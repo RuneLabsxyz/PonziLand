@@ -11,3 +11,13 @@ pub struct Land {
     pub token_used: ContractAddress,
     pub pool_key: ContractAddress, // The Liquidity Pool Key
 }
+
+#[derive(Copy, Drop, Serde, Debug)]
+#[dojo::model]
+pub struct auction_info {
+    #[key]
+    pub location: u64,
+    pub auction_start_time: u64,
+    pub last_bid_time: u64,
+    pub auction_price: u64,
+}

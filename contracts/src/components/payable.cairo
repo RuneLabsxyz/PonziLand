@@ -2,15 +2,6 @@
 
 use starknet::ContractAddress;
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
-// Interfaces
-
-// #[starknet::interface]
-// trait IERC20<TContractState> {
-//     fn transfer(ref self: TContractState, recipient: ContractAddress, amount: u256) -> bool;
-//     fn transferFrom(
-//         ref self: TContractState, sender: ContractAddress, recipient: ContractAddress, amount: u256
-//     ) -> bool;
-// }
 
 // Component
 
@@ -20,8 +11,9 @@ mod PayableComponent {
 
     use starknet::{ContractAddress};
     use starknet::info::get_contract_address;
-    use starknet::storage::Map;
-
+    use starknet::storage::{
+    Map,StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
+};
     // Internal imports
 
     // Local imports
@@ -38,8 +30,8 @@ mod PayableComponent {
         const ERC20_NOT_SUFFICIENT_AMOUNT: felt252 = 'ERC20: not sufficient amount';
     }
 
-    #[derive(Drop, Serde, starknet::Store)]
-    struct StakeInfo {
+    #[derive(Drop, Serde, starknet::Store, Debug)]
+    pub struct TokenInfo {
         token_address: ContractAddress,
         amount: u64,
     }
@@ -51,7 +43,13 @@ mod PayableComponent {
         // token_address: ContractAddress,
         token_dispatcher: IERC20CamelDispatcher,
         //this stake_balance can be in another component
-        stake_balance: Map<ContractAddress, StakeInfo>
+        stake_balance: Map<ContractAddress, TokenInfo>,
+        pending_taxes:Map<(ContractAddress,u64),TokenInfo>,
+        pending_taxes_length:Map<ContractAddress,u64>,
+
+        //this for the current version of cairo don't work
+        // pending_taxes:Map<ContractAddress,Vec<TokenInfo>>
+
     }
 
     // Events
@@ -98,14 +96,53 @@ mod PayableComponent {
             token_address: ContractAddress,
             amount: u64
         ) {
-            let contract = get_contract_address();
+            let contract_address = get_contract_address();
             self._initialize(token_address);
-            let stake_info = StakeInfo { token_address, amount };
-            let status = self.token_dispatcher.read().transferFrom(staker, contract, amount.into());
+            let stake_info = TokenInfo { token_address, amount };
+
+            let status = self.token_dispatcher.read().transferFrom(staker, contract_address, amount.into());
             assert(status, errors::ERC20_STAKE_FAILED);
 
             self.stake_balance.write(staker, stake_info);
         }
+
+        fn _add_taxes(ref self:ComponentState<TContractState>,owner_land:ContractAddress,token_address:ContractAddress,amount:u64){
+            // to see how many of diferents tokens the person can have
+            let  taxes_length= self.pending_taxes_length.read(owner_land);
+            //to see if the token of new taxes already exists
+            let mut found = false;
+            //find existing token and sum the amount
+            for mut i in 0..taxes_length{
+                let mut token_info = self.pending_taxes.read((owner_land,i));
+                if token_info.token_address == token_address {
+                    token_info.amount += amount;
+                    self.pending_taxes.write((owner_land,i),token_info);
+                    found = true;
+                    break; 
+                }
+            };
+
+            if !found {
+                self.pending_taxes.write((owner_land, taxes_length), TokenInfo {
+                    token_address,amount
+                });
+                self.pending_taxes_length.write(owner_land, taxes_length + 1);
+          
+            };
+
+        }
+
+        fn _discount_stake_for_taxes(ref self:ComponentState<TContractState>, owner_land:ContractAddress,tax_amount:u64){
+            let stake_balance = self.stake_balance.read(owner_land);
+            assert(stake_balance.amount > tax_amount,'not sufficient stake for taxes');
+            let new_amount = stake_balance.amount - tax_amount;
+            self.stake_balance.write(owner_land,TokenInfo{
+                token_address:stake_balance.token_address,
+                amount:new_amount
+            });
+        }   
+
+
 
         fn _validate(
             ref self: ComponentState<TContractState>,

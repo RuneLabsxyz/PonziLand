@@ -45,9 +45,8 @@ mod setup {
         ].span()
     }
 
-    fn deploy_erc20() -> IERC20CamelDispatcher {
+    fn deploy_erc20(recipient: ContractAddress) -> IERC20CamelDispatcher {
         // println!("{:?}",MyToken::TEST_CLASS_HASH);
-        let recipient = RECIPIENT();
         let mut calldata = array![];
         Serde::serialize(@recipient, ref calldata);
         let (address, _) = starknet::deploy_syscall(
@@ -65,7 +64,7 @@ mod setup {
     fn create_setup() -> (WorldStorage, IActionsDispatcher, IERC20CamelDispatcher) {
         let ndef = namespace_def();
         let cdf = contract_defs();
-        let erc20 = deploy_erc20();
+        let erc20 = deploy_erc20(RECIPIENT());
         let mut world = spawn_test_world([ndef].span());
         world.sync_perms_and_inits(cdf);
         let (contract_address, _) = world.dns(@"actions").unwrap();
