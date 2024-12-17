@@ -23,51 +23,33 @@ version = "2.8.4"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.0.1#d7335e6f5c76a1dda887ec00c594c2c019b4a05f"
 
 [[package]]
-name = "openzeppelin_access"
-version = "0.15.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.15.1#2f8a93d762858714095a1d391afffa9e21df6983"
-dependencies = [
- "openzeppelin_introspection",
- "openzeppelin_utils",
-]
-
-[[package]]
 name = "openzeppelin_account"
-version = "0.15.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.15.1#2f8a93d762858714095a1d391afffa9e21df6983"
+version = "0.18.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
-]
-
-[[package]]
-name = "openzeppelin_governance"
-version = "0.15.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.15.1#2f8a93d762858714095a1d391afffa9e21df6983"
-dependencies = [
- "openzeppelin_access",
- "openzeppelin_introspection",
 ]
 
 [[package]]
 name = "openzeppelin_introspection"
-version = "0.15.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.15.1#2f8a93d762858714095a1d391afffa9e21df6983"
+version = "0.18.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 
 [[package]]
 name = "openzeppelin_token"
-version = "0.15.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.15.1#2f8a93d762858714095a1d391afffa9e21df6983"
+version = "0.18.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 dependencies = [
  "openzeppelin_account",
- "openzeppelin_governance",
  "openzeppelin_introspection",
+ "openzeppelin_utils",
 ]
 
 [[package]]
 name = "openzeppelin_utils"
-version = "0.15.1"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.15.1#2f8a93d762858714095a1d391afffa9e21df6983"
+version = "0.18.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 
 [[package]]
 name = "ponzi_land"
