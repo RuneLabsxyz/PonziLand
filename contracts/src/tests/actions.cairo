@@ -40,6 +40,10 @@ fn NEIGHBOR_3() -> ContractAddress {
     contract_address_const::<'NEIGHBOR_3'>()
 }
 
+fn NEW_BUYER() -> ContractAddress {
+    contract_address_const::<'NEW_BUYER'>()
+}
+
 #[test]
 fn test_buy_action() {
     let (mut world, actions_system, erc20) = create_setup();
@@ -60,7 +64,7 @@ fn test_buy_action() {
 
     world.write_model_test(@land);
 
-    actions_system.buy(11, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL(), false);
+    actions_system.buy(11, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL(), true);
     let stake_balance = actions_system.get_stake_balance(RECIPIENT());
 
     let mut land: Land = world.read_model(11);
@@ -74,8 +78,8 @@ fn test_buy_action() {
 #[should_panic]
 fn test_invalid_land() {
     let (mut world, actions_system, erc20) = create_setup();
-    set_contract_address(RECIPIENT());
 
+    set_contract_address(RECIPIENT());
     let mut land: Land = world.read_model(11);
 
     //permisions for the contract
@@ -91,86 +95,119 @@ fn test_invalid_land() {
 
     world.write_model_test(@land);
 
+    // Attempt to buy land at invalid position (11000)
     actions_system.buy(11000, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL(), false);
 }
 
 //test for now without auction
 #[test]
-fn test_bid_action() {
+fn test_bid_and_buy_action() {
+    // Setup test environment
     let (mut world, actions_system, erc20) = create_setup();
     set_contract_address(RECIPIENT());
 
-    //permisions for the contract
-    erc20.approve(actions_system.contract_address, 10000);
+    //grant ERC20 approval
+    erc20.approve(actions_system.contract_address, 1000);
 
+    // Bid on land at position 11
+    set_block_timestamp(100);
     actions_system.bid(11, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL());
     let stake_balance = actions_system.get_stake_balance(RECIPIENT());
 
+    // Validate bid/buy updates
     let mut land: Land = world.read_model(11);
-    assert(land.owner == RECIPIENT(), 'has to be a new owner');
-    assert(land.pool_key == NEW_LIQUIDITY_POOL(), 'has to be a new lp');
-    assert(land.sell_price == 10, 'has to be a new price');
-    assert(stake_balance == 12, 'error with stake_balance')
+    assert(land.owner == RECIPIENT(), 'error in set a owner');
+    assert(land.pool_key == NEW_LIQUIDITY_POOL(), 'error in set a lp');
+    assert(land.sell_price == 10, 'error in set a price');
+    assert(stake_balance == 12, 'error in set a stake_balance');
+    assert(land.block_date_bought == 100, 'error in set block time');
+
+    // Simulate token transfer to new buyer
+    erc20.transfer(NEW_BUYER(), 20);
+    set_contract_address(NEW_BUYER());
+    erc20.approve(actions_system.contract_address, 1000);
+    let erc20_new_buyer = deploy_erc20(NEW_BUYER());
+    set_block_timestamp(160);
+
+    // Approve tokens and perform buy action
+    erc20_new_buyer.approve(actions_system.contract_address, 1000);
+    actions_system.buy(11, erc20_new_buyer.contract_address, 300, 500, NEW_LIQUIDITY_POOL(), false);
+
+    // Validate buy action updates
+    let land: Land = world.read_model(11);
+    let stake_balance = actions_system.get_stake_balance(NEW_BUYER());
+    assert(land.owner == NEW_BUYER(), 'error in set owner from buy');
+    assert(stake_balance == 500, 'error in stake from buy');
+    assert(land.sell_price == 300, 'error in set a price from buy');
+    assert(land.block_date_bought == 160, 'error in set time from buy');
 }
 
+
 #[test]
-fn test_taxes() {
+fn test_claim_and_add_taxes() {
     let (mut world, actions_system, erc20) = create_setup();
 
+    // Deploy ERC20 tokens for neighbors
     let erc20_neighbor_1 = deploy_erc20(NEIGHBOR_1());
     let erc20_neighbor_2 = deploy_erc20(NEIGHBOR_2());
     let erc20_neighbor_3 = deploy_erc20(NEIGHBOR_3());
 
-    //permisions for the contract
+    //Set permissions for ERC20 tokens
     set_contract_address(RECIPIENT());
     erc20.approve(actions_system.contract_address, 10000);
-
     let allowance = erc20.allowance(RECIPIENT(), actions_system.contract_address);
     assert(allowance >= 10000, 'Approval failed');
 
     //create lands
-
-    //land 1
-    actions_system.create_land(1280, 500, erc20.contract_address, LIQUIDITY_POOL(), 1000);
-    let claimer_land: Land = world.read_model(1280);
-    assert(claimer_land.owner == RECIPIENT(), 'error with the land owner');
-
-    //neighboors
-    set_contract_address(NEIGHBOR_1());
-    erc20_neighbor_1.approve(actions_system.contract_address, 10000);
-    let neighbor_1_land_1 = actions_system
-        .create_land(1281, 500, erc20_neighbor_1.contract_address, LIQUIDITY_POOL(), 1000);
-
-    set_contract_address(NEIGHBOR_2());
-    erc20_neighbor_2.approve(actions_system.contract_address, 100000);
-    let neighbor_2_land_1 = actions_system
-        .create_land(1216, 500, erc20_neighbor_2.contract_address, LIQUIDITY_POOL(), 1000);
-
-    set_contract_address(NEIGHBOR_3());
-    erc20_neighbor_3.approve(actions_system.contract_address, 10000);
-    let neighbor_3_land_1 = actions_system
-        .create_land(1344, 500, erc20_neighbor_3.contract_address, LIQUIDITY_POOL(), 1000);
+    set_block_timestamp(100);
 
     //generate taxes for land 1 to neighboors
 
+    // Bid on land for claimer
+    actions_system.bid(1280, erc20.contract_address, 500, 1000, LIQUIDITY_POOL());
+    let claimer_land: Land = world.read_model(1280);
+    assert(claimer_land.owner == RECIPIENT(), 'error with the land owner');
+
+    set_block_timestamp(300);
+
+    //Bid for neighbors
+    set_contract_address(NEIGHBOR_1());
+    erc20_neighbor_1.approve(actions_system.contract_address, 100);
+    actions_system.bid(1281, erc20_neighbor_1.contract_address, 500, 100, LIQUIDITY_POOL());
+
+    set_block_timestamp(500);
+
+    set_contract_address(NEIGHBOR_2());
+    erc20_neighbor_2.approve(actions_system.contract_address, 100000);
+    actions_system.bid(1216, erc20_neighbor_2.contract_address, 500, 1000, LIQUIDITY_POOL());
+
+    set_block_timestamp(600);
+
+    set_contract_address(NEIGHBOR_3());
+    erc20_neighbor_3.approve(actions_system.contract_address, 10000);
+    actions_system.bid(1344, erc20_neighbor_3.contract_address, 500, 1000, LIQUIDITY_POOL());
+
+    // Set permissions for ERC20 tokens
     set_contract_address(RECIPIENT());
     erc20_neighbor_1.approve(RECIPIENT(), 100);
     erc20_neighbor_2.approve(RECIPIENT(), 100);
     erc20_neighbor_3.approve(RECIPIENT(), 100);
 
-    actions_system.claim(1280);
+    //simulate some time difference to generate taxes
+    set_block_timestamp(5000);
+    actions_system.claim(1280, false);
 
     //verify the claimer land
     let claimer_land_taxes = actions_system.get_pending_taxes(claimer_land.owner);
     assert(claimer_land_taxes.len() == 0, 'have pending taxes');
-    assert(erc20_neighbor_1.balanceOf(claimer_land.owner) == 3, 'fail in pay taxes');
-    assert(erc20_neighbor_2.balanceOf(claimer_land.owner) == 5, 'fail in pay taxes');
-    assert(erc20_neighbor_3.balanceOf(claimer_land.owner) == 5, 'fail in pay taxes');
+    assert(erc20_neighbor_1.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
+    assert(erc20_neighbor_2.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
+    assert(erc20_neighbor_3.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
 
     //verify the neighbors of the claimer land
-    let taxes_neighbor_1 = actions_system.get_pending_taxes(neighbor_1_land_1.owner);
-    let taxes_neighbor_2 = actions_system.get_pending_taxes(neighbor_2_land_1.owner);
-    let taxes_neighbor_3 = actions_system.get_pending_taxes(neighbor_3_land_1.owner);
+    let taxes_neighbor_1 = actions_system.get_pending_taxes(NEIGHBOR_1());
+    let taxes_neighbor_2 = actions_system.get_pending_taxes(NEIGHBOR_2());
+    let taxes_neighbor_3 = actions_system.get_pending_taxes(NEIGHBOR_3());
 
     assert(taxes_neighbor_1.len() > 0, 'must have pending taxes');
     assert(taxes_neighbor_2.len() > 0, 'must have pending taxes');
@@ -185,10 +222,84 @@ fn test_taxes() {
     assert(stake_balance_after_taxes_neighbor_3 < 1000, 'must have less stake');
 }
 
+
+#[test]
+fn test_claim_and_buy_actions() {
+    //setup environment
+    let (mut world, actions_system, erc20) = create_setup();
+    let erc20_neighbor_1 = deploy_erc20(NEIGHBOR_1());
+
+    set_contract_address(RECIPIENT());
+
+    // approve tokens for contract usage
+    erc20.approve(actions_system.contract_address, 1000);
+    let allowance = erc20.allowance(RECIPIENT(), actions_system.contract_address);
+    assert(allowance >= 1000, 'Approval failed');
+
+    //send tokens for the buyer
+    erc20.transfer(NEW_BUYER(), 500);
+    assert(erc20.balanceOf(RECIPIENT()) == 999500, 'error in transfer erc20');
+
+    // Set the block timestamp to simulate the passage of time
+    set_block_timestamp(100);
+
+    // Bid on land at position 1280
+    actions_system.bid(1280, erc20.contract_address, 500, 1000, NEW_LIQUIDITY_POOL());
+    assert(erc20.balanceOf(RECIPIENT()) == 998500, 'error in stake erc20');
+    assert(erc20_neighbor_1.balanceOf(RECIPIENT()) == 0, 'no taxes yet');
+
+    let land_1280: Land = world.read_model(1280);
+    assert(land_1280.last_pay_time == 100, 'err in set last_pay_time');
+
+    // Neighbor bids on adjacent land (1281)
+    set_block_timestamp(600);
+
+    set_contract_address(NEIGHBOR_1());
+    erc20_neighbor_1.approve(actions_system.contract_address, 100);
+    erc20_neighbor_1.transfer(NEW_BUYER(), 100);
+
+    actions_system.bid(1281, erc20_neighbor_1.contract_address, 1000, 100, LIQUIDITY_POOL());
+
+    let land_1280: Land = world.read_model(1280);
+    assert(land_1280.last_pay_time == 600, 'err in change last_pay_time');
+
+    let land_1281: Land = world.read_model(1281);
+    assert(land_1281.last_pay_time == 600, 'err in set last_pay_time');
+
+    // Set a new block timestamp to simulate time passing (tax generation)
+    set_block_timestamp(3000);
+
+    // Perform a buy action for the land
+    set_contract_address(NEW_BUYER());
+    erc20_neighbor_1.approve(actions_system.contract_address, 1000);
+    erc20.approve(actions_system.contract_address, 500);
+
+    actions_system
+        .buy(1280, erc20_neighbor_1.contract_address, 100, 100, NEW_LIQUIDITY_POOL(), false);
+
+    let land_1280: Land = world.read_model(1280);
+    assert(land_1280.last_pay_time == 3000, 'err in change last_pay_time');
+
+    let land_1281: Land = world.read_model(1281);
+    assert(land_1281.last_pay_time == 3000, 'err in change last_pay_time');
+
+    // Verify that the seller received tokens from the sale and also refunded amount from stake
+    assert(erc20.balanceOf(RECIPIENT()) == 1000000, 'error in sell land');
+
+    // Verify taxes were successfully claimed
+    assert(erc20_neighbor_1.balanceOf(RECIPIENT()) > 0, 'error in claim taxes');
+
+    set_block_timestamp(5000);
+
+    //Verify claim for the NEW_BUYER
+    actions_system.claim(1280, false);
+    assert(erc20_neighbor_1.balanceOf(NEW_BUYER()) > 0, 'error in claim normal taxes');
+}
+
 #[test]
 fn test_nuke_action() {
+    //setup environment
     let (mut world, actions_system, erc20) = create_setup();
-
     let erc20_neighbor_1 = deploy_erc20(NEIGHBOR_1());
 
     //permisions for the contract
@@ -199,32 +310,34 @@ fn test_nuke_action() {
     assert(allowance >= 10000, 'Approval failed');
 
     //create lands
+    set_block_timestamp(100);
 
     //land 1
-    actions_system.create_land(1280, 500, erc20.contract_address, LIQUIDITY_POOL(), 100);
+    actions_system.bid(1280, erc20.contract_address, 500, 1000, LIQUIDITY_POOL());
     let claimer_land: Land = world.read_model(1280);
     assert(claimer_land.owner == RECIPIENT(), 'error with the land owner');
 
     //neighboors
     set_contract_address(NEIGHBOR_1());
     erc20_neighbor_1.approve(actions_system.contract_address, 10000);
-    let neighbor_1_land_1 = actions_system
-        .create_land(1281, 500, erc20_neighbor_1.contract_address, LIQUIDITY_POOL(), 10);
+    actions_system.bid(1281, erc20_neighbor_1.contract_address, 500, 10, LIQUIDITY_POOL());
 
     //permisions for transfer tokens
     set_contract_address(RECIPIENT());
     erc20_neighbor_1.approve(RECIPIENT(), 100);
 
+    // Fetch land to check its initial state
     let nuked_land = actions_system.get_land(1281);
-
     assert(nuked_land.owner != ContractAddressZeroable::zero(), 'owner must exist');
     assert(nuked_land.sell_price != 0, 'sell_price must exist');
     assert(nuked_land.pool_key != ContractAddressZeroable::zero(), 'pool_key must exist');
 
-    actions_system.claim(claimer_land.location);
-    let stake_neighbor_1 = actions_system.get_stake_balance(neighbor_1_land_1.owner);
-    let stake_claimer_land = actions_system.get_stake_balance(claimer_land.owner);
+    // Simulate time progression
+    set_block_timestamp(5110);
 
+    actions_system.claim(claimer_land.location, false);
+
+    // Verify that the land has been nuked
     let nuked_land = actions_system.get_land(1281);
 
     assert(nuked_land.owner == ContractAddressZeroable::zero(), 'owner must be 0');

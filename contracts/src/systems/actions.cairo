@@ -25,19 +25,9 @@ trait IActions<T> {
         is_from_bid: bool
     );
 
-    fn claim(ref self: T, land_location: u64);
+    fn claim(ref self: T, land_location: u64, is_from_sell: bool);
 
     fn nuke(ref self: T, land_location: u64);
-
-    fn create_land(
-        ref self: T,
-        location: u64,
-        sell_price: u64,
-        token_used: ContractAddress,
-        pool_key: ContractAddress,
-        stake_amount: u64
-    ) -> Land;
-
 
     //getters
     fn get_stake_balance(self: @T, staker: ContractAddress) -> u64;
@@ -78,6 +68,26 @@ pub mod actions {
         land_location: u64,
     }
 
+    #[derive(Drop,Serde)]
+    #[dojo::event]
+    pub struct NewLandEvent {
+        #[key]
+        owner_land:ContractAddress,
+        #[key]
+        land_location:u64,
+        token_for_sale:ContractAddress,
+        sell_price:u64
+    }
+
+    #[derive(Drop,Serde)]
+    #[dojo::event]
+    pub struct RemainingStakeEvent{
+        #[key]
+        land_location:u64,
+        remaining_stake:u64
+    }
+
+
     // Storage
     #[storage]
     struct Storage {
@@ -102,18 +112,21 @@ pub mod actions {
 
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
-
-            self.payable._validate(caller, token_for_sale, land.sell_price);
-
-            // //find the way to validate the liquidity pool for the new token_for_sale
-            // //some assert();
+            assert(amount_to_stake > 0, 'amount_to_stake > 0');
 
             if is_from_bid {
-                //self.payable._pay_us();
+                //TODO: we have to create our contract to send the tokens for the first sell
+                //self.payable._pay_to_us();
+
+                self.claim(land_location, true);
                 self.payable._stake(caller, token_for_sale, amount_to_stake);
             } else {
-                self.payable._pay(caller, land.owner, land.sell_price.into());
-                // self.payable._refund_of_stake(land.owner);
+                //we see if the buyer has the token and the amount for buy the land
+                assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
+                self.claim(land_location, true);
+                self.payable._pay(caller, land.owner,land.token_used, land.sell_price);
+
+                self.payable._refund_of_stake(land.owner);
                 self.payable._stake(caller, token_for_sale, amount_to_stake);
             }
 
@@ -122,25 +135,43 @@ pub mod actions {
             land.sell_price = sell_price;
             land.pool_key = liquidity_pool;
             land.token_used = token_for_sale;
+            land.last_pay_time = get_block_timestamp();
 
             world.write_model(@land);
+            world.emit_event(@NewLandEvent{
+                owner_land:land.owner,
+                land_location,
+                token_for_sale,
+                sell_price
+            })
         }
 
-        //see what we want return in this function
-        fn claim(ref self: ContractState, land_location: u64) {
-            //review valid_position function
-            is_valid_position(land_location);
+        //TODO:what happens if someone wants to call this from voyager?
+        fn claim(ref self: ContractState, land_location: u64, is_from_sell: bool) {
+            assert(is_valid_position(land_location), 'Land location not valid');
+
             let mut world = self.world_default();
             let caller = get_caller_address();
-            let land: Land = world.read_model(land_location);
+            let mut land: Land = world.read_model(land_location);
 
-            assert(land.owner == caller, 'not the owner');
+            if !is_from_sell {
+                assert(land.owner == caller, 'not the owner')
+            };
+            //generate taxes for each neighbor of claimer
             let neighbors = self.payable._add_neighbors(world, land_location);
             if neighbors.len() != 0 {
                 for location in neighbors {
                     match self.payable._generate_taxes(world, location) {
-                        Result::Ok(_) => {},
-                        Result::Err(_) => { self.nuke(location); }
+                        Result::Ok(remaining_stake) => {if remaining_stake != 0 {
+                            world.emit_event(@RemainingStakeEvent{
+                                land_location:location,
+                                remaining_stake
+                            })
+                        }},
+                        Result::Err(_) => {
+                            // println!("nuke");
+                            self.nuke(location);
+                        }
                     };
                 };
             }
@@ -192,30 +223,6 @@ pub mod actions {
                 );
         }
 
-
-        //I will change this for bid function after, only for fast test
-        fn create_land(
-            ref self: ContractState,
-            location: u64,
-            sell_price: u64,
-            token_used: ContractAddress,
-            pool_key: ContractAddress,
-            stake_amount: u64
-        ) -> Land {
-            assert(is_valid_position(location), 'Land location not valid');
-            let mut world = self.world_default();
-            let mut land: Land = world.read_model(location);
-            let caller = get_caller_address();
-            land.owner = caller;
-            land.block_date_bought = get_block_timestamp();
-            land.sell_price = sell_price;
-            land.pool_key = pool_key;
-            land.token_used = token_used;
-            self.payable._stake(caller, token_used, stake_amount);
-
-            world.write_model(@land);
-            land
-        }
 
         //GETTERS FUNCTIONS
 
