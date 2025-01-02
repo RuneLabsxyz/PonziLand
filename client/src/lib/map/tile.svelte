@@ -66,6 +66,7 @@
                 : `background-image: url('/tiles/${type}.jpg');
         background-size: cover;
         background-position: center;`}
+            style:border={ $tileHUD?.location == location ? "1px solid #FFFFFF" : ""}
         ></div>
     </Popover.Trigger>
     <Popover.Content side="right">
