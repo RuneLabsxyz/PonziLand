@@ -10,6 +10,7 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
+		"baseUrl": ".",
 		"paths": {
 			"@dojoengine/sdk-svelte": ["../dist/index.js"],
 			"$lib/*": ["./src/lib/*"]
