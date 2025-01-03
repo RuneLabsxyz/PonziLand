@@ -3,6 +3,7 @@
     import { tileHUD } from '$lib/stores/stores';
     import data from '$lib/data.json';
     import Tilehud from '$lib/ui/tilehud.svelte';
+    import Nuke from '$lib/components/nuke.svelte';
 
     let backgroundImage = $state('/tiles/grass.jpg');
 
@@ -72,8 +73,11 @@
                 : ''}
         ></div>
     </Popover.Trigger>
-    <Popover.Content side="right" class="p-0 z-40 custom-border">
+    <Popover.Content side="right" class="p-0 z-40 border-none">
         <Tilehud />
+        {#if true}
+            <Nuke />
+        {/if}
     </Popover.Content>
 </Popover.Root>
 
