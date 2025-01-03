@@ -3,6 +3,7 @@
     import { getAuctionData } from "$lib/api/mock-land";
     import type { AuctionData } from "$lib/interfaces";
     import { handleTileBuy, handleAuctionBuy } from "$lib/stores/ui.svelte";
+    import * as Popover from "$lib/components/ui/popover";
 
     let auctionInfo = $state<AuctionData | null>(null);
 
@@ -18,13 +19,21 @@
 
 <!-- Tile HUD with close button -->
 {#if $tileHUD}
-    <div class="bg-white p-4 rounded shadow-lg z-50">
-        <button
+    <div class="bg-white p-4 rounded shadow-lg z-40">
+        <Popover.Close>
+            <button
+                class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                onclick={() => ($tileHUD = null)}
+            >
+                ✕
+            </button>
+        </Popover.Close>
+        <!-- <button
             class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
             onclick={() => ($tileHUD = null)}
         >
             ✕
-        </button>
+        </button> -->
         <h1 class="text-lg font-bold mb-2">Tile HUD</h1>
         <div class="space-y-2">
             <p>

@@ -1,10 +1,10 @@
 <script lang="ts">
-    import * as Popover from "$lib/components/ui/popover";
-    import { tileHUD } from "$lib/stores/stores";
-    import data from "$lib/data.json";
-    import Tilehud from "$lib/ui/tilehud.svelte";
+    import * as Popover from '$lib/components/ui/popover';
+    import { tileHUD } from '$lib/stores/stores';
+    import data from '$lib/data.json';
+    import Tilehud from '$lib/ui/tilehud.svelte';
 
-    let backgroundImage = $state("/tiles/grass.jpg");
+    let backgroundImage = $state('/tiles/grass.jpg');
 
     let { type, location, owner, sellPrice, tokenUsed, tokenAddress } = $props<{
         type: string;
@@ -16,7 +16,7 @@
     }>();
 
     function handleClick() {
-        console.log("clicked");
+        console.log('clicked');
         $tileHUD = {
             location: location,
             owner: owner,
@@ -34,13 +34,13 @@
     const getCastleImage = () => {
         const token = data.availableTokens.find((t) => t.name === tokenUsed);
         if (!token) {
-            const basicTypes = ["basic", "advanced", "premium"];
+            const basicTypes = ['basic', 'advanced', 'premium'];
             const randomBasic =
                 basicTypes[Math.floor(Math.random() * basicTypes.length)];
             return `/images/basic/${randomBasic}.png`;
         }
 
-        const castleTypes = ["basic", "advanced", "premium"] as const;
+        const castleTypes = ['basic', 'advanced', 'premium'] as const;
         const randomType =
             castleTypes[Math.floor(Math.random() * castleTypes.length)];
         return token.images.castle[randomType];
@@ -59,7 +59,7 @@
         <div
             onclick={handleClick}
             class="tile"
-            style={type === "house"
+            style={type === 'house'
                 ? `background-image: url('${backgroundImage}'), url('/tiles/grass.jpg');
         background-size: contain, cover;
         background-repeat: no-repeat, repeat;
@@ -68,11 +68,11 @@
         background-size: cover;
         background-position: center;`}
             style:border={$tileHUD?.location == location
-                ? "1px solid #FFFFFF"
-                : ""}
+                ? '1px solid #FFFFFF'
+                : ''}
         ></div>
     </Popover.Trigger>
-    <Popover.Content side="right">
+    <Popover.Content side="right" class="p-0 z-40">
         <Tilehud />
     </Popover.Content>
 </Popover.Root>

@@ -1,5 +1,6 @@
 <script>
-    import { setupBurner } from '$lib/contexts/account';
+    import { dev } from '$app/environment';
+import { setupBurner } from '$lib/contexts/account';
     import { setupClient } from '$lib/contexts/client';
     import { setupStore } from '$lib/contexts/store';
     import { dojoConfig } from '$lib/dojoConfig';
@@ -21,7 +22,9 @@
         <Ui />
     <!-- even if dojo error render -->
     {:catch _}
+      {#if dev}
         <Map />
         <Ui />
+      {/if}
     {/await}
 </div>
