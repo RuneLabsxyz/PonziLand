@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+    font-family: "Nintendo DS BIOS";
+    font-style: normal;
+    font-weight: 400;
+    src: url("fonts/Nintendo-DS-BIOS.ttf") format("truetype");
+}
+
 .custom-border {
     border: double blue 1em;
     border-image: url("images/ui/nineslicing.png") 5 round round; /* 9-slice border */
