@@ -2,6 +2,7 @@
     import * as Popover from "$lib/components/ui/popover";
     import { tileHUD } from "$lib/stores/stores";
     import data from "$lib/data.json";
+    import Tilehud from "$lib/ui/tilehud.svelte";
 
     let backgroundImage = $state("/tiles/grass.jpg");
 
@@ -56,7 +57,7 @@
 <Popover.Root>
     <Popover.Trigger>
         <div
-            on:click={handleClick}
+            onclick={handleClick}
             class="tile"
             style={type === "house"
                 ? `background-image: url('${backgroundImage}'), url('/tiles/grass.jpg');
@@ -66,11 +67,13 @@
                 : `background-image: url('/tiles/${type}.jpg');
         background-size: cover;
         background-position: center;`}
-            style:border={ $tileHUD?.location == location ? "1px solid #FFFFFF" : ""}
+            style:border={$tileHUD?.location == location
+                ? "1px solid #FFFFFF"
+                : ""}
         ></div>
     </Popover.Trigger>
     <Popover.Content side="right">
-        ok depart
+        <Tilehud />
     </Popover.Content>
 </Popover.Root>
 
