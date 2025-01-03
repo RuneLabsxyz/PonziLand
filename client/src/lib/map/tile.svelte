@@ -72,7 +72,7 @@
                 : ''}
         ></div>
     </Popover.Trigger>
-    <Popover.Content side="right" class="p-0 z-40">
+    <Popover.Content side="right" class="p-0 z-40 custom-border">
         <Tilehud />
     </Popover.Content>
 </Popover.Root>

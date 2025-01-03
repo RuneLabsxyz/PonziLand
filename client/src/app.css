@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.custom-border {
+    border: double blue 1em;
+    border-image: url("images/ui/nineslicing.png") 5 round round; /* 9-slice border */
+    image-rendering: pixelated;
+}
