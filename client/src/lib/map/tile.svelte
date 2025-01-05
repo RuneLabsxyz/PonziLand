@@ -75,7 +75,7 @@
     </Popover.Trigger>
     <Popover.Content side="right" class="p-0 z-40 border-none">
         <Tilehud />
-        {#if true}
+        {#if false}
             <Nuke />
         {/if}
     </Popover.Content>
