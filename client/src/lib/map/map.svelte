@@ -182,9 +182,9 @@
 <style>
     .map-wrapper {
         position: relative;
-        margin: 32px 0 0 32px;
-        width: calc(100% - 64px);
-        height: calc(100% - 64px);
+        margin: 32px;
+        width: calc(100% - 32px);
+        height: calc(100% - 32px);
     }
 
     .column-numbers {
