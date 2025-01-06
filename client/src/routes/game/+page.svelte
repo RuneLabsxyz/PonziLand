@@ -40,10 +40,15 @@
                 value = 100;
                 setTimeout(() => {
                     loading = false;
-                }, 500);
+                }, 200);
             })
             .catch((err) => {
                 console.error('promise rejected', err);
+                clearInterval(interval);
+                value = 100;
+                setTimeout(() => {
+                    loading = false;
+                }, 200);
             });
     });
 </script>
