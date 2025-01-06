@@ -8,7 +8,7 @@
     <div class="flex gap-2">
         <Sheet.Root preventScroll={false}>
             <Sheet.Trigger>
-                <Button>My lands</Button>
+                <Button class="ponzi-card">My lands</Button>
             </Sheet.Trigger>
             <Sheet.Content side="left">
                 <Sheet.Header>
@@ -17,7 +17,7 @@
                 </Sheet.Header>
             </Sheet.Content>
         </Sheet.Root>
-        <Button>My Bids</Button>
-        <Button>Achievements</Button>
+        <Button class="ponzi-card">My Bids</Button>
+        <Button class="ponzi-card">Achievements</Button>
     </div>
 </div>

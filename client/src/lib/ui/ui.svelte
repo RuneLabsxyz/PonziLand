@@ -11,6 +11,7 @@
         handleCancel,
     } from '$lib/stores/ui.svelte';
     import Toolbar from './toolbar.svelte';
+    import AccountLookup from '$lib/components/account_lookup.svelte';
 </script>
 
 <Toolbar />
@@ -29,3 +30,4 @@
         />
     {/if}
 {/if}
+<AccountLookup />
