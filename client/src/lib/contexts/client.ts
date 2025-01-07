@@ -37,7 +37,7 @@ async function _setupDojo(config: DojoConfig) {
   return {
     ...initialized,
     toriiClient: initialized.client,
-    client: getClient(provider),
+    client: await getClient(provider),
   };
 }
 // Set the context (This function CANNOT be async due to setContext not working otherwise)

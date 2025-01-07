@@ -1,93 +1,101 @@
-import type { SchemaType } from "@dojoengine/sdk";
+import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
+
+import type { BigNumberish } from 'starknet';
+
+type RemoveFieldOrder<T> = T extends object
+  ? Omit<
+      {
+        [K in keyof T]: T[K] extends object ? RemoveFieldOrder<T[K]> : T[K];
+      },
+      'fieldOrder'
+    >
+  : T;
+// Type definition for `ponzi_land::models::land::LandValue` struct
+export interface LandValue {
+	fieldOrder: string[];
+	block_date_bought: BigNumberish;
+	owner: string;
+	sell_price: BigNumberish;
+	token_used: string;
+	pool_key: string;
+	last_pay_time: BigNumberish;
+}
+export type InputLandValue = RemoveFieldOrder<LandValue>;
 
 // Type definition for `ponzi_land::models::land::Land` struct
 export interface Land {
 	fieldOrder: string[];
-	location: number;
-	block_date_bought: number;
+	location: BigNumberish;
+	block_date_bought: BigNumberish;
 	owner: string;
-	sell_price: number;
+	sell_price: BigNumberish;
 	token_used: string;
 	pool_key: string;
+	last_pay_time: BigNumberish;
 }
+export type InputLand = RemoveFieldOrder<Land>;
 
-// Type definition for `ponzi_land::models::land::LandValue` struct
-export interface LandValue {
+// Type definition for `ponzi_land::models::land::auction_info` struct
+export interface AuctionInfo {
 	fieldOrder: string[];
-	block_date_bought: number;
-	owner: string;
-	sell_price: number;
-	token_used: string;
-	pool_key: string;
+	location: BigNumberish;
+	auction_start_time: BigNumberish;
+	last_bid_time: BigNumberish;
+	auction_price: BigNumberish;
 }
+export type InputAuctionInfo = RemoveFieldOrder<AuctionInfo>;
 
-export interface PonziLandSchemaType extends SchemaType {
+// Type definition for `ponzi_land::models::land::auction_infoValue` struct
+export interface AuctionInfoValue {
+	fieldOrder: string[];
+	auction_start_time: BigNumberish;
+	last_bid_time: BigNumberish;
+	auction_price: BigNumberish;
+}
+export type InputAuctionInfoValue = RemoveFieldOrder<AuctionInfoValue>;
+
+export interface SchemaType extends ISchemaType {
 	ponzi_land: {
-		Land: Land,
 		LandValue: LandValue,
-		ERC__Balance: ERC__Balance,
-		ERC__Token: ERC__Token,
-		ERC__Transfer: ERC__Transfer,
+		Land: Land,
+		auction_info: auction_info,
+		auction_infoValue: auction_infoValue,
 	},
 }
-export const schema: PonziLandSchemaType = {
+export const schema: SchemaType = {
 	ponzi_land: {
+		LandValue: {
+			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
+			block_date_bought: 0,
+			owner: "",
+			sell_price: 0,
+			token_used: "",
+			pool_key: "",
+			last_pay_time: 0,
+		},
 		Land: {
-			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key'],
+			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
 			location: 0,
 			block_date_bought: 0,
 			owner: "",
 			sell_price: 0,
 			token_used: "",
 			pool_key: "",
+			last_pay_time: 0,
 		},
-		LandValue: {
-			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key'],
-			block_date_bought: 0,
-			owner: "",
-			sell_price: 0,
-			token_used: "",
-			pool_key: "",
+		auction_info: {
+			fieldOrder: ['location', 'auction_start_time', 'last_bid_time', 'auction_price'],
+			location: 0,
+			auction_start_time: 0,
+			last_bid_time: 0,
+			auction_price: 0,
 		},
-		ERC__Balance: {
-			fieldOrder: ['balance', 'type', 'tokenmetadata'],
-			balance: '',
-			type: 'ERC20',
-			tokenMetadata: {
-				fieldOrder: ['name', 'symbol', 'tokenId', 'decimals', 'contractAddress'],
-				name: '',
-				symbol: '',
-				tokenId: '',
-				decimals: '',
-				contractAddress: '',
-			},
+		auction_infoValue: {
+			fieldOrder: ['auction_start_time', 'last_bid_time', 'auction_price'],
+			auction_start_time: 0,
+			last_bid_time: 0,
+			auction_price: 0,
 		},
-		ERC__Token: {
-			fieldOrder: ['name', 'symbol', 'tokenId', 'decimals', 'contractAddress'],
-			name: '',
-			symbol: '',
-			tokenId: '',
-			decimals: '',
-			contractAddress: '',
-		},
-		ERC__Transfer: {
-			fieldOrder: ['from', 'to', 'amount', 'type', 'executed', 'tokenMetadata'],
-			from: '',
-			to: '',
-			amount: '',
-			type: 'ERC20',
-			executedAt: '',
-			tokenMetadata: {
-				fieldOrder: ['name', 'symbol', 'tokenId', 'decimals', 'contractAddress'],
-				name: '',
-				symbol: '',
-				tokenId: '',
-				decimals: '',
-				contractAddress: '',
-			},
-			transactionHash: '',
-		},
-
 	},
 };
 // Type definition for ERC__Balance struct
