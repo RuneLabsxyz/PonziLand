@@ -1,9 +1,9 @@
 import { createDojoConfig } from "@dojoengine/core";
 
-import manifest from "../../../contracts/manifest_dev.json";
+import manifest from "../../../contracts/manifest_sepolia.json";
 
 export const dojoConfig = createDojoConfig({
-    manifest,
-    rpcUrl: "http://127.0.0.1:5050",
-    toriiUrl: "http://127.0.0.1:8080",
+  manifest,
+  rpcUrl: "https://api.cartridge.gg/x/starknet/sepolia",
+  toriiUrl: "https://api.cartridge.gg/x/ponziland-sepolia/torii",
 });
