@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
+import data from '$lib/data.json';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -70,4 +71,28 @@ export function toHexWithPadding(number: number, paddingLength = 64) {
 
   // Add the 0x prefix
   return '0x' + hex;
+}
+
+export function shortenHex(hex: string, length = 4) {
+  if (!hex.startsWith('0x')) {
+    return hex;
+  }
+
+  if (hex.length <= 2 + 2 * length) {
+    // No shortening needed
+    return hex;
+  }
+
+  const start = hex.slice(0, 2 + length);
+  const end = hex.slice(-length);
+  return `${start}...${end}`;
+}
+
+export function getTokenInfo(tokenAddress: string) {
+  // from data.available tokens
+  const token = data.availableTokens.find(
+    (token) => token.address === tokenAddress
+  );
+
+  return token;
 }

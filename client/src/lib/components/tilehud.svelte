@@ -6,6 +6,7 @@
   import { useLands } from '$lib/api/land.svelte';
   import Card from './ui/card/card.svelte';
   import AuctionHud from './auction/auction-hud.svelte';
+  import { shortenHex, toHexWithPadding } from '$lib/utils';
 
   let landStore = useLands();
 
@@ -29,9 +30,9 @@
         ) + 1})
         #{$tileHUD.location}
       </p>
-      <p>Owner: {$tileHUD.owner ?? 'Unclaimed'}</p>
+      <p>Owner: {shortenHex($tileHUD.owner ?? '') || 'Unclaimed'}</p>
     </div>
-    {#if $tileHUD.owner != "0x0000000000000000000000000000000000000000000000000000000000000000" && $tileHUD.owner != null}
+    {#if $tileHUD.owner != toHexWithPadding(0) && $tileHUD.owner != null}
       <button
         class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         onclick={() =>
