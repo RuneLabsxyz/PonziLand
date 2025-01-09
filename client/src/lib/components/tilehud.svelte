@@ -3,6 +3,7 @@
     import { mousePosCoords } from '$lib/stores/stores';
     import { getAuctionData } from '$lib/api/mock-land';
     import type { AuctionData } from '$lib/interfaces';
+    import Card from './ui/card/card.svelte';
 
     let auctionInfo = $state<AuctionData | null>(null);
 
@@ -26,7 +27,7 @@
 
 <!-- Tile HUD with close button -->
 {#if $tileHUD}
-    <div class="fixed bottom-0 right-0 bg-white p-4 rounded shadow-lg z-50">
+    <Card class="fixed bottom-0 right-0 z-50">
         <button 
             class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
             onclick={() => $tileHUD = null}
@@ -59,5 +60,5 @@
                 Bid
             </button>
         {/if}
-    </div>
+    </Card>
 {/if}
