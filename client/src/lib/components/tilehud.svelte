@@ -23,12 +23,11 @@
   let { onBuyTile, onBidTile } = $props();
 </script>
 
-<!-- Permanent mouse coordinates display -->
-<div class="fixed top-0 right-0 bg-white p-2 rounded shadow-lg z-50">
+<Card class="fixed bottom-0 left-0 z-50">
   <p>
     Mouse: {$mousePosCoords ? `${$mousePosCoords.x}, ${$mousePosCoords.y}` : ""}
   </p>
-</div>
+</Card>
 
 <!-- Tile HUD with close button -->
 {#if $tileHUD}
