@@ -16,7 +16,6 @@ export type AccountProvider = {
 export function setupAccount(
   config: DojoConfig
 ): Promise<AccountProvider | undefined> {
-  console.log("'", PUBLIC_DOJO_BURNER_ADDRESS, "'");
   if (PUBLIC_DOJO_BURNER_ADDRESS != "null") {
     return setupBurnerAccount(config);
   } else {

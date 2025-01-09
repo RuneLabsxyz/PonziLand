@@ -31,6 +31,12 @@ type LandsStore = Readable<LandWithActions[]> & {
   /// Buy an empty / nuked land.
   /// NOTE: This function may be removed later.
   bidLand(location: BigNumberish, setup: LandSetup): TransactionResult;
+  auctionLand(
+    location: BigNumberish,
+    startPrice: BigNumberish,
+    floorPrice: BigNumberish,
+    tokenForSale: string
+  ): TransactionResult;
 };
 
 type LandWithActions = Land & {
@@ -135,6 +141,15 @@ export function useLands(): LandsStore | undefined {
         setup.salePrice,
         setup.amountToStake,
         setup.liquidityPoolAddress
+      );
+    },
+    auctionLand(location, startPrice, floorPrice, tokenForSale) {
+      return sdk.client.actions.auction(
+        account.getAccount()!,
+        location,
+        startPrice,
+        floorPrice,
+        tokenForSale
       );
     },
   };
