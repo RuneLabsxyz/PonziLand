@@ -1,11 +1,11 @@
 <script lang="ts">
-  import Tile from "./tile.svelte";
-  import { mockLandData } from "$lib/api/mock-land";
-  import { mousePosCoords } from "$lib/stores/stores";
-  import { cameraPosition } from "$lib/stores/camera";
-  import { useLands } from "$lib/api/land.svelte";
-  import type { LandsStore } from "$lib/api/land.svelte";
-  import type { BigNumberish } from "starknet";
+  import Tile from './tile.svelte';
+  import { mockLandData } from '$lib/api/mock-land';
+  import { mousePosCoords } from '$lib/stores/stores';
+  import { cameraPosition } from '$lib/stores/camera';
+  import { useLands } from '$lib/api/land.svelte';
+  import type { LandsStore } from '$lib/api/land.svelte';
+  import type { BigNumberish } from 'starknet';
 
   const MAP_SIZE = 64;
   const TILE_SIZE = 32;
@@ -19,9 +19,9 @@
   try {
     landStore = useLands();
   } catch (e) {
-    console.log("Error in map.svelte", e);
+    console.log('Error in map.svelte', e);
   }
-  $inspect("landStore", $landStore);
+  $inspect('landStore', $landStore);
 
   let tiles = $state<
     {
@@ -43,13 +43,13 @@
             const index = row * MAP_SIZE + col;
             const landData = lands[index];
             return {
-              type: landData?.owner ? "house" : "grass",
+              type: landData?.owner ? 'house' : 'grass',
               owner: landData?.owner,
               sellPrice: landData?.sell_price as number,
               tokenUsed: landData?.token_used,
               tokenAddress: landData?.token_used,
             };
-          })
+          }),
       );
   });
 

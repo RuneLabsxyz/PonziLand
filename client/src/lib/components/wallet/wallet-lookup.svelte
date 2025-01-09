@@ -1,7 +1,7 @@
 <script>
-  import { accountAddress } from "$lib/stores/stores";
-  import Button from "../ui/button/button.svelte";
-  import Card from "../ui/card/card.svelte";
+  import { accountAddress } from '$lib/stores/stores';
+  import Button from '../ui/button/button.svelte';
+  import Card from '../ui/card/card.svelte';
 </script>
 
 <div class="fixed top-0 right-0 z-50">
