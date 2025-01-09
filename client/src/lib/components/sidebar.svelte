@@ -1,6 +1,6 @@
 <script lang="ts">
-    import YourLands from './sidebar/yourlands.svelte';
-    import YourBids from './sidebar/yourbids.svelte';
+    import YourLands from '../components/sidebar/yourlands.svelte';
+    import YourBids from '../components/sidebar/yourbids.svelte';
     let open = $state(false);
     let activeTab = $state('lands'); // 'lands' or 'bids'
 </script>

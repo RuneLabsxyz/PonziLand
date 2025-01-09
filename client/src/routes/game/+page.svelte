@@ -4,8 +4,8 @@
   import { setupClient } from "$lib/contexts/client";
   import { setupStore } from "$lib/contexts/store";
   import { dojoConfig } from "$lib/dojoConfig";
-  import Map from "$lib/map/map.svelte";
-  import Ui from "$lib/ui/ui.svelte";
+  import Map from "$lib/components/map/map.svelte";
+  import Ui from "$lib/components/ui.svelte";
 
   const promise = Promise.all([
     setupClient(dojoConfig),
