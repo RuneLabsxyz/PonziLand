@@ -23,7 +23,7 @@
     }
 
     function handleBuyClick() {
-        onBuy();
+        onBuy(data);
     }
 
     function handleCancelClick() {

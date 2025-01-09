@@ -8,7 +8,7 @@ import {
   QueryBuilder,
   type SubscribeParams,
 } from "@dojoengine/sdk";
-import { derived, get, writable, type Readable } from "svelte/store";
+import { derived, get, readable, writable, type Readable } from "svelte/store";
 import { slide } from "svelte/transition";
 
 type TransactionResult = Promise<
@@ -51,18 +51,32 @@ export function useLands(): LandsStore | undefined {
   const landStore = derived([store], ([actualStore]) => actualStore);
 
   (async () => {
-    await sdk.subscribeEntityQuery({
-      query: new QueryBuilder<PonziLandSchemaType>()
-        .namespace("ponzi_land", (ns) => {
-          ns.entity("Land", (e) => e.build());
-        })
-        .build(),
+    const query = new QueryBuilder<PonziLandSchemaType>()
+      .namespace("ponzi_land", (ns) => {
+        ns.entity("Land", (e) => e.build());
+      })
+      .build();
+    // also query initial
+    await sdk.getEntities({
+      query,
       callback: (response) => {
         if (response.error || response.data == null) {
           console.log("Got an error!", response.error);
         } else {
           console.log("Setting entities :)");
-          console.log("Data!");
+          console.log("Data!", JSON.stringify(response.data));
+          get(landStore).setEntities(response.data);
+        }
+      },
+    });
+    await sdk.subscribeEntityQuery({
+      query,
+      callback: (response) => {
+        if (response.error || response.data == null) {
+          console.log("Got an error!", response.error);
+        } else {
+          console.log("Setting entities :)");
+          console.log("Data!", JSON.stringify(response.data));
           get(landStore).setEntities(response.data);
         }
       },
@@ -79,23 +93,23 @@ export function useLands(): LandsStore | undefined {
         // Add functions
         increaseStake(amount: BigNumberish) {
           return sdk.client.actions.increaseStake(
-            account.account!,
+            account.getAccount()!,
             land.location,
             amount
           );
         },
         increasePrice(amount: BigNumberish) {
           return sdk.client.actions.increasePrice(
-            account.account!,
+            account.getAccount()!,
             land.location,
             amount
           );
         },
         claim() {
-          return sdk.client.actions.claim(account.account!, land.location);
+          return sdk.client.actions.claim(account.getAccount()!, land.location);
         },
         nuke() {
-          return sdk.client.actions.claim(account.account!, land.location);
+          return sdk.client.actions.claim(account.getAccount()!, land.location);
         },
       }));
   });
@@ -104,7 +118,7 @@ export function useLands(): LandsStore | undefined {
     ...landEntityStore,
     buyLand(location, setup) {
       return sdk.client.actions.buy(
-        account.account!,
+        account.getAccount()!,
         location,
         setup.tokenForSaleAddress,
         setup.salePrice,
@@ -114,7 +128,7 @@ export function useLands(): LandsStore | undefined {
     },
     bidLand(location, setup) {
       return sdk.client.actions.bid(
-        account.account!,
+        account.getAccount()!,
         location,
         setup.tokenForSaleAddress,
         setup.salePrice,
