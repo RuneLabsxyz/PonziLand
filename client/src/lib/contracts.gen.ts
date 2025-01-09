@@ -3,6 +3,28 @@ import { Account, AccountInterface, type BigNumberish } from "starknet";
 import * as models from "./models.gen";
 
 export async function setupWorld(provider: DojoProvider) {
+  const actions_auction = async (
+    snAccount: Account | AccountInterface,
+    landLocation: BigNumberish,
+    startPrice: BigNumberish,
+    floorPrice: BigNumberish,
+    tokenForSale: string
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        {
+          contractName: "actions",
+          entrypoint: "auction",
+          calldata: [landLocation, startPrice, floorPrice, tokenForSale],
+        },
+        "ponzi_land"
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const actions_bid = async (
     snAccount: Account | AccountInterface,
     landLocation: BigNumberish,
@@ -175,8 +197,21 @@ export async function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const actions_getCurrentAuctionPrice = async (landLocation: BigNumberish) => {
+    try {
+      return await provider.call("ponzi_land", {
+        contractName: "actions",
+        entrypoint: "get_current_auction_price",
+        calldata: [landLocation],
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     actions: {
+      auction: actions_auction,
       bid: actions_bid,
       buy: actions_buy,
       claim: actions_claim,
@@ -186,6 +221,7 @@ export async function setupWorld(provider: DojoProvider) {
       getStakeBalance: actions_getStakeBalance,
       getLand: actions_getLand,
       getPendingTaxes: actions_getPendingTaxes,
+      getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
     },
   };
 }

@@ -1,7 +1,7 @@
 import { useClient } from "$lib/contexts/client";
 import { onMount, unmount } from "svelte";
 import type { BigNumberish } from "starknet";
-import type { Land, PonziLandSchemaType } from "$lib/models.gen";
+import type { Land, SchemaType as PonziLandSchemaType } from "$lib/models.gen";
 import { useDojo } from "$lib/contexts/dojo";
 import {
   createDojoStore,
@@ -95,6 +95,7 @@ export function useLands(): LandsStore | undefined {
           return sdk.client.actions.increaseStake(
             account.getAccount()!,
             land.location,
+            land.token_used,
             amount
           );
         },

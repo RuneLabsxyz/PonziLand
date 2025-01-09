@@ -1253,7 +1253,7 @@
   "contracts": [
     {
       "address": "0x4da8873257357eb154d5bfd136d9c580970398a11af3b1bc610be18fab081eb",
-      "class_hash": "0x6c45a2ab55332b969daea8b08945371ab2c789bc47e2397e6ae125077295a3",
+      "class_hash": "0x129c888764cc30df2dd6a3b656153649277988f55a992c3193dbac13c589515",
       "abi": [
         {
           "type": "impl",
@@ -1362,6 +1362,30 @@
           "type": "interface",
           "name": "ponzi_land::systems::actions::IActions",
           "items": [
+            {
+              "type": "function",
+              "name": "auction",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "start_price",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "floor_price",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "token_for_sale",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
             {
               "type": "function",
               "name": "bid",
@@ -1521,6 +1545,22 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_current_auction_price",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u64"
+                }
+              ],
+              "state_mutability": "view"
             }
           ]
         },
@@ -1654,6 +1694,7 @@
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
       "systems": [
+        "auction",
         "bid",
         "buy",
         "claim",
@@ -1667,23 +1708,35 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x7056cc6dc11d1f4ae58f6017484b122878ea2f6634f924895fcdd80ecf3a3c1",
-      "tag": "ponzi_land-Land",
-      "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
+      "class_hash": "0x70cbab39da2aaa049ced7c5eff87f180555b7c0b25a844e320d56dc877f65e",
+      "tag": "ponzi_land-Auction",
+      "selector": "0x7e0590370db3aa23e7aa340e9dfbdb6127f3fe6d5173b6051be0225a6acddec"
     },
     {
       "members": [],
-      "class_hash": "0x1b979554455e2bec6c00b229e6efc4ce1133dd9cc96fef0d002451096334509",
-      "tag": "ponzi_land-auction_info",
-      "selector": "0x5b31a1623abaaf8ad8be01a06a59cb746b3ba1114ab05ae443d65d06d8a61ff"
+      "class_hash": "0x7056cc6dc11d1f4ae58f6017484b122878ea2f6634f924895fcdd80ecf3a3c1",
+      "tag": "ponzi_land-Land",
+      "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
     }
   ],
   "events": [
     {
       "members": [],
+      "class_hash": "0x306fb3619cfe1cf9e08ff9fc50005f7b66040ac9a3e2243d4791637bb2d2101",
+      "tag": "ponzi_land-AuctionFinishedEvent",
+      "selector": "0x4a851acb463e71e7b60828525b2af21e21fc500b159358a7b0f0036418d3d9a"
+    },
+    {
+      "members": [],
       "class_hash": "0x92682836dedea3233ea898fa0a7f0a64fc025f74453dd4d0b0b6442552ec59",
       "tag": "ponzi_land-LandNukedEvent",
       "selector": "0x5ab63e32ba617fc00cdaf4469b0dfffd18eacb82fa7b5036437ca7f4ce3964b"
+    },
+    {
+      "members": [],
+      "class_hash": "0x7a01723d7f27950049e713b83ce9ea1a509331cf63f89756bb5700f2607614c",
+      "tag": "ponzi_land-NewAuctionEvent",
+      "selector": "0x617c6bf5e078af2c93083a50e445f36b55cad4a6bd07a21a5a42540cb0d8f9f"
     },
     {
       "members": [],

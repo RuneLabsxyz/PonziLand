@@ -23,24 +23,6 @@
 
   // Receive the onBuyTile callback prop from the parent
   let { onBuyTile, onBidTile } = $props();
-
-  const account = useAccount();
-
-  async function alowance() {
-    const tx = await account.getAccount()!.execute([
-      {
-        contractAddress:
-          "0x01853F03f808Ae62DFBd8B8A4De08E2052388c40B9F91d626090DE04BBC1F619",
-        entrypoint: "approve",
-        calldata: CallData.compile({
-          spender: manifest.contracts[0].address,
-          amount: cairo.uint256(100),
-        }),
-      },
-    ]);
-
-    console.log("tx:", tx);
-  }
 </script>
 
 <!-- Permanent mouse coordinates display -->
@@ -90,24 +72,6 @@
       >
         Bid
       </button>
-
-      <button onclick={() => alowance()}>Allowance</button>
-
-      <button
-        onclick={() =>
-          landStore
-            ?.bidLand($tileHUD!.location, {
-              amountToStake: 10,
-              liquidityPoolAddress:
-                "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9",
-              salePrice: 1,
-              tokenForSaleAddress:
-                "0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619",
-            })
-            .then((e) =>
-              console.log("Executed transaction: ", e?.transaction_hash)
-            )}>Test</button
-      >
     {/if}
   </div>
 {/if}

@@ -1,5 +1,5 @@
 // TODO: Add bindings
-import type { PonziLandSchemaType } from "$lib/models.gen";
+import type { SchemaType } from "$lib/models.gen";
 import zustandToSvelte from "$lib/zustandToSvelte";
 import { createDojoStore } from "@dojoengine/sdk";
 import { getContext, setContext } from "svelte";
@@ -9,7 +9,7 @@ const storeKey = Symbol("dojo_store");
 export type Store = ReturnType<typeof setupStore>;
 
 export function setupStore() {
-  const value = zustandToSvelte(createDojoStore<PonziLandSchemaType>());
+  const value = zustandToSvelte(createDojoStore<SchemaType>());
 
   setContext(storeKey, value);
 

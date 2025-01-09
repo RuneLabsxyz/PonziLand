@@ -10,17 +10,26 @@ type RemoveFieldOrder<T> = T extends object
       'fieldOrder'
     >
   : T;
-// Type definition for `ponzi_land::models::land::LandValue` struct
-export interface LandValue {
+// Type definition for `ponzi_land::models::auction::AuctionValue` struct
+export interface AuctionValue {
 	fieldOrder: string[];
-	block_date_bought: BigNumberish;
-	owner: string;
-	sell_price: BigNumberish;
-	token_used: string;
-	pool_key: string;
-	last_pay_time: BigNumberish;
+	start_time: BigNumberish;
+	start_price: BigNumberish;
+	floor_price: BigNumberish;
+	is_finished: boolean;
 }
-export type InputLandValue = RemoveFieldOrder<LandValue>;
+export type InputAuctionValue = RemoveFieldOrder<AuctionValue>;
+
+// Type definition for `ponzi_land::models::auction::Auction` struct
+export interface Auction {
+	fieldOrder: string[];
+	land_location: BigNumberish;
+	start_time: BigNumberish;
+	start_price: BigNumberish;
+	floor_price: BigNumberish;
+	is_finished: boolean;
+}
+export type InputAuction = RemoveFieldOrder<Auction>;
 
 // Type definition for `ponzi_land::models::land::Land` struct
 export interface Land {
@@ -35,43 +44,42 @@ export interface Land {
 }
 export type InputLand = RemoveFieldOrder<Land>;
 
-// Type definition for `ponzi_land::models::land::auction_info` struct
-export interface AuctionInfo {
+// Type definition for `ponzi_land::models::land::LandValue` struct
+export interface LandValue {
 	fieldOrder: string[];
-	location: BigNumberish;
-	auction_start_time: BigNumberish;
-	last_bid_time: BigNumberish;
-	auction_price: BigNumberish;
+	block_date_bought: BigNumberish;
+	owner: string;
+	sell_price: BigNumberish;
+	token_used: string;
+	pool_key: string;
+	last_pay_time: BigNumberish;
 }
-export type InputAuctionInfo = RemoveFieldOrder<AuctionInfo>;
-
-// Type definition for `ponzi_land::models::land::auction_infoValue` struct
-export interface AuctionInfoValue {
-	fieldOrder: string[];
-	auction_start_time: BigNumberish;
-	last_bid_time: BigNumberish;
-	auction_price: BigNumberish;
-}
-export type InputAuctionInfoValue = RemoveFieldOrder<AuctionInfoValue>;
+export type InputLandValue = RemoveFieldOrder<LandValue>;
 
 export interface SchemaType extends ISchemaType {
 	ponzi_land: {
-		LandValue: LandValue,
+		AuctionValue: AuctionValue,
+		Auction: Auction,
 		Land: Land,
-		auction_info: auction_info,
-		auction_infoValue: auction_infoValue,
+		LandValue: LandValue,
 	},
 }
 export const schema: SchemaType = {
 	ponzi_land: {
-		LandValue: {
-			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
-			block_date_bought: 0,
-			owner: "",
-			sell_price: 0,
-			token_used: "",
-			pool_key: "",
-			last_pay_time: 0,
+		AuctionValue: {
+			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished'],
+			start_time: 0,
+			start_price: 0,
+			floor_price: 0,
+			is_finished: false,
+		},
+		Auction: {
+			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished'],
+			land_location: 0,
+			start_time: 0,
+			start_price: 0,
+			floor_price: 0,
+			is_finished: false,
 		},
 		Land: {
 			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
@@ -83,18 +91,14 @@ export const schema: SchemaType = {
 			pool_key: "",
 			last_pay_time: 0,
 		},
-		auction_info: {
-			fieldOrder: ['location', 'auction_start_time', 'last_bid_time', 'auction_price'],
-			location: 0,
-			auction_start_time: 0,
-			last_bid_time: 0,
-			auction_price: 0,
-		},
-		auction_infoValue: {
-			fieldOrder: ['auction_start_time', 'last_bid_time', 'auction_price'],
-			auction_start_time: 0,
-			last_bid_time: 0,
-			auction_price: 0,
+		LandValue: {
+			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
+			block_date_bought: 0,
+			owner: "",
+			sell_price: 0,
+			token_used: "",
+			pool_key: "",
+			last_pay_time: 0,
 		},
 	},
 };
