@@ -6,7 +6,7 @@
   import { useLands } from '$lib/api/land.svelte';
   import type { LandsStore } from '$lib/api/land.svelte';
   import type { BigNumberish } from 'starknet';
-  import { getTokenInfo } from '$lib/utils';
+  import { getTokenInfo, toHexWithPadding } from '$lib/utils';
 
   const MAP_SIZE = 64;
   const TILE_SIZE = 32;
@@ -74,7 +74,7 @@
       const x = location % MAP_SIZE;
       const y = Math.floor(location / MAP_SIZE);
       tiles[y][x] = {
-        type: 'house',
+        type: land.owner == toHexWithPadding(0) ? 'auction' : 'house',
         owner: land.owner,
         sellPrice: sellPrice,
         tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',

@@ -54,13 +54,21 @@
 <!-- svelte-ignore event_directive_deprecated -->
 <div
   on:click={handleClick}
-  class="tile"
+  class={
+    `tile ${type === 'auction' ? 'tile-auction' : ''}`
+  }
   style={type === 'house'
     ? `background-image: url('${backgroundImage}'), url('/tiles/grass.jpg');
                background-size: contain, cover;
                background-repeat: no-repeat, repeat;
                background-position: center, center;`
-    : `background-image: url('/tiles/${type}.jpg');
+    : (type === 'auction')
+      ? `background-image: url('/tiles/grass.jpg');
+               background-size: cover;
+               background-position: center;
+               position: relative;
+               `
+      :`background-image: url('/tiles/${type}.jpg');
                background-size: cover;
                background-position: center;`}
 ></div>
@@ -70,5 +78,16 @@
     width: 32px;
     height: 32px;
     border: 1px solid #44656b;
+  }
+
+  .tile-auction::after {
+    content: '🔨';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 12px;
+    background: #ff0;
   }
 </style>
