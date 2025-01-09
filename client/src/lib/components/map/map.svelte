@@ -19,7 +19,7 @@
     } catch (e) {
         console.log('Error in map.svelte', e);
     }
-    $inspect('aaaaaaa', $landStore);
+    $inspect('landStore', $landStore);
 
     const tiles = Array(MAP_SIZE).fill(null).map((_, row) => 
         Array(MAP_SIZE).fill(null).map((_, col) => {
@@ -132,11 +132,11 @@
             class="map-container"
             role="application"
             aria-label="Draggable map"
-            on:wheel={handleWheel}
-            on:mousedown={handleMouseDown}
-            on:mousemove={handleMouseMove}
-            on:mouseup={handleMouseUp}
-            on:mouseleave={handleMouseUp}
+            onwheel={handleWheel}
+            onmousedown={handleMouseDown}
+            onmousemove={handleMouseMove}
+            onmouseup={handleMouseUp}
+            onmouseleave={handleMouseUp}
             style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale})"
         >
             {#each tiles as row, y}
