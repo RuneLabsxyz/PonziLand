@@ -1,6 +1,6 @@
-import { useAccount } from "./account";
-import { useClient } from "./client";
-import { useStore } from "./store";
+import { useAccount } from './account';
+import { useClient } from './client';
+import { useStore } from './store';
 
 export function useDojo() {
   const client = useClient();

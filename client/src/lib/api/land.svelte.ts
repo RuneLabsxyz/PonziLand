@@ -1,15 +1,15 @@
-import { useClient } from "$lib/contexts/client";
-import { onMount, unmount } from "svelte";
-import type { BigNumberish } from "starknet";
-import type { Land, SchemaType as PonziLandSchemaType } from "$lib/models.gen";
-import { useDojo } from "$lib/contexts/dojo";
+import { useClient } from '$lib/contexts/client';
+import { onMount, unmount } from 'svelte';
+import type { BigNumberish } from 'starknet';
+import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
+import { useDojo } from '$lib/contexts/dojo';
 import {
   createDojoStore,
   QueryBuilder,
   type SubscribeParams,
-} from "@dojoengine/sdk";
-import { derived, get, readable, writable, type Readable } from "svelte/store";
-import { slide } from "svelte/transition";
+} from '@dojoengine/sdk';
+import { derived, get, readable, writable, type Readable } from 'svelte/store';
+import { slide } from 'svelte/transition';
 
 type TransactionResult = Promise<
   | {
@@ -35,7 +35,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
     location: BigNumberish,
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
-    tokenForSale: string
+    tokenForSale: string,
   ): TransactionResult;
 };
 
@@ -47,7 +47,7 @@ export type LandWithActions = Land & {
 
 export function useLands(): LandsStore | undefined {
   // Get all lands in the store
-  if (typeof window === "undefined") {
+  if (typeof window === 'undefined') {
     // We are on the server. Return nothing.
     return undefined;
   }
@@ -58,8 +58,8 @@ export function useLands(): LandsStore | undefined {
 
   (async () => {
     const query = new QueryBuilder<PonziLandSchemaType>()
-      .namespace("ponzi_land", (ns) => {
-        ns.entity("Land", (e) => e.build());
+      .namespace('ponzi_land', (ns) => {
+        ns.entity('Land', (e) => e.build());
       })
       .build();
     // also query initial
@@ -67,10 +67,10 @@ export function useLands(): LandsStore | undefined {
       query,
       callback: (response) => {
         if (response.error || response.data == null) {
-          console.log("Got an error!", response.error);
+          console.log('Got an error!', response.error);
         } else {
-          console.log("Setting entities :)");
-          console.log("Data!", JSON.stringify(response.data));
+          console.log('Setting entities :)');
+          console.log('Data!', JSON.stringify(response.data));
           get(landStore).setEntities(response.data);
         }
       },
@@ -79,10 +79,10 @@ export function useLands(): LandsStore | undefined {
       query,
       callback: (response) => {
         if (response.error || response.data == null) {
-          console.log("Got an error!", response.error);
+          console.log('Got an error!', response.error);
         } else {
-          console.log("Setting entities :)");
-          console.log("Data!", JSON.stringify(response.data));
+          console.log('Setting entities :)');
+          console.log('Data!', JSON.stringify(response.data));
           get(landStore).setEntities(response.data);
         }
       },
@@ -92,8 +92,8 @@ export function useLands(): LandsStore | undefined {
 
   const landEntityStore = derived([landStore], ([s]) => {
     return s
-      .getEntitiesByModel("ponzi_land", "Land")
-      .map((e) => e.models["ponzi_land"]["Land"] as Land)
+      .getEntitiesByModel('ponzi_land', 'Land')
+      .map((e) => e.models['ponzi_land']['Land'] as Land)
       .map((land) => ({
         ...land,
         // Add functions
@@ -102,14 +102,14 @@ export function useLands(): LandsStore | undefined {
             account.getAccount()!,
             land.location,
             land.token_used,
-            amount
+            amount,
           );
         },
         increasePrice(amount: BigNumberish) {
           return sdk.client.actions.increasePrice(
             account.getAccount()!,
             land.location,
-            amount
+            amount,
           );
         },
         claim() {
@@ -130,7 +130,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice,
         setup.amountToStake,
-        setup.liquidityPoolAddress
+        setup.liquidityPoolAddress,
       );
     },
     bidLand(location, setup) {
@@ -140,7 +140,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice,
         setup.amountToStake,
-        setup.liquidityPoolAddress
+        setup.liquidityPoolAddress,
       );
     },
     auctionLand(location, startPrice, floorPrice, tokenForSale) {
@@ -149,7 +149,7 @@ export function useLands(): LandsStore | undefined {
         location,
         startPrice,
         floorPrice,
-        tokenForSale
+        tokenForSale,
       );
     },
   };

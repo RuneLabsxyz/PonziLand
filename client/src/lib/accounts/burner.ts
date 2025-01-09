@@ -1,13 +1,13 @@
 //TODO: Add cartridge controller at some point
 
-import type { DojoConfig } from "@dojoengine/core";
-import { BurnerManager, setupBurnerManager } from "@dojoengine/create-burner";
-import { getContext, setContext } from "svelte";
+import type { DojoConfig } from '@dojoengine/core';
+import { BurnerManager, setupBurnerManager } from '@dojoengine/create-burner';
+import { getContext, setContext } from 'svelte';
 
-import { PUBLIC_DOJO_BURNER_ADDRESS } from "$env/static/public";
-import type { AccountProvider } from "$lib/contexts/account";
+import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
+import type { AccountProvider } from '$lib/contexts/account';
 
-const accountKey = Symbol("dojoAccountBurner");
+const accountKey = Symbol('dojoAccountBurner');
 
 // For the context, svelte is weird.
 // You cannot reassign, because then the change is not propagated through the setContext (js identity things)
@@ -40,7 +40,7 @@ function toAccount(burner?: BurnerManager): AccountProvider | undefined {
 }
 
 export function setupBurnerAccount(
-  config: DojoConfig
+  config: DojoConfig,
 ): Promise<AccountProvider | undefined> {
   if (PUBLIC_DOJO_BURNER_ADDRESS == null) {
     // Burner is not available locally.
@@ -51,12 +51,12 @@ export function setupBurnerAccount(
 }
 
 export function setupBurner(
-  config: DojoConfig
+  config: DojoConfig,
 ): Promise<BurnerManager | undefined> {
   let state: { value: BurnerManager | undefined } = { value: undefined };
 
   const promise = (async () => {
-    if (typeof window === "undefined") {
+    if (typeof window === 'undefined') {
       // We are on the server. Return nothing.
       return undefined;
     }
@@ -70,11 +70,11 @@ export function setupBurner(
 
 export function useBurner(): BurnerManager {
   const contextValue = getContext<{ value: BurnerManager | undefined }>(
-    accountKey
+    accountKey,
   ).value;
 
   if (contextValue == null) {
-    throw "The context is null! Please await for setupBurner before using components containing useBurner()!";
+    throw 'The context is null! Please await for setupBurner before using components containing useBurner()!';
   }
 
   return contextValue;

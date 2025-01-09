@@ -1,9 +1,9 @@
-import { setupWorld } from "$lib/contracts.gen";
+import { setupWorld } from '$lib/contracts.gen';
 import {
   DojoProvider,
   getContractByName,
   type DojoCall,
-} from "@dojoengine/core";
+} from '@dojoengine/core';
 import {
   cairo,
   CallData,
@@ -11,7 +11,7 @@ import {
   type AccountInterface,
   type BigNumberish,
   type Call,
-} from "starknet";
+} from 'starknet';
 
 export type ApprovalData = {
   tokenAddress: string;
@@ -22,15 +22,15 @@ function getApprove(
   provider: DojoProvider,
   data: ApprovalData,
   spendingCall: DojoCall | Call,
-  namespace: string = "ponzi_land"
+  namespace: string = 'ponzi_land',
 ): [Call, DojoCall | Call] {
   let spendingContract;
 
-  if ("contractName" in spendingCall) {
+  if ('contractName' in spendingCall) {
     spendingContract = getContractByName(
       provider.manifest,
       namespace,
-      spendingCall.contractName
+      spendingCall.contractName,
     )!.address as string;
   } else {
     spendingContract = spendingCall.contractAddress;
@@ -41,7 +41,7 @@ function getApprove(
   return [
     {
       contractAddress: data.tokenAddress,
-      entrypoint: "approve",
+      entrypoint: 'approve',
       calldata: CallData.compile({
         spender: spendingContract,
         amount: cairo.uint256(data.amount),
@@ -58,7 +58,7 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string
+    liquidityPool: string,
   ) => {
     return await provider.execute(
       snAccount,
@@ -69,8 +69,8 @@ export async function wrappedActions(provider: DojoProvider) {
           amount: amountToStake,
         },
         {
-          contractName: "actions",
-          entrypoint: "bid",
+          contractName: 'actions',
+          entrypoint: 'bid',
           calldata: [
             landLocation,
             tokenForSale,
@@ -78,9 +78,9 @@ export async function wrappedActions(provider: DojoProvider) {
             amountToStake,
             liquidityPool,
           ],
-        }
+        },
       ),
-      "ponzi_land"
+      'ponzi_land',
     );
   };
 
@@ -90,7 +90,7 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string
+    liquidityPool: string,
   ) => {
     try {
       return await provider.execute(
@@ -102,8 +102,8 @@ export async function wrappedActions(provider: DojoProvider) {
             amount: amountToStake,
           },
           {
-            contractName: "actions",
-            entrypoint: "buy",
+            contractName: 'actions',
+            entrypoint: 'buy',
             calldata: [
               landLocation,
               tokenForSale,
@@ -111,9 +111,9 @@ export async function wrappedActions(provider: DojoProvider) {
               amountToStake,
               liquidityPool,
             ],
-          }
+          },
         ),
-        "ponzi_land"
+        'ponzi_land',
       );
     } catch (error) {
       console.error(error);
@@ -124,7 +124,7 @@ export async function wrappedActions(provider: DojoProvider) {
     snAccount: Account | AccountInterface,
     landLocation: BigNumberish,
     stakingToken: string,
-    amountToStake: BigNumberish
+    amountToStake: BigNumberish,
   ) => {
     try {
       return await provider.execute(
@@ -136,12 +136,12 @@ export async function wrappedActions(provider: DojoProvider) {
             amount: amountToStake,
           },
           {
-            contractName: "actions",
-            entrypoint: "increase_stake",
+            contractName: 'actions',
+            entrypoint: 'increase_stake',
             calldata: [landLocation, amountToStake],
-          }
+          },
         ),
-        "ponzi_land"
+        'ponzi_land',
       );
     } catch (error) {
       console.error(error);
