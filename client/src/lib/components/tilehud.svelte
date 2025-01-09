@@ -5,19 +5,9 @@
   import type { AuctionData } from '$lib/interfaces';
   import { useLands } from '$lib/api/land.svelte';
   import Card from './ui/card/card.svelte';
-
-  let auctionInfo = $state<AuctionData | null>(null);
+  import AuctionHud from './auction/auction-hud.svelte';
 
   let landStore = useLands();
-
-  $effect(() => {
-    if ($tileHUD && !$tileHUD?.owner) {
-      const auctionData = getAuctionData($tileHUD!.location);
-      if (auctionData) {
-        auctionInfo = auctionData;
-      }
-    }
-  });
 
   // Receive the onBuyTile callback prop from the parent
   let { onBuyTile, onBidTile } = $props();
@@ -25,23 +15,23 @@
 
 <!-- Tile HUD with close button -->
 {#if $tileHUD}
-  <Card class="fixed bottom-0 right-0 z-50">
+  <Card class="fixed bottom-0 right-0 z-50 w-80">
     <button
-      class="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+      class="absolute top-0 right-0 text-white hover:text-gray-400"
       onclick={() => ($tileHUD = null)}
     >
       ✕
     </button>
-    <h1 class="text-lg font-bold mb-2">Tile HUD</h1>
-    <div class="space-y-2">
+    <div>
       <p>
         Location: ({Math.floor($tileHUD.location % 64) + 1}, {Math.floor(
           $tileHUD.location / 64,
         ) + 1})
+        #{$tileHUD.location}
       </p>
       <p>Owner: {$tileHUD.owner ?? 'Unclaimed'}</p>
     </div>
-    {#if $tileHUD.owner}
+    {#if $tileHUD.owner != "0x0000000000000000000000000000000000000000000000000000000000000000" && $tileHUD.owner != null}
       <button
         class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         onclick={() =>
@@ -57,12 +47,13 @@
         {$tileHUD.tokenUsed}
       </button>
     {:else}
-      <button
+      <AuctionHud />
+      <!-- <button
         class="mt-4 bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         onclick={() => onBidTile(auctionInfo)}
       >
         Bid
-      </button>
+      </button> -->
     {/if}
   </Card>
 {/if}
