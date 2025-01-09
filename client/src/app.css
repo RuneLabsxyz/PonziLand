@@ -1,7 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -75,4 +75,11 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+@font-face {
+  font-family: 'Nintendo DS BIOS';
+  font-style: normal;
+  font-weight: 400;
+  src: url('fonts/Nintendo-DS-BIOS.ttf') format('truetype');
 }
