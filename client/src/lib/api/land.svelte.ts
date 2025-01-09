@@ -25,7 +25,7 @@ type LandSetup = {
   liquidityPoolAddress: string;
 };
 
-type LandsStore = Readable<LandWithActions[]> & {
+export type LandsStore = Readable<LandWithActions[]> & {
   /// Buy a land from another player
   buyLand(location: BigNumberish, setup: LandSetup): TransactionResult;
   /// Buy an empty / nuked land.
@@ -33,7 +33,7 @@ type LandsStore = Readable<LandWithActions[]> & {
   bidLand(location: BigNumberish, setup: LandSetup): TransactionResult;
 };
 
-type LandWithActions = Land & {
+export type LandWithActions = Land & {
   increaseStake(amount: BigNumberish): TransactionResult;
   increasePrice(amount: BigNumberish): TransactionResult;
   claim(): TransactionResult;
