@@ -5,6 +5,7 @@
     import AuctionModal from './auctionmodal.svelte';
     import type { TileInfo, BuyData, AuctionData } from '$lib/interfaces';
   import WalletLookup from './wallet/wallet-lookup.svelte';
+  import MousCoords from './mousCoords.svelte';
 
     let showModal = $state<boolean>(false);
     let modalData = $state<TileInfo | null>(null);
@@ -35,8 +36,11 @@
 
 <div class="z-50 absolute top-0 left-0">
     <Sidebar />
+    
     <TileHUD onBuyTile={handleTileBuy} onBidTile={handleAuctionBuy}/>
     <WalletLookup />
+    <MousCoords />
+
     {#if showModal}
         {#if modalData?.owner}
         <Modal
