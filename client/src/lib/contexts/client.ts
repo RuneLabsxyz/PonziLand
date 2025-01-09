@@ -1,7 +1,7 @@
 import { DojoProvider, type DojoConfig } from "@dojoengine/core";
 import { init } from "@dojoengine/sdk";
-import { schema, type PonziLandSchemaType as Schema } from "$lib/models.gen";
-import { setupWorld as getClient } from "$lib/contracts.gen";
+import { schema, type SchemaType as Schema } from "$lib/models.gen";
+import { wrappedActions } from "$lib/api/contracts/approve";
 import { dojoConfig } from "$lib/dojoConfig";
 import { getContext, setContext } from "svelte";
 
@@ -24,7 +24,7 @@ async function _setupDojo(config: DojoConfig) {
         worldAddress: config.manifest.world.address,
       },
       domain: {
-        name: "WORLD_NAME",
+        name: "ponzi_land",
         version: "1.0",
         chainId: "KATANA",
         revision: "1",
@@ -37,7 +37,7 @@ async function _setupDojo(config: DojoConfig) {
   return {
     ...initialized,
     toriiClient: initialized.client,
-    client: getClient(provider),
+    client: await wrappedActions(provider),
   };
 }
 // Set the context (This function CANNOT be async due to setContext not working otherwise)

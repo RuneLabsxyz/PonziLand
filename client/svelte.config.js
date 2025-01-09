@@ -1,18 +1,60 @@
-import adapter from '@sveltejs/adapter-auto';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from "@sveltejs/adapter-auto";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
+import process from "node:process";
+const profile = process.env.DOJO_PROFILE?.toLowerCase() ?? "dev";
+
+process.env.PUBLIC_DOJO_PROFILE = profile;
+
+const profiles = {
+  env: {
+    PUBLIC_DOJO_RPC_URL: process.env.DOJO_RPC_URL,
+    PUBLIC_DOJO_TORII_URL: process.env.DOJO_TORII_URL,
+    PUBLIC_DOJO_BURNER_ADDRESS: process.env.DOJO_TORII_URL,
+    PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_TORII_URL,
+  },
+  dev: {
+    PUBLIC_DOJO_RPC_URL: "http://127.0.0.1:5050",
+    PUBLIC_DOJO_TORII_URL: "http://127.0.0.1:8080",
+    PUBLIC_DOJO_BURNER_ADDRESS:
+      "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec",
+    PUBLIC_DOJO_BURNER_PRIVATE:
+      "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912",
+  },
+  sepolia: {
+    PUBLIC_DOJO_RPC_URL: "https://api.cartridge.gg/x/starknet/sepolia",
+    PUBLIC_DOJO_TORII_URL: "https://api.cartridge.gg/x/ponziland-sepolia/torii",
+    PUBLIC_DOJO_BURNER_ADDRESS: null,
+    PUBLIC_DOJO_BURNER_PRIVATE: null,
+  },
+};
+
+const envProfile = profile[profiles];
+// Check if available in the environment, else use the default one
+for (const entry of Object.entries(profiles.env)) {
+  if (entry[1] != null) {
+    envProfile[entry[0]] = entry[1];
+  }
+}
+
+for (const val of Object.entries(profiles[profile])) {
+  process.env[val[0]] = val[1];
+}
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	// Consult https://svelte.dev/docs/kit/integrations
-	// for more information about preprocessors
-	preprocess: vitePreprocess(),
+  // Consult https://svelte.dev/docs/kit/integrations
+  // for more information about preprocessors
+  preprocess: vitePreprocess(),
 
-	kit: {
-		// adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://svelte.dev/docs/kit/adapters for more information about adapters.
-		adapter: adapter()
-	}
+  kit: {
+    // adapter-auto only supports some environments, see https://svelte.dev/docs/kit/adapter-auto for a list.
+    // If your environment is not supported, or you settled on a specific environment, switch out the adapter.
+    // See https://svelte.dev/docs/kit/adapters for more information about adapters.
+    adapter: adapter(),
+    alias: {
+      $manifest: `../contracts/manifest_${profile}.json`,
+    },
+  },
 };
 
 export default config;

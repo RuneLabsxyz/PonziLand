@@ -1,28 +1,33 @@
 <script lang="ts">
-    import { tileHUD } from '$lib/stores/stores';
-    import { mousePosCoords } from '$lib/stores/stores';
-    import { getAuctionData } from '$lib/api/mock-land';
-    import type { AuctionData } from '$lib/interfaces';
-    import Card from './ui/card/card.svelte';
+  import { tileHUD } from "$lib/stores/stores";
+  import { mousePosCoords } from "$lib/stores/stores";
+  import { getAuctionData } from "$lib/api/mock-land";
+  import type { AuctionData } from "$lib/interfaces";
+  import { useLands } from "$lib/api/land.svelte";
+  import Card from "./ui/card/card.svelte";
 
-    let auctionInfo = $state<AuctionData | null>(null);
+  let auctionInfo = $state<AuctionData | null>(null);
 
-    $effect(() => {
-        if ($tileHUD && !$tileHUD?.owner) {
-            const auctionData = getAuctionData($tileHUD!.location);
-            if (auctionData) {
-                auctionInfo = auctionData;
-            }
-        }
-    });
-    
-    // Receive the onBuyTile callback prop from the parent
-    let { onBuyTile, onBidTile } = $props();
+  let landStore = useLands();
+
+  $effect(() => {
+    if ($tileHUD && !$tileHUD?.owner) {
+      const auctionData = getAuctionData($tileHUD!.location);
+      if (auctionData) {
+        auctionInfo = auctionData;
+      }
+    }
+  });
+
+  // Receive the onBuyTile callback prop from the parent
+  let { onBuyTile, onBidTile } = $props();
 </script>
 
 <!-- Permanent mouse coordinates display -->
 <div class="fixed top-0 right-0 bg-white p-2 rounded shadow-lg z-50">
-    <p>Mouse: {$mousePosCoords ? `${$mousePosCoords.x}, ${$mousePosCoords.y}` : ''}</p>
+  <p>
+    Mouse: {$mousePosCoords ? `${$mousePosCoords.x}, ${$mousePosCoords.y}` : ""}
+  </p>
 </div>
 
 <!-- Tile HUD with close button -->

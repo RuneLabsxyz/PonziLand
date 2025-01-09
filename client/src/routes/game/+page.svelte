@@ -1,6 +1,6 @@
 <script>
   import { dev } from "$app/environment";
-  import { setupBurner } from "$lib/contexts/account";
+  import { setupAccount } from "$lib/contexts/account";
   import { setupClient } from "$lib/contexts/client";
   import { setupStore } from "$lib/contexts/store";
   import { dojoConfig } from "$lib/dojoConfig";
@@ -9,9 +9,14 @@
 
   const promise = Promise.all([
     setupClient(dojoConfig),
-    setupBurner(dojoConfig),
+    setupAccount(dojoConfig),
     setupStore()
-  ]);
+  ]).then(async ([_, accountProvider]) => {
+      if (accountProvider?.getAccount() == null) {
+        console.info("The user is not logged in! Attempting login.")
+        await accountProvider?.connect();
+      }
+  });
 </script>
 
 <div class="h-screen w-screen bg-black/10 overflow-hidden">

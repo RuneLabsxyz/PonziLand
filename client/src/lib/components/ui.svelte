@@ -26,7 +26,7 @@
     }
 
     function handleBuy(data: BuyData): void {
-        console.log("Buying land with data:", data);
+        console.log("Buying land with data:", $state.snapshot(auctionData));
         // TODO: call buyTile function + front end sugar
         showModal = false;
     }

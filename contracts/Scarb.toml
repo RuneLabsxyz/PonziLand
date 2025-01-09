@@ -7,7 +7,7 @@ version = "1.0.1"
 sierra-replace-ids = true
 
 [scripts]
-migrate = "sozo build && sozo migrate"                      # scarb run migrate
+migrate = "sozo build && sozo migrate"                    # scarb run migrate
 spawn = "sozo execute ponzi_land-actions spawn --wait"    # scarb run spawn
 move = "sozo execute ponzi_land-actions move -c 1 --wait" # scarb run move
 
@@ -16,6 +16,8 @@ dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.8" }
 # openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.15.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.18.0" }
 
+
+[profile.sepolia]
 
 [[target.starknet-contract]]
 build-external-contracts = ["dojo::world::world_contract::world"]
