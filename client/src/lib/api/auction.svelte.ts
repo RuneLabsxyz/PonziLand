@@ -1,9 +1,7 @@
 import { useDojo } from '$lib/contexts/dojo';
-import type { AuctionData } from '$lib/interfaces';
 import type { SchemaType } from '$lib/models.gen';
 import { toHexWithPadding } from '$lib/utils';
 import { QueryBuilder } from '@dojoengine/sdk';
-import { get } from 'svelte/store';
 
 export const getAuctionDataFromLocation = async (location: number) => {
   const { client: sdk } = useDojo();

@@ -64,6 +64,45 @@
           "premium": "/assets/tokens/paper/castles/premium.png"
         }
       }
+    },
+    {
+      "name": "RED",
+      "address": "0x06450580d0d5cd36f0107227091ca68a237fd0ab538ae59ea43868f660bc2c30",
+      "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "images": {
+        "icon": "/assets/tokens/red/icon.svg",
+        "castle": {
+          "basic": "/assets/tokens/red/castles/basic.png",
+          "advanced": "/assets/tokens/red/castles/advanced.png",
+          "premium": "/assets/tokens/red/castles/premium.png"
+        }
+      }
+    },
+    {
+      "name": "GREEN",
+      "address": "0x04ed678da6c0534e8ba7a1e7db81f3ecc0f1c2628094094b5123c481cd13461f",
+      "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "images": {
+        "icon": "/assets/tokens/green/icon.svg",
+        "castle": {
+          "basic": "/assets/tokens/green/castles/basic.png",
+          "advanced": "/assets/tokens/green/castles/advanced.png",
+          "premium": "/assets/tokens/green/castles/premium.png"
+        }
+      }
+    },
+    {
+      "name": "BLUE",
+      "address": "0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619",
+      "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "images": {
+        "icon": "/assets/tokens/blue/icon.svg",
+        "castle": {
+          "basic": "/assets/tokens/blue/castles/basic.png",
+          "advanced": "/assets/tokens/blue/castles/advanced.png",
+          "premium": "/assets/tokens/blue/castles/premium.png"
+        }
+      }
     }
   ],
   "commonImages": {

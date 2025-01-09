@@ -1,15 +1,11 @@
-import { useClient } from '$lib/contexts/client';
-import { onMount, unmount } from 'svelte';
-import type { BigNumberish } from 'starknet';
-import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import { useDojo } from '$lib/contexts/dojo';
+import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import {
-  createDojoStore,
   QueryBuilder,
-  type SubscribeParams,
+  type SubscribeParams
 } from '@dojoengine/sdk';
-import { derived, get, readable, writable, type Readable } from 'svelte/store';
-import { slide } from 'svelte/transition';
+import type { BigNumberish } from 'starknet';
+import { derived, get, type Readable } from 'svelte/store';
 
 type TransactionResult = Promise<
   | {
