@@ -36,7 +36,7 @@
         if (!token) {
             const basicTypes = ['basic', 'advanced', 'premium'];
             const randomBasic = basicTypes[Math.floor(Math.random() * basicTypes.length)];
-            return `/images/basic/${randomBasic}.png`;
+            return `/assets/tokens/basic/castles/${randomBasic}.png`;
         }
         
         const castleTypes = ['basic', 'advanced', 'premium'] as const;

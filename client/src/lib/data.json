@@ -5,11 +5,11 @@
       "address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "images": {
-        "icon": "/images/tokens/eth/icon.svg",
+        "icon": "/assets/tokens/eth/icon.svg",
         "castle": {
-          "basic": "/images/tokens/eth/castles/basic.png",
-          "advanced": "/images/tokens/eth/castles/advanced.png",
-          "premium": "/images/tokens/eth/castles/premium.png"
+          "basic": "/assets/tokens/eth/castles/basic.png",
+          "advanced": "/assets/tokens/eth/castles/advanced.png",
+          "premium": "/assets/tokens/eth/castles/premium.png"
         }
       }
     },
@@ -18,11 +18,11 @@
       "address": "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "images": {
-        "icon": "/images/tokens/usdc/icon.svg",
+        "icon": "/assets/tokens/usdc/icon.svg",
         "castle": {
-          "basic": "/images/tokens/usdc/castles/basic.png",
-          "advanced": "/images/tokens/usdc/castles/advanced.png",
-          "premium": "/images/tokens/usdc/castles/premium.png"
+          "basic": "/assets/tokens/usdc/castles/basic.png",
+          "advanced": "/assets/tokens/usdc/castles/advanced.png",
+          "premium": "/assets/tokens/usdc/castles/premium.png"
         }
       }
     },
@@ -31,11 +31,11 @@
       "address": "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "images": {
-        "icon": "/images/tokens/usdt/icon.svg",
+        "icon": "/assets/tokens/usdt/icon.svg",
         "castle": {
-          "basic": "/images/tokens/usdt/castles/basic.png",
-          "advanced": "/images/tokens/usdt/castles/advanced.png",
-          "premium": "/images/tokens/usdt/castles/premium.png"
+          "basic": "/assets/tokens/usdt/castles/basic.png",
+          "advanced": "/assets/tokens/usdt/castles/advanced.png",
+          "premium": "/assets/tokens/usdt/castles/premium.png"
         }
       }
     },
@@ -44,11 +44,11 @@
       "address": "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "images": {
-        "icon": "/images/tokens/lords/icon.svg",
+        "icon": "/assets/tokens/lords/icon.svg",
         "castle": {
-          "basic": "/images/tokens/lords/castles/basic.png",
-          "advanced": "/images/tokens/lords/castles/advanced.png",
-          "premium": "/images/tokens/lords/castles/premium.png"
+          "basic": "/assets/tokens/lords/castles/basic.png",
+          "advanced": "/assets/tokens/lords/castles/advanced.png",
+          "premium": "/assets/tokens/lords/castles/premium.png"
         }
       }
     },
@@ -57,11 +57,11 @@
       "address": "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "images": {
-        "icon": "/images/tokens/paper/icon.svg",
+        "icon": "/assets/tokens/paper/icon.svg",
         "castle": {
-          "basic": "/images/tokens/paper/castles/basic.png",
-          "advanced": "/images/tokens/paper/castles/advanced.png",
-          "premium": "/images/tokens/paper/castles/premium.png"
+          "basic": "/assets/tokens/paper/castles/basic.png",
+          "advanced": "/assets/tokens/paper/castles/advanced.png",
+          "premium": "/assets/tokens/paper/castles/premium.png"
         }
       }
     }
