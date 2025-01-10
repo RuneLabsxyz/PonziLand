@@ -1,10 +1,11 @@
 <script lang="ts">
   import { getAuctionDataFromLocation } from '$lib/api/auction.svelte';
+  import type { LandSetup } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
-  import type { AuctionData } from '$lib/interfaces';
   import type { Auction } from '$lib/models.gen';
   import { tileHUD } from '$lib/stores/stores';
   import { toHexWithPadding } from '$lib/utils';
+  import Button from '../ui/button/button.svelte';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
@@ -69,4 +70,25 @@
 <p>StartPrice: {parseInt(auctionInfo?.start_price as string, 16)}</p>
 <p>Current Price: {currentPriceDerived()}</p>
 <p>FloorPrice: {parseInt(auctionInfo?.floor_price as string, 16)}</p>
-<pre class="text-ponzi">{JSON.stringify(auctionInfo, null, 2)}</pre>
+<Button
+  on:click={() => {
+    console.log('Buying land with data:', auctionInfo);
+
+    const landSetup: LandSetup = {
+      tokenForSaleAddress: '0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619', //BLUE
+      salePrice: toHexWithPadding(1),
+      amountToStake: toHexWithPadding(100),
+      liquidityPoolAddress: toHexWithPadding(0),
+    };
+
+    if (!$tileHUD?.location) {
+      return;
+    }
+
+    landStore?.bidLand($tileHUD?.location, landSetup).then(res => {
+      console.log('Bought land:', res);
+    });
+  }}
+>
+  Buy for {currentPriceDerived()}
+</Button>

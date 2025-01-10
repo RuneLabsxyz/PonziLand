@@ -13,6 +13,9 @@ import {
   type Call,
 } from 'starknet';
 
+import { Web3 } from 'web3';
+const web3 = new Web3();
+
 export type ApprovalData = {
   tokenAddress: string;
   amount: BigNumberish;
@@ -37,6 +40,7 @@ function getApprove(
   }
 
   console.log(spendingContract);
+  console.dir(data)
 
   return [
     {
@@ -44,7 +48,7 @@ function getApprove(
       entrypoint: 'approve',
       calldata: CallData.compile({
         spender: spendingContract,
-        amount: cairo.uint256(data.amount),
+        amount: cairo.uint256(web3.utils.toWei(data.amount, 'ether')),
       }),
     },
     spendingCall,
