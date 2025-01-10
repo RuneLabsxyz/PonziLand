@@ -6,6 +6,7 @@
   import Card from '../ui/card/card.svelte';
   import { useController } from '$lib/accounts/controller';
   import { fetchBLUEBalance } from '$lib/accounts/balances';
+  import WalletHelp from './wallet-help.svelte';
 
   const { store, client: sdk, account } = useDojo();
   const controller = useController();
@@ -25,16 +26,13 @@
   });
 </script>
 
-<div class="fixed top-0 right-0 z-50">
+<div class="fixed top-0 right-0 z-50 flex items-center gap-2">
+  <div>
+    <WalletHelp />
+  </div>
   {#if account}
-    <Card>
+    <Card class="shadow-ponzi">
       <p>Wallet: {accountData?.address}</p>
-      <pre>{accountData}</pre>
-      <Button onclick={() => handleShowInventory()}>inventory</Button>
-    </Card>
-
-    <Card>
-      <pre>{accountData}</pre>
     </Card>
   {:else}
     <Button class="m-2">Connect Wallet</Button>
