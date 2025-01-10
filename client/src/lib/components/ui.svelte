@@ -6,6 +6,7 @@
   import type { TileInfo, BuyData, AuctionData } from '$lib/interfaces';
   import WalletLookup from './wallet/wallet-lookup.svelte';
   import MousCoords from './mousCoords.svelte';
+  import BuyModal from './buy/buy-modal.svelte';
 
   let showModal = $state<boolean>(false);
   let modalData = $state<TileInfo | null>(null);
@@ -41,7 +42,7 @@
   <MousCoords />
   {#if showModal}
     {#if modalData?.owner}
-      <Modal onCancel={handleCancel} onBuy={handleBuy} data={modalData} />
+      <BuyModal onCancel={handleCancel} data={modalData} />
     {:else}
       <AuctionModal
         onCancel={handleCancel}

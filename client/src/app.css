@@ -54,9 +54,11 @@
 }
 
 .border-ponzi {
-  border: solid transparent 1em;
-  border-image: url('assets/ui/frame.png') 30 round round;
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image: url('assets/ui/frame.png') 10 10 10 10 round round;
   image-rendering: pixelated;
+  padding: 0.5em;
 }
 
 .bg-ponzi {
