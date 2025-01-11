@@ -1,7 +1,7 @@
 <script lang="ts">
   import Tile from './tile.svelte';
   import { mockLandData } from '$lib/api/mock-land';
-  import { mousePosCoords } from '$lib/stores/stores';
+  import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { cameraPosition } from '$lib/stores/camera';
   import { useLands } from '$lib/api/land.svelte';
   import type { LandsStore } from '$lib/api/land.svelte';

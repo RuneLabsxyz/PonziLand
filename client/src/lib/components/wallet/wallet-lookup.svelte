@@ -1,6 +1,6 @@
 <script>
   import { useDojo } from '$lib/contexts/dojo';
-  import { accountAddress } from '$lib/stores/stores';
+  import { accountAddress } from '$lib/stores/stores.svelte';
   import { stringify } from 'postcss';
   import Button from '../ui/button/button.svelte';
   import Card from '../ui/card/card.svelte';

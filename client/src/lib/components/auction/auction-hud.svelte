@@ -3,7 +3,7 @@
   import type { LandSetup } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
   import type { Auction } from '$lib/models.gen';
-  import { tileHUD } from '$lib/stores/stores';
+  import { selectedLand } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import Button from '../ui/button/button.svelte';
 
@@ -42,13 +42,13 @@
 
   $effect(() => {
     const owner =
-      $tileHUD?.owner == null || $tileHUD?.owner == toHexWithPadding(0);
-    if ($tileHUD && owner) {
-      getAuctionDataFromLocation($tileHUD.location).then((res) => {
+      $selectedLand?.owner == null || $selectedLand?.owner == toHexWithPadding(0);
+    if ($selectedLand && owner) {
+      getAuctionDataFromLocation($selectedLand.location).then((res) => {
         if (res && res.length == 0) {
           return;
           // call the function to create auction
-          // landStore?.auctionLand($tileHUD.location, 100, 1, '0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619');
+          // landStore?.auctionLand($selectedLand.location, 100, 1, '0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619');
         }
         auctionInfo = res[0].models.ponzi_land.Auction as Auction;
       });
@@ -81,11 +81,11 @@
       liquidityPoolAddress: toHexWithPadding(0),
     };
 
-    if (!$tileHUD?.location) {
+    if (!$selectedLand?.location) {
       return;
     }
 
-    landStore?.bidLand($tileHUD?.location, landSetup).then(res => {
+    landStore?.bidLand($selectedLand?.location, landSetup).then(res => {
       console.log('Bought land:', res);
     });
   }}

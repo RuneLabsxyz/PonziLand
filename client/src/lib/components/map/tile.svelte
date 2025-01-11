@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { tileHUD } from '$lib/stores/stores';
+  import { selectedLand } from '$lib/stores/stores.svelte';
   import data from '$lib/data.json';
 
   let backgroundImage = $state('/tiles/grass.jpg');
@@ -15,7 +15,7 @@
 
   function handleClick() {
     console.log('clicked');
-    $tileHUD = {
+    $selectedLand = {
       location: location,
       owner: owner,
       sellPrice: sellPrice,
@@ -23,11 +23,6 @@
       tokenAddress: tokenAddress,
     };
   }
-
-  // const getCastleImage = () => {
-  //     const token = data.availableTokens.find(t => t.name === tokenUsed);
-  //     return token ? token.images.castle.basic : '/images/basic/basic.png';
-  // };
 
   const getCastleImage = () => {
     const token = data.availableTokens.find((t) => t.name === tokenUsed);

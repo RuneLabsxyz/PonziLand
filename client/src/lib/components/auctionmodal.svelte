@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { AuctionData } from '$lib/interfaces';
-  import { onMount, onDestroy } from 'svelte';
+  import { uiStore } from '$lib/stores/stores.svelte';
 
-  let { onCancel, onBuy, data } = $props();
+  import { onDestroy, onMount } from 'svelte';
+
   let timeLeft = $state(0);
-  let timer: number;
+  let timer: string | number | NodeJS.Timeout | undefined;
 
   onMount(() => {
     updateTimer();
@@ -16,19 +16,16 @@
   });
 
   function updateTimer() {
-    if (data?.bids.length) {
-      const lastBid = data.bids[data.bids.length - 1];
+    if (uiStore.auctionData?.bids.length) {
+      const lastBid =
+        uiStore.auctionData.bids[uiStore.auctionData.bids.length - 1];
       timeLeft = Math.max(0, lastBid.timestamp + 3600000 - Date.now());
     }
   }
 
-  function handleBuyClick() {
-    onBuy(data);
-  }
+  function handleBuyClick() {}
 
-  function handleCancelClick() {
-    onCancel();
-  }
+  function handleCancelClick() {}
 </script>
 
 <div
@@ -37,7 +34,7 @@
   <div class="bg-white rounded-lg p-6 max-w-md w-full">
     <h2 class="text-2xl font-bold mb-4">Auction Modal</h2>
 
-    {#if data?.bids.length}
+    {#if uiStore.auctionData?.bids.length}
       <div class="mb-4">
         <div class="flex justify-between items-center">
           <div>
@@ -51,7 +48,8 @@
           <div>
             <h3 class="text-lg font-semibold">Current Price:</h3>
             <span class="text-xl font-bold">
-              {data.bids[data.bids.length - 1].price} LORDS
+              {uiStore.auctionData.bids[uiStore.auctionData.bids.length - 1]
+                .price} LORDS
             </span>
           </div>
         </div>
@@ -67,7 +65,7 @@
             </tr>
           </thead>
           <tbody>
-            {#each data.bids as bid}
+            {#each uiStore.auctionData.bids as bid}
               <tr class="border-t">
                 <td class="p-2">{bid.price}</td>
                 <td class="p-2">{bid.bidder.slice(0, 6)}...</td>

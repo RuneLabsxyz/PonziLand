@@ -73,7 +73,11 @@ export function toHexWithPadding(number: number, paddingLength = 64) {
   return '0x' + hex;
 }
 
-export function shortenHex(hex: string, length = 4) {
+export function shortenHex(hex: string | null | undefined, length = 4) {
+  if (!hex) {
+    return '0xundefined';
+  }
+
   if (!hex.startsWith('0x')) {
     return hex;
   }
@@ -95,4 +99,15 @@ export function getTokenInfo(tokenAddress: string) {
   );
 
   return token;
+}
+
+export function locationIntToString(location: number | undefined) {
+  if (location === undefined) {
+    return 'Undefined Location';
+  }
+  // 64 grid give 0, 0
+  const x = location % 64;
+  const y = Math.floor(location / 64);
+
+  return `${x}, ${y}`;
 }

@@ -1,5 +1,5 @@
 <script>
-  import { mousePosCoords } from '$lib/stores/stores';
+  import { mousePosCoords } from '$lib/stores/stores.svelte';
 
   import Card from './ui/card/card.svelte';
 </script>
