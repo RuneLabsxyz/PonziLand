@@ -1,0 +1,33 @@
+name: Client - Formatting (sepolia)
+
+on:
+  push:
+    branches:
+      - "main"
+  # Cloudflare handles preview environments pretty well:
+  pull_request:
+    branches:
+      - "main"
+
+permissions:
+  contents: read
+
+jobs:
+  slot-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting
+        working-directory: ./client
+        run: bun prettier --check .
