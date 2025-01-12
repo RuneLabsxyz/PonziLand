@@ -21,6 +21,7 @@
 		"@dojoengine/torii-wasm": "^1.0.0-alpha.30",
 		"@dojoengine/utils": "^1.0.0-alpha.30",
 		"@sveltejs/adapter-auto": "^3.0.0",
+		"@sveltejs/adapter-cloudflare": "3",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"autoprefixer": "^10.4.20",
