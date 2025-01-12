@@ -1,10 +1,9 @@
-name: Client - Formatting (sepolia)
+name: Client - Formatting
 
 on:
   push:
     branches:
       - "main"
-  # Cloudflare handles preview environments pretty well:
   pull_request:
     branches:
       - "main"
