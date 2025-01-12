@@ -11,6 +11,8 @@ on:
 
 permissions:
   contents: read
+  deployments: write
+  pull-requests: write
 
 jobs:
   slot-deployment:
@@ -40,8 +42,13 @@ jobs:
           # Force the auto bundler to prepare for cloudflare (otherwise it does weird things)
           CF_PAGES: "1"
 
-      - name: Deploy to cloudflare pages
-        working-directory: ./client
-        run: bun wrangler pages deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      - name: Deploy to Cloudflare Pages
+        uses: andykenward/github-actions-cloudflare-pages@v2.3.2
+        id: pages
+        with:
+          cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          cloudflare-project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+          directory: .svelte-kit/cloudflare
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-environment: PonziLand ${{ (github.ref == 'refs/heads/main' && '(Production)') || '(Preview)' }}
