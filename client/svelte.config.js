@@ -9,12 +9,14 @@ const profiles = {
   env: {
     PUBLIC_DOJO_RPC_URL: process.env.DOJO_RPC_URL,
     PUBLIC_DOJO_TORII_URL: process.env.DOJO_TORII_URL,
-    PUBLIC_DOJO_BURNER_ADDRESS: process.env.DOJO_TORII_URL,
-    PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_TORII_URL,
+    PUBLIC_DOJO_BURNER_ADDRESS: process.env.DOJO_BURNER_ADDRESS,
+    PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_BURNER_PRIVATE,
+    PUBLIC_DOJO_CHAIN_ID: process.env.DOJO_CHAIN_ID,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
     PUBLIC_DOJO_TORII_URL: 'http://127.0.0.1:8080',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_KATANA',
     PUBLIC_DOJO_BURNER_ADDRESS:
       '0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec',
     PUBLIC_DOJO_BURNER_PRIVATE:
@@ -23,6 +25,7 @@ const profiles = {
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
     PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-sepolia/torii',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
   },

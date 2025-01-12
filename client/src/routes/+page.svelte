@@ -2,9 +2,30 @@
   import { goto } from '$app/navigation';
   import { setupAccount } from '$lib/contexts/account';
   import { dojoConfig } from '$lib/dojoConfig';
-  
+
+  // setup account
+  const account = setupAccount(dojoConfig);
+
   async function startGame() {
-    goto('/game');
+    const accountProvider = await account;
+    if (accountProvider == null) {
+      console.log('No accountProvider?!?');
+      return;
+    }
+
+    // Instead of directly using cartridge, show the popup
+    window.dispatchEvent(new Event('wallet_login'));
+
+    return;
+    /*
+        await accountProvider.connect();
+
+        if (accountProvider?.getAccount()) {
+            goto('/game');
+        } else {
+            console.log("User has cancelled login.");
+        }
+        */
   }
 </script>
 

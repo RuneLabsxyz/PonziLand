@@ -1,10 +1,10 @@
-import { getContext, onMount, setContext } from 'svelte';
+import { getContext, setContext } from 'svelte';
 import Controller from '@cartridge/controller';
 import { type DojoConfig } from '$lib/dojoConfig';
 import type { AccountInterface, WalletAccount } from 'starknet';
-import type ControllerProvider from '@cartridge/controller';
+import type { AccountProvider } from '$lib/contexts/account';
 
-export class SvelteController extends Controller {
+export class SvelteController extends Controller implements AccountProvider {
   _account?: AccountInterface;
   _username?: string;
 
@@ -28,6 +28,17 @@ export class SvelteController extends Controller {
     } catch (e) {
       console.log(e);
     }
+  }
+
+  async setupSession(): Promise<any> {
+    // no-op
+  }
+  getWalletAccount(): AccountInterface | undefined {
+    return this.getAccount();
+  }
+
+  supportsSession(): boolean {
+    return true;
   }
 
   async disconnect(): Promise<void> {

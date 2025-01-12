@@ -39,13 +39,22 @@ async function getApprove(
   console.log(spendingContract);
   console.dir(data);
 
+  const decimals = (await provider.call('ponzi_land', {
+    contractAddress: data.tokenAddress,
+    entrypoint: 'decimals',
+  })) as unknown as number;
+
+  console.log('decimals: ', decimals);
+
   return [
     {
       contractAddress: data.tokenAddress,
       entrypoint: 'approve',
       calldata: CallData.compile({
         spender: spendingContract,
-        amount: cairo.uint256(data.amount),
+        amount: cairo.uint256(
+          BigInt(data.amount) * BigInt(10) ** BigInt(decimals),
+        ),
       }),
     },
     spendingCall,

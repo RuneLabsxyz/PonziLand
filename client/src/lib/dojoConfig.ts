@@ -6,6 +6,7 @@ import {
   PUBLIC_DOJO_PROFILE,
   PUBLIC_DOJO_BURNER_ADDRESS,
   PUBLIC_DOJO_BURNER_PRIVATE,
+  PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
 import type { CallPolicy } from '@cartridge/controller';
 import type { DojoConfig as DojoConfigInternal } from '@dojoengine/core';
@@ -28,10 +29,12 @@ const internalDojoConfig = createDojoConfig({
 export type DojoConfig = DojoConfigInternal & {
   policies: CallPolicy[];
   profile: string;
+  chainId: string;
 };
 
 export const dojoConfig: DojoConfig = {
   ...internalDojoConfig,
   policies,
   profile: PUBLIC_DOJO_PROFILE,
+  chainId: PUBLIC_DOJO_CHAIN_ID,
 };
