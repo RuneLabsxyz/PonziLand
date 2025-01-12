@@ -43,7 +43,4 @@ impl StoreImpl of StoreTrait {
     fn delete_land(mut self: Store, land: Land) {
         self.world.erase_model(@land);
     }
-
-
-
 }

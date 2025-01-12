@@ -54,11 +54,10 @@ fn test_buy_action() {
     let allowance = erc20.allowance(RECIPIENT(), actions_system.contract_address);
     assert(allowance >= 1000, 'Approval failed');
 
-     
-    actions_system.auction(11,100,50,erc20.contract_address);
+    actions_system.auction(11, 100, 50, erc20.contract_address);
 
     //creation of the land
-    actions_system.auction(11,100,50,erc20.contract_address);
+    actions_system.auction(11, 100, 50, erc20.contract_address);
     actions_system.bid(11, erc20.contract_address, 10, 12, LIQUIDITY_POOL());
 
     // Simulate token transfer to new buyer
@@ -114,16 +113,15 @@ fn test_bid_and_buy_action() {
 
     // Bid on land at position 11
     set_block_timestamp(100);
-    
-    actions_system.auction(11,100,50,erc20.contract_address);
+
+    actions_system.auction(11, 100, 50, erc20.contract_address);
 
     set_block_timestamp(600);
-    
-    actions_system.auction(11,100,50,erc20.contract_address);
+
+    actions_system.auction(11, 100, 50, erc20.contract_address);
     actions_system.bid(11, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL());
     let stake_balance = actions_system.get_stake_balance(RECIPIENT());
-    
- 
+
     // Validate bid/buy updates
     let mut land: Land = world.read_model(11);
     assert(land.owner == RECIPIENT(), 'error in set a owner');
@@ -173,8 +171,8 @@ fn test_claim_and_add_taxes() {
 
     //generate taxes for land 1 to neighboors
     //Auction/Bid on land for claimer
-    
-    actions_system.auction(1280,100,50,erc20.contract_address);
+
+    actions_system.auction(1280, 100, 50, erc20.contract_address);
     actions_system.bid(1280, erc20.contract_address, 500, 1000, LIQUIDITY_POOL());
     let claimer_land: Land = world.read_model(1280);
     assert(claimer_land.owner == RECIPIENT(), 'error with the land owner');
@@ -185,7 +183,7 @@ fn test_claim_and_add_taxes() {
     set_contract_address(NEIGHBOR_1());
     erc20_neighbor_1.approve(actions_system.contract_address, 1000);
 
-    actions_system.auction(1281,20,10,erc20_neighbor_1.contract_address);
+    actions_system.auction(1281, 20, 10, erc20_neighbor_1.contract_address);
     actions_system.bid(1281, erc20_neighbor_1.contract_address, 500, 100, LIQUIDITY_POOL());
 
     set_block_timestamp(500);
@@ -193,7 +191,7 @@ fn test_claim_and_add_taxes() {
     set_contract_address(NEIGHBOR_2());
     erc20_neighbor_2.approve(actions_system.contract_address, 100000);
 
-    actions_system.auction(1216,20,10,erc20_neighbor_2.contract_address);
+    actions_system.auction(1216, 20, 10, erc20_neighbor_2.contract_address);
     actions_system.bid(1216, erc20_neighbor_2.contract_address, 500, 1000, LIQUIDITY_POOL());
 
     set_block_timestamp(600);
@@ -201,7 +199,7 @@ fn test_claim_and_add_taxes() {
     set_contract_address(NEIGHBOR_3());
     erc20_neighbor_3.approve(actions_system.contract_address, 10000);
 
-    actions_system.auction(1344,100,50,erc20_neighbor_3.contract_address);
+    actions_system.auction(1344, 100, 50, erc20_neighbor_3.contract_address);
     actions_system.bid(1344, erc20_neighbor_3.contract_address, 500, 1000, LIQUIDITY_POOL());
 
     // Set permissions for ERC20 tokens
@@ -261,7 +259,7 @@ fn test_claim_and_buy_actions() {
     set_block_timestamp(100);
 
     // Auction/Bid on land at position 1280
-    actions_system.auction(1280,100,50,erc20.contract_address);
+    actions_system.auction(1280, 100, 50, erc20.contract_address);
     actions_system.bid(1280, erc20.contract_address, 500, 1000, NEW_LIQUIDITY_POOL());
 
     assert(erc20.balanceOf(RECIPIENT()) == 998000, 'error in stake erc20');
@@ -277,7 +275,7 @@ fn test_claim_and_buy_actions() {
     erc20_neighbor_1.approve(actions_system.contract_address, 2000);
     erc20_neighbor_1.transfer(NEW_BUYER(), 1000);
 
-    actions_system.auction(1281,100,50,erc20_neighbor_1.contract_address);
+    actions_system.auction(1281, 100, 50, erc20_neighbor_1.contract_address);
     actions_system.bid(1281, erc20_neighbor_1.contract_address, 1000, 100, LIQUIDITY_POOL());
     let land_1280: Land = world.read_model(1280);
     assert(land_1280.last_pay_time == 600, 'err in 1280 last_pay_time');
@@ -331,7 +329,7 @@ fn test_nuke_action() {
     set_block_timestamp(100);
 
     //land 1
-    actions_system.auction(1280,100,50,erc20.contract_address);
+    actions_system.auction(1280, 100, 50, erc20.contract_address);
     actions_system.bid(1280, erc20.contract_address, 500, 1000, LIQUIDITY_POOL());
     let claimer_land: Land = world.read_model(1280);
     assert(claimer_land.owner == RECIPIENT(), 'error with the land owner');
@@ -340,7 +338,7 @@ fn test_nuke_action() {
     set_contract_address(NEIGHBOR_1());
     erc20_neighbor_1.approve(actions_system.contract_address, 10000);
 
-    actions_system.auction(1281,100,50,erc20_neighbor_1.contract_address);
+    actions_system.auction(1281, 100, 50, erc20_neighbor_1.contract_address);
     actions_system.bid(1281, erc20_neighbor_1.contract_address, 500, 10, LIQUIDITY_POOL());
 
     //permisions for transfer tokens
@@ -381,23 +379,23 @@ fn test_increase_price_and_stake() {
     //create land
     set_block_timestamp(100);
 
-    actions_system.auction(1280,100,50,erc20.contract_address);
+    actions_system.auction(1280, 100, 50, erc20.contract_address);
     actions_system.bid(1280, erc20.contract_address, 500, 1000, LIQUIDITY_POOL());
     let land: Land = world.read_model(1280);
 
     //verify the land
     assert(land.owner == RECIPIENT(), 'error with the land owner');
     assert(land.sell_price == 500, 'land price has to be 500');
-    
+
     //increase the price
     actions_system.increase_price(1280, 2300);
     let land: Land = world.read_model(1280);
     assert(land.sell_price == 2300, 'has increase to 2300');
-    
+
     //increase the stake
     let stake_balance = actions_system.get_stake_balance(land.owner);
     assert(stake_balance == 1000, 'stake has to be 1000');
-    
+
     actions_system.increase_stake(1280, 2000);
 
     let stake_balance = actions_system.get_stake_balance(land.owner);
