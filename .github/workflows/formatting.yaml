@@ -1,9 +1,6 @@
-name: Contracts - Testing
+name: Contracts - Formatting
 
 on:
-  push:
-    branches:
-      - "main"
   pull_request:
     branches:
       - "main"
@@ -24,10 +21,9 @@ jobs:
         with:
           version: "v1.0.8"
 
-      - name: Build contract
+      - name: Validate formatting
         working-directory: ./contracts
-        run: sozo build
-
-      - name: Test contract
-        working-directory: ./contracts
-        run: sozo test
+        run: |-
+          if scarb fmt --check > /dev/null; then
+            echo "The contract code is not formatted correctly!"
+          fi

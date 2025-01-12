@@ -1,0 +1,47 @@
+name: Client - Cloudflare Deploy (sepolia)
+
+on:
+  push:
+    branches:
+      - "main"
+  # Cloudflare handles preview environments pretty well:
+  pull_request:
+    branches:
+      - "main"
+
+permissions:
+  contents: read
+
+jobs:
+  slot-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - id: setup-dojo
+        uses: runelabsxyz/setup-dojo@main
+        with:
+          version: "v1.0.0"
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: bun install --frozen-lockfile
+
+      - name: Build frontend for sepolia
+        run: bun run build:sepolia
+        working-directory: ./client
+        env:
+          # Force the auto bundler to prepare for cloudflare (otherwise it does weird things)
+          CF_PAGES: "1"
+
+      - name: Deploy to cloudflare pages
+        working-directory: ./client
+        run: bun wrangler pages deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
