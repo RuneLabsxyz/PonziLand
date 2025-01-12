@@ -68,5 +68,9 @@
 .text-ponzi {
   font-family: 'Nintendo DS BIOS', sans-serif;
   color: #fff;
-  text-shadow: 0 0.1em #000, 0.1em 0 #000, 0 -0.1em #000, -0.1em 0 #000;
+  text-shadow:
+    0 0.1em #000,
+    0.1em 0 #000,
+    0 -0.1em #000,
+    -0.1em 0 #000;
 }

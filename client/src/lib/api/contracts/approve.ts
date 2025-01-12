@@ -22,7 +22,7 @@ async function getApprove(
   provider: DojoProvider,
   data: ApprovalData,
   spendingCall: DojoCall | Call,
-  namespace: string = 'ponzi_land'
+  namespace: string = 'ponzi_land',
 ): Promise<[Call, DojoCall | Call]> {
   let spendingContract;
 
@@ -30,7 +30,7 @@ async function getApprove(
     spendingContract = getContractByName(
       provider.manifest,
       namespace,
-      spendingCall.contractName
+      spendingCall.contractName,
     )!.address as string;
   } else {
     spendingContract = spendingCall.contractAddress;
@@ -65,7 +65,7 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string
+    liquidityPool: string,
   ) => {
     return await provider.execute(
       snAccount,
@@ -85,9 +85,9 @@ export async function wrappedActions(provider: DojoProvider) {
             amountToStake,
             liquidityPool,
           ],
-        }
+        },
       ),
-      'ponzi_land'
+      'ponzi_land',
     );
   };
 
@@ -97,7 +97,7 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string
+    liquidityPool: string,
   ) => {
     try {
       return await provider.execute(
@@ -118,9 +118,9 @@ export async function wrappedActions(provider: DojoProvider) {
               amountToStake,
               liquidityPool,
             ],
-          }
+          },
         ),
-        'ponzi_land'
+        'ponzi_land',
       );
     } catch (error) {
       console.error(error);
@@ -131,7 +131,7 @@ export async function wrappedActions(provider: DojoProvider) {
     snAccount: Account | AccountInterface,
     landLocation: BigNumberish,
     stakingToken: string,
-    amountToStake: BigNumberish
+    amountToStake: BigNumberish,
   ) => {
     try {
       return await provider.execute(
@@ -146,9 +146,9 @@ export async function wrappedActions(provider: DojoProvider) {
             contractName: 'actions',
             entrypoint: 'increase_stake',
             calldata: [landLocation, amountToStake],
-          }
+          },
         ),
-        'ponzi_land'
+        'ponzi_land',
       );
     } catch (error) {
       console.error(error);
