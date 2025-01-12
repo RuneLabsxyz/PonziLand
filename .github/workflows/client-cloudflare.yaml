@@ -49,6 +49,6 @@ jobs:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           cloudflare-project-name: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
-          directory: .svelte-kit/cloudflare
+          directory: ./client/.svelte-kit/cloudflare
           github-token: ${{ secrets.GITHUB_TOKEN }}
           github-environment: PonziLand ${{ (github.ref == 'refs/heads/main' && '(Production)') || '(Preview)' }}
