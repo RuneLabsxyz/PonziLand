@@ -2,6 +2,7 @@ import { toHexWithPadding } from '$lib/utils';
 import { derived, writable } from 'svelte/store';
 import data from '$lib/data.json';
 import type { AuctionData, TileInfo } from '$lib/interfaces';
+import type { TransactionResult } from '$lib/api/land.svelte';
 
 export const selectedLand = writable<{
   location: number;
@@ -9,6 +10,8 @@ export const selectedLand = writable<{
   sellPrice: number;
   tokenUsed: string;
   tokenAddress: string;
+  claim(): TransactionResult;
+  nuke(): TransactionResult;
 } | null>(null);
 
 export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {

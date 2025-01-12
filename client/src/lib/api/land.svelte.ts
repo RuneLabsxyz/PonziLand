@@ -4,7 +4,7 @@ import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
 import type { BigNumberish } from 'starknet';
 import { derived, get, type Readable } from 'svelte/store';
 
-type TransactionResult = Promise<
+export type TransactionResult = Promise<
   | {
       transaction_hash: string;
     }
@@ -36,6 +36,7 @@ export type LandWithActions = Land & {
   increaseStake(amount: BigNumberish): TransactionResult;
   increasePrice(amount: BigNumberish): TransactionResult;
   claim(): TransactionResult;
+  nuke(): TransactionResult;
 };
 
 export function useLands(): LandsStore | undefined {

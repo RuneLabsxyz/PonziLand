@@ -1,12 +1,10 @@
 <script lang="ts">
-  import Tile from './tile.svelte';
-  import { mockLandData } from '$lib/api/mock-land';
-  import { mousePosCoords } from '$lib/stores/stores.svelte';
-  import { cameraPosition } from '$lib/stores/camera';
-  import { useLands } from '$lib/api/land.svelte';
   import type { LandsStore } from '$lib/api/land.svelte';
-  import type { BigNumberish } from 'starknet';
+  import { type LandWithActions, useLands } from '$lib/api/land.svelte';
+  import { cameraPosition } from '$lib/stores/camera';
+  import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { getTokenInfo, toHexWithPadding } from '$lib/utils';
+  import Tile from './tile.svelte';
 
   const MAP_SIZE = 64;
   const TILE_SIZE = 32;
@@ -26,13 +24,17 @@
 
   // Reactive state for the tiles
   let tiles = $state<
-    {
-      type: string;
-      owner: string | null;
-      sellPrice: number | null;
-      tokenUsed: string | null;
-      tokenAddress: string | null;
-    }[][]
+    Array<
+      Array<
+        Partial<LandWithActions> & {
+          type: 'grass' | 'house' | 'auction';
+          owner: string | undefined;
+          sellPrice: number | null;
+          tokenUsed: string | null;
+          tokenAddress: string | null;
+        }
+      >
+    >
   >([]);
 
   landStore?.subscribe((lands) => {
@@ -44,7 +46,7 @@
           .fill(null)
           .map(() => ({
             type: 'grass',
-            owner: null,
+            owner: undefined,
             sellPrice: null,
             tokenUsed: null,
             tokenAddress: null,
@@ -74,6 +76,7 @@
       const x = location % MAP_SIZE;
       const y = Math.floor(location / MAP_SIZE);
       tiles[y][x] = {
+        ...land,
         type: land.owner == toHexWithPadding(0) ? 'auction' : 'house',
         owner: land.owner,
         sellPrice: sellPrice,
@@ -196,12 +199,7 @@
         <div class="row">
           {#each row as tile, x}
             <Tile
-              type={tile.type}
-              location={x + y * MAP_SIZE}
-              owner={tile.owner}
-              sellPrice={tile.sellPrice || 0}
-              tokenUsed={tile.tokenUsed}
-              tokenAddress={tile.tokenAddress}
+              land={tile}
             />
           {/each}
         </div>

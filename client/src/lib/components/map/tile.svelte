@@ -1,31 +1,36 @@
 <script lang="ts">
   import { selectedLand } from '$lib/stores/stores.svelte';
   import data from '$lib/data.json';
+  import type { LandWithActions } from '$lib/api/land.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
-  let { type, location, owner, sellPrice, tokenUsed, tokenAddress } = $props<{
-    type: string;
-    location: number;
-    owner: string | null;
-    sellPrice: number;
-    tokenUsed: string | null;
-    tokenAddress: string | null;
-  }>();
+  let { land } =
+    $props<{
+      land: Partial<LandWithActions> & {
+        type: 'grass' | 'house' | 'auction';
+        owner: string | undefined;
+        sellPrice: number | null;
+        tokenUsed: string | null;
+        tokenAddress: string | null;
+      };
+    }>();
 
   function handleClick() {
     console.log('clicked');
     $selectedLand = {
-      location: location,
-      owner: owner,
-      sellPrice: sellPrice,
-      tokenUsed: tokenUsed,
-      tokenAddress: tokenAddress,
+      location: land.location,
+      owner: land.owner,
+      sellPrice: land.sellPrice,
+      tokenUsed: land.tokenUsed,
+      tokenAddress: land.tokenAddress,
+      claim: land.claim,
+      nuke: land.nuke
     };
   }
 
   const getCastleImage = () => {
-    const token = data.availableTokens.find((t) => t.name === tokenUsed);
+    const token = data.availableTokens.find((t) => t.name === land.tokenUsed);
     if (!token) {
       const basicTypes = ['basic', 'advanced', 'premium'];
       const randomBasic =
@@ -49,21 +54,19 @@
 <!-- svelte-ignore event_directive_deprecated -->
 <div
   on:click={handleClick}
-  class={
-    `tile ${type === 'auction' ? 'tile-auction' : ''}`
-  }
-  style={type === 'house'
+  class={`tile ${land.type === 'auction' ? 'tile-auction' : ''}`}
+  style={land.type === 'house'
     ? `background-image: url('${backgroundImage}'), url('/tiles/grass.jpg');
                background-size: contain, cover;
                background-repeat: no-repeat, repeat;
                background-position: center, center;`
-    : (type === 'auction')
+    : land.type === 'auction'
       ? `background-image: url('/tiles/grass.jpg');
                background-size: cover;
                background-position: center;
                position: relative;
                `
-      :`background-image: url('/tiles/${type}.jpg');
+      : `background-image: url('/tiles/${land.type}.jpg');
                background-size: cover;
                background-position: center;`}
 ></div>

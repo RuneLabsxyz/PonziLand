@@ -6,16 +6,29 @@
 
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');
-    
+
     uiStore.showModal = true;
     uiStore.modalData = {
-            location: $selectedLandMeta!.location,
-            sellPrice: $selectedLandMeta!.sellPrice,
-            tokenUsed: $selectedLandMeta!.tokenUsed,
-            tokenAddress: $selectedLandMeta!.tokenAddress,
-            owner: $selectedLandMeta!.owner || undefined,
-          };
+      location: $selectedLandMeta!.location,
+      sellPrice: $selectedLandMeta!.sellPrice,
+      tokenUsed: $selectedLandMeta!.tokenUsed,
+      tokenAddress: $selectedLandMeta!.tokenAddress,
+      owner: $selectedLandMeta!.owner || undefined,
+    };
+  };
 
+  const handleClaimLandClick = () => {
+    console.log('Claim land clicked');
+    $selectedLandMeta!.claim().then((res) => {
+      console.log('Claimed', res);
+    });
+  };
+
+  const handleNukeLandClick = () => {
+    console.log('Nuke Land Clicked');
+    $selectedLandMeta?.nuke().then((res) => {
+      console.log('Nuked', res);
+    });
   };
 </script>
 
@@ -40,6 +53,23 @@
         class="w-full">{shortenHex($selectedLandMeta?.owner)}</a
       >
     </div>
-    <Button on:click={() => {handleBuyLandClick()}} class="mt-2 text-xl text-ponzi">BUY LAND</Button>
+    <Button
+      on:click={() => {
+        handleBuyLandClick();
+      }}
+      class="mt-2 text-xl text-ponzi">BUY LAND</Button
+    >
+    <Button
+      on:click={() => {
+        handleClaimLandClick();
+      }}
+      class="mt-2 text-xl text-ponzi">CLAIM</Button
+    >
+    <Button
+      on:click={() => {
+        handleNukeLandClick();
+      }}
+      class="mt-2 text-xl text-ponzi">NUKE</Button
+    >
   </div>
 </div>
