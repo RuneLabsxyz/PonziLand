@@ -41,10 +41,11 @@
     // initialize the map with empty tiles
     tiles = Array(MAP_SIZE)
       .fill(null)
-      .map(() =>
+      .map((_, i) =>
         Array(MAP_SIZE)
           .fill(null)
-          .map(() => ({
+          .map((_, j) => ({
+            location: i * MAP_SIZE + j,
             type: 'grass',
             owner: undefined,
             sellPrice: null,
