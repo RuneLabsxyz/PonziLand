@@ -5,6 +5,7 @@
   import LandHud from './land/land-hud.svelte';
   import WalletLookup from './wallet/wallet-lookup.svelte';
   import { uiStore } from '$lib/stores/stores.svelte';
+  import Toolbar from './toolbar/toolbar.svelte';
 </script>
 
 <div class="z-50 absolute top-0 left-0">
@@ -13,6 +14,8 @@
 
   <!-- Tile HUD -->
   <LandHud />
+
+  <Toolbar />
 
   <!-- Modals -->
   {#if uiStore.showModal}
