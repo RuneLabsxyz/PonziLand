@@ -1,8 +1,8 @@
+import data from '$lib/data.json';
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
-import data from '$lib/data.json';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -123,4 +123,9 @@ export function padAddress(address: string) {
   const addressPadded = addressEnd.padStart(64, '0');
 
   return `0x${addressPadded}`;
+}
+
+export function hexStringToNumber(hex: string) {
+  const hexString = hex.startsWith('0x') ? hex.slice(2) : hex;
+  return parseInt(hexString, 16);
 }

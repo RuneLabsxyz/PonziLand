@@ -51,7 +51,7 @@ async function getApprove(
       entrypoint: 'approve',
       calldata: CallData.compile({
         spender: spendingContract,
-        amount: cairo.uint256(BigInt(data.amount) * BigInt(10 ** decimals)),
+        amount: cairo.uint256(data.amount),
       }),
     },
     spendingCall,

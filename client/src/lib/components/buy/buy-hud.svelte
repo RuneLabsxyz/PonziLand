@@ -1,7 +1,11 @@
 <script lang="ts">
   import { useLands } from '$lib/api/land.svelte';
   import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
-  import { locationIntToString, shortenHex } from '$lib/utils';
+  import {
+    hexStringToNumber,
+    locationIntToString,
+    shortenHex,
+  } from '$lib/utils';
   import LandOverview from '../land/land-overview.svelte';
   import { Button } from '../ui/button';
 
@@ -12,7 +16,7 @@
 
     uiStore.showModal = true;
     uiStore.modalData = {
-      location: $selectedLandMeta!.location,
+      location: hexStringToNumber($selectedLandMeta!.location),
       sellPrice: $selectedLandMeta!.sellPrice,
       tokenUsed: $selectedLandMeta!.tokenUsed,
       tokenAddress: $selectedLandMeta!.tokenAddress,
@@ -47,9 +51,11 @@
   <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
     <div class="flex w-full">
       <span class="w-full">Location :</span>
-      <span class="w-full"
-        >{locationIntToString($selectedLandMeta?.location)}</span
-      >
+      <span class="w-full">
+        {locationIntToString(
+          hexStringToNumber($selectedLandMeta?.location ?? ''),
+        )}
+      </span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Price :</span>
@@ -81,9 +87,12 @@
       }}
       class="mt-2 text-xl text-ponzi">NUKE</Button
     >
-    <Button on:click={() => {
-      handleGetTaxesClick();
-    }} class="mt-2 text-xl text-ponzi">
+    <Button
+      on:click={() => {
+        handleGetTaxesClick();
+      }}
+      class="mt-2 text-xl text-ponzi"
+    >
       GET TAXES
     </Button>
   </div>
