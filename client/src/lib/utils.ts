@@ -132,11 +132,11 @@ export function hexStringToNumber(hex: string) {
 }
 
 export function toBigInt(value: BigNumberish): bigint {
-  if (typeof value === "string" || typeof value === "number") {
+  if (typeof value === 'string' || typeof value === 'number') {
     return BigInt(value);
   }
-  if (typeof value === "bigint") {
+  if (typeof value === 'bigint') {
     return value;
   }
-  throw new Error("Unsupported BigNumberish type");
+  throw new Error('Unsupported BigNumberish type');
 }
