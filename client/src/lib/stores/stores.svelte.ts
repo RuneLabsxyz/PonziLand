@@ -23,7 +23,7 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
 
     // get token info from tokenAddress from data
     const token = data.availableTokens.find(
-      (token) => token.address === $selectedLand.tokenAddress
+      (token) => token.address === $selectedLand.tokenAddress,
     );
 
     // --- Helper Functions --- TODO

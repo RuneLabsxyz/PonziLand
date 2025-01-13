@@ -28,7 +28,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
     location: BigNumberish,
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
-    tokenForSale: string
+    tokenForSale: string,
   ): TransactionResult;
 };
 
@@ -96,14 +96,14 @@ export function useLands(): LandsStore | undefined {
             account.getAccount()!,
             land.location,
             land.token_used,
-            amount
+            amount,
           );
         },
         increasePrice(amount: BigNumberish) {
           return sdk.client.actions.increasePrice(
             account.getAccount()!,
             land.location,
-            amount
+            amount,
           );
         },
         claim() {
@@ -124,7 +124,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice,
         setup.amountToStake,
-        setup.liquidityPoolAddress
+        setup.liquidityPoolAddress,
       );
     },
     bidLand(location, setup) {
@@ -134,7 +134,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice,
         setup.amountToStake,
-        setup.liquidityPoolAddress
+        setup.liquidityPoolAddress,
       );
     },
     auctionLand(location, startPrice, floorPrice, tokenForSale) {
@@ -143,7 +143,7 @@ export function useLands(): LandsStore | undefined {
         location,
         startPrice,
         floorPrice,
-        tokenForSale
+        tokenForSale,
       );
     },
   };
