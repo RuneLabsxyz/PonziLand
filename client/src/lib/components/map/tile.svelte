@@ -5,16 +5,18 @@
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
-  let { land } =
-    $props<{
-      land: Partial<LandWithActions> & {
-        type: 'grass' | 'house' | 'auction';
-        owner: string | undefined;
-        sellPrice: number | null;
-        tokenUsed: string | null;
-        tokenAddress: string | null;
-      };
-    }>();
+  
+  let { land } = $props<{
+    land: Partial<LandWithActions> & {
+      type: 'grass' | 'house' | 'auction';
+      owner: string | undefined;
+      sellPrice: number | null;
+      tokenUsed: string | null;
+      tokenAddress: string | null;
+    };
+  }>();
+  
+  let selected = $derived($selectedLand?.location === land.location);
 
   function handleClick() {
     console.log('clicked');
@@ -25,7 +27,7 @@
       tokenUsed: land.tokenUsed,
       tokenAddress: land.tokenAddress,
       claim: land.claim,
-      nuke: land.nuke
+      nuke: land.nuke,
     };
   }
 
@@ -54,7 +56,9 @@
 <!-- svelte-ignore event_directive_deprecated -->
 <div
   on:click={handleClick}
-  class={`tile ${land.type === 'auction' ? 'tile-auction' : ''}`}
+  class={`tile ${land.type === 'auction' ? 'tile-auction' : ''} ${
+    selected ? 'selected' : ''
+  }`}
   style={land.type === 'house'
     ? `background-image: url('${backgroundImage}'), url('/tiles/grass.jpg');
                background-size: contain, cover;
@@ -87,5 +91,9 @@
     color: white;
     font-size: 12px;
     background: #ff0;
+  }
+
+  .selected {
+    border: 1px solid #ff0;
   }
 </style>
