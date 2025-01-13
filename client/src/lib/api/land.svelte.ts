@@ -1,7 +1,7 @@
 import { useDojo } from '$lib/contexts/dojo';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
-import type { BigNumberish } from 'starknet';
+import type { BigNumberish, Result } from 'starknet';
 import { derived, get, type Readable } from 'svelte/store';
 
 export type TransactionResult = Promise<
@@ -30,6 +30,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
     floorPrice: BigNumberish,
     tokenForSale: string,
   ): TransactionResult;
+  getPendingTaxes(owner: string): Promise<Result | undefined>;
 };
 
 export type LandWithActions = Land & {
@@ -64,7 +65,7 @@ export function useLands(): LandsStore | undefined {
           console.log('Got an error!', response.error);
         } else {
           console.log('Setting entities :)');
-          console.log('Data!', JSON.stringify(response.data));
+          console.log('Data!', response.data);
           get(landStore).setEntities(response.data);
         }
       },
@@ -111,7 +112,7 @@ export function useLands(): LandsStore | undefined {
         },
         nuke() {
           return sdk.client.actions.claim(account.getAccount()!, land.location);
-        },
+        }
       }));
   });
 
@@ -146,5 +147,8 @@ export function useLands(): LandsStore | undefined {
         tokenForSale,
       );
     },
+    getPendingTaxes() {
+      return sdk.client.actions.getPendingTaxes(account.getAccount()!.address);
+    }
   };
 }

@@ -1,11 +1,9 @@
 <script>
+  import { fetchBLUEBalance } from '$lib/accounts/balances';
+  import { useController } from '$lib/accounts/controller';
   import { useDojo } from '$lib/contexts/dojo';
-  import { accountAddress } from '$lib/stores/stores.svelte';
-  import { stringify } from 'postcss';
   import Button from '../ui/button/button.svelte';
   import Card from '../ui/card/card.svelte';
-  import { useController } from '$lib/accounts/controller';
-  import { fetchBLUEBalance } from '$lib/accounts/balances';
   import WalletHelp from './wallet-help.svelte';
 
   const { store, client: sdk, account } = useDojo();
@@ -30,9 +28,12 @@
   <div>
     <WalletHelp />
   </div>
-  {#if account}
+  {#if accountData?.address}
     <Card class="shadow-ponzi">
       <p>Wallet: {accountData?.address}</p>
+      <Button on:click={() => {
+        account.disconnect();
+      }}>LOGOUT</Button>
     </Card>
   {:else}
     <Button class="m-2">Connect Wallet</Button>

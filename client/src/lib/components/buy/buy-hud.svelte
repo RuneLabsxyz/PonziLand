@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { useLands } from '$lib/api/land.svelte';
   import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
   import { locationIntToString, shortenHex } from '$lib/utils';
   import LandOverview from '../land/land-overview.svelte';
   import { Button } from '../ui/button';
+
+  let landStore = useLands();
 
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');
@@ -28,6 +31,13 @@
     console.log('Nuke Land Clicked');
     $selectedLandMeta?.nuke().then((res) => {
       console.log('Nuked', res);
+    });
+  };
+
+  const handleGetTaxesClick = () => {
+    console.log('Get Taxes Clicked');
+    landStore?.getPendingTaxes($selectedLandMeta?.owner!).then((res) => {
+      console.log('Taxes', res);
     });
   };
 </script>
@@ -71,5 +81,10 @@
       }}
       class="mt-2 text-xl text-ponzi">NUKE</Button
     >
+    <Button on:click={() => {
+      handleGetTaxesClick();
+    }} class="mt-2 text-xl text-ponzi">
+      GET TAXES
+    </Button>
   </div>
 </div>

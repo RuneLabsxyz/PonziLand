@@ -21,6 +21,7 @@
   function handleClick() {
     console.log('clicked');
     $selectedLand = {
+      type: land.type,
       location: land.location,
       owner: land.owner,
       sellPrice: land.sellPrice,
@@ -29,6 +30,7 @@
       claim: land.claim,
       nuke: land.nuke,
     };
+    console.log($selectedLand);
   }
 
   const getCastleImage = () => {
@@ -40,7 +42,7 @@
       return `/assets/tokens/basic/castles/${randomBasic}.png`;
     }
 
-    const castleTypes = ['basic', 'advanced', 'premium'] as const;
+    const castleTypes = ['basic'] as const;
     const randomType =
       castleTypes[Math.floor(Math.random() * castleTypes.length)];
     return token.images.castle[randomType];

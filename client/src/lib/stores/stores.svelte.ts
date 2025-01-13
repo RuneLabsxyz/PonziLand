@@ -5,7 +5,8 @@ import type { AuctionData, TileInfo } from '$lib/interfaces';
 import type { TransactionResult } from '$lib/api/land.svelte';
 
 export const selectedLand = writable<{
-  location: number;
+  type: string;
+  location: string;
   owner: string | null;
   sellPrice: number;
   tokenUsed: string;

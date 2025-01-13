@@ -7,7 +7,7 @@
 
 {#if $selectedLandMeta}
   <Card class="fixed bottom-0 right-0 z-50 w-96 bg-ponzi">
-    {#if $selectedLandMeta?.isAuction}
+    {#if $selectedLandMeta.isAuction || $selectedLandMeta.owner == undefined}
       <AuctionHud />
     {:else}
       <BuyHud />
