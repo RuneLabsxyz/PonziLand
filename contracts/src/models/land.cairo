@@ -15,8 +15,6 @@ pub struct Land {
 }
 
 
-
-
 #[generate_trait]
 impl LandImpl of LandTrait {
     #[inline(always)]

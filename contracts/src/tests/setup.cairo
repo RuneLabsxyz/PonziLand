@@ -38,10 +38,10 @@ mod setup {
                 TestResource::Event(
                     actions::e_RemainingStakeEvent::TEST_CLASS_HASH.try_into().unwrap()
                 ),
-                 TestResource::Event(
+                TestResource::Event(
                     actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap()
                 ),
-                 TestResource::Event(
+                TestResource::Event(
                     actions::e_AuctionFinishedEvent::TEST_CLASS_HASH.try_into().unwrap()
                 ),
                 TestResource::Contract(actions::TEST_CLASS_HASH)

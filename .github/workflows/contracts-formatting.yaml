@@ -1,0 +1,26 @@
+name: Contracts - Formatting
+
+on:
+  pull_request:
+    branches:
+      - "main"
+
+permissions:
+  contents: read
+
+jobs:
+  slot-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - id: setup-dojo
+        uses: runelabsxyz/setup-dojo@main
+        with:
+          version: "v1.0.8"
+
+      - name: Validate formatting
+        working-directory: ./contracts
+        run: scarb fmt --check
