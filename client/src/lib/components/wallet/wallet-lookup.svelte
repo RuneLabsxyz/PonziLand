@@ -9,19 +9,28 @@
 
   const { store, client: sdk, account } = useDojo();
 
-  let accountData = $derived(account.getAccount());
+  let connected = $state(false);
+
+  $effect(() => {
+    if (account.getAccount()) {
+      connected = true;
+    } else {
+      connected = false;
+    }
+  });
 </script>
 
-<div class="fixed top-0 right-0 z-50 flex items-center gap-2">
-  <div>
+<div class="fixed top-0 right-0 z-50">
+  <div class="absolute top-2 left-0" style="transform: translateX(-120%);">
     <WalletHelp />
   </div>
-  {#if accountData}
+  {#if connected}
     <Card class="shadow-ponzi">
-      <p>Wallet: {padAddress(accountData?.address)}</p>
+      <p>Wallet: {padAddress(account.getAccount()?.address ?? '')}</p>
       <Button
         on:click={() => {
           account.disconnect();
+          connected = false;
         }}>LOGOUT</Button
       >
       <WalletBalance />
@@ -31,7 +40,7 @@
       class="m-2"
       onclick={async () => {
         await account.connect().then(() => {
-          
+          if (account.getAccount()?.address) connected = true;
         });
       }}>CONNECT WALLET</Button
     >
