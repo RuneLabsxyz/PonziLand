@@ -112,7 +112,7 @@ export function useLands(): LandsStore | undefined {
         },
         nuke() {
           return sdk.client.actions.claim(account.getAccount()!, land.location);
-        }
+        },
       }));
   });
 
@@ -149,6 +149,6 @@ export function useLands(): LandsStore | undefined {
     },
     getPendingTaxes() {
       return sdk.client.actions.getPendingTaxes(account.getAccount()!.address);
-    }
+    },
   };
 }

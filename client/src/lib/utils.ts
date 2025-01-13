@@ -111,3 +111,16 @@ export function locationIntToString(location: number | undefined) {
 
   return `${x}, ${y}`;
 }
+
+export function padAddress(address: string) {
+  // test if start with 0x
+  if (!address.startsWith('0x')) {
+    return;
+  }
+  // get what is after 0x
+  const addressEnd = address.slice(2);
+  // padd for 66 char
+  const addressPadded = addressEnd.padStart(64, '0');
+
+  return `0x${addressPadded}`;
+}

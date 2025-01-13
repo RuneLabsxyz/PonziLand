@@ -6,9 +6,15 @@
   import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import Button from '../ui/button/button.svelte';
+  import BuySellForm from '../buy/buy-sell-form.svelte';
+  import type { Token } from '$lib/interfaces';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
+
+  let selectedToken = $state<Token | null>(null);
+  let stakeAmount = $state<number>(0);
+  let sellAmount = $state<number>(0);
 
   let currentPriceDerived = $derived(() => {
     if (auctionInfo && currentTime) {
@@ -70,15 +76,16 @@
 <p>StartPrice: {parseInt(auctionInfo?.start_price as string, 16)}</p>
 <p>Current Price: {currentPriceDerived()}</p>
 <p>FloorPrice: {parseInt(auctionInfo?.floor_price as string, 16)}</p>
+
+<BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
 <Button
   on:click={() => {
     console.log('Buying land with data:', auctionInfo);
 
     const landSetup: LandSetup = {
-      tokenForSaleAddress:
-        '0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619', //BLUE
-      salePrice: toHexWithPadding(1),
-      amountToStake: toHexWithPadding(100),
+      tokenForSaleAddress: selectedToken?.address as string,
+      salePrice: sellAmount,
+      amountToStake: stakeAmount,
       liquidityPoolAddress: toHexWithPadding(0),
     };
 

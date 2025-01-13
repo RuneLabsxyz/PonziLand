@@ -32,6 +32,7 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
     return {
       ...$selectedLand,
       isAuction,
+      isEmpty: $selectedLand.owner == undefined,
       token,
     };
   }

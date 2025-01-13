@@ -2,7 +2,7 @@
   import type { AuctionData, BuyData, TileInfo } from '$lib/interfaces';
   import AuctionModal from './auctionmodal.svelte';
   import BuyModal from './buy/buy-modal.svelte';
-  import LandHud from './land-hud.svelte';
+  import LandHud from './land/land-hud.svelte';
   import WalletLookup from './wallet/wallet-lookup.svelte';
   import { uiStore } from '$lib/stores/stores.svelte';
 </script>
