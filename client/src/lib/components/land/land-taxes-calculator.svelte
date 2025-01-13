@@ -75,7 +75,7 @@
 
 <div class="grid z-40">
   {#each taxes as tax}
-    <div class="grid-item">{tax}</div>
+    <div class="grid-item text-ponzi">{tax}</div>
   {/each}
 </div>
 
