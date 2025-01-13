@@ -9,14 +9,14 @@
 
   const { store, client: sdk, account } = useDojo();
 
-  const accountData = $derived(account.getAccount());
+  let accountData = $derived(account.getAccount());
 </script>
 
 <div class="fixed top-0 right-0 z-50 flex items-center gap-2">
   <div>
     <WalletHelp />
   </div>
-  {#if accountData?.address}
+  {#if accountData}
     <Card class="shadow-ponzi">
       <p>Wallet: {padAddress(accountData?.address)}</p>
       <Button
@@ -27,6 +27,13 @@
       <WalletBalance />
     </Card>
   {:else}
-    <Button class="m-2">Connect Wallet</Button>
+    <Button
+      class="m-2"
+      onclick={async () => {
+        await account.connect().then(() => {
+          
+        });
+      }}>CONNECT WALLET</Button
+    >
   {/if}
 </div>
