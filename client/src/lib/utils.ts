@@ -3,6 +3,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
+import type { BigNumberish } from 'starknet';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -128,4 +129,14 @@ export function padAddress(address: string) {
 export function hexStringToNumber(hex: string) {
   const hexString = hex.startsWith('0x') ? hex.slice(2) : hex;
   return parseInt(hexString, 16);
+}
+
+export function toBigInt(value: BigNumberish): bigint {
+  if (typeof value === "string" || typeof value === "number") {
+    return BigInt(value);
+  }
+  if (typeof value === "bigint") {
+    return value;
+  }
+  throw new Error("Unsupported BigNumberish type");
 }

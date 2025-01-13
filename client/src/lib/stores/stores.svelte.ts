@@ -1,4 +1,4 @@
-import { toHexWithPadding } from '$lib/utils';
+import { padAddress, toHexWithPadding } from '$lib/utils';
 import { derived, writable } from 'svelte/store';
 import data from '$lib/data.json';
 import type { AuctionData, TileInfo } from '$lib/interfaces';
@@ -42,6 +42,7 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
 export const mousePosCoords = writable<{
   x: number;
   y: number;
+  location: number;
 } | null>(null);
 
 export const accountAddress = writable<string | null>(null);

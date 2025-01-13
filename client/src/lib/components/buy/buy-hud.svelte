@@ -1,15 +1,27 @@
 <script lang="ts">
   import { useLands } from '$lib/api/land.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
   import {
     hexStringToNumber,
     locationIntToString,
+    padAddress,
     shortenHex,
+    toHexWithPadding,
   } from '$lib/utils';
   import LandOverview from '../land/land-overview.svelte';
+  import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
   import { Button } from '../ui/button';
 
   let landStore = useLands();
+
+  const { store, client: sdk, account } = useDojo();
+
+  const accountData = $derived(account.getAccount());
+
+  let isOwner = $derived(
+    $selectedLandMeta?.owner == padAddress(accountData?.address ?? ''),
+  );
 
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');
@@ -46,7 +58,14 @@
   };
 </script>
 
-<div class="flex gap-4">
+<div class="flex gap-4 relative">
+  {#if isOwner}
+    <div class="absolute -top-8 left-0 right-0">
+      <div class="flex justify-center">
+        <img src="/assets/ui/crown.png" alt="owner" class="h-7 w-8" />
+      </div>
+    </div>
+  {/if}
   <LandOverview data={$selectedLandMeta} />
   <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
     <div class="flex w-full">
@@ -55,6 +74,7 @@
         {locationIntToString(
           hexStringToNumber($selectedLandMeta?.location ?? ''),
         )}
+        <span class="text-gray-500 text-sm">#{hexStringToNumber($selectedLandMeta?.location ?? '')}</span>
       </span>
     </div>
     <div class="flex w-full">
@@ -77,12 +97,6 @@
     >
     <Button
       on:click={() => {
-        handleClaimLandClick();
-      }}
-      class="mt-2 text-xl text-ponzi">CLAIM</Button
-    >
-    <Button
-      on:click={() => {
         handleNukeLandClick();
       }}
       class="mt-2 text-xl text-ponzi">NUKE</Button
@@ -95,5 +109,16 @@
     >
       GET TAXES
     </Button>
+    {#if isOwner}
+      <Button
+        on:click={() => {
+          handleClaimLandClick();
+        }}
+        class="mt-2 text-xl text-ponzi">CLAIM</Button
+      >
+      <hr />
+      <div>Claimable Taxes:</div>
+      <LandTaxesCalculator />
+    {/if}
   </div>
 </div>
