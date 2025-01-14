@@ -6,8 +6,8 @@ const buttonVariants = tv({
   base: 'text-ponzi flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium disabled:pointer-events-none disabled:opacity-50',
   variants: {
     variant: {
-      blue: 'button-ponzi-blue',  
-      red: 'button-ponzi-red'
+      blue: 'button-ponzi-blue',
+      red: 'button-ponzi-red',
     },
     size: {
       default: 'h-10 px-4 pb-1',

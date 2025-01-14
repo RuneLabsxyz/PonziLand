@@ -40,7 +40,7 @@ export type LandWithMeta = Land & {
   sellPrice: number | null;
   tokenUsed: string | null;
   tokenAddress: string | null;
-}; 
+};
 
 export type LandWithActions = LandWithMeta & {
   increaseStake(amount: BigNumberish): TransactionResult;
