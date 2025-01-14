@@ -24,7 +24,6 @@
       console.error('selected land is not available');
       return;
     }
-    console.log('Creating Auction');
     //TODO change the params
     landStore
       ?.auctionLand(

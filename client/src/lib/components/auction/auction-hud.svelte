@@ -13,8 +13,8 @@
   let currentTime = $state(Date.now());
 
   let selectedToken = $state<Token | null>(null);
-  let stakeAmount = $state<number>(0);
-  let sellAmount = $state<number>(0);
+  let stakeAmount = $state<number>(100);
+  let sellAmount = $state<number>(100);
 
   let currentPriceDerived = $derived(() => {
     if (auctionInfo && currentTime) {
@@ -86,7 +86,9 @@
       tokenForSaleAddress: selectedToken?.address as string,
       salePrice: sellAmount,
       amountToStake: stakeAmount,
-      liquidityPoolAddress: toHexWithPadding(1),
+      liquidityPoolAddress: toHexWithPadding(0),
+      tokenAddress: $selectedLandMeta?.tokenAddress as string,
+      currentPrice: (currentPriceDerived() as number) * 1e6,
     };
 
     if (!$selectedLand?.location) {
@@ -99,4 +101,5 @@
   }}
 >
   Buy for {currentPriceDerived()}
+  {$selectedLandMeta?.tokenUsed}
 </Button>

@@ -17,6 +17,8 @@ export type LandSetup = {
   salePrice: BigNumberish;
   amountToStake: BigNumberish;
   liquidityPoolAddress: string;
+  tokenAddress: string;
+  currentPrice: BigNumberish;
 };
 
 export type LandsStore = Readable<LandWithActions[]> & {
@@ -187,6 +189,8 @@ export function useLands(): LandsStore | undefined {
         setup.salePrice,
         setup.amountToStake,
         setup.liquidityPoolAddress,
+        setup.tokenAddress,
+        setup.currentPrice
       );
     },
     auctionLand(location, startPrice, floorPrice, tokenForSale, decayRate) {

@@ -20,10 +20,10 @@ export type ApprovalData = {
 
 async function getApprove(
   provider: DojoProvider,
-  data: ApprovalData,
+  data: ApprovalData[],
   spendingCall: DojoCall | Call,
   namespace: string = 'ponzi_land',
-): Promise<[Call, DojoCall | Call]> {
+): Promise<[Call[], DojoCall | Call]> {
   let spendingContract;
 
   if ('contractName' in spendingCall) {
@@ -39,26 +39,18 @@ async function getApprove(
   console.log(spendingContract);
   console.dir(data);
 
-  const decimals = (await provider.call('ponzi_land', {
-    contractAddress: data.tokenAddress,
-    entrypoint: 'decimals',
-  })) as unknown as number;
-
-  console.log('decimals: ', decimals);
-
-  return [
-    {
+  const approvals = data.map((data) => {
+    return {
       contractAddress: data.tokenAddress,
       entrypoint: 'approve',
       calldata: CallData.compile({
         spender: spendingContract,
-        amount: cairo.uint256(
-          BigInt(data.amount) * BigInt(10) ** BigInt(decimals),
-        ),
+        amount: cairo.uint256(data.amount),
       }),
-    },
-    spendingCall,
-  ];
+    };
+  });
+
+  return [approvals, spendingCall];
 }
 
 export async function wrappedActions(provider: DojoProvider) {
@@ -69,27 +61,40 @@ export async function wrappedActions(provider: DojoProvider) {
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
     liquidityPool: string,
+    tokenAddress: string,
+    currentPrice: BigNumberish,
   ) => {
-    return await provider.execute(
-      snAccount,
-      await getApprove(
-        provider,
+    const sell_price = cairo.uint256(sellPrice);
+    const amount_to_stake = cairo.uint256(amountToStake);
+
+    const calls = await getApprove(
+      provider,
+      [
         {
           tokenAddress: tokenForSale,
-          amount: amountToStake,
+          amount: BigInt(amountToStake),
         },
         {
-          contractName: 'actions',
-          entrypoint: 'bid',
-          calldata: CallData.compile({
-            landLocation,
-            tokenForSale,
-            sellPrice: cairo.uint256(sellPrice),
-            amountToStake: cairo.uint256(amountToStake),
-            liquidityPool,
-          }),
+          tokenAddress: tokenAddress,
+          amount: BigInt(currentPrice),
         },
-      ),
+      ],
+      {
+        contractName: 'actions',
+        entrypoint: 'bid',
+        calldata: CallData.compile([
+          landLocation,
+          tokenForSale,
+          sell_price,
+          amount_to_stake,
+          liquidityPool,
+        ]),
+      },
+    );
+
+    return await provider.execute(
+      snAccount,
+      [...calls[0], calls[1]],
       'ponzi_land',
     );
   };
@@ -103,26 +108,30 @@ export async function wrappedActions(provider: DojoProvider) {
     liquidityPool: string,
   ) => {
     try {
-      return await provider.execute(
-        snAccount,
-        await getApprove(
-          provider,
+      const calls = await getApprove(
+        provider,
+        [
           {
             tokenAddress: tokenForSale,
             amount: amountToStake,
           },
-          {
-            contractName: 'actions',
-            entrypoint: 'buy',
-            calldata: CallData.compile([
-              landLocation,
-              tokenForSale,
-              cairo.uint256(sellPrice),
-              cairo.uint256(amountToStake),
-              liquidityPool,
-            ]),
-          },
-        ),
+        ],
+        {
+          contractName: 'actions',
+          entrypoint: 'buy',
+          calldata: [
+            landLocation,
+            tokenForSale,
+            sellPrice,
+            amountToStake,
+            liquidityPool,
+          ],
+        },
+      );
+
+      return await provider.execute(
+        snAccount,
+        [...calls[0], calls[1]],
         'ponzi_land',
       );
     } catch (error) {
@@ -137,23 +146,24 @@ export async function wrappedActions(provider: DojoProvider) {
     amountToStake: BigNumberish,
   ) => {
     try {
-      return await provider.execute(
-        snAccount,
-        await getApprove(
-          provider,
+      const calls = await getApprove(
+        provider,
+        [
           {
             tokenAddress: stakingToken,
             amount: amountToStake,
           },
-          {
-            contractName: 'actions',
-            entrypoint: 'increase_stake',
-            calldata: CallData.compile([
-              landLocation,
-              cairo.uint256(amountToStake),
-            ]),
-          },
-        ),
+        ],
+        {
+          contractName: 'actions',
+          entrypoint: 'increase_stake',
+          calldata: [landLocation, amountToStake],
+        },
+      );
+
+      return await provider.execute(
+        snAccount,
+        [...calls[0], calls[1]],
         'ponzi_land',
       );
     } catch (error) {

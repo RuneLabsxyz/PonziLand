@@ -6,7 +6,6 @@ import {
   CallData,
   type BigNumberish,
 } from 'starknet';
-import * as models from './models.gen';
 
 export async function setupWorld(provider: DojoProvider) {
   const actions_auction = async (
@@ -52,13 +51,13 @@ export async function setupWorld(provider: DojoProvider) {
         {
           contractName: 'actions',
           entrypoint: 'bid',
-          calldata: [
+          calldata: CallData.compile({
             landLocation,
             tokenForSale,
-            sellPrice,
-            amountToStake,
+            sellPrice: cairo.uint256(sellPrice),
+            amountToStake: cairo.uint256(amountToStake),
             liquidityPool,
-          ],
+          }),
         },
         'ponzi_land',
       );
