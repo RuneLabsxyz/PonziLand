@@ -1,6 +1,8 @@
 <script lang="ts">
-  import { fetchBLUEBalance, fetchREDBalance, fetchGREENBalance } from '$lib/accounts/balances';
+  import { fetchTokenBalance } from '$lib/accounts/balances';
   import { useDojo } from '$lib/contexts/dojo';
+  import { dojoConfig } from '$lib/dojoConfig';
+  import { DojoProvider } from '@dojoengine/core';
 
   const { store, client: sdk, account } = useDojo();
 
@@ -11,7 +13,7 @@
   let blueBalance = $state();
 
   const toReadableFormat = (balance: unknown) => {
-    if (typeof balance !== 'bigint' && typeof balance !== 'number' ) {
+    if (typeof balance !== 'bigint' && typeof balance !== 'number') {
       return balance;
     }
 
@@ -19,20 +21,34 @@
   };
 
   $effect(() => {
-    fetchREDBalance(accountData?.address ?? '').then((res) => {
-      console.log('from component RED:', res);
-      console.log(typeof res);
-      redBalance = res
-    })
-    fetchGREENBalance(accountData?.address ?? '').then((res) => {
-      console.log('from component GREEN:', res);
-      console.log(typeof res);
-        greenBalance = res;
+    if (!accountData) {
+      return;
+    }
+
+    const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
+    fetchTokenBalance(
+      '0x06450580d0d5cd36f0107227091ca68a237fd0ab538ae59ea43868f660bc2c30',
+      accountData,
+      provider,
+    ).then((res) => {
+      console.log('from component:', res);
+      redBalance = res;
     });
-    fetchBLUEBalance(accountData?.address ?? '').then((res) => {
-      console.log('from component BLUE:', res);
-      console.log(typeof res);
-      blueBalance = res
+    fetchTokenBalance(
+      '0x04ed678da6c0534e8ba7a1e7db81f3ecc0f1c2628094094b5123c481cd13461f',
+      accountData,
+      provider,
+    ).then((res) => {
+      console.log('from component:', res);
+      greenBalance = res;
+    });
+    fetchTokenBalance(
+      '0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619',
+      accountData,
+      provider,
+    ).then((res) => {
+      console.log('from component:', res);
+      blueBalance = res;
     });
   });
 </script>

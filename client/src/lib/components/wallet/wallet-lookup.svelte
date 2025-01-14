@@ -1,5 +1,4 @@
 <script>
-  import { fetchBLUEBalance } from '$lib/accounts/balances';
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress } from '$lib/utils';
   import Button from '../ui/button/button.svelte';

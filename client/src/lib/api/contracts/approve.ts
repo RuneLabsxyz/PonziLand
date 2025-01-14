@@ -39,12 +39,6 @@ async function getApprove(
   console.log(spendingContract);
   console.dir(data);
 
-  const decimals = (await provider.call('ponzi_land', {
-    contractAddress: data.tokenAddress,
-    entrypoint: 'decimals',
-    calldata: CallData.compile({}),
-  })) as unknown as number;
-
   return [
     {
       contractAddress: data.tokenAddress,
