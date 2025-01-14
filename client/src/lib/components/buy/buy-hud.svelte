@@ -28,9 +28,9 @@
     uiStore.showModal = true;
     uiStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
-      sellPrice: $selectedLandMeta!.sellPrice!,
-      tokenUsed: $selectedLandMeta!.tokenUsed!,
-      tokenAddress: $selectedLandMeta!.tokenAddress!,
+      sellPrice: $selectedLandMeta!.sellPrice ?? 0,
+      tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
+      tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
       owner: $selectedLandMeta!.owner || undefined,
     };
   };

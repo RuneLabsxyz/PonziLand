@@ -59,7 +59,6 @@
     </div>
     <div class="flex justify-center">
       <Button
-        variant="blue"
         on:click={() => {
           handleBuyClick();
         }}>Buy land</Button
