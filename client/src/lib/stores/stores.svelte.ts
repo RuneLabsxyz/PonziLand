@@ -8,9 +8,9 @@ export const selectedLand = writable<{
   type: string;
   location: string;
   owner: string | null;
-  sellPrice: number;
-  tokenUsed: string;
-  tokenAddress: string;
+  sellPrice: number | null;
+  tokenUsed: string | null;
+  tokenAddress: string | null;
   claim(): TransactionResult;
   nuke(): TransactionResult;
 } | null>(null);
