@@ -12,7 +12,8 @@ trait IActions<T> {
         land_location: u64,
         start_price: u256,
         floor_price: u256,
-        token_for_sale: ContractAddress
+        token_for_sale: ContractAddress,
+        decay_rate: u8,
     );
 
     fn bid(
@@ -235,7 +236,7 @@ pub mod actions {
             assert(!auction.is_finished, 'auction is finished');
             assert(auction.start_price > 0, 'auction not started');
 
-            let current_price = auction.get_current_price();
+            let current_price = auction.get_current_price_decay_rate();
             land.sell_price = current_price;
             store.set_land(land);
 
@@ -259,7 +260,8 @@ pub mod actions {
             land_location: u64,
             start_price: u256,
             floor_price: u256,
-            token_for_sale: ContractAddress
+            token_for_sale: ContractAddress,
+            decay_rate: u8,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(start_price > 0, 'start_price > 0');
@@ -272,7 +274,9 @@ pub mod actions {
 
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
 
-            let auction = AuctionTrait::new(land_location, start_price, floor_price, false);
+            let auction = AuctionTrait::new(
+                land_location, start_price, floor_price, false, decay_rate
+            );
             store.set_auction(auction);
 
             land.sell_price = start_price;
@@ -361,7 +365,7 @@ pub mod actions {
         }
 
 
-        //TODO: see how validate if the auction is active or not
+        //for tests
         fn get_current_auction_price(self: @ContractState, land_location: u64) -> u256 {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
@@ -371,8 +375,7 @@ pub mod actions {
             if auction.is_finished {
                 return 0;
             }
-
-            auction.get_current_price()
+            auction.get_current_price_decay_rate()
         }
     }
 
