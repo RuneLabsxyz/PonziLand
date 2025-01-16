@@ -326,12 +326,16 @@ pub mod actions {
 
             self.payable._stake(caller, land.token_used, amount_to_stake);
 
+            land.stake_amount = land.stake_amount + amount_to_stake;
+            store.set_land(land);
+
+            // Could be removed now that the remaining stake is stored in the world contrect
             store
                 .world
                 .emit_event(
                     @RemainingStakeEvent {
                         land_location: land.location,
-                        remaining_stake: self.payable.stake_balance.read(caller).amount
+                        remaining_stake: land.stake_amount
                     }
                 );
         }
