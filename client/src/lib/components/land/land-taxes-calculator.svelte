@@ -1,37 +1,43 @@
 <script lang="ts">
-  import { useLands } from '$lib/api/land.svelte';
-  import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import { useLands, type LandWithMeta } from '$lib/api/land.svelte';
+  import {
+    selectedLandMeta,
+    type SelectedLandType,
+  } from '$lib/stores/stores.svelte';
   import { hexStringToNumber, toBigInt } from '$lib/utils';
-  import { get } from 'svelte/store';
 
   const landStore = useLands();
 
   const calculateTaxes = (sellPrice: bigint, lastClaim: number): bigint => {
-    // 1% of sell price per hour
-    const taxRate = 600n;
-    const now = new Date();
-    console.log('Now:', now);
-    console.log('Last claim:', lastClaim);
+    const taxRate = 4n;
+    const baseTime = 3600n;
 
-    // Calculate hours as an integer
-    const secondsSinceLastClaim = Math.floor(
-      (now.getTime() - lastClaim * 1000) / 1000,
-    );
+    const currentTime = new Date().getTime();
 
-    console.log('Hours since last claim:', secondsSinceLastClaim / 60 / 60);
+    let elapsedTime = BigInt(currentTime - lastClaim * 1000);
 
-    // Ensure the hours are converted to `BigInt`
-    const taxes = (sellPrice * BigInt(secondsSinceLastClaim)) / taxRate;
-    return taxes;
+    console.log('Elapsed Time:', elapsedTime);
+    // convert to hours
+    console.log('Elapsed Time:', elapsedTime / 1000n / 60n / 60n);
+
+    let totalTaxes = (sellPrice * taxRate * elapsedTime) / (100n * baseTime);
+
+    return totalTaxes;
   };
 
   /**
    * Get all 8 neighbors of a land from the 64*64 grid with location as the center
    * @param location
    */
-  const getNeighboringTaxes = (location: string) => {
+  const getNeighboringTaxes = async (land: SelectedLandType) => {
+    if (!land) {
+      return;
+    }
+
+    console.log('Pending taxes', await land.getPendingTaxes());
+
     const MAP_SIZE = 64;
-    const locationValue = hexStringToNumber(location);
+    const locationValue = hexStringToNumber(land.location);
     const neighbors = [
       locationValue - MAP_SIZE - 1,
       locationValue - MAP_SIZE,
@@ -59,24 +65,28 @@
       if (!land || land.location == locationValue) {
         return 0;
       }
-      return calculateTaxes(
-        toBigInt(land.sell_price),
-        Number(land.last_pay_time),
-      );
+      return Number(
+        calculateTaxes(toBigInt(land.sell_price), Number(land.last_pay_time)),
+      ).toExponential(0);
     });
 
     return taxes; // insert 0 in the middle
   };
 
-  let taxes = $derived(
-    getNeighboringTaxes($selectedLandMeta?.location ?? '') ?? [],
-  );
+  let taxes = $derived(async () => {
+    if (!$selectedLandMeta) {
+      return [];
+    }
+    return (await getNeighboringTaxes($selectedLandMeta)) ?? [];
+  });
 </script>
 
 <div class="grid z-40">
-  {#each taxes as tax}
-    <div class="grid-item text-ponzi">{tax}</div>
-  {/each}
+  {#await taxes() then taxes}
+    {#each taxes as tax}
+      <div class="grid-item text-ponzi">{tax}</div>
+    {/each}
+  {/await}
 </div>
 
 <style>

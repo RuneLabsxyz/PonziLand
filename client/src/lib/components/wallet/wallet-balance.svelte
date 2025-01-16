@@ -5,6 +5,7 @@
   import { DojoProvider } from '@dojoengine/core';
   import accountData from '$lib/account.svelte';
   import data from '$lib/data.json';
+  import { Button } from '../ui/button';
 
   const { store, client: sdk, accountManager } = useDojo();
 
@@ -33,14 +34,13 @@
 
   const address = $derived(accountData.address);
 
-  $effect(() => {
+  function fetchBalanceData() {
     const account = accountManager.getProvider()?.getWalletAccount();
     console.log('UPDATINGGGGG');
 
     if (!account || !address) {
       return;
     }
-
     const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
     tokenBalances = data.availableTokens.map((token) => {
       const balance = fetchTokenBalance(token.address, account, provider);
@@ -50,10 +50,15 @@
         balance,
       };
     });
+  }
+
+  $effect(() => {
+    fetchBalanceData();
   });
 </script>
 
 <div>Wallet Balance</div>
+<Button onclick={fetchBalanceData}>Refresh</Button>
 {#each tokenBalances as tokenBalance}
   <div>
     <span>{tokenBalance.token}:</span>

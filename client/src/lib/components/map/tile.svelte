@@ -16,6 +16,10 @@
 
   const accountData = $derived(accountManager.getProvider()!.getAccount());
 
+  let isOwner = $derived(
+    $selectedLandMeta?.owner == padAddress(accountData?.address ?? ''),
+  );
+
   let { land } = $props<{
     land: Partial<LandWithActions> & {
       type: 'grass' | 'house' | 'auction';
@@ -27,9 +31,6 @@
   }>();
 
   let selected = $derived($selectedLand?.location === land.location);
-  let isOwner = $derived(
-    $selectedLandMeta?.owner == padAddress(accountData?.address ?? ''),
-  );
   let isHovering = $derived($mousePosCoords?.location == land.location);
 
   function handleClick() {
@@ -43,6 +44,7 @@
       tokenAddress: land.tokenAddress,
       claim: land.claim,
       nuke: land.nuke,
+      getPendingTaxes: land.getPendingTaxes,
     };
     console.log($selectedLand);
   }

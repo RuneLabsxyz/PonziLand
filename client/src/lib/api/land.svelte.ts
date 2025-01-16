@@ -35,6 +35,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
     decayRate: number,
   ): TransactionResult;
   getPendingTaxes(owner: string): Promise<Result | undefined>;
+  getPendingTaxesForLand(location: BigNumberish): Promise<Result | undefined>;
 };
 
 export type LandWithMeta = Land & {
@@ -50,6 +51,7 @@ export type LandWithActions = LandWithMeta & {
   increasePrice(amount: BigNumberish): TransactionResult;
   claim(): TransactionResult;
   nuke(): TransactionResult;
+  getPendingTaxes(): Promise<Result | undefined>;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -107,15 +109,6 @@ export function useLands(): LandsStore | undefined {
       .getEntitiesByModel('ponzi_land', 'Land')
       .map((e) => e.models['ponzi_land']['Land'] as Land)
       .map((land) => {
-        let location;
-        if (typeof land.location === 'string') {
-          location = parseInt(land.location);
-        } else if (typeof land.location === 'bigint') {
-          location = Number(land.location);
-        } else {
-          location = land.location;
-        }
-
         let sellPrice;
         if (typeof land.sell_price === 'string') {
           sellPrice = parseInt(land.sell_price);
@@ -164,6 +157,9 @@ export function useLands(): LandsStore | undefined {
             land.location,
           );
         },
+        getPendingTaxes() {
+          return sdk.client.actions.getPendingTaxesForLand(land.location, account.getAccount()!.address);
+        }
       }));
   });
 
@@ -190,7 +186,7 @@ export function useLands(): LandsStore | undefined {
         setup.amountToStake,
         setup.liquidityPoolAddress,
         setup.tokenAddress,
-        setup.currentPrice
+        setup.currentPrice,
       );
     },
     auctionLand(location, startPrice, floorPrice, tokenForSale, decayRate) {
@@ -208,5 +204,8 @@ export function useLands(): LandsStore | undefined {
         account()!.getAccount()!.address,
       );
     },
+    getPendingTaxesForLand(location) {
+      return sdk.client.actions.getPendingTaxesForLand(location, account.getAccount()!.address);
+    }
   };
 }

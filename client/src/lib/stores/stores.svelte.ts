@@ -3,8 +3,9 @@ import { derived, writable } from 'svelte/store';
 import data from '$lib/data.json';
 import type { AuctionData, TileInfo } from '$lib/interfaces';
 import type { TransactionResult } from '$lib/api/land.svelte';
+import type { Result } from 'starknet';
 
-export const selectedLand = writable<{
+export type SelectedLandType = {
   type: string;
   location: string;
   owner: string | null;
@@ -13,7 +14,10 @@ export const selectedLand = writable<{
   tokenAddress: string | null;
   claim(): TransactionResult;
   nuke(): TransactionResult;
-} | null>(null);
+  getPendingTaxes(): Promise<Result | undefined>;
+} | null;
+
+export const selectedLand = writable<SelectedLandType>(null);
 
 export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
   if ($selectedLand) {
