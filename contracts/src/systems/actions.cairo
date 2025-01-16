@@ -365,7 +365,6 @@ pub mod actions {
         }
 
 
-        //for tests
         fn get_current_auction_price(self: @ContractState, land_location: u64) -> u256 {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
