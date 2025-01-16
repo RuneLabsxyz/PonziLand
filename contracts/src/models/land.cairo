@@ -30,7 +30,14 @@ impl LandImpl of LandTrait {
         stake_amount: u256,
     ) -> Land {
         Land {
-            location, owner, token_used, sell_price, pool_key, last_pay_time, block_date_bought, stake_amount
+            location,
+            owner,
+            token_used,
+            sell_price,
+            pool_key,
+            last_pay_time,
+            block_date_bought,
+            stake_amount
         }
     }
 }

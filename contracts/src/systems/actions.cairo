@@ -330,12 +330,12 @@ pub mod actions {
             store.set_land(land);
 
             // Could be removed now that the remaining stake is stored in the world contrect
+            // #52 issue
             store
                 .world
                 .emit_event(
                     @RemainingStakeEvent {
-                        land_location: land.location,
-                        remaining_stake: land.stake_amount
+                        land_location: land.location, remaining_stake: land.stake_amount
                     }
                 );
         }
