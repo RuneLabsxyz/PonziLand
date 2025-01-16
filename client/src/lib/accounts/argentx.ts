@@ -104,9 +104,11 @@ export class ArgentXAccount extends CommonStarknetWallet {
   supportsSession(): boolean {
     return true;
   }
+
   getAccount(): Account | undefined {
     return this._session;
   }
+
   async setupSession(): Promise<StoredSession> {
     const [account, storedSession] = await setupSession(
       this._wallet!,

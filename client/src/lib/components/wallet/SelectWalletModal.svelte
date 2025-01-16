@@ -2,16 +2,15 @@
   import { on } from "svelte/events";
   import { onMount } from "svelte";
   import { dojoConfig } from "$lib/dojoConfig";
-  import { setupAccount, USE_BURNER } from "$lib/contexts/account";
+  import { setupAccount, USE_BURNER, useAccount } from "$lib/contexts/account";
   import Button from "../ui/button/button.svelte";
-  import ArgentX from "./button/argentX.svelte";
-  import Controller from "./button/controller.svelte";
-  import Other from "./button/other.svelte";
+  import type { StarknetWindowObject } from "@starknet-io/get-starknet-core";
+  import wasm from "vite-plugin-wasm";
 
   let visible = $state(false);
   let loading = $state(true);
 
-  let validWallets: ValidWallet[] = $state([]);
+  let validWallets: StarknetWindowObject[] = $state([]);
 
   // If we are on dev mode, only add the burner button.
   // Otherise, check for all wallets, and setup controller.
@@ -19,33 +18,34 @@
   // And if a login is asked (with the event wallet_login), open the popup with the found wallets,
   // wait for a successful login, and possibly open a popup to ask for the session popup explaining how it works.
 
-  const setupPromises: Promise<any>[] = [
-    setupAccount(dojoConfig),
-    scanObjectForWalletsCustom(),
-  ];
+  const account = useAccount();
 
-  const promisesToWait = Promise.all(setupPromises);
+  const promisesToWait = (async () => {
+    validWallets = (await account.wait()).getAvailableWallets();
+  })();
 
   onMount(() =>
-    on(window, "wallet_login", async () => {
+    on(window, "wallet_prompt", async () => {
       console.log("EVENT!");
       loading = true;
       visible = true;
       // Ensure everything has loaded.
       await promisesToWait;
+
       loading = false;
     })
   );
 
-  function getWalletButton(wallet: ValidWallet) {
-    switch (wallet.wallet.id) {
-      case "argentX":
-        return ArgentX;
-      case "controller":
-        return Controller;
-      default:
-        return Other;
-    }
+  async function login(id: string) {
+    await account.selectAndLogin(id);
+    console.log("Logged in!");
+
+    // TODO(#58): Split the session setup
+    await account.setupSession();
+
+    visible = false;
+    // resolve waiting promises.
+    window.dispatchEvent(new Event("wallet_login_success"));
   }
 </script>
 
@@ -62,8 +62,22 @@
       WALLETS
       <div class="flex flex-col justify-stretch gap-2">
         {#each validWallets as wallet}
-          {@const WalletButton = getWalletButton(wallet)}
-          <WalletButton value={wallet.wallet} class="text-xl" />
+          {@const image =
+            typeof wallet.icon == "string" ? wallet.icon : wallet.icon.light}
+          <Button
+            class="flex flex-row justify-start"
+            variant="default"
+            on:click={() => login(wallet.id)}
+          >
+            <img
+              src={image}
+              alt={wallet.name + " logo"}
+              class="h-10 p-2 pr-4"
+            />
+            <div>
+              {wallet.name}
+            </div>
+          </Button>
         {/each}
       </div>
     {/if}
