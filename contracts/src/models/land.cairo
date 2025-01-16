@@ -12,6 +12,7 @@ pub struct Land {
     pub pool_key: ContractAddress, // The Liquidity Pool Key
     //we will use this for taxes
     pub last_pay_time: u64,
+    pub stake_amount: u256,
 }
 
 
@@ -26,9 +27,10 @@ impl LandImpl of LandTrait {
         pool_key: ContractAddress,
         last_pay_time: u64,
         block_date_bought: u64,
+        stake_amount: u256,
     ) -> Land {
         Land {
-            location, owner, token_used, sell_price, pool_key, last_pay_time, block_date_bought,
+            location, owner, token_used, sell_price, pool_key, last_pay_time, block_date_bought, stake_amount
         }
     }
 }
