@@ -125,14 +125,14 @@ mod PayableComponent {
         }
 
 
-        fn _refund_of_stake(ref self: ComponentState<TContractState>, recipient: ContractAddress) {
+        fn _refund_of_stake(
+            ref self: ComponentState<TContractState>, recipient: ContractAddress, amount: u256
+        ) {
             let info_of_stake = self.stake_balance.read(recipient);
             self._initialize(info_of_stake.token_address);
             assert(info_of_stake.amount > 0, 'not balance in stake');
-            let status = self
-                .token_dispatcher
-                .read()
-                .transfer(recipient, info_of_stake.amount.into());
+            assert(amount > 0, 'not enough balance in stake');
+            let status = self.token_dispatcher.read().transfer(recipient, amount.into());
 
             assert(status, errors::ERC20_REFUND_FAILED);
         }

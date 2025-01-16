@@ -159,7 +159,7 @@ pub mod actions {
             self.internal_claim(store, land);
 
             self.payable._pay(caller, land.owner, land.token_used, land.sell_price);
-            self.payable._refund_of_stake(land.owner);
+            self.payable._refund_of_stake(land.owner, land.stake_amount);
             self.payable._stake(caller, token_for_sale, amount_to_stake);
 
             self
