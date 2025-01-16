@@ -1,15 +1,16 @@
-import { toHexWithPadding } from '$lib/utils';
+import { padAddress, toHexWithPadding } from '$lib/utils';
 import { derived, writable } from 'svelte/store';
 import data from '$lib/data.json';
 import type { AuctionData, TileInfo } from '$lib/interfaces';
 import type { TransactionResult } from '$lib/api/land.svelte';
 
 export const selectedLand = writable<{
-  location: number;
+  type: string;
+  location: string;
   owner: string | null;
-  sellPrice: number;
-  tokenUsed: string;
-  tokenAddress: string;
+  sellPrice: number | null;
+  tokenUsed: string | null;
+  tokenAddress: string | null;
   claim(): TransactionResult;
   nuke(): TransactionResult;
 } | null>(null);
@@ -31,6 +32,7 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
     return {
       ...$selectedLand,
       isAuction,
+      isEmpty: $selectedLand.owner == undefined,
       token,
     };
   }
@@ -40,6 +42,7 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
 export const mousePosCoords = writable<{
   x: number;
   y: number;
+  location: number;
 } | null>(null);
 
 export const accountAddress = writable<string | null>(null);

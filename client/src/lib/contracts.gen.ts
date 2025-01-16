@@ -1,5 +1,5 @@
 import { DojoProvider } from '@dojoengine/core';
-import { Account, AccountInterface, type BigNumberish } from 'starknet';
+import { Account, AccountInterface, cairo, type BigNumberish } from 'starknet';
 import * as models from './models.gen';
 
 export async function setupWorld(provider: DojoProvider) {
@@ -16,7 +16,12 @@ export async function setupWorld(provider: DojoProvider) {
         {
           contractName: 'actions',
           entrypoint: 'auction',
-          calldata: [landLocation, startPrice, floorPrice, tokenForSale],
+          calldata: [
+            landLocation,
+            cairo.uint256(startPrice),
+            cairo.uint256(floorPrice),
+            tokenForSale,
+          ],
         },
         'ponzi_land',
       );
@@ -197,6 +202,21 @@ export async function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const actions_getPendingTaxesForLand = async (
+    landLocation: BigNumberish,
+    ownerLand: string,
+  ) => {
+    try {
+      return await provider.call('ponzi_land', {
+        contractName: 'actions',
+        entrypoint: 'get_pending_taxes_for_land',
+        calldata: [landLocation, ownerLand],
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const actions_getCurrentAuctionPrice = async (landLocation: BigNumberish) => {
     try {
       return await provider.call('ponzi_land', {
@@ -221,6 +241,7 @@ export async function setupWorld(provider: DojoProvider) {
       getStakeBalance: actions_getStakeBalance,
       getLand: actions_getLand,
       getPendingTaxes: actions_getPendingTaxes,
+      getPendingTaxesForLand: actions_getPendingTaxesForLand,
       getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
     },
   };

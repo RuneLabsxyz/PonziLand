@@ -1,40 +1,47 @@
 <script>
   import { useDojo } from '$lib/contexts/dojo';
-  import { accountAddress } from '$lib/stores/stores.svelte';
-  import { stringify } from 'postcss';
+  import { padAddress } from '$lib/utils';
   import Button from '../ui/button/button.svelte';
   import Card from '../ui/card/card.svelte';
-  import { useController } from '$lib/accounts/controller';
-  import { fetchBLUEBalance } from '$lib/accounts/balances';
+  import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
 
   const { store, client: sdk, account } = useDojo();
-  const controller = useController();
 
-  const accountData = $derived(account.getAccount());
-
-  const handleShowInventory = () => {
-    controller.openProfile('inventory');
-  };
-
-  let balance = $state(0);
+  let connected = $state(false);
 
   $effect(() => {
-    fetchBLUEBalance(accountData?.address ?? '').then((res) =>
-      console.log('from component BLUE:', res),
-    );
+    if (account.getAccount()) {
+      connected = true;
+    } else {
+      connected = false;
+    }
   });
 </script>
 
-<div class="fixed top-0 right-0 z-50 flex items-center gap-2">
-  <div>
+<div class="fixed top-0 right-0 z-50">
+  <div class="absolute top-2 left-0" style="transform: translateX(-120%);">
     <WalletHelp />
   </div>
-  {#if account}
+  {#if connected}
     <Card class="shadow-ponzi">
-      <p>Wallet: {accountData?.address}</p>
+      <p>Wallet: {padAddress(account.getAccount()?.address ?? '')}</p>
+      <Button
+        on:click={() => {
+          account.disconnect();
+          connected = false;
+        }}>LOGOUT</Button
+      >
+      <WalletBalance />
     </Card>
   {:else}
-    <Button class="m-2">Connect Wallet</Button>
+    <Button
+      class="m-2"
+      onclick={async () => {
+        await account.connect().then(() => {
+          if (account.getAccount()?.address) connected = true;
+        });
+      }}>CONNECT WALLET</Button
+    >
   {/if}
 </div>

@@ -1,8 +1,9 @@
+import data from '$lib/data.json';
 import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
 import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
-import data from '$lib/data.json';
+import { twMerge } from 'tailwind-merge';
+import type { BigNumberish } from 'starknet';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -110,4 +111,32 @@ export function locationIntToString(location: number | undefined) {
   const y = Math.floor(location / 64);
 
   return `${x}, ${y}`;
+}
+
+export function padAddress(address: string) {
+  // test if start with 0x
+  if (!address.startsWith('0x')) {
+    return;
+  }
+  // get what is after 0x
+  const addressEnd = address.slice(2);
+  // padd for 66 char
+  const addressPadded = addressEnd.padStart(64, '0');
+
+  return `0x${addressPadded}`;
+}
+
+export function hexStringToNumber(hex: string) {
+  const hexString = hex.startsWith('0x') ? hex.slice(2) : hex;
+  return parseInt(hexString, 16);
+}
+
+export function toBigInt(value: BigNumberish): bigint {
+  if (typeof value === 'string' || typeof value === 'number') {
+    return BigInt(value);
+  }
+  if (typeof value === 'bigint') {
+    return value;
+  }
+  throw new Error('Unsupported BigNumberish type');
 }

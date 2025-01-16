@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { selectedLand } from '$lib/stores/stores.svelte';
+  import { mousePosCoords, selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
   import data from '$lib/data.json';
   import type { LandWithActions } from '$lib/api/land.svelte';
+  import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
+  import { padAddress } from '$lib/utils';
+  import { useDojo } from '$lib/contexts/dojo';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
-  
+  const { store, client: sdk, account } = useDojo();
+
+  const accountData = $derived(account.getAccount());
+
   let { land } = $props<{
     land: Partial<LandWithActions> & {
       type: 'grass' | 'house' | 'auction';
@@ -15,12 +21,17 @@
       tokenAddress: string | null;
     };
   }>();
-  
+
   let selected = $derived($selectedLand?.location === land.location);
+  let isOwner = $derived(
+    $selectedLandMeta?.owner == padAddress(accountData?.address ?? ''),
+  );
+  let isHovering = $derived($mousePosCoords?.location == land.location);
 
   function handleClick() {
     console.log('clicked');
     $selectedLand = {
+      type: land.type,
       location: land.location,
       owner: land.owner,
       sellPrice: land.sellPrice,
@@ -29,6 +40,7 @@
       claim: land.claim,
       nuke: land.nuke,
     };
+    console.log($selectedLand);
   }
 
   const getCastleImage = () => {
@@ -40,7 +52,7 @@
       return `/assets/tokens/basic/castles/${randomBasic}.png`;
     }
 
-    const castleTypes = ['basic', 'advanced', 'premium'] as const;
+    const castleTypes = ['basic'] as const;
     const randomType =
       castleTypes[Math.floor(Math.random() * castleTypes.length)];
     return token.images.castle[randomType];
@@ -56,7 +68,7 @@
 <!-- svelte-ignore event_directive_deprecated -->
 <div
   on:click={handleClick}
-  class={`tile ${land.type === 'auction' ? 'tile-auction' : ''} ${
+  class={`relative tile ${land.type === 'auction' ? 'tile-auction' : ''} ${
     selected ? 'selected' : ''
   }`}
   style={land.type === 'house'
@@ -73,7 +85,16 @@
       : `background-image: url('/tiles/${land.type}.jpg');
                background-size: cover;
                background-position: center;`}
-></div>
+>
+  {#if selected && isOwner && isHovering}
+    <div
+      class="absolute z-10"
+      style="transform: translate(-49%, -50%); top: 50%; left: 50%;"
+    >
+      <LandTaxesCalculator />
+    </div>
+  {/if}
+</div>
 
 <style>
   .tile {

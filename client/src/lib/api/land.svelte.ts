@@ -1,7 +1,8 @@
 import { useDojo } from '$lib/contexts/dojo';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
+import { getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
-import type { BigNumberish } from 'starknet';
+import type { BigNumberish, Result } from 'starknet';
 import { derived, get, type Readable } from 'svelte/store';
 
 export type TransactionResult = Promise<
@@ -30,9 +31,18 @@ export type LandsStore = Readable<LandWithActions[]> & {
     floorPrice: BigNumberish,
     tokenForSale: string,
   ): TransactionResult;
+  getPendingTaxes(owner: string): Promise<Result | undefined>;
 };
 
-export type LandWithActions = Land & {
+export type LandWithMeta = Land & {
+  type: 'auction' | 'house' | 'grass' | string;
+  owner: string;
+  sellPrice: number | null;
+  tokenUsed: string | null;
+  tokenAddress: string | null;
+};
+
+export type LandWithActions = LandWithMeta & {
   increaseStake(amount: BigNumberish): TransactionResult;
   increasePrice(amount: BigNumberish): TransactionResult;
   claim(): TransactionResult;
@@ -64,7 +74,7 @@ export function useLands(): LandsStore | undefined {
           console.log('Got an error!', response.error);
         } else {
           console.log('Setting entities :)');
-          console.log('Data!', JSON.stringify(response.data));
+          console.log('Data!', response.data);
           get(landStore).setEntities(response.data);
         }
       },
@@ -88,6 +98,34 @@ export function useLands(): LandsStore | undefined {
     return s
       .getEntitiesByModel('ponzi_land', 'Land')
       .map((e) => e.models['ponzi_land']['Land'] as Land)
+      .map((land) => {
+        let location;
+        if (typeof land.location === 'string') {
+          location = parseInt(land.location);
+        } else if (typeof land.location === 'bigint') {
+          location = Number(land.location);
+        } else {
+          location = land.location;
+        }
+
+        let sellPrice;
+        if (typeof land.sell_price === 'string') {
+          sellPrice = parseInt(land.sell_price);
+        } else if (typeof land.sell_price === 'bigint') {
+          sellPrice = Number(land.sell_price);
+        } else {
+          sellPrice = land.sell_price;
+        }
+
+        return {
+          ...land,
+          type: land.owner == toHexWithPadding(0) ? 'auction' : 'house',
+          owner: land.owner,
+          sellPrice: sellPrice,
+          tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
+          tokenAddress: land.token_used,
+        };
+      })
       .map((land) => ({
         ...land,
         // Add functions
@@ -145,6 +183,9 @@ export function useLands(): LandsStore | undefined {
         floorPrice,
         tokenForSale,
       );
+    },
+    getPendingTaxes() {
+      return sdk.client.actions.getPendingTaxes(account.getAccount()!.address);
     },
   };
 }

@@ -123,7 +123,7 @@
       const tileY = Math.floor(mouseY / (TILE_SIZE * $cameraPosition.scale));
 
       if (tileX >= 0 && tileX < MAP_SIZE && tileY >= 0 && tileY < MAP_SIZE) {
-        $mousePosCoords = { x: tileX + 1, y: tileY + 1 };
+        $mousePosCoords = { x: tileX + 1, y: tileY + 1, location: tileY * MAP_SIZE + tileX };
       } else {
         $mousePosCoords = null;
       }
