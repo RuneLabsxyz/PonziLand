@@ -20,6 +20,7 @@
 
     // get next claim
     const nextClaimTaxes = await land.getNextClaim();
+    console.log('nextclaim taxes', nextClaimTaxes);
 
     // get pending taxes
     const pendingTaxes = await land.getPendingTaxes();
@@ -34,9 +35,7 @@
     });
 
     pendingTaxes?.forEach((tax) => {
-      console.log('token:', tax.token_address, 'amount:', tax.amount);
       const token = toHexWithPadding(tax.token_address);
-      console.log('token:', token);
       const taxAmount = tax.amount;
       tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
     });

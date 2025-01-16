@@ -26,6 +26,8 @@ export type SelectedLandType = {
     | {
         amount: bigint;
         token_address: bigint;
+        land_location: bigint;
+        can_be_nuked: boolean;
       }[]
     | undefined
   >;

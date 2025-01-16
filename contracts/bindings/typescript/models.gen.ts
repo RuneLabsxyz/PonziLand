@@ -10,17 +10,6 @@ type RemoveFieldOrder<T> = T extends object
       'fieldOrder'
     >
   : T;
-// Type definition for `ponzi_land::models::auction::AuctionValue` struct
-export interface AuctionValue {
-	fieldOrder: string[];
-	start_time: BigNumberish;
-	start_price: BigNumberish;
-	floor_price: BigNumberish;
-	is_finished: boolean;
-	decay_rate: BigNumberish;
-}
-export type InputAuctionValue = RemoveFieldOrder<AuctionValue>;
-
 // Type definition for `ponzi_land::models::auction::Auction` struct
 export interface Auction {
 	fieldOrder: string[];
@@ -32,6 +21,17 @@ export interface Auction {
 	decay_rate: BigNumberish;
 }
 export type InputAuction = RemoveFieldOrder<Auction>;
+
+// Type definition for `ponzi_land::models::auction::AuctionValue` struct
+export interface AuctionValue {
+	fieldOrder: string[];
+	start_time: BigNumberish;
+	start_price: BigNumberish;
+	floor_price: BigNumberish;
+	is_finished: boolean;
+	decay_rate: BigNumberish;
+}
+export type InputAuctionValue = RemoveFieldOrder<AuctionValue>;
 
 // Type definition for `ponzi_land::models::land::LandValue` struct
 export interface LandValue {
@@ -62,25 +62,25 @@ export type InputLand = RemoveFieldOrder<Land>;
 
 export interface SchemaType extends ISchemaType {
 	ponzi_land: {
-		AuctionValue: AuctionValue,
 		Auction: Auction,
+		AuctionValue: AuctionValue,
 		LandValue: LandValue,
 		Land: Land,
 	},
 }
 export const schema: SchemaType = {
 	ponzi_land: {
-		AuctionValue: {
-			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
+		Auction: {
+			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
+			land_location: 0,
 			start_time: 0,
 			start_price: 0,
 			floor_price: 0,
 			is_finished: false,
 			decay_rate: 0,
 		},
-		Auction: {
-			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
-			land_location: 0,
+		AuctionValue: {
+			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
 			start_time: 0,
 			start_price: 0,
 			floor_price: 0,

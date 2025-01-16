@@ -165,10 +165,7 @@ export function useLands(): LandsStore | undefined {
           );
         },
         getNextClaim() {
-          return new Promise<Result | undefined>((resolve, reject) => {
-            // fake data  for now
-            resolve([{ amount: 100n, token_address: ''}]);
-          });
+          return sdk.client.actions.getNextClaimInfo(land.location);
         },
       }));
   });
