@@ -1,15 +1,17 @@
 <script lang="ts">
+  import type { LandWithActions } from '$lib/api/land.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
+  import data from '$lib/data.json';
+  import {
+    moveCameraToLocation
+  } from '$lib/stores/camera';
   import {
     mousePosCoords,
-    selectedLand,
-    selectedLandMeta,
+    selectedLand
   } from '$lib/stores/stores.svelte';
-  import data from '$lib/data.json';
-  import type { LandWithActions } from '$lib/api/land.svelte';
-  import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
   import { padAddress } from '$lib/utils';
-  import { useDojo } from '$lib/contexts/dojo';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
+  import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
@@ -32,7 +34,10 @@
   let isHovering = $derived($mousePosCoords?.location == land.location);
 
   function handleClick() {
-    console.log('clicked');
+    if ($selectedLand?.location == land.location) {
+      moveCameraToLocation(land.location);
+    }
+
     $selectedLand = {
       type: land.type,
       location: land.location,
@@ -46,7 +51,6 @@
       getPendingTaxes: land.getPendingTaxes,
       getNextClaim: land.getNextClaim,
     };
-    console.log($selectedLand);
   }
 
   const getCastleImage = () => {

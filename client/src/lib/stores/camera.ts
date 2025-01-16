@@ -46,3 +46,12 @@ export function moveCameraTo(
     offsetY: targetPixelY + centerOffsetY,
   });
 }
+
+export function moveCameraToLocation(location: number) {
+  const MAP_SIZE = 64;
+
+  const tileX = location % MAP_SIZE;
+  const tileY = Math.floor(location / MAP_SIZE);
+
+  moveCameraTo(tileX, tileY);
+}
