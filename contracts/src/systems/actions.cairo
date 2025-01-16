@@ -170,7 +170,7 @@ pub mod actions {
                     sell_price,
                     amount_to_stake,
                     liquidity_pool,
-                    caller
+                    caller,
                 );
         }
 
@@ -482,6 +482,7 @@ pub mod actions {
                 liquidity_pool,
                 get_block_timestamp(),
                 get_block_timestamp(),
+                amount_to_stake,
             );
 
             store.set_land(land);
