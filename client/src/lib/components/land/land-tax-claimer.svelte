@@ -63,19 +63,21 @@
 
 <div class="flex flex-col-reverse items-center animate-bounce">
   {#await aggregatedTaxes() then taxes}
-    <img
-      src="/assets/tokens/basic/coin.png"
-      alt="coins"
-      class="h-4 w-4 -mt-1 coin"
-    />
-    <div class="h-2 w-full flex flex-col items-center justify-end">
-      {#each taxes as tax}
-        <div class="text-ponzi text-nowrap text-claims pointer-events-none">
-          + {tax.totalTax}
-          {tax.tokenSymbol}
-        </div>
-      {/each}
-    </div>
+    {#if taxes.length > 0}
+      <img
+        src="/assets/tokens/basic/coin.png"
+        alt="coins"
+        class="h-4 w-4 -mt-1 coin"
+      />
+      <div class="h-2 w-full flex flex-col items-center justify-end">
+        {#each taxes as tax}
+          <div class="text-ponzi text-nowrap text-claims pointer-events-none">
+            + {tax.totalTax}
+            {tax.tokenSymbol}
+          </div>
+        {/each}
+      </div>
+    {/if}
   {/await}
 </div>
 
