@@ -9,16 +9,13 @@
   import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
   import { padAddress } from '$lib/utils';
   import { useDojo } from '$lib/contexts/dojo';
+  import LandTaxClaimer from '../land/land-tax-claimer.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
   const { store, client: sdk, accountManager } = useDojo();
 
   const accountData = $derived(accountManager.getProvider()!.getAccount());
-
-  let isOwner = $derived(
-    $selectedLandMeta?.owner == padAddress(accountData?.address ?? ''),
-  );
 
   let { land } = $props<{
     land: Partial<LandWithActions> & {
@@ -30,6 +27,7 @@
     };
   }>();
 
+  let isOwner = $derived(land?.owner == padAddress(accountData?.address ?? ''));
   let selected = $derived($selectedLand?.location === land.location);
   let isHovering = $derived($mousePosCoords?.location == land.location);
 
@@ -100,6 +98,15 @@
       style="transform: translate(-49%, -50%); top: 50%; left: 50%;"
     >
       <LandTaxesCalculator />
+    </div>
+  {/if}
+
+  {#if isOwner}
+    <div
+      class="absolute z-10 top-1 left-1/2"
+      style="transform: translate(-50%, -100%)"
+    >
+      <LandTaxClaimer {land} />
     </div>
   {/if}
 </div>
