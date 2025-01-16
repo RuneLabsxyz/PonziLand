@@ -264,12 +264,6 @@ mod PayableComponent {
                 return Result::Ok(0);
             }
 
-            let current_balance_stake = self.stake_balance.read(land.owner).amount;
-
-            if current_balance_stake == 0 {
-                return Result::Err('Nuke');
-            }
-
             let current_time = get_block_timestamp();
             let elapsed_time = current_time - land.last_pay_time;
 
@@ -278,8 +272,8 @@ mod PayableComponent {
 
             //if we dont have enough stake to pay the taxes,we distrubute the total amount of stake
             //and after we nuke the land
-            let (tax_to_distribute, is_nuke) = if current_balance_stake <= total_taxes {
-                (current_balance_stake, true)
+            let (tax_to_distribute, is_nuke) = if land.stake_amount <= total_taxes {
+                (land.stake_amount, true)
             } else {
                 (total_taxes, false)
             };
@@ -298,6 +292,7 @@ mod PayableComponent {
             self._discount_stake_for_taxes(land.owner, tax_to_distribute);
 
             land.last_pay_time = get_block_timestamp();
+            land.stake_amount = land.stake_amount - tax_to_distribute;
             store.set_land(land);
             if is_nuke {
                 Result::Err('Nuke')
