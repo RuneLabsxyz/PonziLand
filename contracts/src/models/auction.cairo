@@ -4,6 +4,7 @@ use ponzi_land::consts::PRICE_DECREASE_RATE;
 
 const SECONDS_IN_WEEK: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
 const INITIAL_MULTIPLIER: u256 = 1_000_000_000_000_000_000; // 10^18
+const SCALING_FACTOR: u8 = 50;
 
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
@@ -36,6 +37,7 @@ impl AuctionImpl of AuctionTrait {
         }
     }
 
+    //TODO:REMOVE THIS AFTER TESTS
     #[inline(always)]
     fn get_current_price(self: Auction) -> u256 {
         let current_time = get_block_timestamp();
@@ -65,9 +67,9 @@ impl AuctionImpl of AuctionTrait {
         decremented_price
     }
 
-    // Fórmula: P(t) = P₀ * (1 / (1 + k*t))^2
+    // Formula: P(t) = P0 * (1 / (1 + k*t))^2
 
-    // P₀:(start_price)
+    // P0:(start_price)
     // m: (floor_price)
     // k: (decay_rate)
     // t: (progress__time)
@@ -92,7 +94,8 @@ impl AuctionImpl of AuctionTrait {
             .into();
 
         // k is the decay rate (adjusted by INITIAL_MULTIPLIER for scaling)
-        let k: u256 = self.decay_rate.into() * INITIAL_MULTIPLIER; // 4 * 10^18
+        let k: u256 = (self.decay_rate.into() * INITIAL_MULTIPLIER)
+            / SCALING_FACTOR; // 4 * 10^18 / 50 
 
         // Calculate the denominator (1 + k * t) using scaled values for precision
         let denominator = INITIAL_MULTIPLIER + (k * progress__time / INITIAL_MULTIPLIER);
@@ -119,7 +122,7 @@ mod tests {
     // Simulate the price points of an auction over time with a decay rate of 2
     fn simulate_price_points() -> Array<(u64, u256)> {
         set_block_timestamp(0);
-        let auction = AuctionTrait::new(1, 1000000, 0, false, 2);
+        let auction = AuctionTrait::new(1, 1000000, 0, false, 100);
 
         let mut price_points: Array<(u64, u256)> = ArrayTrait::new();
 
