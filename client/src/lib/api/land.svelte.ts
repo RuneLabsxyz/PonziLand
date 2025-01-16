@@ -147,13 +147,13 @@ export function useLands(): LandsStore | undefined {
         claim() {
           return sdk.client.actions.claim(
             account?.getAccount()!,
-            land.location
+            land.location,
           );
         },
         nuke() {
           return sdk.client.actions.claim(
             account?.getAccount()!,
-            land.location
+            land.location,
           );
         },
       }));

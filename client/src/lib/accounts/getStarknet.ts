@@ -1,14 +1,14 @@
-import type { AccountProvider, StoredSession } from "$lib/contexts/account";
-import { dojoConfig } from "$lib/dojoConfig";
-import { getStarknet } from "@starknet-io/get-starknet-core";
-import { WALLET_API } from "@starknet-io/types-js";
+import type { AccountProvider, StoredSession } from '$lib/contexts/account';
+import { dojoConfig } from '$lib/dojoConfig';
+import { getStarknet } from '@starknet-io/get-starknet-core';
+import { WALLET_API } from '@starknet-io/types-js';
 import {
   WalletAccount,
   wallet,
   validateAndParseAddress,
   constants as SNconstants,
   Account,
-} from "starknet";
+} from 'starknet';
 
 export abstract class CommonStarknetWallet implements AccountProvider {
   protected _wallet?: WalletAccount;
@@ -30,20 +30,20 @@ export abstract class CommonStarknetWallet implements AccountProvider {
         nodeUrl: dojoConfig.rpcUrl,
         // We won't be using argent / braavos on slot deployments any time soon
         chainId:
-          dojoConfig.profile == "mainnet"
+          dojoConfig.profile == 'mainnet'
             ? SNconstants.StarknetChainId.SN_MAIN
             : SNconstants.StarknetChainId.SN_SEPOLIA,
       },
-      this._walletObject
+      this._walletObject,
     );
 
     // This is where we need to catch errors if the user cancelled
     const result = await this._wallet.requestAccounts();
 
-    if (typeof result == "string") {
+    if (typeof result == 'string') {
       // This is extracted from the example https://github.com/PhilippeR26/Starknet-WalletAccount/blob/main/src/app/components/client/WalletHandle/SelectWallet.tsx
       // not sure why this means that the wallet is not compatible, but welp
-      throw "This wallet is incompatible";
+      throw 'This wallet is incompatible';
     }
 
     const isConnectedWallet: boolean = await this._wallet
@@ -52,7 +52,7 @@ export abstract class CommonStarknetWallet implements AccountProvider {
 
     if (!isConnectedWallet) {
       this._wallet = undefined;
-      throw "The wallet was not connected correctly";
+      throw 'The wallet was not connected correctly';
     }
   }
 
@@ -68,7 +68,7 @@ export abstract class CommonStarknetWallet implements AccountProvider {
     this._session = new Account(
       this._wallet!,
       storage.address,
-      storage.privateKey
+      storage.privateKey,
     );
   }
 

@@ -1,4 +1,4 @@
-import { dojoConfig } from "$lib/dojoConfig";
+import { dojoConfig } from '$lib/dojoConfig';
 import {
   type SignSessionError,
   type CreateSessionParams,
@@ -7,32 +7,32 @@ import {
   bytesToHexString,
   type SessionKey,
   createSessionRequest,
-} from "@argent/x-sessions";
-import { ec, constants, WalletAccount, RpcProvider, Account } from "starknet";
-import { WALLET_API } from "@starknet-io/types-js";
-import { CommonStarknetWallet } from "./getStarknet";
-import type { AccountProvider, StoredSession } from "$lib/contexts/account";
+} from '@argent/x-sessions';
+import { ec, constants, WalletAccount, RpcProvider, Account } from 'starknet';
+import { WALLET_API } from '@starknet-io/types-js';
+import { CommonStarknetWallet } from './getStarknet';
+import type { AccountProvider, StoredSession } from '$lib/contexts/account';
 
 const STRKFees = [
   {
     tokenAddress:
-      "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-    maxAmount: "10000000000000000",
+      '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7',
+    maxAmount: '10000000000000000',
   },
   {
     tokenAddress:
-      "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-    maxAmount: "200000000000000000000",
+      '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d',
+    maxAmount: '200000000000000000000',
   },
 ];
 
 async function setupSession(
   wallet: WalletAccount,
-  walletObject: WALLET_API.StarknetWindowObject
+  walletObject: WALLET_API.StarknetWindowObject,
 ): Promise<[Account, StoredSession]> {
   const privateKey = ec.starkCurve.utils.randomPrivateKey();
   const chainId =
-    dojoConfig.profile == "mainnet"
+    dojoConfig.profile == 'mainnet'
       ? constants.StarknetChainId.SN_MAIN
       : constants.StarknetChainId.SN_SEPOLIA;
 
@@ -48,12 +48,12 @@ async function setupSession(
   const sessionParams: CreateSessionParams = {
     sessionKey,
     allowedMethods: dojoConfig.policies.map((policy) => ({
-      "Contract Address": policy.target,
+      'Contract Address': policy.target,
       selector: policy.method,
     })),
     expiry,
     metaData: {
-      projectID: "ponzi-land",
+      projectID: 'ponzi-land',
       txFees: STRKFees,
     },
   };
@@ -66,7 +66,7 @@ async function setupSession(
 
   // wallet is a StarknetWindowObject
   const authorisationSignature = await walletObject.request({
-    type: "wallet_signTypedData",
+    type: 'wallet_signTypedData',
     params: sessionRequest.sessionTypedData,
   });
 
@@ -88,7 +88,7 @@ async function setupSession(
     }),
   });
 
-  console.log("Successfully got account!", sessionAccount.address);
+  console.log('Successfully got account!', sessionAccount.address);
 
   return [
     sessionAccount,
@@ -112,7 +112,7 @@ export class ArgentXAccount extends CommonStarknetWallet {
   async setupSession(): Promise<StoredSession> {
     const [account, storedSession] = await setupSession(
       this._wallet!,
-      this._walletObject
+      this._walletObject,
     );
 
     this._session = account;
