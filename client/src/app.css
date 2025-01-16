@@ -50,19 +50,19 @@
   font-family: 'Nintendo DS BIOS';
   font-style: normal;
   font-weight: 400;
-  src: url('fonts/Nintendo-DS-BIOS.ttf') format('truetype');
+  src: url('/fonts/Nintendo-DS-BIOS.ttf') format('truetype');
 }
 
 .border-ponzi {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('assets/ui/frame.png') 10 10 10 10 round round;
+  border-image: url('/assets/ui/frame.png') 10 10 10 10 round round;
   image-rendering: pixelated;
   padding: 0.5em;
 }
 
 .bg-ponzi {
-  background-image: url('assets/ui/texture.png');
+  background-image: url('/assets/ui/texture.png');
 }
 
 .shadow-ponzi {
