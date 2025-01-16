@@ -2,7 +2,7 @@ use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
 use ponzi_land::models::land::Land;
-use ponzi_land::components::payable::PayableComponent::TokenInfo;
+use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo};
 
 // define the interface
 #[starknet::interface]
@@ -49,6 +49,7 @@ trait IActions<T> {
         self: @T, land_location: u64, owner_land: ContractAddress
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
+    fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
 }
 
 // dojo decorator
@@ -60,9 +61,11 @@ pub mod actions {
     use dojo::model::{ModelStorage, ModelValueStorage};
     use ponzi_land::models::land::{Land, LandTrait};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
-    use ponzi_land::components::payable::{PayableComponent, PayableComponent::TokenInfo};
-    use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right};
-    use ponzi_land::consts::{TAX_RATE};
+    use ponzi_land::components::payable::{
+        PayableComponent, PayableComponent::{TokenInfo, ClaimInfo}
+    };
+    use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME};
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
 
@@ -380,6 +383,45 @@ pub mod actions {
             }
             auction.get_current_price_decay_rate()
         }
+
+        fn get_next_claim_info(self: @ContractState, land_location: u64) -> Array<ClaimInfo> {
+            assert(is_valid_position(land_location), 'Land location not valid');
+            let mut world = self.world_default();
+            let store = StoreTrait::new(world);
+            let land = store.land(land_location);
+
+            let neighbors = self.payable._add_neighbors(store, land.location);
+            let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
+
+            if neighbors.len() > 0 {
+                for neighbor in neighbors {
+                    let current_time = get_block_timestamp();
+                    let elapsed_time = current_time - neighbor.last_pay_time;
+
+                    let total_taxes: u256 = (neighbor.sell_price
+                        * TAX_RATE.into()
+                        * elapsed_time.into())
+                        / (100 * BASE_TIME.into());
+
+                    let (tax_to_distribute, is_nuke) = if neighbor.stake_amount <= total_taxes {
+                        (neighbor.stake_amount, true)
+                    } else {
+                        (total_taxes, false)
+                    };
+
+                    let tax_per_neighbor = tax_to_distribute
+                        / max_neighbors(neighbor.location).into();
+                    let claim_info_per_neighbor = ClaimInfo {
+                        token_address: neighbor.token_used,
+                        amount: tax_per_neighbor,
+                        land_location: neighbor.location,
+                        can_be_nuked: is_nuke
+                    };
+                    claim_info.append(claim_info_per_neighbor);
+                }
+            }
+            claim_info
+        }
     }
 
 
@@ -393,22 +435,22 @@ pub mod actions {
             //generate taxes for each neighbor of claimer
             let neighbors = self.payable._add_neighbors(store, land.location);
             if neighbors.len() != 0 {
-                for location in neighbors {
-                    match self.payable._generate_taxes(store, location) {
+                for neighbor in neighbors {
+                    match self.payable._generate_taxes(store, neighbor.location) {
                         Result::Ok(remaining_stake) => {
                             if remaining_stake != 0 {
                                 store
                                     .world
                                     .emit_event(
                                         @RemainingStakeEvent {
-                                            land_location: location, remaining_stake
+                                            land_location: neighbor.location, remaining_stake
                                         }
                                     )
                             }
                         },
                         Result::Err(_) => {
                             // println!("nuke");
-                            self.nuke(location);
+                            self.nuke(neighbor.location);
                         }
                     };
                 };

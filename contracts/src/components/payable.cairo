@@ -43,6 +43,13 @@ mod PayableComponent {
         amount: u256,
     }
 
+    #[derive(Drop, Serde, Debug, Copy)]
+    pub struct ClaimInfo {
+        token_address: ContractAddress,
+        amount: u256,
+        land_location: u64,
+        can_be_nuked: bool,
+    }
     // Storage
 
     #[storage]
@@ -222,8 +229,8 @@ mod PayableComponent {
 
         fn _add_neighbors(
             self: @ComponentState<TContractState>, mut store: Store, land_location: u64
-        ) -> Array<u64> {
-            let mut neighbors: Array<u64> = ArrayTrait::new();
+        ) -> Array<Land> {
+            let mut neighbors: Array<Land> = ArrayTrait::new();
 
             self.add_if_neighbor_exists(store, ref neighbors, left(land_location));
             self.add_if_neighbor_exists(store, ref neighbors, right(land_location));
@@ -257,7 +264,7 @@ mod PayableComponent {
             let mut land = store.land(land_location);
             //generate taxes for each neighbor of neighbor
 
-            let mut neighbors: Array<u64> = self._add_neighbors(store, land_location);
+            let mut neighbors: Array<Land> = self._add_neighbors(store, land_location);
             if neighbors.len() == 0 {
                 land.last_pay_time = get_block_timestamp();
                 store.set_land(land);
@@ -280,12 +287,11 @@ mod PayableComponent {
 
             let tax_per_neighbor = tax_to_distribute / max_neighbors(land_location).into();
 
-            for location in neighbors
+            for neighbor in neighbors
                 .span() {
-                    let neighbor: Land = store.land(*location);
                     self
                         ._add_taxes(
-                            neighbor.owner, land.token_used, tax_per_neighbor, neighbor.location
+                            *neighbor.owner, land.token_used, tax_per_neighbor, *neighbor.location
                         );
                 };
 
@@ -323,14 +329,14 @@ mod PayableComponent {
         fn add_if_neighbor_exists(
             self: @ComponentState<TContractState>,
             mut store: Store,
-            ref neighbors: Array<u64>,
+            ref neighbors: Array<Land>,
             land_location: Option<u64>,
         ) {
             match land_location {
                 Option::Some(location) => {
                     let land = store.land(location);
                     if land.owner != ContractAddressZeroable::zero() {
-                        neighbors.append(location)
+                        neighbors.append(land)
                     }
                 },
                 Option::None => {}
