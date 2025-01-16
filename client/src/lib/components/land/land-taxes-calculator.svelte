@@ -6,6 +6,8 @@
   } from '$lib/stores/stores.svelte';
   import { hexStringToNumber, toBigInt } from '$lib/utils';
 
+  let { showAggregated = false } = $props();
+
   const landStore = useLands();
 
   const calculateTaxes = (sellPrice: bigint, lastClaim: number): bigint => {
@@ -25,16 +27,10 @@
     return totalTaxes;
   };
 
-  /**
-   * Get all 8 neighbors of a land from the 64*64 grid with location as the center
-   * @param location
-   */
-  const getNeighboringTaxes = async (land: SelectedLandType) => {
-    if (!land) {
+  const getNeighbourLands = (land: SelectedLandType) => {
+    if (!land || !$landStore) {
       return;
     }
-
-    console.log('Pending taxes', await land.getPendingTaxes());
 
     const MAP_SIZE = 64;
     const locationValue = hexStringToNumber(land.location);
@@ -50,15 +46,24 @@
       locationValue + MAP_SIZE + 1,
     ];
 
-    console.log('Neighbors:', neighbors);
-    // map to landsStore
-    if (!$landStore) {
-      return;
-    }
-    const neighborLands = neighbors.map((loc) =>
+    return neighbors.map((loc) =>
       $landStore.find((land) => land.location == loc),
     );
-    console.log('Neighbors:', neighborLands);
+  };
+
+  /**
+   * Get all 8 neighbors of a land from the 64*64 grid with location as the center
+   * @param location
+   */
+  const getNeighboringTaxes = async (land: SelectedLandType) => {
+    if (!land) {
+      return;
+    }
+    console.log('Pending taxes', await land.getPendingTaxes());
+
+    const neighborLands = getNeighbourLands(land) ?? [];
+
+    const locationValue = hexStringToNumber(land.location);
 
     // for each of the lands calculate the claimable ammount from the last claim
     const taxes = neighborLands.map((land) => {
@@ -73,20 +78,87 @@
     return taxes; // insert 0 in the middle
   };
 
+  const AggregatedTaxes = async (
+    land: SelectedLandType,
+  ): Promise<{ token: string; totalTax: number }[]> => {
+    if (!land) {
+      return [];
+    }
+
+    const neighborLands = getNeighbourLands(land) ?? [];
+
+    const locationValue = hexStringToNumber(land.location);
+
+    // Create a map to hold the total taxes per token
+    const tokenTaxMap: Record<string, number> = {};
+
+    // Calculate and aggregate taxes
+    neighborLands.forEach((neighborLand) => {
+      if (!neighborLand || neighborLand.location == locationValue) {
+        return;
+      }
+
+      const taxAmount = Number(
+        calculateTaxes(
+          toBigInt(neighborLand.sell_price),
+          Number(neighborLand.last_pay_time),
+        ),
+      );
+
+      // Get the token for the land
+      const token = neighborLand.tokenUsed;
+
+      if (token) {
+        // Aggregate the tax amount for the token
+        tokenTaxMap[token] = (tokenTaxMap[token] || 0) + taxAmount;
+      }
+    });
+
+    // Convert the map to an array of objects
+    const result = Object.entries(tokenTaxMap).map(([token, totalTax]) => ({
+      token,
+      totalTax,
+    }));
+
+    return result;
+  };
+
   let taxes = $derived(async () => {
     if (!$selectedLandMeta) {
       return [];
     }
     return (await getNeighboringTaxes($selectedLandMeta)) ?? [];
   });
+
+  let aggregatedTaxes = $derived(async () => {
+    if (!$selectedLandMeta) {
+      return [];
+    }
+    return await AggregatedTaxes($selectedLandMeta);
+  });
 </script>
 
-<div class="grid z-40">
-  {#await taxes() then taxes}
-    {#each taxes as tax}
-      <div class="grid-item text-ponzi">{tax}</div>
-    {/each}
-  {/await}
+<div class="flex">
+  <div class="grid z-40">
+    {#await taxes() then taxes}
+      {#each taxes as tax}
+        <div class="grid-item text-ponzi">{tax}</div>
+      {/each}
+    {/await}
+  </div>
+  {#if showAggregated}
+    <div>
+      Aggregated:
+
+      <div class="">
+        {#await aggregatedTaxes() then taxes}
+          {#each taxes as tax}
+            <div class="text-ponzi">{tax.token} {tax.totalTax}</div>
+          {/each}
+        {/await}
+      </div>
+    </div>
+  {/if}
 </div>
 
 <style>

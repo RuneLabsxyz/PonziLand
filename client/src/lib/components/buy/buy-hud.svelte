@@ -119,7 +119,7 @@
       >
       <hr />
       <div>Claimable Taxes:</div>
-      <LandTaxesCalculator />
+      <LandTaxesCalculator showAggregated />
     {/if}
   </div>
 </div>
