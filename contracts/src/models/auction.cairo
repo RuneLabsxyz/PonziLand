@@ -95,7 +95,7 @@ impl AuctionImpl of AuctionTrait {
 
         // k is the decay rate (adjusted by INITIAL_MULTIPLIER for scaling)
         let k: u256 = (self.decay_rate.into() * INITIAL_MULTIPLIER)
-            / SCALING_FACTOR; // 4 * 10^18 / 50 
+            / SCALING_FACTOR.into(); // 4 * 10^18 / 50 
 
         // Calculate the denominator (1 + k * t) using scaled values for precision
         let denominator = INITIAL_MULTIPLIER + (k * progress__time / INITIAL_MULTIPLIER);
