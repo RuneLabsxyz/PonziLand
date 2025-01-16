@@ -42,6 +42,7 @@
       sellPrice: land.sellPrice,
       tokenUsed: land.tokenUsed,
       tokenAddress: land.tokenAddress,
+      stakeAmount: land.stakeAmount,
       claim: land.claim,
       nuke: land.nuke,
       getPendingTaxes: land.getPendingTaxes,

@@ -12,6 +12,7 @@ export type SelectedLandType = {
   sellPrice: number | null;
   tokenUsed: string | null;
   tokenAddress: string | null;
+  stakeAmount: number | null;
   claim(): TransactionResult;
   nuke(): TransactionResult;
   getPendingTaxes(): Promise<

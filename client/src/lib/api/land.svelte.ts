@@ -161,7 +161,7 @@ export function useLands(): LandsStore | undefined {
         getPendingTaxes() {
           return sdk.client.actions.getPendingTaxesForLand(
             land.location,
-            account.getAccount()!.address,
+            account()!.getAccount()!.address,
           );
         },
         getNextClaim() {

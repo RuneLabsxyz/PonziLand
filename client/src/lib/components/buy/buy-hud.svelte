@@ -83,6 +83,10 @@
       <span class="w-full">{$selectedLandMeta?.sellPrice}</span>
     </div>
     <div class="flex w-full">
+      <span class="w-full">Remaining Stake :</span>
+      <span class="w-full">{$selectedLandMeta?.stakeAmount}</span>
+    </div>
+    <div class="flex w-full">
       <span class="w-full">Owner :</span>
       <a
         href={`https://sepolia.voyager.online/contract/${$selectedLandMeta?.owner}`}

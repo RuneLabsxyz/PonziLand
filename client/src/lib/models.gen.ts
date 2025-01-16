@@ -33,19 +33,6 @@ export interface Auction {
 }
 export type InputAuction = RemoveFieldOrder<Auction>;
 
-// Type definition for `ponzi_land::models::land::LandValue` struct
-export interface LandValue {
-  fieldOrder: string[];
-  block_date_bought: BigNumberish;
-  owner: string;
-  sell_price: BigNumberish;
-  token_used: string;
-  pool_key: string;
-  last_pay_time: BigNumberish;
-  stake_amount: BigNumberish;
-}
-export type InputLandValue = RemoveFieldOrder<LandValue>;
-
 // Type definition for `ponzi_land::models::land::Land` struct
 export interface Land {
   fieldOrder: string[];
@@ -60,12 +47,25 @@ export interface Land {
 }
 export type InputLand = RemoveFieldOrder<Land>;
 
+// Type definition for `ponzi_land::models::land::LandValue` struct
+export interface LandValue {
+  fieldOrder: string[];
+  block_date_bought: BigNumberish;
+  owner: string;
+  sell_price: BigNumberish;
+  token_used: string;
+  pool_key: string;
+  last_pay_time: BigNumberish;
+  stake_amount: BigNumberish;
+}
+export type InputLandValue = RemoveFieldOrder<LandValue>;
+
 export interface SchemaType extends ISchemaType {
   ponzi_land: {
     AuctionValue: AuctionValue;
     Auction: Auction;
-    LandValue: LandValue;
     Land: Land;
+    LandValue: LandValue;
   };
 }
 export const schema: SchemaType = {
@@ -100,24 +100,6 @@ export const schema: SchemaType = {
       is_finished: false,
       decay_rate: 0,
     },
-    LandValue: {
-      fieldOrder: [
-        'block_date_bought',
-        'owner',
-        'sell_price',
-        'token_used',
-        'pool_key',
-        'last_pay_time',
-        'stake_amount',
-      ],
-      block_date_bought: 0,
-      owner: '',
-      sell_price: 0,
-      token_used: '',
-      pool_key: '',
-      last_pay_time: 0,
-      stake_amount: 0,
-    },
     Land: {
       fieldOrder: [
         'location',
@@ -130,6 +112,24 @@ export const schema: SchemaType = {
         'stake_amount',
       ],
       location: 0,
+      block_date_bought: 0,
+      owner: '',
+      sell_price: 0,
+      token_used: '',
+      pool_key: '',
+      last_pay_time: 0,
+      stake_amount: 0,
+    },
+    LandValue: {
+      fieldOrder: [
+        'block_date_bought',
+        'owner',
+        'sell_price',
+        'token_used',
+        'pool_key',
+        'last_pay_time',
+        'stake_amount',
+      ],
       block_date_bought: 0,
       owner: '',
       sell_price: 0,

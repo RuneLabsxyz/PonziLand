@@ -1,17 +1,9 @@
 <script lang="ts">
   import { useLands } from '$lib/api/land.svelte';
-  import data from '$lib/data.json';
   import type { Token } from '$lib/interfaces';
   import { selectedLand } from '$lib/stores/stores.svelte';
   import BuySellForm from '../buy/buy-sell-form.svelte';
   import { Button } from '../ui/button';
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from '../ui/select';
 
   const landStore = useLands();
 
@@ -31,6 +23,7 @@
         stakeAmount,
         sellAmount,
         selectedToken?.address,
+        2,
       )
       .then((res) => {
         console.log('Auction created:', res);
