@@ -11,7 +11,7 @@ import {
 import { ec, constants, WalletAccount, RpcProvider, Account } from "starknet";
 import { WALLET_API } from "@starknet-io/types-js";
 import { CommonStarknetWallet } from "./getStarknet";
-import type { AccountProvider } from "$lib/contexts/account";
+import type { AccountProvider, StoredSession } from "$lib/contexts/account";
 
 const STRKFees = [
   {
@@ -29,7 +29,7 @@ const STRKFees = [
 async function setupSession(
   wallet: WalletAccount,
   walletObject: WALLET_API.StarknetWindowObject
-) {
+): Promise<[Account, StoredSession]> {
   const privateKey = ec.starkCurve.utils.randomPrivateKey();
   const chainId =
     dojoConfig.profile == "mainnet"
@@ -43,13 +43,15 @@ async function setupSession(
     publicKey: ec.starkCurve.getStarkKey(privateKey),
   };
 
+  const expiry = Math.floor((Date.now() + 1000 * 60 * 60 * 24) / 1000) as any; // ie: 1 day
+
   const sessionParams: CreateSessionParams = {
     sessionKey,
     allowedMethods: dojoConfig.policies.map((policy) => ({
       "Contract Address": policy.target,
       selector: policy.method,
     })),
-    expiry: Math.floor((Date.now() + 1000 * 60 * 60 * 24) / 1000) as any, // ie: 1 day
+    expiry,
     metaData: {
       projectID: "ponzi-land",
       txFees: STRKFees,
@@ -88,7 +90,14 @@ async function setupSession(
 
   console.log("Successfully got account!", sessionAccount.address);
 
-  return sessionAccount;
+  return [
+    sessionAccount,
+    {
+      expiry,
+      address,
+      privateKey: sessionKey.privateKey,
+    },
+  ];
 }
 
 export class ArgentXAccount extends CommonStarknetWallet {
@@ -98,9 +107,14 @@ export class ArgentXAccount extends CommonStarknetWallet {
   getAccount(): Account | undefined {
     return this._session;
   }
-  async setupSession(): Promise<Account> {
-    this._session = await setupSession(this._wallet!, this._walletObject);
+  async setupSession(): Promise<StoredSession> {
+    const [account, storedSession] = await setupSession(
+      this._wallet!,
+      this._walletObject
+    );
 
-    return this._session;
+    this._session = account;
+
+    return storedSession;
   }
 }

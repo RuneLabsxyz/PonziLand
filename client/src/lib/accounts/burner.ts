@@ -47,6 +47,10 @@ function toAccount(burner?: BurnerManager): AccountProvider | undefined {
       // NO-OP, we don't need a session system
     },
 
+    async loadSession(storage) {
+      // NO-OP, we don't need a session system
+    },
+
     supportsSession() {
       // We do not open a popup to sign
       return true;

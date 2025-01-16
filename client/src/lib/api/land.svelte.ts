@@ -131,7 +131,7 @@ export function useLands(): LandsStore | undefined {
         // Add functions
         increaseStake(amount: BigNumberish) {
           return sdk.client.actions.increaseStake(
-            account.getAccount()!,
+            account?.getWalletAccount()!,
             land.location,
             land.token_used,
             amount,
@@ -139,16 +139,22 @@ export function useLands(): LandsStore | undefined {
         },
         increasePrice(amount: BigNumberish) {
           return sdk.client.actions.increasePrice(
-            account.getAccount()!,
+            account?.getWalletAccount()!,
             land.location,
             amount,
           );
         },
         claim() {
-          return sdk.client.actions.claim(account.getAccount()!, land.location);
+          return sdk.client.actions.claim(
+            account?.getAccount()!,
+            land.location
+          );
         },
         nuke() {
-          return sdk.client.actions.claim(account.getAccount()!, land.location);
+          return sdk.client.actions.claim(
+            account?.getAccount()!,
+            land.location
+          );
         },
       }));
   });
@@ -157,7 +163,7 @@ export function useLands(): LandsStore | undefined {
     ...landEntityStore,
     buyLand(location, setup) {
       return sdk.client.actions.buy(
-        account.getAccount()!,
+        account?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
         setup.salePrice,
@@ -165,9 +171,11 @@ export function useLands(): LandsStore | undefined {
         setup.liquidityPoolAddress,
       );
     },
+
+    // TODO(#53): Split this action in two, and migrate the call to the session account
     bidLand(location, setup) {
       return sdk.client.actions.bid(
-        account.getAccount()!,
+        account?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
         setup.salePrice,

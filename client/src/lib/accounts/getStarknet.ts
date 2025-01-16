@@ -1,4 +1,4 @@
-import type { AccountProvider } from "$lib/contexts/account";
+import type { AccountProvider, StoredSession } from "$lib/contexts/account";
 import { dojoConfig } from "$lib/dojoConfig";
 import { getStarknet } from "@starknet-io/get-starknet-core";
 import { WALLET_API } from "@starknet-io/types-js";
@@ -21,7 +21,7 @@ export abstract class CommonStarknetWallet implements AccountProvider {
 
   abstract supportsSession(): boolean;
   abstract getAccount(): Account | undefined;
-  abstract setupSession(): Promise<Account>;
+  abstract setupSession(): Promise<StoredSession>;
 
   async connect() {
     // Create the wallet object
@@ -62,6 +62,14 @@ export abstract class CommonStarknetWallet implements AccountProvider {
     }).disconnect();
     this._wallet = undefined;
     this._session = undefined;
+  }
+
+  async loadSession(storage: StoredSession): Promise<any> {
+    this._session = new Account(
+      this._wallet!,
+      storage.address,
+      storage.privateKey
+    );
   }
 
   getWalletAccount() {

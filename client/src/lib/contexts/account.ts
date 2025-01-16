@@ -1,10 +1,17 @@
 // Get the wanted system from the environment
 
+import { dojoConfig, type DojoConfig } from '$lib/dojoConfig';
 import type { AccountInterface } from 'starknet';
 import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
+import { setupBurnerAccount, useBurnerAccount } from '$lib/accounts/burner';
 import { WALLET_API } from '@starknet-io/types-js';
 import getStarknet from '@starknet-io/get-starknet-core';
+import { isWalletObject } from '@starknet-io/get-starknet-core';
+import { setupController, useController } from '$lib/accounts/controller';
 import { browser } from '$app/environment';
+import { getContext, setContext } from 'svelte';
+import type { Store } from './store';
+import { ArgentXAccount } from '$lib/accounts/argentx';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -15,7 +22,8 @@ export const USE_BURNER = PUBLIC_DOJO_BURNER_ADDRESS != 'null';
 export type AccountProvider = {
   connect(): Promise<any>;
 
-  setupSession(): Promise<any>;
+  setupSession(): Promise<StoredSession | void>;
+  loadSession(storage: StoredSession): Promise<void>;
 
   /// Gets the session account, or in the event that the session account is not available, give out the traditionnal
   /// wallet account.
@@ -40,8 +48,35 @@ export type AccountProvider = {
 // Then, delegate the rest to the current account.
 
 const accountManager = Symbol('accountManager');
+const previousWalletSymbol = Symbol('previousWallet');
+const previousWalletSession = Symbol('walletSession');
 
-let availableWallets = [];
+export async function Provider(
+  wallet: WALLET_API.StarknetWindowObject,
+): Promise<AccountProvider | null> {
+  switch (wallet.id) {
+    case 'burner':
+      if (USE_BURNER) {
+        return (await setupBurnerAccount(dojoConfig)) ?? null;
+      }
+      return null;
+    case 'cartridge':
+      return (await setupController(dojoConfig)) ?? null;
+    case 'argentx':
+      return new ArgentXAccount(wallet);
+    // NOTE: To add new providers, this is here.
+    default:
+      return null;
+  }
+}
+
+export interface StoredSession {
+  address: string;
+  privateKey: string;
+  expiry: Date;
+}
+
+let availableWallets: ValidWallet[] = [];
 
 // export interface StarknetWalletProvider extends StarknetWindowObject {}
 type ValidWallet = {
@@ -50,7 +85,7 @@ type ValidWallet = {
 };
 
 async function scanObjectForWalletsCustom(): Promise<void> {
-  if (!browser) {
+  if (!browser || availableWallets.length > 0) {
     return;
   }
 
@@ -97,19 +132,77 @@ export class AccountManager {
   constructor() {}
 
   public async setup(): Promise<AccountManager> {
-    // TODO: Get the previous wallet id from the local storage.
-    // If it is not null, get & probe the wallet to set it up.
-    // If an error occurs, simply not set the provider so that the session selection screen can show up.
+    // If it is dev, just use the burner provider
+    if (USE_BURNER) {
+      this._provider = await setupBurnerAccount(dojoConfig)!;
+    }
+
+    const previousWallet: string | null = localStorage.getItem(
+      previousWalletSymbol.toString(),
+    );
+
+    // Get all available wallets
+    await scanObjectForWalletsCustom();
+
+    if (previousWallet != null) {
+      console.info('Attempting auto-login with provider', previousWallet);
+      try {
+        await this.selectAndLogin(previousWallet);
+
+        this.getSessionFromStorage();
+      } catch (e) {
+        console.error(
+          'An error occurred while auto-logging the provider ',
+          previousWallet,
+          e,
+        );
+
+        this.disconnect();
+      }
+      return this;
+    }
+
+    console.info('The user did not have a previous wallet selected.');
 
     // NOTE: If session is supported, extract the public & private session from local storage.
 
     return this;
   }
 
-  public async selectAndLogin(provider: string) {
+  public async selectAndLogin(providerId: string) {
     // TODO: Set in the _provider variable the AccountProvider of the selected wallet (use a map)
     // And then call the login() function to prompt everything.
     // Also store the ID to local storage
+    const walletObject = availableWallets.find(
+      (e) => e.wallet.id == providerId,
+    );
+    if (walletObject == null) {
+      throw 'Unknown provider!';
+    }
+
+    const provider = await Provider(walletObject.wallet);
+    if (provider == null) {
+      throw 'Could not setup provider (not registered in account.ts)';
+    }
+
+    try {
+      // Handle user cancelled action
+      this._provider = provider;
+      provider.setupSession();
+      console.info('User logged-in successfully');
+    } catch {
+      console.warn('The user did not log in successfully!');
+    }
+  }
+
+  public disconnect() {
+    // Remove all associated strings from local storage
+    localStorage.removeItem(previousWalletSymbol.toString());
+    localStorage.removeItem(previousWalletSession.toString());
+
+    if (this._provider) {
+      this._provider.disconnect();
+    }
   }
 
   public getProvider() {
@@ -125,9 +218,52 @@ export class AccountManager {
       throw 'The provider does not support session setup!';
     }
 
-    // TODO: Call the setupSession from the provider.
-    // If everything worked, store the session credentials in local storage.
+    const result = await this.setupSession();
+    if (result != undefined) {
+      localStorage.setItem(
+        previousWalletSession.toString(),
+        JSON.stringify(result),
+      );
+    }
+  }
+
+  private getSessionFromStorage() {
+    let parsed: StoredSession;
+    try {
+      parsed = JSON.parse(
+        localStorage.getItem(previousWalletSession.toString())!,
+      );
+    } catch (e) {
+      console.log('Could not fetch session data');
+      return;
+    }
+
+    if (parsed.expiry < new Date()) {
+      console.warn('The session has expired.');
+      localStorage.removeItem(previousWalletSession.toString());
+    }
+
+    this._provider?.loadSession(parsed);
   }
 
   // TODO: Maybe mirror the some of the AccountProvider functions to make it easier to use?
+}
+
+export async function setupAccount() {
+  const manager = new AccountManager();
+
+  setContext(accountManager, manager);
+
+  return manager.setup().then((_) => manager);
+}
+
+export function useAccount() {
+  const manager = getContext<AccountManager>(accountManager);
+  if (manager == null) {
+    console.error(
+      'You are using useAccount(), but the setupAccount() function has not been called.',
+    );
+  }
+
+  return manager;
 }
