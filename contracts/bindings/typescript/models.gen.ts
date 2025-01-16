@@ -17,6 +17,7 @@ export interface AuctionValue {
 	start_price: BigNumberish;
 	floor_price: BigNumberish;
 	is_finished: boolean;
+	decay_rate: BigNumberish;
 }
 export type InputAuctionValue = RemoveFieldOrder<AuctionValue>;
 
@@ -28,8 +29,22 @@ export interface Auction {
 	start_price: BigNumberish;
 	floor_price: BigNumberish;
 	is_finished: boolean;
+	decay_rate: BigNumberish;
 }
 export type InputAuction = RemoveFieldOrder<Auction>;
+
+// Type definition for `ponzi_land::models::land::LandValue` struct
+export interface LandValue {
+	fieldOrder: string[];
+	block_date_bought: BigNumberish;
+	owner: string;
+	sell_price: BigNumberish;
+	token_used: string;
+	pool_key: string;
+	last_pay_time: BigNumberish;
+	stake_amount: BigNumberish;
+}
+export type InputLandValue = RemoveFieldOrder<LandValue>;
 
 // Type definition for `ponzi_land::models::land::Land` struct
 export interface Land {
@@ -41,48 +56,49 @@ export interface Land {
 	token_used: string;
 	pool_key: string;
 	last_pay_time: BigNumberish;
+	stake_amount: BigNumberish;
 }
 export type InputLand = RemoveFieldOrder<Land>;
-
-// Type definition for `ponzi_land::models::land::LandValue` struct
-export interface LandValue {
-	fieldOrder: string[];
-	block_date_bought: BigNumberish;
-	owner: string;
-	sell_price: BigNumberish;
-	token_used: string;
-	pool_key: string;
-	last_pay_time: BigNumberish;
-}
-export type InputLandValue = RemoveFieldOrder<LandValue>;
 
 export interface SchemaType extends ISchemaType {
 	ponzi_land: {
 		AuctionValue: AuctionValue,
 		Auction: Auction,
-		Land: Land,
 		LandValue: LandValue,
+		Land: Land,
 	},
 }
 export const schema: SchemaType = {
 	ponzi_land: {
 		AuctionValue: {
-			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished'],
+			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
 			start_time: 0,
 			start_price: 0,
 			floor_price: 0,
 			is_finished: false,
+			decay_rate: 0,
 		},
 		Auction: {
-			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished'],
+			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
 			land_location: 0,
 			start_time: 0,
 			start_price: 0,
 			floor_price: 0,
 			is_finished: false,
+			decay_rate: 0,
+		},
+		LandValue: {
+			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time', 'stake_amount'],
+			block_date_bought: 0,
+			owner: "",
+			sell_price: 0,
+			token_used: "",
+			pool_key: "",
+			last_pay_time: 0,
+			stake_amount: 0,
 		},
 		Land: {
-			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
+			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time', 'stake_amount'],
 			location: 0,
 			block_date_bought: 0,
 			owner: "",
@@ -90,15 +106,7 @@ export const schema: SchemaType = {
 			token_used: "",
 			pool_key: "",
 			last_pay_time: 0,
-		},
-		LandValue: {
-			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time'],
-			block_date_bought: 0,
-			owner: "",
-			sell_price: 0,
-			token_used: "",
-			pool_key: "",
-			last_pay_time: 0,
+			stake_amount: 0,
 		},
 	},
 };
