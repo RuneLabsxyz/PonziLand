@@ -63,9 +63,12 @@ export const flyAndScale = (
   };
 };
 
-export function toHexWithPadding(number: number | bigint, paddingLength = 64) {
-  // Convert the number to a hexadecimal string
-  let hex = number.toString(16);
+export function toHexWithPadding(value: number | bigint, paddingLength = 64) {
+  // Ensure the value is a bigint for consistent handling
+  const bigIntValue = typeof value === 'bigint' ? value : BigInt(value);
+
+  // Convert the bigint to a hexadecimal string
+  let hex = bigIntValue.toString(16);
 
   // Ensure it's lowercase and pad it to the desired length
   hex = hex.toLowerCase().padStart(paddingLength, '0');

@@ -45,6 +45,7 @@
       claim: land.claim,
       nuke: land.nuke,
       getPendingTaxes: land.getPendingTaxes,
+      getNextClaim: land.getNextClaim,
     };
     console.log($selectedLand);
   }

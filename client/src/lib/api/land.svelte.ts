@@ -32,7 +32,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
     tokenForSale: string,
-    decayRate: number,
+    decayRate: BigNumberish,
   ): TransactionResult;
   getPendingTaxes(owner: string): Promise<Result | undefined>;
   getPendingTaxesForLand(location: BigNumberish): Promise<Result | undefined>;
@@ -52,6 +52,7 @@ export type LandWithActions = LandWithMeta & {
   claim(): TransactionResult;
   nuke(): TransactionResult;
   getPendingTaxes(): Promise<Result | undefined>;
+  getNextClaim(): Promise<Result | undefined>;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -158,8 +159,17 @@ export function useLands(): LandsStore | undefined {
           );
         },
         getPendingTaxes() {
-          return sdk.client.actions.getPendingTaxesForLand(land.location, account.getAccount()!.address);
-        }
+          return sdk.client.actions.getPendingTaxesForLand(
+            land.location,
+            account.getAccount()!.address,
+          );
+        },
+        getNextClaim() {
+          return new Promise<Result | undefined>((resolve, reject) => {
+            // fake data  for now
+            resolve([{ amount: 100n, token_address: ''}]);
+          });
+        },
       }));
   });
 
@@ -205,7 +215,10 @@ export function useLands(): LandsStore | undefined {
       );
     },
     getPendingTaxesForLand(location) {
-      return sdk.client.actions.getPendingTaxesForLand(location, account.getAccount()!.address);
-    }
+      return sdk.client.actions.getPendingTaxesForLand(
+        location,
+        account()!.getAccount()!.address,
+      );
+    },
   };
 }

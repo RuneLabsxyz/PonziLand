@@ -4,7 +4,8 @@
     selectedLandMeta,
     type SelectedLandType,
   } from '$lib/stores/stores.svelte';
-  import { hexStringToNumber, toBigInt } from '$lib/utils';
+  import { hexStringToNumber, toBigInt, toHexWithPadding } from '$lib/utils';
+  import data from '$lib/data.json';
 
   let { showAggregated = false } = $props();
 
@@ -74,76 +75,53 @@
     return taxes; // insert 0 in the middle
   };
 
-  const AggregatedTaxes = async (
+  const getAggregatedTaxes = async (
     land: SelectedLandType,
-  ): Promise<{ token: string; totalTax: number }[]> => {
-    if (!land) {
-      return [];
-    }
-
-    const neighborLands = getNeighbourLands(land) ?? [];
-    const locationValue = hexStringToNumber(land.location);
-    // Create a map to hold the total taxes per token
-    const tokenTaxMap: Record<string, number> = {};
-
-    // Calculate and aggregate taxes
-    neighborLands.forEach((neighborLand) => {
-      if (!neighborLand || neighborLand.location == locationValue) {
-        return;
-      }
-
-      const taxAmount = Number(
-        calculateTaxes(
-          toBigInt(neighborLand.sell_price),
-          Number(neighborLand.last_pay_time),
-        ),
-      );
-
-      // Get the token for the land
-      const token = neighborLand.tokenUsed;
-
-      if (token) {
-        // Aggregate the tax amount for the token
-        tokenTaxMap[token] = (tokenTaxMap[token] || 0) + taxAmount;
-      }
-    });
-
-    // TODO add the pending taxes to the total tax amount
-    const pendingTaxes = await land.getPendingTaxes();
-    if (pendingTaxes === undefined) {
-      return [];
-    }
-    pendingTaxes.forEach((tax) => {
-      const token = tax.token_address;
-      const taxAmount = Number(tax.amount);
-      tokenTaxMap[Number(token)] = (tokenTaxMap[Number(token)] || 0) + taxAmount;
-    });
-
-    // Convert the map to an array of objects
-    const result = Object.entries(tokenTaxMap).map(([token, totalTax]) => ({
-      token,
-      totalTax,
-    }));
-
-    return result;
-  };
-
-  const newAggregatedTaxes = async (land: SelectedLandType,
-  ): Promise<{ token: string; totalTax: number }[]> => {
+  ): Promise<
+    { tokenAddress: string; tokenSymbol: string; totalTax: bigint }[]
+  > => {
     if (!land) {
       return [];
     }
 
     // get next claim
-
+    const nextClaimTaxes = await land.getNextClaim();
 
     // get pending taxes
+    const pendingTaxes = await land.getPendingTaxes();
 
-    // aggregate
+    // aggregate the two arrays with total tax per token
+    const tokenTaxMap: Record<string, bigint> = {};
 
-    return [];
-  }
+    nextClaimTaxes?.forEach((tax) => {
+      const token = toHexWithPadding(tax.token_address);
+      const taxAmount = tax.amount;
+      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
+    });
 
+    pendingTaxes?.forEach((tax) => {
+      console.log('token:', tax.token_address, 'amount:', tax.amount);
+      const token = toHexWithPadding(tax.token_address);
+      console.log('token:', token);
+      const taxAmount = tax.amount;
+      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
+    });
+
+    // Convert the map to an array of objects
+    const result = Object.entries(tokenTaxMap).map(([token, totalTax]) => {
+      console.log('Token:', token, 'Total Tax:', totalTax);
+      const tokenSymbol =
+        data.availableTokens.find((t) => t.address == token)?.name ?? 'Unknown';
+
+      return {
+        tokenAddress: token,
+        tokenSymbol,
+        totalTax,
+      };
+    });
+
+    return result;
+  };
 
   let taxes = $derived(async () => {
     if (!$selectedLandMeta) {
@@ -156,7 +134,7 @@
     if (!$selectedLandMeta) {
       return [];
     }
-    return await AggregatedTaxes($selectedLandMeta);
+    return await getAggregatedTaxes($selectedLandMeta);
   });
 </script>
 
@@ -175,7 +153,7 @@
       <div class="">
         {#await aggregatedTaxes() then taxes}
           {#each taxes as tax}
-            <div class="text-ponzi">{tax.token} {tax.totalTax}</div>
+            <div class="text-ponzi">{tax.tokenSymbol}: {tax.totalTax}</div>
           {/each}
         {/await}
       </div>
