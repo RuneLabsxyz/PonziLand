@@ -53,5 +53,5 @@ export function moveCameraToLocation(location: number) {
   const tileX = location % MAP_SIZE;
   const tileY = Math.floor(location / MAP_SIZE);
 
-  moveCameraTo(tileX, tileY);
+  moveCameraTo(tileX + 1, tileY + 1);
 }
