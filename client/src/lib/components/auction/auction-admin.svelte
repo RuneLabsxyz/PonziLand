@@ -31,7 +31,7 @@
         location,
         stakeAmount,
         sellAmount,
-        selectedToken?.address ?? '',
+        selectedToken?.address!,
       )
       .then((res) => {
         console.log('Auction created:', res);
