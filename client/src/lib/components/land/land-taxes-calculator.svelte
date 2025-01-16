@@ -51,10 +51,6 @@
     );
   };
 
-  /**
-   * Get all 8 neighbors of a land from the 64*64 grid with location as the center
-   * @param location
-   */
   const getNeighboringTaxes = async (land: SelectedLandType) => {
     if (!land) {
       return;
@@ -86,9 +82,7 @@
     }
 
     const neighborLands = getNeighbourLands(land) ?? [];
-
     const locationValue = hexStringToNumber(land.location);
-
     // Create a map to hold the total taxes per token
     const tokenTaxMap: Record<string, number> = {};
 
@@ -114,6 +108,17 @@
       }
     });
 
+    // TODO add the pending taxes to the total tax amount
+    const pendingTaxes = await land.getPendingTaxes();
+    if (pendingTaxes === undefined) {
+      return [];
+    }
+    pendingTaxes.forEach((tax) => {
+      const token = tax.token_address;
+      const taxAmount = Number(tax.amount);
+      tokenTaxMap[Number(token)] = (tokenTaxMap[Number(token)] || 0) + taxAmount;
+    });
+
     // Convert the map to an array of objects
     const result = Object.entries(tokenTaxMap).map(([token, totalTax]) => ({
       token,
@@ -122,6 +127,23 @@
 
     return result;
   };
+
+  const newAggregatedTaxes = async (land: SelectedLandType,
+  ): Promise<{ token: string; totalTax: number }[]> => {
+    if (!land) {
+      return [];
+    }
+
+    // get next claim
+
+
+    // get pending taxes
+
+    // aggregate
+
+    return [];
+  }
+
 
   let taxes = $derived(async () => {
     if (!$selectedLandMeta) {

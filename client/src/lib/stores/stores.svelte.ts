@@ -14,7 +14,10 @@ export type SelectedLandType = {
   tokenAddress: string | null;
   claim(): TransactionResult;
   nuke(): TransactionResult;
-  getPendingTaxes(): Promise<Result | undefined>;
+  getPendingTaxes(): Promise<{
+    amount: bigint;
+    token_address: bigint;
+  }[] | undefined>;
 } | null;
 
 export const selectedLand = writable<SelectedLandType>(null);
