@@ -8,7 +8,9 @@ export function useDojo() {
   const store = useStore();
   return {
     client,
-    account: account.getProvider(),
+    get account() {
+      return account.getProvider();
+    },
     store,
   };
 }

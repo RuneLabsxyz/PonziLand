@@ -7,7 +7,7 @@
 
   const { store, client: sdk, account } = useDojo();
 
-  const accountData = $derived(account.getAccount());
+  const accountData = $derived(account?.getAccount());
 
   let tokenBalances = $state<
     { token: string; balance: Promise<bigint | null> }[]

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { on } from "svelte/events";
-  import { onMount } from "svelte";
-  import { dojoConfig } from "$lib/dojoConfig";
-  import { setupAccount, USE_BURNER, useAccount } from "$lib/contexts/account";
-  import Button from "../ui/button/button.svelte";
-  import type { StarknetWindowObject } from "@starknet-io/get-starknet-core";
-  import wasm from "vite-plugin-wasm";
+  import { on } from 'svelte/events';
+  import { onMount } from 'svelte';
+  import { dojoConfig } from '$lib/dojoConfig';
+  import { setupAccount, USE_BURNER, useAccount } from '$lib/contexts/account';
+  import Button from '../ui/button/button.svelte';
+  import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
+  import wasm from 'vite-plugin-wasm';
 
   let visible = $state(false);
   let loading = $state(true);
@@ -25,27 +25,27 @@
   })();
 
   onMount(() =>
-    on(window, "wallet_prompt", async () => {
-      console.log("EVENT!");
+    on(window, 'wallet_prompt', async () => {
+      console.log('EVENT!');
       loading = true;
       visible = true;
       // Ensure everything has loaded.
       await promisesToWait;
 
       loading = false;
-    })
+    }),
   );
 
   async function login(id: string) {
     await account.selectAndLogin(id);
-    console.log("Logged in!");
+    console.log('Logged in!');
 
     // TODO(#58): Split the session setup
     await account.setupSession();
 
     visible = false;
     // resolve waiting promises.
-    window.dispatchEvent(new Event("wallet_login_success"));
+    window.dispatchEvent(new Event('wallet_login_success'));
   }
 </script>
 
@@ -63,15 +63,14 @@
       <div class="flex flex-col justify-stretch gap-2">
         {#each validWallets as wallet}
           {@const image =
-            typeof wallet.icon == "string" ? wallet.icon : wallet.icon.light}
+            typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
           <Button
             class="flex flex-row justify-start"
-            variant="default"
             on:click={() => login(wallet.id)}
           >
             <img
               src={image}
-              alt={wallet.name + " logo"}
+              alt={wallet.name + ' logo'}
               class="h-10 p-2 pr-4"
             />
             <div>

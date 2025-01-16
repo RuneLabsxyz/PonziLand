@@ -241,29 +241,13 @@ export class AccountManager {
       throw 'The provider does not support session setup!';
     }
 
-    const result = await this.setupSession();
+    const result = await this._provider.setupSession();
     if (result != undefined) {
       localStorage.setItem(
         previousWalletSession.toString(),
         JSON.stringify(result),
       );
     }
-  }
-
-  public getAvailableWallets() {
-    return availableWallets.map((e) => e.wallet);
-  }
-
-  public promptForLogin(): Promise<void> {
-    window.dispatchEvent(new Event('wallet_prompt'));
-
-    return new Promise((resolve) => {
-      const listener = () => {
-        window.removeEventListener('wallet_login_success', listener);
-        resolve();
-      };
-      window.addEventListener('wallet_login_success', listener);
-    });
   }
 
   public getAvailableWallets() {
