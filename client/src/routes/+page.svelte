@@ -2,23 +2,9 @@
   import { goto } from '$app/navigation';
   import { setupAccount } from '$lib/contexts/account';
   import { dojoConfig } from '$lib/dojoConfig';
-  // setup account
-  const account = setupAccount(dojoConfig);
-
+  
   async function startGame() {
-    const accountProvider = await account;
-    if (accountProvider == null) {
-      console.log('No accountProvider?!?');
-      return;
-    }
-
-    await accountProvider.connect();
-
-    if (accountProvider?.getAccount()) {
-      goto('/game');
-    } else {
-      console.log('User has cancelled login.');
-    }
+    goto('/game');
   }
 </script>
 
