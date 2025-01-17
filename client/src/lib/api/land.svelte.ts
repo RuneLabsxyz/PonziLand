@@ -184,6 +184,8 @@ export function useLands(): LandsStore | undefined {
         setup.salePrice,
         setup.amountToStake,
         setup.liquidityPoolAddress,
+        setup.tokenAddress,
+        setup.currentPrice,
       );
     },
 

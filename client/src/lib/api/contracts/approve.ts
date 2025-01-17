@@ -36,9 +36,6 @@ async function getApprove(
     spendingContract = spendingCall.contractAddress;
   }
 
-  console.log(spendingContract);
-  console.dir(data);
-
   const approvals = data.map((data) => {
     return {
       contractAddress: data.tokenAddress,
@@ -112,28 +109,40 @@ export async function wrappedActions(provider: DojoProvider) {
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
     liquidityPool: string,
+    currentToken: string,
+    buyPrice: BigNumberish,
   ) => {
+    const approvals =
+      currentToken == tokenForSale
+        ? [
+            {
+              tokenAddress: tokenForSale,
+              amount: BigInt(amountToStake) + BigInt(buyPrice),
+            },
+          ]
+        : [
+            {
+              tokenAddress: tokenForSale,
+              amount: BigInt(amountToStake),
+            },
+            {
+              tokenAddress: currentToken,
+              amount: BigInt(buyPrice),
+            },
+          ];
+
     try {
-      const calls = await getApprove(
-        provider,
-        [
-          {
-            tokenAddress: tokenForSale,
-            amount: amountToStake,
-          },
-        ],
-        {
-          contractName: 'actions',
-          entrypoint: 'buy',
-          calldata: [
-            landLocation,
-            tokenForSale,
-            sellPrice,
-            amountToStake,
-            liquidityPool,
-          ],
-        },
-      );
+      const calls = await getApprove(provider, approvals, {
+        contractName: 'actions',
+        entrypoint: 'buy',
+        calldata: CallData.compile({
+          landLocation,
+          tokenForSale,
+          sellPrice: cairo.uint256(sellPrice),
+          amountToStake: cairo.uint256(amountToStake),
+          liquidityPool,
+        }),
+      });
 
       return await provider.execute(
         snAccount,

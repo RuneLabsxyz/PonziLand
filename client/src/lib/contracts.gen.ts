@@ -80,13 +80,13 @@ export async function setupWorld(provider: DojoProvider) {
         {
           contractName: 'actions',
           entrypoint: 'buy',
-          calldata: [
+          calldata: CallData.compile({
             landLocation,
             tokenForSale,
-            sellPrice,
-            amountToStake,
+            sellPrice: cairo.uint256(sellPrice),
+            amountToStake: cairo.uint256(amountToStake),
             liquidityPool,
-          ],
+          }),
         },
         'ponzi_land',
       );

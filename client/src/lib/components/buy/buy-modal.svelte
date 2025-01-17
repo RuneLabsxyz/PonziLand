@@ -28,6 +28,8 @@
       salePrice: toHexWithPadding(sellAmount),
       amountToStake: toHexWithPadding(stakeAmount),
       liquidityPoolAddress: selectedToken?.lpAddress || '',
+      tokenAddress: $selectedLandMeta?.tokenAddress || '',
+      currentPrice: $selectedLandMeta?.sellPrice || '',
     };
 
     if (!$selectedLandMeta) {
