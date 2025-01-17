@@ -1,6 +1,8 @@
 <script lang="ts">
   import { useLands } from '$lib/api/land.svelte';
   import { landStore } from '$lib/api/mock-land';
+  import addressState from '$lib/account.svelte';
+
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera';
   import {
@@ -16,33 +18,33 @@
 
   let landsStore = useLands();
 
-  const { store, client: sdk, account } = useDojo();
-
-  const accountData = $derived(account.getAccount());
+  const address = $derived(addressState.address);
 
   let playerLands = $derived(() => {
     if (!$landsStore) return [];
-    if (!accountData) return [];
+    if (!address) return [];
 
     const playerLands = $landsStore.filter(
-      (land) => land.owner == padAddress(accountData?.address ?? ''),
+      (land) => land.owner == padAddress(address ?? ''),
     );
 
-    return playerLands.map((land) => {
-      const token = data.availableTokens.find(
-        (token) => token.address == land.token_used,
-      );
+    return playerLands
+      .map((land) => {
+        const token = data.availableTokens.find(
+          (token) => token.address == land.token_used,
+        );
 
-      return {
-        ...land,
-        location: Number(toBigInt(land.location)),
-        block_date_bought: toBigInt(land.block_date_bought),
-        sell_price: toBigInt(land.sell_price),
-        token_used: land.token_used,
-        pool_key: toBigInt(land.pool_key),
-        token,
-      };
-    }).sort((a, b) => a.location - b.location);
+        return {
+          ...land,
+          location: Number(toBigInt(land.location)),
+          block_date_bought: toBigInt(land.block_date_bought),
+          sell_price: toBigInt(land.sell_price),
+          token_used: land.token_used,
+          pool_key: toBigInt(land.pool_key),
+          token,
+        };
+      })
+      .sort((a, b) => a.location - b.location);
   });
 </script>
 

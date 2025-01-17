@@ -1,4 +1,5 @@
 <script lang="ts">
+  import account from '$lib/account.svelte';
   import { useLands } from '$lib/api/land.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
@@ -15,13 +16,11 @@
 
   let landStore = useLands();
 
-  const { store, client: sdk, account } = useDojo();
+  const { store, client: sdk } = useDojo();
 
-  const accountData = $derived(account.getAccount());
+  const address = $derived(account.address);
 
-  let isOwner = $derived(
-    $selectedLandMeta?.owner == padAddress(accountData?.address ?? ''),
-  );
+  let isOwner = $derived($selectedLandMeta?.owner == padAddress(address ?? ''));
 
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');
@@ -29,9 +28,9 @@
     uiStore.showModal = true;
     uiStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
-      sellPrice: $selectedLandMeta!.sellPrice,
-      tokenUsed: $selectedLandMeta!.tokenUsed,
-      tokenAddress: $selectedLandMeta!.tokenAddress,
+      sellPrice: $selectedLandMeta!.sellPrice!,
+      tokenUsed: $selectedLandMeta!.tokenUsed!,
+      tokenAddress: $selectedLandMeta!.tokenAddress!,
       owner: $selectedLandMeta!.owner || undefined,
     };
   };
@@ -74,7 +73,9 @@
         {locationIntToString(
           hexStringToNumber($selectedLandMeta?.location ?? ''),
         )}
-        <span class="text-gray-500 text-sm">#{hexStringToNumber($selectedLandMeta?.location ?? '')}</span>
+        <span class="text-gray-500 text-sm"
+          >#{hexStringToNumber($selectedLandMeta?.location ?? '')}</span
+        >
       </span>
     </div>
     <div class="flex w-full">

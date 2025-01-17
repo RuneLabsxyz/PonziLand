@@ -13,6 +13,7 @@
       return;
     }
     await accountProvider.promptForLogin();
+    console.log('Got the confirmation that it worked!');
     goto('/game');
   }
 </script>

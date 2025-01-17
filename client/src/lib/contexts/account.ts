@@ -64,6 +64,19 @@ const previousWalletSession = Symbol('walletSession');
 
 let controller: SvelteController | undefined;
 
+export type ConnectedEvent = {
+  type: 'connected';
+  provider: AccountProvider;
+};
+
+export type DisconnectedEvent = {
+  type: 'disconnected';
+};
+
+export type Event = ConnectedEvent | DisconnectedEvent;
+
+export type EventListener = (event: Event) => void;
+
 export async function Provider(
   wallet: WALLET_API.StarknetWindowObject,
 ): Promise<AccountProvider | null> {
@@ -143,9 +156,20 @@ export class AccountManager {
   private _provider?: AccountProvider;
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
+  private _listeners: EventListener[] = [];
 
   constructor() {
     this._setupPromise = this.setup();
+  }
+
+  public listen(listener: EventListener): () => void {
+    this._listeners.push(listener);
+    return () => {
+      const index = this._listeners.findIndex((e) => e == listener);
+      if (index != -1) {
+        this._listeners.splice(index, 1);
+      }
+    };
   }
 
   public async wait(): Promise<AccountManager> {
@@ -212,6 +236,13 @@ export class AccountManager {
       await provider.connect();
       console.info('User logged-in successfully');
 
+      this._listeners.forEach((listener) =>
+        listener({
+          type: 'connected',
+          provider,
+        }),
+      );
+
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch {
       console.warn('The user did not log in successfully!');
@@ -225,6 +256,13 @@ export class AccountManager {
 
     if (this._provider) {
       this._provider.disconnect();
+
+      // Announce that you are disconnected.
+      this._listeners.forEach((listener) =>
+        listener({
+          type: 'disconnected',
+        }),
+      );
     }
   }
 
@@ -292,7 +330,7 @@ export class AccountManager {
 
 export function setupAccount(): Promise<AccountManager> {
   if (getContext(accountManager) != null) {
-    return getContext(accountManager);
+    return getContext<AccountManager>(accountManager).wait();
   }
   const manager = new AccountManager();
 

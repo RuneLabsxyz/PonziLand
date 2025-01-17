@@ -45,9 +45,11 @@
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
 >
   <Card class="flex flex-col min-w-96 h-96">
-    <Button on:click={() => {
-      handleCancelClick();
-    }}>X</Button>
+    <Button
+      on:click={() => {
+        handleCancelClick();
+      }}>X</Button
+    >
     <CardTitle>Buy Land</CardTitle>
     <div class="flex h-full">
       <div class="flex flex-col w-full items-center justify-center">
@@ -57,7 +59,7 @@
     </div>
     <div class="flex justify-center">
       <Button
-        variant="secondary"
+        variant="blue"
         on:click={() => {
           handleBuyClick();
         }}>Buy land</Button

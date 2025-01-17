@@ -1,5 +1,9 @@
 <script lang="ts">
-  import { mousePosCoords, selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
+  import {
+    mousePosCoords,
+    selectedLand,
+    selectedLandMeta,
+  } from '$lib/stores/stores.svelte';
   import data from '$lib/data.json';
   import type { LandWithActions } from '$lib/api/land.svelte';
   import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
@@ -8,9 +12,9 @@
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
-  const { store, client: sdk, account } = useDojo();
+  const { store, client: sdk, accountManager } = useDojo();
 
-  const accountData = $derived(account.getAccount());
+  const accountData = $derived(accountManager.getProvider()!.getAccount());
 
   let { land } = $props<{
     land: Partial<LandWithActions> & {
