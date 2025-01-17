@@ -2,14 +2,9 @@
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
-  import {
-    moveCameraToLocation
-  } from '$lib/stores/camera';
-  import {
-    mousePosCoords,
-    selectedLand
-  } from '$lib/stores/stores.svelte';
-  import { padAddress } from '$lib/utils';
+  import { moveCameraToLocation } from '$lib/stores/camera';
+  import { mousePosCoords, selectedLand } from '$lib/stores/stores.svelte';
+  import { padAddress, toBigInt } from '$lib/utils';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
@@ -114,7 +109,7 @@
     </div>
   {/if}
 
-  {#if $nukableStore.includes(BigInt(land.location)) }
+  {#if $nukableStore.includes(toBigInt(land.location))}
     <div class="text-ponzi animate-pulse">NUKABLE</div>
   {/if}
 </div>

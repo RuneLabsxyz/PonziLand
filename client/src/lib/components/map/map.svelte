@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { LandsStore } from '$lib/api/land.svelte';
-  import { type LandWithActions, useLands } from '$lib/api/land.svelte';
+  import { type LandWithActions, nukableStore, useLands } from '$lib/api/land.svelte';
   import { cameraPosition } from '$lib/stores/camera';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { getTokenInfo, toHexWithPadding } from '$lib/utils';
@@ -21,6 +21,7 @@
     console.log('Error in map.svelte', e);
   }
   $inspect('landStore', $landStore);
+  $inspect('nukeStore', $nukableStore);
 
   // Reactive state for the tiles
   let tiles = $state<

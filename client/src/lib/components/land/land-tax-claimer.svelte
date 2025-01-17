@@ -31,17 +31,15 @@
     const tokenTaxMap: Record<string, bigint> = {};
 
     nextClaimTaxes?.forEach((tax) => {
-      console.log('pending tax', tax.amount);
+      if (tax.can_be_nuked) {
+        nukableLands = [...nukableLands, tax.land_location];
+      }
       if (tax.amount == 0n) return;
       const token = toHexWithPadding(tax.token_address);
       tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + tax.amount;
-      if (tax.can_be_nuked) {
-        nukableLands.push(tax.land_location);
-      }
     });
 
     pendingTaxes?.forEach((tax) => {
-      console.log('pending tax', tax.amount);
       if (tax.amount == 0n) return;
       const token = toHexWithPadding(tax.token_address);
       tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + tax.amount;
@@ -63,7 +61,8 @@
       const result = [...nukableLandStore];
       // for each nukable land, add the land to the store
       nukableLands.forEach((land) => {
-        if (!result.includes(land)) nukableLandStore.push(land);
+        if (!result.includes(land)) result.push(land);
+        console.log('nukable land added to store', land);
       });
 
       return result;
