@@ -15,7 +15,7 @@
     },
     {
       "name": "USDC",
-      "address": "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
+      "address": "0x053b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "images": {
         "icon": "/assets/tokens/usdc/icon.svg",
@@ -23,45 +23,6 @@
           "basic": "/assets/tokens/usdc/castles/basic.png",
           "advanced": "/assets/tokens/usdc/castles/advanced.png",
           "premium": "/assets/tokens/usdc/castles/premium.png"
-        }
-      }
-    },
-    {
-      "name": "USDT",
-      "address": "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",
-      "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
-      "images": {
-        "icon": "/assets/tokens/usdt/icon.svg",
-        "castle": {
-          "basic": "/assets/tokens/usdt/castles/basic.png",
-          "advanced": "/assets/tokens/usdt/castles/advanced.png",
-          "premium": "/assets/tokens/usdt/castles/premium.png"
-        }
-      }
-    },
-    {
-      "name": "LORDS",
-      "address": "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
-      "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
-      "images": {
-        "icon": "/assets/tokens/lords/icon.svg",
-        "castle": {
-          "basic": "/assets/tokens/lords/castles/basic.png",
-          "advanced": "/assets/tokens/lords/castles/advanced.png",
-          "premium": "/assets/tokens/lords/castles/premium.png"
-        }
-      }
-    },
-    {
-      "name": "PAPER",
-      "address": "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8",
-      "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
-      "images": {
-        "icon": "/assets/tokens/paper/icon.svg",
-        "castle": {
-          "basic": "/assets/tokens/paper/castles/basic.png",
-          "advanced": "/assets/tokens/paper/castles/advanced.png",
-          "premium": "/assets/tokens/paper/castles/premium.png"
         }
       }
     },
