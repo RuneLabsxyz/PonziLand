@@ -39,11 +39,38 @@
     startTime: number,
     currentTime = Date.now(),
   ): number {
-    const elapsedMinutes = (currentTime - startTime) / (60 * 1000);
-    const decayFactor = Math.pow(0.99, elapsedMinutes); // Decay rate: 1% per minute
+    const elapsedHours = (currentTime - startTime) / (60 * 60 * 1000);
+    const decayFactor = Math.pow(0.99, elapsedHours); // Decay rate: 1% per hour
     const price = Math.max(startPrice * decayFactor, floorPrice); // Ensure not below floor price
     // Round down to 6 decimal places
-    return Math.floor(price * 1e6) / 1e6;
+    return Math.floor(price);
+  }
+
+  async function handleBiddingClick() {
+    console.log('Buying land with data:', auctionInfo);
+
+    //fetch auction currentprice
+    const currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
+    if (!currentPrice) {
+      return;
+    }
+
+    const landSetup: LandSetup = {
+      tokenForSaleAddress: selectedToken?.address as string,
+      salePrice: sellAmount,
+      amountToStake: stakeAmount,
+      liquidityPoolAddress: toHexWithPadding(0),
+      tokenAddress: $selectedLandMeta?.tokenAddress as string,
+      currentPrice: currentPrice + (currentPrice / 10n),
+    };
+
+    if (!$selectedLand?.location) {
+      return;
+    }
+
+    landStore?.bidLand($selectedLand?.location, landSetup).then((res) => {
+      console.log('Bought land:', res);
+    });
   }
 
   $effect(() => {
@@ -78,28 +105,7 @@
 <p>FloorPrice: {parseInt(auctionInfo?.floor_price as string, 16)}</p>
 
 <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
-<Button
-  on:click={() => {
-    console.log('Buying land with data:', auctionInfo);
-
-    const landSetup: LandSetup = {
-      tokenForSaleAddress: selectedToken?.address as string,
-      salePrice: sellAmount,
-      amountToStake: stakeAmount,
-      liquidityPoolAddress: toHexWithPadding(0),
-      tokenAddress: $selectedLandMeta?.tokenAddress as string,
-      currentPrice: (currentPriceDerived() as number) * 1e6,
-    };
-
-    if (!$selectedLand?.location) {
-      return;
-    }
-
-    landStore?.bidLand($selectedLand?.location, landSetup).then((res) => {
-      console.log('Bought land:', res);
-    });
-  }}
->
+<Button on:click={handleBiddingClick}>
   Buy for {currentPriceDerived()}
   {$selectedLandMeta?.tokenUsed}
 </Button>

@@ -67,30 +67,36 @@ export async function wrappedActions(provider: DojoProvider) {
     const sell_price = cairo.uint256(sellPrice);
     const amount_to_stake = cairo.uint256(amountToStake);
 
-    const calls = await getApprove(
-      provider,
-      [
-        {
-          tokenAddress: tokenForSale,
-          amount: BigInt(amountToStake),
-        },
-        {
-          tokenAddress: tokenAddress,
-          amount: BigInt(currentPrice),
-        },
-      ],
-      {
-        contractName: 'actions',
-        entrypoint: 'bid',
-        calldata: CallData.compile([
-          landLocation,
-          tokenForSale,
-          sell_price,
-          amount_to_stake,
-          liquidityPool,
-        ]),
-      },
-    );
+    const approvals =
+      tokenAddress == tokenForSale
+        ? [
+            {
+              tokenAddress: tokenForSale,
+              amount: BigInt(amountToStake) + BigInt(currentPrice),
+            },
+          ]
+        : [
+            {
+              tokenAddress: tokenForSale,
+              amount: BigInt(amountToStake),
+            },
+            {
+              tokenAddress: tokenAddress,
+              amount: BigInt(currentPrice),
+            },
+          ];
+
+    const calls = await getApprove(provider, approvals, {
+      contractName: 'actions',
+      entrypoint: 'bid',
+      calldata: CallData.compile([
+        landLocation,
+        tokenForSale,
+        sell_price,
+        amount_to_stake,
+        liquidityPool,
+      ]),
+    });
 
     return await provider.execute(
       snAccount,

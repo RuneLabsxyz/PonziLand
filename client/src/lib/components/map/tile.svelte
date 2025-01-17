@@ -50,6 +50,7 @@
       nuke: land.nuke,
       getPendingTaxes: land.getPendingTaxes,
       getNextClaim: land.getNextClaim,
+      getCurrentAuctionPrice: land.getCurrentAuctionPrice,
     };
   }
 

@@ -53,6 +53,7 @@ export type LandWithActions = LandWithMeta & {
   nuke(): TransactionResult;
   getPendingTaxes(): Promise<Result | undefined>;
   getNextClaim(): Promise<Result | undefined>;
+  getCurrentAuctionPrice(): Promise<Result | undefined>;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -167,6 +168,9 @@ export function useLands(): LandsStore | undefined {
         getNextClaim() {
           return sdk.client.actions.getNextClaimInfo(land.location);
         },
+        getCurrentAuctionPrice() {
+          return sdk.client.actions.getCurrentAuctionPrice(land.location);
+        }
       }));
   });
 

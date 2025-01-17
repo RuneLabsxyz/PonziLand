@@ -8,8 +8,8 @@
   const landStore = useLands();
 
   let selectedToken = $state<Token | null>(null);
-  let stakeAmount = $state<number>(0);
-  let sellAmount = $state<number>(0);
+  let stakeAmount = $state<number>(100);
+  let sellAmount = $state<number>(10);
 
   const handleCreateAuction = () => {
     if (!$selectedLand || !selectedToken) {

@@ -31,6 +31,7 @@ export type SelectedLandType = {
       }[]
     | undefined
   >;
+  getCurrentAuctionPrice(): Promise<bigint | undefined>;
 } | null;
 
 export const selectedLand = writable<SelectedLandType>(null);
