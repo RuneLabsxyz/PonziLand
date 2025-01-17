@@ -86,7 +86,7 @@
       tokenForSaleAddress: selectedToken?.address as string,
       salePrice: sellAmount,
       amountToStake: stakeAmount,
-      liquidityPoolAddress: toHexWithPadding(0),
+      liquidityPoolAddress: toHexWithPadding(1),
     };
 
     if (!$selectedLand?.location) {

@@ -12,7 +12,7 @@ spawn = "sozo execute ponzi_land-actions spawn --wait"    # scarb run spawn
 move = "sozo execute ponzi_land-actions move -c 1 --wait" # scarb run move
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.8" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.12" }
 # openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.15.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.18.0" }
 
@@ -23,4 +23,4 @@ openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", 
 build-external-contracts = ["dojo::world::world_contract::world"]
 
 [dev-dependencies]
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.8" }
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.12" }

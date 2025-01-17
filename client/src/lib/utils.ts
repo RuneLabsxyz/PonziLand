@@ -63,7 +63,7 @@ export const flyAndScale = (
   };
 };
 
-export function toHexWithPadding(number: number, paddingLength = 64) {
+export function toHexWithPadding(number: number | bigint, paddingLength = 64) {
   // Convert the number to a hexadecimal string
   let hex = number.toString(16);
 

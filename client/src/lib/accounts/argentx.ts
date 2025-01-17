@@ -7,11 +7,24 @@ import {
   bytesToHexString,
   type SessionKey,
   createSessionRequest,
+  createOutsideExecutionCall,
 } from '@argent/x-sessions';
-import { ec, constants, WalletAccount, RpcProvider, Account } from 'starknet';
+import {
+  ec,
+  constants,
+  WalletAccount,
+  RpcProvider,
+  Account,
+  AccountInterface,
+  type AllowArray,
+  type Call,
+  type UniversalDetails,
+  type InvokeFunctionResponse,
+} from 'starknet';
 import { WALLET_API } from '@starknet-io/types-js';
 import { CommonStarknetWallet } from './getStarknet';
 import type { AccountProvider, StoredSession } from '$lib/contexts/account';
+import { DojoProvider, type DojoCall } from '@dojoengine/core';
 
 const STRKFees = [
   {
@@ -82,6 +95,7 @@ async function setupSession(
     useCacheAuthorisation: false, // optional and defaulted to false, will be added in future developments
     session,
     sessionKey,
+
     provider: new RpcProvider({
       nodeUrl: dojoConfig.rpcUrl,
       chainId: constants.StarknetChainId.SN_SEPOLIA,
@@ -106,6 +120,7 @@ export class ArgentXAccount extends CommonStarknetWallet {
   }
 
   getAccount(): Account | undefined {
+    console.log(this._session);
     return this._session;
   }
 

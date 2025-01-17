@@ -81,13 +81,13 @@ export async function wrappedActions(provider: DojoProvider) {
         {
           contractName: 'actions',
           entrypoint: 'bid',
-          calldata: [
+          calldata: CallData.compile({
             landLocation,
             tokenForSale,
-            sellPrice,
-            amountToStake,
+            sellPrice: cairo.uint256(sellPrice),
+            amountToStake: cairo.uint256(amountToStake),
             liquidityPool,
-          ],
+          }),
         },
       ),
       'ponzi_land',
@@ -117,8 +117,8 @@ export async function wrappedActions(provider: DojoProvider) {
             calldata: [
               landLocation,
               tokenForSale,
-              sellPrice,
-              amountToStake,
+              cairo.uint256(sellPrice),
+              cairo.uint256(amountToStake),
               liquidityPool,
             ],
           },
@@ -148,7 +148,7 @@ export async function wrappedActions(provider: DojoProvider) {
           {
             contractName: 'actions',
             entrypoint: 'increase_stake',
-            calldata: [landLocation, amountToStake],
+            calldata: [landLocation, cairo.uint256(amountToStake)],
           },
         ),
         'ponzi_land',
