@@ -39,6 +39,8 @@
   >([]);
 
   landStore?.subscribe((lands) => {
+    $nukableStore = [];
+
     // initialize the map with empty tiles
     tiles = Array(MAP_SIZE)
       .fill(null)

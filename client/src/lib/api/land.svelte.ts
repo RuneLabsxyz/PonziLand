@@ -1,6 +1,6 @@
 import { useDojo } from '$lib/contexts/dojo';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
-import { getTokenInfo, toHexWithPadding } from '$lib/utils';
+import { getTokenInfo, toBigInt, toHexWithPadding } from '$lib/utils';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
 import type { BigNumberish, Result } from 'starknet';
 import { derived, get, writable, type Readable } from 'svelte/store';
@@ -132,6 +132,7 @@ export function useLands(): LandsStore | undefined {
           sellPrice: sellPrice,
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
+          stakeAmount: toBigInt(land.stake_amount),
         };
       })
       .map((land) => ({
