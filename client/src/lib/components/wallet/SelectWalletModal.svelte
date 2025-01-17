@@ -40,7 +40,9 @@
     console.log('Logged in!');
 
     // TODO(#58): Split the session setup
-    await account.setupSession();
+    if (account.getProvider()?.supportsSession()) {
+      await account.setupSession();
+    }
 
     visible = false;
     // resolve waiting promises.
