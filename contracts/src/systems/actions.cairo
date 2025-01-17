@@ -240,7 +240,7 @@ pub mod actions {
             assert(auction.start_price > 0, 'auction not started');
 
             let current_price = auction.get_current_price_decay_rate();
-            land.sell_price = current_price;
+            land.sell_price = sell_price;
             store.set_land(land);
 
             self.internal_claim(store, land);
@@ -251,6 +251,7 @@ pub mod actions {
                     land_location,
                     token_for_sale,
                     sell_price,
+                    current_price,
                     amount_to_stake,
                     liquidity_pool,
                     caller,
@@ -470,6 +471,7 @@ pub mod actions {
             land_location: u64,
             token_for_sale: ContractAddress,
             sell_price: u256,
+            sold_at_price: u256,
             amount_to_stake: u256,
             liquidity_pool: ContractAddress,
             caller: ContractAddress,
@@ -477,11 +479,8 @@ pub mod actions {
         ) {
             //TODO: we have to create our contract to send the tokens for the first sell
             //self.payable._pay_to_us();
-            self
-                .payable
-                ._pay(
-                    caller, get_contract_address(), store.land(land_location).token_used, sell_price
-                );
+            let land = store.land(land_location);
+            self.payable._pay(caller, get_contract_address(), land.token_used, sold_at_price);
             self.payable._stake(caller, token_for_sale, amount_to_stake);
 
             self

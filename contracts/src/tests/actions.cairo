@@ -258,9 +258,13 @@ fn test_claim_and_buy_actions() {
 
     // Auction/Bid on land at position 1280
     actions_system.auction(1280, 100, 50, erc20.contract_address, 2);
+
+    let auction_value = actions_system.get_current_auction_price(1280);
+    assert(auction_value == 100, 'Error in auction value.');
+
     actions_system.bid(1280, erc20.contract_address, 500, 1000, NEW_LIQUIDITY_POOL());
 
-    assert(erc20.balanceOf(RECIPIENT()) == 998000, 'error in stake erc20');
+    assert(erc20.balanceOf(RECIPIENT()) == 998400, 'error in stake erc20');
     assert(erc20_neighbor_1.balanceOf(RECIPIENT()) == 0, 'no taxes yet');
 
     let land_1280: Land = world.read_model(1280);
@@ -298,7 +302,8 @@ fn test_claim_and_buy_actions() {
     assert(land_1281.last_pay_time == 3000, 'err in 1281 last_pay_time');
 
     // Verify that the seller received tokens from the sale and also refunded amount from stake
-    assert(erc20.balanceOf(RECIPIENT()) == 999500, 'error in sell land');
+
+    assert(erc20.balanceOf(RECIPIENT()) == 999900, 'error in sell land');
 
     // Verify taxes were successfully claimed
     assert(erc20_neighbor_1.balanceOf(RECIPIENT()) > 0, 'error in claim taxes');
