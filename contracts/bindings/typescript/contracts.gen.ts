@@ -4,14 +4,14 @@ import * as models from "./models.gen";
 
 export async function setupWorld(provider: DojoProvider) {
 
-	const actions_auction = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, tokenForSale: string) => {
+	const actions_auction = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, tokenForSale: string, decayRate: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
 				{
 					contractName: "actions",
 					entrypoint: "auction",
-					calldata: [landLocation, startPrice, floorPrice, tokenForSale],
+					calldata: [landLocation, startPrice, floorPrice, tokenForSale, decayRate],
 				},
 				"ponzi_land",
 			);
@@ -152,11 +152,35 @@ export async function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const actions_getPendingTaxesForLand = async (landLocation: BigNumberish, ownerLand: string) => {
+		try {
+			return await provider.call("ponzi_land", {
+				contractName: "actions",
+				entrypoint: "get_pending_taxes_for_land",
+				calldata: [landLocation, ownerLand],
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	const actions_getCurrentAuctionPrice = async (landLocation: BigNumberish) => {
 		try {
 			return await provider.call("ponzi_land", {
 				contractName: "actions",
 				entrypoint: "get_current_auction_price",
+				calldata: [landLocation],
+			});
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
+	const actions_getNextClaimInfo = async (landLocation: BigNumberish) => {
+		try {
+			return await provider.call("ponzi_land", {
+				contractName: "actions",
+				entrypoint: "get_next_claim_info",
 				calldata: [landLocation],
 			});
 		} catch (error) {
@@ -176,7 +200,9 @@ export async function setupWorld(provider: DojoProvider) {
 			getStakeBalance: actions_getStakeBalance,
 			getLand: actions_getLand,
 			getPendingTaxes: actions_getPendingTaxes,
+			getPendingTaxesForLand: actions_getPendingTaxesForLand,
 			getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
+			getNextClaimInfo: actions_getNextClaimInfo,
 		},
 	};
 }

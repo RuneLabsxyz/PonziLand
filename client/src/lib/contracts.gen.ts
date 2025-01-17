@@ -1,5 +1,5 @@
 import { DojoProvider } from '@dojoengine/core';
-import { Account, AccountInterface, cairo, type BigNumberish } from 'starknet';
+import { Account, AccountInterface, type BigNumberish } from 'starknet';
 import * as models from './models.gen';
 
 export async function setupWorld(provider: DojoProvider) {
@@ -9,6 +9,7 @@ export async function setupWorld(provider: DojoProvider) {
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
     tokenForSale: string,
+    decayRate: BigNumberish,
   ) => {
     try {
       return await provider.execute(
@@ -18,9 +19,10 @@ export async function setupWorld(provider: DojoProvider) {
           entrypoint: 'auction',
           calldata: [
             landLocation,
-            cairo.uint256(startPrice),
-            cairo.uint256(floorPrice),
+            startPrice,
+            floorPrice,
             tokenForSale,
+            decayRate,
           ],
         },
         'ponzi_land',
@@ -229,6 +231,18 @@ export async function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const actions_getNextClaimInfo = async (landLocation: BigNumberish) => {
+    try {
+      return await provider.call('ponzi_land', {
+        contractName: 'actions',
+        entrypoint: 'get_next_claim_info',
+        calldata: [landLocation],
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     actions: {
       auction: actions_auction,
@@ -243,6 +257,7 @@ export async function setupWorld(provider: DojoProvider) {
       getPendingTaxes: actions_getPendingTaxes,
       getPendingTaxesForLand: actions_getPendingTaxesForLand,
       getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
+      getNextClaimInfo: actions_getNextClaimInfo,
     },
   };
 }

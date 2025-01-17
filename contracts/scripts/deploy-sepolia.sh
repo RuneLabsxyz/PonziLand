@@ -36,3 +36,9 @@ sozo -P sepolia migrate
  
 # Deployment succeeded message
 echo "Deployment completed successfully."
+
+# Re-deploy torii
+echo "Deleting torii deployment"
+slot deployments delete ponziland-sepolia torii -f
+echo "Creating new torii deployment"
+slot deployments create --tier rare ponziland-sepolia torii --config ./slot-torii.toml

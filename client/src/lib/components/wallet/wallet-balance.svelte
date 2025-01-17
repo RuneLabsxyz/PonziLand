@@ -26,7 +26,10 @@
     const adjustedBalance = BigInt(balance) / factor;
     const formattedBalance = Number(adjustedBalance) / 10 ** precision;
 
-    return formattedBalance.toPrecision(precision);
+    return formattedBalance.toLocaleString('en-US', {
+      minimumFractionDigits: precision,
+      maximumFractionDigits: precision,
+    });
   };
 
   $effect(() => {
