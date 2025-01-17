@@ -134,4 +134,8 @@
   .coin {
     image-rendering: pixelated;
   }
+
+  button:hover .coin {
+    filter: drop-shadow(0 0 0.1em #ffff00);
+  }
 </style>
