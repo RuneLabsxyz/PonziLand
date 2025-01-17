@@ -13,6 +13,7 @@ import { getContext, setContext } from 'svelte';
 import type { Store } from './store';
 import { ArgentXAccount } from '$lib/accounts/argentx';
 import { list } from 'postcss';
+import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -93,7 +94,7 @@ export async function Provider(
     // NOTE: To add new providers, this is here.
     default:
       console.warn('Unknown provider: ', wallet.id);
-      return null;
+      return new NoSessionStarknetWallet(wallet);
   }
 }
 

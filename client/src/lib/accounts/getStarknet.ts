@@ -2,6 +2,7 @@ import type { AccountProvider, StoredSession } from '$lib/contexts/account';
 import { dojoConfig } from '$lib/dojoConfig';
 import { getStarknet } from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
+import { GalleryHorizontal } from 'lucide-svelte';
 import {
   WalletAccount,
   wallet,
@@ -21,7 +22,7 @@ export abstract class CommonStarknetWallet implements AccountProvider {
 
   abstract supportsSession(): boolean;
   abstract getAccount(): Account | undefined;
-  abstract setupSession(): Promise<StoredSession>;
+  abstract setupSession(): Promise<StoredSession | void>;
 
   async connect() {
     // Create the wallet object
@@ -74,5 +75,17 @@ export abstract class CommonStarknetWallet implements AccountProvider {
 
   getWalletAccount() {
     return this._wallet;
+  }
+}
+
+export class NoSessionStarknetWallet extends CommonStarknetWallet {
+  supportsSession(): boolean {
+    return false;
+  }
+  getAccount(): Account | undefined {
+    return this._wallet;
+  }
+  async setupSession(): Promise<StoredSession | void> {
+    // no-op
   }
 }

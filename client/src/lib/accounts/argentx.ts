@@ -26,6 +26,8 @@ import { CommonStarknetWallet } from './getStarknet';
 import type { AccountProvider, StoredSession } from '$lib/contexts/account';
 import { DojoProvider, type DojoCall } from '@dojoengine/core';
 
+const FUSE_DISABLE_ARGENT = true;
+
 const STRKFees = [
   {
     tokenAddress:
@@ -116,15 +118,22 @@ async function setupSession(
 
 export class ArgentXAccount extends CommonStarknetWallet {
   supportsSession(): boolean {
-    return true;
+    return !FUSE_DISABLE_ARGENT;
   }
 
   getAccount(): Account | undefined {
-    console.log(this._session);
-    return this._session;
+    if (FUSE_DISABLE_ARGENT) {
+      return this._wallet;
+    } else {
+      return this._session;
+    }
   }
 
-  async setupSession(): Promise<StoredSession> {
+  async setupSession() {
+    if (FUSE_DISABLE_ARGENT) {
+      return;
+    }
+
     const [account, storedSession] = await setupSession(
       this._wallet!,
       this._walletObject,
