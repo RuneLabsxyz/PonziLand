@@ -12,6 +12,7 @@ const accountKey = Symbol('dojoAccountBurner');
 // For the context, svelte is weird.
 // You cannot reassign, because then the change is not propagated through the setContext (js identity things)
 // So we need to wrap it in a {value: value} to make it work.
+
 function toAccount(burner?: BurnerManager): AccountProvider | undefined {
   if (burner == null) {
     return undefined;
@@ -35,6 +36,24 @@ function toAccount(burner?: BurnerManager): AccountProvider | undefined {
 
     getAccount() {
       return burner.account ?? undefined;
+    },
+
+    getWalletAccount() {
+      // Burners does not have any ui, so this works.
+      return this.getAccount();
+    },
+
+    async setupSession() {
+      // NO-OP, we don't need a session system
+    },
+
+    async loadSession(storage) {
+      // NO-OP, we don't need a session system
+    },
+
+    supportsSession() {
+      // We do not open a popup to sign
+      return true;
     },
   };
 }

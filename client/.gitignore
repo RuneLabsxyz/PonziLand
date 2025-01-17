@@ -22,3 +22,5 @@ vite.config.ts.timestamp-*
 
 # SvelteKit
 .svelte-kit
+
+.vscode

@@ -3,11 +3,10 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { dojoConfig } from '$lib/dojoConfig';
   import { DojoProvider } from '@dojoengine/core';
+  import accountData from '$lib/account.svelte';
   import data from '$lib/data.json';
 
-  const { store, client: sdk, account } = useDojo();
-
-  const accountData = $derived(account.getAccount());
+  const { store, client: sdk, accountManager } = useDojo();
 
   let tokenBalances = $state<
     { token: string; balance: Promise<bigint | null> }[]
@@ -32,14 +31,19 @@
     });
   };
 
+  const address = $derived(accountData.address);
+
   $effect(() => {
-    if (!accountData) {
+    const account = accountManager.getProvider()?.getWalletAccount();
+    console.log('UPDATINGGGGG');
+
+    if (!account || !address) {
       return;
     }
 
     const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
     tokenBalances = data.availableTokens.map((token) => {
-      const balance = fetchTokenBalance(token.address, accountData, provider);
+      const balance = fetchTokenBalance(token.address, account, provider);
 
       return {
         token: token.name,

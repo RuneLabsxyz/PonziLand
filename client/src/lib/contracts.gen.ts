@@ -1,5 +1,11 @@
 import { DojoProvider } from '@dojoengine/core';
-import { Account, AccountInterface, type BigNumberish } from 'starknet';
+import {
+  Account,
+  AccountInterface,
+  cairo,
+  CallData,
+  type BigNumberish,
+} from 'starknet';
 import * as models from './models.gen';
 
 export async function setupWorld(provider: DojoProvider) {
@@ -17,13 +23,13 @@ export async function setupWorld(provider: DojoProvider) {
         {
           contractName: 'actions',
           entrypoint: 'auction',
-          calldata: [
+          calldata: CallData.compile([
             landLocation,
-            startPrice,
-            floorPrice,
+            cairo.uint256(startPrice),
+            cairo.uint256(floorPrice),
             tokenForSale,
             decayRate,
-          ],
+          ]),
         },
         'ponzi_land',
       );

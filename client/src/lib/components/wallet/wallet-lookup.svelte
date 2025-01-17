@@ -1,22 +1,17 @@
-<script>
+<script lang="ts">
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress } from '$lib/utils';
   import Button from '../ui/button/button.svelte';
   import Card from '../ui/card/card.svelte';
   import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
+  import accountDataProvider, { setup } from '$lib/account.svelte';
 
-  const { store, client: sdk, account } = useDojo();
+  setup();
 
-  let connected = $state(false);
-
-  $effect(() => {
-    if (account.getAccount()) {
-      connected = true;
-    } else {
-      connected = false;
-    }
-  });
+  const { store, client: sdk, accountManager } = useDojo();
+  const address = $derived(accountDataProvider.address);
+  const connected = $derived(accountDataProvider.isConnected);
 </script>
 
 <div class="fixed top-0 right-0 z-50">
@@ -25,11 +20,10 @@
   </div>
   {#if connected}
     <Card class="shadow-ponzi">
-      <p>Wallet: {padAddress(account.getAccount()?.address ?? '')}</p>
+      <p>Wallet: {padAddress(address ?? '')}</p>
       <Button
         on:click={() => {
-          account.disconnect();
-          connected = false;
+          accountManager.disconnect();
         }}>LOGOUT</Button
       >
       <WalletBalance />
@@ -38,9 +32,7 @@
     <Button
       class="m-2"
       onclick={async () => {
-        await account.connect().then(() => {
-          if (account.getAccount()?.address) connected = true;
-        });
+        await accountManager.promptForLogin();
       }}>CONNECT WALLET</Button
     >
   {/if}

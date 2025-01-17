@@ -2,8 +2,18 @@
   import { goto } from '$app/navigation';
   import { setupAccount } from '$lib/contexts/account';
   import { dojoConfig } from '$lib/dojoConfig';
-  
+
+  // setup account
+  const account = setupAccount();
+
   async function startGame() {
+    const accountProvider = await account;
+    if (accountProvider == null) {
+      console.log('No accountProvider?!?');
+      return;
+    }
+    await accountProvider.promptForLogin();
+    console.log('Got the confirmation that it worked!');
     goto('/game');
   }
 </script>
@@ -54,9 +64,38 @@
       </div>
     </div>
   </div>
+  <div
+    class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex flex-col items-center"
+  >
+    <p class="text-white text-xl mb-4">Super official sponsors</p>
+    <div class="flex items-center justify-center gap-8">
+      <div class="flex flex-col items-center gap-4">
+        <div class="text-white/50 text-sm">Master of dojo</div>
+        <img src="/home/tarrence.png" alt="Tarrance" class="h-24 w-auto" />
+      </div>
+      <div class="flex flex-col items-center gap-4">
+        <div class="text-white/50 text-sm">Matcha boy</div>
+        <img src="/home/calc.png" alt="Calc" class="h-24 w-auto" />
+      </div>
+    </div>
+  </div>
 </main>
 
 <style>
+  @keyframes blob {
+    0% {
+      transform: translate(0px, 0px) scale(1);
+    }
+    33% {
+      transform: translate(30px, -30px) scale(1.1);
+    }
+    66% {
+      transform: translate(-30px, 30px) scale(1.2);
+    }
+    100% {
+      transform: translate(0px, 0px) scale(1);
+    }
+  }
   @keyframes blob {
     0% {
       transform: translate(0px, 0px) scale(1);

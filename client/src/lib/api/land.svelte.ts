@@ -30,6 +30,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
     tokenForSale: string,
+    decayRate: number,
   ): TransactionResult;
   getPendingTaxes(owner: string): Promise<Result | undefined>;
 };
@@ -56,9 +57,14 @@ export function useLands(): LandsStore | undefined {
     return undefined;
   }
 
-  const { store, client: sdk, account } = useDojo();
+  const { store, client: sdk, accountManager } = useDojo();
 
   const landStore = derived([store], ([actualStore]) => actualStore);
+
+  // We are using this to ensure that we are getting the latest provider, not an old one.
+  const account = () => {
+    return accountManager.getProvider();
+  };
 
   (async () => {
     const query = new QueryBuilder<PonziLandSchemaType>()
@@ -131,7 +137,7 @@ export function useLands(): LandsStore | undefined {
         // Add functions
         increaseStake(amount: BigNumberish) {
           return sdk.client.actions.increaseStake(
-            account.getAccount()!,
+            account()?.getWalletAccount()!,
             land.location,
             land.token_used,
             amount,
@@ -139,16 +145,22 @@ export function useLands(): LandsStore | undefined {
         },
         increasePrice(amount: BigNumberish) {
           return sdk.client.actions.increasePrice(
-            account.getAccount()!,
+            account()?.getWalletAccount()!,
             land.location,
             amount,
           );
         },
         claim() {
-          return sdk.client.actions.claim(account.getAccount()!, land.location);
+          return sdk.client.actions.claim(
+            account()?.getAccount()!,
+            land.location,
+          );
         },
         nuke() {
-          return sdk.client.actions.claim(account.getAccount()!, land.location);
+          return sdk.client.actions.claim(
+            account()?.getAccount()!,
+            land.location,
+          );
         },
       }));
   });
@@ -157,7 +169,7 @@ export function useLands(): LandsStore | undefined {
     ...landEntityStore,
     buyLand(location, setup) {
       return sdk.client.actions.buy(
-        account.getAccount()!,
+        account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
         setup.salePrice,
@@ -165,9 +177,11 @@ export function useLands(): LandsStore | undefined {
         setup.liquidityPoolAddress,
       );
     },
+
+    // TODO(#53): Split this action in two, and migrate the call to the session account
     bidLand(location, setup) {
       return sdk.client.actions.bid(
-        account.getAccount()!,
+        account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
         setup.salePrice,
@@ -175,17 +189,20 @@ export function useLands(): LandsStore | undefined {
         setup.liquidityPoolAddress,
       );
     },
-    auctionLand(location, startPrice, floorPrice, tokenForSale) {
+    auctionLand(location, startPrice, floorPrice, tokenForSale, decayRate) {
       return sdk.client.actions.auction(
-        account.getAccount()!,
+        account()?.getWalletAccount()!,
         location,
         startPrice,
         floorPrice,
         tokenForSale,
+        decayRate,
       );
     },
     getPendingTaxes() {
-      return sdk.client.actions.getPendingTaxes(account.getAccount()!.address);
+      return sdk.client.actions.getPendingTaxes(
+        account()!.getAccount()!.address,
+      );
     },
   };
 }

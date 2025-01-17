@@ -2,9 +2,9 @@ import { getContext, onMount, setContext } from 'svelte';
 import Controller from '@cartridge/controller';
 import { type DojoConfig } from '$lib/dojoConfig';
 import type { AccountInterface, WalletAccount } from 'starknet';
-import type ControllerProvider from '@cartridge/controller';
+import type { AccountProvider, StoredSession } from '$lib/contexts/account';
 
-export class SvelteController extends Controller {
+export class SvelteController extends Controller implements AccountProvider {
   _account?: AccountInterface;
   _username?: string;
 
@@ -30,6 +30,22 @@ export class SvelteController extends Controller {
     }
   }
 
+  async setupSession(): Promise<any> {
+    // no-op
+  }
+
+  async loadSession(storage: StoredSession): Promise<any> {
+    // no-op
+  }
+
+  getWalletAccount(): AccountInterface | undefined {
+    return this.getAccount();
+  }
+
+  supportsSession(): boolean {
+    return true;
+  }
+
   async disconnect(): Promise<void> {
     this._account = undefined;
     this._username = undefined;
@@ -49,45 +65,29 @@ const accountKey = Symbol('controller');
 
 export async function connect(controller: SvelteController) {}
 
-export function setupController(
+export async function setupController(
   config: DojoConfig,
 ): Promise<SvelteController | undefined> {
   let state: { value: SvelteController | undefined } = {
     value: undefined,
   };
 
-  const promise = (async () => {
-    if (typeof window === 'undefined') {
-      // We are on the server. Return nothing.
-      return undefined;
-    }
-
-    const controller = new SvelteController({
-      rpc: config.rpcUrl,
-      policies: config.policies,
-    });
-
-    // Check if the controller is already connected
-    if (await controller.probe()) {
-      await controller.connect();
-    }
-
-    return controller;
-  })().then((e) => (state.value = e));
-
-  setContext(accountKey, state);
-
-  return promise;
-}
-
-export function useController(): SvelteController {
-  const contextValue = getContext<{ value: SvelteController | undefined }>(
-    accountKey,
-  ).value;
-
-  if (contextValue == null) {
-    throw 'The context is null! Please await for setupController before using components containing useController()!';
+  if (typeof window === 'undefined') {
+    // We are on the server. Return nothing.
+    return undefined;
   }
 
-  return contextValue;
+  const controller = new SvelteController({
+    rpc: config.rpcUrl,
+    policies: config.policies,
+  });
+
+  console.info('Starting controller!');
+
+  // Check if the controller is already connected
+  if (await controller.probe()) {
+    await controller.connect();
+  }
+
+  return controller;
 }

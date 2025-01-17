@@ -39,13 +39,22 @@ async function getApprove(
   console.log(spendingContract);
   console.dir(data);
 
+  const decimals = (await provider.call('ponzi_land', {
+    contractAddress: data.tokenAddress,
+    entrypoint: 'decimals',
+  })) as unknown as number;
+
+  console.log('decimals: ', decimals);
+
   return [
     {
       contractAddress: data.tokenAddress,
       entrypoint: 'approve',
       calldata: CallData.compile({
         spender: spendingContract,
-        amount: cairo.uint256(data.amount),
+        amount: cairo.uint256(
+          BigInt(data.amount) * BigInt(10) ** BigInt(decimals),
+        ),
       }),
     },
     spendingCall,
@@ -72,13 +81,13 @@ export async function wrappedActions(provider: DojoProvider) {
         {
           contractName: 'actions',
           entrypoint: 'bid',
-          calldata: [
+          calldata: CallData.compile({
             landLocation,
             tokenForSale,
-            sellPrice,
-            amountToStake,
+            sellPrice: cairo.uint256(sellPrice),
+            amountToStake: cairo.uint256(amountToStake),
             liquidityPool,
-          ],
+          }),
         },
       ),
       'ponzi_land',
@@ -108,8 +117,8 @@ export async function wrappedActions(provider: DojoProvider) {
             calldata: [
               landLocation,
               tokenForSale,
-              sellPrice,
-              amountToStake,
+              cairo.uint256(sellPrice),
+              cairo.uint256(amountToStake),
               liquidityPool,
             ],
           },
@@ -139,7 +148,7 @@ export async function wrappedActions(provider: DojoProvider) {
           {
             contractName: 'actions',
             entrypoint: 'increase_stake',
-            calldata: [landLocation, amountToStake],
+            calldata: [landLocation, cairo.uint256(amountToStake)],
           },
         ),
         'ponzi_land',

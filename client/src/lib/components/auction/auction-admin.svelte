@@ -32,6 +32,7 @@
         stakeAmount,
         sellAmount,
         selectedToken?.address!,
+        decayRate,
       )
       .then((res) => {
         console.log('Auction created:', res);
