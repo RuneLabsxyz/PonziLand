@@ -56,29 +56,50 @@
     return result;
   };
 
-  let aggregatedTaxes = $derived(async () => {
-    return await getAggregatedTaxes(land);
+  function handleClaimFromCoin() {
+    console.log('claiming from coin');
+  }
+
+  function fetchTaxes() {
+    getAggregatedTaxes(land).then((taxes) => {
+      aggregatedTaxes = taxes;
+    });
+  }
+
+  let aggregatedTaxes: {
+    tokenAddress: string;
+    tokenSymbol: string;
+    totalTax: bigint;
+  }[] = $state([]);
+
+  $effect(() => {
+    fetchTaxes();
   });
 </script>
 
 <div class="flex flex-col-reverse items-center animate-bounce">
-  {#await aggregatedTaxes() then taxes}
-    {#if taxes.length > 0}
+  {#if aggregatedTaxes.length > 0}
+    <button
+      onclick={() => {
+        handleClaimFromCoin();
+      }}
+      class="flex items-center"
+    >
       <img
         src="/assets/tokens/basic/coin.png"
         alt="coins"
         class="h-4 w-4 -mt-1 coin"
       />
-      <div class="h-2 w-full flex flex-col items-center justify-end">
-        {#each taxes as tax}
-          <div class="text-ponzi text-nowrap text-claims pointer-events-none">
-            + {tax.totalTax}
-            {tax.tokenSymbol}
-          </div>
-        {/each}
-      </div>
-    {/if}
-  {/await}
+    </button>
+    <div class="h-2 w-full flex flex-col items-center justify-end">
+      {#each aggregatedTaxes as tax}
+        <div class="text-ponzi text-nowrap text-claims pointer-events-none">
+          + {tax.totalTax}
+          {tax.tokenSymbol}
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>

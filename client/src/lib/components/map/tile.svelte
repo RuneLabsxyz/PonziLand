@@ -97,14 +97,14 @@
                background-size: cover;
                background-position: center;`}
 >
-  {#if selected && isOwner && isHovering}
+  <!-- {#if selected && isOwner && isHovering}
     <div
       class="absolute z-10"
       style="transform: translate(-49%, -50%); top: 50%; left: 50%;"
     >
       <LandTaxesCalculator />
     </div>
-  {/if}
+  {/if} -->
 
   {#if isOwner}
     <div
