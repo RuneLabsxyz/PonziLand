@@ -39,6 +39,9 @@
     startTime: number,
     currentTime = Date.now(),
   ): number {
+    if (floorPrice > startPrice) {
+      return floorPrice;
+    }
     const elapsedHours = (currentTime - startTime) / (60 * 60 * 1000);
     const decayFactor = Math.pow(0.99, elapsedHours); // Decay rate: 1% per hour
     const price = Math.max(startPrice * decayFactor, floorPrice); // Ensure not below floor price
@@ -50,9 +53,10 @@
     console.log('Buying land with data:', auctionInfo);
 
     //fetch auction currentprice
-    const currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
+    let currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
     if (!currentPrice) {
-      return;
+      console.error(`Could not get current price ${currentPrice ?? ''}`,);
+      currentPrice = 10000000000000000000000n;
     }
 
     const landSetup: LandSetup = {

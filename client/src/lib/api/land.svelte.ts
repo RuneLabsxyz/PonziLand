@@ -3,7 +3,7 @@ import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import { getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
 import type { BigNumberish, Result } from 'starknet';
-import { derived, get, type Readable } from 'svelte/store';
+import { derived, get, writable, type Readable } from 'svelte/store';
 
 export type TransactionResult = Promise<
   | {
@@ -111,6 +111,11 @@ export function useLands(): LandsStore | undefined {
       .getEntitiesByModel('ponzi_land', 'Land')
       .map((e) => e.models['ponzi_land']['Land'] as Land)
       .map((land) => {
+        // ------------------------
+        // Land With Meta data here
+        // ------------------------
+
+        // convert sell price to number
         let sellPrice;
         if (typeof land.sell_price === 'string') {
           sellPrice = parseInt(land.sell_price);
@@ -170,7 +175,7 @@ export function useLands(): LandsStore | undefined {
         },
         getCurrentAuctionPrice() {
           return sdk.client.actions.getCurrentAuctionPrice(land.location);
-        }
+        },
       }));
   });
 
@@ -225,3 +230,6 @@ export function useLands(): LandsStore | undefined {
     },
   };
 }
+
+// an array of nukable locations
+export const nukableStore = writable<bigint[]>([]);

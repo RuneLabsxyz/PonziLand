@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { useLands } from '$lib/api/land.svelte';
+  import { nukableStore, useLands } from '$lib/api/land.svelte';
   import {
     selectedLandMeta,
     type SelectedLandType,
@@ -8,6 +8,8 @@
   import data from '$lib/data.json';
 
   let { land } = $props<{ land: SelectedLandType }>();
+
+  let nukableLands = $state<bigint[]>([]);
 
   const getAggregatedTaxes = async (
     land: SelectedLandType,
@@ -29,20 +31,24 @@
     const tokenTaxMap: Record<string, bigint> = {};
 
     nextClaimTaxes?.forEach((tax) => {
+      console.log('pending tax', tax.amount);
+      if (tax.amount == 0n) return;
       const token = toHexWithPadding(tax.token_address);
-      const taxAmount = tax.amount;
-      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
+      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + tax.amount;
+      if (tax.can_be_nuked) {
+        nukableLands.push(tax.land_location);
+      }
     });
 
     pendingTaxes?.forEach((tax) => {
+      console.log('pending tax', tax.amount);
+      if (tax.amount == 0n) return;
       const token = toHexWithPadding(tax.token_address);
-      const taxAmount = tax.amount;
-      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
+      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + tax.amount;
     });
 
     // Convert the map to an array of objects
     const result = Object.entries(tokenTaxMap).map(([token, totalTax]) => {
-      console.log('Token:', token, 'Total Tax:', totalTax);
       const tokenSymbol =
         data.availableTokens.find((t) => t.address == token)?.name ?? 'Unknown';
 
@@ -53,11 +59,31 @@
       };
     });
 
+    nukableStore.update((nukableLandStore) => {
+      const result = [...nukableLandStore];
+      // for each nukable land, add the land to the store
+      nukableLands.forEach((land) => {
+        if (!result.includes(land)) nukableLandStore.push(land);
+      });
+
+      return result;
+    });
+
     return result;
   };
 
-  function handleClaimFromCoin() {
+  async function handleClaimFromCoin() {
     console.log('claiming from coin');
+    await land.claim().then(() => {
+      // remove nukable lands from the nukableStore
+      nukableStore.update((nukableLandsFromStore) => {
+        return nukableLandsFromStore.filter((land) =>
+          nukableLands.includes(land),
+        );
+      });
+      nukableLands = [];
+      fetchTaxes();
+    });
   }
 
   function fetchTaxes() {

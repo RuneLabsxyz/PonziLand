@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land.svelte';
+  import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
   import {
@@ -11,7 +11,6 @@
   } from '$lib/stores/stores.svelte';
   import { padAddress } from '$lib/utils';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
-  import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
@@ -113,6 +112,10 @@
     >
       <LandTaxClaimer {land} />
     </div>
+  {/if}
+
+  {#if $nukableStore.includes(BigInt(land.location)) }
+    <div class="text-ponzi animate-pulse">NUKABLE</div>
   {/if}
 </div>
 
