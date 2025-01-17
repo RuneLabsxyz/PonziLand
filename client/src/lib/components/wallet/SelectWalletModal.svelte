@@ -5,7 +5,6 @@
   import { setupAccount, USE_BURNER, useAccount } from '$lib/contexts/account';
   import Button from '../ui/button/button.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
-  import wasm from 'vite-plugin-wasm';
 
   let visible = $state(false);
   let loading = $state(true);
