@@ -312,54 +312,98 @@ fn test_claim_and_buy_actions() {
 
 #[test]
 fn test_nuke_action() {
-    //setup environment
+    // Setup environment
     let (mut world, actions_system, erc20) = create_setup();
     let erc20_neighbor_1 = deploy_erc20(NEIGHBOR_1());
-
-    //permisions for the contract
-    set_contract_address(RECIPIENT());
-    erc20.approve(actions_system.contract_address, 10000);
-
-    let allowance = erc20.allowance(RECIPIENT(), actions_system.contract_address);
-    assert(allowance >= 10000, 'Approval failed');
-
-    //create lands
+    let erc20_neighbor_2 = deploy_erc20(NEIGHBOR_2());
+    let erc20_neighbor_3 = deploy_erc20(NEIGHBOR_3());
+    
     set_block_timestamp(100);
-
-    //land 1
-    actions_system.auction(1280, 100, 50, erc20.contract_address, 2);
-    actions_system.bid(1280, erc20.contract_address, 500, 1000, LIQUIDITY_POOL());
-    let claimer_land: Land = world.read_model(1280);
-    assert(claimer_land.owner == RECIPIENT(), 'error with the land owner');
-
-    //neighboors
+    // Setup permissions for NEIGHBOR_1 (target land that will be nuked)
     set_contract_address(NEIGHBOR_1());
     erc20_neighbor_1.approve(actions_system.contract_address, 10000);
 
+    // Create target land (1281) with small stake that will be nuked
     actions_system.auction(1281, 100, 50, erc20_neighbor_1.contract_address, 2);
-    actions_system.bid(1281, erc20_neighbor_1.contract_address, 500, 10, LIQUIDITY_POOL());
+    actions_system.bid(1281, erc20_neighbor_1.contract_address, 1000, 1000, LIQUIDITY_POOL()); // Small stake
 
-    //permisions for transfer tokens
+    // Create surrounding lands that will generate taxes
+    set_block_timestamp(1000);
+    // Land 1280 (neighbor)
     set_contract_address(RECIPIENT());
-    erc20_neighbor_1.approve(RECIPIENT(), 100);
+    erc20.approve(actions_system.contract_address, 100000);
+    actions_system.auction(1280, 100, 50, erc20.contract_address, 2);
+    actions_system.bid(1280, erc20.contract_address, 59900, 1000, LIQUIDITY_POOL());
+     set_block_timestamp(2000);
 
-    // Fetch land to check its initial state
-    let nuked_land = actions_system.get_land(1281);
-    assert(nuked_land.owner != ContractAddressZeroable::zero(), 'owner must exist');
-    assert(nuked_land.sell_price != 0, 'sell_price must exist');
-    assert(nuked_land.pool_key != ContractAddressZeroable::zero(), 'pool_key must exist');
+    // Land 1282 (neighbor) - Setup NEIGHBOR_2
+    set_contract_address(NEIGHBOR_2());
+    erc20_neighbor_2.approve(actions_system.contract_address, 100000);
+    actions_system.auction(1282, 100, 50, erc20_neighbor_2.contract_address, 2);
+    actions_system.bid(1282, erc20_neighbor_2.contract_address, 59900, 1000, LIQUIDITY_POOL());
+     set_block_timestamp(3000);
+     
+    // Land 1217 (neighbor) - Setup NEIGHBOR_3
+    set_contract_address(NEIGHBOR_3());
+    erc20_neighbor_3.approve(actions_system.contract_address, 100000);
+    actions_system.auction(1217, 100, 50, erc20_neighbor_3.contract_address, 2);
+    actions_system.bid(1217, erc20_neighbor_3.contract_address, 5900, 1000, LIQUIDITY_POOL());
+    
+    // Generate taxes by claiming neighbor lands but not land 1281
+    set_block_timestamp(11100); // Large time jump to accumulate taxes
+    
+    // Claim taxes for surrounding lands
+    set_contract_address(RECIPIENT());
+    actions_system.claim(1280);
+    
+    // Verify pending taxes exist for land 1281 and 1217
 
-    // Simulate time progression
-    set_block_timestamp(5110);
+    let pending_taxes_neighbor_1 = actions_system.get_pending_taxes_for_land(1281, NEIGHBOR_1());
+    assert(pending_taxes_neighbor_1.len() > 0, 'Should have pending taxes');
+    // Store initial balance to compare after nuke
+    let initial_balance_neighbor_1 = erc20.balanceOf(NEIGHBOR_1());
+    // Verify pending taxes exist for land  1217
+    let pending_taxes_neighbor_3 = actions_system.get_pending_taxes_for_land(1217, NEIGHBOR_3());
+    assert(pending_taxes_neighbor_3.len() > 0, 'Should have pending taxes');
+    // Store initial balance to compare after nuke
+    let initial_balance_neighbor_3 = erc20_neighbor_1.balanceOf(NEIGHBOR_3());
 
-    actions_system.claim(claimer_land.location);
+    //Generate taxes
+    set_block_timestamp(20000);
+    set_contract_address(NEIGHBOR_2());
+    actions_system.claim(1282);
 
-    // Verify that the land has been nuked
-    let nuked_land = actions_system.get_land(1281);
+    set_block_timestamp(200000);
+    set_contract_address(NEIGHBOR_2());
+    actions_system.claim(1282);
 
-    assert(nuked_land.owner == ContractAddressZeroable::zero(), 'owner must be 0');
-    assert(nuked_land.sell_price == 0, 'sell_price must be 0');
-    assert(nuked_land.pool_key == ContractAddressZeroable::zero(), 'pool_key must be 0');
+    set_contract_address(RECIPIENT());
+    actions_system.claim(1280);
+
+
+    // Verify the land 1281 was nuked
+    let nuked_land:Land = world.read_model(1281);
+    assert(nuked_land.owner == ContractAddressZeroable::zero(), 'Land should be nuked');
+    assert(nuked_land.sell_price == 0, 'Price should be 0');
+    assert(nuked_land.pool_key == ContractAddressZeroable::zero(), 'Pool should be 0');
+
+    // Verify that pending taxes were paid to the owner during nuke
+    let final_balance = erc20.balanceOf(NEIGHBOR_1());
+    assert(final_balance > initial_balance_neighbor_1, 'Should receive pending taxes');
+    let pending_taxes_neighbor_1 = actions_system.get_pending_taxes_for_land(1281, NEIGHBOR_1());
+    assert(pending_taxes_neighbor_1.len() == 0, 'Should not have pending taxes');
+
+    // Verify the land 1217 was nuked
+    let nuked_land = actions_system.get_land(1217);
+    assert(nuked_land.owner == ContractAddressZeroable::zero(), 'Land should be nuked');
+    assert(nuked_land.sell_price == 0, 'Price should be 0');
+    assert(nuked_land.pool_key == ContractAddressZeroable::zero(), 'Pool should be 0');
+
+    // Verify that pending taxes were paid to the owner during nuke
+    let final_balance =erc20_neighbor_1.balanceOf(NEIGHBOR_3());
+    assert(final_balance > initial_balance_neighbor_3, 'Should receive pending taxes');
+    let pending_taxes_neighbor_3 = actions_system.get_pending_taxes_for_land(1217, NEIGHBOR_3());
+    assert(pending_taxes_neighbor_3.len() == 0, 'Should not have pending taxes');
 }
 
 #[test]

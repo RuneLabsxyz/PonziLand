@@ -186,7 +186,6 @@ pub mod actions {
 
             let land = store.land(land_location);
             let caller = get_caller_address();
-
             assert(land.owner == caller, 'not the owner');
             self.internal_claim(store, land);
         }
@@ -196,10 +195,13 @@ pub mod actions {
         fn nuke(ref self: ContractState, land_location: u64,) {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
-
             let land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
-            assert(self.get_stake_balance(land.owner) == 0, 'land with stake');
+            assert(land.stake_amount == 0, 'land with stake');
+            let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+            if pending_taxes.len() != 0 {
+                self.payable._claim_taxes(pending_taxes, land.owner, land.location);
+            }
 
             let owner_nuked = land.owner;
 
