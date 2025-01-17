@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import process from 'node:process';
 const profile = process.env.DOJO_PROFILE?.toLowerCase() ?? 'dev';
