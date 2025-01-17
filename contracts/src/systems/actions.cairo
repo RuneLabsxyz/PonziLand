@@ -199,7 +199,7 @@ pub mod actions {
 
             let land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
-            assert(self.get_stake_balance(land.owner) == 0, 'land with stake');
+            assert(land.stake_amount == 0, 'land with stake');
 
             let owner_nuked = land.owner;
 
