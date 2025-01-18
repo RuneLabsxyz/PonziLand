@@ -1,19 +1,16 @@
 // Get the wanted system from the environment
 
-import { dojoConfig, type DojoConfig } from '$lib/dojoConfig';
-import type { AccountInterface } from 'starknet';
-import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
-import { setupBurnerAccount, useBurnerAccount } from '$lib/accounts/burner';
-import { WALLET_API } from '@starknet-io/types-js';
-import getStarknet from '@starknet-io/get-starknet-core';
-import { isWalletObject } from '@starknet-io/get-starknet-core';
-import { setupController, SvelteController } from '$lib/accounts/controller';
 import { browser } from '$app/environment';
-import { getContext, setContext } from 'svelte';
-import type { Store } from './store';
+import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
 import { ArgentXAccount } from '$lib/accounts/argentx';
-import { list } from 'postcss';
+import { setupBurnerAccount } from '$lib/accounts/burner';
+import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
+import { dojoConfig } from '$lib/dojoConfig';
+import getStarknet from '@starknet-io/get-starknet-core';
+import { WALLET_API } from '@starknet-io/types-js';
+import type { AccountInterface } from 'starknet';
+import { getContext, setContext } from 'svelte';
 
 /// Common functions required to be implemented by all account providers;
 

@@ -11,8 +11,6 @@
 
   const { store, client: sdk, accountManager } = useDojo();
 
-  const accountData = $derived(accountManager.getProvider()!.getAccount());
-
   let { land } = $props<{
     land: Partial<LandWithActions> & {
       type: 'grass' | 'house' | 'auction';
@@ -23,7 +21,17 @@
     };
   }>();
 
-  let isOwner = $derived(land?.owner == padAddress(accountData?.address ?? ''));
+  let isOwner = $derived(() => {
+    const accountProvider = accountManager.getProvider();
+    if (!accountProvider) {
+      return false;
+    }
+    const accountData = accountProvider.getAccount();
+    if (!accountData) {
+      return false;
+    }
+    return land?.owner == padAddress(accountData.address);
+  });
   let selected = $derived($selectedLand?.location === land.location);
   let isHovering = $derived($mousePosCoords?.location == land.location);
 
@@ -100,7 +108,7 @@
     </div>
   {/if} -->
 
-  {#if isOwner}
+  {#if isOwner()}
     <div
       class="absolute z-10 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"

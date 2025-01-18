@@ -55,7 +55,7 @@
     //fetch auction currentprice
     let currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
     if (!currentPrice) {
-      console.error(`Could not get current price ${currentPrice ?? ''}`,);
+      console.error(`Could not get current price ${currentPrice ?? ''}`);
       currentPrice = 10000000000000000000000n;
     }
 
@@ -65,7 +65,7 @@
       amountToStake: stakeAmount,
       liquidityPoolAddress: toHexWithPadding(0),
       tokenAddress: $selectedLandMeta?.tokenAddress as string,
-      currentPrice: currentPrice + (currentPrice / 10n),
+      currentPrice: currentPrice + currentPrice / 10n,
     };
 
     if (!$selectedLand?.location) {
