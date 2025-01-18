@@ -9,6 +9,7 @@
 
   let { land } = $props<{ land: SelectedLandType }>();
 
+  let waiting = $state(false);
   let nukableLands = $state<bigint[]>([]);
 
   const getAggregatedTaxes = async (
@@ -73,20 +74,31 @@
 
   async function handleClaimFromCoin() {
     console.log('claiming from coin');
-    await land.claim().then(() => {
-      // remove nukable lands from the nukableStore
-      nukableStore.update((nukableLandsFromStore) => {
-        return nukableLandsFromStore.filter((land) =>
-          nukableLands.includes(land),
-        );
+    waiting = true;
+    await land
+      .claim()
+      .then(() => {
+        // remove nukable lands from the nukableStore
+        nukableStore.update((nukableLandsFromStore) => {
+          return nukableLandsFromStore.filter((land) =>
+            nukableLands.includes(land),
+          );
+        });
+        nukableLands = [];
+        setTimeout(() => {
+          fetchTaxes().then(() => {
+            waiting = false;
+          });
+        }, 5000);
+      })
+      .catch(() => {
+        console.error('error claiming from coin');
+        waiting = false;
       });
-      nukableLands = [];
-      fetchTaxes();
-    });
   }
 
-  function fetchTaxes() {
-    getAggregatedTaxes(land).then((taxes) => {
+  async function fetchTaxes() {
+    await getAggregatedTaxes(land).then((taxes) => {
       aggregatedTaxes = taxes;
     });
   }
@@ -103,7 +115,7 @@
 </script>
 
 <div class="flex flex-col-reverse items-center animate-bounce">
-  {#if aggregatedTaxes.length > 0}
+  {#if aggregatedTaxes.length > 0 && !waiting}
     <button
       onclick={() => {
         handleClaimFromCoin();
