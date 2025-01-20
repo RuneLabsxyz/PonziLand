@@ -180,6 +180,12 @@
       {/if}
     {/if}
   {/if}
+
+  {#if isOwner()}
+    <div class="absolute top-0 left-1/2 h-2 w-2 -translate-x-1/2">
+      <img src="/assets/ui/crown.png" alt="owned" />
+    </div>
+  {/if}
 </div>
 
 <style>
