@@ -3,9 +3,15 @@
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
   import { moveCameraToLocation } from '$lib/stores/camera';
-  import { mousePosCoords, selectedLand } from '$lib/stores/stores.svelte';
-  import { padAddress, toBigInt } from '$lib/utils';
+  import {
+    mousePosCoords,
+    selectedLand,
+    selectedLandMeta,
+    uiStore,
+  } from '$lib/stores/stores.svelte';
+  import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
+  import Button from '../ui/button/button.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
@@ -74,6 +80,20 @@
   $effect(() => {
     backgroundImage = getCastleImage();
   });
+
+  const handleBuyLandClick = () => {
+    console.log('Buy land clicked');
+
+    uiStore.showModal = true;
+    uiStore.modalData = {
+      location: hexStringToNumber($selectedLandMeta!.location),
+      // TODO: Enforce null checks here
+      sellPrice: $selectedLandMeta!.sellPrice ?? 0,
+      tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
+      tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
+      owner: $selectedLandMeta!.owner || undefined,
+    };
+  };
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -99,7 +119,6 @@
                background-size: cover;
                background-position: center;`}
 >
-
   {#if isOwner()}
     <div
       class="absolute z-10 top-1 left-1/2"
@@ -111,6 +130,39 @@
 
   {#if $nukableStore.includes(toBigInt(land.location))}
     <div class="text-ponzi animate-pulse">NUKABLE</div>
+  {/if}
+
+  {#if selected}
+    {#if land.type === 'auction'}
+      <!-- <Button
+        size="sm"
+        class="absolute bottom-0 left-1/2 z-20"
+        style="transform: translate(-50%, 50%)"
+        onclick={() => {}}
+      >
+        BID
+      </Button> -->
+    {/if}
+    {#if land.type == 'house'}
+      {#if isOwner()}
+        <!-- <Button
+          size="sm"
+          class="absolute bottom-0 left-1/2 z-20"
+          style="transform: translate(-50%, 50%)"
+        >
+          LAND INFO
+        </Button> -->
+      {:else}
+        <Button
+          size="sm"
+          class="absolute bottom-0 left-1/2 z-20"
+          style="transform: translate(-50%, 50%)"
+          onclick={handleBuyLandClick}
+        >
+          BUY LAND
+        </Button>
+      {/if}
+    {/if}
   {/if}
 </div>
 
@@ -134,5 +186,6 @@
 
   .selected {
     border: 1px solid #ff0;
+    z-index: 20;
   }
 </style>

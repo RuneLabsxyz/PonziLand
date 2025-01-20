@@ -52,7 +52,7 @@
   <div class="flex flex-col">
     {#each playerLands() as land}
       <button
-        class="p-3 text-left flex gap-2"
+        class="p-3 text-left flex gap-2 text-ponzi"
         onclick={() => {
           moveCameraTo(
             Math.floor(land.location % 64) + 1,
