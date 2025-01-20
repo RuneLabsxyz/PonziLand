@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { AuctionData, BuyData, TileInfo } from '$lib/interfaces';
-  import AuctionModal from './auctionmodal.svelte';
+  import AuctionModal from './auction/auction-modal.svelte';
   import BuyModal from './buy/buy-modal.svelte';
   import LandHud from './land/hud/land-hud.svelte';
   import WalletLookup from './wallet/wallet-lookup.svelte';
