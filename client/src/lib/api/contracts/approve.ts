@@ -158,13 +158,16 @@ export async function wrappedActions(provider: DojoProvider) {
         [
           {
             tokenAddress: stakingToken,
-            amount: amountToStake,
+            amount: BigInt(amountToStake),
           },
         ],
         {
           contractName: 'actions',
           entrypoint: 'increase_stake',
-          calldata: [landLocation, amountToStake],
+          calldata: CallData.compile({
+            landLocation,
+            amountToStake: cairo.uint256(BigInt(amountToStake)),
+          }),
         },
       );
 
