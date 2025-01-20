@@ -265,6 +265,7 @@ fn test_nuke_action() {
 
     // Create target land (1281) with small stake that will be nuked
     initialize_land(actions_system, erc20_neighbor_1, NEIGHBOR_1(), 1281, 1000, 1000);
+    let land_1281: Land = world.read_model(1281);
 
     // Create surrounding lands that will generate taxes
     set_block_timestamp(1000);
@@ -275,6 +276,7 @@ fn test_nuke_action() {
 
     set_block_timestamp(3000);
     initialize_land(actions_system, erc20_neighbor_3, NEIGHBOR_3(), 1217, 5900, 1000);
+    let land_1217: Land = world.read_model(1217);
 
     // Generate taxes by claiming neighbor lands but not land 1281
     set_block_timestamp(11100); // Large time jump to accumulate taxes
@@ -308,7 +310,13 @@ fn test_nuke_action() {
 
     // Verify the land 1281 was nuked
     verify_land(
-        world, 1281, ContractAddressZeroable::zero(), 0, ContractAddressZeroable::zero(), 0, 0
+        world,
+        1281,
+        ContractAddressZeroable::zero(),
+        land_1281.sell_price * 10,
+        ContractAddressZeroable::zero(),
+        0,
+        0
     );
 
     // Verify that pending taxes were paid to the owner during nuke
@@ -319,7 +327,13 @@ fn test_nuke_action() {
 
     // Verify the land 1217 was nuked
     verify_land(
-        world, 1217, ContractAddressZeroable::zero(), 0, ContractAddressZeroable::zero(), 0, 0
+        world,
+        1217,
+        ContractAddressZeroable::zero(),
+        land_1217.sell_price * 10,
+        ContractAddressZeroable::zero(),
+        0,
+        0
     );
 
     // Verify that pending taxes were paid to the owner during nuke

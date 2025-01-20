@@ -3,6 +3,7 @@ use dojo::model::{ModelStorage, ModelValueStorage};
 
 use ponzi_land::models::land::Land;
 use ponzi_land::models::auction::Auction;
+use starknet::contract_address::ContractAddressZeroable;
 
 #[derive(Copy, Drop)]
 struct Store {
@@ -40,7 +41,15 @@ impl StoreImpl of StoreTrait {
 
     // Deleter
     #[inline(always)]
-    fn delete_land(mut self: Store, land: Land) {
-        self.world.erase_model(@land);
+    fn delete_land(mut self: Store, mut land: Land) {
+        // self.world.erase_model(@land);
+        land.owner = ContractAddressZeroable::zero();
+        land.block_date_bought = 0;
+        land.sell_price = 0;
+        land.token_used = ContractAddressZeroable::zero();
+        land.pool_key = ContractAddressZeroable::zero();
+        land.last_pay_time = 0;
+        land.stake_amount = 0;
+        self.world.write_model(@land);
     }
 }
