@@ -42,6 +42,8 @@ impl StoreImpl of StoreTrait {
     // Deleter
     #[inline(always)]
     fn delete_land(mut self: Store, mut land: Land) {
+
+        //TODO:Waiting for a fix of dojo
         // self.world.erase_model(@land);
         land.owner = ContractAddressZeroable::zero();
         land.block_date_bought = 0;
