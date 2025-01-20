@@ -15,6 +15,7 @@
     console.log('Buy land clicked');
 
     uiStore.showModal = true;
+    uiStore.modalType = 'buy';
     uiStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
       // TODO: Enforce null checks here

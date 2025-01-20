@@ -85,6 +85,7 @@
     console.log('Buy land clicked');
 
     uiStore.showModal = true;
+    uiStore.modalType = 'buy';
     uiStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
       // TODO: Enforce null checks here
@@ -93,6 +94,21 @@
       tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
       owner: $selectedLandMeta!.owner || undefined,
     };
+  };
+
+  const handleBidClick = () => {
+    console.log('Bid land clicked');
+
+    uiStore.showModal = true;
+    uiStore.modalType = 'bid';
+    // uiStore.modalData = {
+    //   location: hexStringToNumber($selectedLandMeta!.location),
+    //   // TODO: Enforce null checks here
+    //   sellPrice: $selectedLandMeta!.sellPrice ?? 0,
+    //   tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
+    //   tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
+    //   owner: $selectedLandMeta!.owner || undefined,
+    // };
   };
 </script>
 
@@ -134,14 +150,14 @@
 
   {#if selected}
     {#if land.type === 'auction'}
-      <!-- <Button
+      <Button
         size="sm"
         class="absolute bottom-0 left-1/2 z-20"
         style="transform: translate(-50%, 50%)"
-        onclick={() => {}}
+        onclick={handleBidClick}
       >
         BID
-      </Button> -->
+      </Button>
     {/if}
     {#if land.type == 'house'}
       {#if isOwner()}

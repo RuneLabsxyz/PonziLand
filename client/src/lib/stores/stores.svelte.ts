@@ -1,9 +1,8 @@
-import { padAddress, toHexWithPadding } from '$lib/utils';
-import { derived, writable } from 'svelte/store';
-import data from '$lib/data.json';
-import type { AuctionData, TileInfo } from '$lib/interfaces';
 import type { TransactionResult } from '$lib/api/land.svelte';
-import type { Result } from 'starknet';
+import data from '$lib/data.json';
+import type { TileInfo } from '$lib/interfaces';
+import { toHexWithPadding } from '$lib/utils';
+import { derived, writable } from 'svelte/store';
 
 export type SelectedLandType = {
   type: string;
@@ -72,10 +71,10 @@ export const accountAddress = writable<string | null>(null);
 
 export let uiStore = $state<{
   showModal: boolean;
+  modalType: 'bid' | 'buy' | null;
   modalData: TileInfo | null;
-  auctionData: AuctionData | null;
 }>({
   showModal: false,
+  modalType: null,
   modalData: null,
-  auctionData: null,
 });

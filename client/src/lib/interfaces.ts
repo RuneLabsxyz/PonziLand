@@ -12,13 +12,6 @@ export interface Token {
   };
 }
 
-export interface ModalData {
-  location: number;
-  sellPrice: number;
-  tokenUsed: string;
-  owner?: string;
-}
-
 export interface TileInfo {
   location: number;
   sellPrice: number;
@@ -41,9 +34,4 @@ export interface Bid {
   price: number;
   bidder: string;
   timestamp: number;
-}
-
-export interface AuctionData {
-  active: boolean;
-  bids: Bid[];
 }
