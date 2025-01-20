@@ -194,8 +194,8 @@ pub mod actions {
         // TODO:see if we want pass this function into internalTrait
         fn nuke(ref self: ContractState, land_location: u64,) {
             let mut world = self.world_default();
-            let store = StoreTrait::new(world);
-            let land = store.land(land_location);
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land with stake');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
@@ -204,12 +204,26 @@ pub mod actions {
             }
 
             let owner_nuked = land.owner;
-
+            let sell_price = land.sell_price;
+            let token_for_sale = land.token_used;
             //delete land
             store.delete_land(land);
 
             //emit event de nuke land
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
+
+            self.auction(land_location, sell_price * 10, 1, token_for_sale, 200,);
+
+            store
+                .world
+                .emit_event(
+                    @NewAuctionEvent {
+                        land_location,
+                        start_time: get_block_timestamp(),
+                        start_price: sell_price * 10,
+                        floor_price: 0
+                    }
+                );
         }
 
         //Bid offer(in a main currency(Lords?))
