@@ -13,6 +13,7 @@
   let currentTime = $state(Date.now());
 
   let selectedToken = $state<Token | null>(null);
+  //TODO: Change defaults values into an error component
   let stakeAmount = $state<number>(100);
   let sellAmount = $state<number>(100);
 

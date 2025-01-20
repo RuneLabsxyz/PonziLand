@@ -28,6 +28,7 @@
     uiStore.showModal = true;
     uiStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
+      // TODO: Enforce null checks here
       sellPrice: $selectedLandMeta!.sellPrice ?? 0,
       tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
       tokenAddress: $selectedLandMeta!.tokenAddress ?? '',

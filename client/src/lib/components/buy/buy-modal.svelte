@@ -27,9 +27,9 @@
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: toHexWithPadding(sellAmount),
       amountToStake: toHexWithPadding(stakeAmount),
-      liquidityPoolAddress: selectedToken?.lpAddress || '',
-      tokenAddress: $selectedLandMeta?.tokenAddress || '',
-      currentPrice: $selectedLandMeta?.sellPrice || '',
+      liquidityPoolAddress: selectedToken?.lpAddress ?? '',
+      tokenAddress: $selectedLandMeta?.tokenAddress ?? '',
+      currentPrice: $selectedLandMeta?.sellPrice ?? '',
     };
 
     if (!$selectedLandMeta) {
