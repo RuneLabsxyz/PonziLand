@@ -23,7 +23,7 @@ async function getApprove(
   data: ApprovalData[],
   spendingCall: DojoCall | Call,
   namespace: string = 'ponzi_land',
-): Promise<[Call[], DojoCall | Call]> {
+): Promise<(DojoCall | Call)[]> {
   let spendingContract;
 
   if ('contractName' in spendingCall) {
@@ -47,7 +47,7 @@ async function getApprove(
     };
   });
 
-  return [approvals, spendingCall];
+  return [...approvals, spendingCall];
 }
 
 export async function wrappedActions(provider: DojoProvider) {
@@ -97,7 +97,7 @@ export async function wrappedActions(provider: DojoProvider) {
 
     return await provider.execute(
       snAccount,
-      [...calls[0], calls[1]],
+      calls,
       'ponzi_land',
     );
   };
@@ -146,7 +146,7 @@ export async function wrappedActions(provider: DojoProvider) {
 
       return await provider.execute(
         snAccount,
-        [...calls[0], calls[1]],
+        calls,
         'ponzi_land',
       );
     } catch (error) {
@@ -178,7 +178,7 @@ export async function wrappedActions(provider: DojoProvider) {
 
       return await provider.execute(
         snAccount,
-        [...calls[0], calls[1]],
+        calls,
         'ponzi_land',
       );
     } catch (error) {
