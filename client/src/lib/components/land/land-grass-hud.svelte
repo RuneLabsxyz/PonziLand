@@ -1,15 +1,14 @@
 <script lang="ts">
   import { useLands } from '$lib/api/land.svelte';
   import type { Token } from '$lib/interfaces';
-  import { selectedLand } from '$lib/stores/stores.svelte';
-  import BuySellForm from '../buy/buy-sell-form.svelte';
-  import { Button } from '../ui/button';
+  import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
+  import LandOverview from './land-overview.svelte';
 
   const landStore = useLands();
 
   let selectedToken = $state<Token | null>(null);
-  let stakeAmount = $state<number>(100);
-  let sellAmount = $state<number>(10);
+  let startPrice = $state<number>(100);
+  let floorPrice = $state<number>(10);
 
   const handleCreateAuction = () => {
     if (!$selectedLand || !selectedToken) {
@@ -20,8 +19,8 @@
     landStore
       ?.auctionLand(
         $selectedLand.location,
-        stakeAmount,
-        sellAmount,
+        startPrice,
+        floorPrice,
         selectedToken?.address,
         2,
       )
@@ -31,6 +30,9 @@
   };
 </script>
 
-<BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
-
-<Button on:click={handleCreateAuction}>Create Auction</Button>
+<div class="flex h-full items-stretch p-2">
+  <LandOverview data={$selectedLandMeta} />
+  <div class="flex flex-1 justify-center items-center">
+    <p>EMPTY LAND</p>
+  </div>
+</div>

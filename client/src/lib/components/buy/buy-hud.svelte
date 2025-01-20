@@ -101,20 +101,6 @@
       }}
       class="mt-2 text-xl text-ponzi">BUY LAND</Button
     >
-    <Button
-      on:click={() => {
-        handleNukeLandClick();
-      }}
-      class="mt-2 text-xl text-ponzi">NUKE</Button
-    >
-    <Button
-      on:click={() => {
-        handleGetTaxesClick();
-      }}
-      class="mt-2 text-xl text-ponzi"
-    >
-      GET TAXES
-    </Button>
     {#if isOwner}
       <Button
         on:click={() => {
