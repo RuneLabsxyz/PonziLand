@@ -10,7 +10,7 @@
 
   const promise = Promise.all([
     setupClient(dojoConfig),
-    setupAccount(dojoConfig),
+    setupAccount(),
     setupStore(),
   ]);
 
@@ -39,10 +39,10 @@
     }
 
     promise
-      .then(async ([_, accountProvider]) => {
-        if (accountProvider?.getAccount() == null) {
+      .then(async ([_, accountManager]) => {
+        if (accountManager?.getProvider()?.getAccount() == null) {
           console.info('The user is not logged in! Attempting login.');
-          await accountProvider?.connect();
+          await accountManager.getProvider()?.connect();
         }
 
         clearLoading();
