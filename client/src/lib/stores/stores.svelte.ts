@@ -31,6 +31,12 @@ export type SelectedLandType = {
     | undefined
   >;
   getCurrentAuctionPrice(): Promise<bigint | undefined>;
+  increaseStake(amount: bigint): Promise<
+    | {
+        transaction_hash: string;
+      }
+    | undefined
+  >;
 } | null;
 
 export const selectedLand = writable<SelectedLandType>(null);

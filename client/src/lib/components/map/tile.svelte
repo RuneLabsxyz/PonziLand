@@ -60,6 +60,7 @@
       getPendingTaxes: land.getPendingTaxes,
       getNextClaim: land.getNextClaim,
       getCurrentAuctionPrice: land.getCurrentAuctionPrice,
+      increaseStake: land.increaseStake,
     };
   }
 
