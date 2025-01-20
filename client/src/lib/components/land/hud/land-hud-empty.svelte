@@ -2,7 +2,7 @@
   import { useLands } from '$lib/api/land.svelte';
   import type { Token } from '$lib/interfaces';
   import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
-  import LandOverview from './land-overview.svelte';
+  import LandOverview from '../land-overview.svelte';
 
   const landStore = useLands();
 

@@ -3,8 +3,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import { padAddress } from '$lib/utils';
-  import BuyHud from '../buy/buy-hud.svelte';
-  import { Card } from '../ui/card';
+  import { Card } from '../../ui/card';
   import LandHudAuction from './land-hud-auction.svelte';
   import LandHudEmpty from './land-hud-empty.svelte';
   import LandHudOther from './land-hud-other.svelte';

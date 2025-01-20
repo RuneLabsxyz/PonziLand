@@ -1,19 +1,29 @@
 <script lang="ts">
-  import account from '$lib/account.svelte';
   import { useLands } from '$lib/api/land.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
   import {
     hexStringToNumber,
     locationIntToString,
-    padAddress,
     shortenHex,
   } from '$lib/utils';
-  import LandOverview from '../land/land-overview.svelte';
-  import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
-  import { Button } from '../ui/button';
+  import LandOverview from '../../land/land-overview.svelte';
+  import { Button } from '../../ui/button';
 
   let landStore = useLands();
+
+  const handleBuyLandClick = () => {
+    console.log('Buy land clicked');
+
+    uiStore.showModal = true;
+    uiStore.modalData = {
+      location: hexStringToNumber($selectedLandMeta!.location),
+      // TODO: Enforce null checks here
+      sellPrice: $selectedLandMeta!.sellPrice ?? 0,
+      tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
+      tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
+      owner: $selectedLandMeta!.owner || undefined,
+    };
+  };
 
   const handleClaimLandClick = () => {
     console.log('Claim land clicked');
@@ -21,14 +31,23 @@
       console.log('Claimed', res);
     });
   };
+
+  const handleNukeLandClick = () => {
+    console.log('Nuke Land Clicked');
+    $selectedLandMeta?.nuke().then((res) => {
+      console.log('Nuked', res);
+    });
+  };
+
+  const handleGetTaxesClick = () => {
+    console.log('Get Taxes Clicked');
+    landStore?.getPendingTaxes($selectedLandMeta?.owner!).then((res) => {
+      console.log('Taxes', res);
+    });
+  };
 </script>
 
 <div class="flex gap-4 relative">
-  <div class="absolute -top-8 left-0 right-0">
-    <div class="flex justify-center">
-      <img src="/assets/ui/crown.png" alt="owner" class="h-7 w-8" />
-    </div>
-  </div>
   <LandOverview data={$selectedLandMeta} />
   <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
     <div class="flex w-full">
@@ -60,12 +79,9 @@
     </div>
     <Button
       on:click={() => {
-        handleClaimLandClick();
+        handleBuyLandClick();
       }}
-      class="mt-2 text-xl text-ponzi">CLAIM</Button
+      class="mt-2 text-xl text-ponzi">BUY LAND</Button
     >
-    <hr />
-    <div>Claimable Taxes:</div>
-    <LandTaxesCalculator showAggregated />
   </div>
 </div>

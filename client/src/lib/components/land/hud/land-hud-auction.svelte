@@ -5,8 +5,8 @@
   import type { Auction } from '$lib/models.gen';
   import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
-  import Button from '../ui/button/button.svelte';
-  import BuySellForm from '../buy/buy-sell-form.svelte';
+  import Button from '../../ui/button/button.svelte';
+  import BuySellForm from '../../buy/buy-sell-form.svelte';
   import type { Token } from '$lib/interfaces';
 
   let auctionInfo = $state<Auction>();
