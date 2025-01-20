@@ -297,7 +297,7 @@ mod PayableComponent {
 
             self._discount_stake_for_taxes(land.owner, tax_to_distribute);
 
-            land.last_pay_time = get_block_timestamp();
+            land.last_pay_time = current_time;
             land.stake_amount = land.stake_amount - tax_to_distribute;
             store.set_land(land);
             if is_nuke {
