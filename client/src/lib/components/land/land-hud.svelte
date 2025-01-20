@@ -1,19 +1,32 @@
 <script>
+  import account from '$lib/account.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
-  import AuctionHud from '../auction/auction-hud.svelte';
+  import { padAddress } from '$lib/utils';
   import BuyHud from '../buy/buy-hud.svelte';
   import { Card } from '../ui/card';
-  import LandGrassHud from './land-grass-hud.svelte';
+  import LandHudAuction from './land-hud-auction.svelte';
+  import LandHudEmpty from './land-hud-empty.svelte';
+  import LandHudOther from './land-hud-other.svelte';
+  import LandHudOwned from './land-hud-owned.svelte';
+
+  const { store, client: sdk } = useDojo();
+
+  const address = $derived(account.address);
+
+  let isOwner = $derived($selectedLandMeta?.owner == padAddress(address ?? ''));
 </script>
 
 {#if $selectedLandMeta}
   <Card class="fixed bottom-0 right-0 z-50 w-96 bg-ponzi">
     {#if $selectedLandMeta.isAuction}
-      <AuctionHud />
+      <LandHudAuction />
     {:else if $selectedLandMeta.isEmpty}
-      <LandGrassHud />
+      <LandHudEmpty />
+    {:else if isOwner}
+      <LandHudOwned />
     {:else}
-      <BuyHud />
+      <LandHudOther />
     {/if}
   </Card>
 {/if}
