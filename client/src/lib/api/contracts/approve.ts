@@ -95,11 +95,7 @@ export async function wrappedActions(provider: DojoProvider) {
       ]),
     });
 
-    return await provider.execute(
-      snAccount,
-      calls,
-      'ponzi_land',
-    );
+    return await provider.execute(snAccount, calls, 'ponzi_land');
   };
 
   const actions_buy = async (
@@ -144,11 +140,7 @@ export async function wrappedActions(provider: DojoProvider) {
         }),
       });
 
-      return await provider.execute(
-        snAccount,
-        calls,
-        'ponzi_land',
-      );
+      return await provider.execute(snAccount, calls, 'ponzi_land');
     } catch (error) {
       console.error(error);
     }
@@ -176,11 +168,7 @@ export async function wrappedActions(provider: DojoProvider) {
         },
       );
 
-      return await provider.execute(
-        snAccount,
-        calls,
-        'ponzi_land',
-      );
+      return await provider.execute(snAccount, calls, 'ponzi_land');
     } catch (error) {
       console.error(error);
     }
