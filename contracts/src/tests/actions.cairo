@@ -134,14 +134,7 @@ fn test_buy_action() {
     let (mut world, actions_system, erc20) = setup_test();
     set_block_timestamp(100);
     // Create initial land
-    initialize_land(
-        actions_system,
-        erc20,
-        RECIPIENT(),
-        11, // location
-        100, // sell_price
-        50, // stake_amount
-    );
+    initialize_land(actions_system, erc20, RECIPIENT(), 11, 100, 50);
 
     // Setup new buyer with tokens and approvals
     setup_buyer_with_tokens(erc20, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
@@ -171,14 +164,7 @@ fn test_bid_and_buy_action() {
     set_block_timestamp(100);
 
     // Create initial land with auction and bid
-    initialize_land(
-        actions_system,
-        erc20,
-        RECIPIENT(),
-        11, // location
-        100, // sell_price
-        50, // stake_amount
-    );
+    initialize_land(actions_system, erc20, RECIPIENT(), 11, 100, 50);
 
     // Validate bid/buy updates
     verify_land(world, 11, RECIPIENT(), 100, LIQUIDITY_POOL(), 50, 100);
