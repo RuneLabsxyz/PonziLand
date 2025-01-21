@@ -50,6 +50,13 @@ mod PayableComponent {
         land_location: u64,
         can_be_nuked: bool,
     }
+
+    #[derive(Drop, Serde, Debug, Copy)]
+    pub struct YieldInfo {
+        token: ContractAddress,
+        rate: u256,
+    }
+
     // Storage
 
     #[storage]
