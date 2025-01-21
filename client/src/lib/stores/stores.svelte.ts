@@ -3,6 +3,7 @@ import data from '$lib/data.json';
 import type { TileInfo } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import { derived, writable } from 'svelte/store';
+import type { YieldInfo } from '$lib/interfaces';
 
 export type SelectedLandType = {
   type: string;
@@ -37,6 +38,7 @@ export type SelectedLandType = {
       }
     | undefined
   >;
+  getYieldInfo(): Promise<YieldInfo[] | undefined>;
 } | null;
 
 export const selectedLand = writable<SelectedLandType>(null);
@@ -47,6 +49,9 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
 
     // check if land is in auction
     const isAuction = $selectedLand.owner === toHexWithPadding(0);
+
+    // get yield info
+    const yieldInfo = $selectedLand.getYieldInfo();
 
     // get token info from tokenAddress from data
     const token = data.availableTokens.find(
@@ -60,6 +65,7 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
       isAuction,
       isEmpty: $selectedLand.owner == undefined,
       token,
+      yieldInfo,
     };
   }
   return null;

@@ -1,14 +1,17 @@
 <script lang="ts">
-  import {
-    selectedLandMeta,
-    type SelectedLandType,
-  } from '$lib/stores/stores.svelte';
+  import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import type { YieldInfo } from '$lib/interfaces';
 
-  let { land } = $props<{ land: SelectedLandType }>();
+  let yieldInfo: YieldInfo[] | undefined;
+
+  async function updateYieldInfo() {
+    yieldInfo = await $selectedLandMeta?.getYieldInfo();
+  }
 
   $effect(() => {
-    let firstLandId = land.location - 1;
-    let secondLandId = land.location + 1;
+    if ($selectedLandMeta) {
+      updateYieldInfo();
+    }
   });
 </script>
 

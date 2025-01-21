@@ -61,6 +61,7 @@
       getNextClaim: land.getNextClaim,
       getCurrentAuctionPrice: land.getCurrentAuctionPrice,
       increaseStake: land.increaseStake,
+      getYieldInfo: land.getYieldInfo,
     };
   }
 
@@ -138,7 +139,7 @@
                background-position: center;`}
 >
   {#if selected}
-    <RatesOverlay {land} />
+    <RatesOverlay />
   {/if}
   {#if isOwner()}
     <div
