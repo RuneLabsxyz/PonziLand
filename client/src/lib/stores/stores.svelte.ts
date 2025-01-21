@@ -31,6 +31,12 @@ export type SelectedLandType = {
     | undefined
   >;
   getCurrentAuctionPrice(): Promise<bigint | undefined>;
+  increaseStake(amount: bigint): Promise<
+    | {
+        transaction_hash: string;
+      }
+    | undefined
+  >;
 } | null;
 
 export const selectedLand = writable<SelectedLandType>(null);
@@ -71,7 +77,7 @@ export const accountAddress = writable<string | null>(null);
 
 export let uiStore = $state<{
   showModal: boolean;
-  modalType: 'bid' | 'buy' | null;
+  modalType: 'bid' | 'buy' | 'land-info' | null;
   modalData: TileInfo | null;
 }>({
   showModal: false,

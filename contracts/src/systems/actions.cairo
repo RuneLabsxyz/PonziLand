@@ -157,6 +157,7 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
+            assert(caller != land.owner, 'you already own this land');
 
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
             self.internal_claim(store, land);
@@ -194,8 +195,8 @@ pub mod actions {
         // TODO:see if we want pass this function into internalTrait
         fn nuke(ref self: ContractState, land_location: u64,) {
             let mut world = self.world_default();
-            let store = StoreTrait::new(world);
-            let land = store.land(land_location);
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land with stake');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
@@ -204,12 +205,16 @@ pub mod actions {
             }
 
             let owner_nuked = land.owner;
-
+            let sell_price = land.sell_price;
+            let token_for_sale = land.token_used;
             //delete land
             store.delete_land(land);
 
             //emit event de nuke land
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
+
+            //TODO: token_for_sale has to be lords or the token that we choose
+            self.auction(land_location, sell_price * 10, 1, token_for_sale, 200);
         }
 
         //Bid offer(in a main currency(Lords?))
@@ -537,6 +542,34 @@ pub mod actions {
                         final_price: auction.get_current_price(),
                     }
                 );
+
+            //initialize auction for neighbors
+            //TODO:Token for sale has to be lords or the token that we choose
+            //TODO:we have to define the correct decay rate
+            self
+                .initialize_auction_for_neighbors(
+                    store, land_location, sold_at_price * 10, 1, token_for_sale, 100
+                );
+        }
+
+        fn initialize_auction_for_neighbors(
+            ref self: ContractState,
+            mut store: Store,
+            land_location: u64,
+            start_price: u256,
+            floor_price: u256,
+            token_for_sale: ContractAddress,
+            decay_rate: u8,
+        ) {
+            let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
+            if neighbors.len() != 0 {
+                for neighbor in neighbors {
+                    self
+                        .auction(
+                            neighbor.location, start_price, floor_price, token_for_sale, decay_rate,
+                        );
+                }
+            }
         }
 
         fn finalize_land_purchase(

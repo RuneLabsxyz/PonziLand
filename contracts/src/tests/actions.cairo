@@ -12,6 +12,9 @@ use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 use ponzi_land::tests::setup::{setup, setup::{create_setup, deploy_erc20, RECIPIENT}};
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::models::land::{Land};
+use ponzi_land::models::auction::{Auction};
+
+use ponzi_land::helpers::coord::{left, right, up, down};
 
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -129,6 +132,15 @@ fn verify_land(
     assert(land.block_date_bought == expected_block_date_bought, 'incorrect date bought');
 }
 
+fn verify_auction_for_neighbor(
+    world: WorldStorage, location: u64, expected_sell_price: u256, expected_start_time: u64
+) {
+    let neighbor: Land = world.read_model(location);
+    let neighbor_auction: Auction = world.read_model(neighbor.location);
+    assert(neighbor.sell_price == expected_sell_price, 'Err in neighbor sell price');
+    assert(neighbor_auction.start_time == expected_start_time, 'Err in neighbor start time');
+}
+
 #[test]
 fn test_buy_action() {
     let (mut world, actions_system, erc20) = setup_test();
@@ -177,6 +189,15 @@ fn test_bid_and_buy_action() {
 
     // Validate buy action updates
     verify_land(world, 11, NEW_BUYER(), 300, NEW_LIQUIDITY_POOL(), 500, 160);
+
+    //Verify auctions for neighbors
+
+    //right neighbor
+    verify_auction_for_neighbor(world, 12, 1000, 100);
+    //left neighbor
+    verify_auction_for_neighbor(world, 10, 1000, 100);
+    //down neighbor
+    verify_auction_for_neighbor(world, 75, 1000, 100);
 }
 
 
@@ -265,6 +286,7 @@ fn test_nuke_action() {
 
     // Create target land (1281) with small stake that will be nuked
     initialize_land(actions_system, erc20_neighbor_1, NEIGHBOR_1(), 1281, 1000, 1000);
+    let land_1281: Land = world.read_model(1281);
 
     // Create surrounding lands that will generate taxes
     set_block_timestamp(1000);
@@ -275,6 +297,7 @@ fn test_nuke_action() {
 
     set_block_timestamp(3000);
     initialize_land(actions_system, erc20_neighbor_3, NEIGHBOR_3(), 1217, 5900, 1000);
+    let land_1217: Land = world.read_model(1217);
 
     // Generate taxes by claiming neighbor lands but not land 1281
     set_block_timestamp(11100); // Large time jump to accumulate taxes
@@ -308,7 +331,13 @@ fn test_nuke_action() {
 
     // Verify the land 1281 was nuked
     verify_land(
-        world, 1281, ContractAddressZeroable::zero(), 0, ContractAddressZeroable::zero(), 0, 0
+        world,
+        1281,
+        ContractAddressZeroable::zero(),
+        land_1281.sell_price * 10,
+        ContractAddressZeroable::zero(),
+        0,
+        0
     );
 
     // Verify that pending taxes were paid to the owner during nuke
@@ -319,7 +348,13 @@ fn test_nuke_action() {
 
     // Verify the land 1217 was nuked
     verify_land(
-        world, 1217, ContractAddressZeroable::zero(), 0, ContractAddressZeroable::zero(), 0, 0
+        world,
+        1217,
+        ContractAddressZeroable::zero(),
+        land_1217.sell_price * 10,
+        ContractAddressZeroable::zero(),
+        0,
+        0
     );
 
     // Verify that pending taxes were paid to the owner during nuke

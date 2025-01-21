@@ -60,6 +60,7 @@
       getPendingTaxes: land.getPendingTaxes,
       getNextClaim: land.getNextClaim,
       getCurrentAuctionPrice: land.getCurrentAuctionPrice,
+      increaseStake: land.increaseStake,
     };
   }
 
@@ -165,13 +166,17 @@
     {/if}
     {#if land.type == 'house'}
       {#if isOwner()}
-        <!-- <Button
+        <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
           style="transform: translate(-50%, 50%)"
+          onclick={() => {
+            uiStore.showModal = true;
+            uiStore.modalType = 'land-info';
+          }}
         >
           LAND INFO
-        </Button> -->
+        </Button>
       {:else}
         <Button
           size="sm"

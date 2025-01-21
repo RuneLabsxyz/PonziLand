@@ -1,6 +1,10 @@
 <script lang="ts">
   import type { LandsStore } from '$lib/api/land.svelte';
-  import { type LandWithActions, nukableStore, useLands } from '$lib/api/land.svelte';
+  import {
+    type LandWithActions,
+    nukableStore,
+    useLands,
+  } from '$lib/api/land.svelte';
   import { cameraPosition } from '$lib/stores/camera';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { getTokenInfo, toHexWithPadding } from '$lib/utils';
@@ -126,7 +130,11 @@
       const tileY = Math.floor(mouseY / (TILE_SIZE * $cameraPosition.scale));
 
       if (tileX >= 0 && tileX < MAP_SIZE && tileY >= 0 && tileY < MAP_SIZE) {
-        $mousePosCoords = { x: tileX + 1, y: tileY + 1, location: tileY * MAP_SIZE + tileX };
+        $mousePosCoords = {
+          x: tileX + 1,
+          y: tileY + 1,
+          location: tileY * MAP_SIZE + tileX,
+        };
       } else {
         $mousePosCoords = null;
       }
@@ -168,7 +176,7 @@
         class="coordinate"
         style="width: {TILE_SIZE * $cameraPosition.scale}px"
       >
-        {i + 1}
+        {i}
       </div>
     {/each}
   </div>
@@ -181,7 +189,7 @@
           class="coordinate"
           style="height: {TILE_SIZE * $cameraPosition.scale}px"
         >
-          {i + 1}
+          {i}
         </div>
       {/each}
     </div>
@@ -202,9 +210,7 @@
       {#each tiles as row, y}
         <div class="row">
           {#each row as tile, x}
-            <Tile
-              land={tile}
-            />
+            <Tile land={tile} />
           {/each}
         </div>
       {/each}

@@ -13,6 +13,7 @@
   import BuySellForm from '../buy/buy-sell-form.svelte';
   import type { Token } from '$lib/interfaces';
   import { Card } from '../ui/card';
+  import CloseButton from '../ui/close-button.svelte';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
@@ -114,11 +115,7 @@
   class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
 >
   <Card class="flex flex-col min-w-96 min-h-96">
-    <Button
-      on:click={() => {
-        handleCancelClick();
-      }}>X</Button
-    >
+    <CloseButton onclick={handleCancelClick} />
     <p>
       StartTime: {new Date(
         parseInt(auctionInfo?.start_time as string, 16) * 1000,
