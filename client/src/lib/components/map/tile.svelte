@@ -12,6 +12,7 @@
   import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
+  import RatesOverlay from './rates-overlay.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
@@ -135,6 +136,9 @@
                background-size: cover;
                background-position: center;`}
 >
+  {#if selected}
+    <RatesOverlay {land} />
+  {/if}
   {#if isOwner()}
     <div
       class="absolute z-10 top-1 left-1/2"
