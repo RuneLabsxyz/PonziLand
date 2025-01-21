@@ -2,7 +2,7 @@ use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
 use ponzi_land::models::land::Land;
-use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo, YieldInfo};
+use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo, LandYieldInfo};
 
 // define the interface
 #[starknet::interface]
@@ -50,7 +50,7 @@ trait IActions<T> {
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
     fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
-    fn get_neighbors_yield(self: @T, land_location: u64) -> Array<YieldInfo>;
+    fn get_neighbors_yield(self: @T, land_location: u64) -> LandYieldInfo;
 }
 
 // dojo decorator
@@ -63,7 +63,7 @@ pub mod actions {
     use ponzi_land::models::land::{Land, LandTrait};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
     use ponzi_land::components::payable::{
-        PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo}
+        PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
     };
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{TAX_RATE, BASE_TIME};
@@ -433,29 +433,34 @@ pub mod actions {
         }
 
 
-        fn get_neighbors_yield(self: @ContractState, land_location: u64) -> Array<YieldInfo> {
+        fn get_neighbors_yield(self: @ContractState, land_location: u64) -> LandYieldInfo {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
             let neighbors = self.payable._add_neighbors(store, land.location);
+            let mut total_rate: u64 = 0;
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
-                    yield_info
-                        .append(
-                            YieldInfo {
-                                token: neighbor.token_used,
-                                rate: neighbor.sell_price
-                                    * TAX_RATE.into()
-                                    / (100 * BASE_TIME.into())
-                            }
-                        );
+                    let token = neighbor.token_used;
+                    let rate = neighbor.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into());
+
+                    total_rate = total_rate + rate.try_into().unwrap();
+                    yield_info.append(YieldInfo { token, rate });
                 }
             }
-            yield_info
+
+            // we calculate the remaining time of the stake
+            let remaining_stake_time: u256 = if total_rate > 0 {
+                land.stake_amount / total_rate.into()
+            } else {
+                0
+            };
+
+            LandYieldInfo { yield_info, remaining_stake_time }
         }
     }
 

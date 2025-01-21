@@ -51,6 +51,12 @@ mod PayableComponent {
         can_be_nuked: bool,
     }
 
+    #[derive(Drop, Serde, Debug)]
+    pub struct LandYieldInfo {
+        remaining_stake_time: u256,
+        yield_info: Array<YieldInfo>,
+    }
+
     #[derive(Drop, Serde, Debug, Copy)]
     pub struct YieldInfo {
         token: ContractAddress,
