@@ -227,6 +227,37 @@ mod PayableComponent {
         }
 
 
+        fn _add_neighbors_for_auction(
+            self: @ComponentState<TContractState>, mut store: Store, land_location: u64
+        ) -> Array<Land> {
+            let mut neighbors: Array<Land> = ArrayTrait::new();
+
+            self.append_neighbor_for_auction(store, left(land_location), ref neighbors);
+            self.append_neighbor_for_auction(store, right(land_location), ref neighbors);
+            self.append_neighbor_for_auction(store, up(land_location), ref neighbors);
+            self.append_neighbor_for_auction(store, down(land_location), ref neighbors);
+
+            neighbors
+        }
+
+        fn append_neighbor_for_auction(
+            self: @ComponentState<TContractState>,
+            mut store: Store,
+            location_option: Option<u64>,
+            ref neighbors: Array<Land>
+        ) {
+            match location_option {
+                Option::Some(location) => {
+                    let land = store.land(location);
+                    let auction = store.auction(land.location);
+                    if land.owner == ContractAddressZeroable::zero() && auction.start_time == 0 {
+                        neighbors.append(land);
+                    }
+                },
+                Option::None => {}
+            }
+        }
+
         fn _add_neighbors(
             self: @ComponentState<TContractState>, mut store: Store, land_location: u64
         ) -> Array<Land> {

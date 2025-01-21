@@ -12,6 +12,9 @@ use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 use ponzi_land::tests::setup::{setup, setup::{create_setup, deploy_erc20, RECIPIENT}};
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::models::land::{Land};
+use ponzi_land::models::auction::{Auction};
+
+use ponzi_land::helpers::coord::{left, right, up, down};
 
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -129,6 +132,15 @@ fn verify_land(
     assert(land.block_date_bought == expected_block_date_bought, 'incorrect date bought');
 }
 
+fn verify_auction_for_neighbor(
+    world: WorldStorage, location: u64, expected_sell_price: u256, expected_start_time: u64
+) {
+    let neighbor: Land = world.read_model(location);
+    let neighbor_auction: Auction = world.read_model(neighbor.location);
+    assert(neighbor.sell_price == expected_sell_price, 'Err in neighbor sell price');
+    assert(neighbor_auction.start_time == expected_start_time, 'Err in neighbor start time');
+}
+
 #[test]
 fn test_buy_action() {
     let (mut world, actions_system, erc20) = setup_test();
@@ -177,6 +189,15 @@ fn test_bid_and_buy_action() {
 
     // Validate buy action updates
     verify_land(world, 11, NEW_BUYER(), 300, NEW_LIQUIDITY_POOL(), 500, 160);
+
+    //Verify auctions for neighbors
+
+    //right neighbor
+    verify_auction_for_neighbor(world, 12, 1000, 100);
+    //left neighbor
+    verify_auction_for_neighbor(world, 10, 1000, 100);
+    //down neighbor
+    verify_auction_for_neighbor(world, 75, 1000, 100);
 }
 
 
