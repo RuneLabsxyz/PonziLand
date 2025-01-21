@@ -33,15 +33,20 @@ function build_declare() {
     echo "🚀 Declared contract at address: $CONTRACT_CLASS"
 }
 
+function convert_value() {
+    DECIMALS_HEX=$(starkli call --rpc $STARKNET_RPC $1 decimals | jq -r '.[0]')
+    AMOUNT=$(bun repl -p 'const BigNumber = require("bignumber.js").default; new BigNumber('$2') * new BigNumber(10).pow(new BigNumber('$DECIMALS_HEX'))' | ansi2txt)
+    echo $AMOUNT
+}
+
 ## Parameters:
 ## $1: token address
 ## $2: account that will recieve the tokens
 ## $3: amount of tokens to mint (relative to decimals)
 function mint() {
-    DECIMALS_HEX=$(starkli  call --rpc $STARKNET_RPC 0x024d00b81b56e3235b43497ef71d87f4ad7670fd31d06059d8dcd335febf3722 decimals | jq -r '.[0]')
-    MINT_AMOUNT=$(bun repl -p 'const BigNumber = require("bignumber.js").default; new BigNumber('$3') * new BigNumber(10).pow(new BigNumber('$DECIMALS_HEX'))' | ansi2txt)
-    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $1 mint$2 u256:$MINT_AMOUNT
-    echo "☑ Minted $3 tokens (raw: $MINT_AMOUNT) to $2"
+    MINT_AMOUNT=$(convert_value $1 $3)
+    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $1 mint $2 u256:$MINT_AMOUNT
+    echo "☑  Minted $3 tokens (raw: $MINT_AMOUNT) to $2"
 }
 
 function create_token() {
@@ -66,7 +71,56 @@ function create_token() {
     mint $TOKEN_ADDRESS $ACCOUNT_ADDRESS 1000000
 }
 
+function find_token() {
+    TOKEN_ADDRESS=$(cat ./tokens.json | jq -r '.tokens[] | select(.symbol == "'$1'") | .address')
+    if [ -z "$TOKEN_ADDRESS" ]; then
+        echo "unknown token!" > /dev/stderr
+        exit 1
+    fi
+    echo $TOKEN_ADDRESS
+    return 0
+}
 
-build_declare
+function register_token() {
+    echo "⏳  Registering token $1 on ekubo..."
+    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC \
+         $1 transfer $EKUBO_CORE_ADDRESS u256:$(convert_value $1 1) / \
+         $EKUBO_CORE_ADDRESS register_token "$1"
+    echo "☑  Registered token on ekubo!"
+}
 
-create_token "eSTRK" "Emulated STRK"
+function create_pool() {
+    echo "⏳  Creating pool..."
+
+    echo "☑  Pool created!"
+}
+
+case $1 in
+  build)
+    build_declare
+    ;;
+
+  create)
+    create_token "$1" "$2"
+    ;;
+
+  mint)
+    # Mint tokens to the account that deployed the contract
+    TOKEN_ADDRESS=$(find_token $2)
+    mint $TOKEN_ADDRESS $3 $4
+    ;;
+
+  mint-self)
+    TOKEN_ADDRESS=$(find_token $2)
+    mint $TOKEN_ADDRESS $ACCOUNT_ADDRESS $3
+    ;;
+
+  setup-pool)
+    TOKEN_ADDRESS=$(find_token $2)
+    register_token $TOKEN_ADDRESS
+    ;;
+
+  *)
+  echo "UNKNOWN!"
+    ;;
+esac
