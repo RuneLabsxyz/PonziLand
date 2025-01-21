@@ -50,6 +50,7 @@ trait IActions<T> {
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
     fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
+    fn get_neighbors_yield(self: @T, land_location: u64) -> Array<u256>;
 }
 
 // dojo decorator
@@ -157,7 +158,6 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
-            assert(caller != land.owner, 'you already own this land');
 
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
             self.internal_claim(store, land);
@@ -195,8 +195,8 @@ pub mod actions {
         // TODO:see if we want pass this function into internalTrait
         fn nuke(ref self: ContractState, land_location: u64,) {
             let mut world = self.world_default();
-            let mut store = StoreTrait::new(world);
-            let mut land = store.land(land_location);
+            let store = StoreTrait::new(world);
+            let land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land with stake');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
@@ -205,16 +205,12 @@ pub mod actions {
             }
 
             let owner_nuked = land.owner;
-            let sell_price = land.sell_price;
-            let token_for_sale = land.token_used;
+
             //delete land
             store.delete_land(land);
 
             //emit event de nuke land
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
-
-            //TODO: token_for_sale has to be lords or the token that we choose
-            self.auction(land_location, sell_price * 10, 1, token_for_sale, 200);
         }
 
         //Bid offer(in a main currency(Lords?))
@@ -431,31 +427,21 @@ pub mod actions {
             claim_info
         }
 
-        fn get_tax_rates(self: @ContractState, land_location: u64) -> Array<u256> {
+        
+        fn get_neighbors_yield(self: @ContractState, land_location: u64) -> Array<u256> {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbor1 = store.land(left(land_location));
-            let neighbor2 = store.land(right(land_location));
-            let neighbor3 = store.land(up(land_location));
-            let neighbor4 = store.land(down(land_location));
-            let neighbor5 = store.land(up_left(land_location));
-            let neighbor6 = store.land(up_right(land_location));
-            let neighbor7 = store.land(down_left(land_location));
-            let neighbor8 = store.land(down_right(land_location));
+            let neighbors = self.payable._add_neighbors(store, land.location);
 
-            
-            let tax_rates = ArrayTrait::new();
-            tax_rates.append(neighbor1.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor2.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor3.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor4.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor5.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor6.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor7.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
-            tax_rates.append(neighbor8.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            let mut tax_rates: Array<u256> = ArrayTrait::new();
+            if neighbors.len() > 0 {
+                for neighbor in neighbors {
+                    tax_rates.append(neighbor.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+                }
+            }
             tax_rates
         }
     }
@@ -542,34 +528,6 @@ pub mod actions {
                         final_price: auction.get_current_price(),
                     }
                 );
-
-            //initialize auction for neighbors
-            //TODO:Token for sale has to be lords or the token that we choose
-            //TODO:we have to define the correct decay rate
-            self
-                .initialize_auction_for_neighbors(
-                    store, land_location, sold_at_price * 10, 1, token_for_sale, 100
-                );
-        }
-
-        fn initialize_auction_for_neighbors(
-            ref self: ContractState,
-            mut store: Store,
-            land_location: u64,
-            start_price: u256,
-            floor_price: u256,
-            token_for_sale: ContractAddress,
-            decay_rate: u8,
-        ) {
-            let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
-            if neighbors.len() != 0 {
-                for neighbor in neighbors {
-                    self
-                        .auction(
-                            neighbor.location, start_price, floor_price, token_for_sale, decay_rate,
-                        );
-                }
-            }
         }
 
         fn finalize_land_purchase(
