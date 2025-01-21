@@ -61,42 +61,6 @@ fn down(index: u64) -> Option<u64> {
     }
 }
 
-fn up_left(index: u64) -> Option<u64> {
-    let (row, col) = index_to_position(index);
-    if row == 0 || col == 0 {
-        return Option::None;
-    } else {
-        return Option::Some(position_to_index(row - 1, col - 1));
-    }
-}
-
-fn up_right(index: u64) -> Option<u64> {
-    let (row, col) = index_to_position(index);
-    if row == 0 || col == GRID_WIDTH - 1 {
-        return Option::None;
-    } else {
-        return Option::Some(position_to_index(row - 1, col + 1));
-    }
-}
-
-fn down_left(index: u64) -> Option<u64> {
-    let (row, col) = index_to_position(index);
-    if row == GRID_WIDTH - 1 || col == 0 {
-        return Option::None;
-    } else {
-        return Option::Some(position_to_index(row + 1, col - 1));
-    }
-}
-
-fn down_right(index: u64) -> Option<u64> {
-    let (row, col) = index_to_position(index);
-    if row == GRID_WIDTH - 1 || col == GRID_WIDTH - 1 {
-        return Option::None;
-    } else {
-        return Option::Some(position_to_index(row + 1, col + 1));
-    }
-}
-
 fn is_valid_position(index: u64) -> bool {
     index < GRID_WIDTH * GRID_WIDTH
 }
