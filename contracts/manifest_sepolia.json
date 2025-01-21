@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
-    "address": "0xb030b5cf9e25ac682cdff04ebdbc1ccbd7b03988b802f91f6b9a71d0609d3c",
-    "seed": "ponzi_land_internal_4",
+    "address": "0x74726ebce329b31da8fcad2c5bf5bd5da53b4bccbd5b6aaf5f08d7a54e7e954",
+    "seed": "ponzi_land_internal_2",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1252,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x77e6ca0939328a9ee9adb6cef35257f5075bcceb04851963da120671d34ff47",
-      "class_hash": "0x33dcdd769ab6f91b0fdd80b8af110a365c6fb65b023c05a70f8a235732928a8",
+      "address": "0x68afc45a6e6baff16a5089aa81676a2d4b654a7a3e78e83e57690a1b10b9dac",
+      "class_hash": "0x79007547f8634c5c081a68f84307912f752a77c4e0742a80da0e0dc7b8c06da",
       "abi": [
         {
           "type": "impl",
@@ -1409,38 +1409,6 @@
             {
               "name": "can_be_nuked",
               "type": "core::bool"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "ponzi_land::components::payable::PayableComponent::YieldInfo",
-          "members": [
-            {
-              "name": "token",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "sell_price",
-              "type": "core::integer::u256"
-            },
-            {
-              "name": "percent_rate",
-              "type": "core::integer::u256"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "ponzi_land::components::payable::PayableComponent::LandYieldInfo",
-          "members": [
-            {
-              "name": "remaining_stake_time",
-              "type": "core::integer::u256"
-            },
-            {
-              "name": "yield_info",
-              "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::YieldInfo>"
             }
           ]
         },
@@ -1684,22 +1652,6 @@
               "outputs": [
                 {
                   "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::ClaimInfo>"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "get_neighbors_yield",
-              "inputs": [
-                {
-                  "name": "land_location",
-                  "type": "core::integer::u64"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "ponzi_land::components::payable::PayableComponent::LandYieldInfo"
                 }
               ],
               "state_mutability": "view"
