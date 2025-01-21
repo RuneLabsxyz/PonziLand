@@ -13,6 +13,10 @@
       updateYieldInfo();
     }
   });
+
+  $effect(() => {
+    console.log(yieldInfo);
+  });
 </script>
 
 <div
