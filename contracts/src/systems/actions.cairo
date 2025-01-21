@@ -64,7 +64,7 @@ pub mod actions {
     use ponzi_land::components::payable::{
         PayableComponent, PayableComponent::{TokenInfo, ClaimInfo}
     };
-    use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
+    use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, up_left, up_right, down_left, down_right, max_neighbors};
     use ponzi_land::consts::{TAX_RATE, BASE_TIME};
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
@@ -424,6 +424,34 @@ pub mod actions {
                 }
             }
             claim_info
+        }
+
+        fn get_tax_rates(self: @ContractState, land_location: u64) -> Array<u256> {
+            assert(is_valid_position(land_location), 'Land location not valid');
+            let mut world = self.world_default();
+            let store = StoreTrait::new(world);
+            let land = store.land(land_location);
+
+            let neighbor1 = store.land(left(land_location));
+            let neighbor2 = store.land(right(land_location));
+            let neighbor3 = store.land(up(land_location));
+            let neighbor4 = store.land(down(land_location));
+            let neighbor5 = store.land(up_left(land_location));
+            let neighbor6 = store.land(up_right(land_location));
+            let neighbor7 = store.land(down_left(land_location));
+            let neighbor8 = store.land(down_right(land_location));
+
+            
+            let tax_rates = ArrayTrait::new();
+            tax_rates.append(neighbor1.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor2.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor3.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor4.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor5.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor6.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor7.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates.append(neighbor8.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into()));
+            tax_rates
         }
     }
 
