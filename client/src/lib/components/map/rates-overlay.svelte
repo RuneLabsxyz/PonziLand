@@ -20,7 +20,7 @@
 </script>
 
 <div
-  class="absolute inset-0 grid grid-cols-3 grid-rows-3"
+  class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none"
   style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
 >
   {#each Array(9) as _, i}

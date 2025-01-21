@@ -4,6 +4,7 @@
       "name": "ETH",
       "address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
+      "decimals": 18,
       "images": {
         "icon": "/assets/tokens/eth/icon.svg",
         "castle": {
@@ -17,6 +18,7 @@
       "name": "USDC",
       "address": "0x053b40a647cedfca6ca84f542a0fe36736031905a9639a7f19a3c1e66bfd5080",
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
+      "decimals": 18,
       "images": {
         "icon": "/assets/tokens/usdc/icon.svg",
         "castle": {
@@ -30,6 +32,7 @@
       "name": "RED",
       "address": "0x06450580d0d5cd36f0107227091ca68a237fd0ab538ae59ea43868f660bc2c30",
       "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "decimals": 18,
       "images": {
         "icon": "/assets/tokens/red/icon.svg",
         "castle": {
@@ -43,6 +46,7 @@
       "name": "GREEN",
       "address": "0x04ed678da6c0534e8ba7a1e7db81f3ecc0f1c2628094094b5123c481cd13461f",
       "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "decimals": 18,
       "images": {
         "icon": "/assets/tokens/green/icon.svg",
         "castle": {
@@ -56,6 +60,7 @@
       "name": "BLUE",
       "address": "0x01853f03f808ae62dfbd8b8a4de08e2052388c40b9f91d626090de04bbc1f619",
       "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "decimals": 18,
       "images": {
         "icon": "/assets/tokens/blue/icon.svg",
         "castle": {

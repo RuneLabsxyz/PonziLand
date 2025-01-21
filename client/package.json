@@ -42,8 +42,9 @@
     "@argent/x-sessions": "^7.0.0",
     "@dojoengine/sdk": "^1.0.4-alpha.3.1.2",
     "@starknet-io/get-starknet-core": "^4.0.0",
+    "bignumber.js": "^9.1.2",
+    "lucide-svelte": "^0.471.0",
     "vite-plugin-top-level-await": "^1.1.0",
-    "vite-plugin-wasm": "^3.3.0",
-    "lucide-svelte": "^0.471.0"
+    "vite-plugin-wasm": "^3.3.0"
   }
 }

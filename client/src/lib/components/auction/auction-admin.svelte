@@ -12,15 +12,17 @@
     SelectTrigger,
     SelectValue,
   } from '../ui/select';
+  import { toCalldata } from '$lib/utils/currency';
   import data from '$lib/data.json';
   import { goto } from '$app/navigation';
+  import BigNumber from 'bignumber.js';
 
   let landStore = useLands();
 
   let location = $state<number>(0);
   let selectedToken = $state<Token | null>(null);
-  let stakeAmount = $state<number>(100);
-  let sellAmount = $state<number>(10);
+  let startPrice = $state<string>("100");
+  let stopPrice = $state<string>("10");
   let decayRate = $state<number>(2);
 
   const handleCreateAuction = () => {
@@ -29,8 +31,8 @@
     landStore
       ?.auctionLand(
         location,
-        stakeAmount,
-        sellAmount,
+        toCalldata(new BigNumber(startPrice), selectedToken!.decimals),
+        toCalldata(new BigNumber(stopPrice), selectedToken!.decimals),
         selectedToken?.address!,
         decayRate,
       )
@@ -56,9 +58,9 @@
     </SelectContent>
   </Select>
   <Label>Start Price</Label>
-  <Input type="number" bind:value={stakeAmount} />
+  <Input type="number" bind:value={startPrice} />
   <Label>Stop Price</Label>
-  <Input type="number" bind:value={sellAmount} />
+  <Input type="number" bind:value={stopPrice} />
   <Label>Decay Rate</Label>
   <Input type="number" bind:value={decayRate} />
   <Button on:click={handleCreateAuction}>Create Auction</Button>

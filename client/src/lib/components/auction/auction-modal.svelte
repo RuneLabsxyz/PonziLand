@@ -14,6 +14,9 @@
   import type { Token } from '$lib/interfaces';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
+  import BigNumber from 'bignumber.js';
+  import { displayCurrency } from '$lib/utils/currency';
+  import {type BigNumberish} from 'starknet';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
@@ -23,10 +26,10 @@
   let stakeAmount = $state<number>(100);
   let sellAmount = $state<number>(100);
 
-  let currentPriceDerived = $derived(() => {
+  let currentPriceDerived = $derived.by(() => {
     if (auctionInfo && currentTime) {
-      const startPrice = parseInt(auctionInfo.start_price as string, 16);
-      const floorPrice = parseInt(auctionInfo.floor_price as string, 16);
+      const startPrice = new BigNumber(auctionInfo.start_price as string, 16);
+      const floorPrice = new BigNumber(auctionInfo.floor_price as string, 16);
       const startTime = parseInt(auctionInfo.start_time as string, 16) * 1000;
       return calculateCurrentPrice(
         startPrice,
@@ -38,22 +41,40 @@
     return null;
   });
 
+  function displayPrice(value: BigNumberish | undefined | BigNumber) {
+    if (value == undefined) {
+      return 'N/A';
+    }
+    let bigNumber;
+    if (value instanceof BigNumber) {
+      bigNumber = value;
+    } else {
+      bigNumber = new BigNumber(value as string, 16);
+    }
+
+    return displayCurrency(bigNumber, selectedToken?.decimals ?? 18);
+  }
+
+  let startPrice = $derived(displayPrice(auctionInfo?.start_price));
+  let floorPrice = $derived(displayPrice(auctionInfo?.floor_price));
+  let currentPriceDisplay = $derived(displayPrice(currentPriceDerived ?? undefined));
+
   let landStore = useLands();
 
   function calculateCurrentPrice(
-    startPrice: number,
-    floorPrice: number,
+    startPrice: BigNumber,
+    floorPrice: BigNumber,
     startTime: number,
     currentTime = Date.now(),
-  ): number {
+  ): BigNumber {
     if (floorPrice > startPrice) {
       return floorPrice;
     }
     const elapsedHours = (currentTime - startTime) / (60 * 60 * 1000);
+
     const decayFactor = Math.pow(0.99, elapsedHours); // Decay rate: 1% per hour
-    const price = Math.max(startPrice * decayFactor, floorPrice); // Ensure not below floor price
-    // Round down to 6 decimal places
-    return Math.floor(price);
+
+    return BigNumber.max(startPrice.times(decayFactor), floorPrice); // Ensure not below floor price
   }
 
   async function handleBiddingClick() {
@@ -116,18 +137,19 @@
 >
   <Card class="flex flex-col min-w-96 min-h-96">
     <CloseButton onclick={handleCancelClick} />
+    WAAAAIT a minute
     <p>
       StartTime: {new Date(
         parseInt(auctionInfo?.start_time as string, 16) * 1000,
       ).toLocaleString()}
     </p>
-    <p>StartPrice: {parseInt(auctionInfo?.start_price as string, 16)}</p>
-    <p>Current Price: {currentPriceDerived()}</p>
-    <p>FloorPrice: {parseInt(auctionInfo?.floor_price as string, 16)}</p>
+    <p>StartPrice: {startPrice}</p>
+    <p>Current Price: {currentPriceDisplay}</p>
+    <p>FloorPrice: {floorPrice}</p>
 
     <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
     <Button on:click={handleBiddingClick}>
-      Buy for {currentPriceDerived()}
+      Buy for {currentPriceDisplay}
       {$selectedLandMeta?.tokenUsed}
     </Button>
   </Card>

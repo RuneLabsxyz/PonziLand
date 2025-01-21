@@ -2,6 +2,7 @@ export interface Token {
   name: string;
   address: string;
   lpAddress: string;
+  decimals: number;
   images: {
     icon: string;
     castle: {
