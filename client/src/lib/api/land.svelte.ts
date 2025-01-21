@@ -36,6 +36,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
   ): TransactionResult;
   getPendingTaxes(owner: string): Promise<Result | undefined>;
   getPendingTaxesForLand(location: BigNumberish): Promise<Result | undefined>;
+  getYieldInfo(location: BigNumberish): Promise<Result | undefined>;
 };
 
 export type LandWithMeta = Land & {
@@ -177,6 +178,9 @@ export function useLands(): LandsStore | undefined {
         getCurrentAuctionPrice() {
           return sdk.client.actions.getCurrentAuctionPrice(land.location);
         },
+        getYieldInfo() {
+          return sdk.client.actions.getNeighborsYield(land.location);
+        },
       }));
   });
 
@@ -228,6 +232,9 @@ export function useLands(): LandsStore | undefined {
         location,
         account()!.getAccount()!.address,
       );
+    },
+    getYieldInfo(location) {
+      return sdk.client.actions.getNeighborsYield(location);
     },
   };
 }

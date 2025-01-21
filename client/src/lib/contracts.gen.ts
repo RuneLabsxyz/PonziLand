@@ -248,6 +248,18 @@ export async function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const actions_getNeighborsYield = async (landLocation: BigNumberish) => {
+    try {
+      return await provider.call('ponzi_land', {
+        contractName: 'actions',
+        entrypoint: 'get_neighbors_yield',
+        calldata: [landLocation],
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     actions: {
       auction: actions_auction,
@@ -263,6 +275,8 @@ export async function setupWorld(provider: DojoProvider) {
       getPendingTaxesForLand: actions_getPendingTaxesForLand,
       getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
       getNextClaimInfo: actions_getNextClaimInfo,
+      getNeighborsYield: actions_getNeighborsYield,
     },
   };
 }
+

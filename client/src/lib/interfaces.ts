@@ -35,3 +35,8 @@ export interface Bid {
   bidder: string;
   timestamp: number;
 }
+
+export interface YieldInfo {
+  token: string;
+  rate: number;
+}
