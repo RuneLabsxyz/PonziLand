@@ -157,6 +157,7 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
+            assert(caller != land.owner, 'you already own this land');
 
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
             self.internal_claim(store, land);
@@ -212,18 +213,8 @@ pub mod actions {
             //emit event de nuke land
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
-            self.auction(land_location, sell_price * 10, 1, token_for_sale, 200,);
-
-            store
-                .world
-                .emit_event(
-                    @NewAuctionEvent {
-                        land_location,
-                        start_time: get_block_timestamp(),
-                        start_price: sell_price * 10,
-                        floor_price: 0
-                    }
-                );
+            //TODO: token_for_sale has to be lords or the token that we choose
+            self.auction(land_location, sell_price * 10, 1, token_for_sale, 200);
         }
 
         //Bid offer(in a main currency(Lords?))
@@ -523,6 +514,34 @@ pub mod actions {
                         final_price: auction.get_current_price(),
                     }
                 );
+
+            //initialize auction for neighbors
+            //TODO:Token for sale has to be lords or the token that we choose
+            //TODO:we have to define the correct decay rate
+            self
+                .initialize_auction_for_neighbors(
+                    store, land_location, sold_at_price * 10, 1, token_for_sale, 100
+                );
+        }
+
+        fn initialize_auction_for_neighbors(
+            ref self: ContractState,
+            mut store: Store,
+            land_location: u64,
+            start_price: u256,
+            floor_price: u256,
+            token_for_sale: ContractAddress,
+            decay_rate: u8,
+        ) {
+            let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
+            if neighbors.len() != 0 {
+                for neighbor in neighbors {
+                    self
+                        .auction(
+                            neighbor.location, start_price, floor_price, token_for_sale, decay_rate,
+                        );
+                }
+            }
         }
 
         fn finalize_land_purchase(
