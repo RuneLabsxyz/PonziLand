@@ -15,7 +15,7 @@
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
   import BigNumber from 'bignumber.js';
-  import { displayCurrency } from '$lib/utils/currency';
+  import { displayPrice } from '$lib/utils/currency';
   import {type BigNumberish} from 'starknet';
 
   let auctionInfo = $state<Auction>();
@@ -41,23 +41,10 @@
     return null;
   });
 
-  function displayPrice(value: BigNumberish | undefined | BigNumber) {
-    if (value == undefined) {
-      return 'N/A';
-    }
-    let bigNumber;
-    if (value instanceof BigNumber) {
-      bigNumber = value;
-    } else {
-      bigNumber = new BigNumber(value as string, 16);
-    }
 
-    return displayCurrency(bigNumber, selectedToken?.decimals ?? 18);
-  }
-
-  let startPrice = $derived(displayPrice(auctionInfo?.start_price));
-  let floorPrice = $derived(displayPrice(auctionInfo?.floor_price));
-  let currentPriceDisplay = $derived(displayPrice(currentPriceDerived ?? undefined));
+  let startPrice = $derived(displayPrice(auctionInfo?.start_price, selectedToken));
+  let floorPrice = $derived(displayPrice(auctionInfo?.floor_price, selectedToken));
+  let currentPriceDisplay = $derived(displayPrice(currentPriceDerived ?? undefined, selectedToken));
 
   let landStore = useLands();
 

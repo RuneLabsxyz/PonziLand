@@ -10,6 +10,7 @@
     shortenHex,
     toHexWithPadding,
   } from '$lib/utils';
+  import { displayPrice } from '$lib/utils/currency';
   import LandOverview from '../land/land-overview.svelte';
   import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
   import { Button } from '../ui/button';
@@ -81,11 +82,11 @@
     </div>
     <div class="flex w-full">
       <span class="w-full">Price :</span>
-      <span class="w-full">{$selectedLandMeta?.sellPrice}</span>
+      <span class="w-full">{displayPrice($selectedLandMeta?.sellPrice ?? undefined, $selectedLandMeta?.token)}</span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Remaining Stake :</span>
-      <span class="w-full">{$selectedLandMeta?.stakeAmount}</span>
+      <span class="w-full">{displayPrice($selectedLandMeta?.stakeAmount ?? undefined, $selectedLandMeta?.token)}</span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Owner :</span>

@@ -1,3 +1,4 @@
+import type { Token } from '$lib/interfaces';
 import BigNumber from 'bignumber.js';
 import type { BigNumberish } from 'starknet';
 
@@ -63,4 +64,21 @@ export function displayCurrency(
   const normalStr = new BigNumber(twoSig).toString(); // e.g. "0.00032"
 
   return negative ? '-' + normalStr : normalStr;
+}
+
+export function displayPrice(
+  value: BigNumberish | undefined | BigNumber,
+  token?: Token | null,
+) {
+  if (value == undefined) {
+    return 'N/A';
+  }
+  let bigNumber;
+  if (value instanceof BigNumber) {
+    bigNumber = value;
+  } else {
+    bigNumber = new BigNumber(value as string, 16);
+  }
+
+  return displayCurrency(bigNumber, token?.decimals ?? 18);
 }
