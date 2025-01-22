@@ -451,7 +451,7 @@ pub mod actions {
                     total_rate = total_rate + rate.try_into().unwrap();
                     yield_info
                         .append(
-                            YieldInfo { token, sell_price: neighbor.sell_price, percent_rate: rate }
+                            YieldInfo { token, sell_price: neighbor.sell_price, percent_rate: TAX_RATE.into() }
                         );
                 }
             }
