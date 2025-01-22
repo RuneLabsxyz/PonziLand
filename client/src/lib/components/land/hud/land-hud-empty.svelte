@@ -16,12 +16,14 @@
     SelectTrigger,
     SelectValue,
   } from '../../ui/select';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   const landStore = useLands();
 
   let selectedToken = $state<Token | null>(null);
-  let startPrice = $state<number>(100);
-  let floorPrice = $state<number>(10);
+  let startPrice = $state<string>('1000');
+  let floorPrice = $state<string>('1');
+
   let decayRate = $state<number>(2);
 
   const handleCreateAuction = () => {
@@ -29,12 +31,13 @@
       console.error('selected land is not available');
       return;
     }
+
     //TODO change the params
     landStore
       ?.auctionLand(
         $selectedLand.location,
-        startPrice,
-        floorPrice,
+        CurrencyAmount.fromScaled(startPrice, selectedToken),
+        CurrencyAmount.fromScaled(floorPrice, selectedToken),
         selectedToken?.address,
         decayRate,
       )

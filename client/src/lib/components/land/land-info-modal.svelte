@@ -4,6 +4,7 @@
     selectedLandMeta,
     uiStore,
   } from '$lib/stores/stores.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import Button from '../ui/button/button.svelte';
   import { Card } from '../ui/card';
   import CardHeader from '../ui/card/card-header.svelte';
@@ -15,13 +16,15 @@
     uiStore.showModal = false;
   };
 
-  let stakeIncrease = $state(100n);
+  let stakeIncrease = $state('100');
 
   const handleIncreaseStake = () => {
     console.log('Increase stake', stakeIncrease);
 
     $selectedLandMeta
-      ?.increaseStake(stakeIncrease)
+      ?.increaseStake(
+        CurrencyAmount.fromScaled(stakeIncrease, $selectedLandMeta.token),
+      )
       .then((res) => console.log('increase success', res));
   };
 </script>

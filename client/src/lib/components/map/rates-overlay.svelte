@@ -5,6 +5,9 @@
   let yieldInfo: YieldInfo[] | undefined;
 
   async function updateYieldInfo() {
+    if ($selectedLandMeta?.type != 'house') {
+      return;
+    }
     yieldInfo = await $selectedLandMeta?.getYieldInfo();
   }
 
@@ -12,10 +15,6 @@
     if ($selectedLandMeta) {
       updateYieldInfo();
     }
-  });
-
-  $effect(() => {
-    console.log(yieldInfo);
   });
 </script>
 

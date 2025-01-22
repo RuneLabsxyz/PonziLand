@@ -29,8 +29,7 @@
     uiStore.showModal = true;
     uiStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
-      // TODO: Enforce null checks here
-      sellPrice: $selectedLandMeta!.sellPrice ?? 0,
+      sellPrice: $selectedLandMeta!.sellPrice!,
       tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
       tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
       owner: $selectedLandMeta!.owner || undefined,
@@ -41,13 +40,6 @@
     console.log('Claim land clicked');
     $selectedLandMeta!.claim().then((res) => {
       console.log('Claimed', res);
-    });
-  };
-
-  const handleNukeLandClick = () => {
-    console.log('Nuke Land Clicked');
-    $selectedLandMeta?.nuke().then((res) => {
-      console.log('Nuked', res);
     });
   };
 
@@ -82,11 +74,11 @@
     </div>
     <div class="flex w-full">
       <span class="w-full">Price :</span>
-      <span class="w-full">{displayPrice($selectedLandMeta?.sellPrice ?? undefined, $selectedLandMeta?.token)}</span>
+      <span class="w-full">{$selectedLandMeta?.sellPrice?.toString()}</span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Remaining Stake :</span>
-      <span class="w-full">{displayPrice($selectedLandMeta?.stakeAmount ?? undefined, $selectedLandMeta?.token)}</span>
+      <span class="w-full">{$selectedLandMeta?.stakeAmount?.toString()}</span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Owner :</span>

@@ -1,6 +1,5 @@
 <script lang="ts">
   import { locationIntToString } from '$lib/utils';
-  import { Button } from '../ui/button';
 
   const { data } = $props();
 </script>

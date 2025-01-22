@@ -1,7 +1,6 @@
 <script lang="ts">
   import { useLands } from '$lib/api/land.svelte';
   import type { Token } from '$lib/interfaces';
-  import BuySellForm from '../buy/buy-sell-form.svelte';
   import { Button } from '../ui/button';
   import { Input } from '../ui/input';
   import { Label } from '../ui/label';
@@ -12,17 +11,16 @@
     SelectTrigger,
     SelectValue,
   } from '../ui/select';
-  import { toCalldata } from '$lib/utils/currency';
   import data from '$lib/data.json';
   import { goto } from '$app/navigation';
-  import BigNumber from 'bignumber.js';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let landStore = useLands();
 
   let location = $state<number>(0);
   let selectedToken = $state<Token | null>(null);
-  let startPrice = $state<string>("100");
-  let stopPrice = $state<string>("10");
+  let startPrice = $state<string>('100');
+  let stopPrice = $state<string>('10');
   let decayRate = $state<number>(2);
 
   const handleCreateAuction = () => {
@@ -31,8 +29,8 @@
     landStore
       ?.auctionLand(
         location,
-        toCalldata(new BigNumber(startPrice), selectedToken!.decimals),
-        toCalldata(new BigNumber(stopPrice), selectedToken!.decimals),
+        CurrencyAmount.fromScaled(startPrice, selectedToken ?? undefined),
+        CurrencyAmount.fromScaled(stopPrice, selectedToken ?? undefined),
         selectedToken?.address!,
         decayRate,
       )

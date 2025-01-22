@@ -8,7 +8,7 @@ export const getAuctionDataFromLocation = async (location: string) => {
 
   const query = new QueryBuilder<SchemaType>()
     .namespace('ponzi_land', (ns) => {
-      ns.entity('Auction', (a) => a.eq('land_location', location));
+      ns.entity('Auction', (a) => a.eq('land_location', location.toString()));
     })
     .build();
   // also query initial

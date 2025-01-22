@@ -8,20 +8,29 @@
   import Button from '../../ui/button/button.svelte';
   import BuySellForm from '../../buy/buy-sell-form.svelte';
   import type { Token } from '$lib/interfaces';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import BigNumber from 'bignumber.js';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
 
-  let selectedToken = $state<Token | null>(null);
+  let selectedToken = $state<Token | undefined>();
   //TODO: Change defaults values into an error component
-  let stakeAmount = $state<number>(100);
-  let sellAmount = $state<number>(100);
+  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(100));
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(10));
+
+  let startPrice = $derived(
+    CurrencyAmount.fromUnscaled(auctionInfo?.start_price ?? 0),
+  );
+  let floorPrice = $derived(
+    CurrencyAmount.fromUnscaled(auctionInfo?.floor_price ?? 0),
+  );
 
   let currentPriceDerived = $derived(() => {
     if (auctionInfo && currentTime) {
-      const startPrice = parseInt(auctionInfo.start_price as string, 16);
-      const floorPrice = parseInt(auctionInfo.floor_price as string, 16);
+      // TODO: Move this function to a dedicated api store
       const startTime = parseInt(auctionInfo.start_time as string, 16) * 1000;
+
       return calculateCurrentPrice(
         startPrice,
         floorPrice,
@@ -35,19 +44,27 @@
   let landStore = useLands();
 
   function calculateCurrentPrice(
-    startPrice: number,
-    floorPrice: number,
+    startPrice: CurrencyAmount,
+    floorPrice: CurrencyAmount,
     startTime: number,
     currentTime = Date.now(),
-  ): number {
+  ): CurrencyAmount {
     if (floorPrice > startPrice) {
       return floorPrice;
     }
+
     const elapsedHours = (currentTime - startTime) / (60 * 60 * 1000);
     const decayFactor = Math.pow(0.99, elapsedHours); // Decay rate: 1% per hour
-    const price = Math.max(startPrice * decayFactor, floorPrice); // Ensure not below floor price
-    // Round down to 6 decimal places
-    return Math.floor(price);
+    const price = BigNumber.max(
+      startPrice.rawValue().multipliedBy(decayFactor),
+      floorPrice.rawValue(),
+    );
+
+    // Create a new currency amount with the estimation of the price
+    return CurrencyAmount.fromRaw(
+      price.sd(4, BigNumber.ROUND_CEIL),
+      selectedToken,
+    );
   }
 
   async function handleBiddingClick() {
@@ -57,7 +74,8 @@
     let currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
     if (!currentPrice) {
       console.error(`Could not get current price ${currentPrice ?? ''}`);
-      currentPrice = 10000000000000000000000n;
+      // TODO: Show a proper toast
+      return;
     }
 
     const landSetup: LandSetup = {
@@ -66,7 +84,7 @@
       amountToStake: stakeAmount,
       liquidityPoolAddress: toHexWithPadding(0),
       tokenAddress: $selectedLandMeta?.tokenAddress as string,
-      currentPrice: currentPrice + currentPrice / 10n,
+      currentPrice: currentPrice,
     };
 
     if (!$selectedLand?.location) {
@@ -83,6 +101,7 @@
       return;
     }
 
+    // TODO: Move this to a dedicated api store
     console.log('Getting auction data for:', $selectedLand.location);
     getAuctionDataFromLocation($selectedLand.location).then((res) => {
       console.log('Auction data:', res);
@@ -105,9 +124,9 @@
     parseInt(auctionInfo?.start_time as string, 16) * 1000,
   ).toLocaleString()}
 </p>
-<p>StartPrice: {parseInt(auctionInfo?.start_price as string, 16)}</p>
+<p>StartPrice: {startPrice}</p>
 <p>Current Price: {currentPriceDerived()}</p>
-<p>FloorPrice: {parseInt(auctionInfo?.floor_price as string, 16)}</p>
+<p>FloorPrice: {floorPrice}</p>
 
 <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
 <Button on:click={handleBiddingClick}>

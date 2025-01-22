@@ -1,11 +1,8 @@
 <script lang="ts">
   let { active, children, onclick } = $props();
-
-
-
 </script>
 
-<button onclick={onclick} class={`text-ponzi toolbar-button ${active ? 'active' : ''}`}>
+<button {onclick} class={`text-ponzi toolbar-button ${active ? 'active' : ''}`}>
   {@render children?.()}
 </button>
 

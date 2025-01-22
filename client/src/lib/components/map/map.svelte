@@ -1,13 +1,15 @@
 <script lang="ts">
-  import type { LandsStore } from '$lib/api/land.svelte';
+  import type { LandsStore, LandWithMeta } from '$lib/api/land.svelte';
   import {
     type LandWithActions,
     nukableStore,
     useLands,
   } from '$lib/api/land.svelte';
+  import { useTiles } from '$lib/api/tile-store.svelte';
   import { cameraPosition } from '$lib/stores/camera';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
-  import { getTokenInfo, toHexWithPadding } from '$lib/utils';
+  import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import Tile from './tile.svelte';
 
   const MAP_SIZE = 64;
@@ -27,72 +29,9 @@
   $inspect('landStore', $landStore);
   $inspect('nukeStore', $nukableStore);
 
-  // Reactive state for the tiles
-  let tiles = $state<
-    Array<
-      Array<
-        Partial<LandWithActions> & {
-          type: 'grass' | 'house' | 'auction';
-          owner: string | undefined;
-          sellPrice: number | null;
-          tokenUsed: string | null;
-          tokenAddress: string | null;
-        }
-      >
-    >
-  >([]);
+  let tileStore = useTiles();
 
-  landStore?.subscribe((lands) => {
-    $nukableStore = [];
-
-    // initialize the map with empty tiles
-    tiles = Array(MAP_SIZE)
-      .fill(null)
-      .map((_, i) =>
-        Array(MAP_SIZE)
-          .fill(null)
-          .map((_, j) => ({
-            location: i * MAP_SIZE + j,
-            type: 'grass',
-            owner: undefined,
-            sellPrice: null,
-            tokenUsed: null,
-            tokenAddress: null,
-          })),
-      );
-
-    // fill the map with the lands
-    lands.forEach((land) => {
-      let location;
-      if (typeof land.location === 'string') {
-        location = parseInt(land.location);
-      } else if (typeof land.location === 'bigint') {
-        location = Number(land.location);
-      } else {
-        location = land.location;
-      }
-
-      let sellPrice;
-      if (typeof land.sell_price === 'string') {
-        sellPrice = parseInt(land.sell_price);
-      } else if (typeof land.sell_price === 'bigint') {
-        sellPrice = Number(land.sell_price);
-      } else {
-        sellPrice = land.sell_price;
-      }
-
-      const x = location % MAP_SIZE;
-      const y = Math.floor(location / MAP_SIZE);
-      tiles[y][x] = {
-        ...land,
-        type: land.owner == toHexWithPadding(0) ? 'auction' : 'house',
-        owner: land.owner,
-        sellPrice: sellPrice,
-        tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
-        tokenAddress: land.token_used,
-      };
-    });
-  });
+  let tiles = $derived($tileStore ?? []);
 
   function handleWheel(event: WheelEvent) {
     event.preventDefault();

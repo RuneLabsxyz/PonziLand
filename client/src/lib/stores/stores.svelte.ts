@@ -1,57 +1,35 @@
-import type { TransactionResult } from '$lib/api/land.svelte';
+import type {
+  LandWithActions,
+  LandWithMeta,
+  TransactionResult,
+} from '$lib/api/land.svelte';
 import data from '$lib/data.json';
-import type { TileInfo } from '$lib/interfaces';
+import type { TileInfo, Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
-import { derived, writable } from 'svelte/store';
+import { derived, writable, type Readable } from 'svelte/store';
 import type { YieldInfo } from '$lib/interfaces';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
-export type SelectedLandType = {
-  type: string;
-  location: string;
-  owner: string | null;
-  sellPrice: number | null;
-  tokenUsed: string | null;
-  tokenAddress: string | null;
-  stakeAmount: number | null;
-  claim(): TransactionResult;
-  nuke(): TransactionResult;
-  getPendingTaxes(): Promise<
-    | {
-        amount: bigint;
-        token_address: bigint;
-      }[]
-    | undefined
-  >;
-  getNextClaim(): Promise<
-    | {
-        amount: bigint;
-        token_address: bigint;
-        land_location: bigint;
-        can_be_nuked: boolean;
-      }[]
-    | undefined
-  >;
-  getCurrentAuctionPrice(): Promise<bigint | undefined>;
-  increaseStake(amount: bigint): Promise<
-    | {
-        transaction_hash: string;
-      }
-    | undefined
-  >;
-  getYieldInfo(): Promise<YieldInfo[] | undefined>;
-} | null;
+export const selectedLand = writable<LandWithActions | undefined>();
 
-export const selectedLand = writable<SelectedLandType>(null);
+export function selectLand(land: LandWithActions) {
+  selectedLand.set(land);
+}
 
-export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
+export const selectedLandMeta: Readable<
+  | (LandWithActions & {
+      token?: Token;
+    })
+  | undefined
+> = derived(selectedLand, ($selectedLand) => {
   if ($selectedLand) {
+    if ($selectedLand.owner == undefined) {
+      return {
+        ...$selectedLand,
+        isEmpty: true,
+      };
+    }
     // --- Derived Props ---
-
-    // check if land is in auction
-    const isAuction = $selectedLand.owner === toHexWithPadding(0);
-
-    // get yield info
-    const yieldInfo = $selectedLand.getYieldInfo();
 
     // get token info from tokenAddress from data
     const token = data.availableTokens.find(
@@ -62,13 +40,11 @@ export const selectedLandMeta = derived(selectedLand, ($selectedLand) => {
 
     return {
       ...$selectedLand,
-      isAuction,
-      isEmpty: $selectedLand.owner == undefined,
+      isEmpty: false,
       token,
-      yieldInfo,
     };
   }
-  return null;
+  return undefined;
 });
 
 export const mousePosCoords = writable<{

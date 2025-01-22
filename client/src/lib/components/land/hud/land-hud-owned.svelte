@@ -13,8 +13,6 @@
   import LandTaxesCalculator from '../../land/land-taxes-calculator.svelte';
   import { Button } from '../../ui/button';
 
-  let landStore = useLands();
-
   const handleClaimLandClick = () => {
     console.log('Claim land clicked');
     $selectedLandMeta!.claim().then((res) => {
@@ -44,11 +42,11 @@
     </div>
     <div class="flex w-full">
       <span class="w-full">Price :</span>
-      <span class="w-full">{$selectedLandMeta?.sellPrice}</span>
+      <span class="w-full">{$selectedLandMeta?.sellPrice?.toString()}</span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Remaining Stake :</span>
-      <span class="w-full">{$selectedLandMeta?.stakeAmount}</span>
+      <span class="w-full">{$selectedLandMeta?.stakeAmount?.toString()}</span>
     </div>
     <div class="flex w-full">
       <span class="w-full">Owner :</span>

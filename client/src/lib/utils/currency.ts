@@ -13,15 +13,18 @@ export function fromCallData(
   rawAmount: BigNumberish,
   scale: number,
 ): BigNumber {
-  return new BigNumber(rawAmount.toString()).dividedBy(
-    new BigNumber(10).pow(scale),
-  );
+  return new BigNumber(rawAmount.toString()).shiftedBy(-scale);
 }
 
-export function toCalldata(displayAmount: BigNumber, scale: number): bigint {
-  return BigInt(
-    displayAmount.multipliedBy(new BigNumber(10).pow(scale)).toFixed(),
-  );
+export function toCalldata(
+  displayAmount: BigNumber | string,
+  scale: number = 18,
+): BigNumber {
+  if (typeof displayAmount == 'string') {
+    displayAmount = new BigNumber(displayAmount);
+  }
+
+  return displayAmount.shiftedBy(scale);
 }
 
 export function displayCurrency(
@@ -33,7 +36,6 @@ export function displayCurrency(
   }
 
   const bn = number.dividedBy(new BigNumber(10).pow(scale));
-  console.log('BN:', bn.toString());
 
   const negative = bn.isNegative();
   const absVal = bn.abs();
@@ -49,7 +51,6 @@ export function displayCurrency(
     let str = absVal.toFixed(2); // e.g. "123.00", "123.45"
 
     if (str.endsWith('.00')) {
-      console.log('We got a doubleo');
       str = str.slice(0, -3); // drop the .00
     }
 
@@ -64,21 +65,4 @@ export function displayCurrency(
   const normalStr = new BigNumber(twoSig).toString(); // e.g. "0.00032"
 
   return negative ? '-' + normalStr : normalStr;
-}
-
-export function displayPrice(
-  value: BigNumberish | undefined | BigNumber,
-  token?: Token | null,
-) {
-  if (value == undefined) {
-    return 'N/A';
-  }
-  let bigNumber;
-  if (value instanceof BigNumber) {
-    bigNumber = value;
-  } else {
-    bigNumber = new BigNumber(value as string, 16);
-  }
-
-  return displayCurrency(bigNumber, token?.decimals ?? 18);
 }

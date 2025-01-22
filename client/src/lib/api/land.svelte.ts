@@ -1,6 +1,13 @@
 import { useDojo } from '$lib/contexts/dojo';
+import type { YieldInfo } from '$lib/interfaces';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
-import { getTokenInfo, toBigInt, toHexWithPadding } from '$lib/utils';
+import {
+  ensureNumber,
+  getTokenInfo,
+  toBigInt,
+  toHexWithPadding,
+} from '$lib/utils';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
 import type { BigNumberish, Result } from 'starknet';
 import { derived, get, writable, type Readable } from 'svelte/store';
@@ -14,11 +21,11 @@ export type TransactionResult = Promise<
 
 export type LandSetup = {
   tokenForSaleAddress: string;
-  salePrice: BigNumberish;
-  amountToStake: BigNumberish;
+  salePrice: CurrencyAmount;
+  amountToStake: CurrencyAmount;
   liquidityPoolAddress: string;
   tokenAddress: string;
-  currentPrice: BigNumberish;
+  currentPrice: CurrencyAmount | null;
 };
 
 export type LandsStore = Readable<LandWithActions[]> & {
@@ -27,34 +34,54 @@ export type LandsStore = Readable<LandWithActions[]> & {
   /// Buy an empty / nuked land.
   /// NOTE: This function may be removed later.
   bidLand(location: BigNumberish, setup: LandSetup): TransactionResult;
+
   auctionLand(
     location: BigNumberish,
-    startPrice: BigNumberish,
-    floorPrice: BigNumberish,
+
+    startPrice: CurrencyAmount,
+    floorPrice: CurrencyAmount,
     tokenForSale: string,
+
     decayRate: BigNumberish,
   ): TransactionResult;
+
   getPendingTaxes(owner: string): Promise<Result | undefined>;
-  getPendingTaxesForLand(location: BigNumberish): Promise<Result | undefined>;
-  getYieldInfo(location: BigNumberish): Promise<Result | undefined>;
 };
 
-export type LandWithMeta = Land & {
-  type: 'auction' | 'house' | 'grass' | string;
+export type LandWithMeta = Omit<Land, 'location'> & {
+  location: string;
+  // Type conversions
+  stakeAmount: CurrencyAmount;
+  sellPrice: CurrencyAmount;
+
+  type: 'auction' | 'house' | 'grass';
   owner: string;
-  sellPrice: number | null;
+
   tokenUsed: string | null;
   tokenAddress: string | null;
 };
 
+export type PendingTax = {
+  amount: CurrencyAmount;
+  tokenAddress: string;
+};
+
+export type NextClaimInformation = {
+  amount: CurrencyAmount;
+  tokenAddress: string;
+  landLocation: string;
+  canBeNuked: boolean;
+};
+
 export type LandWithActions = LandWithMeta & {
-  increaseStake(amount: BigNumberish): TransactionResult;
-  increasePrice(amount: BigNumberish): TransactionResult;
+  increaseStake(amount: CurrencyAmount): TransactionResult;
+  increasePrice(amount: CurrencyAmount): TransactionResult;
   claim(): TransactionResult;
   nuke(): TransactionResult;
-  getPendingTaxes(): Promise<Result | undefined>;
-  getNextClaim(): Promise<Result | undefined>;
-  getCurrentAuctionPrice(): Promise<Result | undefined>;
+  getPendingTaxes(): Promise<PendingTax[] | undefined>;
+  getNextClaim(): Promise<NextClaimInformation[] | undefined>;
+  getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
+  getYieldInfo(): Promise<YieldInfo[] | undefined>;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -108,7 +135,7 @@ export function useLands(): LandsStore | undefined {
   })();
 
   const landEntityStore = derived([landStore], ([s]) => {
-    return s
+    const landWithActions: LandWithActions[] = s
       .getEntitiesByModel('ponzi_land', 'Land')
       .map((e) => e.models['ponzi_land']['Land'] as Land)
       .map((land) => {
@@ -116,42 +143,35 @@ export function useLands(): LandsStore | undefined {
         // Land With Meta data here
         // ------------------------
 
-        // convert sell price to number
-        let sellPrice;
-        if (typeof land.sell_price === 'string') {
-          sellPrice = parseInt(land.sell_price);
-        } else if (typeof land.sell_price === 'bigint') {
-          sellPrice = Number(land.sell_price);
-        } else {
-          sellPrice = land.sell_price;
-        }
-
         return {
           ...land,
-          type: land.owner == toHexWithPadding(0) ? 'auction' : 'house',
+          location: toHexWithPadding(ensureNumber(land.location)),
+          type: (land.owner == toHexWithPadding(0) ? 'auction' : 'house') as
+            | 'auction'
+            | 'house',
           owner: land.owner,
-          sellPrice: sellPrice,
+          sellPrice: CurrencyAmount.fromUnscaled(land.sell_price),
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
-          stakeAmount: toBigInt(land.stake_amount),
+          stakeAmount: CurrencyAmount.fromUnscaled(land.stake_amount),
         };
       })
       .map((land) => ({
         ...land,
         // Add functions
-        increaseStake(amount: BigNumberish) {
+        increaseStake(amount: CurrencyAmount) {
           return sdk.client.actions.increaseStake(
             account()?.getWalletAccount()!,
             land.location,
             land.token_used,
-            amount,
+            amount.toBignumberish(),
           );
         },
-        increasePrice(amount: BigNumberish) {
+        increasePrice(amount: CurrencyAmount) {
           return sdk.client.actions.increasePrice(
             account()?.getWalletAccount()!,
             land.location,
-            amount,
+            amount.toBignumberish(),
           );
         },
         claim() {
@@ -166,22 +186,44 @@ export function useLands(): LandsStore | undefined {
             land.location,
           );
         },
-        getPendingTaxes() {
-          return sdk.client.actions.getPendingTaxesForLand(
+        async getPendingTaxes() {
+          const result = (await sdk.client.actions.getPendingTaxesForLand(
             land.location,
             account()!.getAccount()!.address,
+          )) as any[] | undefined;
+
+          return result?.map((tax) => ({
+            amount: CurrencyAmount.fromUnscaled(tax.amount),
+            tokenAddress: toHexWithPadding(tax.token_address),
+          }));
+        },
+        async getNextClaim() {
+          const result = (await sdk.client.actions.getNextClaimInfo(
+            ensureNumber(land.location),
+          )) as any[] | undefined;
+          return result?.map((claim) => ({
+            amount: CurrencyAmount.fromUnscaled(claim.amount),
+            tokenAddress: toHexWithPadding(claim.token_address),
+            landLocation: toHexWithPadding(claim.land_location),
+            canBeNuked: claim.can_be_nuked,
+          }));
+        },
+        async getCurrentAuctionPrice() {
+          return CurrencyAmount.fromUnscaled(
+            (await sdk.client.actions.getCurrentAuctionPrice(
+              land.location,
+            ))! as string,
           );
         },
-        getNextClaim() {
-          return sdk.client.actions.getNextClaimInfo(land.location);
-        },
-        getCurrentAuctionPrice() {
-          return sdk.client.actions.getCurrentAuctionPrice(land.location);
-        },
-        getYieldInfo() {
-          return sdk.client.actions.getNeighborsYield(land.location);
+        async getYieldInfo() {
+          console.log('Location:', ensureNumber(land.location));
+          return (await sdk.client.actions.getNeighborsYield(
+            `0x${ensureNumber(land.location)}`,
+          )) as YieldInfo[] | undefined;
         },
       }));
+
+    return landWithActions;
   });
 
   return {
@@ -191,11 +233,11 @@ export function useLands(): LandsStore | undefined {
         account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
-        setup.salePrice,
-        setup.amountToStake,
+        setup.salePrice.toBignumberish(),
+        setup.amountToStake.toBignumberish(),
         setup.liquidityPoolAddress,
         setup.tokenAddress,
-        setup.currentPrice,
+        setup.currentPrice!.toBignumberish(),
       );
     },
 
@@ -205,19 +247,19 @@ export function useLands(): LandsStore | undefined {
         account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
-        setup.salePrice,
-        setup.amountToStake,
+        setup.salePrice.toBignumberish(),
+        setup.amountToStake.toBignumberish(),
         setup.liquidityPoolAddress,
         setup.tokenAddress,
-        setup.currentPrice,
+        setup.currentPrice!.toBignumberish(),
       );
     },
     auctionLand(location, startPrice, floorPrice, tokenForSale, decayRate) {
       return sdk.client.actions.auction(
         account()?.getWalletAccount()!,
         location,
-        startPrice,
-        floorPrice,
+        startPrice.toBignumberish(),
+        floorPrice.toBignumberish(),
         tokenForSale,
         decayRate,
       );
@@ -226,15 +268,6 @@ export function useLands(): LandsStore | undefined {
       return sdk.client.actions.getPendingTaxes(
         account()!.getAccount()!.address,
       );
-    },
-    getPendingTaxesForLand(location) {
-      return sdk.client.actions.getPendingTaxesForLand(
-        location,
-        account()!.getAccount()!.address,
-      );
-    },
-    getYieldInfo(location) {
-      return sdk.client.actions.getNeighborsYield(location);
     },
   };
 }

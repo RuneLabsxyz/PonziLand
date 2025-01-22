@@ -3,6 +3,8 @@
   import type { Token } from '$lib/interfaces';
   import { uiStore, selectedLandMeta } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
+  import { toCalldata } from '$lib/utils/currency';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land/land-overview.svelte';
   import Button from '../ui/button/button.svelte';
   import { CardTitle } from '../ui/card';
@@ -12,9 +14,16 @@
 
   let landStore = useLands();
 
-  let selectedToken = $state<Token | null>(null);
-  let stakeAmount = $state<number>(0);
-  let sellAmount = $state<number>(0);
+  let selectedToken = $state<Token | undefined>();
+
+  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(1));
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(1));
+
+  $effect(() => {
+    // Update the token while preserving the scaled amount
+    stakeAmount.setToken(selectedToken ?? undefined);
+    sellAmount.setToken(selectedToken ?? undefined);
+  });
 
   function handleCancelClick() {
     uiStore.showModal = false;
@@ -26,11 +35,11 @@
 
     const landSetup: LandSetup = {
       tokenForSaleAddress: selectedToken?.address || '',
-      salePrice: toHexWithPadding(sellAmount),
-      amountToStake: toHexWithPadding(stakeAmount),
+      salePrice: sellAmount,
+      amountToStake: stakeAmount,
       liquidityPoolAddress: selectedToken?.lpAddress ?? '',
       tokenAddress: $selectedLandMeta?.tokenAddress ?? '',
-      currentPrice: $selectedLandMeta?.sellPrice ?? '',
+      currentPrice: $selectedLandMeta?.sellPrice ?? null,
     };
 
     if (!$selectedLandMeta) {

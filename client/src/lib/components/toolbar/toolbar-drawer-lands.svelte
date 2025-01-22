@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { useLands } from '$lib/api/land.svelte';
+  import { useLands, type LandWithActions } from '$lib/api/land.svelte';
   import { landStore } from '$lib/api/mock-land';
   import addressState from '$lib/account.svelte';
 
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera';
   import {
+    ensureNumber,
     padAddress,
     shortenHex,
     toBigInt,
@@ -14,11 +15,19 @@
   import { ScrollArea } from '../ui/scroll-area';
   import data from '$lib/data.json';
   import LandOverview from '../land/land-overview.svelte';
-  import { selectedLand } from '$lib/stores/stores.svelte';
+  import { selectedLand, selectLand } from '$lib/stores/stores.svelte';
 
   let landsStore = useLands();
 
   const address = $derived(addressState.address);
+
+  function convertCoordinates(land: LandWithActions) {
+    const location = ensureNumber(land.location);
+    return {
+      x: (location % 64) + 1,
+      y: Math.floor(location / 64) + 1,
+    };
+  }
 
   let playerLands = $derived(() => {
     if (!$landsStore) return [];
@@ -28,23 +37,9 @@
       (land) => land.owner == padAddress(address ?? ''),
     );
 
-    return playerLands
-      .map((land) => {
-        const token = data.availableTokens.find(
-          (token) => token.address == land.token_used,
-        );
-
-        return {
-          ...land,
-          location: Number(toBigInt(land.location)),
-          block_date_bought: toBigInt(land.block_date_bought),
-          sell_price: toBigInt(land.sell_price),
-          token_used: land.token_used,
-          pool_key: toBigInt(land.pool_key),
-          token,
-        };
-      })
-      .sort((a, b) => a.location - b.location);
+    return playerLands.sort(
+      (a, b) => ensureNumber(a.location) - ensureNumber(b.location),
+    );
   });
 </script>
 
@@ -55,21 +50,16 @@
         class="p-3 text-left flex gap-2 text-ponzi"
         onclick={() => {
           moveCameraTo(
-            Math.floor(land.location % 64) + 1,
-            Math.floor(land.location / 64) + 1,
+            Math.floor(ensureNumber(land.location) % 64) + 1,
+            Math.floor(ensureNumber(land.location) / 64) + 1,
           );
-          $selectedLand = {
-            ...land,
-            location: toHexWithPadding(land.location),
-          };
+          selectLand(land);
         }}
       >
         <LandOverview data={land} />
         <div>
           <p class="font-medium">
-            Location: {(land.location % 64) + 1}, {Math.floor(
-              land.location / 64,
-            ) + 1}
+            Location: {convertCoordinates(land)}
           </p>
           <p>Block date bought: {land.block_date_bought}</p>
           <p>Sell Price: {land.sell_price}</p>

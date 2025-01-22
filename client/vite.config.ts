@@ -1,6 +1,6 @@
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
 import wasm from 'vite-plugin-wasm';
+import { defineConfig } from 'vitest/config';
 import topLevelAwait from 'vite-plugin-top-level-await';
 
 export default defineConfig({
@@ -18,6 +18,7 @@ export default defineConfig({
       '@dojoengine/sdk-svelte': '../dist/index.js',
       $lib: '/src/lib',
     },
+    conditions: process.env.VITEST ? ['browser'] : undefined,
   },
   ssr: {
     noExternal: ['@dojoengine/torii-client'],

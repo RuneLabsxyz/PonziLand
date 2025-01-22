@@ -7,25 +7,21 @@
     mousePosCoords,
     selectedLand,
     selectedLandMeta,
+    selectLand,
     uiStore,
   } from '$lib/stores/stores.svelte';
   import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
+  import type { Tile } from '$lib/api/tile-store.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
   const { store, client: sdk, accountManager } = useDojo();
 
   let { land } = $props<{
-    land: Partial<LandWithActions> & {
-      type: 'grass' | 'house' | 'auction';
-      owner: string | undefined;
-      sellPrice: number | null;
-      tokenUsed: string | null;
-      tokenAddress: string | null;
-    };
+    land: Tile;
   }>();
 
   let isOwner = $derived(() => {
@@ -39,6 +35,7 @@
     }
     return land?.owner == padAddress(accountData.address);
   });
+
   let selected = $derived($selectedLand?.location === land.location);
   let isHovering = $derived($mousePosCoords?.location == land.location);
 
@@ -47,22 +44,7 @@
       moveCameraToLocation(land.location);
     }
 
-    $selectedLand = {
-      type: land.type,
-      location: land.location,
-      owner: land.owner,
-      sellPrice: land.sellPrice,
-      tokenUsed: land.tokenUsed,
-      tokenAddress: land.tokenAddress,
-      stakeAmount: land.stakeAmount,
-      claim: land.claim,
-      nuke: land.nuke,
-      getPendingTaxes: land.getPendingTaxes,
-      getNextClaim: land.getNextClaim,
-      getCurrentAuctionPrice: land.getCurrentAuctionPrice,
-      increaseStake: land.increaseStake,
-      getYieldInfo: land.getYieldInfo,
-    };
+    selectLand(land);
   }
 
   const getCastleImage = () => {
@@ -150,7 +132,7 @@
     </div>
   {/if}
 
-  {#if $nukableStore.includes(toBigInt(land.location))}
+  {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
     <div class="text-ponzi animate-pulse">NUKABLE</div>
   {/if}
 

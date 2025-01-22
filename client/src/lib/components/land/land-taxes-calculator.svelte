@@ -1,17 +1,29 @@
 <script lang="ts">
-  import { useLands, type LandWithMeta } from '$lib/api/land.svelte';
   import {
-    selectedLandMeta,
-    type SelectedLandType,
-  } from '$lib/stores/stores.svelte';
-  import { hexStringToNumber, toBigInt, toHexWithPadding } from '$lib/utils';
+    useLands,
+    type LandWithActions,
+    type LandWithMeta,
+  } from '$lib/api/land.svelte';
+  import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import {
+    ensureNumber,
+    hexStringToNumber,
+    toBigInt,
+    toHexWithPadding,
+  } from '$lib/utils';
   import data from '$lib/data.json';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { Currency } from 'lucide-svelte';
+  import { getAggregatedTaxes } from '$lib/utils/taxes';
 
   let { showAggregated = false } = $props();
 
   const landStore = useLands();
 
-  const calculateTaxes = (sellPrice: bigint, lastClaim: number): bigint => {
+  const calculateTaxes = (
+    sellPrice: bigint,
+    lastClaim: number,
+  ): CurrencyAmount => {
     const taxRate = 4n;
     const baseTime = 3600n;
 
@@ -25,16 +37,17 @@
 
     let totalTaxes = (sellPrice * taxRate * elapsedTime) / (100n * baseTime);
 
-    return totalTaxes;
+    return CurrencyAmount.fromUnscaled(totalTaxes);
   };
 
-  const getNeighbourLands = (land: SelectedLandType) => {
+  const getNeighbourLands = (land: LandWithActions) => {
     if (!land || !$landStore) {
       return;
     }
 
     const MAP_SIZE = 64;
     const locationValue = hexStringToNumber(land.location);
+
     const neighbors = [
       locationValue - MAP_SIZE - 1,
       locationValue - MAP_SIZE,
@@ -48,11 +61,11 @@
     ];
 
     return neighbors.map((loc) =>
-      $landStore.find((land) => land.location == loc),
+      $landStore.find((land) => locationValue == loc),
     );
   };
 
-  const getNeighboringTaxes = async (land: SelectedLandType) => {
+  const getNeighboringTaxes = async (land: LandWithActions) => {
     if (!land) {
       return;
     }
@@ -63,64 +76,19 @@
     const locationValue = hexStringToNumber(land.location);
 
     // for each of the lands calculate the claimable ammount from the last claim
-    const taxes = neighborLands.map((land) => {
-      if (!land || land.location == locationValue) {
-        return 0;
+    const taxes = neighborLands.map((neighbor) => {
+      if (!neighbor || hexStringToNumber(neighbor.location) == locationValue) {
+        return CurrencyAmount.fromUnscaled(0n);
       }
-      return Number(
-        calculateTaxes(toBigInt(land.sell_price), Number(land.last_pay_time)),
-      ).toExponential(0);
+      return calculateTaxes(
+        neighbor.sellPrice.toBigint(),
+        Number(neighbor.last_pay_time),
+      )
+        .rawValue()
+        .toExponential(0);
     });
 
     return taxes; // insert 0 in the middle
-  };
-
-  const getAggregatedTaxes = async (
-    land: SelectedLandType,
-  ): Promise<
-    { tokenAddress: string; tokenSymbol: string; totalTax: bigint }[]
-  > => {
-    if (!land) {
-      return [];
-    }
-
-    // get next claim
-    const nextClaimTaxes = await land.getNextClaim();
-
-    // get pending taxes
-    const pendingTaxes = await land.getPendingTaxes();
-
-    // aggregate the two arrays with total tax per token
-    const tokenTaxMap: Record<string, bigint> = {};
-
-    nextClaimTaxes?.forEach((tax) => {
-      const token = toHexWithPadding(tax.token_address);
-      const taxAmount = tax.amount;
-      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
-    });
-
-    pendingTaxes?.forEach((tax) => {
-      console.log('token:', tax.token_address, 'amount:', tax.amount);
-      const token = toHexWithPadding(tax.token_address);
-      console.log('token:', token);
-      const taxAmount = tax.amount;
-      tokenTaxMap[token] = (tokenTaxMap[token] || 0n) + taxAmount;
-    });
-
-    // Convert the map to an array of objects
-    const result = Object.entries(tokenTaxMap).map(([token, totalTax]) => {
-      console.log('Token:', token, 'Total Tax:', totalTax);
-      const tokenSymbol =
-        data.availableTokens.find((t) => t.address == token)?.name ?? 'Unknown';
-
-      return {
-        tokenAddress: token,
-        tokenSymbol,
-        totalTax,
-      };
-    });
-
-    return result;
   };
 
   let taxes = $derived(async () => {

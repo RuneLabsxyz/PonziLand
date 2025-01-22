@@ -134,12 +134,26 @@ export function hexStringToNumber(hex: string) {
   return parseInt(hexString, 16);
 }
 
-export function toBigInt(value: BigNumberish): bigint {
+export function toBigInt(value: BigNumberish): bigint | undefined {
+  if (value == undefined) {
+    return undefined;
+  }
+
   if (typeof value === 'string' || typeof value === 'number') {
     return BigInt(value);
   }
   if (typeof value === 'bigint') {
     return value;
   }
-  throw new Error('Unsupported BigNumberish type');
+  throw new Error('Unsupported BigNumberish type: ' + typeof value);
+}
+
+export function ensureNumber(value: BigNumberish) {
+  if (typeof value === 'string') {
+    return parseInt(value, 16);
+  } else if (typeof value === 'bigint') {
+    return Number(value);
+  } else {
+    return value;
+  }
 }

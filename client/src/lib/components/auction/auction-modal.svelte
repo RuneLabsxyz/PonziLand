@@ -15,16 +15,19 @@
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
   import BigNumber from 'bignumber.js';
-  import { displayPrice } from '$lib/utils/currency';
-  import {type BigNumberish} from 'starknet';
+  import { type BigNumberish } from 'starknet';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { Currency } from 'lucide-svelte';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
 
-  let selectedToken = $state<Token | null>(null);
+  let selectedToken = $state<Token | undefined>();
   //TODO: Change defaults values into an error component
-  let stakeAmount = $state<number>(100);
-  let sellAmount = $state<number>(100);
+  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('100'));
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
+
+  $effect(() => {});
 
   let currentPriceDerived = $derived.by(() => {
     if (auctionInfo && currentTime) {
@@ -41,10 +44,14 @@
     return null;
   });
 
-
-  let startPrice = $derived(displayPrice(auctionInfo?.start_price, selectedToken));
-  let floorPrice = $derived(displayPrice(auctionInfo?.floor_price, selectedToken));
-  let currentPriceDisplay = $derived(displayPrice(currentPriceDerived ?? undefined, selectedToken));
+  // TODO: Put the auction token as a second parameter
+  let startPrice = $derived(
+    CurrencyAmount.fromUnscaled(auctionInfo?.start_price ?? 0).toString(),
+  );
+  let floorPrice = $derived(
+    CurrencyAmount.fromUnscaled(auctionInfo?.floor_price ?? 0).toString(),
+  );
+  let currentPriceDisplay = $derived(currentPriceDerived?.toString());
 
   let landStore = useLands();
 
@@ -71,7 +78,7 @@
     let currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
     if (!currentPrice) {
       console.error(`Could not get current price ${currentPrice ?? ''}`);
-      currentPrice = 10000000000000000000000n;
+      currentPrice = CurrencyAmount.fromScaled('1', $selectedLandMeta?.token);
     }
 
     const landSetup: LandSetup = {
@@ -80,7 +87,7 @@
       amountToStake: stakeAmount,
       liquidityPoolAddress: toHexWithPadding(0),
       tokenAddress: $selectedLandMeta?.tokenAddress as string,
-      currentPrice: currentPrice + currentPrice / 10n,
+      currentPrice: currentPrice, // Include a 10% margin on the bet amount
     };
 
     if (!$selectedLand?.location) {
@@ -124,7 +131,6 @@
 >
   <Card class="flex flex-col min-w-96 min-h-96">
     <CloseButton onclick={handleCancelClick} />
-    WAAAAIT a minute
     <p>
       StartTime: {new Date(
         parseInt(auctionInfo?.start_time as string, 16) * 1000,
@@ -137,7 +143,7 @@
     <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
     <Button on:click={handleBiddingClick}>
       Buy for {currentPriceDisplay}
-      {$selectedLandMeta?.tokenUsed}
+      XXX
     </Button>
   </Card>
 </div>

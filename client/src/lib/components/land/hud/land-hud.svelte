@@ -18,9 +18,9 @@
 
 {#if $selectedLandMeta}
   <Card class="fixed bottom-0 right-0 z-50 w-96 bg-ponzi">
-    {#if $selectedLandMeta.isAuction}
+    {#if $selectedLandMeta.type === 'auction'}
       <LandHudAuction />
-    {:else if $selectedLandMeta.isEmpty}
+    {:else if $selectedLandMeta.type === 'grass'}
       <LandHudEmpty />
     {:else if isOwner}
       <LandHudOwned />
