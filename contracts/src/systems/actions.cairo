@@ -449,7 +449,10 @@ pub mod actions {
                     let rate = neighbor.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into());
 
                     total_rate = total_rate + rate.try_into().unwrap();
-                    yield_info.append(YieldInfo { token, rate });
+                    yield_info
+                        .append(
+                            YieldInfo { token, sell_price: neighbor.sell_price, percent_rate: rate }
+                        );
                 }
             }
 

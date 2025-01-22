@@ -1,7 +1,7 @@
 {
   "world": {
-    "class_hash": "0x79d9ce84b97bcc2a631996c3100d57966fc2f5b061fb1ec4dfd0040976bcac6",
-    "address": "0x23317fcb2a395dfaed56e3df8269845387546de806e8d481728d8ff4c9b4da8",
+    "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
+    "address": "0x1e3f3b4a94efe916afd13af2eac5ddbfb184edda17e58834f5d88a0517ca520",
     "seed": "ponzi_land",
     "name": "Ponzi Land",
     "entrypoints": [
@@ -92,6 +92,10 @@
           {
             "name": "metadata_uri",
             "type": "core::byte_array::ByteArray"
+          },
+          {
+            "name": "metadata_hash",
+            "type": "core::felt252"
           }
         ]
       },
@@ -1002,6 +1006,11 @@
             "name": "uri",
             "type": "core::byte_array::ByteArray",
             "kind": "data"
+          },
+          {
+            "name": "hash",
+            "type": "core::felt252",
+            "kind": "data"
           }
         ]
       },
@@ -1243,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x37c343348a71c5847306518684814a10913261ea588e6fba51ba537fd200da8",
-      "class_hash": "0x20192a4cf85344f7075a21e10393e6f8d58adddba884848095465a587b4ca28",
+      "address": "0x4d81ae950723f367706d4062654b2d829b704b236fa341b4fedf2604dd73200",
+      "class_hash": "0xd676f03126cd97c6da5c37533fd028614f7c3c43c546421754c775a756afe9",
       "abi": [
         {
           "type": "impl",
@@ -1302,30 +1311,16 @@
           "interface_name": "ponzi_land::systems::actions::IActions"
         },
         {
-          "type": "enum",
-          "name": "core::bool",
-          "variants": [
+          "type": "struct",
+          "name": "core::integer::u256",
+          "members": [
             {
-              "name": "False",
-              "type": "()"
+              "name": "low",
+              "type": "core::integer::u128"
             },
             {
-              "name": "True",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "core::option::Option::<core::integer::u64>",
-          "variants": [
-            {
-              "name": "Some",
-              "type": "core::integer::u64"
-            },
-            {
-              "name": "None",
-              "type": "()"
+              "name": "high",
+              "type": "core::integer::u128"
             }
           ]
         },
@@ -1347,7 +1342,7 @@
             },
             {
               "name": "sell_price",
-              "type": "core::integer::u64"
+              "type": "core::integer::u256"
             },
             {
               "name": "token_used",
@@ -1359,7 +1354,11 @@
             },
             {
               "name": "last_pay_time",
-              "type": "core::option::Option::<core::integer::u64>"
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "stake_amount",
+              "type": "core::integer::u256"
             }
           ]
         },
@@ -1373,7 +1372,75 @@
             },
             {
               "name": "amount",
+              "type": "core::integer::u256"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::components::payable::PayableComponent::ClaimInfo",
+          "members": [
+            {
+              "name": "token_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "land_location",
               "type": "core::integer::u64"
+            },
+            {
+              "name": "can_be_nuked",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::components::payable::PayableComponent::YieldInfo",
+          "members": [
+            {
+              "name": "token",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "sell_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "percent_rate",
+              "type": "core::integer::u256"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::components::payable::PayableComponent::LandYieldInfo",
+          "members": [
+            {
+              "name": "remaining_stake_time",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "yield_info",
+              "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::YieldInfo>"
             }
           ]
         },
@@ -1381,6 +1448,34 @@
           "type": "interface",
           "name": "ponzi_land::systems::actions::IActions",
           "items": [
+            {
+              "type": "function",
+              "name": "auction",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "start_price",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "floor_price",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "token_for_sale",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "decay_rate",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
             {
               "type": "function",
               "name": "bid",
@@ -1395,11 +1490,11 @@
                 },
                 {
                   "name": "sell_price",
-                  "type": "core::integer::u64"
+                  "type": "core::integer::u256"
                 },
                 {
                   "name": "amount_to_stake",
-                  "type": "core::integer::u64"
+                  "type": "core::integer::u256"
                 },
                 {
                   "name": "liquidity_pool",
@@ -1423,19 +1518,15 @@
                 },
                 {
                   "name": "sell_price",
-                  "type": "core::integer::u64"
+                  "type": "core::integer::u256"
                 },
                 {
                   "name": "amount_to_stake",
-                  "type": "core::integer::u64"
+                  "type": "core::integer::u256"
                 },
                 {
                   "name": "liquidity_pool",
                   "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "is_from_bid",
-                  "type": "core::bool"
                 }
               ],
               "outputs": [],
@@ -1467,34 +1558,34 @@
             },
             {
               "type": "function",
-              "name": "create_land",
+              "name": "increase_price",
               "inputs": [
                 {
-                  "name": "location",
+                  "name": "land_location",
                   "type": "core::integer::u64"
                 },
                 {
-                  "name": "sell_price",
-                  "type": "core::integer::u64"
-                },
-                {
-                  "name": "token_used",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "pool_key",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "stake_amount",
-                  "type": "core::integer::u64"
+                  "name": "new_price",
+                  "type": "core::integer::u256"
                 }
               ],
-              "outputs": [
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "increase_stake",
+              "inputs": [
                 {
-                  "type": "ponzi_land::models::land::Land"
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "amount_to_stake",
+                  "type": "core::integer::u256"
                 }
               ],
+              "outputs": [],
               "state_mutability": "external"
             },
             {
@@ -1508,7 +1599,7 @@
               ],
               "outputs": [
                 {
-                  "type": "core::integer::u64"
+                  "type": "core::integer::u256"
                 }
               ],
               "state_mutability": "view"
@@ -1541,6 +1632,74 @@
               "outputs": [
                 {
                   "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::TokenInfo>"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_pending_taxes_for_land",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                },
+                {
+                  "name": "owner_land",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::TokenInfo>"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_current_auction_price",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_next_claim_info",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::ClaimInfo>"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_neighbors_yield",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "ponzi_land::components::payable::PayableComponent::LandYieldInfo"
                 }
               ],
               "state_mutability": "view"
@@ -1677,11 +1836,13 @@
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
       "systems": [
+        "auction",
         "bid",
         "buy",
         "claim",
         "nuke",
-        "create_land",
+        "increase_price",
+        "increase_stake",
         "upgrade"
       ]
     }
@@ -1689,23 +1850,47 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x68a87a1a63f2bbf720fc8cecd041699af0d4aeadb9b60ab2d6f64e2a9a19a54",
-      "tag": "ponzi_land-Land",
-      "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
+      "class_hash": "0x1849db767ed466f911a5cb9c9442a0831b0ba02a6cb3fec79376165ea4c8fb",
+      "tag": "ponzi_land-Auction",
+      "selector": "0x7e0590370db3aa23e7aa340e9dfbdb6127f3fe6d5173b6051be0225a6acddec"
     },
     {
       "members": [],
-      "class_hash": "0x1b979554455e2bec6c00b229e6efc4ce1133dd9cc96fef0d002451096334509",
-      "tag": "ponzi_land-auction_info",
-      "selector": "0x5b31a1623abaaf8ad8be01a06a59cb746b3ba1114ab05ae443d65d06d8a61ff"
+      "class_hash": "0x108dddbe1506cfaf70404bca81173e4e494dc6a6c003a69fa9f08337dad611b",
+      "tag": "ponzi_land-Land",
+      "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
     }
   ],
   "events": [
     {
       "members": [],
+      "class_hash": "0x7076d8fe5236a1bc1e53c8a7c98d25975a09f0fe8a4794bfbcd56778acec949",
+      "tag": "ponzi_land-AuctionFinishedEvent",
+      "selector": "0x4a851acb463e71e7b60828525b2af21e21fc500b159358a7b0f0036418d3d9a"
+    },
+    {
+      "members": [],
       "class_hash": "0x92682836dedea3233ea898fa0a7f0a64fc025f74453dd4d0b0b6442552ec59",
       "tag": "ponzi_land-LandNukedEvent",
       "selector": "0x5ab63e32ba617fc00cdaf4469b0dfffd18eacb82fa7b5036437ca7f4ce3964b"
+    },
+    {
+      "members": [],
+      "class_hash": "0x4f70e9c18ead46e7ffdbadb6e8d70f45cde132c6ad8faa05bdef63fb7210400",
+      "tag": "ponzi_land-NewAuctionEvent",
+      "selector": "0x617c6bf5e078af2c93083a50e445f36b55cad4a6bd07a21a5a42540cb0d8f9f"
+    },
+    {
+      "members": [],
+      "class_hash": "0x66128195801869379aa2b09740592f8cb9ec43de620271870f1d7019db42122",
+      "tag": "ponzi_land-NewLandEvent",
+      "selector": "0x399e09d878d316ad3e7e3f11970368610167e6d7d30cc55d95635b86c5181bf"
+    },
+    {
+      "members": [],
+      "class_hash": "0x5075b71332d4501663c2de3c3f7a71574440010eec31bde0a4dea37d88bcdd",
+      "tag": "ponzi_land-RemainingStakeEvent",
+      "selector": "0x7021aa577bc24a67ca28766ec1ad646945d1c9b43aca6af8d53aba43bb0f5ea"
     }
   ]
 }

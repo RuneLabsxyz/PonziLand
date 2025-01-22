@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import type { YieldInfo } from '$lib/interfaces';
+  import { type SelectedLandType } from '$lib/stores/stores.svelte';
 
+  let { land } = $props<{ land: SelectedLandType }>();
+  
   let yieldInfo: YieldInfo[] | undefined;
 
   async function updateYieldInfo() {
@@ -12,8 +14,17 @@
   }
 
   $effect(() => {
-    if ($selectedLandMeta) {
-      updateYieldInfo();
+    console.log('land from rates', land);
+    if (land) {
+      land
+        .getYieldInfo()
+        .then((res: YieldInfo[] | undefined) => {
+          yieldInfo = res;
+          console.log('yield info response:', res);
+        })
+        .catch((error: any) => {
+          console.error('Error fetching yield info:', error);
+        });
     }
   });
 </script>

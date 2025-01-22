@@ -1253,7 +1253,7 @@
   "contracts": [
     {
       "address": "0x68afc45a6e6baff16a5089aa81676a2d4b654a7a3e78e83e57690a1b10b9dac",
-      "class_hash": "0x1830c7b32237e4c4a27ab465ba44554644f97c3631b932bedae5a6b70b3c36f",
+      "class_hash": "0xd676f03126cd97c6da5c37533fd028614f7c3c43c546421754c775a756afe9",
       "abi": [
         {
           "type": "impl",
@@ -1421,7 +1421,11 @@
               "type": "core::starknet::contract_address::ContractAddress"
             },
             {
-              "name": "rate",
+              "name": "sell_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "percent_rate",
               "type": "core::integer::u256"
             }
           ]

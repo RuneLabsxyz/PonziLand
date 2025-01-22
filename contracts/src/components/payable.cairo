@@ -60,7 +60,8 @@ mod PayableComponent {
     #[derive(Drop, Serde, Debug, Copy)]
     pub struct YieldInfo {
         token: ContractAddress,
-        rate: u256,
+        sell_price: u256,
+        percent_rate: u256,
     }
 
     // Storage
