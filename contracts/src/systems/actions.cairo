@@ -455,8 +455,12 @@ pub mod actions {
                 }
             }
 
-            let remaining_stake_time = (land.stake_amount * BASE_TIME.into() * 100)
-                / (land.sell_price * TAX_RATE.into());
+            let remaining_stake_time = if land.sell_price > 0 {
+                (land.stake_amount * BASE_TIME.into() * 100)
+                    / (land.sell_price * TAX_RATE.into())
+            } else {
+                0
+            };
             LandYieldInfo { yield_info, remaining_stake_time }
         }
     }
