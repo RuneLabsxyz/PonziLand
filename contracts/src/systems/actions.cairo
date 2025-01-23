@@ -466,7 +466,6 @@ pub mod actions {
             } else {
                 0
             };
-
             LandYieldInfo { yield_info, remaining_stake_time }
         }
     }
