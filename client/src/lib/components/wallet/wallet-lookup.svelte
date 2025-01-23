@@ -1,6 +1,6 @@
 <script lang="ts">
   import { useDojo } from '$lib/contexts/dojo';
-  import { padAddress } from '$lib/utils';
+  import { padAddress, shortenHex } from '$lib/utils';
   import Button from '../ui/button/button.svelte';
   import Card from '../ui/card/card.svelte';
   import WalletBalance from './wallet-balance.svelte';
@@ -14,18 +14,27 @@
   const connected = $derived(accountDataProvider.isConnected);
 </script>
 
-<div class="fixed top-0 right-0 z-50">
+<div class="fixed top-0 right-0 z-50 w-72">
   <div class="absolute top-2 left-0" style="transform: translateX(-120%);">
     <WalletHelp />
   </div>
   {#if connected}
     <Card class="shadow-ponzi">
-      <p>Wallet: {padAddress(address ?? '')}</p>
-      <Button
-        on:click={() => {
-          accountManager.disconnect();
-        }}>LOGOUT</Button
-      >
+      <div class="flex justify-between items-center">
+        <div class="flex gap-2 items-center">
+          <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
+          <div class="h-2 w-2 rounded-full bg-green-700"></div>
+        </div>
+        <button
+          onclick={() => {
+            accountManager.disconnect();
+          }}
+          aria-label="Logout"
+        >
+          <img src="/assets/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
+        </button>
+      </div>
+      <hr class="my-3" />
       <WalletBalance />
     </Card>
   {:else}

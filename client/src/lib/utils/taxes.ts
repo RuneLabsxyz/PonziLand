@@ -3,7 +3,6 @@ import type { Token } from '$lib/interfaces';
 import { CurrencyAmount } from './CurrencyAmount';
 import data from '$lib/data.json';
 import { Redo } from 'lucide-svelte';
-
 export type TaxData = {
   tokenAddress: string;
   tokenSymbol: string;
