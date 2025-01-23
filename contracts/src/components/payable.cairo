@@ -21,7 +21,7 @@ mod PayableComponent {
     // Internal imports
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::models::land::Land;
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME,TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     // Local imports
 
@@ -317,11 +317,9 @@ mod PayableComponent {
             }
 
             let current_time = get_block_timestamp();
-            let elapsed_time = current_time - land.last_pay_time;
-
+            let elapsed_time = (current_time - land.last_pay_time) * TIME_SPEED.into();
             let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
                 / (100 * BASE_TIME.into());
-
             //if we dont have enough stake to pay the taxes,we distrubute the total amount of stake
             //and after we nuke the land
             let (tax_to_distribute, is_nuke) = if land.stake_amount <= total_taxes {
@@ -329,11 +327,11 @@ mod PayableComponent {
             } else {
                 (total_taxes, false)
             };
-
+            
             let tax_per_neighbor = tax_to_distribute / max_neighbors(land_location).into();
 
             for neighbor in neighbors
-                .span() {
+            .span() {
                     self
                         ._add_taxes(
                             *neighbor.owner, land.token_used, tax_per_neighbor, *neighbor.location

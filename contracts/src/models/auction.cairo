@@ -1,5 +1,5 @@
 use starknet::get_block_timestamp;
-use ponzi_land::consts::PRICE_DECREASE_RATE;
+use ponzi_land::consts::{PRICE_DECREASE_RATE, TIME_SPEED};
 
 
 const SECONDS_IN_WEEK: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
@@ -40,7 +40,7 @@ impl AuctionImpl of AuctionTrait {
     //TODO:REMOVE THIS AFTER TESTS
     #[inline(always)]
     fn get_current_price(self: Auction) -> u256 {
-        let current_time = get_block_timestamp();
+        let current_time = get_block_timestamp() * TIME_SPEED.into();
 
         let time_passed = if current_time > self.start_time {
             current_time - self.start_time
@@ -76,14 +76,12 @@ impl AuctionImpl of AuctionTrait {
 
     #[inline(always)]
     fn get_current_price_decay_rate(self: Auction) -> u256 {
-        let current_time = get_block_timestamp();
-
+        let current_time = get_block_timestamp() * TIME_SPEED.into();
         let time_passed = if current_time > self.start_time {
             current_time - self.start_time
         } else {
             0
         };
-
         // if the auction has passed a week, the price is 0
         if time_passed.into() >= SECONDS_IN_WEEK {
             return 0;
@@ -118,6 +116,7 @@ impl AuctionImpl of AuctionTrait {
 mod tests {
     use super::{Auction, AuctionTrait, SECONDS_IN_WEEK};
     use starknet::testing::{set_contract_address, set_block_timestamp, set_caller_address};
+    use ponzi_land::consts::TIME_SPEED;
 
     // Simulate the price points of an auction over time with a decay rate of 2
     fn simulate_price_points() -> Array<(u64, u256)> {
@@ -142,19 +141,18 @@ mod tests {
 
         let mut i = 0;
         while i < time_points.len() {
-            let time: u64 = *time_points[i];
-
+            let time: u64 = *time_points[i] / TIME_SPEED.into();
             set_block_timestamp(time);
-
             let price = auction.get_current_price_decay_rate();
 
-            price_points.append((time, price));
+            price_points.append((time * TIME_SPEED.into() , price));
             i += 1;
         };
         price_points
     }
+   
 
-    #[test]
+     #[test]
     fn test_price() {
         //                                      time, price
         assert_eq!(*simulate_price_points()[0], (0, 1000000), "err in the first price");
@@ -177,3 +175,4 @@ mod tests {
         assert_eq!(*simulate_price_points()[9], (7 * 24 * 60 * 60, 0));
     }
 }
+    
