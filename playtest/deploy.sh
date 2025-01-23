@@ -35,7 +35,7 @@ function build_declare() {
 
 function convert_value() {
     DECIMALS_HEX=$(starkli call --rpc $STARKNET_RPC $1 decimals | jq -r '.[0]')
-    AMOUNT=$(bun repl -p 'const BigNumber = require("bignumber.js").default; new BigNumber('$2') * new BigNumber(10).pow(new BigNumber('$DECIMALS_HEX'))' | ansi2txt)
+    AMOUNT=$(bun --print 'const BigNumber = require("bignumber.js").default; BigNumber.config({ EXPONENTIAL_AT: [-40, 40] }); new BigNumber('$2').shiftedBy('$DECIMALS_HEX').toFixed(0)' | ansi2txt)
     echo $AMOUNT
 }
 
@@ -50,22 +50,29 @@ function mint() {
 }
 
 function create_token() {
-    TOKEN_INFO=$(cat ./tokens.json | jq '.tokens[] | select(.symbol == "eSTRK")')
+    TOKEN_INFO=$(cat ./tokens.json | jq '.tokens[] | select(.symbol == "'$1'")')
     if [ ! -z "$TOKEN_INFO" ]; then
         echo "Token already exists in tokens.json"
         return
     fi
 
     echo "⏳ Deploying token..."
+    local CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC)
     local TOKEN_ADDRESS=$(starkli deploy $CONTRACT_CLASS --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $ACCOUNT_ADDRESS "bytearray:str:$2" "bytearray:str:$1")
     echo "🚀 Deployed token at address: $TOKEN_ADDRESS"
 
     # Write the contract into the token json
-    jq '.tokens += [{
-        "name": "'$2'",
-        "symbol": "'$1'",
-        "address": "'$TOKEN_ADDRESS'"
-    }]' > ./tokens.json
+    jq \
+    --arg NAME "$2" \
+    --arg SYMBOL "$1" \
+    --arg ADDRESS "$TOKEN_ADDRESS" \
+    '.tokens += [{
+        "name": $NAME,
+        "symbol": $SYMBOL,
+        "address": $ADDRESS
+    }]' ./tokens.json > ./tokens-temp.json
+    rm ./tokens.json
+    mv ./tokens-temp.json ./tokens.json
 
     # Mint an initial supply for the liquidity pool (1 million tokens to have some legroom)
     mint $TOKEN_ADDRESS $ACCOUNT_ADDRESS 1000000
@@ -83,6 +90,8 @@ function find_token() {
 
 function register_token() {
     echo "⏳  Registering token $1 on ekubo..."
+    # Mint yourself some tokens
+    mint $TOKEN_ADDRESS $ACCOUNT_ADDRESS 1
     starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC \
          $1 transfer $EKUBO_CORE_ADDRESS u256:$(convert_value $1 1) / \
          $EKUBO_CORE_ADDRESS register_token "$1"
@@ -101,7 +110,7 @@ case $1 in
     ;;
 
   create)
-    create_token "$1" "$2"
+    create_token "$2" "$3"
     ;;
 
   mint)
