@@ -399,7 +399,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location);
+            let neighbors = self.payable._add_neighbors(store, land.location, true);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
             if neighbors.len() > 0 {
@@ -439,7 +439,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location);
+            let neighbors = self.payable._add_neighbors(store, land.location, false);
             let mut total_rate: u64 = 0;
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
@@ -454,7 +454,8 @@ pub mod actions {
                             YieldInfo {
                                 token,
                                 sell_price: neighbor.sell_price,
-                                percent_rate: TAX_RATE.into()
+                                percent_rate: rate,
+                                location: neighbor.location
                             }
                         );
                 }
@@ -479,7 +480,7 @@ pub mod actions {
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
-            let neighbors = self.payable._add_neighbors(store, land.location);
+            let neighbors = self.payable._add_neighbors(store, land.location, true);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     match self.payable._generate_taxes(store, neighbor.location) {

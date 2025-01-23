@@ -62,6 +62,7 @@ mod PayableComponent {
         token: ContractAddress,
         sell_price: u256,
         percent_rate: u256,
+        location: u64,
     }
 
     // Storage
@@ -272,36 +273,55 @@ mod PayableComponent {
             }
         }
 
+
         fn _add_neighbors(
-            self: @ComponentState<TContractState>, mut store: Store, land_location: u64
+            self: @ComponentState<TContractState>,
+            mut store: Store,
+            land_location: u64,
+            only_with_owners: bool,
         ) -> Array<Land> {
             let mut neighbors: Array<Land> = ArrayTrait::new();
-
-            self.add_if_neighbor_exists(store, ref neighbors, left(land_location));
-            self.add_if_neighbor_exists(store, ref neighbors, right(land_location));
-            self.add_if_neighbor_exists(store, ref neighbors, up(land_location));
-            self.add_if_neighbor_exists(store, ref neighbors, down(land_location));
+            self.add_neighbor(store, ref neighbors, left(land_location), only_with_owners);
+            self.add_neighbor(store, ref neighbors, right(land_location), only_with_owners);
+            self.add_neighbor(store, ref neighbors, up(land_location), only_with_owners);
+            self.add_neighbor(store, ref neighbors, down(land_location), only_with_owners);
 
             // For diagonal neighbors, we need to handle nested Options
             match up(land_location) {
                 Option::Some(up_location) => {
-                    self.add_if_neighbor_exists(store, ref neighbors, left(up_location));
-                    self.add_if_neighbor_exists(store, ref neighbors, right(up_location));
+                    self.add_neighbor(store, ref neighbors, left(up_location), only_with_owners);
+                    self.add_neighbor(store, ref neighbors, right(up_location), only_with_owners);
                 },
                 Option::None => {}
             }
 
             match down(land_location) {
                 Option::Some(down_location) => {
-                    self.add_if_neighbor_exists(store, ref neighbors, left(down_location));
-                    self.add_if_neighbor_exists(store, ref neighbors, right(down_location));
+                    self.add_neighbor(store, ref neighbors, left(down_location), only_with_owners);
+                    self.add_neighbor(store, ref neighbors, right(down_location), only_with_owners);
                 },
                 Option::None => {}
             }
-
             neighbors
         }
 
+        fn add_neighbor(
+            self: @ComponentState<TContractState>,
+            mut store: Store,
+            ref neighbors: Array<Land>,
+            land_location: Option<u64>,
+            only_with_owners: bool,
+        ) {
+            match land_location {
+                Option::Some(location) => {
+                    let land = store.land(location);
+                    if !only_with_owners || land.owner != ContractAddressZeroable::zero() {
+                        neighbors.append(land);
+                    }
+                },
+                Option::None => {}
+            }
+        }
 
         fn _generate_taxes(
             ref self: ComponentState<TContractState>, mut store: Store, land_location: u64
@@ -309,7 +329,7 @@ mod PayableComponent {
             let mut land = store.land(land_location);
             //generate taxes for each neighbor of neighbor
 
-            let mut neighbors: Array<Land> = self._add_neighbors(store, land_location);
+            let mut neighbors: Array<Land> = self._add_neighbors(store, land_location, true);
             if neighbors.len() == 0 {
                 land.last_pay_time = get_block_timestamp();
                 store.set_land(land);
@@ -365,24 +385,6 @@ mod PayableComponent {
                         self._discount_pending_taxes(owner_land, land_location, token_info);
                     }
                 }
-            }
-        }
-
-
-        fn add_if_neighbor_exists(
-            self: @ComponentState<TContractState>,
-            mut store: Store,
-            ref neighbors: Array<Land>,
-            land_location: Option<u64>,
-        ) {
-            match land_location {
-                Option::Some(location) => {
-                    let land = store.land(location);
-                    if land.owner != ContractAddressZeroable::zero() {
-                        neighbors.append(land)
-                    }
-                },
-                Option::None => {}
             }
         }
 
