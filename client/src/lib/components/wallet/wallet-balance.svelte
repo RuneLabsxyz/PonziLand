@@ -8,11 +8,12 @@
   import { DojoProvider } from '@dojoengine/core';
   import { ScrollArea } from '../ui/scroll-area';
   import TokenDisplay from '../ui/token-display/token-display.svelte';
+  import type { Token } from '$lib/interfaces';
 
   const { store, client: sdk, accountManager } = useDojo();
 
   let tokenBalances = $state<
-    { token: string; balance: Promise<bigint | null>; icon: string }[]
+    { token: Token; balance: Promise<bigint | null>; icon: string }[]
   >([]);
 
   const address = $derived(accountData.address);
@@ -28,7 +29,7 @@
       const balance = fetchTokenBalance(token.address, account, provider);
 
       return {
-        token: token.name,
+        token,
         balance,
         icon: token.images.icon,
       };
@@ -73,11 +74,11 @@
             import * as Avatar from '$lib/components/ui/avatar/index.js';
           </script>
           <Avatar.Root class="h-6 w-6">
-            <Avatar.Image src="" alt={tokenBalance.token} />
-            <Avatar.Fallback>{tokenBalance.token}</Avatar.Fallback>
+            <Avatar.Image src="" alt={tokenBalance.token.name} />
+            <Avatar.Fallback>{tokenBalance.token.name}</Avatar.Fallback>
           </Avatar.Root>
           <div class="flex flex-col items-end">
-            <TokenDisplay amount={balance ?? 0n} symbol={tokenBalance.token} />
+            <TokenDisplay amount={balance ?? 0n} token={tokenBalance.token} />
             <span class="text-gray-500">({balance})</span>
           </div>
         </div>
