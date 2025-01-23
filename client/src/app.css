@@ -71,6 +71,7 @@
 
 .text-ponzi {
   font-family: 'Nintendo DS BIOS', sans-serif;
+  line-height: normal;
   color: #fff;
   text-shadow:
     0 0.1em #000,
@@ -96,6 +97,18 @@
     0 0.2em #000;
 }
 
+.text-ponzi .font-bold {
+  -webkit-text-stroke: 0.04em white; /* White stroke, 2px wide */
+  text-shadow: none;
+  letter-spacing: 0.15ch;
+}
+
+.text-ponzi .font-semibold {
+  -webkit-text-stroke: 0.01em white; /* White stroke, 2px wide */
+  text-shadow: none;
+  letter-spacing: 0.15ch;
+}
+
 .button-ponzi-blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
@@ -118,4 +131,8 @@
 
 .button-ponzi-red:hover {
   border-image: url('/assets/ui/button/red/hover.png') 40;
+}
+
+.text-shadow-none {
+  text-shadow: none;
 }

@@ -6,7 +6,7 @@
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/eth/icon.svg",
+        "icon": "",
         "castle": {
           "basic": "/assets/tokens/eth/castles/basic.png",
           "advanced": "/assets/tokens/eth/castles/advanced.png",
@@ -20,7 +20,7 @@
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/usdc/icon.svg",
+        "icon": "",
         "castle": {
           "basic": "/assets/tokens/usdc/castles/basic.png",
           "advanced": "/assets/tokens/usdc/castles/advanced.png",
@@ -34,7 +34,7 @@
       "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/red/icon.svg",
+        "icon": "",
         "castle": {
           "basic": "/assets/tokens/red/castles/basic.png",
           "advanced": "/assets/tokens/red/castles/advanced.png",
@@ -48,7 +48,7 @@
       "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/green/icon.svg",
+        "icon": "",
         "castle": {
           "basic": "/assets/tokens/green/castles/basic.png",
           "advanced": "/assets/tokens/green/castles/advanced.png",
@@ -62,7 +62,7 @@
       "lpAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/blue/icon.svg",
+        "icon": "",
         "castle": {
           "basic": "/assets/tokens/blue/castles/basic.png",
           "advanced": "/assets/tokens/blue/castles/advanced.png",
