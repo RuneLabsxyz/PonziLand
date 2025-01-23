@@ -4,28 +4,33 @@ import { CurrencyAmount } from './CurrencyAmount';
 import data from '$lib/data.json';
 import { Redo } from 'lucide-svelte';
 
+export type TaxData = {
+  tokenAddress: string;
+  tokenSymbol: string;
+  totalTax: CurrencyAmount;
+};
+
 export const getAggregatedTaxes = async (
   land: LandWithActions,
-): Promise<
-  {
-    tokenAddress: string;
-    tokenSymbol: string;
-    totalTax: CurrencyAmount;
-    canBeNuked: boolean;
-  }[]
-> => {
+): Promise<{
+  nukable: string[];
+  taxes: TaxData[];
+}> => {
   if (!land || !land.getNextClaim || !land.getPendingTaxes) {
-    return [];
+    return {
+      nukable: [],
+      taxes: [],
+    };
   }
 
-  const tokensToNuke: string[] = [];
+  const locationsToNuke: string[] = [];
 
   // aggregate the two arrays with total tax per token
   const tokenTaxMap: Record<string, CurrencyAmount> = {};
 
   for (const tax of (await land.getNextClaim()) ?? []) {
     if (tax.canBeNuked) {
-      tokensToNuke.push(tax.tokenAddress);
+      locationsToNuke.push(tax.landLocation);
     }
 
     if (tax.amount.isZero()) {
@@ -59,8 +64,7 @@ export const getAggregatedTaxes = async (
     ).add(tax.amount);
   }
 
-  // Convert the map to an array of objects
-  return Object.entries(tokenTaxMap).map(([tokenAddress, totalTax]) => {
+  const taxes = Object.entries(tokenTaxMap).map(([tokenAddress, totalTax]) => {
     const token: Token | undefined = data.availableTokens.find(
       (t) => t.address == tokenAddress,
     );
@@ -69,7 +73,12 @@ export const getAggregatedTaxes = async (
       tokenAddress: tokenAddress,
       tokenSymbol: token?.name ?? 'Unknown',
       totalTax: totalTax,
-      canBeNuked: tokensToNuke.includes(tokenAddress),
     };
   });
+
+  // Convert the map to an array of objects
+  return {
+    taxes,
+    nukable: locationsToNuke,
+  };
 };
