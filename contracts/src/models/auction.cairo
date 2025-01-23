@@ -145,14 +145,14 @@ mod tests {
             set_block_timestamp(time);
             let price = auction.get_current_price_decay_rate();
 
-            price_points.append((time * TIME_SPEED.into() , price));
+            price_points.append((time * TIME_SPEED.into(), price));
             i += 1;
         };
         price_points
     }
-   
 
-     #[test]
+
+    #[test]
     fn test_price() {
         //                                      time, price
         assert_eq!(*simulate_price_points()[0], (0, 1000000), "err in the first price");
@@ -175,4 +175,4 @@ mod tests {
         assert_eq!(*simulate_price_points()[9], (7 * 24 * 60 * 60, 0));
     }
 }
-    
+

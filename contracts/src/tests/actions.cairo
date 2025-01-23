@@ -1,7 +1,7 @@
 // Starknet imports
 use starknet::contract_address::ContractAddressZeroable;
 use starknet::testing::{set_contract_address, set_block_timestamp, set_caller_address};
-use starknet::{contract_address_const, ContractAddress,get_block_timestamp};
+use starknet::{contract_address_const, ContractAddress, get_block_timestamp};
 // Dojo imports
 
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorageTrait, WorldStorage};
@@ -83,7 +83,6 @@ fn initialize_land(
     let auction_value = actions_system.get_current_auction_price(location);
     assert(auction_value == sell_price, 'Err in auction value');
 
-    
     actions_system
         .bid(location, erc20.contract_address, sell_price, stake_amount, LIQUIDITY_POOL());
 }
@@ -132,7 +131,10 @@ fn verify_land(
     assert(land.sell_price == expected_price, 'incorrect price');
     assert(land.pool_key == expected_pool, 'incorrect pool');
     assert(land.stake_amount == expected_stake, 'incorrect stake');
-    assert(land.block_date_bought * TIME_SPEED.into() == expected_block_date_bought, 'incorrect date bought');
+    assert(
+        land.block_date_bought * TIME_SPEED.into() == expected_block_date_bought,
+        'incorrect date bought'
+    );
 }
 
 fn verify_auction_for_neighbor(
@@ -141,7 +143,10 @@ fn verify_auction_for_neighbor(
     let neighbor: Land = world.read_model(location);
     let neighbor_auction: Auction = world.read_model(neighbor.location);
     assert(neighbor.sell_price == expected_sell_price, 'Err in neighbor sell price');
-    assert(neighbor_auction.start_time * TIME_SPEED.into() == expected_start_time, 'Err in neighbor start time');
+    assert(
+        neighbor_auction.start_time * TIME_SPEED.into() == expected_start_time,
+        'Err in neighbor start time'
+    );
 }
 
 #[test]
@@ -199,10 +204,8 @@ fn test_bid_and_buy_action() {
 
     // Validate buy action updates
     verify_land(world, 11, NEW_BUYER(), 300, NEW_LIQUIDITY_POOL(), 500, 160 * TIME_SPEED.into());
-
     //Verify auctions for neighbors
 
-    
 }
 
 
@@ -316,7 +319,7 @@ fn test_nuke_action() {
     assert(pending_taxes_neighbor_1.len() > 0, 'Should have pending taxes');
     // Store initial balance to compare after nuke
     let initial_balance_neighbor_1 = erc20.balanceOf(NEIGHBOR_1());
-    
+
     let pending_taxes_neighbor_3 = actions_system.get_pending_taxes_for_land(1217, NEIGHBOR_3());
     assert(pending_taxes_neighbor_3.len() > 0, 'Should have pending taxes');
     // Store initial balance to compare after nuke

@@ -66,7 +66,7 @@ pub mod actions {
         PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
     };
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME,TIME_SPEED};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
 

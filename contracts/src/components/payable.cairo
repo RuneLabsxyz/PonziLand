@@ -21,7 +21,7 @@ mod PayableComponent {
     // Internal imports
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::models::land::Land;
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME,TIME_SPEED};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     // Local imports
 
@@ -327,11 +327,11 @@ mod PayableComponent {
             } else {
                 (total_taxes, false)
             };
-            
+
             let tax_per_neighbor = tax_to_distribute / max_neighbors(land_location).into();
 
             for neighbor in neighbors
-            .span() {
+                .span() {
                     self
                         ._add_taxes(
                             *neighbor.owner, land.token_used, tax_per_neighbor, *neighbor.location
