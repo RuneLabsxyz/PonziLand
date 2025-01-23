@@ -440,19 +440,14 @@ pub mod actions {
             let land = store.land(land_location);
 
             let neighbors = self.payable._add_neighbors(store, land.location);
-            let mut total_rate: u64 = 0;
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
-                    let token = neighbor.token_used;
-                    let rate = neighbor.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into());
-
-                    total_rate = total_rate + rate.try_into().unwrap();
                     yield_info
                         .append(
                             YieldInfo {
-                                token,
+                                token: neighbor.token_used,
                                 sell_price: neighbor.sell_price,
                                 percent_rate: TAX_RATE.into()
                             }
@@ -460,13 +455,8 @@ pub mod actions {
                 }
             }
 
-            // we calculate the remaining time of the stake
-            let remaining_stake_time: u256 = if total_rate > 0 {
-                land.stake_amount / total_rate.into()
-            } else {
-                0
-            };
-
+            let remaining_stake_time = (land.stake_amount * BASE_TIME.into() * 100)
+                / (land.sell_price * TAX_RATE.into());
             LandYieldInfo { yield_info, remaining_stake_time }
         }
     }
