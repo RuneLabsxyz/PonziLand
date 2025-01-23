@@ -47,19 +47,25 @@
       >
         <LandOverview data={land} />
         <div>
-          <p class="font-medium">
-            Location: {location[0]}, {location[1]}
-          </p>
-          <p>
+          <!-- <p>
             Bought at: {new Date(
               parseInt(land.block_date_bought as string, 16) * 1000,
             ).toLocaleString()}
-          </p>
-          <p>Sell Price: {land.sellPrice}</p>
+          </p> -->
 
           {#if land.tokenUsed}
             <p>Token: {land.token?.name}</p>
           {/if}
+
+          <p>Stake Remaining: {land.stakeAmount}</p>
+          <p>
+            Daily maintenance cost: {land.sellPrice
+              .rawValue()
+              .multipliedBy(0.02)
+              .toString()}
+            {land.token?.name}/h
+          </p>
+          <p>Sell Price: {land.sellPrice}</p>
         </div>
       </button>
     {/each}
