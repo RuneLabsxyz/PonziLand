@@ -8,26 +8,6 @@
     tokenAddress?: string;
     symbol: string;
   }>();
-
-  const toReadableFormat = (
-    amount: bigint,
-    precision: number = 4,
-    tokenDecimals: number = 18,
-  ) => {
-    if (typeof amount !== 'bigint' && typeof amount !== 'number') {
-      return amount;
-    }
-
-    const factor = BigInt(10) ** BigInt(tokenDecimals - precision);
-    const adjustedAmount = BigInt(amount) / factor;
-    const formattedAmount = Number(adjustedAmount) / 10 ** precision;
-
-    return formattedAmount.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-    });
-  };
-
-  let readableAmount = $derived(toReadableFormat(amount));
 </script>
 
 <div class="flex flex-col items-end">
