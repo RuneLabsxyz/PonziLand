@@ -85,7 +85,7 @@ export type LandWithActions = LandWithMeta & {
   getPendingTaxes(): Promise<PendingTax[] | undefined>;
   getNextClaim(): Promise<NextClaimInformation[] | undefined>;
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
-  getYieldInfo(): Promise<YieldInfo[] | undefined>;
+  getYieldInfo(): Promise<LandYieldInfo | undefined>;
 };
 
 export function useLands(): LandsStore | undefined {

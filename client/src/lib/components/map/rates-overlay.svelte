@@ -1,7 +1,6 @@
 <script lang="ts">
-  import type { LandWithActions, LandsStore } from '$lib/api/land.svelte';
-  import type { YieldInfo, LandYieldInfo } from '$lib/interfaces';
-  import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { LandYieldInfo } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let { land } = $props<{ land: LandWithActions }>();
@@ -34,8 +33,8 @@
   {#each Array(9) as _, i}
     <div class="border border-blue-400 bg-blue-400/40">
       {#if i === 4}
-        <span class="whitespace-nowrap text-red-600 text-[6px]"
-          >-{tokenBurnRate.toString()} {land.token?.name}/h</span
+        <span class="whitespace-nowrap text-red-600 text-[6px]">
+          -{tokenBurnRate.toString()} {land.token?.name}/h</span
         >
       {/if}
     </div>

@@ -40,12 +40,13 @@ export interface Bid {
 }
 
 export interface YieldInfo {
-  token: string;
-  sell_price: number;
-  percent_rate: number;
+  token: bigint;
+  sell_price: bigint;
+  percent_rate: bigint;
+  location: number;
 }
 
 export interface LandYieldInfo {
   yield_info: Array<YieldInfo>;
-  remaining_stake_time: number;
+  remaining_stake_time: bigint;
 }

@@ -1,37 +1,15 @@
 <script lang="ts">
   import { useLands, type LandWithActions } from '$lib/api/land.svelte';
-  import { landStore } from '$lib/api/mock-land';
-  import addressState from '$lib/account.svelte';
 
-  import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera';
-  import {
-    ensureNumber,
-    padAddress,
-    parseLocation,
-    shortenHex,
-    toBigInt,
-    toHexWithPadding,
-  } from '$lib/utils';
-  import { ScrollArea } from '../ui/scroll-area';
-  import data from '$lib/data.json';
+  import { selectLand, usePlayerPlands } from '$lib/stores/stores.svelte';
+  import { ensureNumber, parseLocation } from '$lib/utils';
   import LandOverview from '../land/land-overview.svelte';
-  import {
-    selectedLand,
-    selectLand,
-    usePlayerPlands,
-  } from '$lib/stores/stores.svelte';
+  import { ScrollArea } from '../ui/scroll-area';
+  import LandYieldInfo from './land-yield-info.svelte';
+  import LandTimeUntilNuke from './land-yield-info.svelte';
 
-  let landsStore = useLands();
   let playerLandsStore = usePlayerPlands();
-
-  function convertCoordinates(land: LandWithActions) {
-    const location = ensureNumber(land.location);
-    return {
-      x: (location % 64) + 1,
-      y: Math.floor(location / 64) + 1,
-    };
-  }
 </script>
 
 <ScrollArea class="h-full w-full relative">
@@ -46,9 +24,7 @@
         }}
       >
         <LandOverview data={land} />
-        <div
-          class="w-full text-shadow-none gap-1 flex flex-col text-lg leading-none"
-        >
+        <div class="w-full text-shadow-none flex flex-col leading-none">
           <!-- <p>
             Bought at: {new Date(
               parseInt(land.block_date_bought as string, 16) * 1000,
@@ -64,24 +40,25 @@
             </div>
           {/if}
           <div class="flex justify-between">
-            <p class="opacity-50">Stake Remaining:</p>
+            <p class="opacity-50">Sell price</p>
             <p>
-              {land.stakeAmount}
+              {land.sellPrice}
             </p>
           </div>
           <div class="flex justify-between">
-            <p class="opacity-50">Daily maintenance cost:</p>
-            <p>
+            <p class="opacity-50">Daily maintenance cost</p>
+            <p class="text-red-500">
               {land.sellPrice.rawValue().multipliedBy(0.02).toString()}
               {land.token?.name}/h
             </p>
           </div>
           <div class="flex justify-between">
-            <p class="opacity-50">Sell price:</p>
+            <p class="opacity-50">Stake Remaining</p>
             <p>
-              {land.sellPrice}
+              {land.stakeAmount}
             </p>
           </div>
+          <LandYieldInfo {land} />
         </div>
       </button>
     {/each}
