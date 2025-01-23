@@ -1,14 +1,16 @@
-import type {
-  LandWithActions,
-  LandWithMeta,
-  TransactionResult,
+import {
+  useLands,
+  type LandWithActions,
+  type LandWithMeta,
+  type TransactionResult,
 } from '$lib/api/land.svelte';
 import data from '$lib/data.json';
 import type { TileInfo, Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
-import { derived, writable, type Readable } from 'svelte/store';
+import { derived, readable, writable, type Readable } from 'svelte/store';
 import type { YieldInfo } from '$lib/interfaces';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { useAccount } from '$lib/contexts/account';
 
 export const selectedLand = writable<LandWithActions | undefined>();
 
@@ -53,7 +55,41 @@ export const mousePosCoords = writable<{
   location: number;
 } | null>(null);
 
-export const accountAddress = writable<string | null>(null);
+export const accountAddress = readable<string | undefined>(
+  undefined,
+  (set, update) => {
+    const account = useAccount();
+
+    set(account.getProvider()?.getAccount()?.address);
+
+    // Handle unsubscribe
+    return account!.listen((event) => {
+      if (event.type === 'connected') {
+        set(event.provider.getAccount()?.address);
+      } else {
+        set(undefined);
+      }
+    });
+  },
+);
+
+export function usePlayerPlands() {
+  const landsStore = useLands();
+
+  return derived(
+    [landsStore!, accountAddress],
+    ([$landsStore, $accountAddress]) => {
+      if (!$landsStore || !$accountAddress) {
+        console.log('No value in store!');
+        return [];
+      }
+      const accountAddress = toHexWithPadding(BigInt($accountAddress));
+      return $landsStore.filter(
+        (land) => toHexWithPadding(BigInt(land.owner)) == accountAddress,
+      );
+    },
+  );
+}
 
 // UI State
 

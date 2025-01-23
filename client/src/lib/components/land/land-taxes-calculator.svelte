@@ -1,19 +1,8 @@
 <script lang="ts">
-  import {
-    useLands,
-    type LandWithActions,
-    type LandWithMeta,
-  } from '$lib/api/land.svelte';
+  import { useLands, type LandWithActions } from '$lib/api/land.svelte';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
-  import {
-    ensureNumber,
-    hexStringToNumber,
-    toBigInt,
-    toHexWithPadding,
-  } from '$lib/utils';
-  import data from '$lib/data.json';
+  import { hexStringToNumber } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { Currency } from 'lucide-svelte';
   import { getAggregatedTaxes } from '$lib/utils/taxes';
 
   let { showAggregated = false } = $props();

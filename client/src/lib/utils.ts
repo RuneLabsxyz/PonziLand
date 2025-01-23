@@ -105,14 +105,26 @@ export function getTokenInfo(tokenAddress: string) {
   return token;
 }
 
-export function locationIntToString(location: number | undefined) {
+export function parseLocation(
+  location: number | string | undefined,
+): [number, number] {
   if (location === undefined) {
-    return 'Undefined Location';
+    return [-1, -1];
   }
-  // 64 grid give 0, 0
-  const x = location % 64;
-  const y = Math.floor(location / 64);
 
+  if (typeof location === 'string') {
+    location = parseInt(location, 16);
+  }
+
+  // 64 grid give 0, 0
+  const x = (location % 64) + 1;
+  const y = Math.floor(location / 64) + 1;
+
+  return [x, y];
+}
+
+export function locationIntToString(location: number | string | undefined) {
+  const [x, y] = parseLocation(location);
   return `${x}, ${y}`;
 }
 

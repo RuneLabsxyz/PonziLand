@@ -66,7 +66,7 @@ pub mod actions {
         PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
     };
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
 
@@ -399,13 +399,13 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location);
+            let neighbors = self.payable._add_neighbors(store, land.location, true);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
                     let current_time = get_block_timestamp();
-                    let elapsed_time = current_time - neighbor.last_pay_time;
+                    let elapsed_time = (current_time - neighbor.last_pay_time) * TIME_SPEED.into();
 
                     let total_taxes: u256 = (neighbor.sell_price
                         * TAX_RATE.into()
@@ -439,24 +439,34 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location);
+            let neighbors = self.payable._add_neighbors(store, land.location, false);
+            let mut total_rate: u64 = 0;
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
+                    let token = neighbor.token_used;
+                    let rate = neighbor.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into());
+
+                    total_rate = total_rate + rate.try_into().unwrap();
                     yield_info
                         .append(
                             YieldInfo {
-                                token: neighbor.token_used,
+                                token,
                                 sell_price: neighbor.sell_price,
-                                percent_rate: TAX_RATE.into()
+                                percent_rate: rate,
+                                location: neighbor.location
                             }
                         );
                 }
             }
 
-            let remaining_stake_time = (land.stake_amount * BASE_TIME.into() * 100)
-                / (land.sell_price * TAX_RATE.into());
+            // we calculate the remaining time of the stake
+            let remaining_stake_time: u256 = if total_rate > 0 {
+                land.stake_amount / total_rate.into()
+            } else {
+                0
+            };
             LandYieldInfo { yield_info, remaining_stake_time }
         }
     }
@@ -470,7 +480,7 @@ pub mod actions {
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
-            let neighbors = self.payable._add_neighbors(store, land.location);
+            let neighbors = self.payable._add_neighbors(store, land.location, true);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     match self.payable._generate_taxes(store, neighbor.location) {
@@ -540,7 +550,7 @@ pub mod actions {
                         land_location,
                         start_time: auction.start_time,
                         final_time: get_block_timestamp(),
-                        final_price: auction.get_current_price(),
+                        final_price: auction.get_current_price_decay_rate(),
                     }
                 );
 

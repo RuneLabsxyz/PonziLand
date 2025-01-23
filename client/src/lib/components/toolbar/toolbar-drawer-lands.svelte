@@ -8,6 +8,7 @@
   import {
     ensureNumber,
     padAddress,
+    parseLocation,
     shortenHex,
     toBigInt,
     toHexWithPadding,
@@ -15,11 +16,14 @@
   import { ScrollArea } from '../ui/scroll-area';
   import data from '$lib/data.json';
   import LandOverview from '../land/land-overview.svelte';
-  import { selectedLand, selectLand } from '$lib/stores/stores.svelte';
+  import {
+    selectedLand,
+    selectLand,
+    usePlayerPlands,
+  } from '$lib/stores/stores.svelte';
 
   let landsStore = useLands();
-
-  const address = $derived(addressState.address);
+  let playerLandsStore = usePlayerPlands();
 
   function convertCoordinates(land: LandWithActions) {
     const location = ensureNumber(land.location);
@@ -28,46 +32,33 @@
       y: Math.floor(location / 64) + 1,
     };
   }
-
-  let playerLands = $derived(() => {
-    if (!$landsStore) return [];
-    if (!address) return [];
-
-    const playerLands = $landsStore.filter(
-      (land) => land.owner == padAddress(address ?? ''),
-    );
-
-    return playerLands.sort(
-      (a, b) => ensureNumber(a.location) - ensureNumber(b.location),
-    );
-  });
 </script>
 
 <ScrollArea class="h-full w-full relative">
   <div class="flex flex-col">
-    {#each playerLands() as land}
+    {#each $playerLandsStore as land}
+      {@const location = parseLocation(land.location)}
       <button
         class="p-3 text-left flex gap-2 text-ponzi"
         onclick={() => {
-          moveCameraTo(
-            Math.floor(ensureNumber(land.location) % 64) + 1,
-            Math.floor(ensureNumber(land.location) / 64) + 1,
-          );
+          moveCameraTo(location[0], location[1]);
           selectLand(land);
         }}
       >
         <LandOverview data={land} />
         <div>
           <p class="font-medium">
-            Location: {convertCoordinates(land)}
+            Location: {location[0]}, {location[1]}
           </p>
-          <p>Block date bought: {land.block_date_bought}</p>
-          <p>Sell Price: {land.sell_price}</p>
-          {#if land.token_used}
-            <p>Token: {shortenHex(land.token_used)}</p>
-          {/if}
-          {#if land.pool_key}
-            <p>Pool: {land.pool_key}</p>
+          <p>
+            Bought at: {new Date(
+              parseInt(land.block_date_bought as string, 16) * 1000,
+            ).toLocaleString()}
+          </p>
+          <p>Sell Price: {land.sellPrice}</p>
+
+          {#if land.tokenUsed}
+            <p>Token: {land.token?.name}</p>
           {/if}
         </div>
       </button>

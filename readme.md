@@ -1,3 +1,2 @@
-# ponzi land
+# PonziLand
 
-a gamified de fi protocole 

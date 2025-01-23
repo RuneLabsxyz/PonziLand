@@ -1,5 +1,5 @@
 import { useDojo } from '$lib/contexts/dojo';
-import type { YieldInfo } from '$lib/interfaces';
+import type { Token, YieldInfo } from '$lib/interfaces';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import {
   ensureNumber,
@@ -11,6 +11,7 @@ import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
 import type { BigNumberish, Result } from 'starknet';
 import { derived, get, writable, type Readable } from 'svelte/store';
+import data from '$lib/data.json';
 
 export type TransactionResult = Promise<
   | {
@@ -59,6 +60,8 @@ export type LandWithMeta = Omit<Land, 'location'> & {
 
   tokenUsed: string | null;
   tokenAddress: string | null;
+
+  token?: Token;
 };
 
 export type PendingTax = {
@@ -142,6 +145,10 @@ export function useLands(): LandsStore | undefined {
         // ------------------------
         // Land With Meta data here
         // ------------------------
+        //
+        const token = data.availableTokens.find(
+          (token) => token.address === land.token_used,
+        );
 
         return {
           ...land,
@@ -154,6 +161,7 @@ export function useLands(): LandsStore | undefined {
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
           stakeAmount: CurrencyAmount.fromUnscaled(land.stake_amount),
+          token,
         };
       })
       .map((land) => ({
