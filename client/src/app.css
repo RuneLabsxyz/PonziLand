@@ -71,7 +71,8 @@
 
 .text-ponzi {
   font-family: 'Nintendo DS BIOS', sans-serif;
-  color: #fff;
+  line-height: normal;
+  color: #DFDFE3;
   text-shadow:
     0 0.1em #000,
     0 0.05em #000,
@@ -96,6 +97,18 @@
     0 0.2em #000;
 }
 
+.text-ponzi .font-bold {
+  -webkit-text-stroke: 0.04em white; /* White stroke, 2px wide */
+  text-shadow: none;
+  letter-spacing: 0.15ch;
+}
+
+.text-ponzi .font-semibold {
+  -webkit-text-stroke: 0.01em white; /* White stroke, 2px wide */
+  text-shadow: none;
+  letter-spacing: 0.15ch;
+}
+
 .button-ponzi-blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
@@ -103,19 +116,20 @@
   image-rendering: pixelated;
   background-color: #136a88;
 }
-
 .button-ponzi-blue:hover {
   border-image: url('/assets/ui/button/blue/hover.png') 40;
   background-color: #71d2f8;
 }
-
 .button-ponzi-red {
   background-clip: padding-box;
   border: solid transparent 0.4em;
   border-image: url('/assets/ui/button/red/default.png') 40;
   image-rendering: pixelated;
 }
-
 .button-ponzi-red:hover {
   border-image: url('/assets/ui/button/red/hover.png') 40;
+}
+
+.text-shadow-none {
+  text-shadow: none;
 }

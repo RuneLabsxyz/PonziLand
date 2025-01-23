@@ -39,14 +39,16 @@
     {#each $playerLandsStore as land}
       {@const location = parseLocation(land.location)}
       <button
-        class="p-3 text-left flex gap-2 text-ponzi"
+        class="p-3 text-left flex gap-4 text-ponzi land-card"
         onclick={() => {
           moveCameraTo(location[0], location[1]);
           selectLand(land);
         }}
       >
         <LandOverview data={land} />
-        <div>
+        <div
+          class="w-full text-shadow-none gap-1 flex flex-col text-lg leading-none"
+        >
           <!-- <p>
             Bought at: {new Date(
               parseInt(land.block_date_bought as string, 16) * 1000,
@@ -54,20 +56,44 @@
           </p> -->
 
           {#if land.tokenUsed}
-            <p>Token: {land.token?.name}</p>
+            <div class="flex justify-between">
+              <p class="opacity-50">Token</p>
+              <p>
+                {land.token?.name}
+              </p>
+            </div>
           {/if}
-
-          <p>Stake Remaining: {land.stakeAmount}</p>
-          <p>
-            Daily maintenance cost: {land.sellPrice
-              .rawValue()
-              .multipliedBy(0.02)
-              .toString()}
-            {land.token?.name}/h
-          </p>
-          <p>Sell Price: {land.sellPrice}</p>
+          <div class="flex justify-between">
+            <p class="opacity-50">Stake Remaining:</p>
+            <p>
+              {land.stakeAmount}
+            </p>
+          </div>
+          <div class="flex justify-between">
+            <p class="opacity-50">Daily maintenance cost:</p>
+            <p>
+              {land.sellPrice.rawValue().multipliedBy(0.02).toString()}
+              {land.token?.name}/h
+            </p>
+          </div>
+          <div class="flex justify-between">
+            <p class="opacity-50">Sell price:</p>
+            <p>
+              {land.sellPrice}
+            </p>
+          </div>
         </div>
       </button>
     {/each}
   </div>
 </ScrollArea>
+
+<style>
+  .land-card:nth-child(odd) {
+    background-color: #252536;
+  }
+
+  .land-card:nth-child(even) {
+    background-color: #1b1b2a;
+  }
+</style>
