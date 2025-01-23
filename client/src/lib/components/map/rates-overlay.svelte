@@ -1,25 +1,18 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import type { YieldInfo } from '$lib/interfaces';
+  import type { YieldInfo, LandYieldInfo } from '$lib/interfaces';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
 
   let { land } = $props<{ land: LandWithActions }>();
 
-  let yieldInfo: YieldInfo[] | undefined;
-
-  async function updateYieldInfo() {
-    if ($selectedLandMeta?.type != 'house') {
-      return;
-    }
-    yieldInfo = await $selectedLandMeta?.getYieldInfo();
-  }
+  let yieldInfo: LandYieldInfo | undefined;
 
   $effect(() => {
     console.log('land from rates', land);
     if (land) {
       land
         .getYieldInfo()
-        .then((res: YieldInfo[] | undefined) => {
+        .then((res: LandYieldInfo | undefined) => {
           yieldInfo = res;
           console.log('yield info response:', res);
         })
