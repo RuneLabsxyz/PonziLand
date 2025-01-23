@@ -102,7 +102,7 @@
     if (!$selectedLandMeta) {
       return [];
     }
-    return await getAggregatedTaxes($selectedLandMeta);
+    return (await getAggregatedTaxes($selectedLandMeta)).taxes ?? [];
   });
 </script>
 

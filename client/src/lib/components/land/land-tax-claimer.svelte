@@ -5,7 +5,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tag } from 'lucide-svelte';
   import { type Token } from '$lib/interfaces';
-  import { getAggregatedTaxes } from '$lib/utils/taxes';
+  import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
 
   let { land } = $props<{ land: LandWithActions }>();
 
@@ -38,34 +38,30 @@
   }
 
   async function fetchTaxes() {
-    aggregatedTaxes = await getAggregatedTaxes(land);
+    const result = await getAggregatedTaxes(land);
 
-    const nukableLands = aggregatedTaxes
-      .filter((tax) => tax.canBeNuked)
-      .map((e) => toBigInt(e.tokenAddress)!);
+    aggregatedTaxes = result.taxes;
+
+    const nukableLands = result.nukable;
 
     nukableStore.update((nukableLandStore) => {
       const newStoreValue = [...nukableLandStore];
       // for each nukable land, add the land to the store
       for (const land of nukableLands) {
-        if (newStoreValue.includes(land)) {
+        const location = toBigInt(land)!;
+        if (newStoreValue.includes(location)) {
           continue;
         }
 
         console.log('nukable land added to store', land);
-        newStoreValue.push(land);
+        newStoreValue.push(location);
       }
 
       return newStoreValue;
     });
   }
 
-  let aggregatedTaxes: {
-    tokenAddress: string;
-    tokenSymbol: string;
-    totalTax: CurrencyAmount;
-    canBeNuked: boolean;
-  }[] = $state([]);
+  let aggregatedTaxes: TaxData[] = $state([]);
 
   $effect(() => {
     fetchTaxes();
