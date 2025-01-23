@@ -1,11 +1,15 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { LandWithActions, LandsStore } from '$lib/api/land.svelte';
   import type { YieldInfo, LandYieldInfo } from '$lib/interfaces';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let { land } = $props<{ land: LandWithActions }>();
 
   let yieldInfo: LandYieldInfo | undefined;
+  let tokenBurnRate: CurrencyAmount = $derived(
+    CurrencyAmount.fromRaw(land.sellPrice.rawValue().multipliedBy(0.02)),
+  );
 
   $effect(() => {
     console.log('land from rates', land);
@@ -28,6 +32,12 @@
   style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
 >
   {#each Array(9) as _, i}
-    <div class="border-2 border-blue-400/50 bg-blue-400/10"></div>
+    <div class="border border-blue-400 bg-blue-400/40">
+      {#if i === 4}
+        <span class="whitespace-nowrap text-red-600 text-[6px]"
+          >-{tokenBurnRate.toString()} {land.token?.name}/h</span
+        >
+      {/if}
+    </div>
   {/each}
 </div>
