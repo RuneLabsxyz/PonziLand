@@ -50,7 +50,7 @@
   const getCastleImage = () => {
     const token = data.availableTokens.find((t) => t.name === land.tokenUsed);
     if (!token) {
-      const basicTypes = ['basic', 'advanced', 'premium'];
+      const basicTypes = ['basic']; //'advanced', 'premium'
       const randomBasic =
         basicTypes[Math.floor(Math.random() * basicTypes.length)];
       return `/assets/tokens/basic/castles/${randomBasic}.png`;
@@ -106,17 +106,11 @@
     selected ? 'selected' : ''
   }`}
   style={land.type === 'house'
-    ? `background-image: url('${backgroundImage}'), url('/tiles/grass.jpg');
+    ? `background-image: url('${backgroundImage}'), url('/tiles/grass.png');
                background-size: contain, cover;
                background-repeat: no-repeat, repeat;
                background-position: center, center;`
-    : land.type === 'auction'
-      ? `background-image: url('/tiles/grass.jpg');
-               background-size: cover;
-               background-position: center;
-               position: relative;
-               `
-      : `background-image: url('/tiles/${land.type}.jpg');
+    : `background-image: url('/tiles/${land.type}.png');
                background-size: cover;
                background-position: center;`}
 >
@@ -184,22 +178,10 @@
   .tile {
     width: 32px;
     height: 32px;
-    border: 1px solid #44656b;
-  }
-
-  .tile-auction::after {
-    content: '🔨';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 12px;
-    background: #ff0;
   }
 
   .selected {
-    border: 1px solid #ff0;
+    outline: 1px solid #ff0;
     z-index: 20;
   }
 </style>

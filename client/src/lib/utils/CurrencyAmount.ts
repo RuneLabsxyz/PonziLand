@@ -76,7 +76,7 @@ export class CurrencyAmount {
    * @returns Scaled BigNumberish (multiplied by 10 ** nbDecimals)
    */
   public toBignumberish(): BigNumberish {
-    return toHexWithPadding(this.toBigint());
+    return this.toBigint();
   }
 
   public isZero(): boolean {
