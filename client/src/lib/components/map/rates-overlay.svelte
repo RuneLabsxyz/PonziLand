@@ -1,9 +1,10 @@
 <script lang="ts">
+  import type { LandWithActions } from '$lib/api/land.svelte';
   import type { YieldInfo } from '$lib/interfaces';
-  import { type SelectedLandType } from '$lib/stores/stores.svelte';
+  import { selectedLandMeta } from '$lib/stores/stores.svelte';
 
-  let { land } = $props<{ land: SelectedLandType }>();
-  
+  let { land } = $props<{ land: LandWithActions }>();
+
   let yieldInfo: YieldInfo[] | undefined;
 
   async function updateYieldInfo() {
