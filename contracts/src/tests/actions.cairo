@@ -10,7 +10,7 @@ use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 //Internal imports
 
 use ponzi_land::tests::setup::{
-    setup, setup::{create_setup, deploy_erc20, RECIPIENT, MAIN_CURRRENCY}
+    setup, setup::{create_setup, deploy_erc20, RECIPIENT}
 };
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::models::land::{Land};
