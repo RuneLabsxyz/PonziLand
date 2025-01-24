@@ -90,11 +90,15 @@
   style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
 >
   {#each yieldInfo as info, i}
-    <div class="border border-blue-400 bg-blue-400/40">
+    <div
+      class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
+    >
       {#if i === 4}
-        <span class="whitespace-nowrap text-red-600 text-[6px]">
+        <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
           -{tokenBurnRate.toString()} {land.token?.name}/h</span
         >
+      {:else}
+        <span class="whitespace-nowrap mb-1"> +20 LORDS/h</span>
       {/if}
       {#if info}
         <span class="whitespace-nowrap text-green-600 text-[6px]">
@@ -105,3 +109,11 @@
     </div>
   {/each}
 </div>
+
+<style>
+  .overlay-square {
+    border-width: 0.1px;
+    border-color: #6bd5dd;
+    background-color: hsla(207, 72%, 43%, 0.4);
+  }
+</style>
