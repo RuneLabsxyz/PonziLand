@@ -51,10 +51,11 @@ mod setup {
         ndef
     }
 
-    fn contract_defs() -> Span<ContractDef> {
+    fn contract_defs(erc20_address: felt252) -> Span<ContractDef> {
         [
             ContractDefTrait::new(@"ponzi_land", @"actions")
-                .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span()),
+                .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
+                .with_init_calldata([erc20_address].span()),
         ].span()
     }
 
@@ -74,8 +75,8 @@ mod setup {
 
     fn create_setup() -> (WorldStorage, IActionsDispatcher, IERC20CamelDispatcher) {
         let ndef = namespace_def();
-        let cdf = contract_defs();
         let erc20 = deploy_erc20(RECIPIENT());
+        let cdf = contract_defs(erc20.contract_address.into());
         let mut world = spawn_test_world([ndef].span());
         world.sync_perms_and_inits(cdf);
         let (contract_address, _) = world.dns(@"actions").unwrap();
