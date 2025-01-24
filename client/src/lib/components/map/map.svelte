@@ -1,15 +1,9 @@
 <script lang="ts">
-  import type { LandsStore, LandWithMeta } from '$lib/api/land.svelte';
-  import {
-    type LandWithActions,
-    nukableStore,
-    useLands,
-  } from '$lib/api/land.svelte';
+  import type { LandsStore } from '$lib/api/land.svelte';
+  import { nukableStore, useLands } from '$lib/api/land.svelte';
   import { useTiles } from '$lib/api/tile-store.svelte';
   import { cameraPosition } from '$lib/stores/camera';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
-  import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import Tile from './tile.svelte';
 
   const MAP_SIZE = 64;
@@ -35,13 +29,39 @@
 
   function handleWheel(event: WheelEvent) {
     event.preventDefault();
-    const delta = event.deltaY > 0 ? 0.9 : 1.1;
-    const newScale = Math.max(0.5, Math.min(5, $cameraPosition.scale * delta));
+    let delta;
+    if (event.deltaY > 0) {
+      if (event.deltaY < 5) {
+        delta = 1.01;
+      } else {
+        delta = 1.1;
+      }
+    } else {
+      if (event.deltaY > -5) {
+        delta = 0.99;
+      } else {
+        delta = 0.9;
+      }
+    }
+    const newScale = Math.max(0.6, Math.min(5, $cameraPosition.scale * delta));
+
+    // move the camera position towards the mouse position
+    const rect = mapWrapper.getBoundingClientRect(); // Assuming 'canvas' is the rendering element
+    const mouseX = event.clientX - rect.left; // Mouse X position relative to the canvas
+    const mouseY = event.clientY - rect.top; // Mouse Y position relative to the canvas
+
+    const cameraX = (mouseX - $cameraPosition.offsetX) / $cameraPosition.scale;
+    const cameraY = (mouseY - $cameraPosition.offsetY) / $cameraPosition.scale;
+
+    const newOffsetX = mouseX - cameraX * newScale;
+    const newOffsetY = mouseY - cameraY * newScale;
 
     if (newScale !== $cameraPosition.scale) {
       $cameraPosition = {
         ...$cameraPosition,
         scale: newScale,
+        offsetX: newOffsetX,
+        offsetY: newOffsetY,
       };
       constrainOffset();
     }

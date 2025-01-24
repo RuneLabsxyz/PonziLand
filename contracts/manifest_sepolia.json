@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
-    "address": "0xb030b5cf9e25ac682cdff04ebdbc1ccbd7b03988b802f91f6b9a71d0609d3c",
-    "seed": "ponzi_land_internal_4",
+    "address": "0x432a170b560678103c59236a7510e8be3b8bcd5263e712bd35a35c2ae808789",
+    "seed": "ponzi_land_internal_5",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1252,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x77e6ca0939328a9ee9adb6cef35257f5075bcceb04851963da120671d34ff47",
-      "class_hash": "0x8f7ec7bca688d980eff0102e58ae8be4a966d95093116a0f0463716c2c1357",
+      "address": "0x6d486804be809c374c411f157a8fd023e74c8ab912207886721925597809507",
+      "class_hash": "0x6420fc06f101e46ff96d366d8096c8736c12b3d47dbb18a40cecd9849d48ab1",
       "abi": [
         {
           "type": "impl",
@@ -1427,6 +1427,10 @@
             {
               "name": "percent_rate",
               "type": "core::integer::u256"
+            },
+            {
+              "name": "location",
+              "type": "core::integer::u64"
             }
           ]
         },
