@@ -2,18 +2,14 @@ use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
 use ponzi_land::models::land::Land;
+use ponzi_land::models::auction::Auction;
 use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo, LandYieldInfo};
 
 // define the interface
 #[starknet::interface]
 trait IActions<T> {
     fn auction(
-        ref self: T,
-        land_location: u64,
-        start_price: u256,
-        floor_price: u256,
-        token_for_sale: ContractAddress,
-        decay_rate: u8,
+        ref self: T, land_location: u64, start_price: u256, floor_price: u256, decay_rate: u8,
     );
 
     fn bid(
@@ -51,6 +47,8 @@ trait IActions<T> {
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
     fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
     fn get_neighbors_yield(self: @T, land_location: u64) -> LandYieldInfo;
+    fn get_active_auctions(self: @T) -> u8;
+    fn get_auction(self: @T, land_location: u64) -> Auction;
 }
 
 // dojo decorator
@@ -66,7 +64,7 @@ pub mod actions {
         PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
     };
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS};
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
 
@@ -137,7 +135,14 @@ pub mod actions {
     struct Storage {
         #[substorage(v0)]
         payable: PayableComponent::Storage,
+        active_auctions: u8,
+        main_currency: ContractAddress,
     }
+
+    fn dojo_init(ref self: ContractState, token_address: ContractAddress) {
+        self.main_currency.write(token_address);
+    }
+
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
@@ -207,15 +212,14 @@ pub mod actions {
 
             let owner_nuked = land.owner;
             let sell_price = land.sell_price;
-            let token_for_sale = land.token_used;
             //delete land
             store.delete_land(land);
 
             //emit event de nuke land
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
-            //TODO: token_for_sale has to be lords or the token that we choose
-            self.auction(land_location, sell_price * 10, 1, token_for_sale, 200);
+            //TODO:We have to decide how has to be the sell_price
+            self.auction(land_location, sell_price * 10, 1, 200);
         }
 
         //Bid offer(in a main currency(Lords?))
@@ -246,6 +250,7 @@ pub mod actions {
             let mut auction = store.auction(land_location);
             assert(!auction.is_finished, 'auction is finished');
             assert(auction.start_price > 0, 'auction not started');
+            assert(auction.start_time > 0, 'auction not started');
 
             let current_price = auction.get_current_price_decay_rate();
             land.sell_price = sell_price;
@@ -272,12 +277,16 @@ pub mod actions {
             land_location: u64,
             start_price: u256,
             floor_price: u256,
-            token_for_sale: ContractAddress,
             decay_rate: u8,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
+
+            //we don't want generate an error if the auction is full
+            if (self.active_auctions.read() >= MAX_AUCTIONS) {
+                return;
+            }
 
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
@@ -290,12 +299,12 @@ pub mod actions {
                 land_location, start_price, floor_price, false, decay_rate
             );
             store.set_auction(auction);
+            self.active_auctions.write(self.active_auctions.read() + 1);
 
             land.sell_price = start_price;
 
             // land.token_used = LORDS_CURRENCY;
-
-            land.token_used = token_for_sale;
+            land.token_used = self.main_currency.read();
 
             store.set_land(land);
 
@@ -469,6 +478,17 @@ pub mod actions {
             };
             LandYieldInfo { yield_info, remaining_stake_time }
         }
+
+        fn get_active_auctions(self: @ContractState) -> u8 {
+            self.active_auctions.read()
+        }
+
+        fn get_auction(self: @ContractState, land_location: u64) -> Auction {
+            assert(is_valid_position(land_location), 'Land location not valid');
+            let mut world = self.world_default();
+            let store = StoreTrait::new(world);
+            store.auction(land_location)
+        }
     }
 
 
@@ -542,6 +562,7 @@ pub mod actions {
 
             auction.is_finished = true;
             store.set_auction(auction);
+            self.active_auctions.write(self.active_auctions.read() - 1);
 
             store
                 .world
@@ -557,10 +578,7 @@ pub mod actions {
             //initialize auction for neighbors
             //TODO:Token for sale has to be lords or the token that we choose
             //TODO:we have to define the correct decay rate
-            self
-                .initialize_auction_for_neighbors(
-                    store, land_location, sold_at_price * 10, 1, token_for_sale, 100
-                );
+            self.initialize_auction_for_neighbors(store, land_location, sold_at_price * 10, 1, 100);
         }
 
         fn initialize_auction_for_neighbors(
@@ -569,16 +587,12 @@ pub mod actions {
             land_location: u64,
             start_price: u256,
             floor_price: u256,
-            token_for_sale: ContractAddress,
             decay_rate: u8,
         ) {
             let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
-                    self
-                        .auction(
-                            neighbor.location, start_price, floor_price, token_for_sale, decay_rate,
-                        );
+                    self.auction(neighbor.location, start_price, floor_price, decay_rate,);
                 }
             }
         }
