@@ -79,7 +79,7 @@
         {#each getAggregatedYield(yieldInfo?.yield_info ?? []) as neighbourYield}
           <div class="flex justify-between gap-1 text-yellow-500">
             <div>{neighbourYield.sell_price}</div>
-            <div>{neighbourYield.token?.name ?? 'unknown'}</div>
+            <div>{neighbourYield.token?.symbol ?? 'unknown'}</div>
           </div>
         {/each}
       </div>

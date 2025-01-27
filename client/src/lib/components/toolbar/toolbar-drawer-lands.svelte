@@ -62,7 +62,7 @@
             <p class="opacity-50">Daily maintenance cost</p>
             <p class="text-red-500">
               {land.sellPrice.rawValue().multipliedBy(0.02).toString()}
-              {land.token?.name}/h
+              {land.token?.symbol}/h
             </p>
           </div>
           <div class="flex justify-between">

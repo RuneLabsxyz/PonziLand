@@ -111,7 +111,7 @@
       <div
         class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
       >
-        <span class="whitespace-nowrap text-green-600 text-[6px]">
+        <span class="whitespace-nowrap text-green-300 text-[6px]">
           +{CurrencyAmount.fromUnscaled(info.percent_rate).toString()}
           {info.token?.symbol}/h
         </span>
