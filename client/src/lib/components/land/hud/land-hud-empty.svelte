@@ -3,32 +3,33 @@
   import { useLands } from '$lib/api/land.svelte';
   import type { Token } from '$lib/interfaces';
   import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
-  import LandOverview from '../land-overview.svelte';
-  import { goto } from '$app/navigation';
-  import data from '$lib/data.json';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Button } from '../../ui/button';
   import { Input } from '../../ui/input';
   import { Label } from '../../ui/label';
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from '../../ui/select';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import LandOverview from '../land-overview.svelte';
+  import data from '$lib/data.json';
 
   const landStore = useLands();
 
   let selectedToken = $state<Token | null>(null);
-  let startPrice = $state<string>('1000');
-  let floorPrice = $state<string>('1');
+  let startPrice = $state<string>('0.01');
+  let floorPrice = $state<string>('0.001');
 
   let decayRate = $state<number>(2);
 
   const handleCreateAuction = () => {
-    if (!$selectedLand || !selectedToken) {
+    const selectedToken = data.availableTokens.find(
+      (token) => token.symbol === 'eLORDS',
+    );
+
+    if (!$selectedLand) {
       console.error('selected land is not available');
+      return;
+    }
+
+    if (!selectedToken) {
+      console.error('selected token is not available');
       return;
     }
 
@@ -38,7 +39,6 @@
         $selectedLand.location,
         CurrencyAmount.fromScaled(startPrice, selectedToken),
         CurrencyAmount.fromScaled(floorPrice, selectedToken),
-        selectedToken?.address,
         decayRate,
       )
       .then((res) => {
@@ -54,17 +54,6 @@
   </div>
   {#if $page.data.isAdmin}
     <div class="flex flex-col">
-      <Label>Token</Label>
-      <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
-        <SelectTrigger class="w-[180px]">
-          <SelectValue placeholder="Token" />
-        </SelectTrigger>
-        <SelectContent>
-          {#each data.availableTokens as token}
-            <SelectItem value={token}>{token.name}</SelectItem>
-          {/each}
-        </SelectContent>
-      </Select>
       <Label>Start Price</Label>
       <Input type="number" bind:value={startPrice} />
       <Label>Floor Price</Label>

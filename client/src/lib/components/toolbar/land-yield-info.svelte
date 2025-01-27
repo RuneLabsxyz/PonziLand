@@ -5,7 +5,8 @@
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
-  let { land }: { land: LandWithActions } = $props();
+  let { land, expanded }: { land: LandWithActions; expanded: boolean } =
+    $props();
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
     const aggregatedYield = yieldInfos.reduce(
@@ -71,17 +72,19 @@
       {parseNukeTime(yieldInfo?.remaining_stake_time ?? 0n)}
     </div>
   </div>
-  <div class="flex justify-between">
-    <p class="opacity-50">Neighb. earnings</p>
-    <div class="flex flex-col">
-      {#each getAggregatedYield(yieldInfo?.yield_info ?? []) as neighbourYield}
-        <div class="flex justify-between gap-1 text-yellow-500">
-          <div>{neighbourYield.sell_price}</div>
-          <div>{neighbourYield.token?.name ?? 'unknown'}</div>
-        </div>
-      {/each}
+  {#if expanded}
+    <div class="flex justify-between">
+      <p class="opacity-50">Neighb. earnings</p>
+      <div class="flex flex-col">
+        {#each getAggregatedYield(yieldInfo?.yield_info ?? []) as neighbourYield}
+          <div class="flex justify-between gap-1 text-yellow-500">
+            <div>{neighbourYield.sell_price}</div>
+            <div>{neighbourYield.token?.name ?? 'unknown'}</div>
+          </div>
+        {/each}
+      </div>
     </div>
-  </div>
+  {/if}
 {:catch error}
   <div class="flex justify-between">
     <p class="opacity-50">Time until nuke</p>

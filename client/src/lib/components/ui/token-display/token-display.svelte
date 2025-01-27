@@ -13,7 +13,7 @@
     <div class="amount">
       {CurrencyAmount.fromUnscaled(amount, token.decimals)}
     </div>
-    <div class="font-bold text-right">{token.name}</div>
+    <div class="font-bold text-right">{token.symbol}</div>
   </div>
   <div class="dollars">$0000</div>
 </div>

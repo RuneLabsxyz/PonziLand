@@ -12,7 +12,7 @@
       <img alt="house" src={data.token.images.castle.basic} class="h-20 w-20" />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
-      <span>{locationIntToString(data.location)}</span>
+      <span class="text-ponzi">{locationIntToString(data.location)}</span>
     </div>
   </div>
 </div>

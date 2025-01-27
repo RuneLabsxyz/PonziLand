@@ -114,9 +114,6 @@
                background-size: cover;
                background-position: center;`}
 >
-  {#if selected}
-    <RatesOverlay {land} />
-  {/if}
   {#if isOwner()}
     <div
       class="absolute z-10 top-1 left-1/2"
@@ -142,6 +139,7 @@
       </Button>
     {/if}
     {#if land.type == 'house'}
+      <RatesOverlay {land} />
       {#if isOwner()}
         <Button
           size="sm"
