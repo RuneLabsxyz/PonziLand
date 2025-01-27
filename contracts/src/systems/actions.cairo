@@ -578,7 +578,15 @@ pub mod actions {
             //initialize auction for neighbors
             //TODO:Token for sale has to be lords or the token that we choose
             //TODO:we have to define the correct decay rate
-            self.initialize_auction_for_neighbors(store, land_location, sold_at_price * 10, 1, 100);
+
+            // Math.max(sold_at_price * 10, 1000)
+            let asking_price = if (sold_at_price * 10) > 1000 {
+                sold_at_price * 10
+            } else {
+                1000
+            };
+
+            self.initialize_auction_for_neighbors(store, land_location, asking_price, 1, 100);
         }
 
         fn initialize_auction_for_neighbors(
@@ -630,4 +638,3 @@ pub mod actions {
         }
     }
 }
-
