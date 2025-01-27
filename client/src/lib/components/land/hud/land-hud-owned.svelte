@@ -1,18 +1,7 @@
 <script lang="ts">
-  import account from '$lib/account.svelte';
-  import { useLands } from '$lib/api/land.svelte';
   import LandYieldInfo from '$lib/components/toolbar/land-yield-info.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
-  import {
-    hexStringToNumber,
-    locationIntToString,
-    padAddress,
-    shortenHex,
-  } from '$lib/utils';
+  import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import LandOverview from '../../land/land-overview.svelte';
-  import LandTaxesCalculator from '../../land/land-taxes-calculator.svelte';
-  import { Button } from '../../ui/button';
 
   const handleClaimLandClick = () => {
     console.log('Claim land clicked');
@@ -30,7 +19,9 @@
       </div>
     </div>
   </div>
-  <LandOverview data={$selectedLandMeta} />
+  {#if $selectedLandMeta}
+    <LandOverview land={$selectedLandMeta} />
+  {/if}
   <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
     <!-- <p>
       Bought at: {new Date(

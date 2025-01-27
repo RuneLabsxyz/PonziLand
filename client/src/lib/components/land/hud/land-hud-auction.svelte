@@ -10,6 +10,7 @@
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import BigNumber from 'bignumber.js';
+  import LandOverview from '../land-overview.svelte';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
@@ -119,17 +120,31 @@
   });
 </script>
 
-<p>
-  StartTime: {new Date(
-    parseInt(auctionInfo?.start_time as string, 16) * 1000,
-  ).toLocaleString()}
-</p>
-<p>StartPrice: {startPrice}</p>
-<p>Current Price: {currentPriceDerived()}</p>
-<p>FloorPrice: {floorPrice}</p>
+<div class="flex gap-4 relative items-center border-ponzi-auction -m-2 p-6">
+  {#if $selectedLandMeta}
+    <LandOverview land={$selectedLandMeta} />
+  {/if}
+  <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+    <div class="flex justify-between text-yellow-500">
+      <p class="opacity-50">Owner:</p>
+      <p>Under Auction</p>
+    </div>
+    <div class="flex justify-between text-yellow-500">
+      <p class="opacity-50">Current Price</p>
+      <p class="text-right">
+        {currentPriceDerived()}
+        {$selectedLandMeta?.token?.symbol}
+      </p>
+    </div>
+    <div class="flex justify-between text-red-500">
+      <p class="opacity-50">Sales End in:</p>
+      <p>2h 30m</p>
+    </div>
+  </div>
+</div>
 
-<BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
-<Button on:click={handleBiddingClick}>
-  Buy for {currentPriceDerived()}
-  {$selectedLandMeta?.tokenUsed}
-</Button>
+<style>
+  .border-ponzi-auction {
+    background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23F2B545FF' stroke-width='10' stroke-dasharray='20%2c20' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
+  }
+</style>

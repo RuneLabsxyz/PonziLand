@@ -1,18 +1,28 @@
 <script lang="ts">
-  import { locationIntToString } from '$lib/utils';
+  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { Token } from '$lib/interfaces';
+  import type { Land } from '$lib/models.gen';
+  import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
+  import { locationIntToString, toHexWithPadding } from '$lib/utils';
 
-  const { data } = $props();
+  const { land }: { land: LandWithActions } = $props();
 </script>
 
 <div class="flex flex-col">
   <div
     class="flex items-center justify-center h-24 w-24 bg-[#85C771] rounded border border-white relative"
   >
-    {#if data.token}
-      <img alt="house" src={data.token.images.castle.basic} class="h-20 w-20" />
+    {#if land?.owner !== toHexWithPadding(0)}
+      <img
+        alt="house"
+        src={land.token?.images.castle.basic}
+        class="h-20 w-20"
+      />
+    {:else}
+      <img alt="auction" src={`/tiles/${land.type}.png`} />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
-      <span>{locationIntToString(data.location)}</span>
+      <span>{locationIntToString(land.location)}</span>
     </div>
   </div>
 </div>

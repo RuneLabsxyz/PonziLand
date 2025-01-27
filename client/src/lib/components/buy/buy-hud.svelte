@@ -8,9 +8,7 @@
     locationIntToString,
     padAddress,
     shortenHex,
-    toHexWithPadding,
   } from '$lib/utils';
-  import { displayPrice } from '$lib/utils/currency';
   import LandOverview from '../land/land-overview.svelte';
   import LandTaxesCalculator from '../land/land-taxes-calculator.svelte';
   import { Button } from '../ui/button';
@@ -59,7 +57,9 @@
       </div>
     </div>
   {/if}
-  <LandOverview data={$selectedLandMeta} />
+  {#if $selectedLandMeta}
+    <LandOverview land={$selectedLandMeta} />
+  {/if}
   <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
     <div class="flex w-full">
       <span class="w-full">Location :</span>

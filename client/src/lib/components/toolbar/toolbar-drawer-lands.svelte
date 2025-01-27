@@ -23,7 +23,7 @@
           selectLand(land);
         }}
       >
-        <LandOverview data={land} />
+        <LandOverview {land} />
         <div class="w-full text-shadow-none flex flex-col leading-none">
           <!-- <p>
             Bought at: {new Date(

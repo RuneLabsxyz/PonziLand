@@ -48,7 +48,9 @@
 </script>
 
 <div class="flex h-full items-stretch p-2">
-  <LandOverview data={$selectedLandMeta} />
+  {#if $selectedLandMeta}
+    <LandOverview land={$selectedLandMeta} />
+  {/if}
   <div class="flex flex-1 justify-center items-center">
     <p>EMPTY LAND</p>
   </div>

@@ -28,7 +28,9 @@
 </script>
 
 <div class="flex gap-4 relative">
-  <LandOverview data={$selectedLandMeta} />
+  {#if $selectedLandMeta}
+    <LandOverview land={$selectedLandMeta} />
+  {/if}
   <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
     <div class="flex w-full">
       <span class="w-full">Location :</span>

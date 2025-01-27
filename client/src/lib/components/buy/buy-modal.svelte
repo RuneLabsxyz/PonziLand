@@ -61,7 +61,9 @@
     <CardTitle>Buy Land</CardTitle>
     <div class="flex h-full">
       <div class="flex flex-col w-full items-center justify-center">
-        <LandOverview data={$selectedLandMeta} />
+        {#if $selectedLandMeta}
+          <LandOverview land={$selectedLandMeta} />
+        {/if}
       </div>
       <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
     </div>
