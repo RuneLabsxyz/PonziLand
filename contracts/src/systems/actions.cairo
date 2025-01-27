@@ -9,7 +9,7 @@ use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo, La
 #[starknet::interface]
 trait IActions<T> {
     fn auction(
-        ref self: T, land_location: u64, start_price: u256, floor_price: u256, decay_rate: u8,
+        ref self: T, land_location: u64, start_price: u256, floor_price: u256, decay_rate: u64,
     );
 
     fn bid(
@@ -139,8 +139,22 @@ pub mod actions {
         main_currency: ContractAddress,
     }
 
-    fn dojo_init(ref self: ContractState, token_address: ContractAddress) {
+    fn dojo_init(
+        ref self: ContractState,
+        token_address: ContractAddress,
+        land_1: u64,
+        land_2: u64,
+        land_3: u64,
+        land_4: u64,
+        start_price: u256,
+        floor_price: u256,
+        decay_rate: u64
+    ) {
         self.main_currency.write(token_address);
+        let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
+        for land_location in lands {
+            self.auction(land_location, start_price, floor_price, decay_rate);
+        }
     }
 
 
@@ -277,7 +291,7 @@ pub mod actions {
             land_location: u64,
             start_price: u256,
             floor_price: u256,
-            decay_rate: u8,
+            decay_rate: u64,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(start_price > 0, 'start_price > 0');
@@ -595,7 +609,7 @@ pub mod actions {
             land_location: u64,
             start_price: u256,
             floor_price: u256,
-            decay_rate: u8,
+            decay_rate: u64,
         ) {
             let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
             if neighbors.len() != 0 {

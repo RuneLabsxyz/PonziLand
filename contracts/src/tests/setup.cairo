@@ -55,7 +55,20 @@ mod setup {
         [
             ContractDefTrait::new(@"ponzi_land", @"actions")
                 .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
-                .with_init_calldata([erc20_address].span()),
+                .with_init_calldata(
+                    [
+                        erc20_address,
+                        1280.into(), // land_1
+                        1281.into(), // land_2
+                        1282.into(), // land_3
+                        1217.into(), // land_4
+                        1000_u256.low.into(), // start_price (low)
+                        1000_u256.high.into(), // start_price (high)
+                        1.into(), // floor_price (low)
+                        0.into(), // floor_price (high)
+                        200.into(), // decay_rate
+                    ].span()
+                ),
         ].span()
     }
 
