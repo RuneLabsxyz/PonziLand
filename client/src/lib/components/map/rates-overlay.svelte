@@ -5,6 +5,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$lib/data.json';
   import { toHexWithPadding } from '$lib/utils';
+  import { getNeighbourYieldArray } from '$lib/utils/taxes';
 
   let {
     land,
@@ -39,65 +40,9 @@
   $effect(() => {
     console.log('land from rates', land);
     if (land) {
-      land
-        .getYieldInfo()
-        .then((res: LandYieldInfo | undefined) => {
-          console.log('yield info response:', res);
-
-          const location = Number(land.location);
-          const neighbors = [
-            location - MAP_SIZE - 1,
-            location - MAP_SIZE,
-            location - MAP_SIZE + 1,
-            location - 1,
-            location,
-            location + 1,
-            location + MAP_SIZE - 1,
-            location + MAP_SIZE,
-            location + MAP_SIZE + 1,
-          ];
-
-          console.log('neighbors:', neighbors);
-          console.log(
-            'neighbors bigints',
-            neighbors.map((n) => BigInt(n)),
-          );
-
-          // assign yield info to neighbour if location matches
-          const neighborYieldInfo = neighbors.map((loc) => {
-            const info = res?.yield_info.find((y) => y.location == BigInt(loc));
-
-            if (!info?.percent_rate) {
-              return {
-                ...info,
-                token: undefined,
-                location: BigInt(loc),
-                sell_price: 0n,
-                percent_rate: 0n,
-              };
-            }
-
-            const tokenAddress = toHexWithPadding(info?.token);
-            const token = data.availableTokens.find(
-              (t) => t.address == tokenAddress,
-            );
-
-            return {
-              ...info,
-              token,
-            };
-          });
-
-          const infosFormatted = neighborYieldInfo.sort((a, b) => {
-            return Number((a?.location ?? 0n) - (b?.location ?? 0n));
-          });
-          console.log('yield info:', infosFormatted);
-
-          yieldInfo = infosFormatted;
-        })
-        .catch((error: any) => {
-          console.error('Error fetching yield info:', error);
-        });
+      getNeighbourYieldArray(land).then((res) => {
+        yieldInfo = res;
+      });
     }
   });
 </script>

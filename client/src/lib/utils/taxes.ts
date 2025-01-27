@@ -1,8 +1,10 @@
 import type { LandWithActions } from '$lib/api/land.svelte';
-import type { Token } from '$lib/interfaces';
+import type { LandYieldInfo, Token } from '$lib/interfaces';
 import { CurrencyAmount } from './CurrencyAmount';
 import data from '$lib/data.json';
 import { Redo } from 'lucide-svelte';
+import { MAP_SIZE } from '$lib/api/tile-store.svelte';
+import { toHexWithPadding } from '$lib/utils';
 export type TaxData = {
   tokenAddress: string;
   tokenSymbol: string;
@@ -80,4 +82,53 @@ export const getAggregatedTaxes = async (
     taxes,
     nukable: locationsToNuke,
   };
+};
+
+export const getNeighbourYieldArray = async (land: LandWithActions) => {
+  const rawYieldInfos = await land.getYieldInfo();
+
+  const location = Number(land.location);
+  const neighbors = [
+    location - MAP_SIZE - 1,
+    location - MAP_SIZE,
+    location - MAP_SIZE + 1,
+    location - 1,
+    location,
+    location + 1,
+    location + MAP_SIZE - 1,
+    location + MAP_SIZE,
+    location + MAP_SIZE + 1,
+  ];
+
+  // assign yield info to neighbour if location matches
+  const neighborYieldInfo = neighbors.map((loc) => {
+    const info = rawYieldInfos?.yield_info.find(
+      (y) => y.location == BigInt(loc),
+    );
+
+    if (!info?.percent_rate) {
+      return {
+        ...info,
+        token: undefined,
+        location: BigInt(loc),
+        sell_price: 0n,
+        percent_rate: 0n,
+      };
+    }
+
+    const tokenAddress = toHexWithPadding(info?.token);
+    const token = data.availableTokens.find((t) => t.address == tokenAddress);
+
+    return {
+      ...info,
+      token,
+    };
+  });
+
+  const infosFormatted = neighborYieldInfo.sort((a, b) => {
+    return Number((a?.location ?? 0n) - (b?.location ?? 0n));
+  });
+  console.log('yield info:', infosFormatted);
+
+  return infosFormatted;
 };
