@@ -12,14 +12,16 @@
   <div
     class="flex items-center justify-center h-24 w-24 bg-[#85C771] rounded border border-white relative"
   >
-    {#if land?.owner !== toHexWithPadding(0)}
+    {#if land.type == 'auction'}
+      <img alt="auction" src={`/tiles/${land.type}.png`} />
+    {:else if land.type == 'grass'}
+      <img alt="grass" src={`/tiles/${land.type}.png`} />
+    {:else}
       <img
         alt="house"
         src={land.token?.images.castle.basic}
         class="h-20 w-20"
       />
-    {:else}
-      <img alt="auction" src={`/tiles/${land.type}.png`} />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
       <span>{locationIntToString(land.location)}</span>

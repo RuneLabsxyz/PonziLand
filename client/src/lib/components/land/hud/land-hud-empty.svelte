@@ -51,7 +51,9 @@
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
-  <div class="flex flex-1 justify-center items-center">
+  <div
+    class="flex flex-1 justify-center items-center text-2xl text-shadow-none opacity-50"
+  >
     <p>EMPTY LAND</p>
   </div>
   {#if $page.data.isAdmin}
