@@ -1,6 +1,7 @@
 <script lang="ts">
   import account from '$lib/account.svelte';
   import { useLands } from '$lib/api/land.svelte';
+  import LandYieldInfo from '$lib/components/toolbar/land-yield-info.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
   import {
@@ -21,49 +22,53 @@
   };
 </script>
 
-<div class="flex gap-4 relative">
+<div class="flex gap-4 relative items-center p-4">
   <div class="absolute -top-8 left-0 right-0">
     <div class="flex justify-center">
-      <img src="/assets/ui/crown.png" alt="owner" class="h-7 w-8" />
+      <div class="h-10 w-10">
+        <img src="/assets/ui/crown.png" alt="owner" />
+      </div>
     </div>
   </div>
   <LandOverview data={$selectedLandMeta} />
-  <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
-    <div class="flex w-full">
-      <span class="w-full">Location :</span>
-      <span class="w-full">
-        {locationIntToString(
-          hexStringToNumber($selectedLandMeta?.location ?? ''),
-        )}
-        <span class="text-gray-500 text-sm"
-          >#{hexStringToNumber($selectedLandMeta?.location ?? '')}</span
-        >
-      </span>
+  <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+    <!-- <p>
+      Bought at: {new Date(
+        parseInt(land.block_date_bought as string, 16) * 1000,
+      ).toLocaleString()}
+    </p> -->
+
+    {#if $selectedLandMeta?.tokenUsed}
+      <div class="flex justify-between">
+        <p class="opacity-50">Token</p>
+        <p>
+          {$selectedLandMeta?.token?.name}
+        </p>
+      </div>
+    {/if}
+    <div class="flex justify-between">
+      <p class="opacity-50">Stake Remaining</p>
+      <p>
+        {$selectedLandMeta?.stakeAmount}
+        {$selectedLandMeta?.token?.symbol}
+      </p>
     </div>
-    <div class="flex w-full">
-      <span class="w-full">Price :</span>
-      <span class="w-full">{$selectedLandMeta?.sellPrice?.toString()}</span>
+    <div class="flex justify-between">
+      <p class="opacity-50">Daily maintenance cost</p>
+      <p class="text-red-500">
+        {$selectedLandMeta?.sellPrice.rawValue().multipliedBy(0.02).toString()}
+        {$selectedLandMeta?.token?.symbol}/h
+      </p>
     </div>
-    <div class="flex w-full">
-      <span class="w-full">Remaining Stake :</span>
-      <span class="w-full">{$selectedLandMeta?.stakeAmount?.toString()}</span>
+    {#if $selectedLandMeta}
+      <LandYieldInfo land={$selectedLandMeta} showYields={false} />
+    {/if}
+    <div class="flex justify-between">
+      <p class="opacity-50">Sell price</p>
+      <p>
+        {$selectedLandMeta?.sellPrice}
+        {$selectedLandMeta?.token?.symbol}
+      </p>
     </div>
-    <div class="flex w-full">
-      <span class="w-full">Owner :</span>
-      <a
-        href={`https://sepolia.voyager.online/contract/${$selectedLandMeta?.owner}`}
-        target="_blank"
-        class="w-full">{shortenHex($selectedLandMeta?.owner)}</a
-      >
-    </div>
-    <Button
-      on:click={() => {
-        handleClaimLandClick();
-      }}
-      class="mt-2 text-xl text-ponzi">CLAIM</Button
-    >
-    <hr />
-    <div>Claimable Taxes:</div>
-    <LandTaxesCalculator showAggregated />
   </div>
 </div>
