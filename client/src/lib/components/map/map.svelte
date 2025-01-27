@@ -2,7 +2,7 @@
   import type { LandsStore } from '$lib/api/land.svelte';
   import { nukableStore, useLands } from '$lib/api/land.svelte';
   import { useTiles } from '$lib/api/tile-store.svelte';
-  import { cameraPosition } from '$lib/stores/camera';
+  import { cameraPosition, cameraTransition } from '$lib/stores/camera';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import Tile from './tile.svelte';
 
@@ -57,12 +57,17 @@
     const newOffsetY = mouseY - cameraY * newScale;
 
     if (newScale !== $cameraPosition.scale) {
-      $cameraPosition = {
-        ...$cameraPosition,
-        scale: newScale,
-        offsetX: newOffsetX,
-        offsetY: newOffsetY,
-      };
+      cameraTransition.set(
+        {
+          ...$cameraPosition,
+          scale: newScale,
+          offsetX: newOffsetX,
+          offsetY: newOffsetY,
+        },
+        {
+          duration: 0,
+        },
+      );
       constrainOffset();
     }
   }
@@ -111,7 +116,7 @@
     const minX = Math.min(0, containerWidth - mapWidth);
     const minY = Math.min(0, containerHeight - mapHeight);
 
-    $cameraPosition = {
+    $cameraTransition = {
       ...$cameraPosition,
       offsetX: Math.max(minX, Math.min(0, newX)),
       offsetY: Math.max(minY, Math.min(0, newY)),
@@ -119,7 +124,7 @@
   }
 
   function constrainOffset() {
-    updateOffsets($cameraPosition.offsetX, $cameraPosition.offsetY);
+    updateOffsets($cameraTransition.offsetX, $cameraTransition.offsetY);
   }
 
   function handleMouseUp() {
