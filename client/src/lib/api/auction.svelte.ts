@@ -47,4 +47,4 @@ export const getAuctions = async () => {
     },
   });
   return auctions;
-}
+};
