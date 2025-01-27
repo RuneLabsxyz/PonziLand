@@ -2,6 +2,7 @@
   import { getAuctionDataFromLocation } from '$lib/api/auction.svelte';
   import type { LandSetup } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
+  import type { Token } from '$lib/interfaces';
   import type { Auction } from '$lib/models.gen';
   import {
     selectedLand,
@@ -9,15 +10,13 @@
     uiStore,
   } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
-  import Button from '../ui/button/button.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import BigNumber from 'bignumber.js';
   import BuySellForm from '../buy/buy-sell-form.svelte';
-  import type { Token } from '$lib/interfaces';
+  import LandOverview from '../land/land-overview.svelte';
+  import Button from '../ui/button/button.svelte';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
-  import BigNumber from 'bignumber.js';
-  import { type BigNumberish } from 'starknet';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { Currency } from 'lucide-svelte';
 
   let auctionInfo = $state<Auction>();
   let currentTime = $state(Date.now());
@@ -51,7 +50,12 @@
   let floorPrice = $derived(
     CurrencyAmount.fromUnscaled(auctionInfo?.floor_price ?? 0).toString(),
   );
-  let currentPriceDisplay = $derived(currentPriceDerived?.toString());
+  let currentPriceDisplay = $derived(
+    CurrencyAmount.fromUnscaled(
+      currentPriceDerived?.toNumber() ?? 0,
+      $selectedLandMeta?.token,
+    ),
+  );
 
   let landStore = useLands();
 
@@ -131,6 +135,15 @@
 >
   <Card class="flex flex-col min-w-96 min-h-96">
     <CloseButton onclick={handleCancelClick} />
+
+    <h2 class="text-2xl">Buy Land</h2>
+    <div class="flex flex-col items-center justify-center p-5">
+      {#if $selectedLandMeta}
+        <LandOverview land={$selectedLandMeta} />
+      {/if}
+      <div class="text-shadow-none p-2">0 watching</div>
+      <div>{currentPriceDisplay}</div>
+    </div>
     <p>
       StartTime: {new Date(
         parseInt(auctionInfo?.start_time as string, 16) * 1000,

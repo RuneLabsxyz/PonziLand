@@ -24,7 +24,7 @@
       />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
-      <span class="text-ponzi">{locationIntToString(data.location)}</span>
+      <span class="text-ponzi">{locationIntToString(land.location)}</span>
     </div>
   </div>
 </div>

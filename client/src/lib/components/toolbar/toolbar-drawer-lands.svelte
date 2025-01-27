@@ -35,7 +35,7 @@
             selectLand(land);
           }}
         >
-          <LandOverview data={land} />
+          <LandOverview {land} />
         </button>
         <div class="w-full text-shadow-none flex flex-col leading-none mt-3">
           <!-- <p>
