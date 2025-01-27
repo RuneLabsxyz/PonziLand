@@ -1,9 +1,10 @@
 <script lang="ts">
   import { Card } from '../ui/card';
+  import ToolbarDrawerAuctions from './toolbar-drawer-auctions.svelte';
   import ToolbarDrawerLands from './toolbar-drawer-lands.svelte';
 
   let { active } = $props<{
-    active: 'lands' | 'notifications' | null;
+    active: 'lands' | 'notifications' | 'auctions' | null;
   }>();
 </script>
 
@@ -15,6 +16,10 @@
 
     {#if active === 'notifications'}
       <div>Notifications</div>
+    {/if}
+
+    {#if active === 'auctions'}
+      <ToolbarDrawerAuctions />
     {/if}
   </Card>
 </div>
