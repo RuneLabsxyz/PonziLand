@@ -6,7 +6,11 @@
   import data from '$lib/data.json';
   import { toHexWithPadding } from '$lib/utils';
 
-  let { land } = $props<{ land: LandWithActions }>();
+  let {
+    land,
+  }: {
+    land: LandWithActions;
+  } = $props();
 
   let yieldInfo = $state<
     ({
@@ -40,7 +44,7 @@
         .then((res: LandYieldInfo | undefined) => {
           console.log('yield info response:', res);
 
-          const location = land.location;
+          const location = Number(land.location);
           const neighbors = [
             location - MAP_SIZE - 1,
             location - MAP_SIZE,
@@ -53,12 +57,24 @@
             location + MAP_SIZE + 1,
           ];
 
+          console.log('neighbors:', neighbors);
+          console.log(
+            'neighbors bigints',
+            neighbors.map((n) => BigInt(n)),
+          );
+
           // assign yield info to neighbour if location matches
           const neighborYieldInfo = neighbors.map((loc) => {
-            const info = res?.yield_info.find((y) => y.location === loc);
+            const info = res?.yield_info.find((y) => y.location == BigInt(loc));
 
-            if (!info?.token) {
-              return null;
+            if (!info?.percent_rate) {
+              return {
+                ...info,
+                token: undefined,
+                location: BigInt(loc),
+                sell_price: 0n,
+                percent_rate: 0n,
+              };
             }
 
             const tokenAddress = toHexWithPadding(info?.token);
@@ -66,17 +82,18 @@
               (t) => t.address == tokenAddress,
             );
 
-            if (info) {
-              return {
-                ...info,
-                token,
-              };
-            } else {
-              return null;
-            }
+            return {
+              ...info,
+              token,
+            };
           });
 
-          yieldInfo = neighborYieldInfo;
+          const infosFormatted = neighborYieldInfo.sort((a, b) => {
+            return Number((a?.location ?? 0n) - (b?.location ?? 0n));
+          });
+          console.log('yield info:', infosFormatted);
+
+          yieldInfo = infosFormatted;
         })
         .catch((error: any) => {
           console.error('Error fetching yield info:', error);
@@ -90,23 +107,28 @@
   style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
 >
   {#each yieldInfo as info, i}
-    <div
-      class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
-    >
-      {#if i === 4}
-        <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
-          -{tokenBurnRate.toString()} {land.token?.name}/h</span
-        >
-      {:else}
-        <span class="whitespace-nowrap mb-1"> +20 LORDS/h</span>
-      {/if}
-      {#if info}
+    {#if info?.token}
+      <div
+        class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
+      >
         <span class="whitespace-nowrap text-green-600 text-[6px]">
           +{CurrencyAmount.fromUnscaled(info.percent_rate).toString()}
-          {info.token?.name}/h
+          {info.token?.symbol}/h
         </span>
-      {/if}
-    </div>
+      </div>
+    {:else if i === 4}
+      <div
+        class="text-ponzi text-[4px] flex items-center justify-center leading-none"
+      >
+        <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
+          -{tokenBurnRate.toString()} {land.token?.symbol}/h</span
+        >
+      </div>
+    {:else}
+      <div
+        class="text-ponzi text-[4px] flex items-center justify-center leading-none"
+      ></div>
+    {/if}
   {/each}
 </div>
 
