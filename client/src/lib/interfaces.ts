@@ -2,6 +2,7 @@ import type { CurrencyAmount } from './utils/CurrencyAmount';
 
 export interface Token {
   name: string;
+  symbol: string;
   address: string;
   lpAddress: string;
   decimals: number;
@@ -43,7 +44,7 @@ export interface YieldInfo {
   token: bigint;
   sell_price: bigint;
   percent_rate: bigint;
-  location: number;
+  location: bigint;
 }
 
 export interface LandYieldInfo {

@@ -39,11 +39,8 @@ export type LandsStore = Readable<LandWithActions[]> & {
 
   auctionLand(
     location: BigNumberish,
-
     startPrice: CurrencyAmount,
     floorPrice: CurrencyAmount,
-    tokenForSale: string,
-
     decayRate: BigNumberish,
   ): TransactionResult;
 
@@ -264,13 +261,12 @@ export function useLands(): LandsStore | undefined {
         setup.currentPrice!.toBignumberish(),
       );
     },
-    auctionLand(location, startPrice, floorPrice, tokenForSale, decayRate) {
+    auctionLand(location, startPrice, floorPrice, decayRate) {
       return sdk.client.actions.auction(
         account()?.getWalletAccount()!,
         location,
         startPrice.toBignumberish(),
         floorPrice.toBignumberish(),
-        tokenForSale,
         decayRate,
       );
     },

@@ -5,10 +5,8 @@
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
-  let {
-    land,
-    showYields = true,
-  }: { land: LandWithActions; showYields?: boolean } = $props();
+  let { land, expanded = false }: { land: LandWithActions; expanded?: boolean; } =
+    $props();
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
     console.log('yieldInfos', yieldInfos);
@@ -81,14 +79,14 @@
       {parseNukeTime(yieldInfo?.remaining_stake_time ?? 0n)}
     </div>
   </div>
-  {#if showYields}
+  {#if expanded}
     <div class="flex justify-between">
       <p class="opacity-50">Neighb. earnings</p>
       <div class="flex flex-col">
         {#each getAggregatedYield(yieldInfo?.yield_info ?? []) as neighbourYield}
           <div class="flex justify-between gap-1 text-yellow-500">
             <div>{neighbourYield.totalPercentRate}</div>
-            <div>{neighbourYield.token?.name ?? 'unknown'}</div>
+            <div>{neighbourYield.token?.symbol ?? 'unknown'}</div>
           </div>
         {/each}
       </div>

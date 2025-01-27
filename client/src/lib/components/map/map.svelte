@@ -32,15 +32,15 @@
     let delta;
     if (event.deltaY > 0) {
       if (event.deltaY < 5) {
-        delta = 1.01;
-      } else {
-        delta = 1.1;
-      }
-    } else {
-      if (event.deltaY > -5) {
         delta = 0.99;
       } else {
         delta = 0.9;
+      }
+    } else {
+      if (event.deltaY > -5) {
+        delta = 1.01;
+      } else {
+        delta = 1.1;
       }
     }
     const newScale = Math.max(0.6, Math.min(5, $cameraPosition.scale * delta));
