@@ -8,8 +8,14 @@ use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo, La
 // define the interface
 #[starknet::interface]
 trait IActions<T> {
+    //TODO:PASS THIS FUNCTION TO INTERNAL IMPL AFTER TESTS
     fn auction(
-        ref self: T, land_location: u64, start_price: u256, floor_price: u256, decay_rate: u64,
+        ref self: T,
+        land_location: u64,
+        start_price: u256,
+        floor_price: u256,
+        decay_rate: u64,
+        is_from_nuke: bool
     );
 
     fn bid(
@@ -151,9 +157,10 @@ pub mod actions {
         decay_rate: u64
     ) {
         self.main_currency.write(token_address);
+
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
-            self.auction(land_location, start_price, floor_price, decay_rate);
+            self.auction(land_location, start_price, floor_price, decay_rate, false);
         }
     }
 
@@ -232,8 +239,8 @@ pub mod actions {
             //emit event de nuke land
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
-            //TODO:We have to decide how has to be the sell_price
-            self.auction(land_location, sell_price * 10, 1, 200);
+            //TODO:We have to decide how has to be the sell_price, and the decay_rate
+            self.auction(land_location, sell_price * 10, 1, 200, true);
         }
 
         //Bid offer(in a main currency(Lords?))
@@ -292,13 +299,14 @@ pub mod actions {
             start_price: u256,
             floor_price: u256,
             decay_rate: u64,
+            is_from_nuke: bool
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
 
             //we don't want generate an error if the auction is full
-            if (self.active_auctions.read() >= MAX_AUCTIONS) {
+            if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
                 return;
             }
 
@@ -312,6 +320,7 @@ pub mod actions {
             let auction = AuctionTrait::new(
                 land_location, start_price, floor_price, false, decay_rate
             );
+
             store.set_auction(auction);
             self.active_auctions.write(self.active_auctions.read() + 1);
 
@@ -600,6 +609,7 @@ pub mod actions {
                 1000
             };
 
+            //TODO: we have to define the correct decay rate
             self.initialize_auction_for_neighbors(store, land_location, asking_price, 1, 100);
         }
 
@@ -614,7 +624,7 @@ pub mod actions {
             let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
-                    self.auction(neighbor.location, start_price, floor_price, decay_rate,);
+                    self.auction(neighbor.location, start_price, floor_price, decay_rate, false);
                 }
             }
         }

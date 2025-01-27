@@ -71,7 +71,7 @@ fn initialize_land(
     token_for_sale: IERC20CamelDispatcher
 ) {
     // Create auction and bid
-    actions_system.auction(location, sell_price, sell_price / 2, 2);
+    actions_system.auction(location, sell_price, sell_price / 2, 2, false);
 
     set_block_timestamp(get_block_timestamp() / TIME_SPEED.into());
 
@@ -126,7 +126,8 @@ fn verify_land(
     expected_price: u256,
     expected_pool: ContractAddress,
     expected_stake: u256,
-    expected_block_date_bought: u64
+    expected_block_date_bought: u64,
+    expected_token_used: ContractAddress
 ) {
     let mut land: Land = world.read_model(location);
     assert(land.owner == expected_owner, 'incorrect owner');
@@ -137,6 +138,7 @@ fn verify_land(
         land.block_date_bought * TIME_SPEED.into() == expected_block_date_bought,
         'incorrect date bought'
     );
+    assert(land.token_used == expected_token_used, 'incorrect token used');
 }
 
 fn verify_auction_for_neighbor(
@@ -165,7 +167,9 @@ fn test_buy_action() {
     actions_system.buy(11, main_currency.contract_address, 100, 120, NEW_LIQUIDITY_POOL());
 
     // Verify results
-    verify_land(world, 11, NEW_BUYER(), 100, NEW_LIQUIDITY_POOL(), 120, 100);
+    verify_land(
+        world, 11, NEW_BUYER(), 100, NEW_LIQUIDITY_POOL(), 120, 100, main_currency.contract_address
+    );
 }
 
 #[test]
@@ -189,7 +193,9 @@ fn test_bid_and_buy_action() {
     initialize_land(actions_system, main_currency, RECIPIENT(), 11, 100, 50, main_currency);
 
     // Validate bid/buy updates
-    verify_land(world, 11, RECIPIENT(), 100, LIQUIDITY_POOL(), 50, 100);
+    verify_land(
+        world, 11, RECIPIENT(), 100, LIQUIDITY_POOL(), 50, 100, main_currency.contract_address
+    );
 
     //right neighbor
     verify_auction_for_neighbor(world, 12, 1000, 100);
@@ -205,7 +211,16 @@ fn test_bid_and_buy_action() {
     actions_system.buy(11, main_currency.contract_address, 300, 500, NEW_LIQUIDITY_POOL());
 
     // Validate buy action updates
-    verify_land(world, 11, NEW_BUYER(), 300, NEW_LIQUIDITY_POOL(), 500, 160 * TIME_SPEED.into());
+    verify_land(
+        world,
+        11,
+        NEW_BUYER(),
+        300,
+        NEW_LIQUIDITY_POOL(),
+        500,
+        160 * TIME_SPEED.into(),
+        main_currency.contract_address
+    );
     //Verify auctions for neighbors
 
 }
@@ -345,7 +360,14 @@ fn test_nuke_action() {
 
     // Verify the land 1281 was nuked
     verify_land(
-        world, 1281, ContractAddressZeroable::zero(), 0, ContractAddressZeroable::zero(), 0, 0
+        world,
+        1281,
+        ContractAddressZeroable::zero(),
+        10000,
+        ContractAddressZeroable::zero(),
+        0,
+        0,
+        main_currency.contract_address
     );
 
     // Verify that pending taxes were paid to the owner during nuke
@@ -354,9 +376,16 @@ fn test_nuke_action() {
     let pending_taxes_neighbor_1 = actions_system.get_pending_taxes_for_land(1281, NEIGHBOR_1());
     assert(pending_taxes_neighbor_1.len() == 0, 'Should not have pending taxes');
 
-    // Verify the land 1217 was nuked
+    // Verify the land 1217 was nuked,
     verify_land(
-        world, 1217, ContractAddressZeroable::zero(), 0, ContractAddressZeroable::zero(), 0, 0
+        world,
+        1217,
+        ContractAddressZeroable::zero(),
+        59000,
+        ContractAddressZeroable::zero(),
+        0,
+        0,
+        main_currency.contract_address
     );
 
     // Verify that pending taxes were paid to the owner during nuke
@@ -378,7 +407,9 @@ fn test_increase_price_and_stake() {
     initialize_land(actions_system, main_currency, RECIPIENT(), 1280, 1000, 1000, main_currency);
 
     //verify the land
-    verify_land(world, 1280, RECIPIENT(), 1000, LIQUIDITY_POOL(), 1000, 100);
+    verify_land(
+        world, 1280, RECIPIENT(), 1000, LIQUIDITY_POOL(), 1000, 100, main_currency.contract_address
+    );
 
     //increase the price
     actions_system.increase_price(1280, 2300);
