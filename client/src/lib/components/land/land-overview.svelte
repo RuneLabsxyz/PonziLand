@@ -5,12 +5,14 @@
   import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
   import { locationIntToString, toHexWithPadding } from '$lib/utils';
 
-  const { land }: { land: LandWithActions } = $props();
+  const { land, size = 'sm' }: { land: LandWithActions; size?: 'sm' | 'lg' } =
+    $props();
 </script>
 
 <div class="flex flex-col">
   <div
-    class="flex items-center justify-center h-24 w-24 bg-[#85C771] rounded border border-white relative"
+    class="flex items-center justify-center bg-[#85C771] rounded border border-white relative
+    {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
   >
     {#if land.type == 'auction'}
       <img alt="auction" src={`/tiles/${land.type}.png`} />
@@ -24,7 +26,9 @@
       />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
-      <span class="text-ponzi">{locationIntToString(land.location)}</span>
+      <span class="text-ponzi {size == 'lg' ? 'text-xl' : ''}"
+        >{locationIntToString(land.location)}</span
+      >
     </div>
   </div>
 </div>

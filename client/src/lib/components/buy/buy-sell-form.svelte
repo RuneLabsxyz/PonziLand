@@ -31,20 +31,53 @@
 </script>
 
 <div class="w-full flex flex-col gap-2">
-  Buy Sell Form
-  <Label>Token</Label>
+  <Label class="text-xl">Select Token</Label>
   <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
-    <SelectTrigger class="w-[180px]">
-      <SelectValue placeholder="Token" />
+    <SelectTrigger>
+      {#if selectedToken}
+        <div class="flex gap-2 items-center">
+          <img
+            class="h-4 w-4"
+            src={selectedToken.images.icon}
+            alt={selectedToken.symbol}
+          />
+          {selectedToken.symbol} -
+          {selectedToken.name}
+        </div>
+      {:else}
+        Select Token
+      {/if}
     </SelectTrigger>
     <SelectContent>
       {#each data.availableTokens as token}
-        <SelectItem value={token}>{token.name}</SelectItem>
+        <SelectItem value={token}>
+          <div class="flex gap-2 items-center">
+            <img class="h-4 w-4" src={token.images.icon} alt={token.symbol} />
+            {token.symbol} -
+            {token.name}
+          </div>
+        </SelectItem>
       {/each}
     </SelectContent>
   </Select>
-  <Label>Stake Amount</Label>
+  <button
+    class="flex items-center gap-2 my-2 text-lg text-[#1F75BC] hover:opacity-75 disabled:opacity-50"
+    disabled
+  >
+    <div class="w-6 h-6 bg-[#1F75BC] relative">
+      <div
+        class="w-4 h-1 bg-white absolute left-1/2 top-1/2"
+        style="transform: translate(-50%, -50%);"
+      ></div>
+      <div
+        class="w-4 h-1 bg-white absolute left-1/2 top-1/2"
+        style="transform: translate(-50%, -50%) rotate(-90deg); transform-origin: 50% 50%;"
+      ></div>
+    </div>
+    Add Token Manually ◭ coming soon ◭
+  </button>
+  <Label class="text-xl font-semibold">Stake Amount</Label>
   <Input type="number" bind:value={stakeAmountVal} />
-  <Label>Sell Price</Label>
+  <Label class="text-xl font-semibold">Sell Price</Label>
   <Input type="number" bind:value={sellAmountVal} />
 </div>
