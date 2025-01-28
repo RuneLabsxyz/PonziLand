@@ -7,7 +7,7 @@
       "lpAddress": "0x04d0390b777b424e43839cd1e744799f3de6c176c7e32c1812a41dbd9c19db6a",
       "decimals": 18,
       "images": {
-        "icon": "",
+        "icon": "/assets/tokens/strk/icon.png",
         "castle": {
           "basic": "/assets/tokens/basic/castles/basic.png",
           "advanced": "/assets/tokens/basic/castles/advanced.png",

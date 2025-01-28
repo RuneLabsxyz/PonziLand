@@ -137,12 +137,31 @@
     <CloseButton onclick={handleCancelClick} />
 
     <h2 class="text-2xl">Buy Land</h2>
-    <div class="flex flex-col items-center justify-center p-5">
+    <div class="flex flex-col items-center justify-center p-5 gap-3">
       {#if $selectedLandMeta}
         <LandOverview land={$selectedLandMeta} />
       {/if}
-      <div class="text-shadow-none p-2">0 watching</div>
-      <div>{currentPriceDisplay}</div>
+      <div class="text-shadow-none">0 watching</div>
+      <div class="flex items-center gap-1">
+        {#each currentPriceDisplay.toString() as char}
+          {#if char === '.'}
+            <div class="text-ponzi-huge text-white text-3xl">.</div>
+          {:else}
+            <div class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2">{char}</div>
+          {/if}
+        {/each}
+      </div>
+      <div class="text-ponzi-huge text-3xl"></div>
+      <div class="flex items-center gap-2">
+        <div class="text-2xl font-black">
+          {$selectedLandMeta?.token?.symbol}
+        </div>
+        <img
+          class="w-6 h-6"
+          src={$selectedLandMeta?.token?.images.icon}
+          alt="{$selectedLandMeta?.token?.symbol} icon"
+        />
+      </div>
     </div>
     <p>
       StartTime: {new Date(
