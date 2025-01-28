@@ -5,8 +5,10 @@
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
-  let { land, expanded = false }: { land: LandWithActions; expanded?: boolean; } =
-    $props();
+  let {
+    land,
+    expanded = false,
+  }: { land: LandWithActions; expanded?: boolean } = $props();
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
     console.log('yieldInfos', yieldInfos);
