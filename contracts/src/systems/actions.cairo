@@ -70,7 +70,9 @@ pub mod actions {
         PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
     };
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS};
+    use ponzi_land::consts::{
+        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE
+    };
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
 
@@ -240,7 +242,7 @@ pub mod actions {
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
             //TODO:We have to decide how has to be the sell_price, and the decay_rate
-            self.auction(land_location, sell_price * 10, 1, 200, true);
+            self.auction(land_location, sell_price * 10, FLOOR_PRICE, DECAY_RATE * 2, true);
         }
 
         //Bid offer(in a main currency(Lords?))
@@ -610,7 +612,10 @@ pub mod actions {
             };
 
             //TODO: we have to define the correct decay rate
-            self.initialize_auction_for_neighbors(store, land_location, asking_price, 1, 100);
+            self
+                .initialize_auction_for_neighbors(
+                    store, land_location, asking_price, FLOOR_PRICE, DECAY_RATE
+                );
         }
 
         fn initialize_auction_for_neighbors(
