@@ -51,10 +51,6 @@
     ),
   );
 
-  let maxTokenBurnRate = $derived(
-    CurrencyAmount.fromRaw(tokenBurnRatePerNeighbor.rawValue().multipliedBy(8)),
-  );
-
   $effect(() => {
     console.log('land from rates', land);
     if (land) {
@@ -90,9 +86,6 @@
       >
         <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
           -{tokenBurnRate.toString()} {land.token?.symbol}/h</span
-        >
-        <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
-          (max -{maxTokenBurnRate.toString()} {land.token?.symbol}/h)</span
         >
       </div>
     {:else}
