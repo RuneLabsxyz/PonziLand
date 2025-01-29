@@ -14,6 +14,9 @@
   import CloseButton from '../ui/close-button.svelte';
   import BuySellForm from './buy-sell-form.svelte';
   import ThreeDots from '../loading/three-dots.svelte';
+  import TokenDisplay from '../ui/token-display/token-display.svelte';
+
+  import * as Avatar from '$lib/components/ui/avatar/index.js';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -29,6 +32,8 @@
     stakeAmount.setToken(selectedToken ?? undefined);
     sellAmount.setToken(selectedToken ?? undefined);
   });
+
+  let priceDisplay = $derived($selectedLandMeta?.sellPrice.toString() ?? '');
 
   function handleCancelClick() {
     uiStore.showModal = false;
@@ -90,6 +95,31 @@
       <div class="flex flex-col w-full items-center justify-center min-w-80">
         {#if $selectedLandMeta}
           <LandOverview land={$selectedLandMeta} />
+
+          <div class="flex items-center gap-1 pt-5">
+            {#each priceDisplay as char}
+              {#if char === '.'}
+                <div class="text-ponzi-huge text-3xl">.</div>
+              {:else}
+                <div
+                  class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                >
+                  {char}
+                </div>
+              {/if}
+            {/each}
+          </div>
+          <div class="text-ponzi-huge text-3xl mt-2"></div>
+          <div class="flex items-center gap-2">
+            <div class="text-3xl text-ponzi-huge text-white">
+              {$selectedLandMeta?.token?.symbol}
+            </div>
+            <img
+              class="w-6 h-6 rounded-full"
+              src={$selectedLandMeta?.token?.images.icon}
+              alt="{$selectedLandMeta?.token?.symbol} icon"
+            />
+          </div>
         {/if}
       </div>
       <div class="min-w-80">
