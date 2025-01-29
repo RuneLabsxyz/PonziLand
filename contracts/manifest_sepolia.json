@@ -1253,7 +1253,7 @@
   "contracts": [
     {
       "address": "0x27da016d84a96f6ec783d2bdaebdfabe3db7257e9267a810d99571929eb6e7e",
-      "class_hash": "0x7cb924028051f1bca4466ede8c3895456c67e41776da41fc2658a9505e4a68b",
+      "class_hash": "0x17f3df6147f17ddf991e7c9b74e64d4fd764581b1b8c29e4b3eec1cb9e43ca3",
       "abi": [
         {
           "type": "impl",
@@ -1365,6 +1365,20 @@
           "interface_name": "ponzi_land::systems::actions::IActions"
         },
         {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "ponzi_land::models::land::Land",
           "members": [
@@ -1413,20 +1427,6 @@
             {
               "name": "amount",
               "type": "core::integer::u256"
-            }
-          ]
-        },
-        {
-          "type": "enum",
-          "name": "core::bool",
-          "variants": [
-            {
-              "name": "False",
-              "type": "()"
-            },
-            {
-              "name": "True",
-              "type": "()"
             }
           ]
         },
@@ -1541,6 +1541,10 @@
                 {
                   "name": "decay_rate",
                   "type": "core::integer::u64"
+                },
+                {
+                  "name": "is_from_nuke",
+                  "type": "core::bool"
                 }
               ],
               "outputs": [],
