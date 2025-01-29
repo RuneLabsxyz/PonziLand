@@ -604,11 +604,11 @@ pub mod actions {
             //TODO:Token for sale has to be lords or the token that we choose
             //TODO:we have to define the correct decay rate
 
-            // Math.max(sold_at_price * 10, 1000)
-            let asking_price = if (sold_at_price * 10) > 1000 {
+            // Math.max(sold_at_price * 10, auction.floor_price)
+            let asking_price = if sold_at_price > auction.floor_price {
                 sold_at_price * 10
             } else {
-                1000
+                auction.floor_price * 10
             };
 
             self

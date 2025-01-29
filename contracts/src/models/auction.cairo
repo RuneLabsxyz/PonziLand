@@ -40,10 +40,10 @@ impl AuctionImpl of AuctionTrait {
     //TODO:REMOVE THIS AFTER TESTS
     #[inline(always)]
     fn get_current_price(self: Auction) -> u256 {
-        let current_time = get_block_timestamp() * TIME_SPEED.into();
+        let current_time = get_block_timestamp();
 
         let time_passed = if current_time > self.start_time {
-            current_time - self.start_time
+            (current_time - self.start_time) * TIME_SPEED.into()
         } else {
             0
         };
@@ -76,12 +76,13 @@ impl AuctionImpl of AuctionTrait {
 
     #[inline(always)]
     fn get_current_price_decay_rate(self: Auction) -> u256 {
-        let current_time = get_block_timestamp() * TIME_SPEED.into();
+        let current_time = get_block_timestamp();
         let time_passed = if current_time > self.start_time {
-            current_time - self.start_time
+            (current_time - self.start_time) * TIME_SPEED.into()
         } else {
             0
         };
+
         // if the auction has passed a week, the price is 0
         if time_passed.into() >= SECONDS_IN_WEEK {
             return 0;
@@ -93,7 +94,7 @@ impl AuctionImpl of AuctionTrait {
 
         // k is the decay rate (adjusted by INITIAL_MULTIPLIER for scaling)
         let k: u256 = (self.decay_rate.into() * INITIAL_MULTIPLIER)
-            / SCALING_FACTOR.into(); // 4 * 10^18 / 50 
+            / SCALING_FACTOR.into(); // 4 * 10^18 / 50
 
         // Calculate the denominator (1 + k * t) using scaled values for precision
         let denominator = INITIAL_MULTIPLIER + (k * progress__time / INITIAL_MULTIPLIER);
@@ -175,4 +176,3 @@ mod tests {
         assert_eq!(*simulate_price_points()[9], (7 * 24 * 60 * 60, 0));
     }
 }
-
