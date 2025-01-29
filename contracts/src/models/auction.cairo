@@ -40,10 +40,10 @@ impl AuctionImpl of AuctionTrait {
     //TODO:REMOVE THIS AFTER TESTS
     #[inline(always)]
     fn get_current_price(self: Auction) -> u256 {
-        let current_time = get_block_timestamp() * TIME_SPEED.into();
+        let current_time = get_block_timestamp();
 
         let time_passed = if current_time > self.start_time {
-            current_time - self.start_time
+            (current_time - self.start_time) * TIME_SPEED.into()
         } else {
             0
         };
