@@ -6,6 +6,7 @@
   import data from '$lib/data.json';
   import { toHexWithPadding } from '$lib/utils';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
+  import BigNumber from 'bignumber.js';
 
   let {
     land,
@@ -33,8 +34,25 @@
       location: bigint;
     } | null)[]
   >([]);
-  let tokenBurnRate: CurrencyAmount = $derived(
-    CurrencyAmount.fromRaw(land.sellPrice.rawValue().multipliedBy(0.02)),
+
+  const numberOfNeighbours = $derived(
+    yieldInfo.filter((info) => (info?.percent_rate ?? 0n) !== 0n).length,
+  );
+
+  let tokenBurnRatePerNeighbor: CurrencyAmount = $derived(
+    CurrencyAmount.fromRaw(
+      land.sellPrice.rawValue().multipliedBy(0.02).dividedBy(8),
+    ),
+  );
+
+  let tokenBurnRate = $derived(
+    CurrencyAmount.fromRaw(
+      tokenBurnRatePerNeighbor.rawValue().multipliedBy(numberOfNeighbours),
+    ),
+  );
+
+  let maxTokenBurnRate = $derived(
+    CurrencyAmount.fromRaw(tokenBurnRatePerNeighbor.rawValue().multipliedBy(8)),
   );
 
   $effect(() => {
@@ -57,16 +75,24 @@
         class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
       >
         <span class="whitespace-nowrap text-green-300 text-[6px]">
-          +{CurrencyAmount.fromUnscaled(info.percent_rate).toString()}
+          +{CurrencyAmount.fromRaw(
+            new BigNumber(info.sell_price.toString())
+              .shiftedBy(-info.token.decimals)
+              .multipliedBy(0.02)
+              .dividedBy(8),
+          ).toString()}
           {info.token?.symbol}/h
         </span>
       </div>
     {:else if i === 4}
       <div
-        class="text-ponzi text-[4px] flex items-center justify-center leading-none"
+        class="text-ponzi text-[4px] flex items-center flex-col justify-center leading-none"
       >
         <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
           -{tokenBurnRate.toString()} {land.token?.symbol}/h</span
+        >
+        <span class="whitespace-nowrap text-red-500 mb-1 text-[6px]">
+          (max -{maxTokenBurnRate.toString()} {land.token?.symbol}/h)</span
         >
       </div>
     {:else}
