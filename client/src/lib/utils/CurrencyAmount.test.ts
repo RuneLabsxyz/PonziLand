@@ -8,6 +8,7 @@ const TestTokens = {
   standard: {
     name: 'Standard',
     address: '0x0',
+    symbol: 'STD',
     lpAddress: '0x0',
     decimals: 18,
     images: {
@@ -22,6 +23,7 @@ const TestTokens = {
   noDecimals: {
     name: 'No Decimals',
     address: '0x0',
+    symbol: 'ND',
     lpAddress: '0x0',
     decimals: 0,
     images: {
