@@ -23,12 +23,6 @@
     <LandOverview land={$selectedLandMeta} />
   {/if}
   <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
-    <!-- <p>
-      Bought at: {new Date(
-        parseInt(land.block_date_bought as string, 16) * 1000,
-      ).toLocaleString()}
-    </p> -->
-
     {#if $selectedLandMeta?.tokenUsed}
       <div class="flex justify-between">
         <p class="opacity-50">Token</p>
@@ -52,7 +46,7 @@
       </p>
     </div>
     {#if $selectedLandMeta}
-      <LandYieldInfo land={$selectedLandMeta} showYields={false} />
+      <LandYieldInfo land={$selectedLandMeta} />
     {/if}
     <div class="flex justify-between">
       <p class="opacity-50">Sell price</p>

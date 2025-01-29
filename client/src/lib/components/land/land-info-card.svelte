@@ -17,7 +17,9 @@
   };
 </script>
 
-<div class="land-card p-3 text-left gap-4 text-ponzi relative flex items-start">
+<div
+  class="land-card p-3 text-left gap-4 text-ponzi relative flex items-start even:bg-[#1b1b2a] odd:bg-[#252536]"
+>
   <button
     class="absolute top-0 right-0 m-2"
     onclick={handleExpander}
@@ -34,12 +36,6 @@
     <LandOverview {land} />
   </button>
   <div class="w-full text-shadow-none flex flex-col leading-none mt-3">
-    <!-- <p>
-            Bought at: {new Date(
-              parseInt(land.block_date_bought as string, 16) * 1000,
-            ).toLocaleString()}
-          </p> -->
-
     {#if land.tokenUsed}
       <div class="flex justify-between">
         <p class="opacity-50">Token</p>
@@ -72,14 +68,6 @@
 </div>
 
 <style>
-  .land-card:nth-child(odd) {
-    background-color: #252536;
-  }
-
-  .land-card:nth-child(even) {
-    background-color: #1b1b2a;
-  }
-
   .expander {
     opacity: 0.5;
     border: solid white;

@@ -136,10 +136,6 @@
         {$selectedLandMeta?.token?.symbol}
       </p>
     </div>
-    <div class="flex justify-between text-red-500">
-      <p class="opacity-50">Sales End in:</p>
-      <p>2h 30m</p>
-    </div>
   </div>
 </div>
 
