@@ -24,7 +24,7 @@ const policies: SessionPolicies = (() => {
           name: e.tag,
           methods: e.systems.map((system) => {
             return {
-              entrypoint: 'system',
+              entrypoint: system,
             };
           }),
         },
