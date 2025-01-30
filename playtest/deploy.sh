@@ -1,5 +1,3 @@
-set -ex
-
 # Load environment variables from the appropriate file
 ENV_FILE=".env.sepolia"
 
@@ -129,6 +127,13 @@ case $1 in
     register_token $TOKEN_ADDRESS
     ;;
 
+  start-player)
+    STRK_TOKEN_ADDRESS=$(find_token "eSTRK")
+    TOKEN_ADDRESS=$(find_token "$3")
+
+    mint $STRK_TOKEN_ADDRESS $2 150
+    mint $TOKEN_ADDRESS $2 500
+    ;;
   *)
   echo "UNKNOWN!"
     ;;
