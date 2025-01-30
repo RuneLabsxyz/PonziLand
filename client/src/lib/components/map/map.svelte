@@ -9,6 +9,7 @@
   const MAP_SIZE = 64;
   const TILE_SIZE = 32;
   let isDragging = false;
+  let dragged = $state(false);
   let startX = 0;
   let startY = 0;
 
@@ -68,6 +69,7 @@
   }
 
   function handleMouseDown(event: MouseEvent) {
+    dragged = false;
     isDragging = true;
     startX = event.clientX - $cameraPosition.offsetX;
     startY = event.clientY - $cameraPosition.offsetY;
@@ -77,26 +79,35 @@
     if (isDragging) {
       const newOffsetX = event.clientX - startX;
       const newOffsetY = event.clientY - startY;
+
+      // if difference is less than 5px, don't drag
+      if (
+        Math.abs(newOffsetX - $cameraPosition.offsetX) < 5 &&
+        Math.abs(newOffsetY - $cameraPosition.offsetY) < 5
+      ) {
+        return;
+      }
+      dragged = true;
       updateOffsets(newOffsetX, newOffsetY);
     }
 
-    if (mapWrapper) {
-      const rect = mapWrapper.getBoundingClientRect();
-      const mouseX = event.clientX - rect.left - $cameraPosition.offsetX;
-      const mouseY = event.clientY - rect.top - $cameraPosition.offsetY;
+    if (!mapWrapper) return;
 
-      const tileX = Math.floor(mouseX / (TILE_SIZE * $cameraPosition.scale));
-      const tileY = Math.floor(mouseY / (TILE_SIZE * $cameraPosition.scale));
+    const rect = mapWrapper.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left - $cameraPosition.offsetX;
+    const mouseY = event.clientY - rect.top - $cameraPosition.offsetY;
 
-      if (tileX >= 0 && tileX < MAP_SIZE && tileY >= 0 && tileY < MAP_SIZE) {
-        $mousePosCoords = {
-          x: tileX + 1,
-          y: tileY + 1,
-          location: tileY * MAP_SIZE + tileX,
-        };
-      } else {
-        $mousePosCoords = null;
-      }
+    const tileX = Math.floor(mouseX / (TILE_SIZE * $cameraPosition.scale));
+    const tileY = Math.floor(mouseY / (TILE_SIZE * $cameraPosition.scale));
+
+    if (tileX >= 0 && tileX < MAP_SIZE && tileY >= 0 && tileY < MAP_SIZE) {
+      $mousePosCoords = {
+        x: tileX + 1,
+        y: tileY + 1,
+        location: tileY * MAP_SIZE + tileX,
+      };
+    } else {
+      $mousePosCoords = null;
     }
   }
 
@@ -169,7 +180,7 @@
       {#each tiles as row, y}
         <div class="row">
           {#each row as tile, x}
-            <Tile land={tile} />
+            <Tile land={tile} {dragged} />
           {/each}
         </div>
       {/each}

@@ -20,8 +20,9 @@
 
   const { store, client: sdk, accountManager } = useDojo();
 
-  let { land } = $props<{
+  let { land, dragged } = $props<{
     land: Tile;
+    dragged: boolean;
   }>();
 
   let isOwner = $derived(() => {
@@ -40,6 +41,9 @@
   let isHovering = $derived($mousePosCoords?.location == land.location);
 
   function handleClick() {
+    console.log('clicked', dragged);
+    if (dragged) return;
+
     if ($selectedLand?.location == land.location) {
       moveCameraToLocation(land.location);
     }
@@ -101,7 +105,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore event_directive_deprecated -->
 <div
-  on:click={handleClick}
+  onmouseup={handleClick}
   class={`relative tile ${land.type === 'auction' ? 'tile-auction' : ''} ${
     selected ? 'selected' : ''
   }`}
