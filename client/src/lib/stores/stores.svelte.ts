@@ -66,7 +66,7 @@ export const accountAddress = readable<string | undefined>(
     return account!.listen((event) => {
       if (event.type === 'connected') {
         set(event.provider.getAccount()?.address);
-      } else {
+      } else if (event.type === 'disconnected') {
         set(undefined);
       }
     });
