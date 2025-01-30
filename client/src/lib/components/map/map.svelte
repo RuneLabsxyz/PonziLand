@@ -8,6 +8,10 @@
 
   const MAP_SIZE = 64;
   const TILE_SIZE = 32;
+
+  // Camera position
+  const MIN_SCALE = 0.6;
+  const MAX_SCALE = 16;
   let isDragging = false;
   let startX = 0;
   let startY = 0;
@@ -43,7 +47,10 @@
         delta = 1.1;
       }
     }
-    const newScale = Math.max(0.6, Math.min(5, $cameraPosition.scale * delta));
+    const newScale = Math.max(
+      MIN_SCALE,
+      Math.min(MAX_SCALE, $cameraPosition.scale * delta),
+    );
 
     // move the camera position towards the mouse position
     const rect = mapWrapper.getBoundingClientRect(); // Assuming 'canvas' is the rendering element

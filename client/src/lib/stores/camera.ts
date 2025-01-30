@@ -26,7 +26,7 @@ cameraTransition.subscribe(($camera) => {
 export function moveCameraTo(
   tileX: number,
   tileY: number,
-  targetScale: number = 5,
+  targetScale: number = 8,
 ) {
   const TILE_SIZE = 32;
 
