@@ -350,7 +350,7 @@ mod PayableComponent {
 
             self.update_level_land(store, land, elapsed_time_since_buy);
 
-            let land = store.land(land_location);
+            let mut land = store.land(land_location);
 
             let discount_for_level = self.calculate_discount_for_level(land.level);
 
