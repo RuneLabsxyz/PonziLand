@@ -345,9 +345,10 @@ mod PayableComponent {
             let current_time = get_block_timestamp();
             let elapsed_time = (current_time - land.last_pay_time) * TIME_SPEED.into();
 
-            let elapsed_time_since_buy = (current_time - land.block_date_bought) * TIME_SPEED.into();
+            let elapsed_time_since_buy = (current_time - land.block_date_bought)
+                * TIME_SPEED.into();
 
-            let discount_for_level = self.update_level_land(store, land, elapsed_time_from_buy);
+            let discount_for_level = self.update_level_land(store, land, elapsed_time_since_buy);
 
             let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
                 / (100 * BASE_TIME.into());
