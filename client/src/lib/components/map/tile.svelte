@@ -4,6 +4,7 @@
   import data from '$lib/data.json';
   import { moveCameraToLocation } from '$lib/stores/camera';
   import {
+    accountAddress,
     mousePosCoords,
     selectedLand,
     selectedLandMeta,
@@ -24,17 +25,7 @@
     land: Tile;
   }>();
 
-  let isOwner = $derived(() => {
-    const accountProvider = accountManager.getProvider();
-    if (!accountProvider) {
-      return false;
-    }
-    const accountData = accountProvider.getAccount();
-    if (!accountData) {
-      return false;
-    }
-    return land?.owner == padAddress(accountData.address);
-  });
+  let isOwner = $derived(land?.owner == padAddress($accountAddress ?? '0x1'));
 
   let selected = $derived($selectedLand?.location === land.location);
   let isHovering = $derived($mousePosCoords?.location == land.location);
@@ -114,7 +105,7 @@
                background-size: cover;
                background-position: center;`}
 >
-  {#if isOwner()}
+  {#if isOwner}
     <div
       class="absolute z-10 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
@@ -140,7 +131,7 @@
     {/if}
     {#if land.type == 'house'}
       <RatesOverlay {land} />
-      {#if isOwner()}
+      {#if isOwner}
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
@@ -165,7 +156,7 @@
     {/if}
   {/if}
 
-  {#if isOwner()}
+  {#if isOwner}
     <div class="absolute top-0 left-1/2 h-2 w-2 -translate-x-1/2">
       <img src="/assets/ui/crown.png" alt="owned" />
     </div>

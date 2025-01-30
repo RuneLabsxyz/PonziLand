@@ -9,7 +9,7 @@
       "images": {
         "icon": "/assets/tokens/strk/icon.png",
         "castle": {
-          "basic": "/assets/tokens/basic/castles/basic.png",
+          "basic": "/assets/tokens/strk/castles/basic.png",
           "advanced": "/assets/tokens/basic/castles/advanced.png",
           "premium": "/assets/tokens/basic/castles/premium.png"
         }

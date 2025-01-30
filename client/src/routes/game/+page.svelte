@@ -7,6 +7,7 @@
   import Map from '$lib/components/map/map.svelte';
   import Ui from '$lib/components/ui.svelte';
   import LoadingScreen from '$lib/components/loading/loading-screen.svelte';
+  import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
 
   const promise = Promise.all([
     setupClient(dojoConfig),
@@ -57,6 +58,7 @@
   {#if loading}
     <LoadingScreen {value} />
   {:else}
+    <SwitchChainModal />
     <Map />
     <Ui />
   {/if}

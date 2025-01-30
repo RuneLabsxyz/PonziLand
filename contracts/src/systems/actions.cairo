@@ -473,7 +473,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location, false);
+            let neighbors = self.payable._add_neighbors(store, land.location, true);
             let mut total_rate: u64 = 0;
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();

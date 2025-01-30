@@ -7,8 +7,8 @@
 
   let {
     land,
-    expanded = $bindable(),
-  }: { land: LandWithActions; expanded: boolean } = $props();
+    expanded = $bindable(false),
+  }: { land: LandWithActions; expanded?: boolean } = $props();
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
     const aggregatedYield = yieldInfos.reduce(

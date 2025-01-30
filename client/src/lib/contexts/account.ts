@@ -1,7 +1,10 @@
 // Get the wanted system from the environment
 
 import { browser } from '$app/environment';
-import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
+import {
+  PUBLIC_DOJO_BURNER_ADDRESS,
+  PUBLIC_DOJO_CHAIN_ID,
+} from '$env/static/public';
 import { ArgentXAccount } from '$lib/accounts/argentx';
 import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
@@ -9,7 +12,14 @@ import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { dojoConfig } from '$lib/dojoConfig';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
-import type { AccountInterface } from 'starknet';
+import {
+  Account,
+  cairo,
+  WalletAccount,
+  type AccountInterface,
+  shortString,
+  constants,
+} from 'starknet';
 import { getContext, setContext } from 'svelte';
 
 /// Common functions required to be implemented by all account providers;
@@ -71,7 +81,12 @@ export type DisconnectedEvent = {
   type: 'disconnected';
 };
 
-export type Event = ConnectedEvent | DisconnectedEvent;
+export type ChainChangedEvent = {
+  type: 'chain_change';
+  chainId: string;
+};
+
+export type Event = ConnectedEvent | DisconnectedEvent | ChainChangedEvent;
 
 export type EventListener = (event: Event) => void;
 
@@ -152,6 +167,7 @@ const checkCompatibility = async (
 
 export class AccountManager {
   private _provider?: AccountProvider;
+  private _walletObject?: WALLET_API.StarknetWindowObject;
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
   private _listeners: EventListener[] = [];
@@ -230,6 +246,7 @@ export class AccountManager {
     try {
       // Handle user cancelled action
       this._provider = provider;
+      this._walletObject = walletObject.wallet;
       // First, ask for a login
       await provider.connect();
       console.info('User logged-in successfully');
@@ -241,10 +258,42 @@ export class AccountManager {
         }),
       );
 
+      const walletAccount = provider.getWalletAccount();
+      if (walletAccount instanceof WalletAccount) {
+        console.log('Wallet account!');
+        walletAccount.onNetworkChanged(this.onNetworkChanged.bind(this));
+        walletAccount.onAccountChange(this.onWalletChanged.bind(this));
+      }
+
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch {
       console.warn('The user did not log in successfully!');
     }
+  }
+
+  public async switchChain(chainId: string) {
+    const walletAccount = this._provider?.getWalletAccount();
+    if (walletAccount instanceof WalletAccount) {
+      await walletAccount.switchStarknetChain(
+        shortString.encodeShortString(chainId) as constants.StarknetChainId,
+      );
+    } else {
+      console.error('The switch chain operation is not supported!');
+    }
+  }
+
+  public getProviderName() {
+    return this._walletObject?.id;
+  }
+
+  public async getChainId() {
+    console.log(this._walletObject);
+    const chainId = await this._walletObject?.request({
+      type: 'wallet_requestChainId',
+    });
+    console.log('Response:', chainId);
+    console.log('chainId:', shortString.decodeShortString(chainId ?? '0x0'));
+    return shortString.decodeShortString(chainId ?? '0x0');
   }
 
   public disconnect() {
@@ -255,12 +304,24 @@ export class AccountManager {
     if (this._provider) {
       this._provider.disconnect();
 
+      this._walletObject?.off(
+        'networkChanged',
+        this.onNetworkChanged.bind(this),
+      );
+      this._walletObject?.off(
+        'accountsChanged',
+        this.onWalletChanged.bind(this),
+      );
+
       // Announce that you are disconnected.
       this._listeners.forEach((listener) =>
         listener({
           type: 'disconnected',
         }),
       );
+
+      this._provider = undefined;
+      this._walletObject = undefined;
     }
   }
 
@@ -321,6 +382,31 @@ export class AccountManager {
     }
 
     this._provider?.loadSession(parsed);
+  }
+
+  private onWalletChanged(accounts?: string[]) {
+    console.log('This:', this);
+    if (accounts?.length ?? 0 == 0) {
+      this.disconnect();
+      return;
+    }
+
+    this._listeners.forEach((listener) => {
+      listener({
+        type: 'connected',
+        provider: this._provider!,
+      });
+    });
+  }
+
+  private onNetworkChanged(chainId?: string, accounts?: string[]) {
+    // Notify that the network has changed
+    this._listeners.forEach((listener) => {
+      listener({
+        type: 'chain_change',
+        chainId: shortString.decodeShortString(chainId ?? '0x0') ?? 'unknown',
+      });
+    });
   }
 
   // TODO: Maybe mirror the some of the AccountProvider functions to make it easier to use?
