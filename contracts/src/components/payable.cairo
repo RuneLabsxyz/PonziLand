@@ -348,7 +348,11 @@ mod PayableComponent {
             let elapsed_time_since_buy = (current_time - land.block_date_bought)
                 * TIME_SPEED.into();
 
-            let discount_for_level = self.update_level_land(store, land, elapsed_time_since_buy);
+            self.update_level_land(store, land, elapsed_time_since_buy);
+
+            let land = store.land(land_location);
+
+            let discount_for_level = self.calculate_discount_for_level(land.level);
 
             let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
                 / (100 * BASE_TIME.into());
@@ -397,7 +401,7 @@ mod PayableComponent {
 
         fn update_level_land(
             self: @ComponentState<TContractState>, store: Store, mut land: Land, elapsed_time: u64
-        ) -> u16 {
+        ) {
             let new_level: Level = if elapsed_time >= FOUR_DAYS_IN_SECONDS {
                 Level::Second // Change to level 2 if 4 days or more
             } else if elapsed_time >= TWO_DAYS_IN_SECONDS {
@@ -411,8 +415,6 @@ mod PayableComponent {
                 land.level = new_level;
                 store.set_land(land);
             }
-
-            self.calculate_discount_for_level(new_level)
         }
 
         fn calculate_discount_for_level(
