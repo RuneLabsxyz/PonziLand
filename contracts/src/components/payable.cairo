@@ -20,8 +20,10 @@ mod PayableComponent {
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
-    use ponzi_land::models::land::Land;
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
+    use ponzi_land::models::land::{Land, Level};
+    use ponzi_land::consts::{
+        TAX_RATE, BASE_TIME, TIME_SPEED, TWO_DAYS_IN_SECONDS, FOUR_DAYS_IN_SECONDS
+    };
     use ponzi_land::store::{Store, StoreTrait};
     // Local imports
 
@@ -342,8 +344,17 @@ mod PayableComponent {
             //calculate the total taxes
             let current_time = get_block_timestamp();
             let elapsed_time = (current_time - land.last_pay_time) * TIME_SPEED.into();
+
+            let discount_for_level = self.update_level_land(store, land, elapsed_time);
+
             let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
                 / (100 * BASE_TIME.into());
+
+            let total_taxes = if discount_for_level > 0 {
+                total_taxes - (total_taxes * discount_for_level.into()) / 100
+            } else {
+                total_taxes
+            };
 
             // Calculate the tax per neighbor (divided by the maximum possible neighbors)
             let tax_per_neighbor = total_taxes / max_neighbors(land_location).into();
@@ -381,6 +392,36 @@ mod PayableComponent {
             }
         }
 
+        fn update_level_land(
+            self: @ComponentState<TContractState>, store: Store, mut land: Land, elapsed_time: u64
+        ) -> u16 {
+            let new_level: Level = if elapsed_time >= FOUR_DAYS_IN_SECONDS {
+                Level::Second // Change to level 2 if 4 days or more
+            } else if elapsed_time >= TWO_DAYS_IN_SECONDS {
+                Level::First // Change to level 1 if between 2 and 4 days
+            } else {
+                Level::None
+            };
+
+            // Update the land level only if it has changed
+            if land.level != new_level {
+                land.level = new_level;
+                store.set_land(land);
+            }
+
+            self.calculate_discount_for_level(new_level)
+        }
+
+        fn calculate_discount_for_level(
+            self: @ComponentState<TContractState>, level: Level
+        ) -> u16 {
+            let discount_for_level: u16 = match level {
+                Level::None => 0,
+                Level::First => 15,
+                Level::Second => 30,
+            };
+            discount_for_level
+        }
 
         fn _claim_taxes(
             ref self: ComponentState<TContractState>,

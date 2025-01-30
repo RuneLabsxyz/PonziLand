@@ -8,3 +8,6 @@ pub const MAX_AUCTIONS: u8 = 10;
 pub const DECAY_RATE: u64 = 100;
 //TODO:The floor price can be an u8, depends how we want to handle it
 pub const FLOOR_PRICE: u256 = 1;
+const TWO_DAYS_IN_SECONDS: u64 = 2 * 24 * 60 * 60; // 2 days in seconds;
+const FOUR_DAYS_IN_SECONDS: u64 = TWO_DAYS_IN_SECONDS * 2;
+
