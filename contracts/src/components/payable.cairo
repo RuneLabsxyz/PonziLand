@@ -327,29 +327,40 @@ mod PayableComponent {
             ref self: ComponentState<TContractState>, mut store: Store, land_location: u64
         ) -> Result<u256, felt252> {
             let mut land = store.land(land_location);
-            //generate taxes for each neighbor of neighbor
 
+            //generate taxes for each neighbor of neighbor
             let mut neighbors: Array<Land> = self._add_neighbors(store, land_location, true);
-            if neighbors.len() == 0 {
+
+            //if we dont have neighbors we dont have to pay taxes
+            let neighbors_with_owners = neighbors.len();
+            if neighbors_with_owners == 0 {
                 land.last_pay_time = get_block_timestamp();
                 store.set_land(land);
                 return Result::Ok(0);
             }
 
+            //calculate the total taxes
             let current_time = get_block_timestamp();
             let elapsed_time = (current_time - land.last_pay_time) * TIME_SPEED.into();
             let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
                 / (100 * BASE_TIME.into());
+
+            // Calculate the tax per neighbor (divided by the maximum possible neighbors)
+            let tax_per_neighbor = total_taxes / max_neighbors(land_location).into();
+
+            // Calculate the total tax to distribute (only to existing neighbors)
+            let tax_to_distribute = tax_per_neighbor * neighbors_with_owners.into();
+
             //if we dont have enough stake to pay the taxes,we distrubute the total amount of stake
             //and after we nuke the land
-            let (tax_to_distribute, is_nuke) = if land.stake_amount <= total_taxes {
+            let (tax_to_distribute, is_nuke) = if land.stake_amount <= tax_to_distribute {
                 (land.stake_amount, true)
             } else {
-                (total_taxes, false)
+                (tax_to_distribute, false)
             };
 
-            let tax_per_neighbor = tax_to_distribute / max_neighbors(land_location).into();
-
+            //distribute the taxes to each neighbor
+            let tax_per_neighbor = tax_to_distribute / neighbors_with_owners.into();
             for neighbor in neighbors
                 .span() {
                     self
