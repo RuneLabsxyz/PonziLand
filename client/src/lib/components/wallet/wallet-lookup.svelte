@@ -9,6 +9,21 @@
 
   setup();
 
+  let copied = $state(false);
+
+  function copy() {
+    try {
+      navigator.clipboard.writeText(padAddress(address ?? '')!);
+
+      copied = true;
+      setTimeout(() => {
+        copied = false;
+      }, 1000);
+    } catch (e) {
+      console.error('Failed to copy', e);
+    }
+  }
+
   const { store, client: sdk, accountManager } = useDojo();
   const address = $derived(accountDataProvider.address);
   const connected = $derived(accountDataProvider.isConnected);
@@ -21,10 +36,13 @@
   {#if connected}
     <Card class="shadow-ponzi">
       <div class="flex justify-between items-center">
-        <div class="flex gap-2 items-center">
+        <button type="button" class="flex gap-2 items-center" onclick={copy}>
           <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
           <div class="h-2 w-2 rounded-full bg-green-700"></div>
-        </div>
+          {#if copied}
+            <div class="transition-opacity">Copied!</div>
+          {/if}
+        </button>
         <button
           onclick={() => {
             accountManager.disconnect();
