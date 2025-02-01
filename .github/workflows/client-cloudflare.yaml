@@ -4,10 +4,12 @@ on:
   push:
     branches:
       - "main"
+      - "target/*"
   # Cloudflare handles preview environments pretty well:
   pull_request:
     branches:
       - "main"
+      - "target/*"
 
 permissions:
   contents: read
