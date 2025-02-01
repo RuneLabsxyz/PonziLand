@@ -42,6 +42,7 @@
   },
   "dependencies": {
     "@argent/x-sessions": "^7.0.0",
+    "@avnu/avnu-sdk": "^3.0.0",
     "@dojoengine/sdk": "^1.0.4-alpha.3.1.2",
     "@starknet-io/get-starknet-core": "^4.0.0",
     "bignumber.js": "^9.1.2",

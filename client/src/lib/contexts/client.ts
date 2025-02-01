@@ -36,6 +36,7 @@ async function _setupDojo(config: DojoConfig) {
   const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
   return {
     ...initialized,
+    provider,
     toriiClient: initialized.client,
     client: await wrappedActions(provider),
   };

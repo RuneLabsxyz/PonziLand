@@ -12,6 +12,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: process.env.DOJO_BURNER_ADDRESS,
     PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_BURNER_PRIVATE,
     PUBLIC_DOJO_CHAIN_ID: process.env.DOJO_CHAIN_ID,
+    PUBLIC_AVNU_URL: process.env.AVNU_URL,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -26,6 +27,7 @@ const profiles = {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
     PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-sepolia/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
+    PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
   },
