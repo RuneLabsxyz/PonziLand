@@ -72,7 +72,7 @@ export const getAggregatedTaxes = async (
 
     return {
       tokenAddress: tokenAddress,
-      tokenSymbol: token?.name ?? 'Unknown',
+      tokenSymbol: token?.symbol ?? '???',
       totalTax: totalTax,
     };
   });

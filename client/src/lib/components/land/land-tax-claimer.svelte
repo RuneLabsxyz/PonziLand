@@ -79,7 +79,7 @@
       <img
         src="/assets/tokens/basic/coin.png"
         alt="coins"
-        class="h-4 w-4 -mt-1 coin"
+        class="h-3 w-3 -mt-1 coin"
       />
     </button>
     <div class="h-2 w-full flex flex-col items-center justify-end">

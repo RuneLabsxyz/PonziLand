@@ -21,9 +21,10 @@
 
   const { store, client: sdk, accountManager } = useDojo();
 
-  let { land, dragged } = $props<{
+  let { land, dragged, scale } = $props<{
     land: Tile;
     dragged: boolean;
+    scale: number;
   }>();
 
   let isOwner = $derived(land?.owner == padAddress($accountAddress ?? '0x1'));
@@ -109,7 +110,7 @@
                background-size: cover;
                background-position: center;`}
 >
-  {#if isOwner}
+  {#if isOwner() && scale > 1.5}
     <div
       class="absolute z-10 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
@@ -161,7 +162,7 @@
   {/if}
 
   {#if isOwner}
-    <div class="absolute top-0 left-1/2 h-2 w-2 -translate-x-1/2">
+    <div class="absolute top-0 left-1/2 crown -translate-x-1/2">
       <img src="/assets/ui/crown.png" alt="owned" />
     </div>
   {/if}
@@ -176,5 +177,9 @@
   .selected {
     outline: 1px solid #ff0;
     z-index: 20;
+  }
+
+  .crown {
+    width: calc(max(1rem * (1 / var(--scale)), 0.5em));
   }
 </style>
