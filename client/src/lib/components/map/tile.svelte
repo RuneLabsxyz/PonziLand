@@ -110,7 +110,7 @@
                background-size: cover;
                background-position: center;`}
 >
-  {#if isOwner() && scale > 1.5}
+  {#if isOwner && scale > 1.5}
     <div
       class="absolute z-10 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
