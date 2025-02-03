@@ -1,30 +1,8 @@
 <script lang="ts">
-  import { useLands } from '$lib/api/land.svelte';
-  import { selectedLandMeta, uiStore } from '$lib/stores/stores.svelte';
-  import {
-    hexStringToNumber,
-    locationIntToString,
-    shortenHex,
-  } from '$lib/utils';
+  import { useDojo } from '$lib/contexts/dojo';
+  import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import { shortenHex } from '$lib/utils';
   import LandOverview from '../../land/land-overview.svelte';
-  import { Button } from '../../ui/button';
-
-  let landStore = useLands();
-
-  const handleBuyLandClick = () => {
-    console.log('Buy land clicked');
-
-    uiStore.showModal = true;
-    uiStore.modalType = 'buy';
-    uiStore.modalData = {
-      location: hexStringToNumber($selectedLandMeta!.location),
-      // TODO: Enforce null checks here
-      sellPrice: $selectedLandMeta!.sellPrice!,
-      tokenUsed: $selectedLandMeta!.tokenUsed!,
-      tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
-      owner: $selectedLandMeta!.owner || undefined,
-    };
-  };
 </script>
 
 <div class="flex gap-4 relative items-center p-4">
