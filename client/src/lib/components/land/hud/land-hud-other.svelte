@@ -27,43 +27,36 @@
   };
 </script>
 
-<div class="flex gap-4 relative">
+<div class="flex gap-4 relative items-center p-4">
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
-  <div class="w-full flex flex-col text-xl gap-1" style="line-height: normal;">
-    <div class="flex w-full">
-      <span class="w-full">Location :</span>
-      <span class="w-full">
-        {locationIntToString(
-          hexStringToNumber($selectedLandMeta?.location ?? ''),
-        )}
-        <span class="text-gray-500 text-sm"
-          >#{hexStringToNumber($selectedLandMeta?.location ?? '')}</span
+  <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+    <div class="flex justify-between">
+      <p class="opacity-50">Owner</p>
+      <p class="text-[#1F75BC] hover:underline">
+        <a
+          href={`https://sepolia.voyager.online/contract/${$selectedLandMeta?.owner}`}
+          target="_blank"
+          class="w-full"
         >
-      </span>
+          {shortenHex($selectedLandMeta?.owner)}
+        </a>
+      </p>
     </div>
-    <div class="flex w-full">
-      <span class="w-full">Price :</span>
-      <span class="w-full">{$selectedLandMeta?.sellPrice?.toString()}</span>
+    <div class="flex justify-between">
+      <p class="opacity-50">Price</p>
+      <p>
+        {$selectedLandMeta?.sellPrice?.toString()}
+        {$selectedLandMeta?.token?.symbol}
+      </p>
     </div>
-    <div class="flex w-full">
-      <span class="w-full">Remaining Stake :</span>
-      <span class="w-full">{$selectedLandMeta?.stakeAmount?.toString()}</span>
+    <div class="flex justify-between">
+      <p class="opacity-50">Remaining Stake</p>
+      <p>
+        {$selectedLandMeta?.stakeAmount?.toString()}
+        {$selectedLandMeta?.token?.symbol}
+      </p>
     </div>
-    <div class="flex w-full">
-      <span class="w-full">Owner :</span>
-      <a
-        href={`https://sepolia.voyager.online/contract/${$selectedLandMeta?.owner}`}
-        target="_blank"
-        class="w-full">{shortenHex($selectedLandMeta?.owner)}</a
-      >
-    </div>
-    <Button
-      on:click={() => {
-        handleBuyLandClick();
-      }}
-      class="mt-2 text-xl text-ponzi">BUY LAND</Button
-    >
   </div>
 </div>
