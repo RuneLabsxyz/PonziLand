@@ -15,7 +15,11 @@
   <div class="absolute -top-8 left-0 right-0">
     <div class="flex justify-center">
       <div class="h-10 w-10">
-        <img src="/assets/ui/crown.png" alt="owner" />
+        <img
+          src="/assets/ui/icons/Icon_Crown.png"
+          alt="owner"
+          style="image-rendering: pixelated;"
+        />
       </div>
     </div>
   </div>

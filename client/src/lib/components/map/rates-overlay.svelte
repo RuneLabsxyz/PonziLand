@@ -1,10 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import { MAP_SIZE } from '$lib/api/tile-store.svelte';
-  import type { LandYieldInfo } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import data from '$lib/data.json';
-  import { toHexWithPadding } from '$lib/utils';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
   import BigNumber from 'bignumber.js';
 

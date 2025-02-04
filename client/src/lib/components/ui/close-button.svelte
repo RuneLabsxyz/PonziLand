@@ -21,5 +21,5 @@
     `}
   {onclick}
 >
-  <img src="/assets/ui/close.png" alt="close" />
+  <img src="/assets/ui/icons/Icon_Thin_WindowClose.png" alt="close" />
 </button>

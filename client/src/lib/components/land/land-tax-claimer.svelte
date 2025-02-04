@@ -77,7 +77,7 @@
       class="flex items-center"
     >
       <img
-        src="/assets/tokens/basic/coin.png"
+        src="/assets/ui/icons/Icon_Coin2.png"
         alt="coins"
         class="h-4 w-4 -mt-1 coin"
       />
