@@ -1,3 +1,4 @@
+
 # Load environment variables from the appropriate file
 ENV_FILE=".env.sepolia"
 
@@ -9,12 +10,21 @@ else
   exit 1
 fi
 
+if [[ -z "$STARKNET_KEYSTORE_PASSWORD" ]]; then
+  echo "No password detected!"
+  PASSWORD_ENTRY=""
+else
+  PASSWORD_ENTRY="--keystore-password $STARKNET_KEYSTORE_PASSWORD"
+fi
+
+
 # Define a cleanup function to clear environment variables
 cleanup_env() {
   echo "Cleaning up environment variables..."
   unset STARKNET_RPC_URL
   unset DOJO_ACCOUNT_ADDRESS
   unset DOJO_PRIVATE_KEY
+  unset PASSWORD_ENTRY
   echo "Environment variables cleared."
 }
 
@@ -27,7 +37,7 @@ function build_declare() {
     echo "⏳ Building contract..."
     scarb build
     echo "⏳ Declaring contract..."
-    CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC)
+    CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE $PASSWORD_ENTRY --rpc $STARKNET_RPC)
     echo "🚀 Declared contract at address: $CONTRACT_CLASS"
 }
 
@@ -43,7 +53,7 @@ function convert_value() {
 ## $3: amount of tokens to mint (relative to decimals)
 function mint() {
     MINT_AMOUNT=$(convert_value $1 $3)
-    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $1 mint $2 u256:$MINT_AMOUNT
+    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE $PASSWORD_ENTRY --rpc $STARKNET_RPC $1 mint $2 u256:$MINT_AMOUNT
     echo "☑  Minted $3 tokens (raw: $MINT_AMOUNT) to $2"
 }
 
@@ -55,8 +65,8 @@ function create_token() {
     fi
 
     echo "⏳ Deploying token..."
-    local CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC)
-    local TOKEN_ADDRESS=$(starkli deploy $CONTRACT_CLASS --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $ACCOUNT_ADDRESS "bytearray:str:$2" "bytearray:str:$1")
+    local CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE $PASSWORD_ENTRY --rpc $STARKNET_RPC)
+    local TOKEN_ADDRESS=$(starkli deploy $CONTRACT_CLASS --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $PASSWORD_ENTRY $ACCOUNT_ADDRESS "bytearray:str:$2" "bytearray:str:$1")
     echo "🚀 Deployed token at address: $TOKEN_ADDRESS"
 
     # Write the contract into the token json
@@ -90,7 +100,7 @@ function register_token() {
     echo "⏳  Registering token $1 on ekubo..."
     # Mint yourself some tokens
     mint $TOKEN_ADDRESS $ACCOUNT_ADDRESS 1
-    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC \
+    starkli invoke --account $STARKNET_ACCOUNT --keystore $STARKNET_KEYSTORE --rpc $STARKNET_RPC $PASSWORD_ENTRY \
          $1 transfer $EKUBO_CORE_ADDRESS u256:$(convert_value $1 1) / \
          $EKUBO_CORE_ADDRESS register_token "$1"
     echo "☑  Registered token on ekubo!"
@@ -132,6 +142,7 @@ case $1 in
     TOKEN_ADDRESS=$(find_token "$3")
 
     mint $STRK_TOKEN_ADDRESS $2 150
+    sleep 3
     mint $TOKEN_ADDRESS $2 500
     ;;
   *)
