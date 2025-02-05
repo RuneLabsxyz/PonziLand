@@ -117,7 +117,7 @@ export function parseLocation(
   }
 
   // 64 grid give 0, 0
-  const x = (location % 64);
+  const x = location % 64;
   const y = Math.floor(location / 64);
 
   return [x, y];
