@@ -1,32 +1,39 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
-  import { toBigInt, toHexWithPadding } from '$lib/utils';
-  import data from '$lib/data.json';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { Tag } from 'lucide-svelte';
-  import { type Token } from '$lib/interfaces';
+  import { toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
 
   let { land } = $props<{ land: LandWithActions }>();
 
-  let waiting = $state(false);
   let nukableLands = $state<bigint[]>([]);
+
+  let waiting = $state(false);
+  let animating = $state(false);
+  let claiming = $state(false);
 
   async function handleClaimFromCoin() {
     console.log('claiming from coin');
     waiting = true;
+    claiming = true;
+    animating = true;
+    setTimeout(() => {
+      animating = false;
+      console.log('not animating anymore');
+    }, 2000);
     await land
       .claim()
       .then(() => {
+        claiming = false;
         // remove nukable lands from the nukableStore
         nukableStore.update((nukableLandsFromStore) => {
-          return nukableLandsFromStore.filter((land) =>
-            nukableLands.includes(land),
+          return nukableLandsFromStore.filter(
+            (land) => !nukableLands.includes(land),
           );
         });
         nukableLands = [];
         setTimeout(() => {
           fetchTaxes().then(() => {
+            console.log('not waiting anymore');
             waiting = false;
           });
         }, 5000);
@@ -65,6 +72,15 @@
 
   $effect(() => {
     fetchTaxes();
+
+    const interval = setInterval(() => {
+      console.log('refetching taxes');
+      fetchTaxes();
+    }, 10 * 1000);
+
+    return () => {
+      clearInterval(interval);
+    };
   });
 </script>
 
@@ -82,16 +98,21 @@
         class="h-3 w-3 -mt-1 coin"
       />
     </button>
-    <div class="h-2 w-full flex flex-col items-center justify-end">
-      {#each aggregatedTaxes as tax}
-        <div class="text-ponzi text-nowrap text-claims pointer-events-none">
-          + {tax.totalTax}
-          {tax.tokenSymbol}
-        </div>
-      {/each}
-    </div>
   {/if}
 </div>
+
+{#if animating}
+  <div
+    class="h-2 w-full flex flex-col items-center justify-end animate-fade-up"
+  >
+    {#each aggregatedTaxes as tax}
+      <div class="text-ponzi text-nowrap text-claims pointer-events-none">
+        + {tax.totalTax}
+        {tax.tokenSymbol}
+      </div>
+    {/each}
+  </div>
+{/if}
 
 <style>
   .text-claims {
@@ -103,5 +124,19 @@
 
   button:hover .coin {
     filter: drop-shadow(0 0 0.1em #ffff00);
+  }
+
+  @keyframes fade-up {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+  }
+  .animate-fade-up {
+    animation: fade-up 1.5s ease-out forwards;
   }
 </style>
