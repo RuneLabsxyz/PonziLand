@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import type { LandYieldInfo, YieldInfo } from '$lib/interfaces';
   import data from '$lib/data.json';
-  import { padAddress, toHexWithPadding } from '$lib/utils';
+  import type { YieldInfo } from '$lib/interfaces';
+  import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let {
@@ -14,14 +14,15 @@
     const aggregatedYield = yieldInfos.reduce(
       (acc, curr) => {
         const tokenAddress = toHexWithPadding(curr.token);
-        acc[tokenAddress] = acc[tokenAddress] ?? 0n;
+        acc[tokenAddress] = acc[tokenAddress] ?? 0;
 
-        const tax = curr.percent_rate;
+        const percentRate = Number(curr.percent_rate) / 100;
+        const tax = percentRate * Number(curr.sell_price);
         acc[tokenAddress] += tax;
 
         return acc;
       },
-      {} as Record<string, bigint>,
+      {} as Record<string, number>,
     );
 
     return Object.entries(aggregatedYield).map(([token, sell_price]) => {
@@ -79,7 +80,7 @@
   </div>
   {#if expanded}
     <div class="flex justify-between">
-      <p class="opacity-50">Neighb. earnings</p>
+      <p class="opacity-50">Neighb. earnings/h</p>
       <div class="flex flex-col">
         {#each getAggregatedYield(yieldInfo?.yield_info ?? []) as neighbourYield}
           <div class="flex justify-between gap-1 text-yellow-500">
@@ -91,7 +92,7 @@
     </div>
   {:else}
     <div class="flex justify-between">
-      <p class="opacity-50">Neighb. earnings</p>
+      <p class="opacity-50">Neighb. earnings/h</p>
       <button
         type="button"
         class="px-2 bg-white bg-opacity-50"
