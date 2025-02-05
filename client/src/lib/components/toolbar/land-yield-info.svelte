@@ -15,7 +15,10 @@
       (acc, curr) => {
         const tokenAddress = toHexWithPadding(curr.token);
         acc[tokenAddress] = acc[tokenAddress] ?? 0n;
-        acc[tokenAddress] += curr.sell_price;
+
+        const tax = curr.percent_rate;
+        acc[tokenAddress] += tax;
+
         return acc;
       },
       {} as Record<string, bigint>,
