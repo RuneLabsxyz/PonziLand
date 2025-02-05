@@ -61,6 +61,7 @@ mod PayableComponent {
     pub struct YieldInfo {
         token: ContractAddress,
         sell_price: u256,
+        per_hour: u256,
         percent_rate: u256,
         location: u64,
     }

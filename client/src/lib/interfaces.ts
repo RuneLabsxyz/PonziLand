@@ -43,6 +43,7 @@ export interface Bid {
 export interface YieldInfo {
   token: bigint;
   sell_price: bigint;
+  per_hour: bigint;
   percent_rate: bigint;
   location: bigint;
 }

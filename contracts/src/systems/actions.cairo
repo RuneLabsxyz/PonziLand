@@ -474,32 +474,43 @@ pub mod actions {
             let land = store.land(land_location);
 
             let neighbors = self.payable._add_neighbors(store, land.location, true);
-            let mut total_rate: u64 = 0;
+            let neighbors_count = neighbors.len();
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
-            if neighbors.len() > 0 {
+            if neighbors_count > 0 {
                 for neighbor in neighbors {
                     let token = neighbor.token_used;
-                    let rate = neighbor.sell_price * TAX_RATE.into() / (100 * BASE_TIME.into());
+                    let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
+                    let rate_per_hour = rate * neighbor.sell_price / 100;
 
-                    total_rate = total_rate + rate.try_into().unwrap();
                     yield_info
                         .append(
                             YieldInfo {
                                 token,
                                 sell_price: neighbor.sell_price,
                                 percent_rate: rate,
+                                per_hour: rate_per_hour,
                                 location: neighbor.location
                             }
                         );
                 }
             }
 
-            // we calculate the remaining time of the stake
-            let remaining_stake_time: u256 = if total_rate > 0 {
-                land.stake_amount / total_rate.into()
+            // Calculate the remaining time the stake may sustain.
+
+            let remaining_stake_time: u256 = if neighbors_count > 0 {
+                let per_hour_expenses_percent = TAX_RATE.into()
+                    * TIME_SPEED.into()
+                    * land.sell_price
+                    / neighbors_count.into();
+
+                // The time in unix seconds that the stake may sustain.
+                // We multiply by 3600 (BASE_TIME) to get the time in seconds instead of hours,
+                // and by 100 to convert the percent to the good decimal point => 1 / (x * 1/100) =
+                // 100 / x
+                land.stake_amount * 100 * BASE_TIME.into() / (per_hour_expenses_percent)
             } else {
-                0
+                0 // No neighbors, no expenses
             };
             LandYieldInfo { yield_info, remaining_stake_time }
         }
