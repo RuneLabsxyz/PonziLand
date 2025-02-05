@@ -1,6 +1,7 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
-  import { toBigInt } from '$lib/utils';
+  import { claimQueue } from '$lib/stores/event.store.svelte';
+  import { getTokenInfo, toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
 
   let { land } = $props<{ land: LandWithActions }>();
@@ -16,10 +17,23 @@
     waiting = true;
     claiming = true;
     animating = true;
+
     setTimeout(() => {
       animating = false;
       console.log('not animating anymore');
     }, 2000);
+
+    claimQueue.update((queue) => {
+      return [
+        ...queue,
+        ...aggregatedTaxes.map((tax) => {
+          const token = getTokenInfo(tax.tokenAddress);
+          tax.totalTax.setToken(token);
+          console.log('total tax when updating queue', tax.totalTax);
+          return tax.totalTax;
+        }),
+      ];
+    });
     await land
       .claim()
       .then(() => {

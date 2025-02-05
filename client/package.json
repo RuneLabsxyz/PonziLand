@@ -30,7 +30,7 @@
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.3",
-    "svelte": "^5.0.0",
+    "svelte": "^5.19.7",
     "svelte-check": "^4.0.0",
     "tailwind-merge": "^2.6.0",
     "tailwind-variants": "^0.3.0",

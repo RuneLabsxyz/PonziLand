@@ -51,6 +51,10 @@ export class CurrencyAmount {
     return this.value;
   }
 
+  public getToken(): Token | undefined {
+    return this.token;
+  }
+
   public setToken(token?: Token) {
     this.token = token;
   }
