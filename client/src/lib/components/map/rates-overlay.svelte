@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
+  import { GAME_SPEED } from '$lib/const';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
-  import BigNumber from 'bignumber.js';
 
   let {
     land,
@@ -38,7 +38,11 @@
 
   let tokenBurnRatePerNeighbor: CurrencyAmount = $derived(
     CurrencyAmount.fromRaw(
-      land.sellPrice.rawValue().multipliedBy(0.02).dividedBy(8),
+      land.sellPrice
+        .rawValue()
+        .multipliedBy(0.02)
+        .dividedBy(8)
+        .multipliedBy(GAME_SPEED),
     ),
   );
 

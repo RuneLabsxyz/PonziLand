@@ -4,6 +4,7 @@
   import type { LandYieldInfo, YieldInfo } from '$lib/interfaces';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import BigNumber from 'bignumber.js';
 
   const GAME_SPEED = 4;
 
@@ -26,6 +27,14 @@
 
   let totalBurnRate = $derived.by(() => {
     return landBurnPerNeighbour.multipliedBy(neighbourNumber);
+  });
+
+  let estimatedNukeTime = $derived.by(() => {
+    const remainingTime = BigNumber(land.stakeAmount.rawValue())
+      .dividedBy(totalBurnRate)
+      .multipliedBy(60 * 60); // Convert hours to minutes
+
+    return remainingTime;
   });
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
@@ -54,21 +63,21 @@
     });
   };
 
-  const parseNukeTime = (givenTime: bigint) => {
-    const time = givenTime / 60n; // Convert seconds to minutes
+  const parseNukeTime = (givenTime: number) => {
+    const time = givenTime / 60; // Convert seconds to minutes
 
     // Convert minutes (bigint) to days, hours, minutes, and seconds
-    const minutes = time % 60n;
-    const hours = (time / 60n) % 24n;
-    const days = time / 1440n; // 1440 minutes in a day
+    const minutes = Math.floor(time % 60);
+    const hours = Math.floor((time / 60) % 24);
+    const days = Math.floor(time / 1440); // 1440 minutes in a day
 
     // Build the formatted string
     const parts: string[] = [];
 
-    if (days > 0) parts.push(`${days} day${days > 1n ? 's' : ''}`);
-    if (hours > 0n || days > 0n)
+    if (days > 0) parts.push(`${days} day${days > 1 ? 's' : ''}`);
+    if (hours > 0 || days > 0)
       parts.push(`${hours.toString().padStart(2, '0')}h`);
-    if (minutes > 0n || hours > 0n || days > 0n)
+    if (minutes > 0 || hours > 0 || days > 0)
       parts.push(`${minutes.toString().padStart(2, '0')}m`);
 
     return {
@@ -78,6 +87,8 @@
       toString: () => parts.join(' '),
     };
   };
+
+  let parsedNukeTime = $derived(parseNukeTime(estimatedNukeTime.toNumber()));
 
   let neighbourNumber = $derived.by(() => {
     const neighbourNumber =
@@ -115,12 +126,8 @@
   </div>
   <div class="flex justify-between">
     <div class="opacity-50">Time until nuke</div>
-    <div
-      class={parseNukeTime(yieldInfo?.remaining_stake_time ?? 0n).days <= 0n
-        ? 'text-red-500'
-        : 'text-green-500'}
-    >
-      {parseNukeTime(yieldInfo?.remaining_stake_time ?? 0n)}
+    <div class={parsedNukeTime.days <= 0n ? 'text-red-500' : 'text-green-500'}>
+      {parsedNukeTime}
     </div>
   </div>
   {#if expanded}
