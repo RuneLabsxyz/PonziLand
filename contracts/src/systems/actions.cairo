@@ -69,6 +69,7 @@ pub mod actions {
     use ponzi_land::components::payable::{
         PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
     };
+    use ponzi_land::utils::{add_neighbors, add_neighbor,add_neighbors_for_auction};
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE
@@ -192,6 +193,7 @@ pub mod actions {
             self.internal_claim(store, land);
 
             self.payable._pay(caller, land.owner, land.token_used, land.sell_price);
+            //TODO:stake component
             self.payable._refund_of_stake(land.owner, land.stake_amount);
             self.payable._stake(caller, token_for_sale, amount_to_stake);
 
@@ -230,6 +232,7 @@ pub mod actions {
             assert(land.stake_amount == 0, 'land with stake');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if pending_taxes.len() != 0 {
+                //TODO:tax component
                 self.payable._claim_taxes(pending_taxes, land.owner, land.location);
             }
 
@@ -369,7 +372,7 @@ pub mod actions {
             let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
-
+            //TODO:stake component
             self.payable._stake(caller, land.token_used, amount_to_stake);
 
             land.stake_amount = land.stake_amount + amount_to_stake;
@@ -391,18 +394,21 @@ pub mod actions {
 
         //TODO: here we have to change the return to struct of TokenInfo, no only amount
         fn get_stake_balance(self: @ContractState, staker: ContractAddress) -> u256 {
+            //TODO:stake component
             self.payable.stake_balance.read(staker).amount
         }
 
         fn get_pending_taxes(
             self: @ContractState, owner_land: ContractAddress
         ) -> Array<TokenInfo> {
+            //TODO:tax component
             self.payable._get_pending_taxes(owner_land, Option::None)
         }
 
         fn get_pending_taxes_for_land(
             self: @ContractState, land_location: u64, owner_land: ContractAddress
         ) -> Array<TokenInfo> {
+            //TODO:tax component
             self.payable._get_pending_taxes(owner_land, Option::Some(land_location))
         }
 
@@ -433,7 +439,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location, true);
+            let neighbors = add_neighbors(store, land.location, true);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
             if neighbors.len() > 0 {
@@ -473,7 +479,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location, true);
+            let neighbors = add_neighbors(store, land.location, true);
             let mut total_rate: u64 = 0;
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
@@ -525,9 +531,10 @@ pub mod actions {
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
-            let neighbors = self.payable._add_neighbors(store, land.location, true);
+            let neighbors = add_neighbors(store, land.location, true);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
+                    //TODO:tax component
                     match self.payable._generate_taxes(store, neighbor.location) {
                         Result::Ok(remaining_stake) => {
                             if remaining_stake != 0 {
@@ -551,6 +558,7 @@ pub mod actions {
             //claim taxes for the land
             let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if taxes.len() != 0 {
+                //TODO:tax component
                 self.payable._claim_taxes(taxes, land.owner, land.location);
             }
         }
@@ -572,6 +580,7 @@ pub mod actions {
             //self.payable._pay_to_us();
             let land = store.land(land_location);
             self.payable._pay(caller, get_contract_address(), land.token_used, sold_at_price);
+            //TODO:stake component
             self.payable._stake(caller, token_for_sale, amount_to_stake);
 
             self
@@ -627,7 +636,7 @@ pub mod actions {
             floor_price: u256,
             decay_rate: u64,
         ) {
-            let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
+            let neighbors = add_neighbors_for_auction(store, land_location);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     self.auction(neighbor.location, start_price, floor_price, decay_rate, false);
