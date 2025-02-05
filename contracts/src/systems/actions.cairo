@@ -15,7 +15,7 @@ trait IActions<T> {
         start_price: u256,
         floor_price: u256,
         decay_rate: u64,
-        is_from_nuke: bool
+        is_from_nuke: bool,
     );
 
     fn bid(
@@ -39,16 +39,16 @@ trait IActions<T> {
 
     fn nuke(ref self: T, land_location: u64);
 
-    fn increase_price(ref self: T, land_location: u64, new_price: u256,);
+    fn increase_price(ref self: T, land_location: u64, new_price: u256);
 
-    fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256,);
+    fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256);
 
     //getters
     fn get_stake_balance(self: @T, staker: ContractAddress) -> u256;
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes(self: @T, owner_land: ContractAddress) -> Array<TokenInfo>;
     fn get_pending_taxes_for_land(
-        self: @T, land_location: u64, owner_land: ContractAddress
+        self: @T, land_location: u64, owner_land: ContractAddress,
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
     fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
@@ -67,11 +67,11 @@ pub mod actions {
     use ponzi_land::models::land::{Land, LandTrait};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
     use ponzi_land::components::payable::{
-        PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo}
+        PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo},
     };
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE
+        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
     };
     use ponzi_land::store::{Store, StoreTrait};
     use dojo::event::EventStorage;
@@ -106,7 +106,7 @@ pub mod actions {
         #[key]
         land_location: u64,
         token_for_sale: ContractAddress,
-        sell_price: u256
+        sell_price: u256,
     }
 
     #[derive(Drop, Serde)]
@@ -114,7 +114,7 @@ pub mod actions {
     pub struct RemainingStakeEvent {
         #[key]
         land_location: u64,
-        remaining_stake: u256
+        remaining_stake: u256,
     }
 
     #[derive(Drop, Serde)]
@@ -156,7 +156,7 @@ pub mod actions {
         land_4: u64,
         start_price: u256,
         floor_price: u256,
-        decay_rate: u64
+        decay_rate: u64,
     ) {
         self.main_currency.write(token_address);
 
@@ -222,7 +222,7 @@ pub mod actions {
 
 
         // TODO:see if we want pass this function into internalTrait
-        fn nuke(ref self: ContractState, land_location: u64,) {
+        fn nuke(ref self: ContractState, land_location: u64) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
@@ -291,7 +291,7 @@ pub mod actions {
                     amount_to_stake,
                     liquidity_pool,
                     caller,
-                    auction
+                    auction,
                 );
         }
 
@@ -301,7 +301,7 @@ pub mod actions {
             start_price: u256,
             floor_price: u256,
             decay_rate: u64,
-            is_from_nuke: bool
+            is_from_nuke: bool,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(start_price > 0, 'start_price > 0');
@@ -320,7 +320,7 @@ pub mod actions {
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
 
             let auction = AuctionTrait::new(
-                land_location, start_price, floor_price, false, decay_rate
+                land_location, start_price, floor_price, false, decay_rate,
             );
 
             store.set_auction(auction);
@@ -337,13 +337,13 @@ pub mod actions {
                 .world
                 .emit_event(
                     @NewAuctionEvent {
-                        land_location, start_time: auction.start_time, start_price, floor_price
-                    }
+                        land_location, start_time: auction.start_time, start_price, floor_price,
+                    },
                 );
         }
 
 
-        fn increase_price(ref self: ContractState, land_location: u64, new_price: u256,) {
+        fn increase_price(ref self: ContractState, land_location: u64, new_price: u256) {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -381,8 +381,8 @@ pub mod actions {
                 .world
                 .emit_event(
                     @RemainingStakeEvent {
-                        land_location: land.location, remaining_stake: land.stake_amount
-                    }
+                        land_location: land.location, remaining_stake: land.stake_amount,
+                    },
                 );
         }
 
@@ -395,13 +395,13 @@ pub mod actions {
         }
 
         fn get_pending_taxes(
-            self: @ContractState, owner_land: ContractAddress
+            self: @ContractState, owner_land: ContractAddress,
         ) -> Array<TokenInfo> {
             self.payable._get_pending_taxes(owner_land, Option::None)
         }
 
         fn get_pending_taxes_for_land(
-            self: @ContractState, land_location: u64, owner_land: ContractAddress
+            self: @ContractState, land_location: u64, owner_land: ContractAddress,
         ) -> Array<TokenInfo> {
             self.payable._get_pending_taxes(owner_land, Option::Some(land_location))
         }
@@ -458,7 +458,7 @@ pub mod actions {
                         token_address: neighbor.token_used,
                         amount: tax_per_neighbor,
                         land_location: neighbor.location,
-                        can_be_nuked: is_nuke
+                        can_be_nuked: is_nuke,
                     };
                     claim_info.append(claim_info_per_neighbor);
                 }
@@ -490,8 +490,8 @@ pub mod actions {
                                 sell_price: neighbor.sell_price,
                                 percent_rate: rate,
                                 per_hour: rate_per_hour,
-                                location: neighbor.location
-                            }
+                                location: neighbor.location,
+                            },
                         );
                 }
             }
@@ -504,7 +504,8 @@ pub mod actions {
                     * land.sell_price
                     / max_neighbors(land.location).into();
 
-                let per_hour_expenses_percent = per_hour_expenses_percent_per_neighbour * neighbors_count;
+                let per_hour_expenses_percent = per_hour_expenses_percent_per_neighbour
+                    * neighbors_count;
 
                 // The time in unix seconds that the stake may sustain.
                 // We multiply by 3600 (BASE_TIME) to get the time in seconds instead of hours,
@@ -548,15 +549,15 @@ pub mod actions {
                                     .world
                                     .emit_event(
                                         @RemainingStakeEvent {
-                                            land_location: neighbor.location, remaining_stake
-                                        }
+                                            land_location: neighbor.location, remaining_stake,
+                                        },
                                     )
                             }
                         },
                         Result::Err(_) => {
                             // println!("nuke");
                             self.nuke(neighbor.location);
-                        }
+                        },
                     };
                 };
             }
@@ -595,7 +596,7 @@ pub mod actions {
                     sell_price,
                     amount_to_stake,
                     liquidity_pool,
-                    caller
+                    caller,
                 );
 
             auction.is_finished = true;
@@ -610,7 +611,7 @@ pub mod actions {
                         start_time: auction.start_time,
                         final_time: get_block_timestamp(),
                         final_price: auction.get_current_price_decay_rate(),
-                    }
+                    },
                 );
 
             //initialize auction for neighbors
@@ -628,7 +629,7 @@ pub mod actions {
                 .initialize_auction_for_neighbors(
                     // The floor price and decay_rate are extracted from the current auction, to
                     // always propagate the values from the intial auctions
-                    store, land_location, asking_price, auction.floor_price, auction.decay_rate
+                    store, land_location, asking_price, auction.floor_price, auction.decay_rate,
                 );
         }
 
@@ -675,8 +676,8 @@ pub mod actions {
                 .world
                 .emit_event(
                     @NewLandEvent {
-                        owner_land: land.owner, land_location, token_for_sale, sell_price
-                    }
+                        owner_land: land.owner, land_location, token_for_sale, sell_price,
+                    },
                 );
         }
     }
