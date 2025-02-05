@@ -28,6 +28,7 @@
       sell_price: bigint;
       percent_rate: bigint;
       location: bigint;
+      per_hour: bigint;
     } | null)[]
   >([]);
 
@@ -67,12 +68,7 @@
         class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
       >
         <span class="whitespace-nowrap text-green-300 text-[6px]">
-          +{CurrencyAmount.fromRaw(
-            new BigNumber(info.sell_price.toString())
-              .shiftedBy(-info.token.decimals)
-              .multipliedBy(0.02)
-              .dividedBy(8),
-          ).toString()}
+          +{CurrencyAmount.fromUnscaled(info.per_hour, info.token).toString()}
           {info.token?.symbol}/h
         </span>
       </div>

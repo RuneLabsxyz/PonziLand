@@ -1,14 +1,7 @@
 <script lang="ts">
-  import LandYieldInfo from '$lib/components/toolbar/land-yield-info.svelte';
+  import LandYieldInfo from '$lib/components/land/land-yield-info.svelte';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import LandOverview from '../../land/land-overview.svelte';
-
-  const handleClaimLandClick = () => {
-    console.log('Claim land clicked');
-    $selectedLandMeta!.claim().then((res) => {
-      console.log('Claimed', res);
-    });
-  };
 </script>
 
 <div class="flex gap-4 relative items-center p-4">

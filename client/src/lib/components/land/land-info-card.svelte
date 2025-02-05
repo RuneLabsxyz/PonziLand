@@ -1,10 +1,9 @@
 <script>
-  import { landStore } from '$lib/api/mock-land';
   import { moveCameraTo } from '$lib/stores/camera';
   import { selectLand } from '$lib/stores/stores.svelte';
   import { parseLocation } from '$lib/utils';
-  import LandYieldInfo from '../toolbar/land-yield-info.svelte';
   import LandOverview from './land-overview.svelte';
+  import LandYieldInfo from './land-yield-info.svelte';
 
   let { land } = $props();
 
@@ -48,13 +47,6 @@
       <p class="opacity-50">Sell price</p>
       <p>
         {land.sellPrice}
-      </p>
-    </div>
-    <div class="flex justify-between">
-      <p class="opacity-50">Daily maintenance cost</p>
-      <p class="text-red-500">
-        {land.sellPrice.rawValue().multipliedBy(0.02).toString()}
-        {land.token?.symbol}/h
       </p>
     </div>
     <div class="flex justify-between">

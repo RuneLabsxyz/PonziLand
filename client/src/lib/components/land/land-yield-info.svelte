@@ -1,14 +1,32 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
   import data from '$lib/data.json';
-  import type { YieldInfo } from '$lib/interfaces';
+  import type { LandYieldInfo, YieldInfo } from '$lib/interfaces';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+
+  const GAME_SPEED = 4;
 
   let {
     land,
     expanded = $bindable(false),
   }: { land: LandWithActions; expanded?: boolean } = $props();
+
+  let landBurnPerNeighbour = $derived.by(() => {
+    const taxRate = land.sellPrice
+      .rawValue()
+      .multipliedBy(0.02)
+      .multipliedBy(GAME_SPEED);
+
+    const taxPerNeighbour = taxRate.dividedBy(8);
+    console.log('taxPerNeighbour', taxPerNeighbour.toString());
+
+    return taxPerNeighbour;
+  });
+
+  let totalBurnRate = $derived.by(() => {
+    return landBurnPerNeighbour.multipliedBy(neighbourNumber);
+  });
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
     const aggregatedYield = yieldInfos.reduce(
@@ -36,7 +54,9 @@
     });
   };
 
-  const parseNukeTime = (time: bigint) => {
+  const parseNukeTime = (givenTime: bigint) => {
+    const time = givenTime / 60n; // Convert seconds to minutes
+
     // Convert minutes (bigint) to days, hours, minutes, and seconds
     const minutes = time % 60n;
     const hours = (time / 60n) % 24n;
@@ -58,16 +78,41 @@
       toString: () => parts.join(' '),
     };
   };
+
+  let neighbourNumber = $derived.by(() => {
+    const neighbourNumber =
+      yieldInfo?.yield_info.filter((y) => y.percent_rate).length ?? 0;
+    console.log('neighbourNumber', neighbourNumber);
+    return neighbourNumber;
+  });
+
+  let yieldInfo: LandYieldInfo | undefined = $state(undefined);
+
+  $effect(() => {
+    land.getYieldInfo().then((info) => {
+      yieldInfo = info;
+    });
+  });
 </script>
 
-{#await land.getYieldInfo()}
+{#if !yieldInfo}
+  <div class="flex justify-between">
+    <div class="opacity-50">Maintenance Cost</div>
+    <div class="">
+      <div class="animate-pulse bg-gray-800 h-3 w-12"></div>
+    </div>
+  </div>
   <div class="flex justify-between">
     <div class="opacity-50">Time until nuke</div>
     <div class="text-green-500">
       <div class="animate-pulse bg-gray-800 h-3 w-12"></div>
     </div>
   </div>
-{:then yieldInfo}
+{:else}
+  <div class="flex justify-between">
+    <div class="opacity-50">Maintenance Cost</div>
+    <div class="text-red-500">{totalBurnRate} {land?.token?.symbol}/h</div>
+  </div>
   <div class="flex justify-between">
     <div class="opacity-50">Time until nuke</div>
     <div
@@ -104,13 +149,4 @@
       </button>
     </div>
   {/if}
-{:catch error}
-  <div class="flex justify-between">
-    <p class="opacity-50">Time until nuke</p>
-    <p class="text-red-500">Error fetching yield info</p>
-  </div>
-  <div class="flex justify-between">
-    <p class="opacity-50">Neighb. earnings /day</p>
-    <p class="text-red-500">Error fetching yield info</p>
-  </div>
-{/await}
+{/if}
