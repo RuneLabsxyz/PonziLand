@@ -499,10 +499,12 @@ pub mod actions {
             // Calculate the remaining time the stake may sustain.
 
             let remaining_stake_time: u256 = if neighbors_count > 0 {
-                let per_hour_expenses_percent = TAX_RATE.into()
+                let per_hour_expenses_percent_per_neighbour = TAX_RATE.into()
                     * TIME_SPEED.into()
                     * land.sell_price
-                    / neighbors_count.into();
+                    / max_neighbors(land.location).into();
+
+                let per_hour_expenses_percent = per_hour_expenses_percent_per_neighbour * neighbors_count;
 
                 // The time in unix seconds that the stake may sustain.
                 // We multiply by 3600 (BASE_TIME) to get the time in seconds instead of hours,
