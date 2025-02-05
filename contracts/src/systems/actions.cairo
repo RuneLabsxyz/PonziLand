@@ -505,7 +505,7 @@ pub mod actions {
                     / max_neighbors(land.location).into();
 
                 let per_hour_expenses_percent = per_hour_expenses_percent_per_neighbour
-                    * neighbors_count;
+                    * neighbors_count.into();
 
                 // The time in unix seconds that the stake may sustain.
                 // We multiply by 3600 (BASE_TIME) to get the time in seconds instead of hours,
