@@ -110,7 +110,7 @@
 
 <div class="relative w-full h-full">
   <div class="flex flex-col-reverse items-center animate-bounce">
-    {#if (aggregatedTaxes.length > 0 && !waiting) || true}
+    {#if aggregatedTaxes.length > 0 && !waiting}
       <button
         onclick={() => {
           handleClaimFromCoin();
@@ -126,7 +126,17 @@
     {/if}
   </div>
 
-  {#if animating || true}
+  {#if animating}
+    <div
+      class="absolute h-[60rem] w-[60rem] top-0 left-1/2 flex items-center justify-center -translate-y-1/2 -translate-x-1/2 animate-fade-out"
+    >
+      <Particles
+        id="tsparticles-{land.location}"
+        class="animate-fade-out"
+        options={particlesConfig}
+        on:particlesLoaded={onParticlesLoaded}
+      />
+    </div>
     <div
       class="h-2 w-full flex flex-col items-center justify-end animate-fade-up"
     >
@@ -136,25 +146,6 @@
           {tax.tokenSymbol}
         </div>
       {/each}
-    </div>
-    <div
-      class="absolute h-80 w-80 top-0 left-1/2 flex items-center justify-center -translate-y-1/2 -translate-x-1/2"
-    >
-      <Particles
-        id="tsparticles-{land.location}"
-        options={particlesConfig}
-        on:particlesLoaded={onParticlesLoaded}
-      />
-      <!-- <Confetti
-        size={4}
-        x={[-0.08, 0.08]}
-        y={[0.05, 0.1]}
-        delay={[0, 200]}
-        duration={1300}
-        amount={20}
-        fallDistance="20px"
-        colorArray={['url(/assets/ui/icons/Icon_Coin1.png)']}
-      /> -->
     </div>
   {/if}
 </div>
@@ -176,13 +167,34 @@
       opacity: 1;
       transform: translateY(0);
     }
+    50% {
+      opacity: 1;
+    }
     100% {
       opacity: 0;
-      transform: translateY(-30px);
+      transform: translateY(-20px);
     }
   }
   .animate-fade-up {
     animation: fade-up 1.5s ease-out forwards;
+  }
+
+  @keyframes fade-out {
+    0% {
+      opacity: 1;
+    }
+
+    50% {
+      opacity: 1;
+    }
+
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .animate-fade-out {
+    animation: fade-out 1s ease-out forwards;
   }
 
   .unselectable {

@@ -1,4 +1,5 @@
 import {
+  clamp,
   type ISourceOptions,
   MoveDirection,
   OutMode,
@@ -7,14 +8,14 @@ import {
 export const particlesConfig: ISourceOptions = {
   fpsLimit: 120,
   style: {
-    scale: "0.05",
+    scale: "0.1",
   },
   particles: {
     bounce: {
       vertical: {
         value: {
-          min: 0.01,
-          max: 0.01,
+          min: 0.001,
+          max: 0.001,
         },
       },
     },
@@ -55,19 +56,20 @@ export const particlesConfig: ISourceOptions = {
       enable: true,
       gravity: {
         enable: true,
-        maxSpeed: 100,
+        acceleration: 40,
+        maxSpeed: 40,
       },
       speed: {
         min: 10,
-        max: 12,
+        max: 15,
       },
-      direction: MoveDirection.none,
+      direction: MoveDirection.top,
       random: false,
       straight: false,
       outModes: {
-        bottom: OutMode.split,
-        left: OutMode.split,
-        right: OutMode.split,
+        bottom: OutMode.destroy,
+        left: OutMode.destroy,
+        right: OutMode.destroy,
         default: OutMode.bounce,
         top: OutMode.none,
       },
@@ -84,23 +86,24 @@ export const particlesConfig: ISourceOptions = {
     },
   },
   detectRetina: true,
-  background: {
-    color: '#fff',
-  },
   emitters: {
+    position: {
+      x: 50,
+      y: 50,
+    },
     direction: MoveDirection.top,
     life: {
-      count: 0,
-      duration: 0.15,
+      count: 1,
+      duration: 0.3,
       delay: 5,
     },
     rate: {
-      delay: 0.1,
+      delay: 0.001,
       quantity: 1,
     },
     size: {
-      width: 0,
-      height: 0,
+      width: 10,
+      height: 10,
     },
   },
 };
