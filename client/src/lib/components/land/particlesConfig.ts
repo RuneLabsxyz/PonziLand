@@ -8,7 +8,7 @@ import {
 export const particlesConfig: ISourceOptions = {
   fpsLimit: 120,
   style: {
-    scale: "0.1",
+    scale: '0.1',
   },
   particles: {
     bounce: {
