@@ -38,12 +38,12 @@
 
     aggregatedTaxes = result.taxes;
 
-    const nukableLands = result.nukable;
+    const nukables = result.nukable;
 
     nukableStore.update((nukableLandStore) => {
       const newStoreValue = [...nukableLandStore];
       // for each nukable land, add the land to the store
-      for (const land of nukableLands) {
+      for (const land of nukables) {
         const location = toBigInt(land)!;
         if (newStoreValue.includes(location)) {
           continue;

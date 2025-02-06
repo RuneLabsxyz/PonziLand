@@ -158,7 +158,11 @@
   {/if}
 
   {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
-    <div class="text-ponzi animate-pulse">NUKABLE</div>
+    <div
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ponzi animate-pulse"
+    >
+      NUKABLE
+    </div>
   {/if}
 
   {#if isOwner}
