@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import { nukableStore } from '$lib/api/land.svelte';
+  import type { Tile } from '$lib/api/tile-store.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
   import { moveCameraToLocation } from '$lib/stores/camera';
@@ -15,7 +16,6 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
-  import type { Tile } from '$lib/api/tile-store.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
@@ -96,32 +96,19 @@
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore event_directive_deprecated -->
-<div
-  onmouseup={handleClick}
-  class={`relative tile ${land.type === 'auction' ? 'tile-auction' : ''} ${
-    selected ? 'selected' : ''
-  }`}
-  style={land.type === 'house'
-    ? `background-image: url('${backgroundImage}'), url('/tiles/grass.png');
+<div class="relative {selected ? 'selected' : ''}">
+  <div
+    onmouseup={handleClick}
+    class={`relative tile ${land.type === 'auction' ? 'tile-auction' : ''}`}
+    style={land.type === 'house'
+      ? `background-image: url('${backgroundImage}'), url('/tiles/grass.png');
                background-size: contain, cover;
                background-repeat: no-repeat, repeat;
                background-position: center, center;`
-    : `background-image: url('/tiles/${land.type}.png');
+      : `background-image: url('/tiles/${land.type}.png');
                background-size: cover;
                background-position: center;`}
->
-  {#if isOwner && scale > 1.5}
-    <div
-      class="absolute z-10 top-1 left-1/2"
-      style="transform: translate(-50%, -100%)"
-    >
-      <LandTaxClaimer {land} />
-    </div>
-  {/if}
-
-  {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
-    <div class="text-ponzi animate-pulse">NUKABLE</div>
-  {/if}
+  ></div>
 
   {#if selected}
     {#if land.type === 'auction'}
@@ -159,6 +146,19 @@
         </Button>
       {/if}
     {/if}
+  {/if}
+
+  {#if isOwner && scale > 1.5}
+    <div
+      class="absolute z-20 top-1 left-1/2"
+      style="transform: translate(-50%, -100%)"
+    >
+      <LandTaxClaimer {land} />
+    </div>
+  {/if}
+
+  {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
+    <div class="text-ponzi animate-pulse">NUKABLE</div>
   {/if}
 
   {#if isOwner}

@@ -1,10 +1,6 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
-  import { toBigInt, toHexWithPadding } from '$lib/utils';
-  import data from '$lib/data.json';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { Tag } from 'lucide-svelte';
-  import { type Token } from '$lib/interfaces';
+  import { toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
 
   let { land } = $props<{ land: LandWithActions }>();
@@ -12,7 +8,7 @@
   let waiting = $state(false);
   let nukableLands = $state<bigint[]>([]);
 
-  async function handleClaimFromCoin() {
+  async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
     waiting = true;
     await land
@@ -70,12 +66,7 @@
 
 <div class="flex flex-col-reverse items-center animate-bounce">
   {#if aggregatedTaxes.length > 0 && !waiting}
-    <button
-      onclick={() => {
-        handleClaimFromCoin();
-      }}
-      class="flex items-center"
-    >
+    <button onclick={handleClaimFromCoin} class="flex items-center">
       <img
         src="/assets/ui/icons/Icon_Coin2.png"
         alt="coins"

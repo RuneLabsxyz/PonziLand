@@ -63,7 +63,7 @@
 </script>
 
 <div
-  class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none"
+  class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20"
   style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
 >
   {#each yieldInfo as info, i}
