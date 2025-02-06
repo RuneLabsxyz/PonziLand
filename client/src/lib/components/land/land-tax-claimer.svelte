@@ -3,6 +3,7 @@
   import { claimQueue } from '$lib/stores/event.store.svelte';
   import { getTokenInfo, toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
+  import { Confetti } from 'svelte-confetti';
 
   let { land } = $props<{ land: LandWithActions }>();
 
@@ -50,7 +51,7 @@
             console.log('not waiting anymore');
             waiting = false;
           });
-        }, 5000);
+        }, 5 * 1000);
       })
       .catch(() => {
         console.error('error claiming from coin');
@@ -98,35 +99,51 @@
   });
 </script>
 
-<div class="flex flex-col-reverse items-center animate-bounce">
-  {#if aggregatedTaxes.length > 0 && !waiting}
-    <button
-      onclick={() => {
-        handleClaimFromCoin();
-      }}
-      class="flex items-center"
+<div class="relative w-full h-full">
+  <div class="flex flex-col-reverse items-center animate-bounce">
+    {#if (aggregatedTaxes.length > 0 && !waiting) || true}
+      <button
+        onclick={() => {
+          handleClaimFromCoin();
+        }}
+        class="flex items-center"
+      >
+        <img
+          src="/assets/ui/icons/Icon_Coin2.png"
+          alt="coins"
+          class="h-3 w-3 -mt-1 coin unselectable"
+        />
+      </button>
+    {/if}
+  </div>
+
+  {#if animating}
+    <div
+      class="h-2 w-full flex flex-col items-center justify-end animate-fade-up"
     >
-      <img
-        src="/assets/ui/icons/Icon_Coin2.png"
-        alt="coins"
-        class="h-3 w-3 -mt-1 coin"
+      {#each aggregatedTaxes as tax}
+        <div class="text-ponzi text-nowrap text-claims pointer-events-none">
+          + {tax.totalTax}
+          {tax.tokenSymbol}
+        </div>
+      {/each}
+    </div>
+    <div
+      class="absolute top-0 left-0 h-full w-full flex items-center justify-center"
+    >
+      <Confetti
+        size={4}
+        x={[-0.08, 0.08]}
+        y={[0.05, 0.1]}
+        delay={[0, 200]}
+        duration={1300}
+        amount={20}
+        fallDistance="20px"
+        colorArray={['url(/assets/ui/icons/Icon_Coin1.png)']}
       />
-    </button>
+    </div>
   {/if}
 </div>
-
-{#if animating}
-  <div
-    class="h-2 w-full flex flex-col items-center justify-end animate-fade-up"
-  >
-    {#each aggregatedTaxes as tax}
-      <div class="text-ponzi text-nowrap text-claims pointer-events-none">
-        + {tax.totalTax}
-        {tax.tokenSymbol}
-      </div>
-    {/each}
-  </div>
-{/if}
 
 <style>
   .text-claims {
@@ -152,5 +169,13 @@
   }
   .animate-fade-up {
     animation: fade-up 1.5s ease-out forwards;
+  }
+
+  .unselectable {
+    -webkit-user-drag: none;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
   }
 </style>
