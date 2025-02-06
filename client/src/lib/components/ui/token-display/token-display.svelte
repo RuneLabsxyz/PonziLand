@@ -48,17 +48,13 @@
 </script>
 
 <div class="flex gap-2 items-center justify-end w-full">
-  <div
-    class="amount flex text-right justify-end w-full {animating
-      ? 'animating text-green-500 justify-between'
-      : ''}"
-  >
+  <div class="flex text-right justify-end w-full relative overflow-hidden">
     {#if animating}
-      <span class="ml-3">
+      <span class="ml-3 absolute left-0 top-0 animate-in-out-left">
         +{CurrencyAmount.fromUnscaled(increment, token)}
       </span>
     {/if}
-    <span>
+    <span class="amount {animating ? 'animating text-green-500' : ''}">
       {CurrencyAmount.fromUnscaled(tweenAmount.current, token)}
     </span>
   </div>
@@ -88,5 +84,28 @@
   .animating {
     transform: scale(1.05);
     animation: scale-down 0.3s ease-in-out 1000ms forwards;
+  }
+
+  @keyframes slideInOutLeft {
+    0% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+    10% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    90% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }
+
+  .animate-in-out-left {
+    animation: slideInOutLeft 1250ms ease-in-out forwards;
   }
 </style>
