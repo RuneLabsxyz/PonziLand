@@ -45,9 +45,14 @@
     "@avnu/avnu-sdk": "^3.0.0",
     "@dojoengine/sdk": "^1.0.4-alpha.3.1.2",
     "@starknet-io/get-starknet-core": "^4.0.0",
+    "@tsparticles/engine": "^3.8.1",
+    "@tsparticles/shape-image": "^3.8.1",
+    "@tsparticles/slim": "^3.8.1",
+    "@tsparticles/svelte": "^3.1.1",
     "bignumber.js": "^9.1.2",
     "lucide-svelte": "^0.471.0",
     "svelte-confetti": "^2.3.1",
+    "tsparticles": "^3.8.1",
     "vite-plugin-top-level-await": "^1.1.0",
     "vite-plugin-wasm": "^3.3.0"
   }

@@ -4,6 +4,15 @@
   import { getTokenInfo, toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import { Confetti } from 'svelte-confetti';
+  import Particles from '@tsparticles/svelte';
+  import { particlesConfig } from './particlesConfig';
+
+  let onParticlesLoaded = (event: any) => {
+    const particlesContainer = event.detail.particles;
+
+    // you can use particlesContainer to call all the Container class
+    // (from the core library) methods like play, pause, refresh, start, stop
+  };
 
   let { land } = $props<{ land: LandWithActions }>();
 
@@ -117,7 +126,7 @@
     {/if}
   </div>
 
-  {#if animating}
+  {#if animating || true}
     <div
       class="h-2 w-full flex flex-col items-center justify-end animate-fade-up"
     >
@@ -129,9 +138,14 @@
       {/each}
     </div>
     <div
-      class="absolute top-0 left-0 h-full w-full flex items-center justify-center"
+      class="absolute h-80 w-80 top-0 left-1/2 flex items-center justify-center -translate-y-1/2 -translate-x-1/2"
     >
-      <Confetti
+      <Particles
+        id="tsparticles-{land.location}"
+        options={particlesConfig}
+        on:particlesLoaded={onParticlesLoaded}
+      />
+      <!-- <Confetti
         size={4}
         x={[-0.08, 0.08]}
         y={[0.05, 0.1]}
@@ -140,7 +154,7 @@
         amount={20}
         fallDistance="20px"
         colorArray={['url(/assets/ui/icons/Icon_Coin1.png)']}
-      />
+      /> -->
     </div>
   {/if}
 </div>

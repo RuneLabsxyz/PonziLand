@@ -8,6 +8,24 @@
   import Ui from '$lib/components/ui.svelte';
   import LoadingScreen from '$lib/components/loading/loading-screen.svelte';
   import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
+  import { particlesInit } from '@tsparticles/svelte';
+  import { loadFull } from 'tsparticles'; // if you are going to use `loadFull`, install the "tsparticles" package too.
+  // import { loadSlim } from '@tsparticles/slim'; // if you are going to use `loadSlim`, install the "@tsparticles/slim" package too.
+  import { tsParticles } from '@tsparticles/engine';
+  import { loadImageShape } from '@tsparticles/shape-image';
+
+  void particlesInit(async (engine) => {
+    // call this once per app
+    // you can use main to customize the tsParticles instance adding presets or custom shapes
+    // this loads the tsparticles package bundle, it's the easiest method for getting everything ready
+    // starting from v2 you can add only the features you need reducing the bundle size
+    //await loadFull(engine);
+    await loadFull(engine);
+  });
+
+  (async () => {
+    await loadImageShape(tsParticles);
+  })();
 
   const promise = Promise.all([
     setupClient(dojoConfig),
