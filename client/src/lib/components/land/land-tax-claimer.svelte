@@ -22,7 +22,7 @@
   let animating = $state(false);
   let claiming = $state(false);
 
-  async function handleClaimFromCoin() {
+  async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
     waiting = true;
     claiming = true;
@@ -111,12 +111,7 @@
 <div class="relative w-full h-full">
   <div class="flex flex-col-reverse items-center animate-bounce">
     {#if aggregatedTaxes.length > 0 && !waiting}
-      <button
-        onclick={() => {
-          handleClaimFromCoin();
-        }}
-        class="flex items-center"
-      >
+      <button onclick={handleClaimFromCoin} class="flex items-center">
         <img
           src="/assets/ui/icons/Icon_Coin2.png"
           alt="coins"
