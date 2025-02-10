@@ -1,4 +1,3 @@
-
 use starknet::contract_address::ContractAddressZeroable;
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::models::land::Land;
@@ -73,6 +72,4 @@ fn add_neighbor(
         Option::None => {}
     }
 }
-
-
 
