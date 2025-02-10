@@ -43,6 +43,8 @@ trait IActions<T> {
 
     fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256);
 
+    fn level_up(self: @T, land_location: u64) -> bool;
+
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
         self: @T, land_location: u64, owner_land: ContractAddress,
@@ -61,7 +63,7 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use ponzi_land::models::land::{Land, LandTrait};
+    use ponzi_land::models::land::{Land, LandTrait, Level};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
 
@@ -71,9 +73,10 @@ pub mod actions {
     use ponzi_land::components::payable::PayableComponent;
 
     use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor, add_neighbors_for_auction};
+    use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
+        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE
     };
     use ponzi_land::store::{Store, StoreTrait};
 
@@ -406,6 +409,17 @@ pub mod actions {
                 );
         }
 
+        fn level_up(self: @ContractState, land_location: u64) -> bool {
+            let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
+
+            let current_time = get_block_timestamp();
+            let elapsed_time_since_buy = (current_time - land.block_date_bought)
+                * TIME_SPEED.into();
+
+            self.update_level(ref store, ref land, elapsed_time_since_buy)
+        }
 
         //GETTERS FUNCTIONS
 
@@ -676,6 +690,20 @@ pub mod actions {
                         owner_land: land.owner, land_location, token_for_sale, sell_price,
                     },
                 );
+        }
+
+        fn update_level(
+            self: @ContractState, ref store: Store, ref land: Land, elapsed_time: u64
+        ) -> bool {
+            let new_level = calculate_new_level(elapsed_time);
+
+            if land.level != new_level {
+                land.level = new_level;
+                store.set_land(land);
+                true
+            } else {
+                false
+            }
         }
     }
 }

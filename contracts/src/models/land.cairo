@@ -16,6 +16,14 @@ pub struct Land {
     //we will use this for taxes
     pub last_pay_time: u64,
     pub stake_amount: u256,
+    pub level: Level,
+}
+
+#[derive(Serde, Drop, Copy, PartialEq, Introspect, Debug)]
+pub enum Level {
+    None,
+    First,
+    Second,
 }
 
 
@@ -41,6 +49,7 @@ impl LandImpl of LandTrait {
             last_pay_time,
             block_date_bought,
             stake_amount,
+            level: Level::None
         }
     }
 }
