@@ -114,15 +114,17 @@ pub mod actions {
         land_location: u64,
     }
 
+
     #[derive(Drop, Serde)]
     #[dojo::event]
-    pub struct NewLandEvent {
+    pub struct LandBoughtEvent {
         #[key]
-        owner_land: ContractAddress,
+        buyer: ContractAddress,
         #[key]
         land_location: u64,
-        token_for_sale: ContractAddress,
-        sell_price: u256,
+        sold_price: u256,
+        seller: ContractAddress,
+        token_used: ContractAddress,
     }
 
     #[derive(Drop, Serde)]
@@ -148,6 +150,7 @@ pub mod actions {
     pub struct AuctionFinishedEvent {
         #[key]
         land_location: u64,
+        buyer: ContractAddress,
         start_time: u64,
         final_time: u64,
         final_price: u256,
@@ -212,9 +215,15 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
+
             assert(caller != land.owner, 'you already own this land');
 
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
+
+            let seller = land.owner;
+            let sold_price = land.sell_price;
+            let token_used = land.token_used;
+
             self.internal_claim(store, land);
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
@@ -234,6 +243,14 @@ pub mod actions {
                     amount_to_stake,
                     liquidity_pool,
                     caller,
+                );
+
+            store
+                .world
+                .emit_event(
+                    @LandBoughtEvent {
+                        buyer: caller, land_location: land.location, sold_price, seller, token_used,
+                    },
                 );
         }
 
@@ -617,6 +634,7 @@ pub mod actions {
                 .emit_event(
                     @AuctionFinishedEvent {
                         land_location: land.location,
+                        buyer: land.owner,
                         start_time: auction.start_time,
                         final_time: get_block_timestamp(),
                         final_price: auction.get_current_price_decay_rate(),
@@ -682,14 +700,6 @@ pub mod actions {
             store.set_land(land);
 
             self.stake._add(amount_to_stake, land, store);
-
-            store
-                .world
-                .emit_event(
-                    @NewLandEvent {
-                        owner_land: land.owner, land_location, token_for_sale, sell_price,
-                    },
-                );
         }
 
         fn update_level(
