@@ -181,9 +181,7 @@ mod TaxesComponent {
 
                     let status = payable.transfer(owner_land, validation_result);
                     assert(status, errors::ERC20_TRANSFER_CLAIM_FAILED);
-                    if status {
-                        self._discount_pending_taxes(owner_land, land_location, token_info);
-                    }
+                    self._discount_pending_taxes(owner_land, land_location, token_info);
                 }
             }
         }

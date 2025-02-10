@@ -27,8 +27,8 @@ trait IPayable<TContractState> {
         self: @TContractState, recipient: ContractAddress, validation_result: ValidationResult
     ) -> bool;
     fn pay_to_us(
-        self: @TContractState, sender: ContractAddress, token_address: ContractAddress, amount: u256
-    );
+        self: @TContractState, sender: ContractAddress, validation_result: ValidationResult
+    ) -> bool;
 }
 
 #[starknet::component]
@@ -36,7 +36,7 @@ mod PayableComponent {
     use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
     use starknet::ContractAddress;
     use super::ValidationResult;
-
+    use ponzi_land::consts::OUR_CONTRACT_SEPOLIA_ADDRESS;
 
     //TODO:move this to a file for errors
     mod errors {
@@ -97,12 +97,20 @@ mod PayableComponent {
         fn pay_to_us(
             self: @ComponentState<TContractState>,
             sender: ContractAddress,
-            token_address: ContractAddress,
-            amount: u256
-        ) { // self.validate(sender, token_address, amount);
-        //CONST OUR_CONTRACT = OXOXOXOX;
-        // let status = self.token_dispatcher.read().transferFrom(sender,OUR_CONTRACT,amount);
-        // assert(status, errors::ERC20_PAY_FAILED);
+            validation_result: ValidationResult
+        ) -> bool {
+            assert(
+                self.token_dispatcher.read().contract_address == validation_result.token_address,
+                errors::DIFFERENT_ERC20_TOKEN_DISPATCHER
+            );
+            self
+                .token_dispatcher
+                .read()
+                .transferFrom(
+                    sender,
+                    OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
+                    validation_result.amount
+                )
         }
     }
 }

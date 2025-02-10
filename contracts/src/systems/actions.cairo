@@ -579,14 +579,10 @@ pub mod actions {
             caller: ContractAddress,
             mut auction: Auction,
         ) {
-            //TODO: we have to create our contract to send the tokens for the first sell
-            //self.payable._pay_to_us();
             let validation_result = self.payable.validate(land.token_used, caller, sold_at_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
-            let transfer_status = self
-                .payable
-                .transfer_from(caller, get_contract_address(), validation_result);
-            assert(transfer_status, errors::ERC20_PAY_FOR_BID_FAILED);
+            let pay_to_us_status = self.payable.pay_to_us(caller, validation_result);
+            assert(pay_to_us_status, errors::ERC20_PAY_FOR_BID_FAILED);
             self
                 .finalize_land_purchase(
                     store,
