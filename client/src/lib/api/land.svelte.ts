@@ -3,6 +3,7 @@ import type { Token, YieldInfo } from '$lib/interfaces';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import {
   ensureNumber,
+  getNeighbours,
   getTokenInfo,
   toBigInt,
   toHexWithPadding,
@@ -13,6 +14,7 @@ import type { BigNumberish, Result } from 'starknet';
 import { derived, get, writable, type Readable } from 'svelte/store';
 import data from '$lib/data.json';
 import { type LandYieldInfo } from '$lib/interfaces';
+import { estimateNukeTime, getNeighbourYieldArray } from '$lib/utils/taxes';
 
 export type TransactionResult = Promise<
   | {
@@ -83,6 +85,7 @@ export type LandWithActions = LandWithMeta & {
   getNextClaim(): Promise<NextClaimInformation[] | undefined>;
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
   getYieldInfo(): Promise<LandYieldInfo | undefined>;
+  getEstimatedNukeTime(): number | undefined;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -227,6 +230,15 @@ export function useLands(): LandsStore | undefined {
           )) as LandYieldInfo | undefined;
 
           return result;
+        },
+        getEstimatedNukeTime() {
+          return estimateNukeTime(
+            land.sellPrice.rawValue().toNumber(),
+            land.stakeAmount.rawValue().toNumber(),
+            getNeighbours(land.location, landWithActions).filter(
+              (l) => l != undefined,
+            ).length,
+          );
         },
       }));
 
