@@ -42,9 +42,7 @@
     const estimatedNukeTime = land.getEstimatedNukeTime();
     if (!estimatedNukeTime) return -1;
 
-    const daysUntilNuke = Math.floor(estimatedNukeTime / 60 / 60 / 24);
-
-    return daysUntilNuke;
+    return estimatedNukeTime;
   });
 
   let selected = $derived($selectedLand?.location === land.location);
