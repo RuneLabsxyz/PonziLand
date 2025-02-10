@@ -5,6 +5,7 @@ import data from '$lib/data.json';
 import { Redo } from 'lucide-svelte';
 import { MAP_SIZE } from '$lib/api/tile-store.svelte';
 import { toHexWithPadding } from '$lib/utils';
+import { GAME_SPEED } from '$lib/const';
 export type TaxData = {
   tokenAddress: string;
   tokenSymbol: string;
@@ -132,4 +133,27 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
   console.log('yield info:', infosFormatted);
 
   return infosFormatted;
+};
+
+export const estimateNukeTime = (
+  sellPrice: number,
+  remainingStake: number,
+  neighbourNumber: number,
+) => {
+  console.log('estimating nuke time', sellPrice, remainingStake, neighbourNumber);
+
+  const gameSpeed = GAME_SPEED;
+  const taxRate = 0.02;
+  const baseTime = 3600;
+  const maxNeighbours = 8;
+
+  const maxRate = sellPrice * taxRate * gameSpeed;
+  const maxRatePerNeighbour = maxRate / maxNeighbours;
+  const rateOfActualNeighbours = maxRatePerNeighbour * neighbourNumber;
+
+  const remainingHours = remainingStake / rateOfActualNeighbours;
+  const remainingSeconds = remainingHours * baseTime;
+
+  console.log("estimated seconds", remainingSeconds);
+  return remainingSeconds;
 };
