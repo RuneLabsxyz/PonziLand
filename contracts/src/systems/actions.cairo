@@ -484,8 +484,8 @@ pub mod actions {
             let land = store.land(land_location);
 
             let neighbors = add_neighbors(store, land.location, true);
-            let mut total_rate: u64 = 0;
-            //TODO:see if we pass this to utils
+            let neighbors_count = neighbors.len();
+
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors_count > 0 {
                 for neighbor in neighbors {
@@ -527,6 +527,7 @@ pub mod actions {
             };
             LandYieldInfo { yield_info, remaining_stake_time }
         }
+
 
         fn get_active_auctions(self: @ContractState) -> u8 {
             self.active_auctions.read()
