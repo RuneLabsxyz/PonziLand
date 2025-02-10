@@ -13,6 +13,8 @@ mod helpers {
 
 mod components {
     mod payable;
+    mod taxes;
+    mod stake;
 }
 
 mod consts;
@@ -27,6 +29,10 @@ mod mocks {
     mod erc20;
 }
 
+mod utils {
+    mod common_strucs;
+    mod get_neighbors;
+}
 
 #[cfg(test)]
 mod tests {
