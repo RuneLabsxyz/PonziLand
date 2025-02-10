@@ -195,7 +195,7 @@ export function getNeighbours(
 
   console.log('filteredStore', filteredStore);
   console.log('location', location);
-  console.log('neighbourHex', neighborsHex)
+  console.log('neighbourHex', neighborsHex);
 
   const neighbours = neighborsHex.map((loc) => {
     return filteredStore.find((l) => {
@@ -205,5 +205,5 @@ export function getNeighbours(
 
   console.log('neighbours', neighbours);
 
-  return neighbours
+  return neighbours;
 }
