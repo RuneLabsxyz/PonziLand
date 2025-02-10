@@ -1,6 +1,9 @@
 use starknet::ContractAddress;
+use starknet::contract_address::ContractAddressZeroable;
+use ponzi_land::utils::common_strucs::{TokenInfo};
 
-#[derive(Copy, Drop, Serde, Debug)]
+
+#[derive(Drop, Serde, Debug, Copy)]
 #[dojo::model]
 pub struct Land {
     #[key]
@@ -37,7 +40,7 @@ impl LandImpl of LandTrait {
             pool_key,
             last_pay_time,
             block_date_bought,
-            stake_amount
+            stake_amount,
         }
     }
 }

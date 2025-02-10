@@ -15,6 +15,7 @@ use ponzi_land::models::land::{Land};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS};
 use ponzi_land::helpers::coord::{left, right, up, down};
+use ponzi_land::store::{Store, StoreTrait};
 
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -48,7 +49,7 @@ fn NEW_BUYER() -> ContractAddress {
 }
 
 // Helper functions for common test setup and actions
-fn setup_test() -> (WorldStorage, IActionsDispatcher, IERC20CamelDispatcher) {
+fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher) {
     let (world, actions_system, erc20) = create_setup();
     set_contract_address(RECIPIENT());
 
@@ -57,7 +58,9 @@ fn setup_test() -> (WorldStorage, IActionsDispatcher, IERC20CamelDispatcher) {
     let allowance = erc20.allowance(RECIPIENT(), actions_system.contract_address);
     assert(allowance >= 1000, 'Approval failed');
 
-    (world, actions_system, erc20)
+    let store = StoreTrait::new(world);
+
+    (store, actions_system, erc20)
 }
 
 // Helper function for initializing lands
@@ -110,17 +113,16 @@ fn setup_buyer_with_tokens(
 }
 
 // Helper function for verifying taxes and stake after a claim
-fn verify_taxes_and_stake(actions_system: IActionsDispatcher, neighbor: ContractAddress) {
-    let taxes_neighbor = actions_system.get_pending_taxes(neighbor);
-    assert(taxes_neighbor.len() > 0, 'must have pending taxes');
-
-    let stake_balance_after_taxes = actions_system.get_stake_balance(neighbor);
-    assert(stake_balance_after_taxes < 1000, 'must have less stake');
+fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u64, store: Store) {
+    let land = store.land(land_location);
+    let taxes = actions_system.get_pending_taxes_for_land(land_location, land.owner);
+    assert(taxes.len() > 0, 'must have pending taxes');
+    assert(land.stake_amount < 1000, 'must have less stake');
 }
 
 // Helper function for land verification
 fn verify_land(
-    world: WorldStorage,
+    store: Store,
     location: u64,
     expected_owner: ContractAddress,
     expected_price: u256,
@@ -129,7 +131,7 @@ fn verify_land(
     expected_block_date_bought: u64,
     expected_token_used: ContractAddress
 ) {
-    let mut land: Land = world.read_model(location);
+    let land = store.land(location);
     assert(land.owner == expected_owner, 'incorrect owner');
     assert(land.sell_price == expected_price, 'incorrect price');
     assert(land.pool_key == expected_pool, 'incorrect pool');
@@ -142,10 +144,10 @@ fn verify_land(
 }
 
 fn verify_auction_for_neighbor(
-    world: WorldStorage, location: u64, expected_sell_price: u256, expected_start_time: u64
+    store: Store, location: u64, expected_sell_price: u256, expected_start_time: u64
 ) {
-    let neighbor: Land = world.read_model(location);
-    let neighbor_auction: Auction = world.read_model(neighbor.location);
+    let neighbor = store.land(location);
+    let neighbor_auction = store.auction(neighbor.location);
     assert(neighbor.sell_price == expected_sell_price, 'Err in neighbor sell price');
     assert(
         neighbor_auction.start_time * TIME_SPEED.into() == expected_start_time,
@@ -155,7 +157,7 @@ fn verify_auction_for_neighbor(
 
 #[test]
 fn test_buy_action() {
-    let (mut world, actions_system, main_currency) = setup_test();
+    let (store, actions_system, main_currency) = setup_test();
     set_block_timestamp(100);
     // Create initial land
     initialize_land(actions_system, main_currency, RECIPIENT(), 11, 100, 50, main_currency);
@@ -168,14 +170,14 @@ fn test_buy_action() {
 
     // Verify results
     verify_land(
-        world, 11, NEW_BUYER(), 100, NEW_LIQUIDITY_POOL(), 120, 100, main_currency.contract_address
+        store, 11, NEW_BUYER(), 100, NEW_LIQUIDITY_POOL(), 120, 100, main_currency.contract_address
     );
 }
 
 #[test]
 #[should_panic]
 fn test_invalid_land() {
-    let (_, actions_system, erc20) = create_setup();
+    let (_, actions_system, erc20) = setup_test();
 
     // Attempt to buy land at invalid position (11000)
     actions_system.buy(11000, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL());
@@ -184,7 +186,7 @@ fn test_invalid_land() {
 //test for now without auction
 #[test]
 fn test_bid_and_buy_action() {
-    let (world, actions_system, main_currency) = setup_test();
+    let (store, actions_system, main_currency) = setup_test();
 
     // Set initial timestamp
     set_block_timestamp(100);
@@ -194,15 +196,15 @@ fn test_bid_and_buy_action() {
 
     // Validate bid/buy updates
     verify_land(
-        world, 11, RECIPIENT(), 100, LIQUIDITY_POOL(), 50, 100, main_currency.contract_address
+        store, 11, RECIPIENT(), 100, LIQUIDITY_POOL(), 50, 100, main_currency.contract_address
     );
 
     //right neighbor
-    verify_auction_for_neighbor(world, 12, 1000, 100);
+    verify_auction_for_neighbor(store, 12, 1000, 100);
     //left neighbor
-    verify_auction_for_neighbor(world, 10, 1000, 100);
+    verify_auction_for_neighbor(store, 10, 1000, 100);
     //down neighbor
-    verify_auction_for_neighbor(world, 75, 1000, 100);
+    verify_auction_for_neighbor(store, 75, 1000, 100);
 
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
@@ -212,7 +214,7 @@ fn test_bid_and_buy_action() {
 
     // Validate buy action updates
     verify_land(
-        world,
+        store,
         11,
         NEW_BUYER(),
         300,
@@ -225,10 +227,11 @@ fn test_bid_and_buy_action() {
 
 }
 
-
+//TODO: EL PROBLEMA CON ESTO ES QUE NO SE SUMA EL STAKE AMOUNT, Y DESPUES HAY UN PROBLEMA CON EL PAY
+//AMOUNT QUE HAY MENOS
 #[test]
 fn test_claim_and_add_taxes() {
-    let (mut world, actions_system, main_currency) = setup_test();
+    let (store, actions_system, main_currency) = setup_test();
 
     // Deploy ERC20 tokens for neighbors
     let erc20_neighbor_1 = deploy_erc20(NEIGHBOR_1());
@@ -241,11 +244,11 @@ fn test_claim_and_add_taxes() {
 
     // Setup neighbor lands
     set_block_timestamp(300);
-    initialize_land(actions_system, main_currency, NEIGHBOR_1(), 1281, 500, 100, erc20_neighbor_1);
+    initialize_land(actions_system, main_currency, NEIGHBOR_1(), 1281, 500, 1000, erc20_neighbor_1);
 
     // Verify timestamps after bids
-    let land_1280: Land = world.read_model(1280);
-    let land_1281: Land = world.read_model(1281);
+    let land_1280 = store.land(1280);
+    let land_1281 = store.land(1281);
     assert(land_1280.last_pay_time == 300 / TIME_SPEED.into(), 'Err in 1280 last_pay_time');
     assert(land_1281.last_pay_time == 300 / TIME_SPEED.into(), 'Err in 1281 last_pay_time');
 
@@ -266,26 +269,25 @@ fn test_claim_and_add_taxes() {
     actions_system.claim(1280);
 
     //Get claimer land and verify taxes
-    let claimer_land: Land = world.read_model(1280);
-    let claimer_land_taxes = actions_system.get_pending_taxes(claimer_land.owner);
-
+    let claimer_land = store.land(1280);
+    let claimer_land_taxes = actions_system.get_pending_taxes_for_land(1280, claimer_land.owner);
     assert(claimer_land_taxes.len() == 0, 'have pending taxes');
     assert(erc20_neighbor_1.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
     assert(erc20_neighbor_2.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
     assert(erc20_neighbor_3.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
 
     // Verify the neighbors of the claimer land
-    verify_taxes_and_stake(actions_system, NEIGHBOR_1());
-    verify_taxes_and_stake(actions_system, NEIGHBOR_2());
-    verify_taxes_and_stake(actions_system, NEIGHBOR_3());
+    verify_taxes_and_stake(actions_system, 1281, store);
+    verify_taxes_and_stake(actions_system, 1216, store);
+    verify_taxes_and_stake(actions_system, 1217, store);
 
-    let land_1281: Land = world.read_model(1281);
+    let land_1281 = store.land(1281);
     assert(land_1281.last_pay_time == 5000, 'Err in 1281 last_pay');
 
-    let land_1216: Land = world.read_model(1216);
+    let land_1216 = store.land(1216);
     assert(land_1216.last_pay_time == 5000, 'Err in 1216 last_pay');
 
-    let land_1217: Land = world.read_model(1217);
+    let land_1217 = store.land(1217);
     assert(land_1217.last_pay_time == 5000, 'Err in 1217 last_pay');
 
     set_block_timestamp(6000);
@@ -294,14 +296,14 @@ fn test_claim_and_add_taxes() {
 
     actions_system.buy(1281, erc20_neighbor_1.contract_address, 100, 100, NEW_LIQUIDITY_POOL());
     // verify the claim when occurs a buy
-    let land_1280: Land = world.read_model(1281);
+    let land_1280 = store.land(1281);
     assert(land_1280.last_pay_time == 6000, 'Err in 1281 last_pay');
 }
 
 #[test]
 fn test_nuke_action() {
     // Setup environment
-    let (mut world, actions_system, main_currency) = setup_test();
+    let (store, actions_system, main_currency) = setup_test();
     let erc20_neighbor_1 = deploy_erc20(NEIGHBOR_1());
     let erc20_neighbor_2 = deploy_erc20(NEIGHBOR_2());
     let erc20_neighbor_3 = deploy_erc20(NEIGHBOR_3());
@@ -360,7 +362,7 @@ fn test_nuke_action() {
 
     // Verify the land 1281 was nuked
     verify_land(
-        world,
+        store,
         1281,
         ContractAddressZeroable::zero(),
         10000,
@@ -378,7 +380,7 @@ fn test_nuke_action() {
 
     // Verify the land 1217 was nuked,
     verify_land(
-        world,
+        store,
         1217,
         ContractAddressZeroable::zero(),
         59000,
@@ -398,32 +400,89 @@ fn test_nuke_action() {
 
 #[test]
 fn test_increase_price_and_stake() {
-    //setup environment
-    let (mut world, actions_system, main_currency) = create_setup();
+    let (store, actions_system, main_currency) = setup_test();
 
     //create land
     set_block_timestamp(100);
-
     initialize_land(actions_system, main_currency, RECIPIENT(), 1280, 1000, 1000, main_currency);
 
     //verify the land
     verify_land(
-        world, 1280, RECIPIENT(), 1000, LIQUIDITY_POOL(), 1000, 100, main_currency.contract_address
+        store, 1280, RECIPIENT(), 1000, LIQUIDITY_POOL(), 1000, 100, main_currency.contract_address
     );
 
     //increase the price
     actions_system.increase_price(1280, 2300);
-    let land: Land = world.read_model(1280);
+    let land = store.land(1280);
     assert(land.sell_price == 2300, 'has increase to 2300');
 
     //increase the stake
     main_currency.approve(actions_system.contract_address, 2000);
-    let stake_balance = actions_system.get_stake_balance(land.owner);
-    assert(stake_balance == 1000, 'stake has to be 1000');
+    let land = store.land(1280);
+    assert(land.stake_amount == 1000, 'stake has to be 1000');
 
     actions_system.increase_stake(1280, 2000);
 
-    let stake_balance = actions_system.get_stake_balance(land.owner);
-    assert(stake_balance == 3000, 'stake has to be 3000');
+    let land = store.land(1280);
+    assert(land.stake_amount == 3000, 'stake has to be 3000');
+}
+
+#[test]
+fn test_detailed_tax_calculation() {
+    set_block_timestamp(1000);
+    let (store, actions_system, main_currency) = setup_test();
+
+    let erc20_neighbor = deploy_erc20(NEIGHBOR_1());
+
+    // timestamp: 1000
+    initialize_land(
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        1280, // Central position
+        10000, // sell_price
+        5000, // stake_amount
+        main_currency
+    );
+
+    // Initialize one neighbor to generate taxes
+    // timestamp: 2000 / 4 , sell_price: 20000
+    set_block_timestamp(2000);
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        1281, // Right neighbor
+        20000, // sell_price
+        10000, // stake_amount - enough to cover taxes
+        erc20_neighbor
+    );
+
+    // Calculate expected taxes after 3600 seconds (1 BASE_TIME)
+    // Move to timestamp 5600 (500 + 3600)
+    set_block_timestamp(5600);
+
+    // For land 1281:
+    // elapsed_time = (5600 - 500) * TIME_SPEED = 5100 * 4 = 20400
+    // total_taxes = (20000 * 2 * 20400) / (100 * 3600) = 2226
+    // tax_per_neighbor = 1600 / 8 = 283 (8 possible neighbors)
+
+    // Trigger tax calculation by claiming
+    set_contract_address(RECIPIENT());
+    actions_system.claim(1280);
+
+    // Verify the tax calculations
+    let land_1281 = store.land(1281);
+    assert(land_1281.last_pay_time == 5600, 'Wrong last pay time');
+
+    // Verify stake amount was reduced by correct tax amount
+    assert(land_1281.stake_amount == 9717, // 10000 - 200
+     'Wrong stake amount after tax');
+
+    // Verify taxes for central land (1280)
+    let pending_taxes = actions_system.get_pending_taxes_for_land(1280, RECIPIENT());
+    assert(pending_taxes.len() == 0, 'Wrong number of tax entries');
+
+    assert(erc20_neighbor.balanceOf(RECIPIENT()) == 283, 'Wrong tax amount calculated');
 }
 
