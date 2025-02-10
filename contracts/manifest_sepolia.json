@@ -1253,7 +1253,7 @@
   "contracts": [
     {
       "address": "0x1f058fe3a5a82cc12c1e38444d3f9f3fd3511ef4c95851a3d4e07ad195e0af6",
-      "class_hash": "0x4d4356c7b866617c56aa0569e78c924ba692f560c3d66135fd2693fec45dee7",
+      "class_hash": "0x70af2e31348e464723b8a3f28f825d121dfdbe16654ea4febbf3ae75f771bca",
       "abi": [
         {
           "type": "impl",
@@ -1462,6 +1462,10 @@
             },
             {
               "name": "sell_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "per_hour",
               "type": "core::integer::u256"
             },
             {

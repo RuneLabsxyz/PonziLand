@@ -58,7 +58,7 @@
   </button>
 </div>
 
-<ScrollArea class="h-32 w-full">
+<ScrollArea class="h-36 w-full">
   <div class="mr-3 flex flex-col gap-1">
     {#each tokenBalances as tokenBalance}
       {#await tokenBalance.balance}
@@ -69,7 +69,7 @@
           </div>
         </div>
       {:then balance}
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center relative">
           <Avatar.Root class="h-6 w-6">
             <Avatar.Image
               src={tokenBalance.token.images.icon}
@@ -77,9 +77,7 @@
             />
             <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
           </Avatar.Root>
-          <div class="flex flex-col items-end">
-            <TokenDisplay amount={balance ?? 0n} token={tokenBalance.token} />
-          </div>
+          <TokenDisplay amount={balance ?? 0n} token={tokenBalance.token} />
         </div>
       {/await}
     {/each}

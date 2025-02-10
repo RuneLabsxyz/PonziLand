@@ -1,12 +1,8 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import { MAP_SIZE } from '$lib/api/tile-store.svelte';
-  import type { LandYieldInfo } from '$lib/interfaces';
+  import { GAME_SPEED } from '$lib/const';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import data from '$lib/data.json';
-  import { toHexWithPadding } from '$lib/utils';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
-  import BigNumber from 'bignumber.js';
 
   let {
     land,
@@ -32,6 +28,7 @@
       sell_price: bigint;
       percent_rate: bigint;
       location: bigint;
+      per_hour: bigint;
     } | null)[]
   >([]);
 
@@ -41,7 +38,11 @@
 
   let tokenBurnRatePerNeighbor: CurrencyAmount = $derived(
     CurrencyAmount.fromRaw(
-      land.sellPrice.rawValue().multipliedBy(0.02).dividedBy(8),
+      land.sellPrice
+        .rawValue()
+        .multipliedBy(0.02)
+        .dividedBy(8)
+        .multipliedBy(GAME_SPEED),
     ),
   );
 
@@ -62,7 +63,7 @@
 </script>
 
 <div
-  class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none"
+  class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20"
   style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
 >
   {#each yieldInfo as info, i}
@@ -71,12 +72,7 @@
         class="overlay-square text-ponzi text-[4px] flex items-center justify-center leading-none"
       >
         <span class="whitespace-nowrap text-green-300 text-[6px]">
-          +{CurrencyAmount.fromRaw(
-            new BigNumber(info.sell_price.toString())
-              .shiftedBy(-info.token.decimals)
-              .multipliedBy(0.02)
-              .dividedBy(8),
-          ).toString()}
+          +{CurrencyAmount.fromUnscaled(info.per_hour, info.token).toString()}
           {info.token?.symbol}/h
         </span>
       </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getAuctionDataFromLocation } from '$lib/api/auction.svelte';
   import type { LandSetup } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
+  import { useAccount } from '$lib/contexts/account';
   import type { Token } from '$lib/interfaces';
   import type { Auction } from '$lib/models.gen';
   import {
@@ -11,87 +11,34 @@
   } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import BigNumber from 'bignumber.js';
   import BuySellForm from '../buy/buy-sell-form.svelte';
   import LandOverview from '../land/land-overview.svelte';
-  import Button from '../ui/button/button.svelte';
+  import ThreeDots from '../loading/three-dots.svelte';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import ThreeDots from '../loading/three-dots.svelte';
-  import { useAccount } from '$lib/contexts/account';
-
-  let extended = $state(false);
-
-  let loading = $state(false);
-
-  let auctionInfo = $state<Auction>();
-  let currentTime = $state(Date.now());
-
-  let selectedToken = $state<Token | undefined>();
-  //TODO: Change defaults values into an error component
-  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('100'));
-  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
-
-  $effect(() => {});
-
-  let currentPriceDerived = $derived.by(() => {
-    if (auctionInfo && currentTime) {
-      const startPrice = new BigNumber(auctionInfo.start_price as string, 16);
-      const floorPrice = new BigNumber(auctionInfo.floor_price as string, 16);
-      const startTime = parseInt(auctionInfo.start_time as string, 16) * 1000;
-      const currentPrice = calculateCurrentPrice(
-        startPrice,
-        floorPrice,
-        startTime,
-        currentTime,
-      );
-
-      console.log(currentPrice.toString());
-      return currentPrice;
-    }
-    return null;
-  });
-
-  // TODO: Put the auction token as a second parameter
-  let startPrice = $derived(
-    CurrencyAmount.fromUnscaled(auctionInfo?.start_price ?? 0).toString(),
-  );
-  let floorPrice = $derived(
-    CurrencyAmount.fromUnscaled(auctionInfo?.floor_price ?? 0).toString(),
-  );
-  let currentPriceDisplay = $derived(
-    CurrencyAmount.fromUnscaled(
-      currentPriceDerived?.toNumber() ?? 0,
-      $selectedLandMeta?.token,
-    ),
-  );
 
   let landStore = useLands();
   let accountManager = useAccount();
 
-  function calculateCurrentPrice(
-    startPrice: BigNumber,
-    floorPrice: BigNumber,
-    startTime: number,
-    currentTime = Date.now(),
-  ): BigNumber {
-    if (floorPrice > startPrice) {
-      return floorPrice;
-    }
-    const elapsedHours = (currentTime - startTime) / (60 * 60 * 1000);
+  let extended = $state(false);
+  let loading = $state(false);
+  let fetching = $state(false);
 
-    const decayFactor = Math.pow(0.99, elapsedHours); // Decay rate: 1% per hour
+  let auctionInfo = $state<Auction>();
+  let currentPrice = $state<CurrencyAmount>();
+  let priceDisplay = $derived(currentPrice?.toString());
 
-    return BigNumber.max(startPrice.times(decayFactor), floorPrice); // Ensure not below floor price
-  }
+  // Form
+  let selectedToken = $state<Token | undefined>();
+  //TODO: Change defaults values into an error component
+  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('100'));
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
 
   async function handleBiddingClick() {
     loading = true;
     console.log('Buying land with data:', auctionInfo);
 
     //fetch auction currentprice
-    let currentPrice = await $selectedLandMeta?.getCurrentAuctionPrice();
     if (!currentPrice) {
       console.error(`Could not get current price ${currentPrice ?? ''}`);
       currentPrice = CurrencyAmount.fromScaled('1', $selectedLandMeta?.token);
@@ -142,29 +89,26 @@
   }
 
   $effect(() => {
-    if (!$selectedLand) {
-      return;
-    }
-
-    console.log('Getting auction data for:', $selectedLand.location);
-    getAuctionDataFromLocation($selectedLand.location).then((res) => {
-      console.log('Auction data:', res);
-      if (res.length === 0) {
-        return;
-      }
-      auctionInfo = res[0].models.ponzi_land.Auction as Auction;
-    });
+    fetchCurrentPrice();
 
     const interval = setInterval(() => {
-      currentTime = Date.now();
-    }, 1000);
+      console.log('Fetching current price');
+      fetchCurrentPrice();
+    }, 2000);
 
     return () => clearInterval(interval);
   });
 
-  const priceDisplay = $derived(currentPriceDisplay.toString());
+  const fetchCurrentPrice = () => {
+    if (!$selectedLand) {
+      return;
+    }
 
-  $inspect(priceDisplay);
+    $selectedLandMeta?.getCurrentAuctionPrice().then((res) => {
+      currentPrice = res;
+      fetching = false;
+    });
+  };
 </script>
 
 <div
@@ -182,17 +126,42 @@
           {/if}
           <div class="text-shadow-none">0 watching</div>
           <div class="flex items-center gap-1">
-            {#each priceDisplay as char}
-              {#if char === '.'}
-                <div class="text-ponzi-huge text-3xl">.</div>
-              {:else}
-                <div
-                  class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+            {#if priceDisplay}
+              {#each priceDisplay as char}
+                {#if char === '.'}
+                  <div class="text-ponzi-huge text-3xl">.</div>
+                {:else}
+                  <div
+                    class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                  >
+                    {char}
+                  </div>
+                {/if}
+              {/each}
+              {#if !fetching}
+                <button
+                  onclick={() => {
+                    fetching = true;
+                    fetchCurrentPrice();
+                  }}
+                  aria-label="Refresh balance"
                 >
-                  {char}
-                </div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 32 32"
+                    width="32px"
+                    height="32px"
+                    fill="currentColor"
+                    class="h-5 w-5"
+                    ><path
+                      d="M 6 4 L 6 6 L 4 6 L 4 8 L 2 8 L 2 10 L 6 10 L 6 26 L 17 26 L 17 24 L 8 24 L 8 10 L 12 10 L 12 8 L 10 8 L 10 6 L 8 6 L 8 4 L 6 4 z M 15 6 L 15 8 L 24 8 L 24 22 L 20 22 L 20 24 L 22 24 L 22 26 L 24 26 L 24 28 L 26 28 L 26 26 L 28 26 L 28 24 L 30 24 L 30 22 L 26 22 L 26 6 L 15 6 z"
+                    /></svg
+                  >
+                </button>
               {/if}
-            {/each}
+            {:else}
+              Fetching Price<ThreeDots />
+            {/if}
           </div>
           <div class="text-ponzi-huge text-3xl"></div>
           <div class="flex items-center gap-2">

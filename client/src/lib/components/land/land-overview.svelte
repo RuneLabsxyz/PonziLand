@@ -1,9 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import type { Token } from '$lib/interfaces';
-  import type { Land } from '$lib/models.gen';
-  import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
-  import { locationIntToString, toHexWithPadding } from '$lib/utils';
+  import { locationIntToString } from '$lib/utils';
 
   const { land, size = 'sm' }: { land: LandWithActions; size?: 'sm' | 'lg' } =
     $props();

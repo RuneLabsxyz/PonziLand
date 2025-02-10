@@ -4,19 +4,19 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_actions_auction_calldata = (landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, decayRate: BigNumberish): DojoCall => {
+	const build_actions_auction_calldata = (landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, decayRate: BigNumberish, isFromNuke: boolean): DojoCall => {
 		return {
 			contractName: "actions",
 			entrypoint: "auction",
-			calldata: [landLocation, startPrice, floorPrice, decayRate],
+			calldata: [landLocation, startPrice, floorPrice, decayRate, isFromNuke],
 		};
 	};
 
-	const actions_auction = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, decayRate: BigNumberish) => {
+	const actions_auction = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, decayRate: BigNumberish, isFromNuke: boolean) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_auction_calldata(landLocation, startPrice, floorPrice, decayRate),
+				build_actions_auction_calldata(landLocation, startPrice, floorPrice, decayRate, isFromNuke),
 				"ponzi_land",
 			);
 		} catch (error) {

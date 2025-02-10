@@ -72,7 +72,7 @@ export const getAggregatedTaxes = async (
 
     return {
       tokenAddress: tokenAddress,
-      tokenSymbol: token?.name ?? 'Unknown',
+      tokenSymbol: token?.symbol ?? '???',
       totalTax: totalTax,
     };
   });
@@ -113,6 +113,7 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
         location: BigInt(loc),
         sell_price: 0n,
         percent_rate: 0n,
+        per_hour: 0n,
       };
     }
 

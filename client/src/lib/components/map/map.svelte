@@ -187,12 +187,12 @@
       onmousemove={handleMouseMove}
       onmouseup={handleMouseUp}
       onmouseleave={handleMouseUp}
-      style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale})"
+      style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale}); --scale: {$cameraPosition.scale}"
     >
       {#each tiles as row, y}
         <div class="row">
           {#each row as tile, x}
-            <Tile land={tile} {dragged} />
+            <Tile land={tile} {dragged} scale={$cameraPosition.scale} />
           {/each}
         </div>
       {/each}
