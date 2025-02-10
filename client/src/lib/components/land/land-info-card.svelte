@@ -28,7 +28,7 @@
   </button>
   <button
     onclick={() => {
-      moveCameraTo(location[0], location[1]);
+      moveCameraTo(location[0] + 1, location[1] + 1);
       selectLand(land);
     }}
   >

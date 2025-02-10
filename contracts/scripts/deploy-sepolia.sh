@@ -32,7 +32,7 @@ sozo -P sepolia build
 
 # Deploy the project
 echo "Deploying to Sepolia..."
-sozo -P sepolia migrate
+sozo -P sepolia migrate --fee ETH
 
 # Deployment succeeded message
 echo "Deployment completed successfully."

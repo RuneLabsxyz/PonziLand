@@ -30,7 +30,7 @@
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.3",
-    "svelte": "^5.0.0",
+    "svelte": "^5.19.7",
     "svelte-check": "^4.0.0",
     "tailwind-merge": "^2.6.0",
     "tailwind-variants": "^0.3.0",
@@ -45,8 +45,14 @@
     "@avnu/avnu-sdk": "^3.0.0",
     "@dojoengine/sdk": "^1.0.4-alpha.3.1.2",
     "@starknet-io/get-starknet-core": "^4.0.0",
+    "@tsparticles/engine": "^3.8.1",
+    "@tsparticles/shape-image": "^3.8.1",
+    "@tsparticles/slim": "^3.8.1",
+    "@tsparticles/svelte": "^3.1.1",
     "bignumber.js": "^9.1.2",
     "lucide-svelte": "^0.471.0",
+    "svelte-confetti": "^2.3.1",
+    "tsparticles": "^3.8.1",
     "vite-plugin-top-level-await": "^1.1.0",
     "vite-plugin-wasm": "^3.3.0"
   }

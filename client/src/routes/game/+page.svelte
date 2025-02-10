@@ -8,6 +8,18 @@
   import Ui from '$lib/components/ui.svelte';
   import LoadingScreen from '$lib/components/loading/loading-screen.svelte';
   import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
+  import { particlesInit } from '@tsparticles/svelte';
+  import { loadFull } from 'tsparticles';
+  import { tsParticles } from '@tsparticles/engine';
+  import { loadImageShape } from '@tsparticles/shape-image';
+
+  void particlesInit(async (engine) => {
+    await loadFull(engine);
+  });
+
+  (async () => {
+    await loadImageShape(tsParticles);
+  })();
 
   const promise = Promise.all([
     setupClient(dojoConfig),
