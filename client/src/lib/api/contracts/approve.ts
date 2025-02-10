@@ -9,6 +9,7 @@ import {
   CallData,
   type Account,
   type AccountInterface,
+  type AllowArray,
   type BigNumberish,
   type Call,
 } from 'starknet';
@@ -23,7 +24,7 @@ async function getApprove(
   data: ApprovalData[],
   spendingCall: DojoCall | Call,
   namespace: string = 'ponzi_land',
-): Promise<(DojoCall | Call)[]> {
+): Promise<AllowArray<DojoCall | Call>> {
   let spendingContract;
 
   if ('contractName' in spendingCall) {
@@ -47,6 +48,8 @@ async function getApprove(
     };
   });
 
+  console.log('spending call', spendingCall);
+
   return [...approvals, spendingCall];
 }
 
@@ -61,8 +64,8 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenAddress: string,
     currentPrice: BigNumberish,
   ) => {
-    const sell_price = cairo.uint256(sellPrice);
-    const amount_to_stake = cairo.uint256(amountToStake);
+    const sell_price = sellPrice
+    const amount_to_stake = amountToStake
 
     const approvals =
       tokenAddress == tokenForSale
@@ -134,8 +137,8 @@ export async function wrappedActions(provider: DojoProvider) {
         calldata: CallData.compile({
           landLocation,
           tokenForSale,
-          sellPrice: cairo.uint256(sellPrice),
-          amountToStake: cairo.uint256(amountToStake),
+          sellPrice: sellPrice,
+          amountToStake: amountToStake,
           liquidityPool,
         }),
       });

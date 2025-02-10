@@ -24,7 +24,6 @@
   let loading = $state(false);
   let fetching = $state(false);
 
-  let auctionInfo = $state<Auction>();
   let currentPrice = $state<CurrencyAmount>();
   let priceDisplay = $derived(currentPrice?.toString());
 
@@ -36,11 +35,9 @@
 
   async function handleBiddingClick() {
     loading = true;
-    console.log('Buying land with data:', auctionInfo);
 
     //fetch auction currentprice
     if (!currentPrice) {
-      console.error(`Could not get current price ${currentPrice ?? ''}`);
       currentPrice = CurrencyAmount.fromScaled('1', $selectedLandMeta?.token);
     }
 
@@ -52,6 +49,8 @@
       tokenAddress: $selectedLandMeta?.tokenAddress as string,
       currentPrice: currentPrice, // Include a 10% margin on the bet amount
     };
+
+    console.log('Buying from land:', landSetup);
 
     if (!$selectedLand?.location) {
       loading = false;

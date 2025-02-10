@@ -35,13 +35,6 @@
         {$selectedLandMeta?.token?.symbol}
       </p>
     </div>
-    <div class="flex justify-between">
-      <p class="opacity-50">Daily maintenance cost</p>
-      <p class="text-red-500">
-        {$selectedLandMeta?.sellPrice.rawValue().multipliedBy(0.02).toString()}
-        {$selectedLandMeta?.token?.symbol}/h
-      </p>
-    </div>
     {#if $selectedLandMeta}
       <LandYieldInfo land={$selectedLandMeta} />
     {/if}
