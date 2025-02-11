@@ -64,8 +64,8 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenAddress: string,
     currentPrice: BigNumberish,
   ) => {
-    const sell_price = sellPrice
-    const amount_to_stake = amountToStake
+    const sell_price = sellPrice;
+    const amount_to_stake = amountToStake;
 
     const approvals =
       tokenAddress == tokenForSale

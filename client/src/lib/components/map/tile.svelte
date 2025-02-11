@@ -180,15 +180,11 @@
   {#if isOwner}
     <div
       class="absolute top-0 left-1/2 -translate-x-1/2 {scale > 1.5
-        ? 'w-2'
-        : 'w-6'}"
-    >
-      <img
-        src="/assets/ui/icons/Icon_Crown.png"
-        alt="owned"
-        style="image-rendering: pixelated;"
-      />
-    </div>
+        ? 'w-2 h-2'
+        : 'w-6 h-6'}"
+      style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
+      onclick={handleClick}
+    ></div>
   {/if}
   {#if land.type == 'house'}
     <div class="absolute top-0 right-0 text-[4px]">
