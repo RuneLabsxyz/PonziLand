@@ -172,6 +172,7 @@
   {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
     <div
       class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ponzi animate-pulse"
+      onclick={handleClick}
     >
       NUKABLE
     </div>
@@ -187,7 +188,7 @@
     ></div>
   {/if}
   {#if land.type == 'house'}
-    <div class="absolute top-0 right-0 text-[4px]">
+    <div class="absolute top-0 right-0 text-[4px]" onclick={handleClick}>
       {#if estimatedNukeTime == -1}
         inf.
       {:else}

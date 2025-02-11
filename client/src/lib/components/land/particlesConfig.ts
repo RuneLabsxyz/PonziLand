@@ -60,12 +60,11 @@ export const particlesConfig: ISourceOptions = {
         maxSpeed: 40,
       },
       speed: {
-        min: 10,
-        max: 15,
+        min: 20,
+        max: 25,
       },
       direction: MoveDirection.top,
       random: false,
-      straight: false,
       outModes: {
         bottom: OutMode.destroy,
         left: OutMode.destroy,
