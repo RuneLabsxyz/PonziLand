@@ -16,13 +16,12 @@
   });
 </script>
 
-<div>{sellAmountVal} {stakeAmountVal} : max {taxes.maxRate}/h</div>
-
+<div>max {taxes.maxRate}/h</div>
 <div class="flex justify-between w-full">
   {#each rates as rate, i}
     <div class="flex flex-col items-center w-full">
       <div>{i + 1}</div>
-      <LandNukeShield estimatedNukeTime={rate} class="w-10 h-10" />
+      <LandNukeShield estimatedNukeTime={rate} class="w-10 h-10" lockTime />
     </div>
   {/each}
 </div>

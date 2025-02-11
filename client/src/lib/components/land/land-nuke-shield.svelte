@@ -5,7 +5,8 @@
   let {
     estimatedNukeTime,
     class: ClassName = '',
-  }: { estimatedNukeTime: number; class: string } = $props();
+    lockTime = false,
+  }: { estimatedNukeTime: number; class: string; lockTime: boolean } = $props();
 
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
   let estimatedTimeString = $derived.by(() => {
@@ -55,6 +56,7 @@
 
   $effect(() => {
     // trigger interval to update estimatedTimeString every seconds
+    if (lockTime) return;
     const interval = setInterval(() => {
       estimatedNukeTime -= 1;
     }, 1000);
