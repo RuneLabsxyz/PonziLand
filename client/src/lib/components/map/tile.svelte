@@ -3,7 +3,7 @@
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
-  import { moveCameraToLocation } from '$lib/stores/camera';
+  import { cameraPosition, moveCameraToLocation } from '$lib/stores/camera';
   import {
     accountAddress,
     mousePosCoords,
@@ -19,8 +19,6 @@
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
-  const { store, client: sdk, accountManager } = useDojo();
-
   let { land, dragged, scale } = $props<{
     land: Tile;
     dragged: boolean;
@@ -28,9 +26,7 @@
   }>();
 
   let isOwner = $derived(land?.owner == padAddress($accountAddress ?? '0x1'));
-
   let selected = $derived($selectedLand?.location === land.location);
-  let isHovering = $derived($mousePosCoords?.location == land.location);
 
   function handleClick() {
     console.log('clicked', dragged);
@@ -166,7 +162,11 @@
   {/if}
 
   {#if isOwner}
-    <div class="absolute top-0 left-1/2 crown -translate-x-1/2">
+    <div
+      class="absolute top-0 left-1/2 -translate-x-1/2 {scale > 1.5
+        ? 'w-2'
+        : 'w-6'}"
+    >
       <img
         src="/assets/ui/icons/Icon_Crown.png"
         alt="owned"
@@ -185,9 +185,5 @@
   .selected {
     outline: 1px solid #ff0;
     z-index: 20;
-  }
-
-  .crown {
-    width: calc(max(1rem * (1 / var(--scale)), 0.5em));
   }
 </style>

@@ -44,7 +44,8 @@
         }),
       ];
     });
-    await land
+
+    land
       .claim()
       .then(() => {
         claiming = false;
@@ -60,7 +61,7 @@
             console.log('not waiting anymore');
             waiting = false;
           });
-        }, 5 * 1000);
+        }, 10 * 1000);
       })
       .catch(() => {
         console.error('error claiming from coin');
