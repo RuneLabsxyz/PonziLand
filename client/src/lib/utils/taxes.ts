@@ -140,13 +140,21 @@ export const estimateNukeTime = (
   remainingStake: number,
   neighbourNumber: number,
 ) => {
-  console.log(
-    'estimating nuke time',
-    sellPrice,
-    remainingStake,
-    neighbourNumber,
-  );
+  
+  const tax = estimateTax(sellPrice);
 
+  const rateOfActualNeighbours = tax.ratePerNeighbour * neighbourNumber;
+
+  const remainingHours = remainingStake / rateOfActualNeighbours;
+  const remainingSeconds = remainingHours * tax.baseTime;
+
+  console.log('estimated seconds', remainingSeconds);
+  return remainingSeconds;
+};
+
+export const estimateTax = (
+  sellPrice: number,
+) => {
   const gameSpeed = GAME_SPEED;
   const taxRate = 0.02;
   const baseTime = 3600;
@@ -154,11 +162,12 @@ export const estimateNukeTime = (
 
   const maxRate = sellPrice * taxRate * gameSpeed;
   const maxRatePerNeighbour = maxRate / maxNeighbours;
-  const rateOfActualNeighbours = maxRatePerNeighbour * neighbourNumber;
 
-  const remainingHours = remainingStake / rateOfActualNeighbours;
-  const remainingSeconds = remainingHours * baseTime;
+  return {
+    taxRate,
+    baseTime,
+    maxRate,
+    ratePerNeighbour : maxRatePerNeighbour,
+  }
 
-  console.log('estimated seconds', remainingSeconds);
-  return remainingSeconds;
 };

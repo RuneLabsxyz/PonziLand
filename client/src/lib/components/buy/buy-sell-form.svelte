@@ -7,6 +7,7 @@
   import { Select, SelectContent, SelectValue } from '../ui/select';
   import SelectItem from '../ui/select/select-item.svelte';
   import SelectTrigger from '../ui/select/select-trigger.svelte';
+  import BuyInsights from './buy-insights.svelte';
 
   let {
     selectedToken = $bindable<Token | undefined>(),
@@ -76,8 +77,15 @@
     </div>
     Add Token Manually ◭ coming soon ◭
   </button>
-  <Label class="text-xl font-semibold">Stake Amount</Label>
-  <Input type="number" bind:value={stakeAmountVal} />
-  <Label class="text-xl font-semibold">Sell Price</Label>
-  <Input type="number" bind:value={sellAmountVal} />
+  <div class="flex gap-2">
+    <div>
+      <Label class="text-xl font-semibold">Stake Amount</Label>
+      <Input type="number" bind:value={stakeAmountVal} />
+    </div>
+    <div>
+      <Label class="text-xl font-semibold">Sell Price</Label>
+      <Input type="number" bind:value={sellAmountVal} />
+    </div>
+  </div>
+  <BuyInsights {sellAmountVal} {stakeAmountVal} />
 </div>
