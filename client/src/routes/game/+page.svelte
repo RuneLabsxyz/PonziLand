@@ -55,7 +55,7 @@
       .then(async ([_, accountManager]) => {
         if (accountManager?.getProvider()?.getAccount() == null) {
           console.info('The user is not logged in! Attempting login.');
-          await accountManager.getProvider()?.connect();
+          await accountManager?.getProvider()?.connect();
         }
 
         clearLoading();

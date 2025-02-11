@@ -20,6 +20,9 @@ export default defineConfig({
     },
     conditions: process.env.VITEST ? ['browser'] : undefined,
   },
+  define: {
+    global: {},
+  },
   ssr: {
     noExternal: ['@dojoengine/torii-client'],
   },

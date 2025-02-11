@@ -1,13 +1,14 @@
 <script>
   import { goto } from '$app/navigation';
-  import { setupAccount } from '$lib/contexts/account';
+  import { setupAccount, useAccount } from '$lib/contexts/account';
   import { dojoConfig } from '$lib/dojoConfig';
 
   // setup account
-  const account = setupAccount();
+  //
+  const account = useAccount();
 
   async function startGame() {
-    const accountProvider = await account;
+    const accountProvider = account;
     if (accountProvider == null) {
       console.log('No accountProvider?!?');
       return;

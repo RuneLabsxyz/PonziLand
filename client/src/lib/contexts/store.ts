@@ -1,7 +1,7 @@
 // TODO: Add bindings
 import type { SchemaType } from '$lib/models.gen';
 import zustandToSvelte from '$lib/zustandToSvelte';
-import { createDojoStore } from '@dojoengine/sdk';
+import { createDojoStore } from '@dojoengine/sdk/react';
 import { getContext, setContext } from 'svelte';
 
 const storeKey = Symbol('dojo_store');

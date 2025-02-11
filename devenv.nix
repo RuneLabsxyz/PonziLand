@@ -20,6 +20,7 @@ in {
     jq
     bc
     colorized-logs
+    wrangler
   ];
 
   languages.javascript = {

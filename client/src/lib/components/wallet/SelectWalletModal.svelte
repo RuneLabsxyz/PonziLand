@@ -2,7 +2,12 @@
   import { on } from 'svelte/events';
   import { onMount } from 'svelte';
   import { dojoConfig } from '$lib/dojoConfig';
-  import { setupAccount, USE_BURNER, useAccount } from '$lib/contexts/account';
+  import {
+    AccountManager,
+    setupAccount,
+    USE_BURNER,
+    useAccount,
+  } from '$lib/contexts/account';
   import Button from '../ui/button/button.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
 
@@ -20,28 +25,31 @@
   const account = useAccount();
 
   const promisesToWait = (async () => {
-    validWallets = (await account.wait()).getAvailableWallets();
+    if (account != null) {
+      validWallets = (await account.wait()).getAvailableWallets();
+    }
   })();
 
-  onMount(() =>
+  onMount(() => {
     on(window, 'wallet_prompt', async () => {
       console.log('EVENT!');
       loading = true;
       visible = true;
+
       // Ensure everything has loaded.
       await promisesToWait;
 
       loading = false;
-    }),
-  );
+    });
+  });
 
   async function login(id: string) {
-    await account.selectAndLogin(id);
+    await account!.selectAndLogin(id);
     console.log('Logged in!');
 
     // TODO(#58): Split the session setup
-    if (account.getProvider()?.supportsSession()) {
-      await account.setupSession();
+    if (account!.getProvider()?.supportsSession()) {
+      await account!.setupSession();
     }
 
     visible = false;
