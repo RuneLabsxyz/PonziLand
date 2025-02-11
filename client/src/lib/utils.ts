@@ -4,6 +4,7 @@ import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 import type { BigNumberish } from 'starknet';
+import type { LandWithActions } from './api/land.svelte';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -168,4 +169,41 @@ export function ensureNumber(value: BigNumberish) {
   } else {
     return value;
   }
+}
+
+export function getNeighbours(
+  locationString: string,
+  landStore: LandWithActions[],
+) {
+  const location = toBigInt(locationString) ?? 0n;
+  const neighbors = [
+    location - 65n,
+    location - 64n,
+    location - 63n,
+    location - 1n,
+    location + 1n,
+    location + 63n,
+    location + 64n,
+    location + 65n,
+  ];
+
+  const neighborsHex = neighbors.map((loc) => toHexWithPadding(loc));
+
+  const filteredStore = landStore.filter(
+    (l) => l.owner !== toHexWithPadding(0),
+  );
+
+  console.log('filteredStore', filteredStore);
+  console.log('location', location);
+  console.log('neighbourHex', neighborsHex);
+
+  const neighbours = neighborsHex.map((loc) => {
+    return filteredStore.find((l) => {
+      return l.location == loc;
+    });
+  });
+
+  console.log('neighbours', neighbours);
+
+  return neighbours;
 }

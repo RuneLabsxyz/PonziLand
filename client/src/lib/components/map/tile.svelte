@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { nukableStore } from '$lib/api/land.svelte';
+  import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
@@ -13,19 +13,36 @@
     uiStore,
   } from '$lib/stores/stores.svelte';
   import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
+  import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
 
   let backgroundImage = $state('/tiles/grass.jpg');
 
-  let { land, dragged, scale } = $props<{
+  let {
+    land,
+    dragged,
+    scale,
+  }: { land: Tile; dragged: boolean; scale: number } = $props<{
     land: Tile;
     dragged: boolean;
     scale: number;
   }>();
 
-  let isOwner = $derived(land?.owner == padAddress($accountAddress ?? '0x1'));
+  let isOwner = $derived.by(() => {
+    if (land.type == 'grass') return false;
+    land?.owner == padAddress($accountAddress ?? '0x1');
+  });
+
+  let estimatedNukeTime = $derived.by(() => {
+    if (land.type !== 'house') return -1;
+    const estimatedNukeTime = land.getEstimatedNukeTime();
+    if (!estimatedNukeTime) return -1;
+
+    return estimatedNukeTime;
+  });
+
   let selected = $derived($selectedLand?.location === land.location);
 
   function handleClick() {
@@ -33,13 +50,14 @@
     if (dragged) return;
 
     if ($selectedLand?.location == land.location) {
-      moveCameraToLocation(land.location);
+      moveCameraToLocation(Number(land.location));
     }
 
-    selectLand(land);
+    selectLand(land as LandWithActions);
   }
 
   const getCastleImage = () => {
+    if (land.type !== 'house') return '';
     const token = data.availableTokens.find((t) => t.name === land.tokenUsed);
     if (!token) {
       const basicTypes = ['basic']; //'advanced', 'premium'
@@ -144,7 +162,7 @@
     {/if}
   {/if}
 
-  {#if isOwner && scale > 1.5}
+  {#if isOwner && scale > 1.5 && land.type === 'house'}
     <div
       class="absolute z-20 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
@@ -172,6 +190,15 @@
         alt="owned"
         style="image-rendering: pixelated;"
       />
+    </div>
+  {/if}
+  {#if land.type == 'house'}
+    <div class="absolute top-0 right-0 text-[4px]">
+      {#if estimatedNukeTime == -1}
+        inf.
+      {:else}
+        <LandNukeShield {estimatedNukeTime} />
+      {/if}
     </div>
   {/if}
 </div>

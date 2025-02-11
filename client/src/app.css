@@ -60,6 +60,13 @@
   src: url('/fonts/upheavtt.ttf') format('truetype');
 }
 
+@font-face {
+  font-family: 'PonziNumberV2';
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/PonziNumberV2.ttf') format('truetype');
+}
+
 .border-ponzi {
   background-clip: padding-box;
   border: solid transparent 0.4em;
