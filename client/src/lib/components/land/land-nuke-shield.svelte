@@ -1,9 +1,13 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip';
+  import { cn } from '$lib/utils';
 
-  let { estimatedNukeTime }: { estimatedNukeTime: number } = $props();
+  let {
+    estimatedNukeTime,
+    class: ClassName = '',
+  }: { estimatedNukeTime: number; class: string } = $props();
 
-  let estimatedDays = Math.floor(estimatedNukeTime / 60 / 60 / 24);
+  let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
   let estimatedTimeString = $derived.by(() => {
     // Convert estimatedNukeTime to a human-readable string
     if (estimatedNukeTime < 0) return 'N/A';
@@ -62,7 +66,10 @@
 <Tooltip.Root>
   <Tooltip.Trigger>
     <div
-      class="nuke-shield h-2 w-2 flex items-center justify-center leading-none"
+      class={cn(
+        'nuke-shield h-2 w-2 flex items-center justify-center leading-none',
+        ClassName,
+      )}
       style="background-image: {getStyle(estimatedDays)
         .image}; color: {getStyle(estimatedDays).color}"
     >
