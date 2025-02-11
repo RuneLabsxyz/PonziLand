@@ -43,6 +43,8 @@ trait IActions<T> {
 
     fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256);
 
+    fn level_up(self: @T, land_location: u64) -> bool;
+
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
         self: @T, land_location: u64, owner_land: ContractAddress,
@@ -61,7 +63,7 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use ponzi_land::models::land::{Land, LandTrait};
+    use ponzi_land::models::land::{Land, LandTrait, Level};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
 
@@ -71,9 +73,10 @@ pub mod actions {
     use ponzi_land::components::payable::PayableComponent;
 
     use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor, add_neighbors_for_auction};
+    use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
+        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE
     };
     use ponzi_land::store::{Store, StoreTrait};
 
@@ -111,15 +114,17 @@ pub mod actions {
         land_location: u64,
     }
 
+
     #[derive(Drop, Serde)]
     #[dojo::event]
-    pub struct NewLandEvent {
+    pub struct LandBoughtEvent {
         #[key]
-        owner_land: ContractAddress,
+        buyer: ContractAddress,
         #[key]
         land_location: u64,
-        token_for_sale: ContractAddress,
-        sell_price: u256,
+        sold_price: u256,
+        seller: ContractAddress,
+        token_used: ContractAddress,
     }
 
     #[derive(Drop, Serde)]
@@ -145,6 +150,7 @@ pub mod actions {
     pub struct AuctionFinishedEvent {
         #[key]
         land_location: u64,
+        buyer: ContractAddress,
         start_time: u64,
         final_time: u64,
         final_price: u256,
@@ -209,9 +215,15 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
+
             assert(caller != land.owner, 'you already own this land');
 
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
+
+            let seller = land.owner;
+            let sold_price = land.sell_price;
+            let token_used = land.token_used;
+
             self.internal_claim(store, land);
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
@@ -231,6 +243,14 @@ pub mod actions {
                     amount_to_stake,
                     liquidity_pool,
                     caller,
+                );
+
+            store
+                .world
+                .emit_event(
+                    @LandBoughtEvent {
+                        buyer: caller, land_location: land.location, sold_price, seller, token_used,
+                    },
                 );
         }
 
@@ -406,6 +426,17 @@ pub mod actions {
                 );
         }
 
+        fn level_up(self: @ContractState, land_location: u64) -> bool {
+            let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
+
+            let current_time = get_block_timestamp();
+            let elapsed_time_since_buy = (current_time - land.block_date_bought)
+                * TIME_SPEED.into();
+
+            self.update_level(ref store, ref land, elapsed_time_since_buy)
+        }
 
         //GETTERS FUNCTIONS
 
@@ -603,6 +634,7 @@ pub mod actions {
                 .emit_event(
                     @AuctionFinishedEvent {
                         land_location: land.location,
+                        buyer: land.owner,
                         start_time: auction.start_time,
                         final_time: get_block_timestamp(),
                         final_price: auction.get_current_price_decay_rate(),
@@ -668,14 +700,20 @@ pub mod actions {
             store.set_land(land);
 
             self.stake._add(amount_to_stake, land, store);
+        }
 
-            store
-                .world
-                .emit_event(
-                    @NewLandEvent {
-                        owner_land: land.owner, land_location, token_for_sale, sell_price,
-                    },
-                );
+        fn update_level(
+            self: @ContractState, ref store: Store, ref land: Land, elapsed_time: u64
+        ) -> bool {
+            let new_level = calculate_new_level(elapsed_time);
+
+            if land.level != new_level {
+                land.level = new_level;
+                store.set_land(land);
+                true
+            } else {
+                false
+            }
         }
     }
 }
