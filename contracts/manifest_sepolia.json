@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
-    "address": "0x27a82b1641d3a6b4b0b049afeb6c9f0196fe6b440fcb636e87be0243b23736f",
-    "seed": "ponzi_land_private_1",
+    "address": "0x2cf5e4d6e0b6fb887a3d16cdb17765342b42ef64c146fc06e26b371938a8efb",
+    "seed": "ponzi_land_private_3",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1252,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x1f058fe3a5a82cc12c1e38444d3f9f3fd3511ef4c95851a3d4e07ad195e0af6",
-      "class_hash": "0x70af2e31348e464723b8a3f28f825d121dfdbe16654ea4febbf3ae75f771bca",
+      "address": "0x616d93aabddcbcf49cc2337fe05dc5383bf4b73cb8975496db09544dd3202af",
+      "class_hash": "0xb9e88766372aeeac2c4aabc9f6306d4ed231006d51c282d30f46e5674e98a2",
       "abi": [
         {
           "type": "impl",
@@ -1418,7 +1418,7 @@
         },
         {
           "type": "struct",
-          "name": "ponzi_land::components::payable::PayableComponent::TokenInfo",
+          "name": "ponzi_land::utils::common_strucs::TokenInfo",
           "members": [
             {
               "name": "token_address",
@@ -1432,7 +1432,7 @@
         },
         {
           "type": "struct",
-          "name": "ponzi_land::components::payable::PayableComponent::ClaimInfo",
+          "name": "ponzi_land::utils::common_strucs::ClaimInfo",
           "members": [
             {
               "name": "token_address",
@@ -1454,7 +1454,7 @@
         },
         {
           "type": "struct",
-          "name": "ponzi_land::components::payable::PayableComponent::YieldInfo",
+          "name": "ponzi_land::utils::common_strucs::YieldInfo",
           "members": [
             {
               "name": "token",
@@ -1480,7 +1480,7 @@
         },
         {
           "type": "struct",
-          "name": "ponzi_land::components::payable::PayableComponent::LandYieldInfo",
+          "name": "ponzi_land::utils::common_strucs::LandYieldInfo",
           "members": [
             {
               "name": "remaining_stake_time",
@@ -1488,7 +1488,7 @@
             },
             {
               "name": "yield_info",
-              "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::YieldInfo>"
+              "type": "core::array::Array::<ponzi_land::utils::common_strucs::YieldInfo>"
             }
           ]
         },
@@ -1668,22 +1668,6 @@
             },
             {
               "type": "function",
-              "name": "get_stake_balance",
-              "inputs": [
-                {
-                  "name": "staker",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::integer::u256"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
               "name": "get_land",
               "inputs": [
                 {
@@ -1694,22 +1678,6 @@
               "outputs": [
                 {
                   "type": "ponzi_land::models::land::Land"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "get_pending_taxes",
-              "inputs": [
-                {
-                  "name": "owner_land",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::TokenInfo>"
                 }
               ],
               "state_mutability": "view"
@@ -1729,7 +1697,7 @@
               ],
               "outputs": [
                 {
-                  "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::TokenInfo>"
+                  "type": "core::array::Array::<ponzi_land::utils::common_strucs::TokenInfo>"
                 }
               ],
               "state_mutability": "view"
@@ -1761,7 +1729,7 @@
               ],
               "outputs": [
                 {
-                  "type": "core::array::Array::<ponzi_land::components::payable::PayableComponent::ClaimInfo>"
+                  "type": "core::array::Array::<ponzi_land::utils::common_strucs::ClaimInfo>"
                 }
               ],
               "state_mutability": "view"
@@ -1777,7 +1745,7 @@
               ],
               "outputs": [
                 {
-                  "type": "ponzi_land::components::payable::PayableComponent::LandYieldInfo"
+                  "type": "ponzi_land::utils::common_strucs::LandYieldInfo"
                 }
               ],
               "state_mutability": "view"
@@ -1909,6 +1877,18 @@
         },
         {
           "type": "event",
+          "name": "ponzi_land::components::stake::StakeComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::components::taxes::TaxesComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
           "name": "ponzi_land::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
@@ -1925,6 +1905,16 @@
             {
               "name": "PayableEvent",
               "type": "ponzi_land::components::payable::PayableComponent::Event",
+              "kind": "flat"
+            },
+            {
+              "name": "StakeEvent",
+              "type": "ponzi_land::components::stake::StakeComponent::Event",
+              "kind": "flat"
+            },
+            {
+              "name": "TaxesEvent",
+              "type": "ponzi_land::components::taxes::TaxesComponent::Event",
               "kind": "flat"
             }
           ]
