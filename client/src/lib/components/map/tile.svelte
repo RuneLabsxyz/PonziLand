@@ -1,12 +1,10 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
   import data from '$lib/data.json';
-  import { cameraPosition, moveCameraToLocation } from '$lib/stores/camera';
+  import { moveCameraToLocation } from '$lib/stores/camera';
   import {
     accountAddress,
-    mousePosCoords,
     selectedLand,
     selectedLandMeta,
     selectLand,
@@ -32,7 +30,7 @@
 
   let isOwner = $derived.by(() => {
     if (land.type == 'grass') return false;
-    land?.owner == padAddress($accountAddress ?? '0x1');
+    return land?.owner == padAddress($accountAddress ?? '0x1');
   });
 
   let estimatedNukeTime = $derived.by(() => {
