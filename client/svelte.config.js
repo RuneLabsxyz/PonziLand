@@ -25,7 +25,8 @@ const profiles = {
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
-    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-sepolia-target/torii',
+    PUBLIC_DOJO_TORII_URL:
+      'https://api.cartridge.gg/x/ponziland-sepolia-target/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
