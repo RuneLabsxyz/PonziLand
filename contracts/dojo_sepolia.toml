@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "ponzi_land_private_1"
+seed = "ponzi_land_private_3"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -20,7 +20,7 @@ rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
 ipfs_config.url = "https://ipfs.infura.io:5001"
 ipfs_config.username = "2EBrzr7ZASQZKH32sl2xWauXPSA"
 ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
-world_address = "0x027a82b1641d3a6b4b0b049afeb6c9f0196fe6b440fcb636e87be0243b23736f"
+world_address = "0x02cf5e4d6e0b6fb887a3d16cdb17765342b42ef64c146fc06e26b371938a8efb"
 
 [writers]
 "ponzi_land" = ["ponzi_land-actions"]
