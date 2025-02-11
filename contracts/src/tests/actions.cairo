@@ -11,7 +11,7 @@ use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 
 use ponzi_land::tests::setup::{setup, setup::{create_setup, deploy_erc20, RECIPIENT}};
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-use ponzi_land::models::land::{Land};
+use ponzi_land::models::land::{Land, Level};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS};
 use ponzi_land::helpers::coord::{left, right, up, down};
@@ -476,7 +476,7 @@ fn test_detailed_tax_calculation() {
     assert(land_1281.last_pay_time == 5600, 'Wrong last pay time');
 
     // Verify stake amount was reduced by correct tax amount
-    assert(land_1281.stake_amount == 9717, // 10000 - 200
+    assert(land_1281.stake_amount == 9717, // 10000 - 283
      'Wrong stake amount after tax');
 
     // Verify taxes for central land (1280)
@@ -486,3 +486,29 @@ fn test_detailed_tax_calculation() {
     assert(erc20_neighbor.balanceOf(RECIPIENT()) == 283, 'Wrong tax amount calculated');
 }
 
+#[test]
+fn test_level_up() {
+    let (store, actions_system, main_currency) = setup_test();
+
+    let erc20_neighbor = deploy_erc20(NEIGHBOR_1());
+
+    set_block_timestamp(100);
+
+    initialize_land(actions_system, main_currency, RECIPIENT(), 1280, 10000, 5000, main_currency);
+
+    set_block_timestamp(200);
+    initialize_land(
+        actions_system, main_currency, NEIGHBOR_1(), 1281, 20000, 10000, erc20_neighbor
+    );
+
+    set_block_timestamp(60000);
+
+    set_contract_address(RECIPIENT());
+    actions_system.level_up(1280);
+
+    let land_1280 = store.land(1280);
+    let land_1281 = store.land(1281);
+
+    assert_eq!(land_1280.level, Level::First, "Land 1280 should be Level::First");
+    assert_eq!(land_1281.level, Level::None, "Land 1281 should be Level::None");
+}
