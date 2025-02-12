@@ -15,13 +15,16 @@ import { derived, get, writable, type Readable } from 'svelte/store';
 import data from '$lib/data.json';
 import { type LandYieldInfo } from '$lib/interfaces';
 import { estimateNukeTime, getNeighbourYieldArray } from '$lib/utils/taxes';
-
+import type { Level as LevelModel } from '$lib/models.gen';
+import { fromDojoLevel } from '$lib/utils/level';
 export type TransactionResult = Promise<
   | {
       transaction_hash: string;
     }
   | undefined
 >;
+
+export type Level = keyof LevelModel;
 
 export type LandSetup = {
   tokenForSaleAddress: string;
@@ -49,7 +52,7 @@ export type LandsStore = Readable<LandWithActions[]> & {
   getPendingTaxes(owner: string): Promise<Result | undefined>;
 };
 
-export type LandWithMeta = Omit<Land, 'location'> & {
+export type LandWithMeta = Omit<Land, 'location' | 'level'> & {
   location: string;
   // Type conversions
   stakeAmount: CurrencyAmount;
@@ -57,6 +60,8 @@ export type LandWithMeta = Omit<Land, 'location'> & {
 
   type: 'auction' | 'house' | 'grass';
   owner: string;
+
+  level: Level;
 
   tokenUsed: string | null;
   tokenAddress: string | null;
@@ -158,6 +163,7 @@ export function useLands(): LandsStore | undefined {
             | 'auction'
             | 'house',
           owner: land.owner,
+          level: fromDojoLevel(land.level) ?? 'None',
           sellPrice: CurrencyAmount.fromUnscaled(land.sell_price),
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
@@ -280,11 +286,7 @@ export function useLands(): LandsStore | undefined {
         startPrice.toBignumberish(),
         floorPrice.toBignumberish(),
         decayRate,
-      );
-    },
-    getPendingTaxes() {
-      return sdk.client.actions.getPendingTaxes(
-        account()!.getAccount()!.address,
+        false,
       );
     },
   };

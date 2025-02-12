@@ -2,6 +2,7 @@
 import type { SchemaType } from '$lib/models.gen';
 import zustandToSvelte from '$lib/zustandToSvelte';
 import { createDojoStore } from '@dojoengine/sdk/react';
+import type { createDojoStore as dojoStoreFunction } from '@dojoengine/sdk';
 import { getContext, setContext } from 'svelte';
 
 const storeKey = Symbol('dojo_store');
@@ -9,7 +10,12 @@ const storeKey = Symbol('dojo_store');
 export type Store = ReturnType<typeof setupStore>;
 
 export function setupStore() {
-  const value = zustandToSvelte(createDojoStore<SchemaType>());
+  const value = zustandToSvelte(
+    // This is a dirty fix to make the type checker happy
+    createDojoStore<SchemaType>() as ReturnType<
+      typeof dojoStoreFunction<SchemaType>
+    >,
+  );
 
   setContext(storeKey, value);
 

@@ -39,8 +39,8 @@ const policies: SessionPolicies = (() => {
 
 const internalDojoConfig = createDojoConfig({
   manifest,
-  rpcUrl: 'https://api.cartridge.gg/x/starknet/sepolia',
-  toriiUrl: 'https://api.cartridge.gg/x/ponziland-sepolia/torii',
+  rpcUrl: PUBLIC_DOJO_RPC_URL,
+  toriiUrl: PUBLIC_DOJO_TORII_URL,
   masterAddress: PUBLIC_DOJO_BURNER_ADDRESS,
   masterPrivateKey: PUBLIC_DOJO_BURNER_PRIVATE,
 });
