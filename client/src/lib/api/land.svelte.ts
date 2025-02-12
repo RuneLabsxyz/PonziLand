@@ -48,8 +48,6 @@ export type LandsStore = Readable<LandWithActions[]> & {
     floorPrice: CurrencyAmount,
     decayRate: BigNumberish,
   ): TransactionResult;
-
-  getPendingTaxes(owner: string): Promise<Result | undefined>;
 };
 
 export type LandWithMeta = Omit<Land, 'location' | 'level'> & {
@@ -91,6 +89,7 @@ export type LandWithActions = LandWithMeta & {
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
   getYieldInfo(): Promise<LandYieldInfo | undefined>;
   getEstimatedNukeTime(): number | undefined;
+  levelUp(): TransactionResult;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -236,6 +235,12 @@ export function useLands(): LandsStore | undefined {
           )) as LandYieldInfo | undefined;
 
           return result;
+        },
+        async levelUp() {
+          return await sdk.client.actions.levelUp(
+            account()?.getAccount()!,
+            land.location,
+          );
         },
         getEstimatedNukeTime() {
           return estimateNukeTime(
