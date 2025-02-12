@@ -257,9 +257,13 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const actions_levelUp = async (landLocation: BigNumberish) => {
+	const actions_levelUp = async (snAccount: Account | AccountInterface, landLocation: BigNumberish) => {
 		try {
-			return await provider.call("ponzi_land", build_actions_levelUp_calldata(landLocation));
+			return await provider.execute(
+				snAccount,
+				build_actions_levelUp_calldata(landLocation),
+				"ponzi_land",
+			);
 		} catch (error) {
 			console.error(error);
 			throw error;
