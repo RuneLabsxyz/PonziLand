@@ -1253,7 +1253,7 @@
   "contracts": [
     {
       "address": "0x13f64f126c4f0d91a31328d4f08a5c293e5c4f4a02bea7f5e0d9a7fec826658",
-      "class_hash": "0x3b7fd70d529dc7e18d563ce2b338341ca68d43f68429a3e088017b5ebcdc3e6",
+      "class_hash": "0x5ba5b4bed818a7c3d04e727b98b1607e0aef1e31bb526924c60b8253739419d",
       "abi": [
         {
           "type": "impl",
@@ -1702,7 +1702,7 @@
                   "type": "core::bool"
                 }
               ],
-              "state_mutability": "view"
+              "state_mutability": "external"
             },
             {
               "type": "function",
@@ -1981,6 +1981,7 @@
         "nuke",
         "increase_price",
         "increase_stake",
+        "level_up",
         "upgrade"
       ]
     }

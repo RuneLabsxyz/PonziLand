@@ -1,5 +1,6 @@
 <script lang="ts">
   import LandYieldInfo from '$lib/components/land/land-yield-info.svelte';
+  import Button from '$lib/components/ui/button/button.svelte';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import LandOverview from '../../land/land-overview.svelte';
 </script>
@@ -16,10 +17,17 @@
       </div>
     </div>
   </div>
+
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
   <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+    <div class="flex justify-between">
+      <p class="opacity-50">Level</p>
+      <p>
+        {$selectedLandMeta?.level}
+      </p>
+    </div>
     {#if $selectedLandMeta?.tokenUsed}
       <div class="flex justify-between">
         <p class="opacity-50">Token</p>
@@ -44,6 +52,17 @@
         {$selectedLandMeta?.sellPrice}
         {$selectedLandMeta?.token?.symbol}
       </p>
+    </div>
+
+    <div class="flex h-8">
+      <Button
+        onclick={async () => {
+          console.log(
+            'Result of levelup: ',
+            await $selectedLandMeta?.levelUp(),
+          );
+        }}>Level Up</Button
+      >
     </div>
   </div>
 </div>
