@@ -43,7 +43,7 @@ trait IActions<T> {
 
     fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256);
 
-    fn level_up(self: @T, land_location: u64) -> bool;
+    fn level_up(ref self: T, land_location: u64) -> bool;
 
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
@@ -426,10 +426,13 @@ pub mod actions {
                 );
         }
 
-        fn level_up(self: @ContractState, land_location: u64) -> bool {
+        fn level_up(ref self: ContractState, land_location: u64) -> bool {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
+            let caller = get_caller_address();
+
+            assert(land.owner == caller, 'not the owner');
 
             let current_time = get_block_timestamp();
             let elapsed_time_since_buy = (current_time - land.block_date_bought)
