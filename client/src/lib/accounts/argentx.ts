@@ -23,7 +23,10 @@ import {
 } from 'starknet';
 import { WALLET_API } from '@starknet-io/types-js';
 import { CommonStarknetWallet } from './getStarknet';
-import type { AccountProvider, StoredSession } from '$lib/contexts/account';
+import type {
+  AccountProvider,
+  StoredSession,
+} from '$lib/contexts/account.svelte';
 import { DojoProvider, type DojoCall } from '@dojoengine/core';
 
 const FUSE_DISABLE_ARGENT = true;

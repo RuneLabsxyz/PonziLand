@@ -1,8 +1,8 @@
 <script>
   import { dev } from '$app/environment';
-  import { setupAccount } from '$lib/contexts/account';
-  import { setupClient } from '$lib/contexts/client';
-  import { setupStore } from '$lib/contexts/store';
+  import { setupAccount } from '$lib/contexts/account.svelte';
+  import { setupClient } from '$lib/contexts/client.svelte';
+  import { setupStore } from '$lib/contexts/store.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
   import Map from '$lib/components/map/map.svelte';
   import Ui from '$lib/components/ui.svelte';

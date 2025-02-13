@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PUBLIC_DOJO_CHAIN_ID } from '$env/static/public';
-  import { useAccount } from '$lib/contexts/account';
+  import { useAccount } from '$lib/contexts/account.svelte';
   import { onMount } from 'svelte';
   import Button from '../ui/button/button.svelte';
   import { Card } from '../ui/card';

@@ -12,6 +12,9 @@ export default defineConfig({
   server: {
     host: 'localhost',
     port: 3000,
+    fs: {
+      allow: ['../constracts/manifest_*.json'],
+    },
   },
   resolve: {
     alias: {
@@ -23,6 +26,7 @@ export default defineConfig({
   define: {
     global: {},
   },
+
   ssr: {
     noExternal: ['@dojoengine/torii-client'],
   },
