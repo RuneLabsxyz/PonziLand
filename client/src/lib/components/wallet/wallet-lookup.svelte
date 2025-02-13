@@ -29,12 +29,12 @@
   const connected = $derived(accountDataProvider.isConnected);
 </script>
 
-<div class="fixed top-0 right-0 z-50 w-72">
+<div class="fixed top-0 right-0 z-50">
   <div class="absolute top-2 left-0" style="transform: translateX(-120%);">
     <WalletHelp />
   </div>
   {#if connected}
-    <Card class="shadow-ponzi">
+    <Card class="shadow-ponzi w-72">
       <div class="flex justify-between items-center">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
           <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
