@@ -15,7 +15,7 @@ export class Neighbors {
     upRight: bigint;
     downLeft: bigint;
     downRight: bigint;
-};
+  };
   private source: LandWithActions[] = [];
   private neighbors: LandWithActions[] = [];
 
@@ -33,7 +33,9 @@ export class Neighbors {
     if (neighbors) this.neighbors = neighbors;
     if (source) {
       this.source = source;
-      this.neighbors = Neighbors.getWithLocation(location, this.source).filter(l => l !== undefined);
+      this.neighbors = Neighbors.getWithLocation(location, this.source).filter(
+        (l) => l !== undefined,
+      );
     }
   }
 
@@ -46,35 +48,51 @@ export class Neighbors {
   }
 
   public getUpLeft() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.upLeft));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.upLeft),
+    );
   }
 
   public getUp() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.up));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.up),
+    );
   }
 
   public getUpRight() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.upRight));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.upRight),
+    );
   }
 
   public getLeft() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.left));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.left),
+    );
   }
 
   public getRight() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.right));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.right),
+    );
   }
 
   public getDownLeft() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.downLeft));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.downLeft),
+    );
   }
 
   public getDown() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.down));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.down),
+    );
   }
 
   public getDownRight() {
-    return this.neighbors.find(l => l.location === toHexWithPadding(this.locations.downRight));
+    return this.neighbors.find(
+      (l) => l.location === toHexWithPadding(this.locations.downRight),
+    );
   }
 
   static getLocations(location: bigint, gridSize = GRID_SIZE) {

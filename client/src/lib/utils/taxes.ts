@@ -140,7 +140,6 @@ export const estimateNukeTime = (
   remainingStake: number,
   neighbourNumber: number,
 ) => {
-  
   const tax = estimateTax(sellPrice);
 
   const rateOfActualNeighbours = tax.ratePerNeighbour * neighbourNumber;
@@ -152,9 +151,7 @@ export const estimateNukeTime = (
   return remainingSeconds;
 };
 
-export const estimateTax = (
-  sellPrice: number,
-) => {
+export const estimateTax = (sellPrice: number) => {
   const gameSpeed = GAME_SPEED;
   const taxRate = 0.02;
   const baseTime = 3600;
@@ -167,7 +164,6 @@ export const estimateTax = (
     taxRate,
     baseTime,
     maxRate,
-    ratePerNeighbour : maxRatePerNeighbour,
-  }
-
+    ratePerNeighbour: maxRatePerNeighbour,
+  };
 };
