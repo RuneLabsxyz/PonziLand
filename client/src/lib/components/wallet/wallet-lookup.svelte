@@ -31,7 +31,33 @@
 
 <div class="fixed top-0 right-0 z-50">
   <div class="absolute top-2 left-0" style="transform: translateX(-120%);">
-    <WalletHelp />
+    <div class="flex flex-col gap-2">
+      <WalletHelp />
+      <a
+        href="https://x.com/ponzidotland"
+        target="_blank"
+        referrerpolicy="no-referrer"
+      >
+        <img
+          src="/assets/ui/social/x.png"
+          alt="X icon"
+          style="image-rendering: pixelated;"
+          class="h-8 w-8"
+        />
+      </a>
+      <a
+        href="https://discord.gg/WJgymPB5aB"
+        target="_blank"
+        referrerpolicy="no-referrer"
+      >
+        <img
+          src="/assets/ui/social/discord.png"
+          alt="Discord icon"
+          style="image-rendering: pixelated;"
+          class="h-8 w-8"
+        />
+      </a>
+    </div>
   </div>
   {#if connected}
     <Card class="shadow-ponzi w-72">
