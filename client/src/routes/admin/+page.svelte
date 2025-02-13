@@ -5,9 +5,9 @@
   import ThreeDots from '$lib/components/loading/three-dots.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
-  import { setupAccount } from '$lib/contexts/account';
-  import { setupClient } from '$lib/contexts/client';
-  import { setupStore } from '$lib/contexts/store';
+  import { setupAccount } from '$lib/contexts/account.svelte';
+  import { setupClient } from '$lib/contexts/client.svelte';
+  import { setupStore } from '$lib/contexts/store.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
   import type { Token } from '$lib/interfaces';
   import { selectedLand } from '$lib/stores/stores.svelte';

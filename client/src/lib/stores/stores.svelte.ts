@@ -10,12 +10,42 @@ import { toHexWithPadding } from '$lib/utils';
 import { derived, readable, writable, type Readable } from 'svelte/store';
 import type { YieldInfo } from '$lib/interfaces';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import { useAccount } from '$lib/contexts/account';
+import { useAccount } from '$lib/contexts/account.svelte';
+import type { Land } from '$lib/models.gen';
 
-export const selectedLand = writable<LandWithActions | undefined>();
+export const selectedLandPosition = writable<string | null>(null);
+
+export const selectedLand: Readable<LandWithActions | undefined> = derived(
+  selectedLandPosition,
+  ($pos, set) => {
+    // We only call useLands() once there’s an active subscription on selectedLand.
+    let unsubscribe: (() => void) | undefined;
+
+    if ($pos) {
+      // “Lazily” set up the subscription
+      const landsStore = useLands()!;
+
+      unsubscribe = landsStore.subscribe((lands) => {
+        if (!lands) {
+          set(undefined);
+        } else {
+          set(lands.find((land) => land.location === $pos));
+        }
+      });
+    } else {
+      // No position => no land
+      set(undefined);
+    }
+
+    return () => {
+      // Called on cleanup when no more subscribers
+      unsubscribe?.();
+    };
+  },
+);
 
 export function selectLand(land: LandWithActions) {
-  selectedLand.set(land);
+  selectedLandPosition.set(land.location);
 }
 
 export const selectedLandMeta: Readable<
@@ -25,7 +55,7 @@ export const selectedLandMeta: Readable<
   | undefined
 > = derived(selectedLand, ($selectedLand) => {
   if ($selectedLand) {
-    if ($selectedLand.owner == undefined) {
+    if ($selectedLand?.owner == undefined) {
       return {
         ...$selectedLand,
         isEmpty: true,
@@ -35,7 +65,7 @@ export const selectedLandMeta: Readable<
 
     // get token info from tokenAddress from data
     const token = data.availableTokens.find(
-      (token) => token.address === $selectedLand.tokenAddress,
+      (token) => token.address === $selectedLand!.tokenAddress,
     );
 
     // --- Helper Functions --- TODO
@@ -60,7 +90,7 @@ export const accountAddress = readable<string | undefined>(
   (set, update) => {
     const account = useAccount();
 
-    set(account.getProvider()?.getAccount()?.address);
+    set(account!.getProvider()?.getAccount()?.address);
 
     // Handle unsubscribe
     return account!.listen((event) => {

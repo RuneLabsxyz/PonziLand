@@ -1,4 +1,7 @@
-import type { AccountProvider, StoredSession } from '$lib/contexts/account';
+import type {
+  AccountProvider,
+  StoredSession,
+} from '$lib/contexts/account.svelte';
 import { dojoConfig } from '$lib/dojoConfig';
 import { getStarknet } from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';

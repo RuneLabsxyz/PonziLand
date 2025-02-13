@@ -8,6 +8,8 @@ import { getContext, setContext } from 'svelte';
 
 const storeKey = Symbol('dojo_store');
 
+let state: { value?: Store } = $state({});
+
 export type Store = ReturnType<typeof setupStore>;
 
 export function setupStore() {
@@ -18,13 +20,14 @@ export function setupStore() {
     >,
   );
 
-  setContext(storeKey, value);
+  state = { value };
 
   return value;
 }
 
 export function useStore(): Store {
-  const context = getContext<Store | undefined>(storeKey);
+  const context = state.value;
+
   if (context == undefined) {
     throw 'Store is not set!';
   } else {

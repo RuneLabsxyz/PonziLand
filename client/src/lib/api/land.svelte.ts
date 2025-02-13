@@ -107,7 +107,7 @@ export function useLands(): LandsStore | undefined {
 
   // We are using this to ensure that we are getting the latest provider, not an old one.
   const account = () => {
-    return accountManager.getProvider();
+    return accountManager!.getProvider();
   };
 
   (async () => {

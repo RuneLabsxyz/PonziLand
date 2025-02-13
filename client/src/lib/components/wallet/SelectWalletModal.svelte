@@ -7,7 +7,7 @@
     setupAccount,
     USE_BURNER,
     useAccount,
-  } from '$lib/contexts/account';
+  } from '$lib/contexts/account.svelte';
   import Button from '../ui/button/button.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
 
