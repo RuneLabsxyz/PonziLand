@@ -22,12 +22,6 @@
     <LandOverview land={$selectedLandMeta} />
   {/if}
   <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
-    <div class="flex justify-between">
-      <p class="opacity-50">Level</p>
-      <p>
-        {$selectedLandMeta?.level}
-      </p>
-    </div>
     {#if $selectedLandMeta?.tokenUsed}
       <div class="flex justify-between">
         <p class="opacity-50">Token</p>
