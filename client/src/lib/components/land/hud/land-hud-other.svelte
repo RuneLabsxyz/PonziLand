@@ -22,12 +22,6 @@
         </a>
       </p>
     </div>
-    <div class="flex justify-between">
-      <p class="opacity-50">Level</p>
-      <p>
-        {$selectedLandMeta?.level}
-      </p>
-    </div>
 
     <div class="flex justify-between">
       <p class="opacity-50">Price</p>

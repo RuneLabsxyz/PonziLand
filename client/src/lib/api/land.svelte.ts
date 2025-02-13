@@ -24,7 +24,7 @@ export type TransactionResult = Promise<
   | undefined
 >;
 
-export type Level = keyof LevelModel;
+export type Level = 0 | 1 | 2;
 
 export type LandSetup = {
   tokenForSaleAddress: string;
@@ -162,7 +162,7 @@ export function useLands(): LandsStore | undefined {
             | 'auction'
             | 'house',
           owner: land.owner,
-          level: fromDojoLevel(land.level) ?? 'None',
+          level: fromDojoLevel(land.level),
           sellPrice: CurrencyAmount.fromUnscaled(land.sell_price),
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
