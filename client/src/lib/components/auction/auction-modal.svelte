@@ -8,9 +8,11 @@
     selectedLand,
     selectedLandMeta,
     uiStore,
+    type SelectedLand,
   } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { onMount } from 'svelte';
   import BuySellForm from '../buy/buy-sell-form.svelte';
   import LandOverview from '../land/land-overview.svelte';
   import ThreeDots from '../loading/three-dots.svelte';
@@ -23,6 +25,12 @@
   let extended = $state(false);
   let loading = $state(false);
   let fetching = $state(false);
+
+  let land: SelectedLand = $state();
+
+  onMount(() => {
+    land = $selectedLandMeta;
+  });
 
   let currentPrice = $state<CurrencyAmount>();
   let priceDisplay = $derived(currentPrice?.toString());
@@ -64,7 +72,7 @@
       );
 
       if (result?.transaction_hash) {
-        await accountManager
+        await accountManager!
           .getProvider()
           ?.getWalletAccount()
           ?.waitForTransaction(result.transaction_hash);
@@ -99,11 +107,11 @@
   });
 
   const fetchCurrentPrice = () => {
-    if (!$selectedLand) {
+    if (!land) {
       return;
     }
 
-    $selectedLandMeta?.getCurrentAuctionPrice().then((res) => {
+    land?.getCurrentAuctionPrice().then((res) => {
       currentPrice = res;
       fetching = false;
     });
@@ -120,8 +128,8 @@
     <div class="flex flex-col items-center">
       <div class="flex gap-6">
         <div class="flex flex-col items-center justify-center p-5 gap-3">
-          {#if $selectedLandMeta}
-            <LandOverview land={$selectedLandMeta} size="lg" />
+          {#if land}
+            <LandOverview {land} size="lg" />
           {/if}
           <div class="text-shadow-none">0 watching</div>
           <div class="flex items-center gap-1">
@@ -165,12 +173,12 @@
           <div class="text-ponzi-huge text-3xl"></div>
           <div class="flex items-center gap-2">
             <div class="text-3xl text-ponzi-huge text-white">
-              {$selectedLandMeta?.token?.symbol}
+              {land?.token?.symbol}
             </div>
             <img
               class="w-6 h-6"
-              src={$selectedLandMeta?.token?.images.icon}
-              alt="{$selectedLandMeta?.token?.symbol} icon"
+              src={land?.token?.images.icon}
+              alt="{land?.token?.symbol} icon"
             />
           </div>
         </div>

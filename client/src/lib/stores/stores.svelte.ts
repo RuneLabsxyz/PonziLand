@@ -48,36 +48,40 @@ export function selectLand(land: LandWithActions) {
   selectedLandPosition.set(land.location);
 }
 
-export const selectedLandMeta: Readable<
-  | (LandWithActions & {
-      token?: Token;
-    })
-  | undefined
-> = derived(selectedLand, ($selectedLand) => {
-  if ($selectedLand) {
-    if ($selectedLand?.owner == undefined) {
+export type LandWithToken = LandWithActions & {
+  token?: Token;
+};
+
+export type SelectedLand = LandWithToken | undefined;
+
+export const selectedLandMeta: Readable<SelectedLand> = derived(
+  selectedLand,
+  ($selectedLand) => {
+    if ($selectedLand) {
+      if ($selectedLand?.owner == undefined) {
+        return {
+          ...$selectedLand,
+          isEmpty: true,
+        };
+      }
+      // --- Derived Props ---
+
+      // get token info from tokenAddress from data
+      const token = data.availableTokens.find(
+        (token) => token.address === $selectedLand!.tokenAddress,
+      );
+
+      // --- Helper Functions --- TODO
+
       return {
         ...$selectedLand,
-        isEmpty: true,
+        isEmpty: false,
+        token,
       };
     }
-    // --- Derived Props ---
-
-    // get token info from tokenAddress from data
-    const token = data.availableTokens.find(
-      (token) => token.address === $selectedLand!.tokenAddress,
-    );
-
-    // --- Helper Functions --- TODO
-
-    return {
-      ...$selectedLand,
-      isEmpty: false,
-      token,
-    };
-  }
-  return undefined;
-});
+    return undefined;
+  },
+);
 
 export const mousePosCoords = writable<{
   x: number;
