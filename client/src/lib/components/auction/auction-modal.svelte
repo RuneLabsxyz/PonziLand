@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { LandSetup } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
-  import { useAccount } from '$lib/contexts/account';
+  import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
   import type { Auction } from '$lib/models.gen';
   import {

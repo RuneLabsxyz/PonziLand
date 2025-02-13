@@ -6,7 +6,7 @@ export function fromDojoLevel(level: LevelModel): Level | undefined {
     return level as Level;
   }
 
-  console.log('level:', level);
+  console.log('level:', level, typeof level);
 
   return (
     (Object.entries(level ?? {}).filter(
