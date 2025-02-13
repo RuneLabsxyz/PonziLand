@@ -41,18 +41,27 @@ async function _setupDojo(config: DojoConfig) {
     client: await wrappedActions(provider),
   };
 }
+
+let state: { value: Client | undefined } = $state({ value: undefined });
+
 // Set the context (This function CANNOT be async due to setContext not working otherwise)
-export function setupClient(config: DojoConfig): Promise<Client | undefined> {
-  let result: { value?: Client } = {};
+export async function setupClient(
+  config: DojoConfig,
+): Promise<Client | undefined> {
+  if (state?.value == undefined) {
+    // set the value in the context
+    const result = await _setupDojo(config);
 
-  // set the value in the context
-  setContext(dojoKey, result);
+    state = { value: result };
 
-  return _setupDojo(config).then((value) => (result.value = value));
+    return result;
+  } else {
+    return Promise.resolve(state.value);
+  }
 }
 
 export function useClient(): Client {
-  const contextValue = getContext<{ value?: Client }>(dojoKey).value;
+  const contextValue = state.value;
 
   if (contextValue == null) {
     throw 'The context is null! Please await for setupDojo before using components containing useDojo() !';

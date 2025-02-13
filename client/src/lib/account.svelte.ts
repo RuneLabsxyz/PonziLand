@@ -1,4 +1,4 @@
-import { useAccount, type AccountProvider } from './contexts/account';
+import { useAccount, type AccountProvider } from './contexts/account.svelte';
 import { type AccountInterface } from 'starknet';
 
 function wrapped<T>(value: T) {
