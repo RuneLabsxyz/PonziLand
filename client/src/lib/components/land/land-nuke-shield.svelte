@@ -6,11 +6,16 @@
     estimatedNukeTime,
     class: ClassName = '',
     lockTime = false,
-  }: { estimatedNukeTime: number; class: string; lockTime: boolean } = $props();
+  }: {
+    estimatedNukeTime: number;
+    class?: string;
+    lockTime?: boolean;
+  } = $props();
 
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
   let estimatedTimeString = $derived.by(() => {
     // Convert estimatedNukeTime to a human-readable string
+    if (estimatedNukeTime === Infinity) return 'no neighbors = no tax';
     if (estimatedNukeTime < 0) return 'N/A';
     const days = Math.floor(estimatedNukeTime / 60 / 60 / 24);
     const hours = Math.floor((estimatedNukeTime / 60 / 60) % 24);
@@ -75,12 +80,12 @@
       style="background-image: {getStyle(estimatedDays)
         .image}; color: {getStyle(estimatedDays).color}"
     >
-      {estimatedDays}
+      {estimatedDays === Infinity ? '∞' : estimatedDays}
     </div>
   </Tooltip.Trigger>
-  <Tooltip.Content class="border-ponzi bg-ponzi text-ponzi"
-    >{estimatedTimeString}</Tooltip.Content
-  >
+  <Tooltip.Content class="border-ponzi bg-ponzi text-ponzi">
+    {estimatedTimeString}
+  </Tooltip.Content>
 </Tooltip.Root>
 
 <style>

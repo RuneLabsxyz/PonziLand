@@ -1,12 +1,14 @@
 <script lang="ts">
   import data from '$lib/data.json';
   import type { Token } from '$lib/interfaces';
+  import { selectedLand } from '$lib/stores/stores.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Input } from '../ui/input';
   import Label from '../ui/label/label.svelte';
   import { Select, SelectContent, SelectValue } from '../ui/select';
   import SelectItem from '../ui/select/select-item.svelte';
   import SelectTrigger from '../ui/select/select-trigger.svelte';
+  import BuyInsightsOld from './buy-insights-old.svelte';
   import BuyInsights from './buy-insights.svelte';
 
   let {
@@ -32,7 +34,7 @@
 </script>
 
 <div class="w-full flex flex-col gap-2">
-  <Label class="text-xl">Select Token</Label>
+  <Label class="text-xl font-semibold">Select Token</Label>
   <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
     <SelectTrigger>
       {#if selectedToken}
@@ -87,5 +89,13 @@
       <Input type="number" bind:value={sellAmountVal} />
     </div>
   </div>
-  <BuyInsights {sellAmountVal} {stakeAmountVal} />
+  {#if $selectedLand}
+    <BuyInsights
+      {sellAmountVal}
+      {stakeAmountVal}
+      {selectedToken}
+      land={$selectedLand}
+    />
+  {/if}
+  <BuyInsightsOld {sellAmountVal} {stakeAmountVal} />
 </div>

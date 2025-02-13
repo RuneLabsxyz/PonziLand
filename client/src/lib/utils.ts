@@ -171,11 +171,7 @@ export function ensureNumber(value: BigNumberish) {
   }
 }
 
-export function getNeighbours(
-  locationString: string,
-  landStore: LandWithActions[],
-) {
-  const location = toBigInt(locationString) ?? 0n;
+export function getNeighborsLocations(location: bigint) {
   const neighbors = [
     location - 65n,
     location - 64n,
@@ -186,6 +182,25 @@ export function getNeighbours(
     location + 64n,
     location + 65n,
   ];
+
+  const up = location - 64n;
+  const down = location + 64n;
+  const left = location - 1n;
+  const right = location + 1n;
+  const upLeft = location - 65n;
+  const upRight = location - 63n;
+  const downLeft = location + 63n;
+  const downRight = location + 65n;
+
+  return { array: neighbors, up, down, left, right, upLeft, upRight, downLeft, downRight };
+}
+
+export function getNeighbours(
+  locationString: string,
+  landStore: LandWithActions[],
+) {
+  const location = toBigInt(locationString) ?? 0n;
+  const neighbors = getNeighborsLocations(location).array;
 
   const neighborsHex = neighbors.map((loc) => toHexWithPadding(loc));
 
