@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
   import { locationIntToString } from '$lib/utils';
+  import LandDisplay from './land-display.svelte';
 
   const { land, size = 'sm' }: { land: LandWithActions; size?: 'sm' | 'lg' } =
     $props();
@@ -12,16 +13,11 @@
     {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
   >
     {#if land.type == 'auction'}
-      <img alt="auction" src={`/tiles/${land.type}.png`} />
+      <LandDisplay auction />
     {:else if land.type == 'grass'}
-      <img alt="grass" src={`/tiles/${land.type}.png`} />
+      <LandDisplay />
     {:else}
-      <img
-        alt="house"
-        src={land.token?.images.castle.basic}
-        class="h-full w-full"
-        style="scale: 1.25;"
-      />
+      <LandDisplay basic />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
       <span class="text-ponzi {size == 'lg' ? 'text-xl' : 'text-lg'}"

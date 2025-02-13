@@ -8,7 +8,6 @@
   import { Select, SelectContent, SelectValue } from '../ui/select';
   import SelectItem from '../ui/select/select-item.svelte';
   import SelectTrigger from '../ui/select/select-trigger.svelte';
-  import BuyInsightsOld from './buy-insights-old.svelte';
   import BuyInsights from './buy-insights.svelte';
 
   let {
@@ -26,6 +25,7 @@
 
   $effect(() => {
     stakeAmount = CurrencyAmount.fromScaled(stakeAmountVal);
+    selectedToken = data.availableTokens.find((t) => t.symbol == 'eSTRK');
   });
 
   $effect(() => {
@@ -35,7 +35,10 @@
 
 <div class="w-full flex flex-col gap-2">
   <Label class="text-xl font-semibold">Select Token</Label>
-  <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
+  <Select
+    onSelectedChange={(v) => (selectedToken = v?.value as Token)}
+    selected={{ value: data.availableTokens.find((t) => t.symbol == 'eSTRK') }}
+  >
     <SelectTrigger>
       {#if selectedToken}
         <div class="flex gap-2 items-center">
@@ -97,5 +100,4 @@
       land={$selectedLand}
     />
   {/if}
-  <BuyInsightsOld {sellAmountVal} {stakeAmountVal} />
 </div>

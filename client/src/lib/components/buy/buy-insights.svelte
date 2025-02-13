@@ -1,11 +1,11 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import { landStore } from '$lib/api/mock-land';
   import type { Token } from '$lib/interfaces';
   import { estimateNukeTime, estimateTax } from '$lib/utils/taxes';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import { Label } from '../ui/label';
   import { Slider } from '../ui/slider';
+  import BuyInsightsNeighborGrid from './insights/buy-insights-neighbor-grid.svelte';
 
   let {
     sellAmountVal,
@@ -19,15 +19,84 @@
     land: LandWithActions;
   } = $props();
 
-  let taxes = $derived(estimateTax(parseInt(sellAmountVal)));
+  let taxes = $derived(estimateTax(parseFloat(sellAmountVal)));
 
   let neighbors = $derived(land?.getNeighbors());
-  let nbNeighbors = $state(neighbors.array.length);
+  let nbNeighbors = $state(neighbors.getNeighbors().length);
+  let filteredNeighbors = $derived.by(() => {
+    const filteredNeighbors = neighbors.getNeighbors().slice(0, nbNeighbors);
+
+    let up: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getUp(),
+    );
+    let upRight: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getUpRight(),
+    );
+    let right: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getRight(),
+    );
+    let downRight: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getDownRight(),
+    );
+    let down: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getDown(),
+    );
+    let downLeft: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getDownLeft(),
+    );
+    let left: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getLeft(),
+    );
+    let upLeft: LandWithActions | undefined | null = filteredNeighbors.find(
+      (land) => land == neighbors.getUpLeft(),
+    );
+
+    // Add empty lands in function of the number of neighbors
+    if (neighbors.getNeighbors().length < nbNeighbors) {
+      console.log('add empty lands');
+      const emptyLands = Array(
+        nbNeighbors - neighbors.getNeighbors().length,
+      ).fill(null);
+
+      // find wich direction to add the empty land
+      emptyLands.forEach((_, i) => {
+        if (upLeft === undefined) {
+          upLeft = null;
+        } else if (up === undefined) {
+          up = null;
+        } else if (upRight === undefined) {
+          upRight = null;
+        } else if (right === undefined) {
+          right = null;
+        } else if (downRight === undefined) {
+          downRight = null;
+        } else if (down === undefined) {
+          down = null;
+        } else if (downLeft === undefined) {
+          downLeft = null;
+        } else if (left === undefined) {
+          left = null;
+        }
+      });
+    }
+
+    return {
+      array: filteredNeighbors,
+      up,
+      upRight,
+      right,
+      downRight,
+      down,
+      downLeft,
+      left,
+      upLeft,
+    };
+  });
 
   let estimatedNukeTimeSeconds = $derived(
     estimateNukeTime(
-      parseInt(sellAmountVal),
-      parseInt(stakeAmountVal),
+      parseFloat(sellAmountVal),
+      parseFloat(stakeAmountVal),
       nbNeighbors,
     ),
   );
@@ -51,33 +120,50 @@
   });
 </script>
 
-<div class="flex w-full justify-between mt-4 gap-4">
-  <div class="w-full p-4 flex items-center justify-center">
-    <div class="grid grid-cols-3 gap-2 w-fit">
-      <div class="w-8 h-8 bg-gray-400"></div>
-      <div class="w-8 h-8 bg-gray-400"></div>
-      <div class="w-8 h-8 bg-gray-400"></div>
-
-      <div class="w-8 h-8 bg-gray-400">{neighbors.left}</div>
-
-      <!--Own Land-->
-      <div class="w-8 h-8 bg-gray-400">
-        {selectedToken?.symbol ?? 'choose token'}
-      </div>
-
-      <div class="w-8 h-8 bg-gray-400">{neighbors.right}</div>
-
-      <div class="w-8 h-8 bg-gray-400"></div>
-      <div class="w-8 h-8 bg-gray-400"></div>
-      <div class="w-8 h-8 bg-gray-400"></div>
-    </div>
+<Label class="font-semibold text-xl mt-3">Neighborhood Overview</Label>
+<div class="flex w-full justify-between items-center gap-4">
+  <div class="w-64 flex items-center justify-center">
+    {#if filteredNeighbors}
+      <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
+    {/if}
   </div>
   <div class="w-full flex flex-col gap-4 mr-8">
+    <div class="w-full text-shadow-none flex flex-col leading-none mt-3">
+      <div class="flex justify-between">
+        <p class="opacity-50">Per Neighbors</p>
+        <p>
+          -{taxes.ratePerNeighbour}
+          <span class="opacity-50">{selectedToken?.symbol}/h</span>
+        </p>
+      </div>
+      <div class="flex justify-between">
+        <p class="opacity-50">Max:</p>
+        <p>
+          -{taxes.maxRate}
+          <span class="opacity-50">{selectedToken?.symbol}/h</span>
+        </p>
+      </div>
+      <div class="flex justify-between">
+        <p class="">
+          <span class="opacity-50"> For </span>
+          {nbNeighbors}
+          <span class="opacity-50"> neighbors: </span>
+        </p>
+        <p class="text-right">
+          - {taxes.ratePerNeighbour * nbNeighbors}
+          <span class="opacity-50">{selectedToken?.symbol}/h</span>
+        </p>
+      </div>
+    </div>
+
     <div class="flex flex-col gap-4">
-      <Label class="font-bold">Neighbours</Label>
       <div class="flex justify-between text-gray-400">
         {#each Array(8) as _, i}
-          <span>
+          <span
+            class={i + 1 == neighbors.getNeighbors().length
+              ? 'text-white font-bold'
+              : ''}
+          >
             {i + 1}
           </span>
         {/each}

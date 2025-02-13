@@ -1,21 +1,20 @@
 import { useDojo } from '$lib/contexts/dojo';
-import type { Token, YieldInfo } from '$lib/interfaces';
+import data from '$lib/data.json';
+import type { Token } from '$lib/interfaces';
+import { type LandYieldInfo } from '$lib/interfaces';
 import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
 import {
   ensureNumber,
-  getNeighborsLocations,
-  getNeighbours,
   getTokenInfo,
   toBigInt,
   toHexWithPadding,
 } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { estimateNukeTime } from '$lib/utils/taxes';
 import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
 import type { BigNumberish, Result } from 'starknet';
 import { derived, get, writable, type Readable } from 'svelte/store';
-import data from '$lib/data.json';
-import { type LandYieldInfo } from '$lib/interfaces';
-import { estimateNukeTime, getNeighbourYieldArray } from '$lib/utils/taxes';
+import { Neighbors } from './neighbors';
 
 export type TransactionResult = Promise<
   | {
@@ -87,17 +86,7 @@ export type LandWithActions = LandWithMeta & {
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
   getYieldInfo(): Promise<LandYieldInfo | undefined>;
   getEstimatedNukeTime(): number | undefined;
-  getNeighbors(): {
-    array: LandWithActions[];
-    up?: LandWithActions;
-    down?: LandWithActions;
-    left?: LandWithActions;
-    right?: LandWithActions;
-    upLeft?: LandWithActions;
-    upRight?: LandWithActions;
-    downLeft?: LandWithActions;
-    downRight?: LandWithActions;
-  };
+  getNeighbors(): Neighbors;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -247,62 +236,17 @@ export function useLands(): LandsStore | undefined {
           return estimateNukeTime(
             land.sellPrice.rawValue().toNumber(),
             land.stakeAmount.rawValue().toNumber(),
-            getNeighbours(land.location, landWithActions).filter(
-              (l) => l != undefined,
-            ).length,
+            new Neighbors({
+              location: land.location,
+              source: landWithActions,
+            }).getNeighbors().length,
           );
         },
         getNeighbors() {
-          const neighborsLocations = getNeighborsLocations(
-            toBigInt(land.location) ?? 0n,
-          );
-          const neighborsArray: LandWithActions[] = neighborsLocations.array
-            .map((location) => {
-              const foundNeighbor = landWithActions.find(
-                (l) => toBigInt(l.location) == location,
-              );
-              if (foundNeighbor) {
-                return foundNeighbor;
-              }
-            })
-            .filter((l) => l != undefined);
-
-          const up = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.up,
-          );
-          const down = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.down,
-          );
-          const left = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.left,
-          );
-          const right = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.right,
-          );
-          const upLeft = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.upLeft,
-          );
-          const upRight = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.upRight,
-          );
-          const downLeft = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.downLeft,
-          );
-          const downRight = neighborsArray.find(
-            (l) => toBigInt(l.location) === neighborsLocations.downRight,
-          );
-
-          return {
-            array: neighborsArray,
-            up,
-            down,
-            left,
-            right,
-            upLeft,
-            upRight,
-            downLeft,
-            downRight,
-          };
+          return new Neighbors({
+            location: land.location,
+            source: landWithActions,
+          });
         },
       }));
 
