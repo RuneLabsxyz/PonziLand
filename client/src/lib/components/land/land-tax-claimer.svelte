@@ -20,35 +20,32 @@
 
   let waiting = $state(false);
   let animating = $state(false);
-  let claiming = $state(false);
 
   async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
-    waiting = true;
-    claiming = true;
-    animating = true;
-
-    setTimeout(() => {
-      animating = false;
-      console.log('not animating anymore');
-    }, 2000);
-
-    claimQueue.update((queue) => {
-      return [
-        ...queue,
-        ...aggregatedTaxes.map((tax) => {
-          const token = getTokenInfo(tax.tokenAddress);
-          tax.totalTax.setToken(token);
-          console.log('total tax when updating queue', tax.totalTax);
-          return tax.totalTax;
-        }),
-      ];
-    });
 
     land
       .claim()
       .then(() => {
-        claiming = false;
+        waiting = true;
+        animating = true;
+
+        setTimeout(() => {
+          animating = false;
+          console.log('not animating anymore');
+        }, 2000);
+
+        claimQueue.update((queue) => {
+          return [
+            ...queue,
+            ...aggregatedTaxes.map((tax) => {
+              const token = getTokenInfo(tax.tokenAddress);
+              tax.totalTax.setToken(token);
+              console.log('total tax when updating queue', tax.totalTax);
+              return tax.totalTax;
+            }),
+          ];
+        });
         // remove nukable lands from the nukableStore
         nukableStore.update((nukableLandsFromStore) => {
           return nukableLandsFromStore.filter(
