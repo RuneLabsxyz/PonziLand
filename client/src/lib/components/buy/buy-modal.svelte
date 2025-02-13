@@ -1,8 +1,16 @@
 <script lang="ts">
-  import { useLands, type LandSetup } from '$lib/api/land.svelte';
+  import {
+    useLands,
+    type LandSetup,
+    type LandWithActions,
+  } from '$lib/api/land.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
-  import { uiStore, selectedLandMeta } from '$lib/stores/stores.svelte';
+  import {
+    uiStore,
+    selectedLandMeta,
+    type SelectedLand,
+  } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { toCalldata } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -17,6 +25,8 @@
   import TokenDisplay from '../ui/token-display/token-display.svelte';
 
   import * as Avatar from '$lib/components/ui/avatar/index.js';
+  import { onMount } from 'svelte';
+  import { ParticlesDensity } from '@tsparticles/engine';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -27,13 +37,19 @@
   let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(1));
   let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(1));
 
+  let land: SelectedLand = $state();
+
+  onMount(() => {
+    land = $selectedLandMeta;
+  });
+
   $effect(() => {
     // Update the token while preserving the scaled amount
     stakeAmount.setToken(selectedToken ?? undefined);
     sellAmount.setToken(selectedToken ?? undefined);
   });
 
-  let priceDisplay = $derived($selectedLandMeta?.sellPrice.toString() ?? '');
+  let priceDisplay = $derived(land?.sellPrice.toString() ?? '');
 
   function handleCancelClick() {
     uiStore.showModal = false;
@@ -48,11 +64,11 @@
       salePrice: sellAmount,
       amountToStake: stakeAmount,
       liquidityPoolAddress: selectedToken?.lpAddress ?? '',
-      tokenAddress: $selectedLandMeta?.tokenAddress ?? '',
-      currentPrice: $selectedLandMeta?.sellPrice ?? null,
+      tokenAddress: land?.tokenAddress ?? '',
+      currentPrice: land?.sellPrice ?? null,
     };
 
-    if (!$selectedLandMeta) {
+    if (!land) {
       console.error('No land selected');
       return;
     }
@@ -60,10 +76,7 @@
     loading = true;
 
     try {
-      const result = await landStore?.buyLand(
-        $selectedLandMeta?.location,
-        landSetup,
-      );
+      const result = await landStore?.buyLand(land?.location, landSetup);
 
       if (result?.transaction_hash) {
         await accountManager
@@ -93,8 +106,8 @@
     <CardTitle>Buy Land</CardTitle>
     <div class="flex h-full w-full">
       <div class="flex flex-col w-full items-center justify-center min-w-80">
-        {#if $selectedLandMeta}
-          <LandOverview land={$selectedLandMeta} />
+        {#if land}
+          <LandOverview {land} />
 
           <div class="flex items-center gap-1 pt-5">
             {#each priceDisplay as char}
@@ -112,12 +125,12 @@
           <div class="text-ponzi-huge text-3xl mt-2"></div>
           <div class="flex items-center gap-2">
             <div class="text-3xl text-ponzi-huge text-white">
-              {$selectedLandMeta?.token?.symbol}
+              {land?.token?.symbol}
             </div>
             <img
               class="w-6 h-6 rounded-full"
-              src={$selectedLandMeta?.token?.images.icon}
-              alt="{$selectedLandMeta?.token?.symbol} icon"
+              src={land?.token?.images.icon}
+              alt="{land?.token?.symbol} icon"
             />
           </div>
         {/if}
