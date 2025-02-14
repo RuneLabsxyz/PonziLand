@@ -15,9 +15,12 @@ mod setup {
 
     // External dependencies
     use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
-
+    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
     // Internal imports
     use ponzi_land::mocks::erc20::MyToken;
+    use ponzi_land::mocks::ekubo_core::{
+        MockEkuboCore, IEkuboCoreTesting, IEkuboCoreTestingDispatcher
+    };
     use ponzi_land::models::land::{Land, m_Land};
     use ponzi_land::models::auction::{Auction, m_Auction};
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
@@ -25,6 +28,27 @@ mod setup {
 
     fn RECIPIENT() -> ContractAddress {
         contract_address_const::<'RECIPIENT'>()
+    }
+
+
+    fn create_setup() -> (
+        WorldStorage,
+        IActionsDispatcher,
+        IERC20CamelDispatcher,
+        ICoreDispatcher,
+        IEkuboCoreTestingDispatcher
+    ) {
+        let ndef = namespace_def();
+        let erc20 = deploy_erc20(RECIPIENT());
+        let (core_dispatcher, testing_dispatcher) = deploy_mock_ekubo_core();
+        let cdf = contract_defs(
+            erc20.contract_address.into(), core_dispatcher.contract_address.into()
+        );
+        let mut world = spawn_test_world([ndef].span());
+        world.sync_perms_and_inits(cdf);
+        let (contract_address, _) = world.dns(@"actions").unwrap();
+        let actions_system = IActionsDispatcher { contract_address };
+        (world, actions_system, erc20, core_dispatcher, testing_dispatcher)
     }
 
 
@@ -53,7 +77,7 @@ mod setup {
         ndef
     }
 
-    fn contract_defs(erc20_address: felt252) -> Span<ContractDef> {
+    fn contract_defs(erc20_address: felt252, ekubo_core_address: felt252) -> Span<ContractDef> {
         [
             ContractDefTrait::new(@"ponzi_land", @"actions")
                 .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
@@ -69,6 +93,7 @@ mod setup {
                         1.into(), // floor_price (low)
                         0.into(), // floor_price (high)
                         200.into(), // decay_rate
+                        ekubo_core_address,
                     ].span()
                 ),
         ].span()
@@ -88,27 +113,17 @@ mod setup {
         IERC20CamelDispatcher { contract_address: address }
     }
 
-    fn create_setup() -> (WorldStorage, IActionsDispatcher, IERC20CamelDispatcher) {
-        let ndef = namespace_def();
-        let erc20 = deploy_erc20(RECIPIENT());
-        let cdf = contract_defs(erc20.contract_address.into());
-        let mut world = spawn_test_world([ndef].span());
-        world.sync_perms_and_inits(cdf);
-        let (contract_address, _) = world.dns(@"actions").unwrap();
-        let actions_system = IActionsDispatcher { contract_address };
-        (world, actions_system, erc20)
+    fn deploy_mock_ekubo_core() -> (ICoreDispatcher, IEkuboCoreTestingDispatcher) {
+        let (address, _) = starknet::deploy_syscall(
+            MockEkuboCore::TEST_CLASS_HASH.try_into().expect('Class hash conversion failed'),
+            0,
+            ArrayTrait::new().span(),
+            false
+        )
+            .expect('Mock Ekubo Core deploy failed');
+        let core_dispatcher = ICoreDispatcher { contract_address: address };
+        let testing_dispatcher = IEkuboCoreTestingDispatcher { contract_address: address };
+
+        (core_dispatcher, testing_dispatcher)
     }
-    // #[test]
-// fn test_deploy_erc20() {
-//     let erc20 = deploy_erc20();
-//     // assert(erc20.contract_address, '');
-//     println!("erc20 {:?}", erc20.contract_address);
-// }
-
-    // #[test]
-// fn test_create_setup(){
-//     let (world,actions_system)= create_setup();
-
-    // }
-
 }

@@ -13,9 +13,8 @@ move = "sozo execute ponzi_land-actions move -c 1 --wait" # scarb run move
 
 [dependencies]
 dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.12" }
-# openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.15.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.18.0" }
-
+ekubo = { git = "https://github.com/EkuboProtocol/abis", rev = "edb6de8c9baf515f1053bbab3d86825d54a63bc3"}
 
 [profile.sepolia]
 
