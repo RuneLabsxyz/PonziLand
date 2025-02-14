@@ -9,24 +9,22 @@ use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 
 //Internal imports
 
-use ponzi_land::tests::setup::{setup, setup::{create_setup, deploy_erc20, RECIPIENT}};
+use ponzi_land::tests::setup::{
+    setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core}
+};
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-use ponzi_land::models::land::{Land, Level};
+use ponzi_land::models::land::{Land, Level, PoolKeyConversion,PoolKey};
 use ponzi_land::models::auction::{Auction};
-use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS};
+use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS,STARK_ADDRESS,BROTHER_ADDRESS};
 use ponzi_land::helpers::coord::{left, right, up, down};
 use ponzi_land::store::{Store, StoreTrait};
+use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
 
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
+// use ekubo::types::keys::PoolKey;
 
-fn LIQUIDITY_POOL() -> ContractAddress {
-    contract_address_const::<'LIQUIDITY_POOL'>()
-}
-
-fn NEW_LIQUIDITY_POOL() -> ContractAddress {
-    contract_address_const::<'NEW_LIQUIDITY_POOL'>()
-}
 
 fn FIRST_OWNER() -> ContractAddress {
     contract_address_const::<'FIRST_OWNER'>()
@@ -46,6 +44,29 @@ fn NEIGHBOR_3() -> ContractAddress {
 
 fn NEW_BUYER() -> ContractAddress {
     contract_address_const::<'NEW_BUYER'>()
+}
+
+fn pool_key() -> PoolKey {
+    let fee: u128 = 170141183460469235273462165868118016;
+    let pool_key = PoolKey {
+        token0: BROTHER_ADDRESS.try_into().unwrap(),
+        token1: STARK_ADDRESS.try_into().unwrap(),
+        fee: fee,
+        tick_spacing: 1000,
+        extension: ContractAddressZeroable::zero(),
+    };
+
+    pool_key
+}
+
+fn deleted_pool_key() -> PoolKey {
+    PoolKey {
+        token0: ContractAddressZeroable::zero(),
+        token1: ContractAddressZeroable::zero(),
+        fee: 0,
+        tick_spacing: 0,
+        extension: ContractAddressZeroable::zero()
+    }
 }
 
 // Helper functions for common test setup and actions
@@ -89,7 +110,7 @@ fn initialize_land(
     assert(allowance >= stake_amount, 'Buyer approval failed');
 
     actions_system
-        .bid(location, token_for_sale.contract_address, sell_price, stake_amount, LIQUIDITY_POOL());
+        .bid(location, token_for_sale.contract_address, sell_price, stake_amount, pool_key());
 }
 
 // Helper function for setting up a buyer with tokens
@@ -126,7 +147,7 @@ fn verify_land(
     location: u64,
     expected_owner: ContractAddress,
     expected_price: u256,
-    expected_pool: ContractAddress,
+    expected_pool: PoolKey,
     expected_stake: u256,
     expected_block_date_bought: u64,
     expected_token_used: ContractAddress
@@ -155,6 +176,7 @@ fn verify_auction_for_neighbor(
     );
 }
 
+
 #[test]
 fn test_buy_action() {
     let (store, actions_system, main_currency) = setup_test();
@@ -166,11 +188,11 @@ fn test_buy_action() {
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     // Perform buy action
-    actions_system.buy(11, main_currency.contract_address, 100, 120, NEW_LIQUIDITY_POOL());
+    actions_system.buy(11, main_currency.contract_address, 100, 120, pool_key());
 
     // Verify results
     verify_land(
-        store, 11, NEW_BUYER(), 100, NEW_LIQUIDITY_POOL(), 120, 100, main_currency.contract_address
+        store, 11, NEW_BUYER(), 100, pool_key(), 120, 100, main_currency.contract_address
     );
 }
 
@@ -180,7 +202,7 @@ fn test_invalid_land() {
     let (_, actions_system, erc20) = setup_test();
 
     // Attempt to buy land at invalid position (11000)
-    actions_system.buy(11000, erc20.contract_address, 10, 12, NEW_LIQUIDITY_POOL());
+    actions_system.buy(11000, erc20.contract_address, 10, 12, pool_key());
 }
 
 //test for now without auction
@@ -196,7 +218,7 @@ fn test_bid_and_buy_action() {
 
     // Validate bid/buy updates
     verify_land(
-        store, 11, RECIPIENT(), 100, LIQUIDITY_POOL(), 50, 100, main_currency.contract_address
+        store, 11, RECIPIENT(), 100, pool_key(), 50, 100, main_currency.contract_address
     );
 
     //right neighbor
@@ -210,7 +232,7 @@ fn test_bid_and_buy_action() {
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     set_block_timestamp(160);
-    actions_system.buy(11, main_currency.contract_address, 300, 500, NEW_LIQUIDITY_POOL());
+    actions_system.buy(11, main_currency.contract_address, 300, 500, pool_key());
 
     // Validate buy action updates
     verify_land(
@@ -218,7 +240,7 @@ fn test_bid_and_buy_action() {
         11,
         NEW_BUYER(),
         300,
-        NEW_LIQUIDITY_POOL(),
+        pool_key(),
         500,
         160 * TIME_SPEED.into(),
         main_currency.contract_address
@@ -294,7 +316,7 @@ fn test_claim_and_add_taxes() {
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(erc20_neighbor_1, actions_system, NEIGHBOR_1(), NEW_BUYER(), 1000);
 
-    actions_system.buy(1281, erc20_neighbor_1.contract_address, 100, 100, NEW_LIQUIDITY_POOL());
+    actions_system.buy(1281, erc20_neighbor_1.contract_address, 100, 100, pool_key());
     // verify the claim when occurs a buy
     let land_1280 = store.land(1281);
     assert(land_1280.last_pay_time == 6000, 'Err in 1281 last_pay');
@@ -366,7 +388,7 @@ fn test_nuke_action() {
         1281,
         ContractAddressZeroable::zero(),
         10000,
-        ContractAddressZeroable::zero(),
+        deleted_pool_key(),
         0,
         0,
         main_currency.contract_address
@@ -384,7 +406,7 @@ fn test_nuke_action() {
         1217,
         ContractAddressZeroable::zero(),
         59000,
-        ContractAddressZeroable::zero(),
+        deleted_pool_key(),
         0,
         0,
         main_currency.contract_address
@@ -408,7 +430,7 @@ fn test_increase_price_and_stake() {
 
     //verify the land
     verify_land(
-        store, 1280, RECIPIENT(), 1000, LIQUIDITY_POOL(), 1000, 100, main_currency.contract_address
+        store, 1280, RECIPIENT(), 1000, pool_key(), 1000, 100, main_currency.contract_address
     );
 
     //increase the price
@@ -512,3 +534,33 @@ fn test_level_up() {
     assert_eq!(land_1280.level, Level::First, "Land 1280 should be Level::First");
     assert_eq!(land_1281.level, Level::None, "Land 1281 should be Level::None");
 }
+
+// #[test]
+// fn check_liquidity_pool(){
+//     let (store, actions_system, main_currency) = setup_test();
+//     set_block_timestamp(100);
+//     let (core, testing) = deploy_mock_ekubo_core();
+//     // Create initial land
+//     initialize_land(actions_system, main_currency, RECIPIENT(), 11, 100, 50, main_currency);
+
+//     // Setup new buyer with tokens and approvals
+//     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
+
+//     // Perform buy action
+//     actions_system.buy(11, main_currency.contract_address, 100, 120, pool_key());
+
+//     let land = store.land(11);
+//     //TODO: VER PORQUE ACA ME TRAE UN NUMERO ENTERO QUIERO EL HEXADECIMAL
+//     //TODO:ver si me falta algo mas para poder llamar bien a las funcion de ekubo
+//     println!("core ekubo {:?}", core.contract_address);
+//     println!("testing {:?}", testing.contract_address);
+//     println!("pool key {:?}", land.pool_key);
+//     testing.set_pool_liquidity(PoolKeyConversion::to_ekubo(land.pool_key), 1000);
+//     let liquidity = core.get_pool_liquidity(PoolKeyConversion::to_ekubo(land.pool_key));
+//     println!("liquidity {}", liquidity);
+
+//     // Verify results
+//     verify_land(
+//         store, 11, NEW_BUYER(), 100, pool_key(), 120, 100, main_currency.contract_address
+//     );
+// }

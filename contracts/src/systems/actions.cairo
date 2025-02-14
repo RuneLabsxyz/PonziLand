@@ -1,7 +1,7 @@
 use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
-use ponzi_land::models::land::Land;
+use ponzi_land::models::land::{Land,PoolKey};
 use ponzi_land::models::auction::Auction;
 use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 
@@ -24,7 +24,7 @@ trait IActions<T> {
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
-        liquidity_pool: ContractAddress,
+        liquidity_pool: PoolKey,
     );
     fn buy(
         ref self: T,
@@ -32,7 +32,7 @@ trait IActions<T> {
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
-        liquidity_pool: ContractAddress,
+        liquidity_pool: PoolKey,
     );
 
     fn claim(ref self: T, land_location: u64);
@@ -63,7 +63,7 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use ponzi_land::models::land::{Land, LandTrait, Level};
+    use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion,PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
 
@@ -76,11 +76,14 @@ pub mod actions {
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE
+        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
+        EKUBO_CORE_SEPOLIA_ADDRESS
     };
     use ponzi_land::store::{Store, StoreTrait};
 
     use dojo::event::EventStorage;
+
+    // use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // use ponzi_land::tokens::main_currency::LORDS_CURRENCY;
 
@@ -174,6 +177,7 @@ pub mod actions {
         taxes: TaxesComponent::Storage,
         active_auctions: u8,
         main_currency: ContractAddress,
+        // ekubo_core: ICoreDispatcher,
     }
 
     fn dojo_init(
@@ -188,6 +192,11 @@ pub mod actions {
         decay_rate: u64,
     ) {
         self.main_currency.write(token_address);
+        // self
+        //     .ekubo_core
+        //     .write(
+        //         ICoreDispatcher { contract_address: EKUBO_CORE_SEPOLIA_ADDRESS.try_into().unwrap() }
+        //     );
 
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
@@ -204,12 +213,11 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
             assert(amount_to_stake > 0, 'amount_to_stake > 0');
-
             let mut world = self.world_default();
             let caller = get_caller_address();
 
@@ -298,7 +306,7 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
         ) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
@@ -609,7 +617,7 @@ pub mod actions {
             sell_price: u256,
             sold_at_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
             caller: ContractAddress,
             mut auction: Auction,
         ) {
@@ -686,7 +694,7 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
             caller: ContractAddress,
         ) {
             let land = LandTrait::new(
@@ -718,5 +726,13 @@ pub mod actions {
                 false
             }
         }
+
+        // fn check_liquidity_pool(self: @ContractState, mut land: Land) {
+        //     let liquidity_pool: u128 = self
+        //         .ekubo_core
+        //         .read()
+        //         .get_pool_liquidity(PoolKeyConversion::to_ekubo(land.pool_key));
+        //     assert((land.sell_price * 3) < liquidity_pool.into(), 'not sufficient lp');
+        // }
     }
 }
