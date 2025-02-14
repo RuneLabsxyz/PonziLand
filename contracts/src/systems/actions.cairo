@@ -77,7 +77,7 @@ pub mod actions {
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        EKUBO_CORE_SEPOLIA_ADDRESS
+        LIQUIDITY_SAFETY_MULTIPLIER
     };
     use ponzi_land::store::{Store, StoreTrait};
 
@@ -224,7 +224,7 @@ pub mod actions {
             assert(caller != land.owner, 'you already own this land');
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
             assert(
-                self.is_liquidity_above_triple_sell_price(sell_price, liquidity_pool),
+                self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
                 'Invalid liquidity_pool in buy'
             );
 
@@ -272,11 +272,11 @@ pub mod actions {
             let land = store.land(land_location);
             let caller = get_caller_address();
             assert(land.owner == caller, 'not the owner');
-            assert(
-                self.is_liquidity_above_triple_sell_price(land.sell_price, land.pool_key),
-                'Invalid liquidity_pool in buy'
-            );
-            self.internal_claim(store, land);
+            if self.check_liquidity_pool_requirements(land.sell_price, land.pool_key) {
+                self.internal_claim(store, land);
+            } else {
+                self.nuke(land.location);
+            }
         }
 
 
@@ -319,7 +319,7 @@ pub mod actions {
             let caller = get_caller_address();
 
             assert(
-                self.is_liquidity_above_triple_sell_price(sell_price, liquidity_pool),
+                self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
                 'Invalid liquidity_pool in bid'
             );
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -603,7 +603,12 @@ pub mod actions {
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     let is_nuke = self.taxes._calculate_and_distribute(store, neighbor.location);
-                    if is_nuke {
+                    let neighbor = store.land(neighbor.location);
+                    if is_nuke
+                        || !self
+                            .check_liquidity_pool_requirements(
+                                neighbor.sell_price, neighbor.pool_key
+                            ) {
                         self.nuke(neighbor.location);
                     }
                 };
@@ -734,14 +739,14 @@ pub mod actions {
             }
         }
 
-        fn is_liquidity_above_triple_sell_price(
+        fn check_liquidity_pool_requirements(
             self: @ContractState, sell_price: u256, pool_key: PoolKey
         ) -> bool {
             let liquidity_pool: u128 = self
                 .ekubo_core
                 .read()
                 .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
-            return (sell_price * 3) < liquidity_pool.into();
+            return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
         }
     }
 }

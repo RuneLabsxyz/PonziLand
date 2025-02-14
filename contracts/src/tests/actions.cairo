@@ -15,7 +15,7 @@ use ponzi_land::tests::setup::{
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::models::land::{Land, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
-use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS, STARK_ADDRESS, BROTHER_ADDRESS};
+use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS};
 use ponzi_land::helpers::coord::{left, right, up, down};
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
@@ -24,6 +24,9 @@ use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTesti
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 // use ekubo::types::keys::PoolKey;
+
+const BROTHER_ADDRESS: felt252 = 0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe;
+const STARK_ADDRESS: felt252 = 0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0;
 
 fn FIRST_OWNER() -> ContractAddress {
     contract_address_const::<'FIRST_OWNER'>()
