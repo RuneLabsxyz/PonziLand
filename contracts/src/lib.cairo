@@ -27,6 +27,7 @@ mod tokens {
 
 mod mocks {
     mod erc20;
+    mod ekubo_core;
 }
 
 mod utils {
