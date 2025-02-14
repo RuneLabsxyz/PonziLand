@@ -4,7 +4,6 @@ use ponzi_land::utils::common_strucs::{TokenInfo};
 use ekubo::types::keys::PoolKey as EkuboPoolKey;
 
 
-
 #[derive(Drop, Serde, Debug, Copy)]
 #[dojo::model]
 pub struct Land {
@@ -72,7 +71,7 @@ impl LandImpl of LandTrait {
         owner: ContractAddress,
         token_used: ContractAddress,
         sell_price: u256,
-        pool_key:PoolKey,
+        pool_key: PoolKey,
         last_pay_time: u64,
         block_date_bought: u64,
         stake_amount: u256,

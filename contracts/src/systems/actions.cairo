@@ -1,7 +1,7 @@
 use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
-use ponzi_land::models::land::{Land,PoolKey};
+use ponzi_land::models::land::{Land, PoolKey};
 use ponzi_land::models::auction::Auction;
 use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 
@@ -63,7 +63,7 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion,PoolKey};
+    use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
 
@@ -83,7 +83,7 @@ pub mod actions {
 
     use dojo::event::EventStorage;
 
-    // use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
+    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // use ponzi_land::tokens::main_currency::LORDS_CURRENCY;
 
@@ -177,7 +177,7 @@ pub mod actions {
         taxes: TaxesComponent::Storage,
         active_auctions: u8,
         main_currency: ContractAddress,
-        // ekubo_core: ICoreDispatcher,
+        ekubo_core: ICoreDispatcher,
     }
 
     fn dojo_init(
@@ -190,13 +190,10 @@ pub mod actions {
         start_price: u256,
         floor_price: u256,
         decay_rate: u64,
+        ekubo_core_address: ContractAddress
     ) {
         self.main_currency.write(token_address);
-        // self
-        //     .ekubo_core
-        //     .write(
-        //         ICoreDispatcher { contract_address: EKUBO_CORE_SEPOLIA_ADDRESS.try_into().unwrap() }
-        //     );
+        self.ekubo_core.write(ICoreDispatcher { contract_address: ekubo_core_address });
 
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
@@ -225,8 +222,11 @@ pub mod actions {
             let land = store.land(land_location);
 
             assert(caller != land.owner, 'you already own this land');
-
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
+            assert(
+                self.is_liquidity_above_triple_sell_price(sell_price, liquidity_pool),
+                'Invalid liquidity_pool in buy'
+            );
 
             let seller = land.owner;
             let sold_price = land.sell_price;
@@ -272,6 +272,10 @@ pub mod actions {
             let land = store.land(land_location);
             let caller = get_caller_address();
             assert(land.owner == caller, 'not the owner');
+            assert(
+                self.is_liquidity_above_triple_sell_price(land.sell_price, land.pool_key),
+                'Invalid liquidity_pool in buy'
+            );
             self.internal_claim(store, land);
         }
 
@@ -313,8 +317,11 @@ pub mod actions {
 
             let mut land = store.land(land_location);
             let caller = get_caller_address();
-            //find the way to validate the liquidity pool for the new token_for_sale
-            //some assert();
+
+            assert(
+                self.is_liquidity_above_triple_sell_price(sell_price, liquidity_pool),
+                'Invalid liquidity_pool in bid'
+            );
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
             assert(sell_price > 0, 'sell_price > 0');
@@ -727,12 +734,14 @@ pub mod actions {
             }
         }
 
-        // fn check_liquidity_pool(self: @ContractState, mut land: Land) {
-        //     let liquidity_pool: u128 = self
-        //         .ekubo_core
-        //         .read()
-        //         .get_pool_liquidity(PoolKeyConversion::to_ekubo(land.pool_key));
-        //     assert((land.sell_price * 3) < liquidity_pool.into(), 'not sufficient lp');
-        // }
+        fn is_liquidity_above_triple_sell_price(
+            self: @ContractState, sell_price: u256, pool_key: PoolKey
+        ) -> bool {
+            let liquidity_pool: u128 = self
+                .ekubo_core
+                .read()
+                .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
+            return (sell_price * 3) < liquidity_pool.into();
+        }
     }
 }
