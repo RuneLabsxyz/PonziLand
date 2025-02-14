@@ -22,7 +22,7 @@ pub struct Land {
 
 #[derive(Serde, Drop, Copy, PartialEq, Introspect, Debug)]
 pub enum Level {
-    None,
+    Zero,
     First,
     Second,
 }
@@ -85,7 +85,7 @@ impl LandImpl of LandTrait {
             last_pay_time,
             block_date_bought,
             stake_amount,
-            level: Level::None
+            level: Level::Zero
         }
     }
 }

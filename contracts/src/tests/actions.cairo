@@ -547,7 +547,7 @@ fn test_level_up() {
     let land_1281 = store.land(1281);
 
     assert_eq!(land_1280.level, Level::First, "Land 1280 should be Level::First");
-    assert_eq!(land_1281.level, Level::None, "Land 1281 should be Level::None");
+    assert_eq!(land_1281.level, Level::Zero, "Land 1281 should be Level::None");
 }
 
 #[test]
