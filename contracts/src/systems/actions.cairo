@@ -272,11 +272,8 @@ pub mod actions {
             let land = store.land(land_location);
             let caller = get_caller_address();
             assert(land.owner == caller, 'not the owner');
-            if self.check_liquidity_pool_requirements(land.sell_price, land.pool_key) {
-                self.internal_claim(store, land);
-            } else {
-                self.nuke(land.location);
-            }
+
+            self.internal_claim(store, land);
         }
 
 
