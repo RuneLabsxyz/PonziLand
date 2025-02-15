@@ -16,8 +16,8 @@
       <LandDisplay auction />
     {:else if land.type == 'grass'}
       <LandDisplay />
-    {:else}
-      <LandDisplay basic />
+    {:else if land.type == 'house'}
+      <LandDisplay token={land.token} grass={false} class=" scale-125" />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
       <span class="text-ponzi {size == 'lg' ? 'text-xl' : 'text-lg'}"

@@ -94,7 +94,7 @@
     <div class="flex h-full w-full">
       <div class="flex flex-col w-full items-center justify-center min-w-80">
         {#if $selectedLandMeta}
-          <LandOverview land={$selectedLandMeta} />
+          <LandOverview land={$selectedLandMeta} size="lg" />
 
           <div class="flex items-center gap-1 pt-5">
             {#each priceDisplay as char}
