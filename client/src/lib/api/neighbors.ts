@@ -33,9 +33,9 @@ export class Neighbors {
     if (neighbors) this.neighbors = neighbors;
     if (source) {
       this.source = source;
-      this.neighbors = Neighbors.getWithLocation(location, this.source).filter(
-        (l) => l !== undefined,
-      );
+      this.neighbors = Neighbors.getWithLocation(location, this.source)
+        .getNeighbors()
+        .filter((l) => l !== undefined);
     }
   }
 
@@ -122,20 +122,19 @@ export class Neighbors {
 
   static getWithLocation(locationString: string, landStore: LandWithActions[]) {
     const location = toBigInt(locationString) ?? 0n;
-    const neighbors = this.getLocations(location).array;
 
-    const neighborsHex = neighbors.map((loc) => toHexWithPadding(loc));
-
+    const locations = this.getLocations(location).array;
     const filteredStore = landStore.filter(
       (l) => l.owner !== toHexWithPadding(0),
     );
 
-    const neighbours = neighborsHex.map((loc) => {
-      return filteredStore.find((l) => {
-        return l.location == loc;
-      });
-    });
+    const neighborsLands = locations.map((l) =>
+      filteredStore.find((ls) => ls.location === toHexWithPadding(l)),
+    );
 
-    return neighbours;
+    return new Neighbors({
+      location: locationString,
+      neighbors: neighborsLands.filter((l) => l !== undefined),
+    });
   }
 }
