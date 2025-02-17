@@ -120,7 +120,7 @@ export interface RemainingStakeEventValue {
 
 // Type definition for `ponzi_land::models::land::Level` enum
 export type Level = {
-  None: string;
+  Zero: string;
   First: string;
   Second: string;
 };
@@ -197,7 +197,7 @@ export const schema: SchemaType = {
       last_pay_time: 0,
       stake_amount: 0,
       level: new CairoCustomEnum({
-        None: '',
+        Zero: "",
         First: undefined,
         Second: undefined,
       }),
@@ -221,7 +221,7 @@ export const schema: SchemaType = {
       last_pay_time: 0,
       stake_amount: 0,
       level: new CairoCustomEnum({
-        None: '',
+        Zero: "",
         First: undefined,
         Second: undefined,
       }),
