@@ -7,7 +7,7 @@ import {
 } from '@avnu/avnu-sdk';
 import type { CurrencyAmount } from './CurrencyAmount';
 import type { Token } from '$lib/interfaces';
-import { useAccount } from '$lib/contexts/account';
+import { useAccount } from '$lib/contexts/account.svelte';
 
 export type BaseQuoteParams = {
   sellToken: Token;

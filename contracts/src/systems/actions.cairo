@@ -1,9 +1,9 @@
 use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
-use ponzi_land::models::land::Land;
+use ponzi_land::models::land::{Land, PoolKey};
 use ponzi_land::models::auction::Auction;
-use ponzi_land::components::payable::PayableComponent::{TokenInfo, ClaimInfo, LandYieldInfo};
+use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 
 // define the interface
 #[starknet::interface]
@@ -24,7 +24,7 @@ trait IActions<T> {
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
-        liquidity_pool: ContractAddress,
+        liquidity_pool: PoolKey,
     );
     fn buy(
         ref self: T,
@@ -32,7 +32,7 @@ trait IActions<T> {
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
-        liquidity_pool: ContractAddress,
+        liquidity_pool: PoolKey,
     );
 
     fn claim(ref self: T, land_location: u64);
@@ -43,10 +43,9 @@ trait IActions<T> {
 
     fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256);
 
-    //getters
-    fn get_stake_balance(self: @T, staker: ContractAddress) -> u256;
+    fn level_up(ref self: T, land_location: u64) -> bool;
+
     fn get_land(self: @T, land_location: u64) -> Land;
-    fn get_pending_taxes(self: @T, owner_land: ContractAddress) -> Array<TokenInfo>;
     fn get_pending_taxes_for_land(
         self: @T, land_location: u64, owner_land: ContractAddress,
     ) -> Array<TokenInfo>;
@@ -64,28 +63,48 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use ponzi_land::models::land::{Land, LandTrait};
+    use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
-    use ponzi_land::components::payable::{
-        PayableComponent, PayableComponent::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo},
-    };
+
+
+    use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
+    use ponzi_land::components::stake::StakeComponent;
+    use ponzi_land::components::taxes::TaxesComponent;
+    use ponzi_land::components::payable::PayableComponent;
+
+    use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor, add_neighbors_for_auction};
+    use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
+        LIQUIDITY_SAFETY_MULTIPLIER
     };
     use ponzi_land::store::{Store, StoreTrait};
+
     use dojo::event::EventStorage;
+
+    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // use ponzi_land::tokens::main_currency::LORDS_CURRENCY;
 
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
-    impl PayableInternalImpl = PayableComponent::InternalImpl<ContractState>;
+    impl PayableInternalImpl = PayableComponent::PayableImpl<ContractState>;
+
+    component!(path: StakeComponent, storage: stake, event: StakeEvent);
+    impl StakeInternalImpl = StakeComponent::InternalImpl<ContractState>;
+
+    component!(path: TaxesComponent, storage: taxes, event: TaxesEvent);
+    impl TaxesInternalImpl = TaxesComponent::InternalImpl<ContractState>;
 
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
         #[flat]
         PayableEvent: PayableComponent::Event,
+        #[flat]
+        StakeEvent: StakeComponent::Event,
+        #[flat]
+        TaxesEvent: TaxesComponent::Event
     }
 
     //events
@@ -98,15 +117,17 @@ pub mod actions {
         land_location: u64,
     }
 
+
     #[derive(Drop, Serde)]
     #[dojo::event]
-    pub struct NewLandEvent {
+    pub struct LandBoughtEvent {
         #[key]
-        owner_land: ContractAddress,
+        buyer: ContractAddress,
         #[key]
         land_location: u64,
-        token_for_sale: ContractAddress,
-        sell_price: u256,
+        sold_price: u256,
+        seller: ContractAddress,
+        token_used: ContractAddress,
     }
 
     #[derive(Drop, Serde)]
@@ -132,19 +153,31 @@ pub mod actions {
     pub struct AuctionFinishedEvent {
         #[key]
         land_location: u64,
+        buyer: ContractAddress,
         start_time: u64,
         final_time: u64,
         final_price: u256,
     }
 
+    mod errors {
+        const ERC20_PAY_FOR_BUY_FAILED: felt252 = 'ERC20: pay for buy failed';
+        const ERC20_PAY_FOR_BID_FAILED: felt252 = 'ERC20: pay for bid failed';
+        const ERC20_VALIDATE_AMOUNT_BUY: felt252 = 'validate amount for buy failed';
+        const ERC20_VALIDATE_AMOUNT_BID: felt252 = 'validate amount for bid failed';
+    }
 
     // Storage
     #[storage]
     struct Storage {
         #[substorage(v0)]
         payable: PayableComponent::Storage,
+        #[substorage(v0)]
+        stake: StakeComponent::Storage,
+        #[substorage(v0)]
+        taxes: TaxesComponent::Storage,
         active_auctions: u8,
         main_currency: ContractAddress,
+        ekubo_core: ICoreDispatcher,
     }
 
     fn dojo_init(
@@ -157,8 +190,10 @@ pub mod actions {
         start_price: u256,
         floor_price: u256,
         decay_rate: u64,
+        ekubo_core_address: ContractAddress
     ) {
         self.main_currency.write(token_address);
+        self.ekubo_core.write(ICoreDispatcher { contract_address: ekubo_core_address });
 
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
@@ -175,25 +210,37 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
             assert(amount_to_stake > 0, 'amount_to_stake > 0');
-
             let mut world = self.world_default();
             let caller = get_caller_address();
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
-            assert(caller != land.owner, 'you already own this land');
 
+            assert(caller != land.owner, 'you already own this land');
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
+            assert(
+                self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
+                'Invalid liquidity_pool in buy'
+            );
+
+            let seller = land.owner;
+            let sold_price = land.sell_price;
+            let token_used = land.token_used;
+
             self.internal_claim(store, land);
 
-            self.payable._pay(caller, land.owner, land.token_used, land.sell_price);
-            self.payable._refund_of_stake(land.owner, land.stake_amount);
-            self.payable._stake(caller, token_for_sale, amount_to_stake);
+            let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
+            assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
+
+            let transfer_status = self.payable.transfer_from(caller, land.owner, validation_result);
+            assert(transfer_status, errors::ERC20_PAY_FOR_BUY_FAILED);
+
+            self.stake._refund(store, land);
 
             self
                 .finalize_land_purchase(
@@ -204,6 +251,14 @@ pub mod actions {
                     amount_to_stake,
                     liquidity_pool,
                     caller,
+                );
+
+            store
+                .world
+                .emit_event(
+                    @LandBoughtEvent {
+                        buyer: caller, land_location: land.location, sold_price, seller, token_used,
+                    },
                 );
         }
 
@@ -217,6 +272,7 @@ pub mod actions {
             let land = store.land(land_location);
             let caller = get_caller_address();
             assert(land.owner == caller, 'not the owner');
+
             self.internal_claim(store, land);
         }
 
@@ -227,10 +283,10 @@ pub mod actions {
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
-            assert(land.stake_amount == 0, 'land with stake');
+            assert(land.stake_amount == 0, 'land with stake inside nuke');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if pending_taxes.len() != 0 {
-                self.payable._claim_taxes(pending_taxes, land.owner, land.location);
+                self.taxes._claim(pending_taxes, land.owner, land.location);
             }
 
             let owner_nuked = land.owner;
@@ -245,23 +301,24 @@ pub mod actions {
             self.auction(land_location, sell_price * 10, FLOOR_PRICE, DECAY_RATE * 2, true);
         }
 
-        //Bid offer(in a main currency(Lords?))
-        // how we know who will be the owner of the land?
         fn bid(
             ref self: ContractState,
             land_location: u64,
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
         ) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
             let caller = get_caller_address();
-            //find the way to validate the liquidity pool for the new token_for_sale
-            //some assert();
+
+            assert(
+                self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
+                'Invalid liquidity_pool in bid'
+            );
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
             assert(sell_price > 0, 'sell_price > 0');
@@ -284,7 +341,7 @@ pub mod actions {
             self
                 .buy_from_bid(
                     store,
-                    land_location,
+                    land,
                     token_for_sale,
                     sell_price,
                     current_price,
@@ -314,7 +371,6 @@ pub mod actions {
 
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
-
             let mut land = store.land(land_location);
 
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
@@ -369,11 +425,7 @@ pub mod actions {
             let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
-
-            self.payable._stake(caller, land.token_used, amount_to_stake);
-
-            land.stake_amount = land.stake_amount + amount_to_stake;
-            store.set_land(land);
+            self.stake._add(amount_to_stake, land, store);
 
             // Could be removed now that the remaining stake is stored in the world contrect
             // #52 issue
@@ -386,24 +438,27 @@ pub mod actions {
                 );
         }
 
+        fn level_up(ref self: ContractState, land_location: u64) -> bool {
+            let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
+            let caller = get_caller_address();
+
+            assert(land.owner == caller, 'not the owner');
+
+            let current_time = get_block_timestamp();
+            let elapsed_time_since_buy = (current_time - land.block_date_bought)
+                * TIME_SPEED.into();
+
+            self.update_level(ref store, ref land, elapsed_time_since_buy)
+        }
 
         //GETTERS FUNCTIONS
-
-        //TODO: here we have to change the return to struct of TokenInfo, no only amount
-        fn get_stake_balance(self: @ContractState, staker: ContractAddress) -> u256 {
-            self.payable.stake_balance.read(staker).amount
-        }
-
-        fn get_pending_taxes(
-            self: @ContractState, owner_land: ContractAddress,
-        ) -> Array<TokenInfo> {
-            self.payable._get_pending_taxes(owner_land, Option::None)
-        }
 
         fn get_pending_taxes_for_land(
             self: @ContractState, land_location: u64, owner_land: ContractAddress,
         ) -> Array<TokenInfo> {
-            self.payable._get_pending_taxes(owner_land, Option::Some(land_location))
+            self.taxes._get_pending_taxes(owner_land, land_location)
         }
 
         fn get_land(self: @ContractState, land_location: u64) -> Land {
@@ -433,9 +488,10 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location, true);
+            let neighbors = add_neighbors(store, land.location, true);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
+            //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
                     let current_time = get_block_timestamp();
@@ -473,7 +529,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = self.payable._add_neighbors(store, land.location, true);
+            let neighbors = add_neighbors(store, land.location, true);
             let neighbors_count = neighbors.len();
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
@@ -518,6 +574,7 @@ pub mod actions {
             LandYieldInfo { yield_info, remaining_stake_time }
         }
 
+
         fn get_active_auctions(self: @ContractState) -> u8 {
             self.active_auctions.read()
         }
@@ -539,59 +596,48 @@ pub mod actions {
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
-            let neighbors = self.payable._add_neighbors(store, land.location, true);
+            let neighbors = add_neighbors(store, land.location, true);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
-                    match self.payable._generate_taxes(store, neighbor.location) {
-                        Result::Ok(remaining_stake) => {
-                            if remaining_stake != 0 {
-                                store
-                                    .world
-                                    .emit_event(
-                                        @RemainingStakeEvent {
-                                            land_location: neighbor.location, remaining_stake,
-                                        },
-                                    )
-                            }
-                        },
-                        Result::Err(_) => {
-                            // println!("nuke");
-                            self.nuke(neighbor.location);
-                        },
-                    };
+                    let is_nuke = self.taxes._calculate_and_distribute(store, neighbor.location);
+                    let neighbor = store.land(neighbor.location);
+                    if is_nuke
+                        || !self
+                            .check_liquidity_pool_requirements(
+                                neighbor.sell_price, neighbor.pool_key
+                            ) {
+                        self.nuke(neighbor.location);
+                    }
                 };
             }
 
             //claim taxes for the land
             let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if taxes.len() != 0 {
-                self.payable._claim_taxes(taxes, land.owner, land.location);
+                self.taxes._claim(taxes, land.owner, land.location);
             }
         }
-
 
         fn buy_from_bid(
             ref self: ContractState,
             mut store: Store,
-            land_location: u64,
+            mut land: Land,
             token_for_sale: ContractAddress,
             sell_price: u256,
             sold_at_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
             caller: ContractAddress,
             mut auction: Auction,
         ) {
-            //TODO: we have to create our contract to send the tokens for the first sell
-            //self.payable._pay_to_us();
-            let land = store.land(land_location);
-            self.payable._pay(caller, get_contract_address(), land.token_used, sold_at_price);
-            self.payable._stake(caller, token_for_sale, amount_to_stake);
-
+            let validation_result = self.payable.validate(land.token_used, caller, sold_at_price);
+            assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
+            let pay_to_us_status = self.payable.pay_to_us(caller, validation_result);
+            assert(pay_to_us_status, errors::ERC20_PAY_FOR_BID_FAILED);
             self
                 .finalize_land_purchase(
                     store,
-                    land_location,
+                    land.location,
                     token_for_sale,
                     sell_price,
                     amount_to_stake,
@@ -599,15 +645,16 @@ pub mod actions {
                     caller,
                 );
 
-            auction.is_finished = true;
             store.set_auction(auction);
+            auction.is_finished = true;
             self.active_auctions.write(self.active_auctions.read() - 1);
 
             store
                 .world
                 .emit_event(
                     @AuctionFinishedEvent {
-                        land_location,
+                        land_location: land.location,
+                        buyer: land.owner,
                         start_time: auction.start_time,
                         final_time: get_block_timestamp(),
                         final_price: auction.get_current_price_decay_rate(),
@@ -629,19 +676,19 @@ pub mod actions {
                 .initialize_auction_for_neighbors(
                     // The floor price and decay_rate are extracted from the current auction, to
                     // always propagate the values from the intial auctions
-                    store, land_location, asking_price, auction.floor_price, auction.decay_rate,
+                    store, land.location, asking_price, auction.floor_price, auction.decay_rate
                 );
         }
 
         fn initialize_auction_for_neighbors(
             ref self: ContractState,
             mut store: Store,
-            land_location: u64,
+            location: u64,
             start_price: u256,
             floor_price: u256,
             decay_rate: u64,
         ) {
-            let neighbors = self.payable._add_neighbors_for_auction(store, land_location);
+            let neighbors = add_neighbors_for_auction(store, location);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     self.auction(neighbor.location, start_price, floor_price, decay_rate, false);
@@ -656,7 +703,7 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: ContractAddress,
+            liquidity_pool: PoolKey,
             caller: ContractAddress,
         ) {
             let land = LandTrait::new(
@@ -667,18 +714,36 @@ pub mod actions {
                 liquidity_pool,
                 get_block_timestamp(),
                 get_block_timestamp(),
-                amount_to_stake,
+                0,
             );
 
             store.set_land(land);
 
-            store
-                .world
-                .emit_event(
-                    @NewLandEvent {
-                        owner_land: land.owner, land_location, token_for_sale, sell_price,
-                    },
-                );
+            self.stake._add(amount_to_stake, land, store);
+        }
+
+        fn update_level(
+            self: @ContractState, ref store: Store, ref land: Land, elapsed_time: u64
+        ) -> bool {
+            let new_level = calculate_new_level(elapsed_time);
+
+            if land.level != new_level {
+                land.level = new_level;
+                store.set_land(land);
+                true
+            } else {
+                false
+            }
+        }
+
+        fn check_liquidity_pool_requirements(
+            self: @ContractState, sell_price: u256, pool_key: PoolKey
+        ) -> bool {
+            let liquidity_pool: u128 = self
+                .ekubo_core
+                .read()
+                .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
+            return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
         }
     }
 }

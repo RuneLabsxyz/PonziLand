@@ -5,7 +5,7 @@ import { BurnerManager, setupBurnerManager } from '@dojoengine/create-burner';
 import { getContext, setContext } from 'svelte';
 
 import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
-import type { AccountProvider } from '$lib/contexts/account';
+import type { AccountProvider } from '$lib/contexts/account.svelte';
 
 const accountKey = Symbol('dojoAccountBurner');
 

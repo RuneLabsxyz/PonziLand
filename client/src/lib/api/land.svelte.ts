@@ -15,13 +15,16 @@ import { derived, get, writable, type Readable } from 'svelte/store';
 import data from '$lib/data.json';
 import { type LandYieldInfo } from '$lib/interfaces';
 import { estimateNukeTime, getNeighbourYieldArray } from '$lib/utils/taxes';
-
+import type { Level as LevelModel } from '$lib/models.gen';
+import { fromDojoLevel } from '$lib/utils/level';
 export type TransactionResult = Promise<
   | {
       transaction_hash: string;
     }
   | undefined
 >;
+
+export type Level = 0 | 1 | 2;
 
 export type LandSetup = {
   tokenForSaleAddress: string;
@@ -45,11 +48,9 @@ export type LandsStore = Readable<LandWithActions[]> & {
     floorPrice: CurrencyAmount,
     decayRate: BigNumberish,
   ): TransactionResult;
-
-  getPendingTaxes(owner: string): Promise<Result | undefined>;
 };
 
-export type LandWithMeta = Omit<Land, 'location'> & {
+export type LandWithMeta = Omit<Land, 'location' | 'level'> & {
   location: string;
   // Type conversions
   stakeAmount: CurrencyAmount;
@@ -57,6 +58,8 @@ export type LandWithMeta = Omit<Land, 'location'> & {
 
   type: 'auction' | 'house' | 'grass';
   owner: string;
+
+  level: Level;
 
   tokenUsed: string | null;
   tokenAddress: string | null;
@@ -86,6 +89,7 @@ export type LandWithActions = LandWithMeta & {
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
   getYieldInfo(): Promise<LandYieldInfo | undefined>;
   getEstimatedNukeTime(): number | undefined;
+  levelUp(): TransactionResult;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -101,7 +105,7 @@ export function useLands(): LandsStore | undefined {
 
   // We are using this to ensure that we are getting the latest provider, not an old one.
   const account = () => {
-    return accountManager.getProvider();
+    return accountManager!.getProvider();
   };
 
   (async () => {
@@ -158,6 +162,7 @@ export function useLands(): LandsStore | undefined {
             | 'auction'
             | 'house',
           owner: land.owner,
+          level: fromDojoLevel(land.level),
           sellPrice: CurrencyAmount.fromUnscaled(land.sell_price),
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
@@ -231,6 +236,12 @@ export function useLands(): LandsStore | undefined {
 
           return result;
         },
+        async levelUp() {
+          return await sdk.client.actions.levelUp(
+            account()?.getAccount()!,
+            land.location,
+          );
+        },
         getEstimatedNukeTime() {
           return estimateNukeTime(
             land.sellPrice.rawValue().toNumber(),
@@ -280,11 +291,7 @@ export function useLands(): LandsStore | undefined {
         startPrice.toBignumberish(),
         floorPrice.toBignumberish(),
         decayRate,
-      );
-    },
-    getPendingTaxes() {
-      return sdk.client.actions.getPendingTaxes(
-        account()!.getAccount()!.address,
+        false,
       );
     },
   };
