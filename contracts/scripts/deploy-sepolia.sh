@@ -41,4 +41,4 @@ echo "Deployment completed successfully."
 echo "Deleting torii deployment"
 slot deployments delete ponziland-sepolia-target torii -f
 echo "Creating new torii deployment"
-slot deployments create --tier rare ponziland-sepolia-target torii --config ./slot-torii.toml
+slot deployments create --tier epic ponziland-sepolia-target torii --config ./slot-torii.toml

@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
-    "address": "0x19e7246f81a6a9ab0076a3b6962de2d6b9b71e20862b268249592c37fce6f0f",
-    "seed": "ponzi_land_private_4",
+    "address": "0x159a8d45365dce1aa357933e2e2e0a9290a41f275e100ae549092c3bb91067d",
+    "seed": "ponzi_land_private_6",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1252,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x13f64f126c4f0d91a31328d4f08a5c293e5c4f4a02bea7f5e0d9a7fec826658",
-      "class_hash": "0x5ba5b4bed818a7c3d04e727b98b1607e0aef1e31bb526924c60b8253739419d",
+      "address": "0x13a412a8d57aa5e07ec40b58e53ba487630be5dc8838a040813dc3b34b710e0",
+      "class_hash": "0x78642cef1273b1a1f61e43aacfe948cafa672099f2594a0bb0b66e76baf85f4",
       "abi": [
         {
           "type": "impl",
@@ -1354,6 +1354,10 @@
             {
               "name": "decay_rate",
               "type": "core::integer::u64"
+            },
+            {
+              "name": "ekubo_core_address",
+              "type": "core::starknet::contract_address::ContractAddress"
             }
           ],
           "outputs": [],
@@ -1379,11 +1383,37 @@
           ]
         },
         {
+          "type": "struct",
+          "name": "ponzi_land::models::land::PoolKey",
+          "members": [
+            {
+              "name": "token0",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "token1",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "tick_spacing",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "extension",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
           "type": "enum",
           "name": "ponzi_land::models::land::Level",
           "variants": [
             {
-              "name": "None",
+              "name": "Zero",
               "type": "()"
             },
             {
@@ -1422,7 +1452,7 @@
             },
             {
               "name": "pool_key",
-              "type": "core::starknet::contract_address::ContractAddress"
+              "type": "ponzi_land::models::land::PoolKey"
             },
             {
               "name": "last_pay_time",
@@ -1598,7 +1628,7 @@
                 },
                 {
                   "name": "liquidity_pool",
-                  "type": "core::starknet::contract_address::ContractAddress"
+                  "type": "ponzi_land::models::land::PoolKey"
                 }
               ],
               "outputs": [],
@@ -1626,7 +1656,7 @@
                 },
                 {
                   "name": "liquidity_pool",
-                  "type": "core::starknet::contract_address::ContractAddress"
+                  "type": "ponzi_land::models::land::PoolKey"
                 }
               ],
               "outputs": [],
@@ -1968,7 +1998,8 @@
         "0",
         "1000000000000000000",
         "0",
-        "100"
+        "100",
+        "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -1995,7 +2026,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6b98f11e9a4d4755cd81c83360ff3d60fc2e40aa6913d2b4a8e2cfda3155900",
+      "class_hash": "0xf0ebb95ca188aaf518c4a60f951e32a2d31086ea85a4b66978216077556722",
       "tag": "ponzi_land-Land",
       "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
     }

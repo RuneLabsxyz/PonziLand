@@ -23,6 +23,11 @@ version = "2.8.4"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.0.12#5f74aaef06a7900b1a6f6448465eb623c2e14aa1"
 
 [[package]]
+name = "ekubo"
+version = "0.1.0"
+source = "git+https://github.com/EkuboProtocol/abis?rev=edb6de8c9baf515f1053bbab3d86825d54a63bc3#edb6de8c9baf515f1053bbab3d86825d54a63bc3"
+
+[[package]]
 name = "openzeppelin_account"
 version = "0.18.0"
 source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
@@ -57,5 +62,6 @@ version = "1.0.1"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
+ "ekubo",
  "openzeppelin_token",
 ]
