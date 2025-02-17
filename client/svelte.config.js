@@ -17,6 +17,7 @@ const profiles = {
     PUBLIC_DOJO_CHAIN_ID: process.env.DOJO_CHAIN_ID,
     PUBLIC_AVNU_URL: process.env.AVNU_URL,
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
+    PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -37,6 +38,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
+    PUBLIC_SOCIALINK_URL: 'https://social.ponzi.land',
   },
 };
 
