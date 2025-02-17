@@ -1,5 +1,6 @@
 mod systems {
     mod actions;
+    mod auth;
 }
 
 mod models {
