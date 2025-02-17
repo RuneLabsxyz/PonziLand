@@ -1,4 +1,4 @@
-world_address = "0x019e7246f81a6a9ab0076a3b6962de2d6b9b71e20862b268249592c37fce6f0f"
+world_address = "0x0159a8d45365dce1aa357933e2e2e0a9290a41f275e100ae549092c3bb91067d"
 rpc = "https://api.cartridge.gg/x/starknet/sepolia"
 explorer = false
 events.raw = true
