@@ -11,6 +11,7 @@
     uiStore,
   } from '$lib/stores/stores.svelte';
   import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
+  import LandDisplay from '../land/land-display.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
@@ -109,18 +110,15 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore event_directive_deprecated -->
 <div class="relative {selected ? 'selected' : ''}">
-  <div
-    onmouseup={handleClick}
-    class={`relative tile ${land.type === 'auction' ? 'tile-auction' : ''}`}
-    style={land.type === 'house'
-      ? `background-image: url('${backgroundImage}'), url('/tiles/grass.png');
-               background-size: contain, cover;
-               background-repeat: no-repeat, repeat;
-               background-position: center, center;`
-      : `background-image: url('/tiles/${land.type}.png');
-               background-size: cover;
-               background-position: center;`}
-  ></div>
+  <div onmouseup={handleClick} class={`relative tile`}>
+    {#if land.type == 'auction'}
+      <LandDisplay auction road />
+    {:else if land.type == 'grass'}
+      <LandDisplay grass road seed={land.location} />
+    {:else if land.type == 'house'}
+      <LandDisplay token={land.token} road />
+    {/if}
+  </div>
 
   {#if selected}
     {#if land.type === 'auction'}

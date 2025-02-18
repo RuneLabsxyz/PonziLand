@@ -6,9 +6,9 @@
 </script>
 
 {#if land === undefined}
-  <LandDisplay />
+  <LandDisplay grass road />
 {:else if land === null}
-  <LandDisplay basic />
+  <LandDisplay basic grass road />
 {:else if land.token}
-  <LandDisplay token={land.token} />
+  <LandDisplay token={land.token} road />
 {/if}

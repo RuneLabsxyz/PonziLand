@@ -13,11 +13,11 @@
     {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
   >
     {#if land.type == 'auction'}
-      <LandDisplay auction />
+      <LandDisplay auction class="scale-125" />
     {:else if land.type == 'grass'}
-      <LandDisplay />
+      <LandDisplay grass class="scale-125" />
     {:else if land.type == 'house'}
-      <LandDisplay token={land.token} grass={false} class=" scale-125" />
+      <LandDisplay token={land.token} class="scale-125" />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
       <span class="text-ponzi {size == 'lg' ? 'text-xl' : 'text-lg'}"
