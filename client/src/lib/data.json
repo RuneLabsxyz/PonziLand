@@ -8,10 +8,23 @@
       "decimals": 18,
       "images": {
         "icon": "/assets/tokens/strk/icon.png",
-        "castle": {
-          "basic": "/assets/tokens/strk/castles/basic.png",
-          "advanced": "/assets/tokens/basic/castles/advanced.png",
-          "premium": "/assets/tokens/basic/castles/premium.png"
+        "biome": {
+          "x": 0,
+          "y": 7
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
         }
       }
     },
@@ -23,10 +36,23 @@
       "decimals": 18,
       "images": {
         "icon": "/assets/tokens/paper/icon.svg",
-        "castle": {
-          "basic": "/assets/tokens/paper/castles/basic.png",
-          "advanced": "/assets/tokens/paper/castles/advanced.png",
-          "premium": "/assets/tokens/paper/castles/premium.png"
+        "biome": {
+          "x": 0,
+          "y": 1
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 0
+          },
+          "2": {
+            "x": 3,
+            "y": 1
+          },
+          "3": {
+            "x": 3,
+            "y": 2
+          }
         }
       }
     },
@@ -38,10 +64,23 @@
       "decimals": 18,
       "images": {
         "icon": "/assets/tokens/lords/icon.svg",
-        "castle": {
-          "basic": "/assets/tokens/lords/castles/basic.png",
-          "advanced": "/assets/tokens/lords/castles/advanced.png",
-          "premium": "/assets/tokens/lords/castles/premium.png"
+        "biome": {
+          "x": 0,
+          "y": 6
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 0
+          },
+          "2": {
+            "x": 0,
+            "y": 1
+          },
+          "3": {
+            "x": 0,
+            "y": 2
+          }
         }
       }
     },
@@ -53,10 +92,23 @@
       "decimals": 18,
       "images": {
         "icon": "/assets/tokens/brother/icon.png",
-        "castle": {
-          "basic": "/assets/tokens/brother/castles/basic.png",
-          "advanced": "/assets/tokens/brother/castles/advanced.png",
-          "premium": "/assets/tokens/brother/castles/premium.png"
+        "biome": {
+          "x": 0,
+          "y": 2
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 6
+          },
+          "2": {
+            "x": 3,
+            "y": 7
+          },
+          "3": {
+            "x": 3,
+            "y": 8
+          }
         }
       }
     },
@@ -68,10 +120,23 @@
       "decimals": 18,
       "images": {
         "icon": "/assets/tokens/pal/icon.svg",
-        "castle": {
-          "basic": "/assets/tokens/pal/castles/basic.png",
-          "advanced": "/assets/tokens/pal/castles/advanced.png",
-          "premium": "/assets/tokens/pal/castles/premium.png"
+        "biome": {
+          "x": 0,
+          "y": 5
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 3
+          },
+          "2": {
+            "x": 0,
+            "y": 4
+          },
+          "3": {
+            "x": 0,
+            "y": 5
+          }
         }
       }
     }

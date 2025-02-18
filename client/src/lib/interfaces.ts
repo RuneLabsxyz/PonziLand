@@ -1,5 +1,10 @@
 import type { CurrencyAmount } from './utils/CurrencyAmount';
 
+interface Coordinates {
+  x: number;
+  y: number;
+}
+
 export interface Token {
   name: string;
   symbol: string;
@@ -8,10 +13,11 @@ export interface Token {
   decimals: number;
   images: {
     icon: string;
-    castle: {
-      basic: string;
-      advanced: string;
-      premium: string;
+    biome: Coordinates;
+    building: {
+      1: Coordinates;
+      2: Coordinates;
+      3: Coordinates;
     };
   };
 }
