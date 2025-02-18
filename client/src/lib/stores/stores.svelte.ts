@@ -125,6 +125,18 @@ export function usePlayerPlands() {
   );
 }
 
+export function useActiveAuctions() {
+  let landsStore = useLands();
+
+  return derived(landsStore!, (landsStore) => {
+    if (!landsStore) {
+      console.log('No value in store!');
+      return [];
+    }
+    return $landsStore.filter((land) => land.type == 'auction');
+  });
+}
+
 // UI State
 
 export let uiStore = $state<{

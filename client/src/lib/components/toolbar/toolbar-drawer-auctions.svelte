@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getAuctions } from '$lib/api/auction.svelte';
   import { useDojo } from '$lib/contexts/dojo';
+  import { useActiveAuctions } from '$lib/stores/stores.svelte';
 
   const { store, client: sdk, accountManager } = useDojo();
 
@@ -13,6 +14,9 @@
       console.log('Auctions', res);
     });
   });
+
+  let auctions = useActiveAuctions();
 </script>
 
 <div>Auctions</div>
+<div>{JSON.stringify(auctions, null, 2)}</div>
