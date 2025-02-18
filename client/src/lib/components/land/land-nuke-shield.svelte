@@ -13,6 +13,14 @@
   } = $props();
 
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
+  let estimatedDaysString = $derived.by(() => {
+    if (estimatedDays === Infinity) {
+      return '∞';
+    } else if (estimatedDays > 365) {
+      return '365+';
+    }
+    return estimatedDays.toString();
+  });
   let estimatedTimeString = $derived.by(() => {
     // Convert estimatedNukeTime to a human-readable string
     if (estimatedNukeTime === Infinity) return 'no neighbors = no tax';
@@ -86,7 +94,7 @@
       style="background-image: {getStyle(estimatedDays)
         .image}; color: {getStyle(estimatedDays).color}"
     >
-      {estimatedDays === Infinity ? '∞' : estimatedDays}
+      {estimatedDaysString}
     </div>
   </Tooltip.Trigger>
   <Tooltip.Content
