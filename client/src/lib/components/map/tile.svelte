@@ -1,7 +1,6 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
-  import data from '$lib/data.json';
   import { moveCameraToLocation } from '$lib/stores/camera';
   import {
     accountAddress,
@@ -16,8 +15,6 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
-
-  let backgroundImage = $state('/tiles/grass.jpg');
 
   let {
     land,
@@ -54,26 +51,6 @@
 
     selectLand(land as LandWithActions);
   }
-
-  const getCastleImage = () => {
-    if (land.type !== 'house') return '';
-    const token = data.availableTokens.find((t) => t.name === land.tokenUsed);
-    if (!token) {
-      const basicTypes = ['basic']; //'advanced', 'premium'
-      const randomBasic =
-        basicTypes[Math.floor(Math.random() * basicTypes.length)];
-      return `/assets/tokens/basic/castles/${randomBasic}.png`;
-    }
-
-    const castleTypes = ['basic'] as const;
-    const randomType =
-      castleTypes[Math.floor(Math.random() * castleTypes.length)];
-    return token.images.castle[randomType];
-  };
-
-  $effect(() => {
-    backgroundImage = getCastleImage();
-  });
 
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');

@@ -1,4 +1,4 @@
-<a href="https://docs.ponzi.land">
+<a href="https://docs.ponzi.land" target="_blank" rel="noopener noreferrer">
   <img
     src="/assets/ui/icons/Icon_Thin_Help.png"
     alt="help icon"
