@@ -25,7 +25,7 @@
 
   let rng = seedrandom(seed);
 
-  let grassNumber = Math.floor(rng() * 9);
+  let grassNumber = Math.floor(rng() * 7);
 
   let grassX = grassNumber % 4;
   let grassY = Math.floor(grassNumber / 3);
