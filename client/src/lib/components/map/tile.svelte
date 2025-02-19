@@ -17,8 +17,6 @@
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
 
-  let backgroundImage = $state('/tiles/grass.jpg');
-
   let {
     land,
     dragged,
@@ -54,26 +52,6 @@
 
     selectLand(land as LandWithActions);
   }
-
-  const getCastleImage = () => {
-    if (land.type !== 'house') return '';
-    const token = data.availableTokens.find((t) => t.name === land.tokenUsed);
-    if (!token) {
-      const basicTypes = ['basic']; //'advanced', 'premium'
-      const randomBasic =
-        basicTypes[Math.floor(Math.random() * basicTypes.length)];
-      return `/assets/tokens/basic/castles/${randomBasic}.png`;
-    }
-
-    const castleTypes = ['basic'] as const;
-    const randomType =
-      castleTypes[Math.floor(Math.random() * castleTypes.length)];
-    return token.images.castle[randomType];
-  };
-
-  $effect(() => {
-    backgroundImage = getCastleImage();
-  });
 
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');
