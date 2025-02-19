@@ -3,6 +3,7 @@
   import type { Token } from '$lib/interfaces';
   import { selectedLand } from '$lib/stores/stores.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { onMount } from 'svelte';
   import { Input } from '../ui/input';
   import Label from '../ui/label/label.svelte';
   import { Select, SelectContent, SelectValue } from '../ui/select';
@@ -34,16 +35,14 @@
   });
 
   $effect(() => {
+    stakeAmount = CurrencyAmount.fromScaled(stakeAmountVal);
     sellAmount = CurrencyAmount.fromScaled(sellAmountVal);
   });
 </script>
 
 <div class="w-full flex flex-col gap-2">
   <Label class="text-xl font-semibold">Select Token</Label>
-  <Select
-    onSelectedChange={(v) => (selectedToken = v?.value as Token)}
-    selected={{ value: data.availableTokens.find((t) => t.symbol == 'eSTRK') }}
-  >
+  <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
     <SelectTrigger>
       {#if selectedToken}
         <div class="flex gap-2 items-center">
