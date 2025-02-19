@@ -2,6 +2,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { useActiveAuctions } from '$lib/stores/stores.svelte';
   import LandInfoCard from '../land/land-info-card.svelte';
+  import ThreeDots from '../loading/three-dots.svelte';
   import ScrollArea from '../ui/scroll-area/scroll-area.svelte';
 
   const { store, client: sdk, accountManager } = useDojo();
@@ -31,7 +32,9 @@
 <div class="text-lg font-semibold">Auctions</div>
 <ScrollArea class="h-full w-full relative">
   <div class="flex flex-col">
-    {#await sortedAuctions then auctions}
+    {#await sortedAuctions}
+      loading auctions <ThreeDots />
+    {:then auctions}
       {#each auctions as auction}
         <LandInfoCard land={auction} />
       {/each}

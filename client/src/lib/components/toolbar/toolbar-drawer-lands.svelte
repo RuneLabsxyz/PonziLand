@@ -6,6 +6,7 @@
   let playerLandsStore = usePlayerLands();
 </script>
 
+<div class="text-lg font-semibold">My Lands</div>
 <ScrollArea class="h-full w-full relative">
   <div class="flex flex-col">
     {#each $playerLandsStore as land}
