@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import { Input } from '../ui/input';
   import Label from '../ui/label/label.svelte';
-  import { Select, SelectContent, SelectValue } from '../ui/select';
+  import { Select, SelectContent } from '../ui/select';
   import SelectItem from '../ui/select/select-item.svelte';
   import SelectTrigger from '../ui/select/select-trigger.svelte';
   import BuyInsights from './buy-insights.svelte';
