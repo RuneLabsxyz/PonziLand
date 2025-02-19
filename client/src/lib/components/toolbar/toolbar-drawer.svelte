@@ -8,18 +8,18 @@
   }>();
 </script>
 
-<div class={`ponzi-toolbar-drawer ${active ? 'active' : ''}`}>
-  <Card class="w-full h-full">
+<div class={`ponzi-toolbar-drawer flex flex-col ${active ? 'active' : ''}`}>
+  <Card class="w-full h-full flex flex-col">
+    {#if active === 'auctions'}
+      <ToolbarDrawerAuctions />
+    {/if}
+
     {#if active === 'lands'}
       <ToolbarDrawerLands />
     {/if}
 
     {#if active === 'notifications'}
       <div>Notifications</div>
-    {/if}
-
-    {#if active === 'auctions'}
-      <ToolbarDrawerAuctions />
     {/if}
   </Card>
 </div>
@@ -34,7 +34,7 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
-    z-index: 1000; /* Ensure it stays above other content */
+    z-index: 20; /* Ensure it stays above other content */
   }
 
   .ponzi-toolbar-drawer.active {

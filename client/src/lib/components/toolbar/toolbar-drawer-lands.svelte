@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { usePlayerPlands } from '$lib/stores/stores.svelte';
-  import { parseLocation } from '$lib/utils';
+  import { usePlayerLands } from '$lib/stores/stores.svelte';
   import LandInfoCard from '../land/land-info-card.svelte';
   import { ScrollArea } from '../ui/scroll-area';
 
-  let playerLandsStore = usePlayerPlands();
+  let playerLandsStore = usePlayerLands();
 </script>
 
 <ScrollArea class="h-full w-full relative">
