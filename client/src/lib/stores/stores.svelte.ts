@@ -107,7 +107,7 @@ export const accountAddress = readable<string | undefined>(
   },
 );
 
-export function usePlayerPlands() {
+export function usePlayerLands() {
   const landsStore = useLands();
 
   return derived(
@@ -128,7 +128,10 @@ export function usePlayerPlands() {
 export function useActiveAuctions() {
   let landsStore = useLands();
 
-  return derived(landsStore!, (landsStore) => {
+  console.log('landsStore', landsStore);
+
+  return derived(landsStore!, ($landsStore) => {
+    console.log('derived', $landsStore);
     if (!landsStore) {
       console.log('No value in store!');
       return [];
