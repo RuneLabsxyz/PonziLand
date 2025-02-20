@@ -112,7 +112,8 @@ mod setup {
                         0.into(), // floor_price (high)
                         200.into(), // decay_rate
                         ekubo_core_address,
-                        auth_contract_address
+                        auth_contract_address,
+                        RECIPIENT().into()
                     ].span()
                 ),
         ].span()

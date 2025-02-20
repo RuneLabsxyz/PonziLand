@@ -45,6 +45,10 @@ trait IActions<T> {
 
     fn level_up(ref self: T, land_location: u64) -> bool;
 
+    fn lock_actions(ref self: T);
+
+    fn unlock_actions(ref self: T);
+
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
         self: @T, land_location: u64, owner_land: ContractAddress,
@@ -181,7 +185,9 @@ pub mod actions {
         active_auctions: u8,
         main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
-        auth_dispatcher: IAuthDispatcher
+        auth_dispatcher: IAuthDispatcher,
+        owner: ContractAddress,
+        lock_actions: bool,
     }
 
     fn dojo_init(
@@ -195,11 +201,14 @@ pub mod actions {
         floor_price: u256,
         decay_rate: u64,
         ekubo_core_address: ContractAddress,
-        auth_contract_address: ContractAddress
+        auth_contract_address: ContractAddress,
+        owner: ContractAddress,
     ) {
         self.main_currency.write(token_address);
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
         self.auth_dispatcher.write(IAuthDispatcher { contract_address: auth_contract_address });
+        self.owner.write(owner);
+        self.lock_actions.write(false);
 
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
@@ -221,6 +230,8 @@ pub mod actions {
             //TODO:uncomment this when the tests are ready
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
+
+            assert(!self.lock_actions.read(), 'actions are locked');
 
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
@@ -278,6 +289,8 @@ pub mod actions {
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
 
+            assert(!self.lock_actions.read(), 'actions are locked');
+
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -296,6 +309,9 @@ pub mod actions {
             //TODO:uncomment this when the tests are ready
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
+
+            assert(!self.lock_actions.read(), 'actions are locked');
+
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
@@ -329,6 +345,8 @@ pub mod actions {
             //TODO:uncomment this when the tests are ready
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
+
+            assert(!self.lock_actions.read(), 'actions are locked');
 
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
@@ -385,6 +403,8 @@ pub mod actions {
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
 
+            assert(!self.lock_actions.read(), 'actions are locked');
+
             //we don't want generate an error if the auction is full
             if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
                 return;
@@ -425,6 +445,8 @@ pub mod actions {
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
 
+            assert(!self.lock_actions.read(), 'actions are locked');
+
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -444,6 +466,8 @@ pub mod actions {
             //TODO:uncomment this when the tests are ready
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
+
+            assert(!self.lock_actions.read(), 'actions are locked');
 
             assert(is_valid_position(land_location), 'Land location not valid');
 
@@ -472,6 +496,8 @@ pub mod actions {
             // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
             // authorized');
 
+            assert(!self.lock_actions.read(), 'actions are locked');
+
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -486,6 +512,16 @@ pub mod actions {
                 * TIME_SPEED.into();
 
             self.update_level(ref store, ref land, elapsed_time_since_buy)
+        }
+
+        fn lock_actions(ref self: ContractState) {
+            assert(self.owner.read() == get_caller_address(), 'not the owner');
+            self.lock_actions.write(true);
+        }
+
+        fn unlock_actions(ref self: ContractState) {
+            assert(self.owner.read() == get_caller_address(), 'not the owner');
+            self.lock_actions.write(false);
         }
 
         //GETTERS FUNCTIONS
