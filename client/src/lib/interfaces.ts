@@ -1,4 +1,5 @@
 import type { CurrencyAmount } from './utils/CurrencyAmount';
+import type data from '$lib/data.json';
 
 interface Coordinates {
   x: number;
@@ -9,7 +10,7 @@ export interface Token {
   name: string;
   symbol: string;
   address: string;
-  lpAddress: string;
+  liquidityPoolType: string;
   decimals: number;
   images: {
     icon: string;
@@ -34,7 +35,6 @@ export interface BuyData {
   tokens: Array<{
     name: string;
     address: string;
-    lpAddress: string;
   }>;
   stakeAmount: CurrencyAmount;
   sellPrice: CurrencyAmount;

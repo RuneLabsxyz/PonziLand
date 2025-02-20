@@ -1,11 +1,13 @@
-import { type DojoCall, DojoProvider } from '@dojoengine/core';
+import { DojoProvider, type DojoCall } from '@dojoengine/core';
 import {
   Account,
   AccountInterface,
   type BigNumberish,
-  cairo,
-  CallData,
+  CairoOption,
+  CairoCustomEnum,
+  type ByteArray,
 } from 'starknet';
+import * as models from './models.gen';
 
 export function setupWorld(provider: DojoProvider) {
   const build_actions_auction_calldata = (
@@ -13,16 +15,12 @@ export function setupWorld(provider: DojoProvider) {
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
     decayRate: BigNumberish,
+    isFromNuke: boolean,
   ): DojoCall => {
     return {
       contractName: 'actions',
       entrypoint: 'auction',
-      calldata: CallData.compile([
-        landLocation,
-        cairo.uint256(startPrice),
-        cairo.uint256(floorPrice),
-        decayRate,
-      ]),
+      calldata: [landLocation, startPrice, floorPrice, decayRate, isFromNuke],
     };
   };
 
@@ -32,6 +30,7 @@ export function setupWorld(provider: DojoProvider) {
     startPrice: BigNumberish,
     floorPrice: BigNumberish,
     decayRate: BigNumberish,
+    isFromNuke: boolean,
   ) => {
     try {
       return await provider.execute(
@@ -41,6 +40,7 @@ export function setupWorld(provider: DojoProvider) {
           startPrice,
           floorPrice,
           decayRate,
+          isFromNuke,
         ),
         'ponzi_land',
       );
@@ -55,18 +55,18 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ): DojoCall => {
     return {
       contractName: 'actions',
       entrypoint: 'bid',
-      calldata: CallData.compile([
+      calldata: [
         landLocation,
         tokenForSale,
-        cairo.uint256(sellPrice),
-        cairo.uint256(amountToStake),
+        sellPrice,
+        amountToStake,
         liquidityPool,
-      ]),
+      ],
     };
   };
 
@@ -76,7 +76,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ) => {
     try {
       return await provider.execute(
@@ -101,7 +101,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ): DojoCall => {
     return {
       contractName: 'actions',
@@ -122,7 +122,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ) => {
     try {
       return await provider.execute(
@@ -298,28 +298,6 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
-  const build_actions_getPendingTaxes_calldata = (
-    ownerLand: string,
-  ): DojoCall => {
-    return {
-      contractName: 'actions',
-      entrypoint: 'get_pending_taxes',
-      calldata: [ownerLand],
-    };
-  };
-
-  const actions_getPendingTaxes = async (ownerLand: string) => {
-    try {
-      return await provider.call(
-        'ponzi_land',
-        build_actions_getPendingTaxes_calldata(ownerLand),
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
   const build_actions_getPendingTaxesForLand_calldata = (
     landLocation: BigNumberish,
     ownerLand: string,
@@ -339,26 +317,6 @@ export function setupWorld(provider: DojoProvider) {
       return await provider.call(
         'ponzi_land',
         build_actions_getPendingTaxesForLand_calldata(landLocation, ownerLand),
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
-  const build_actions_getStakeBalance_calldata = (staker: string): DojoCall => {
-    return {
-      contractName: 'actions',
-      entrypoint: 'get_stake_balance',
-      calldata: [staker],
-    };
-  };
-
-  const actions_getStakeBalance = async (staker: string) => {
-    try {
-      return await provider.call(
-        'ponzi_land',
-        build_actions_getStakeBalance_calldata(staker),
       );
     } catch (error) {
       console.error(error);
@@ -422,6 +380,32 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const build_actions_levelUp_calldata = (
+    landLocation: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'actions',
+      entrypoint: 'level_up',
+      calldata: [landLocation],
+    };
+  };
+
+  const actions_levelUp = async (
+    snAccount: Account | AccountInterface,
+    landLocation: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_actions_levelUp_calldata(landLocation),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const build_actions_nuke_calldata = (
     landLocation: BigNumberish,
   ): DojoCall => {
@@ -471,17 +455,15 @@ export function setupWorld(provider: DojoProvider) {
       buildGetNeighborsYieldCalldata: build_actions_getNeighborsYield_calldata,
       getNextClaimInfo: actions_getNextClaimInfo,
       buildGetNextClaimInfoCalldata: build_actions_getNextClaimInfo_calldata,
-      getPendingTaxes: actions_getPendingTaxes,
-      buildGetPendingTaxesCalldata: build_actions_getPendingTaxes_calldata,
       getPendingTaxesForLand: actions_getPendingTaxesForLand,
       buildGetPendingTaxesForLandCalldata:
         build_actions_getPendingTaxesForLand_calldata,
-      getStakeBalance: actions_getStakeBalance,
-      buildGetStakeBalanceCalldata: build_actions_getStakeBalance_calldata,
       increasePrice: actions_increasePrice,
       buildIncreasePriceCalldata: build_actions_increasePrice_calldata,
       increaseStake: actions_increaseStake,
       buildIncreaseStakeCalldata: build_actions_increaseStake_calldata,
+      levelUp: actions_levelUp,
+      buildLevelUpCalldata: build_actions_levelUp_calldata,
       nuke: actions_nuke,
       buildNukeCalldata: build_actions_nuke_calldata,
     },

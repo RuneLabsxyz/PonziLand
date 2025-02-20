@@ -7,7 +7,7 @@ import {
 } from '@avnu/avnu-sdk';
 import type { CurrencyAmount } from './CurrencyAmount';
 import type { Token } from '$lib/interfaces';
-import { useAccount } from '$lib/contexts/account';
+import { useAccount } from '$lib/contexts/account.svelte';
 
 export type BaseQuoteParams = {
   sellToken: Token;
@@ -52,7 +52,7 @@ export function useAvnu() {
     },
     executeSwap(quote: Quote, executeOptions: ExecuteSwapOptions = {}) {
       return executeSwap(
-        account.getProvider()?.getWalletAccount()!,
+        account?.getProvider()?.getWalletAccount()!,
         quote,
         executeOptions,
         options,

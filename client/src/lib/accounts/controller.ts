@@ -2,7 +2,10 @@ import { getContext, onMount, setContext } from 'svelte';
 import Controller from '@cartridge/controller';
 import { type DojoConfig } from '$lib/dojoConfig';
 import type { AccountInterface, WalletAccount } from 'starknet';
-import type { AccountProvider, StoredSession } from '$lib/contexts/account';
+import type {
+  AccountProvider,
+  StoredSession,
+} from '$lib/contexts/account.svelte';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: AccountInterface;

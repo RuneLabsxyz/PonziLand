@@ -13,6 +13,8 @@ import { dojoConfig } from '$lib/dojoConfig';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
 import {
+  Account,
+  cairo,
   WalletAccount,
   type AccountInterface,
   shortString,
@@ -410,23 +412,22 @@ export class AccountManager {
   // TODO: Maybe mirror the some of the AccountProvider functions to make it easier to use?
 }
 
-export function setupAccount(): Promise<AccountManager | null> {
-  if (!browser) {
-    return Promise.resolve(null);
+let state = $state<AccountManager | null>(null);
+
+export function setupAccount(): Promise<AccountManager> {
+  if (state != null) {
+    return state.wait();
   }
 
-  if (getContext(accountManager) != null) {
-    return getContext<AccountManager>(accountManager).wait();
-  }
   const manager = new AccountManager();
 
-  setContext(accountManager, manager);
+  state = manager;
 
   return manager.wait();
 }
 
 export function useAccount() {
-  const manager = getContext<AccountManager>(accountManager);
+  const manager = state;
   if (manager == null) {
     console.error(
       'You are using useAccount(), but the setupAccount() function has not been called.',

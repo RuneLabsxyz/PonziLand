@@ -13,6 +13,8 @@ mod helpers {
 
 mod components {
     mod payable;
+    mod taxes;
+    mod stake;
 }
 
 mod consts;
@@ -25,8 +27,14 @@ mod tokens {
 
 mod mocks {
     mod erc20;
+    mod ekubo_core;
 }
 
+mod utils {
+    mod common_strucs;
+    mod get_neighbors;
+    mod level_up;
+}
 
 #[cfg(test)]
 mod tests {

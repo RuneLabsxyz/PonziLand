@@ -4,6 +4,7 @@
   import 'seedrandom';
   import seedrandom from 'seedrandom';
   import SpriteSheet from '../ui/sprite-sheet.svelte';
+  import type { Level } from '$lib/api/land.svelte';
 
   let {
     class: className = '',
@@ -13,6 +14,7 @@
     auction = false,
     road = false,
     seed = '',
+    level = 1,
   }: {
     class?: string;
     token?: Token;
@@ -21,6 +23,7 @@
     auction?: boolean;
     road?: boolean;
     seed?: string;
+    level?: Level;
   } = $props();
 
   let rng = seedrandom(seed);
@@ -96,8 +99,8 @@
     />
     <SpriteSheet
       src="/sheets/buildings.png"
-      x={token.images.building[1].x}
-      y={token.images.building[1].y}
+      x={token.images.building[level].x}
+      y={token.images.building[level].y}
       xSize={256}
       xMax={1536}
       ySize={256}

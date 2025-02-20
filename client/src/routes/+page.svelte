@@ -1,6 +1,6 @@
 <script>
   import { goto } from '$app/navigation';
-  import { setupAccount, useAccount } from '$lib/contexts/account';
+  import { setupAccount, useAccount } from '$lib/contexts/account.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
 
   // setup account

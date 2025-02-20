@@ -18,7 +18,6 @@
   let landStore = useLands();
 
   let location = $state<number>(0);
-  let selectedToken = $state<Token | null>(null);
   let startPrice = $state<string>('100');
   let stopPrice = $state<string>('10');
   let decayRate = $state<number>(2);
@@ -29,9 +28,8 @@
     landStore
       ?.auctionLand(
         location,
-        CurrencyAmount.fromScaled(startPrice, selectedToken ?? undefined),
-        CurrencyAmount.fromScaled(stopPrice, selectedToken ?? undefined),
-        selectedToken?.address!,
+        CurrencyAmount.fromScaled(startPrice, data.availableTokens[0]),
+        CurrencyAmount.fromScaled(stopPrice, data.availableTokens[0]),
         decayRate,
       )
       .then((res) => {
@@ -44,17 +42,6 @@
   <Button onclick={() => goto('/game')}>Back to game</Button>
   <Label>Location</Label>
   <Input bind:value={location} type="number" />
-  <Label>Token</Label>
-  <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
-    <SelectTrigger class="w-[180px]">
-      <SelectValue placeholder="Token" />
-    </SelectTrigger>
-    <SelectContent>
-      {#each data.availableTokens as token}
-        <SelectItem value={token}>{token.name}</SelectItem>
-      {/each}
-    </SelectContent>
-  </Select>
   <Label>Start Price</Label>
   <Input type="number" bind:value={startPrice} />
   <Label>Stop Price</Label>

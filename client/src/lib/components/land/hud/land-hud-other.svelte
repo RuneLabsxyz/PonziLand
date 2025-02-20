@@ -22,6 +22,7 @@
         </a>
       </p>
     </div>
+
     <div class="flex justify-between">
       <p class="opacity-50">Price</p>
       <p>
