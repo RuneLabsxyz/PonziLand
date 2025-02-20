@@ -2,6 +2,10 @@
 use starknet::contract_address::ContractAddressZeroable;
 use starknet::testing::{set_contract_address, set_block_timestamp, set_caller_address};
 use starknet::{contract_address_const, ContractAddress, get_block_timestamp};
+use core::ec::{EcPointTrait, EcStateTrait};
+use core::ec::stark_curve::{GEN_X, GEN_Y};
+use core::poseidon::poseidon_hash_span;
+use starknet::{testing, get_tx_info};
 // Dojo imports
 
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorageTrait, WorldStorage};
@@ -13,6 +17,7 @@ use ponzi_land::tests::setup::{
     setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core}
 };
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
+use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 use ponzi_land::models::land::{Land, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS};
@@ -23,7 +28,6 @@ use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTesti
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
-// use ekubo::types::keys::PoolKey;
 
 const BROTHER_ADDRESS: felt252 = 0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe;
 const STARK_ADDRESS: felt252 = 0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0;
@@ -71,10 +75,38 @@ fn deleted_pool_key() -> PoolKey {
     }
 }
 
+
+fn get_public_key(private_key: felt252) -> felt252 {
+    let generator = EcPointTrait::new(GEN_X, GEN_Y).unwrap();
+    let public_key_point = generator.mul(private_key);
+    match public_key_point.try_into() {
+        Option::Some(nz_point) => nz_point.x(),
+        Option::None => panic_with_felt252('Invalid public key')
+    }
+}
+
+//TODO:see how generate a correct sign to validate in tests
+fn generate_sign(auth_dispatcher: IAuthDispatcher) {
+    let private_key: felt252 = 0x1234567890987654321;
+    let public_key = get_public_key(private_key);
+    println!("Public Key: {:?}", public_key);
+    auth_dispatcher.set_verifier(public_key);
+
+    let message_hash = poseidon_hash_span(array![RECIPIENT().into()].span());
+
+    testing::set_signature(array![message_hash, private_key].span());
+    let signature = get_tx_info().unbox().signature;
+    println!("signature {:?}", signature);
+
+    auth_dispatcher.add_authorized(array![*signature[0], *signature[1]]);
+}
+
 // Helper functions for common test setup and actions
 fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCoreTestingDispatcher) {
-    let (world, actions_system, erc20, _, testing_dispatcher) = create_setup();
+    let (world, actions_system, erc20, _, testing_dispatcher, auth_dispatcher) = create_setup();
     set_contract_address(RECIPIENT());
+
+    //generate_sign(auth_dispatcher);
 
     // Setup initial ERC20 approval
     erc20.approve(actions_system.contract_address, 10000);

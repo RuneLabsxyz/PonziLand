@@ -24,31 +24,47 @@ mod setup {
     use ponzi_land::models::land::{Land, m_Land};
     use ponzi_land::models::auction::{Auction, m_Auction};
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-
+    use ponzi_land::systems::auth::{Auth, IAuthDispatcher, IAuthDispatcherTrait};
 
     fn RECIPIENT() -> ContractAddress {
         contract_address_const::<'RECIPIENT'>()
     }
 
 
+    const TEST_PRIVATE_KEY: felt252 = 0x1234; // Una clave privada específica para testing
+    const TEST_PUBLIC_KEY: felt252 =
+        0x1ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca; // Clave pública correspondiente
+
     fn create_setup() -> (
         WorldStorage,
         IActionsDispatcher,
         IERC20CamelDispatcher,
         ICoreDispatcher,
-        IEkuboCoreTestingDispatcher
+        IEkuboCoreTestingDispatcher,
+        IAuthDispatcher
     ) {
         let ndef = namespace_def();
+
+        //deploy of necessary contracts for the test
         let erc20 = deploy_erc20(RECIPIENT());
         let (core_dispatcher, testing_dispatcher) = deploy_mock_ekubo_core();
+        let auth_dispatcher = deploy_auht_contract(RECIPIENT().into(), TEST_PUBLIC_KEY);
+
+        //
         let cdf = contract_defs(
-            erc20.contract_address.into(), core_dispatcher.contract_address.into()
+            erc20.contract_address.into(),
+            core_dispatcher.contract_address.into(),
+            auth_dispatcher.contract_address.into()
         );
+
+        //
         let mut world = spawn_test_world([ndef].span());
         world.sync_perms_and_inits(cdf);
+
         let (contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address };
-        (world, actions_system, erc20, core_dispatcher, testing_dispatcher)
+
+        (world, actions_system, erc20, core_dispatcher, testing_dispatcher, auth_dispatcher)
     }
 
 
@@ -77,7 +93,9 @@ mod setup {
         ndef
     }
 
-    fn contract_defs(erc20_address: felt252, ekubo_core_address: felt252) -> Span<ContractDef> {
+    fn contract_defs(
+        erc20_address: felt252, ekubo_core_address: felt252, auth_contract_address: felt252
+    ) -> Span<ContractDef> {
         [
             ContractDefTrait::new(@"ponzi_land", @"actions")
                 .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
@@ -94,6 +112,7 @@ mod setup {
                         0.into(), // floor_price (high)
                         200.into(), // decay_rate
                         ekubo_core_address,
+                        auth_contract_address
                     ].span()
                 ),
         ].span()
@@ -125,5 +144,18 @@ mod setup {
         let testing_dispatcher = IEkuboCoreTestingDispatcher { contract_address: address };
 
         (core_dispatcher, testing_dispatcher)
+    }
+
+
+    fn deploy_auht_contract(owner: felt252, verifier: felt252) -> IAuthDispatcher {
+        let (address, _) = starknet::deploy_syscall(
+            Auth::TEST_CLASS_HASH.try_into().expect('Class hash conversion failed'),
+            0,
+            array![owner, verifier].span(),
+            false
+        )
+            .expect('Auth contract deploy failed');
+
+        IAuthDispatcher { contract_address: address }
     }
 }

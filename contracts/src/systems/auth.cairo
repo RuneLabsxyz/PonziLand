@@ -2,61 +2,70 @@ use starknet::ContractAddress;
 use starknet::{get_caller_address, get_contract_address};
 use starknet::contract_address::ContractAddressZeroable;
 
+
 #[starknet::interface]
 trait IAuth<T> {
     fn is_authorized(self: @T, address: ContractAddress) -> bool;
-    fn add_authorized(ref self: T, address: ContractAddress, signature: Array<felt252>);
+    fn add_authorized(ref self: T, signature: Array<felt252>);
     fn remove_authorized(ref self: T, address: ContractAddress);
-    fn set_verifier(ref self: T, new_verifier: ContractAddress);
+    fn set_verifier(ref self: T, new_verifier: felt252);
+
+    //getter
+    fn get_owner(self: @T) -> ContractAddress;
 }
 
-#[dojo::contract]
-pub mod auth {
-    use super::IAuth;
 
-    use dojo::world::WorldStorage;
-    use dojo::event::EventStorage;
-
+#[starknet::contract]
+pub mod Auth {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
     };
+    use core::ecdsa::check_ecdsa_signature;
+    use core::poseidon::poseidon_hash_span;
 
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    struct AddressAuthorized {
-        #[key]
+
+    use super::IAuth;
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        AddressAuthorizedEvent: AddressAuthorizedEvent,
+        AddressRemovedEvent: AddressRemovedEvent,
+        VerifierUpdatedEvent: VerifierUpdatedEvent
+    }
+
+    #[derive(Drop, Serde, starknet::Event)]
+    pub struct AddressAuthorizedEvent {
         address: ContractAddress,
         authorized_at: u64,
     }
 
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    struct AddressRemoved {
-        #[key]
+    #[derive(Drop, Serde, starknet::Event)]
+    pub struct AddressRemovedEvent {
         address: ContractAddress,
         removed_at: u64
     }
 
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    struct VerifierUpdated {
-        #[key]
-        new_verifier: ContractAddress,
-        old_verifier: ContractAddress,
+    #[derive(Drop, Serde, starknet::Event)]
+    pub struct VerifierUpdatedEvent {
+        new_verifier: felt252,
+        old_verifier: felt252,
     }
+
 
     #[storage]
     struct Storage {
         authorized_addresses: Map::<ContractAddress, bool>,
-        verifier: ContractAddress,
-        //Here we can put more than one owner
+        //has to be the public key
+        verifier: felt252,
         owner: ContractAddress,
     }
 
+
     #[constructor]
-    fn constructor(ref self: ContractState, owner: ContractAddress, verifier: ContractAddress) {
+    fn constructor(ref self: ContractState, owner: ContractAddress, verifier: felt252) {
         self.owner.write(owner);
         self.verifier.write(verifier);
     }
@@ -67,57 +76,55 @@ pub mod auth {
             self.authorized_addresses.read(address)
         }
 
-        fn add_authorized(
-            ref self: ContractState, address: ContractAddress, signature: Array<felt252>
-        ) {
-            let mut world = self.world_default();
-
-            // Verify the signature is from the authorized verifier || we can add if the owner is
-            // the caller
+        fn add_authorized(ref self: ContractState, signature: Array<felt252>) {
+            let address = get_caller_address();
+            // Verify the signature is from the authorized verifier
             assert(self.verify_signature(address, signature), 'Invalid signature');
 
             self.authorized_addresses.write(address, true);
-            world.emit_event(@AddressAuthorized { address, authorized_at: get_block_timestamp() });
+            self.emit(AddressAuthorizedEvent { address, authorized_at: get_block_timestamp() });
         }
 
         fn remove_authorized(ref self: ContractState, address: ContractAddress) {
-            let mut world = self.world_default();
-            // Only owner can remove addresses
             let caller = get_caller_address();
             assert(caller == self.owner.read(), 'Only owner can remove');
 
             self.authorized_addresses.write(address, false);
-            world.emit_event(@AddressRemoved { address, removed_at: get_block_timestamp() });
+            self.emit(AddressRemovedEvent { address, removed_at: get_block_timestamp() });
         }
 
-        fn set_verifier(ref self: ContractState, new_verifier: ContractAddress) {
-            let mut world = self.world_default();
-
+        fn set_verifier(ref self: ContractState, new_verifier: felt252) {
             let caller = get_caller_address();
             assert(caller == self.owner.read(), 'Only owner can change verifier');
 
             let old_verifier = self.verifier.read();
             self.verifier.write(new_verifier);
 
-            world.emit_event(@VerifierUpdated { new_verifier, old_verifier });
+            self.emit(VerifierUpdatedEvent { new_verifier, old_verifier });
+        }
+
+        //getter
+        fn get_owner(self: @ContractState) -> ContractAddress {
+            return self.owner.read();
         }
     }
 
     #[generate_trait]
     impl InternalFunctions of InternalFunctionsTrait {
-        fn world_default(self: @ContractState) -> WorldStorage {
-            self.world(@"ponzi_land")
-        }
-
-        //or one of the owners can be social.ponzi.land
+        //TODO: See how validate this with in tests
         fn verify_signature(
             self: @ContractState, address: ContractAddress, signature: Array<felt252>
         ) -> bool {
-            // Here we have to implement the signature verification logic
-            // using the verifier contract address stored in self.verifier based on
-            // social.ponzi.land
-
-            true
+            let verifier = self.verifier.read();
+            let signature_r = *signature[0];
+            let signature_s = *signature[1];
+            let message: felt252 = address.try_into().unwrap();
+            // let message_hash = poseidon_hash_span(array![address.into()].span());
+            println!("signature_r{:?}", signature_r);
+            println!("signature_s{:?}", signature_s);
+            println!("message {:?}", message);
+            println!("verifier {:?}", verifier);
+            return check_ecdsa_signature(message, verifier, signature_r, signature_s);
         }
     }
 }
