@@ -24,8 +24,13 @@
   let sellAmountVal = $state(sellAmount.toString());
 
   $effect(() => {
+    if (selectedToken == undefined) {
+      selectedToken = data.availableTokens.find((t) => t.symbol == 'eSTRK');
+    }
+  });
+
+  $effect(() => {
     stakeAmount = CurrencyAmount.fromScaled(stakeAmountVal);
-    selectedToken = data.availableTokens.find((t) => t.symbol == 'eSTRK');
   });
 
   $effect(() => {
