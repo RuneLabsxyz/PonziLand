@@ -52,7 +52,7 @@ export function useAvnu() {
     },
     executeSwap(quote: Quote, executeOptions: ExecuteSwapOptions = {}) {
       return executeSwap(
-        account.getProvider()?.getWalletAccount()!,
+        account?.getProvider()?.getWalletAccount()!,
         quote,
         executeOptions,
         options,

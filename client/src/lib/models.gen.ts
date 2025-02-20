@@ -30,7 +30,7 @@ export interface Land {
   owner: string;
   sell_price: BigNumberish;
   token_used: string;
-  pool_key: string;
+  pool_key: PoolKey;
   last_pay_time: BigNumberish;
   stake_amount: BigNumberish;
   level: LevelEnum;
@@ -42,10 +42,19 @@ export interface LandValue {
   owner: string;
   sell_price: BigNumberish;
   token_used: string;
-  pool_key: string;
+  pool_key: PoolKey;
   last_pay_time: BigNumberish;
   stake_amount: BigNumberish;
   level: LevelEnum;
+}
+
+// Type definition for `ponzi_land::models::land::PoolKey` struct
+export interface PoolKey {
+  token0: string;
+  token1: string;
+  fee: BigNumberish;
+  tick_spacing: BigNumberish;
+  extension: string;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
@@ -132,6 +141,7 @@ export interface SchemaType extends ISchemaType {
     AuctionValue: WithFieldOrder<AuctionValue>;
     Land: WithFieldOrder<Land>;
     LandValue: WithFieldOrder<LandValue>;
+    PoolKey: WithFieldOrder<PoolKey>;
     AuctionFinishedEvent: WithFieldOrder<AuctionFinishedEvent>;
     AuctionFinishedEventValue: WithFieldOrder<AuctionFinishedEventValue>;
     LandBoughtEvent: WithFieldOrder<LandBoughtEvent>;
@@ -193,11 +203,17 @@ export const schema: SchemaType = {
       owner: '',
       sell_price: 0,
       token_used: '',
-      pool_key: '',
+      pool_key: {
+        token0: '',
+        token1: '',
+        fee: 0,
+        tick_spacing: 0,
+        extension: '',
+      },
       last_pay_time: 0,
       stake_amount: 0,
       level: new CairoCustomEnum({
-        Zero: "",
+        Zero: '',
         First: undefined,
         Second: undefined,
       }),
@@ -217,14 +233,28 @@ export const schema: SchemaType = {
       owner: '',
       sell_price: 0,
       token_used: '',
-      pool_key: '',
+      pool_key: {
+        token0: '',
+        token1: '',
+        fee: 0,
+        tick_spacing: 0,
+        extension: '',
+      },
       last_pay_time: 0,
       stake_amount: 0,
       level: new CairoCustomEnum({
-        Zero: "",
+        Zero: '',
         First: undefined,
         Second: undefined,
       }),
+    },
+    PoolKey: {
+      fieldOrder: ['token0', 'token1', 'fee', 'tick_spacing', 'extension'],
+      token0: '',
+      token1: '',
+      fee: 0,
+      tick_spacing: 0,
+      extension: '',
     },
     AuctionFinishedEvent: {
       fieldOrder: [
@@ -306,6 +336,7 @@ export enum ModelsMapping {
   Land = 'ponzi_land-Land',
   LandValue = 'ponzi_land-LandValue',
   Level = 'ponzi_land-Level',
+  PoolKey = 'ponzi_land-PoolKey',
   AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
   AuctionFinishedEventValue = 'ponzi_land-AuctionFinishedEventValue',
   LandBoughtEvent = 'ponzi_land-LandBoughtEvent',

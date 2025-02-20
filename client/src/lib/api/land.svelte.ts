@@ -1,8 +1,11 @@
 import { useDojo } from '$lib/contexts/dojo';
 import data from '$lib/data.json';
-import type { Token } from '$lib/interfaces';
-import { type LandYieldInfo } from '$lib/interfaces';
-import type { Land, SchemaType as PonziLandSchemaType } from '$lib/models.gen';
+import type { Token, YieldInfo } from '$lib/interfaces';
+import type {
+  Land,
+  SchemaType as PonziLandSchemaType,
+  PoolKey,
+} from '$lib/models.gen';
 import {
   ensureNumber,
   getTokenInfo,
@@ -31,7 +34,7 @@ export type LandSetup = {
   tokenForSaleAddress: string;
   salePrice: CurrencyAmount;
   amountToStake: CurrencyAmount;
-  liquidityPoolAddress: string;
+  liquidityPool: PoolKey;
   tokenAddress: string;
   currentPrice: CurrencyAmount | null;
 };
@@ -125,7 +128,7 @@ export function useLands(): LandsStore | undefined {
         } else {
           console.log('Setting entities :)');
           console.log('Data!', response.data);
-          get(landStore).setEntities(response.data);
+          get(landStore).setEntities(response.data.flat(1));
         }
       },
     });
@@ -137,7 +140,7 @@ export function useLands(): LandsStore | undefined {
         } else {
           console.log('Setting entities :)');
           console.log('Data!', JSON.stringify(response.data));
-          get(landStore).setEntities(response.data);
+          get(landStore).setEntities(response.data.flat(1));
         }
       },
       options: {},
@@ -274,7 +277,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice.toBignumberish(),
         setup.amountToStake.toBignumberish(),
-        setup.liquidityPoolAddress,
+        setup.liquidityPool,
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
@@ -288,7 +291,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice.toBignumberish(),
         setup.amountToStake.toBignumberish(),
-        setup.liquidityPoolAddress,
+        setup.liquidityPool,
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );

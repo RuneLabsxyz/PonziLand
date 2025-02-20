@@ -20,7 +20,7 @@ rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
 ipfs_config.url = "https://ipfs.infura.io:5001"
 ipfs_config.username = "2EBrzr7ZASQZKH32sl2xWauXPSA"
 ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
-#world_address = "0x019e7246f81a6a9ab0076a3b6962de2d6b9b71e20862b268249592c37fce6f0f"
+world = "0x0159a8d45365dce1aa357933e2e2e0a9290a41f275e100ae549092c3bb91067d"
 
 [writers]
 "ponzi_land" = ["ponzi_land-actions"]
@@ -37,5 +37,5 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "1000000000000000000",
     "0",
     "100",
-    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
+    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
 ]

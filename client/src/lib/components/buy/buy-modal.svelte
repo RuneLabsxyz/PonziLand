@@ -11,22 +11,17 @@
     selectedLandMeta,
     type SelectedLand,
   } from '$lib/stores/stores.svelte';
-  import { toHexWithPadding } from '$lib/utils';
-  import { toCalldata } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land/land-overview.svelte';
-  import LoadingScreen from '../loading/loading-screen.svelte';
   import Button from '../ui/button/button.svelte';
   import { CardTitle } from '../ui/card';
   import Card from '../ui/card/card.svelte';
   import CloseButton from '../ui/close-button.svelte';
   import BuySellForm from './buy-sell-form.svelte';
   import ThreeDots from '../loading/three-dots.svelte';
-  import TokenDisplay from '../ui/token-display/token-display.svelte';
 
-  import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { onMount } from 'svelte';
-  import { ParticlesDensity } from '@tsparticles/engine';
+  import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -63,7 +58,7 @@
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: sellAmount,
       amountToStake: stakeAmount,
-      liquidityPoolAddress: selectedToken?.lpAddress ?? '',
+      liquidityPool: getLiquidityPoolFromToken(selectedToken!),
       tokenAddress: land?.tokenAddress ?? '',
       currentPrice: land?.sellPrice ?? null,
     };

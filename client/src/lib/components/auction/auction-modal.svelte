@@ -18,6 +18,7 @@
   import ThreeDots from '../loading/three-dots.svelte';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
+  import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -53,7 +54,7 @@
       tokenForSaleAddress: selectedToken?.address as string,
       salePrice: sellAmount,
       amountToStake: stakeAmount,
-      liquidityPoolAddress: toHexWithPadding(0),
+      liquidityPool: getLiquidityPoolFromToken(selectedToken!),
       tokenAddress: $selectedLandMeta?.tokenAddress as string,
       currentPrice: currentPrice, // Include a 10% margin on the bet amount
     };
