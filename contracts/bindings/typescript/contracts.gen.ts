@@ -25,7 +25,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_bid_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: string): DojoCall => {
+	const build_actions_bid_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey): DojoCall => {
 		return {
 			contractName: "actions",
 			entrypoint: "bid",
@@ -33,7 +33,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const actions_bid = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: string) => {
+	const actions_bid = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -46,7 +46,7 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_buy_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: string): DojoCall => {
+	const build_actions_buy_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey): DojoCall => {
 		return {
 			contractName: "actions",
 			entrypoint: "buy",
@@ -54,7 +54,7 @@ export function setupWorld(provider: DojoProvider) {
 		};
 	};
 
-	const actions_buy = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: string) => {
+	const actions_buy = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey) => {
 		try {
 			return await provider.execute(
 				snAccount,

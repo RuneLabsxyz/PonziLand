@@ -224,7 +224,7 @@ pub mod actions {
             assert(caller != land.owner, 'you already own this land');
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
             assert(
-                self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
+                self.check_liquidity_pool_requirements(token_for_sale, sell_price, liquidity_pool),
                 'Invalid liquidity_pool in buy'
             );
 
@@ -316,7 +316,7 @@ pub mod actions {
             let caller = get_caller_address();
 
             assert(
-                self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
+                self.check_liquidity_pool_requirements(token_for_sale, sell_price, liquidity_pool),
                 'Invalid liquidity_pool in bid'
             );
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -604,7 +604,7 @@ pub mod actions {
                     if is_nuke
                         || !self
                             .check_liquidity_pool_requirements(
-                                neighbor.sell_price, neighbor.pool_key
+                                neighbor.token_used, neighbor.sell_price, neighbor.pool_key
                             ) {
                         self.nuke(neighbor.location);
                     }
@@ -737,8 +737,32 @@ pub mod actions {
         }
 
         fn check_liquidity_pool_requirements(
-            self: @ContractState, sell_price: u256, pool_key: PoolKey
+            self: @ContractState, sell_token: ContractAddress, sell_price: u256, pool_key: PoolKey
         ) -> bool {
+            let main_currency = self.main_currency.read();
+
+            // We need to validate that the poolkey:
+            // - Is valid (token0 < token1)
+            // - Contains main_currency in one of its two tokens
+            // - Contains sell_token in one of its two tokens
+
+            let token0 = pool_key.token0;
+            let token1 = pool_key.token1;
+
+            if token0 != main_currency && token1 != main_currency {
+                return false;
+            }
+
+            if token0 != sell_token && token1 != sell_token {
+                return false;
+            }
+
+            if token0 == token1 {
+                // We cannot create a liquidity pool between the same tokens,
+                // so we always accept it
+                return true;
+            }
+
             let liquidity_pool: u128 = self
                 .ekubo_core
                 .read()
