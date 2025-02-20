@@ -142,6 +142,10 @@ export const estimateNukeTime = (
 ) => {
   const tax = estimateTax(sellPrice);
 
+  if (sellPrice <= 0 || isNaN(sellPrice)) {
+    return 0;
+  }
+
   const rateOfActualNeighbours = tax.ratePerNeighbour * neighbourNumber;
 
   const remainingHours = remainingStake / rateOfActualNeighbours;
@@ -152,6 +156,15 @@ export const estimateNukeTime = (
 };
 
 export const estimateTax = (sellPrice: number) => {
+  if (sellPrice <= 0 || isNaN(sellPrice)) {
+    return {
+      taxRate: 0,
+      baseTime: 0,
+      maxRate: 0,
+      ratePerNeighbour: 0,
+    };
+  }
+
   const gameSpeed = GAME_SPEED;
   const taxRate = 0.02;
   const baseTime = 3600;

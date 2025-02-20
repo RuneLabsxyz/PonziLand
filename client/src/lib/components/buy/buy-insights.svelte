@@ -2,6 +2,7 @@
   import type { LandWithActions } from '$lib/api/land.svelte';
   import type { Token } from '$lib/interfaces';
   import { estimateNukeTime, estimateTax } from '$lib/utils/taxes';
+  import { Redo } from 'lucide-svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import { Label } from '../ui/label';
   import { Slider } from '../ui/slider';
@@ -108,6 +109,10 @@
 
   let estimatedTimeString = $derived.by(() => {
     const time = estimatedNukeTimeSeconds;
+
+    if (time == 0) {
+      return '0s';
+    }
     // format seconds to dd hh mm ss
     const days = Math.floor(time / (3600 * 24));
     const hours = Math.floor((time % (3600 * 24)) / 3600);
@@ -119,6 +124,11 @@
 
   let estimatedNukeDate = $derived.by(() => {
     const time = estimatedNukeTimeSeconds;
+
+    if (time == 0) {
+      return '';
+    }
+
     const date = new Date();
     date.setSeconds(date.getSeconds() + time);
     return date.toLocaleString();
