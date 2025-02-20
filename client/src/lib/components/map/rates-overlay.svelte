@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
   import { GAME_SPEED } from '$lib/const';
+  import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
 
@@ -12,19 +13,7 @@
 
   let yieldInfo = $state<
     ({
-      token:
-        | {
-            name: string;
-            symbol: string;
-            address: string;
-            lpAddress: string;
-            decimals: number;
-            images: {
-              icon: string;
-              castle: { basic: string; advanced: string; premium: string };
-            };
-          }
-        | undefined;
+      token: Token | undefined;
       sell_price: bigint;
       percent_rate: bigint;
       location: bigint;

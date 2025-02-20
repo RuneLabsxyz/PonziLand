@@ -1,7 +1,6 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
-  import data from '$lib/data.json';
   import { moveCameraToLocation } from '$lib/stores/camera';
   import {
     accountAddress,

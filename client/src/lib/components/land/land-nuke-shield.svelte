@@ -13,6 +13,14 @@
   } = $props();
 
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
+  let estimatedDaysString = $derived.by(() => {
+    if (estimatedDays === Infinity) {
+      return '∞';
+    } else if (estimatedDays > 365) {
+      return '365+';
+    }
+    return estimatedDays.toString();
+  });
   let estimatedTimeString = $derived.by(() => {
     // Convert estimatedNukeTime to a human-readable string
     if (estimatedNukeTime === Infinity) return 'no neighbors = no tax';
@@ -22,6 +30,12 @@
     const minutes = Math.floor((estimatedNukeTime / 60) % 60);
     const seconds = Math.floor(estimatedNukeTime % 60);
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+  });
+  let estimatedNukeDate = $derived.by(() => {
+    const time = estimatedNukeTime;
+    const date = new Date();
+    date.setSeconds(date.getSeconds() + time);
+    return date.toLocaleString();
   });
 
   // Define thresholds with corresponding background images
@@ -80,11 +94,26 @@
       style="background-image: {getStyle(estimatedDays)
         .image}; color: {getStyle(estimatedDays).color}"
     >
-      {estimatedDays === Infinity ? '∞' : estimatedDays}
+      {estimatedDaysString}
     </div>
   </Tooltip.Trigger>
-  <Tooltip.Content class="border-ponzi bg-ponzi text-ponzi">
-    {estimatedTimeString}
+  <Tooltip.Content
+    class="border-ponzi bg-ponzi text-ponzi flex gap-2  items-center justify-center"
+  >
+    <div class="flex flex-col">
+      <span>
+        <span class="opacity-50"> Estimated nuke date: </span>
+        <span>{estimatedNukeDate}</span>
+      </span>
+      <span><span class="opacity-50">in</span> {estimatedTimeString}</span>
+    </div>
+    <a
+      href="https://docs.ponzi.land/docs/%E2%9A%99%EF%B8%8F%20Mechanics/nukeing"
+      rel="noopener noreferrer"
+      target="_blank"
+      class="cursor-pointer h-6 w-6"
+      ><img src="/assets/ui/icons/Icon_Help.png" alt="info" /></a
+    >
   </Tooltip.Content>
 </Tooltip.Root>
 
