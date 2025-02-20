@@ -35,7 +35,6 @@ export interface BuyData {
   tokens: Array<{
     name: string;
     address: string;
-    lpAddress: string;
   }>;
   stakeAmount: CurrencyAmount;
   sellPrice: CurrencyAmount;

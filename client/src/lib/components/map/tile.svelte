@@ -93,7 +93,7 @@
     {:else if land.type == 'grass'}
       <LandDisplay grass road seed={land.location} />
     {:else if land.type == 'house'}
-      <LandDisplay token={land.token} road />
+      <LandDisplay token={land.token} level={land.level} road />
     {/if}
   </div>
 
