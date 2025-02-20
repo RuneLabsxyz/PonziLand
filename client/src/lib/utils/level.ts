@@ -17,12 +17,12 @@ export function getEnumVariant(level: LevelModel) {
 export function fromDojoLevel(level: LevelModel): Level {
   switch (getEnumVariant(level)) {
     case 'Zero':
-      return 0;
-    case 'First':
       return 1;
-    case 'Second':
+    case 'First':
       return 2;
+    case 'Second':
+      return 3;
     default:
-      return 0;
+      return 1;
   }
 }

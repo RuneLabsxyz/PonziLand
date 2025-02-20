@@ -1,6 +1,6 @@
 import { useDojo } from '$lib/contexts/dojo';
 import data from '$lib/data.json';
-import type { Token, YieldInfo } from '$lib/interfaces';
+import type { LandYieldInfo, Token } from '$lib/interfaces';
 import type {
   Land,
   SchemaType as PonziLandSchemaType,
@@ -28,7 +28,7 @@ export type TransactionResult = Promise<
   | undefined
 >;
 
-export type Level = 0 | 1 | 2;
+export type Level = 1 | 2 | 3;
 
 export type LandSetup = {
   tokenForSaleAddress: string;
