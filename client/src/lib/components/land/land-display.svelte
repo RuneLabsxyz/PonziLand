@@ -28,7 +28,7 @@
 
   let rng = $derived(seedrandom(seed));
 
-  let grassNumber = $derived(Math.floor(rng() * 9));
+  let grassNumber = $derived(Math.floor(rng() * 7));
 
   let grassX = $derived(grassNumber % 4);
   let grassY = $derived(Math.floor(grassNumber / 3));
