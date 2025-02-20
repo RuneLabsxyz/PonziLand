@@ -1,6 +1,8 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import process from 'node:process';
+
+// Import dotenv for environment variables
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -16,6 +18,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_BURNER_PRIVATE,
     PUBLIC_DOJO_CHAIN_ID: process.env.DOJO_CHAIN_ID,
     PUBLIC_AVNU_URL: process.env.AVNU_URL,
+
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
   },
@@ -43,6 +46,7 @@ const profiles = {
 };
 
 const envProfile = profiles[profile];
+
 // Check if available in the environment, else use the default one
 for (const entry of Object.entries(profiles.env)) {
   if (entry[1] != null) {
@@ -50,7 +54,7 @@ for (const entry of Object.entries(profiles.env)) {
   }
 }
 
-for (const val of Object.entries(profiles[profile])) {
+for (const val of Object.entries(envProfile)) {
   process.env[val[0]] = val[1];
 }
 

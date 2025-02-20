@@ -12,6 +12,8 @@
   import { loadFull } from 'tsparticles';
   import { tsParticles } from '@tsparticles/engine';
   import { loadImageShape } from '@tsparticles/shape-image';
+  import { getInfo } from '$lib/accounts/social/index.svelte';
+  import { a } from 'vitest/dist/chunks/suite.BJU7kdY9.js';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -56,6 +58,16 @@
         if (accountManager?.getProvider()?.getAccount() == null) {
           console.info('The user is not logged in! Attempting login.');
           await accountManager?.getProvider()?.connect();
+        }
+
+        // Check if the user needs to signup with socialink
+        const address = accountManager
+          ?.getProvider()
+          ?.getWalletAccount()?.address;
+        if (address != null) {
+          const userInfo = await getInfo(address);
+          if (!userInfo.exists) {
+          }
         }
 
         clearLoading();
