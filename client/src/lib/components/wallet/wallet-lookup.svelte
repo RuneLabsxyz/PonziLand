@@ -6,6 +6,7 @@
   import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
   import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { getInfo } from '$lib/accounts/social/index.svelte';
 
   setup();
 
@@ -26,6 +27,16 @@
 
   const { store, client: sdk, accountManager } = useDojo();
   const address = $derived(accountDataProvider.address);
+
+  let username: string | undefined = $state();
+  $effect(() => {
+    if (address) {
+      getInfo(address).then((profile) => {
+        username = profile?.username ?? undefined;
+      });
+    }
+  });
+
   const connected = $derived(accountDataProvider.isConnected);
 </script>
 
@@ -63,7 +74,16 @@
     <Card class="shadow-ponzi w-72">
       <div class="flex justify-between items-center">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
-          <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
+          {#if username}
+            <p>
+              User: {username}
+              <span class="opacity-50 text-sm"
+                >{shortenHex(padAddress(address ?? ''), 8)}</span
+              >
+            </p>
+          {:else}
+            <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
+          {/if}
           <div class="h-2 w-2 rounded-full bg-green-700"></div>
           {#if copied}
             <div class="transition-opacity">Copied!</div>

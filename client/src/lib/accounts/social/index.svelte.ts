@@ -111,3 +111,22 @@ export async function register(username: string) {
     );
   }
 }
+
+export async function checkUsername(username: string) {
+  const response = await fetch(
+    `${PUBLIC_SOCIALINK_URL}/api/user/availability/${username}`,
+  );
+
+  if (!response.ok) {
+    try {
+      const error = await response.json();
+
+      throw error.error;
+    } catch (e) {
+      console.error('Error while checking username', e);
+      throw e;
+    }
+  }
+
+  return await response.json();
+}
