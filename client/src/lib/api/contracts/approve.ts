@@ -1,4 +1,5 @@
 import { setupWorld } from '$lib/contracts.gen';
+import type { PoolKey } from '$lib/models.gen';
 import {
   DojoProvider,
   getContractByName,
@@ -54,7 +55,7 @@ async function getApprove(
 }
 
 export async function wrappedActions(provider: DojoProvider) {
-  const worldActions = setupWorld(provider).actions;
+  const world = setupWorld(provider);
 
   const actions_bid = async (
     snAccount: Account | AccountInterface,
@@ -62,15 +63,13 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
-    tokenAddress: string,
+    liquidityPool: PoolKey,
+    /* Added parameters required for approval */
+    buyingToken: string,
     currentPrice: BigNumberish,
   ) => {
-    const sell_price = sellPrice;
-    const amount_to_stake = amountToStake;
-
     const approvals =
-      tokenAddress == tokenForSale
+      buyingToken == tokenForSale
         ? [
             {
               tokenAddress: tokenForSale,
@@ -83,22 +82,22 @@ export async function wrappedActions(provider: DojoProvider) {
               amount: BigInt(amountToStake),
             },
             {
-              tokenAddress: tokenAddress,
+              tokenAddress: buyingToken,
               amount: BigInt(currentPrice),
             },
           ];
 
-    const calls = await getApprove(provider, approvals, {
-      contractName: 'actions',
-      entrypoint: 'bid',
-      calldata: CallData.compile([
+    const calls = await getApprove(
+      provider,
+      approvals,
+      world.actions.buildBidCalldata(
         landLocation,
         tokenForSale,
-        sell_price,
-        amount_to_stake,
+        sellPrice,
+        amountToStake,
         liquidityPool,
-      ]),
-    });
+      ),
+    );
 
     return await provider.execute(snAccount, calls, 'ponzi_land');
   };
@@ -109,7 +108,10 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+
+    liquidityPool: PoolKey,
+
+    /* Added arguments for approval */
     currentToken: string,
     buyPrice: BigNumberish,
   ) => {
@@ -133,17 +135,17 @@ export async function wrappedActions(provider: DojoProvider) {
           ];
 
     try {
-      const calls = await getApprove(provider, approvals, {
-        contractName: 'actions',
-        entrypoint: 'buy',
-        calldata: CallData.compile({
+      const calls = await getApprove(
+        provider,
+        approvals,
+        world.actions.buildBuyCalldata(
           landLocation,
           tokenForSale,
-          sellPrice: sellPrice,
-          amountToStake: amountToStake,
+          sellPrice,
+          amountToStake,
           liquidityPool,
-        }),
-      });
+        ),
+      );
 
       return await provider.execute(snAccount, calls, 'ponzi_land');
     } catch (error) {
@@ -166,14 +168,7 @@ export async function wrappedActions(provider: DojoProvider) {
             amount: BigInt(amountToStake),
           },
         ],
-        {
-          contractName: 'actions',
-          entrypoint: 'increase_stake',
-          calldata: CallData.compile({
-            landLocation,
-            amountToStake: cairo.uint256(BigInt(amountToStake)),
-          }),
-        },
+        world.actions.buildIncreaseStakeCalldata(landLocation, amountToStake),
       );
 
       return await provider.execute(snAccount, calls, 'ponzi_land');
@@ -187,7 +182,7 @@ export async function wrappedActions(provider: DojoProvider) {
     landLocations: BigNumberish[],
   ) => {
     const calls = landLocations.map((location) => {
-      return worldActions.buildClaimCalldata(location);
+      return world.actions.buildClaimCalldata(location);
     });
 
     try {
@@ -200,7 +195,7 @@ export async function wrappedActions(provider: DojoProvider) {
 
   return {
     actions: {
-      ...worldActions,
+      ...world.actions,
       // Add the wrapped calls with multicalls
       bid: actions_bid,
       buy: actions_buy,

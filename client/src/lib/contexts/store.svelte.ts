@@ -3,7 +3,7 @@ import type { SchemaType } from '$lib/models.gen';
 import zustandToSvelte from '$lib/zustandToSvelte';
 //@ts-ignore: This error comes from a difference between the types and the actual implementation.
 import { createDojoStore } from '@dojoengine/sdk/react';
-import type { createDojoStore as dojoStoreFunction } from '@dojoengine/sdk';
+import type { createDojoStore as dojoStoreFunction } from '@dojoengine/sdk/react';
 import { getContext, setContext } from 'svelte';
 
 const storeKey = Symbol('dojo_store');

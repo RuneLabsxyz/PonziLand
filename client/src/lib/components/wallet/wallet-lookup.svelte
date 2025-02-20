@@ -71,7 +71,7 @@
         </button>
         <button
           onclick={() => {
-            accountManager.disconnect();
+            accountManager?.disconnect();
           }}
           aria-label="Logout"
         >
@@ -85,7 +85,7 @@
     <Button
       class="m-2"
       onclick={async () => {
-        await accountManager.promptForLogin();
+        await accountManager?.promptForLogin();
       }}>CONNECT WALLET</Button
     >
   {/if}
