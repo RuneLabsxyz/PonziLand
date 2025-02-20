@@ -55,7 +55,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ): DojoCall => {
     return {
       contractName: 'actions',
@@ -76,7 +76,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ) => {
     try {
       return await provider.execute(
@@ -101,7 +101,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ): DojoCall => {
     return {
       contractName: 'actions',
@@ -122,7 +122,7 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: string,
+    liquidityPool: models.PoolKey,
   ) => {
     try {
       return await provider.execute(

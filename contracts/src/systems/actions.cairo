@@ -600,12 +600,13 @@ pub mod actions {
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     let is_nuke = self.taxes._calculate_and_distribute(store, neighbor.location);
+                    let has_liquidity_requirements = self
+                        .check_liquidity_pool_requirements(
+                            neighbor.token_used, neighbor.sell_price, neighbor.pool_key
+                        );
+
                     let neighbor = store.land(neighbor.location);
-                    if is_nuke
-                        || !self
-                            .check_liquidity_pool_requirements(
-                                neighbor.token_used, neighbor.sell_price, neighbor.pool_key
-                            ) {
+                    if is_nuke || !has_liquidity_requirements {
                         self.nuke(neighbor.location);
                     }
                 };
