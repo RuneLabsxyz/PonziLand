@@ -33,7 +33,9 @@
 <ScrollArea class="h-full w-full relative">
   <div class="flex flex-col">
     {#await sortedAuctions}
-      loading auctions <ThreeDots />
+      <div>
+        loading auctions <ThreeDots />
+      </div>
     {:then auctions}
       {#each auctions as auction}
         <LandInfoCard land={auction} />

@@ -34,7 +34,9 @@
   });
 
   let currentPrice = $state<CurrencyAmount>();
-  let priceDisplay = $derived(currentPrice?.toString());
+  let priceDisplay = $derived(
+    currentPrice?.rawValue().toNumber().toLocaleString(),
+  );
 
   // Form
   let selectedToken = $state<Token | undefined>();
@@ -137,13 +139,14 @@
             {#if priceDisplay}
               {#each priceDisplay as char}
                 {#if char === '.'}
-                  <div class="text-ponzi-huge text-3xl">.</div>
+                  <span class="text-ponzi-huge text-3xl">.</span>
+                {:else if char == ','}
+                  <span class="text-ponzi-huge text-3xl opacity-0"></span>
                 {:else}
-                  <div
+                  <span
                     class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                    >{char}</span
                   >
-                    {char}
-                  </div>
                 {/if}
               {/each}
               {#if !fetching}
