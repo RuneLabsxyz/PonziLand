@@ -34,15 +34,13 @@
   });
 
   let currentPrice = $state<CurrencyAmount>();
-  let priceDisplay = $derived(
-    currentPrice?.rawValue().toNumber().toLocaleString(),
-  );
+  let priceDisplay = $derived(currentPrice?.toString());
 
   // Form
   let selectedToken = $state<Token | undefined>();
   //TODO: Change defaults values into an error component
-  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('100'));
-  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
+  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('1'));
 
   async function handleBiddingClick() {
     loading = true;
