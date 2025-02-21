@@ -1,9 +1,9 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import { claims } from '$lib/stores/claim.svelte';
   import { claimQueue } from '$lib/stores/event.store.svelte';
   import { getTokenInfo, toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
-  import { Confetti } from 'svelte-confetti';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
 
@@ -14,21 +14,23 @@
     // (from the core library) methods like play, pause, refresh, start, stop
   };
 
-  let { land } = $props<{ land: LandWithActions }>();
+  let { land }: { land: LandWithActions } = $props<{ land: LandWithActions }>();
 
   let nukableLands = $state<bigint[]>([]);
 
-  let waiting = $state(false);
   let animating = $state(false);
+  let timing = $state(false);
 
   async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
+    fetchTaxes();
 
     land
       .claim()
       .then(() => {
-        waiting = true;
         animating = true;
+        claims[land.location].lastClaimTime = Date.now();
+        getTiming();
 
         setTimeout(() => {
           animating = false;
@@ -49,20 +51,13 @@
         // remove nukable lands from the nukableStore
         nukableStore.update((nukableLandsFromStore) => {
           return nukableLandsFromStore.filter(
-            (land) => !nukableLands.includes(land),
+            (nukableLand) => !nukableLands.includes(nukableLand),
           );
         });
         nukableLands = [];
-        setTimeout(() => {
-          fetchTaxes().then(() => {
-            console.log('not waiting anymore');
-            waiting = false;
-          });
-        }, 10 * 1000);
       })
       .catch(() => {
         console.error('error claiming from coin');
-        waiting = false;
       });
   }
 
@@ -79,7 +74,7 @@
       for (const land of nukables) {
         const location = toBigInt(land)!;
         if (newStoreValue.includes(location)) {
-          continue;
+          continue; // TODO remove it if neighbor is not nukable and in the array
         }
 
         console.log('nukable land added to store', land);
@@ -89,15 +84,29 @@
       return newStoreValue;
     });
   }
+  async function getTiming() {
+    const claimInfo = claims[land.location];
+    if (!claimInfo) return;
+
+    if (
+      claimInfo.lastClaimTime == 0 ||
+      Date.now() - claimInfo.lastClaimTime >= 10 * 1000
+    ) {
+      timing = true;
+    } else {
+      timing = false;
+    }
+  }
 
   let aggregatedTaxes: TaxData[] = $state([]);
 
   $effect(() => {
     fetchTaxes();
+    getTiming();
 
     const interval = setInterval(() => {
-      console.log('refetching taxes');
       fetchTaxes();
+      getTiming();
     }, 10 * 1000);
 
     return () => {
@@ -108,7 +117,7 @@
 
 <div class="relative w-full h-full">
   <div class="flex flex-col-reverse items-center animate-bounce">
-    {#if aggregatedTaxes.length > 0 && !waiting}
+    {#if aggregatedTaxes.length > 0 && timing}
       <button onclick={handleClaimFromCoin} class="flex items-center">
         <img
           src="/assets/ui/icons/Icon_Coin2.png"
