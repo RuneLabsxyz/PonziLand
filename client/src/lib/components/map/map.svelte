@@ -43,6 +43,8 @@
         if (land.owner === addressHex) {
           claims[land.location] = {
             lastClaimTime: 0,
+            animating: false,
+            land: land,
           };
         }
       });

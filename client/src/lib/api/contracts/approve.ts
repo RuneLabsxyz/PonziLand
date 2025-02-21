@@ -54,6 +54,8 @@ async function getApprove(
 }
 
 export async function wrappedActions(provider: DojoProvider) {
+  const worldActions = setupWorld(provider).actions;
+
   const actions_bid = async (
     snAccount: Account | AccountInterface,
     landLocation: BigNumberish,
@@ -180,13 +182,30 @@ export async function wrappedActions(provider: DojoProvider) {
     }
   };
 
+  const actions_claim_all = async (
+    snAccount: Account | AccountInterface,
+    landLocations: BigNumberish[],
+  ) => {
+    const calls = landLocations.map((location) => {
+      return worldActions.buildClaimCalldata(location);
+    });
+
+    try {
+      return await provider.execute(snAccount, calls, 'ponzi_land');
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   return {
     actions: {
-      ...(await setupWorld(provider)).actions,
+      ...worldActions,
       // Add the wrapped calls with multicalls
       bid: actions_bid,
       buy: actions_buy,
       increaseStake: actions_increaseStake,
+      claimAll: actions_claim_all,
     },
   };
 }

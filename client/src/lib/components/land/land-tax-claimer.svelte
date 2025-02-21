@@ -1,12 +1,12 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
-  import { claims } from '$lib/stores/claim.svelte';
+  import { claimAllOfToken, claims } from '$lib/stores/claim.svelte';
   import { claimQueue } from '$lib/stores/event.store.svelte';
   import { getTokenInfo, toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
-  import { get } from 'svelte/store';
+  import { useDojo } from '$lib/contexts/dojo';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -15,13 +15,17 @@
     // (from the core library) methods like play, pause, refresh, start, stop
   };
 
+  const dojo = useDojo();
+  const account = () => {
+    return dojo.accountManager.getProvider();
+  };
+
   let { land }: { land: LandWithActions } = $props<{ land: LandWithActions }>();
 
   let nukableLands = $state<bigint[]>([]);
 
   let animating = $derived.by(() => {
     const claimInfo = claims[land.location];
-    getTiming();
     if (!claimInfo) return false;
 
     if (claimInfo.animating) {
@@ -40,24 +44,16 @@
     console.log('claiming from coin');
     fetchTaxes();
 
-    land
-      .claim()
+    if (!land.token) {
+      console.error("Land doesn't have a token");
+      return;
+    }
+
+    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
       .then(() => {
-        claims[land.location].lastClaimTime = Date.now();
-        claims[land.location].animating = true;
         getTiming();
 
-        claimQueue.update((queue) => {
-          return [
-            ...queue,
-            ...aggregatedTaxes.map((tax) => {
-              const token = getTokenInfo(tax.tokenAddress);
-              tax.totalTax.setToken(token);
-              console.log('total tax when updating queue', tax.totalTax);
-              return tax.totalTax;
-            }),
-          ];
-        });
+        // TODO remove nuke update from here
         // remove nukable lands from the nukableStore
         nukableStore.update((nukableLandsFromStore) => {
           return nukableLandsFromStore.filter(
@@ -66,8 +62,8 @@
         });
         nukableLands = [];
       })
-      .catch(() => {
-        console.error('error claiming from coin');
+      .catch((e) => {
+        console.error('error claiming from coin', e);
       });
   }
 
