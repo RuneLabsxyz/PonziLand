@@ -6,6 +6,7 @@
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
+  import { get } from 'svelte/store';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -18,7 +19,21 @@
 
   let nukableLands = $state<bigint[]>([]);
 
-  let animating = $state(false);
+  let animating = $derived.by(() => {
+    const claimInfo = claims[land.location];
+    getTiming();
+    if (!claimInfo) return false;
+
+    if (claimInfo.animating) {
+      setTimeout(() => {
+        claims[land.location].animating = false;
+        console.log('not animating anymore');
+      }, 2000);
+      return true;
+    } else {
+      return false;
+    }
+  });
   let timing = $state(false);
 
   async function handleClaimFromCoin(e: Event) {
@@ -28,14 +43,9 @@
     land
       .claim()
       .then(() => {
-        animating = true;
         claims[land.location].lastClaimTime = Date.now();
+        claims[land.location].animating = true;
         getTiming();
-
-        setTimeout(() => {
-          animating = false;
-          console.log('not animating anymore');
-        }, 2000);
 
         claimQueue.update((queue) => {
           return [

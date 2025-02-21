@@ -1,1 +1,3 @@
-export let claims: { [key: string]: { lastClaimTime: number } } = $state({});
+export let claims: {
+  [key: string]: { lastClaimTime: number; animating: boolean };
+} = $state({});
