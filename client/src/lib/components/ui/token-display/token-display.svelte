@@ -20,23 +20,44 @@
     easing: (t) => 1 - Math.pow(1 - t, 3),
   });
 
+  const localQueue: CurrencyAmount[] = [];
+  let processing = $state(false);
+
+  const processQueue = () => {
+    const nextEvent = localQueue[0];
+    increment = Number(nextEvent.toBigint());
+    animating = true;
+    tweenAmount.set(Number(nextEvent.toBigint() + amount)).then(() => {
+      setTimeout(() => {
+        animating = false;
+        // remove from local queue
+        localQueue.shift();
+      }, 250);
+      setTimeout(() => {
+        // Test if should restart
+        if (localQueue.length > 0) {
+          processQueue();
+        } else {
+          processing = false;
+        }
+      }, 750);
+    });
+  };
+
   $effect(() => {
     const unsub = claimQueue.subscribe((queue) => {
-      console.log('queue', queue);
       const nextEvent = queue[0];
 
       if (nextEvent?.getToken()?.address == token.address) {
-        console.log('token is the same', token.symbol);
-        console.log('setting amount to', nextEvent.toBigint());
+        // add to local queue
+        localQueue.push(nextEvent);
+        // trigger updates
+        if (processing == false) {
+          processing = true;
+          processQueue();
+        }
 
-        increment = Number(nextEvent.toBigint());
-        animating = true;
-        tweenAmount.set(Number(nextEvent.toBigint() + amount)).then(() => {
-          setTimeout(() => {
-            animating = false;
-          }, 250);
-        });
-
+        // remove from global queue
         claimQueue.update((queue) => queue.slice(1));
       }
     });

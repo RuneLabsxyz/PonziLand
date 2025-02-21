@@ -3,7 +3,9 @@
   import { nukableStore, useLands } from '$lib/api/land.svelte';
   import { useTiles } from '$lib/api/tile-store.svelte';
   import { cameraPosition, cameraTransition } from '$lib/stores/camera';
-  import { mousePosCoords } from '$lib/stores/stores.svelte';
+  import { claims } from '$lib/stores/claim.svelte';
+  import { accountAddress, mousePosCoords } from '$lib/stores/stores.svelte';
+  import { toHexWithPadding } from '$lib/utils';
   import Tile from './tile.svelte';
 
   const MAP_SIZE = 64;
@@ -25,12 +27,26 @@
   } catch (e) {
     console.log('Error in map.svelte', e);
   }
-  $inspect('landStore', $landStore);
-  $inspect('nukeStore', $nukableStore);
 
   let tileStore = useTiles();
 
   let tiles = $derived($tileStore ?? []);
+
+  $effect(() => {
+    accountAddress.subscribe((address) => {
+      const addressHex = toHexWithPadding(BigInt(address ?? ''));
+      $landStore?.forEach((land) => {
+        if (land.owner === addressHex) {
+          claims[land.location] = {
+            lastClaimTime: 0,
+            animating: false,
+            land: land,
+            claimable: true,
+          };
+        }
+      });
+    });
+  });
 
   function handleWheel(event: WheelEvent) {
     event.preventDefault();

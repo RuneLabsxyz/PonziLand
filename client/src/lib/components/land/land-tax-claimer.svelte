@@ -1,11 +1,12 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import { claimAllOfToken, claims } from '$lib/stores/claim.svelte';
   import { claimQueue } from '$lib/stores/event.store.svelte';
   import { getTokenInfo, toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
-  import { Confetti } from 'svelte-confetti';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
+  import { useDojo } from '$lib/contexts/dojo';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -14,55 +15,53 @@
     // (from the core library) methods like play, pause, refresh, start, stop
   };
 
-  let { land } = $props<{ land: LandWithActions }>();
+  const dojo = useDojo();
+  const account = () => {
+    return dojo.accountManager.getProvider();
+  };
+
+  let { land }: { land: LandWithActions } = $props<{ land: LandWithActions }>();
 
   let nukableLands = $state<bigint[]>([]);
 
-  let waiting = $state(false);
-  let animating = $state(false);
+  let animating = $derived.by(() => {
+    const claimInfo = claims[land.location];
+    if (!claimInfo) return false;
+
+    if (claimInfo.animating) {
+      setTimeout(() => {
+        claims[land.location].animating = false;
+        console.log('not animating anymore');
+      }, 2000);
+      return true;
+    } else {
+      return false;
+    }
+  });
+  let timing = $derived(claims[land.location].claimable);
 
   async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
+    fetchTaxes();
 
-    land
-      .claim()
+    if (!land.token) {
+      console.error("Land doesn't have a token");
+      return;
+    }
+
+    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
       .then(() => {
-        waiting = true;
-        animating = true;
-
-        setTimeout(() => {
-          animating = false;
-          console.log('not animating anymore');
-        }, 2000);
-
-        claimQueue.update((queue) => {
-          return [
-            ...queue,
-            ...aggregatedTaxes.map((tax) => {
-              const token = getTokenInfo(tax.tokenAddress);
-              tax.totalTax.setToken(token);
-              console.log('total tax when updating queue', tax.totalTax);
-              return tax.totalTax;
-            }),
-          ];
-        });
+        // TODO remove nuke update from here
         // remove nukable lands from the nukableStore
         nukableStore.update((nukableLandsFromStore) => {
           return nukableLandsFromStore.filter(
-            (land) => !nukableLands.includes(land),
+            (nukableLand) => !nukableLands.includes(nukableLand),
           );
         });
         nukableLands = [];
-        setTimeout(() => {
-          fetchTaxes().then(() => {
-            console.log('not waiting anymore');
-            waiting = false;
-          });
-        }, 10 * 1000);
       })
-      .catch(() => {
-        console.error('error claiming from coin');
-        waiting = false;
+      .catch((e) => {
+        console.error('error claiming from coin', e);
       });
   }
 
@@ -79,7 +78,7 @@
       for (const land of nukables) {
         const location = toBigInt(land)!;
         if (newStoreValue.includes(location)) {
-          continue;
+          continue; // TODO remove it if neighbor is not nukable and in the array
         }
 
         console.log('nukable land added to store', land);
@@ -89,14 +88,12 @@
       return newStoreValue;
     });
   }
-
   let aggregatedTaxes: TaxData[] = $state([]);
 
   $effect(() => {
     fetchTaxes();
 
     const interval = setInterval(() => {
-      console.log('refetching taxes');
       fetchTaxes();
     }, 10 * 1000);
 
@@ -108,7 +105,7 @@
 
 <div class="relative w-full h-full">
   <div class="flex flex-col-reverse items-center animate-bounce">
-    {#if aggregatedTaxes.length > 0 && !waiting}
+    {#if aggregatedTaxes.length > 0 && timing}
       <button onclick={handleClaimFromCoin} class="flex items-center">
         <img
           src="/assets/ui/icons/Icon_Coin2.png"
