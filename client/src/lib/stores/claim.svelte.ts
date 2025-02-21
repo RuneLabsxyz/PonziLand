@@ -9,6 +9,7 @@ import { getTokenInfo } from '$lib/utils';
 export let claims: {
   [key: string]: {
     lastClaimTime: number;
+    claimable: boolean;
     animating: boolean;
     land: LandWithActions;
   };
@@ -38,10 +39,12 @@ export async function claimAllOfToken(
       landsWithThisToken.map((land) => land.location),
     )
     .then(() => {
+      
       // update the last claim time for all the lands
       landsWithThisToken.forEach((land) => {
         claims[land.location].lastClaimTime = Date.now();
         claims[land.location].animating = true;
+        claims[land.location].claimable = false;
       });
 
       claimQueue.update((queue) => {

@@ -38,7 +38,7 @@
       return false;
     }
   });
-  let timing = $state(false);
+  let timing = $derived(claims[land.location].claimable);
 
   async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
@@ -51,8 +51,6 @@
 
     claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
       .then(() => {
-        getTiming();
-
         // TODO remove nuke update from here
         // remove nukable lands from the nukableStore
         nukableStore.update((nukableLandsFromStore) => {
@@ -90,29 +88,13 @@
       return newStoreValue;
     });
   }
-  async function getTiming() {
-    const claimInfo = claims[land.location];
-    if (!claimInfo) return;
-
-    if (
-      claimInfo.lastClaimTime == 0 ||
-      Date.now() - claimInfo.lastClaimTime >= 10 * 1000
-    ) {
-      timing = true;
-    } else {
-      timing = false;
-    }
-  }
-
   let aggregatedTaxes: TaxData[] = $state([]);
 
   $effect(() => {
     fetchTaxes();
-    getTiming();
 
     const interval = setInterval(() => {
       fetchTaxes();
-      getTiming();
     }, 10 * 1000);
 
     return () => {

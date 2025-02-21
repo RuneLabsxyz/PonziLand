@@ -28,10 +28,6 @@
     console.log('Error in map.svelte', e);
   }
 
-  $inspect('landStore', $landStore);
-  $inspect('nukeStore', $nukableStore);
-  $inspect('claimsStore', claims);
-
   let tileStore = useTiles();
 
   let tiles = $derived($tileStore ?? []);
@@ -45,6 +41,7 @@
             lastClaimTime: 0,
             animating: false,
             land: land,
+            claimable: true,
           };
         }
       });
