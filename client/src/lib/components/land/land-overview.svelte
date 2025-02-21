@@ -15,11 +15,7 @@
     {#if land.type == 'auction'}
       <LandDisplay auction class="scale-125" />
     {:else if land.type == 'grass'}
-      <LandDisplay
-        grass
-        seed={locationIntToString(land.location)}
-        class="scale-125"
-      />
+      <LandDisplay grass seed={land.location} class="scale-125" />
     {:else if land.type == 'house'}
       <LandDisplay token={land.token} class="scale-125" />
     {/if}

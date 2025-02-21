@@ -30,8 +30,8 @@
   // Form
   let selectedToken = $state<Token | undefined>();
   //TODO: Change defaults values into an error component
-  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('100'));
-  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
+  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('1'));
 
   async function handleBiddingClick() {
     loading = true;
@@ -128,13 +128,14 @@
             {#if priceDisplay}
               {#each priceDisplay as char}
                 {#if char === '.'}
-                  <div class="text-ponzi-huge text-3xl">.</div>
+                  <span class="text-ponzi-huge text-3xl">.</span>
+                {:else if char == ','}
+                  <span class="text-ponzi-huge text-3xl opacity-0"></span>
                 {:else}
-                  <div
+                  <span
                     class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                    >{char}</span
                   >
-                    {char}
-                  </div>
                 {/if}
               {/each}
               {#if !fetching}
