@@ -39,13 +39,24 @@ export async function claimAllOfToken(
       landsWithThisToken.map((land) => land.location),
     )
     .then(() => {
-      
       // update the last claim time for all the lands
       landsWithThisToken.forEach((land) => {
         claims[land.location].lastClaimTime = Date.now();
         claims[land.location].animating = true;
         claims[land.location].claimable = false;
       });
+
+      setTimeout(() => {
+        landsWithThisToken.forEach((land) => {
+          claims[land.location].animating = false;
+        });
+      }, 2000);
+
+      setTimeout(() => {
+        landsWithThisToken.forEach((land) => {
+          claims[land.location].claimable = true;
+        });
+      }, 30 * 1000);
 
       claimQueue.update((queue) => {
         return [

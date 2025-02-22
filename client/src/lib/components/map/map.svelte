@@ -37,12 +37,14 @@
       const addressHex = toHexWithPadding(BigInt(address ?? ''));
       $landStore?.forEach((land) => {
         if (land.owner === addressHex) {
-          claims[land.location] = {
-            lastClaimTime: 0,
-            animating: false,
-            land: land,
-            claimable: true,
-          };
+          if (!claims[land.location]) {
+            claims[land.location] = {
+              lastClaimTime: 0,
+              animating: false,
+              land: land,
+              claimable: true,
+            };
+          }
         }
       });
     });

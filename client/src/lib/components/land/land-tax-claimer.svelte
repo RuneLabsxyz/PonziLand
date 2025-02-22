@@ -1,12 +1,11 @@
 <script lang="ts">
   import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
   import { claimAllOfToken, claims } from '$lib/stores/claim.svelte';
-  import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { getTokenInfo, toBigInt } from '$lib/utils';
+  import { toBigInt } from '$lib/utils';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
-  import { useDojo } from '$lib/contexts/dojo';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -95,7 +94,7 @@
 
     const interval = setInterval(() => {
       fetchTaxes();
-    }, 10 * 1000);
+    }, 15 * 1000);
 
     return () => {
       clearInterval(interval);
@@ -105,7 +104,7 @@
 
 <div class="relative w-full h-full">
   <div class="flex flex-col-reverse items-center animate-bounce">
-    {#if aggregatedTaxes.length > 0 && timing}
+    {#if aggregatedTaxes.length > 0 && timing && !animating}
       <button onclick={handleClaimFromCoin} class="flex items-center">
         <img
           src="/assets/ui/icons/Icon_Coin2.png"
