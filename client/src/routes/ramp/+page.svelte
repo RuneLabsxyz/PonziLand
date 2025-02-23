@@ -127,7 +127,7 @@
     Loading...
   </div>
 {:then _}
-  <div class="flex items-center justify-center min-h-screen">
+  <div class="flex items-center justify-center min-h-screen bg-green-200">
     <div
       class="flex flex-col items-center justify-center w-fit h-fit bg-red-500 mx-auto"
     >
@@ -154,7 +154,7 @@
         <p>ETH Address : {ethAddress.current}</p>
         <p>Controller Address: {controllerAccount?.address}</p>
 
-        <Card class="m-5 md:w-full p-2">
+        <Card class="m-5 md:w-full p-2 mx-auto">
           <form method="POST" use:enhance class="flex flex-col gap-2">
             <input
               type="hidden"
