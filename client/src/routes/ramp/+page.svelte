@@ -131,33 +131,38 @@
     class="flex items-center justify-center min-h-screen"
     style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
   >
+    <div class="absolute top-0 left-0 m-4 p-4 bg-gray-800 text-white rounded">
+      <p>Network: {network?.display_name}</p>
+      <p>
+        Available tokens: {network?.tokens
+          ?.map((token) => token.symbol)
+          .join(', ')}
+      </p>
+      <p>ETH Address : {ethAddress.current}</p>
+      <p>Controller Address: {controllerAccount?.address}</p>
+    </div>
+
     <div
-      class="flex flex-col items-center justify-center w-fit h-fit bg-red-500 mx-auto"
+      class="flex flex-col items-center justify-center w-fit h-fit bg-red-500 mx-auto text-3xl"
     >
       <div class="p-5 text-white">
-        <div class="flex gap-2">
-          <Button onclick={() => appKit.open()}>Open Modal</Button>
-
-          {#if !controllerAccount?.address}
-            <Button onclick={() => account?.selectAndLogin('controller')}
-              >Connect with controller</Button
-            >
-          {:else}
-            <Button onclick={() => account?.disconnect()}
-              >Disconnect from controller</Button
-            >
-          {/if}
+        <div class="">
+          <div>1. Connect Phantom</div>
+          <Button onclick={() => appKit.open()}>Connect</Button>
         </div>
-        <p>Network: {network?.display_name}</p>
-        <p>
-          Available tokens: {network?.tokens
-            ?.map((token) => token.symbol)
-            .join(', ')}
-        </p>
-        <p>ETH Address : {ethAddress.current}</p>
-        <p>Controller Address: {controllerAccount?.address}</p>
+        <div class="pt-3">2. Create a controller</div>
+        {#if !controllerAccount?.address}
+          <Button onclick={() => account?.selectAndLogin('controller')}
+            >Connect with controller</Button
+          >
+        {:else}
+          <Button onclick={() => account?.disconnect()}
+            >Disconnect from controller</Button
+          >
+        {/if}
+        <div class="pt-3">3. Send tokens to your controller</div>
 
-        <Card class="m-5 md:w-full p-2 mx-auto">
+        <Card class=" md:w-full px-2 mx-auto">
           <form method="POST" use:enhance class="flex flex-col gap-2">
             <input
               type="hidden"
