@@ -117,6 +117,24 @@
     }
   });
 
+  let isPhantomConnected = $state(false);
+  let isControllerConnected = $state(false);
+
+  function connectPhantom() {
+    appKit.open();
+    isPhantomConnected = true;
+  }
+
+  function connectController() {
+    account?.selectAndLogin('controller');
+    isControllerConnected = true;
+  }
+
+  function disconnectController() {
+    account?.disconnect();
+    isControllerConnected = false;
+  }
+
   async function startSwap() {}
 </script>
 
@@ -142,25 +160,44 @@
       <p>Controller Address: {controllerAccount?.address}</p>
     </div>
 
-    <div
-      class="flex flex-col items-center justify-center w-fit h-fit bg-red-500 mx-auto text-3xl"
+    <Card
+      class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl"
     >
       <div class="p-5 text-white">
         <div class="">
-          <div>1. Connect Phantom</div>
-          <Button onclick={() => appKit.open()}>Connect</Button>
+          <div class="pb-3">
+            1. Connect Phantom
+            {#if isPhantomConnected || account}
+              <span>✔️</span>
+            {/if}
+          </div>
+          <Button onclick={connectPhantom}>
+            {#if isPhantomConnected}
+              Connect
+            {:else}
+              Disconnect
+            {/if}
+          </Button>
         </div>
-        <div class="pt-3">2. Create a controller</div>
+        <div class="pt-5 pb-3">
+          2. Create a controller
+          {#if isControllerConnected || controllerAccount}
+            <span>✔️</span>
+          {/if}
+        </div>
         {#if !controllerAccount?.address}
-          <Button onclick={() => account?.selectAndLogin('controller')}
-            >Connect with controller</Button
-          >
+          <Button onclick={connectController}>Connect with controller</Button>
         {:else}
-          <Button onclick={() => account?.disconnect()}
+          <Button onclick={disconnectController}
             >Disconnect from controller</Button
           >
         {/if}
-        <div class="pt-3">3. Send tokens to your controller</div>
+        <div class="pt-5 pb-3">
+          3. Send tokens to your controller
+          {#if isPhantomConnected && isControllerConnected}
+            <span>✔️</span>
+          {/if}
+        </div>
 
         <Card class=" md:w-full px-2 mx-auto">
           <form method="POST" use:enhance class="flex flex-col gap-2">
@@ -262,6 +299,6 @@
           </form>
         </Card>
       </div>
-    </div>
+    </Card>
   </div>
 {/await}
