@@ -5,6 +5,8 @@
     width: number;
     height: number;
   }>();
+
+  const rotation = Math.random() * 360;
 </script>
 
 <div
@@ -16,9 +18,7 @@
       height: {height}px;
     "
 >
-  <div class="cloud-layer layer1"></div>
-  <div class="cloud-layer layer2"></div>
-  <div class="cloud-layer layer3"></div>
+  <div class="cloud-layer" style="transform: rotate({rotation}deg)"></div>
 </div>
 
 <style>
@@ -30,47 +30,13 @@
 
   .cloud-layer {
     position: absolute;
-    border-radius: 50%;
-    background-color: rgba(255, 255, 255, 0.5);
-    filter: blur(10px);
-    animation: moveClouds 10s infinite alternate ease-in-out;
-  }
-
-  .layer1 {
-    width: 100px;
-    height: 60px;
+    background-color: rgba(255, 255, 255, 0.3);
+    filter: blur(15px);
+    transform-origin: center;
+    width: 120px;
+    height: 80px;
     top: 20px;
     left: 20px;
-    animation-duration: 12s;
-    animation-direction: alternate-reverse;
-  }
-
-  .layer2 {
-    width: 120px;
-    height: 70px;
-    top: 40px;
-    left: 50px;
-    animation-duration: 15s;
-  }
-
-  .layer3 {
-    width: 80px;
-    height: 50px;
-    top: 60px;
-    left: 30px;
-    animation-duration: 18s;
-    animation-direction: alternate-reverse;
-  }
-
-  @keyframes moveClouds {
-    0% {
-      transform: translate(0, 0) rotate(0deg);
-    }
-    50% {
-      transform: translate(10px, -10px) rotate(5deg);
-    }
-    100% {
-      transform: translate(-10px, 10px) rotate(-5deg);
-    }
+    border-radius: 40% 60% 60% 40% / 60% 30% 70% 40%;
   }
 </style>

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import type { Tile } from '$lib/api/tile-store.svelte';
   import Fog from './fog-tile.svelte';
 
   let { tiles, tileSize, mapSize } = $props<{
-    tiles: Tile[][];
+    tiles: any[][];
     tileSize: number;
     mapSize: number;
   }>();
@@ -13,7 +12,7 @@
 
   let emptyZones = $derived(calculateEmptyZones(tiles));
 
-  function calculateEmptyZones(tiles: Tile[][]) {
+  function calculateEmptyZones(tiles: any[][]) {
     const zones: { x: number; y: number }[] = [];
     if (!tiles.length) return zones;
 
@@ -155,12 +154,3 @@
     height={ZONE_SIZE * tileSize}
   />
 {/each}
-
-<style>
-  .empty-zone {
-    position: absolute;
-    background-color: rgba(255, 0, 0, 0.5);
-    pointer-events: none;
-    z-index: 1;
-  }
-</style>
