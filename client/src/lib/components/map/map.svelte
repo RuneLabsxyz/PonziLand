@@ -7,6 +7,8 @@
   import { accountAddress, mousePosCoords } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import Tile from './tile.svelte';
+  import Characters from './characters.svelte';
+  import Particles from './particles.svelte';
 
   const MAP_SIZE = 64;
   const TILE_SIZE = 32;
@@ -168,6 +170,8 @@
   }
 </script>
 
+<Particles />
+
 <div class="map-wrapper" bind:this={mapWrapper}>
   <!-- Column numbers -->
   <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
@@ -214,6 +218,7 @@
           {/each}
         </div>
       {/each}
+      <Characters {tiles} />
     </button>
   </div>
 </div>
