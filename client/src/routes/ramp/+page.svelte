@@ -127,128 +127,133 @@
     Loading...
   </div>
 {:then _}
-  <div
-    class="flex flex-col items-center justify-center w-full h-full min-h-screen"
-  >
-    <div class="p-5 text-white">
-      <div class="flex gap-2">
-        <Button onclick={() => appKit.open()}>Open Modal</Button>
+  <div class="flex items-center justify-center min-h-screen">
+    <div
+      class="flex flex-col items-center justify-center w-fit h-fit bg-red-500 mx-auto"
+    >
+      <div class="p-5 text-white">
+        <div class="flex gap-2">
+          <Button onclick={() => appKit.open()}>Open Modal</Button>
 
-        {#if !controllerAccount?.address}
-          <Button onclick={() => account?.selectAndLogin('controller')}
-            >Connect with controller</Button
-          >
-        {:else}
-          <Button onclick={() => account?.disconnect()}
-            >Disconnect from controller</Button
-          >
-        {/if}
-      </div>
-      <p>Network: {network?.display_name}</p>
-      <p>
-        Available tokens: {network?.tokens
-          ?.map((token) => token.symbol)
-          .join(', ')}
-      </p>
-      <p>ETH Address : {ethAddress.current}</p>
-      <p>Controller Address: {controllerAccount?.address}</p>
+          {#if !controllerAccount?.address}
+            <Button onclick={() => account?.selectAndLogin('controller')}
+              >Connect with controller</Button
+            >
+          {:else}
+            <Button onclick={() => account?.disconnect()}
+              >Disconnect from controller</Button
+            >
+          {/if}
+        </div>
+        <p>Network: {network?.display_name}</p>
+        <p>
+          Available tokens: {network?.tokens
+            ?.map((token) => token.symbol)
+            .join(', ')}
+        </p>
+        <p>ETH Address : {ethAddress.current}</p>
+        <p>Controller Address: {controllerAccount?.address}</p>
 
-      <Card class="m-5 md:w-full p-2">
-        <form method="POST" use:enhance class="flex flex-col gap-2">
-          <input
-            type="hidden"
-            name="destination_address"
-            value={controllerAccount?.address}
-          />
-
-          <input type="hidden" name="source_network" value={network?.name} />
-
-          <input
-            type="hidden"
-            name="source_token"
-            value={selectedToken?.symbol}
-          />
-
-          <p>I want to gamble:</p>
-
-          <div class="flex gap-2">
-            <Input type="text" bind:value={amount} name="amount" />
-            <RampTokenSelect
-              class="w-40"
-              values={network?.tokens ?? []}
-              bind:value={selectedToken}
+        <Card class="m-5 md:w-full p-2">
+          <form method="POST" use:enhance class="flex flex-col gap-2">
+            <input
+              type="hidden"
+              name="destination_address"
+              value={controllerAccount?.address}
             />
-          </div>
 
-          <div class="flex justify-end w-full h-5">
-            {#if balance}
-              <p>You have {balance?.toString()} {selectedToken?.symbol}</p>
-            {/if}
-          </div>
-          {#if error}
-            <Card class="bg-red-800">
-              <p class="p-2">{error.message} :/</p>
-            </Card>
-          {/if}
+            <input type="hidden" name="source_network" value={network?.name} />
 
-          {#if quote}
-            <div>
-              <p>Quote:</p>
-              <table
-                class="w-full table-auto border-1 border-collapse border border-white mt-2"
-              >
-                <tbody>
-                  <tr class="border-b border-white bg-gray-800">
-                    <th class="border-r text-right py-1 pr-2">You transfer</th>
-                    <td class="pl-2">
-                      {debouncedAmount.current}
-                      {selectedToken?.symbol}
-                    </td>
-                  </tr>
-                  <tr class="border-b border-white">
-                    <th class="border-r text-right py-1 pr-2">Layerswap Fees</th
-                    >
-                    <td class="pl-2 text-red-600">
-                      - {quote.layerswap_fees}
-                      {selectedToken?.symbol}
-                    </td>
-                  </tr>
-                  <tr class="border-b border-white">
-                    <th class="border-r text-right py-1 pr-2"
-                      >Blockchain Fees</th
-                    >
-                    <td class="pl-2 text-red-600">
-                      - {quote.blockchain_fees}
-                      {selectedToken?.symbol}
-                    </td>
-                  </tr>
-                  <tr class="border-b border-white">
-                    <th class="border-r text-right py-1 pr-2">PonziLand Fees</th
-                    >
-                    <td class="pl-2 text-red-600">
-                      - {quote.ramp_fees}
-                      {selectedToken?.symbol}
-                    </td>
-                  </tr>
-                  <tr class="border-b border-white bg-green-800">
-                    <th class="border-r text-right py-1 pr-2">You receive</th>
-                    <td class="pl-2">
-                      {quote.receive_amount}
-                      USDC
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+            <input
+              type="hidden"
+              name="source_token"
+              value={selectedToken?.symbol}
+            />
 
-              <div class="flex flex-row justify-end mt-2">
-                <Button onclick={startSwap} type="submit"
-                  >Shut up and take my money!</Button
-                >
-              </div>
+            <p>I want to gamble:</p>
+
+            <div class="flex gap-2">
+              <Input type="text" bind:value={amount} name="amount" />
+              <RampTokenSelect
+                class="w-40"
+                values={network?.tokens ?? []}
+                bind:value={selectedToken}
+              />
             </div>
-          {/if}
-        </form>
-      </Card>
+
+            <div class="flex justify-end w-full h-5">
+              {#if balance}
+                <p>You have {balance?.toString()} {selectedToken?.symbol}</p>
+              {/if}
+            </div>
+            {#if error}
+              <Card class="bg-red-800">
+                <p class="p-2">{error.message} :/</p>
+              </Card>
+            {/if}
+
+            {#if quote}
+              <div>
+                <p>Quote:</p>
+                <table
+                  class="w-full table-auto border-1 border-collapse border border-white mt-2"
+                >
+                  <tbody>
+                    <tr class="border-b border-white bg-gray-800">
+                      <th class="border-r text-right py-1 pr-2">You transfer</th
+                      >
+                      <td class="pl-2">
+                        {debouncedAmount.current}
+                        {selectedToken?.symbol}
+                      </td>
+                    </tr>
+                    <tr class="border-b border-white">
+                      <th class="border-r text-right py-1 pr-2"
+                        >Layerswap Fees</th
+                      >
+                      <td class="pl-2 text-red-600">
+                        - {quote.layerswap_fees}
+                        {selectedToken?.symbol}
+                      </td>
+                    </tr>
+                    <tr class="border-b border-white">
+                      <th class="border-r text-right py-1 pr-2"
+                        >Blockchain Fees</th
+                      >
+                      <td class="pl-2 text-red-600">
+                        - {quote.blockchain_fees}
+                        {selectedToken?.symbol}
+                      </td>
+                    </tr>
+                    <tr class="border-b border-white">
+                      <th class="border-r text-right py-1 pr-2"
+                        >PonziLand Fees</th
+                      >
+                      <td class="pl-2 text-red-600">
+                        - {quote.ramp_fees}
+                        {selectedToken?.symbol}
+                      </td>
+                    </tr>
+                    <tr class="border-b border-white bg-green-800">
+                      <th class="border-r text-right py-1 pr-2">You receive</th>
+                      <td class="pl-2">
+                        {quote.receive_amount}
+                        USDC
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <div class="flex flex-row justify-end mt-2">
+                  <Button onclick={startSwap} type="submit"
+                    >Shut up and take my money!</Button
+                  >
+                </div>
+              </div>
+            {/if}
+          </form>
+        </Card>
+      </div>
     </div>
   </div>
 {/await}
