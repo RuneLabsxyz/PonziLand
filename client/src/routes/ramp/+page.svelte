@@ -127,7 +127,10 @@
     Loading...
   </div>
 {:then _}
-  <div class="flex items-center justify-center min-h-screen bg-green-200">
+  <div
+    class="flex items-center justify-center min-h-screen"
+    style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
+  >
     <div
       class="flex flex-col items-center justify-center w-fit h-fit bg-red-500 mx-auto"
     >
