@@ -74,12 +74,9 @@
 
   let promisesToWait = Promise.all([
     setupAccount().then((accountObj) => {
-      if (accountObj == undefined) {
-        return;
-      }
-      account = accountObj;
-      if (accountObj.getProvider() != undefined) {
-        controllerAccount = accountObj.getProvider()?.getAccount();
+      account = accountObj ?? undefined;
+      if (accountObj?.getProvider() != undefined) {
+        controllerAccount = accountObj?.getProvider()?.getAccount();
       }
 
       // Listen on updates
