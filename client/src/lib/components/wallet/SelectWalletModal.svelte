@@ -10,6 +10,7 @@
   } from '$lib/contexts/account';
   import Button from '../ui/button/button.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
+  import { goto } from '$app/navigation';
 
   let visible = $state(false);
   let loading = $state(true);
@@ -87,6 +88,13 @@
             </div>
           </Button>
         {/each}
+        _________________________
+        <Button
+          on:click={() => {
+            visible = false;
+            goto('/ramp');
+          }}>Phantom</Button
+        >
       </div>
     {/if}
   </div>
