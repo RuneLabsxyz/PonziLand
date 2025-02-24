@@ -84,7 +84,13 @@
 <div
   class="absolute flex items-center top-0 left-1/2 transform -translate-x-1/2 z-30 p-4 my-2"
 >
-  <img src="/assets/ui/ramp/character.png" alt="Character" class="w-24 h-24" />
+  <img
+    src="/assets/ui/ramp/character.png"
+    alt="Character"
+    class="w-24 h-24"
+    class:animate-shake={displayedDescription.length <
+      instructions.instructions[stepNumber]?.description.length}
+  />
   <button
     class="relative bg-chatbox flex items-center justify-center"
     style="background-image: url('/assets/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
@@ -119,3 +125,23 @@
     {/if}
   </button>
 </div>
+
+<style>
+  .animate-shake {
+    animation: shake 0.2s infinite;
+    transform-origin: center;
+    animation-timing-function: linear;
+  }
+
+  @keyframes shake {
+    0% {
+      transform: rotate(-8deg);
+    }
+    50% {
+      transform: rotate(8deg);
+    }
+    100% {
+      transform: rotate(-8deg);
+    }
+  }
+</style>
