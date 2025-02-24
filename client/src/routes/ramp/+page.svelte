@@ -17,6 +17,7 @@
   import { debounce } from '$lib/utils/debounce.svelte';
   import type { QuoteResponse } from './api/fetch-quote/+server';
   import CoinAnimation from '$lib/components/ramp/coin-animation.svelte';
+  import Particles from '$lib/components/ramp/particles.svelte';
 
   let { data }: { data: PageData } = $props();
 
@@ -139,6 +140,8 @@
   async function startSwap() {}
 </script>
 
+<Particles />
+
 {#await promisesToWait}
   <div
     class="flex justify-center items-center text-3xl text-white w-full h-full"
@@ -165,7 +168,7 @@
     <CoinAnimation />
 
     <Card
-      class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl"
+      class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20"
     >
       <div class="p-5 text-white">
         <div class="">
