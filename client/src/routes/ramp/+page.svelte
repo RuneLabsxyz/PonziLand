@@ -16,6 +16,7 @@
   import BigNumber from 'bignumber.js';
   import { debounce } from '$lib/utils/debounce.svelte';
   import type { QuoteResponse } from './api/fetch-quote/+server';
+  import CoinAnimation from '$lib/components/ramp/coin-animation.svelte';
 
   let { data }: { data: PageData } = $props();
 
@@ -149,7 +150,9 @@
     class="flex items-center justify-center min-h-screen"
     style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
   >
-    <div class="absolute top-0 left-0 m-4 p-4 bg-gray-800 text-white rounded">
+    <div
+      class="absolute top-0 left-0 m-4 p-4 bg-gray-800 text-white rounded z-10"
+    >
       <p>Network: {network?.display_name}</p>
       <p>
         Available tokens: {network?.tokens
@@ -159,6 +162,7 @@
       <p>ETH Address : {ethAddress.current}</p>
       <p>Controller Address: {controllerAccount?.address}</p>
     </div>
+    <CoinAnimation />
 
     <Card
       class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl"
