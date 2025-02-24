@@ -125,7 +125,7 @@
 
   function connectPhantom() {
     appKit.open();
-    isPhantomConnected = true;
+    isPhantomConnected = !isPhantomConnected;
   }
 
   function connectController() {
@@ -185,12 +185,12 @@
         <div class="">
           <div class="pb-3">
             1. Connect Phantom
-            {#if isPhantomConnected || account}
+            {#if ethAddress.current}
               <span>✔️</span>
             {/if}
           </div>
           <Button onclick={connectPhantom}>
-            {#if isPhantomConnected}
+            {#if !ethAddress.current}
               Connect
             {:else}
               Disconnect
@@ -198,7 +198,7 @@
           </Button>
         </div>
         <div class="pt-5 pb-3">
-          2. Create a controller
+          2. Create your Controller
           {#if isControllerConnected || controllerAccount}
             <span>✔️</span>
           {/if}
