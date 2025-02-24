@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AccountManager, setupAccount } from '$lib/contexts/account';
+  import { step } from '@reown/appkit/networks';
   import type { AccountInterface } from 'starknet';
 
   let {
@@ -77,7 +78,11 @@
   });
 
   function nextStep() {
-    stepNumber = (stepNumber + 1) % (instructions.instructions.length + 1);
+    if (stepNumber < instructions.instructions.length - 1) {
+      stepNumber++;
+    } else {
+      stepNumber = 0;
+    }
   }
 </script>
 
