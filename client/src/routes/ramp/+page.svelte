@@ -132,7 +132,7 @@
 <Card
   class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20"
 >
-  <div class="p-5 text-white">
+  <div class="p-5 text-white w-full">
     <WalletSetups />
 
     <div class="pt-5 pb-3">3. Prepare your transfer</div>

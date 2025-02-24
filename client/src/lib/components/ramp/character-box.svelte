@@ -97,47 +97,47 @@
   });
 </script>
 
-<div
-  class="absolute flex items-center top-0 left-1/2 transform -translate-x-1/2 z-30 p-4 my-2"
->
-  <img
-    src="/assets/ui/ramp/character.png"
-    alt="Character"
-    class="w-24 h-24"
-    class:animate-shake={displayedDescription.length <
-      instructions.instructions[stepNumber - 1]?.description.length}
-  />
-  <button
-    class="relative bg-chatbox flex items-center justify-center"
-    style="background-image: url('/assets/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
-    onclick={() => {
-      if (
-        displayedDescription.length <
-        instructions.instructions[stepNumber - 1].description.length
-      ) {
-        clearInterval(intervalIdDescription);
-        displayedDescription =
-          instructions.instructions[stepNumber - 1].description;
-      }
-    }}
-    onkeydown={(e) => e.key === 'Enter'}
-  >
-    {#if stepNumber <= instructions.instructions.length}
-      <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
-        <div class="mb-2">
-          <p class="text-3xl font-bold">{displayedTitle}</p>
+<div class="w-screen">
+  <div class="flex items-center justify-center transform z-40 p-4 my-2">
+    <img
+      src="/assets/ui/ramp/character.png"
+      alt="Character"
+      class="w-24 h-24"
+      class:animate-shake={displayedDescription.length <
+        instructions.instructions[stepNumber - 1]?.description.length}
+    />
+    <button
+      class="relative bg-chatbox flex items-center justify-center"
+      style="background-image: url('/assets/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
+      onclick={() => {
+        if (
+          displayedDescription.length <
+          instructions.instructions[stepNumber - 1].description.length
+        ) {
+          clearInterval(intervalIdDescription);
+          displayedDescription =
+            instructions.instructions[stepNumber - 1].description;
+        }
+      }}
+      onkeydown={(e) => e.key === 'Enter'}
+    >
+      {#if stepNumber <= instructions.instructions.length}
+        <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
+          <div class="mb-2">
+            <p class="text-3xl font-bold">{displayedTitle}</p>
+          </div>
+          <div class="relative text-xl">
+            <span class="invisible block">
+              {instructions.instructions[stepNumber - 1].description}
+            </span>
+            <span class="absolute top-0 left-0 block">
+              {displayedDescription}
+            </span>
+          </div>
         </div>
-        <div class="relative text-xl">
-          <span class="invisible block">
-            {instructions.instructions[stepNumber - 1].description}
-          </span>
-          <span class="absolute top-0 left-0 block">
-            {displayedDescription}
-          </span>
-        </div>
-      </div>
-    {/if}
-  </button>
+      {/if}
+    </button>
+  </div>
 </div>
 
 <style>
