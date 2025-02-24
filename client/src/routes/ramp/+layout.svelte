@@ -50,7 +50,7 @@
   </div>
 {:then _}
   <div
-    class="flex flex-col"
+    class="flex flex-col min-h-screen"
     style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
   >
     <div

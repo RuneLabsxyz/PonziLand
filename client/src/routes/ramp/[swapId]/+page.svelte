@@ -15,9 +15,9 @@
 
   let swap = $state(data.swap);
 
-  let hasDoneTransaction = sessionState<[string, string] | undefined>(
+  let hasDoneTransaction = sessionState<[string, string] | []>(
     'hasDoneTransaction-' + data.swap.id,
-    undefined,
+    [],
   );
 
   let txLink = $derived.by(() => {
@@ -28,16 +28,12 @@
   });
 
   $effect(() => {
-    if (
-      currentStep.current === 1 &&
-      actionRequired &&
-      !hasDoneTransaction.current
-    ) {
+    if (currentStep.current === 1 && hasDoneTransaction.current.length == 0) {
       // Action required
       setCurrentStep(4);
     } else if (
       currentStep.current <= 4 &&
-      (!actionRequired || hasDoneTransaction.current)
+      (!actionRequired || hasDoneTransaction.current.length > 0)
     ) {
       setCurrentStep(5);
     } else if (data.swap.status === 'completed') {
