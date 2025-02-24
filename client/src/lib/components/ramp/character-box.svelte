@@ -42,6 +42,39 @@
   };
 
   let stepNumber = $state(0);
+  let displayedTitle = $state('');
+  let displayedDescription = $state('');
+  let intervalIdDescription: NodeJS.Timeout;
+
+  function typeText(
+    targetText: string,
+    setter: (value: string) => void,
+    onComplete?: () => void,
+  ) {
+    let index = 0;
+    return setInterval(() => {
+      setter(targetText.slice(0, index));
+      index++;
+      if (index > targetText.length && onComplete) {
+        onComplete();
+      }
+    }, 20);
+  }
+
+  $effect(() => {
+    if (stepNumber < instructions.instructions.length) {
+      const currentStep = instructions.instructions[stepNumber];
+      clearInterval(intervalIdDescription);
+
+      displayedTitle = currentStep.title;
+      displayedDescription = '';
+
+      intervalIdDescription = typeText(
+        currentStep.description,
+        (d) => (displayedDescription = d),
+      );
+    }
+  });
 
   function nextStep() {
     stepNumber = (stepNumber + 1) % (instructions.instructions.length + 1);
@@ -59,13 +92,18 @@
     onkeydown={(e) => e.key === 'Enter' && nextStep()}
   >
     {#if stepNumber < instructions.instructions.length}
-      <div class="p-4 mx-14 text-black text-left">
-        <p class="text-xl font-bold mb-2">
-          {instructions.instructions[stepNumber].title}
-        </p>
-        <p class="text-lg">
-          {instructions.instructions[stepNumber].description}
-        </p>
+      <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
+        <div class="mb-2">
+          <p class="text-xl font-bold">{displayedTitle}</p>
+        </div>
+        <div class="relative">
+          <span class="invisible block">
+            {instructions.instructions[stepNumber].description}
+          </span>
+          <span class="absolute top-0 left-0 block">
+            {displayedDescription}
+          </span>
+        </div>
       </div>
     {/if}
   </button>
