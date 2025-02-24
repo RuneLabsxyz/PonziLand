@@ -45,10 +45,6 @@ trait IActions<T> {
 
     fn level_up(ref self: T, land_location: u64) -> bool;
 
-    fn lock_actions(ref self: T);
-
-    fn unlock_actions(ref self: T);
-
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
         self: @T, land_location: u64, owner_land: ContractAddress,
@@ -92,6 +88,7 @@ pub mod actions {
         LIQUIDITY_SAFETY_MULTIPLIER
     };
     use ponzi_land::store::{Store, StoreTrait};
+    use ponzi_land::interfaces::systems::{SystemsTrait};
 
 
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
@@ -185,9 +182,6 @@ pub mod actions {
         active_auctions: u8,
         main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
-        auth_dispatcher: IAuthDispatcher,
-        owner: ContractAddress,
-        lock_actions: bool,
     }
 
     fn dojo_init(
@@ -201,14 +195,9 @@ pub mod actions {
         floor_price: u256,
         decay_rate: u64,
         ekubo_core_address: ContractAddress,
-        auth_contract_address: ContractAddress,
-        owner: ContractAddress,
     ) {
         self.main_currency.write(token_address);
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
-        self.auth_dispatcher.write(IAuthDispatcher { contract_address: auth_contract_address });
-        self.owner.write(owner);
-        self.lock_actions.write(false);
 
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
@@ -227,17 +216,16 @@ pub mod actions {
             amount_to_stake: u256,
             liquidity_pool: PoolKey,
         ) {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
             assert(amount_to_stake > 0, 'amount_to_stake > 0');
+
             let mut world = self.world_default();
             let caller = get_caller_address();
+
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
@@ -285,15 +273,12 @@ pub mod actions {
 
 
         fn claim(ref self: ContractState, land_location: u64) {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
             let mut store = StoreTrait::new(world);
 
             let land = store.land(land_location);
@@ -306,13 +291,10 @@ pub mod actions {
 
         // TODO:see if we want pass this function into internalTrait
         fn nuke(ref self: ContractState, land_location: u64) {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
             //TODO:see how we validate the lp to nuke the land
@@ -342,13 +324,11 @@ pub mod actions {
             amount_to_stake: u256,
             liquidity_pool: PoolKey,
         ) {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
+
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
@@ -403,14 +383,16 @@ pub mod actions {
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
 
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             //we don't want generate an error if the auction is full
             if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
                 return;
             }
 
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
+
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
 
@@ -441,15 +423,13 @@ pub mod actions {
 
 
         fn increase_price(ref self: ContractState, land_location: u64, new_price: u256) {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
+
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
@@ -463,15 +443,13 @@ pub mod actions {
         }
 
         fn increase_stake(ref self: ContractState, land_location: u64, amount_to_stake: u256) {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
+
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
@@ -492,15 +470,13 @@ pub mod actions {
         }
 
         fn level_up(ref self: ContractState, land_location: u64) -> bool {
-            //TODO:uncomment this when the tests are ready
-            // assert(self.auth_dispatcher.read().is_authorized(get_caller_address()), 'not
-            // authorized');
-
-            assert(!self.lock_actions.read(), 'actions are locked');
-
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
+            //TODO:uncomment this when the tests for genereate signed messages are ready
+            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
+            // permitted');
+
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
             let caller = get_caller_address();
@@ -514,15 +490,6 @@ pub mod actions {
             self.update_level(ref store, ref land, elapsed_time_since_buy)
         }
 
-        fn lock_actions(ref self: ContractState) {
-            assert(self.owner.read() == get_caller_address(), 'not the owner');
-            self.lock_actions.write(true);
-        }
-
-        fn unlock_actions(ref self: ContractState) {
-            assert(self.owner.read() == get_caller_address(), 'not the owner');
-            self.lock_actions.write(false);
-        }
 
         //GETTERS FUNCTIONS
 

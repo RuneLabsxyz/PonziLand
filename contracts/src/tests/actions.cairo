@@ -103,7 +103,7 @@ fn generate_sign(auth_dispatcher: IAuthDispatcher) {
 
 // Helper functions for common test setup and actions
 fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCoreTestingDispatcher) {
-    let (world, actions_system, erc20, _, testing_dispatcher, auth_dispatcher) = create_setup();
+    let (world, actions_system, erc20, _, testing_dispatcher, _) = create_setup();
     set_contract_address(RECIPIENT());
 
     //generate_sign(auth_dispatcher);
