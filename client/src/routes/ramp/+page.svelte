@@ -6,7 +6,6 @@
   import { appKit } from '$lib/ramp';
   import { provider, address as ethAddress } from '$lib/ramp/stores.svelte';
   import { BrowserProvider } from 'ethers/providers';
-  import { onMount } from 'svelte';
   import type { PageData } from './$types';
   import RampTokenSelect from './RampTokenSelect.svelte';
   import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
@@ -176,7 +175,7 @@
     </div>
     <CoinAnimation />
 
-    <CharacterBox {controllerAccount} {account} />
+    <CharacterBox {controllerAccount} account={ethAddress.current} />
 
     <Card
       class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20"

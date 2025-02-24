@@ -8,8 +8,23 @@
     account,
   }: {
     controllerAccount: AccountInterface | undefined;
-    account: AccountManager | undefined;
+    account: string | undefined;
   } = $props();
+
+  let stepNumber = $state(0);
+
+  $effect(() => {
+    console.log('controllerAccount', controllerAccount);
+    if (!account) {
+      stepNumber = 0;
+    } else if (!controllerAccount) {
+      stepNumber = 1;
+    } else if (controllerAccount && controllerAccount.address) {
+      stepNumber = 2;
+    } else {
+      stepNumber = 3;
+    }
+  });
 
   const instructions = {
     instructions: [
@@ -42,7 +57,6 @@
       "Once your controller is set up and fueled, you won't need to repeat these steps. Next time, simply connect via your controller to jump back into the action!",
   };
 
-  let stepNumber = $state(0);
   let displayedTitle = $state('');
   let displayedDescription = $state('');
   let intervalIdDescription: NodeJS.Timeout;
@@ -76,14 +90,6 @@
       );
     }
   });
-
-  function nextStep() {
-    if (stepNumber < instructions.instructions.length - 1) {
-      stepNumber++;
-    } else {
-      stepNumber = 0;
-    }
-  }
 </script>
 
 <div
@@ -107,11 +113,9 @@
         clearInterval(intervalIdDescription);
         displayedDescription =
           instructions.instructions[stepNumber].description;
-      } else {
-        nextStep();
       }
     }}
-    onkeydown={(e) => e.key === 'Enter' && nextStep()}
+    onkeydown={(e) => e.key === 'Enter'}
   >
     {#if stepNumber < instructions.instructions.length}
       <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
