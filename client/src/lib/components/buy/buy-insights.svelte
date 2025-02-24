@@ -22,7 +22,12 @@
   let taxes = $derived(estimateTax(parseFloat(sellAmountVal)));
 
   let neighbors = $derived(land?.getNeighbors());
-  let nbNeighbors = $state(neighbors.getNeighbors().length);
+
+  let nbNeighbors = $state(0);
+  $effect(() => {
+    nbNeighbors = neighbors.getNeighbors().length;
+  });
+
   let filteredNeighbors = $derived.by(() => {
     const filteredNeighbors = neighbors.getNeighbors().slice(0, nbNeighbors);
 

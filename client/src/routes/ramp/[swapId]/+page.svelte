@@ -13,6 +13,8 @@
 
   let { data }: { data: PageData } = $props();
 
+  let swap = $state(data.swap);
+
   let hasDoneTransaction = sessionState<[string, string] | undefined>(
     'hasDoneTransaction-' + data.swap.id,
     undefined,
@@ -46,6 +48,23 @@
   function onTransferSuccess(tx: string) {
     hasDoneTransaction.current = [tx, new Date().toJSON()];
   }
+
+  $effect(() => {
+    const cancellation = setInterval(async () => {
+      const response = await fetch(`/ramp/api/${data.swap.id}/status`);
+
+      if (response.status === 200) {
+        const data = await response.json();
+        if (data.status === 'completed') {
+          setCurrentStep(6);
+        }
+      }
+    }, 10_000); // Every 10 seconds
+
+    return () => {
+      clearInterval(cancellation);
+    };
+  });
 
   $inspect(txLink);
 
