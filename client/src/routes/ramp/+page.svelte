@@ -18,6 +18,7 @@
   import type { QuoteResponse } from './api/fetch-quote/+server';
   import CoinAnimation from '$lib/components/ramp/coin-animation.svelte';
   import Particles from '$lib/components/ramp/particles.svelte';
+  import CharacterBox from '$lib/components/ramp/character-box.svelte';
 
   let { data }: { data: PageData } = $props();
 
@@ -138,6 +139,14 @@
   }
 
   async function startSwap() {}
+
+  function truncateAddress(
+    address: string | undefined,
+    length: number = 6,
+  ): string {
+    if (!address) return '';
+    return `${address.slice(0, length)}...${address.slice(-length)}`;
+  }
 </script>
 
 <Particles />
@@ -162,10 +171,12 @@
           ?.map((token) => token.symbol)
           .join(', ')}
       </p>
-      <p>ETH Address : {ethAddress.current}</p>
-      <p>Controller Address: {controllerAccount?.address}</p>
+      <p>ETH Address : {truncateAddress(ethAddress.current)}</p>
+      <p>Controller Address: {truncateAddress(controllerAccount?.address)}</p>
     </div>
     <CoinAnimation />
+
+    <CharacterBox />
 
     <Card
       class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20"
