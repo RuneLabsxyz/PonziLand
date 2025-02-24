@@ -1,4 +1,19 @@
-<script lang="ts"></script>
+<script lang="ts">
+  import { AccountManager, setupAccount } from '$lib/contexts/account';
+  import type { AccountInterface } from 'starknet';
+
+  let {
+    controllerAccount,
+    account,
+  }: {
+    controllerAccount: AccountInterface | undefined;
+    account: AccountManager | undefined;
+  } = $props();
+
+  $effect(() => {
+    console.log('Account changed', account);
+  });
+</script>
 
 <div
   class="absolute flex items-center top-0 left-1/2 transform z-30 -translate-x-1/2 text-white p-4 my-2"

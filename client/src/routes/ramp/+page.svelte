@@ -176,7 +176,7 @@
     </div>
     <CoinAnimation />
 
-    <CharacterBox />
+    <CharacterBox {controllerAccount} {account} />
 
     <Card
       class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20"
