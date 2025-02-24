@@ -14,25 +14,25 @@
     instructions: [
       {
         stepNumber: 1,
-        title: 'Step Into the Arena',
+        title: '1/ Step Into the Arena',
         description:
           "Summon your Phantom wallet and click 'Connect Phantom' to open the gates of Ponzi.land. Fortune favors the brave!",
       },
       {
         stepNumber: 2,
-        title: 'Forge Your Controller',
+        title: '2/ Forge Your Controller',
         description:
           'Construct your mighty controller—a mystical vault that will safeguard your tokens and grant you the power to play in Ponzi.land.',
       },
       {
         stepNumber: 3,
-        title: 'Tribute Your Tokens',
+        title: '3/ Tribute Your Tokens',
         description:
           'Send USDC from your Phantom wallet to your newly forged controller. Feed the beast and watch your balance come to life!',
       },
       {
         stepNumber: 4,
-        title: 'Embrace the Game',
+        title: '4/ Embrace the Game',
         description:
           'Your controller is now fueled and ready. Plunge into the heart of Ponzi.land to play and chase glory!',
       },
@@ -59,11 +59,11 @@
     onkeydown={(e) => e.key === 'Enter' && nextStep()}
   >
     {#if stepNumber < instructions.instructions.length}
-      <div class="p-4 text-black text-center">
+      <div class="p-4 mx-14 text-black text-left">
         <p class="text-xl font-bold mb-2">
           {instructions.instructions[stepNumber].title}
         </p>
-        <p class="text-sm">
+        <p class="text-lg">
           {instructions.instructions[stepNumber].description}
         </p>
       </div>
