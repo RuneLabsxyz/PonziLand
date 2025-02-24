@@ -1,5 +1,6 @@
 <script lang="ts">
   import { AccountManager, setupAccount } from '$lib/contexts/account';
+  import { currentStep } from '$lib/ramp/stores.svelte';
   import { step } from '@reown/appkit/networks';
   import type { AccountInterface } from 'starknet';
 
@@ -10,21 +11,6 @@
     controllerAccount: AccountInterface | undefined;
     account: string | undefined;
   } = $props();
-
-  let stepNumber = $state(0);
-
-  $effect(() => {
-    console.log('controllerAccount', controllerAccount);
-    if (!account) {
-      stepNumber = 0;
-    } else if (!controllerAccount) {
-      stepNumber = 1;
-    } else if (controllerAccount && controllerAccount.address) {
-      stepNumber = 2;
-    } else {
-      stepNumber = 3;
-    }
-  });
 
   const instructions = {
     instructions: [
@@ -38,17 +24,29 @@
         stepNumber: 2,
         title: '2/ Forge Your Controller',
         description:
-          'Construct your mighty controller—a mystical vault that will safeguard your tokens and grant you the power to play in Ponzi.land.',
+          'Construct your mighty controller — a mystical vault that will safeguard your tokens and grant you the power to play in Ponzi.land.',
       },
       {
         stepNumber: 3,
-        title: '3/ Tribute Your Tokens',
+        title: '3/ Make your choice',
+        description:
+          'Choose the amount you are willing to bet in Ponzi.land. You can always add more later.',
+      },
+      {
+        stepNumber: 4,
+        title: '4/ Tribute Your Tokens',
         description:
           'Send USDC from your Phantom wallet to your newly forged controller. Feed the beast and watch your balance come to life!',
       },
       {
-        stepNumber: 4,
-        title: '4/ Embrace the Game',
+        stepNumber: 5,
+        title: '5/ Let the Ponziboys transfer your tokens',
+        description:
+          'My ponziboys are currently hard at work transferring your tokens to your controller. But I trust them on how to approach this task',
+      },
+      {
+        stepNumber: 6,
+        title: '6/ Embrace the Game',
         description:
           'Your controller is now fueled and ready. Plunge into the heart of Ponzi.land to play and chase glory!',
       },
@@ -76,18 +74,25 @@
     }, 20);
   }
 
+  let stepNumber = $derived(currentStep.current);
+
   $effect(() => {
-    if (stepNumber < instructions.instructions.length) {
-      const currentStep = instructions.instructions[stepNumber];
+    console.log('Attempting to access step', stepNumber);
+    if (currentStep.current <= instructions.instructions.length) {
+      const step = instructions.instructions[currentStep.current - 1];
+      console.log(step);
+
       clearInterval(intervalIdDescription);
 
-      displayedTitle = currentStep.title;
+      displayedTitle = step.title;
       displayedDescription = '';
 
       intervalIdDescription = typeText(
-        currentStep.description,
+        step.description,
         (d) => (displayedDescription = d),
       );
+    } else {
+      console.log('Concern');
     }
   });
 </script>
@@ -100,7 +105,7 @@
     alt="Character"
     class="w-24 h-24"
     class:animate-shake={displayedDescription.length <
-      instructions.instructions[stepNumber]?.description.length}
+      instructions.instructions[stepNumber - 1]?.description.length}
   />
   <button
     class="relative bg-chatbox flex items-center justify-center"
@@ -108,23 +113,23 @@
     onclick={() => {
       if (
         displayedDescription.length <
-        instructions.instructions[stepNumber].description.length
+        instructions.instructions[stepNumber - 1].description.length
       ) {
         clearInterval(intervalIdDescription);
         displayedDescription =
-          instructions.instructions[stepNumber].description;
+          instructions.instructions[stepNumber - 1].description;
       }
     }}
     onkeydown={(e) => e.key === 'Enter'}
   >
-    {#if stepNumber < instructions.instructions.length}
+    {#if stepNumber <= instructions.instructions.length}
       <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
         <div class="mb-2">
           <p class="text-3xl font-bold">{displayedTitle}</p>
         </div>
         <div class="relative text-xl">
           <span class="invisible block">
-            {instructions.instructions[stepNumber].description}
+            {instructions.instructions[stepNumber - 1].description}
           </span>
           <span class="absolute top-0 left-0 block">
             {displayedDescription}

@@ -32,12 +32,9 @@
   }
 </script>
 
-<div>
-  <h1>1. Send the amount</h1>
+<div class="text-xl">
+  <h1 class="text-3xl">4. Send the amount</h1>
   {#if provider.current}
-    <p>To enjoy PonziLand, you first need to send the amount you requested.</p>
-    <p>Note: You will need to accept the transaction in your wallet.</p>
-
     <Button onclick={executeTransfer}>Send</Button>
   {:else}
     <p>To execute the transfer, please connect your wallet.</p>

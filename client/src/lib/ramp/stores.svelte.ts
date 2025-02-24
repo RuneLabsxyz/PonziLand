@@ -22,3 +22,10 @@ appKit.subscribeProviders((state) => {
     address.current = appKit.getAddress('eip155');
   }
 })();
+
+export let currentStep: { current: number } = $state({ current: 1 });
+
+export function setCurrentStep(step: number) {
+  console.log('Setting current step to:', step);
+  currentStep.current = step;
+}

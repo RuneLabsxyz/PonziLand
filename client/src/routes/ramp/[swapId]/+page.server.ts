@@ -13,6 +13,8 @@ export const load: PageServerLoad = async ({ params, cookies }) => {
 
     swap: {
       id: swapId,
+      amount: swap.data?.swap?.requested_amount || 0,
+      sourceSymbol: swap.data?.swap?.source_token?.symbol || 'unknown',
       status: swap.data?.swap?.status || 'unknown',
       txExplorerTemplate:
         swap.data?.swap?.source_network?.transaction_explorer_template,

@@ -6,6 +6,7 @@
     SelectTrigger,
   } from '$lib/components/ui/select';
   import data from '$lib/data.json';
+  import { onMount } from 'svelte';
   import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
 
   let {
@@ -16,6 +17,12 @@
     values: NetworkWithTokens.Data.Token[];
     value: NetworkWithTokens.Data.Token | undefined;
   } & any = $props();
+
+  onMount(() => {
+    if (value == null) {
+      value = values[0];
+    }
+  });
 </script>
 
 <Select
