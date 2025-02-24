@@ -116,9 +116,9 @@
     {#if stepNumber < instructions.instructions.length}
       <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
         <div class="mb-2">
-          <p class="text-xl font-bold">{displayedTitle}</p>
+          <p class="text-3xl font-bold">{displayedTitle}</p>
         </div>
-        <div class="relative">
+        <div class="relative text-xl">
           <span class="invisible block">
             {instructions.instructions[stepNumber].description}
           </span>
