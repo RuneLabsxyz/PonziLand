@@ -88,7 +88,18 @@
   <button
     class="relative bg-chatbox flex items-center justify-center"
     style="background-image: url('/assets/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
-    onclick={nextStep}
+    onclick={() => {
+      if (
+        displayedDescription.length <
+        instructions.instructions[stepNumber].description.length
+      ) {
+        clearInterval(intervalIdDescription);
+        displayedDescription =
+          instructions.instructions[stepNumber].description;
+      } else {
+        nextStep();
+      }
+    }}
     onkeydown={(e) => e.key === 'Enter' && nextStep()}
   >
     {#if stepNumber < instructions.instructions.length}
