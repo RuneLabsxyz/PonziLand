@@ -13,15 +13,15 @@
 
   let { data }: { data: PageData } = $props();
 
-  let hasDoneTransaction = sessionState(
+  let hasDoneTransaction = sessionState<[string, string] | undefined>(
     'hasDoneTransaction-' + data.swap.id,
-    '',
+    undefined,
   );
 
   let txLink = $derived.by(() => {
     return data.swap.txExplorerTemplate?.replace(
       '{0}',
-      hasDoneTransaction.current,
+      hasDoneTransaction.current?.[0] ?? '',
     );
   });
 
@@ -43,6 +43,10 @@
     }
   });
 
+  function onTransferSuccess(tx: string) {
+    hasDoneTransaction.current = [tx, new Date().toJSON()];
+  }
+
   $inspect(txLink);
 
   let actionRequired = $derived(data.deposits?.length ?? 0 > 0);
@@ -61,10 +65,7 @@
     </div>
 
     {#if currentStep.current === 4}
-      <ExecuteTransfer
-        action={data.deposits![0]}
-        ondone={(tx) => (hasDoneTransaction.current = tx)}
-      />
+      <ExecuteTransfer action={data.deposits![0]} ondone={onTransferSuccess} />
     {:else if currentStep.current >= 4}
       <h1 class="text-3xl pt-5 pb-1">4. Send the amount <span>✔️</span></h1>
       <p class="text-xl opacity-50 pb-1">
@@ -77,6 +78,8 @@
 
     {#if currentStep.current === 5}
       <h1 class="text-3xl pt-5 pb-1">5. Wait for the transfer</h1>
+
+      <Wait swap={data.swap} transferTime={hasDoneTransaction.current?.[1]} />
       <p class="text-xl opacity-50 pb-1">
         You did it! Let's wait for the transaction to complete<ThreeDots />
       </p>
