@@ -2,6 +2,7 @@
   import Particles, { particlesInit } from '@tsparticles/svelte';
   import { loadSlim } from '@tsparticles/slim';
   import type { Container } from '@tsparticles/engine';
+
   let particlesConfig = {
     particles: {
       color: {
@@ -35,16 +36,11 @@
         random: true,
       },
       opacity: {
-        value: [
-          { value: 0.5, color: '#d3d3d3' },
-          { value: 0.5, color: '#c0c0c0' },
-          { value: 0.5, color: '#a9a9a9' },
-          { value: 0.5, color: '#808080' },
-          { value: 0.5, color: '#696969' },
-          { value: 0.5, color: '#505050' },
-          { value: 0.8, color: '#ffd700' },
-        ],
-        random: false,
+        value: 0.5,
+        random: {
+          enable: true,
+          minimumValue: 0.3,
+        },
       },
       shape: {
         type: 'triangle',
@@ -56,11 +52,20 @@
           enable: false,
         },
         onHover: {
-          enable: false,
+          enable: true,
+          mode: 'bubble',
+        },
+      },
+      modes: {
+        bubble: {
+          size: 10,
+          distance: 200,
+          duration: 2,
         },
       },
     },
   };
+
   let onParticlesLoaded = (event: CustomEvent<{ container: Container }>) => {
     const particlesContainer = event.detail.container;
   };
