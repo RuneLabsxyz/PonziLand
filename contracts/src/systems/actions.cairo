@@ -60,32 +60,36 @@ trait IActions<T> {
 #[dojo::contract]
 pub mod actions {
     use super::{IActions, WorldStorage};
+
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
+
     use dojo::model::{ModelStorage, ModelValueStorage};
+    use dojo::event::EventStorage;
+    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
+
+    use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+
     use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
-
-    use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
     use ponzi_land::components::stake::StakeComponent;
     use ponzi_land::components::taxes::TaxesComponent;
     use ponzi_land::components::payable::PayableComponent;
 
+    use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
     use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor, add_neighbors_for_auction};
     use ponzi_land::utils::level_up::{calculate_new_level};
+
     use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
+
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
         LIQUIDITY_SAFETY_MULTIPLIER
     };
     use ponzi_land::store::{Store, StoreTrait};
+    use ponzi_land::interfaces::systems::{SystemsTrait};
 
-    use dojo::event::EventStorage;
-
-    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
-
-    // use ponzi_land::tokens::main_currency::LORDS_CURRENCY;
 
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
     impl PayableInternalImpl = PayableComponent::PayableImpl<ContractState>;
@@ -177,7 +181,7 @@ pub mod actions {
         taxes: TaxesComponent::Storage,
         active_auctions: u8,
         main_currency: ContractAddress,
-        ekubo_core: ICoreDispatcher,
+        ekubo_dispatcher: ICoreDispatcher,
     }
 
     fn dojo_init(
@@ -190,10 +194,10 @@ pub mod actions {
         start_price: u256,
         floor_price: u256,
         decay_rate: u64,
-        ekubo_core_address: ContractAddress
+        ekubo_core_address: ContractAddress,
     ) {
         self.main_currency.write(token_address);
-        self.ekubo_core.write(ICoreDispatcher { contract_address: ekubo_core_address });
+        self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
 
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         for land_location in lands {
@@ -215,8 +219,14 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
             assert(amount_to_stake > 0, 'amount_to_stake > 0');
+
             let mut world = self.world_default();
             let caller = get_caller_address();
+
+            assert(
+                world.auth_dispatcher().can_take_action(get_caller_address()),
+                'action not permitted'
+            );
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
@@ -265,12 +275,13 @@ pub mod actions {
 
         fn claim(ref self: ContractState, land_location: u64) {
             assert(is_valid_position(land_location), 'Land location not valid');
-
+            let caller = get_caller_address();
             let mut world = self.world_default();
+
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
 
             let land = store.land(land_location);
-            let caller = get_caller_address();
             assert(land.owner == caller, 'not the owner');
 
             self.internal_claim(store, land);
@@ -282,6 +293,7 @@ pub mod actions {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
+
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land with stake inside nuke');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
@@ -310,10 +322,13 @@ pub mod actions {
             liquidity_pool: PoolKey,
         ) {
             let mut world = self.world_default();
+
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(
                 self.check_liquidity_pool_requirements(token_for_sale, sell_price, liquidity_pool),
@@ -368,8 +383,8 @@ pub mod actions {
             if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
                 return;
             }
-
             let mut world = self.world_default();
+
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
 
@@ -403,10 +418,13 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
+            let caller = get_caller_address();
+
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
             assert(new_price > land.sell_price, 'new_price != land.sell_price');
@@ -419,10 +437,13 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
+            let caller = get_caller_address();
+
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
             self.stake._add(amount_to_stake, land, store);
@@ -439,10 +460,15 @@ pub mod actions {
         }
 
         fn level_up(ref self: ContractState, land_location: u64) -> bool {
+            assert(is_valid_position(land_location), 'Land location not valid');
+
             let mut world = self.world_default();
+
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
 
@@ -452,6 +478,7 @@ pub mod actions {
 
             self.update_level(ref store, ref land, elapsed_time_since_buy)
         }
+
 
         //GETTERS FUNCTIONS
 
@@ -765,7 +792,7 @@ pub mod actions {
             }
 
             let liquidity_pool: u128 = self
-                .ekubo_core
+                .ekubo_dispatcher
                 .read()
                 .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
             return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
