@@ -37,20 +37,30 @@ export async function GET(request: Request) {
     return json(jsonData);
   } catch (error) {
     console.error(error);
-    if (error instanceof NotFoundError) {
-      // Body is a json
-      const code = (error.error as any | undefined)?.error?.code;
-      console.log(code);
-      if (code === 'ROUTE_NOT_FOUND_ERROR') {
-        return json({
-          error: {
-            code: 'ROUTE_NOT_FOUND_ERROR',
-            message: 'No route was found. Try with another token',
-          },
-        });
-      }
+
+    const errorData = (error.error as any | undefined)?.error;
+    const code = errorData?.code;
+    console.log(code);
+    if (code === 'ROUTE_NOT_FOUND_ERROR') {
+      return json({
+        error: {
+          code: 'ROUTE_NOT_FOUND_ERROR',
+          message: 'No route was found. Try with another token',
+        },
+      });
+    } else if (code === 'GREATER_THAN_MAX_ERROR') {
+      return json({
+        error: {
+          code: 'GREATER_THAN_MAX_ERROR',
+          message:
+            'Hold on a minute, this is more than what we can handle! You cannot transfer more than ' +
+            errorData.metadata['AmountLimit'] +
+            ' ' +
+            sourceToken +
+            '.',
+        },
+      });
     } else {
-      console.error(error);
       return json({
         error: {
           code: 'INTERNAL_SERVER_ERROR',

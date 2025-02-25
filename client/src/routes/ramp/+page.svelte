@@ -108,6 +108,8 @@
       selectedToken
     ) {
       quote = undefined;
+      error = undefined;
+
       // Fetch quote
       fetch(
         `/ramp/api/fetch-quote?amount=${debouncedAmount.current}&sourceNetwork=${network?.name}&sourceToken=${selectedToken?.symbol}`,
@@ -130,7 +132,7 @@
 </script>
 
 <Card
-  class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20"
+  class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20 md:min-w-[25rem]"
 >
   <div class="p-5 text-white w-full">
     <WalletSetups />
@@ -163,9 +165,11 @@
         {/if}
       </div>
       {#if error}
-        <Card class="bg-red-800">
-          <p class="p-2">{error.message} :/</p>
-        </Card>
+        <div class="flex justify-center">
+          <Card class="bg-red-800 text-wrap text-lg w-fit max-w-[27rem]">
+            <p class="p-2">{error.message}</p>
+          </Card>
+        </div>
       {/if}
 
       {#if quote}
