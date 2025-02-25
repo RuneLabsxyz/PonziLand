@@ -28,7 +28,7 @@
   });
 
   $effect(() => {
-    if (currentStep.current === 1 && hasDoneTransaction.current.length == 0) {
+    if (currentStep.current < 4 && hasDoneTransaction.current.length == 0) {
       // Action required
       setCurrentStep(4);
     } else if (
