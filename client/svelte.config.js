@@ -1,6 +1,9 @@
 import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import process from 'node:process';
+import dotenv from 'dotenv';
+dotenv.config();
+
 const profile = process.env.DOJO_PROFILE?.toLowerCase() ?? 'dev';
 
 process.env.PUBLIC_DOJO_PROFILE = profile;
@@ -13,6 +16,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_BURNER_PRIVATE,
     PUBLIC_DOJO_CHAIN_ID: process.env.DOJO_CHAIN_ID,
     PUBLIC_AVNU_URL: process.env.AVNU_URL,
+    BYPASS_TOKEN: process.env.BYPASS_TOKEN,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -22,6 +26,7 @@ const profiles = {
       '0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec',
     PUBLIC_DOJO_BURNER_PRIVATE:
       '0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912',
+    BYPASS_TOKEN: '',
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -30,10 +35,11 @@ const profiles = {
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
+    BYPASS_TOKEN: '',
   },
 };
 
-const envProfile = profile[profiles];
+const envProfile = profiles[profile];
 // Check if available in the environment, else use the default one
 for (const entry of Object.entries(profiles.env)) {
   if (entry[1] != null) {
@@ -44,6 +50,8 @@ for (const entry of Object.entries(profiles.env)) {
 for (const val of Object.entries(profiles[profile])) {
   process.env[val[0]] = val[1];
 }
+
+console.log(process.env['BYPASS_TOKEN']);
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
