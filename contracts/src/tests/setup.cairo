@@ -30,11 +30,6 @@ mod setup {
         contract_address_const::<'RECIPIENT'>()
     }
 
-
-    const TEST_PRIVATE_KEY: felt252 = 0x1234; // Una clave privada específica para testing
-    const TEST_PUBLIC_KEY: felt252 =
-        0x1ef15c18599971b7beced415a40f0c7deacfd9b0d1819e03d723d8bc943cfca; // Clave pública correspondiente
-
     fn create_setup() -> (
         WorldStorage,
         IActionsDispatcher,

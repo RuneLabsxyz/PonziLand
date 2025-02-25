@@ -23,5 +23,5 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
 [writers]
-"ponzi_land" = ["ponzi_land-actions","ponzi_land-auth"]
+"ponzi_land" = ["ponzi_land-actions"]
 
