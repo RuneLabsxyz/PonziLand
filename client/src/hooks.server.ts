@@ -1,5 +1,4 @@
 import { BYPASS_TOKEN } from '$env/static/private';
-import { rei } from '@reown/appkit/networks';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
