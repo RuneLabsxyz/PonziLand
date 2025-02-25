@@ -1,9 +1,10 @@
+import { building } from '$app/environment';
 import { BYPASS_TOKEN } from '$env/static/private';
 import { redirect, type Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
-  // Bypass all this trickery if the bypass token is set to '' (default)
-  if (BYPASS_TOKEN === '') {
+  // Bypass all this trickery if the bypass token is set to '' (default), or if we're building
+  if (BYPASS_TOKEN === '' || building) {
     return await resolve(event);
   }
 
