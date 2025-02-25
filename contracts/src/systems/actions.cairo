@@ -223,9 +223,10 @@ pub mod actions {
             let mut world = self.world_default();
             let caller = get_caller_address();
 
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
+            assert(
+                world.auth_dispatcher().can_take_action(get_caller_address()),
+                'action not permitted'
+            );
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
@@ -274,15 +275,13 @@ pub mod actions {
 
         fn claim(ref self: ContractState, land_location: u64) {
             assert(is_valid_position(land_location), 'Land location not valid');
-
+            let caller = get_caller_address();
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
+
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
 
             let land = store.land(land_location);
-            let caller = get_caller_address();
             assert(land.owner == caller, 'not the owner');
 
             self.internal_claim(store, land);
@@ -292,11 +291,9 @@ pub mod actions {
         // TODO:see if we want pass this function into internalTrait
         fn nuke(ref self: ContractState, land_location: u64) {
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
+
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land with stake inside nuke');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
@@ -325,14 +322,13 @@ pub mod actions {
             liquidity_pool: PoolKey,
         ) {
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
+
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(
                 self.check_liquidity_pool_requirements(sell_price, liquidity_pool),
@@ -387,11 +383,7 @@ pub mod actions {
             if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
                 return;
             }
-
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
 
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
@@ -426,14 +418,13 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
+            let caller = get_caller_address();
+
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
             assert(new_price > land.sell_price, 'new_price != land.sell_price');
@@ -446,14 +437,13 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
+            let caller = get_caller_address();
+
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
             let mut store = StoreTrait::new(world);
 
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
             self.stake._add(amount_to_stake, land, store);
@@ -473,13 +463,12 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
-            //TODO:uncomment this when the tests for genereate signed messages are ready
-            // assert(world.auth_dispatcher().can_take_action(get_caller_address()), 'action not
-            // permitted');
+
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
-            let caller = get_caller_address();
 
             assert(land.owner == caller, 'not the owner');
 

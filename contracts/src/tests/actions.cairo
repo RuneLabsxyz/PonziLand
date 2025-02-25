@@ -76,38 +76,83 @@ fn deleted_pool_key() -> PoolKey {
 }
 
 
-fn get_public_key(private_key: felt252) -> felt252 {
-    let generator = EcPointTrait::new(GEN_X, GEN_Y).unwrap();
-    let public_key_point = generator.mul(private_key);
-    match public_key_point.try_into() {
-        Option::Some(nz_point) => nz_point.x(),
-        Option::None => panic_with_felt252('Invalid public key')
-    }
+// Signature struct
+#[derive(Drop, Copy)]
+struct Signature {
+    r: felt252,
+    s: felt252,
 }
 
-//TODO:see how generate a correct sign to validate in tests
-fn generate_sign(auth_dispatcher: IAuthDispatcher) {
-    let private_key: felt252 = 0x1234567890987654321;
-    let public_key = get_public_key(private_key);
-    println!("Public Key: {:?}", public_key);
+fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
+    //PRIVATE KEY => 0x1234567890987654321
+    let public_key: felt252 =
+        0x020c29f1c98f3320d56f01c13372c923123c35828bce54f2153aa1cfe61c44f2; // From script
     auth_dispatcher.set_verifier(public_key);
 
-    let message_hash = poseidon_hash_span(array![RECIPIENT().into()].span());
+    let addresses: Array<(ContractAddress, Signature)> = array![
+        (
+            RECIPIENT(),
+            Signature {
+                r: 0x385afe7f043fd89f119e489f7d955f6302a67d8eea31df1234d9e98ba19edf1,
+                s: 0x41ac046404bd42a971a04f39cc887868df51b2d1fd36c4b458d6f93d1e81be0
+            }
+        ),
+        (
+            FIRST_OWNER(),
+            Signature {
+                r: 0x15455111f634471af0d2b92cf1bea5952572c7698e7c0bfaef775b085ad9ad4, // Replace from script
+                s: 0x1ec03c2cec3fd613c39c01c3b2914aa6c14a32577d5aff3120ae55cd61807c8 // Replace from script
+            }
+        ),
+        (
+            NEIGHBOR_1(),
+            Signature {
+                r: 0x3090f3bab984fd8a5f7e2aeb68445a576c6d27f2cf8271e9a09b2c4ef5cb2, // Replace from script
+                s: 0x1e4f1f0eb4ecd88ca956bbdbc975c583b9c67aafcd61d35e327b5e86d0c9ab1 // Replace from script
+            }
+        ),
+        (
+            NEIGHBOR_2(),
+            Signature {
+                r: 0x29319b4850a57bdb26b3c0da2263c37453a331f99edc53fc449f7fbe04788ab,
+                s: 0x1df852dbfdbfdb03797f38913f767bd017d0429131e028434231a6ef5f03e4d
+            }
+        ),
+        (
+            NEIGHBOR_3(),
+            Signature {
+                r: 0x6cd54871db709fb53080256364565fdd5f1d059f6237b61ef15e9869d20aabb,
+                s: 0x2fbd16550e59cb61476c952cd2873f5ce207535ad268615f42cfecd9962fe47
+            }
+        ),
+        (
+            NEW_BUYER(),
+            Signature {
+                r: 0x6816c59001073c4b45ca2bb90062c77ff228817ee1859ff4362c000ac0e96bb,
+                s: 0x77d582bd4740d95bba36bb9a366bcc5494103b210287125b4b6848d41b10fbf
+            }
+        ),
+    ];
 
-    testing::set_signature(array![message_hash, private_key].span());
-    let signature = get_tx_info().unbox().signature;
-    println!("signature {:?}", signature);
-
-    auth_dispatcher.add_authorized(array![*signature[0], *signature[1]]);
+    let mut i = 0;
+    while i < addresses.len() {
+        let (address, sig) = *addresses.at(i);
+        set_contract_address(address);
+        auth_dispatcher.add_authorized(array![sig.r, sig.s]);
+        assert(auth_dispatcher.can_take_action(address), 'Authorization failed');
+        i += 1;
+    };
 }
+
 
 // Helper functions for common test setup and actions
 fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCoreTestingDispatcher) {
-    let (world, actions_system, erc20, _, testing_dispatcher, _) = create_setup();
+    let (world, actions_system, erc20, _, testing_dispatcher, auth_system) = create_setup();
     set_contract_address(RECIPIENT());
 
-    //generate_sign(auth_dispatcher);
+    authorize_all_addresses(auth_system);
 
+    set_contract_address(RECIPIENT());
     // Setup initial ERC20 approval
     erc20.approve(actions_system.contract_address, 10000);
     let allowance = erc20.allowance(RECIPIENT(), actions_system.contract_address);
