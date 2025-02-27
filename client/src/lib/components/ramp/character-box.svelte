@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AccountManager, setupAccount } from '$lib/contexts/account';
+  import { AccountManager, setupAccount } from '$lib/contexts/account.svelte';
   import { currentStep } from '$lib/ramp/stores.svelte';
   import { step } from '@reown/appkit/networks';
   import type { AccountInterface } from 'starknet';

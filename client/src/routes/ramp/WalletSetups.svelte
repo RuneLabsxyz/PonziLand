@@ -4,7 +4,7 @@
     AccountManager,
     setupAccount,
     useAccount,
-  } from '$lib/contexts/account';
+  } from '$lib/contexts/account.svelte';
   import { appKit } from '$lib/ramp';
   import {
     provider,

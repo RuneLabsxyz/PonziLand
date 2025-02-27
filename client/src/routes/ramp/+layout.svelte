@@ -5,7 +5,7 @@
   import type { AccountInterface } from 'starknet';
 
   import { address as ethAddress, provider } from '$lib/ramp/stores.svelte';
-  import { AccountManager, setupAccount } from '$lib/contexts/account';
+  import { AccountManager, setupAccount } from '$lib/contexts/account.svelte';
 
   let { children, data }: { children: any; data: LayoutServerData } = $props();
 

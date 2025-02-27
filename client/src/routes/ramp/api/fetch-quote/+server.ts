@@ -35,7 +35,7 @@ export async function GET(request: Request) {
     };
 
     return json(jsonData);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
 
     const errorData = (error.error as any | undefined)?.error;
