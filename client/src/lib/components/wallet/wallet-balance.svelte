@@ -19,7 +19,7 @@
   const address = $derived(accountData.address);
 
   function fetchBalanceData() {
-    const account = accountManager.getProvider()?.getWalletAccount();
+    const account = accountManager!.getProvider()?.getWalletAccount();
 
     if (!account || !address) {
       return;
