@@ -1,38 +1,51 @@
+import { rei } from '@reown/appkit/networks';
+import { getInfo, type UserResponse } from './accounts/social/index.svelte';
 import { useAccount, type AccountProvider } from './contexts/account.svelte';
 import { type AccountInterface } from 'starknet';
-
-function wrapped<T>(value: T) {
-  return { value };
-}
-
-type Wrapped<T> = { value?: T };
+import { Result } from 'postcss';
 
 export const state: {
   isConnected: boolean;
   address?: string;
   sessionAccount?: AccountInterface;
   walletAccount?: AccountInterface;
+  profile?: UserResponse;
 } = $state({
   isConnected: false,
 });
 
+const updateState = async (provider: AccountProvider) => {
+  const walletAccount = provider.getWalletAccount();
+  console.log('Got the following:', walletAccount?.address);
+
+  state.isConnected = walletAccount != null;
+  state.address = walletAccount?.address;
+  state.walletAccount = walletAccount;
+
+  const profile = await getInfo(state.address!);
+  console.log('ayayayay', profile);
+  state.profile = profile;
+};
+
+const resetState = () => {
+  state.address = undefined;
+  state.isConnected = false;
+  state.walletAccount = undefined;
+  state.profile = undefined;
+};
+
+export function refresh() {
+  const accountManager = useAccount()!;
+  const currentProvider = accountManager.getProvider();
+  if (currentProvider != null) {
+    updateState(currentProvider);
+  } else {
+    resetState();
+  }
+}
+
 export function setup() {
-  const accountManager = useAccount();
-
-  const updateState = (provider: AccountProvider) => {
-    const walletAccount = provider.getWalletAccount();
-    console.log('Got the following:', walletAccount?.address);
-
-    state.isConnected = walletAccount != null;
-    state.address = walletAccount?.address;
-    state.walletAccount = walletAccount;
-  };
-
-  const resetState = () => {
-    state.address = undefined;
-    state.isConnected = false;
-    state.walletAccount = undefined;
-  };
+  const accountManager = useAccount()!;
 
   // Initial state
   let currentProvider = accountManager.getProvider();

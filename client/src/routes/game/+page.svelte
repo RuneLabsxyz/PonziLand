@@ -13,7 +13,8 @@
   import { tsParticles } from '@tsparticles/engine';
   import { loadImageShape } from '@tsparticles/shape-image';
   import { getInfo } from '$lib/accounts/social/index.svelte';
-  import { a } from 'vitest/dist/chunks/suite.BJU7kdY9.js';
+  import Register from '$lib/components/socialink/register.svelte';
+  import { state as accountState, setup } from '$lib/account.svelte';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -27,9 +28,13 @@
     setupClient(dojoConfig),
     setupAccount(),
     setupStore(),
+    setup(),
   ]);
 
   let loading = $state(true);
+
+  let showRegister = $derived((accountState.profile?.exists ?? false) == false);
+
   let value = $state(10);
 
   $effect(() => {
@@ -64,11 +69,6 @@
         const address = accountManager
           ?.getProvider()
           ?.getWalletAccount()?.address;
-        if (address != null) {
-          const userInfo = await getInfo(address);
-          if (!userInfo.exists) {
-          }
-        }
 
         clearLoading();
       })
@@ -81,6 +81,8 @@
 <div class="h-screen w-screen bg-black/10 overflow-hidden">
   {#if loading}
     <LoadingScreen {value} />
+  {:else if showRegister}
+    <Register />
   {:else}
     <SwitchChainModal />
     <Map />

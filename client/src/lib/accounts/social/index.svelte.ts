@@ -19,6 +19,10 @@ export type UserResponse = {
 let cacheMap: Record<string, UserResponse> = $state({});
 
 export async function getInfo(address: string) {
+  if (cacheMap[address] != undefined) {
+    return cacheMap[address];
+  }
+
   // TODO: Ensure the format!
   const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/${address}`);
 
@@ -44,9 +48,12 @@ export async function getInfo(address: string) {
 }
 
 async function fetchRegisterSignature(username: string) {
-  const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/register`, {
-    method: 'GET',
-  });
+  const response = await fetch(
+    `${PUBLIC_SOCIALINK_URL}/api/user/register?username=${username}`,
+    {
+      method: 'GET',
+    },
+  );
 
   if (!response.ok) {
     try {
@@ -54,7 +61,7 @@ async function fetchRegisterSignature(username: string) {
 
       throw error.error;
     } catch (e) {
-      console.error('Error while fetching register request', e);
+      console.error('Error while fetching register request: ', e);
       throw 'Impossible to get the signature request.';
     }
   }
@@ -63,7 +70,7 @@ async function fetchRegisterSignature(username: string) {
 }
 
 async function sendRegister(typedData: any, signature: Signature) {
-  const response = await fetch('/api/user/register', {
+  const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/register`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -96,15 +103,18 @@ export async function register(username: string) {
 
   // Get the account provider, and ask for a signature
   try {
-    const signature = await useAccount()
-      ?.getProvider()
-      ?.getWalletAccount()
-      ?.signMessage(signatureResponse);
+    const account = useAccount()?.getProvider()?.getWalletAccount();
+    const signature = await account?.signMessage(signatureResponse);
+
+    console.log('Signature:', signature);
 
     // Submit the response to the server
     await sendRegister(signatureResponse, signature!);
 
     console.log('Successfully registered!');
+
+    // Remove from the cache
+    delete cacheMap[account?.address!];
   } catch (e) {
     console.log(
       'An error occurred while signing and send the response message',
@@ -128,5 +138,5 @@ export async function checkUsername(username: string) {
     }
   }
 
-  return await response.json();
+  return (await response.json()).available;
 }
