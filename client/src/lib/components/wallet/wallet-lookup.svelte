@@ -6,7 +6,6 @@
   import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
   import accountDataProvider, { setup } from '$lib/account.svelte';
-  import { getInfo } from '$lib/accounts/social/index.svelte';
 
   setup();
 
@@ -28,16 +27,8 @@
   const { store, client: sdk, accountManager } = useDojo();
   const address = $derived(accountDataProvider.address);
 
-  let username: string | undefined = $state();
-  $effect(() => {
-    if (address) {
-      getInfo(address).then((profile) => {
-        username = profile?.username ?? undefined;
-      });
-    }
-  });
-
   const connected = $derived(accountDataProvider.isConnected);
+  const username = $derived(accountDataProvider.profile?.username);
 </script>
 
 <div class="fixed top-0 right-0 z-50">
