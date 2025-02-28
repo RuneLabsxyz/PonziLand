@@ -21,7 +21,7 @@ use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 use ponzi_land::models::land::{Land, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS};
-use ponzi_land::helpers::coord::{left, right, up, down};
+use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
 
@@ -367,7 +367,7 @@ fn test_bid_and_buy_action() {
     //left neighbor
     verify_auction_for_neighbor(store, 10, 1000, 100);
     //down neighbor
-    verify_auction_for_neighbor(store, 75, 1000, 100);
+    verify_auction_for_neighbor(store, 76, 1000, 100);
 
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
@@ -386,12 +386,8 @@ fn test_bid_and_buy_action() {
         160 * TIME_SPEED.into(),
         main_currency.contract_address
     );
-    //Verify auctions for neighbors
-
 }
 
-//TODO: EL PROBLEMA CON ESTO ES QUE NO SE SUMA EL STAKE AMOUNT, Y DESPUES HAY UN PROBLEMA CON EL PAY
-//AMOUNT QUE HAY MENOS
 #[test]
 fn test_claim_and_add_taxes() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
@@ -798,4 +794,93 @@ fn check_invalid_liquidity_pool() {
         100,
         main_currency.contract_address
     );
+}
+
+#[test]
+fn test_organic_auction() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+
+    set_block_timestamp(100);
+    //simulate liquidity pool from ekubo with amount
+    ekubo_testing_dispatcher
+        .set_pool_liquidity(
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+        );
+
+    // Step 1: Bid on 11 (row=0, col=11) - Expands to 7 auctions (we started with 4 initial lands)
+    initialize_land(actions_system, main_currency, RECIPIENT(), 11, 2, 50, main_currency);
+
+    let left_neighbor = store.auction(left(11).unwrap()); // 10
+    let right_neighbor = store.auction(right(11).unwrap()); // 12
+    let down_right_neighbor = store.auction(down_right(11).unwrap()); // 76
+    let down_neighbor = store.auction(down(11).unwrap()); // 75
+
+    assert(left_neighbor.start_price == 20, 'left auction not started');
+    assert(right_neighbor.start_price == 20, 'right auction not started');
+    assert(down_right_neighbor.start_price == 20, 'down_rigth auction not started');
+    assert(down_neighbor.start_price == 0, 'down incorrect auction started');
+
+    // Setup new buyer with tokens and approvals
+    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 10000);
+
+    // Step 2: Bid on 12 (row=0, col=12) - Expands to 9 auctions
+    actions_system
+        .bid(
+            right_neighbor.land_location,
+            main_currency.contract_address,
+            10,
+            10,
+            pool_key(main_currency.contract_address)
+        );
+
+    let right_12 = store.auction(right(12).unwrap()); // 13
+    let down_right_12 = store.auction(down_right(12).unwrap()); // 77
+    let down_12 = store.auction(down(12).unwrap()); // 76 (already exists)
+    let down_left_12 = store.auction(down_left(12).unwrap()); // initialize 75
+
+    assert(right_12.start_price == 200, 'right 12 not started');
+    assert(down_right_12.start_price == 200, 'dr 12 not started');
+    assert(down_12.start_price == 20, 'down 12 already started');
+    assert(down_left_12.start_price == 200, 'left 12 not started');
+
+    // Step 3: Bid on 10 (row=0, col=10) - Expands to 11 auctions
+    actions_system
+        .bid(
+            left_neighbor.land_location,
+            main_currency.contract_address,
+            10,
+            10,
+            pool_key(main_currency.contract_address)
+        );
+
+    let left_10 = store.auction(left(10).unwrap()); // 9 
+    let down_right_10 = store.auction(down_right(10).unwrap()); // 75 (already exists)
+    let down_10 = store.auction(down(10).unwrap()); // 74
+    let down_left_10 = store.auction(down_left(10).unwrap()); // 73
+
+    assert(
+        left_10.start_price == 200, 'left 10 auction not started'
+    ); // is 200 because the sell of the neighbors was for 20 so 20 * 10 = 200
+    assert(down_right_10.start_price == 200, 'dr 10 auction not started');
+    assert(down_10.start_price == 200, 'down 10 auction not started');
+    assert(down_left_10.start_price == 200, 'dl 10 auction not started');
+
+    // Step 4: Bid on 75 (row=1, col=11) - Expands to 12 auctions (limit reached)
+    actions_system
+        .bid(
+            down_right_10.land_location,
+            main_currency.contract_address,
+            10,
+            10,
+            pool_key(main_currency.contract_address)
+        );
+
+    let down_75 = store.auction(down(75).unwrap()); // 139 (row=2, col=11)
+    let left_75 = store.auction(left(75).unwrap()); // 74 (already exists)
+    let down_left_75 = store
+        .auction(down_left(75).unwrap()); // 138 (not enabled yet) because the limit was reached
+
+    assert(down_75.start_price == 2000, 'down 75 auction not started');
+    assert(left_75.start_price == 200, 'left 75 already started');
+    assert(down_left_75.start_price == 0, 'dl 75 started');
 }

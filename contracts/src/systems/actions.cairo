@@ -63,7 +63,9 @@ pub mod actions {
 
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
-
+    use starknet::storage::{
+        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry
+    };
     use dojo::model::{ModelStorage, ModelValueStorage};
     use dojo::event::EventStorage;
     use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
@@ -78,14 +80,20 @@ pub mod actions {
     use ponzi_land::components::payable::PayableComponent;
 
     use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
-    use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor, add_neighbors_for_auction};
+    use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor};
+    use ponzi_land::utils::spiral::{
+        get_next_position, SpiralState, should_continue_adding_auctions
+    };
     use ponzi_land::utils::level_up::{calculate_new_level};
 
-    use ponzi_land::helpers::coord::{is_valid_position, up, down, left, right, max_neighbors};
+    use ponzi_land::helpers::coord::{
+        is_valid_position, up, down, left, right, max_neighbors, index_to_position,
+        position_to_index, up_left, up_right, down_left, down_right
+    };
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        LIQUIDITY_SAFETY_MULTIPLIER
+        LIQUIDITY_SAFETY_MULTIPLIER,
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -182,6 +190,8 @@ pub mod actions {
         active_auctions: u8,
         main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
+        spiral_states: Map<u64, SpiralState>,
+        active_auction_queue: Map<u64, bool>
     }
 
     fn dojo_init(
@@ -343,9 +353,7 @@ pub mod actions {
 
             //Validate if the land can be buyed because is an auction happening for that land
             let mut auction = store.auction(land_location);
-            assert(!auction.is_finished, 'auction is finished');
-            assert(auction.start_price > 0, 'auction not started');
-            assert(auction.start_time > 0, 'auction not started');
+            assert(self.active_auction_queue.read(land_location), 'auction not started');
 
             let current_price = auction.get_current_price_decay_rate();
             land.sell_price = sell_price;
@@ -378,13 +386,11 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
-
             //we don't want generate an error if the auction is full
             if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
                 return;
             }
             let mut world = self.world_default();
-
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
 
@@ -395,7 +401,9 @@ pub mod actions {
             );
 
             store.set_auction(auction);
+            //TODO:improve this for notion task [RUNE-124]
             self.active_auctions.write(self.active_auctions.read() + 1);
+            self.active_auction_queue.write(land_location, true);
 
             land.sell_price = start_price;
 
@@ -675,7 +683,9 @@ pub mod actions {
 
             store.set_auction(auction);
             auction.is_finished = true;
+            //TODO:IMPROVE THIS FOR NOTION TASK [RUNE-124]
             self.active_auctions.write(self.active_auctions.read() - 1);
+            self.active_auction_queue.write(land.location, false);
 
             store
                 .world
@@ -694,35 +704,15 @@ pub mod actions {
             //TODO:we have to define the correct decay rate
 
             // Math.max(sold_at_price * 10, auction.floor_price)
+            //TODO:IMPROVE THIS ON NOTION TASK [RUNE-124]
             let asking_price = if sold_at_price > auction.floor_price {
                 sold_at_price * 10
             } else {
                 auction.floor_price * 10
             };
-
-            self
-                .initialize_auction_for_neighbors(
-                    // The floor price and decay_rate are extracted from the current auction, to
-                    // always propagate the values from the intial auctions
-                    store, land.location, asking_price, auction.floor_price, auction.decay_rate
-                );
+            self.add_spiral_auctions(store, land.location, asking_price);
         }
 
-        fn initialize_auction_for_neighbors(
-            ref self: ContractState,
-            mut store: Store,
-            location: u64,
-            start_price: u256,
-            floor_price: u256,
-            decay_rate: u64,
-        ) {
-            let neighbors = add_neighbors_for_auction(store, location);
-            if neighbors.len() != 0 {
-                for neighbor in neighbors {
-                    self.auction(neighbor.location, start_price, floor_price, decay_rate, false);
-                }
-            }
-        }
 
         fn finalize_land_purchase(
             ref self: ContractState,
@@ -796,6 +786,79 @@ pub mod actions {
                 .read()
                 .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
             return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
+        }
+
+        fn add_spiral_auctions(
+            ref self: ContractState, store: Store, land_location: u64, start_price: u256
+        ) {
+            let mut state = self.initialize_or_read_state_of_spiral_auction(land_location);
+            let mut added = 0;
+
+            // from here we start the spiral
+            let center_pos = position_to_index(state.row, state.col);
+            let mut current_pos = center_pos;
+
+            let mut directions_tried: u8 = 0;
+
+            while should_continue_adding_auctions(
+                added, self.active_auctions.read(), directions_tried
+            ) {
+                //it controls how far we explore in each direction (1, 1, 2, 2, ...)
+                let steps = state.advance / 2 + 1;
+                let mut i = 0;
+
+                while i < steps
+                    && should_continue_adding_auctions(
+                        added, self.active_auctions.read(), directions_tried
+                    ) {
+                    if let Option::Some(next_pos) = get_next_position(state.direction, center_pos) {
+                        current_pos = next_pos;
+                        if store.land(current_pos).owner.is_zero()
+                            && !self.active_auction_queue.read(current_pos) {
+                            self.auction(current_pos, start_price, FLOOR_PRICE, DECAY_RATE, false);
+
+                            let next_direction = (state.direction + 1) % 8;
+                            self.update_spiral_state(current_pos, next_direction, 1,);
+                            added += 1;
+                        }
+                    }
+                    i += 1;
+                };
+
+                //Checking if we've completed a full cycle (8 directions)
+                // 'advance' increases to expand the spiral's reach on the next iteration
+                state.direction = (state.direction + 1) % 8;
+                if state.direction == 0 {
+                    state.advance += 1;
+                }
+
+                directions_tried += 1;
+            };
+
+            self.update_spiral_state(center_pos, state.direction, state.advance);
+        }
+
+        fn initialize_or_read_state_of_spiral_auction(
+            ref self: ContractState, land_location: u64
+        ) -> SpiralState {
+            let mut state = self.spiral_states.read(land_location);
+            if state.row == 0 && state.col == 0 {
+                let (row, col) = index_to_position(land_location);
+                state = SpiralState { row, col, advance: 1, direction: 0 };
+            };
+
+            state
+        }
+
+        fn update_spiral_state(
+            ref self: ContractState, current_pos: u64, next_direction: u8, advance: u64,
+        ) {
+            let (new_row, new_col) = index_to_position(current_pos);
+            let new_state = SpiralState {
+                row: new_row, col: new_col, advance, direction: next_direction
+            };
+
+            self.spiral_states.write(current_pos, new_state);
         }
     }
 }

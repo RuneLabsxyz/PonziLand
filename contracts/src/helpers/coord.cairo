@@ -61,6 +61,42 @@ fn down(index: u64) -> Option<u64> {
     }
 }
 
+fn up_left(index: u64) -> Option<u64> {
+    let (row, col) = index_to_position(index);
+    if row == 0 || col == 0 {
+        Option::None
+    } else {
+        Option::Some(position_to_index(row - 1, col - 1))
+    }
+}
+
+fn up_right(index: u64) -> Option<u64> {
+    let (row, col) = index_to_position(index);
+    if row == 0 || col == GRID_WIDTH - 1 {
+        Option::None
+    } else {
+        Option::Some(position_to_index(row - 1, col + 1))
+    }
+}
+
+fn down_left(index: u64) -> Option<u64> {
+    let (row, col) = index_to_position(index);
+    if row == GRID_WIDTH - 1 || col == 0 {
+        Option::None
+    } else {
+        Option::Some(position_to_index(row + 1, col - 1))
+    }
+}
+
+fn down_right(index: u64) -> Option<u64> {
+    let (row, col) = index_to_position(index);
+    if row == GRID_WIDTH - 1 || col == GRID_WIDTH - 1 {
+        Option::None
+    } else {
+        Option::Some(position_to_index(row + 1, col + 1))
+    }
+}
+
 fn is_valid_position(index: u64) -> bool {
     index < GRID_WIDTH * GRID_WIDTH
 }
@@ -83,16 +119,16 @@ fn max_neighbors(index: u64) -> u64 {
     }
 
     // Diagonal neighbors
-    if up(index).is_some() && right(index).is_some() {
+    if up_left(index).is_some() {
         count += 1;
     }
-    if up(index).is_some() && left(index).is_some() {
+    if up_right(index).is_some() {
         count += 1;
     }
-    if down(index).is_some() && right(index).is_some() {
+    if down_left(index).is_some() {
         count += 1;
     }
-    if down(index).is_some() && left(index).is_some() {
+    if down_right(index).is_some() {
         count += 1;
     }
 

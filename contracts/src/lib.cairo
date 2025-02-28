@@ -39,6 +39,7 @@ mod utils {
     mod common_strucs;
     mod get_neighbors;
     mod level_up;
+    mod spiral;
 }
 
 #[cfg(test)]
