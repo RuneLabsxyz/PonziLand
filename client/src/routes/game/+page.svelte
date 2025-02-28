@@ -15,6 +15,7 @@
   import { getInfo } from '$lib/accounts/social/index.svelte';
   import Register from '$lib/components/socialink/register.svelte';
   import { state as accountState, setup } from '$lib/account.svelte';
+  import LinkProvider from '$lib/components/socialink/LinkProvider.svelte';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -33,7 +34,10 @@
 
   let loading = $state(true);
 
-  let showRegister = $derived((accountState.profile?.exists ?? false) == false);
+  let showRegister = $derived(
+    accountState.address != null &&
+      (accountState.profile?.exists ?? false) == false,
+  );
 
   let value = $state(10);
 
@@ -84,6 +88,8 @@
   {:else if showRegister}
     <Register />
   {:else}
+    <LinkProvider />
+
     <SwitchChainModal />
     <Map />
     <Ui />
