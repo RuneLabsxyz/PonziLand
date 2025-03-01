@@ -5,46 +5,27 @@ import { useAccount } from '$lib/contexts/account.svelte';
 import { accountAddress } from '$lib/stores/stores.svelte';
 import type { Signature } from 'starknet';
 import { get } from 'svelte/store';
+import { Socialink, type UserInfo } from '@runelabsxyz/socialink-sdk';
 
-export type UserResponse = {
-  exists: boolean;
-  address: string;
-  username?: string;
-  providers?: Array<{
-    service: string;
-    username?: string;
-  }>;
-};
+let socialink: Socialink | undefined = $state();
 
-let cacheMap: Record<string, UserResponse> = $state({});
+export async function setupSocialink() {
+  const account = useAccount();
 
-export async function getInfo(address: string) {
-  if (cacheMap[address] != undefined) {
-    return cacheMap[address];
+  socialink = new Socialink(
+    PUBLIC_SOCIALINK_URL,
+    async () => account?.getProvider()?.getWalletAccount()!,
+  );
+
+  return socialink;
+}
+
+export function getSocialink() {
+  if (!socialink) {
+    throw new Error('Socialink not initialized');
   }
 
-  // TODO: Ensure the format!
-  const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/${address}`);
-
-  if (!response.ok) {
-    // Check if is a 404, and return the JSON body in that case
-    if (response.status === 404) {
-      const user = await response.json();
-      cacheMap[address] = user;
-      return user;
-    } else {
-      console.error('An error occurred while fetching user information');
-
-      return {
-        exists: false,
-        address: address,
-      };
-    }
-  }
-
-  const user = await response.json();
-  cacheMap[address] = user;
-  return user;
+  return socialink;
 }
 
 async function fetchRegisterSignature(username: string) {
@@ -112,9 +93,6 @@ export async function register(username: string) {
     await sendRegister(signatureResponse, signature!);
 
     console.log('Successfully registered!');
-
-    // Remove from the cache
-    delete cacheMap[account?.address!];
   } catch (e) {
     console.log(
       'An error occurred while signing and send the response message',

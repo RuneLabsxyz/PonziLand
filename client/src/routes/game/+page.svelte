@@ -1,5 +1,4 @@
 <script>
-  import { dev } from '$app/environment';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { setupStore } from '$lib/contexts/store.svelte';
@@ -12,10 +11,9 @@
   import { loadFull } from 'tsparticles';
   import { tsParticles } from '@tsparticles/engine';
   import { loadImageShape } from '@tsparticles/shape-image';
-  import { getInfo } from '$lib/accounts/social/index.svelte';
+  import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import Register from '$lib/components/socialink/register.svelte';
   import { state as accountState, setup } from '$lib/account.svelte';
-  import LinkProvider from '$lib/components/socialink/LinkProvider.svelte';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -29,7 +27,7 @@
     setupClient(dojoConfig),
     setupAccount(),
     setupStore(),
-    setup(),
+    setupSocialink(),
   ]);
 
   let loading = $state(true);
@@ -88,8 +86,6 @@
   {:else if showRegister}
     <Register />
   {:else}
-    <LinkProvider />
-
     <SwitchChainModal />
     <Map />
     <Ui />

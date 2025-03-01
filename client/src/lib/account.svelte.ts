@@ -1,15 +1,16 @@
 import { rei } from '@reown/appkit/networks';
-import { getInfo, type UserResponse } from './accounts/social/index.svelte';
+import { getSocialink } from './accounts/social/index.svelte';
 import { useAccount, type AccountProvider } from './contexts/account.svelte';
 import { type AccountInterface } from 'starknet';
 import { Result } from 'postcss';
+import type { UserInfo } from '@runelabsxyz/socialink-sdk';
 
 export const state: {
   isConnected: boolean;
   address?: string;
   sessionAccount?: AccountInterface;
   walletAccount?: AccountInterface;
-  profile?: UserResponse;
+  profile?: UserInfo;
 } = $state({
   isConnected: false,
 });
@@ -22,7 +23,7 @@ const updateState = async (provider: AccountProvider) => {
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
 
-  const profile = await getInfo(state.address!);
+  const profile = await getSocialink().getUser(state.address!);
   console.log('ayayayay', profile);
   state.profile = profile;
 };
