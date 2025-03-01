@@ -6,8 +6,11 @@
   import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
   import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { getSocialink } from '$lib/accounts/social/index.svelte';
 
   setup();
+
+  let socialink = getSocialink();
 
   let copied = $state(false);
 
@@ -79,6 +82,15 @@
           {#if copied}
             <div class="transition-opacity">Copied!</div>
           {/if}
+        </button>
+        <button
+          onclick={() => {
+            console.log('Starting Discord link');
+            socialink.startLink('discord');
+          }}
+          aria-label="Logout"
+        >
+          Discord
         </button>
         <button
           onclick={() => {
