@@ -14,6 +14,7 @@
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import Register from '$lib/components/socialink/register.svelte';
   import { state as accountState, setup } from '$lib/account.svelte';
+  import Invitation from '$lib/components/socialink/Invitation.svelte';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -36,6 +37,14 @@
     accountState.address != null &&
       (accountState.profile?.exists ?? false) == false,
   );
+
+  let showInvitation = $derived(
+    accountState.address != null &&
+      (accountState.profile?.exists && accountState.profile?.whitelisted) ==
+        false,
+  );
+
+  $inspect('Invitation: ', showInvitation);
 
   let value = $state(10);
 
@@ -85,6 +94,8 @@
     <LoadingScreen {value} />
   {:else if showRegister}
     <Register />
+  {:else if showInvitation}
+    <Invitation />
   {:else}
     <SwitchChainModal />
     <Map />
