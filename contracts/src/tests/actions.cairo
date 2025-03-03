@@ -201,6 +201,13 @@ fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCore
     (store, actions_system, erc20, testing_dispatcher)
 }
 
+pub enum Direction {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
 // Helper function for initializing lands
 fn initialize_land(
     actions_system: IActionsDispatcher,
@@ -287,18 +294,44 @@ fn verify_land(
     assert(land.token_used == expected_token_used, 'incorrect token used');
 }
 
-fn verify_auction_for_neighbor(
-    store: Store, location: u64, expected_sell_price: u256, expected_start_time: u64
+fn bid_and_verify_next_auctions(
+    actions_system: IActionsDispatcher,
+    store: Store,
+    main_currency: IERC20CamelDispatcher,
+    locations: Array<u64>,
+    next_direction: u8, // 0=left, 1=up, 2=right, 3=down
+    pool_key: PoolKey
 ) {
-    let neighbor = store.land(location);
-    let neighbor_auction = store.auction(neighbor.location);
-    assert(neighbor.sell_price == expected_sell_price, 'Err in neighbor sell price');
-    assert(
-        neighbor_auction.start_time * TIME_SPEED.into() == expected_start_time,
-        'Err in neighbor start time'
-    );
-}
+    // Bid on all locations
+    let mut i = 0;
+    loop {
+        if i >= locations.len() {
+            break;
+        }
+        let location = *locations.at(i);
+        actions_system.bid(location, main_currency.contract_address, 2, 10, pool_key);
+        i += 1;
+    };
 
+    // Verify next auctions were created in the specified direction
+    i = 0;
+    loop {
+        if i >= locations.len() {
+            break;
+        }
+        let location = *locations.at(i);
+        let next_auction = match next_direction {
+            0 => store.auction(left(location).unwrap()),
+            1 => store.auction(up(location).unwrap()),
+            2 => store.auction(right(location).unwrap()),
+            3 => store.auction(down(location).unwrap()),
+            _ => panic_with_felt252('Invalid direction')
+        };
+        assert(next_auction.start_price > 0, 'auction not started');
+        assert(next_auction.start_time > 0, 'auction not started');
+        i += 1;
+    };
+}
 
 #[test]
 fn test_buy_action() {
@@ -362,13 +395,6 @@ fn test_bid_and_buy_action() {
     // Validate bid/buy updates
     verify_land(store, 11, RECIPIENT(), 100, pool, 50, 100, main_currency.contract_address);
 
-    //right neighbor
-    verify_auction_for_neighbor(store, 12, 1000, 100);
-    //left neighbor
-    verify_auction_for_neighbor(store, 10, 1000, 100);
-    //down neighbor
-    verify_auction_for_neighbor(store, 76, 1000, 100);
-
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
@@ -396,7 +422,6 @@ fn test_claim_and_add_taxes() {
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
         );
-
     // Deploy ERC20 tokens for neighbors
     let erc20_neighbor_1 = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
@@ -405,7 +430,6 @@ fn test_claim_and_add_taxes() {
     let erc20_neighbor_2 = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_2()
     );
-
     let erc20_neighbor_3 = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_3()
     );
@@ -800,87 +824,86 @@ fn check_invalid_liquidity_pool() {
 fn test_organic_auction() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
 
-    set_block_timestamp(100);
-    //simulate liquidity pool from ekubo with amount
+    set_block_timestamp(10);
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
         );
 
-    // Step 1: Bid on 11 (row=0, col=11) - Expands to 7 auctions (we started with 4 initial lands)
-    initialize_land(actions_system, main_currency, RECIPIENT(), 11, 2, 50, main_currency);
+    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 90000);
 
-    let left_neighbor = store.auction(left(11).unwrap()); // 10
-    let right_neighbor = store.auction(right(11).unwrap()); // 12
-    let down_right_neighbor = store.auction(down_right(11).unwrap()); // 76
-    let down_neighbor = store.auction(down(11).unwrap()); // 75
+    // Initial head locations
+    let heads: Array<u64> = array![1080, 1050, 1002, 1007];
 
-    assert(left_neighbor.start_price == 20, 'left auction not started');
-    assert(right_neighbor.start_price == 20, 'right auction not started');
-    assert(down_right_neighbor.start_price == 20, 'down_rigth auction not started');
-    assert(down_neighbor.start_price == 0, 'down incorrect auction started');
+    let pool = pool_key(main_currency.contract_address);
 
-    // Setup new buyer with tokens and approvals
-    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 10000);
+    // Step 1: Bid on heads and verify LEFT auctions
+    bid_and_verify_next_auctions(actions_system, store, main_currency, heads.clone(), 0, pool);
 
-    // Step 2: Bid on 12 (row=0, col=12) - Expands to 9 auctions
-    actions_system
-        .bid(
-            right_neighbor.land_location,
-            main_currency.contract_address,
-            10,
-            10,
-            pool_key(main_currency.contract_address)
-        );
+    // Get LEFT locations
+    let mut left_locations: Array<u64> = ArrayTrait::new();
+    let mut i = 0;
+    loop {
+        if i >= heads.len() {
+            break;
+        }
+        let left_loc = left(*heads.at(i)).unwrap();
+        left_locations.append(left_loc);
+        i += 1;
+    };
 
-    let right_12 = store.auction(right(12).unwrap()); // 13
-    let down_right_12 = store.auction(down_right(12).unwrap()); // 77
-    let down_12 = store.auction(down(12).unwrap()); // 76 (already exists)
-    let down_left_12 = store.auction(down_left(12).unwrap()); // initialize 75
+    // Step 2: Bid on LEFT locations and verify UP auctions
+    bid_and_verify_next_auctions(
+        actions_system, store, main_currency, left_locations.clone(), 1, pool
+    );
 
-    assert(right_12.start_price == 200, 'right 12 not started');
-    assert(down_right_12.start_price == 200, 'dr 12 not started');
-    assert(down_12.start_price == 20, 'down 12 already started');
-    assert(down_left_12.start_price == 200, 'left 12 not started');
+    // Get UP locations
+    let mut up_locations: Array<u64> = ArrayTrait::new();
+    i = 0;
+    loop {
+        if i >= left_locations.len() {
+            break;
+        }
+        let up_loc = up(*left_locations.at(i)).unwrap();
+        up_locations.append(up_loc);
+        i += 1;
+    };
 
-    // Step 3: Bid on 10 (row=0, col=10) - Expands to 11 auctions
-    actions_system
-        .bid(
-            left_neighbor.land_location,
-            main_currency.contract_address,
-            10,
-            10,
-            pool_key(main_currency.contract_address)
-        );
+    bid_and_verify_next_auctions(
+        actions_system, store, main_currency, up_locations.clone(), 2, pool
+    );
 
-    let left_10 = store.auction(left(10).unwrap()); // 9 
-    let down_right_10 = store.auction(down_right(10).unwrap()); // 75 (already exists)
-    let down_10 = store.auction(down(10).unwrap()); // 74
-    let down_left_10 = store.auction(down_left(10).unwrap()); // 73
+    // Get RIGHT locations
+    let mut right_locations: Array<u64> = ArrayTrait::new();
+    i = 0;
+    loop {
+        if i >= up_locations.len() {
+            break;
+        }
+        let right_loc = right(*up_locations.at(i)).unwrap();
 
-    assert(
-        left_10.start_price == 200, 'left 10 auction not started'
-    ); // is 200 because the sell of the neighbors was for 20 so 20 * 10 = 200
-    assert(down_right_10.start_price == 200, 'dr 10 auction not started');
-    assert(down_10.start_price == 200, 'down 10 auction not started');
-    assert(down_left_10.start_price == 200, 'dl 10 auction not started');
+        right_locations.append(right_loc);
+        i += 1;
+    };
 
-    // Step 4: Bid on 75 (row=1, col=11) - Expands to 12 auctions (limit reached)
-    actions_system
-        .bid(
-            down_right_10.land_location,
-            main_currency.contract_address,
-            10,
-            10,
-            pool_key(main_currency.contract_address)
-        );
+    // Get second RIGHT locations
+    let mut right2_locations: Array<u64> = ArrayTrait::new();
+    i = 0;
+    loop {
+        if i >= right_locations.len() {
+            break;
+        }
+        let right2_loc = right(*right_locations.at(i)).unwrap();
 
-    let down_75 = store.auction(down(75).unwrap()); // 139 (row=2, col=11)
-    let left_75 = store.auction(left(75).unwrap()); // 74 (already exists)
-    let down_left_75 = store
-        .auction(down_left(75).unwrap()); // 138 (not enabled yet) because the limit was reached
+        right2_locations.append(right2_loc);
+        i += 1;
+    };
 
-    assert(down_75.start_price == 2000, 'down 75 auction not started');
-    assert(left_75.start_price == 200, 'left 75 already started');
-    assert(down_left_75.start_price == 0, 'dl 75 started');
+    // Step 4: Bid on second RIGHT locations and verify DOWN auctions
+    bid_and_verify_next_auctions(
+        actions_system, store, main_currency, right2_locations.clone(), 3, pool
+    );
+
+    let final_active_auctions = actions_system.get_active_auctions();
+    assert(final_active_auctions <= MAX_AUCTIONS, 'Too many active auctions');
 }

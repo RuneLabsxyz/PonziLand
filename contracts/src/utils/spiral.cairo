@@ -4,31 +4,28 @@ use ponzi_land::helpers::coord::{
 };
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::consts::{MAX_AUCTIONS, MAX_NEW_AUCTIONS};
+use starknet::storage::{
+    Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
+};
 
-#[derive(Copy, Drop, Serde, starknet::Store)]
+
+#[derive(Copy, Drop, Serde, starknet::Store, Debug)]
 struct SpiralState {
-    row: u64,
-    col: u64,
+    direction: u8, // 0=left, 1=top, 2=right, 3=down
+    current_head: u8,
+    steps: u64,
     advance: u64,
-    direction: u8
+    steps_remaining: Option<u64>,
 }
 
-
-fn should_continue_adding_auctions(added: u8, active_auctions: u8, directions_tried: u8) -> bool {
-    added < MAX_NEW_AUCTIONS && active_auctions < MAX_AUCTIONS && directions_tried < 8
-}
 
 // Helper function to get next position based on direction
-fn get_next_position(direction: u8, center_pos: u64,) -> Option<u64> {
+fn get_next_position(direction: u8, location: u64,) -> Option<u64> {
     match direction {
-        0 => left(center_pos),
-        1 => up_left(center_pos),
-        2 => up(center_pos),
-        3 => up_right(center_pos),
-        4 => right(center_pos),
-        5 => down_right(center_pos),
-        6 => down(center_pos),
-        7 => down_left(center_pos),
+        0 => left(location),
+        1 => up(location),
+        2 => right(location),
+        3 => down(location),
         _ => Option::None
     }
 }
