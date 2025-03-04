@@ -18,7 +18,8 @@ pub struct Auction {
     pub start_price: u256,
     pub floor_price: u256,
     pub is_finished: bool,
-    pub decay_rate: u64
+    pub decay_rate: u64,
+    pub sold_at_price: Option<u256>,
 }
 
 #[generate_trait]
@@ -33,7 +34,8 @@ impl AuctionImpl of AuctionTrait {
             start_price,
             floor_price,
             is_finished,
-            decay_rate
+            decay_rate,
+            sold_at_price: Option::None,
         }
     }
 

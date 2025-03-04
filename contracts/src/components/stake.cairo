@@ -20,7 +20,6 @@ mod StakeComponent {
     use ponzi_land::models::land::Land;
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
-    use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
 

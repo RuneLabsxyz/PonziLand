@@ -80,7 +80,7 @@ pub mod actions {
     use ponzi_land::components::payable::PayableComponent;
 
     use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
-    use ponzi_land::utils::get_neighbors::{add_neighbors, add_neighbor};
+    use ponzi_land::utils::get_neighbors::{add_neighbors, get_average_for_sell_price};
     use ponzi_land::utils::spiral::{get_next_position, SpiralState,};
     use ponzi_land::utils::level_up::{calculate_new_level};
 
@@ -91,7 +91,7 @@ pub mod actions {
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        LIQUIDITY_SAFETY_MULTIPLIER,
+        LIQUIDITY_SAFETY_MULTIPLIER,MIN_AUCTION_PRICE
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -313,13 +313,13 @@ pub mod actions {
             }
 
             let owner_nuked = land.owner;
-            let sell_price = land.sell_price;
             store.delete_land(land);
 
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
             //TODO:We have to decide how has to be the sell_price, and the decay_rate
-            self.auction(land_location, sell_price * 10, FLOOR_PRICE, DECAY_RATE * 2, true);
+            let sell_price = get_average_for_sell_price(store, land_location);
+            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE * 2, true);
         }
 
         fn bid(
@@ -400,7 +400,6 @@ pub mod actions {
             );
 
             store.set_auction(auction);
-            //TODO:improve this for notion task [RUNE-124]
             self.active_auctions.write(self.active_auctions.read() + 1);
             self.active_auction_queue.write(land_location, true);
             land.sell_price = start_price;
@@ -520,7 +519,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = add_neighbors(store, land.location, true);
+            let (neighbors, _) = add_neighbors(store, land.location, false);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
             //TODO:see if we pass this to utils
@@ -561,7 +560,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let neighbors = add_neighbors(store, land.location, true);
+            let (neighbors, _) = add_neighbors(store, land.location, false);
             let neighbors_count = neighbors.len();
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
@@ -628,7 +627,7 @@ pub mod actions {
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
-            let neighbors = add_neighbors(store, land.location, true);
+            let (neighbors, _) = add_neighbors(store, land.location, false);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     let is_nuke = self.taxes._calculate_and_distribute(store, neighbor.location);
@@ -678,8 +677,8 @@ pub mod actions {
                     caller,
                 );
             auction.is_finished = true;
+            auction.sold_at_price = Option::Some(sold_at_price);
             store.set_auction(auction);
-            //TODO:IMPROVE THIS FOR NOTION TASK [RUNE-124]
             self.active_auctions.write(self.active_auctions.read() - 1);
             self.active_auction_queue.write(land.location, false);
 
@@ -701,11 +700,10 @@ pub mod actions {
 
             // Math.max(sold_at_price * 10, auction.floor_price)
             if self.active_auctions.read() < MAX_AUCTIONS {
-                //TODO:IMPROVE THIS ON NOTION TASK [RUNE-124]
                 let asking_price = if sold_at_price > auction.floor_price {
                     sold_at_price * 10
                 } else {
-                    auction.floor_price * 10
+                   auction.floor_price * 10
                 };
                 self.add_spiral_auctions(store, land.location, asking_price);
             }

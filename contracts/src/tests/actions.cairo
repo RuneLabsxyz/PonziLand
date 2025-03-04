@@ -578,11 +578,12 @@ fn test_nuke_action() {
     actions_system.claim(1280);
 
     // Verify the land 1281 was nuked
+    //testing get_average_for_sell_price()
     verify_land(
         store,
         1281,
         ContractAddressZeroable::zero(),
-        10000,
+        599000,
         deleted_pool_key(),
         0,
         0,
@@ -596,11 +597,12 @@ fn test_nuke_action() {
     assert(pending_taxes_neighbor_1.len() == 0, 'Should not have pending taxes');
 
     // Verify the land 1217 was nuked,
+    //testing get_average_for_sell_price()
     verify_land(
         store,
         1217,
         ContractAddressZeroable::zero(),
-        59000,
+        402660,
         deleted_pool_key(),
         0,
         0,
