@@ -91,7 +91,7 @@ pub mod actions {
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        LIQUIDITY_SAFETY_MULTIPLIER,MIN_AUCTION_PRICE
+        LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -703,7 +703,7 @@ pub mod actions {
                 let asking_price = if sold_at_price > auction.floor_price {
                     sold_at_price * 10
                 } else {
-                   auction.floor_price * 10
+                    auction.floor_price * 10
                 };
                 self.add_spiral_auctions(store, land.location, asking_price);
             }
