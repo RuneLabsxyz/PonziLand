@@ -47,24 +47,22 @@
 }
 
 @font-face {
-  font-family: 'Nintendo DS BIOS';
-  font-style: normal;
-  font-weight: 400;
-  src: url('/fonts/Nintendo-DS-BIOS.ttf') format('truetype');
+  font-family: 'PonziNumber';
+  src: url('/fonts/PonziNumber_Regular_G7.ttf');
 }
 
 @font-face {
-  font-family: 'Upheaval';
+  font-family: 'PonziDS';
   font-style: normal;
   font-weight: 400;
-  src: url('/fonts/upheavtt.ttf') format('truetype');
+  src: url('/fonts/PonziDS_RegularV2.ttf') format('truetype');
 }
 
 @font-face {
-  font-family: 'PonziNumberV2';
+  font-family: 'PonziDS';
   font-style: normal;
-  font-weight: 400;
-  src: url('/fonts/PonziNumberV2.ttf') format('truetype');
+  font-weight: 600;
+  src: url('/fonts/PonziDS2_SemiBoldV3.ttf') format('truetype');
 }
 
 .border-ponzi {
@@ -84,56 +82,36 @@
 }
 
 .text-ponzi-huge {
-  font-family: 'Upheaval', sans-serif;
+  font-family: 'PonziNumber', sans-serif;
   line-height: normal;
   text-shadow: 0px 2.148px 0px #000;
 }
 
 .text-ponzi {
-  font-family: 'Nintendo DS BIOS', sans-serif;
+  font-family: 'PonziDS', sans-serif;
   line-height: normal;
   color: #dfdfe3;
-  text-shadow:
-    0 0.1em #000,
-    0 0.05em #000,
-    0.1em 0 #000,
-    0.05em 0 #000,
-    0 -0.1em #000,
-    0 -0.05em #000,
-    -0.1em 0 #000,
-    -0.05em 0 #000,
-    0 0.12em #000,
-    0 0.14em #000,
-    0 0.16em #000,
-    0 0.18em #000,
-    0.05em 0.12em #000,
-    0.05em 0.14em #000,
-    0.05em 0.16em #000,
-    0.05em 0.18em #000,
-    -0.05em 0.12em #000,
-    -0.05em 0.14em #000,
-    -0.05em 0.16em #000,
-    -0.05em 0.18em #000,
-    0 0.2em #000;
+  -webkit-text-stroke: 1px #000;
+  paint-order: stroke fill;
 }
 
-.text-ponzi .font-black {
-  -webkit-text-stroke: 0.08em white; /* White stroke, 2px wide */
+/* .text-ponzi .font-black {
+  -webkit-text-stroke: 0.08em white;
   text-shadow: none;
   letter-spacing: 0.2ch;
 }
 
 .text-ponzi .font-bold {
-  -webkit-text-stroke: 0.04em white; /* White stroke, 2px wide */
+  -webkit-text-stroke: 0.04em white;
   text-shadow: none;
   letter-spacing: 0.15ch;
 }
 
 .text-ponzi .font-semibold {
-  -webkit-text-stroke: 0.01em white; /* White stroke, 2px wide */
+  -webkit-text-stroke: 0.01em white;
   text-shadow: none;
   letter-spacing: 0.15ch;
-}
+} */
 
 .button-ponzi-blue {
   background-clip: padding-box;
