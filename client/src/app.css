@@ -34,6 +34,33 @@
     --ring: 20 14.3% 4.1%;
 
     --radius: 0;
+
+    --text-xs: 0.25rem;
+    --text-xs--line-height: calc(1 / 0.75);
+    --text-sm: 0.5rem;
+    --text-sm--line-height: calc(1.25 / 0.875);
+    --text-base: 0.75rem;
+    --text-base--line-height: calc(1.5 / 1);
+    --text-lg: 1rem;
+    --text-lg--line-height: calc(1.75 / 1.125);
+    --text-xl: 1.25rem;
+    --text-xl--line-height: calc(1.75 / 1.25);
+    --text-2xl: 1.5rem;
+    --text-2xl--line-height: calc(2 / 1.5);
+    --text-3xl: 1.875rem;
+    --text-3xl--line-height: calc(2.25 / 1.875);
+    --text-4xl: 2.25rem;
+    --text-4xl--line-height: calc(2.5 / 2.25);
+    --text-5xl: 3rem;
+    --text-5xl--line-height: 1;
+    --text-6xl: 3.75rem;
+    --text-6xl--line-height: 1;
+    --text-7xl: 4.5rem;
+    --text-7xl--line-height: 1;
+    --text-8xl: 6rem;
+    --text-8xl--line-height: 1;
+    --text-9xl: 8rem;
+    --text-9xl--line-height: 1;
   }
 }
 
@@ -51,8 +78,16 @@
   src: url('/fonts/PonziNumber_Regular_G7.ttf');
 }
 
+.text-ponzi-number {
+  font-family: 'PonziNumber', sans-serif;
+  line-height: normal;
+  -webkit-text-stroke: 0.25em #000;
+  paint-order: stroke fill;
+}
+
 @font-face {
   font-family: 'PonziDS';
+  font-size: small;
   font-style: normal;
   font-weight: 400;
   src: url('/fonts/PonziDS_RegularV2.ttf') format('truetype');
@@ -63,6 +98,28 @@
   font-style: normal;
   font-weight: 600;
   src: url('/fonts/PonziDS2_SemiBoldV3.ttf') format('truetype');
+}
+
+.text-ponzi {
+  --text-stroke: 0.25em;
+  font-family: 'PonziDS', sans-serif;
+  line-height: normal;
+  color: #dfdfe3;
+  -webkit-text-stroke: var(--text-stroke) #000;
+  paint-order: stroke fill;
+  letter-spacing: 0.1ch;
+}
+
+.text-shadow-none {
+  text-shadow: none;
+}
+
+.text-stroke-0 {
+  --text-stroke: 0;
+}
+
+.text-stroke-none {
+  -webkit-text-stroke: 0;
 }
 
 .border-ponzi {
@@ -79,21 +136,6 @@
 
 .shadow-ponzi {
   box-shadow: inset 4px 4px 0 0 #0b0c13;
-}
-
-.text-ponzi-number {
-  font-family: 'PonziNumber', sans-serif;
-  line-height: normal;
-  -webkit-text-stroke: 0.25em #000;
-  paint-order: stroke fill;
-}
-
-.text-ponzi {
-  font-family: 'PonziDS', sans-serif;
-  line-height: normal;
-  color: #dfdfe3;
-  -webkit-text-stroke: 1px #000;
-  paint-order: stroke fill;
 }
 
 /* .text-ponzi .font-black {
@@ -133,8 +175,4 @@
 }
 .button-ponzi-red:hover {
   border-image: url('/assets/ui/button/red/hover.png') 40;
-}
-
-.text-shadow-none {
-  text-shadow: none;
 }

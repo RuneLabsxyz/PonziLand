@@ -48,4 +48,11 @@
       drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
       drop-shadow(var(--stroke-offset) 0 0 #ff0);
   }
+
+  .hovering.Biome {
+    filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #ff0)
+      drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
+      drop-shadow(var(--stroke-offset) 0 0 #ff0)
+      drop-shadow(0 var(--stroke-offset) 0 #ff0);
+  }
 </style>
