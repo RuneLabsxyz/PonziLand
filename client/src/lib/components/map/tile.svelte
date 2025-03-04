@@ -41,6 +41,8 @@
 
   let selected = $derived($selectedLand?.location === land.location);
 
+  let hovering = $state(false);
+
   function handleClick() {
     console.log('clicked', dragged);
     if (dragged) return;
@@ -87,13 +89,26 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore event_directive_deprecated -->
 <div class="relative {selected ? 'selected' : ''}">
-  <div onmouseup={handleClick} class={`relative tile`}>
+  <div
+    onmouseup={handleClick}
+    class={`relative tile`}
+    onmouseover={() => (hovering = true)}
+    onfocus={() => (hovering = true)}
+    onmouseout={() => (hovering = false)}
+    onblur={() => (hovering = false)}
+  >
     {#if land.type == 'auction'}
-      <LandDisplay auction road />
+      <LandDisplay auction road {selected} {hovering} />
     {:else if land.type == 'grass'}
-      <LandDisplay grass road seed={land.location} />
+      <LandDisplay grass road seed={land.location} {selected} {hovering} />
     {:else if land.type == 'house'}
-      <LandDisplay token={land.token} level={land.level} road />
+      <LandDisplay
+        token={land.token}
+        level={land.level}
+        road
+        {selected}
+        {hovering}
+      />
     {/if}
   </div>
 
@@ -180,7 +195,6 @@
   }
 
   .selected {
-    outline: 1px solid #ff0;
     z-index: 20;
   }
 </style>
