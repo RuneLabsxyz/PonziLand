@@ -1,17 +1,9 @@
-import {
-  useLands,
-  type LandWithActions,
-  type LandWithMeta,
-  type TransactionResult,
-} from '$lib/api/land.svelte';
+import { useLands, type LandWithActions } from '$lib/api/land.svelte';
+import { useAccount } from '$lib/contexts/account.svelte';
 import data from '$lib/data.json';
 import type { TileInfo, Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import { derived, readable, writable, type Readable } from 'svelte/store';
-import type { YieldInfo } from '$lib/interfaces';
-import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import { useAccount } from '$lib/contexts/account.svelte';
-import type { Land } from '$lib/models.gen';
 
 export const selectedLandPosition = writable<string | null>(null);
 
