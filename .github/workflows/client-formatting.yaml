@@ -27,6 +27,9 @@ jobs:
           echo "[install.scopes]" > ~/.bunfig.toml
           echo "\"@runelabsxyz\" = { token = \"${{ secrets.GITHUB_TOKEN }}\", url = \"https://npm.pkg.github.com\" }" >> ~/.bunfig.toml
           cat ~/.bunfig.toml # Debug output to check file contents
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" > ~/.npmrc
+          echo "======"
+          cat ~/.npmrc # Debug output to check file contents
 
       - name: Install dependencies
         working-directory: ./client
