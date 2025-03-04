@@ -23,12 +23,14 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: "v1.1.45"
-      - run: |
-          echo "[install]" >> ./client/.bunfig.toml
-          echo "registry = \"https://registry.npmjs.org\"" >> ./client/.bunfig.toml
-          echo "[install.scopes]" >> ./client/.bunfig.toml
-          echo "\"@runelabsxyz\" = { token = \"${{ secrets.GITHUB_TOKEN }}\", url = \"https://npm.pkg.github.com/\" }" >> ./client/.bunfig.toml
-          cat ./client/.bunfig.toml # Debug output to check file contents
+      - name: Setup bunfig.toml
+        working-directory: ./client
+        run: |
+          echo "[install]" >> ./bunfig.toml
+          echo "registry = \"https://registry.npmjs.org\"" >> ./bunfig.toml
+          echo "[install.scopes]" >> ./bunfig.toml
+          echo "\"@runelabsxyz\" = { token = \"${{ secrets.GITHUB_TOKEN }}\", url = \"https://npm.pkg.github.com/\" }" >> ./bunfig.toml
+          cat ./bunfig.toml # Debug output to check file contents
 
       - name: Install dependencies
         working-directory: ./client
