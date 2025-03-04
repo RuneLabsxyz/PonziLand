@@ -90,7 +90,7 @@
             loading price <ThreeDots />
           </p>
         {:then currentprice}
-          <p class="break-all text-ponzi-huge text-[#f2b545]">
+          <p class="break-all text-ponzi-number text-[#f2b545]">
             {#if currentprice?.rawValue().toNumber() == 0}
               free
             {:else}

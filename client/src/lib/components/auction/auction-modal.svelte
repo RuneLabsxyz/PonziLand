@@ -137,12 +137,12 @@
             {#if priceDisplay}
               {#each priceDisplay as char}
                 {#if char === '.'}
-                  <span class="text-ponzi-huge text-3xl">.</span>
+                  <span class="text-ponzi-number text-3xl">.</span>
                 {:else if char == ','}
-                  <span class="text-ponzi-huge text-3xl opacity-0"></span>
+                  <span class="text-ponzi-number text-3xl opacity-0"></span>
                 {:else}
                   <span
-                    class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                    class="text-ponzi-number text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
                     >{char}</span
                   >
                 {/if}
@@ -172,9 +172,9 @@
               Fetching Price<ThreeDots />
             {/if}
           </div>
-          <div class="text-ponzi-huge text-3xl"></div>
+          <div class="text-ponzi-number text-3xl"></div>
           <div class="flex items-center gap-2">
-            <div class="text-3xl text-ponzi-huge text-white">
+            <div class="text-3xl text-ponzi-number text-white">
               {land?.token?.symbol}
             </div>
             <img
