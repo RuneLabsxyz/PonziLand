@@ -38,6 +38,8 @@
       (accountState.profile?.exists ?? false) == false,
   );
 
+  $inspect(showRegister, '=>', accountState.profile);
+
   let showInvitation = $derived(
     accountState.address != null &&
       (accountState.profile?.exists && accountState.profile?.whitelisted) ==
