@@ -5,9 +5,15 @@ use starknet::contract_address::ContractAddressZeroable;
 
 #[starknet::interface]
 trait IAuth<T> {
-    fn add_authorized(ref self: T, signature: Array<felt252>);
+    fn add_authorized_with_signature(ref self: T, signature: Array<felt252>);
+    fn add_authorized(ref self: T, address: ContractAddress);
     fn remove_authorized(ref self: T, address: ContractAddress);
     fn set_verifier(ref self: T, new_verifier: felt252);
+
+    fn add_verifier(ref self: T, new_verifier: ContractAddress);
+    fn remove_verifier(ref self: T, verifier: ContractAddress);
+
+
     fn lock_actions(ref self: T);
     fn unlock_actions(ref self: T);
 
@@ -60,6 +66,7 @@ pub mod auth {
     #[storage]
     struct Storage {
         authorized_addresses: Map::<ContractAddress, bool>,
+        verifier_accounts: Map::<ContractAddress, bool>,
         //has to be the public key
         verifier: felt252,
         owner: ContractAddress,
@@ -70,16 +77,34 @@ pub mod auth {
     fn dojo_init(ref self: ContractState, owner: ContractAddress, verifier: felt252) {
         self.owner.write(owner);
         self.verifier.write(verifier);
+
         self.actions_locked.write(false);
     }
 
     #[abi(embed_v0)]
     impl AuthImpl of IAuth<ContractState> {
-        fn add_authorized(ref self: ContractState, signature: Array<felt252>) {
+        fn add_authorized_with_signature(ref self: ContractState, signature: Array<felt252>) {
             let mut world = self.world_default();
             let address = get_caller_address();
+
             // Verify the signature is from the authorized verifier
             assert(self.verify_signature(address, signature), 'Invalid signature');
+            self.authorized_addresses.write(address, true);
+            world
+                .emit_event(
+                    @AddressAuthorizedEvent { address, authorized_at: get_block_timestamp() }
+                );
+        }
+
+        fn add_authorized(ref self: ContractState, address: ContractAddress) {
+            let mut world = self.world_default();
+
+            let caller = get_caller_address();
+            let is_owner = caller == self.owner.read();
+            let is_authorizer = self.verifier_accounts.read(caller);
+            assert(is_owner || is_authorizer, 'Only owner or verifier can add');
+
+            // Verify the signature is from the authorized verifier
             self.authorized_addresses.write(address, true);
             world
                 .emit_event(
@@ -105,6 +130,20 @@ pub mod auth {
             self.verifier.write(new_verifier);
 
             world.emit_event(@VerifierUpdatedEvent { new_verifier, old_verifier });
+        }
+
+        fn add_verifier(ref self: ContractState, new_verifier: ContractAddress) {
+            let caller = get_caller_address();
+            assert(caller == self.owner.read(), 'Only owner can add verifier');
+
+            self.verifier_accounts.write(new_verifier, true);
+        }
+
+        fn remove_verifier(ref self: ContractState, verifier: ContractAddress) {
+            let caller = get_caller_address();
+            assert(caller == self.owner.read(), 'Only owner can remove verifier');
+
+            self.verifier_accounts.write(verifier, false);
         }
 
         fn lock_actions(ref self: ContractState) {
@@ -138,6 +177,8 @@ pub mod auth {
         fn verify_signature(
             self: @ContractState, address: ContractAddress, signature: Array<felt252>
         ) -> bool {
+            assert(signature.len() == 2, 'Invalid signature length');
+
             let verifier = self.verifier.read();
             let signature_r = *signature[0];
             let signature_s = *signature[1];

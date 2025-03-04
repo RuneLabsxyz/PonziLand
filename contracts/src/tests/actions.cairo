@@ -174,9 +174,8 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
 
     let mut i = 0;
     while i < addresses.len() {
-        let (address, sig) = *addresses.at(i);
-        set_contract_address(address);
-        auth_dispatcher.add_authorized(array![sig.r, sig.s]);
+        let (address, _) = *addresses.at(i);
+        auth_dispatcher.add_authorized(address);
         assert(auth_dispatcher.can_take_action(address), 'Authorization failed');
         i += 1;
     };

@@ -15,6 +15,8 @@ permissions:
   contents: read
   deployments: write
   pull-requests: write
+  id-token: write # This is required for requesting the JWT
+  packages: read
 
 jobs:
   slot-deployment:
@@ -31,7 +33,16 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "v1.1.45"
+
+      - name: Setup bunfig.toml
+        working-directory: ./client
+        run: |
+          echo "[install]" >> ./bunfig.toml
+          echo "registry = \"https://registry.npmjs.org\"" >> ./bunfig.toml
+          echo "[install.scopes]" >> ./bunfig.toml
+          echo "\"@runelabsxyz\" = { token = \"${{ secrets.GITHUB_TOKEN }}\", url = \"https://npm.pkg.github.com/\" }" >> ./bunfig.toml
+          cat ./bunfig.toml # Debug output to check file contents
 
       - name: Install dependencies
         working-directory: ./client

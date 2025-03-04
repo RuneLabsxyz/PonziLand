@@ -6,7 +6,7 @@
   import { Card } from '../ui/card';
 
   // Get the chain from the wallet
-  const accountProvider = useAccount();
+  const accountProvider = useAccount()!;
   let chainId: string | undefined = $state();
 
   let visible = $derived(

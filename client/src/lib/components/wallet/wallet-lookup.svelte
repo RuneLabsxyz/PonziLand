@@ -6,8 +6,11 @@
   import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
   import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { getSocialink } from '$lib/accounts/social/index.svelte';
 
   setup();
+
+  let socialink = getSocialink();
 
   let copied = $state(false);
 
@@ -26,7 +29,9 @@
 
   const { store, client: sdk, accountManager } = useDojo();
   const address = $derived(accountDataProvider.address);
+
   const connected = $derived(accountDataProvider.isConnected);
+  const username = $derived(accountDataProvider.profile?.username);
 </script>
 
 <div class="fixed top-0 right-0 z-50">
@@ -63,11 +68,29 @@
     <Card class="shadow-ponzi w-72">
       <div class="flex justify-between items-center">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
-          <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
+          {#if username}
+            <p>
+              User: {username}
+              <span class="opacity-50 text-sm"
+                >{shortenHex(padAddress(address ?? ''), 8)}</span
+              >
+            </p>
+          {:else}
+            <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
+          {/if}
           <div class="h-2 w-2 rounded-full bg-green-700"></div>
           {#if copied}
             <div class="transition-opacity">Copied!</div>
           {/if}
+        </button>
+        <button
+          onclick={() => {
+            console.log('Starting Discord link');
+            socialink.startLink('discord');
+          }}
+          aria-label="Logout"
+        >
+          Discord
         </button>
         <button
           onclick={() => {
