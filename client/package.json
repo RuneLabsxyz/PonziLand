@@ -43,7 +43,7 @@
     "@layerswap/sdk": "^0.1.0-alpha.2",
     "@reown/appkit": "^1.6.8",
     "@reown/appkit-adapter-ethers": "^1.6.8",
-    "@runelabsxyz/socialink-sdk": "^0.0.1-next.1",
+    "@runelabsxyz/socialink-sdk": "^0.0.1-next.2",
     "@starknet-io/get-starknet-core": "^4.0.0",
     "@sv-use/core": "^1.15.1",
     "@tsparticles/engine": "^3.8.1",
