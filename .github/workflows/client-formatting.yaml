@@ -34,7 +34,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./client
-        run: bun install --frozen-lockfile --verbose
+        run: bun install --frozen-lockfile
 
       - name: Check formatting
         working-directory: ./client
