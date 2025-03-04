@@ -23,11 +23,10 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
-
-      - name: Setup npm registry
-        run: |
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
-          echo "@runelabsxyz:registry=https://npm.pkg.github.com" >> .npmrc
+      - run: |
+          echo "[install.scopes]" > ~/.bunfig.toml
+          echo "\"@runelabsxyz\" = { token = \"${{ secrets.GITHUB_TOKEN }}\", url = \"https://npm.pkg.github.com\" }" >> ~/.bunfig.toml
+          cat ~/.bunfig.toml # Debug output to check file contents
 
       - name: Install dependencies
         working-directory: ./client
