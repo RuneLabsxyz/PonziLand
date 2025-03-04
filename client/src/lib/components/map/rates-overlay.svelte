@@ -224,7 +224,7 @@
           viewBox="0 0 171 91"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          class="w-3 h-3 top-1/3 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-135 pr-1"
+          class="w-3 h-3 top-1/3 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-[135deg] pr-1"
         >
           <path
             opacity="0.53"
@@ -284,7 +284,7 @@
           viewBox="0 0 171 91"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
-          class="w-3 h-3 bottom-1/3 right-1/3 translate-x-1/2 translate-y-1/2 absolute -rotate-135 pr-1"
+          class="w-3 h-3 bottom-1/3 right-1/3 translate-x-1/2 translate-y-1/2 absolute -rotate-[135deg] pr-1"
         >
           <path
             opacity="0.53"
