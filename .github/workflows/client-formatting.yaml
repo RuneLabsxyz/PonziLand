@@ -30,7 +30,7 @@ jobs:
         working-directory: ./client
         env:
           BUN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: bun install --frozen-lockfile
+        run: bun install --frozen-lockfile --verbose
 
       - name: Check formatting
         working-directory: ./client
