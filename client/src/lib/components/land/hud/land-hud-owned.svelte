@@ -21,7 +21,7 @@
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
-  <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+  <div class="w-full text-stroke-none flex flex-col leading-none text-xs">
     {#if $selectedLandMeta?.tokenUsed}
       <div class="flex justify-between">
         <p class="opacity-50">Token</p>

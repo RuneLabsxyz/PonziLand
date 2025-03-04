@@ -9,7 +9,7 @@
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
-  <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+  <div class="w-full text-stroke-none flex flex-col leading-none text-sm">
     <div class="flex justify-between">
       <p class="opacity-50">Owner</p>
       <p class="text-[#1F75BC] hover:underline">
