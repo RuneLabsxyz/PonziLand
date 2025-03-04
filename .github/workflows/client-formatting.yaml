@@ -22,7 +22,7 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "v1.1.45"
       - run: |
           echo "[install]" >> ~/.bunfig.toml
           echo "registry = \"https://registry.npmjs.org\"" >> ~/.bunfig.toml
