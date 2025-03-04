@@ -81,10 +81,11 @@
   box-shadow: inset 4px 4px 0 0 #0b0c13;
 }
 
-.text-ponzi-huge {
+.text-ponzi-number {
   font-family: 'PonziNumber', sans-serif;
   line-height: normal;
-  text-shadow: 0px 2.148px 0px #000;
+  -webkit-text-stroke: 0.25em #000;
+  paint-order: stroke fill;
 }
 
 .text-ponzi {

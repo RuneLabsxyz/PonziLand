@@ -141,7 +141,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 50%)"
+          style="transform: translate(-50%, 0) scale(0.5)"
           onclick={handleBuyLandClick}
         >
           BUY LAND
@@ -195,6 +195,6 @@
   }
 
   .selected {
-    z-index: 20;
+    z-index: 30;
   }
 </style>

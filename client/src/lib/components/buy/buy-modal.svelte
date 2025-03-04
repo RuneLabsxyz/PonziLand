@@ -107,19 +107,19 @@
           <div class="flex items-center gap-1 pt-5">
             {#each priceDisplay as char}
               {#if char === '.'}
-                <div class="text-ponzi-huge text-3xl">.</div>
+                <div class="text-ponzi-number text-3xl">.</div>
               {:else}
                 <div
-                  class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                  class="text-ponzi-number text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
                 >
                   {char}
                 </div>
               {/if}
             {/each}
           </div>
-          <div class="text-ponzi-huge text-3xl mt-2"></div>
+          <div class="text-ponzi-number text-3xl mt-2"></div>
           <div class="flex items-center gap-2">
-            <div class="text-3xl text-ponzi-huge text-white">
+            <div class="text-3xl text-ponzi-number text-white">
               {land?.token?.symbol}
             </div>
             <img
