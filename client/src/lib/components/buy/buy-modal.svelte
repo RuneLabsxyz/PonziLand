@@ -130,7 +130,7 @@
           </div>
         {/if}
       </div>
-      <div class="min-w-80">
+      <div class="flex flex-col gap-4 w-96 text-stroke-none">
         <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
       </div>
     </div>
