@@ -36,11 +36,13 @@ jobs:
           bun-version: latest
           registry-url: "https://npm.pkg.github.com/"
           scope: "@runelabsxyz"
+      - run: |
+          echo "[install.scopes]" > ~/.bunfig.toml
+          echo "\"@runelabsxyz\" = { token = \"${{ secrets.GITHUB_TOKEN }}\", url = \"https://npm.pkg.github.com\" }" >> ~/.bunfig.toml
+          cat ~/.bunfig.toml # Debug output to check file contents
 
       - name: Install dependencies
         working-directory: ./client
-        env:
-          BUN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: bun install --frozen-lockfile
 
       - name: Build frontend for sepolia
