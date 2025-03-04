@@ -7,58 +7,59 @@ use ponzi_land::helpers::coord::{
 };
 
 
-fn add_neighbors(
-    mut store: Store, land_location: u64, for_nuke_sell_price: bool
-) -> (Array<Land>, Array<Auction>) {
+fn get_land_neighbors(mut store: Store, land_location: u64) -> Array<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
-    let mut auctions: Array<Auction> = ArrayTrait::new();
 
-    add_neighbor(store, ref lands, ref auctions, left(land_location), for_nuke_sell_price);
-    add_neighbor(store, ref lands, ref auctions, right(land_location), for_nuke_sell_price);
-    add_neighbor(store, ref lands, ref auctions, up(land_location), for_nuke_sell_price);
-    add_neighbor(store, ref lands, ref auctions, down(land_location), for_nuke_sell_price);
+    for direction in get_directions(
+        land_location
+    ) {
+        add_land_neighbor(store, ref lands, direction);
+    };
 
-    // For diagonal lands,ref auctions, we need to handle nested Options
-    add_neighbor(store, ref lands, ref auctions, up_left(land_location), for_nuke_sell_price);
-    add_neighbor(store, ref lands, ref auctions, up_right(land_location), for_nuke_sell_price);
-    add_neighbor(store, ref lands, ref auctions, down_left(land_location), for_nuke_sell_price);
-    add_neighbor(store, ref lands, ref auctions, down_right(land_location), for_nuke_sell_price);
-
-    return (lands, auctions);
+    lands
 }
 
-fn add_neighbor(
-    mut store: Store,
-    ref lands: Array<Land>,
-    ref auctions: Array<Auction>,
-    land_location: Option<u64>,
-    for_nuke_sell_price: bool,
-) {
-    if for_nuke_sell_price {
-        match land_location {
-            Option::Some(location) => {
-                let auction = store.auction(location);
-                if auction.is_finished && auction.sold_at_price.is_some() {
-                    auctions.append(auction);
-                }
-            },
-            Option::None => {}
-        }
-    } else {
-        match land_location {
-            Option::Some(location) => {
-                let land = store.land(location);
-                if !land.owner.is_zero() {
-                    lands.append(land);
-                }
-            },
-            Option::None => {}
-        }
+fn add_land_neighbor(mut store: Store, ref lands: Array<Land>, land_location: Option<u64>) {
+    match land_location {
+        Option::Some(location) => {
+            let land = store.land(location);
+            if !land.owner.is_zero() {
+                lands.append(land);
+            }
+        },
+        Option::None => {}
     }
 }
 
-fn get_average_for_sell_price(mut store: Store, land_location: u64) -> u256 {
-    let (_, neighbors) = add_neighbors(store, land_location, true);
+fn get_auction_neighbors(mut store: Store, land_location: u64) -> Array<Auction> {
+    let mut auctions: Array<Auction> = ArrayTrait::new();
+
+    for direction in get_directions(
+        land_location
+    ) {
+        add_auction_neighbor(store, ref auctions, direction);
+    };
+
+    auctions
+}
+
+fn add_auction_neighbor(
+    mut store: Store, ref auctions: Array<Auction>, land_location: Option<u64>,
+) {
+    match land_location {
+        Option::Some(location) => {
+            let auction = store.auction(location);
+            if auction.is_finished && auction.sold_at_price.is_some() {
+                auctions.append(auction);
+            }
+        },
+        Option::None => {}
+    }
+}
+
+
+fn get_average_price(mut store: Store, land_location: u64) -> u256 {
+    let neighbors = get_auction_neighbors(store, land_location);
 
     if neighbors.len() == 0 {
         return MIN_AUCTION_PRICE;
@@ -72,4 +73,17 @@ fn get_average_for_sell_price(mut store: Store, land_location: u64) -> u256 {
         i += 1;
     };
     (total_price / neighbors.len().into()) * FACTOR_FOR_SELL_PRICE.into()
+}
+
+fn get_directions(land_location: u64) -> Array<Option<u64>> {
+    array![
+        left(land_location),
+        right(land_location),
+        up(land_location),
+        down(land_location),
+        up_left(land_location),
+        up_right(land_location),
+        down_left(land_location),
+        down_right(land_location)
+    ]
 }

@@ -18,7 +18,7 @@ mod TaxesComponent {
     use ponzi_land::models::land::Land;
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
-    use ponzi_land::utils::get_neighbors::{add_neighbors};
+    use ponzi_land::utils::get_neighbors::{get_land_neighbors};
     use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
@@ -62,7 +62,7 @@ mod TaxesComponent {
             let mut land = store.land(land_location);
 
             //generate taxes for each neighbor of neighbor
-            let (neighbors, _) = add_neighbors(store, land_location, false);
+            let neighbors = get_land_neighbors(store, land_location);
 
             //if we dont have neighbors we dont have to pay taxes
             let neighbors_with_owners = neighbors.len();

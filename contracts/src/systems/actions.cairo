@@ -80,7 +80,7 @@ pub mod actions {
     use ponzi_land::components::payable::PayableComponent;
 
     use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
-    use ponzi_land::utils::get_neighbors::{add_neighbors, get_average_for_sell_price};
+    use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
     use ponzi_land::utils::spiral::{get_next_position, SpiralState,};
     use ponzi_land::utils::level_up::{calculate_new_level};
 
@@ -317,8 +317,7 @@ pub mod actions {
 
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
-            //TODO:We have to decide how has to be the sell_price, and the decay_rate
-            let sell_price = get_average_for_sell_price(store, land_location);
+            let sell_price = get_average_price(store, land_location);
             self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE * 2, true);
         }
 
@@ -519,7 +518,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let (neighbors, _) = add_neighbors(store, land.location, false);
+            let neighbors = get_land_neighbors(store, land.location);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
             //TODO:see if we pass this to utils
@@ -560,7 +559,7 @@ pub mod actions {
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let (neighbors, _) = add_neighbors(store, land.location, false);
+            let neighbors = get_land_neighbors(store, land.location);
             let neighbors_count = neighbors.len();
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
@@ -627,7 +626,7 @@ pub mod actions {
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
-            let (neighbors, _) = add_neighbors(store, land.location, false);
+            let neighbors = get_land_neighbors(store, land.location);
             if neighbors.len() != 0 {
                 for neighbor in neighbors {
                     let is_nuke = self.taxes._calculate_and_distribute(store, neighbor.location);
