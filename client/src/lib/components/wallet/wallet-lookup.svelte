@@ -66,7 +66,7 @@
   </div>
   {#if connected}
     <Card class="shadow-ponzi w-72">
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center text-sm">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
           {#if username}
             <p>

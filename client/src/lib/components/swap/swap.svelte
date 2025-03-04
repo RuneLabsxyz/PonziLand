@@ -226,7 +226,7 @@
         class="w-16"
       />
       <p
-        class="absolute top-[0.79em] right-[0.5em] text-black text-shadow-none"
+        class="absolute top-[0.79em] right-[0.5em] text-black text-stroke-none"
       >
         %
       </p>

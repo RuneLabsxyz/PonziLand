@@ -132,7 +132,7 @@
           {#if land}
             <LandOverview {land} size="lg" />
           {/if}
-          <div class="text-shadow-none">0 watching</div>
+          <div class="text-stroke-none">0 watching</div>
           <div class="flex items-center gap-1">
             {#if priceDisplay}
               {#each priceDisplay as char}
