@@ -16,7 +16,7 @@ permissions:
   deployments: write
   pull-requests: write
   id-token: write # This is required for requesting the JWT
-  packages: write
+  packages: read
 
 jobs:
   slot-deployment:

@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   slot-deployment:
@@ -23,6 +24,12 @@ jobs:
         with:
           bun-version: latest
 
+      - name: Install dependencies
+        working-directory: ./client
+        env:
+          BUN_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bun install --frozen-lockfile
+
       - name: Check formatting
         working-directory: ./client
-        run: bunx prettier --check .
+        run: bun prettier --check .
