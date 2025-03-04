@@ -1,18 +1,25 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import ThreeDots from './three-dots.svelte';
-  import Progress from '../ui/progress/progress.svelte';
+  import { fly } from 'svelte/transition';
   import LoadingImage from './loading-image.svelte';
   import messages from './loading-messages.json';
 
   let { value } = $props();
 
   const randomPhrase = messages[Math.floor(Math.random() * messages.length)];
+  const easingFunction = (t: any, overshoot = 1) => {
+    const s = overshoot;
+    return 0.5 * (2 * t) * (2 * t) * ((s * 1.525 + 1) * (2 * t) - s * 1.525);
+  };
 </script>
 
 <div
-  transition:fade
-  class="Container absolute inset-0 flex items-center justify-center flex-col z-50 dark"
+  transition:fly={{
+    y: '-100%',
+    duration: 1000,
+    opacity: 1,
+    easing: easingFunction,
+  }}
+  class="Container absolute inset-0 flex items-center justify-center flex-col z-50 dark scale-110"
 >
   <LoadingImage imageUrl="/logo.png" maskProgress={value} />
   <div class="flex gap-2 items-center justify-center">
@@ -25,5 +32,6 @@
   .Container {
     background: radial-gradient(rgba(24, 18, 68, 0.5), rgba(14, 4, 21, 0.5)),
       url('/assets/ui/texture.png');
+    z-index: 1000;
   }
 </style>
