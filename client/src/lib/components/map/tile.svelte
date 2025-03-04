@@ -117,7 +117,7 @@
       <Button
         size="sm"
         class="absolute bottom-0 left-1/2 z-20"
-        style="transform: translate(-50%, 50%)"
+        style="transform: translate(-50%, 0) scale(0.5)"
         onclick={handleBidClick}
       >
         BID
@@ -129,7 +129,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 50%)"
+          style="transform: translate(-50%, 0) scale(0.5)"
           onclick={() => {
             uiStore.showModal = true;
             uiStore.modalType = 'land-info';
