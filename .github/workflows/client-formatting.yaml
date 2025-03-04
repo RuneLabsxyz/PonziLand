@@ -23,10 +23,6 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Install dependencies
-        working-directory: ./client
-        run: bun install --frozen-lockfile
-
       - name: Check formatting
         working-directory: ./client
-        run: bun prettier --check .
+        run: bunx prettier --check .
