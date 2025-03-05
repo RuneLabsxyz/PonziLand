@@ -37,9 +37,8 @@
       onclick={handleCancel}
       className="absolute top-0 right-0 m-2"
     />
-
     <CardTitle class="mt-2 mb-3">Land Info</CardTitle>
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-2 text-stroke-none">
       <Input bind:value={stakeIncrease} />
       <Button onclick={handleIncreaseStake}>Increase stake</Button>
     </div>

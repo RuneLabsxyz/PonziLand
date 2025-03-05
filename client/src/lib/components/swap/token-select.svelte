@@ -12,20 +12,20 @@
 </script>
 
 <Select onSelectedChange={(v) => (value = v?.value as Token)}>
-  <SelectTrigger {...rest}>
+  <SelectTrigger {...rest} class="text-stroke-none">
     {#if value}
-      <div class="flex gap-2 items-center">
+      <div class="flex gap-2 items-center text-black">
         <img class="h-4 w-4" src={value.images.icon} alt={value.symbol} />
         {value.symbol}
       </div>
     {:else}
-      Select Token
+      <span> Select Token </span>
     {/if}
   </SelectTrigger>
-  <SelectContent>
+  <SelectContent class="text-stroke-none">
     {#each data.availableTokens as token}
       <SelectItem value={token}>
-        <div class="flex gap-2 items-center">
+        <div class="flex gap-2 items-center text-stroke-none">
           <img class="h-4 w-4" src={token.images.icon} alt={token.symbol} />
           {token.symbol}
         </div>

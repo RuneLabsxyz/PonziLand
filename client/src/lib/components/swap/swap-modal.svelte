@@ -11,7 +11,7 @@
   >
     <Card>
       <CloseButton onclick={() => (visible = false)} />
-      <h1 class="text-2xl mb-3">Swap</h1>
+      <h1 class="text-2xl mb-3 text-stroke-none">Swap</h1>
       <Swap
         {...props}
         onSwap={() => {
