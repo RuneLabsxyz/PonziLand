@@ -68,21 +68,23 @@
   });
 </script>
 
-<div class="flex gap-2 items-center justify-end w-full">
+<div class="flex gap-2 items-center justify-end w-full text-stroke-none">
   <div class="flex text-right justify-end w-full relative overflow-hidden">
     {#if animating}
       <span class="ml-3 absolute left-0 top-0 animate-in-out-left">
         +{CurrencyAmount.fromUnscaled(increment, token)}
       </span>
     {/if}
-    <span class="amount {animating ? 'animating text-green-500' : ''}">
+    <span class="text-sm {animating ? 'animating text-green-500' : ''}">
       {CurrencyAmount.fromUnscaled(tweenAmount.current, token)}
     </span>
   </div>
   <div class="font-bold text-right">
     {token.symbol}
   </div>
-  <button onclick={() => (showSwap = true)}>Swap</button>
+  <button class="text-[10px] opacity-75" onclick={() => (showSwap = true)}
+    >SWAP</button
+  >
 </div>
 
 {#if showSwap}
@@ -90,9 +92,6 @@
 {/if}
 
 <style>
-  .amount {
-    text-shadow: none;
-  }
   @keyframes scale-down {
     from {
       transform: scale(1.05);

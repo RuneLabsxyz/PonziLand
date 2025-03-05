@@ -61,7 +61,7 @@
   </div>
   {#if connected}
     <Card class="shadow-ponzi w-72">
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center text-sm">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
           <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
           <div class="h-2 w-2 rounded-full bg-green-700"></div>

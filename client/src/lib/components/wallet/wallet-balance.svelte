@@ -42,7 +42,7 @@
 </script>
 
 <div class="flex justify-between items-center mr-3 mb-2">
-  <div class="text-2xl text-shadow-none">BALANCE</div>
+  <div class="font-bold text-stroke-none">BALANCE</div>
   <button onclick={fetchBalanceData} aria-label="Refresh balance">
     <svg
       xmlns="http://www.w3.org/2000/svg"
