@@ -19,19 +19,26 @@
     opacity: 1,
     easing: easingFunction,
   }}
-  class="Container absolute inset-0 flex items-center justify-center flex-col z-50 dark scale-110"
+  class="Container absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center flex-col z-[1000] overflow-visible"
 >
   <LoadingImage imageUrl="/logo.png" maskProgress={value} />
-  <div class="flex gap-2 items-center justify-center">
+  <div class="flex gap-2 items-center justify-center z-50">
     <p class="text-white text-lg leading-none">{randomPhrase}</p>
     <img src="/assets/ui/ramp/coinGif.gif" alt="Loading" class="w-3 h-3" />
   </div>
 </div>
 
 <style>
-  .Container {
+  .Container::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100vw;
+    height: 100vh;
+    transform: translate(-50%, -50%);
     background: radial-gradient(rgba(24, 18, 68, 0.5), rgba(14, 4, 21, 0.5)),
       url('/assets/ui/texture.png');
-    z-index: 1000;
+    scale: 1.1;
   }
 </style>
