@@ -2,6 +2,7 @@
   import { Card } from '../ui/card';
   import ToolbarDrawerAuctions from './toolbar-drawer-auctions.svelte';
   import ToolbarDrawerLands from './toolbar-drawer-lands.svelte';
+  import ToolbarDrawerPings from './toolbar-drawer-pings.svelte';
 
   let { active } = $props<{
     active: 'lands' | 'notifications' | 'auctions' | null;
@@ -19,7 +20,7 @@
     {/if}
 
     {#if active === 'notifications'}
-      <div>Notifications</div>
+      <ToolbarDrawerPings />
     {/if}
   </Card>
 </div>
