@@ -29,7 +29,7 @@ import type {
 } from '$lib/contexts/account.svelte';
 import { DojoProvider, type DojoCall } from '@dojoengine/core';
 
-const FUSE_DISABLE_ARGENT = true;
+const FUSE_DISABLE_ARGENT = false;
 
 const STRKFees = [
   {
@@ -65,10 +65,13 @@ async function setupSession(
 
   const sessionParams: CreateSessionParams = {
     sessionKey,
-    allowedMethods: dojoConfig.policies.map((policy) => ({
-      'Contract Address': policy.target,
-      selector: policy.method,
-    })),
+    allowedMethods: Object.entries(dojoConfig.policies.contracts ?? {}).flatMap(
+      (policy) =>
+        policy[1].methods.map((method) => ({
+          selector: method.entrypoint,
+          'Contract Address': policy[0],
+        })),
+    ),
     expiry,
     metaData: {
       projectID: 'ponzi-land',

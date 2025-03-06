@@ -1,5 +1,4 @@
 <script>
-  import { dev } from '$app/environment';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { setupStore } from '$lib/contexts/store.svelte';
@@ -12,6 +11,10 @@
   import { loadFull } from 'tsparticles';
   import { tsParticles } from '@tsparticles/engine';
   import { loadImageShape } from '@tsparticles/shape-image';
+  import { setupSocialink } from '$lib/accounts/social/index.svelte';
+  import Register from '$lib/components/socialink/register.svelte';
+  import { setup as setupAccountState } from '$lib/account.svelte';
+  import Invitation from '$lib/components/socialink/Invitation.svelte';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -25,9 +28,28 @@
     setupClient(dojoConfig),
     setupAccount(),
     setupStore(),
+    setupSocialink(),
   ]);
 
+  const accountState = setupAccountState();
+
   let loading = $state(true);
+
+  let showRegister = $derived(
+    accountState.address != null &&
+      (accountState.profile?.exists ?? false) == false,
+  );
+
+  $inspect(showRegister, '=>', accountState.profile);
+
+  let showInvitation = $derived(
+    accountState.address != null &&
+      (accountState.profile?.exists && accountState.profile?.whitelisted) ==
+        false,
+  );
+
+  $inspect('Invitation: ', showInvitation);
+
   let value = $state(10);
 
   $effect(() => {
@@ -58,6 +80,11 @@
           await accountManager?.getProvider()?.connect();
         }
 
+        // Check if the user needs to signup with socialink
+        const address = accountManager
+          ?.getProvider()
+          ?.getWalletAccount()?.address;
+
         clearLoading();
       })
       .catch((err) => {
@@ -69,6 +96,10 @@
 <div class="h-screen w-screen bg-black/10 overflow-hidden">
   {#if loading}
     <LoadingScreen {value} />
+  {:else if showRegister}
+    <Register />
+  {:else if showInvitation}
+    <Invitation />
   {:else}
     <SwitchChainModal />
     <Map />
