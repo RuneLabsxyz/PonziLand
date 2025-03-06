@@ -1253,7 +1253,7 @@
   "contracts": [
     {
       "address": "0x7b64555515cc16a7b6b02afca3b045926b90bf4babfbb1d2568bf2a2bb4fc32",
-      "class_hash": "0x324a036c81e41edc37f849cb46a6f8e859d1e1c80f7699b64e77fda912b1f66",
+      "class_hash": "0x6fc74fb9c4a741d36598af5ae9727ebf0925f30aab7049422e7603091923ee1",
       "abi": [
         {
           "type": "impl",
@@ -1545,6 +1545,20 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "core::option::Option::<core::integer::u256>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "ponzi_land::models::auction::Auction",
           "members": [
@@ -1571,6 +1585,10 @@
             {
               "name": "decay_rate",
               "type": "core::integer::u64"
+            },
+            {
+              "name": "sold_at_price",
+              "type": "core::option::Option::<core::integer::u256>"
             }
           ]
         },
@@ -2355,7 +2373,7 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x2d6a47decc7a74f87446e1496f5b5f8b97d606db403b421c1a1d3c732a6a102",
+      "class_hash": "0x4d4f8bc81b165b16ad563551b8f9c6a8870e4014e4360b5d73237ef24f3fc7",
       "tag": "ponzi_land-Auction",
       "selector": "0x7e0590370db3aa23e7aa340e9dfbdb6127f3fe6d5173b6051be0225a6acddec"
     },
