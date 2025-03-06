@@ -6,11 +6,15 @@
   import LandInfoModal from './land/land-info-modal.svelte';
   import Toolbar from './toolbar/toolbar.svelte';
   import WalletLookup from './wallet/wallet-lookup.svelte';
+  import Leaderboard from './ui/leaderboard/Leaderboard.svelte';
 </script>
 
 <div class="z-50 absolute top-0 left-0">
   <!-- Wallet Lookup -->
   <WalletLookup />
+
+  <!-- Leaderboard-->
+  <Leaderboard />
 
   <!-- Tile HUD -->
   <LandHud />
