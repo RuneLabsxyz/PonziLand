@@ -12,7 +12,20 @@ export async function fetchTokenBalances() {
         headers: {
           'Content-Type': 'text/plain',
         },
-        body: 'SELECT account_address, contract_address, balance FROM token_balances LIMIT 1000;',
+        body: `
+          WITH ranked_balances AS (
+            SELECT 
+              account_address, 
+              contract_address, 
+              balance,
+              ROW_NUMBER() OVER (PARTITION BY contract_address ORDER BY balance DESC) as rank
+            FROM token_balances
+          )
+          SELECT account_address, contract_address, balance 
+          FROM ranked_balances 
+          WHERE rank <= 50 OR contract_address = '${baseToken}'
+          ORDER BY contract_address, balance DESC;
+        `,
       },
     );
 
