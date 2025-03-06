@@ -7,6 +7,7 @@
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import type { Token } from '$lib/interfaces';
+  import Card from '../../ui/card/card.svelte';
 
   const { store } = useDojo();
   const address = $derived(accountData.address);
@@ -108,9 +109,12 @@
       });
     }
 
-    return userAssets.sort((a, b) =>
-      a.totalValue > b.totalValue ? -1 : a.totalValue < b.totalValue ? 1 : 0,
-    );
+    return userAssets
+      .map((user) => ({
+        address: user.address,
+        totalValue: Number(user.totalValue),
+      }))
+      .sort((a, b) => b.totalValue - a.totalValue);
   }
 
   async function refreshLeaderboard() {
@@ -143,43 +147,47 @@
   }
 </script>
 
-<div class="flex justify-between items-center mr-3 mb-2 text-white">
-  <div class="text-2xl text-shadow-none">BALANCE</div>
-  <button on:click={refreshLeaderboard} aria-label="Refresh balance">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 32 32"
-      width="32px"
-      height="32px"
-      fill="currentColor"
-      class="h-5 w-5"
-    >
-      <path
-        d="M 6 4 L 6 6 L 4 6 L 4 8 L 2 8 L 2 10 L 6 10 L 6 26 L 17 26 L 17 24 L 8 24 L 8 10 L 12 10 L 12 8 L 10 8 L 10 6 L 8 6 L 8 4 L 6 4 z M 15 6 L 15 8 L 24 8 L 24 22 L 20 22 L 20 24 L 22 24 L 22 26 L 24 26 L 24 28 L 26 28 L 26 26 L 28 26 L 28 24 L 30 24 L 30 22 L 26 22 L 26 6 L 15 6 z"
-      />
-    </svg>
-  </button>
-</div>
-
-<ScrollArea class="h-36 w-full text-white">
-  <div class="mr-3 flex flex-col gap-1">
-    {#if isLoading}
-      <div class="text-center py-2">Loading leaderboard data...</div>
-    {:else if userRankings.length === 0}
-      <div class="text-center py-2">No data available</div>
-    {:else}
-      {#each userRankings as user, index}
-        <div class="flex justify-between items-center p-2 bg-black/20 rounded">
-          <div class="flex items-center gap-2">
-            <span class="font-bold">{index + 1}.</span>
-            <span class="font-mono">{formatAddress(user.address)}</span>
-            {#if user.address === address}
-              <span class="text-xs bg-primary/30 px-1 rounded">You</span>
-            {/if}
-          </div>
-          <div class="font-bold">{formatValue(user.totalValue.toString())}</div>
-        </div>
-      {/each}
-    {/if}
+<Card class="shadow-ponzi w-72">
+  <div class="flex justify-between items-center mr-3 mb-2 text-white">
+    <div class="text-2xl text-shadow-none">leaderboard</div>
+    <button on:click={refreshLeaderboard} aria-label="Refresh balance">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 32 32"
+        width="32px"
+        height="32px"
+        fill="currentColor"
+        class="h-5 w-5"
+      >
+        <path
+          d="M 6 4 L 6 6 L 4 6 L 4 8 L 2 8 L 2 10 L 6 10 L 6 26 L 17 26 L 17 24 L 8 24 L 8 10 L 12 10 L 12 8 L 10 8 L 10 6 L 8 6 L 8 4 L 6 4 z M 15 6 L 15 8 L 24 8 L 24 22 L 20 22 L 20 24 L 22 24 L 22 26 L 24 26 L 24 28 L 26 28 L 26 26 L 28 26 L 28 24 L 30 24 L 30 22 L 26 22 L 26 6 L 15 6 z"
+        />
+      </svg>
+    </button>
   </div>
-</ScrollArea>
+
+  <ScrollArea class="h-36 w-full text-white">
+    <div class="mr-3 flex flex-col gap-1">
+      {#if isLoading}
+        <div class="text-center py-2">Loading leaderboard data...</div>
+      {:else if userRankings.length === 0}
+        <div class="text-center py-2">No data available</div>
+      {:else}
+        {#each userRankings as user, index}
+          <div class="flex justify-between items-center p-2 rounded">
+            <div class="flex items-center gap-2">
+              <span class="font-bold">{index + 1}.</span>
+              <span class="font-mono">{formatAddress(user.address)}</span>
+              {#if user.address === address}
+                <span class="text-xs bg-primary/30 px-1 rounded">You</span>
+              {/if}
+            </div>
+            <div class="font-bold">
+              {formatValue(user.totalValue.toString())}
+            </div>
+          </div>
+        {/each}
+      {/if}
+    </div>
+  </ScrollArea>
+</Card>
