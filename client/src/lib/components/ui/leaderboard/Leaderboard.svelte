@@ -66,7 +66,7 @@
   }
 
   async function calculateUserAssets() {
-    const userAssets: Array<{ address: string; totalValue: number }> = [];
+    const userAssets: Array<{ address: string; totalValue: bigint }> = [];
     const uniqueTokens = new Set<string>();
     const tokenPriceCache: Record<string, number> = {};
 
@@ -89,14 +89,16 @@
     }
 
     for (const [accountAddress, tokens] of Object.entries(leaderboardData)) {
-      let totalInBaseCurrency = 0;
+      let totalInBaseCurrency = 0n;
 
       for (const [tokenAddress, balance] of Object.entries(tokens)) {
         if (tokenAddress === baseToken) {
-          totalInBaseCurrency += balance;
+          totalInBaseCurrency +=
+            BigInt(balance.toString()) / 1000000000000000000n;
         } else if (tokenPriceCache[tokenAddress]) {
-          // Use cached price rate
-          totalInBaseCurrency += balance * tokenPriceCache[tokenAddress];
+          totalInBaseCurrency +=
+            BigInt(Math.floor(balance * tokenPriceCache[tokenAddress])) /
+            1000000000000000000n;
         }
       }
 
@@ -106,7 +108,9 @@
       });
     }
 
-    return userAssets.sort((a, b) => b.totalValue - a.totalValue);
+    return userAssets.sort((a, b) =>
+      a.totalValue > b.totalValue ? -1 : a.totalValue < b.totalValue ? 1 : 0,
+    );
   }
 
   async function refreshLeaderboard() {
@@ -139,7 +143,7 @@
   }
 </script>
 
-<div class="flex justify-between items-center mr-3 mb-2">
+<div class="flex justify-between items-center mr-3 mb-2 text-white">
   <div class="text-2xl text-shadow-none">BALANCE</div>
   <button on:click={refreshLeaderboard} aria-label="Refresh balance">
     <svg
@@ -157,8 +161,8 @@
   </button>
 </div>
 
-<ScrollArea class="h-36 w-full">
-  <div class="mr-3 flex flex-col gap-1 text-white">
+<ScrollArea class="h-36 w-full text-white">
+  <div class="mr-3 flex flex-col gap-1">
     {#if isLoading}
       <div class="text-center py-2">Loading leaderboard data...</div>
     {:else if userRankings.length === 0}
