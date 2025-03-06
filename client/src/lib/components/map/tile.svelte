@@ -1,21 +1,22 @@
 <script lang="ts">
-  import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import account from '$lib/account.svelte';
+  import { type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
   import {
     selectedLand,
     selectedLandMeta,
     selectLand,
     uiStore,
   } from '$lib/stores/stores.svelte';
-  import { cn, hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
+  import { cn, hexStringToNumber, padAddress } from '$lib/utils';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeAnimation from '../land/land-nuke-animation.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
-  import account from '$lib/account.svelte';
 
   let {
     land,
@@ -154,12 +155,18 @@
     </div>
   {/if}
 
-  {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
+  {#if nukeStore.pending.includes(land.location)}
     <div
-      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ponzi animate-pulse"
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ponzi animate-pulse text-xs"
       onclick={handleClick}
     >
       NUKABLE
+    </div>
+  {/if}
+
+  {#if nukeStore.nuking.includes(land.location)}
+    <div class="absolute top-0 right-0" onclick={handleClick}>
+      <LandNukeAnimation />
     </div>
   {/if}
 
@@ -172,9 +179,6 @@
       style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
-    <div class="absolute top-0 right-0" onclick={handleClick}>
-      <LandNukeAnimation />
-    </div>
   {/if}
   {#if land.type == 'house'}
     <div class="absolute top-0 right-0 text-[4px]" onclick={handleClick}>

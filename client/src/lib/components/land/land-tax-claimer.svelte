@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import { type LandWithActions } from '$lib/api/land.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { claimAllOfToken, claims } from '$lib/stores/claim.svelte';
-  import { toBigInt } from '$lib/utils';
+  import { claimAllOfToken, claimStore } from '$lib/stores/claim.svelte';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -16,20 +16,18 @@
 
   const dojo = useDojo();
   const account = () => {
-    return dojo.accountManager.getProvider();
+    return dojo.accountManager?.getProvider();
   };
 
   let { land }: { land: LandWithActions } = $props<{ land: LandWithActions }>();
 
-  let nukableLands = $state<bigint[]>([]);
-
   let animating = $derived.by(() => {
-    const claimInfo = claims[land.location];
+    const claimInfo = claimStore.value[land.location];
     if (!claimInfo) return false;
 
     if (claimInfo.animating) {
       setTimeout(() => {
-        claims[land.location].animating = false;
+        claimStore.value[land.location].animating = false;
         console.log('not animating anymore');
       }, 2000);
       return true;
@@ -37,7 +35,7 @@
       return false;
     }
   });
-  let timing = $derived(claims[land.location].claimable);
+  let timing = $derived(claimStore.value[land.location].claimable);
 
   async function handleClaimFromCoin(e: Event) {
     console.log('claiming from coin');
@@ -49,16 +47,7 @@
     }
 
     claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
-      .then(() => {
-        // TODO remove nuke update from here
-        // remove nukable lands from the nukableStore
-        nukableStore.update((nukableLandsFromStore) => {
-          return nukableLandsFromStore.filter(
-            (nukableLand) => !nukableLands.includes(nukableLand),
-          );
-        });
-        nukableLands = [];
-      })
+      .then(() => {})
       .catch((e) => {
         console.error('error claiming from coin', e);
       });
@@ -69,22 +58,22 @@
 
     aggregatedTaxes = result.taxes;
 
-    const nukables = result.nukable;
+    const nukables = result.nukables;
 
-    nukableStore.update((nukableLandStore) => {
-      const newStoreValue = [...nukableLandStore];
-      // for each nukable land, add the land to the store
-      for (const land of nukables) {
-        const location = toBigInt(land)!;
-        if (newStoreValue.includes(location)) {
-          continue; // TODO remove it if neighbor is not nukable and in the array
+    nukables.forEach((land) => {
+      if (land.nukable) {
+        // add to nukeStore.pending if not already in
+        if (!nukeStore.pending.includes(land.location)) {
+          nukeStore.pending.push(land.location);
         }
-
-        console.log('nukable land added to store', land);
-        newStoreValue.push(location);
+      } else {
+        // remove from nukeStore.pending if in
+        if (nukeStore.pending.includes(land.location)) {
+          nukeStore.pending = nukeStore.pending.filter(
+            (loc) => loc !== land.location,
+          );
+        }
       }
-
-      return newStoreValue;
     });
   }
   let aggregatedTaxes: TaxData[] = $state([]);

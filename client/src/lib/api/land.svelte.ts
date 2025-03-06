@@ -308,6 +308,3 @@ export function useLands(): LandsStore | undefined {
     },
   };
 }
-
-// an array of nukable locations
-export const nukableStore = writable<bigint[]>([]);

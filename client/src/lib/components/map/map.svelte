@@ -1,9 +1,9 @@
 <script lang="ts">
   import type { LandsStore } from '$lib/api/land.svelte';
-  import { nukableStore, useLands } from '$lib/api/land.svelte';
+  import { useLands } from '$lib/api/land.svelte';
   import { useTiles } from '$lib/api/tile-store.svelte';
   import { cameraPosition, cameraTransition } from '$lib/stores/camera';
-  import { claims } from '$lib/stores/claim.svelte';
+  import { claimStore } from '$lib/stores/claim.svelte';
   import { accountAddress, mousePosCoords } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import Tile from './tile.svelte';
@@ -37,8 +37,8 @@
       const addressHex = toHexWithPadding(BigInt(address ?? ''));
       $landStore?.forEach((land) => {
         if (land.owner === addressHex) {
-          if (!claims[land.location]) {
-            claims[land.location] = {
+          if (!claimStore.value[land.location]) {
+            claimStore.value[land.location] = {
               lastClaimTime: 0,
               animating: false,
               land: land,
