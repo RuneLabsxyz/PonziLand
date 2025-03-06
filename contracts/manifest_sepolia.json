@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
-    "address": "0x159a8d45365dce1aa357933e2e2e0a9290a41f275e100ae549092c3bb91067d",
-    "seed": "ponzi_land_private_6",
+    "address": "0x6da0dc9f1d48dfa3dd95442505fb7c6f485d7a234780658660604914973766c",
+    "seed": "ponzi_land-playtest-2",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1252,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x13a412a8d57aa5e07ec40b58e53ba487630be5dc8838a040813dc3b34b710e0",
-      "class_hash": "0x609a50114df8a016fe425457c116446536d2a9c1515c15506091aba94d95511",
+      "address": "0x439ad81bdc71d06d3c81d0da0ba8899f3bc734f5df4a8230a0ab8e68853bf14",
+      "class_hash": "0x6fc74fb9c4a741d36598af5ae9727ebf0925f30aab7049422e7603091923ee1",
       "abi": [
         {
           "type": "impl",
@@ -1545,6 +1545,20 @@
           ]
         },
         {
+          "type": "enum",
+          "name": "core::option::Option::<core::integer::u256>",
+          "variants": [
+            {
+              "name": "Some",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "None",
+              "type": "()"
+            }
+          ]
+        },
+        {
           "type": "struct",
           "name": "ponzi_land::models::auction::Auction",
           "members": [
@@ -1571,6 +1585,10 @@
             {
               "name": "decay_rate",
               "type": "core::integer::u64"
+            },
+            {
+              "name": "sold_at_price",
+              "type": "core::option::Option::<core::integer::u256>"
             }
           ]
         },
@@ -2015,12 +2033,347 @@
         "level_up",
         "upgrade"
       ]
+    },
+    {
+      "address": "0x7f8d499b12c52dd750e9f04076932cc3f6be4f4526299aeb5f0d9e1e39fb053",
+      "class_hash": "0x37c572c3babd05f6d9e45283ad9b856ae608cb85e969f9d70cfe062f488f77f",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "auth__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "auth__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [
+            {
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "verifier",
+              "type": "core::felt252"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "impl",
+          "name": "AuthImpl",
+          "interface_name": "ponzi_land::systems::auth::IAuth"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "ponzi_land::systems::auth::IAuth",
+          "items": [
+            {
+              "type": "function",
+              "name": "add_authorized_with_signature",
+              "inputs": [
+                {
+                  "name": "signature",
+                  "type": "core::array::Array::<core::felt252>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "add_authorized",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "remove_authorized",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_verifier",
+              "inputs": [
+                {
+                  "name": "new_verifier",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "add_verifier",
+              "inputs": [
+                {
+                  "name": "new_verifier",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "remove_verifier",
+              "inputs": [
+                {
+                  "name": "verifier",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "lock_actions",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "unlock_actions",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "can_take_action",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_owner",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::systems::auth::auth::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [
+        "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9",
+        "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b"
+      ],
+      "tag": "ponzi_land-auth",
+      "selector": "0x79a9785e982c152c7118478ac140ec6ac2b038a1eb4f20454f4d07a6240d304",
+      "systems": [
+        "dojo_init",
+        "add_authorized_with_signature",
+        "add_authorized",
+        "remove_authorized",
+        "set_verifier",
+        "add_verifier",
+        "remove_verifier",
+        "lock_actions",
+        "unlock_actions",
+        "upgrade"
+      ]
     }
   ],
   "models": [
     {
       "members": [],
-      "class_hash": "0x2d6a47decc7a74f87446e1496f5b5f8b97d606db403b421c1a1d3c732a6a102",
+      "class_hash": "0x4d4f8bc81b165b16ad563551b8f9c6a8870e4014e4360b5d73237ef24f3fc7",
       "tag": "ponzi_land-Auction",
       "selector": "0x7e0590370db3aa23e7aa340e9dfbdb6127f3fe6d5173b6051be0225a6acddec"
     },
@@ -2032,6 +2385,18 @@
     }
   ],
   "events": [
+    {
+      "members": [],
+      "class_hash": "0x5e776963a4930975a86b5587130862de77f232737955cf164e58accccabec9",
+      "tag": "ponzi_land-AddressAuthorizedEvent",
+      "selector": "0x14776f846375e96d33e72213fe182d77e3f35fc2d30ee5a9f13927e4ebe833e"
+    },
+    {
+      "members": [],
+      "class_hash": "0x7052549b98a94da91791186eeca8191662fdca2be22b2e00c5f26c9d8d77ab6",
+      "tag": "ponzi_land-AddressRemovedEvent",
+      "selector": "0x3a20177c447e7a755a6169d2decc740986b2d1c6a552b6798451a3d1d70241f"
+    },
     {
       "members": [],
       "class_hash": "0x3e3c22f5cbbc09dc13d11c7348aa5a11c113046e69c4a3f71ff73eb10319afa",
@@ -2061,6 +2426,12 @@
       "class_hash": "0x5075b71332d4501663c2de3c3f7a71574440010eec31bde0a4dea37d88bcdd",
       "tag": "ponzi_land-RemainingStakeEvent",
       "selector": "0x7021aa577bc24a67ca28766ec1ad646945d1c9b43aca6af8d53aba43bb0f5ea"
+    },
+    {
+      "members": [],
+      "class_hash": "0x15768b2c1f9c8cd4ac9ab44d51f8c6af6a53ac6803db2e0f0a05c4f63bd548",
+      "tag": "ponzi_land-VerifierUpdatedEvent",
+      "selector": "0x25d0221db2d5d6010d38e5df9c861dbc406c1d156a715f4a241138edb377f6d"
     }
   ]
 }
