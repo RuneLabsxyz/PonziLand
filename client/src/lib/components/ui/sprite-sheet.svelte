@@ -1,24 +1,123 @@
-<script lang="ts">
+<script>
   import { cn } from '$lib/utils';
+  import { onMount, onDestroy } from 'svelte';
 
-  let {
+  const {
     class: className = '',
     src,
-    x,
-    y,
+    x: initialX = 0,
+    y: initialY = 0,
     xSize,
     ySize,
     xMax,
     yMax,
     width,
     height,
+    // Animation properties
+    animate = false, // Whether to animate
+    frameDelay = 100, // Delay between frames in milliseconds
+    startFrame = 0, // Starting frame index
+    endFrame: initialEndFrame, // Ending frame index (defaults to max frame)
+    loop = true, // Whether to loop the animation
+    horizontal = true, // Animation direction (horizontal or vertical)
+    autoplay = true, // Start animation automatically
   } = $props();
 
+  // Calculate total frames based on sprite sheet dimensions
+  const totalFramesX = Math.floor(xMax / xSize);
+  const totalFramesY = Math.floor(yMax / ySize);
+
+  // Default end frame if not specified
+  const endFrame = $state(
+    initialEndFrame === undefined
+      ? horizontal
+        ? totalFramesX - 1
+        : totalFramesY - 1
+      : initialEndFrame,
+  );
+
+  // Animation state
+  let currentFrame = $state(startFrame);
+  let animationInterval = $state();
+  let isPlaying = $state(autoplay && animate);
+
+  // Sprite position
+  let x = $state(initialX);
+  let y = $state(initialY);
+
+  // Calculate ratios for background sizing
   let xRatio = $derived(width / xSize);
   let yRatio = $derived(height / ySize);
 
   let bgWidth = $derived(xRatio * xMax);
   let bgHeight = $derived(yRatio * yMax);
+
+  // Update sprite position when frame changes
+  $effect(() => {
+    if (animate && horizontal) {
+      x = currentFrame % totalFramesX;
+      y = Math.floor(currentFrame / totalFramesX);
+    } else if (animate && !horizontal) {
+      y = currentFrame % totalFramesY;
+      x = Math.floor(currentFrame / totalFramesY);
+    }
+  });
+
+  // Animation control functions
+  function startAnimation() {
+    if (!animate || animationInterval) return;
+
+    isPlaying = true;
+    animationInterval = setInterval(() => {
+      currentFrame++;
+
+      // Check if we've reached the end frame
+      if (currentFrame > endFrame) {
+        if (loop) {
+          currentFrame = startFrame;
+        } else {
+          stopAnimation();
+        }
+      }
+    }, frameDelay);
+  }
+
+  function stopAnimation() {
+    if (animationInterval) {
+      clearInterval(animationInterval);
+      animationInterval = null;
+      isPlaying = false;
+    }
+  }
+
+  function resetAnimation() {
+    currentFrame = startFrame;
+    if (isPlaying) {
+      stopAnimation();
+      startAnimation();
+    }
+  }
+
+  // Lifecycle hooks
+  onMount(() => {
+    if (animate && autoplay) {
+      startAnimation();
+    }
+  });
+
+  onDestroy(() => {
+    stopAnimation();
+  });
+
+  // Export API
+  const controls = {
+    play: startAnimation,
+    pause: stopAnimation,
+    reset: resetAnimation,
+    get isPlaying() {
+      return isPlaying;
+    },
+  };
 </script>
 
 <div

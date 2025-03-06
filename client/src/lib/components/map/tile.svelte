@@ -10,6 +10,7 @@
   } from '$lib/stores/stores.svelte';
   import { cn, hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
   import LandDisplay from '../land/land-display.svelte';
+  import LandNukeAnimation from '../land/land-nuke-animation.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
@@ -171,6 +172,9 @@
       style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
+    <div class="absolute top-0 right-0" onclick={handleClick}>
+      <LandNukeAnimation />
+    </div>
   {/if}
   {#if land.type == 'house'}
     <div class="absolute top-0 right-0 text-[4px]" onclick={handleClick}>
