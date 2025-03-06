@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { uiStore } from '$lib/stores/stores.svelte';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import AuctionModal from './auction/auction-modal.svelte';
   import BuyModal from './buy/buy-modal.svelte';
   import LandHud from './land/hud/land-hud.svelte';

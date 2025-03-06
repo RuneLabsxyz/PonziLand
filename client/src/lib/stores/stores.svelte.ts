@@ -128,15 +128,3 @@ export function useActiveAuctions() {
     return $landsStore.filter((land) => land.type == 'auction');
   });
 }
-
-// UI State
-
-export let uiStore = $state<{
-  showModal: boolean;
-  modalType: 'bid' | 'buy' | 'land-info' | null;
-  modalData: TileInfo | null;
-}>({
-  showModal: false,
-  modalType: null,
-  modalData: null,
-});

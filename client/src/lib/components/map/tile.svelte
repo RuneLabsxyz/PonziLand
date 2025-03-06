@@ -8,9 +8,9 @@
     selectedLand,
     selectedLandMeta,
     selectLand,
-    uiStore,
   } from '$lib/stores/stores.svelte';
   import { cn, hexStringToNumber, padAddress } from '$lib/utils';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeAnimation from '../land/land-nuke-animation.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';

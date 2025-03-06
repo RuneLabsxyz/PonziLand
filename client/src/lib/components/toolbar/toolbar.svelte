@@ -1,18 +1,17 @@
 <script lang="ts">
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import ToolbarButton from './toolbar-button.svelte';
   import ToolbarDrawer from './toolbar-drawer.svelte';
-
-  let active = $state<'lands' | 'notifications' | 'auctions' | null>(null);
 </script>
 
 <div class="fixed bottom-0 left-0 flex gap-2 z-20 p-2">
   <ToolbarButton
-    active={'lands' === active}
+    active={'lands' === uiStore.toolbarActive}
     onclick={() => {
-      if (active === 'lands') {
-        active = null;
+      if (uiStore.toolbarActive === 'lands') {
+        uiStore.toolbarActive = null;
       } else {
-        active = 'lands';
+        uiStore.toolbarActive = 'lands';
       }
     }}
   >
@@ -24,12 +23,12 @@
     <span class="text-xs">My Lands</span>
   </ToolbarButton>
   <ToolbarButton
-    active={'auctions' === active}
+    active={'auctions' === uiStore.toolbarActive}
     onclick={() => {
-      if (active === 'auctions') {
-        active = null;
+      if (uiStore.toolbarActive === 'auctions') {
+        uiStore.toolbarActive = null;
       } else {
-        active = 'auctions';
+        uiStore.toolbarActive = 'auctions';
       }
     }}
   >
@@ -41,12 +40,12 @@
     <span class="text-xs">Auctions</span>
   </ToolbarButton>
   <ToolbarButton
-    active={'notifications' === active}
+    active={'notifications' === uiStore.toolbarActive}
     onclick={() => {
-      if (active === 'notifications') {
-        active = null;
+      if (uiStore.toolbarActive === 'notifications') {
+        uiStore.toolbarActive = null;
       } else {
-        active = 'notifications';
+        uiStore.toolbarActive = 'notifications';
       }
     }}
   >
@@ -59,7 +58,7 @@
   </ToolbarButton>
 </div>
 
-<ToolbarDrawer {active} />
+<ToolbarDrawer active={uiStore.toolbarActive} />
 
 <style>
   div {

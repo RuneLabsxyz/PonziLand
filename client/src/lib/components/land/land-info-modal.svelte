@@ -1,13 +1,9 @@
 <script>
-  import {
-    selectedLand,
-    selectedLandMeta,
-    uiStore,
-  } from '$lib/stores/stores.svelte';
+  import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import Button from '../ui/button/button.svelte';
   import { Card } from '../ui/card';
-  import CardHeader from '../ui/card/card-header.svelte';
   import CardTitle from '../ui/card/card-title.svelte';
   import CloseButton from '../ui/close-button.svelte';
   import Input from '../ui/input/input.svelte';

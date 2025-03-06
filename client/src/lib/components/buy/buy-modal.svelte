@@ -1,27 +1,23 @@
 <script lang="ts">
-  import {
-    useLands,
-    type LandSetup,
-    type LandWithActions,
-  } from '$lib/api/land.svelte';
+  import { useLands, type LandSetup } from '$lib/api/land.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
   import {
-    uiStore,
     selectedLandMeta,
     type SelectedLand,
   } from '$lib/stores/stores.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land/land-overview.svelte';
+  import ThreeDots from '../loading/three-dots.svelte';
   import Button from '../ui/button/button.svelte';
   import { CardTitle } from '../ui/card';
   import Card from '../ui/card/card.svelte';
   import CloseButton from '../ui/close-button.svelte';
   import BuySellForm from './buy-sell-form.svelte';
-  import ThreeDots from '../loading/three-dots.svelte';
 
-  import { onMount } from 'svelte';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
+  import { onMount } from 'svelte';
 
   let landStore = useLands();
   let accountManager = useAccount();
