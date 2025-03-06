@@ -11,6 +11,8 @@
   import Button from '../ui/button/button.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
   import { goto } from '$app/navigation';
+  import { Card } from '../ui/card';
+  import CloseButton from '../ui/close-button.svelte';
 
   let visible = $state(false);
   let loading = $state(true);
@@ -63,13 +65,18 @@
   <div class="bg-black opacity-60 absolute w-screen h-screen top-0 left-0 z-40">
     &nbsp;
   </div>
-  <div
-    class="absolute top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white z-50 p-5 min-w-52 text-2xl"
+  <Card
+    class="absolute top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-5 min-w-52 text-2xl"
   >
+    <CloseButton
+      onclick={() => {
+        visible = false;
+      }}
+    />
     {#if loading}
       Loading...
     {:else}
-      WALLETS
+      <div class="mb-2">WALLETS</div>
       <div class="flex flex-col justify-stretch gap-2">
         {#each validWallets as wallet}
           {@const image =
@@ -90,6 +97,7 @@
         {/each}
         _________________________
         <Button
+          class="flex flex-row justify-start"
           on:click={() => {
             visible = false;
             goto('/ramp');
@@ -97,5 +105,5 @@
         >
       </div>
     {/if}
-  </div>
+  </Card>
 {/if}
