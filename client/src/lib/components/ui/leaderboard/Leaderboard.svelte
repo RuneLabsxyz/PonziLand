@@ -176,10 +176,19 @@
         {#each userRankings as user, index}
           <div class="flex justify-between items-center p-2 rounded">
             <div class="flex items-center gap-2">
-              <span class="font-bold">{index + 1}.</span>
+              <span class="font-bold">
+                {index + 1}.
+              </span>
               <span class="font-mono">{formatAddress(user.address)}</span>
               {#if user.address === address}
                 <span class="text-xs bg-primary/30 px-1 rounded">You</span>
+              {/if}
+              {#if index === 0}
+                <img
+                  src="/assets/extra/crown.png"
+                  alt="Crown"
+                  class="w-4 h-4"
+                />
               {/if}
             </div>
             <div class="font-bold">
