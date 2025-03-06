@@ -10,6 +10,7 @@
   import TokenDisplay from '../../ui/token-display/token-display.svelte';
   import type { Token } from '$lib/interfaces';
   import { fetchTokenBalances } from './request';
+  import { onMount } from 'svelte';
 
   const { store, client: sdk, accountManager } = useDojo();
 
@@ -18,6 +19,7 @@
   >([]);
 
   const address = $derived(accountData.address);
+  let leaderboardData = $state<any>([]);
 
   function fetchBalanceData() {
     if (accountManager == null) {
@@ -40,9 +42,11 @@
     });
   }
 
-  $effect(() => {
+  onMount(async () => {
+    console.log('fetching balance data');
     fetchBalanceData();
-    fetchTokenBalances();
+    leaderboardData = await fetchTokenBalances();
+    console.log('leaderboardData', leaderboardData);
   });
 </script>
 

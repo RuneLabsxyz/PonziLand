@@ -1,5 +1,4 @@
 export async function fetchTokenBalances() {
-  console.log('FETCHING TOKEN BALANCES');
   try {
     const response = await fetch(
       'https://api.cartridge.gg/x/ponziland-sepolia-target/torii/sql',
@@ -17,8 +16,33 @@ export async function fetchTokenBalances() {
     }
 
     const data = await response.json();
-    console.log('LEADERBOARD INFO', data);
+    return parseTokenBalances(data);
   } catch (error) {
     console.error('Error fetching token balances:', error);
+    return {};
   }
+}
+
+interface TokenBalanceEntry {
+  account_address: string;
+  contract_address: string;
+  balance: number;
+}
+
+export function parseTokenBalances(
+  data: TokenBalanceEntry[],
+): Record<string, Record<string, number>> {
+  const result: Record<string, Record<string, number>> = {};
+
+  data.forEach((entry) => {
+    const { account_address, contract_address, balance } = entry;
+
+    if (!result[account_address]) {
+      result[account_address] = {};
+    }
+
+    result[account_address][contract_address] = balance;
+  });
+
+  return result;
 }
