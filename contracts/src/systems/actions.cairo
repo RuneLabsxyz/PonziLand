@@ -45,6 +45,8 @@ trait IActions<T> {
 
     fn level_up(ref self: T, land_location: u64) -> bool;
 
+    fn reimburse_stakes(ref self: T,);
+
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
         self: @T, land_location: u64, owner_land: ContractAddress,
@@ -91,7 +93,7 @@ pub mod actions {
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE
+        LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -480,6 +482,34 @@ pub mod actions {
                 * TIME_SPEED.into();
 
             self.update_level(ref store, ref land, elapsed_time_since_buy)
+        }
+
+        fn reimburse_stakes(ref self: ContractState) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+
+            let mut store = StoreTrait::new(world);
+            let mut active_lands: Array<Land> = ArrayTrait::new();
+
+            for i in 0
+                ..GRID_WIDTH
+                    * GRID_WIDTH {
+                        let land = store.land(i);
+                        if !land.owner.is_zero() && land.stake_amount > 0 {
+                            active_lands.append(land);
+                        }
+                    };
+
+            for land in active_lands
+                .span() {
+                    let land = *land;
+                    let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+                    if taxes.len() != 0 {
+                        self.taxes._claim(taxes, land.owner, land.location);
+                    }
+                };
+
+            self.stake.reimburse(store, active_lands);
         }
 
 

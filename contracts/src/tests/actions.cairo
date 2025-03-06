@@ -182,6 +182,32 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
     };
 }
 
+fn validate_staking_state(
+    store: Store,
+    contract_address: ContractAddress,
+    land_locations: Span<u64>,
+    tokens: Span<IERC20CamelDispatcher>,
+    should_have_balance: bool
+) {
+    let mut i = 0;
+    while i < land_locations.len() {
+        let location = *land_locations.at(i);
+        let land = store.land(location);
+        let token = *tokens.at(i);
+        let balance = token.balanceOf(contract_address);
+
+        if should_have_balance {
+            assert(land.stake_amount > 0, 'Stake > 0 expected');
+            assert(balance > 0, 'Balnce > 0 expected');
+        } else {
+            assert(land.stake_amount == 0, 'Stake == 0 expected');
+            assert(balance == 0, 'Balance == 0 expected');
+        }
+
+        i += 1;
+    };
+}
+
 
 // Helper functions for common test setup and actions
 fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCoreTestingDispatcher) {
@@ -909,3 +935,72 @@ fn test_organic_auction() {
     let final_active_auctions = actions_system.get_active_auctions();
     assert(final_active_auctions <= MAX_AUCTIONS, 'Too many active auctions');
 }
+
+#[test]
+#[available_gas(900000000000)]
+#[ignore]
+fn test_reimburse_stakes() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+
+    set_block_timestamp(10);
+    ekubo_testing_dispatcher
+        .set_pool_liquidity(
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+        );
+
+    // Deploy ERC20 tokens for neighbors
+    let erc20_neighbor_1 = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+    );
+
+    let erc20_neighbor_2 = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_2()
+    );
+    let erc20_neighbor_3 = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_3()
+    );
+
+    // Create initial claimer land
+    set_block_timestamp(100);
+    initialize_land(actions_system, main_currency, RECIPIENT(), 1280, 500, 1000, main_currency);
+
+    // Setup neighbor lands
+    set_block_timestamp(300);
+    initialize_land(actions_system, main_currency, NEIGHBOR_1(), 1281, 500, 1000, erc20_neighbor_1);
+
+    set_block_timestamp(500);
+    initialize_land(actions_system, main_currency, NEIGHBOR_2(), 1216, 500, 1000, erc20_neighbor_2);
+
+    set_block_timestamp(600);
+    initialize_land(actions_system, main_currency, NEIGHBOR_3(), 1217, 500, 1000, erc20_neighbor_3);
+
+    set_block_timestamp(5000);
+    set_contract_address(RECIPIENT());
+
+    actions_system.claim(1280);
+
+    initialize_land(actions_system, main_currency, RECIPIENT(), 1250, 500, 130, main_currency);
+
+    initialize_land(actions_system, main_currency, RECIPIENT(), 1251, 500, 157, main_currency);
+
+    let land_locations = array![1280, 1281, 1216, 1217, 1250, 1251];
+    let tokens = array![
+        main_currency,
+        erc20_neighbor_1,
+        erc20_neighbor_2,
+        erc20_neighbor_3,
+        main_currency,
+        main_currency
+    ];
+
+    validate_staking_state(
+        store, actions_system.contract_address, land_locations.span(), tokens.span(), true
+    );
+
+    actions_system.reimburse_stakes();
+
+    validate_staking_state(
+        store, actions_system.contract_address, land_locations.span(), tokens.span(), false
+    );
+}
+

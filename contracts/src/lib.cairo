@@ -40,6 +40,7 @@ mod utils {
     mod get_neighbors;
     mod level_up;
     mod spiral;
+    mod stake;
 }
 
 #[cfg(test)]

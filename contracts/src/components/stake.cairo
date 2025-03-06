@@ -18,10 +18,17 @@ mod StakeComponent {
     // Internal imports
     use ponzi_land::helpers::coord::{max_neighbors};
     use ponzi_land::models::land::Land;
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, GRID_WIDTH,};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
-    use ponzi_land::utils::common_strucs::{TokenInfo};
+    use ponzi_land::utils::{
+        common_strucs::{TokenInfo},
+        stake::{
+            summarize_stake_totals, get_total_stake_for_token, calculate_refund_ratio,
+            calculate_refund_amount
+        }
+    };
+
 
     // Local imports
     use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -81,6 +88,52 @@ mod StakeComponent {
 
             land.stake_amount = 0;
             store.set_land(land);
+        }
+
+        fn reimburse(
+            ref self: ComponentState<TContractState>, mut store: Store, active_lands: Array<Land>
+        ) {
+            let active_lands_span = active_lands.span();
+            let (mut stake_totals, unique_tokens) = summarize_stake_totals(active_lands_span);
+            let mut payable = get_dep_component_mut!(ref self, Payable);
+
+            for token_used in unique_tokens
+                .span() {
+                    let token_address: ContractAddress = *token_used;
+                    let token_key: felt252 = token_address.into();
+
+                    let balance = payable.balance_of(*token_used, get_contract_address());
+
+                    let total_staked = get_total_stake_for_token(ref stake_totals, token_key);
+
+                    let ratio = calculate_refund_ratio(total_staked, balance);
+
+                    for mut land in active_lands_span {
+                        self.distribute_refund(store, *land, *token_used, ratio);
+                    };
+                }
+        }
+
+        fn distribute_refund(
+            ref self: ComponentState<TContractState>,
+            mut store: Store,
+            mut land: Land,
+            token_used: ContractAddress,
+            ratio: u256,
+        ) {
+            if land.token_used == token_used {
+                let refund_amount = calculate_refund_amount(land.stake_amount, ratio);
+
+                let mut payable = get_dep_component_mut!(ref self, Payable);
+                let validation_result = payable
+                    .validate(land.token_used, get_contract_address(), refund_amount);
+
+                let status = payable.transfer(land.owner, validation_result);
+                assert(status, errors::ERC20_REFUND_FAILED);
+
+                land.stake_amount = 0;
+                store.set_land(land);
+            }
         }
     }
 }
