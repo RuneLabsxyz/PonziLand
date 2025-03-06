@@ -27,27 +27,28 @@
         >{locationIntToString(land.location)}</span
       >
     </div>
+    {#if land.type == 'house'}
+      <div
+        class="absolute -bottom-3 left-0 w-full leading-none flex flex-row justify-center"
+      >
+        <img
+          src={land.level >= 1 ? ON_IMAGE : OFF_IMAGE}
+          class="w-5"
+          alt="no star"
+        />
 
-    <div
-      class="absolute -bottom-3 left-0 w-full leading-none flex flex-row justify-center"
-    >
-      <img
-        src={land.level >= 1 ? ON_IMAGE : OFF_IMAGE}
-        class="w-5"
-        alt="no star"
-      />
+        <img
+          src={land.level >= 2 ? ON_IMAGE : OFF_IMAGE}
+          class="w-5"
+          alt="no star"
+        />
 
-      <img
-        src={land.level >= 2 ? ON_IMAGE : OFF_IMAGE}
-        class="w-5"
-        alt="no star"
-      />
-
-      <img
-        src={land.level >= 3 ? ON_IMAGE : OFF_IMAGE}
-        class="w-5"
-        alt="no star"
-      />
-    </div>
+        <img
+          src={land.level >= 3 ? ON_IMAGE : OFF_IMAGE}
+          class="w-5"
+          alt="no star"
+        />
+      </div>
+    {/if}
   </div>
 </div>
