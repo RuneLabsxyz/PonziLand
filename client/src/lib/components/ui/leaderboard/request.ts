@@ -1,3 +1,8 @@
+// @notice This token is used to rank users in the leaderboard.
+// @notice The token is Emulated stark token.
+export const baseToken =
+  '0x71de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0';
+
 export async function fetchTokenBalances() {
   try {
     const response = await fetch(
