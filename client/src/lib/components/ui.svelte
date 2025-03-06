@@ -14,7 +14,7 @@
   <WalletLookup />
 
   <!-- Leaderboard-->
-  <Leaderboard />
+  <!-- <Leaderboard /> -->
 
   <!-- Tile HUD -->
   <LandHud />
