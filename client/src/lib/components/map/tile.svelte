@@ -3,18 +3,18 @@
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
   import {
-    accountAddress,
     selectedLand,
     selectedLandMeta,
     selectLand,
     uiStore,
   } from '$lib/stores/stores.svelte';
-  import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
+  import { cn, hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
+  import account from '$lib/account.svelte';
 
   let {
     land,
@@ -26,9 +26,11 @@
     scale: number;
   }>();
 
+  let address = $derived(account.address);
+
   let isOwner = $derived.by(() => {
-    if (land.type == 'grass') return false;
-    return land?.owner == padAddress($accountAddress ?? '0x1');
+    if (land.type === 'grass') return false;
+    return land?.owner === padAddress(address ?? '');
   });
 
   let estimatedNukeTime = $derived.by(() => {
@@ -74,14 +76,6 @@
 
     uiStore.showModal = true;
     uiStore.modalType = 'bid';
-    // uiStore.modalData = {
-    //   location: hexStringToNumber($selectedLandMeta!.location),
-    //   // TODO: Enforce null checks here
-    //   sellPrice: $selectedLandMeta!.sellPrice ?? 0,
-    //   tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
-    //   tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
-    //   owner: $selectedLandMeta!.owner || undefined,
-    // };
   };
 </script>
 
@@ -170,9 +164,10 @@
 
   {#if isOwner}
     <div
-      class="absolute top-0 left-1/2 -translate-x-1/2 {scale > 1.5
-        ? 'w-2 h-2'
-        : 'w-6 h-6'}"
+      class={cn(
+        'absolute top-0 left-1/2 -translate-x-1/2 z-20',
+        scale > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
+      )}
       style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
