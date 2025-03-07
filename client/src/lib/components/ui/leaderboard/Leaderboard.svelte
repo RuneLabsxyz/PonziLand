@@ -16,6 +16,9 @@
   let isLoading = $state(true);
   const avnu = useAvnu();
 
+  // Add this to track the user's rank
+  let userRank = $state<number | null>(null);
+
   // Create token objects for Avnu quotes
   function createTokenObject(tokenAddress: string): Token {
     return {
@@ -122,6 +125,13 @@
     try {
       leaderboardData = await fetchTokenBalances();
       userRankings = await calculateUserAssets();
+
+      userRank = userRankings.findIndex((user) => user.address === address);
+      if (userRank !== -1) {
+        userRank += 1;
+      } else {
+        userRank = null;
+      }
     } catch (error) {
       console.error('Error refreshing leaderboard:', error);
     } finally {
@@ -179,7 +189,11 @@
               <span class="font-bold">
                 {index + 1}.
               </span>
-              <span class="font-mono">{formatAddress(user.address)}</span>
+              <span
+                class="font-mono"
+                class:text-red-500={user.address === address}
+                >{formatAddress(user.address)}</span
+              >
               {#if user.address === address}
                 <span class="text-xs bg-primary/30 px-1 rounded">You</span>
               {/if}
@@ -199,4 +213,16 @@
       {/if}
     </div>
   </ScrollArea>
+
+  {#if userRank !== null && !isLoading && address}
+    <div class="mt-2 px-2 py-1 text-white border-t border-white/20">
+      <div class="flex items-center gap-2">
+        <span class="text-sm">Your rank:</span>
+        <span class="font-bold">{userRank}</span>
+        <span class="font-mono text-red-500 text-sm"
+          >{formatAddress(address)}</span
+        >
+      </div>
+    </div>
+  {/if}
 </Card>
