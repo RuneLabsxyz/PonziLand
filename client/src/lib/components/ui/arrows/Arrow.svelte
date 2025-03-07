@@ -1,12 +1,12 @@
 <script lang="ts">
   // Arrow component that can be either straight or bent (diagonal)
-  let { class: className = "", type = "straight" } = $props<{
+  let { class: className = '', type = 'straight' } = $props<{
     class?: string;
-    type?: "straight" | "bent";
+    type?: 'straight' | 'bent';
   }>();
 </script>
 
-{#if type === "straight"}
+{#if type === 'straight'}
   <svg
     width="171"
     height="91"
