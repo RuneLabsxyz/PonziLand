@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "starknet": "^6.23.1"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.4"
+  }
+}
