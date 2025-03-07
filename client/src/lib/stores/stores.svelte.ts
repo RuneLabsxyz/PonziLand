@@ -4,6 +4,7 @@ import data from '$lib/data.json';
 import type { TileInfo, Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import { derived, readable, writable, type Readable } from 'svelte/store';
+import account from '$lib/account.svelte';
 
 export const selectedLandPosition = writable<string | null>(null);
 
@@ -102,19 +103,15 @@ export const accountAddress = readable<string | undefined>(
 export function usePlayerLands() {
   const landsStore = useLands();
 
-  return derived(
-    [landsStore!, accountAddress],
-    ([$landsStore, $accountAddress]) => {
-      if (!$landsStore || !$accountAddress) {
-        console.log('No value in store!');
-        return [];
-      }
-      const accountAddress = toHexWithPadding(BigInt($accountAddress));
-      return $landsStore.filter(
-        (land) => toHexWithPadding(BigInt(land.owner)) == accountAddress,
-      );
-    },
-  );
+  return derived([landsStore!], ([$landsStore]) => {
+    const accountAddress = account.address;
+    if (!$landsStore || !accountAddress) {
+      console.log('No value in store!');
+      return [];
+    }
+    const address = accountAddress;
+    return $landsStore.filter((land) => land.owner == address);
+  });
 }
 
 export function useActiveAuctions() {
