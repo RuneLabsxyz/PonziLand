@@ -1,25 +1,36 @@
 <script lang="ts">
   import accountData from '$lib/account.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import { ScrollArea } from '../../ui/scroll-area';
-  import { fetchTokenBalances, baseToken } from './request';
   import { onMount } from 'svelte';
+
+  import { fetchTokenBalances, baseToken } from './request';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import type { Token } from '$lib/interfaces';
-  import Card from '../../ui/card/card.svelte';
 
-  const { store } = useDojo();
+  //Types
+  import type { Token } from '$lib/interfaces';
+  import type { Quote } from '@avnu/avnu-sdk';
+
+  //UI
+  import Card from '../../ui/card/card.svelte';
+  import { ScrollArea } from '../../ui/scroll-area';
+
+  //Helpers
+  import { formatAddress, formatValue } from './helpers';
+
   const address = $derived(accountData.address);
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
   let userRankings = $state<Array<{ address: string; totalValue: number }>>([]);
   let isLoading = $state(true);
   const avnu = useAvnu();
 
-  // Add this to track the user's rank
   let userRank = $state<number | null>(null);
 
-  // Create token objects for Avnu quotes
+  /**
+   * @notice Creates a token object for Avnu quotes
+   * @dev Used to format token data from our interfaces
+   * @param tokenAddress The address of the token
+   * @returns A Token object with default values
+   */
   function createTokenObject(tokenAddress: string): Token {
     return {
       address: tokenAddress,
@@ -39,11 +50,18 @@
     };
   }
 
+  /**
+   * @notice Calculates the price of a token amount in base currency (estark)
+   * @dev Uses Avnu SDK to fetch quotes for price conversion
+   * @param tokenAddress The address of the token to price
+   * @param amount The amount of tokens to price
+   * @returns The price in base currency as a number
+   */
   async function getPriceInBaseCurrency(
     tokenAddress: string,
-    amount: number,
+    amount: bigint,
   ): Promise<number> {
-    if (!tokenAddress || !amount || amount <= 0) {
+    if (!tokenAddress || !amount || amount <= 0n) {
       return 0;
     }
 
@@ -55,7 +73,14 @@
         sellAmount,
       };
 
-      const quotes = await avnu.fetchQuotes(quoteParams);
+      let data: QuoteParams & {
+        leadingSide: 'sell' | 'buy';
+      } = {
+        ...quoteParams,
+        leadingSide: 'sell',
+      };
+
+      const quotes: Quote[] = await avnu.fetchQuotes(data);
       if (quotes.length > 0) {
         const priceInBaseCurrency = CurrencyAmount.fromUnscaled(
           quotes[0].buyAmount,
@@ -65,15 +90,19 @@
     } catch (error) {
       console.error(`Error fetching price for token ${tokenAddress}:`, error);
     }
-
     return 0;
   }
 
-  async function calculateUserAssets() {
-    const userAssets: Array<{ address: string; totalValue: bigint }> = [];
+  /**
+   * @notice Calculates token prices for all unique tokens
+   * @dev Creates a cache of token prices to avoid redundant API calls
+   * @returns Record of token addresses to their prices
+   */
+  async function calculateTokenPrices(): Promise<Record<string, number>> {
     const uniqueTokens = new Set<string>();
     const tokenPriceCache: Record<string, number> = {};
 
+    // Get unique tokens
     for (const tokens of Object.values(leaderboardData)) {
       for (const tokenAddress in tokens) {
         if (tokenAddress !== baseToken) {
@@ -82,15 +111,31 @@
       }
     }
 
+    // Calculate prices for each token
     for (const tokenAddress of uniqueTokens) {
       try {
-        const priceForOneUnit = await getPriceInBaseCurrency(tokenAddress, 1);
+        const priceForOneUnit = await getPriceInBaseCurrency(
+          tokenAddress,
+          1000000000000000000n,
+        );
         tokenPriceCache[tokenAddress] = priceForOneUnit;
       } catch (error) {
         console.error(`Failed to get price for token ${tokenAddress}:`, error);
         tokenPriceCache[tokenAddress] = 0;
       }
     }
+
+    return tokenPriceCache;
+  }
+
+  /**
+   * @notice Calculates total asset value for all users
+   * @dev Uses cached token prices to calculate total value in base currency
+   * @returns Array of user addresses and their total asset values, sorted by value
+   */
+  async function calculateUserAssets() {
+    const userAssets: Array<{ address: string; totalValue: bigint }> = [];
+    const tokenPriceCache = await calculateTokenPrices();
 
     for (const [accountAddress, tokens] of Object.entries(leaderboardData)) {
       let totalInBaseCurrency = 0n;
@@ -120,6 +165,10 @@
       .sort((a, b) => b.totalValue - a.totalValue);
   }
 
+  /**
+   * @notice Refreshes the leaderboard data
+   * @dev Fetches new token balances and recalculates user rankings
+   */
   async function refreshLeaderboard() {
     isLoading = true;
     try {
@@ -140,27 +189,12 @@
   }
 
   onMount(refreshLeaderboard);
-
-  function formatAddress(address: string): string {
-    if (!address) return '';
-    return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-  }
-
-  function formatValue(value: string): string {
-    const correctedValue = value.startsWith('00x')
-      ? value.replace('00x', '0x')
-      : value;
-
-    const bigValue = BigInt(correctedValue);
-
-    return bigValue.toString(10);
-  }
 </script>
 
 <Card class="shadow-ponzi w-72">
   <div class="flex justify-between items-center mr-3 mb-2 text-white">
     <div class="text-2xl text-shadow-none">leaderboard</div>
-    <button on:click={refreshLeaderboard} aria-label="Refresh balance">
+    <button onclick={refreshLeaderboard} aria-label="Refresh balance">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 32 32"
