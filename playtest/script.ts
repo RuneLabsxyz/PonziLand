@@ -1,5 +1,6 @@
 import { $, env, file } from "bun";
 import tokens from "./tokens.json";
+import holders from "./query-results.json";
 import {
   Account,
   CairoCustomEnum,
@@ -7,8 +8,13 @@ import {
   RpcProvider,
   constants,
   transaction,
+  CairoOption,
+  CallData,
+  CairoOptionVariant,
+  Call,
 } from "starknet";
 import { ABI } from "./abi";
+import { exit } from "node:process";
 
 const provider = new RpcProvider({
   nodeUrl: env.STARKNET_RPC,
@@ -29,6 +35,35 @@ const account = new Account(
   undefined,
   constants.TRANSACTION_VERSION.V3,
 );
+
+function getCalls(contractAddress: string) {
+  const calls: Call[] = [];
+  for (const holder of holders) {
+    calls.push({
+      contractAddress,
+      entrypoint: "set_mint_status",
+      // approve 1 wei for bridge
+      calldata: CallData.compile({
+        address: holder.account_address,
+        status: new CairoOption<CairoCustomEnum>(
+          CairoOptionVariant.Some,
+          new CairoCustomEnum({ ePAL: {} }),
+        ),
+      }),
+    });
+  }
+  return calls;
+}
+
+console.log(
+  await account.execute(
+    getCalls(
+      "0x02d9ec36cd62c36e2b3cb2256cd07af0e5518e9e462a8091d73b0ba045fc1446",
+    ),
+  ),
+);
+
+exit(0);
 
 async function setAccess(token_address: string) {
   const contract = new Contract(ABI, token_address, account).typedv2(ABI);
