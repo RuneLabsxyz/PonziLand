@@ -37,6 +37,8 @@ trait IActions<T> {
 
     fn claim(ref self: T, land_location: u64);
 
+    fn claim_all(ref self: T, land_locations: Array<u64>);
+
     fn nuke(ref self: T, land_location: u64);
 
     fn increase_price(ref self: T, land_location: u64, new_price: u256);
@@ -298,6 +300,21 @@ pub mod actions {
             self.internal_claim(store, land);
         }
 
+        fn claim_all(ref self: ContractState, land_locations: Array<u64>) {
+            let caller = get_caller_address();
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+            let mut store = StoreTrait::new(world);
+
+            for land_location in land_locations {
+                if !self.active_auction_queue.read(land_location) {
+                    assert(is_valid_position(land_location), 'Land location not valid');
+                    let land = store.land(land_location);
+                    assert(land.owner == caller, 'not the owner');
+                    self.internal_claim(store, land);
+                }
+            };
+        }
 
         // TODO:see if we want pass this function into internalTrait
         fn nuke(ref self: ContractState, land_location: u64) {
