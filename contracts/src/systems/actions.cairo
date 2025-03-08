@@ -63,6 +63,9 @@ trait IActions<T> {
 pub mod actions {
     use super::{IActions, WorldStorage};
 
+    use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
+    use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
+
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
@@ -81,10 +84,13 @@ pub mod actions {
     use ponzi_land::components::taxes::TaxesComponent;
     use ponzi_land::components::payable::PayableComponent;
 
-    use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo};
+    use ponzi_land::utils::common_strucs::{
+        TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes
+    };
     use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
     use ponzi_land::utils::spiral::{get_next_position, SpiralState,};
     use ponzi_land::utils::level_up::{calculate_new_level};
+    use ponzi_land::utils::stake::{calculate_refund_amount};
 
     use ponzi_land::helpers::coord::{
         is_valid_position, up, down, left, right, max_neighbors, index_to_position,
@@ -489,27 +495,33 @@ pub mod actions {
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
 
             let mut store = StoreTrait::new(world);
-            let mut active_lands: Array<Land> = ArrayTrait::new();
+            let mut active_lands_with_taxes: Array<LandWithTaxes> = ArrayTrait::new();
 
             for i in 0
                 ..GRID_WIDTH
                     * GRID_WIDTH {
                         let land = store.land(i);
                         if !land.owner.is_zero() && land.stake_amount > 0 {
-                            active_lands.append(land);
+                            let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+                            active_lands_with_taxes
+                                .append(
+                                    LandWithTaxes {
+                                        land,
+                                        taxes: if taxes.len() != 0 {
+                                            Option::Some(taxes)
+                                        } else {
+                                            Option::None
+                                        },
+                                    }
+                                )
                         }
                     };
 
-            for land in active_lands
-                .span() {
-                    let land = *land;
-                    let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-                    if taxes.len() != 0 {
-                        self.taxes._claim(taxes, land.owner, land.location);
-                    }
-                };
+            let mut token_ratios = self
+                .stake
+                .reimburse_and_return_ratios(store, active_lands_with_taxes.span());
 
-            self.stake.reimburse(store, active_lands);
+            self.distribute_adjusted_taxes(active_lands_with_taxes, token_ratios);
         }
 
 
@@ -860,6 +872,46 @@ pub mod actions {
                 current_head: 0, steps: 1, advance: 0, direction: 0, steps_remaining: Option::None
             };
             self.spiral_states.write(state);
+        }
+
+        fn distribute_adjusted_taxes(
+            ref self: ContractState,
+            active_lands_with_taxes: Array<LandWithTaxes>,
+            mut token_ratios: Felt252Dict<Nullable<u256>>
+        ) {
+            for land_with_taxes in active_lands_with_taxes
+                .span() {
+                    let land = *land_with_taxes.land;
+                    let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
+
+                    if let Option::Some(taxes) = land_with_taxes.taxes {
+                        for tax in taxes
+                            .span() {
+                                let tax = *tax;
+                                let token_ratio =
+                                    match match_nullable(
+                                        token_ratios.get(tax.token_address.into())
+                                    ) {
+                                    FromNullableResult::Null => 0_u256,
+                                    FromNullableResult::NotNull(val) => val.unbox(),
+                                };
+
+                                let adjuested_tax_amount = calculate_refund_amount(
+                                    tax.amount, token_ratio
+                                );
+
+                                adjusted_taxes
+                                    .append(
+                                        TokenInfo {
+                                            token_address: tax.token_address,
+                                            amount: adjuested_tax_amount
+                                        }
+                                    )
+                            }
+                    }
+
+                    self.taxes._claim(adjusted_taxes, land.owner, land.location);
+                }
         }
     }
 }

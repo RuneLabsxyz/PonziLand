@@ -4,6 +4,10 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 
 #[starknet::component]
 mod StakeComponent {
+    //core imports
+    use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
+    use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
+
     //use dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
 
@@ -22,10 +26,10 @@ mod StakeComponent {
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::{
-        common_strucs::{TokenInfo},
+        common_strucs::{TokenInfo, LandWithTaxes},
         stake::{
-            summarize_stake_totals, get_total_stake_for_token, calculate_refund_ratio,
-            calculate_refund_amount
+            summarize_totals, get_total_stake_for_token, get_total_tax_for_token,
+            calculate_refund_ratio, calculate_refund_amount, adjust_land_taxes
         }
     };
 
@@ -90,12 +94,17 @@ mod StakeComponent {
             store.set_land(land);
         }
 
-        fn reimburse(
-            ref self: ComponentState<TContractState>, mut store: Store, active_lands: Array<Land>
-        ) {
-            let active_lands_span = active_lands.span();
-            let (mut stake_totals, unique_tokens) = summarize_stake_totals(active_lands_span);
+        fn reimburse_and_return_ratios(
+            ref self: ComponentState<TContractState>,
+            mut store: Store,
+            active_lands_with_taxes: Span<LandWithTaxes>
+        ) -> Felt252Dict<Nullable<u256>> {
+            let (mut stake_totals, mut tax_totals, unique_tokens) = summarize_totals(
+                active_lands_with_taxes
+            );
             let mut payable = get_dep_component_mut!(ref self, Payable);
+
+            let mut token_ratios: Felt252Dict<Nullable<u256>> = Default::default();
 
             for token_used in unique_tokens
                 .span() {
@@ -106,12 +115,18 @@ mod StakeComponent {
 
                     let total_staked = get_total_stake_for_token(ref stake_totals, token_key);
 
-                    let ratio = calculate_refund_ratio(total_staked, balance);
+                    let total_tax = get_total_tax_for_token(ref tax_totals, token_key);
 
-                    for mut land in active_lands_span {
-                        self.distribute_refund(store, *land, *token_used, ratio);
+                    let ratio = calculate_refund_ratio(total_staked + total_tax, balance);
+
+                    token_ratios.insert(token_key, NullableTrait::new(ratio));
+
+                    for mut land_with_taxes in active_lands_with_taxes {
+                        self.distribute_refund(store, *land_with_taxes.land, token_address, ratio);
                     };
-                }
+                };
+
+            token_ratios
         }
 
         fn distribute_refund(
