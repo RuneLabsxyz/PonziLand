@@ -145,6 +145,7 @@
         road
         {selected}
         {hovering}
+        nuking={true}
       />
     {/if}
   </div>
@@ -205,8 +206,8 @@
     </div>
   {/if}
 
-  {#if nukeStore.nuking.includes(land.location)}
-    <div class="absolute top-0 right-0" onclick={handleClick}>
+  {#if nukeStore.nuking.includes(land.location) || land.type == 'house'}
+    <div class="absolute top-0 right-0 w-full h-full z-20">
       <LandNukeAnimation />
     </div>
   {/if}
