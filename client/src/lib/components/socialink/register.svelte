@@ -1,15 +1,11 @@
 <script lang="ts">
-  import { uiStore } from '$lib/stores/stores.svelte';
-  import { Card } from '../ui/card';
-  import CloseButton from '../ui/close-button.svelte';
-  import { debounce } from '$lib/utils/debounce.svelte';
-  import { checkUsername, register } from '$lib/accounts/social/index.svelte';
-  import { Button } from '../ui/button';
-  import ThreeDots from '../loading/three-dots.svelte';
   import { refresh } from '$lib/account.svelte';
+  import { checkUsername, register } from '$lib/accounts/social/index.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
-  import type { SvelteController } from '$lib/accounts/controller';
-  import { Cone } from 'lucide-svelte';
+  import { debounce } from '$lib/utils/debounce.svelte';
+  import ThreeDots from '../loading/three-dots.svelte';
+  import { Button } from '../ui/button';
+  import { Card } from '../ui/card';
 
   let username = $state('');
   let usernameAvailable = $state(true);
