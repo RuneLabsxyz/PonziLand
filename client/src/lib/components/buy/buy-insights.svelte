@@ -100,14 +100,15 @@
     };
   });
 
-  let estimatedNukeTimeSeconds = $derived(
-    estimateNukeTime(
+  let estimatedNukeTimeSeconds = $derived.by(() => {
+    const lastPayTime = 0;
+    return estimateNukeTime(
       parseFloat(sellAmountVal),
       parseFloat(stakeAmountVal),
       nbNeighbors,
-      Date.now() / 1000,
-    ),
-  );
+      lastPayTime,
+    );
+  });
 
   let estimatedTimeString = $derived.by(() => {
     const time = estimatedNukeTimeSeconds;

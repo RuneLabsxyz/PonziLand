@@ -17,6 +17,8 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
+  import { onMount } from 'svelte';
+  import { getAggregatedTaxes } from '$lib/utils/taxes';
 
   let {
     land,
@@ -79,6 +81,35 @@
     uiStore.showModal = true;
     uiStore.modalType = 'bid';
   };
+
+  async function setNukables() {
+    if (land.type === 'auction') {
+      const aggregatedTaxes = await getAggregatedTaxes(land);
+      const nukables = aggregatedTaxes.nukables;
+
+      nukables.forEach((land) => {
+        if (land.nukable) {
+          // add to nukeStore.pending if not already in
+          if (!nukeStore.pending.includes(land.location)) {
+            nukeStore.pending.push(land.location);
+          }
+        } else {
+          // remove from nukeStore.pending if in
+          if (nukeStore.pending.includes(land.location)) {
+            nukeStore.pending = nukeStore.pending.filter(
+              (loc) => loc !== land.location,
+            );
+          }
+        }
+      });
+    }
+  }
+
+  $effect(() => {
+    if (land.type === 'auction') {
+      setNukables();
+    }
+  });
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
