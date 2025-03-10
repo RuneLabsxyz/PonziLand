@@ -1,25 +1,19 @@
 <script lang="ts">
+  import type { Token } from '$lib/interfaces';
   import { Input } from '../ui/input';
   import Label from '../ui/label/label.svelte';
-  import type { Token } from '$lib/interfaces';
 
-  import Card from '../ui/card/card.svelte';
-  import TokenSelect from './token-select.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import { onMount } from 'svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
-  import { accountAddress } from '$lib/stores/stores.svelte';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import Button from '../ui/button/button.svelte';
-  import { debounce } from '$lib/utils/debounce.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
-  import { executeSwap, fetchQuotes, type Quote } from '@avnu/avnu-sdk';
-  import { Leaf } from 'lucide-svelte';
-  import { Select } from '../ui/select';
-  import SelectTrigger from '../ui/select/select-trigger.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { debounce } from '$lib/utils/debounce.svelte';
+  import { type Quote } from '@avnu/avnu-sdk';
+  import { onMount } from 'svelte';
+  import Button from '../ui/button/button.svelte';
+  import TokenSelect from './token-select.svelte';
 
   let { client, accountManager } = useDojo();
-  let account = $derived($accountAddress);
   let avnu = useAvnu();
   let {
     sellToken = $bindable(),
@@ -49,13 +43,13 @@
   onMount(async () => {
     if (accountManager?.getProvider()?.getAccount() == null) {
       console.info('The user is not logged in! Attempting login.');
-      await accountManager.getProvider()?.connect();
+      await accountManager?.getProvider()?.connect();
     }
   });
 
   async function getTokenBalance(address?: string) {
     // Only do it on the browser
-    if (!address || !accountManager.getProvider()?.getWalletAccount()) {
+    if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
       return 0;
     }
 

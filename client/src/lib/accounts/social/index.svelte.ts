@@ -1,11 +1,11 @@
 // TODO: Migrate this to a special library that will be used by both the implementation and the client.
 
 import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
+import account from '$lib/account.svelte';
 import { useAccount } from '$lib/contexts/account.svelte';
-import { accountAddress } from '$lib/stores/stores.svelte';
+import { Socialink } from '@runelabsxyz/socialink-sdk';
 import type { Signature } from 'starknet';
 import { get } from 'svelte/store';
-import { Socialink, type UserInfo } from '@runelabsxyz/socialink-sdk';
 
 let socialink: Socialink | undefined = $state();
 
@@ -51,6 +51,13 @@ async function fetchRegisterSignature(username: string) {
 }
 
 async function sendRegister(typedData: any, signature: Signature) {
+  if (!account.address) {
+    console.error(
+      'No account address found',
+      new Error('No account address found'),
+    );
+    return;
+  }
   const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/register`, {
     method: 'POST',
     headers: {
@@ -58,7 +65,7 @@ async function sendRegister(typedData: any, signature: Signature) {
     },
     body: JSON.stringify({
       signature,
-      address: get(accountAddress),
+      address: account.address,
       typedData,
     }),
   });

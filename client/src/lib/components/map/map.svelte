@@ -1,11 +1,11 @@
 <script lang="ts">
+  import account from '$lib/account.svelte';
   import type { LandsStore } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
   import { useTiles } from '$lib/api/tile-store.svelte';
   import { cameraPosition, cameraTransition } from '$lib/stores/camera';
   import { claimStore } from '$lib/stores/claim.svelte';
-  import { accountAddress, mousePosCoords } from '$lib/stores/stores.svelte';
-  import { toHexWithPadding } from '$lib/utils';
+  import { mousePosCoords } from '$lib/stores/stores.svelte';
   import Tile from './tile.svelte';
 
   const MAP_SIZE = 64;
@@ -33,20 +33,18 @@
   let tiles = $derived($tileStore ?? []);
 
   $effect(() => {
-    accountAddress.subscribe((address) => {
-      const addressHex = toHexWithPadding(BigInt(address ?? ''));
-      $landStore?.forEach((land) => {
-        if (land.owner === addressHex) {
-          if (!claimStore.value[land.location]) {
-            claimStore.value[land.location] = {
-              lastClaimTime: 0,
-              animating: false,
-              land: land,
-              claimable: true,
-            };
-          }
+    const address = account.address;
+    $landStore?.forEach((land) => {
+      if (land.owner === address) {
+        if (!claimStore.value[land.location]) {
+          claimStore.value[land.location] = {
+            lastClaimTime: 0,
+            animating: false,
+            land: land,
+            claimable: true,
+          };
         }
-      });
+      }
     });
   });
 

@@ -208,7 +208,7 @@ export function useLands(): LandsStore | undefined {
         async getPendingTaxes() {
           const result = (await sdk.client.actions.getPendingTaxesForLand(
             land.location,
-            account()!.getAccount()!.address,
+            account()!.getWalletAccount()!.address,
           )) as any[] | undefined;
 
           return result?.map((tax) => ({

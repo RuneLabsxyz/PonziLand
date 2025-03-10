@@ -1,10 +1,8 @@
-import { useLands, type LandWithActions } from '$lib/api/land.svelte';
-import { useAccount } from '$lib/contexts/account.svelte';
-import data from '$lib/data.json';
-import type { TileInfo, Token } from '$lib/interfaces';
-import { toHexWithPadding } from '$lib/utils';
-import { derived, readable, writable, type Readable } from 'svelte/store';
 import account from '$lib/account.svelte';
+import { useLands, type LandWithActions } from '$lib/api/land.svelte';
+import data from '$lib/data.json';
+import type { Token } from '$lib/interfaces';
+import { derived, writable, type Readable } from 'svelte/store';
 
 export const selectedLandPosition = writable<string | null>(null);
 
@@ -81,24 +79,6 @@ export const mousePosCoords = writable<{
   y: number;
   location: number;
 } | null>(null);
-
-export const accountAddress = readable<string | undefined>(
-  undefined,
-  (set, update) => {
-    const account = useAccount();
-
-    set(account!.getProvider()?.getAccount()?.address);
-
-    // Handle unsubscribe
-    return account!.listen((event) => {
-      if (event.type === 'connected') {
-        set(event.provider.getAccount()?.address);
-      } else if (event.type === 'disconnected') {
-        set(undefined);
-      }
-    });
-  },
-);
 
 export function usePlayerLands() {
   const landsStore = useLands();
