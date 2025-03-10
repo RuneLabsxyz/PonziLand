@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import account from '$lib/account.svelte';
   import { type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
@@ -10,7 +11,6 @@
     selectLand,
   } from '$lib/stores/stores.svelte';
   import { cn, hexStringToNumber, padAddress } from '$lib/utils';
-  import { uiStore } from '$lib/stores/ui.store.svelte';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeAnimation from '../land/land-nuke-animation.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
