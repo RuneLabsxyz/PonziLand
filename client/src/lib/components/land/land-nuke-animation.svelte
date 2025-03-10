@@ -3,18 +3,18 @@
 </script>
 
 <SpriteSheet
-  src="/sheets/explosion.png"
-  xSize={320}
-  ySize={232}
-  xMax={1600}
-  yMax={1163}
+  src="/sheets/nuclear-explosion.png"
+  xSize={350}
+  ySize={350}
+  xMax={1750}
+  yMax={2450}
   width={32}
   height={32}
   animate={true}
-  frameDelay={120}
+  frameDelay={90}
   startFrame={0}
-  endFrame={24}
+  endFrame={35}
   loop={false}
-  horizontal={false}
+  horizontal={true}
   autoplay={true}
 />

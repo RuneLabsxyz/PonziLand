@@ -110,6 +110,16 @@
       setNukables();
     }
   });
+
+  $effect(() => {
+    if (nukeStore.nuking.includes(land.location)) {
+      setTimeout(() => {
+        nukeStore.nuking = nukeStore.nuking.filter(
+          (loc) => loc !== land.location,
+        );
+      }, 5000);
+    }
+  });
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -188,7 +198,7 @@
 
   {#if nukeStore.pending.includes(land.location)}
     <div
-      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ponzi animate-pulse text-xs"
+      class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}
     >
       NUKABLE

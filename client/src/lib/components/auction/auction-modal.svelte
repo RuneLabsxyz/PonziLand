@@ -87,6 +87,10 @@
         land?.getNeighbors().locations.array.forEach((location) => {
           const locationString = toHexWithPadding(location);
           if (nukeStore.pending.includes(locationString)) {
+            // remove from pending
+            nukeStore.pending = nukeStore.pending.filter(
+              (loc) => loc !== locationString,
+            );
             nukeStore.nuking.push(locationString);
           }
         });

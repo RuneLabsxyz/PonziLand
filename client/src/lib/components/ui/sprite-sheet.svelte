@@ -17,7 +17,7 @@
     animate = false, // Whether to animate
     frameDelay = 100, // Delay between frames in milliseconds
     startFrame = 0, // Starting frame index
-    endFrame: initialEndFrame = -1, // Ending frame index (defaults to max frame)
+    endFrame: initialEndFrame = undefined, // Ending frame index (defaults to max frame)
     loop = true, // Whether to loop the animation
     horizontal = true, // Animation direction (horizontal or vertical)
     autoplay = true, // Start animation automatically
