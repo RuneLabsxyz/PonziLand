@@ -21,7 +21,7 @@
       alt="Lands"
       class="w-8 h-8 bg-cover"
     />
-    <span class="text-sm">My Lands</span>
+    <span class="text-xs">My Lands</span>
   </ToolbarButton>
   <ToolbarButton
     active={'auctions' === active}
@@ -38,7 +38,7 @@
       alt="Auctions"
       class="w-8 h-8 bg-cover"
     />
-    <span class="text-sm">Auctions</span>
+    <span class="text-xs">Auctions</span>
   </ToolbarButton>
   <ToolbarButton
     active={'notifications' === active}
@@ -55,7 +55,7 @@
       alt="Notifications"
       class="w-8 h-8 bg-cover"
     />
-    <span class="text-sm">Notifications</span>
+    <span class="text-xs">Pings</span>
   </ToolbarButton>
 </div>
 

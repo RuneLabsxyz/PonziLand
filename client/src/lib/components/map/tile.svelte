@@ -3,18 +3,18 @@
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
   import {
-    accountAddress,
     selectedLand,
     selectedLandMeta,
     selectLand,
     uiStore,
   } from '$lib/stores/stores.svelte';
-  import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
+  import { cn, hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
+  import account from '$lib/account.svelte';
 
   let {
     land,
@@ -26,9 +26,11 @@
     scale: number;
   }>();
 
+  let address = $derived(account.address);
+
   let isOwner = $derived.by(() => {
-    if (land.type == 'grass') return false;
-    return land?.owner == padAddress($accountAddress ?? '0x1');
+    if (land.type === 'grass') return false;
+    return land?.owner === padAddress(address ?? '');
   });
 
   let estimatedNukeTime = $derived.by(() => {
@@ -40,6 +42,8 @@
   });
 
   let selected = $derived($selectedLand?.location === land.location);
+
+  let hovering = $state(false);
 
   function handleClick() {
     console.log('clicked', dragged);
@@ -72,14 +76,6 @@
 
     uiStore.showModal = true;
     uiStore.modalType = 'bid';
-    // uiStore.modalData = {
-    //   location: hexStringToNumber($selectedLandMeta!.location),
-    //   // TODO: Enforce null checks here
-    //   sellPrice: $selectedLandMeta!.sellPrice ?? 0,
-    //   tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
-    //   tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
-    //   owner: $selectedLandMeta!.owner || undefined,
-    // };
   };
 </script>
 
@@ -87,13 +83,26 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore event_directive_deprecated -->
 <div class="relative {selected ? 'selected' : ''}">
-  <div onmouseup={handleClick} class={`relative tile`}>
+  <div
+    onmouseup={handleClick}
+    class={`relative tile`}
+    onmouseover={() => (hovering = true)}
+    onfocus={() => (hovering = true)}
+    onmouseout={() => (hovering = false)}
+    onblur={() => (hovering = false)}
+  >
     {#if land.type == 'auction'}
-      <LandDisplay auction road />
+      <LandDisplay auction road {selected} {hovering} />
     {:else if land.type == 'grass'}
-      <LandDisplay grass road seed={land.location} />
+      <LandDisplay grass road seed={land.location} {selected} {hovering} />
     {:else if land.type == 'house'}
-      <LandDisplay token={land.token} level={land.level} road />
+      <LandDisplay
+        token={land.token}
+        level={land.level}
+        road
+        {selected}
+        {hovering}
+      />
     {/if}
   </div>
 
@@ -102,7 +111,7 @@
       <Button
         size="sm"
         class="absolute bottom-0 left-1/2 z-20"
-        style="transform: translate(-50%, 50%)"
+        style="transform: translate(-50%, 0) scale(0.5)"
         onclick={handleBidClick}
       >
         BID
@@ -114,7 +123,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 50%)"
+          style="transform: translate(-50%, 0) scale(0.5)"
           onclick={() => {
             uiStore.showModal = true;
             uiStore.modalType = 'land-info';
@@ -126,7 +135,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 50%)"
+          style="transform: translate(-50%, 0) scale(0.5)"
           onclick={handleBuyLandClick}
         >
           BUY LAND
@@ -155,9 +164,10 @@
 
   {#if isOwner}
     <div
-      class="absolute top-0 left-1/2 -translate-x-1/2 {scale > 1.5
-        ? 'w-2 h-2'
-        : 'w-6 h-6'}"
+      class={cn(
+        'absolute top-0 left-1/2 -translate-x-1/2 z-20',
+        scale > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
+      )}
       style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
@@ -180,7 +190,6 @@
   }
 
   .selected {
-    outline: 1px solid #ff0;
-    z-index: 20;
+    z-index: 30;
   }
 </style>

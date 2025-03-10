@@ -128,21 +128,23 @@
     <h2 class="text-2xl">Buy Land</h2>
     <div class="flex flex-col items-center">
       <div class="flex gap-6">
-        <div class="flex flex-col items-center justify-center p-5 gap-3">
+        <div class="flex flex-col items-center justify-center p-5">
           {#if land}
             <LandOverview {land} size="lg" />
           {/if}
-          <div class="text-shadow-none">0 watching</div>
-          <div class="flex items-center gap-1">
+          <div class="text-stroke-none mt-5 opacity-25 text-blue-500">
+            # watchers ◭ coming soon ◭
+          </div>
+          <div class="flex items-center gap-1 mt-5">
             {#if priceDisplay}
               {#each priceDisplay as char}
                 {#if char === '.'}
-                  <span class="text-ponzi-huge text-3xl">.</span>
+                  <span class="text-ponzi-number text-3xl">.</span>
                 {:else if char == ','}
-                  <span class="text-ponzi-huge text-3xl opacity-0"></span>
+                  <span class="text-ponzi-number text-3xl opacity-0"></span>
                 {:else}
                   <span
-                    class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                    class="text-ponzi-number text-stroke-auction text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
                     >{char}</span
                   >
                 {/if}
@@ -172,9 +174,9 @@
               Fetching Price<ThreeDots />
             {/if}
           </div>
-          <div class="text-ponzi-huge text-3xl"></div>
+          <div class="text-ponzi-number text-3xl mt-2"></div>
           <div class="flex items-center gap-2">
-            <div class="text-3xl text-ponzi-huge text-white">
+            <div class="text-3xl text-ponzi-number text-white">
               {land?.token?.symbol}
             </div>
             <img
@@ -221,3 +223,10 @@
     </div>
   </Card>
 </div>
+
+<style>
+  .text-stroke-auction {
+    text-shadow: #1a1300 2px 3px;
+    -webkit-text-stroke: 0;
+  }
+</style>

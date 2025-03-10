@@ -30,16 +30,15 @@
 </script>
 
 <div
-  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+  class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 text-stroke-none"
 >
   <Card class="flex flex-col min-w-96 min-h-96 relative">
     <CloseButton
       onclick={handleCancel}
       className="absolute top-0 right-0 m-2"
     />
-
     <CardTitle class="mt-2 mb-3">Land Info</CardTitle>
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-2 text-stroke-none">
       <Input bind:value={stakeIncrease} />
       <Button onclick={handleIncreaseStake}>Increase stake</Button>
     </div>

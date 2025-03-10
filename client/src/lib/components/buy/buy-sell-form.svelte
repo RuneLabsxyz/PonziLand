@@ -40,8 +40,8 @@
   });
 </script>
 
-<div class="w-full flex flex-col gap-2">
-  <Label class="text-xl font-semibold">Select Token</Label>
+<div class="w-full flex flex-col gap-2 text-stroke-none">
+  <Label class="text-lg font-semibold">Select Token</Label>
   <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
     <SelectTrigger>
       {#if selectedToken}
@@ -88,11 +88,11 @@
   </button>
   <div class="flex gap-2">
     <div>
-      <Label class="text-xl font-semibold">Stake Amount</Label>
+      <Label class="text-lg font-semibold">Stake Amount</Label>
       <Input type="number" bind:value={stakeAmountVal} />
     </div>
     <div>
-      <Label class="text-xl font-semibold">Sell Price</Label>
+      <Label class="text-lg font-semibold">Sell Price</Label>
       <Input type="number" bind:value={sellAmountVal} />
     </div>
   </div>

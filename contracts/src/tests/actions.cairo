@@ -181,6 +181,32 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
     };
 }
 
+fn validate_staking_state(
+    store: Store,
+    contract_address: ContractAddress,
+    land_locations: Span<u64>,
+    tokens: Span<IERC20CamelDispatcher>,
+    should_have_balance: bool
+) {
+    let mut i = 0;
+    while i < land_locations.len() {
+        let location = *land_locations.at(i);
+        let land = store.land(location);
+        let token = *tokens.at(i);
+        let balance = token.balanceOf(contract_address);
+
+        if should_have_balance {
+            assert(land.stake_amount > 0, 'Stake > 0 expected');
+            assert(balance > 0, 'Balnce > 0 expected');
+        } else {
+            assert(land.stake_amount == 0, 'Stake == 0 expected');
+            assert(balance == 0, 'Balance == 0 expected');
+        }
+
+        i += 1;
+    };
+}
+
 
 // Helper functions for common test setup and actions
 fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCoreTestingDispatcher) {

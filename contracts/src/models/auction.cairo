@@ -1,9 +1,8 @@
 use starknet::get_block_timestamp;
-use ponzi_land::consts::{PRICE_DECREASE_RATE, TIME_SPEED};
+use ponzi_land::consts::{PRICE_DECREASE_RATE, TIME_SPEED, DECIMALS_FACTOR};
 
 
 const SECONDS_IN_WEEK: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
-const INITIAL_MULTIPLIER: u256 = 1_000_000_000_000_000_000; // 10^18
 const SCALING_FACTOR: u8 = 50;
 
 #[derive(Copy, Drop, Serde, Debug)]
@@ -90,28 +89,27 @@ impl AuctionImpl of AuctionTrait {
             return 0;
         }
 
-        // Scale the time passed by INITIAL_MULTIPLIER to maintain precision in integer math
-        let progress__time: u256 = (time_passed.into() * INITIAL_MULTIPLIER / SECONDS_IN_WEEK)
-            .into();
+        // Scale the time passed by DECIMALS_FACTOR to maintain precision in integer math
+        let progress__time: u256 = (time_passed.into() * DECIMALS_FACTOR / SECONDS_IN_WEEK).into();
 
-        // k is the decay rate (adjusted by INITIAL_MULTIPLIER for scaling)
-        let k: u256 = (self.decay_rate.into() * INITIAL_MULTIPLIER)
+        // k is the decay rate (adjusted by DECIMALS_FACTOR for scaling)
+        let k: u256 = (self.decay_rate.into() * DECIMALS_FACTOR)
             / SCALING_FACTOR.into(); // 4 * 10^18 / 50
 
         // Calculate the denominator (1 + k * t) using scaled values for precision
-        let denominator = INITIAL_MULTIPLIER + (k * progress__time / INITIAL_MULTIPLIER);
+        let denominator = DECIMALS_FACTOR + (k * progress__time / DECIMALS_FACTOR);
 
         // Calculate the decay factor using the formula (1 / (1 + k * t))^2
         // Ensure denominator is not zero to avoid division by zero errors
         let decay_factor = if denominator != 0 {
-            let temp = (INITIAL_MULTIPLIER * INITIAL_MULTIPLIER) / denominator;
-            (temp * temp) / INITIAL_MULTIPLIER
+            let temp = (DECIMALS_FACTOR * DECIMALS_FACTOR) / denominator;
+            (temp * temp) / DECIMALS_FACTOR
         } else {
             0
         };
 
         // current price
-        self.start_price * decay_factor / INITIAL_MULTIPLIER
+        self.start_price * decay_factor / DECIMALS_FACTOR
     }
 }
 

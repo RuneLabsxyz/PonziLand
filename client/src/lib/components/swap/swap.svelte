@@ -165,7 +165,7 @@
 </script>
 
 <Label class="font-semibold" for="sellAmount">You sell:</Label>
-<div class="flex mt-1">
+<div class="flex mt-1 text-stroke-none">
   <Input
     type="number"
     bind:value={sellAmountVal}
@@ -174,7 +174,7 @@
   />
   <TokenSelect class="max-w-32" bind:value={sellToken} />
 </div>
-<div>
+<div class="mt-2">
   {#if sellTokenBalance != undefined}
     You have <span class="font-bold">{sellTokenBalance}</span>
     {sellToken?.symbol ?? ''}
@@ -198,7 +198,7 @@
 </div>
 
 <Label class="font-semibold">To buy:</Label>
-<div class="flex mt-1">
+<div class="flex mt-1 text-stroke-none">
   <Input
     type="number"
     bind:value={buyAmountVal}
@@ -206,7 +206,7 @@
   />
   <TokenSelect class="max-w-32" bind:value={buyToken} />
 </div>
-<div>
+<div class="mt-2">
   {#if buyTokenBalance != undefined}
     You have <span class="font-bold">{buyTokenBalance}</span>
     {buyToken?.symbol ?? ''}
@@ -217,7 +217,7 @@
   <!-- Prepare slippage -->
   <div class="flex flex-col gap-2">
     <Label class="" for="slippage">Max Slippage:</Label>
-    <div class="inline-block relative">
+    <div class="inline-block relative text-stroke-none">
       <Input
         type="text"
         inputmode="numeric"
@@ -225,11 +225,7 @@
         id="slippage"
         class="w-16"
       />
-      <p
-        class="absolute top-[0.79em] right-[0.5em] text-black text-shadow-none"
-      >
-        %
-      </p>
+      <p class="absolute top-[0.79em] right-[0.5em]">%</p>
     </div>
   </div>
   <Button onclick={swap} disabled={quotes.length <= 0}>Swap</Button>

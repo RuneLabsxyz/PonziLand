@@ -93,7 +93,7 @@
   });
 </script>
 
-<div class="h-screen w-screen bg-black/10 overflow-hidden">
+<div class="h-screen w-screen bg-black/10 overflow-visible">
   {#if loading}
     <LoadingScreen {value} />
   {:else if showRegister}

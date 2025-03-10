@@ -53,6 +53,7 @@
     "@types/seedrandom": "^3.0.8",
     "bignumber.js": "^9.1.2",
     "ethers": "^6.13.5",
+    "gsap": "^3.12.7",
     "lucide-svelte": "^0.471.0",
     "seedrandom": "^3.0.5",
     "starknet": "6.21.0",
