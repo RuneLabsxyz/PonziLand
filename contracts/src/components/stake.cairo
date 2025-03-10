@@ -94,10 +94,36 @@ mod StakeComponent {
             store.set_land(land);
         }
 
-        fn reimburse_and_return_ratios(
+        fn reimburse(
             ref self: ComponentState<TContractState>,
             mut store: Store,
-            active_lands_with_taxes: Span<LandWithTaxes>
+            active_lands_with_taxes: Span<LandWithTaxes>,
+            ref token_ratios: Felt252Dict<Nullable<u256>>
+        ) {
+            let mut payable = get_dep_component_mut!(ref self, Payable);
+
+            for mut land_with_taxes in active_lands_with_taxes {
+                let mut land = *land_with_taxes.land;
+                let token_ratio = match match_nullable(token_ratios.get(land.token_used.into())) {
+                    FromNullableResult::Null => 0_u256,
+                    FromNullableResult::NotNull(val) => val.unbox(),
+                };
+
+                let refund_amount = calculate_refund_amount(land.stake_amount, token_ratio);
+
+                let validation_result = payable
+                    .validate(land.token_used, get_contract_address(), refund_amount);
+
+                let status = payable.transfer(land.owner, validation_result);
+                assert(status, errors::ERC20_REFUND_FAILED);
+
+                land.stake_amount = 0;
+                store.set_land(land);
+            };
+        }
+
+        fn calculate_token_ratios(
+            ref self: ComponentState<TContractState>, active_lands_with_taxes: Span<LandWithTaxes>
         ) -> Felt252Dict<Nullable<u256>> {
             let (mut stake_totals, mut tax_totals, unique_tokens) = summarize_totals(
                 active_lands_with_taxes
@@ -120,35 +146,9 @@ mod StakeComponent {
                     let ratio = calculate_refund_ratio(total_staked + total_tax, balance);
 
                     token_ratios.insert(token_key, NullableTrait::new(ratio));
-
-                    for mut land_with_taxes in active_lands_with_taxes {
-                        self.distribute_refund(store, *land_with_taxes.land, token_address, ratio);
-                    };
                 };
 
             token_ratios
-        }
-
-        fn distribute_refund(
-            ref self: ComponentState<TContractState>,
-            mut store: Store,
-            mut land: Land,
-            token_used: ContractAddress,
-            ratio: u256,
-        ) {
-            if land.token_used == token_used {
-                let refund_amount = calculate_refund_amount(land.stake_amount, ratio);
-
-                let mut payable = get_dep_component_mut!(ref self, Payable);
-                let validation_result = payable
-                    .validate(land.token_used, get_contract_address(), refund_amount);
-
-                let status = payable.transfer(land.owner, validation_result);
-                assert(status, errors::ERC20_REFUND_FAILED);
-
-                land.stake_amount = 0;
-                store.set_land(land);
-            }
         }
     }
 }

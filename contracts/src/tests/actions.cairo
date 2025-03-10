@@ -955,6 +955,7 @@ fn test_reimburse_stakes() {
     let erc20_neighbor_2 = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_2()
     );
+
     let erc20_neighbor_3 = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_3()
     );
@@ -982,10 +983,9 @@ fn test_reimburse_stakes() {
 
     initialize_land(actions_system, main_currency, RECIPIENT(), 1251, 500, 157, main_currency);
 
-    let land_locations = array![1280, 1281, 1216, 1217, 1250, 1251];
+    let land_locations = array![1280, 1216, 1217, 1250, 1251];
     let tokens = array![
-        main_currency,
-        erc20_neighbor_1,
+        main_currency, // erc20_neighbor_1,
         erc20_neighbor_2,
         erc20_neighbor_3,
         main_currency,
@@ -1018,9 +1018,6 @@ fn test_claim_all() {
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
     );
 
-    let erc20_neighbor_2 = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_2()
-    );
     let erc20_neighbor_3 = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_3()
     );

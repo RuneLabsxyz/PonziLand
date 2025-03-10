@@ -536,9 +536,11 @@ pub mod actions {
 
             let mut token_ratios = self
                 .stake
-                .reimburse_and_return_ratios(store, active_lands_with_taxes.span());
+                .calculate_token_ratios(active_lands_with_taxes.span());
 
-            self.distribute_adjusted_taxes(active_lands_with_taxes, token_ratios);
+            self.stake.reimburse(store, active_lands_with_taxes.span(), ref token_ratios);
+
+            self.distribute_adjusted_taxes(active_lands_with_taxes, ref token_ratios);
         }
 
 
@@ -894,7 +896,7 @@ pub mod actions {
         fn distribute_adjusted_taxes(
             ref self: ContractState,
             active_lands_with_taxes: Array<LandWithTaxes>,
-            mut token_ratios: Felt252Dict<Nullable<u256>>
+            ref token_ratios: Felt252Dict<Nullable<u256>>
         ) {
             for land_with_taxes in active_lands_with_taxes
                 .span() {
@@ -912,7 +914,6 @@ pub mod actions {
                                     FromNullableResult::Null => 0_u256,
                                     FromNullableResult::NotNull(val) => val.unbox(),
                                 };
-
                                 let adjuested_tax_amount = calculate_refund_amount(
                                     tax.amount, token_ratio
                                 );
@@ -926,7 +927,6 @@ pub mod actions {
                                     )
                             }
                     }
-
                     self.taxes._claim(adjusted_taxes, land.owner, land.location);
                 }
         }
