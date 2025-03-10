@@ -20,6 +20,7 @@ import { Neighbors } from './neighbors';
 import { estimateNukeTime, getNeighbourYieldArray } from '$lib/utils/taxes';
 import type { Level as LevelModel } from '$lib/models.gen';
 import { fromDojoLevel } from '$lib/utils/level';
+import { toNumber } from 'ethers';
 
 export type TransactionResult = Promise<
   | {
@@ -255,6 +256,7 @@ export function useLands(): LandsStore | undefined {
               location: land.location,
               source: landWithActions,
             }).getNeighbors().length,
+            toNumber(land.last_pay_time),
           );
         },
         getNeighbors() {

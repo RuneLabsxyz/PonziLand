@@ -7,6 +7,7 @@
   import { Label } from '../ui/label';
   import { Slider } from '../ui/slider';
   import BuyInsightsNeighborGrid from './insights/buy-insights-neighbor-grid.svelte';
+  import { toNumber } from 'ethers';
 
   let {
     sellAmountVal,
@@ -104,6 +105,7 @@
       parseFloat(sellAmountVal),
       parseFloat(stakeAmountVal),
       nbNeighbors,
+      Date.now() / 1000,
     ),
   );
 

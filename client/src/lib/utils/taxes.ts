@@ -141,6 +141,7 @@ export const estimateNukeTime = (
   sellPrice: number,
   remainingStake: number,
   neighbourNumber: number,
+  lastPayTime: number,
 ) => {
   const tax = estimateTax(sellPrice);
 
@@ -153,7 +154,11 @@ export const estimateNukeTime = (
   const remainingHours = remainingStake / rateOfActualNeighbours;
   const remainingSeconds = remainingHours * tax.baseTime;
 
-  return remainingSeconds;
+  const now = Date.now() / 1000;
+  const timeSinceLastPay = now - lastPayTime;
+  const remainingNukeTimeFromNow = remainingSeconds - timeSinceLastPay;
+
+  return remainingNukeTimeFromNow;
 };
 
 export const estimateTax = (sellPrice: number) => {
