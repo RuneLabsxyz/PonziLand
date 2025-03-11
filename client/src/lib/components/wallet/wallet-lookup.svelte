@@ -86,15 +86,6 @@
         </button>
         <button
           onclick={() => {
-            console.log('Starting Discord link');
-            socialink.startLink('discord');
-          }}
-          aria-label="Logout"
-        >
-          Discord
-        </button>
-        <button
-          onclick={() => {
             accountManager?.disconnect();
           }}
           aria-label="Logout"
