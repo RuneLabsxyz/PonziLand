@@ -13,7 +13,7 @@
   import { loadImageShape } from '@tsparticles/shape-image';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import Register from '$lib/components/socialink/register.svelte';
-  import { setup as setupAccountState } from '$lib/account.svelte';
+  import { setup as setupAccountState, refresh } from '$lib/account.svelte';
   import Invitation from '$lib/components/socialink/Invitation.svelte';
 
   void particlesInit(async (engine) => {
@@ -84,6 +84,9 @@
         const address = accountManager
           ?.getProvider()
           ?.getWalletAccount()?.address;
+
+        // Make sure that we finished updating the user signup state.
+        await refresh();
 
         clearLoading();
       })

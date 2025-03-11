@@ -35,11 +35,11 @@ const resetState = () => {
   state.profile = undefined;
 };
 
-export function refresh() {
+export async function refresh() {
   const accountManager = useAccount()!;
   const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
-    updateState(currentProvider);
+    await updateState(currentProvider);
   } else {
     resetState();
   }
