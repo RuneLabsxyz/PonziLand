@@ -3,6 +3,7 @@ import { useDojo } from '$lib/contexts/dojo';
 import type { Token } from '$lib/interfaces';
 import { getTokenInfo } from '$lib/utils';
 import { getAggregatedTaxes } from '$lib/utils/taxes';
+import type { BigNumberish } from 'ethers';
 import type { Account, AccountInterface } from 'starknet';
 import { claimQueue } from './event.store.svelte';
 
@@ -38,7 +39,7 @@ export async function claimAllOfToken(
   await sdk.client.actions
     .claimAll(
       account,
-      landsWithThisToken.map((land) => land.location),
+      landsWithThisToken.map((land) => land.location as BigNumberish),
     )
     .then(() => {
       // update the last claim time for all the lands
