@@ -39,8 +39,10 @@
   // Form
   let selectedToken = $state<Token | undefined>();
   //TODO: Change defaults values into an error component
-  let stakeAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('10'));
-  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('1'));
+  let stakeAmount = $state<CurrencyAmount>(
+    CurrencyAmount.fromScaled('0.0000001'),
+  );
+  let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled('0.0001'));
 
   async function handleBiddingClick() {
     loading = true;

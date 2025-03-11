@@ -6,6 +6,7 @@
   import { cameraPosition, cameraTransition } from '$lib/stores/camera';
   import { claimStore } from '$lib/stores/claim.svelte';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
+  import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
 
   const MAP_SIZE = 64;
@@ -34,8 +35,10 @@
 
   $effect(() => {
     const address = account.address;
+    if (!address || !landStore) return;
+    const addressString = padAddress(address);
     $landStore?.forEach((land) => {
-      if (land.owner === address) {
+      if (land.owner === addressString) {
         if (!claimStore.value[land.location]) {
           claimStore.value[land.location] = {
             lastClaimTime: 0,

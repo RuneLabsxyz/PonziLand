@@ -12,28 +12,18 @@
 
   let opacity = $state(0);
 
+  import { gsap } from 'gsap';
+
   onMount(() => {
-    // Start animation from 0 to 1 opacity
-    const animation = () => {
-      const start = performance.now();
-      const duration = 1500; // 1.5 seconds
-
-      const step = (timestamp: any) => {
-        const elapsed = timestamp - start;
-        const progress = Math.min(elapsed / duration, 1);
-
-        // Update opacity value from 0 to 1
-        opacity = progress;
-
-        if (progress < 1) {
-          requestAnimationFrame(step);
-        }
-      };
-
-      requestAnimationFrame(step);
-    };
-
-    animation();
+    // Create a timeline to animate opacity from 0 to 1 and then back to 0
+    const tl = gsap.timeline();
+    tl.to('.flashing-biome', {
+      duration: 0.3,
+      opacity: 1,
+    }).to('.flashing-biome', {
+      duration: 1.5,
+      opacity: 0,
+    });
   });
 </script>
 
@@ -43,10 +33,9 @@
     style="mask-image: url('/sheets/biomes.png'); mask-position: {-biomeX *
       width}px {-biomeY * height}px; mask-size: {(2048 / 256) *
       width}px {(3072 / 256) * height}px;"
-    transition:fade={{ duration: 200 }}
   >
     <div
-      class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
+      class="flashing-biome absolute h-full w-full top-0 bottom-0 left-0 right-0"
       style="background-color: white; opacity: {opacity};"
     ></div>
   </div>

@@ -5,7 +5,6 @@
   import seedrandom from 'seedrandom';
   import SpriteSheet from '../ui/sprite-sheet.svelte';
   import type { Level } from '$lib/api/land.svelte';
-  import NukeExplosion from '../animation/nuke-explosion.svelte';
 
   let {
     class: className = '',
@@ -18,7 +17,6 @@
     level = 1,
     selected = false,
     hovering = false,
-    nuking = false,
   }: {
     class?: string;
     token?: Token;
@@ -30,7 +28,6 @@
     level?: Level;
     selected?: boolean;
     hovering?: boolean;
-    nuking?: boolean;
   } = $props();
 
   let rng = $derived(seedrandom(seed));
@@ -123,14 +120,6 @@
         ? 'selected'
         : ''} {hovering ? 'hovering' : ''}"
     />
-    {#if nuking}
-      <NukeExplosion
-        biomeX={token.images.biome.x}
-        biomeY={token.images.biome.y}
-        {width}
-        {height}
-      />
-    {/if}
   {:else if basic}
     <div
       style="background-image: url('/assets/tokens/basic/castles/basic.png'); background-size: contain; background-position: center;"

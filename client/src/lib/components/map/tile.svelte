@@ -19,6 +19,7 @@
   import RatesOverlay from './rates-overlay.svelte';
   import { onMount } from 'svelte';
   import { getAggregatedTaxes } from '$lib/utils/taxes';
+  import NukeExplosion from '../animation/nuke-explosion.svelte';
 
   let {
     land,
@@ -31,6 +32,7 @@
   }>();
 
   let address = $derived(account.address);
+  let isNuking = $derived(nukeStore.nuking.includes(land.location));
 
   let isOwner = $derived.by(() => {
     if (land.type === 'grass') return false;
@@ -134,7 +136,9 @@
     onmouseout={() => (hovering = false)}
     onblur={() => (hovering = false)}
   >
-    {#if land.type == 'auction'}
+    {#if isNuking}
+      <LandDisplay grass road seed={land.location} {selected} {hovering} />
+    {:else if land.type == 'auction'}
       <LandDisplay auction road {selected} {hovering} />
     {:else if land.type == 'grass'}
       <LandDisplay grass road seed={land.location} {selected} {hovering} />
@@ -145,7 +149,6 @@
         road
         {selected}
         {hovering}
-        nuking={true}
       />
     {/if}
   </div>
@@ -206,7 +209,15 @@
     </div>
   {/if}
 
-  {#if nukeStore.nuking.includes(land.location) || land.type == 'house'}
+  {#if isNuking}
+    {#if land.type == 'house' && land.token}
+      <NukeExplosion
+        biomeX={land.token.images.biome.x}
+        biomeY={land.token.images.biome.y}
+        width={32}
+        height={32}
+      />
+    {/if}
     <div class="absolute top-0 right-0 w-full h-full z-20">
       <LandNukeAnimation />
     </div>
