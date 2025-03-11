@@ -97,6 +97,8 @@
 </script>
 
 <div class="h-screen w-screen bg-black/10 overflow-visible">
+  <SwitchChainModal />
+
   {#if loading}
     <LoadingScreen {value} />
   {:else if showRegister}
@@ -104,7 +106,6 @@
   {:else if showInvitation}
     <Invitation />
   {:else}
-    <SwitchChainModal />
     <Map />
     <Ui />
   {/if}

@@ -48,7 +48,7 @@
   }
 </script>
 
-<div class="fixed inset-0 flex items-center justify-center z-50 bg-[#322637]">
+<div class="fixed inset-0 flex items-center justify-center z-40 bg-[#322637]">
   <Card class="flex flex-col min-w-96 min-h-96 bg-ponzi">
     <div class="flex flex-col items-center">
       <div class="flex flex-col items-center space-y-6">

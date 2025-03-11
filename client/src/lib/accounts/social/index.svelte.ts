@@ -57,7 +57,6 @@ async function sendRegister(typedData: any, signature: Signature) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      username: typedData.message.username,
       signature,
       address: get(accountAddress),
       typedData,
@@ -79,11 +78,14 @@ async function sendRegister(typedData: any, signature: Signature) {
 }
 
 export async function register(username: string) {
+  username = username.toLowerCase();
   // Fetch the signature from socialink
   const signatureResponse = await fetchRegisterSignature(username);
 
   // Get the account provider, and ask for a signature
   try {
+    console.log('Sending signature request: ', signatureResponse);
+
     const account = useAccount()?.getProvider()?.getWalletAccount();
     const signature = await account?.signMessage(signatureResponse);
 
@@ -102,7 +104,7 @@ export async function register(username: string) {
 
 export async function checkUsername(username: string) {
   const response = await fetch(
-    `${PUBLIC_SOCIALINK_URL}/api/user/availability/${username}`,
+    `${PUBLIC_SOCIALINK_URL}/api/user/availability/${username.toLowerCase()}`,
   );
 
   if (!response.ok) {

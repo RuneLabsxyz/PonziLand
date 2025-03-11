@@ -16,7 +16,7 @@
   }
 </script>
 
-<div class="fixed inset-0 flex items-center justify-center z-50 bg-[#322637]">
+<div class="fixed inset-0 flex items-center justify-center z-40 bg-[#322637]">
   <Card class="pointer-events-auto p-5 bg-ponzi">
     <h1 class="text-2xl font-bold">Whitelist</h1>
     <p class="text-lg">Validate your account to access the game.</p>
