@@ -1,5 +1,6 @@
 import { $, env, file } from "bun";
 import tokens from "./tokens.json";
+import manifest from "../contracts/manifest_sepolia.json";
 import holders from "./query-results.json";
 import {
   Account,
@@ -55,12 +56,42 @@ function getCalls(contractAddress: string) {
   return calls;
 }
 
-console.log(
-  await account.execute(
-    getCalls(
-      "0x02d9ec36cd62c36e2b3cb2256cd07af0e5518e9e462a8091d73b0ba045fc1446",
-    ),
-  ),
+async function resetUser(address: string) {
+  console.log("Reseting user.");
+  const authContractAddress = manifest.contracts.find(
+    (e) => e.tag == "ponzi_land-auth",
+  )?.address;
+
+  const txHash = await account.execute([
+    // Reset the activation status
+    {
+      contractAddress: authContractAddress!,
+      entrypoint: "remove_authorized",
+      calldata: CallData.compile({
+        address,
+      }),
+    },
+    // Reset the mint status
+    {
+      contractAddress:
+        "0x02d9ec36cd62c36e2b3cb2256cd07af0e5518e9e462a8091d73b0ba045fc1446",
+      entrypoint: "set_mint_status",
+      calldata: CallData.compile({
+        address,
+        status: new CairoOption<CairoCustomEnum>(CairoOptionVariant.None),
+      }),
+    },
+  ]);
+
+  console.log(txHash);
+
+  await provider.waitForTransaction(txHash.transaction_hash);
+
+  console.log(`Transaction ${txHash} passed!`);
+}
+
+await resetUser(
+  "0x01537422a78edbb830b46007573169e2d0c1b524f6de8f9e7775f3be1be5da5d",
 );
 
 exit(0);
@@ -68,10 +99,7 @@ exit(0);
 async function setAccess(token_address: string) {
   const contract = new Contract(ABI, token_address, account).typedv2(ABI);
 
-  const tx = await contract.set_access(
-    "0x02d9ec36cd62c36e2b3cb2256cd07af0e5518e9e462a8091d73b0ba045fc1446",
-    new CairoCustomEnum({ Minter: {} }),
-  );
+  const tx = await contract;
 
   await provider.waitForTransaction(tx.transaction_hash);
 
