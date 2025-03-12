@@ -856,7 +856,7 @@ fn test_organic_auction() {
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
         );
 
-    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 90000);
+    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 900000);
 
     // Initial head locations
     let heads: Array<u64> = array![1080, 1050, 1002, 1007];

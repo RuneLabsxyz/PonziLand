@@ -108,8 +108,13 @@ impl AuctionImpl of AuctionTrait {
             0
         };
 
-        // current price
-        self.start_price * decay_factor / DECIMALS_FACTOR
+        let current_price = self.start_price * decay_factor / DECIMALS_FACTOR;
+
+        if current_price > self.floor_price {
+            current_price
+        } else {
+            self.floor_price
+        }
     }
 }
 
