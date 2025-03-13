@@ -64,39 +64,3 @@ export function parseTokenBalances(
 
   return result;
 }
-
-interface PriceResponse {
-  buyAmount: string;
-  sellAmount: string;
-  estimatedPriceImpact: string;
-  routes: any[];
-}
-
-export async function fetchSwapPrice(
-  sellTokenAddress: string,
-  buyTokenAddress: string,
-  sellAmount: string,
-): Promise<PriceResponse> {
-  try {
-    const url = new URL('https://starknet.api.avnu.fi/swap/v2/prices');
-    url.searchParams.append('sellTokenAddress', sellTokenAddress);
-    url.searchParams.append('buyTokenAddress', buyTokenAddress);
-    url.searchParams.append('sellAmount', sellAmount);
-
-    const response = await fetch(url.toString(), {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching swap price:', error);
-    throw error;
-  }
-}
