@@ -2,20 +2,55 @@
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import { Card } from '$lib/components/ui/card';
   import OnboardingWalletInfo from '$lib/components/wallet/onboarding-wallet-info.svelte';
-  import type { LayoutData } from './$types';
+  import { useAccount, setupAccount } from '$lib/contexts/account.svelte';
+  import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { Account } from 'starknet';
+  import { Button } from '$lib/components/ui/button';
+  import { goto } from '$app/navigation';
+
+  const accountManager = useAccount();
 
   const { children } = $props();
 
   // Setup socialink
-  setupSocialink();
+  const setupPromise = (async () => {
+    await setupSocialink();
+    const account = await setupAccount();
+    setup();
+
+    // Once all is ready, check for a redirect
+    if (!accountDataProvider.isConnected) {
+      goto('/onboarding/connect');
+    }
+  })();
+
+  const onConnect = async () => {
+    if (!accountDataProvider.profile?.exists) {
+      // redirect to the register
+      goto('/onboarding/register');
+    } else if (!accountDataProvider.profile?.whitelisted) {
+      goto('/onboarding/whitelist');
+    } else {
+      goto('/game');
+    }
+  };
 </script>
 
-<OnboardingWalletInfo />
+<OnboardingWalletInfo onconnect={onConnect} />
 
 <div
   class="w-screen h-screen inset-0 flex items-center justify-center bg-[#322637]"
 >
   <Card class="flex flex-col min-w-96 min-h-96 bg-ponzi m-5">
-    {@render children()}
+    {#await setupPromise}
+      <div class="flex flex-col items-center justify-center h-full grow">
+        <h1 class="text-2xl font-bold pt-2">Loading...</h1>
+        <div class="md:max-w-[50vw] opacity-90 p-5 gap-2 flex flex-col grow">
+          <p>Please wait while we set up your account.</p>
+        </div>
+      </div>
+    {:then}
+      {@render children()}
+    {/await}
   </Card>
 </div>

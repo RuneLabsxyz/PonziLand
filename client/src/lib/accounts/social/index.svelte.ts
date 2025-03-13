@@ -14,6 +14,7 @@ export async function setupSocialink() {
 
   socialink = new Socialink(
     PUBLIC_SOCIALINK_URL,
+    // @ts-expect-error: This causes an error due to a starknet.js version mismatch
     async () => account?.getProvider()?.getWalletAccount()!,
   );
 
@@ -50,7 +51,11 @@ async function fetchRegisterSignature(username: string) {
   return await response.json();
 }
 
-async function sendRegister(typedData: any, signature: Signature) {
+async function sendRegister(
+  typedData: any,
+  signature: Signature,
+  controller: boolean = false,
+) {
   if (!account.address) {
     console.error(
       'No account address found',
@@ -67,6 +72,7 @@ async function sendRegister(typedData: any, signature: Signature) {
       signature,
       address: account.address,
       typedData,
+      method: controller ? 'controller' : 'starknetjs',
     }),
   });
 
@@ -92,8 +98,8 @@ export async function register(username: string) {
   // Get the account provider, and ask for a signature
   try {
     console.log('Sending signature request: ', signatureResponse);
-
-    const account = useAccount()?.getProvider()?.getWalletAccount();
+    const provider = useAccount()?.getProvider();
+    const account = provider?.getWalletAccount();
 
     const hash = await account?.hashMessage(signatureResponse);
 
@@ -102,7 +108,11 @@ export async function register(username: string) {
     console.log('Signature:', signature, 'for hash:', hash);
 
     // Submit the response to the server
-    await sendRegister(signatureResponse, signature!);
+    await sendRegister(
+      signatureResponse,
+      signature!,
+      useAccount()?.getProviderName() == 'controller',
+    );
 
     console.log('Successfully registered!');
   } catch (e) {
@@ -113,7 +123,7 @@ export async function register(username: string) {
   }
 }
 
-export async function checkUsername(username: string) {
+export async function checkUsername(username: string): Promise<true | string> {
   const response = await fetch(
     `${PUBLIC_SOCIALINK_URL}/api/user/availability/${username.toLowerCase()}`,
   );
@@ -129,5 +139,6 @@ export async function checkUsername(username: string) {
     }
   }
 
-  return (await response.json()).available;
+  const data = await response.json();
+  return data.available ? true : data.error;
 }

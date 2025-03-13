@@ -119,10 +119,6 @@
 
   {#if loading}
     <LoadingScreen {value} />
-  {:else if showRegister}
-    <Register />
-  {:else if showInvitation}
-    <Invitation />
   {:else}
     <Map />
     <Ui />

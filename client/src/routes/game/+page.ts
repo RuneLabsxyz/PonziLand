@@ -1,4 +1,6 @@
-export function load({ url }) {
+import type { PageLoad } from './$types';
+
+const load: PageLoad = async ({ url }) => {
   // Access the query parameter
   const isAdmin = url.searchParams.get('admin') === 'true';
 
@@ -6,4 +8,4 @@ export function load({ url }) {
   return {
     isAdmin,
   };
-}
+};
