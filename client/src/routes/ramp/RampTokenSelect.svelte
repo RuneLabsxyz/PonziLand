@@ -8,6 +8,8 @@
   import data from '$lib/data.json';
   import { onMount } from 'svelte';
   import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
+  import { ImageIcon } from 'lucide-svelte';
+  import ImageIfAvailable from '$lib/components/ui/image-if-available.svelte';
 
   let {
     values,
@@ -31,7 +33,11 @@
   <SelectTrigger {...rest}>
     {#if value}
       <div class="flex gap-2 items-center">
-        <img class="h-4 w-4 rounded-full" src={value.logo} alt={value.symbol} />
+        <ImageIfAvailable
+          class="h-4 w-4 rounded-full"
+          src={value.logo}
+          alt=""
+        />
         {value.symbol}
       </div>
     {:else}
@@ -42,10 +48,10 @@
     {#each values as token}
       <SelectItem value={token}>
         <div class="flex gap-2 items-center">
-          <img
+          <ImageIfAvailable
             class="h-4 w-4 rounded-full"
             src={token.logo}
-            alt={token.symbol}
+            alt=""
           />
           {token.symbol}
         </div>

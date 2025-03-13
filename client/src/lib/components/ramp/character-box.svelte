@@ -107,7 +107,7 @@
         instructions.instructions[stepNumber - 1]?.description.length}
     />
     <button
-      class="relative bg-chatbox flex items-center justify-center"
+      class="relative bg-chatbox flex items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
       style="background-image: url('/assets/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
       onclick={() => {
         if (
@@ -124,9 +124,9 @@
       {#if stepNumber <= instructions.instructions.length}
         <div class="p-4 mx-14 text-black text-left" style="width: 550px;">
           <div class="mb-2">
-            <p class="text-3xl font-bold">{displayedTitle}</p>
+            <p class="text-2xl font-bold">{displayedTitle}</p>
           </div>
-          <div class="relative text-xl">
+          <div class="relative text-md">
             <span class="invisible block">
               {instructions.instructions[stepNumber - 1].description}
             </span>

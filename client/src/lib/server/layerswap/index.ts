@@ -6,7 +6,7 @@ import { Fan } from 'lucide-svelte';
 export const SWAP_ENV = {
   SN_SEPOLIA: {
     destination_network: 'STARKNET_SEPOLIA',
-    destination_token: 'ARUSDC',
+    destination_token: 'USDC',
   },
 };
 
