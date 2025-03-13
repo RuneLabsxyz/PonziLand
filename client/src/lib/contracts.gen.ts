@@ -1,8 +1,11 @@
 import { type DojoCall, DojoProvider } from '@dojoengine/core';
-import { CallData, Account, AccountInterface, type BigNumberish } from 'starknet';
+import {
+  CallData,
+  Account,
+  AccountInterface,
+  type BigNumberish,
+} from 'starknet';
 import * as models from './models.gen';
-
-
 
 export function setupWorld(provider: DojoProvider) {
   const build_auth_addAuthorized_calldata = (address: string): DojoCall => {

@@ -6,11 +6,7 @@ import type {
   SchemaType as PonziLandSchemaType,
   PoolKey,
 } from '$lib/models.gen';
-import {
-  ensureNumber,
-  getTokenInfo,
-  toHexWithPadding
-} from '$lib/utils';
+import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { fromDojoLevel } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
@@ -305,6 +301,6 @@ export function useLands(): LandsStore | undefined {
         decayRate,
         false,
       );
-    }
+    },
   };
 }
