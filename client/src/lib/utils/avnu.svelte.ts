@@ -24,6 +24,19 @@ export type BuyQuote = BaseQuoteParams & {
 
 export type QuoteParams = SellQuote | BuyQuote;
 
+export type SwapPriceParams = {
+  sellTokenAddress: string;
+  buyTokenAddress: string;
+  sellAmount: string;
+};
+
+export type SwapPriceResponse = {
+  buyAmount: string;
+  sellAmount: string;
+  estimatedPriceImpact: string;
+  routes: any[];
+}[];
+
 export function useAvnu() {
   // Setup avnu client
   const options = { baseUrl: PUBLIC_AVNU_URL };
@@ -57,6 +70,30 @@ export function useAvnu() {
         executeOptions,
         options,
       );
+    },
+    async fetchSwapPrice(params: SwapPriceParams): Promise<SwapPriceResponse> {
+      try {
+        const url = new URL(`${PUBLIC_AVNU_URL}/swap/v2/prices`);
+        url.searchParams.append('sellTokenAddress', params.sellTokenAddress);
+        url.searchParams.append('buyTokenAddress', params.buyTokenAddress);
+        url.searchParams.append('sellAmount', params.sellAmount);
+
+        const response = await fetch(url.toString(), {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        return await response.json();
+      } catch (error) {
+        console.error('Error fetching swap price:', error);
+        throw error;
+      }
     },
   };
 }

@@ -3,7 +3,11 @@
   import { onMount } from 'svelte';
 
   import { fetchTokenBalances, baseToken } from './request';
-  import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
+  import {
+    useAvnu,
+    type QuoteParams,
+    type SwapPriceParams,
+  } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   //Types
@@ -52,7 +56,7 @@
 
   /**
    * @notice Calculates the price of a token amount in base currency (estark)
-   * @dev Uses Avnu SDK to fetch quotes for price conversion
+   * @dev Uses Avnu SDK to fetch swap prices for price conversion
    * @param tokenAddress The address of the token to price
    * @param amount The amount of tokens to price
    * @returns The price in base currency as a number
@@ -66,31 +70,18 @@
     }
 
     try {
-      const sellAmount = CurrencyAmount.fromUnscaled(amount.toString());
-      const quoteParams: QuoteParams = {
-        sellToken: createTokenObject(tokenAddress),
-        buyToken: createTokenObject(baseToken),
-        sellAmount,
+      const params: SwapPriceParams = {
+        sellTokenAddress: tokenAddress,
+        buyTokenAddress: baseToken,
+        sellAmount: '0x' + amount.toString(16),
       };
 
-      let data: QuoteParams & {
-        leadingSide: 'sell' | 'buy';
-      } = {
-        ...quoteParams,
-        leadingSide: 'sell',
-      };
-
-      const quotes: Quote[] = await avnu.fetchQuotes(data);
-      if (quotes.length > 0) {
-        const priceInBaseCurrency = CurrencyAmount.fromUnscaled(
-          quotes[0].buyAmount,
-        );
-        return Number(priceInBaseCurrency.toString());
-      }
+      const priceData = await avnu.fetchSwapPrice(params);
+      return Number(priceData[0].buyAmount) / 1e18;
     } catch (error) {
       console.error(`Error fetching price for token ${tokenAddress}:`, error);
+      return 0;
     }
-    return 0;
   }
 
   /**
