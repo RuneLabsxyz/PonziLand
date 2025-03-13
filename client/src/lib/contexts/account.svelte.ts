@@ -34,6 +34,8 @@ export type AccountProvider = {
   setupSession(): Promise<StoredSession | void>;
   loadSession(storage: StoredSession): Promise<void>;
 
+  icon: string;
+
   /// Gets the session account, or in the event that the session account is not available, give out the traditionnal
   /// wallet account.
   getAccount(): AccountInterface | undefined;
@@ -266,8 +268,8 @@ export class AccountManager {
       }
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
-    } catch {
-      console.warn('The user did not log in successfully!');
+    } catch (error) {
+      console.warn('The user did not log in successfully!', error);
     }
   }
 

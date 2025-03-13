@@ -29,7 +29,7 @@ export abstract class CommonStarknetWallet implements AccountProvider {
   abstract setupSession(): Promise<StoredSession | void>;
 
   async connect() {
-    this._wallet = await WalletAccount.connectSilent(
+    this._wallet = await WalletAccount.connect(
       new Provider({
         nodeUrl: dojoConfig.rpcUrl,
         // We won't be using argent / braavos on slot deployments any time soon
@@ -78,6 +78,15 @@ export abstract class CommonStarknetWallet implements AccountProvider {
 
   getWalletAccount() {
     return this._wallet;
+  }
+
+  get icon(): string {
+    const icon = this._walletObject!.icon;
+    if (typeof icon === 'string') {
+      return icon;
+    } else {
+      return icon.dark;
+    }
   }
 }
 
