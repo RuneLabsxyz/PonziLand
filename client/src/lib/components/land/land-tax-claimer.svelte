@@ -47,7 +47,6 @@
     }
 
     claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
-      .then(() => {})
       .catch((e) => {
         console.error('error claiming from coin', e);
       });

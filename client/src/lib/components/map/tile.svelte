@@ -108,9 +108,7 @@
   }
 
   $effect(() => {
-    if (land.type === 'auction') {
-      setNukables();
-    }
+    setNukables();
   });
 
   $effect(() => {
@@ -136,12 +134,10 @@
     onmouseout={() => (hovering = false)}
     onblur={() => (hovering = false)}
   >
-    {#if isNuking}
+    {#if isNuking || land.type == 'grass'}
       <LandDisplay grass road seed={land.location} {selected} {hovering} />
     {:else if land.type == 'auction'}
       <LandDisplay auction road {selected} {hovering} />
-    {:else if land.type == 'grass'}
-      <LandDisplay grass road seed={land.location} {selected} {hovering} />
     {:else if land.type == 'house'}
       <LandDisplay
         token={land.token}
