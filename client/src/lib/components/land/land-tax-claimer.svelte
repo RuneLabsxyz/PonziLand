@@ -46,10 +46,11 @@
       return;
     }
 
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
-      .catch((e) => {
+    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!).catch(
+      (e) => {
         console.error('error claiming from coin', e);
-      });
+      },
+    );
   }
 
   async function fetchTaxes() {
