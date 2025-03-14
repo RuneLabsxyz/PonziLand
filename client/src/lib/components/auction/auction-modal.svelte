@@ -88,12 +88,10 @@
         // Nuke neighboring lands that are nukable
         land?.getNeighbors().locations.array.forEach((location) => {
           const locationString = toHexWithPadding(location);
-          if (nukeStore.pending.includes(locationString)) {
+          if (nukeStore.pending.has(locationString)) {
             // remove from pending
-            nukeStore.pending = nukeStore.pending.filter(
-              (loc) => loc !== locationString,
-            );
-            nukeStore.nuking.push(locationString);
+            nukeStore.pending.delete(locationString);
+            nukeStore.nuking.set(locationString, true);
           }
         });
       } else {

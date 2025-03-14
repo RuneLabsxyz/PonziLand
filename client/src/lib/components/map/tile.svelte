@@ -32,7 +32,7 @@
   }>();
 
   let address = $derived(account.address);
-  let isNuking = $derived(nukeStore.nuking.includes(land.location));
+  let isNuking = $derived(nukeStore.nuking.has(land.location));
 
   let isOwner = $derived.by(() => {
     if (land.type === 'grass') return false;
@@ -92,15 +92,13 @@
       nukables.forEach((land) => {
         if (land.nukable) {
           // add to nukeStore.pending if not already in
-          if (!nukeStore.pending.includes(land.location)) {
-            nukeStore.pending.push(land.location);
+          if (!nukeStore.pending.has(land.location)) {
+            nukeStore.pending.set(land.location, true);
           }
         } else {
           // remove from nukeStore.pending if in
-          if (nukeStore.pending.includes(land.location)) {
-            nukeStore.pending = nukeStore.pending.filter(
-              (loc) => loc !== land.location,
-            );
+          if (nukeStore.pending.has(land.location)) {
+            nukeStore.pending.delete(land.location);
           }
         }
       });
@@ -112,11 +110,9 @@
   });
 
   $effect(() => {
-    if (nukeStore.nuking.includes(land.location)) {
+    if (nukeStore.nuking.has(land.location)) {
       setTimeout(() => {
-        nukeStore.nuking = nukeStore.nuking.filter(
-          (loc) => loc !== land.location,
-        );
+        nukeStore.nuking.delete(land.location);
       }, 5000);
     }
   });
@@ -196,7 +192,7 @@
     </div>
   {/if}
 
-  {#if nukeStore.pending.includes(land.location)}
+  {#if nukeStore.pending.has(land.location)}
     <div
       class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}

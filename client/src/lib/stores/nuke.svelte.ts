@@ -1,4 +1,7 @@
-export let nukeStore = $state<{ pending: string[]; nuking: string[] }>({
-  pending: [],
-  nuking: [],
+export let nukeStore = $state<{
+  pending: Map<string, boolean>;
+  nuking: Map<string, boolean>;
+}>({
+  pending: new Map(),
+  nuking: new Map(),
 });

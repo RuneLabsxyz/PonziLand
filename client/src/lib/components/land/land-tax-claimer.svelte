@@ -61,17 +61,10 @@
 
     nukables.forEach((land) => {
       if (land.nukable) {
-        // add to nukeStore.pending if not already in
-        if (!nukeStore.pending.includes(land.location)) {
-          nukeStore.pending.push(land.location);
-        }
+        nukeStore.pending.set(land.location, true);
       } else {
         // remove from nukeStore.pending if in
-        if (nukeStore.pending.includes(land.location)) {
-          nukeStore.pending = nukeStore.pending.filter(
-            (loc) => loc !== land.location,
-          );
-        }
+        nukeStore.pending.delete(land.location);
       }
     });
   }

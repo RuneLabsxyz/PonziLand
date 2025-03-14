@@ -87,12 +87,10 @@
         const neighborsLocations = land.getNeighbors().locations.array;
         neighborsLocations.forEach((location) => {
           const locationString = toHexWithPadding(location);
-          if (nukeStore.pending.includes(locationString)) {
+          if (nukeStore.pending.has(locationString)) {
             // remove from nukeStore.pending if in
-            nukeStore.pending = nukeStore.pending.filter(
-              (loc) => loc !== locationString,
-            );
-            nukeStore.nuking.push(locationString);
+            nukeStore.pending.delete(locationString);
+            nukeStore.nuking.set(locationString, true);
           }
         });
       }
