@@ -108,16 +108,6 @@
   onDestroy(() => {
     stopAnimation();
   });
-
-  // Export API
-  const controls = {
-    play: startAnimation,
-    pause: stopAnimation,
-    reset: resetAnimation,
-    get isPlaying() {
-      return isPlaying;
-    },
-  };
 </script>
 
 <div
