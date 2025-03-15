@@ -142,3 +142,26 @@ export async function checkUsername(username: string): Promise<true | string> {
   const data = await response.json();
   return data.available ? true : data.error;
 }
+
+export async function addressesLookup(addresses: string[]) {
+  const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/lookup`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ addresses }),
+  });
+
+  if (!response.ok) {
+    try {
+      const error = await response.json();
+
+      throw error.error;
+    } catch (e) {
+      console.error('Error while looking up addresses', e);
+      throw e;
+    }
+  }
+
+  return (await response.json()) as { addresses: string[]; username: string }[];
+}

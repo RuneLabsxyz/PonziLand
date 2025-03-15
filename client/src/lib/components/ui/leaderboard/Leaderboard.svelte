@@ -16,10 +16,14 @@
 
   //Helpers
   import { formatAddress, formatValue } from './helpers';
+  import { addressesLookup } from '$lib/accounts/social/index.svelte';
+  import { padAddress } from '$lib/utils';
 
   const address = $derived(accountData.address);
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
-  let userRankings = $state<Array<{ address: string; totalValue: number }>>([]);
+  let userRankings = $state<
+    Array<{ address: string; username?: string; totalValue: number }>
+  >([]);
   let isLoading = $state(true);
   const avnu = useAvnu();
 
@@ -134,8 +138,17 @@
    * @returns Array of user addresses and their total asset values, sorted by value
    */
   async function calculateUserAssets() {
-    const userAssets: Array<{ address: string; totalValue: bigint }> = [];
+    const userAssets: Array<{
+      address: string;
+      username?: string;
+      totalValue: bigint;
+    }> = [];
     const tokenPriceCache = await calculateTokenPrices();
+    const usernames = await addressesLookup(
+      Object.keys(leaderboardData).map((address) => padAddress(address) ?? ''),
+    );
+
+    console.log('usernames', usernames);
 
     for (const [accountAddress, tokens] of Object.entries(leaderboardData)) {
       let totalInBaseCurrency = 0n;
@@ -151,8 +164,13 @@
         }
       }
 
+      const username = usernames.find((lookup) =>
+        lookup.addresses.includes(padAddress(accountAddress) ?? ''),
+      )?.username;
+
       userAssets.push({
         address: accountAddress,
+        username,
         totalValue: totalInBaseCurrency,
       });
     }
@@ -160,6 +178,7 @@
     return userAssets
       .map((user) => ({
         address: user.address,
+        username: user.username,
         totalValue: Number(user.totalValue),
       }))
       .sort((a, b) => b.totalValue - a.totalValue);
@@ -175,7 +194,9 @@
       leaderboardData = await fetchTokenBalances();
       userRankings = await calculateUserAssets();
 
-      userRank = userRankings.findIndex((user) => user.address === address);
+      userRank = userRankings.findIndex(
+        (user) => padAddress(user.address) === address,
+      );
       if (userRank !== -1) {
         userRank += 1;
       } else {
@@ -223,11 +244,19 @@
               <span class="font-bold">
                 {index + 1}.
               </span>
-              <span
-                class="font-mono"
-                class:text-red-500={user.address === address}
-                >{formatAddress(user.address)}</span
-              >
+              {#if user.username}
+                <span
+                  class="font-mono"
+                  class:text-red-500={user.address === address}
+                  >{user.username}</span
+                >
+              {:else}
+                <span
+                  class="font-mono"
+                  class:text-red-500={user.address === address}
+                  >{formatAddress(user.address)}</span
+                >
+              {/if}
               {#if user.address === address}
                 <span class="text-xs bg-primary/30 px-1 rounded">You</span>
               {/if}
