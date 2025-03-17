@@ -2,7 +2,11 @@
   import accountData from '$lib/account.svelte';
   import { onMount } from 'svelte';
 
-  import { fetchTokenBalances, baseToken } from './request';
+  import {
+    fetchTokenBalances,
+    baseToken,
+    fetchUsernamesBatch,
+  } from './request';
   import {
     useAvnu,
     type QuoteParams,
@@ -163,19 +167,17 @@
 
   /**
    * @notice Fetches usernames for all addresses in the rankings
-   * @dev Uses Socialink to get usernames when available
+   * @dev Uses batch request to get usernames efficiently
    */
   async function fetchUsernames() {
-    const socialink = getSocialink();
-    for (const user of userRankings) {
-      try {
-        const profile = await socialink.getUser(user.address);
-        if (profile.exists) {
-          usernames[user.address] = profile.username;
-        }
-      } catch (error) {
-        console.error(`Error fetching username for ${user.address}:`, error);
-      }
+    try {
+      // Extract all unique addresses from the rankings
+      const addresses = userRankings.map((user) => user.address);
+
+      // Fetch usernames in a single batch request
+      usernames = await fetchUsernamesBatch(addresses);
+    } catch (error) {
+      console.error('Error fetching usernames:', error);
     }
   }
 

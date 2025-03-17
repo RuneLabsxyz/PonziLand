@@ -64,3 +64,42 @@ export function parseTokenBalances(
 
   return result;
 }
+
+/**
+ * @notice Fetches usernames for multiple addresses in a single batch request
+ * @dev Uses Socialink API to get usernames for all provided addresses
+ * @param addresses Array of wallet addresses to look up
+ * @returns Record mapping addresses to usernames (if found)
+ */
+export async function fetchUsernamesBatch(
+  addresses: string[],
+): Promise<Record<string, string>> {
+  try {
+    const response = await fetch('https://social.ponzi.land/api/user/lookup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ addresses }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Network response was not ok: ${response.status}`);
+    }
+
+    const users = await response.json();
+    const usernameMap: Record<string, string> = {};
+
+    // Map the response to an address -> username lookup object
+    users.forEach((user: { address: string; username: string }) => {
+      if (user.username) {
+        usernameMap[user.address] = user.username;
+      }
+    });
+
+    return usernameMap;
+  } catch (error) {
+    console.error('Error fetching usernames in batch:', error);
+    return {};
+  }
+}
