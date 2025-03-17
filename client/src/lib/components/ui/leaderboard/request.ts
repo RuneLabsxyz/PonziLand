@@ -71,6 +71,7 @@ export function parseTokenBalances(
  * @param addresses Array of wallet addresses to look up
  * @returns Record mapping addresses to usernames (if found)
  */
+// TODO: Replace this with a direct SDK call
 export async function fetchUsernamesBatch(
   addresses: string[],
 ): Promise<Record<string, string>> {
