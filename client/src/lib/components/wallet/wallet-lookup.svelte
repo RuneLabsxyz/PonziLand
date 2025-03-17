@@ -67,7 +67,7 @@
   </div>
   {#if connected}
     <Card class="shadow-ponzi w-72">
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center text-sm">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
           {#if username}
             <p>
@@ -83,15 +83,6 @@
           {#if copied}
             <div class="transition-opacity">Copied!</div>
           {/if}
-        </button>
-        <button
-          onclick={() => {
-            console.log('Starting Discord link');
-            socialink.startLink('discord');
-          }}
-          aria-label="Logout"
-        >
-          Discord
         </button>
         <button
           onclick={() => {

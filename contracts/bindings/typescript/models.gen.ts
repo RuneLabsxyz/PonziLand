@@ -1,6 +1,6 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, BigNumberish } from 'starknet';
+import { CairoCustomEnum, CairoOption, CairoOptionVariant, BigNumberish } from 'starknet';
 
 type WithFieldOrder<T> = T & { fieldOrder: string[] };
 
@@ -12,6 +12,7 @@ export interface Auction {
 	floor_price: BigNumberish;
 	is_finished: boolean;
 	decay_rate: BigNumberish;
+	sold_at_price: CairoOption<BigNumberish>;
 }
 
 // Type definition for `ponzi_land::models::auction::AuctionValue` struct
@@ -21,6 +22,7 @@ export interface AuctionValue {
 	floor_price: BigNumberish;
 	is_finished: boolean;
 	decay_rate: BigNumberish;
+	sold_at_price: CairoOption<BigNumberish>;
 }
 
 // Type definition for `ponzi_land::models::land::Land` struct
@@ -127,6 +129,39 @@ export interface RemainingStakeEventValue {
 	remaining_stake: BigNumberish;
 }
 
+// Type definition for `ponzi_land::systems::auth::auth::AddressAuthorizedEvent` struct
+export interface AddressAuthorizedEvent {
+	address: string;
+	authorized_at: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::auth::auth::AddressAuthorizedEventValue` struct
+export interface AddressAuthorizedEventValue {
+	authorized_at: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::auth::auth::AddressRemovedEvent` struct
+export interface AddressRemovedEvent {
+	address: string;
+	removed_at: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::auth::auth::AddressRemovedEventValue` struct
+export interface AddressRemovedEventValue {
+	removed_at: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::auth::auth::VerifierUpdatedEvent` struct
+export interface VerifierUpdatedEvent {
+	new_verifier: BigNumberish;
+	old_verifier: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::auth::auth::VerifierUpdatedEventValue` struct
+export interface VerifierUpdatedEventValue {
+	old_verifier: BigNumberish;
+}
+
 // Type definition for `ponzi_land::models::land::Level` enum
 export type Level = {
 	Zero: string;
@@ -152,26 +187,34 @@ export interface SchemaType extends ISchemaType {
 		NewAuctionEventValue: WithFieldOrder<NewAuctionEventValue>,
 		RemainingStakeEvent: WithFieldOrder<RemainingStakeEvent>,
 		RemainingStakeEventValue: WithFieldOrder<RemainingStakeEventValue>,
+		AddressAuthorizedEvent: WithFieldOrder<AddressAuthorizedEvent>,
+		AddressAuthorizedEventValue: WithFieldOrder<AddressAuthorizedEventValue>,
+		AddressRemovedEvent: WithFieldOrder<AddressRemovedEvent>,
+		AddressRemovedEventValue: WithFieldOrder<AddressRemovedEventValue>,
+		VerifierUpdatedEvent: WithFieldOrder<VerifierUpdatedEvent>,
+		VerifierUpdatedEventValue: WithFieldOrder<VerifierUpdatedEventValue>,
 	},
 }
 export const schema: SchemaType = {
 	ponzi_land: {
 		Auction: {
-			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
+			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate', 'sold_at_price'],
 			land_location: 0,
 			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
 			is_finished: false,
 			decay_rate: 0,
+		sold_at_price: new CairoOption(CairoOptionVariant.None),
 		},
 		AuctionValue: {
-			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate'],
+			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate', 'sold_at_price'],
 			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
 			is_finished: false,
 			decay_rate: 0,
+		sold_at_price: new CairoOption(CairoOptionVariant.None),
 		},
 		Land: {
 			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time', 'stake_amount', 'level'],
@@ -270,6 +313,33 @@ export const schema: SchemaType = {
 			fieldOrder: ['remaining_stake'],
 		remaining_stake: 0,
 		},
+		AddressAuthorizedEvent: {
+			fieldOrder: ['address', 'authorized_at'],
+			address: "",
+			authorized_at: 0,
+		},
+		AddressAuthorizedEventValue: {
+			fieldOrder: ['authorized_at'],
+			authorized_at: 0,
+		},
+		AddressRemovedEvent: {
+			fieldOrder: ['address', 'removed_at'],
+			address: "",
+			removed_at: 0,
+		},
+		AddressRemovedEventValue: {
+			fieldOrder: ['removed_at'],
+			removed_at: 0,
+		},
+		VerifierUpdatedEvent: {
+			fieldOrder: ['new_verifier', 'old_verifier'],
+			new_verifier: 0,
+			old_verifier: 0,
+		},
+		VerifierUpdatedEventValue: {
+			fieldOrder: ['old_verifier'],
+			old_verifier: 0,
+		},
 	},
 };
 export enum ModelsMapping {
@@ -289,4 +359,10 @@ export enum ModelsMapping {
 	NewAuctionEventValue = 'ponzi_land-NewAuctionEventValue',
 	RemainingStakeEvent = 'ponzi_land-RemainingStakeEvent',
 	RemainingStakeEventValue = 'ponzi_land-RemainingStakeEventValue',
+	AddressAuthorizedEvent = 'ponzi_land-AddressAuthorizedEvent',
+	AddressAuthorizedEventValue = 'ponzi_land-AddressAuthorizedEventValue',
+	AddressRemovedEvent = 'ponzi_land-AddressRemovedEvent',
+	AddressRemovedEventValue = 'ponzi_land-AddressRemovedEventValue',
+	VerifierUpdatedEvent = 'ponzi_land-VerifierUpdatedEvent',
+	VerifierUpdatedEventValue = 'ponzi_land-VerifierUpdatedEventValue',
 }

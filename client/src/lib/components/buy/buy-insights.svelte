@@ -7,6 +7,7 @@
   import { Label } from '../ui/label';
   import { Slider } from '../ui/slider';
   import BuyInsightsNeighborGrid from './insights/buy-insights-neighbor-grid.svelte';
+  import { toNumber } from 'ethers';
 
   let {
     sellAmountVal,
@@ -99,13 +100,18 @@
     };
   });
 
-  let estimatedNukeTimeSeconds = $derived(
-    estimateNukeTime(
+  let estimatedNukeTimeSeconds = $derived.by(() => {
+    const lastPayTime =
+      land.last_pay_time == 0
+        ? Date.now() / 1000
+        : toNumber(land.last_pay_time);
+    return estimateNukeTime(
       parseFloat(sellAmountVal),
       parseFloat(stakeAmountVal),
       nbNeighbors,
-    ),
-  );
+      lastPayTime,
+    );
+  });
 
   let estimatedTimeString = $derived.by(() => {
     const time = estimatedNukeTimeSeconds;
@@ -142,8 +148,8 @@
       <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
     {/if}
   </div>
-  <div class="w-full flex flex-col gap-4 mr-8">
-    <div class="w-full text-shadow-none flex flex-col leading-none mt-3">
+  <div class="w-full flex flex-col gap-4 mr-8 text-xs">
+    <div class="w-full text-stroke-none flex flex-col leading-4 mt-3">
       <div class="flex justify-between">
         <p class="opacity-50">Per Neighbors</p>
         <p>
@@ -165,7 +171,7 @@
           <span class="opacity-50"> neighbors: </span>
         </p>
         <p class="text-right">
-          - {taxes.ratePerNeighbour * nbNeighbors}
+          -{taxes.ratePerNeighbour * nbNeighbors}
           <span class="opacity-50">{selectedToken?.symbol}/h</span>
         </p>
       </div>

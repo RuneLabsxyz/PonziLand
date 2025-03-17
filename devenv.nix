@@ -21,6 +21,7 @@ in {
     bc
     colorized-logs
     wrangler
+    graphite-cli
   ];
 
   languages.javascript = {

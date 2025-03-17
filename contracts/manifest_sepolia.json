@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x45575a88cc5cef1e444c77ce60b7b4c9e73a01cbbe20926d5a4c72a94011410",
-    "address": "0x6da0dc9f1d48dfa3dd95442505fb7c6f485d7a234780658660604914973766c",
-    "seed": "ponzi_land-playtest-2",
+    "address": "0x17eea57dfb4472df7e83758f8444608dce79809cb39484049b5cd46ae081c20",
+    "seed": "ponzi_land-internal-2",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1252,8 +1252,8 @@
   },
   "contracts": [
     {
-      "address": "0x439ad81bdc71d06d3c81d0da0ba8899f3bc734f5df4a8230a0ab8e68853bf14",
-      "class_hash": "0x6fc74fb9c4a741d36598af5ae9727ebf0925f30aab7049422e7603091923ee1",
+      "address": "0x22213fe88e09ea896280f1055f75623584886cc443834802310c61f54477b88",
+      "class_hash": "0x30280e77149b8a9250177e3f0f7d0532cd9ceff0b2598a35b12cb3ce0e77c79",
       "abi": [
         {
           "type": "impl",
@@ -1694,6 +1694,18 @@
             },
             {
               "type": "function",
+              "name": "claim_all",
+              "inputs": [
+                {
+                  "name": "land_locations",
+                  "type": "core::array::Array::<core::integer::u64>"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "nuke",
               "inputs": [
                 {
@@ -1750,6 +1762,13 @@
                   "type": "core::bool"
                 }
               ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "reimburse_stakes",
+              "inputs": [],
+              "outputs": [],
               "state_mutability": "external"
             },
             {
@@ -2008,10 +2027,10 @@
       ],
       "init_calldata": [
         "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
-        "0x41",
-        "0x48",
-        "0x201",
-        "0x208",
+        "0x410",
+        "0xc10",
+        "0x430",
+        "0xc30",
         "128000000000000000000",
         "0",
         "1000000000000000000",
@@ -2027,15 +2046,17 @@
         "bid",
         "buy",
         "claim",
+        "claim_all",
         "nuke",
         "increase_price",
         "increase_stake",
         "level_up",
+        "reimburse_stakes",
         "upgrade"
       ]
     },
     {
-      "address": "0x7f8d499b12c52dd750e9f04076932cc3f6be4f4526299aeb5f0d9e1e39fb053",
+      "address": "0x21d430f979386571632bba15f2df931f4f8fcd8906f4004006145b48c348bee",
       "class_hash": "0x37c572c3babd05f6d9e45283ad9b856ae608cb85e969f9d70cfe062f488f77f",
       "abi": [
         {

@@ -11,9 +11,12 @@ export const state: {
   sessionAccount?: AccountInterface;
   walletAccount?: AccountInterface;
   profile?: UserInfo;
+  providerName?: string;
 } = $state({
   isConnected: false,
 });
+
+let isSetup = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
   const walletAccount = provider.getWalletAccount();
@@ -26,6 +29,7 @@ const updateState = async (provider: AccountProvider) => {
   const profile = await getSocialink().getUser(state.address!);
   console.log('ayayayay', profile);
   state.profile = profile;
+  state.providerName = useAccount()?.getProviderName();
 };
 
 const resetState = () => {
@@ -33,19 +37,23 @@ const resetState = () => {
   state.isConnected = false;
   state.walletAccount = undefined;
   state.profile = undefined;
+  state.providerName = undefined;
 };
 
-export function refresh() {
+export async function refresh() {
   const accountManager = useAccount()!;
   const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
-    updateState(currentProvider);
+    await updateState(currentProvider);
   } else {
     resetState();
   }
 }
 
 export function setup() {
+  if (isSetup) return;
+
+  isSetup = true;
   const accountManager = useAccount()!;
 
   // Initial state

@@ -15,6 +15,8 @@
     road = false,
     seed = '',
     level = 1,
+    selected = false,
+    hovering = false,
   }: {
     class?: string;
     token?: Token;
@@ -24,6 +26,8 @@
     road?: boolean;
     seed?: string;
     level?: Level;
+    selected?: boolean;
+    hovering?: boolean;
   } = $props();
 
   let rng = $derived(seedrandom(seed));
@@ -33,8 +37,8 @@
   let grassX = $derived(grassNumber % 4);
   let grassY = $derived(Math.floor(grassNumber / 3));
 
-  let width = $state();
-  let height = $state();
+  let width: number | undefined = $state();
+  let height: number | undefined = $state();
 </script>
 
 <div
@@ -81,7 +85,10 @@
       yMax={768}
       {width}
       {height}
-      class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
+      class={cn('absolute h-full w-full top-0 bottom-0 left-0 right-0', {
+        selected: selected,
+        hovering: hovering,
+      })}
     />
   {/if}
   {#if token}
@@ -95,7 +102,9 @@
       yMax={3072}
       {width}
       {height}
-      class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
+      class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
+        ? 'selected'
+        : ''} {hovering ? 'hovering' : ''}"
     />
     <SpriteSheet
       src="/sheets/buildings.png"
@@ -107,7 +116,9 @@
       yMax={4608}
       {width}
       {height}
-      class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
+      class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
+        ? 'selected'
+        : ''} {hovering ? 'hovering' : ''}"
     />
   {:else if basic}
     <div

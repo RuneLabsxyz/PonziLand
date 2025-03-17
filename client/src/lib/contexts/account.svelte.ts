@@ -10,12 +10,14 @@ import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { dojoConfig } from '$lib/dojoConfig';
+import { Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
 import {
   Account,
   cairo,
   WalletAccount,
+  constants as SNconstants,
   type AccountInterface,
   shortString,
   constants,
@@ -33,6 +35,8 @@ export type AccountProvider = {
 
   setupSession(): Promise<StoredSession | void>;
   loadSession(storage: StoredSession): Promise<void>;
+
+  icon: string;
 
   /// Gets the session account, or in the event that the session account is not available, give out the traditionnal
   /// wallet account.
@@ -230,6 +234,17 @@ export class AccountManager {
     return this;
   }
 
+  getStarknetProvider() {
+    return new StarknetProvider({
+      nodeUrl: dojoConfig.rpcUrl,
+      // We won't be using argent / braavos on slot deployments any time soon
+      chainId:
+        dojoConfig.profile == 'mainnet'
+          ? SNconstants.StarknetChainId.SN_MAIN
+          : SNconstants.StarknetChainId.SN_SEPOLIA,
+    });
+  }
+
   public async selectAndLogin(providerId: string) {
     const walletObject = availableWallets.find(
       (e) => e.wallet.id == providerId,
@@ -266,8 +281,8 @@ export class AccountManager {
       }
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
-    } catch {
-      console.warn('The user did not log in successfully!');
+    } catch (error) {
+      console.warn('The user did not log in successfully!', error);
     }
   }
 

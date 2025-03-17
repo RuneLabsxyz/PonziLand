@@ -19,7 +19,7 @@
 </script>
 
 <div
-  class="land-card p-3 text-left gap-4 text-ponzi relative flex items-start even:bg-[#1b1b2a] odd:bg-[#252536] {land.location ==
+  class="p-3 text-left text-stroke-0 text-xs text-ponzi relative flex gap-4 items-start even:bg-[#1b1b2a] odd:bg-[#252536] {land.location ==
   $selectedLandMeta?.location
     ? 'border border-yellow-400'
     : ''}"
@@ -42,7 +42,7 @@
     <LandOverview {land} />
   </button>
   {#if land.type == 'house'}
-    <div class="w-full text-shadow-none flex flex-col leading-none mt-3">
+    <div class="w-full flex flex-col mt-3">
       {#if land.tokenUsed}
         <div class="flex justify-between">
           <p class="opacity-50">Token</p>
@@ -67,7 +67,7 @@
     </div>
   {/if}
   {#if land.type == 'auction'}
-    <div class="w-full text-shadow-none flex flex-col leading-none">
+    <div class="w-full flex flex-col">
       {#if land.tokenUsed}
         <div class="flex justify-between">
           <p class="opacity-50">Token</p>
@@ -90,7 +90,7 @@
             loading price <ThreeDots />
           </p>
         {:then currentprice}
-          <p class="break-all text-ponzi-huge text-[#f2b545]">
+          <p class="break-all text-ponzi-number text-[#f2b545]">
             {#if currentprice?.rawValue().toNumber() == 0}
               free
             {:else}

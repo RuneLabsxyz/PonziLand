@@ -67,7 +67,7 @@
   let actionRequired = $derived(data.deposits?.length ?? 0 > 0);
 </script>
 
-<div class="flex flex-col items-center justify-center w-screen">
+<div class="flex flex-col items-center justify-center w-screen text-ponzi">
   <div class="w-full p-10 md:w-2/3 lg:w-1/2 2xl:w-1/3">
     <Card class="text-white text-3xl">
       <WalletSetups />

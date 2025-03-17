@@ -27,9 +27,8 @@ import type {
   AccountProvider,
   StoredSession,
 } from '$lib/contexts/account.svelte';
-import { DojoProvider, type DojoCall } from '@dojoengine/core';
 
-const FUSE_DISABLE_ARGENT = false;
+const FUSE_DISABLE_ARGENT = true;
 
 const STRKFees = [
   {

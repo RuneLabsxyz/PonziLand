@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { setupStore } from '$lib/contexts/store.svelte';
@@ -13,8 +13,9 @@
   import { loadImageShape } from '@tsparticles/shape-image';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import Register from '$lib/components/socialink/register.svelte';
-  import { setup as setupAccountState } from '$lib/account.svelte';
+  import { setup as setupAccountState, refresh } from '$lib/account.svelte';
   import Invitation from '$lib/components/socialink/Invitation.svelte';
+  import { goto } from '$app/navigation';
 
   void particlesInit(async (engine) => {
     await loadFull(engine);
@@ -31,7 +32,7 @@
     setupSocialink(),
   ]);
 
-  const accountState = setupAccountState();
+  const accountState = setupAccountState()!;
 
   let loading = $state(true);
 
@@ -85,6 +86,26 @@
           ?.getProvider()
           ?.getWalletAccount()?.address;
 
+        // Make sure that we finished updating the user signup state.
+        await refresh();
+
+        // Check if the user needs to signup with socialink
+        if (address != null && !accountState.profile?.exists) {
+          console.info('The user needs to signup with socialink.');
+          goto('/onboarding/register');
+          return;
+        }
+
+        if (
+          address != null &&
+          accountState.profile?.exists &&
+          !accountState.profile?.whitelisted
+        ) {
+          console.info('The user needs to get whitelisted.');
+          goto('/onboarding/whitelist');
+          return;
+        }
+
         clearLoading();
       })
       .catch((err) => {
@@ -93,15 +114,12 @@
   });
 </script>
 
-<div class="h-screen w-screen bg-black/10 overflow-hidden">
+<div class="h-screen w-screen bg-black/10 overflow-visible">
+  <SwitchChainModal />
+
   {#if loading}
     <LoadingScreen {value} />
-  {:else if showRegister}
-    <Register />
-  {:else if showInvitation}
-    <Invitation />
   {:else}
-    <SwitchChainModal />
     <Map />
     <Ui />
   {/if}

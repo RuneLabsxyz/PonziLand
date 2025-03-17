@@ -177,22 +177,6 @@ export async function wrappedActions(provider: DojoProvider) {
     }
   };
 
-  const actions_claim_all = async (
-    snAccount: Account | AccountInterface,
-    landLocations: BigNumberish[],
-  ) => {
-    const calls = landLocations.map((location) => {
-      return world.actions.buildClaimCalldata(location);
-    });
-
-    try {
-      return await provider.execute(snAccount, calls, 'ponzi_land');
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
   return {
     actions: {
       ...world.actions,
@@ -200,7 +184,6 @@ export async function wrappedActions(provider: DojoProvider) {
       bid: actions_bid,
       buy: actions_buy,
       increaseStake: actions_increaseStake,
-      claimAll: actions_claim_all,
     },
   };
 }

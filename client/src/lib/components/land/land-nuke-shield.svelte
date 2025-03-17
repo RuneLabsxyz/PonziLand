@@ -122,8 +122,7 @@
     font-size: 0.8em;
     background-size: cover;
     background-position: center;
-    font-family: 'PonziNumberV2';
-    text-shadow: 0em 0.1em 0 black;
+    font-family: 'PonziNumber';
     -webkit-text-stroke: 0.25em black;
     paint-order: stroke fill;
   }

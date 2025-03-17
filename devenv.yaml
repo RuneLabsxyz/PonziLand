@@ -4,3 +4,4 @@ inputs:
     url: github:cachix/devenv-nixpkgs/rolling
   cairo-nix:
     url: github:knownasred/cairo-nix
+allowUnfree: true

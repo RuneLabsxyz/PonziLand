@@ -29,6 +29,9 @@ trait IPayable<TContractState> {
     fn pay_to_us(
         self: @TContractState, sender: ContractAddress, validation_result: ValidationResult
     ) -> bool;
+    fn balance_of(
+        ref self: TContractState, token_address: ContractAddress, owner: ContractAddress
+    ) -> u256;
 }
 
 #[starknet::component]
@@ -111,6 +114,14 @@ mod PayableComponent {
                     OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
                     validation_result.amount
                 )
+        }
+        fn balance_of(
+            ref self: ComponentState<TContractState>,
+            token_address: ContractAddress,
+            owner: ContractAddress
+        ) -> u256 {
+            self.initialize(token_address);
+            self.token_dispatcher.read().balanceOf(owner)
         }
     }
 }

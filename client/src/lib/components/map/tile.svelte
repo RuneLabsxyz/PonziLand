@@ -1,20 +1,25 @@
 <script lang="ts">
-  import { nukableStore, type LandWithActions } from '$lib/api/land.svelte';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
+  import account from '$lib/account.svelte';
+  import { type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
   import {
-    accountAddress,
     selectedLand,
     selectedLandMeta,
     selectLand,
-    uiStore,
   } from '$lib/stores/stores.svelte';
-  import { hexStringToNumber, padAddress, toBigInt } from '$lib/utils';
+  import { cn, hexStringToNumber, padAddress } from '$lib/utils';
   import LandDisplay from '../land/land-display.svelte';
+  import LandNukeAnimation from '../land/land-nuke-animation.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
+  import { onMount } from 'svelte';
+  import { getAggregatedTaxes } from '$lib/utils/taxes';
+  import NukeExplosion from '../animation/nuke-explosion.svelte';
 
   let {
     land,
@@ -26,9 +31,12 @@
     scale: number;
   }>();
 
+  let address = $derived(account.address);
+  let isNuking = $derived(nukeStore.nuking.has(land.location));
+
   let isOwner = $derived.by(() => {
-    if (land.type == 'grass') return false;
-    return land?.owner == padAddress($accountAddress ?? '0x1');
+    if (land.type === 'grass') return false;
+    return land?.owner === padAddress(address ?? '');
   });
 
   let estimatedNukeTime = $derived.by(() => {
@@ -40,6 +48,8 @@
   });
 
   let selected = $derived($selectedLand?.location === land.location);
+
+  let hovering = $state(false);
 
   function handleClick() {
     console.log('clicked', dragged);
@@ -72,28 +82,66 @@
 
     uiStore.showModal = true;
     uiStore.modalType = 'bid';
-    // uiStore.modalData = {
-    //   location: hexStringToNumber($selectedLandMeta!.location),
-    //   // TODO: Enforce null checks here
-    //   sellPrice: $selectedLandMeta!.sellPrice ?? 0,
-    //   tokenUsed: $selectedLandMeta!.tokenUsed ?? '',
-    //   tokenAddress: $selectedLandMeta!.tokenAddress ?? '',
-    //   owner: $selectedLandMeta!.owner || undefined,
-    // };
   };
+
+  async function setNukables() {
+    if (land.type === 'auction') {
+      const aggregatedTaxes = await getAggregatedTaxes(land);
+      const nukables = aggregatedTaxes.nukables;
+
+      nukables.forEach((land) => {
+        if (land.nukable) {
+          // add to nukeStore.pending if not already in
+          if (!nukeStore.pending.has(land.location)) {
+            nukeStore.pending.set(land.location, true);
+          }
+        } else {
+          // remove from nukeStore.pending if in
+          if (nukeStore.pending.has(land.location)) {
+            nukeStore.pending.delete(land.location);
+          }
+        }
+      });
+    }
+  }
+
+  $effect(() => {
+    setNukables();
+  });
+
+  $effect(() => {
+    if (nukeStore.nuking.has(land.location)) {
+      setTimeout(() => {
+        nukeStore.nuking.delete(land.location);
+      }, 5000);
+    }
+  });
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <!-- svelte-ignore event_directive_deprecated -->
 <div class="relative {selected ? 'selected' : ''}">
-  <div onmouseup={handleClick} class={`relative tile`}>
-    {#if land.type == 'auction'}
-      <LandDisplay auction road />
-    {:else if land.type == 'grass'}
-      <LandDisplay grass road seed={land.location} />
+  <div
+    onmouseup={handleClick}
+    class={`relative tile`}
+    onmouseover={() => (hovering = true)}
+    onfocus={() => (hovering = true)}
+    onmouseout={() => (hovering = false)}
+    onblur={() => (hovering = false)}
+  >
+    {#if isNuking || land.type == 'grass'}
+      <LandDisplay grass road seed={land.location} {selected} {hovering} />
+    {:else if land.type == 'auction'}
+      <LandDisplay auction road {selected} {hovering} />
     {:else if land.type == 'house'}
-      <LandDisplay token={land.token} level={land.level} road />
+      <LandDisplay
+        token={land.token}
+        level={land.level}
+        road
+        {selected}
+        {hovering}
+      />
     {/if}
   </div>
 
@@ -102,7 +150,7 @@
       <Button
         size="sm"
         class="absolute bottom-0 left-1/2 z-20"
-        style="transform: translate(-50%, 50%)"
+        style="transform: translate(-50%, 0) scale(0.5)"
         onclick={handleBidClick}
       >
         BID
@@ -114,7 +162,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 50%)"
+          style="transform: translate(-50%, 0) scale(0.5)"
           onclick={() => {
             uiStore.showModal = true;
             uiStore.modalType = 'land-info';
@@ -126,7 +174,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 50%)"
+          style="transform: translate(-50%, 0) scale(0.5)"
           onclick={handleBuyLandClick}
         >
           BUY LAND
@@ -144,20 +192,35 @@
     </div>
   {/if}
 
-  {#if $nukableStore.includes(toBigInt(land.location) ?? -1n)}
+  {#if nukeStore.pending.has(land.location)}
     <div
-      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-ponzi animate-pulse"
+      class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}
     >
       NUKABLE
     </div>
   {/if}
 
+  {#if isNuking}
+    {#if land.type == 'house' && land.token}
+      <NukeExplosion
+        biomeX={land.token.images.biome.x}
+        biomeY={land.token.images.biome.y}
+        width={32}
+        height={32}
+      />
+    {/if}
+    <div class="absolute top-0 right-0 w-full h-full z-20">
+      <LandNukeAnimation />
+    </div>
+  {/if}
+
   {#if isOwner}
     <div
-      class="absolute top-0 left-1/2 -translate-x-1/2 {scale > 1.5
-        ? 'w-2 h-2'
-        : 'w-6 h-6'}"
+      class={cn(
+        'absolute top-0 left-1/2 -translate-x-1/2 z-20',
+        scale > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
+      )}
       style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
@@ -180,7 +243,6 @@
   }
 
   .selected {
-    outline: 1px solid #ff0;
-    z-index: 20;
+    z-index: 30;
   }
 </style>

@@ -4,6 +4,7 @@
   import type { LandYieldInfo, YieldInfo } from '$lib/interfaces';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { estimateNukeTime } from '$lib/utils/taxes';
   import BigNumber from 'bignumber.js';
 
   const GAME_SPEED = 4;
@@ -30,11 +31,12 @@
   });
 
   let estimatedNukeTime = $derived.by(() => {
-    const remainingTime = BigNumber(land.stakeAmount.rawValue())
-      .dividedBy(totalBurnRate)
-      .multipliedBy(60 * 60); // Convert hours to minutes
-
-    return remainingTime;
+    return estimateNukeTime(
+      land.sellPrice.rawValue().toNumber(),
+      land.stakeAmount.rawValue().toNumber(),
+      land.getNeighbors().getNeighbors().length,
+      Number(land.last_pay_time),
+    );
   });
 
   const getAggregatedYield = (yieldInfos: YieldInfo[]) => {
@@ -88,7 +90,7 @@
     };
   };
 
-  let parsedNukeTime = $derived(parseNukeTime(estimatedNukeTime.toNumber()));
+  let parsedNukeTime = $derived(parseNukeTime(estimatedNukeTime));
 
   let neighbourNumber = $derived.by(() => {
     const neighbourNumber =
@@ -122,11 +124,18 @@
 {:else}
   <div class="flex justify-between">
     <div class="opacity-50">Maintenance Cost</div>
-    <div class="text-red-500">{totalBurnRate} {land?.token?.symbol}/h</div>
+    <div class="text-red-500 text-right">
+      {totalBurnRate}
+      {land?.token?.symbol}/h
+    </div>
   </div>
   <div class="flex justify-between">
     <div class="opacity-50">Time until nuke</div>
-    <div class={parsedNukeTime.days <= 0n ? 'text-red-500' : 'text-green-500'}>
+    <div
+      class="text-right {parsedNukeTime.days <= 0n
+        ? 'text-red-500'
+        : 'text-green-500'}"
+    >
       {parsedNukeTime}
     </div>
   </div>

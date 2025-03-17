@@ -28,6 +28,17 @@ jobs:
         working-directory: ./contracts
         run: sozo build
 
-      - name: Test contract
+      - name: Test contract (standard)
+        if: github.event_name != 'release'
         working-directory: ./contracts
-        run: sozo test
+        run: sozo test 
+
+      - name: Test contract (ignored tests for release)
+        if: github.event_name == 'release' 
+        working-directory: ./contracts
+        run: sozo test --ignored 
+
+      - name: Test contract (non-ignored tests for release)
+        if: github.event_name == 'release' 
+        working-directory: ./contracts
+        run: sozo test 

@@ -1,19 +1,22 @@
-import type { LandWithActions } from '$lib/api/land.svelte';
+import { type LandWithActions } from '$lib/api/land.svelte';
 import { useDojo } from '$lib/contexts/dojo';
 import type { Token } from '$lib/interfaces';
+import { getTokenInfo } from '$lib/utils';
+import { getAggregatedTaxes } from '$lib/utils/taxes';
+import type { BigNumberish } from 'ethers';
 import type { Account, AccountInterface } from 'starknet';
 import { claimQueue } from './event.store.svelte';
-import { getAggregatedTaxes } from '$lib/utils/taxes';
-import { getTokenInfo } from '$lib/utils';
 
-export let claims: {
-  [key: string]: {
-    lastClaimTime: number;
-    claimable: boolean;
-    animating: boolean;
-    land: LandWithActions;
+export let claimStore: {
+  value: {
+    [key: string]: {
+      lastClaimTime: number;
+      claimable: boolean;
+      animating: boolean;
+      land: LandWithActions;
+    };
   };
-} = $state({});
+} = $state({ value: {} });
 
 export async function claimAllOfToken(
   token: Token,
@@ -21,7 +24,7 @@ export async function claimAllOfToken(
   account: Account | AccountInterface,
 ) {
   // get all the lands with the same token
-  const landsWithThisToken = Object.values(claims)
+  const landsWithThisToken = Object.values(claimStore.value)
     .filter((claim) => claim.land.token?.address === token.address)
     .map((claim) => claim.land);
 
@@ -36,25 +39,27 @@ export async function claimAllOfToken(
   await sdk.client.actions
     .claimAll(
       account,
-      landsWithThisToken.map((land) => land.location),
+      landsWithThisToken.map((land) => land.location as BigNumberish),
     )
     .then(() => {
       // update the last claim time for all the lands
       landsWithThisToken.forEach((land) => {
-        claims[land.location].lastClaimTime = Date.now();
-        claims[land.location].animating = true;
-        claims[land.location].claimable = false;
+        claimStore.value[land.location].lastClaimTime = Date.now();
+        claimStore.value[land.location].animating = true;
+        claimStore.value[land.location].claimable = false;
       });
 
       setTimeout(() => {
         landsWithThisToken.forEach((land) => {
-          claims[land.location].animating = false;
+          claimStore.value[land.location].animating = false;
         });
       }, 2000);
 
       setTimeout(() => {
         landsWithThisToken.forEach((land) => {
-          claims[land.location].claimable = true;
+          if (land.type === 'house') {
+            claimStore.value[land.location].claimable = true;
+          }
         });
       }, 30 * 1000);
 

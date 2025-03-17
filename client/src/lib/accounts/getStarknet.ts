@@ -12,6 +12,7 @@ import {
   validateAndParseAddress,
   constants as SNconstants,
   Account,
+  Provider,
 } from 'starknet';
 
 export abstract class CommonStarknetWallet implements AccountProvider {
@@ -28,21 +29,20 @@ export abstract class CommonStarknetWallet implements AccountProvider {
   abstract setupSession(): Promise<StoredSession | void>;
 
   async connect() {
-    // Create the wallet object
-    this._wallet = new WalletAccount(
-      {
+    this._wallet = await WalletAccount.connect(
+      new Provider({
         nodeUrl: dojoConfig.rpcUrl,
         // We won't be using argent / braavos on slot deployments any time soon
         chainId:
           dojoConfig.profile == 'mainnet'
             ? SNconstants.StarknetChainId.SN_MAIN
             : SNconstants.StarknetChainId.SN_SEPOLIA,
-      },
+      }),
       this._walletObject,
     );
 
     // This is where we need to catch errors if the user cancelled
-    const result = await this._wallet.requestAccounts();
+    const result = await this._wallet.requestAccounts(true);
 
     if (typeof result == 'string') {
       // This is extracted from the example https://github.com/PhilippeR26/Starknet-WalletAccount/blob/main/src/app/components/client/WalletHandle/SelectWallet.tsx
@@ -78,6 +78,15 @@ export abstract class CommonStarknetWallet implements AccountProvider {
 
   getWalletAccount() {
     return this._wallet;
+  }
+
+  get icon(): string {
+    const icon = this._walletObject!.icon;
+    if (typeof icon === 'string') {
+      return icon;
+    } else {
+      return icon.dark;
+    }
   }
 }
 

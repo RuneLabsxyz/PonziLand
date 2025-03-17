@@ -45,7 +45,7 @@
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
-  <div class="w-full text-shadow-none flex flex-col leading-none text-lg">
+  <div class="w-full flex flex-col leading-none text-sm">
     <div class="flex justify-between text-yellow-500">
       <p class="opacity-50">Owner:</p>
       <p>Under Auction</p>

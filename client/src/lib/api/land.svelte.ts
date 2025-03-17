@@ -6,20 +6,15 @@ import type {
   SchemaType as PonziLandSchemaType,
   PoolKey,
 } from '$lib/models.gen';
-import {
-  ensureNumber,
-  getTokenInfo,
-  toBigInt,
-  toHexWithPadding,
-} from '$lib/utils';
+import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
-import type { BigNumberish } from 'starknet';
-import { derived, get, writable, type Readable } from 'svelte/store';
-import { Neighbors } from './neighbors';
-import { estimateNukeTime, getNeighbourYieldArray } from '$lib/utils/taxes';
-import type { Level as LevelModel } from '$lib/models.gen';
 import { fromDojoLevel } from '$lib/utils/level';
+import { estimateNukeTime } from '$lib/utils/taxes';
+import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
+import { toNumber } from 'ethers';
+import type { BigNumberish } from 'starknet';
+import { derived, get, type Readable } from 'svelte/store';
+import { Neighbors } from './neighbors';
 
 export type TransactionResult = Promise<
   | {
@@ -200,7 +195,7 @@ export function useLands(): LandsStore | undefined {
           );
         },
         nuke() {
-          return sdk.client.actions.claim(
+          return sdk.client.actions.nuke(
             account()?.getAccount()!,
             land.location,
           );
@@ -208,7 +203,7 @@ export function useLands(): LandsStore | undefined {
         async getPendingTaxes() {
           const result = (await sdk.client.actions.getPendingTaxesForLand(
             land.location,
-            account()!.getAccount()!.address,
+            account()!.getWalletAccount()!.address,
           )) as any[] | undefined;
 
           return result?.map((tax) => ({
@@ -255,6 +250,7 @@ export function useLands(): LandsStore | undefined {
               location: land.location,
               source: landWithActions,
             }).getNeighbors().length,
+            toNumber(land.last_pay_time),
           );
         },
         getNeighbors() {
@@ -308,6 +304,3 @@ export function useLands(): LandsStore | undefined {
     },
   };
 }
-
-// an array of nukable locations
-export const nukableStore = writable<bigint[]>([]);

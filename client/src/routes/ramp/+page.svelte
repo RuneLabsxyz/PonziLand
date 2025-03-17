@@ -132,7 +132,7 @@
 </script>
 
 <Card
-  class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20 md:min-w-[25rem]"
+  class="flex flex-col items-center justify-center w-fit h-fit mx-auto text-3xl z-20 md:min-w-[25rem] "
 >
   <div class="p-5 text-white w-full">
     <WalletSetups />
@@ -150,8 +150,14 @@
 
       <input type="hidden" name="source_token" value={selectedToken?.symbol} />
 
-      <div class="flex gap-2">
-        <Input type="text" bind:value={amount} name="amount" placeholder="1" />
+      <div class="flex gap-2 text-stroke-0 text-stroke-none">
+        <Input
+          type="text"
+          bind:value={amount}
+          name="amount"
+          placeholder="1"
+          class="ponzi-number"
+        />
         <RampTokenSelect
           class="w-60"
           values={network?.tokens ?? []}

@@ -7,20 +7,43 @@
 
   const socialink = getSocialink();
 
+  const {
+    onfinish,
+  }: {
+    onfinish: () => void;
+  } = $props();
+
   function startInvitation() {
     socialink.startInvitation().then((tx: string) => {
       // We can force the reload of the account data
       console.log('Invitation finished, tx:', tx);
       refresh();
+
+      if (onfinish) {
+        onfinish();
+      }
     });
   }
 </script>
 
-<div class="fixed inset-0 flex items-center justify-center z-50 bg-[#322637]">
-  <Card class="pointer-events-auto p-5 bg-ponzi">
-    <h1 class="text-2xl font-bold">Whitelist</h1>
-    <p class="text-lg">Validate your account to access the game.</p>
+<div class="flex flex-col items-center flex-grow p-5">
+  <div class="flex flex-col flex-grow max-w-96 gap-2">
+    <h1 class="text-2xl font-bold mb-5 self-center">Whitelist</h1>
+    <p>PonziLand is not yet available to everyone.</p>
+    <p>
+      You can click on the "Validate Account" button below to check if you meet
+      the requirements to start playing, and jump in the action if you meet
+      them.
+    </p>
+    <p>
+      If you are not eligible, don't worry. Keep an eye on our Twitter account
+      to get notified when the game releases!
+    </p>
 
-    <Button class="mt-4" on:click={startInvitation}>Validate Account</Button>
-  </Card>
+    <span class="self-end h-full grow">&nbsp;</span>
+
+    <Button class="mt-4 self-stretch" on:click={startInvitation}
+      >Validate Account</Button
+    >
+  </div>
 </div>

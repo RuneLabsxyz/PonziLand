@@ -1,25 +1,19 @@
 <script lang="ts">
+  import type { Token } from '$lib/interfaces';
   import { Input } from '../ui/input';
   import Label from '../ui/label/label.svelte';
-  import type { Token } from '$lib/interfaces';
 
-  import Card from '../ui/card/card.svelte';
-  import TokenSelect from './token-select.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import { onMount } from 'svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
-  import { accountAddress } from '$lib/stores/stores.svelte';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import Button from '../ui/button/button.svelte';
-  import { debounce } from '$lib/utils/debounce.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
-  import { executeSwap, fetchQuotes, type Quote } from '@avnu/avnu-sdk';
-  import { Leaf } from 'lucide-svelte';
-  import { Select } from '../ui/select';
-  import SelectTrigger from '../ui/select/select-trigger.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { debounce } from '$lib/utils/debounce.svelte';
+  import { type Quote } from '@avnu/avnu-sdk';
+  import { onMount } from 'svelte';
+  import Button from '../ui/button/button.svelte';
+  import TokenSelect from './token-select.svelte';
 
   let { client, accountManager } = useDojo();
-  let account = $derived($accountAddress);
   let avnu = useAvnu();
   let {
     sellToken = $bindable(),
@@ -49,13 +43,13 @@
   onMount(async () => {
     if (accountManager?.getProvider()?.getAccount() == null) {
       console.info('The user is not logged in! Attempting login.');
-      await accountManager.getProvider()?.connect();
+      await accountManager?.getProvider()?.connect();
     }
   });
 
   async function getTokenBalance(address?: string) {
     // Only do it on the browser
-    if (!address || !accountManager.getProvider()?.getWalletAccount()) {
+    if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
       return 0;
     }
 
@@ -165,7 +159,7 @@
 </script>
 
 <Label class="font-semibold" for="sellAmount">You sell:</Label>
-<div class="flex mt-1">
+<div class="flex mt-1 text-stroke-none">
   <Input
     type="number"
     bind:value={sellAmountVal}
@@ -174,7 +168,7 @@
   />
   <TokenSelect class="max-w-32" bind:value={sellToken} />
 </div>
-<div>
+<div class="mt-2">
   {#if sellTokenBalance != undefined}
     You have <span class="font-bold">{sellTokenBalance}</span>
     {sellToken?.symbol ?? ''}
@@ -198,7 +192,7 @@
 </div>
 
 <Label class="font-semibold">To buy:</Label>
-<div class="flex mt-1">
+<div class="flex mt-1 text-stroke-none">
   <Input
     type="number"
     bind:value={buyAmountVal}
@@ -206,7 +200,7 @@
   />
   <TokenSelect class="max-w-32" bind:value={buyToken} />
 </div>
-<div>
+<div class="mt-2">
   {#if buyTokenBalance != undefined}
     You have <span class="font-bold">{buyTokenBalance}</span>
     {buyToken?.symbol ?? ''}
@@ -217,7 +211,7 @@
   <!-- Prepare slippage -->
   <div class="flex flex-col gap-2">
     <Label class="" for="slippage">Max Slippage:</Label>
-    <div class="inline-block relative">
+    <div class="inline-block relative text-stroke-none">
       <Input
         type="text"
         inputmode="numeric"
@@ -225,11 +219,7 @@
         id="slippage"
         class="w-16"
       />
-      <p
-        class="absolute top-[0.79em] right-[0.5em] text-black text-shadow-none"
-      >
-        %
-      </p>
+      <p class="absolute top-[0.79em] right-[0.5em]">%</p>
     </div>
   </div>
   <Button onclick={swap} disabled={quotes.length <= 0}>Swap</Button>

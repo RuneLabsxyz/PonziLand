@@ -1,27 +1,25 @@
 <script lang="ts">
-  import {
-    useLands,
-    type LandSetup,
-    type LandWithActions,
-  } from '$lib/api/land.svelte';
+  import { useLands, type LandSetup } from '$lib/api/land.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
   import {
-    uiStore,
     selectedLandMeta,
     type SelectedLand,
   } from '$lib/stores/stores.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land/land-overview.svelte';
+  import ThreeDots from '../loading/three-dots.svelte';
   import Button from '../ui/button/button.svelte';
   import { CardTitle } from '../ui/card';
   import Card from '../ui/card/card.svelte';
   import CloseButton from '../ui/close-button.svelte';
   import BuySellForm from './buy-sell-form.svelte';
-  import ThreeDots from '../loading/three-dots.svelte';
 
-  import { onMount } from 'svelte';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
+  import { onMount } from 'svelte';
+  import { toHexWithPadding } from '$lib/utils';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -84,6 +82,17 @@
         // Close the modal
         uiStore.showModal = false;
         uiStore.modalData = null;
+
+        //nuke the lands
+        const neighborsLocations = land.getNeighbors().locations.array;
+        neighborsLocations.forEach((location) => {
+          const locationString = toHexWithPadding(location);
+          if (nukeStore.pending.has(locationString)) {
+            // remove from nukeStore.pending if in
+            nukeStore.pending.delete(locationString);
+            nukeStore.nuking.set(locationString, true);
+          }
+        });
       }
     } catch (error) {
       console.error('Error buying land', error);
@@ -107,19 +116,19 @@
           <div class="flex items-center gap-1 pt-5">
             {#each priceDisplay as char}
               {#if char === '.'}
-                <div class="text-ponzi-huge text-3xl">.</div>
+                <div class="text-ponzi-number text-3xl">.</div>
               {:else}
                 <div
-                  class="text-ponzi-huge text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
+                  class="text-ponzi-number text-3xl bg-[#2B2B3D] p-2 text-[#f2b545]"
                 >
                   {char}
                 </div>
               {/if}
             {/each}
           </div>
-          <div class="text-ponzi-huge text-3xl mt-2"></div>
+          <div class="text-ponzi-number text-3xl mt-2"></div>
           <div class="flex items-center gap-2">
-            <div class="text-3xl text-ponzi-huge text-white">
+            <div class="text-3xl text-ponzi-number text-white">
               {land?.token?.symbol}
             </div>
             <img
@@ -130,7 +139,7 @@
           </div>
         {/if}
       </div>
-      <div class="min-w-80">
+      <div class="flex flex-col gap-4 w-96 text-stroke-none">
         <BuySellForm bind:selectedToken bind:stakeAmount bind:sellAmount />
       </div>
     </div>

@@ -13,6 +13,8 @@
     chainId && PUBLIC_DOJO_CHAIN_ID.toLowerCase() !== chainId?.toLowerCase(),
   );
 
+  $inspect('Should be shown', visible);
+
   let providerName: string | undefined;
 
   async function switchNetwork() {

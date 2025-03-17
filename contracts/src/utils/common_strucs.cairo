@@ -1,4 +1,5 @@
 use starknet::ContractAddress;
+use ponzi_land::models::land::Land;
 
 #[derive(Drop, Serde, starknet::Store, Debug, Introspect, Copy)]
 pub struct TokenInfo {
@@ -27,4 +28,10 @@ pub struct YieldInfo {
     per_hour: u256,
     percent_rate: u256,
     location: u64,
+}
+
+#[derive(Drop, Serde, Debug)]
+pub struct LandWithTaxes {
+    land: Land,
+    taxes: Option<Array<TokenInfo>>,
 }
