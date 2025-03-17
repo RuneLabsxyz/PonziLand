@@ -9,6 +9,7 @@
     type SwapPriceParams,
   } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { getSocialink } from '$lib/accounts/social/index.svelte';
 
   //Types
   import type { Token } from '$lib/interfaces';
@@ -27,7 +28,11 @@
   let isLoading = $state(true);
   const avnu = useAvnu();
 
+  // Add this new constant
+  const VERIFIED_ONLY = true;
+
   let userRank = $state<number | null>(null);
+  let usernames = $state<Record<string, string>>({});
 
   /**
    * @notice Creates a token object for Avnu quotes
@@ -157,6 +162,24 @@
   }
 
   /**
+   * @notice Fetches usernames for all addresses in the rankings
+   * @dev Uses Socialink to get usernames when available
+   */
+  async function fetchUsernames() {
+    const socialink = getSocialink();
+    for (const user of userRankings) {
+      try {
+        const profile = await socialink.getUser(user.address);
+        if (profile.exists) {
+          usernames[user.address] = profile.username;
+        }
+      } catch (error) {
+        console.error(`Error fetching username for ${user.address}:`, error);
+      }
+    }
+  }
+
+  /**
    * @notice Refreshes the leaderboard data
    * @dev Fetches new token balances and recalculates user rankings
    */
@@ -165,6 +188,13 @@
     try {
       leaderboardData = await fetchTokenBalances();
       userRankings = await calculateUserAssets();
+
+      usernames = {};
+      await fetchUsernames();
+
+      if (VERIFIED_ONLY) {
+        userRankings = userRankings.filter((user) => usernames[user.address]);
+      }
 
       userRank = userRankings.findIndex((user) => user.address === address);
       if (userRank !== -1) {
@@ -217,7 +247,7 @@
               <span
                 class="font-mono"
                 class:text-red-500={user.address === address}
-                >{formatAddress(user.address)}</span
+                >{usernames[user.address] || formatAddress(user.address)}</span
               >
               {#if user.address === address}
                 <span class="text-xs bg-primary/30 px-1 rounded">You</span>
@@ -245,7 +275,7 @@
         <span class="text-sm">Your rank:</span>
         <span class="font-bold">{userRank}</span>
         <span class="font-mono text-red-500 text-sm"
-          >{formatAddress(address)}</span
+          >{usernames[address] || formatAddress(address)}</span
         >
         <span class="ml-auto font-bold">
           {formatValue(
