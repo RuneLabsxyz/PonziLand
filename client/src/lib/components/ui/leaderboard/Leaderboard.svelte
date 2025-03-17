@@ -247,6 +247,13 @@
         <span class="font-mono text-red-500 text-sm"
           >{formatAddress(address)}</span
         >
+        <span class="ml-auto font-bold">
+          {formatValue(
+            userRankings
+              .find((user) => user.address === address)
+              ?.totalValue.toString() || '0',
+          )}
+        </span>
       </div>
     </div>
   {/if}
