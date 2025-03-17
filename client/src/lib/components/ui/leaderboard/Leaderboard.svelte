@@ -101,7 +101,6 @@
     const uniqueTokens = new Set<string>();
     const tokenPriceCache: Record<string, number> = {};
 
-    // Get unique tokens
     for (const tokens of Object.values(leaderboardData)) {
       for (const tokenAddress in tokens) {
         if (tokenAddress !== baseToken) {
@@ -110,7 +109,6 @@
       }
     }
 
-    // Calculate prices for each token
     for (const tokenAddress of uniqueTokens) {
       try {
         const priceForOneUnit = await getPriceInBaseCurrency(
@@ -170,10 +168,8 @@
    */
   async function fetchUsernames() {
     try {
-      // Extract all unique addresses from the rankings
       const addresses = userRankings.map((user) => user.address);
 
-      // Fetch usernames in a single batch request
       usernames = await fetchUsernamesBatch(addresses);
     } catch (error) {
       console.error('Error fetching usernames:', error);
