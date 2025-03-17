@@ -260,33 +260,6 @@
                 {/each}
               </div>
             </div>
-
-            <!-- Top Pools -->
-            <!-- <div class="mb-3">
-              <h4 class="text-white font-semibold mb-2">Top Pools</h4>
-              <div class="bg-black/20 rounded-lg p-3 space-y-2">
-                {#each card.topPools as pool}
-                  <div class="text-sm">
-                    <div class="flex justify-between mb-1">
-                      <span class="text-gray-300">Fee:</span>
-                      <span class="text-white font-mono">{pool.fee}%</span>
-                    </div>
-                    <div class="flex justify-between text-xs">
-                      <span class="text-gray-400">TVL:</span>
-                      <span class="text-gray-300 font-mono">
-                        {CurrencyAmount.fromUnscaled(
-                          pool.tvl0_total,
-                          baseTokenDetails,
-                        ).toString()} / {CurrencyAmount.fromUnscaled(
-                          pool.tvl1_total,
-                          card.tokenDetails,
-                        ).toString()}
-                      </span>
-                    </div>
-                  </div>
-                {/each}
-              </div>
-            </div> -->
           </div>
         </Card>
       {/each}
