@@ -2,7 +2,7 @@
 mod MyToken {
     use openzeppelin_token::erc20::{ERC20Component, ERC20HooksEmptyImpl};
     use starknet::{ContractAddress, get_caller_address};
-    const FAUCET_AMOUNT: u256 = 1_000_000; // 1E6 * 1E18
+    const FAUCET_AMOUNT: u256 = 900_000_000_000_000_000_000_000; // 1E6 * 1E18
     component!(path: ERC20Component, storage: erc20, event: ERC20Event);
 
     // ERC20 Mixin

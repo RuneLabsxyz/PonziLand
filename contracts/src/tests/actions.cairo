@@ -856,13 +856,15 @@ fn test_organic_auction() {
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
         );
 
-    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 900000);
+    setup_buyer_with_tokens(
+        main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 900_000_000_000_000_000_000_000
+    );
 
     // Initial head locations
     let heads: Array<u64> = array![1080, 1050, 1002, 1007];
 
     let pool = pool_key(main_currency.contract_address);
-
+    set_block_timestamp(10000);
     // Step 1: Bid on heads and verify LEFT auctions
     bid_and_verify_next_auctions(actions_system, store, main_currency, heads.clone(), 0, pool);
 
@@ -877,6 +879,7 @@ fn test_organic_auction() {
         left_locations.append(left_loc);
         i += 1;
     };
+    set_block_timestamp(100000);
 
     // Step 2: Bid on LEFT locations and verify UP auctions
     bid_and_verify_next_auctions(
@@ -894,6 +897,7 @@ fn test_organic_auction() {
         up_locations.append(up_loc);
         i += 1;
     };
+    set_block_timestamp(100000);
 
     bid_and_verify_next_auctions(
         actions_system, store, main_currency, up_locations.clone(), 2, pool
