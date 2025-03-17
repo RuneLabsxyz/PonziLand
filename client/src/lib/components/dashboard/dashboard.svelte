@@ -5,6 +5,7 @@
   import { fetchEkuboPairData, baseToken } from './requests';
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceChart from './PriceChart.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let {
     tokens,
@@ -239,10 +240,20 @@
                     </span>
                     <div class="text-right">
                       <div class="text-white font-mono">
-                        {Number(vol.volume).toLocaleString()}
+                        {CurrencyAmount.fromUnscaled(
+                          vol.volume,
+                          vol.token === baseToken
+                            ? baseTokenDetails
+                            : card.tokenDetails,
+                        ).toString()}
                       </div>
                       <div class="text-xs text-gray-400">
-                        Fees: {Number(vol.fees).toLocaleString()}
+                        Fees: {CurrencyAmount.fromUnscaled(
+                          vol.fees,
+                          vol.token === baseToken
+                            ? baseTokenDetails
+                            : card.tokenDetails,
+                        ).toString()}
                       </div>
                     </div>
                   </div>
@@ -251,7 +262,7 @@
             </div>
 
             <!-- Top Pools -->
-            <div class="mb-3">
+            <!-- <div class="mb-3">
               <h4 class="text-white font-semibold mb-2">Top Pools</h4>
               <div class="bg-black/20 rounded-lg p-3 space-y-2">
                 {#each card.topPools as pool}
@@ -263,15 +274,19 @@
                     <div class="flex justify-between text-xs">
                       <span class="text-gray-400">TVL:</span>
                       <span class="text-gray-300 font-mono">
-                        {Number(pool.tvl0_total).toLocaleString()} / {Number(
+                        {CurrencyAmount.fromUnscaled(
+                          pool.tvl0_total,
+                          baseTokenDetails,
+                        ).toString()} / {CurrencyAmount.fromUnscaled(
                           pool.tvl1_total,
-                        ).toLocaleString()}
+                          card.tokenDetails,
+                        ).toString()}
                       </span>
                     </div>
                   </div>
                 {/each}
               </div>
-            </div>
+            </div> -->
           </div>
         </Card>
       {/each}
