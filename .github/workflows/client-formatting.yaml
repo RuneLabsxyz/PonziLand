@@ -1,4 +1,4 @@
-name: Client - Formatting
+name: client-formatting
 
 on:
   push:
@@ -13,7 +13,8 @@ permissions:
   packages: read
 
 jobs:
-  slot-deployment:
+  client-formatting:
+    name: Validate client formatting
     runs-on: ubuntu-latest
 
     steps:

@@ -1,4 +1,4 @@
-name: Client - Cloudflare Deploy (sepolia)
+name: sepolia-deployment
 
 on:
   push:
@@ -19,7 +19,8 @@ permissions:
   packages: read
 
 jobs:
-  slot-deployment:
+  sepolia-deployment:
+    name: Deploy UI to cloudflare (Sepolia)
     runs-on: ubuntu-latest
 
     steps:

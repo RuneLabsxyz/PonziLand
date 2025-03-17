@@ -1,4 +1,4 @@
-name: Contracts - Formatting
+name: contract-formatting
 
 on:
   pull_request:
@@ -9,7 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  slot-deployment:
+  contract-formatting:
+    name: Validate contract formatting
     runs-on: ubuntu-latest
 
     steps:
