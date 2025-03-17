@@ -2,15 +2,15 @@
   import { onMount } from 'svelte';
   import type { Token } from '$lib/interfaces';
   import type { EkuboApiResponse, TokenTVL, TokenVolume } from './requests';
-  import { fetchEkuboPairData } from './requests';
+  import { fetchEkuboPairData, baseToken } from './requests';
   import Card from '$lib/components/ui/card/card.svelte';
+  import PriceChart from './PriceChart.svelte';
 
-  // Base token (e.g. eStark)
-  const baseToken: string =
-    '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0';
-
-  // Tokens passed as props.
-  export let tokens: Token[];
+  let {
+    tokens,
+  }: {
+    tokens: Token[];
+  } = $props();
 
   // Find base token details
   const baseTokenDetails = tokens.find((t) => t.address === baseToken);
@@ -32,9 +32,9 @@
     historicalPrices: HistoricalPrice[];
   }
 
-  let pairCards: PairCardData[] = [];
-  let loading = true;
-  let error = '';
+  let pairCards: PairCardData[] = $state([]);
+  let loading = $state(true);
+  let error = $state('');
 
   /**
    * @notice Calculates the current conversion rate between two tokens in a pool
@@ -196,6 +196,16 @@
               </h3>
             </div>
 
+            <!-- Price Chart -->
+            <div class="mb-4">
+              <PriceChart
+                data={card.historicalPrices}
+                title="Price History"
+                baseSymbol={baseTokenDetails?.symbol || 'Base'}
+                quoteSymbol={card.tokenDetails.symbol}
+              />
+            </div>
+
             <!-- Conversion Rates -->
             <div class="bg-black/20 rounded-lg p-3 mb-3">
               <div class="flex justify-between items-center mb-2">
@@ -262,52 +272,6 @@
                 {/each}
               </div>
             </div>
-
-            <!-- Historical Prices Collapsible -->
-            <details class="group">
-              <summary
-                class="flex justify-between items-center cursor-pointer text-white font-semibold"
-              >
-                <span>Historical Prices</span>
-                <svg
-                  class="w-5 h-5 transform group-open:rotate-180 transition-transform"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </summary>
-              <div
-                class="mt-2 bg-black/20 rounded-lg p-3 max-h-40 overflow-y-auto"
-              >
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr>
-                      <th class="text-left text-gray-300">Date</th>
-                      <th class="text-right text-gray-300">Price</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {#each card.historicalPrices as hp}
-                      <tr>
-                        <td class="text-gray-400"
-                          >{new Date(hp.date).toLocaleDateString()}</td
-                        >
-                        <td class="text-right font-mono text-white"
-                          >{hp.price.toFixed(6)}</td
-                        >
-                      </tr>
-                    {/each}
-                  </tbody>
-                </table>
-              </div>
-            </details>
           </div>
         </Card>
       {/each}
