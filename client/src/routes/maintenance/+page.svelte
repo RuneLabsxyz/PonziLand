@@ -1,5 +1,23 @@
 <script>
   import Card from '$lib/components/ui/card/card.svelte';
+  import { DATE_GATE } from '$lib/const';
+  import { onMount } from 'svelte';
+
+  let currentDate = $state(Date.now());
+  let durationLeft = $derived(DATE_GATE.getTime() - currentDate);
+
+  let secondsLeft = $derived(Math.floor(durationLeft / 1000) % 60);
+
+  let minutesLeft = $derived(Math.floor(durationLeft / (1000 * 60)) % 60);
+  let hoursLeft = $derived(Math.floor(durationLeft / (1000 * 60 * 60)));
+
+  onMount(() => {
+    const interval = setInterval(() => {
+      currentDate = Date.now();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  });
 </script>
 
 <div
@@ -7,12 +25,25 @@
   style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
 >
   <Card>
-    <div class="p-5">
-      <h1 class="text-4xl font-bold text-center mb-2">We are closed!</h1>
-      <p class="text-xl max-w-80">
+    <div class="p-5 max-w-[35rem]">
+      <h1 class="text-4xl font-bold text-center mb-2">
+        We are closed (for now)!
+      </h1>
+      <p class="text-xl">
         The ponziboys are hard at work! Let them cook, and I promise that we
-        will be back soon. Well, I hope that will be back soon. Maybe we will be
-        back soon? Soon:tm:
+        will be back soon. At least now you know that we are working on it.
+        Here's a timer, but I'm not sure when we'll be back.
+      </p>
+
+      <p class="text-center text-2xl text-bold my-4">
+        {hoursLeft.toString().padStart(2, '0')}:{minutesLeft
+          .toString()
+          .padStart(2, '0')}:{secondsLeft.toString().padStart(2, '0')}
+      </p>
+
+      <p class="text-xl">
+        I can tell that it is accurate though, but I'm not allowed to tell you
+        when we'll be back.
       </p>
     </div>
   </Card>

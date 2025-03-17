@@ -53,7 +53,7 @@ jobs:
         working-directory: ./client
         env:
           LAYERSWAP_TOKEN: ${{ secrets.LAYERSWAP_TOKEN }}
-          BYPASS_TOKEN: "" # If you want to enable the maintenance wall:  ${{ secrets.BYPASS_TOKEN }}
+          BYPASS_TOKEN: ${{ secrets.BYPASS_TOKEN }}
           # Force the auto bundler to prepare for cloudflare (otherwise it does weird things)
           CF_PAGES: "1"
 
