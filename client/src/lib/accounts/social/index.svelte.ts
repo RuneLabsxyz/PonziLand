@@ -12,11 +12,11 @@ let socialink: Socialink | undefined = $state();
 export async function setupSocialink() {
   const account = useAccount();
 
-  socialink = new Socialink(
-    PUBLIC_SOCIALINK_URL,
-    // @ts-expect-error: This causes an error due to a starknet.js version mismatch
-    async () => account?.getProvider()?.getWalletAccount()!,
-  );
+  // @ts-expect-error: This causes an error due to a starknet.js version mismatch
+  socialink = new Socialink(PUBLIC_SOCIALINK_URL, async () => ({
+    wallet: account?.getProvider()?.getWalletAccount()!,
+    provider: account?.getProviderName() as any,
+  }));
 
   return socialink;
 }
