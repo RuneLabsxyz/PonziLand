@@ -3,6 +3,7 @@
   import Card from '$lib/components/ui/card/card.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import type { Token } from '$lib/interfaces';
+  import Dashboard from '$lib/components/dashboard/dashboard.svelte';
 
   const tokens: Token[] = data.availableTokens;
 </script>
@@ -34,3 +35,5 @@
     </ScrollArea>
   </Card>
 </div>
+
+<Dashboard {tokens} />
