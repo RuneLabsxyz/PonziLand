@@ -32,7 +32,6 @@
   let isLoading = $state(true);
   const avnu = useAvnu();
 
-  // Add this new constant
   const VERIFIED_ONLY = true;
 
   let userRank = $state<number | null>(null);
