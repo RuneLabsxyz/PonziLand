@@ -3,7 +3,7 @@
   import { onMount } from 'svelte';
   import Card from '../ui/card/card.svelte';
   import { Button } from '../ui/button';
-  import { refresh } from '$lib/account.svelte';
+  import { refresh, state } from '$lib/account.svelte';
 
   const socialink = getSocialink();
 
@@ -14,15 +14,28 @@
   } = $props();
 
   function startInvitation() {
-    socialink.startInvitation().then((tx: string) => {
-      // We can force the reload of the account data
-      console.log('Invitation finished, tx:', tx);
-      refresh();
+    socialink
+      .startInvitation()
+      .then(async (tx: string) => {
+        // We can force the reload of the account data
+        console.log('Invitation finished, tx:', tx);
+        await refresh();
 
-      if (onfinish) {
-        onfinish();
-      }
-    });
+        if (onfinish) {
+          onfinish();
+        }
+      })
+      .catch(async () => {
+        // The user might have closed after a successful invitation
+        await refresh();
+
+        if (state.profile?.exists && state.profile?.whitelisted) {
+          // User is whitelisted, so do as if it was successful
+          if (onfinish) {
+            onfinish();
+          }
+        }
+      });
   }
 </script>
 

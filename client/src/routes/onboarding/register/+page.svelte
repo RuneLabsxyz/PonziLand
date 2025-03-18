@@ -17,7 +17,7 @@
       ?.getStarknetProvider()
       .getClassAt(accountDataProvider.address!)
       .then(() => {
-        // Account exists, proceed to registration
+        // Account exists, so we can proceed to registration (the current page)
       })
       .catch((error) => {
         goto('/onboarding/deploy');
