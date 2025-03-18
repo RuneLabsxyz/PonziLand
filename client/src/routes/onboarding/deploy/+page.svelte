@@ -1,9 +1,15 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import { PUBLIC_DOJO_PROFILE } from '$env/static/public';
   import { Button } from '$lib/components/ui/button';
+  import { Input } from '$lib/components/ui/input';
   import { useAccount } from '$lib/contexts/account.svelte';
-  import { Send } from 'lucide-svelte';
+  import { ClipboardCopy, ClipboardPaste, Send } from 'lucide-svelte';
   import { constants } from 'starknet';
+  import { state as accountState } from '$lib/account.svelte';
+  import { onMount } from 'svelte';
+
+  let copied = $state(false);
 
   async function sendDummyTransaction() {
     const { transaction_hash } = await useAccount()
@@ -25,6 +31,10 @@
 
     goto('/onboarding/register');
   }
+
+  onMount(() => {
+    console.log('Profile:', PUBLIC_DOJO_PROFILE);
+  });
 </script>
 
 <div class="flex flex-col h-full grow p-5 gap-2 max-w-[40rem]">
@@ -40,6 +50,39 @@
     While clicking on the button below will allow you to do it, you might need
     to transfer some STRK tokens to your account.
   </p>
+
+  {#if PUBLIC_DOJO_PROFILE == 'sepolia'}
+    <div>
+      You can get some tokens from the <a
+        class="text-blue-500 hover:underline"
+        target="_blank"
+        href="https://starknet-faucet.vercel.app/">official faucet</a
+      >. This is your wallet address:
+      <div class="bg-white flex p-0 my-4">
+        <Input
+          readonly
+          value={accountState.address}
+          class="!text-black my-2 text-stroke-0 text-stroke-none flex-grow m-0"
+        />
+        {#if copied}
+          <span class="text-green-500 self-center px-2">Copied!</span>
+        {/if}
+        <button
+          class="text-black px-2"
+          onclick={() => {
+            copied = true;
+            setTimeout(() => {
+              copied = false;
+            }, 2000);
+            navigator.clipboard.writeText(accountState.address ?? '');
+          }}
+        >
+          <ClipboardCopy />
+        </button>
+      </div>
+    </div>
+  {/if}
+
   <p>
     Once it is done, you can click the button below, send the transaction and
     get closer to playing on PonziLand!
