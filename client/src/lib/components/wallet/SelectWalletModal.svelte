@@ -13,6 +13,7 @@
   import { goto } from '$app/navigation';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
+  import { ENABLE_RAMP } from '$lib/flags';
 
   let visible = $state(false);
   let loading = $state(true);
@@ -95,14 +96,16 @@
             </div>
           </Button>
         {/each}
-        _________________________
-        <Button
-          class="flex flex-row justify-start"
-          on:click={() => {
-            visible = false;
-            goto('/ramp');
-          }}>Phantom</Button
-        >
+        {#if ENABLE_RAMP}
+          _________________________
+          <Button
+            class="flex flex-row justify-start"
+            on:click={() => {
+              visible = false;
+              goto('/ramp');
+            }}>Phantom</Button
+          >
+        {/if}
       </div>
     {/if}
   </Card>

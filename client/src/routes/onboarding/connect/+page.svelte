@@ -5,6 +5,7 @@
   import { Button } from '$lib/components/ui/button';
   import SelectWallet from '$lib/components/wallet/select-wallet.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
+  import { ENABLE_RAMP } from '$lib/flags';
 
   const accountManager = useAccount();
 
@@ -40,11 +41,13 @@
     <SelectWallet />
   </div>
 
-  <div class="self-center text-xl font-bold mx-2">or</div>
+  {#if ENABLE_RAMP}
+    <div class="self-center text-xl font-bold mx-2">or</div>
 
-  <Button
-    on:click={() => {
-      goto('/ramp');
-    }}>Phantom</Button
-  >
+    <Button
+      on:click={() => {
+        goto('/ramp');
+      }}>Phantom</Button
+    >
+  {/if}
 </div>
