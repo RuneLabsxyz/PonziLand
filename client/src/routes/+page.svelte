@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { setupAccount, useAccount } from '$lib/contexts/account.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
@@ -20,18 +20,15 @@
     goto('/game');
   }
 
-  // Video boomerang effect
-  let videoElement;
+  let videoElement: HTMLVideoElement;
 
   onMount(() => {
     if (videoElement) {
-      // Skip the first 2 seconds of the video
       videoElement.currentTime = 2;
 
-      // Set up the boomerang effect from 2 to 5 seconds
       videoElement.addEventListener('timeupdate', () => {
         if (videoElement.currentTime >= 5) {
-          videoElement.currentTime = 2; // Reset to 2 seconds
+          videoElement.currentTime = 2;
         }
       });
     }
