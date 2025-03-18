@@ -161,5 +161,8 @@
       "wallet": "/images/icons/wallet.svg",
       "settings": "/images/icons/settings.svg"
     }
-  }
+  },
+  "address_blacklist": [
+    "0x04f6a506b6feb38a670526241e7b81cab84006d696a3c9c6fef99f4dc8765a26"
+  ]
 }

@@ -24,3 +24,11 @@ export function formatValue(value: string): string {
 
   return bigValue.toString(10);
 }
+
+export function areAddressesEquals(a: string, b: string): boolean {
+  try {
+    return BigInt(a) == BigInt(b);
+  } catch (error) {
+    return false;
+  }
+}

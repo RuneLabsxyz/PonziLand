@@ -1,3 +1,8 @@
+import { address_blacklist } from '$lib/data.json';
+import { areAddressesEquals } from './helpers';
+
+const blackList = address_blacklist.map((e) => BigInt(e));
+
 // @notice This token is used to rank users in the leaderboard.
 // @notice The token is Emulated stark token.
 export const baseToken =
@@ -14,15 +19,15 @@ export async function fetchTokenBalances() {
         },
         body: `
           WITH ranked_balances AS (
-            SELECT 
-              account_address, 
-              contract_address, 
+            SELECT
+              account_address,
+              contract_address,
               balance,
               ROW_NUMBER() OVER (PARTITION BY contract_address ORDER BY balance DESC) as rank
             FROM token_balances
           )
-          SELECT account_address, contract_address, balance 
-          FROM ranked_balances 
+          SELECT account_address, contract_address, balance
+          FROM ranked_balances
           WHERE rank <= 50 OR contract_address = '${baseToken}'
           ORDER BY contract_address, balance DESC;
         `,
@@ -54,6 +59,12 @@ export function parseTokenBalances(
 
   data.forEach((entry) => {
     const { account_address, contract_address, balance } = entry;
+
+    if (blackList.includes(BigInt(account_address))) {
+      // Skip blacklisted addresses
+      console.log(`Skipping blacklisted address: ${account_address}`);
+      return;
+    }
 
     if (!result[account_address]) {
       result[account_address] = {};
