@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { setupAccount, useAccount } from '$lib/contexts/account.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
+  import { onMount } from 'svelte';
 
   // setup account
   //
@@ -18,26 +19,45 @@
     console.log('Got the confirmation that it worked!');
     goto('/game');
   }
+
+  // Video boomerang effect
+  let videoElement;
+
+  onMount(() => {
+    if (videoElement) {
+      // Skip the first 2 seconds of the video
+      videoElement.currentTime = 2;
+
+      // Set up the boomerang effect from 2 to 5 seconds
+      videoElement.addEventListener('timeupdate', () => {
+        if (videoElement.currentTime >= 5) {
+          videoElement.currentTime = 2; // Reset to 2 seconds
+        }
+      });
+    }
+  });
 </script>
 
 <main
   class="relative flex flex-col items-center justify-center h-screen overflow-hidden"
 >
-  <!-- Animated gradient background -->
-  <div
-    class="absolute inset-0 bg-gradient-to-br from-purple-600 via-blue-500 to-green-400 animate-gradient"
-  ></div>
+  <!-- Video background with explosion effect -->
+  <div class="absolute inset-0 overflow-hidden">
+    <video
+      bind:this={videoElement}
+      autoplay
+      muted
+      loop
+      playsinline
+      class="absolute w-full h-auto min-h-screen object-cover"
+      style="transform: scale(1.2) translateY(-15%);"
+    >
+      <source src="/home/EXPLOSION.mp4" type="video/mp4" />
+    </video>
+  </div>
 
-  <!-- Floating circles for added visual interest -->
-  <div
-    class="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full mix-blend-multiply filter blur-xl animate-blob"
-  ></div>
-  <div
-    class="absolute top-1/3 right-1/4 w-96 h-96 bg-pink-300/10 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"
-  ></div>
-  <div
-    class="absolute bottom-1/4 left-1/3 w-96 h-96 bg-yellow-200/10 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"
-  ></div>
+  <!-- Overlay to ensure text is visible over video -->
+  <div class="absolute inset-0 bg-black/30 z-0"></div>
 
   <h1 class="text-6xl font-bold mb-8 text-white drop-shadow-lg z-10">
     Ponzi Land
@@ -84,32 +104,5 @@
 </main>
 
 <style>
-  @keyframes blob {
-    0% {
-      transform: translate(0px, 0px) scale(1);
-    }
-    33% {
-      transform: translate(30px, -30px) scale(1.1);
-    }
-    66% {
-      transform: translate(-30px, 30px) scale(1.2);
-    }
-    100% {
-      transform: translate(0px, 0px) scale(1);
-    }
-  }
-  @keyframes blob {
-    0% {
-      transform: translate(0px, 0px) scale(1);
-    }
-    33% {
-      transform: translate(30px, -30px) scale(1.1);
-    }
-    66% {
-      transform: translate(-30px, 30px) scale(1.2);
-    }
-    100% {
-      transform: translate(0px, 0px) scale(1);
-    }
-  }
+  /* Removed duplicate keyframes and unnecessary animations since we're using video now */
 </style>
