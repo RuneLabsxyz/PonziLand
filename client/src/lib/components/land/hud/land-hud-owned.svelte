@@ -2,7 +2,30 @@
   import LandYieldInfo from '$lib/components/land/land-yield-info.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
+  import { onMount } from 'svelte';
   import LandOverview from '../../land/land-overview.svelte';
+  import { GAME_SPEED } from '$lib/const';
+
+  let levelUpInfo = $state($selectedLandMeta?.getLevelInfo());
+
+  onMount(() => {
+    const interval = setInterval(() => {
+      levelUpInfo = $selectedLandMeta?.getLevelInfo();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  });
+
+  let timeLeft = $derived(
+    levelUpInfo == undefined
+      ? 0
+      : (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) /
+          GAME_SPEED,
+  );
+
+  let secondsLeft = $derived(timeLeft % 60);
+  let minutesLeft = $derived(Math.floor(timeLeft / 60) % 60);
+  let hoursLeft = $derived(Math.floor(timeLeft / 3600));
 </script>
 
 <div class="flex gap-4 relative items-center p-4">
@@ -47,16 +70,26 @@
         {$selectedLandMeta?.token?.symbol}
       </p>
     </div>
+    {#if $selectedLandMeta?.level ?? 1 < 3}
+      <div class="flex justify-between">
+        <p class="opacity-50">Level up in</p>
+        <p>
+          {hoursLeft}h {minutesLeft}m {secondsLeft}s
+        </p>
+      </div>
+    {/if}
 
     <div class="flex h-8">
-      <Button
-        onclick={async () => {
-          console.log(
-            'Result of levelup: ',
-            await $selectedLandMeta?.levelUp(),
-          );
-        }}>Level Up</Button
-      >
+      {#if levelUpInfo?.canLevelUp}
+        <Button
+          onclick={async () => {
+            console.log(
+              'Result of levelup: ',
+              await $selectedLandMeta?.levelUp(),
+            );
+          }}>Level Up</Button
+        >
+      {/if}
     </div>
   </div>
 </div>

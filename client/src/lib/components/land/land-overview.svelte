@@ -1,10 +1,24 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import { locationIntToString } from '$lib/utils';
+  import { cn, locationIntToString } from '$lib/utils';
   import LandDisplay from './land-display.svelte';
+  import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
+  import { onMount } from 'svelte';
+  import { Progress } from '../ui/progress';
 
   const { land, size = 'sm' }: { land: LandWithActions; size?: 'sm' | 'lg' } =
     $props();
+
+  // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
+  let levelUpInfo = $state(land.getLevelInfo());
+
+  onMount(() => {
+    const interval = setInterval(() => {
+      levelUpInfo = land.getLevelInfo();
+    }, 1000);
+
+    return () => clearInterval(interval);
+  });
 
   const OFF_IMAGE = '/assets/ui/star/off.png';
   const ON_IMAGE = '/assets/ui/star/on.png';
@@ -51,4 +65,17 @@
       </div>
     {/if}
   </div>
+  <!-- Also show the progress bar for the next level -->
+  {#if land.type == 'house' && land.level < 3}
+    <div class="pt-4 w-full leading-none flex flex-col justify-center">
+      <div class="fw-full bg-white h-2">
+        <Progress
+          value={levelUpInfo.timeSinceLastLevelUp}
+          max={levelUpInfo.levelUpTime}
+          class={cn('w-full p-0 h-2')}
+          color={levelUpInfo.canLevelUp ? 'green' : undefined}
+        ></Progress>
+      </div>
+    </div>
+  {/if}
 </div>

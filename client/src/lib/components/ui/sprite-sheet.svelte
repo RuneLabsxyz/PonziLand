@@ -45,6 +45,15 @@
   let x = $state(initialX);
   let y = $state(initialY);
 
+  // Update position when initial changes
+  $effect(() => {
+    x = initialX;
+  });
+
+  $effect(() => {
+    y = initialY;
+  });
+
   // Calculate ratios for background sizing
   let xRatio = $derived(width / xSize);
   let yRatio = $derived(height / ySize);

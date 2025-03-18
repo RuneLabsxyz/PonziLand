@@ -39,6 +39,8 @@
 
   let width: number | undefined = $state();
   let height: number | undefined = $state();
+
+  $inspect('Token: ', token?.images.building);
 </script>
 
 <div

@@ -15,6 +15,7 @@ import { toNumber } from 'ethers';
 import type { BigNumberish } from 'starknet';
 import { derived, get, type Readable } from 'svelte/store';
 import { Neighbors } from './neighbors';
+import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 
 export type TransactionResult = Promise<
   | {
@@ -78,6 +79,13 @@ export type NextClaimInformation = {
   canBeNuked: boolean;
 };
 
+export type LevelInfo = {
+  canLevelUp: boolean;
+  expectedLevel: Level;
+  timeSinceLastLevelUp: number;
+  levelUpTime: number;
+};
+
 export type LandWithActions = LandWithMeta & {
   increaseStake(amount: CurrencyAmount): TransactionResult;
   increasePrice(amount: CurrencyAmount): TransactionResult;
@@ -90,6 +98,7 @@ export type LandWithActions = LandWithMeta & {
   getEstimatedNukeTime(): number | undefined;
   getNeighbors(): Neighbors;
   levelUp(): TransactionResult;
+  getLevelInfo(): LevelInfo;
 };
 
 export function useLands(): LandsStore | undefined {
@@ -258,6 +267,26 @@ export function useLands(): LandsStore | undefined {
             location: land.location,
             source: landWithActions,
           });
+        },
+
+        getLevelInfo() {
+          const now = Math.floor(Date.now() / 1000);
+          const boughtSince =
+            (now - Number(land.block_date_bought)) * GAME_SPEED;
+
+          const expectedLevel = Math.min(
+            Math.floor(boughtSince / LEVEL_UP_TIME) + 1,
+            3,
+          );
+          const timeSinceLastLevelUp = boughtSince % LEVEL_UP_TIME;
+          const levelUpTime = expectedLevel < 3 ? LEVEL_UP_TIME : 0;
+
+          return {
+            canLevelUp: expectedLevel > land.level,
+            expectedLevel,
+            timeSinceLastLevelUp,
+            levelUpTime,
+          };
         },
       }));
 
