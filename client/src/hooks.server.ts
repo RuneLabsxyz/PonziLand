@@ -27,7 +27,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   if (event.url.pathname === '/maintenance') {
     // Resolve as normal
-    return await resolve(event);
+    if (new Date() > DATE_GATE) {
+      return redirect(302, '/');
+    } else {
+      return await resolve(event);
+    }
   }
 
   // For the others, check the cookies, and if we have the good value, resolve as normal. Otherwise redirect to /maintenance
