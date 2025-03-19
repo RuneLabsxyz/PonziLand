@@ -173,6 +173,6 @@
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
-    animation-delay: 1s; /* Start floating after initial entrance animation */
+    animation-delay: 1s;
   }
 </style>
