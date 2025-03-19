@@ -121,8 +121,6 @@ export async function register(username: string) {
       signature!,
       useAccount()?.getProviderName() == 'controller',
     );
-
-    console.log('Successfully registered!');
   } catch (e) {
     console.log(
       'An error occurred while signing and send the response message',

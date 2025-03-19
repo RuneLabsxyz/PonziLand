@@ -20,14 +20,12 @@ let isSetup = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
   const walletAccount = provider.getWalletAccount();
-  console.log('Got the following:', walletAccount?.address);
 
   state.isConnected = walletAccount != null;
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
 
   const profile = await getSocialink().getUser(state.address!);
-  console.log('ayayayay', profile);
   state.profile = profile;
   state.providerName = useAccount()?.getProviderName();
 };
@@ -64,7 +62,6 @@ export function setup() {
 
   // Listen on updates
   accountManager.listen((event) => {
-    console.log('Event: ', event);
     switch (event.type) {
       case 'connected':
         updateState(event.provider);

@@ -49,8 +49,6 @@ async function getApprove(
     };
   });
 
-  console.log('spending call', spendingCall);
-
   return [...approvals, spendingCall];
 }
 

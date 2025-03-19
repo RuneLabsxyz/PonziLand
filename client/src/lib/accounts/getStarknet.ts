@@ -3,8 +3,10 @@ import type {
   StoredSession,
 } from '$lib/contexts/account.svelte';
 import { dojoConfig } from '$lib/dojoConfig';
+import { padAddress, toHexWithPadding } from '$lib/utils';
 import { getStarknet } from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
+import { generatedTrue } from '@tsparticles/engine';
 import { GalleryHorizontal } from 'lucide-svelte';
 import {
   WalletAccount,
@@ -13,7 +15,11 @@ import {
   constants as SNconstants,
   Account,
   Provider,
+  CallData,
+  type Call,
+  selector,
 } from 'starknet';
+import { trace } from './utils/walnut-trace';
 
 export abstract class CommonStarknetWallet implements AccountProvider {
   protected _wallet?: WalletAccount;
@@ -95,7 +101,13 @@ export class NoSessionStarknetWallet extends CommonStarknetWallet {
     return false;
   }
   getAccount(): Account | undefined {
-    return this._wallet;
+    if (this._wallet == undefined) {
+      return undefined;
+    }
+
+    return Object.assign(this._wallet, {
+      execute: trace(this._wallet.execute),
+    });
   }
   async setupSession(): Promise<StoredSession | void> {
     // no-op

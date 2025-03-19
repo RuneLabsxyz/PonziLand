@@ -1,42 +1,3 @@
-import { $, env, file } from "bun";
-import tokens from "./tokens.json";
-import manifest from "../contracts/manifest_sepolia.json";
-import holders from "./query-results.json";
-import {
-  Account,
-  CairoCustomEnum,
-  Contract,
-  RpcProvider,
-  constants,
-  transaction,
-  CairoOption,
-  CallData,
-  CairoOptionVariant,
-  Call,
-} from "starknet";
-import { ABI } from "./abi";
-import { exit } from "node:process";
-
-const provider = new RpcProvider({
-  nodeUrl: env.STARKNET_RPC,
-});
-
-const { stdout } =
-  await $`starkli signer keystore inspect-private $STARKNET_KEYSTORE --password $STARKNET_KEYSTORE_PASSWORD --raw`.quiet();
-const privateKey = stdout.toString().replace("\n", "");
-
-const address = (
-  await file(env.STARKNET_ACCOUNT!.replace("~", env.HOME!)).json()
-).deployment.address;
-
-const account = new Account(
-  provider,
-  address,
-  privateKey,
-  undefined,
-  constants.TRANSACTION_VERSION.V3,
-);
-
 function getCalls(contractAddress: string) {
   const calls: Call[] = [];
   for (const holder of holders) {
@@ -64,23 +25,6 @@ async function resetUser(address: string) {
 
   const txHash = await account.execute([
     // Reset the activation status
-    {
-      contractAddress: authContractAddress!,
-      entrypoint: "remove_authorized",
-      calldata: CallData.compile({
-        address,
-      }),
-    },
-    // Reset the mint status
-    {
-      contractAddress:
-        "0x02d9ec36cd62c36e2b3cb2256cd07af0e5518e9e462a8091d73b0ba045fc1446",
-      entrypoint: "set_mint_status",
-      calldata: CallData.compile({
-        address,
-        status: new CairoOption<CairoCustomEnum>(CairoOptionVariant.None),
-      }),
-    },
   ]);
 
   console.log(txHash);

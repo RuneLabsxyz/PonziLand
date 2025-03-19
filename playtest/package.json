@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bignumber.js": "^9.1.2",
     "starknet": "^6.23.1"
   },
   "devDependencies": {

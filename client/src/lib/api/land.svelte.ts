@@ -130,8 +130,6 @@ export function useLands(): LandsStore | undefined {
         if (response.error || response.data == null) {
           console.log('Got an error!', response.error);
         } else {
-          console.log('Setting entities :)');
-          console.log('Data!', response.data);
           get(landStore).setEntities(response.data.flat(1));
         }
       },
@@ -142,8 +140,6 @@ export function useLands(): LandsStore | undefined {
         if (response.error || response.data == null) {
           console.log('Got an error!', response.error);
         } else {
-          console.log('Setting entities :)');
-          console.log('Data!', JSON.stringify(response.data));
           get(landStore).setEntities(response.data.flat(1));
         }
       },

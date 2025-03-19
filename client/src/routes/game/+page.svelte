@@ -41,15 +41,11 @@
       (accountState.profile?.exists ?? false) == false,
   );
 
-  $inspect(showRegister, '=>', accountState.profile);
-
   let showInvitation = $derived(
     accountState.address != null &&
       (accountState.profile?.exists && accountState.profile?.whitelisted) ==
         false,
   );
-
-  $inspect('Invitation: ', showInvitation);
 
   let value = $state(10);
 
