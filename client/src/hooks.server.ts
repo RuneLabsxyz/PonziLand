@@ -6,7 +6,12 @@ import { redirect, type Handle } from '@sveltejs/kit';
 export const handle: Handle = async ({ event, resolve }) => {
   // Bypass all this trickery if the bypass token is set to '' (default), or if we're building
   // Or if we are after the DATE_GATE
+
   if (BYPASS_TOKEN === '' || building || new Date() > DATE_GATE) {
+    if (event.url.pathname === '/maintenance') {
+      return redirect(302, '/');
+    }
+
     return await resolve(event);
   }
 

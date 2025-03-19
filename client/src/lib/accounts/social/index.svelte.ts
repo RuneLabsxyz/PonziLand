@@ -9,6 +9,14 @@ import { get } from 'svelte/store';
 
 let socialink: Socialink | undefined = $state();
 
+let addressUsernameCache: Record<string, string> = $state({});
+
+export async function getUsername(address: string) {
+  if (address in addressUsernameCache) {
+    return;
+  }
+}
+
 export async function setupSocialink() {
   const account = useAccount();
 

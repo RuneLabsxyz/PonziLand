@@ -7,6 +7,7 @@
   import { Account } from 'starknet';
   import { Button } from '$lib/components/ui/button';
   import { goto } from '$app/navigation';
+  import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
 
   const accountManager = useAccount();
 
@@ -37,6 +38,8 @@
 </script>
 
 <OnboardingWalletInfo onconnect={onConnect} />
+
+<SwitchChainModal />
 
 <div
   class="w-screen h-screen inset-0 flex items-center justify-center bg-[#322637]"
