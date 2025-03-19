@@ -859,7 +859,7 @@ pub mod actions {
                     get_next_position(direction, current_head_location) {
                     if store.land(next_pos).owner.is_zero()
                         && !self.active_auction_queue.read(next_pos) {
-                        self.auction(next_pos, start_price, 0, DECAY_RATE, false);
+                        self.auction(next_pos, start_price, 1, DECAY_RATE, false);
                     };
 
                     self.heads.write(spiral_state.current_head, next_pos);
