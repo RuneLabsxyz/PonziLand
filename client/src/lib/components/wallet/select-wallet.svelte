@@ -11,6 +11,7 @@
   import Button from '../ui/button/button.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
   import { goto } from '$app/navigation';
+  import { Dice3 } from 'lucide-svelte';
 
   let visible = $state(false);
   let loading = $state(true);

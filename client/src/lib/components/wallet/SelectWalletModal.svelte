@@ -14,11 +14,17 @@
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
   import { ENABLE_RAMP } from '$lib/flags';
+  import { Dice3 } from 'lucide-svelte';
+  import { validators } from 'tailwind-merge';
 
   let visible = $state(false);
   let loading = $state(true);
 
   let validWallets: StarknetWindowObject[] = $state([]);
+
+  function shuffleWallets() {
+    validWallets = validWallets.sort(() => Math.random() - 0.5);
+  }
 
   // If we are on dev mode, only add the burner button.
   // Otherise, check for all wallets, and setup controller.
@@ -67,7 +73,7 @@
     &nbsp;
   </div>
   <Card
-    class="absolute top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-5 min-w-52 text-2xl"
+    class="absolute top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 p-10 text-2xl min-w-80"
   >
     <CloseButton
       onclick={() => {
@@ -77,35 +83,40 @@
     {#if loading}
       Loading...
     {:else}
-      <div class="mb-2">WALLETS</div>
-      <div class="flex flex-col justify-stretch gap-2">
-        {#each validWallets as wallet}
-          {@const image =
-            typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
-          <Button
-            class="flex flex-row justify-start"
-            on:click={() => login(wallet.id)}
-          >
-            <img
-              src={image}
-              alt={wallet.name + ' logo'}
-              class="h-10 p-2 pr-4"
-            />
-            <div>
-              {wallet.name}
-            </div>
-          </Button>
-        {/each}
-        {#if ENABLE_RAMP}
-          _________________________
-          <Button
-            class="flex flex-row justify-start"
-            on:click={() => {
-              visible = false;
-              goto('/ramp');
-            }}>Phantom</Button
-          >
-        {/if}
+      <div class="m-3 mt-0">
+        <div class="mb-5 flex gap-2">
+          <div>WALLETS</div>
+        </div>
+
+        <div class="flex flex-col justify-stretch gap-2">
+          {#each validWallets as wallet}
+            {@const image =
+              typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
+            <Button
+              class="flex flex-row justify-start"
+              on:click={() => login(wallet.id)}
+            >
+              <img
+                src={image}
+                alt={wallet.name + ' logo'}
+                class="h-10 p-2 pr-4"
+              />
+              <div>
+                {wallet.name}
+              </div>
+            </Button>
+          {/each}
+          {#if ENABLE_RAMP}
+            _________________________
+            <Button
+              class="flex flex-row justify-start"
+              on:click={() => {
+                visible = false;
+                goto('/ramp');
+              }}>Phantom</Button
+            >
+          {/if}
+        </div>
       </div>
     {/if}
   </Card>

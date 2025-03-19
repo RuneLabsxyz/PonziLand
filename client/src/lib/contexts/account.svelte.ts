@@ -28,6 +28,23 @@ import { getContext, setContext } from 'svelte';
 
 export const USE_BURNER = PUBLIC_DOJO_BURNER_ADDRESS != 'null';
 
+export const WalletWeights: Record<string, number> = {
+  // Controller is preferred.
+  controller: 99,
+
+  // Session-supported wallets (ordering alphabetically)
+  argentX: 21,
+  braavos: 20,
+
+  // Other wallets (sorted alphabetically)
+  fordefi: 12,
+  keplr: 11,
+  okxwallet: 10,
+
+  // We block metamask due to issues
+  metamask: -1,
+};
+
 // TODO: In AccountProvider, offer a way to store the session loaded from local storage, if it exists (can be a no-op on cartridge + burner)
 
 export type AccountProvider = {
@@ -363,7 +380,14 @@ export class AccountManager {
   }
 
   public getAvailableWallets() {
-    return availableWallets.map((e) => e.wallet);
+    return availableWallets
+      .map((e) => e.wallet)
+      .filter(
+        (wallet) =>
+          // Allow unknown and non-ignored wallets
+          !(wallet.id in WalletWeights) || WalletWeights[wallet.id] > 0,
+      )
+      .sort((a, b) => (WalletWeights[b.id] ?? 0) - (WalletWeights[a.id] ?? 0));
   }
 
   public promptForLogin(): Promise<void> {
