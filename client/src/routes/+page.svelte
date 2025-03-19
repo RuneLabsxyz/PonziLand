@@ -118,19 +118,19 @@
     />
     <Particles
       id="tsparticles"
-      class="absolute z-30 h-full w-full overflow-hidden pointer-events-none"
+      class="absolute z-[1] h-full w-full overflow-hidden pointer-events-none"
       options={particlesConfig}
       on:particlesLoaded={onParticlesLoaded}
     />
   </div>
 
-  <div class="absolute inset-0 bg-black/30 z-0"></div>
+  <div class="absolute inset-0 bg-black/30 z-[2]"></div>
 
   {#if showLogo}
     <img
       src="/logo.png"
       alt="Ponzi Land Logo"
-      class="z-10 pt-20 w-[min(500px,80vw)] animate-float"
+      class="z-[3] pt-20 w-[min(500px,80vw)] animate-float"
       transition:fly={{ y: -400, duration: 1500 }}
     />
   {/if}
@@ -138,11 +138,11 @@
   <Button
     variant="red"
     on:click={startGame}
-    class="z-20 text-xl px-12 py-4 font-bold">Play</Button
+    class="z-[3] text-xl px-12 py-4 font-bold">Play</Button
   >
 
   <div
-    class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 flex flex-col items-center"
+    class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[3] flex flex-col items-center"
   >
     <p class="text-white text-xl mb-4">Super official sponsors</p>
     <div class="flex items-center justify-center gap-8">
