@@ -25,7 +25,7 @@
     if (!canvas) return;
 
     const labels = data.map((d) => new Date(d.date).toLocaleDateString());
-    const prices = data.map((d) => d.price);
+    const prices = data.map((d) => 1 / d.price);
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
