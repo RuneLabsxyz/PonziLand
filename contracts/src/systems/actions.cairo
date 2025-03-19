@@ -760,12 +760,12 @@ pub mod actions {
 
             // Math.max(sold_at_price * 10, auction.floor_price)
             if self.active_auctions.read() < MAX_AUCTIONS {
-                let asking_price = if sold_at_price > auction.floor_price {
+                let _asking_price = if sold_at_price > auction.floor_price {
                     sold_at_price * 10
                 } else {
                     auction.floor_price * 10
                 };
-                self.add_spiral_auctions(store, land.location, asking_price);
+                self.add_spiral_auctions(store, land.location, FLOOR_PRICE);
             }
         }
 
@@ -859,7 +859,7 @@ pub mod actions {
                     get_next_position(direction, current_head_location) {
                     if store.land(next_pos).owner.is_zero()
                         && !self.active_auction_queue.read(next_pos) {
-                        self.auction(next_pos, start_price, FLOOR_PRICE, DECAY_RATE, false);
+                        self.auction(next_pos, start_price, 0, DECAY_RATE, false);
                     };
 
                     self.heads.write(spiral_state.current_head, next_pos);
