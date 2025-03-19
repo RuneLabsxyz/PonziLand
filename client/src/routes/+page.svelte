@@ -99,9 +99,13 @@
   }
 
   let showLogo = false;
+  let showWave = false;
 
   onMount(() => {
     showLogo = true;
+    setTimeout(() => {
+      showWave = true;
+    }, 3000);
   });
 </script>
 
@@ -134,28 +138,21 @@
       transition:fly={{ y: -400, duration: 1500 }}
     />
   {/if}
+  {#if showWave}
+    <img
+      src="/home/wave.gif"
+      alt="Waving Character"
+      class="fixed bottom-[-100px] left-0 z-[3] h-[400px] w-auto"
+      style="transform: rotate(10deg);"
+      transition:fly={{ y: 300, duration: 1000 }}
+    />
+  {/if}
 
   <Button
     variant="red"
     on:click={startGame}
     class="z-[3] text-xl px-12 py-4 font-bold">Play</Button
   >
-
-  <div
-    class="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-[3] flex flex-col items-center"
-  >
-    <p class="text-white text-xl mb-4">Super official sponsors</p>
-    <div class="flex items-center justify-center gap-8">
-      <div class="flex flex-col items-center gap-4">
-        <div class="text-white/50 text-sm">Master of dojo</div>
-        <img src="/home/tarrence.png" alt="Tarrance" class="h-24 w-auto" />
-      </div>
-      <div class="flex flex-col items-center gap-4">
-        <div class="text-white/50 text-sm">Matcha boy</div>
-        <img src="/home/calc.png" alt="Calc" class="h-24 w-auto" />
-      </div>
-    </div>
-  </div>
 </main>
 
 <style>
