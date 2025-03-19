@@ -18,8 +18,9 @@ import {
   CallData,
   type Call,
   selector,
+  AccountInterface,
 } from 'starknet';
-import { trace } from './utils/walnut-trace';
+import { trace, traceWallet } from './utils/walnut-trace';
 
 export abstract class CommonStarknetWallet implements AccountProvider {
   protected _wallet?: WalletAccount;
@@ -100,14 +101,8 @@ export class NoSessionStarknetWallet extends CommonStarknetWallet {
   supportsSession(): boolean {
     return false;
   }
-  getAccount(): Account | undefined {
-    if (this._wallet == undefined) {
-      return undefined;
-    }
-
-    return Object.assign(this._wallet, {
-      execute: trace(this._wallet.execute),
-    });
+  getAccount(): WalletAccount | undefined {
+    return traceWallet(this._wallet);
   }
   async setupSession(): Promise<StoredSession | void> {
     // no-op

@@ -37,6 +37,10 @@ sozo -P sepolia migrate --fee ETH
 # Deployment succeeded message
 echo "Deployment completed successfully."
 
+echo "Validating for walnut"
+sozo -P sepolia walnut verify
+echo "Validation completed successfully."
+
 # Re-deploy torii
 echo "Skip redeployment"
 exit 1

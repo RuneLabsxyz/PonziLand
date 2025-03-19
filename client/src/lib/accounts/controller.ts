@@ -6,6 +6,7 @@ import type {
   AccountProvider,
   StoredSession,
 } from '$lib/contexts/account.svelte';
+import { trace, traceWallet } from './utils/walnut-trace';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
@@ -62,7 +63,7 @@ export class SvelteController extends Controller implements AccountProvider {
   }
 
   getAccount(): AccountInterface | undefined {
-    return this._account;
+    return traceWallet(this._account);
   }
 
   getUsername(): string | undefined {

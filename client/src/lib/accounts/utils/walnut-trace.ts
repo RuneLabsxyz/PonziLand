@@ -1,5 +1,12 @@
 import { padAddress, toHexWithPadding } from '$lib/utils';
-import { CallData, selector, type Call } from 'starknet';
+import {
+  Account,
+  AccountInterface,
+  CallData,
+  selector,
+  WalletAccount,
+  type Call,
+} from 'starknet';
 
 function generateWalnutCallData(data: Call[] | Call) {
   let calls: Call[];
@@ -41,5 +48,17 @@ export function trace<T extends (...args: any[]) => Promise<any>>(
       // return value is lost!
       return target.apply(thisArg, args);
     },
+  });
+}
+
+export function traceWallet(
+  wallet: WalletAccount | undefined,
+): WalletAccount | undefined {
+  if (wallet == undefined) {
+    return undefined;
+  }
+
+  return Object.assign(wallet, {
+    execute: trace(wallet.execute),
   });
 }
