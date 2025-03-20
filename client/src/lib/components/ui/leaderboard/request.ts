@@ -61,8 +61,6 @@ export function parseTokenBalances(
     const { account_address, contract_address, balance } = entry;
 
     if (blackList.includes(BigInt(account_address))) {
-      // Skip blacklisted addresses
-      console.log(`Skipping blacklisted address: ${account_address}`);
       return;
     }
 

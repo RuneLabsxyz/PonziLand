@@ -27,6 +27,7 @@
   import { formatAddress, formatValue } from './helpers';
 
   import { usernames, updateUsernames } from '$lib/stores/accounts';
+  import { padAddress } from '$lib/utils';
 
   const address = $derived(accountData.address);
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
@@ -190,10 +191,14 @@
       await fetchUsernames();
 
       if (VERIFIED_ONLY) {
-        userRankings = userRankings.filter((user) => $usernames[user.address]);
+        userRankings = userRankings.filter(
+          (user) => padAddress(user.address)! in $usernames,
+        );
       }
 
-      userRank = userRankings.findIndex((user) => user.address === address);
+      userRank = userRankings.findIndex(
+        (user) => padAddress(user.address) === padAddress(address ?? ''),
+      );
       if (userRank !== -1) {
         userRank += 1;
       } else {
@@ -244,7 +249,8 @@
               <span
                 class="font-mono"
                 class:text-red-500={user.address === address}
-                >{$usernames[user.address] || formatAddress(user.address)}</span
+                >{$usernames[padAddress(user.address)!] ||
+                  formatAddress(user.address)}</span
               >
               {#if user.address === address}
                 <span class="text-xs bg-primary/30 px-1 rounded">You</span>
