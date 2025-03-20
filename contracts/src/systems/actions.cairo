@@ -343,7 +343,9 @@ pub mod actions {
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
             let sell_price = get_average_price(store, land_location);
-            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE * 2, true);
+
+            //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
+            self.auction(land_location, FLOOR_PRICE, 1, DECAY_RATE * 2, true);
         }
 
         fn bid(
@@ -859,6 +861,7 @@ pub mod actions {
                     get_next_position(direction, current_head_location) {
                     if store.land(next_pos).owner.is_zero()
                         && !self.active_auction_queue.read(next_pos) {
+                        //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
                         self.auction(next_pos, start_price, 1, DECAY_RATE, false);
                     };
 
