@@ -20,7 +20,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/strk/icon.png",
+        "icon": "/tokens/strk/icon.png",
         "biome": {
           "x": 0,
           "y": 7
@@ -48,7 +48,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/paper/icon.svg",
+        "icon": "/tokens/paper/icon.svg",
         "biome": {
           "x": 0,
           "y": 1
@@ -76,7 +76,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/lords/icon.svg",
+        "icon": "/tokens/lords/icon.svg",
         "biome": {
           "x": 0,
           "y": 6
@@ -104,7 +104,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/brother/icon.png",
+        "icon": "/tokens/brother/icon.png",
         "biome": {
           "x": 0,
           "y": 2
@@ -132,7 +132,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/pal/icon.svg",
+        "icon": "/tokens/pal/icon.svg",
         "biome": {
           "x": 0,
           "y": 5

@@ -20,8 +20,8 @@
     return () => clearInterval(interval);
   });
 
-  const OFF_IMAGE = '/assets/ui/star/off.png';
-  const ON_IMAGE = '/assets/ui/star/on.png';
+  const OFF_IMAGE = '/ui/star/off.png';
+  const ON_IMAGE = '/ui/star/on.png';
 </script>
 
 <div class="flex flex-col">

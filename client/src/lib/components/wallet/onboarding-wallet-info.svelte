@@ -51,7 +51,7 @@
             aria-label="Logout"
           >
             <img
-              src="/assets/ui/icons/logout.png"
+              src="/ui/icons/logout.png"
               alt="logout"
               class="h-5 w-5"
             />
