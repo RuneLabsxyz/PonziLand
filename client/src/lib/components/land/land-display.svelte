@@ -48,7 +48,7 @@
 >
   {#if road}
     <SpriteSheet
-      src="/sheets/road.png"
+      src="/land-display/road.png"
       y={0}
       x={0}
       xSize={320}
@@ -62,7 +62,7 @@
   {/if}
   {#if grass}
     <SpriteSheet
-      src="/sheets/empty.png"
+      src="/land-display/empty.png"
       y={grassY}
       x={grassX}
       xSize={256}
@@ -76,7 +76,7 @@
   {/if}
   {#if auction}
     <SpriteSheet
-      src="/sheets/empty.png"
+      src="/land-display/empty.png"
       x={3}
       y={2}
       xSize={256}
@@ -93,7 +93,7 @@
   {/if}
   {#if token}
     <SpriteSheet
-      src="/sheets/biomes.png"
+      src="/tokens/+global/biomes.png"
       x={token.images.biome.x}
       y={token.images.biome.y}
       xSize={256}
@@ -107,7 +107,7 @@
         : ''} {hovering ? 'hovering' : ''}"
     />
     <SpriteSheet
-      src="/sheets/buildings.png"
+      src="/tokens/+global/buildings.png"
       x={token.images.building[level].x}
       y={token.images.building[level].y}
       xSize={256}
