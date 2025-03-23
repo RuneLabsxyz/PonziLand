@@ -1,13 +1,38 @@
 import { building } from '$app/environment';
 import { BYPASS_TOKEN } from '$env/static/private';
-import { DATE_GATE } from '$lib/const';
+import { CLOSING_DATE, DATE_GATE } from '$lib/const';
 import { redirect, type Handle } from '@sveltejs/kit';
+
+export function isMaintenanceModeEnabled(
+  bypassToken: string,
+  now: Date,
+  startDate: Date | undefined,
+  endDate: Date | undefined,
+) {
+  const noBypass = bypassToken === '';
+  const currentlyBuilding = building;
+  const isAfterDateGate = startDate === undefined || now > startDate;
+  const isBeforeClosingDate = endDate === undefined || now < endDate;
+  const noStartAndEnd = startDate === undefined && endDate === undefined;
+
+  if (
+    noBypass ||
+    currentlyBuilding ||
+    (isAfterDateGate && isBeforeClosingDate && !noStartAndEnd)
+  ) {
+    return false;
+  }
+
+  return true;
+}
 
 export const handle: Handle = async ({ event, resolve }) => {
   // Bypass all this trickery if the bypass token is set to '' (default), or if we're building
   // Or if we are after the DATE_GATE
 
-  if (BYPASS_TOKEN === '' || building || new Date() > DATE_GATE) {
+  if (
+    !isMaintenanceModeEnabled(BYPASS_TOKEN, new Date(), DATE_GATE, CLOSING_DATE)
+  ) {
     if (event.url.pathname === '/maintenance') {
       return redirect(302, '/');
     }
