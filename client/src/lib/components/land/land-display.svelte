@@ -106,20 +106,43 @@
         ? 'selected'
         : ''} {hovering ? 'hovering' : ''}"
     />
-    <SpriteSheet
-      src="/tokens/+global/buildings.png"
-      x={token.images.building[level].x}
-      y={token.images.building[level].y}
-      xSize={256}
-      xMax={1536}
-      ySize={256}
-      yMax={4608}
-      {width}
-      {height}
-      class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] {selected
-        ? 'selected'
-        : ''} {hovering ? 'hovering' : ''}"
-    />
+    {#if token.images.building[level].frames}
+      <SpriteSheet
+        src={`/tokens/${token.symbol}/${level}-animated.png`}
+        xSize={token.images.building[level].xSize}
+        ySize={token.images.building[level].ySize}
+        xMax={token.images.building[level].frames *
+          token.images.building[level].xSize}
+        yMax={token.images.building[level].ySize}
+        {width}
+        {height}
+        animate={true}
+        frameDelay={200}
+        startFrame={0}
+        endFrame={token.images.building[level].frames - 1}
+        loop={true}
+        horizontal={true}
+        autoplay={true}
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] scale-75 {selected
+          ? 'selected'
+          : ''} {hovering ? 'hovering' : ''}"
+      />
+    {:else}
+      <SpriteSheet
+        src="/tokens/+global/buildings.png"
+        x={token.images.building[level].x}
+        y={token.images.building[level].y}
+        xSize={256}
+        xMax={1536}
+        ySize={256}
+        yMax={4608}
+        {width}
+        {height}
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] {selected
+          ? 'selected'
+          : ''} {hovering ? 'hovering' : ''}"
+      />
+    {/if}
   {:else if basic}
     <div
       style="background-image: url('/tokens/basic/castles/basic.png'); background-size: contain; background-position: center;"
