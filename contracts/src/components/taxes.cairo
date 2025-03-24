@@ -77,7 +77,7 @@ mod TaxesComponent {
             let discount_for_level = calculate_discount_for_level(land.level);
 
             //calculate the total taxes
-            let elapsed_time = (current_time - land.last_pay_time) * TIME_SPEED.into();
+            let elapsed_time: u256 = (current_time - land.last_pay_time).into() * TIME_SPEED.into();
             let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
                 / (100 * BASE_TIME.into());
 

@@ -27,10 +27,7 @@ mod StakeComponent {
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::{
         common_strucs::{TokenInfo, LandWithTaxes},
-        stake::{
-            summarize_totals, get_total_stake_for_token, get_total_tax_for_token,
-            calculate_refund_ratio, calculate_refund_amount, adjust_land_taxes
-        }
+        stake::{calculate_refund_ratio, calculate_refund_amount}
     };
 
 
@@ -46,7 +43,9 @@ mod StakeComponent {
     }
 
     #[storage]
-    struct Storage {}
+    struct Storage {
+        token_stakes: Map<ContractAddress, u256>, // Track total stakes per token
+    }
 
     #[generate_trait]
     impl InternalImpl<
@@ -70,6 +69,10 @@ mod StakeComponent {
             assert(status, errors::ERC20_STAKE_FAILED);
 
             assert(land.owner == get_caller_address(), 'only the owner can stake');
+
+            let current_total = self.token_stakes.read(land.token_used);
+            self.token_stakes.write(land.token_used, current_total + amount);
+
             land.stake_amount = land.stake_amount + amount;
             store.set_land(land);
         }
@@ -90,20 +93,41 @@ mod StakeComponent {
             let status = payable.transfer(land.owner, validation_result);
             assert(status, errors::ERC20_REFUND_FAILED);
 
+            let current_total = self.token_stakes.read(land.token_used);
+            if current_total > stake_amount {
+                self.token_stakes.write(land.token_used, current_total - stake_amount);
+            } else {
+                self.token_stakes.write(land.token_used, 0);
+            }
+
             land.stake_amount = 0;
             store.set_land(land);
+        }
+
+        fn _discount_total_stake(ref self: ComponentState<TContractState>, taxes: Span<TokenInfo>) {
+            for token_info in taxes {
+                let token_info = *token_info;
+                let current_total = self.token_stakes.read(token_info.token_address);
+                if current_total > token_info.amount {
+                    self
+                        .token_stakes
+                        .write(token_info.token_address, current_total - token_info.amount);
+                } else {
+                    self.token_stakes.write(token_info.token_address, 0);
+                }
+            };
         }
 
         fn reimburse(
             ref self: ComponentState<TContractState>,
             mut store: Store,
-            active_lands_with_taxes: Span<LandWithTaxes>,
+            active_lands: Span<Land>,
             ref token_ratios: Felt252Dict<Nullable<u256>>
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
-            for mut land_with_taxes in active_lands_with_taxes {
-                let mut land = *land_with_taxes.land;
+            for mut land in active_lands {
+                let mut land = *land;
                 let token_ratio = match match_nullable(token_ratios.get(land.token_used.into())) {
                     FromNullableResult::Null => 0_u256,
                     FromNullableResult::NotNull(val) => val.unbox(),
@@ -117,36 +141,41 @@ mod StakeComponent {
                 let status = payable.transfer(land.owner, validation_result);
                 assert(status, errors::ERC20_REFUND_FAILED);
 
+                // Update total stakes for this token
+                let current_total = self.token_stakes.read(land.token_used);
+                if current_total > refund_amount {
+                    self.token_stakes.write(land.token_used, current_total - refund_amount);
+                } else {
+                    self.token_stakes.write(land.token_used, 0);
+                }
+
                 land.stake_amount = 0;
                 store.set_land(land);
             };
         }
 
         fn calculate_token_ratios(
-            ref self: ComponentState<TContractState>, active_lands_with_taxes: Span<LandWithTaxes>
+            ref self: ComponentState<TContractState>, active_lands: Span<Land>
         ) -> Felt252Dict<Nullable<u256>> {
-            let (mut stake_totals, mut tax_totals, unique_tokens) = summarize_totals(
-                active_lands_with_taxes
-            );
             let mut payable = get_dep_component_mut!(ref self, Payable);
-
             let mut token_ratios: Felt252Dict<Nullable<u256>> = Default::default();
+            let mut processed_tokens: Felt252Dict<bool> = Default::default();
+            for land in active_lands {
+                let land = *land;
+                let token_address = land.token_used;
+                let token_key: felt252 = token_address.into();
 
-            for token_used in unique_tokens
-                .span() {
-                    let token_address: ContractAddress = *token_used;
-                    let token_key: felt252 = token_address.into();
+                if !processed_tokens.get(token_key) {
+                    processed_tokens.insert(token_key, true);
 
-                    let balance = payable.balance_of(*token_used, get_contract_address());
+                    // Get total amount for this token from storage
+                    let total_staked = self.token_stakes.read(token_address);
 
-                    let total_staked = get_total_stake_for_token(ref stake_totals, token_key);
-
-                    let total_tax = get_total_tax_for_token(ref tax_totals, token_key);
-
-                    let ratio = calculate_refund_ratio(total_staked + total_tax, balance);
-
+                    let balance = payable.balance_of(token_address, get_contract_address());
+                    let ratio = calculate_refund_ratio(total_staked, balance);
                     token_ratios.insert(token_key, NullableTrait::new(ratio));
-                };
+                }
+            };
 
             token_ratios
         }

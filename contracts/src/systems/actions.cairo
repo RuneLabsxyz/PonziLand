@@ -106,7 +106,6 @@ pub mod actions {
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
 
-
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
     impl PayableInternalImpl = PayableComponent::PayableImpl<ContractState>;
 
@@ -200,7 +199,8 @@ pub mod actions {
         ekubo_dispatcher: ICoreDispatcher,
         heads: Map<u8, u64>,
         spiral_states: SpiralState,
-        active_auction_queue: Map<u64, bool>
+        active_auction_queue: Map<u64, bool>,
+        staked_lands: Map<u64, bool>, // New storage variable to track staked lands
     }
 
     fn dojo_init(
@@ -334,11 +334,13 @@ pub mod actions {
             assert(land.stake_amount == 0, 'land with stake inside nuke');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if pending_taxes.len() != 0 {
+                self.stake._discount_total_stake(pending_taxes.span());
                 self.taxes._claim(pending_taxes, land.owner, land.location);
             }
 
             let owner_nuked = land.owner;
             store.delete_land(land);
+            self.staked_lands.write(land_location, false);
 
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
@@ -476,6 +478,7 @@ pub mod actions {
             let mut land = store.land(land_location);
 
             assert(land.owner == caller, 'not the owner');
+            assert(amount_to_stake > 0, 'amount has to be > 0');
             self.stake._add(amount_to_stake, land, store);
 
             // Could be removed now that the remaining stake is stored in the world contrect
@@ -514,35 +517,27 @@ pub mod actions {
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
 
             let mut store = StoreTrait::new(world);
-            let mut active_lands_with_taxes: Array<LandWithTaxes> = ArrayTrait::new();
+            let mut active_lands: Array<Land> = ArrayTrait::new();
 
-            for i in 0
-                ..GRID_WIDTH
-                    * GRID_WIDTH {
-                        let land = store.land(i);
-                        if !land.owner.is_zero() && land.stake_amount > 0 {
-                            let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-                            active_lands_with_taxes
-                                .append(
-                                    LandWithTaxes {
-                                        land,
-                                        taxes: if taxes.len() != 0 {
-                                            Option::Some(taxes)
-                                        } else {
-                                            Option::None
-                                        },
-                                    }
-                                )
-                        }
-                    };
+            let mut i: u64 = 0;
+            loop {
+                if i >= GRID_WIDTH * GRID_WIDTH {
+                    break;
+                }
+                if self.staked_lands.read(i) {
+                    let land = store.land(i);
+                    if !land.owner.is_zero() && land.stake_amount > 0 {
+                        active_lands.append(land);
+                    }
+                }
+                i += 1;
+            };
 
-            let mut token_ratios = self
-                .stake
-                .calculate_token_ratios(active_lands_with_taxes.span());
+            let mut token_ratios = self.stake.calculate_token_ratios(active_lands.span());
 
-            self.stake.reimburse(store, active_lands_with_taxes.span(), ref token_ratios);
+            self.stake.reimburse(store, active_lands.span(), ref token_ratios);
 
-            self.distribute_adjusted_taxes(active_lands_with_taxes, ref token_ratios);
+            self.distribute_adjusted_taxes(active_lands, ref token_ratios);
         }
 
 
@@ -708,6 +703,7 @@ pub mod actions {
             //claim taxes for the land
             let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if taxes.len() != 0 {
+                self.stake._discount_total_stake(taxes.span());
                 self.taxes._claim(taxes, land.owner, land.location);
             }
         }
@@ -738,6 +734,8 @@ pub mod actions {
                     liquidity_pool,
                     caller,
                 );
+            self.staked_lands.write(land.location, true);
+
             auction.is_finished = true;
             auction.sold_at_price = Option::Some(sold_at_price);
             store.set_auction(auction);
@@ -895,41 +893,39 @@ pub mod actions {
             };
             self.spiral_states.write(state);
         }
-
         fn distribute_adjusted_taxes(
             ref self: ContractState,
-            active_lands_with_taxes: Array<LandWithTaxes>,
+            active_lands: Array<Land>,
             ref token_ratios: Felt252Dict<Nullable<u256>>
         ) {
-            for land_with_taxes in active_lands_with_taxes
+            for land in active_lands
                 .span() {
-                    let land = *land_with_taxes.land;
+                    let land = *land;
                     let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
 
-                    if let Option::Some(taxes) = land_with_taxes.taxes {
-                        for tax in taxes
-                            .span() {
-                                let tax = *tax;
-                                let token_ratio =
-                                    match match_nullable(
-                                        token_ratios.get(tax.token_address.into())
-                                    ) {
-                                    FromNullableResult::Null => 0_u256,
-                                    FromNullableResult::NotNull(val) => val.unbox(),
-                                };
-                                let adjuested_tax_amount = calculate_refund_amount(
-                                    tax.amount, token_ratio
-                                );
+                    let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+                    for tax in taxes
+                        .span() {
+                            let tax = *tax;
+                            let token_ratio =
+                                match match_nullable(token_ratios.get(tax.token_address.into())) {
+                                FromNullableResult::Null => 0_u256,
+                                FromNullableResult::NotNull(val) => val.unbox(),
+                            };
+                            let adjuested_tax_amount = calculate_refund_amount(
+                                tax.amount, token_ratio
+                            );
 
-                                adjusted_taxes
-                                    .append(
-                                        TokenInfo {
-                                            token_address: tax.token_address,
-                                            amount: adjuested_tax_amount
-                                        }
-                                    )
-                            }
-                    }
+                            adjusted_taxes
+                                .append(
+                                    TokenInfo {
+                                        token_address: tax.token_address,
+                                        amount: adjuested_tax_amount
+                                    }
+                                )
+                        };
+
+                    self.stake._discount_total_stake(adjusted_taxes.span());
                     self.taxes._claim(adjusted_taxes, land.owner, land.location);
                 }
         }
