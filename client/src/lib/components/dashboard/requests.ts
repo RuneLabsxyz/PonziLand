@@ -91,3 +91,29 @@ export async function fetchBuyEvents() {
     return {};
   }
 }
+
+export async function fetchAllTimePlayers() {
+  try {
+    const response = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: `
+        SELECT *
+        FROM "ponzi_land-AddressAuthorizedEvent"
+        LIMIT 1000;
+        `,
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching token balances:', error);
+    return {};
+  }
+}
