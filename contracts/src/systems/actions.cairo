@@ -333,10 +333,7 @@ pub mod actions {
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land with stake inside nuke');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-            if pending_taxes.len() != 0 {
-                self.stake._discount_total_stake(pending_taxes.span());
-                self.taxes._claim(pending_taxes, land.owner, land.location);
-            }
+            self._claim_and_discount_taxes(pending_taxes, land.owner, land.location);
 
             let owner_nuked = land.owner;
             store.delete_land(land);
@@ -533,11 +530,9 @@ pub mod actions {
                 i += 1;
             };
 
-            let mut token_ratios = self.stake.calculate_token_ratios(active_lands.span());
+            self.stake._reimburse(store, active_lands.span());
 
-            self.stake.reimburse(store, active_lands.span(), ref token_ratios);
-
-            self.distribute_adjusted_taxes(active_lands, ref token_ratios);
+            self._distribute_adjusted_taxes(active_lands);
         }
 
 
@@ -702,10 +697,7 @@ pub mod actions {
 
             //claim taxes for the land
             let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-            if taxes.len() != 0 {
-                self.stake._discount_total_stake(taxes.span());
-                self.taxes._claim(taxes, land.owner, land.location);
-            }
+            self._claim_and_discount_taxes(taxes, land.owner, land.location);
         }
 
         fn buy_from_bid(
@@ -893,29 +885,29 @@ pub mod actions {
             };
             self.spiral_states.write(state);
         }
-        fn distribute_adjusted_taxes(
-            ref self: ContractState,
-            active_lands: Array<Land>,
-            ref token_ratios: Felt252Dict<Nullable<u256>>
+
+        fn _claim_and_discount_taxes(
+            ref self: ContractState, taxes: Array<TokenInfo>, owner: ContractAddress, location: u64
         ) {
+            if taxes.len() != 0 {
+                self.stake._discount_total_stake(taxes.span());
+                self.taxes._claim(taxes, owner, location);
+            }
+        }
+
+        fn _distribute_adjusted_taxes(ref self: ContractState, active_lands: Array<Land>,) {
             for land in active_lands
                 .span() {
                     let land = *land;
                     let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
-
                     let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
                     for tax in taxes
                         .span() {
                             let tax = *tax;
-                            let token_ratio =
-                                match match_nullable(token_ratios.get(tax.token_address.into())) {
-                                FromNullableResult::Null => 0_u256,
-                                FromNullableResult::NotNull(val) => val.unbox(),
-                            };
+                            let token_ratio = self.stake._get_token_ratios(tax.token_address);
                             let adjuested_tax_amount = calculate_refund_amount(
                                 tax.amount, token_ratio
                             );
-
                             adjusted_taxes
                                 .append(
                                     TokenInfo {
@@ -925,8 +917,7 @@ pub mod actions {
                                 )
                         };
 
-                    self.stake._discount_total_stake(adjusted_taxes.span());
-                    self.taxes._claim(adjusted_taxes, land.owner, land.location);
+                    self._claim_and_discount_taxes(adjusted_taxes, land.owner, land.location);
                 }
         }
     }

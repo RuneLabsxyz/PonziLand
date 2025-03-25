@@ -45,6 +45,7 @@ mod StakeComponent {
     #[storage]
     struct Storage {
         token_stakes: Map<ContractAddress, u256>, // Track total stakes per token
+        token_ratios: Map<ContractAddress, u256>,
     }
 
     #[generate_trait]
@@ -72,7 +73,6 @@ mod StakeComponent {
 
             let current_total = self.token_stakes.read(land.token_used);
             self.token_stakes.write(land.token_used, current_total + amount);
-
             land.stake_amount = land.stake_amount + amount;
             store.set_land(land);
         }
@@ -104,80 +104,76 @@ mod StakeComponent {
             store.set_land(land);
         }
 
+        fn _reimburse(
+            ref self: ComponentState<TContractState>, mut store: Store, active_lands: Span<Land>,
+        ) {
+            for mut land in active_lands {
+                let mut land = *land;
+                let token_ratio = self.__generate_token_ratio(land.token_used);
+                let refund_amount = calculate_refund_amount(land.stake_amount, token_ratio);
+                self.__process_refund(land, store, refund_amount);
+            };
+        }
+
+        fn _get_token_ratios(
+            self: @ComponentState<TContractState>, token_address: ContractAddress
+        ) -> u256 {
+            self.token_ratios.read(token_address)
+        }
+
         fn _discount_total_stake(ref self: ComponentState<TContractState>, taxes: Span<TokenInfo>) {
             for token_info in taxes {
                 let token_info = *token_info;
                 let current_total = self.token_stakes.read(token_info.token_address);
-                if current_total > token_info.amount {
+                if current_total >= token_info.amount {
                     self
                         .token_stakes
                         .write(token_info.token_address, current_total - token_info.amount);
                 } else {
-                    self.token_stakes.write(token_info.token_address, 0);
+                    panic!("Attempting to discount more than what's staked");
                 }
             };
         }
 
-        fn reimburse(
+        fn __generate_token_ratio(
+            ref self: ComponentState<TContractState>, token: ContractAddress
+        ) -> u256 {
+            let existing_ratio = self.token_ratios.read(token);
+            if existing_ratio != 0 {
+                return existing_ratio;
+            }
+
+            let mut payable = get_dep_component_mut!(ref self, Payable);
+            let total_staked = self.token_stakes.read(token);
+            let balance = payable.balance_of(token, get_contract_address());
+            let ratio = calculate_refund_ratio(total_staked, balance);
+            self.token_ratios.write(token, ratio);
+            ratio
+        }
+
+        fn __process_refund(
             ref self: ComponentState<TContractState>,
+            mut land: Land,
             mut store: Store,
-            active_lands: Span<Land>,
-            ref token_ratios: Felt252Dict<Nullable<u256>>
+            refund_amount: u256
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
-            for mut land in active_lands {
-                let mut land = *land;
-                let token_ratio = match match_nullable(token_ratios.get(land.token_used.into())) {
-                    FromNullableResult::Null => 0_u256,
-                    FromNullableResult::NotNull(val) => val.unbox(),
-                };
+            let validation_result = payable
+                .validate(land.token_used, get_contract_address(), refund_amount);
+            let status = payable.transfer(land.owner, validation_result);
+            assert(status, errors::ERC20_REFUND_FAILED);
 
-                let refund_amount = calculate_refund_amount(land.stake_amount, token_ratio);
-
-                let validation_result = payable
-                    .validate(land.token_used, get_contract_address(), refund_amount);
-
-                let status = payable.transfer(land.owner, validation_result);
-                assert(status, errors::ERC20_REFUND_FAILED);
-
-                // Update total stakes for this token
-                let current_total = self.token_stakes.read(land.token_used);
-                if current_total > refund_amount {
-                    self.token_stakes.write(land.token_used, current_total - refund_amount);
-                } else {
-                    self.token_stakes.write(land.token_used, 0);
-                }
-
-                land.stake_amount = 0;
-                store.set_land(land);
+            let current_total = self.token_stakes.read(land.token_used);
+            let new_total = if current_total > refund_amount {
+                current_total - refund_amount
+            } else {
+                0
             };
-        }
+            self.token_stakes.write(land.token_used, new_total);
 
-        fn calculate_token_ratios(
-            ref self: ComponentState<TContractState>, active_lands: Span<Land>
-        ) -> Felt252Dict<Nullable<u256>> {
-            let mut payable = get_dep_component_mut!(ref self, Payable);
-            let mut token_ratios: Felt252Dict<Nullable<u256>> = Default::default();
-            let mut processed_tokens: Felt252Dict<bool> = Default::default();
-            for land in active_lands {
-                let land = *land;
-                let token_address = land.token_used;
-                let token_key: felt252 = token_address.into();
-
-                if !processed_tokens.get(token_key) {
-                    processed_tokens.insert(token_key, true);
-
-                    // Get total amount for this token from storage
-                    let total_staked = self.token_stakes.read(token_address);
-
-                    let balance = payable.balance_of(token_address, get_contract_address());
-                    let ratio = calculate_refund_ratio(total_staked, balance);
-                    token_ratios.insert(token_key, NullableTrait::new(ratio));
-                }
-            };
-
-            token_ratios
+            land.stake_amount = 0;
+            store.set_land(land);
         }
     }
 }
