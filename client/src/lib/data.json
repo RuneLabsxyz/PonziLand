@@ -39,7 +39,9 @@
             "y": 5,
             "frames": 6,
             "ySize": 192,
-            "xSize": 192
+            "xSize": 192,
+            "xMax": 1152,
+            "yMax": 192
           }
         }
       }
@@ -116,7 +118,8 @@
             "xSize": 192,
             "xMax": 960,
             "yMax": 384,
-            "boomerang": true
+            "boomerang": true,
+            "delay": 2000
           }
         }
       }

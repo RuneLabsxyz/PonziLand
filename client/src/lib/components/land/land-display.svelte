@@ -107,23 +107,24 @@
         : ''} {hovering ? 'hovering' : ''}"
     />
     {#if token.images.building[level].frames}
+      {@const animationMeta = token.images.building[level]}
       <SpriteSheet
         src={`/tokens/${token.symbol}/${level}-animated.png`}
-        xSize={token.images.building[level].xSize}
-        ySize={token.images.building[level].ySize}
-        xMax={token.images.building[level].xMax}
-        yMax={token.images.building[level].yMax}
+        xSize={animationMeta.xSize}
+        ySize={animationMeta.ySize}
+        xMax={animationMeta.xMax}
+        yMax={animationMeta.yMax}
         {width}
         {height}
         animate={true}
-        frameDelay={150}
+        frameDelay={100}
         startFrame={0}
-        endFrame={token.images.building[level].frames - 1}
+        endFrame={animationMeta.frames - 1}
         loop={true}
-        boomerang={token.images.building[level].boomerang}
+        boomerang={animationMeta.boomerang}
         horizontal={true}
         autoplay={true}
-        delay={0}
+        delay={animationMeta.delay}
         class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] scale-75 {selected
           ? 'selected'
           : ''} {hovering ? 'hovering' : ''}"

@@ -13,6 +13,7 @@ interface AnimationMeta {
   xMax: number;
   yMax: number;
   boomerang?: boolean;
+  delay?: number;
 }
 
 export interface Token {

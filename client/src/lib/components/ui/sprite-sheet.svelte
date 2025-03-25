@@ -41,7 +41,9 @@
   // Animation state
   let currentFrame = $state(startFrame);
   let animationInterval = $state();
+  let restartTimeout = $state();
   let isPlaying = $state(autoplay && animate);
+  let direction = $state(1);
 
   // Sprite position
   let x = $state(initialX);
@@ -74,27 +76,49 @@
     }
   });
 
-  // Animation control functions
   function startAnimation() {
     if (!animate || animationInterval) return;
 
     isPlaying = true;
-    let direction = 1; // 1 for forward, -1 for backward
+    restartTimeout = null;
 
-    animationInterval = setInterval(() => {
+    animationInterval = setInterval(async () => {
       currentFrame += direction;
 
       // Check if we've reached the end frame or start frame
       if (currentFrame >= endFrame) {
         if (boomerang) {
-          direction = -1; // Reverse direction
+          clearInterval(animationInterval);
+          animationInterval = null;
+
+          restartTimeout = setTimeout(() => {
+            direction = -1; // Reverse direction
+            startAnimation(); // Restart the animation
+          }, delay); // 1-second delay (adjust as needed)
         } else if (!loop) {
           stopAnimation();
         } else {
-          currentFrame = startFrame;
+          // Add a delay before restarting
+          clearInterval(animationInterval);
+          animationInterval = null;
+
+          restartTimeout = setTimeout(() => {
+            currentFrame = startFrame;
+            startAnimation(); // Restart the animation
+          }, delay); // 1-second delay (adjust as needed)
         }
       } else if (currentFrame <= startFrame) {
-        direction = 1; // Forward direction
+        if (boomerang) {
+          clearInterval(animationInterval);
+          animationInterval = null;
+
+          restartTimeout = setTimeout(() => {
+            direction = 1; // Forward direction
+            startAnimation(); // Restart the animation
+          }, delay); // 1-second delay (adjust as needed)
+        } else {
+          direction = 1; // Forward direction
+        }
       }
     }, frameDelay);
   }
@@ -103,8 +127,15 @@
     if (animationInterval) {
       clearInterval(animationInterval);
       animationInterval = null;
-      isPlaying = false;
     }
+
+    // Clear the restart timeout if it exists
+    if (restartTimeout) {
+      clearTimeout(restartTimeout);
+      restartTimeout = null;
+    }
+
+    isPlaying = false;
   }
 
   function resetAnimation() {
