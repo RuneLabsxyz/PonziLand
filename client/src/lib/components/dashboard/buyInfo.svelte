@@ -13,6 +13,7 @@
   } = $props();
 
   let tokenTotals = $state<Record<string, bigint>>({});
+  let tokenTransactions = $state<Record<string, number>>({});
   let isLoading = $state(true);
 
   /**
@@ -21,6 +22,7 @@
    */
   function calculateTokenTotals(events: any[]) {
     const totals: Record<string, bigint> = {};
+    const transactions: Record<string, number> = {};
 
     for (const event of events) {
       const token = event.token_used;
@@ -28,18 +30,22 @@
 
       if (!totals[token]) {
         totals[token] = 0n;
+        transactions[token] = 0;
       }
       totals[token] += amount;
+      transactions[token] += 1;
     }
 
-    return totals;
+    return { totals, transactions };
   }
 
   async function refreshBuyInfo() {
     isLoading = true;
     try {
       const buyEvents = await fetchBuyEvents();
-      tokenTotals = calculateTokenTotals(buyEvents);
+      const { totals, transactions } = calculateTokenTotals(buyEvents);
+      tokenTotals = totals;
+      tokenTransactions = transactions;
     } catch (error) {
       console.error('Error fetching buy events:', error);
     } finally {
@@ -84,6 +90,12 @@
               <span class="text-gray-300">Total Volume:</span>
               <span class="text-white font-mono font-bold">
                 {CurrencyAmount.fromUnscaled(total, tokenDetails).toString()}
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-300">Total Transactions:</span>
+              <span class="text-white font-mono font-bold">
+                {tokenTransactions[tokenAddress]}
               </span>
             </div>
           </div>
