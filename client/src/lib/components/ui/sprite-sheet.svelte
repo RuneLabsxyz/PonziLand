@@ -19,8 +19,10 @@
     startFrame = 0, // Starting frame index
     endFrame: initialEndFrame = undefined, // Ending frame index (defaults to max frame)
     loop = true, // Whether to loop the animation
+    boomerang = false, // Whether to reverse the animation
     horizontal = true, // Animation direction (horizontal or vertical)
     autoplay = true, // Start animation automatically
+    delay = 0,
   } = $props();
 
   // Calculate total frames based on sprite sheet dimensions
@@ -77,16 +79,22 @@
     if (!animate || animationInterval) return;
 
     isPlaying = true;
-    animationInterval = setInterval(() => {
-      currentFrame++;
+    let direction = 1; // 1 for forward, -1 for backward
 
-      // Check if we've reached the end frame
-      if (currentFrame > endFrame) {
-        if (loop) {
-          currentFrame = startFrame;
-        } else {
+    animationInterval = setInterval(() => {
+      currentFrame += direction;
+
+      // Check if we've reached the end frame or start frame
+      if (currentFrame >= endFrame) {
+        if (boomerang) {
+          direction = -1; // Reverse direction
+        } else if (!loop) {
           stopAnimation();
+        } else {
+          currentFrame = startFrame;
         }
+      } else if (currentFrame <= startFrame) {
+        direction = 1; // Forward direction
       }
     }, frameDelay);
   }

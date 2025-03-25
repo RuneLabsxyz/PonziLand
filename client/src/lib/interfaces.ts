@@ -10,6 +10,9 @@ interface AnimationMeta {
   frames: number;
   ySize: number;
   xSize: number;
+  xMax: number;
+  yMax: number;
+  boomerang?: boolean;
 }
 
 export interface Token {

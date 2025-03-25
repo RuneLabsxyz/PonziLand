@@ -111,18 +111,19 @@
         src={`/tokens/${token.symbol}/${level}-animated.png`}
         xSize={token.images.building[level].xSize}
         ySize={token.images.building[level].ySize}
-        xMax={token.images.building[level].frames *
-          token.images.building[level].xSize}
-        yMax={token.images.building[level].ySize}
+        xMax={token.images.building[level].xMax}
+        yMax={token.images.building[level].yMax}
         {width}
         {height}
         animate={true}
-        frameDelay={200}
+        frameDelay={150}
         startFrame={0}
         endFrame={token.images.building[level].frames - 1}
         loop={true}
+        boomerang={token.images.building[level].boomerang}
         horizontal={true}
         autoplay={true}
+        delay={0}
         class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] scale-75 {selected
           ? 'selected'
           : ''} {hovering ? 'hovering' : ''}"
