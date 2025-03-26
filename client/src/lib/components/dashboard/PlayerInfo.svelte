@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { fetchAllTimePlayers } from './requests';
+  import { fetchAllTimePlayers, fetchBuyEvents } from './requests';
   import { onMount } from 'svelte';
   import Card from '../ui/card/card.svelte';
 
@@ -7,9 +7,12 @@
 
   let playerCount = $state(0);
   let isLoading = $state(true);
-  let activeAddresses = $state<Array<{ address: string; activatedAt: string }>>(
-    [],
-  );
+  let activeAddresses = $state<
+    Array<{
+      address: string;
+      actions: Array<{ date: string; type: 'first_play' | 'buy' }>;
+    }>
+  >([]);
 
   $effect(() => {
     console.log('Active addresses:', activeAddresses);
@@ -18,22 +21,58 @@
   async function refreshPlayerInfo() {
     isLoading = true;
     try {
-      const players = await fetchAllTimePlayers();
+      const [players, buys] = await Promise.all([
+        fetchAllTimePlayers(),
+        fetchBuyEvents(),
+      ]);
+
       playerCount = players.length;
-      activeAddresses = players.map(
-        (player: { address: string; internal_executed_at: string }) => ({
-          address: player.address,
-          activatedAt: player.internal_executed_at,
+
+      const addressActions = new Map();
+
+      players.forEach(
+        (player: { address: string; internal_executed_at: string }) => {
+          addressActions.set(player.address, [
+            {
+              date: player.internal_executed_at,
+              type: 'first_play',
+            },
+          ]);
+        },
+      );
+
+      // Add buy actions
+      buys.forEach((buy: { buyer: string; internal_executed_at: string }) => {
+        const actions = addressActions.get(buy.buyer) || [];
+        actions.push({
+          date: buy.internal_executed_at,
+          type: 'buy',
+        });
+        addressActions.set(buy.buyer, actions);
+      });
+
+      // Convert map to array and sort actions by date
+      activeAddresses = Array.from(addressActions.entries()).map(
+        ([address, actions]) => ({
+          address,
+          actions: actions.sort(
+            (
+              a: { date: string; type: 'first_play' | 'buy' },
+              b: { date: string; type: 'first_play' | 'buy' },
+            ) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+          ),
         }),
       );
     } catch (error) {
-      console.error('Error fetching players:', error);
+      console.error('Error fetching data:', error);
     } finally {
       isLoading = false;
     }
   }
 
-  onMount(refreshPlayerInfo);
+  onMount(async () => {
+    await refreshPlayerInfo();
+  });
 </script>
 
 {#if isLoading}
