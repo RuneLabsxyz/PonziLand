@@ -70,6 +70,24 @@
     }
   }
 
+  function calculateChurnRate(days: number): string {
+    const churnedPlayers = activeAddresses.filter((player) => {
+      if (player.actions.length === 1) return true; // Only one action means they churned
+
+      const firstAction = new Date(player.actions[0].date);
+      const lastAction = new Date(
+        player.actions[player.actions.length - 1].date,
+      );
+
+      const hoursDiff =
+        (lastAction.getTime() - firstAction.getTime()) / (1000 * 60 * 60);
+      return hoursDiff < 24 * days;
+    }).length;
+
+    const churnRate = (churnedPlayers / activeAddresses.length) * 100;
+    return churnRate.toFixed(1);
+  }
+
   onMount(async () => {
     await refreshPlayerInfo();
   });
@@ -101,6 +119,43 @@
           <span class="text-gray-300">Whitelist conversion rate:</span>
           <span class="text-white font-mono font-bold">
             {((playerCount / WHITE_LIST_COUNT) * 100).toFixed(1)}%
+          </span>
+        </div>
+      </div>
+    </div>
+  </Card>
+
+  <Card class="shadow-ponzi overflow-hidden">
+    <div class="p-4">
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="text-lg font-bold text-white">Player Retention</h3>
+      </div>
+
+      <!-- Churn Rate Info -->
+      <div class="bg-black/20 rounded-lg p-3">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Day 1 Churn Rate:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateChurnRate(1)}%
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Day 2 Churn Rate:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateChurnRate(2)}%
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Day 3 Churn Rate:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateChurnRate(3)}%
+          </span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-300">Day 4 Churn Rate:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateChurnRate(4)}%
           </span>
         </div>
       </div>
