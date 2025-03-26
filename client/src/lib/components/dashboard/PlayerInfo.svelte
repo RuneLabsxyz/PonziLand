@@ -2,6 +2,7 @@
   import { fetchAllTimePlayers, fetchBuyEvents } from './requests';
   import { onMount } from 'svelte';
   import Card from '../ui/card/card.svelte';
+  import TransactionChart from './TransactionChart.svelte';
 
   const WHITE_LIST_COUNT = 53;
 
@@ -13,6 +14,7 @@
       actions: Array<{ date: string; type: 'first_play' | 'buy' }>;
     }>
   >([]);
+  let buys = $state<Array<{ buyer: string; internal_executed_at: string }>>([]);
 
   $effect(() => {
     console.log('Active addresses:', activeAddresses);
@@ -21,12 +23,13 @@
   async function refreshPlayerInfo() {
     isLoading = true;
     try {
-      const [players, buys] = await Promise.all([
+      const [players, buyEvents] = await Promise.all([
         fetchAllTimePlayers(),
         fetchBuyEvents(),
       ]);
 
       playerCount = players.length;
+      buys = buyEvents;
 
       const addressActions = new Map();
 
@@ -42,14 +45,16 @@
       );
 
       // Add buy actions
-      buys.forEach((buy: { buyer: string; internal_executed_at: string }) => {
-        const actions = addressActions.get(buy.buyer) || [];
-        actions.push({
-          date: buy.internal_executed_at,
-          type: 'buy',
-        });
-        addressActions.set(buy.buyer, actions);
-      });
+      buyEvents.forEach(
+        (buy: { buyer: string; internal_executed_at: string }) => {
+          const actions = addressActions.get(buy.buyer) || [];
+          actions.push({
+            date: buy.internal_executed_at,
+            type: 'buy',
+          });
+          addressActions.set(buy.buyer, actions);
+        },
+      );
 
       // Convert map to array and sort actions by date
       activeAddresses = Array.from(addressActions.entries()).map(
@@ -159,6 +164,20 @@
           </span>
         </div>
       </div>
+    </div>
+  </Card>
+
+  <Card class="shadow-ponzi overflow-hidden">
+    <div class="p-4">
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="text-lg font-bold text-white">Transaction Activity</h3>
+      </div>
+
+      <TransactionChart
+        transactions={buys.map((buy) => ({
+          date: buy.internal_executed_at,
+        }))}
+      />
     </div>
   </Card>
 {/if}
