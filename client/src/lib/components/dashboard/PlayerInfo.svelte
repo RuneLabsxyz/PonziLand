@@ -123,6 +123,58 @@
     };
   }
 
+  function calculateAdvancedStats() {
+    const playerLifespans = new Map();
+    buys.forEach((buy) => {
+      const existing = playerLifespans.get(buy.buyer) || [];
+      existing.push(new Date(buy.internal_executed_at));
+      playerLifespans.set(buy.buyer, existing);
+    });
+
+    let totalTimeSpans = 0;
+    let activePlayers = 0;
+    let multiTxPlayers = 0;
+    const now = new Date();
+
+    playerLifespans.forEach((dates, address) => {
+      if (dates.length > 1) {
+        multiTxPlayers++;
+        const timeSpan =
+          (Math.max(...dates.map((d: Date) => d.getTime())) -
+            Math.min(...dates.map((d: Date) => d.getTime()))) /
+          (1000 * 60 * 60);
+        totalTimeSpans += timeSpan;
+      }
+
+      const lastTx = Math.max(...dates.map((d: Date) => d.getTime()));
+      if ((now.getTime() - lastTx) / (1000 * 60 * 60) <= 24) {
+        activePlayers++;
+      }
+    });
+
+    return {
+      avgTimeBetweenTx: (totalTimeSpans / multiTxPlayers).toFixed(1),
+      active24h: activePlayers,
+      active24hPercent: ((activePlayers / playerLifespans.size) * 100).toFixed(
+        1,
+      ),
+      repeatPlayerPercent: (
+        (multiTxPlayers / playerLifespans.size) *
+        100
+      ).toFixed(1),
+      uniquePlayers: playerLifespans.size,
+      totalTransactions: buys.length,
+      avgTxPerDay: (
+        buys.length /
+        ((now.getTime() -
+          Math.min(
+            ...buys.map((b) => new Date(b.internal_executed_at).getTime()),
+          )) /
+          (1000 * 60 * 60 * 24))
+      ).toFixed(1),
+    };
+  }
+
   onMount(async () => {
     await refreshPlayerInfo();
   });
@@ -254,6 +306,51 @@
           <span class="text-gray-300">Max Transactions:</span>
           <span class="text-white font-mono font-bold">
             {calculateTransactionStats().max}
+          </span>
+        </div>
+      </div>
+    </div>
+  </Card>
+
+  <Card class="shadow-ponzi overflow-hidden">
+    <div class="p-4">
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="text-lg font-bold text-white">Advanced Metrics</h3>
+      </div>
+
+      <div class="bg-black/20 rounded-lg p-3">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Active Players (24h):</span>
+          <span class="text-white font-mono font-bold">
+            {calculateAdvancedStats().active24h} ({calculateAdvancedStats()
+              .active24hPercent}%)
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Repeat Players:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateAdvancedStats().repeatPlayerPercent}%
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Avg Time Between Transactions:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateAdvancedStats().avgTimeBetweenTx}h
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Avg Transactions per Day:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateAdvancedStats().avgTxPerDay}
+          </span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-300">Transaction/Player Ratio:</span>
+          <span class="text-white font-mono font-bold">
+            {(
+              calculateAdvancedStats().totalTransactions /
+              calculateAdvancedStats().uniquePlayers
+            ).toFixed(2)}
           </span>
         </div>
       </div>
