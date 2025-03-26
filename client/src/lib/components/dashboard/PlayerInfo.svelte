@@ -93,6 +93,36 @@
     return churnRate.toFixed(1);
   }
 
+  function calculateTransactionStats() {
+    const txCountByAddress = new Map();
+    buys.forEach((buy) => {
+      txCountByAddress.set(
+        buy.buyer,
+        (txCountByAddress.get(buy.buyer) || 0) + 1,
+      );
+    });
+
+    const txCounts = Array.from(txCountByAddress.values());
+    txCounts.sort((a, b) => a - b);
+
+    const average =
+      txCounts.reduce((sum, count) => sum + count, 0) / txCounts.length;
+
+    const q1Index = Math.floor(txCounts.length * 0.25);
+    const q2Index = Math.floor(txCounts.length * 0.5);
+    const q3Index = Math.floor(txCounts.length * 0.75);
+
+    return {
+      average: average.toFixed(2),
+      median: txCounts[q2Index],
+      q1: txCounts[q1Index],
+      q2: txCounts[q2Index],
+      q3: txCounts[q3Index],
+      min: txCounts[0],
+      max: txCounts[txCounts.length - 1],
+    };
+  }
+
   onMount(async () => {
     await refreshPlayerInfo();
   });
@@ -178,6 +208,55 @@
           date: buy.internal_executed_at,
         }))}
       />
+    </div>
+  </Card>
+
+  <Card class="shadow-ponzi overflow-hidden">
+    <div class="p-4">
+      <!-- Header -->
+      <div class="flex items-center gap-3 mb-4">
+        <h3 class="text-lg font-bold text-white">Transaction Statistics</h3>
+      </div>
+
+      <!-- Stats Info -->
+      <div class="bg-black/20 rounded-lg p-3">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Average Transactions/Player:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateTransactionStats().average}
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Median (Q2):</span>
+          <span class="text-white font-mono font-bold">
+            {calculateTransactionStats().median}
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Q1 (25th percentile):</span>
+          <span class="text-white font-mono font-bold">
+            {calculateTransactionStats().q1}
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Q3 (75th percentile):</span>
+          <span class="text-white font-mono font-bold">
+            {calculateTransactionStats().q3}
+          </span>
+        </div>
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-gray-300">Min Transactions:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateTransactionStats().min}
+          </span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-300">Max Transactions:</span>
+          <span class="text-white font-mono font-bold">
+            {calculateTransactionStats().max}
+          </span>
+        </div>
+      </div>
     </div>
   </Card>
 {/if}
