@@ -7,7 +7,13 @@
 
   let playerCount = $state(0);
   let isLoading = $state(true);
-  let activeAddresses = $state<string[]>([]);
+  let activeAddresses = $state<Array<{ address: string; activatedAt: string }>>(
+    [],
+  );
+
+  $effect(() => {
+    console.log('Active addresses:', activeAddresses);
+  });
 
   async function refreshPlayerInfo() {
     isLoading = true;
@@ -15,7 +21,10 @@
       const players = await fetchAllTimePlayers();
       playerCount = players.length;
       activeAddresses = players.map(
-        (player: { player: string }) => player.player,
+        (player: { address: string; internal_executed_at: string }) => ({
+          address: player.address,
+          activatedAt: player.internal_executed_at,
+        }),
       );
     } catch (error) {
       console.error('Error fetching players:', error);
