@@ -100,7 +100,7 @@
 <div class="w-screen">
   <div class="flex items-center justify-center transform z-40 p-4 my-2">
     <img
-      src="/assets/ui/ramp/character.png"
+      src="/ui/ramp/character.png"
       alt="Character"
       class="w-24 h-24"
       class:animate-shake={displayedDescription.length <
@@ -108,7 +108,7 @@
     />
     <button
       class="relative bg-chatbox flex items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
-      style="background-image: url('/assets/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
+      style="background-image: url('/ui/ramp/chat-box.png'); background-size: cover; width: 600px; height: 180px;"
       onclick={() => {
         if (
           displayedDescription.length <

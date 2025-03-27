@@ -125,13 +125,13 @@
 .border-ponzi {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('/assets/ui/frame.png') 10 10 10 10 round round;
+  border-image: url('/ui/card/frame.png') 10 10 10 10 round round;
   image-rendering: pixelated;
   padding: 0.5em;
 }
 
 .bg-ponzi {
-  background-image: url('/assets/ui/texture.png');
+  background-image: url('/ui/card/texture.png');
 }
 
 .shadow-ponzi {
@@ -159,21 +159,21 @@
 .button-ponzi-blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('/assets/ui/button/blue/default.png') 40;
+  border-image: url('/ui/button/blue/default.png') 40;
   image-rendering: pixelated;
   background-color: #136a88;
 }
 .button-ponzi-blue:hover {
-  border-image: url('/assets/ui/button/blue/hover.png') 40;
+  border-image: url('/ui/button/blue/hover.png') 40;
   background-color: #71d2f8;
 }
 .button-ponzi-red {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('/assets/ui/button/red/default.png') 40;
+  border-image: url('/ui/button/red/default.png') 40;
   image-rendering: pixelated;
   background-color: #832849;
 }
 .button-ponzi-red:hover {
-  border-image: url('/assets/ui/button/red/hover.png') 40;
+  border-image: url('/ui/button/red/hover.png') 40;
 }

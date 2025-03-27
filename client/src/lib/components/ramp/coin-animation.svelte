@@ -15,7 +15,7 @@
   {#if falling}
     <img
       id="coin"
-      src="/assets/ui/ramp/coinGif.gif"
+      src="/ui/ramp/coinGif.gif"
       alt="Coin Animation"
       transition:fly={{ y: -1000, duration: 5000 }}
       bind:this={coinElement}

@@ -221,7 +221,7 @@
         'absolute top-0 left-1/2 -translate-x-1/2 z-20',
         scale > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
       )}
-      style="background-image: url('/assets/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
+      style="background-image: url('/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
   {/if}

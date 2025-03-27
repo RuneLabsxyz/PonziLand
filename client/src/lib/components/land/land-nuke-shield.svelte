@@ -41,28 +41,28 @@
   // Define thresholds with corresponding background images
   const thresholds: { [key: number]: { image: string; color: string } } = {
     7: {
-      image: 'url(/assets/ui/icons/Icon_ShieldBlue.png)',
+      image: 'url(/ui/icons/Icon_ShieldBlue.png)',
       color: '#DFDFE3',
     },
     5: {
-      image: 'url(/assets/ui/icons/Icon_ShieldGrey.png)',
+      image: 'url(/ui/icons/Icon_ShieldGrey.png)',
       color: '#DFDFE3',
     },
     3: {
-      image: 'url(/assets/ui/icons/Icon_ShieldYellow.png)',
+      image: 'url(/ui/icons/Icon_ShieldYellow.png)',
       color: '#F2B545',
     },
     2: {
-      image: 'url(/assets/ui/icons/Icon_ShieldOrange.png)',
+      image: 'url(/ui/icons/Icon_ShieldOrange.png)',
       color: '#F27345',
     },
-    1: { image: 'url(/assets/ui/icons/Icon_ShieldRed.png)', color: '#ED3939' },
+    1: { image: 'url(/ui/icons/Icon_ShieldRed.png)', color: '#ED3939' },
   };
 
   // Determine the appropriate background image based on estimatedNukeTime
   function getStyle(time: number) {
     let selectedStyle = {
-      image: 'url(/assets/ui/icons/Icon_ShieldRed.png)',
+      image: 'url(/ui/icons/Icon_ShieldRed.png)',
       color: '#ED3939',
     }; // Default style
     for (const [days, style] of Object.entries(thresholds)) {
@@ -112,7 +112,7 @@
       rel="noopener noreferrer"
       target="_blank"
       class="cursor-pointer h-6 w-6"
-      ><img src="/assets/ui/icons/Icon_Help.png" alt="info" /></a
+      ><img src="/ui/icons/Icon_Help.png" alt="info" /></a
     >
   </Tooltip.Content>
 </Tooltip.Root>

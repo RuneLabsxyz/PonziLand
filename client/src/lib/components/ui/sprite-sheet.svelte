@@ -19,8 +19,10 @@
     startFrame = 0, // Starting frame index
     endFrame: initialEndFrame = undefined, // Ending frame index (defaults to max frame)
     loop = true, // Whether to loop the animation
+    boomerang = false, // Whether to reverse the animation
     horizontal = true, // Animation direction (horizontal or vertical)
     autoplay = true, // Start animation automatically
+    delay = 0,
   } = $props();
 
   // Calculate total frames based on sprite sheet dimensions
@@ -39,7 +41,9 @@
   // Animation state
   let currentFrame = $state(startFrame);
   let animationInterval = $state();
+  let restartTimeout = $state();
   let isPlaying = $state(autoplay && animate);
+  let direction = $state(1);
 
   // Sprite position
   let x = $state(initialX);
@@ -72,20 +76,48 @@
     }
   });
 
-  // Animation control functions
   function startAnimation() {
     if (!animate || animationInterval) return;
 
     isPlaying = true;
-    animationInterval = setInterval(() => {
-      currentFrame++;
+    restartTimeout = null;
 
-      // Check if we've reached the end frame
-      if (currentFrame > endFrame) {
-        if (loop) {
-          currentFrame = startFrame;
-        } else {
+    animationInterval = setInterval(async () => {
+      currentFrame += direction;
+
+      // Check if we've reached the end frame or start frame
+      if (currentFrame >= endFrame) {
+        if (boomerang) {
+          clearInterval(animationInterval);
+          animationInterval = null;
+
+          restartTimeout = setTimeout(() => {
+            direction = -1; // Reverse direction
+            startAnimation(); // Restart the animation
+          }, delay); // 1-second delay (adjust as needed)
+        } else if (!loop) {
           stopAnimation();
+        } else {
+          // Add a delay before restarting
+          clearInterval(animationInterval);
+          animationInterval = null;
+
+          restartTimeout = setTimeout(() => {
+            currentFrame = startFrame;
+            startAnimation(); // Restart the animation
+          }, delay); // 1-second delay (adjust as needed)
+        }
+      } else if (currentFrame <= startFrame) {
+        if (boomerang) {
+          clearInterval(animationInterval);
+          animationInterval = null;
+
+          restartTimeout = setTimeout(() => {
+            direction = 1; // Forward direction
+            startAnimation(); // Restart the animation
+          }, delay); // 1-second delay (adjust as needed)
+        } else {
+          direction = 1; // Forward direction
         }
       }
     }, frameDelay);
@@ -95,8 +127,15 @@
     if (animationInterval) {
       clearInterval(animationInterval);
       animationInterval = null;
-      isPlaying = false;
     }
+
+    // Clear the restart timeout if it exists
+    if (restartTimeout) {
+      clearTimeout(restartTimeout);
+      restartTimeout = null;
+    }
+
+    isPlaying = false;
   }
 
   function resetAnimation() {

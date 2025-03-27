@@ -45,7 +45,7 @@
         referrerpolicy="no-referrer"
       >
         <img
-          src="/assets/ui/social/x.png"
+          src="/ui/social/x.png"
           alt="X icon"
           style="image-rendering: pixelated;"
           class="h-8 w-8"
@@ -57,7 +57,7 @@
         referrerpolicy="no-referrer"
       >
         <img
-          src="/assets/ui/social/discord.png"
+          src="/ui/social/discord.png"
           alt="Discord icon"
           style="image-rendering: pixelated;"
           class="h-8 w-8"
@@ -90,7 +90,7 @@
           }}
           aria-label="Logout"
         >
-          <img src="/assets/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
+          <img src="/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
         </button>
       </div>
       <hr class="my-3" />

@@ -48,7 +48,7 @@
 >
   {#if road}
     <SpriteSheet
-      src="/sheets/road.png"
+      src="/land-display/road.png"
       y={0}
       x={0}
       xSize={320}
@@ -62,7 +62,7 @@
   {/if}
   {#if grass}
     <SpriteSheet
-      src="/sheets/empty.png"
+      src="/land-display/empty.png"
       y={grassY}
       x={grassX}
       xSize={256}
@@ -76,7 +76,7 @@
   {/if}
   {#if auction}
     <SpriteSheet
-      src="/sheets/empty.png"
+      src="/land-display/empty.png"
       x={3}
       y={2}
       xSize={256}
@@ -93,36 +93,61 @@
   {/if}
   {#if token}
     <SpriteSheet
-      src="/sheets/biomes.png"
+      src="/tokens/+global/biomes.png"
       x={token.images.biome.x}
       y={token.images.biome.y}
       xSize={256}
       xMax={2048}
       ySize={256}
-      yMax={3072}
+      yMax={3328}
       {width}
       {height}
       class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
         ? 'selected'
         : ''} {hovering ? 'hovering' : ''}"
     />
-    <SpriteSheet
-      src="/sheets/buildings.png"
-      x={token.images.building[level].x}
-      y={token.images.building[level].y}
-      xSize={256}
-      xMax={1536}
-      ySize={256}
-      yMax={4608}
-      {width}
-      {height}
-      class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
-        ? 'selected'
-        : ''} {hovering ? 'hovering' : ''}"
-    />
+    {#if token.images.building[level].frames}
+      {@const animationMeta = token.images.building[level]}
+      <SpriteSheet
+        src={`/tokens/${token.symbol}/${level}-animated.png`}
+        xSize={animationMeta.xSize}
+        ySize={animationMeta.ySize}
+        xMax={animationMeta.xMax}
+        yMax={animationMeta.yMax}
+        {width}
+        {height}
+        animate={true}
+        frameDelay={100}
+        startFrame={0}
+        endFrame={animationMeta.frames - 1}
+        loop={true}
+        boomerang={animationMeta.boomerang}
+        horizontal={true}
+        autoplay={true}
+        delay={animationMeta.delay}
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] scale-75 {selected
+          ? 'selected'
+          : ''} {hovering ? 'hovering' : ''}"
+      />
+    {:else}
+      <SpriteSheet
+        src="/tokens/+global/buildings.png"
+        x={token.images.building[level].x}
+        y={token.images.building[level].y}
+        xSize={256}
+        xMax={1536}
+        ySize={256}
+        yMax={4608}
+        {width}
+        {height}
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] {selected
+          ? 'selected'
+          : ''} {hovering ? 'hovering' : ''}"
+      />
+    {/if}
   {:else if basic}
     <div
-      style="background-image: url('/assets/tokens/basic/castles/basic.png'); background-size: contain; background-position: center;"
+      style="background-image: url('/tokens/basic/castles/basic.png'); background-size: contain; background-position: center;"
       class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
     ></div>
   {/if}

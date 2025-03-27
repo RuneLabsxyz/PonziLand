@@ -51,7 +51,7 @@
 {:then _}
   <div
     class="flex flex-col min-h-screen"
-    style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
+    style="background-image: url('/ui/bg.png'); background-size: cover; background-position: center;"
   >
     <div
       class="absolute bottom-0 left-0 m-4 p-4 bg-gray-800 text-white text-ponzi rounded z-10"

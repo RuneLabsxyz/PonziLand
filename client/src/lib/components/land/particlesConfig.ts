@@ -77,7 +77,7 @@ export const particlesConfig: ISourceOptions = {
       type: 'image',
       options: {
         image: {
-          src: '/assets/ui/icons/Icon_Coin1.png',
+          src: '/ui/icons/Icon_Coin1.png',
           width: 100,
           height: 100,
         },
