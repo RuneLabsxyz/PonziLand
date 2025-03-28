@@ -194,7 +194,6 @@ fn validate_staking_state(
         let land = store.land(location);
         let token = *tokens.at(i);
         let balance = token.balanceOf(contract_address);
-
         if should_have_balance {
             assert(land.stake_amount > 0, 'Stake > 0 expected');
             assert(balance > 0, 'Balnce > 0 expected');
@@ -939,8 +938,6 @@ fn test_organic_auction() {
 }
 
 #[test]
-#[available_gas(900000000000)]
-#[ignore]
 fn test_reimburse_stakes() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
 
@@ -977,18 +974,22 @@ fn test_reimburse_stakes() {
     set_block_timestamp(600);
     initialize_land(actions_system, main_currency, NEIGHBOR_3(), 1217, 500, 1000, erc20_neighbor_3);
 
-    set_block_timestamp(5000);
     set_contract_address(RECIPIENT());
 
+    initialize_land(actions_system, main_currency, RECIPIENT(), 1250, 500, 1000, main_currency);
+
+    initialize_land(actions_system, main_currency, RECIPIENT(), 1251, 500, 1000, main_currency);
+
+    set_block_timestamp(2000);
     actions_system.claim(1280);
 
-    initialize_land(actions_system, main_currency, RECIPIENT(), 1250, 500, 130, main_currency);
+    set_block_timestamp(4000);
+    actions_system.claim(1280);
 
-    initialize_land(actions_system, main_currency, RECIPIENT(), 1251, 500, 157, main_currency);
-
-    let land_locations = array![1280, 1216, 1217, 1250, 1251];
+    let land_locations = array![1280, 1281, 1216, 1217, 1250, 1251];
     let tokens = array![
-        main_currency, // erc20_neighbor_1,
+        main_currency, // 
+        erc20_neighbor_1,
         erc20_neighbor_2,
         erc20_neighbor_3,
         main_currency,
