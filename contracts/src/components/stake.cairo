@@ -168,7 +168,7 @@ mod StakeComponent {
             let new_total = if current_total > refund_amount {
                 current_total - refund_amount
             } else {
-                0
+                panic("Attempting to refund more than what's staked");
             };
             self.token_stakes.write(land.token_used, new_total);
 
