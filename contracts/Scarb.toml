@@ -1,5 +1,5 @@
 [package]
-cairo-version = "=2.8.4"
+cairo-version = "=2.9.2"
 name = "ponzi_land"
 version = "1.0.1"
 
@@ -12,9 +12,10 @@ spawn = "sozo execute ponzi_land-actions spawn --wait"    # scarb run spawn
 move = "sozo execute ponzi_land-actions move -c 1 --wait" # scarb run move
 
 [dependencies]
-dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.12" }
+dojo = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.1" }
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v0.18.0" }
 ekubo = { git = "https://github.com/EkuboProtocol/abis", rev = "edb6de8c9baf515f1053bbab3d86825d54a63bc3"}
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.1" }
 
 [profile.sepolia]
 
@@ -22,4 +23,5 @@ ekubo = { git = "https://github.com/EkuboProtocol/abis", rev = "edb6de8c9baf515f
 build-external-contracts = ["dojo::world::world_contract::world"]
 
 [dev-dependencies]
-dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.0.12" }
+cairo_test = "=2.9.2"
+dojo_cairo_test = { git = "https://github.com/dojoengine/dojo", tag = "v1.3.1" }

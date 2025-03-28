@@ -51,13 +51,16 @@ trait IActions<T> {
 
     fn get_land(self: @T, land_location: u64) -> Land;
     fn get_pending_taxes_for_land(
-        self: @T, land_location: u64, owner_land: ContractAddress,
+        self: @T, land_location: u64, owner: ContractAddress,
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
     fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
     fn get_neighbors_yield(self: @T, land_location: u64) -> LandYieldInfo;
     fn get_active_auctions(self: @T) -> u8;
     fn get_auction(self: @T, land_location: u64) -> Auction;
+    fn get_time_to_nuke(self: @T, land_location: u64) -> u256;
+    fn get_claimable_taxes_per_neighbor(self: @T, land_location: u64) -> u256;
+ //   fn get_neighbors(self: @T, land_location: u64) -> Array<Land>;
 }
 
 // dojo decorator
@@ -98,6 +101,7 @@ pub mod actions {
         is_valid_position, up, down, left, right, max_neighbors, index_to_position,
         position_to_index, up_left, up_right, down_left, down_right
     };
+    use ponzi_land::helpers::claims::{get_taxes_per_neighbor};
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
@@ -331,7 +335,7 @@ pub mod actions {
             let mut land = store.land(land_location);
 
             //TODO:see how we validate the lp to nuke the land
-            assert(land.stake_amount == 0, 'land with stake inside nuke');
+            assert(land.stake_amount == 0, 'land still has stake');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if pending_taxes.len() != 0 {
                 self.taxes._claim(pending_taxes, land.owner, land.location);
@@ -549,9 +553,9 @@ pub mod actions {
         //GETTERS FUNCTIONS
 
         fn get_pending_taxes_for_land(
-            self: @ContractState, land_location: u64, owner_land: ContractAddress,
+            self: @ContractState, land_location: u64, owner: ContractAddress,
         ) -> Array<TokenInfo> {
-            self.taxes._get_pending_taxes(owner_land, land_location)
+            self.taxes._get_pending_taxes(owner, land_location)
         }
 
         fn get_land(self: @ContractState, land_location: u64) -> Land {
@@ -678,8 +682,28 @@ pub mod actions {
             let store = StoreTrait::new(world);
             store.auction(land_location)
         }
-    }
 
+        fn get_time_to_nuke(self: @ContractState, land_location: u64) -> u256 {
+            let mut world = self.world_default();
+            let store = StoreTrait::new(world);
+            let land = store.land(land_location);
+
+            let num_neighbors = get_land_neighbors(store, land_location).len();
+            if num_neighbors == 0 {
+                return 0;
+            }
+
+            get_taxes_per_neighbor(land)
+
+        }
+
+        fn get_claimable_taxes_per_neighbor(self: @ContractState, land_location: u64) -> u256 {
+            let world = self.world_default();
+            let store = StoreTrait::new(world);
+            let land = store.land(land_location);
+            get_taxes_per_neighbor(land)
+        }
+    }
 
     #[generate_trait]
     impl InternalImpl of InternalTrait {

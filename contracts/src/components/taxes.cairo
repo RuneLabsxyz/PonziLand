@@ -22,6 +22,7 @@ mod TaxesComponent {
     use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
+    use ponzi_land::helpers::claims::get_taxes_per_neighbor;
 
     // Local imports
     use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -60,6 +61,7 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>, mut store: Store, land_location: u64
         ) -> bool {
             let mut land = store.land(land_location);
+            let current_time = get_block_timestamp();
 
             //generate taxes for each neighbor of neighbor
             let neighbors = get_land_neighbors(store, land_location);
@@ -72,24 +74,8 @@ mod TaxesComponent {
                 return false;
             }
 
-            let current_time = get_block_timestamp();
-
-            let discount_for_level = calculate_discount_for_level(land.level);
-
-            //calculate the total taxes
-            let elapsed_time = (current_time - land.last_pay_time) * TIME_SPEED.into();
-            let total_taxes: u256 = (land.sell_price * TAX_RATE.into() * elapsed_time.into())
-                / (100 * BASE_TIME.into());
-
-            //calculate discount for level
-            let total_taxes = if discount_for_level > 0 {
-                total_taxes - (total_taxes * discount_for_level.into()) / 100
-            } else {
-                total_taxes
-            };
-
             // Calculate the tax per neighbor (divided by the maximum possible neighbors)
-            let tax_per_neighbor = total_taxes / max_neighbors(land_location).into();
+            let tax_per_neighbor = get_taxes_per_neighbor(land);
 
             // Calculate the total tax to distribute (only to existing neighbors)
             let tax_to_distribute = tax_per_neighbor * neighbors_with_owners.into();
