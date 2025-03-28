@@ -165,12 +165,12 @@ mod StakeComponent {
             assert(status, errors::ERC20_REFUND_FAILED);
 
             let current_total = self.token_stakes.read(land.token_used);
-            let new_total = if current_total > refund_amount {
-                current_total - refund_amount
+            if current_total >= refund_amount {
+                let new_total = current_total - refund_amount;
+                self.token_stakes.write(land.token_used, new_total);
             } else {
-                panic("Attempting to refund more than what's staked");
+                panic!("Attempting to refund more than what's staked");
             };
-            self.token_stakes.write(land.token_used, new_total);
 
             land.stake_amount = 0;
             store.set_land(land);
