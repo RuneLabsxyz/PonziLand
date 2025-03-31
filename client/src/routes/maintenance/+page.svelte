@@ -22,7 +22,7 @@
 
 <div
   class="flex flex-col h-screen w-screen justify-center items-center"
-  style="background-image: url('/assets/ui/bg.png'); background-size: cover; background-position: center;"
+  style="background-image: url('/ui/bg.png'); background-size: cover; background-position: center;"
 >
   <Card>
     <div class="p-5 max-w-[35rem]">

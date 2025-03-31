@@ -24,7 +24,7 @@
   <LoadingImage imageUrl="/logo.png" maskProgress={value} />
   <div class="flex gap-2 items-center justify-center z-50">
     <p class="text-white text-lg leading-none">{randomPhrase}</p>
-    <img src="/assets/ui/ramp/coinGif.gif" alt="Loading" class="w-3 h-3" />
+    <img src="/ui/ramp/coinGif.gif" alt="Loading" class="w-3 h-3" />
   </div>
 </div>
 
@@ -38,7 +38,7 @@
     height: 100vh;
     transform: translate(-50%, -50%);
     background: radial-gradient(rgba(24, 18, 68, 0.5), rgba(14, 4, 21, 0.5)),
-      url('/assets/ui/texture.png');
+      url('/ui/card/texture.png');
     scale: 1.1;
   }
 </style>

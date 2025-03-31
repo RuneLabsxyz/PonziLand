@@ -89,7 +89,7 @@
     {#if aggregatedTaxes.length > 0 && timing && !animating}
       <button onclick={handleClaimFromCoin} class="flex items-center">
         <img
-          src="/assets/ui/icons/Icon_Coin2.png"
+          src="/ui/icons/Icon_Coin2.png"
           alt="coins"
           class="h-3 w-3 -mt-1 coin unselectable"
         />

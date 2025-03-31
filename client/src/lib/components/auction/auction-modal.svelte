@@ -212,7 +212,7 @@
         {:else if extended}
           <button onclick={handleBiddingClick}>
             <img
-              src="/assets/ui/button/buy/button-buy.png"
+              src="/ui/button/buy/button-buy.png"
               alt="buy-land"
               class=" hover:cursor-pointer hover:opacity-90"
             />
@@ -225,7 +225,7 @@
             }}
           >
             <img
-              src="/assets/ui/button/buy/button-buy-glass.png"
+              src="/ui/button/buy/button-buy-glass.png"
               alt="buy-land"
               class=" hover:cursor-pointer hover:opacity-90"
             />

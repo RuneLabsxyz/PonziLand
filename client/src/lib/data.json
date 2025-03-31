@@ -20,7 +20,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/strk/icon.png",
+        "icon": "/tokens/eSTRK/icon.png",
         "biome": {
           "x": 0,
           "y": 7
@@ -36,7 +36,12 @@
           },
           "3": {
             "x": 3,
-            "y": 5
+            "y": 5,
+            "frames": 6,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1152,
+            "yMax": 192
           }
         }
       }
@@ -48,7 +53,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/paper/icon.svg",
+        "icon": "/tokens/ePAPER/icon.svg",
         "biome": {
           "x": 0,
           "y": 1
@@ -56,15 +61,30 @@
         "building": {
           "1": {
             "x": 3,
-            "y": 0
+            "y": 0,
+            "frames": 4,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 192
           },
           "2": {
             "x": 3,
-            "y": 1
+            "y": 1,
+            "frames": 8,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 384
           },
           "3": {
             "x": 3,
-            "y": 2
+            "y": 2,
+            "frames": 8,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 384
           }
         }
       }
@@ -76,7 +96,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/lords/icon.svg",
+        "icon": "/tokens/eLORDS/icon.svg",
         "biome": {
           "x": 0,
           "y": 6
@@ -92,7 +112,14 @@
           },
           "3": {
             "x": 0,
-            "y": 2
+            "y": 2,
+            "frames": 10,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 960,
+            "yMax": 384,
+            "boomerang": true,
+            "delay": 2000
           }
         }
       }
@@ -104,7 +131,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/brother/icon.png",
+        "icon": "/tokens/eBROTHER/icon.png",
         "biome": {
           "x": 0,
           "y": 2
@@ -120,7 +147,12 @@
           },
           "3": {
             "x": 3,
-            "y": 8
+            "y": 8,
+            "frames": 7,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1344,
+            "yMax": 192
           }
         }
       }
@@ -132,7 +164,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
-        "icon": "/assets/tokens/pal/icon.svg",
+        "icon": "/tokens/ePAL/icon.svg",
         "biome": {
           "x": 0,
           "y": 5
@@ -148,7 +180,12 @@
           },
           "3": {
             "x": 0,
-            "y": 5
+            "y": 5,
+            "frames": 9,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 576,
+            "yMax": 576
           }
         }
       }
