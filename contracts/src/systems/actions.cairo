@@ -59,7 +59,9 @@ trait IActions<T> {
     fn get_active_auctions(self: @T) -> u8;
     fn get_auction(self: @T, land_location: u64) -> Auction;
     fn get_time_to_nuke(self: @T, land_location: u64) -> u256;
-    fn get_claimable_taxes_per_neighbor(self: @T, land_location: u64) -> u256;
+    fn get_unclaimed_taxes_per_neighbor(self: @T, land_location: u64) -> u256;
+    // returns (pending_taxes, unclaimed_taxes)
+    fn get_claimable_taxes_for_land(self: @T, land_location: u64, owner: ContractAddress) -> (Array<TokenInfo>, Array<TokenInfo>);
  //   fn get_neighbors(self: @T, land_location: u64) -> Array<Land>;
 }
 
@@ -101,7 +103,7 @@ pub mod actions {
         is_valid_position, up, down, left, right, max_neighbors, index_to_position,
         position_to_index, up_left, up_right, down_left, down_right
     };
-    use ponzi_land::helpers::claims::{get_taxes_per_neighbor};
+    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_time_to_nuke};
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
@@ -689,19 +691,38 @@ pub mod actions {
             let land = store.land(land_location);
 
             let num_neighbors = get_land_neighbors(store, land_location).len();
-            if num_neighbors == 0 {
-                return 0;
-            }
 
-            get_taxes_per_neighbor(land)
+            get_time_to_nuke(land, num_neighbors.try_into().unwrap())
 
         }
 
-        fn get_claimable_taxes_per_neighbor(self: @ContractState, land_location: u64) -> u256 {
+        fn get_unclaimed_taxes_per_neighbor(self: @ContractState, land_location: u64) -> u256 {
             let world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
             get_taxes_per_neighbor(land)
+        }
+
+        fn get_claimable_taxes_for_land(self: @ContractState, land_location: u64, owner: ContractAddress) -> (Array<TokenInfo>, Array<TokenInfo>) {
+            let world = self.world_default();
+            let store = StoreTrait::new(world);
+            
+            let pending_taxes = self.get_pending_taxes_for_land(land_location, owner);
+
+            let neighbors = get_land_neighbors(store, land_location);
+
+            let mut unclaimed_taxes: Array<TokenInfo> = ArrayTrait::new();
+
+            for neighbor in neighbors {
+                let taxes_per_neighbor = self.get_unclaimed_taxes_per_neighbor(neighbor.location);
+                let tax_info = TokenInfo {
+                    token_address: neighbor.token_used,
+                    amount: taxes_per_neighbor,
+                };
+                unclaimed_taxes.append(tax_info);
+            };
+
+            (pending_taxes, unclaimed_taxes)
         }
     }
 

@@ -14,7 +14,7 @@ mod models {
 
 mod helpers {
     mod coord;
-    mod claims;
+    mod taxes;
 }
 
 mod components {

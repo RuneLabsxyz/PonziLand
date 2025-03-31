@@ -22,7 +22,7 @@ mod TaxesComponent {
     use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
-    use ponzi_land::helpers::claims::get_taxes_per_neighbor;
+    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
 
     // Local imports
     use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -61,7 +61,6 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>, mut store: Store, land_location: u64
         ) -> bool {
             let mut land = store.land(land_location);
-            let current_time = get_block_timestamp();
 
             //generate taxes for each neighbor of neighbor
             let neighbors = get_land_neighbors(store, land_location);
@@ -73,7 +72,7 @@ mod TaxesComponent {
                 store.set_land(land);
                 return false;
             }
-
+            let current_time = get_block_timestamp();
             // Calculate the tax per neighbor (divided by the maximum possible neighbors)
             let tax_per_neighbor = get_taxes_per_neighbor(land);
 
@@ -178,12 +177,12 @@ mod TaxesComponent {
 
                     let status = payable.transfer(owner_land, validation_result);
                     assert(status, errors::ERC20_TRANSFER_CLAIM_FAILED);
-                    self._discount_pending_taxes(owner_land, land_location, token_info);
+                    self._remove_pending_taxes(owner_land, land_location, token_info);
                 }
             }
         }
 
-        fn _discount_pending_taxes(
+        fn _remove_pending_taxes(
             ref self: ComponentState<TContractState>,
             owner_land: ContractAddress,
             land_location: u64,
