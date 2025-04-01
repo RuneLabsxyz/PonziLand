@@ -1,4 +1,3 @@
-
 use ponzi_land::utils::level_up::calculate_discount_for_level;
 use ponzi_land::helpers::coord::max_neighbors;
 use ponzi_land::models::land::Land;
@@ -33,10 +32,22 @@ pub fn get_tax_rate_per_neighbor(land: Land) -> u256 {
 }
 
 pub fn get_time_to_nuke(land: Land, num_neighbors: u8) -> u256 {
-    let tax_rate = get_tax_rate_per_neighbor(land);
-    let current_time = get_block_timestamp();
+    let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land);
+    let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
+    let current_time: u256 = get_block_timestamp().into();
 
-    let res = ((tax_rate * num_neighbors.into()) / land.stake_amount * TIME_SPEED.into()) - (current_time - land.last_pay_time).into();
+    let seconds_to_nuke = (land.stake_amount * BASE_TIME.into()) / total_tax_rate ;
+    // The nuke time is the last payment time plus the seconds until nuke
+    let nuke_time = land.last_pay_time.into() + seconds_to_nuke;
 
+    let mut res = 0;
+    if nuke_time < current_time {
+        res = 0;
+    }
+    else {
+        res = nuke_time - current_time;
+    }
+
+    println!("res: {}", res);
     res
 }

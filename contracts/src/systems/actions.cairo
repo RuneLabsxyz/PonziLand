@@ -54,15 +54,15 @@ trait IActions<T> {
         self: @T, land_location: u64, owner: ContractAddress,
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
-    fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
+    fn get_next_claim_info(self: @T, land_location: u64) -> (Array<ClaimInfo>, Array<TokenInfo>);
     fn get_neighbors_yield(self: @T, land_location: u64) -> LandYieldInfo;
     fn get_active_auctions(self: @T) -> u8;
     fn get_auction(self: @T, land_location: u64) -> Auction;
-    fn get_time_to_nuke(self: @T, land_location: u64) -> u256;
+    fn get_time_to_nuke(self: @T, land_location: u64) -> u64;
     fn get_unclaimed_taxes_per_neighbor(self: @T, land_location: u64) -> u256;
     // returns (pending_taxes, unclaimed_taxes)
     fn get_claimable_taxes_for_land(self: @T, land_location: u64, owner: ContractAddress) -> (Array<TokenInfo>, Array<TokenInfo>);
- //   fn get_neighbors(self: @T, land_location: u64) -> Array<Land>;
+  //  fn get_neighbors(self: @T, land_location: u64) -> Array<(Land, LandYieldInfo)>;
 }
 
 // dojo decorator
@@ -581,7 +581,7 @@ pub mod actions {
             auction.get_current_price_decay_rate()
         }
 
-        fn get_next_claim_info(self: @ContractState, land_location: u64) -> Array<ClaimInfo> {
+        fn get_next_claim_info(self: @ContractState, land_location: u64) -> (Array<ClaimInfo>, Array<TokenInfo>) {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
@@ -590,37 +590,26 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land.location);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
+            let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+
+            let time_to_nuke = self.get_time_to_nuke(land.location);
+
             //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
-                    let current_time = get_block_timestamp();
-                    let elapsed_time = (current_time - neighbor.last_pay_time) * TIME_SPEED.into();
+                    let tax_per_neighbor = self.get_unclaimed_taxes_per_neighbor(neighbor.location);
 
-                    let total_taxes: u256 = (neighbor.sell_price
-                        * TAX_RATE.into()
-                        * elapsed_time.into())
-                        / (100 * BASE_TIME.into());
-
-                    let (tax_to_distribute, is_nuke) = if neighbor.stake_amount <= total_taxes {
-                        (neighbor.stake_amount, true)
-                    } else {
-                        (total_taxes, false)
-                    };
-
-                    let tax_per_neighbor = tax_to_distribute
-                        / max_neighbors(neighbor.location).into();
                     let claim_info_per_neighbor = ClaimInfo {
                         token_address: neighbor.token_used,
                         amount: tax_per_neighbor,
                         land_location: neighbor.location,
-                        can_be_nuked: is_nuke,
+                        can_be_nuked: time_to_nuke == 0,
                     };
                     claim_info.append(claim_info_per_neighbor);
                 }
             }
-            claim_info
+            (claim_info, pending_taxes)
         }
-
 
         fn get_neighbors_yield(self: @ContractState, land_location: u64) -> LandYieldInfo {
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -685,14 +674,14 @@ pub mod actions {
             store.auction(land_location)
         }
 
-        fn get_time_to_nuke(self: @ContractState, land_location: u64) -> u256 {
+        fn get_time_to_nuke(self: @ContractState, land_location: u64) -> u64 {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
             let num_neighbors = get_land_neighbors(store, land_location).len();
 
-            get_time_to_nuke(land, num_neighbors.try_into().unwrap())
+            get_time_to_nuke(land, num_neighbors.try_into().unwrap()).try_into().unwrap()
 
         }
 
