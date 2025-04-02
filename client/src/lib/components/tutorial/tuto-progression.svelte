@@ -3,6 +3,7 @@
     tutorialProgression,
     addAuctionToTiles,
     removeAuctionFromTiles,
+    buyAuction,
   } from './stores';
   import { selectedLandPosition } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
@@ -40,9 +41,9 @@
       selectedLandPosition.set(auctionLocation);
     }
 
-    $effect(() => {
-      console.log('selecedé', $selectedLandPosition);
-    });
+    if ($tutorialProgression === 8) {
+      buyAuction();
+    }
   });
 </script>
 

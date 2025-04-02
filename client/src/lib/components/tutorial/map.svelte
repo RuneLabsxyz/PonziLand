@@ -55,30 +55,6 @@
     }
   });
 
-  try {
-    landStore = useLands();
-  } catch (e) {
-    console.log('Error in map.svelte', e);
-  }
-
-  $effect(() => {
-    const address = account.address;
-    if (!address || !landStore) return;
-    const addressString = padAddress(address);
-    $landStore?.forEach((land) => {
-      if (land.owner === addressString) {
-        if (!claimStore.value[land.location]) {
-          claimStore.value[land.location] = {
-            lastClaimTime: 0,
-            animating: false,
-            land: land,
-            claimable: true,
-          };
-        }
-      }
-    });
-  });
-
   function handleWheel(event: WheelEvent) {
     if (!cameraEnabled) return;
     event.preventDefault();

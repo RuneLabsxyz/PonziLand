@@ -50,6 +50,56 @@ export function removeAuctionFromTiles(): void {
   });
 }
 
+export function buyAuction(): void {
+  tiles.update((currentTiles) => {
+    const newTiles = [...currentTiles];
+
+    if (newTiles[8] && newTiles[8][8]) {
+      newTiles[8] = [...newTiles[8]];
+      newTiles[8][8] = {
+        ...newTiles[8][8],
+        type: 'house',
+        token: {
+          name: 'Emulated STRK',
+          symbol: 'eSTRK',
+          address:
+            '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
+          liquidityPoolType: '005-01',
+          decimals: 18,
+          images: {
+            icon: '/tokens/eSTRK/icon.png',
+            biome: {
+              x: 0,
+              y: 7,
+            },
+            building: {
+              '1': {
+                x: 3,
+                y: 3,
+              },
+              '2': {
+                x: 3,
+                y: 4,
+              },
+              '3': {
+                x: 3,
+                y: 5,
+                frames: 6,
+                ySize: 192,
+                xSize: 192,
+                xMax: 1152,
+                yMax: 192,
+              },
+            },
+          },
+        },
+      };
+    }
+
+    return newTiles;
+  });
+}
+
 export function setSelectedlandAsTheAuctionLand(): void {}
 
 export const tiles = writable<Tile[][]>(createFakeTiles());

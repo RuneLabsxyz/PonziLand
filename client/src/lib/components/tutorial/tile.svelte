@@ -32,21 +32,10 @@
     scale: number;
   }>();
 
-  let address = $derived(account.address);
-  let isNuking = $derived(nukeStore.nuking.has(land.location));
+  let isNuking = false;
+  let isOwner = false;
 
-  let isOwner = $derived.by(() => {
-    if (land.type === 'grass') return false;
-    return land?.owner === padAddress(address ?? '');
-  });
-
-  let estimatedNukeTime = $derived.by(() => {
-    if (land.type !== 'house') return -1;
-    const estimatedNukeTime = land.getEstimatedNukeTime();
-    if (!estimatedNukeTime) return -1;
-
-    return estimatedNukeTime;
-  });
+  const estimatedNukeTime = 100000000000;
 
   let selected = $derived($selectedLandPosition === land.location);
 
