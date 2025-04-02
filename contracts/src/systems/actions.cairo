@@ -29,7 +29,6 @@ trait IActions<T> {
 
     fn claim_all(ref self: T, land_locations: Array<u64>);
 
-    fn nuke(ref self: T, land_location: u64);
 
     fn increase_price(ref self: T, land_location: u64, new_price: u256);
 
@@ -313,28 +312,6 @@ pub mod actions {
             };
         }
 
-        // TODO:see if we want pass this function into internalTrait
-        fn nuke(ref self: ContractState, land_location: u64) {
-            let mut world = self.world_default();
-            let mut store = StoreTrait::new(world);
-            let mut land = store.land(land_location);
-            //TODO:see how we validate the lp to nuke the land
-            assert(land.stake_amount == 0, 'land with stake inside nuke');
-            let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-            if pending_taxes.len() != 0 {
-                self.taxes._claim(pending_taxes, land.owner, land.location);
-            }
-
-            let owner_nuked = land.owner;
-            store.delete_land(land);
-
-            world.emit_event(@LandNukedEvent { owner_nuked, land_location });
-
-            let sell_price = get_average_price(store, land_location);
-
-            //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
-            self.auction(land_location, FLOOR_PRICE, 1, DECAY_RATE * 2, true);
-        }
 
         fn bid(
             ref self: ContractState,
@@ -675,6 +652,31 @@ pub mod actions {
                 );
         }
 
+        fn nuke(ref self: ContractState, land_location: u64, has_liquidity_requirements: bool) {
+            let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
+            assert(land.stake_amount == 0 || !has_liquidity_requirements, 'land not valid to nuke');
+
+            let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+            if pending_taxes.len() != 0 {
+                self.taxes._claim(pending_taxes, land.owner, land.location);
+            }
+
+            if land.stake_amount > 0 {
+                self.stake._refund(store, land);
+            }
+
+            let owner_nuked = land.owner;
+            store.delete_land(land);
+
+            world.emit_event(@LandNukedEvent { owner_nuked, land_location });
+
+            let sell_price = get_average_price(store, land_location);
+
+            //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
+            self.auction(land_location, FLOOR_PRICE, 1, DECAY_RATE * 2, true);
+        }
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
@@ -689,7 +691,7 @@ pub mod actions {
 
                     let neighbor = store.land(neighbor.location);
                     if is_nuke || !has_liquidity_requirements {
-                        self.nuke(neighbor.location);
+                        self.nuke(neighbor.location, has_liquidity_requirements);
                     }
                 };
             }
