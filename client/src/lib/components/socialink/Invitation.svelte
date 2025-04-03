@@ -1,7 +1,5 @@
 <script lang="ts">
   import { getSocialink } from '$lib/accounts/social/index.svelte';
-  import { onMount } from 'svelte';
-  import Card from '../ui/card/card.svelte';
   import { Button } from '../ui/button';
   import { refresh, state } from '$lib/account.svelte';
 

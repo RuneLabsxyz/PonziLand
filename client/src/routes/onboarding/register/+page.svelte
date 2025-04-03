@@ -9,7 +9,6 @@
 
   // Do not keep people there if they already have an account name
   onMount(async () => {
-    await setup();
     if (accountDataProvider.profile?.exists) {
       goto('/onboarding/whitelist');
     }

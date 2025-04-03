@@ -1,11 +1,9 @@
 <script lang="ts">
   import { refresh } from '$lib/account.svelte';
   import { checkUsername, register } from '$lib/accounts/social/index.svelte';
-  import { useAccount } from '$lib/contexts/account.svelte';
   import { debounce } from '$lib/utils/debounce.svelte';
   import ThreeDots from '../loading/three-dots.svelte';
   import { Button } from '../ui/button';
-  import { Card } from '../ui/card';
 
   const {
     onfinish,
