@@ -54,7 +54,7 @@ trait IActions<T> {
         self: @T, land_location: u64, owner: ContractAddress,
     ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u64) -> u256;
-    fn get_next_claim_info(self: @T, land_location: u64) -> (Array<ClaimInfo>, Array<TokenInfo>);
+    fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
     fn get_neighbors_yield(self: @T, land_location: u64) -> LandYieldInfo;
     fn get_active_auctions(self: @T) -> u8;
     fn get_auction(self: @T, land_location: u64) -> Auction;
@@ -103,7 +103,7 @@ pub mod actions {
         is_valid_position, up, down, left, right, max_neighbors, index_to_position,
         position_to_index, up_left, up_right, down_left, down_right
     };
-    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_time_to_nuke};
+    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor, get_time_to_nuke};
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
@@ -581,7 +581,7 @@ pub mod actions {
             auction.get_current_price_decay_rate()
         }
 
-        fn get_next_claim_info(self: @ContractState, land_location: u64) -> (Array<ClaimInfo>, Array<TokenInfo>) {
+        fn get_next_claim_info(self: @ContractState, land_location: u64) -> Array<ClaimInfo> {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
@@ -589,8 +589,6 @@ pub mod actions {
 
             let neighbors = get_land_neighbors(store, land.location);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
-
-            let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
 
             let time_to_nuke = self.get_time_to_nuke(land.location);
 
@@ -608,7 +606,7 @@ pub mod actions {
                     claim_info.append(claim_info_per_neighbor);
                 }
             }
-            (claim_info, pending_taxes)
+            claim_info
         }
 
         fn get_neighbors_yield(self: @ContractState, land_location: u64) -> LandYieldInfo {
@@ -625,7 +623,7 @@ pub mod actions {
                 for neighbor in neighbors {
                     let token = neighbor.token_used;
                     let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
-                    let rate_per_hour = rate * neighbor.sell_price / 100;
+                    let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
 
                     yield_info
                         .append(
@@ -640,26 +638,8 @@ pub mod actions {
                 }
             }
 
-            // Calculate the remaining time the stake may sustain.
-
-            let remaining_stake_time: u256 = if neighbors_count > 0 {
-                let per_hour_expenses_percent_per_neighbour = TAX_RATE.into()
-                    * TIME_SPEED.into()
-                    * land.sell_price
-                    / max_neighbors(land.location).into();
-
-                let per_hour_expenses_percent = per_hour_expenses_percent_per_neighbour
-                    * neighbors_count.into();
-
-                // The time in unix seconds that the stake may sustain.
-                // We multiply by 3600 (BASE_TIME) to get the time in seconds instead of hours,
-                // and by 100 to convert the percent to the good decimal point => 1 / (x * 1/100) =
-                // 100 / x
-                land.stake_amount * 100 * BASE_TIME.into() / (per_hour_expenses_percent)
-            } else {
-                0 // No neighbors, no expenses
-            };
-            LandYieldInfo { yield_info, remaining_stake_time }
+            let time_to_nuke = self.get_time_to_nuke(land.location);
+            LandYieldInfo { yield_info, remaining_stake_time: time_to_nuke.into() }
         }
 
 
