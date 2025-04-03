@@ -10,7 +10,7 @@ mod TaxesComponent {
     use starknet::info::{get_contract_address, get_block_timestamp};
 
     use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
+        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
     };
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
@@ -38,7 +38,7 @@ mod TaxesComponent {
         //                 (land_owner,token_index) -> token_info
         pending_taxes: Map<(ContractAddress, u64), TokenInfo>,
         //                         (land_owner,location,token_index) -> token_info
-        pending_taxes_for_land: Map<(ContractAddress, u64, u64), TokenInfo>
+        pending_taxes_for_land: Map<(ContractAddress, u64, u64), TokenInfo>,
         //this for the current version of cairo with dojo don't work
     //pending_taxes:Map<ContractAddress,Vec<TokenInfo>>
 
@@ -58,7 +58,7 @@ mod TaxesComponent {
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
         fn _calculate_and_distribute(
-            ref self: ComponentState<TContractState>, mut store: Store, land_location: u64
+            ref self: ComponentState<TContractState>, mut store: Store, land_location: u64,
         ) -> bool {
             let mut land = store.land(land_location);
 
@@ -119,7 +119,7 @@ mod TaxesComponent {
             ref tax_payer: Land,
             tax_recipient: Land,
             amount: u256,
-            mut store: Store
+            mut store: Store,
         ) {
             // to see how many of diferents tokens the person can have in that land_location
             let taxes_length = self
@@ -128,24 +128,23 @@ mod TaxesComponent {
             //to see if the token of new taxes already exists
             let mut found = false;
             //find existing token and sum the amount
-            for mut i in 0
-                ..taxes_length {
-                    let mut token_info = self
+            for mut i in 0..taxes_length {
+                let mut token_info = self
+                    .pending_taxes_for_land
+                    .read((tax_recipient.owner, tax_recipient.location, i));
+
+                if token_info.token_address == tax_payer.token_used {
+                    token_info.amount += amount;
+
+                    self
                         .pending_taxes_for_land
-                        .read((tax_recipient.owner, tax_recipient.location, i));
+                        .write((tax_recipient.owner, tax_recipient.location, i), token_info);
 
-                    if token_info.token_address == tax_payer.token_used {
-                        token_info.amount += amount;
+                    found = true;
 
-                        self
-                            .pending_taxes_for_land
-                            .write((tax_recipient.owner, tax_recipient.location, i), token_info);
-
-                        found = true;
-
-                        break;
-                    }
-                };
+                    break;
+                }
+            };
 
             if !found {
                 let token_info = TokenInfo { token_address: tax_payer.token_used, amount };
@@ -165,14 +164,14 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>,
             taxes: Array<TokenInfo>,
             owner_land: ContractAddress,
-            land_location: u64
+            land_location: u64,
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
             for token_info in taxes {
                 if token_info.amount > 0 {
                     let validation_result = payable
                         .validate(
-                            token_info.token_address, get_contract_address(), token_info.amount
+                            token_info.token_address, get_contract_address(), token_info.amount,
                         );
 
                     let status = payable.transfer(owner_land, validation_result);
@@ -186,42 +185,39 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>,
             owner_land: ContractAddress,
             land_location: u64,
-            token_info: TokenInfo
+            token_info: TokenInfo,
         ) {
             //to see the quantity of token in total
             let taxes_length = self.pending_taxes_length.read((owner_land, land_location));
 
-            for mut i in 0
-                ..taxes_length {
-                    let mut pending_tax = self
-                        .pending_taxes_for_land
-                        .read((owner_land, land_location, i));
+            for mut i in 0..taxes_length {
+                let mut pending_tax = self
+                    .pending_taxes_for_land
+                    .read((owner_land, land_location, i));
 
-                    if pending_tax.amount > 0
-                        && pending_tax.token_address == token_info.token_address {
-                        self
-                            .pending_taxes_for_land
-                            .write(
-                                (owner_land, land_location, i),
-                                TokenInfo { token_address: pending_tax.token_address, amount: 0 }
-                            );
-                    }
-                };
+                if pending_tax.amount > 0 && pending_tax.token_address == token_info.token_address {
+                    self
+                        .pending_taxes_for_land
+                        .write(
+                            (owner_land, land_location, i),
+                            TokenInfo { token_address: pending_tax.token_address, amount: 0 },
+                        );
+                }
+            };
         }
 
         fn _get_pending_taxes(
-            self: @ComponentState<TContractState>, owner_land: ContractAddress, land_location: u64
+            self: @ComponentState<TContractState>, owner_land: ContractAddress, land_location: u64,
         ) -> Array<TokenInfo> {
             let taxes_length = self.pending_taxes_length.read((owner_land, land_location));
             let mut taxes: Array<TokenInfo> = ArrayTrait::new();
 
-            for mut i in 0
-                ..taxes_length {
-                    let tax = self.pending_taxes_for_land.read((owner_land, land_location, i));
-                    if tax.amount > 0 {
-                        taxes.append(tax);
-                    }
-                };
+            for mut i in 0..taxes_length {
+                let tax = self.pending_taxes_for_land.read((owner_land, land_location, i));
+                if tax.amount > 0 {
+                    taxes.append(tax);
+                }
+            };
             taxes
         }
     }

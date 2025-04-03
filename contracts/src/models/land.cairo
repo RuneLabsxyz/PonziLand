@@ -85,8 +85,7 @@ impl LandImpl of LandTrait {
             last_pay_time,
             block_date_bought,
             stake_amount,
-            level: Level::Zero
+            level: Level::Zero,
         }
     }
-
 }

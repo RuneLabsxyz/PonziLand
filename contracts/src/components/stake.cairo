@@ -16,21 +16,21 @@ mod StakeComponent {
     use starknet::info::{get_contract_address, get_block_timestamp, get_caller_address};
 
     use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
+        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
     };
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
     use ponzi_land::helpers::coord::{max_neighbors};
     use ponzi_land::models::land::Land;
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, GRID_WIDTH,};
+    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, GRID_WIDTH};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::{
         common_strucs::{TokenInfo, LandWithTaxes},
         stake::{
             summarize_totals, get_total_stake_for_token, get_total_tax_for_token,
-            calculate_refund_ratio, calculate_refund_amount, adjust_land_taxes
-        }
+            calculate_refund_ratio, calculate_refund_amount, adjust_land_taxes,
+        },
     };
 
 
@@ -56,7 +56,10 @@ mod StakeComponent {
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
         fn _add(
-            ref self: ComponentState<TContractState>, amount: u256, mut land: Land, mut store: Store
+            ref self: ComponentState<TContractState>,
+            amount: u256,
+            mut land: Land,
+            mut store: Store,
         ) {
             //initialize and validate token balance
             let mut payable = get_dep_component_mut!(ref self, Payable);
@@ -98,7 +101,7 @@ mod StakeComponent {
             ref self: ComponentState<TContractState>,
             mut store: Store,
             active_lands_with_taxes: Span<LandWithTaxes>,
-            ref token_ratios: Felt252Dict<Nullable<u256>>
+            ref token_ratios: Felt252Dict<Nullable<u256>>,
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
@@ -123,30 +126,29 @@ mod StakeComponent {
         }
 
         fn calculate_token_ratios(
-            ref self: ComponentState<TContractState>, active_lands_with_taxes: Span<LandWithTaxes>
+            ref self: ComponentState<TContractState>, active_lands_with_taxes: Span<LandWithTaxes>,
         ) -> Felt252Dict<Nullable<u256>> {
             let (mut stake_totals, mut tax_totals, unique_tokens) = summarize_totals(
-                active_lands_with_taxes
+                active_lands_with_taxes,
             );
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
             let mut token_ratios: Felt252Dict<Nullable<u256>> = Default::default();
 
-            for token_used in unique_tokens
-                .span() {
-                    let token_address: ContractAddress = *token_used;
-                    let token_key: felt252 = token_address.into();
+            for token_used in unique_tokens.span() {
+                let token_address: ContractAddress = *token_used;
+                let token_key: felt252 = token_address.into();
 
-                    let balance = payable.balance_of(*token_used, get_contract_address());
+                let balance = payable.balance_of(*token_used, get_contract_address());
 
-                    let total_staked = get_total_stake_for_token(ref stake_totals, token_key);
+                let total_staked = get_total_stake_for_token(ref stake_totals, token_key);
 
-                    let total_tax = get_total_tax_for_token(ref tax_totals, token_key);
+                let total_tax = get_total_tax_for_token(ref tax_totals, token_key);
 
-                    let ratio = calculate_refund_ratio(total_staked + total_tax, balance);
+                let ratio = calculate_refund_ratio(total_staked + total_tax, balance);
 
-                    token_ratios.insert(token_key, NullableTrait::new(ratio));
-                };
+                token_ratios.insert(token_key, NullableTrait::new(ratio));
+            };
 
             token_ratios
         }

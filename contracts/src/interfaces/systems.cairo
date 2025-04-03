@@ -1,6 +1,6 @@
 use starknet::{ContractAddress, ClassHash};
 use dojo::world::{
-    WorldStorage, WorldStorageTrait, IWorldDispatcher, IWorldDispatcherTrait, Resource
+    WorldStorage, WorldStorageTrait, IWorldDispatcher, IWorldDispatcherTrait, Resource,
 };
 
 pub use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};

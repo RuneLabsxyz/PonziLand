@@ -25,7 +25,11 @@ pub struct Auction {
 impl AuctionImpl of AuctionTrait {
     #[inline(always)]
     fn new(
-        land_location: u64, start_price: u256, floor_price: u256, is_finished: bool, decay_rate: u64
+        land_location: u64,
+        start_price: u256,
+        floor_price: u256,
+        is_finished: bool,
+        decay_rate: u64,
     ) -> Auction {
         Auction {
             land_location,

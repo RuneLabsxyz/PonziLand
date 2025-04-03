@@ -28,7 +28,7 @@ pub mod auth {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
+        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
     };
     use core::ecdsa::check_ecdsa_signature;
     use core::poseidon::poseidon_hash_span;
@@ -51,7 +51,7 @@ pub mod auth {
     struct AddressRemovedEvent {
         #[key]
         address: ContractAddress,
-        removed_at: u64
+        removed_at: u64,
     }
 
     #[derive(Drop, Serde)]
@@ -92,7 +92,7 @@ pub mod auth {
             self.authorized_addresses.write(address, true);
             world
                 .emit_event(
-                    @AddressAuthorizedEvent { address, authorized_at: get_block_timestamp() }
+                    @AddressAuthorizedEvent { address, authorized_at: get_block_timestamp() },
                 );
         }
 
@@ -108,7 +108,7 @@ pub mod auth {
             self.authorized_addresses.write(address, true);
             world
                 .emit_event(
-                    @AddressAuthorizedEvent { address, authorized_at: get_block_timestamp() }
+                    @AddressAuthorizedEvent { address, authorized_at: get_block_timestamp() },
                 );
         }
 
@@ -175,7 +175,7 @@ pub mod auth {
         }
 
         fn verify_signature(
-            self: @ContractState, address: ContractAddress, signature: Array<felt252>
+            self: @ContractState, address: ContractAddress, signature: Array<felt252>,
         ) -> bool {
             assert(signature.len() == 2, 'Invalid signature length');
 

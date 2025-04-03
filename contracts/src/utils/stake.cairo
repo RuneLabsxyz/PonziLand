@@ -6,7 +6,7 @@ use ponzi_land::utils::common_strucs::{LandWithTaxes, TokenInfo};
 use ponzi_land::consts::DECIMALS_FACTOR;
 
 fn summarize_totals(
-    active_lands: Span<LandWithTaxes>
+    active_lands: Span<LandWithTaxes>,
 ) -> (Felt252Dict<Nullable<u256>>, Felt252Dict<Nullable<u256>>, Array<ContractAddress>) {
     let mut stake_totals: Felt252Dict<Nullable<u256>> = Default::default();
     let mut tax_totals: Felt252Dict<Nullable<u256>> = Default::default();
@@ -28,17 +28,16 @@ fn summarize_totals(
 
         //summarize the taxes for each land
         if let Option::Some(taxes) = land_with_taxes.taxes {
-            for tax in taxes
-                .span() {
-                    let tax = *tax;
-                    let tax_key: felt252 = tax.token_address.into();
-                    let prev_tax = match match_nullable(tax_totals.get(tax_key)) {
-                        FromNullableResult::Null => 0_u256,
-                        FromNullableResult::NotNull(val) => val.unbox(),
-                    };
-                    let new_tax = prev_tax + tax.amount;
-                    tax_totals.insert(tax_key, NullableTrait::new(new_tax));
-                }
+            for tax in taxes.span() {
+                let tax = *tax;
+                let tax_key: felt252 = tax.token_address.into();
+                let prev_tax = match match_nullable(tax_totals.get(tax_key)) {
+                    FromNullableResult::Null => 0_u256,
+                    FromNullableResult::NotNull(val) => val.unbox(),
+                };
+                let new_tax = prev_tax + tax.amount;
+                tax_totals.insert(tax_key, NullableTrait::new(new_tax));
+            }
         }
     };
 
@@ -46,7 +45,7 @@ fn summarize_totals(
 }
 
 fn get_total_stake_for_token(
-    ref stake_totals: Felt252Dict<Nullable<u256>>, token_key: felt252
+    ref stake_totals: Felt252Dict<Nullable<u256>>, token_key: felt252,
 ) -> u256 {
     match match_nullable(stake_totals.get(token_key)) {
         FromNullableResult::Null => 0_u256,
@@ -55,7 +54,7 @@ fn get_total_stake_for_token(
 }
 
 fn get_total_tax_for_token(
-    ref tax_totals: Felt252Dict<Nullable<u256>>, token_key: felt252
+    ref tax_totals: Felt252Dict<Nullable<u256>>, token_key: felt252,
 ) -> u256 {
     match match_nullable(tax_totals.get(token_key)) {
         FromNullableResult::Null => 0_u256,
@@ -78,29 +77,26 @@ fn calculate_refund_amount(amount: u256, ratio: u256) -> u256 {
 
 
 fn adjust_land_taxes(
-    land_with_taxes: @LandWithTaxes, token_address: ContractAddress, ratio: u256
+    land_with_taxes: @LandWithTaxes, token_address: ContractAddress, ratio: u256,
 ) -> LandWithTaxes {
     let mut updated_taxes: Option<Array<TokenInfo>> = Option::None;
 
     if let Option::Some(original_taxes) = land_with_taxes.taxes {
         let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
 
-        for current_tax in original_taxes
-            .span() {
-                let current_tax = *current_tax;
-                let adjusted_amount = if current_tax.token_address == token_address {
-                    calculate_refund_amount(current_tax.amount, ratio)
-                } else {
-                    current_tax.amount
-                };
-
-                adjusted_taxes
-                    .append(
-                        TokenInfo {
-                            token_address: current_tax.token_address, amount: adjusted_amount
-                        }
-                    );
+        for current_tax in original_taxes.span() {
+            let current_tax = *current_tax;
+            let adjusted_amount = if current_tax.token_address == token_address {
+                calculate_refund_amount(current_tax.amount, ratio)
+            } else {
+                current_tax.amount
             };
+
+            adjusted_taxes
+                .append(
+                    TokenInfo { token_address: current_tax.token_address, amount: adjusted_amount },
+                );
+        };
 
         updated_taxes = Option::Some(adjusted_taxes);
     }

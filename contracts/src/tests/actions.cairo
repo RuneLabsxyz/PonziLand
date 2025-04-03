@@ -11,7 +11,7 @@ use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 //Internal imports
 
 use ponzi_land::tests::setup::{
-    setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core}
+    setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core},
 };
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
@@ -19,7 +19,9 @@ use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKe
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS};
 use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
-use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_time_to_nuke, get_taxes_per_neighbor};
+use ponzi_land::helpers::taxes::{
+    get_tax_rate_per_neighbor, get_time_to_nuke, get_taxes_per_neighbor,
+};
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
 
@@ -82,25 +84,25 @@ fn deploy_erc20_with_pool(
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(
-                neighbor_pool_key(main_currency, erc20_neighbor_1.contract_address)
+                neighbor_pool_key(main_currency, erc20_neighbor_1.contract_address),
             ),
-            1000000
+            1000000,
         );
 
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(
-                neighbor_pool_key(main_currency, erc20_neighbor_2.contract_address)
+                neighbor_pool_key(main_currency, erc20_neighbor_2.contract_address),
             ),
-            1000000
+            1000000,
         );
 
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(
-                neighbor_pool_key(main_currency, erc20_neighbor_3.contract_address)
+                neighbor_pool_key(main_currency, erc20_neighbor_3.contract_address),
             ),
-            1000000
+            1000000,
         );
 
     (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3)
@@ -125,7 +127,7 @@ fn deleted_pool_key() -> PoolKey {
         token1: ContractAddressZeroable::zero(),
         fee: 0,
         tick_spacing: 0,
-        extension: ContractAddressZeroable::zero()
+        extension: ContractAddressZeroable::zero(),
     }
 }
 
@@ -148,43 +150,43 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
             RECIPIENT(),
             Signature {
                 r: 0x385afe7f043fd89f119e489f7d955f6302a67d8eea31df1234d9e98ba19edf1,
-                s: 0x41ac046404bd42a971a04f39cc887868df51b2d1fd36c4b458d6f93d1e81be0
-            }
+                s: 0x41ac046404bd42a971a04f39cc887868df51b2d1fd36c4b458d6f93d1e81be0,
+            },
         ),
         (
             FIRST_OWNER(),
             Signature {
                 r: 0x15455111f634471af0d2b92cf1bea5952572c7698e7c0bfaef775b085ad9ad4, // Replace from script
                 s: 0x1ec03c2cec3fd613c39c01c3b2914aa6c14a32577d5aff3120ae55cd61807c8 // Replace from script
-            }
+            },
         ),
         (
             NEIGHBOR_1(),
             Signature {
                 r: 0x3090f3bab984fd8a5f7e2aeb68445a576c6d27f2cf8271e9a09b2c4ef5cb2, // Replace from script
                 s: 0x1e4f1f0eb4ecd88ca956bbdbc975c583b9c67aafcd61d35e327b5e86d0c9ab1 // Replace from script
-            }
+            },
         ),
         (
             NEIGHBOR_2(),
             Signature {
                 r: 0x29319b4850a57bdb26b3c0da2263c37453a331f99edc53fc449f7fbe04788ab,
-                s: 0x1df852dbfdbfdb03797f38913f767bd017d0429131e028434231a6ef5f03e4d
-            }
+                s: 0x1df852dbfdbfdb03797f38913f767bd017d0429131e028434231a6ef5f03e4d,
+            },
         ),
         (
             NEIGHBOR_3(),
             Signature {
                 r: 0x6cd54871db709fb53080256364565fdd5f1d059f6237b61ef15e9869d20aabb,
-                s: 0x2fbd16550e59cb61476c952cd2873f5ce207535ad268615f42cfecd9962fe47
-            }
+                s: 0x2fbd16550e59cb61476c952cd2873f5ce207535ad268615f42cfecd9962fe47,
+            },
         ),
         (
             NEW_BUYER(),
             Signature {
                 r: 0x6816c59001073c4b45ca2bb90062c77ff228817ee1859ff4362c000ac0e96bb,
-                s: 0x77d582bd4740d95bba36bb9a366bcc5494103b210287125b4b6848d41b10fbf
-            }
+                s: 0x77d582bd4740d95bba36bb9a366bcc5494103b210287125b4b6848d41b10fbf,
+            },
         ),
     ];
 
@@ -202,7 +204,7 @@ fn validate_staking_state(
     contract_address: ContractAddress,
     land_locations: Span<u64>,
     tokens: Span<IERC20CamelDispatcher>,
-    should_have_balance: bool
+    should_have_balance: bool,
 ) {
     let mut i = 0;
     while i < land_locations.len() {
@@ -257,7 +259,7 @@ fn initialize_land(
     location: u64,
     sell_price: u256,
     stake_amount: u256,
-    token_for_sale: IERC20CamelDispatcher
+    token_for_sale: IERC20CamelDispatcher,
 ) {
     // Instead of creating an auction directly, we'll use one of the initial lands
     // or wait for spiral auctions to reach the desired location
@@ -266,7 +268,7 @@ fn initialize_land(
 
     let auction_value = actions_system.get_current_auction_price(location);
     setup_buyer_with_tokens(
-        main_currency, actions_system, RECIPIENT(), owner, auction_value + stake_amount
+        main_currency, actions_system, RECIPIENT(), owner, auction_value + stake_amount,
     );
 
     token_for_sale.approve(actions_system.contract_address, auction_value + stake_amount);
@@ -280,7 +282,7 @@ fn initialize_land(
             token_for_sale.contract_address,
             sell_price,
             stake_amount,
-            neighbor_pool_key(main_currency.contract_address, token_for_sale.contract_address)
+            neighbor_pool_key(main_currency.contract_address, token_for_sale.contract_address),
         );
 }
 
@@ -290,7 +292,7 @@ fn setup_buyer_with_tokens(
     actions_system: IActionsDispatcher,
     from: ContractAddress,
     to: ContractAddress,
-    amount: u256
+    amount: u256,
 ) {
     // Transfer tokens from seller to buyer
     set_contract_address(from);
@@ -321,7 +323,7 @@ fn verify_land(
     expected_pool: PoolKey,
     expected_stake: u256,
     expected_block_date_bought: u64,
-    expected_token_used: ContractAddress
+    expected_token_used: ContractAddress,
 ) {
     let land = store.land(location);
     assert(land.owner == expected_owner, 'incorrect owner');
@@ -330,7 +332,7 @@ fn verify_land(
     assert(land.stake_amount == expected_stake, 'incorrect stake');
     assert(
         land.block_date_bought * TIME_SPEED.into() == expected_block_date_bought,
-        'incorrect date bought'
+        'incorrect date bought',
     );
     assert(land.token_used == expected_token_used, 'incorrect token used');
 }
@@ -341,7 +343,7 @@ fn bid_and_verify_next_auctions(
     main_currency: IERC20CamelDispatcher,
     locations: Array<u64>,
     next_direction: u8, // 0=left, 1=up, 2=right, 3=down
-    pool_key: PoolKey
+    pool_key: PoolKey,
 ) {
     // Bid on all locations
     let mut i = 0;
@@ -366,7 +368,7 @@ fn bid_and_verify_next_auctions(
             1 => store.auction(up(location).unwrap()),
             2 => store.auction(right(location).unwrap()),
             3 => store.auction(down(location).unwrap()),
-            _ => panic_with_felt252('Invalid direction')
+            _ => panic_with_felt252('Invalid direction'),
         };
         assert(next_auction.start_price > 0, 'auction not started');
         assert(next_auction.start_time > 0, 'auction not started');
@@ -398,10 +400,10 @@ fn create_land_with_neighbors(
         pool_key(token_used.contract_address),
         last_pay_time,
         block_date_bought,
-        stake_amount
+        stake_amount,
     );
     setup_buyer_with_tokens(
-        token_used, actions_system, owner, actions_system.contract_address, stake_amount
+        token_used, actions_system, owner, actions_system.contract_address, stake_amount,
     );
 
     store.world.write_model_test(@land);
@@ -418,14 +420,14 @@ fn create_land_with_neighbors(
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_1.contract_address),
             last_pay_time,
             block_date_bought,
-            stake_amount
+            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_1,
             actions_system,
             NEIGHBOR_1(),
             actions_system.contract_address,
-            stake_amount
+            stake_amount,
         );
         store.world.write_model_test(@left_land);
     }
@@ -439,14 +441,14 @@ fn create_land_with_neighbors(
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_2.contract_address),
             last_pay_time,
             block_date_bought,
-            stake_amount
+            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_2,
             actions_system,
             NEIGHBOR_2(),
             actions_system.contract_address,
-            stake_amount
+            stake_amount,
         );
         store.world.write_model_test(@right_land);
     }
@@ -460,14 +462,14 @@ fn create_land_with_neighbors(
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_3.contract_address),
             last_pay_time,
             block_date_bought,
-            stake_amount
+            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_3,
             actions_system,
             NEIGHBOR_3(),
             actions_system.contract_address,
-            stake_amount
+            stake_amount,
         );
         store.world.write_model_test(@up_land);
     }
@@ -481,14 +483,14 @@ fn create_land_with_neighbors(
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_1.contract_address),
             last_pay_time,
             block_date_bought,
-            stake_amount
+            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_1,
             actions_system,
             NEIGHBOR_1(),
             actions_system.contract_address,
-            stake_amount
+            stake_amount,
         );
         store.world.write_model_test(@down_land);
     }
@@ -502,7 +504,7 @@ fn test_buy_action() {
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
 
     set_block_timestamp(100);
@@ -515,7 +517,11 @@ fn test_buy_action() {
     // Perform buy action
     actions_system
         .buy(
-            1080, main_currency.contract_address, 100, 120, pool_key(main_currency.contract_address)
+            1080,
+            main_currency.contract_address,
+            100,
+            120,
+            pool_key(main_currency.contract_address),
         );
 
     // Verify results
@@ -527,7 +533,7 @@ fn test_buy_action() {
         pool_key(main_currency.contract_address),
         120,
         100,
-        main_currency.contract_address
+        main_currency.contract_address,
     );
 }
 
@@ -573,7 +579,7 @@ fn test_bid_and_buy_action() {
         pool,
         500,
         160 * TIME_SPEED.into(),
-        main_currency.contract_address
+        main_currency.contract_address,
     );
 }
 
@@ -583,11 +589,11 @@ fn test_claim_and_add_taxes() {
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     set_block_timestamp(100 / TIME_SPEED.into());
@@ -605,7 +611,7 @@ fn test_claim_and_add_taxes() {
         1000,
         erc20_neighbor_1,
         erc20_neighbor_2,
-        erc20_neighbor_3
+        erc20_neighbor_3,
     );
 
     set_contract_address(RECIPIENT());
@@ -642,7 +648,7 @@ fn test_claim_and_add_taxes() {
             erc20_neighbor_1.contract_address,
             100,
             100,
-            neighbor_pool_key(main_currency.contract_address, erc20_neighbor_1.contract_address)
+            neighbor_pool_key(main_currency.contract_address, erc20_neighbor_1.contract_address),
         );
     // verify the claim when occurs a buy
     let claimer_land = store.land(1080);
@@ -656,11 +662,11 @@ fn test_nuke_action() {
     //set a liquidity pool with amount for each token
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000,
         );
 
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     set_block_timestamp(100 / TIME_SPEED.into());
@@ -677,7 +683,7 @@ fn test_nuke_action() {
         100,
         erc20_neighbor_1,
         erc20_neighbor_2,
-        erc20_neighbor_3
+        erc20_neighbor_3,
     );
 
     // Generate taxes by claiming neighbor lands but not land 1281
@@ -714,7 +720,7 @@ fn test_nuke_action() {
         deleted_pool_key(),
         0,
         0,
-        main_currency.contract_address
+        main_currency.contract_address,
     );
 
     // Verify that pending taxes were paid to the owner during nuke
@@ -731,7 +737,7 @@ fn test_nuke_action() {
         deleted_pool_key(),
         0,
         0,
-        main_currency.contract_address
+        main_currency.contract_address,
     );
 
     // Verify that pending taxes were paid to the owner during nuke
@@ -781,11 +787,11 @@ fn test_detailed_tax_calculation() {
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000,
         );
 
     let (erc20_neighbor, _, _) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     // timestamp: 1000
@@ -796,7 +802,7 @@ fn test_detailed_tax_calculation() {
         1280, // Central position
         10000, // sell_price
         5000, // stake_amount
-        main_currency
+        main_currency,
     );
 
     // Initialize one neighbor to generate taxes
@@ -809,7 +815,7 @@ fn test_detailed_tax_calculation() {
         1281, // Right neighbor
         20000, // sell_price
         10000, // stake_amount - enough to cover taxes
-        erc20_neighbor
+        erc20_neighbor,
     );
 
     // Calculate expected taxes after 3600 seconds (1 BASE_TIME)
@@ -831,7 +837,7 @@ fn test_detailed_tax_calculation() {
 
     // Verify stake amount was reduced by correct tax amount
     assert(land_1281.stake_amount == 9717, // 10000 - 283
-     'Wrong stake amount after tax');
+    'Wrong stake amount after tax');
 
     // Verify taxes for central land (1280)
     let pending_taxes = actions_system.get_pending_taxes_for_land(1280, RECIPIENT());
@@ -847,11 +853,11 @@ fn test_level_up() {
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100000,
         );
 
     let (erc20_neighbor, _, _) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     set_block_timestamp(100);
@@ -860,7 +866,7 @@ fn test_level_up() {
 
     set_block_timestamp(200);
     initialize_land(
-        actions_system, main_currency, NEIGHBOR_1(), 1050, 20000, 10000, erc20_neighbor
+        actions_system, main_currency, NEIGHBOR_1(), 1050, 20000, 10000, erc20_neighbor,
     );
     set_block_timestamp((TWO_DAYS_IN_SECONDS / TIME_SPEED.into()) + 100);
 
@@ -881,7 +887,7 @@ fn check_success_liquidity_pool() {
     //simulate liquidity pool from ekubo with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100000,
         );
 
     // Create initial land
@@ -893,7 +899,11 @@ fn check_success_liquidity_pool() {
     // Perform buy action
     actions_system
         .buy(
-            1080, main_currency.contract_address, 100, 120, pool_key(main_currency.contract_address)
+            1080,
+            main_currency.contract_address,
+            100,
+            120,
+            pool_key(main_currency.contract_address),
         );
 
     // Verify results
@@ -905,7 +915,7 @@ fn check_success_liquidity_pool() {
         pool_key(main_currency.contract_address),
         120,
         100,
-        main_currency.contract_address
+        main_currency.contract_address,
     );
 }
 
@@ -918,7 +928,7 @@ fn check_invalid_liquidity_pool() {
     //simulate liquidity pool from ekubo with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100,
         );
 
     // Create initial land
@@ -930,7 +940,11 @@ fn check_invalid_liquidity_pool() {
     // Perform buy action
     actions_system
         .buy(
-            1080, main_currency.contract_address, 100, 120, pool_key(main_currency.contract_address)
+            1080,
+            main_currency.contract_address,
+            100,
+            120,
+            pool_key(main_currency.contract_address),
         );
 
     // Verify results
@@ -942,7 +956,7 @@ fn check_invalid_liquidity_pool() {
         pool_key(main_currency.contract_address),
         120,
         100,
-        main_currency.contract_address
+        main_currency.contract_address,
     );
 }
 
@@ -953,11 +967,11 @@ fn test_organic_auction() {
     set_block_timestamp(10);
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
 
     setup_buyer_with_tokens(
-        main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 900_000_000_000_000_000_000_000
+        main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 900_000_000_000_000_000_000_000,
     );
 
     // Initial head locations
@@ -983,7 +997,7 @@ fn test_organic_auction() {
 
     // Step 2: Bid on LEFT locations and verify UP auctions
     bid_and_verify_next_auctions(
-        actions_system, store, main_currency, left_locations.clone(), 1, pool
+        actions_system, store, main_currency, left_locations.clone(), 1, pool,
     );
 
     // Get UP locations
@@ -1000,7 +1014,7 @@ fn test_organic_auction() {
     set_block_timestamp(100000);
 
     bid_and_verify_next_auctions(
-        actions_system, store, main_currency, up_locations.clone(), 2, pool
+        actions_system, store, main_currency, up_locations.clone(), 2, pool,
     );
 
     // Get RIGHT locations
@@ -1031,7 +1045,7 @@ fn test_organic_auction() {
 
     // Step 4: Bid on second RIGHT locations and verify DOWN auctions
     bid_and_verify_next_auctions(
-        actions_system, store, main_currency, right2_locations.clone(), 3, pool
+        actions_system, store, main_currency, right2_locations.clone(), 3, pool,
     );
 
     let final_active_auctions = actions_system.get_active_auctions();
@@ -1047,12 +1061,12 @@ fn test_reimburse_stakes() {
     set_block_timestamp(10);
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
 
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     // Create initial claimer land
@@ -1084,17 +1098,17 @@ fn test_reimburse_stakes() {
         erc20_neighbor_2,
         erc20_neighbor_3,
         main_currency,
-        main_currency
+        main_currency,
     ];
 
     validate_staking_state(
-        store, actions_system.contract_address, land_locations.span(), tokens.span(), true
+        store, actions_system.contract_address, land_locations.span(), tokens.span(), true,
     );
 
     actions_system.reimburse_stakes();
 
     validate_staking_state(
-        store, actions_system.contract_address, land_locations.span(), tokens.span(), false
+        store, actions_system.contract_address, land_locations.span(), tokens.span(), false,
     );
 }
 
@@ -1105,13 +1119,13 @@ fn test_claim_all() {
     set_block_timestamp(10);
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
 
     let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     set_block_timestamp(100 / TIME_SPEED.into());
@@ -1128,7 +1142,7 @@ fn test_claim_all() {
         400,
         erc20_neighbor_1,
         erc20_neighbor_2,
-        erc20_neighbor_3
+        erc20_neighbor_3,
     );
 
     setup_buyer_with_tokens(erc20_neighbor_2, actions_system, NEIGHBOR_2(), RECIPIENT(), 1100);
@@ -1162,11 +1176,11 @@ fn test_time_to_nuke() {
     //set a liquidity pool with amount for each token
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000,
         );
 
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
     set_block_timestamp(10000);
@@ -1183,9 +1197,8 @@ fn test_time_to_nuke() {
         1 * 100000000,
         erc20_neighbor_1,
         erc20_neighbor_2,
-        erc20_neighbor_3
+        erc20_neighbor_3,
     );
-
 
     let block_timestamp = get_block_timestamp();
 
@@ -1194,7 +1207,7 @@ fn test_time_to_nuke() {
     let time_to_nuke = actions_system.get_time_to_nuke(1080);
     let tax_rate = get_tax_rate_per_neighbor(land);
 
-    set_block_timestamp(block_timestamp + time_to_nuke/4);
+    set_block_timestamp(block_timestamp + time_to_nuke / 4);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(1080) * 4;
 
     let remaining_stake = land.stake_amount - unclaimed_taxes;
@@ -1202,10 +1215,15 @@ fn test_time_to_nuke() {
     set_block_timestamp(10000 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
 
     let new_time_to_nuke = actions_system.get_time_to_nuke(1080);
-    let claimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(1080);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(1080);
+
+    assert!(unclaimed_taxes * 4 < land.stake_amount, "stake should be more than unclaimed taxes");
     assert!(new_time_to_nuke > 0, "should not be nukable yet");
 
     set_block_timestamp(10000 + time_to_nuke);
+
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(1080);
+    assert!(unclaimed_taxes * 4 >= land.stake_amount, "stake should be <= unclaimed taxes");
 
     let new_time_to_nuke = actions_system.get_time_to_nuke(1080);
 
