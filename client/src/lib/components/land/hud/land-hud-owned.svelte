@@ -33,7 +33,7 @@
     <div class="flex justify-center">
       <div class="h-10 w-10">
         <img
-          src="/assets/ui/icons/Icon_Crown.png"
+          src="/ui/icons/Icon_Crown.png"
           alt="owner"
           style="image-rendering: pixelated;"
         />

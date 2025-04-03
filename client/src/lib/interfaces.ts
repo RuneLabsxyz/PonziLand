@@ -6,6 +6,16 @@ interface Coordinates {
   y: number;
 }
 
+interface AnimationMeta {
+  frames: number;
+  ySize: number;
+  xSize: number;
+  xMax: number;
+  yMax: number;
+  boomerang?: boolean;
+  delay?: number;
+}
+
 export interface Token {
   name: string;
   symbol: string;
@@ -16,9 +26,9 @@ export interface Token {
     icon: string;
     biome: Coordinates;
     building: {
-      1: Coordinates;
-      2: Coordinates;
-      3: Coordinates;
+      1: Coordinates & AnimationMeta;
+      2: Coordinates & AnimationMeta;
+      3: Coordinates & AnimationMeta;
     };
   };
 }

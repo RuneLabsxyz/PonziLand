@@ -6,6 +6,8 @@
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceChart from './PriceChart.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import BuyInfo from './buyInfo.svelte';
+  import PlayerInfo from './PlayerInfo.svelte';
 
   let {
     tokens,
@@ -263,6 +265,22 @@
           </div>
         </Card>
       {/each}
+
+      <div class="col-span-full">
+        <hr class="border-gray-700 my-8" />
+        <h2 class="text-2xl mb-6 text-white">
+          Token Volume Based on Land Purchases
+        </h2>
+      </div>
+
+      <BuyInfo {tokens} />
+
+      <div class="col-span-full">
+        <hr class="border-gray-700 my-8" />
+        <h2 class="text-2xl mb-6 text-white">Player data</h2>
+      </div>
+
+      <PlayerInfo />
     </div>
   </div>
 {/if}

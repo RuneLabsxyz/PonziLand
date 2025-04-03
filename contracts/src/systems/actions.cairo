@@ -8,16 +8,6 @@ use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 // define the interface
 #[starknet::interface]
 trait IActions<T> {
-    //TODO:PASS THIS FUNCTION TO INTERNAL IMPL AFTER TESTS
-    fn auction(
-        ref self: T,
-        land_location: u64,
-        start_price: u256,
-        floor_price: u256,
-        decay_rate: u64,
-        is_from_nuke: bool,
-    );
-
     fn bid(
         ref self: T,
         land_location: u64,
@@ -273,7 +263,6 @@ pub mod actions {
             let seller = land.owner;
             let sold_price = land.sell_price;
             let token_used = land.token_used;
-
             self.internal_claim(store, land);
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
@@ -339,7 +328,6 @@ pub mod actions {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
-
             //TODO:see how we validate the lp to nuke the land
             assert(land.stake_amount == 0, 'land still has stake');
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
@@ -407,49 +395,6 @@ pub mod actions {
                     liquidity_pool,
                     caller,
                     auction,
-                );
-        }
-
-        fn auction(
-            ref self: ContractState,
-            land_location: u64,
-            start_price: u256,
-            floor_price: u256,
-            decay_rate: u64,
-            is_from_nuke: bool,
-        ) {
-            assert(is_valid_position(land_location), 'Land location not valid');
-            assert(start_price > 0, 'start_price > 0');
-            assert(floor_price > 0, 'floor_price > 0');
-            //we don't want generate an error if the auction is full
-            if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
-                return;
-            }
-            let mut world = self.world_default();
-            let mut store = StoreTrait::new(world);
-            let mut land = store.land(land_location);
-
-            assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
-
-            let auction = AuctionTrait::new(
-                land_location, start_price, floor_price, false, decay_rate,
-            );
-
-            store.set_auction(auction);
-            self.active_auctions.write(self.active_auctions.read() + 1);
-            self.active_auction_queue.write(land_location, true);
-            land.sell_price = start_price;
-            // land.token_used = LORDS_CURRENCY;
-            land.token_used = self.main_currency.read();
-
-            store.set_land(land);
-
-            store
-                .world
-                .emit_event(
-                    @NewAuctionEvent {
-                        land_location, start_time: auction.start_time, start_price, floor_price,
-                    },
                 );
         }
 
@@ -703,6 +648,50 @@ pub mod actions {
             self.world(@"ponzi_land")
         }
 
+        fn auction(
+            ref self: ContractState,
+            land_location: u64,
+            start_price: u256,
+            floor_price: u256,
+            decay_rate: u64,
+            is_from_nuke: bool,
+        ) {
+            assert(is_valid_position(land_location), 'Land location not valid');
+            assert(start_price > 0, 'start_price > 0');
+            assert(floor_price > 0, 'floor_price > 0');
+            //we don't want generate an error if the auction is full
+            if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
+                return;
+            }
+            let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
+
+            assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
+
+            let auction = AuctionTrait::new(
+                land_location, start_price, floor_price, false, decay_rate,
+            );
+
+            store.set_auction(auction);
+            self.active_auctions.write(self.active_auctions.read() + 1);
+            self.active_auction_queue.write(land_location, true);
+            land.sell_price = start_price;
+            // land.token_used = LORDS_CURRENCY;
+            land.token_used = self.main_currency.read();
+
+            store.set_land(land);
+
+            store
+                .world
+                .emit_event(
+                    @NewAuctionEvent {
+                        land_location, start_time: auction.start_time, start_price, floor_price,
+                    },
+                );
+        }
+
+
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
             let neighbors = get_land_neighbors(store, land.location);
@@ -808,7 +797,6 @@ pub mod actions {
                 get_block_timestamp(),
                 0,
             );
-
             store.set_land(land);
 
             self.stake._add(amount_to_stake, land, store);

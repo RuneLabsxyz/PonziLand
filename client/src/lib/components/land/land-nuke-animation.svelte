@@ -3,7 +3,7 @@
 </script>
 
 <SpriteSheet
-  src="/sheets/nuclear-explosion.png"
+  src="/land-display/nuke-animation.png"
   xSize={350}
   ySize={350}
   xMax={1750}

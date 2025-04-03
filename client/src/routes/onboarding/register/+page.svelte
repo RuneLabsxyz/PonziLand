@@ -1,14 +1,14 @@
 <script lang="ts">
   import Register from '$lib/components/socialink/register.svelte';
   import { onMount } from 'svelte';
-  import accountDataProvider from '$lib/account.svelte';
+  import accountDataProvider, { setup } from '$lib/account.svelte';
   import { goto } from '$app/navigation';
   import { useAccount } from '$lib/contexts/account.svelte';
 
   const accountManager = useAccount();
 
   // Do not keep people there if they already have an account name
-  onMount(() => {
+  onMount(async () => {
     if (accountDataProvider.profile?.exists) {
       goto('/onboarding/whitelist');
     }

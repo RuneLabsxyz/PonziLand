@@ -97,10 +97,12 @@ fn deploy_erc20_with_pool(
             1000000,
         );
 
+
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(
                 neighbor_pool_key(main_currency, erc20_neighbor_3.contract_address),
+
             ),
             1000000,
         );
@@ -404,6 +406,7 @@ fn create_land_with_neighbors(
     );
     setup_buyer_with_tokens(
         token_used, actions_system, owner, actions_system.contract_address, stake_amount,
+
     );
 
     store.world.write_model_test(@land);
@@ -421,6 +424,7 @@ fn create_land_with_neighbors(
             last_pay_time,
             block_date_bought,
             stake_amount,
+
         );
         setup_buyer_with_tokens(
             token_used_neighbor_1,
@@ -428,6 +432,7 @@ fn create_land_with_neighbors(
             NEIGHBOR_1(),
             actions_system.contract_address,
             stake_amount,
+
         );
         store.world.write_model_test(@left_land);
     }
@@ -442,6 +447,7 @@ fn create_land_with_neighbors(
             last_pay_time,
             block_date_bought,
             stake_amount,
+
         );
         setup_buyer_with_tokens(
             token_used_neighbor_2,
@@ -449,6 +455,7 @@ fn create_land_with_neighbors(
             NEIGHBOR_2(),
             actions_system.contract_address,
             stake_amount,
+
         );
         store.world.write_model_test(@right_land);
     }
@@ -463,6 +470,7 @@ fn create_land_with_neighbors(
             last_pay_time,
             block_date_bought,
             stake_amount,
+
         );
         setup_buyer_with_tokens(
             token_used_neighbor_3,
@@ -470,6 +478,7 @@ fn create_land_with_neighbors(
             NEIGHBOR_3(),
             actions_system.contract_address,
             stake_amount,
+
         );
         store.world.write_model_test(@up_land);
     }
@@ -484,6 +493,7 @@ fn create_land_with_neighbors(
             last_pay_time,
             block_date_bought,
             stake_amount,
+
         );
         setup_buyer_with_tokens(
             token_used_neighbor_1,
@@ -491,6 +501,7 @@ fn create_land_with_neighbors(
             NEIGHBOR_1(),
             actions_system.contract_address,
             stake_amount,
+
         );
         store.world.write_model_test(@down_land);
     }
@@ -522,6 +533,7 @@ fn test_buy_action() {
             100,
             120,
             pool_key(main_currency.contract_address),
+
         );
 
     // Verify results
@@ -594,6 +606,7 @@ fn test_claim_and_add_taxes() {
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+
     );
 
     set_block_timestamp(100 / TIME_SPEED.into());
@@ -612,6 +625,7 @@ fn test_claim_and_add_taxes() {
         erc20_neighbor_1,
         erc20_neighbor_2,
         erc20_neighbor_3,
+
     );
 
     set_contract_address(RECIPIENT());
@@ -667,6 +681,7 @@ fn test_nuke_action() {
 
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+
     );
 
     set_block_timestamp(100 / TIME_SPEED.into());
@@ -792,6 +807,7 @@ fn test_detailed_tax_calculation() {
 
     let (erc20_neighbor, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+
     );
 
     // timestamp: 1000
@@ -857,7 +873,7 @@ fn test_level_up() {
         );
 
     let (erc20_neighbor, _, _) = deploy_erc20_with_pool(
-        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
     );
 
     set_block_timestamp(100);
@@ -1067,6 +1083,7 @@ fn test_reimburse_stakes() {
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+
     );
 
     // Create initial claimer land
@@ -1228,4 +1245,5 @@ fn test_time_to_nuke() {
     let new_time_to_nuke = actions_system.get_time_to_nuke(1080);
 
     assert!(new_time_to_nuke == 0, "should be nukable now");
+
 }

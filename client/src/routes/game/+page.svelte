@@ -27,25 +27,13 @@
 
   const promise = Promise.all([
     setupClient(dojoConfig),
+    setupAccountState(),
     setupAccount(),
     setupStore(),
     setupSocialink(),
   ]);
 
-  const accountState = setupAccountState()!;
-
   let loading = $state(true);
-
-  let showRegister = $derived(
-    accountState.address != null &&
-      (accountState.profile?.exists ?? false) == false,
-  );
-
-  let showInvitation = $derived(
-    accountState.address != null &&
-      (accountState.profile?.exists && accountState.profile?.whitelisted) ==
-        false,
-  );
 
   let value = $state(10);
 
@@ -71,7 +59,12 @@
     }
 
     promise
-      .then(async ([_, accountManager]) => {
+      .then(async ([_, accountState, accountManager]) => {
+        if (accountState == null) {
+          console.error('Account state is null!');
+          return;
+        }
+
         if (accountManager?.getProvider()?.getAccount() == null) {
           console.info('The user is not logged in! Attempting login.');
           await accountManager?.getProvider()?.connect();

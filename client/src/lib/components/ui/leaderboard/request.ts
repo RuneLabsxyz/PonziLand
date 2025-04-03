@@ -1,5 +1,6 @@
 import { address_blacklist } from '$lib/data.json';
 import { areAddressesEquals } from './helpers';
+import { PUBLIC_DOJO_TORII_URL } from '$env/static/public';
 
 const blackList = address_blacklist.map((e) => BigInt(e));
 
@@ -10,14 +11,12 @@ export const baseToken =
 
 export async function fetchTokenBalances() {
   try {
-    const response = await fetch(
-      'https://api.cartridge.gg/x/ponziland-sepolia-target/torii/sql',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'text/plain',
-        },
-        body: `
+    const response = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain',
+      },
+      body: `
           WITH ranked_balances AS (
             SELECT
               account_address,
@@ -31,8 +30,7 @@ export async function fetchTokenBalances() {
           WHERE rank <= 50 OR contract_address = '${baseToken}'
           ORDER BY contract_address, balance DESC;
         `,
-      },
-    );
+    });
 
     if (!response.ok) {
       throw new Error('Network response was not ok');

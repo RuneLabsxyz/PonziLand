@@ -16,7 +16,7 @@
     }}
   >
     <img
-      src="/assets/ui/icons/Icon_MyLand2.png"
+      src="/ui/icons/Icon_MyLand2.png"
       alt="Lands"
       class="w-8 h-8 bg-cover"
     />
@@ -33,7 +33,7 @@
     }}
   >
     <img
-      src="/assets/ui/icons/Icon_Auction.png"
+      src="/ui/icons/Icon_Auction.png"
       alt="Auctions"
       class="w-8 h-8 bg-cover"
     />
@@ -50,7 +50,7 @@
     }}
   >
     <img
-      src="/assets/ui/icons/Icon_Notification.png"
+      src="/ui/icons/Icon_Notification.png"
       alt="Notifications"
       class="w-8 h-8 bg-cover"
     />
