@@ -19,6 +19,7 @@ use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKe
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS};
 use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
+use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_time_to_nuke, get_taxes_per_neighbor};
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
 
@@ -1168,35 +1169,45 @@ fn test_time_to_nuke() {
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1()
     );
 
+    set_block_timestamp(10000);
+
     let neighbors_location = create_land_with_neighbors(
         store,
         actions_system,
         1080,
         RECIPIENT(),
         main_currency,
-        500000,
+        5 * 100000000,
         get_block_timestamp(),
         get_block_timestamp(),
-        100,
+        1 * 100000000,
         erc20_neighbor_1,
         erc20_neighbor_2,
         erc20_neighbor_3
     );
 
+
     let block_timestamp = get_block_timestamp();
 
-    let time_to_nuke = actions_system.get_time_to_nuke(*neighbors_location[0]);
+    let land: Land = store.land(1080);
 
-    println!("time_to_nuke: {}", time_to_nuke);
+    let time_to_nuke = actions_system.get_time_to_nuke(1080);
+    let tax_rate = get_tax_rate_per_neighbor(land);
 
-    set_block_timestamp(150 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
+    set_block_timestamp(block_timestamp + time_to_nuke/4);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(1080) * 4;
 
-    let new_time_to_nuke = actions_system.get_time_to_nuke(*neighbors_location[0]);
+    let remaining_stake = land.stake_amount - unclaimed_taxes;
+
+    set_block_timestamp(10000 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
+
+    let new_time_to_nuke = actions_system.get_time_to_nuke(1080);
+    let claimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(1080);
     assert!(new_time_to_nuke > 0, "should not be nukable yet");
 
-    set_block_timestamp(150 + time_to_nuke);
+    set_block_timestamp(10000 + time_to_nuke);
 
-    let new_time_to_nuke = actions_system.get_time_to_nuke(*neighbors_location[0]);
+    let new_time_to_nuke = actions_system.get_time_to_nuke(1080);
 
     assert!(new_time_to_nuke == 0, "should be nukable now");
 }

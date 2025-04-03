@@ -25,9 +25,9 @@ pub fn get_tax_rate_per_neighbor(land: Land) -> u256 {
     let discount_for_level = calculate_discount_for_level(land.level);
 
     if discount_for_level > 0 {
-        land.sell_price * TAX_RATE.into() * discount_for_level.into() / (max_neighbors(land.location).into() * 100)
+        land.sell_price * TAX_RATE.into() * discount_for_level.into() / (max_neighbors(land.location).into() * 100 * 100)
     } else {
-        land.sell_price * TAX_RATE.into() / max_neighbors(land.location).into()
+        land.sell_price * TAX_RATE.into() / (max_neighbors(land.location).into() * 100)
     }
 }
 
@@ -35,8 +35,11 @@ pub fn get_time_to_nuke(land: Land, num_neighbors: u8) -> u256 {
     let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land);
     let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
     let current_time: u256 = get_block_timestamp().into();
-
-    let seconds_to_nuke = (land.stake_amount * BASE_TIME.into()) / (total_tax_rate * TIME_SPEED.into());
+    // Calculate how many seconds it takes for taxes to equal stake amount
+    // The tax accumulation per second is: (total_tax_rate * TIME_SPEED) / (100 * BASE_TIME)
+    // So time to nuke = stake_amount / (tax per second)
+    let seconds_to_nuke = (land.stake_amount * 100 * BASE_TIME.into()) / (total_tax_rate * TIME_SPEED.into());
+    
     // The nuke time is the last payment time plus the seconds until nuke
     let nuke_time = land.last_pay_time.into() + seconds_to_nuke;
 
