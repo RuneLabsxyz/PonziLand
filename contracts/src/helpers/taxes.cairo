@@ -36,7 +36,7 @@ pub fn get_time_to_nuke(land: Land, num_neighbors: u8) -> u256 {
     let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
     let current_time: u256 = get_block_timestamp().into();
 
-    let seconds_to_nuke = (land.stake_amount * BASE_TIME.into()) / total_tax_rate ;
+    let seconds_to_nuke = (land.stake_amount * BASE_TIME.into()) / (total_tax_rate * TIME_SPEED.into());
     // The nuke time is the last payment time plus the seconds until nuke
     let nuke_time = land.last_pay_time.into() + seconds_to_nuke;
 
@@ -48,6 +48,5 @@ pub fn get_time_to_nuke(land: Land, num_neighbors: u8) -> u256 {
         res = nuke_time - current_time;
     }
 
-    println!("res: {}", res);
     res
 }

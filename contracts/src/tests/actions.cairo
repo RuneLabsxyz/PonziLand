@@ -21,7 +21,7 @@ use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatch
 use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 use ponzi_land::models::land::{Land, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
-use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS};
+use ponzi_land::consts::{TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, BASE_TIME};
 use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
@@ -569,20 +569,18 @@ fn bid_and_verify_next_auctions(
         );
 
         let block_timestamp = get_block_timestamp();
-        println!("block_timestamp: {}", block_timestamp);
 
-        let time_to_nuke = actions_system.get_time_to_nuke(1281) / TIME_SPEED.into();
-        println!("time_to_nuke: {}", time_to_nuke);
+        let time_to_nuke = actions_system.get_time_to_nuke(1281);
 
-        set_block_timestamp(150 + time_to_nuke * TIME_SPEED.into() - 100);
+        set_block_timestamp(150 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
+        set_contract_address(NEIGHBOR_1());
 
-        let new_time_to_nuke = actions_system.get_time_to_nuke(1281) / TIME_SPEED.into();
-        println!("new_time_to_nuke: {}", new_time_to_nuke);
+        let new_time_to_nuke = actions_system.get_time_to_nuke(1281);
         assert!(new_time_to_nuke > 0, "should not be nukable yet");
 
-        set_block_timestamp(150 + time_to_nuke * TIME_SPEED.into() + 1);
+        set_block_timestamp(150 + time_to_nuke);
 
-        let new_time_to_nuke = actions_system.get_time_to_nuke(1281) / TIME_SPEED.into();
+        let new_time_to_nuke = actions_system.get_time_to_nuke(1281);
 
         assert!(new_time_to_nuke == 0, "should be nukable now");
     }
