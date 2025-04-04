@@ -3,16 +3,14 @@ use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::models::land::Land;
 use ponzi_land::models::auction::Auction;
 use ponzi_land::helpers::coord::{
-    left, right, up, down, max_neighbors, up_left, up_right, down_left, down_right
+    left, right, up, down, max_neighbors, up_left, up_right, down_left, down_right,
 };
 
 
 fn get_land_neighbors(mut store: Store, land_location: u64) -> Array<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
 
-    for direction in get_directions(
-        land_location
-    ) {
+    for direction in get_directions(land_location) {
         add_land_neighbor(store, ref lands, direction);
     };
 
@@ -27,16 +25,14 @@ fn add_land_neighbor(mut store: Store, ref lands: Array<Land>, land_location: Op
                 lands.append(land);
             }
         },
-        Option::None => {}
+        Option::None => {},
     }
 }
 
 fn get_auction_neighbors(mut store: Store, land_location: u64) -> Array<Auction> {
     let mut auctions: Array<Auction> = ArrayTrait::new();
 
-    for direction in get_directions(
-        land_location
-    ) {
+    for direction in get_directions(land_location) {
         add_auction_neighbor(store, ref auctions, direction);
     };
 
@@ -53,7 +49,7 @@ fn add_auction_neighbor(
                 auctions.append(auction);
             }
         },
-        Option::None => {}
+        Option::None => {},
     }
 }
 
@@ -84,6 +80,6 @@ fn get_directions(land_location: u64) -> Array<Option<u64>> {
         up_left(land_location),
         up_right(land_location),
         down_left(land_location),
-        down_right(land_location)
+        down_right(land_location),
     ]
 }

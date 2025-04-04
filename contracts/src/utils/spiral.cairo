@@ -1,11 +1,11 @@
 use ponzi_land::helpers::coord::{
     left, right, up, down, index_to_position, position_to_index, up_left, up_right, down_left,
-    down_right
+    down_right,
 };
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::consts::{MAX_AUCTIONS};
 use starknet::storage::{
-    Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait
+    Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
 };
 
 
@@ -20,13 +20,13 @@ struct SpiralState {
 
 
 // Helper function to get next position based on direction
-fn get_next_position(direction: u8, location: u64,) -> Option<u64> {
+fn get_next_position(direction: u8, location: u64) -> Option<u64> {
     match direction {
         0 => left(location),
         1 => up(location),
         2 => right(location),
         3 => down(location),
-        _ => Option::None
+        _ => Option::None,
     }
 }
 
