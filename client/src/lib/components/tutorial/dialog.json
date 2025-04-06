@@ -16,17 +16,17 @@
   },
   {
     "id": 4,
-    "text": "Here you can see your progress.",
+    "text": "You can buy land by clicking on an auctionned land. ",
     "image_id": 4
   },
   {
     "id": 5,
-    "text": "Click on the menu to explore more options.",
+    "text": "The land price will decrease over time, until a player buys it.\n\nThe higher the price, the more XP and tokens you’ll get !",
     "image_id": 1
   },
   {
     "id": 6,
-    "text": "You can customize your settings here.",
+    "text": "Choose a token to buy the land to get a building from the community you want ! ",
     "image_id": 2
   },
   {

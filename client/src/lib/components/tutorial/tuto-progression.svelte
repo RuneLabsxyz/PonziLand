@@ -4,12 +4,14 @@
     addAuctionToTiles,
     removeAuctionFromTiles,
     buyAuction,
+    leveUp,
   } from './stores';
   import { selectedLandPosition } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import dialogData from './dialog.json';
 
   let currentDialog = $derived(dialogData[$tutorialProgression - 1]);
+  let activeImage = $state('');
 
   function formatText(text: string) {
     return text.replace(/\n/g, '<br>');
@@ -40,12 +42,37 @@
       const auctionLocation = toHexWithPadding(8 * 16 + 8);
       selectedLandPosition.set(auctionLocation);
     }
+    if ($tutorialProgression === 5) {
+      activeImage = 'auction';
+    } else if ($tutorialProgression === 6) {
+      activeImage = 'buy-auction';
+    } else {
+      activeImage = '';
+    }
 
     if ($tutorialProgression === 8) {
       buyAuction();
     }
+    if ($tutorialProgression === 9) {
+      leveUp(8, 8);
+    }
+    if ($tutorialProgression === 10) {
+      leveUp(8, 8);
+    }
   });
 </script>
+
+<div
+  class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+>
+  {#if activeImage !== ''}
+    <img
+      src={`/tutorial/ui/${activeImage}.png`}
+      alt={`Tutorial ${activeImage} interface`}
+      class="max-w-[80vw] max-h-[80vh]"
+    />
+  {/if}
+</div>
 
 <div
   class="fixed left-0 right-0 top-8 mx-auto z-[9999] flex w-fit max-w-2xl items-center gap-4"

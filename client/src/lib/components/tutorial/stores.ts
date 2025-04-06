@@ -59,6 +59,7 @@ export function buyAuction(): void {
       newTiles[8][8] = {
         ...newTiles[8][8],
         type: 'house',
+        level: 1,
         token: {
           name: 'Emulated STRK',
           symbol: 'eSTRK',
@@ -100,7 +101,28 @@ export function buyAuction(): void {
   });
 }
 
-export function setSelectedlandAsTheAuctionLand(): void {}
+export function leveUp(x: number, y: number): void {
+  tiles.update((currentTiles) => {
+    const newTiles = [...currentTiles];
+
+    if (
+      newTiles[x] &&
+      newTiles[x][y] &&
+      newTiles[x][y].type === 'house' &&
+      'level' in newTiles[x][y]
+    ) {
+      newTiles[x] = [...newTiles[x]];
+      newTiles[x][y] = {
+        ...newTiles[x][y],
+        level: newTiles[x][y].level + 1,
+      };
+    }
+
+    return newTiles;
+  });
+}
+
+export function setSelectedlandAsTheAuctionLand(): void { }
 
 export const tiles = writable<Tile[][]>(createFakeTiles());
 export const tutorialProgression = writable<number>(1);
