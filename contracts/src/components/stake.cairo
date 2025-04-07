@@ -27,7 +27,7 @@ mod StakeComponent {
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::{
         common_strucs::{TokenInfo, LandWithTaxes},
-        stake::{calculate_refund_ratio, calculate_refund_amount}
+        stake::{calculate_refund_ratio, calculate_refund_amount},
     };
 
 
@@ -84,7 +84,6 @@ mod StakeComponent {
         fn _refund(ref self: ComponentState<TContractState>, mut store: Store, mut land: Land) {
             let stake_amount = land.stake_amount;
             assert(stake_amount > 0, 'amount to refund is 0');
-
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
             //validate if the contract has sufficient balance for refund stake
@@ -97,10 +96,10 @@ mod StakeComponent {
             assert(status, errors::ERC20_REFUND_FAILED);
 
             let current_total = self.token_stakes.read(land.token_used);
-            if current_total > stake_amount {
+            if current_total >= stake_amount {
                 self.token_stakes.write(land.token_used, current_total - stake_amount);
             } else {
-                self.token_stakes.write(land.token_used, 0);
+                panic!("Attempting to refund more than what's staked");
             }
 
             land.stake_amount = 0;
@@ -119,7 +118,7 @@ mod StakeComponent {
         }
 
         fn _get_token_ratios(
-            self: @ComponentState<TContractState>, token_address: ContractAddress
+            self: @ComponentState<TContractState>, token_address: ContractAddress,
         ) -> u256 {
             self.token_ratios.read(token_address)
         }
@@ -139,7 +138,7 @@ mod StakeComponent {
         }
 
         fn __generate_token_ratio(
-            ref self: ComponentState<TContractState>, token: ContractAddress
+            ref self: ComponentState<TContractState>, token: ContractAddress,
         ) -> u256 {
             let existing_ratio = self.token_ratios.read(token);
             if existing_ratio != 0 {
@@ -158,7 +157,7 @@ mod StakeComponent {
             ref self: ComponentState<TContractState>,
             mut land: Land,
             mut store: Store,
-            refund_amount: u256
+            refund_amount: u256,
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
