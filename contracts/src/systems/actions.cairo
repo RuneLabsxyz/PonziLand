@@ -672,15 +672,17 @@ pub mod actions {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
-            assert(land.stake_amount == 0 || !has_liquidity_requirements, 'land not valid to nuke');
+
+            if !has_liquidity_requirements && land.stake_amount > 0 {
+                self.stake._refund(store, land);
+                land = store.land(land_location);
+            }
+
+            assert(land.stake_amount == 0, 'land not valid to nuke');
 
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if pending_taxes.len() != 0 {
                 self.taxes._claim(pending_taxes, land.owner, land.location);
-            }
-
-            if land.stake_amount > 0 {
-                self.stake._refund(store, land);
             }
 
             let owner_nuked = land.owner;
