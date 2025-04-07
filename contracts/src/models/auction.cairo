@@ -1,9 +1,11 @@
 use starknet::get_block_timestamp;
 use ponzi_land::consts::{PRICE_DECREASE_RATE, TIME_SPEED, DECIMALS_FACTOR};
 
-
 const SECONDS_IN_WEEK: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
 const SCALING_FACTOR: u8 = 50;
+const LINEAR_DECAY_TIME: u64 = 10 * 60; // 10 minutes
+const DROP_RATE: u8 = 9; // 90% of the price or 9/10
+const RATE_DENOMINATOR: u8 = 10;
 
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
@@ -25,7 +27,11 @@ pub struct Auction {
 impl AuctionImpl of AuctionTrait {
     #[inline(always)]
     fn new(
-        land_location: u64, start_price: u256, floor_price: u256, is_finished: bool, decay_rate: u64
+        land_location: u64,
+        start_price: u256,
+        floor_price: u256,
+        is_finished: bool,
+        decay_rate: u64,
     ) -> Auction {
         Auction {
             land_location,
@@ -89,26 +95,44 @@ impl AuctionImpl of AuctionTrait {
             return 0;
         }
 
-        // Scale the time passed by DECIMALS_FACTOR to maintain precision in integer math
-        let progress__time: u256 = (time_passed.into() * DECIMALS_FACTOR / SECONDS_IN_WEEK).into();
+        let mut current_price: u256 = self.start_price;
 
-        // k is the decay rate (adjusted by DECIMALS_FACTOR for scaling)
-        let k: u256 = (self.decay_rate.into() * DECIMALS_FACTOR)
-            / SCALING_FACTOR.into(); // 4 * 10^18 / 50
+        //for the first minutes we use a linear decay
+        if time_passed <= LINEAR_DECAY_TIME {
+            let time_fraction = time_passed.into() * DECIMALS_FACTOR / LINEAR_DECAY_TIME.into();
 
-        // Calculate the denominator (1 + k * t) using scaled values for precision
-        let denominator = DECIMALS_FACTOR + (k * progress__time / DECIMALS_FACTOR);
+            let linear_factor = DECIMALS_FACTOR
+                - (DROP_RATE.into() * time_fraction / RATE_DENOMINATOR.into()).into();
 
-        // Calculate the decay factor using the formula (1 / (1 + k * t))^2
-        // Ensure denominator is not zero to avoid division by zero errors
-        let decay_factor = if denominator != 0 {
-            let temp = (DECIMALS_FACTOR * DECIMALS_FACTOR) / denominator;
-            (temp * temp) / DECIMALS_FACTOR
+            current_price = self.start_price * linear_factor / DECIMALS_FACTOR;
         } else {
-            0
-        };
+            // Scale the time passed by DECIMALS_FACTOR to maintain precision in integer math
+            let remaining_rate = RATE_DENOMINATOR - DROP_RATE;
+            let price_after_linear = self.start_price
+                * remaining_rate.into()
+                / RATE_DENOMINATOR.into();
 
-        let current_price = self.start_price * decay_factor / DECIMALS_FACTOR;
+            let progress__time: u256 = (time_passed.into() * DECIMALS_FACTOR / SECONDS_IN_WEEK)
+                .into();
+
+            // k is the decay rate (adjusted by DECIMALS_FACTOR for scaling)
+            let k: u256 = (self.decay_rate.into() * DECIMALS_FACTOR)
+                / SCALING_FACTOR.into(); // 4 * 10^18 / 50
+
+            // Calculate the denominator (1 + k * t) using scaled values for precision
+            let denominator = DECIMALS_FACTOR + (k * progress__time / DECIMALS_FACTOR);
+
+            // Calculate the decay factor using the formula (1 / (1 + k * t))^2
+            // Ensure denominator is not zero to avoid division by zero errors
+            let decay_factor = if denominator != 0 {
+                let temp = (DECIMALS_FACTOR * DECIMALS_FACTOR) / denominator;
+                (temp * temp) / DECIMALS_FACTOR
+            } else {
+                0
+            };
+
+            current_price = price_after_linear * decay_factor / DECIMALS_FACTOR;
+        }
 
         if current_price > self.floor_price {
             current_price
@@ -134,6 +158,10 @@ mod tests {
         // Time points to check the price
         let time_points = array![
             0,
+            2 * 60, //2min
+            5 * 60, //5min
+            8 * 60, //8min
+            10 * 60, //10min
             1 * 60 * 60, // 1h
             6 * 60 * 60, // 6hs
             12 * 60 * 60, // 12hs
@@ -162,22 +190,30 @@ mod tests {
     fn test_price() {
         //                                      time, price
         assert_eq!(*simulate_price_points()[0], (0, 1000000), "err in the first price");
+        //                                        2min
+        assert_eq!(*simulate_price_points()[1], (2 * 60, 820000), "err in the 2nd price");
+        //                                        5min
+        assert_eq!(*simulate_price_points()[2], (5 * 60, 550000), "err in the 3rd price");
+        //                                        8min
+        assert_eq!(*simulate_price_points()[3], (8 * 60, 280000), "err in the 4th price");
+        //                                        10min
+        assert_eq!(*simulate_price_points()[4], (10 * 60, 100000), "err in the 5th price");
         //                                        1h
-        assert_eq!(*simulate_price_points()[1], (1 * 60 * 60, 976608), "err in the 2dn price");
+        assert_eq!(*simulate_price_points()[5], (1 * 60 * 60, 97660), "err in the 6th price");
         //                                        6h
-        assert_eq!(*simulate_price_points()[2], (6 * 60 * 60, 871111), "err in the 3rd price");
+        assert_eq!(*simulate_price_points()[6], (6 * 60 * 60, 87111), "err in the 7th price");
         //                                        12h
-        assert_eq!(*simulate_price_points()[3], (12 * 60 * 60, 765625), "err in the 4th price");
+        assert_eq!(*simulate_price_points()[7], (12 * 60 * 60, 76562), "err in the 8th price");
         //                                        1day
-        assert_eq!(*simulate_price_points()[4], (24 * 60 * 60, 604938), "err in the 5th price");
-        assert_eq!(*simulate_price_points()[5], (36 * 60 * 60, 490000), "err in the 6th price");
+        assert_eq!(*simulate_price_points()[8], (24 * 60 * 60, 60493), "err in the 9th price");
+        assert_eq!(*simulate_price_points()[9], (36 * 60 * 60, 49000), "err in the 10th price");
         //                                        2days
-        assert_eq!(*simulate_price_points()[6], (48 * 60 * 60, 404958), "err in the 7th price");
+        assert_eq!(*simulate_price_points()[10], (48 * 60 * 60, 40495), "err in the 11th price");
         //                                        3days
-        assert_eq!(*simulate_price_points()[7], (72 * 60 * 60, 289940), "err in the 8th price");
+        assert_eq!(*simulate_price_points()[11], (72 * 60 * 60, 28994), "err in the 12th price");
         //                                        5days
-        assert_eq!(*simulate_price_points()[8], (120 * 60 * 60, 169550), "err in the 9th price");
+        assert_eq!(*simulate_price_points()[12], (120 * 60 * 60, 16955), "err in the 13th price");
         //                                         1week
-        assert_eq!(*simulate_price_points()[9], (7 * 24 * 60 * 60, 0));
+        assert_eq!(*simulate_price_points()[13], (7 * 24 * 60 * 60, 0), "err in the 14th price");
     }
 }

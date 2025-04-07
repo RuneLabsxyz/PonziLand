@@ -48,7 +48,7 @@ export async function refresh() {
   }
 }
 
-export function setup() {
+export async function setup() {
   if (isSetup) return;
 
   isSetup = true;
@@ -57,7 +57,7 @@ export function setup() {
   // Initial state
   let currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
-    updateState(currentProvider);
+    await updateState(currentProvider);
   }
 
   // Listen on updates

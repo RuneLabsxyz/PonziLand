@@ -3,24 +3,24 @@ version = 1
 
 [[package]]
 name = "dojo"
-version = "1.0.12"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.0.12#5f74aaef06a7900b1a6f6448465eb623c2e14aa1"
+version = "1.4.0"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.4.0#22ef7101e84429f4f06fa634f927dd6ad2c48752"
 dependencies = [
  "dojo_plugin",
 ]
 
 [[package]]
 name = "dojo_cairo_test"
-version = "1.0.11"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.0.12#5f74aaef06a7900b1a6f6448465eb623c2e14aa1"
+version = "1.0.12"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.4.0#22ef7101e84429f4f06fa634f927dd6ad2c48752"
 dependencies = [
  "dojo",
 ]
 
 [[package]]
 name = "dojo_plugin"
-version = "2.8.4"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.0.12#5f74aaef06a7900b1a6f6448465eb623c2e14aa1"
+version = "2.9.4"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.4.0#22ef7101e84429f4f06fa634f927dd6ad2c48752"
 
 [[package]]
 name = "ekubo"
@@ -58,7 +58,7 @@ source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f3730
 
 [[package]]
 name = "ponzi_land"
-version = "1.0.1"
+version = "1.4.0"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
