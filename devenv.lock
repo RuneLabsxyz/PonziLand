@@ -8,10 +8,10 @@
         "oxalica": "oxalica"
       },
       "locked": {
-        "lastModified": 1744117110,
+        "lastModified": 1744122875,
         "owner": "knownasred",
         "repo": "cairo-nix",
-        "rev": "31ef79ccbcccd3ba957a70797dbc7ad6d472b256",
+        "rev": "b339b33a2da7ee036872d3da535a8c03b01cd822",
         "type": "github"
       },
       "original": {
@@ -122,10 +122,10 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1744099644,
+        "lastModified": 1744120788,
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "6c05b89b2e55170ea243d9acd087dc4086226dfa",
+        "rev": "a62d20dd366a941a588bfe3c814826cf631a0554",
         "type": "github"
       },
       "original": {
