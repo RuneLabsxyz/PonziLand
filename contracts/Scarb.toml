@@ -2,6 +2,7 @@
 cairo-version = "=2.9.4"
 name = "ponzi_land"
 version = "1.4.0"
+edition = "2023_01"
 
 [cairo]
 sierra-replace-ids = true
