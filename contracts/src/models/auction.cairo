@@ -1,11 +1,8 @@
 use starknet::get_block_timestamp;
-use ponzi_land::consts::{PRICE_DECREASE_RATE, TIME_SPEED, DECIMALS_FACTOR};
-
-const SECONDS_IN_WEEK: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
-const SCALING_FACTOR: u8 = 50;
-const LINEAR_DECAY_TIME: u64 = 10 * 60; // 10 minutes
-const DROP_RATE: u8 = 9; // 90% of the price or 9/10
-const RATE_DENOMINATOR: u8 = 10;
+use ponzi_land::consts::{
+    PRICE_DECREASE_RATE, TIME_SPEED, DECIMALS_FACTOR, AUCTION_DURATION, SCALING_FACTOR,
+    RATE_DENOMINATOR, LINEAR_DECAY_TIME, DROP_RATE,
+};
 
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
@@ -91,7 +88,7 @@ impl AuctionImpl of AuctionTrait {
         };
 
         // if the auction has passed a week, the price is 0
-        if time_passed.into() >= SECONDS_IN_WEEK {
+        if time_passed.into() >= AUCTION_DURATION {
             return 0;
         }
 
@@ -112,7 +109,7 @@ impl AuctionImpl of AuctionTrait {
                 * remaining_rate.into()
                 / RATE_DENOMINATOR.into();
 
-            let progress__time: u256 = (time_passed.into() * DECIMALS_FACTOR / SECONDS_IN_WEEK)
+            let progress__time: u256 = (time_passed.into() * DECIMALS_FACTOR / AUCTION_DURATION)
                 .into();
 
             // k is the decay rate (adjusted by DECIMALS_FACTOR for scaling)
@@ -144,7 +141,7 @@ impl AuctionImpl of AuctionTrait {
 
 #[cfg(test)]
 mod tests {
-    use super::{Auction, AuctionTrait, SECONDS_IN_WEEK};
+    use super::{Auction, AuctionTrait, AUCTION_DURATION};
     use starknet::testing::{set_contract_address, set_block_timestamp, set_caller_address};
     use ponzi_land::consts::TIME_SPEED;
 
@@ -178,6 +175,9 @@ mod tests {
             let time: u64 = *time_points[i] / TIME_SPEED.into();
             set_block_timestamp(time);
             let price = auction.get_current_price_decay_rate();
+            // While the tests are dependent on constants, use the following code to get the price
+            // points:
+            // print!("idx: {}, Price: {}\n", i, price);
 
             price_points.append((time * TIME_SPEED.into(), price));
             i += 1;
@@ -188,32 +188,34 @@ mod tests {
 
     #[test]
     fn test_price() {
+        let price_points = simulate_price_points();
         //                                      time, price
-        assert_eq!(*simulate_price_points()[0], (0, 1000000), "err in the first price");
+        assert_eq!(*price_points[0], (0, 1000000), "err in the first price");
         //                                        2min
-        assert_eq!(*simulate_price_points()[1], (2 * 60, 820000), "err in the 2nd price");
+        assert_eq!(*price_points[1], (2 * 60, 991000), "err in the 2nd price");
         //                                        5min
-        assert_eq!(*simulate_price_points()[2], (5 * 60, 550000), "err in the 3rd price");
+        assert_eq!(*price_points[2], (5 * 60, 977500), "err in the 3rd price");
         //                                        8min
-        assert_eq!(*simulate_price_points()[3], (8 * 60, 280000), "err in the 4th price");
+        assert_eq!(*price_points[3], (8 * 60, 964000), "err in the 4th price");
         //                                        10min
-        assert_eq!(*simulate_price_points()[4], (10 * 60, 100000), "err in the 5th price");
+        assert_eq!(*price_points[4], (10 * 60, 955000), "err in the 5th price");
         //                                        1h
-        assert_eq!(*simulate_price_points()[5], (1 * 60 * 60, 97660), "err in the 6th price");
+        assert_eq!(*price_points[5], (1 * 60 * 60, 730000), "err in the 6th price");
         //                                        6h
-        assert_eq!(*simulate_price_points()[6], (6 * 60 * 60, 87111), "err in the 7th price");
+        assert_eq!(*price_points[6], (6 * 60 * 60, 87111), "err in the 7th price");
         //                                        12h
-        assert_eq!(*simulate_price_points()[7], (12 * 60 * 60, 76562), "err in the 8th price");
+        assert_eq!(*price_points[7], (12 * 60 * 60, 76562), "err in the 8th price");
         //                                        1day
-        assert_eq!(*simulate_price_points()[8], (24 * 60 * 60, 60493), "err in the 9th price");
-        assert_eq!(*simulate_price_points()[9], (36 * 60 * 60, 49000), "err in the 10th price");
+        assert_eq!(*price_points[8], (24 * 60 * 60, 60493), "err in the 9th price");
+
+        assert_eq!(*price_points[9], (36 * 60 * 60, 49000), "err in the 10th price");
         //                                        2days
-        assert_eq!(*simulate_price_points()[10], (48 * 60 * 60, 40495), "err in the 11th price");
+        assert_eq!(*price_points[10], (48 * 60 * 60, 40495), "err in the 11th price");
         //                                        3days
-        assert_eq!(*simulate_price_points()[11], (72 * 60 * 60, 28994), "err in the 12th price");
+        assert_eq!(*price_points[11], (72 * 60 * 60, 28994), "err in the 12th price");
         //                                        5days
-        assert_eq!(*simulate_price_points()[12], (120 * 60 * 60, 16955), "err in the 13th price");
+        assert_eq!(*price_points[12], (120 * 60 * 60, 16955), "err in the 13th price");
         //                                         1week
-        assert_eq!(*simulate_price_points()[13], (7 * 24 * 60 * 60, 0), "err in the 14th price");
+        assert_eq!(*price_points[13], (7 * 24 * 60 * 60, 0), "err in the 14th price");
     }
 }

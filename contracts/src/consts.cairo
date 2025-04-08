@@ -15,3 +15,14 @@ pub const LIQUIDITY_SAFETY_MULTIPLIER: u8 = 3;
 pub const MIN_AUCTION_PRICE: u256 = 500 * DECIMALS_FACTOR; // 10
 pub const FACTOR_FOR_SELL_PRICE: u8 = 10; // 10x the sale price at the start
 pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
+
+
+const AUCTION_DURATION: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
+
+const SCALING_FACTOR: u8 = 50;
+const LINEAR_DECAY_TIME: u64 = 10 * 60 * 20; // 10 minutes IRL
+// (not dependent on time speed, so * TIME_SPEED, but due to the wrong unit, we cannot use the
+// variable directly)
+
+const DROP_RATE: u8 = 90; // 90% of the price or 9/10
+const RATE_DENOMINATOR: u8 = 100; // To get a percentage
