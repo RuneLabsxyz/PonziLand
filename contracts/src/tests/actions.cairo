@@ -24,7 +24,9 @@ use ponzi_land::systems::actions::actions::{InternalImpl, NewAuctionEvent};
 use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
-use ponzi_land::consts::{BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS};
+use ponzi_land::consts::{
+    BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE,
+};
 use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
 use ponzi_land::helpers::taxes::{
     get_tax_rate_per_neighbor, get_time_to_nuke, get_taxes_per_neighbor,
@@ -758,7 +760,7 @@ fn test_nuke_action() {
         store,
         neighbor_land_location.unwrap(),
         ContractAddressZeroable::zero(),
-        50000000000000000000,
+        MIN_AUCTION_PRICE,
         deleted_pool_key(),
         0,
         0,

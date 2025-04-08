@@ -100,7 +100,7 @@ pub mod actions {
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH,
+        LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH, FACTOR_FOR_SELL_PRICE,
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -681,9 +681,13 @@ pub mod actions {
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
             let sell_price = get_average_price(store, land_location);
+            let sell_price = if sell_price > MIN_AUCTION_PRICE {
+                sell_price
+            } else {
+                MIN_AUCTION_PRICE
+            };
 
-            //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
-            self.auction(land_location, FLOOR_PRICE, 1, DECAY_RATE * 2, true);
+            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
         }
 
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
@@ -761,12 +765,14 @@ pub mod actions {
 
             // Math.max(sold_at_price * 10, auction.floor_price)
             if self.active_auctions.read() < MAX_AUCTIONS {
-                let _asking_price = if sold_at_price > auction.floor_price {
-                    sold_at_price * 10
+                let asking_price = sold_at_price * FACTOR_FOR_SELL_PRICE.into();
+                let asking_price = if asking_price > MIN_AUCTION_PRICE {
+                    sold_at_price
                 } else {
-                    auction.floor_price * 10
+                    MIN_AUCTION_PRICE
                 };
-                self.add_spiral_auctions(store, land.location, FLOOR_PRICE);
+
+                self.add_spiral_auctions(store, land.location, asking_price);
             }
         }
 
@@ -860,7 +866,7 @@ pub mod actions {
                     if store.land(next_pos).owner.is_zero()
                         && !self.active_auction_queue.read(next_pos) {
                         //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
-                        self.auction(next_pos, start_price, 1, DECAY_RATE, false);
+                        self.auction(next_pos, start_price, FLOOR_PRICE, DECAY_RATE, false);
                     };
 
                     self.heads.write(spiral_state.current_head, next_pos);
@@ -925,4 +931,3 @@ pub mod actions {
         }
     }
 }
-
