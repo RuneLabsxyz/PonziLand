@@ -106,7 +106,7 @@ pub mod actions {
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID, DECAY_RATE,
         FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH,
-        FACTOR_FOR_SELL_PRICE,CENTER_LOCATION
+        FACTOR_FOR_SELL_PRICE, CENTER_LOCATION,
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -232,13 +232,13 @@ pub mod actions {
         self.current_section.write(1, 0);
         self.auction(CENTER_LOCATION, start_price, floor_price, decay_rate, false);
         //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
-        // let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
-        // let mut i = 0;
-        // for land_location in lands {
-        //     self.auction(land_location, start_price, floor_price, decay_rate, false);
-        //     self.initialize_heads(i, land_location);
-        //     i += 1;
-        // };
+    // let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
+    // let mut i = 0;
+    // for land_location in lands {
+    //     self.auction(land_location, start_price, floor_price, decay_rate, false);
+    //     self.initialize_heads(i, land_location);
+    //     i += 1;
+    // };
     }
 
 
@@ -907,12 +907,12 @@ pub mod actions {
         //     self.spiral_states.write(spiral_state);
         // }
 
-
         //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
         // fn initialize_heads(ref self: ContractState, index: u8, firts_heads: u64) {
         //     self.heads.write(index, firts_heads);
         //     let state = SpiralState {
-        //         current_head: 0, steps: 1, advance: 0, direction: 0, steps_remaining: Option::None,
+        //         current_head: 0, steps: 1, advance: 0, direction: 0, steps_remaining:
+        //         Option::None,
         //     };
         //     self.spiral_states.write(state);
         // }
@@ -952,7 +952,6 @@ pub mod actions {
             while i < MAX_AUCTIONS_FROM_BID && self.active_auctions.read() < MAX_AUCTIONS {
                 let new_auction_location = self.select_next_auction();
                 self.auction(new_auction_location, start_price, FLOOR_PRICE, DECAY_RATE, false);
-                println!("new_auction_location: {}", new_auction_location);
                 i += 1;
             }
         }

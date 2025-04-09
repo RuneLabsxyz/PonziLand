@@ -25,7 +25,7 @@ fn get_circle_land_position(circle: u64, index: u64) -> u64 {
     let total_lands = lands_in_circle(circle);
     assert(index < total_lands, 'Invalid index for circle');
     let section = index / lands_per_section;
-    let offset = index % lands_per_section; 
+    let offset = index % lands_per_section;
 
     let mut row: u64 = 0;
     let mut col: u64 = 0;
