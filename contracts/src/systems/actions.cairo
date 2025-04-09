@@ -106,7 +106,7 @@ pub mod actions {
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID, DECAY_RATE,
         FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH,
-        FACTOR_FOR_SELL_PRICE,
+        FACTOR_FOR_SELL_PRICE,CENTER_LOCATION
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -202,11 +202,11 @@ pub mod actions {
         active_auctions: u8,
         main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
-        heads: Map<u8, u64>,
-        spiral_states: SpiralState,
+        //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
+        // heads: Map<u8, u64>,
+        // spiral_states: SpiralState,
         active_auction_queue: Map<u64, bool>,
         staked_lands: Map<u64, bool>, // New storage variable to track staked lands
-        
         used_lands_in_circle: Map<(u64, u8), Vec<u64>>,
         current_circle: u64,
         current_section: Map<u64, u8>,
@@ -216,10 +216,11 @@ pub mod actions {
     fn dojo_init(
         ref self: ContractState,
         token_address: ContractAddress,
-        land_1: u64,
-        land_2: u64,
-        land_3: u64,
-        land_4: u64,
+        //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
+        // land_1: u64,
+        // land_2: u64,
+        // land_3: u64,
+        // land_4: u64,
         start_price: u256,
         floor_price: u256,
         decay_rate: u64,
@@ -229,13 +230,15 @@ pub mod actions {
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
         self.current_circle.write(1);
         self.current_section.write(1, 0);
-        let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
-        let mut i = 0;
-        for land_location in lands {
-            self.auction(land_location, start_price, floor_price, decay_rate, false);
-            self.initialize_heads(i, land_location);
-            i += 1;
-        };
+        self.auction(CENTER_LOCATION, start_price, floor_price, decay_rate, false);
+        //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
+        // let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
+        // let mut i = 0;
+        // for land_location in lands {
+        //     self.auction(land_location, start_price, floor_price, decay_rate, false);
+        //     self.initialize_heads(i, land_location);
+        //     i += 1;
+        // };
     }
 
 
@@ -783,7 +786,6 @@ pub mod actions {
                 } else {
                     MIN_AUCTION_PRICE
                 };
-
                 self.generate_new_auction(asking_price)
             }
         }
@@ -861,55 +863,59 @@ pub mod actions {
             return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
         }
 
-        fn add_spiral_auctions(
-            ref self: ContractState, store: Store, land_location: u64, start_price: u256,
-        ) {
-            let mut spiral_state = self.spiral_states.read();
-            let direction = spiral_state.direction;
-            //with this we can continue the auction in the last place where stop for MAX_AUCTIONS
-            let steps = spiral_state.steps_remaining.unwrap_or(spiral_state.steps);
-            let mut i = 0;
 
-            while i < steps && self.active_auctions.read() < MAX_AUCTIONS {
-                let mut current_head_location = self.heads.read(spiral_state.current_head);
-                if let Option::Some(next_pos) =
-                    get_next_position(direction, current_head_location) {
-                    if store.land(next_pos).owner.is_zero()
-                        && !self.active_auction_queue.read(next_pos) {
-                        //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
-                        self.auction(next_pos, start_price, FLOOR_PRICE, DECAY_RATE, false);
-                    };
+        //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
+        // fn add_spiral_auctions(
+        //     ref self: ContractState, store: Store, land_location: u64, start_price: u256,
+        // ) {
+        //     let mut spiral_state = self.spiral_states.read();
+        //     let direction = spiral_state.direction;
+        //     //with this we can continue the auction in the last place where stop for MAX_AUCTIONS
+        //     let steps = spiral_state.steps_remaining.unwrap_or(spiral_state.steps);
+        //     let mut i = 0;
 
-                    self.heads.write(spiral_state.current_head, next_pos);
-                }
-                i += 1;
-            };
-            if i < steps {
-                spiral_state.steps_remaining = Option::Some(steps - i);
-            } else {
-                spiral_state.steps_remaining = Option::None;
-                spiral_state.current_head += 1;
-                if spiral_state.current_head == 4 {
-                    spiral_state.current_head = 0;
-                    spiral_state.advance += 1;
-                    spiral_state.direction = (spiral_state.direction + 1) % 4;
-                    if spiral_state.advance % 2 == 0 {
-                        spiral_state.advance = 0;
-                        spiral_state.steps += 1;
-                    };
-                };
-            }
+        //     while i < steps && self.active_auctions.read() < MAX_AUCTIONS {
+        //         let mut current_head_location = self.heads.read(spiral_state.current_head);
+        //         if let Option::Some(next_pos) =
+        //             get_next_position(direction, current_head_location) {
+        //             if store.land(next_pos).owner.is_zero()
+        //                 && !self.active_auction_queue.read(next_pos) {
+        //                 //TODO:AFTER PLAYTESTS WE HAVE TO DECIDE START_PRICE AND FLOOR_PRICE
+        //                 self.auction(next_pos, start_price, FLOOR_PRICE, DECAY_RATE, false);
+        //             };
 
-            self.spiral_states.write(spiral_state);
-        }
+        //             self.heads.write(spiral_state.current_head, next_pos);
+        //         }
+        //         i += 1;
+        //     };
+        //     if i < steps {
+        //         spiral_state.steps_remaining = Option::Some(steps - i);
+        //     } else {
+        //         spiral_state.steps_remaining = Option::None;
+        //         spiral_state.current_head += 1;
+        //         if spiral_state.current_head == 4 {
+        //             spiral_state.current_head = 0;
+        //             spiral_state.advance += 1;
+        //             spiral_state.direction = (spiral_state.direction + 1) % 4;
+        //             if spiral_state.advance % 2 == 0 {
+        //                 spiral_state.advance = 0;
+        //                 spiral_state.steps += 1;
+        //             };
+        //         };
+        //     }
 
-        fn initialize_heads(ref self: ContractState, index: u8, firts_heads: u64) {
-            self.heads.write(index, firts_heads);
-            let state = SpiralState {
-                current_head: 0, steps: 1, advance: 0, direction: 0, steps_remaining: Option::None,
-            };
-            self.spiral_states.write(state);
-        }
+        //     self.spiral_states.write(spiral_state);
+        // }
+
+
+        //TODO:DELETE THIS IF WE WANT TO CHANGE THE LOGIC FOR CIRCLE EXPANSION
+        // fn initialize_heads(ref self: ContractState, index: u8, firts_heads: u64) {
+        //     self.heads.write(index, firts_heads);
+        //     let state = SpiralState {
+        //         current_head: 0, steps: 1, advance: 0, direction: 0, steps_remaining: Option::None,
+        //     };
+        //     self.spiral_states.write(state);
+        // }
 
         fn _claim_and_discount_taxes(
             ref self: ContractState, taxes: Array<TokenInfo>, owner: ContractAddress, location: u64,
