@@ -67,7 +67,8 @@ pub mod actions {
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry,
+        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
+        MutableVecTrait,
     };
     use dojo::model::{ModelStorage, ModelValueStorage};
     use dojo::event::EventStorage;
@@ -97,10 +98,15 @@ pub mod actions {
     use ponzi_land::helpers::taxes::{
         get_taxes_per_neighbor, get_tax_rate_per_neighbor, get_time_to_nuke,
     };
+    use ponzi_land::helpers::circle_expansion::{
+        get_circle_land_position, get_random_index, lands_per_section, generate_circle,
+        is_section_completed, get_random_available_index,
+    };
 
     use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, DECAY_RATE, FLOOR_PRICE,
-        LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH, FACTOR_FOR_SELL_PRICE,
+        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID, DECAY_RATE,
+        FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH,
+        FACTOR_FOR_SELL_PRICE,
     };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
@@ -199,7 +205,12 @@ pub mod actions {
         heads: Map<u8, u64>,
         spiral_states: SpiralState,
         active_auction_queue: Map<u64, bool>,
-        staked_lands: Map<u64, bool> // New storage variable to track staked lands
+        staked_lands: Map<u64, bool>, // New storage variable to track staked lands
+        
+        used_lands_in_circle: Map<(u64, u8), Vec<u64>>,
+        current_circle: u64,
+        current_section: Map<u64, u8>,
+        completed_lands_per_section: Map<(u64, u8), u64>,
     }
 
     fn dojo_init(
@@ -216,7 +227,8 @@ pub mod actions {
     ) {
         self.main_currency.write(token_address);
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
-
+        self.current_circle.write(1);
+        self.current_section.write(1, 0);
         let lands: Array<u64> = array![land_1, land_2, land_3, land_4];
         let mut i = 0;
         for land_location in lands {
@@ -772,10 +784,9 @@ pub mod actions {
                     MIN_AUCTION_PRICE
                 };
 
-                self.add_spiral_auctions(store, land.location, asking_price);
+                self.generate_new_auction(asking_price)
             }
         }
-
 
         fn finalize_land_purchase(
             ref self: ContractState,
@@ -928,6 +939,73 @@ pub mod actions {
 
                 self._claim_and_discount_taxes(adjusted_taxes, land.owner, land.location);
             };
+        }
+
+        fn generate_new_auction(ref self: ContractState, start_price: u256) {
+            let mut i = 0;
+            while i < MAX_AUCTIONS_FROM_BID && self.active_auctions.read() < MAX_AUCTIONS {
+                let new_auction_location = self.select_next_auction();
+                self.auction(new_auction_location, start_price, FLOOR_PRICE, DECAY_RATE, false);
+                println!("new_auction_location: {}", new_auction_location);
+                i += 1;
+            }
+        }
+
+        fn select_next_auction(ref self: ContractState) -> u64 {
+            let circle = self.current_circle.read();
+            let section = self.current_section.read(circle);
+            let section_len = lands_per_section(circle);
+
+            let current_section_count = self.completed_lands_per_section.read((circle, section));
+            if is_section_completed(current_section_count, circle) {
+                self.advance_section(circle);
+            }
+
+            let section = self.current_section.read(circle);
+            let used_lands = self.get_used_index(circle, section);
+            let random_index = get_random_available_index(circle, used_lands);
+            self.used_lands_in_circle.entry((circle, section)).append().write(random_index);
+
+            let index = section.into() * section_len + random_index;
+            let land_location = get_circle_land_position(circle, index);
+
+            self.increment_section_count(circle, section);
+            self.handle_circle_completion(circle);
+            return land_location;
+        }
+
+        fn get_used_index(ref self: ContractState, circle: u64, section: u8) -> Array<u64> {
+            let mut index = array![];
+            let vec_len = self.used_lands_in_circle.entry((circle, section)).len();
+            let mut i = 0;
+            while i < vec_len {
+                index.append(self.used_lands_in_circle.entry((circle, section)).at(i).read());
+                i += 1;
+            };
+            index
+        }
+
+        fn increment_section_count(ref self: ContractState, circle: u64, section: u8) {
+            let current_section_count = self.completed_lands_per_section.read((circle, section));
+            self.completed_lands_per_section.write((circle, section), current_section_count + 1);
+        }
+
+        fn handle_circle_completion(ref self: ContractState, circle: u64) {
+            let section = self.current_section.read(circle);
+            if section == 3 {
+                self.advance_circle(circle);
+            }
+        }
+
+        fn advance_section(ref self: ContractState, circle: u64) {
+            let section = self.current_section.read(circle);
+            self.current_section.write(circle, section + 1);
+            self.completed_lands_per_section.write((circle, section + 1), 1);
+        }
+
+        fn advance_circle(ref self: ContractState, circle: u64) {
+            self.current_circle.write(circle + 1);
+            self.current_section.write(circle + 1, 0);
         }
     }
 }

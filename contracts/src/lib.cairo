@@ -15,6 +15,7 @@ mod models {
 mod helpers {
     mod coord;
     mod taxes;
+    mod circle_expansion;
 }
 
 mod components {

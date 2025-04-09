@@ -5,6 +5,7 @@ pub const BASE_TIME: u64 = 3600;
 pub const PRICE_DECREASE_RATE: u64 = 2;
 pub const TIME_SPEED: u32 = 20;
 pub const MAX_AUCTIONS: u8 = 16;
+pub const MAX_AUCTIONS_FROM_BID: u8 = 3;
 pub const DECAY_RATE: u64 = 200;
 pub const FLOOR_PRICE: u256 = DECIMALS_FACTOR / 10;
 pub const OUR_CONTRACT_SEPOLIA_ADDRESS: felt252 =
@@ -15,7 +16,7 @@ pub const LIQUIDITY_SAFETY_MULTIPLIER: u8 = 3;
 pub const MIN_AUCTION_PRICE: u256 = 500 * DECIMALS_FACTOR; // 10
 pub const FACTOR_FOR_SELL_PRICE: u8 = 10; // 10x the sale price at the start
 pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
-
+pub const CENTER_LOCATION:u64 = 2080;
 
 const AUCTION_DURATION: u256 = 7 * 24 * 60 * 60; // 1 week in seconds
 
