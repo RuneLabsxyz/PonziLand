@@ -87,6 +87,8 @@
 
       let price = calculatePriceFromPool(response.topPools[0]);
 
+      price = 1 / price;
+
       return Number(price) / 1e18;
     } catch (error) {
       console.error(`Error fetching price for token ${tokenAddress}:`, error);
