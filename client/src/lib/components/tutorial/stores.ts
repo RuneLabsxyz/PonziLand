@@ -33,7 +33,6 @@ export function addAuctionToTiles(): void {
     return newTiles;
   });
 }
-
 export function removeAuctionFromTiles(): void {
   tiles.update((currentTiles) => {
     const newTiles = [...currentTiles];

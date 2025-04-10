@@ -2,7 +2,11 @@
   import { onMount } from 'svelte';
   import type { Token } from '$lib/interfaces';
   import type { EkuboApiResponse, TokenTVL, TokenVolume } from './requests';
-  import { fetchEkuboPairData, baseToken } from './requests';
+  import { baseToken } from './requests';
+  import {
+    fetchEkuboPairData,
+    calculatePriceFromPool,
+  } from '../defi/ekubo/requests';
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceChart from './PriceChart.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -38,21 +42,6 @@
   let pairCards: PairCardData[] = $state([]);
   let loading = $state(true);
   let error = $state('');
-
-  /**
-   * @notice Calculates the current conversion rate between two tokens in a pool
-   * @dev Uses the TVL data to determine the exchange rate between token0 and token1
-   * @param data The Ekubo API response containing TVL information
-   * @returns The current conversion rate as a number
-   */
-  function calculateCurrentConversionRate(data: EkuboApiResponse): number {
-    if (data.tvlByToken.length < 2) return 0;
-    const token0 = data.tvlByToken[0];
-    const token1 = data.tvlByToken[1];
-    const balance0 = BigInt(token0.balance);
-    const balance1 = BigInt(token1.balance);
-    return Number(balance0) / Number(balance1);
-  }
 
   /**
    * @notice Retrieves historical token balances for a specific date
@@ -129,7 +118,8 @@
     try {
       const promises = pairTokens.map(async (token) => {
         const data = await fetchEkuboPairData(baseToken, token.address);
-        const currentRate = calculateCurrentConversionRate(data);
+        const currentRate = calculatePriceFromPool(data.topPools[0]);
+        console.log('currentRate', currentRate);
         const historicalDate = data.tvlDeltaByTokenByDate.length
           ? data.tvlDeltaByTokenByDate[0].date
           : new Date().toISOString();

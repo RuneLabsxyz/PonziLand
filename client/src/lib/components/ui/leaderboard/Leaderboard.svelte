@@ -7,17 +7,17 @@
     baseToken,
     fetchUsernamesBatch,
   } from './request';
+  import { useAvnu, type SwapPriceParams } from '$lib/utils/avnu.svelte';
   import {
-    useAvnu,
-    type QuoteParams,
-    type SwapPriceParams,
-  } from '$lib/utils/avnu.svelte';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { getSocialink } from '$lib/accounts/social/index.svelte';
-
+    fetchEkuboPairData,
+    calculatePriceFromPool,
+  } from '$lib/components/defi/ekubo/requests';
   //Types
   import type { Token } from '$lib/interfaces';
-  import type { Quote } from '@avnu/avnu-sdk';
+  import type {
+    EkuboApiResponse,
+    PoolInfo,
+  } from '$lib/components/defi/ekubo/requests';
 
   //UI
   import Card from '../../ui/card/card.svelte';
@@ -80,14 +80,14 @@
     }
 
     try {
-      const params: SwapPriceParams = {
-        sellTokenAddress: tokenAddress,
-        buyTokenAddress: baseToken,
-        sellAmount: '0x' + amount.toString(16),
-      };
+      let response: EkuboApiResponse = await fetchEkuboPairData(
+        tokenAddress,
+        baseToken,
+      );
 
-      const priceData = await avnu.fetchSwapPrice(params);
-      return Number(priceData[0].buyAmount) / 1e18;
+      let price = calculatePriceFromPool(response.topPools[0]);
+
+      return Number(price) / 1e18;
     } catch (error) {
       console.error(`Error fetching price for token ${tokenAddress}:`, error);
       return 0;
