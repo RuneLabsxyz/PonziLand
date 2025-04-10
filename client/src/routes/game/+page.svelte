@@ -26,11 +26,12 @@
   })();
 
   const promise = Promise.all([
+    setupSocialink().then(() => {
+      return setupAccountState();
+    }),
     setupClient(dojoConfig),
-    setupAccountState(),
     setupAccount(),
     setupStore(),
-    setupSocialink(),
   ]);
 
   let loading = $state(true);
@@ -59,9 +60,10 @@
     }
 
     promise
-      .then(async ([_, accountState, accountManager]) => {
+      .then(async ([accountState, dojo, accountManager]) => {
         if (accountState == null) {
           console.error('Account state is null!');
+
           return;
         }
 
@@ -95,10 +97,13 @@
           return;
         }
 
+        console.log('Everything is ready!', dojo != undefined);
+
         clearLoading();
       })
       .catch((err) => {
-        clearLoading();
+        console.error('An error occurred:', err);
+        // TODO: Redirect to an error page!
       });
   });
 </script>
