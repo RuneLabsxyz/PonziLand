@@ -86,32 +86,29 @@ fn get_random_index(max: u64) -> u64 {
     return index.try_into().unwrap();
 }
 
-//TODO: this can be improved
-fn get_random_available_index(circle: u64, used_lands_in_section: Array<u64>) -> u64 {
+fn get_random_available_index(circle: u64, used_lands: Array<u64>) -> u64 {
     let section_len = lands_per_section(circle);
-    let mut candidates: Array<u64> = ArrayTrait::new();
+    let rand = get_random_index(section_len.into());
+    let mut index = rand;
+    let mut result = 0;
+    let mut tries = 0;
 
-    let mut i = 0;
-    loop {
-        if i == section_len {
-            break;
-        };
-        let mut already_used = false;
-        let mut j = 0;
-        while j < used_lands_in_section.len() {
-            if *used_lands_in_section.at(j) == i {
-                already_used = true;
+    while tries < section_len {
+        let mut found = false;
+        for i in 0..used_lands.len() {
+            if *used_lands.at(i) == index {
+                found = true;
                 break;
             };
-            j += 1;
         };
-        if !already_used {
-            candidates.append(i.try_into().unwrap());
-        };
-        i += 1;
-    };
-    let rand = get_random_index(candidates.len().into());
-    let candidate = *candidates.at(rand.try_into().unwrap());
-    return candidate.into();
-}
 
+        if !found {
+            result = index;
+            break;
+        };
+
+        index = (index + 1) % section_len;
+        tries += 1;
+    };
+    return result;
+}
