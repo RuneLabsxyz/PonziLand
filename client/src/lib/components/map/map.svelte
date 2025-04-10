@@ -8,14 +8,14 @@
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
+  import { GRID_SIZE } from '$lib/const';
 
-  const MAP_SIZE = 64;
   const TILE_SIZE = 32;
 
   // Camera position
   const MIN_SCALE = 0.6;
   const MAX_SCALE = 16;
-  let isDragging = false;
+  let isDragging = $state(false);
   let dragged = $state(false);
   let startX = 0;
   let startY = 0;
@@ -131,11 +131,11 @@
     const tileX = Math.floor(mouseX / (TILE_SIZE * $cameraPosition.scale));
     const tileY = Math.floor(mouseY / (TILE_SIZE * $cameraPosition.scale));
 
-    if (tileX >= 0 && tileX < MAP_SIZE && tileY >= 0 && tileY < MAP_SIZE) {
+    if (tileX >= 0 && tileX < GRID_SIZE && tileY >= 0 && tileY < GRID_SIZE) {
       $mousePosCoords = {
         x: tileX + 1,
         y: tileY + 1,
-        location: tileY * MAP_SIZE + tileX,
+        location: tileY * GRID_SIZE + tileX,
       };
     } else {
       $mousePosCoords = null;
@@ -145,8 +145,8 @@
   function updateOffsets(newX: number, newY: number) {
     if (!mapWrapper) return;
 
-    const mapWidth = MAP_SIZE * TILE_SIZE * $cameraPosition.scale;
-    const mapHeight = MAP_SIZE * TILE_SIZE * $cameraPosition.scale;
+    const mapWidth = GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
+    const mapHeight = GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
     const containerWidth = mapWrapper.clientWidth;
     const containerHeight = mapWrapper.clientHeight;
 
@@ -172,7 +172,7 @@
 <div class="map-wrapper" bind:this={mapWrapper}>
   <!-- Column numbers -->
   <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
-    {#each Array(MAP_SIZE) as _, i}
+    {#each Array(GRID_SIZE) as _, i}
       <div
         class="coordinate"
         style="width: {TILE_SIZE * $cameraPosition.scale}px"
@@ -185,7 +185,7 @@
   <div class="map-with-rows">
     <!-- Row numbers -->
     <div class="row-numbers" style="top: {$cameraPosition.offsetY}px">
-      {#each Array(MAP_SIZE) as _, i}
+      {#each Array(GRID_SIZE) as _, i}
         <div
           class="coordinate"
           style="height: {TILE_SIZE * $cameraPosition.scale}px"

@@ -8,14 +8,13 @@
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import TileCell from './tile.svelte';
-  import { tiles } from './stores';
+  import { tiles, MAP_SIZE } from './stores';
 
-  const MAP_SIZE = 16;
   const TILE_SIZE = 32;
 
   const MIN_SCALE = 2.0;
   const MAX_SCALE = 16;
-  let isDragging = false;
+  let isDragging = $state(false);
   let dragged = $state(false);
   let cameraEnabled = $state(false);
   let startX = 0;

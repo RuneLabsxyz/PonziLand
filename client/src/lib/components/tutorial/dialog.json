@@ -1,76 +1,76 @@
 [
   {
-    "id": 1,
+    "step": 1,
     "text": "Hello there! Welcome to the world of PonziLand!\n\nI'm Lazi, and I will explain the fundamentals of this game!",
     "image_id": 1
   },
   {
-    "id": 2,
+    "step": 2,
     "text": "Right now, the world is full of empty lands. \n\n Everyday, new lands are under auction for players to buy. ",
     "image_id": 2
   },
   {
-    "id": 3,
+    "step": 3,
     "text": "A new auction has been launched ! We should buy it before another player claims it !",
     "image_id": 3
   },
   {
-    "id": 4,
+    "step": 4,
     "text": "You can buy land by clicking on an auctionned land. ",
     "image_id": 4
   },
   {
-    "id": 5,
-    "text": "The land price will decrease over time, until a player buys it.\n\nThe higher the price, the more XP and tokens you’ll get !",
+    "step": 5,
+    "text": "The land price will decrease over time, until a player buys it.\n\nThe higher the price, the more XP and tokens you'll get !",
     "image_id": 1
   },
   {
-    "id": 6,
+    "step": 6,
     "text": "Choose a token to buy the land to get a building from the community you want ! ",
     "image_id": 2
   },
   {
-    "id": 7,
+    "step": 7,
     "text": "Check out the leaderboard to see top players.",
     "image_id": 3
   },
   {
-    "id": 8,
+    "step": 8,
     "text": "Visit the shop to buy new items.",
     "image_id": 4
   },
   {
-    "id": 9,
+    "step": 9,
     "text": "Complete tasks to earn rewards.",
     "image_id": 1
   },
   {
-    "id": 10,
+    "step": 10,
     "text": "Join a community to interact with other players.",
     "image_id": 2
   },
   {
-    "id": 11,
+    "step": 11,
     "text": "Participate in events to win exclusive prizes.",
     "image_id": 3
   },
   {
-    "id": 12,
+    "step": 12,
     "text": "Use the help section if you need assistance.",
     "image_id": 4
   },
   {
-    "id": 13,
+    "step": 13,
     "text": "Keep an eye on notifications for updates.",
     "image_id": 1
   },
   {
-    "id": 14,
+    "step": 14,
     "text": "You can log out from the settings menu.",
     "image_id": 2
   },
   {
-    "id": 15,
+    "step": 15,
     "text": "Thank you for completing the tutorial!",
     "image_id": 3
   }
