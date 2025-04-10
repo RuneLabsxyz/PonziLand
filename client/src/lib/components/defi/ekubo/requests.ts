@@ -52,7 +52,8 @@ export async function fetchEkuboPairData(
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorContent = await response.text();
+      throw new Error(`HTTP error! status: ${response.status}, content: ${errorContent}`);
     }
     const data: EkuboApiResponse = await response.json();
     return data;
