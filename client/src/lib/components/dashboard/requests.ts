@@ -21,7 +21,6 @@ export interface TVLDeltaEntry {
 export const baseToken: string =
   '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0';
 
-
 export async function fetchBuyEvents() {
   try {
     const response = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {

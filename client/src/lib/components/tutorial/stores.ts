@@ -121,7 +121,7 @@ export function leveUp(x: number, y: number): void {
   });
 }
 
-export function setSelectedlandAsTheAuctionLand(): void { }
+export function setSelectedlandAsTheAuctionLand(): void {}
 
 export const tiles = writable<Tile[][]>(createFakeTiles());
 export const tutorialProgression = writable<number>(1);

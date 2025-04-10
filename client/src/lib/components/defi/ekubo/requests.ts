@@ -1,4 +1,3 @@
-
 export interface TokenVolume {
   token: string;
   volume: string;
@@ -74,11 +73,9 @@ export function calculatePriceFromPool(pool: PoolInfo): number {
   const reserve1 = parseFloat(pool.tvl1_total);
 
   if (reserve0 === 0) {
-    throw new Error("Token0 reserve is zero, cannot compute price.");
+    throw new Error('Token0 reserve is zero, cannot compute price.');
   }
 
   const price = reserve0 / reserve1;
   return price;
 }
-
-
