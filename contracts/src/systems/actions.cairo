@@ -510,15 +510,18 @@ pub mod actions {
             //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
-                    let tax_per_neighbor = self.get_unclaimed_taxes_per_neighbor(neighbor.location);
+                    if neighbor.stake_amount > 0 {
+                        let tax_per_neighbor = self
+                            .get_unclaimed_taxes_per_neighbor(neighbor.location);
 
-                    let claim_info_per_neighbor = ClaimInfo {
-                        token_address: neighbor.token_used,
-                        amount: tax_per_neighbor,
-                        land_location: neighbor.location,
-                        can_be_nuked: time_to_nuke == 0,
-                    };
-                    claim_info.append(claim_info_per_neighbor);
+                        let claim_info_per_neighbor = ClaimInfo {
+                            token_address: neighbor.token_used,
+                            amount: tax_per_neighbor,
+                            land_location: neighbor.location,
+                            can_be_nuked: time_to_nuke == 0,
+                        };
+                        claim_info.append(claim_info_per_neighbor);
+                    }
                 }
             }
             claim_info
@@ -536,20 +539,22 @@ pub mod actions {
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors_count > 0 {
                 for neighbor in neighbors {
-                    let token = neighbor.token_used;
-                    let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
-                    let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
+                    if neighbor.stake_amount > 0 {
+                        let token = neighbor.token_used;
+                        let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
+                        let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
 
-                    yield_info
-                        .append(
-                            YieldInfo {
-                                token,
-                                sell_price: neighbor.sell_price,
-                                percent_rate: rate,
-                                per_hour: rate_per_hour,
-                                location: neighbor.location,
-                            },
-                        );
+                        yield_info
+                            .append(
+                                YieldInfo {
+                                    token,
+                                    sell_price: neighbor.sell_price,
+                                    percent_rate: rate,
+                                    per_hour: rate_per_hour,
+                                    location: neighbor.location,
+                                },
+                            );
+                    }
                 }
             }
 
