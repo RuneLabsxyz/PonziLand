@@ -68,17 +68,27 @@ export async function fetchEkuboPairData(
  * from the given PoolInfo.
  *
  * @param pool - The pool data containing liquidity information.
- * @returns The price of one unit of token0 expressed in token1.
- * @throws If the reserve for token0 is zero.
+ * @param token0Decimals - Number of decimals for token0 (optional, defaults to 18)
+ * @param token1Decimals - Number of decimals for token1 (optional, defaults to 18)
+ * @returns The price of one unit of token0 expressed in token1, adjusted for decimals
  */
-export function calculatePriceFromPool(pool: PoolInfo): number {
-  const reserve0 = parseFloat(pool.tvl0_total);
-  const reserve1 = parseFloat(pool.tvl1_total);
+export function calculatePriceFromPool(
+  pool: PoolInfo,
+  token0Decimals: number = 18,
+  token1Decimals: number = 18
+): number {
+  const reserve0 = BigInt(pool.tvl0_total);
+  const reserve1 = BigInt(pool.tvl1_total);
 
-  if (reserve0 === 0) {
+  if (reserve0 === 0n) {
     throw new Error('Token0 reserve is zero, cannot compute price.');
   }
 
-  const price = reserve0 / reserve1;
-  return price;
+  const rawPrice = Number(reserve1) / Number(reserve0);
+  const decimalAdjustment = Math.pow(10, token1Decimals - token0Decimals);
+  const adjustedPrice = rawPrice * decimalAdjustment;
+
+  console.log('adjustedPrice', adjustedPrice);
+
+  return adjustedPrice;
 }

@@ -119,7 +119,14 @@
     try {
       const promises = pairTokens.map(async (token) => {
         const data = await fetchEkuboPairData(baseToken, token.address);
-        const currentRate = calculatePriceFromPool(data.topPools[0]);
+        if (!baseTokenDetails?.decimals) {
+          throw new Error('Base token decimals not found');
+        }
+        const currentRate = calculatePriceFromPool(
+          data.topPools[0],
+          baseTokenDetails.decimals,
+          token.decimals,
+        );
         console.log('currentRate', currentRate);
         const historicalDate = data.tvlDeltaByTokenByDate.length
           ? data.tvlDeltaByTokenByDate[0].date
