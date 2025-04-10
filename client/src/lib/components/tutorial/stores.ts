@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Tile } from '$lib/api/tile-store.svelte';
 import { toHexWithPadding } from '$lib/utils';
+import data from '$lib/data.json';
 
 export const MAP_SIZE = 16;
 
@@ -59,40 +60,7 @@ export function buyAuction(): void {
         ...newTiles[8][8],
         type: 'house',
         level: 1,
-        token: {
-          name: 'Emulated STRK',
-          symbol: 'eSTRK',
-          address:
-            '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
-          liquidityPoolType: '005-01',
-          decimals: 18,
-          images: {
-            icon: '/tokens/eSTRK/icon.png',
-            biome: {
-              x: 0,
-              y: 7,
-            },
-            building: {
-              '1': {
-                x: 3,
-                y: 3,
-              },
-              '2': {
-                x: 3,
-                y: 4,
-              },
-              '3': {
-                x: 3,
-                y: 5,
-                frames: 6,
-                ySize: 192,
-                xSize: 192,
-                xMax: 1152,
-                yMax: 192,
-              },
-            },
-          },
-        },
+        token: data.availableTokens[0],
       };
     }
 
@@ -120,8 +88,6 @@ export function leveUp(x: number, y: number): void {
     return newTiles;
   });
 }
-
-export function setSelectedlandAsTheAuctionLand(): void {}
 
 export const tiles = writable<Tile[][]>(createFakeTiles());
 export const tutorialProgression = writable<number>(1);

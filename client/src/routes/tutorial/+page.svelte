@@ -1,7 +1,7 @@
 <script lang="ts">
-  import Map from '$lib/components/tutorial/map.svelte';
-  import Ui from '$lib/components/tutorial/ui.svelte';
+  import TutorialMap from '$lib/components/tutorial/map.svelte';
+  import TutorialUi from '$lib/components/tutorial/ui.svelte';
 </script>
 
-<Map />
-<Ui />
+<TutorialMap />
+<TutorialUi />

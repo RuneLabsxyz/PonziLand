@@ -22,11 +22,7 @@
   import { getAggregatedTaxes } from '$lib/utils/taxes';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
 
-  let {
-    land,
-    dragged,
-    scale,
-  }: { land: Tile; dragged: boolean; scale: number } = $props<{
+  let { land, dragged, scale } = $props<{
     land: Tile;
     dragged: boolean;
     scale: number;
@@ -45,7 +41,7 @@
     console.log('clicked', dragged);
     if (dragged) return;
 
-    if ($selectedLand?.location == land.location) {
+    if (selected) {
       moveCameraToLocation(Number(land.location));
     }
 
@@ -74,38 +70,7 @@
     uiStore.modalType = 'bid';
   };
 
-  async function setNukables() {
-    if (land.type === 'auction') {
-      const aggregatedTaxes = await getAggregatedTaxes(land);
-      const nukables = aggregatedTaxes.nukables;
-
-      nukables.forEach((land) => {
-        if (land.nukable) {
-          // add to nukeStore.pending if not already in
-          if (!nukeStore.pending.has(land.location)) {
-            nukeStore.pending.set(land.location, true);
-          }
-        } else {
-          // remove from nukeStore.pending if in
-          if (nukeStore.pending.has(land.location)) {
-            nukeStore.pending.delete(land.location);
-          }
-        }
-      });
-    }
-  }
-
-  $effect(() => {
-    setNukables();
-  });
-
-  $effect(() => {
-    if (nukeStore.nuking.has(land.location)) {
-      setTimeout(() => {
-        nukeStore.nuking.delete(land.location);
-      }, 5000);
-    }
-  });
+  //TODO: handle nuke animation based on tutorial state
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -217,11 +182,7 @@
   {/if}
   {#if land.type == 'house'}
     <div class="absolute top-0 right-0 text-[4px]" onclick={handleClick}>
-      {#if estimatedNukeTime == -1}
-        inf.
-      {:else}
-        <LandNukeShield {estimatedNukeTime} />
-      {/if}
+      <LandNukeShield {estimatedNukeTime} />
     </div>
   {/if}
 </div>

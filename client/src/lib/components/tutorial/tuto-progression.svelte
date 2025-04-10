@@ -14,7 +14,7 @@
   let activeImage = $state('');
 
   function formatText(text: string) {
-    return text.replace(/\n/g, '<br>');
+    return text.replaceAll('\n', '<br>');
   }
 
   function nextStep() {
