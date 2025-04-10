@@ -1,3 +1,4 @@
+import { CallData } from "starknet";
 import {
   doTransaction,
   forEachToken,
@@ -31,3 +32,13 @@ await doTransaction(
     "Minter",
   ),
 );
+
+console.log("=== Ensuring the agents can interact with the contract");
+await doTransaction({
+  contractAddress: getContractAddress("auth"),
+  entrypoint: "add_authorized",
+  calldata: CallData.compile({
+    address:
+      "0x0274b3248dfc7324fa59d59dc21b69b705e3e5e3174f3fb39ee421f5e818dbf4",
+  }),
+});
