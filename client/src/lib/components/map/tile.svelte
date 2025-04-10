@@ -9,8 +9,8 @@
     selectedLand,
     selectedLandMeta,
     selectLand,
+    selectedLandPosition,
   } from '$lib/stores/stores.svelte';
-  import { selectedLandPosition } from '$lib/stores/stores.svelte';
   import { cn, hexStringToNumber, padAddress } from '$lib/utils';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeAnimation from '../land/land-nuke-animation.svelte';
