@@ -961,8 +961,8 @@ pub mod actions {
             let section = self.current_section.read(circle);
             let section_len = lands_per_section(circle);
 
-            let current_section_count = self.completed_lands_per_section.read((circle, section));
-            if is_section_completed(current_section_count, circle) {
+            let used_lands = self.get_used_index(circle, section);
+            if used_lands.len().into() == section_len {
                 self.advance_section(circle);
             }
 
@@ -997,7 +997,10 @@ pub mod actions {
 
         fn handle_circle_completion(ref self: ContractState, circle: u64) {
             let section = self.current_section.read(circle);
-            if section == 3 {
+            let current_section_count = self.completed_lands_per_section.read((circle, section));
+            let section_len = lands_per_section(circle);
+        
+            if section == 3 && current_section_count >= section_len {
                 self.advance_circle(circle);
             }
         }
@@ -1005,7 +1008,6 @@ pub mod actions {
         fn advance_section(ref self: ContractState, circle: u64) {
             let section = self.current_section.read(circle);
             self.current_section.write(circle, section + 1);
-            self.completed_lands_per_section.write((circle, section + 1), 1);
         }
 
         fn advance_circle(ref self: ContractState, circle: u64) {
