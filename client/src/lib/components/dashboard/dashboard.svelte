@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import type { Token } from '$lib/interfaces';
-  import type { EkuboApiResponse, TokenTVL, TokenVolume } from './requests';
+  import type { TokenTVL, TokenVolume } from './requests';
+  import type { EkuboApiResponse } from '../defi/ekubo/requests';
   import { baseToken } from './requests';
   import {
     fetchEkuboPairData,
