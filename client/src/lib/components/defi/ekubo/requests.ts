@@ -1,3 +1,5 @@
+import { PUBLIC_EKUBO_URL } from '$env/static/public';
+
 export interface TokenVolume {
   token: string;
   volume: string;
@@ -44,7 +46,7 @@ export async function fetchEkuboPairData(
   tokenA: string,
   tokenB: string,
 ): Promise<EkuboApiResponse> {
-  const baseUrl = 'https://sepolia-api.ekubo.org/pair';
+  const baseUrl = PUBLIC_EKUBO_URL + '/pair';
   const url = `${baseUrl}/${tokenA}/${tokenB}`;
 
   try {

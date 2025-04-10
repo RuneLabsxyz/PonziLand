@@ -18,7 +18,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: process.env.DOJO_BURNER_PRIVATE,
     PUBLIC_DOJO_CHAIN_ID: process.env.DOJO_CHAIN_ID,
     PUBLIC_AVNU_URL: process.env.AVNU_URL,
-
+    PUBLIC_EKUBO_URL: process.env.EKUBO_URL,
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
   },
@@ -38,6 +38,7 @@ const profiles = {
       'https://api.cartridge.gg/x/ponziland-sepolia-recovery/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
+    PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
