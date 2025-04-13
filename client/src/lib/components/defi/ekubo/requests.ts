@@ -1,5 +1,5 @@
 import { PUBLIC_EKUBO_URL } from '$env/static/public';
-
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 export interface TokenVolume {
   token: string;
   volume: string;
@@ -78,7 +78,7 @@ export function calculatePriceFromPool(
   pool: PoolInfo,
   token0Decimals: number = 18,
   token1Decimals: number = 18,
-): number {
+): CurrencyAmount {
   const reserve0 = BigInt(pool.tvl0_total);
   const reserve1 = BigInt(pool.tvl1_total);
 
@@ -90,7 +90,5 @@ export function calculatePriceFromPool(
   const decimalAdjustment = Math.pow(10, token1Decimals - token0Decimals);
   const adjustedPrice = rawPrice * decimalAdjustment;
 
-  console.log('adjustedPrice', adjustedPrice);
-
-  return adjustedPrice;
+  return CurrencyAmount.fromScaled(adjustedPrice);
 }

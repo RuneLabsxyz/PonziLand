@@ -28,41 +28,16 @@
 
   import { usernames, updateUsernames } from '$lib/stores/accounts';
   import { padAddress } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   const address = $derived(accountData.address);
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
   let userRankings = $state<Array<{ address: string; totalValue: number }>>([]);
   let isLoading = $state(true);
-  const avnu = useAvnu();
 
   const VERIFIED_ONLY = true;
 
   let userRank = $state<number | null>(null);
-
-  /**
-   * @notice Creates a token object for Avnu quotes
-   * @dev Used to format token data from our interfaces
-   * @param tokenAddress The address of the token
-   * @returns A Token object with default values
-   */
-  function createTokenObject(tokenAddress: string): Token {
-    return {
-      address: tokenAddress,
-      symbol: '',
-      decimals: 18,
-      name: '',
-      liquidityPoolType: 'AMM',
-      images: {
-        icon: '',
-        biome: { x: 0, y: 0 },
-        building: {
-          1: { x: 0, y: 0 },
-          2: { x: 0, y: 0 },
-          3: { x: 0, y: 0 },
-        },
-      },
-    };
-  }
 
   /**
    * @notice Calculates the price of a token amount in base currency (estark)
@@ -73,10 +48,9 @@
    */
   async function getPriceInBaseCurrency(
     tokenAddress: string,
-    amount: bigint,
-  ): Promise<number> {
-    if (!tokenAddress || !amount || amount <= 0n) {
-      return 0;
+  ): Promise<CurrencyAmount> {
+    if (!tokenAddress) {
+      throw new Error('Invalid token address');
     }
 
     try {
@@ -87,23 +61,24 @@
 
       let price = calculatePriceFromPool(response.topPools[0]);
 
-      price = 1 / price;
-
-      return Number(price) / 1e18;
+      return price;
     } catch (error) {
-      console.error(`Error fetching price for token ${tokenAddress}:`, error);
-      return 0;
+      throw new Error(
+        `Error fetching price for token ${tokenAddress}: ${error}`,
+      );
     }
   }
 
   /**
    * @notice Calculates token prices for all unique tokens
    * @dev Creates a cache of token prices to avoid redundant API calls
-   * @returns Record of token addresses to their prices
+   * @returns Record of token addresses to their CurrencyAmount prices
    */
-  async function calculateTokenPrices(): Promise<Record<string, number>> {
+  async function calculateTokenPrices(): Promise<
+    Record<string, CurrencyAmount>
+  > {
     const uniqueTokens = new Set<string>();
-    const tokenPriceCache: Record<string, number> = {};
+    const tokenPriceCache: Record<string, CurrencyAmount> = {};
 
     for (const tokens of Object.values(leaderboardData)) {
       for (const tokenAddress in tokens) {
@@ -115,14 +90,11 @@
 
     for (const tokenAddress of uniqueTokens) {
       try {
-        const priceForOneUnit = await getPriceInBaseCurrency(
-          tokenAddress,
-          1000000000000000000n,
-        );
+        const priceForOneUnit = await getPriceInBaseCurrency(tokenAddress);
         tokenPriceCache[tokenAddress] = priceForOneUnit;
       } catch (error) {
         console.error(`Failed to get price for token ${tokenAddress}:`, error);
-        tokenPriceCache[tokenAddress] = 0;
+        tokenPriceCache[tokenAddress] = CurrencyAmount.fromScaled(0);
       }
     }
 
@@ -146,9 +118,13 @@
           totalInBaseCurrency +=
             BigInt(balance.toString()) / 1000000000000000000n;
         } else if (tokenPriceCache[tokenAddress]) {
+          const tokenPrice = tokenPriceCache[tokenAddress];
+          const balanceAmount = CurrencyAmount.fromUnscaled(balance);
+          const valueInBase = balanceAmount
+            .rawValue()
+            .multipliedBy(tokenPrice.rawValue());
           totalInBaseCurrency +=
-            BigInt(Math.floor(balance * tokenPriceCache[tokenAddress])) /
-            1000000000000000000n;
+            BigInt(Math.floor(Number(valueInBase))) / 1000000000000000000n;
         }
       }
 

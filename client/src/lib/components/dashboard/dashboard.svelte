@@ -13,6 +13,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import BuyInfo from './buyInfo.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
+  import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
 
   let {
     tokens,
@@ -32,7 +33,7 @@
     token: string;
     tokenDetails: Token;
     data: EkuboApiResponse;
-    currentRate: number;
+    currentRate: CurrencyAmount;
     historicalRate: number;
     historicalDate: string;
     volumeByToken: TokenVolume[];
@@ -127,7 +128,6 @@
           baseTokenDetails.decimals,
           token.decimals,
         );
-        console.log('currentRate', currentRate);
         const historicalDate = data.tvlDeltaByTokenByDate.length
           ? data.tvlDeltaByTokenByDate[0].date
           : new Date().toISOString();
@@ -211,9 +211,9 @@
             <div class="bg-black/20 rounded-lg p-3 mb-3">
               <div class="flex justify-between items-center mb-2">
                 <span class="text-gray-300">Current Rate:</span>
-                <span class="text-white font-mono font-bold"
-                  >{card.currentRate.toFixed(6)}</span
-                >
+                <span class="text-white font-mono font-bold">
+                  {card.currentRate.toString()}
+                </span>
               </div>
               <div class="flex justify-between items-center text-sm">
                 <span class="text-gray-300"
@@ -279,6 +279,15 @@
       </div>
 
       <PlayerInfo />
+
+      <div class="col-span-full">
+        <hr class="border-gray-700 my-8" />
+        <h2 class="text-2xl mb-6 text-white">Leaderboard</h2>
+      </div>
+
+      <div class="col-span-full">
+        <Leaderboard />
+      </div>
     </div>
   </div>
 {/if}
