@@ -1,0 +1,9 @@
+[workspace]
+members = ["crates/*"]
+resolver = "2"
+
+[workspace.dependencies]
+ekubo_sdk = "0.1.20"
+starknet = "0.14.0"
+thiserror = "2.0.12"
+tokio = "1"

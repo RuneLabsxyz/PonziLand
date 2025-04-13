@@ -7,7 +7,6 @@
   ...
 }: let
   system = pkgs.stdenv.system;
-  dojo-nix = inputs.cairo-nix.legacyPackages.${system};
   cairo-nix = inputs.cairo-nix.packages.${system};
 in {
   packages = with pkgs; [
@@ -26,6 +25,10 @@ in {
   languages.javascript = {
     enable = true;
     bun.enable = true;
+  };
+
+  languages.rust = {
+    enable = true;
   };
 
   cachix = {
