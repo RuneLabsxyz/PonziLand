@@ -53,7 +53,9 @@ export async function fetchEkuboPairData(
     const response = await fetch(url);
     if (!response.ok) {
       const errorContent = await response.text();
-      throw new Error(`HTTP error! status: ${response.status}, content: ${errorContent}`);
+      throw new Error(
+        `HTTP error! status: ${response.status}, content: ${errorContent}`,
+      );
     }
     const data: EkuboApiResponse = await response.json();
     return data;
@@ -75,7 +77,7 @@ export async function fetchEkuboPairData(
 export function calculatePriceFromPool(
   pool: PoolInfo,
   token0Decimals: number = 18,
-  token1Decimals: number = 18
+  token1Decimals: number = 18,
 ): number {
   const reserve0 = BigInt(pool.tvl0_total);
   const reserve1 = BigInt(pool.tvl1_total);
