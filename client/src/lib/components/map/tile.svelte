@@ -86,7 +86,9 @@
   };
 
   async function setNukables() {
-    if (land.type === 'auction') {
+    if (land.type === 'house') {
+      // TODO: Add an alternative indexer that calls the view function on the behalf of the user
+      // to avoid destroying the RPC node.
       const aggregatedTaxes = await getAggregatedTaxes(land);
       const nukables = aggregatedTaxes.nukables;
 

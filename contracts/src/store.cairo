@@ -49,7 +49,7 @@ impl StoreImpl of StoreTrait {
             token1: ContractAddressZeroable::zero(),
             fee: 0,
             tick_spacing: 0,
-            extension: ContractAddressZeroable::zero()
+            extension: ContractAddressZeroable::zero(),
         };
 
         land.owner = ContractAddressZeroable::zero();

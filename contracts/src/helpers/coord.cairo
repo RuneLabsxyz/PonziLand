@@ -200,26 +200,26 @@ mod coord_test {
         // Corner positions
         assert_eq!(max_neighbors(position_to_index(0, 0)), 3); // Top-left: right, down, down-right
         assert_eq!(
-            max_neighbors(position_to_index(0, GRID_WIDTH - 1)), 3
+            max_neighbors(position_to_index(0, GRID_WIDTH - 1)), 3,
         ); // Top-right: left, down, down-left
         assert_eq!(
-            max_neighbors(position_to_index(GRID_WIDTH - 1, 0)), 3
+            max_neighbors(position_to_index(GRID_WIDTH - 1, 0)), 3,
         ); // Bottom-left: up, right, up-right
         assert_eq!(
-            max_neighbors(position_to_index(GRID_WIDTH - 1, GRID_WIDTH - 1)), 3
+            max_neighbors(position_to_index(GRID_WIDTH - 1, GRID_WIDTH - 1)), 3,
         ); // Bottom-right: up, left, up-left
 
         // Edge positions
         assert_eq!(
-            max_neighbors(position_to_index(0, 1)), 5
+            max_neighbors(position_to_index(0, 1)), 5,
         ); // Top edge: left, right, down, down-left, down-right
         assert_eq!(
-            max_neighbors(position_to_index(1, 0)), 5
+            max_neighbors(position_to_index(1, 0)), 5,
         ); // Left edge: up, down, right, up-right, down-right
 
         // Interior position
         assert_eq!(
-            max_neighbors(position_to_index(1, 1)), 8
+            max_neighbors(position_to_index(1, 1)), 8,
         ); // All directions: up, down, left, right, and all diagonals
     }
 }

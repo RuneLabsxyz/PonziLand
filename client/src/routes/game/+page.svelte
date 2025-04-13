@@ -26,26 +26,15 @@
   })();
 
   const promise = Promise.all([
+    setupSocialink().then(() => {
+      return setupAccountState();
+    }),
     setupClient(dojoConfig),
     setupAccount(),
     setupStore(),
-    setupSocialink(),
   ]);
 
-  const accountState = setupAccountState()!;
-
   let loading = $state(true);
-
-  let showRegister = $derived(
-    accountState.address != null &&
-      (accountState.profile?.exists ?? false) == false,
-  );
-
-  let showInvitation = $derived(
-    accountState.address != null &&
-      (accountState.profile?.exists && accountState.profile?.whitelisted) ==
-        false,
-  );
 
   let value = $state(10);
 
@@ -71,7 +60,13 @@
     }
 
     promise
-      .then(async ([_, accountManager]) => {
+      .then(async ([accountState, dojo, accountManager]) => {
+        if (accountState == null) {
+          console.error('Account state is null!');
+
+          return;
+        }
+
         if (accountManager?.getProvider()?.getAccount() == null) {
           console.info('The user is not logged in! Attempting login.');
           await accountManager?.getProvider()?.connect();
@@ -102,10 +97,13 @@
           return;
         }
 
+        console.log('Everything is ready!', dojo != undefined);
+
         clearLoading();
       })
       .catch((err) => {
-        clearLoading();
+        console.error('An error occurred:', err);
+        // TODO: Redirect to an error page!
       });
   });
 </script>

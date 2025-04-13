@@ -10,7 +10,7 @@ mod setup {
     use dojo::world::{WorldStorageTrait, WorldStorage};
     use dojo_cairo_test::{
         spawn_test_world, NamespaceDef, TestResource, ContractDefTrait, ContractDef,
-        WorldStorageTestTrait
+        WorldStorageTestTrait,
     };
 
     // External dependencies
@@ -19,7 +19,7 @@ mod setup {
     // Internal imports
     use ponzi_land::mocks::erc20::MyToken;
     use ponzi_land::mocks::ekubo_core::{
-        MockEkuboCore, IEkuboCoreTesting, IEkuboCoreTestingDispatcher
+        MockEkuboCore, IEkuboCoreTesting, IEkuboCoreTestingDispatcher,
     };
     use ponzi_land::models::land::{Land, m_Land};
     use ponzi_land::models::auction::{Auction, m_Auction};
@@ -64,40 +64,42 @@ mod setup {
 
     fn namespace_def() -> NamespaceDef {
         let ndef = NamespaceDef {
-            namespace: "ponzi_land", resources: [
+            namespace: "ponzi_land",
+            resources: [
                 TestResource::Model(m_Land::TEST_CLASS_HASH),
                 TestResource::Model(m_Auction::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
                 TestResource::Event(
-                    actions::e_RemainingStakeEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    actions::e_RemainingStakeEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(
-                    actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Event(
-                    actions::e_AuctionFinishedEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    actions::e_AuctionFinishedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Event(
-                    actions::e_LandBoughtEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    actions::e_LandBoughtEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Contract(auth::TEST_CLASS_HASH),
                 TestResource::Event(
-                    auth::e_AddressAuthorizedEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    auth::e_AddressAuthorizedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Event(
-                    auth::e_AddressRemovedEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    auth::e_AddressRemovedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Event(
-                    auth::e_VerifierUpdatedEvent::TEST_CLASS_HASH.try_into().unwrap()
+                    auth::e_VerifierUpdatedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
-            ].span()
+            ]
+                .span(),
         };
 
         ndef
     }
 
-    fn contract_defs(erc20_address: felt252, ekubo_core_address: felt252,) -> Span<ContractDef> {
+    fn contract_defs(erc20_address: felt252, ekubo_core_address: felt252) -> Span<ContractDef> {
         let mut contract_defs: Array<ContractDef> = array![];
 
         contract_defs
@@ -106,18 +108,14 @@ mod setup {
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
                     .with_init_calldata(
                         [
-                            erc20_address,
-                            1080.into(), // land_1
-                            1050.into(), // land_2
-                            1002.into(), // land_3
-                            1007.into(), // land_4
-                            2_u256.low.into(), // start_price (low)
+                            erc20_address, 2_u256.low.into(), // start_price (low)
                             2_u256.high.into(), // start_price (high)
                             1.into(), // floor_price (low)
                             0.into(), // floor_price (high)
                             200.into(), // decay_rate
                             ekubo_core_address,
-                        ].span()
+                        ]
+                            .span(),
                     ),
             );
 
@@ -125,11 +123,9 @@ mod setup {
             .append(
                 ContractDefTrait::new(@"ponzi_land", @"auth")
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
-                    .with_init_calldata(
-                        [RECIPIENT().into(), // owner
-                         0.into(), // verifier
-                        ].span()
-                    ),
+                    .with_init_calldata([RECIPIENT().into(), // owner
+                    0.into() // verifier
+                    ].span()),
             );
 
         contract_defs.span()
@@ -142,7 +138,7 @@ mod setup {
             MyToken::TEST_CLASS_HASH.try_into().expect('Class hash conversion failed'),
             0,
             calldata.span(),
-            false
+            false,
         )
             .expect('ERC20 deploy failed');
 
@@ -154,7 +150,7 @@ mod setup {
             MockEkuboCore::TEST_CLASS_HASH.try_into().expect('Class hash conversion failed'),
             0,
             ArrayTrait::new().span(),
-            false
+            false,
         )
             .expect('Mock Ekubo Core deploy failed');
         let core_dispatcher = ICoreDispatcher { contract_address: address };
@@ -169,7 +165,7 @@ mod setup {
             auth::TEST_CLASS_HASH.try_into().expect('Class hash conversion failed'),
             0,
             array![owner, verifier].span(),
-            false
+            false,
         )
             .expect('Auth contract deploy failed');
 

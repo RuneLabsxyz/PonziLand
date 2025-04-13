@@ -4,9 +4,7 @@ on:
   push:
     branches:
       - "main"
-  pull_request:
-    branches:
-      - "main"
+  pull_request: {}
 
 permissions:
   contents: read
@@ -23,7 +21,7 @@ jobs:
       - id: setup-dojo
         uses: runelabsxyz/setup-dojo@main
         with:
-          version: "v1.0.12"
+          version: "v1.4.0"
 
       - name: Build contract
         working-directory: ./contracts

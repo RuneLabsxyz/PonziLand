@@ -6,11 +6,7 @@ on:
       - "main"
       - "target/*"
   # Cloudflare handles preview environments pretty well:
-  pull_request:
-    branches:
-      - "main"
-      - "target/*"
-
+  pull_request: {}
 permissions:
   contents: read
   deployments: write
