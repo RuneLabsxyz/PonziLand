@@ -1,76 +1,76 @@
 [
   {
-    "step": 1,
+    "step": "_1",
     "text": "Hello there! Welcome to the world of PonziLand!\n\nI'm Lazi, and I will explain the fundamentals of this game!",
     "image_id": 1
   },
   {
-    "step": 2,
+    "step": "_2",
     "text": "Right now, the world is full of empty lands. \n\n Everyday, new lands are under auction for players to buy. ",
     "image_id": 2
   },
   {
-    "step": 3,
+    "step": "_3",
     "text": "A new auction has been launched ! We should buy it before another player claims it !",
     "image_id": 3
   },
   {
-    "step": 4,
+    "step": "_4",
     "text": "You can buy land by clicking on an auctionned land. ",
     "image_id": 4
   },
   {
-    "step": 5,
+    "step": "_5",
     "text": "The land price will decrease over time, until a player buys it.\n\nThe higher the price, the more XP and tokens you'll get !",
     "image_id": 1
   },
   {
-    "step": 6,
+    "step": "_6",
     "text": "Choose a token to buy the land to get a building from the community you want ! ",
     "image_id": 2
   },
   {
-    "step": 7,
+    "step": "_7",
     "text": "Check out the leaderboard to see top players.",
     "image_id": 3
   },
   {
-    "step": 8,
+    "step": "_8",
     "text": "Visit the shop to buy new items.",
     "image_id": 4
   },
   {
-    "step": 9,
+    "step": "_9",
     "text": "Complete tasks to earn rewards.",
     "image_id": 1
   },
   {
-    "step": 10,
+    "step": "_10",
     "text": "Join a community to interact with other players.",
     "image_id": 2
   },
   {
-    "step": 11,
+    "step": "_11",
     "text": "Participate in events to win exclusive prizes.",
     "image_id": 3
   },
   {
-    "step": 12,
+    "step": "_12",
     "text": "Use the help section if you need assistance.",
     "image_id": 4
   },
   {
-    "step": 13,
+    "step": "_13",
     "text": "Keep an eye on notifications for updates.",
     "image_id": 1
   },
   {
-    "step": 14,
+    "step": "_14",
     "text": "You can log out from the settings menu.",
     "image_id": 2
   },
   {
-    "step": 15,
+    "step": "_15",
     "text": "Thank you for completing the tutorial!",
     "image_id": 3
   }
