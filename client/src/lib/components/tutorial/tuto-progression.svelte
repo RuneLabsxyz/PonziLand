@@ -5,12 +5,15 @@
     removeAuctionFromTiles,
     buyAuction,
     leveUp,
-  } from './stores';
+  } from './stores.svelte';
   import { selectedLandPosition } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import dialogData from './dialog.json';
+  import { countOffset } from '@tsparticles/engine';
 
-  let currentDialog = $derived(dialogData[$tutorialProgression - 1]);
+  const step = tutorialProgression();
+
+  let currentDialog = $derived(dialogData[step.value - 1]);
 
   // Active image is the state that controls which image is displayed
   // during the tutorial. It is set to an empty string when no image is displayed.
@@ -23,45 +26,45 @@
   }
 
   function nextStep() {
-    if ($tutorialProgression < 15) {
-      tutorialProgression.set($tutorialProgression + 1);
+    if (step.value < 15) {
+      step.increment();
     }
   }
 
   function previousStep() {
-    if ($tutorialProgression > 1) {
-      tutorialProgression.set($tutorialProgression - 1);
+    if (step.value > 1) {
+      step.decrement();
     }
   }
 
   // Tutorial progression handler:
   // This effect manages special tutorial elements based on the current step
   $effect(() => {
-    if ($tutorialProgression === 3) {
+    if (step.value === 3) {
       addAuctionToTiles();
-    } else if ($tutorialProgression < 3) {
+    } else if (step.value < 3) {
       removeAuctionFromTiles();
     }
-    if ($tutorialProgression === 4) {
+    if (step.value === 4) {
       // Select the auction tile at position [8][8]
       const auctionLocation = toHexWithPadding(8 * 16 + 8);
       selectedLandPosition.set(auctionLocation);
     }
-    if ($tutorialProgression === 5) {
+    if (step.value === 5) {
       activeImage = 'auction';
-    } else if ($tutorialProgression === 6) {
+    } else if (step.value === 6) {
       activeImage = 'buy-auction';
     } else {
       activeImage = '';
     }
 
-    if ($tutorialProgression === 8) {
+    if (step.value === 8) {
       buyAuction();
     }
-    if ($tutorialProgression === 9) {
+    if (step.value === 9) {
       leveUp(8, 8);
     }
-    if ($tutorialProgression === 10) {
+    if (step.value === 10) {
       leveUp(8, 8);
     }
   });
@@ -123,7 +126,7 @@
   class="fixed bottom-16 left-0 right-0 mx-auto z-[9999] flex w-fit flex-col items-center pointer-events-none"
 >
   <span class="text-2xl font-bold text-white text-ponzi">
-    Step {$tutorialProgression}/15
+    Step {step.value}/15
   </span>
 </div>
 

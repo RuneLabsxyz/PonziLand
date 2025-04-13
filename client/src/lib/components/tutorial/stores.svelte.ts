@@ -90,4 +90,15 @@ export function leveUp(x: number, y: number): void {
 }
 
 export const tiles = writable<Tile[][]>(createFakeTiles());
-export const tutorialProgression = writable<number>(1);
+
+export function tutorialProgression() {
+  let value = $state(1);
+
+  return {
+    get value() {
+      return value;
+    },
+    increment: () => (value += 1),
+    decrement: () => (value -= 1),
+  };
+}

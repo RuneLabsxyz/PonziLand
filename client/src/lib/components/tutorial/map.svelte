@@ -8,7 +8,7 @@
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import TileCell from './tile.svelte';
-  import { tiles, MAP_SIZE } from './stores';
+  import { tiles, MAP_SIZE, setTiles } from './stores.svelte';
 
   const TILE_SIZE = 32;
 
