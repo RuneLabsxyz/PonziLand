@@ -11,6 +11,11 @@
   import dialogData from './dialog.json';
 
   let currentDialog = $derived(dialogData[$tutorialProgression - 1]);
+
+  // Active image is the state that controls which image is displayed
+  // during the tutorial. It is set to an empty string when no image is displayed.
+  // The images are loaded from the /tutorial/ui/ directory.
+  // The images are named according to the activeImage variable.
   let activeImage = $state('');
 
   function formatText(text: string) {
