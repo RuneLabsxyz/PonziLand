@@ -8,7 +8,9 @@
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import TileCell from './tile.svelte';
-  import { tiles, MAP_SIZE, setTiles } from './stores.svelte';
+  import { tileState, MAP_SIZE } from './stores.svelte';
+
+  let tiles = $derived(tileState.getTiles());
 
   const TILE_SIZE = 32;
 
@@ -218,7 +220,7 @@
         onmouseleave={handleMouseUp}
         style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale});"
       >
-        {#each $tiles as row, y}
+        {#each tiles as row, y}
           <div class="row">
             {#each row as tile, x}
               <TileCell land={tile} {dragged} scale={$cameraPosition.scale} />

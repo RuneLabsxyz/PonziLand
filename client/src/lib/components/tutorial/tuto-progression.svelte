@@ -1,11 +1,5 @@
 <script lang="ts">
-  import {
-    tutorialProgression,
-    addAuctionToTiles,
-    removeAuctionFromTiles,
-    buyAuction,
-    leveUp,
-  } from './stores.svelte';
+  import { tutorialProgression, tileState } from './stores.svelte';
   import { selectedLandPosition } from '$lib/stores/stores.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import dialogData from './dialog.json';
@@ -28,22 +22,23 @@
   function nextStep() {
     if (step.value < 15) {
       step.increment();
+      changeMap();
     }
   }
 
   function previousStep() {
     if (step.value > 1) {
       step.decrement();
+      changeMap();
     }
   }
 
   // Tutorial progression handler:
-  // This effect manages special tutorial elements based on the current step
-  $effect(() => {
+  function changeMap() {
     if (step.value === 3) {
-      addAuctionToTiles();
+      tileState.addAuction();
     } else if (step.value < 3) {
-      removeAuctionFromTiles();
+      tileState.removeAuction();
     }
     if (step.value === 4) {
       // Select the auction tile at position [8][8]
@@ -59,15 +54,15 @@
     }
 
     if (step.value === 8) {
-      buyAuction();
+      tileState.buyAuction();
     }
     if (step.value === 9) {
-      leveUp(8, 8);
+      tileState.levelUp(8, 8);
     }
     if (step.value === 10) {
-      leveUp(8, 8);
+      tileState.levelUp(8, 8);
     }
-  });
+  }
 </script>
 
 <div
