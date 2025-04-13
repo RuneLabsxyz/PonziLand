@@ -1,6 +1,9 @@
+// Required, as the uint macro overrides that function.
+#![allow(clippy::manual_div_ceil)]
+
 use ekubo_sdk::math::uint::U256;
 use std::fmt::Binary;
-use std::ops::{Not, Shl, Sub};
+use std::ops::{Not, Sub};
 use std::{
     fmt::Display,
     ops::{Add, Div, Mul},
@@ -94,7 +97,7 @@ impl U256FD128 {
     }
 
     pub fn is_negative(&self) -> bool {
-        (self.0 >> 256 - 1) == U256::one()
+        (self.0 >> (256 - 1)) == U256::one()
     }
 
     pub fn sign(&self) -> i8 {
@@ -206,9 +209,9 @@ impl Mul for U256FD128 {
 
         let result = U256FD128(U256::from(result));
 
-        if self.sign() == other.sign() && result.sign() == -1 {
-            panic!("Multiplication overflow");
-        } else if self.sign() != other.sign() && result.sign() == 1 {
+        if self.sign() == other.sign() && result.sign() == -1
+            || self.sign() != other.sign() && result.sign() == 1
+        {
             panic!("Multiplication overflow");
         }
 
@@ -264,7 +267,7 @@ impl Display for U256FD128 {
         let whole = abs_val.0 >> 128;
 
         let mut decimals = String::new();
-        let mut acc = abs_val.0 & (U256::one() << 128) - 1; // Get only the fractional part
+        let mut acc = abs_val.0 & ((U256::one() << 128) - 1); // Get only the fractional part
 
         if !acc.is_zero() {
             decimals.push('.');
@@ -277,7 +280,7 @@ impl Display for U256FD128 {
                 break;
             }
 
-            acc = acc * 10;
+            acc *= 10;
             let digit = (acc >> 128).as_u32() as u8;
             decimals.push((b'0' + digit) as char);
             acc &= (U256::one() << 128) - 1; // Clear the fractional part, again
