@@ -11,9 +11,9 @@ fn calculate_discount_for_level(level: Level) -> u16 {
 }
 
 fn calculate_new_level(elapsed_time: u64) -> Level {
-    if elapsed_time >= FOUR_DAYS_IN_SECONDS {
+    if elapsed_time >= FOUR_DAYS_IN_SECONDS.into() {
         Level::Second
-    } else if elapsed_time >= TWO_DAYS_IN_SECONDS {
+    } else if elapsed_time >= TWO_DAYS_IN_SECONDS.into() {
         Level::First
     } else {
         Level::Zero

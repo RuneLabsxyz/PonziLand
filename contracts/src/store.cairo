@@ -19,12 +19,12 @@ impl StoreImpl of StoreTrait {
 
     // Getter
     #[inline(always)]
-    fn land(self: Store, land_location: u64) -> Land {
+    fn land(self: Store, land_location: u16) -> Land {
         self.world.read_model(land_location)
     }
 
     #[inline(always)]
-    fn auction(self: Store, land_location: u64) -> Auction {
+    fn auction(self: Store, land_location: u16) -> Auction {
         self.world.read_model(land_location)
     }
 

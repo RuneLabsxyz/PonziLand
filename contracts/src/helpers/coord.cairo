@@ -5,14 +5,14 @@
 
 use ponzi_land::consts::{GRID_WIDTH};
 
-fn position_to_index(row: u64, col: u64) -> u64 {
+fn position_to_index(row: u16, col: u16) -> u16 {
     assert!(row < GRID_WIDTH, "out of bounds");
     assert!(col < GRID_WIDTH, "out of bounds");
 
     return row * GRID_WIDTH + col;
 }
 
-fn index_to_position(index: u64) -> (u64, u64) {
+fn index_to_position(index: u16) -> (u16, u16) {
     assert!(index < GRID_WIDTH * GRID_WIDTH, "out of bounds");
 
     let row = index / GRID_WIDTH;
@@ -21,7 +21,7 @@ fn index_to_position(index: u64) -> (u64, u64) {
     return (row, col);
 }
 
-fn left(index: u64) -> Option<u64> {
+fn left(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if col == 0 {
         // return index;
@@ -31,7 +31,7 @@ fn left(index: u64) -> Option<u64> {
     }
 }
 
-fn right(index: u64) -> Option<u64> {
+fn right(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if col == GRID_WIDTH - 1 {
         //return index
@@ -41,7 +41,7 @@ fn right(index: u64) -> Option<u64> {
     }
 }
 
-fn up(index: u64) -> Option<u64> {
+fn up(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if row == 0 {
         //return index
@@ -51,7 +51,7 @@ fn up(index: u64) -> Option<u64> {
     }
 }
 
-fn down(index: u64) -> Option<u64> {
+fn down(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if row == GRID_WIDTH - 1 {
         //return index
@@ -61,7 +61,7 @@ fn down(index: u64) -> Option<u64> {
     }
 }
 
-fn up_left(index: u64) -> Option<u64> {
+fn up_left(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if row == 0 || col == 0 {
         Option::None
@@ -70,7 +70,7 @@ fn up_left(index: u64) -> Option<u64> {
     }
 }
 
-fn up_right(index: u64) -> Option<u64> {
+fn up_right(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if row == 0 || col == GRID_WIDTH - 1 {
         Option::None
@@ -79,7 +79,7 @@ fn up_right(index: u64) -> Option<u64> {
     }
 }
 
-fn down_left(index: u64) -> Option<u64> {
+fn down_left(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if row == GRID_WIDTH - 1 || col == 0 {
         Option::None
@@ -88,7 +88,7 @@ fn down_left(index: u64) -> Option<u64> {
     }
 }
 
-fn down_right(index: u64) -> Option<u64> {
+fn down_right(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
     if row == GRID_WIDTH - 1 || col == GRID_WIDTH - 1 {
         Option::None
@@ -97,11 +97,11 @@ fn down_right(index: u64) -> Option<u64> {
     }
 }
 
-fn is_valid_position(index: u64) -> bool {
+fn is_valid_position(index: u16) -> bool {
     index < GRID_WIDTH * GRID_WIDTH
 }
 
-fn max_neighbors(index: u64) -> u64 {
+fn max_neighbors(index: u16) -> u8 {
     let mut count = 0;
 
     // Orthogonal neighbors
@@ -192,7 +192,7 @@ mod coord_test {
         assert(is_valid_position(10), 'has to be true');
         assert(is_valid_position(4095), 'has to be true');
         assert(!is_valid_position(4096), 'has to be false');
-        assert(!is_valid_position(100000), 'has to be false');
+        assert(!is_valid_position(10000), 'has to be false');
     }
 
     #[test]

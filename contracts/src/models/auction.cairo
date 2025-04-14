@@ -10,13 +10,13 @@ pub struct Auction {
     // id:u64 // this can be the key with location, we have to see if we prefer this or with the
     // start_time
     #[key]
-    pub land_location: u64, // 64 x 64 land
+    pub land_location: u16, // 64 x 64 land
     //the start_time can be the other key
     pub start_time: u64,
     pub start_price: u256,
     pub floor_price: u256,
     pub is_finished: bool,
-    pub decay_rate: u64,
+    pub decay_rate: u16,
     pub sold_at_price: Option<u256>,
 }
 
@@ -24,11 +24,11 @@ pub struct Auction {
 impl AuctionImpl of AuctionTrait {
     #[inline(always)]
     fn new(
-        land_location: u64,
+        land_location: u16,
         start_price: u256,
         floor_price: u256,
         is_finished: bool,
-        decay_rate: u64,
+        decay_rate: u16,
     ) -> Auction {
         Auction {
             land_location,
@@ -88,14 +88,14 @@ impl AuctionImpl of AuctionTrait {
         };
 
         // if the auction has passed a week, the price is 0
-        if time_passed.into() >= AUCTION_DURATION {
+        if time_passed >= AUCTION_DURATION.into() {
             return 0;
         }
 
         let mut current_price: u256 = self.start_price;
 
         //for the first minutes we use a linear decay
-        if time_passed <= LINEAR_DECAY_TIME {
+        if time_passed <= LINEAR_DECAY_TIME.into() {
             let time_fraction = time_passed.into() * DECIMALS_FACTOR / LINEAR_DECAY_TIME.into();
 
             let linear_factor = DECIMALS_FACTOR
@@ -109,7 +109,9 @@ impl AuctionImpl of AuctionTrait {
                 * remaining_rate.into()
                 / RATE_DENOMINATOR.into();
 
-            let progress__time: u256 = (time_passed.into() * DECIMALS_FACTOR / AUCTION_DURATION)
+            let progress__time: u256 = (time_passed.into()
+                * DECIMALS_FACTOR
+                / AUCTION_DURATION.into())
                 .into();
 
             // k is the decay rate (adjusted by DECIMALS_FACTOR for scaling)

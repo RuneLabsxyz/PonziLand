@@ -34,11 +34,11 @@ mod TaxesComponent {
     #[storage]
     struct Storage {
         //                         (land_owner,location) -> token_index
-        pending_taxes_length: Map<(ContractAddress, u64), u64>,
+        pending_taxes_length: Map<(ContractAddress, u16), u64>,
         //                 (land_owner,token_index) -> token_info
         pending_taxes: Map<(ContractAddress, u64), TokenInfo>,
         //                         (land_owner,location,token_index) -> token_info
-        pending_taxes_for_land: Map<(ContractAddress, u64, u64), TokenInfo>,
+        pending_taxes_for_land: Map<(ContractAddress, u16, u64), TokenInfo>,
         //this for the current version of cairo with dojo don't work
     //pending_taxes:Map<ContractAddress,Vec<TokenInfo>>
 
@@ -58,7 +58,7 @@ mod TaxesComponent {
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
         fn _calculate_and_distribute(
-            ref self: ComponentState<TContractState>, mut store: Store, land_location: u64,
+            ref self: ComponentState<TContractState>, mut store: Store, land_location: u16,
         ) -> bool {
             let mut land = store.land(land_location);
 
@@ -164,7 +164,7 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>,
             taxes: Array<TokenInfo>,
             owner_land: ContractAddress,
-            land_location: u64,
+            land_location: u16,
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
             for token_info in taxes {
@@ -184,7 +184,7 @@ mod TaxesComponent {
         fn _remove_pending_taxes(
             ref self: ComponentState<TContractState>,
             owner_land: ContractAddress,
-            land_location: u64,
+            land_location: u16,
             token_info: TokenInfo,
         ) {
             //to see the quantity of token in total
@@ -207,7 +207,7 @@ mod TaxesComponent {
         }
 
         fn _get_pending_taxes(
-            self: @ComponentState<TContractState>, owner_land: ContractAddress, land_location: u64,
+            self: @ComponentState<TContractState>, owner_land: ContractAddress, land_location: u16,
         ) -> Array<TokenInfo> {
             let taxes_length = self.pending_taxes_length.read((owner_land, land_location));
             let mut taxes: Array<TokenInfo> = ArrayTrait::new();

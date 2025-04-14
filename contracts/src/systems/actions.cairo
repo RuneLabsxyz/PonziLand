@@ -10,7 +10,7 @@ use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 trait IActions<T> {
     fn bid(
         ref self: T,
-        land_location: u64,
+        land_location: u16,
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
@@ -18,42 +18,42 @@ trait IActions<T> {
     );
     fn buy(
         ref self: T,
-        land_location: u64,
+        land_location: u16,
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
         liquidity_pool: PoolKey,
     );
 
-    fn claim(ref self: T, land_location: u64);
+    fn claim(ref self: T, land_location: u16);
 
-    fn claim_all(ref self: T, land_locations: Array<u64>);
+    fn claim_all(ref self: T, land_locations: Array<u16>);
 
 
-    fn increase_price(ref self: T, land_location: u64, new_price: u256);
+    fn increase_price(ref self: T, land_location: u16, new_price: u256);
 
-    fn increase_stake(ref self: T, land_location: u64, amount_to_stake: u256);
+    fn increase_stake(ref self: T, land_location: u16, amount_to_stake: u256);
 
-    fn level_up(ref self: T, land_location: u64) -> bool;
+    fn level_up(ref self: T, land_location: u16) -> bool;
 
     fn reimburse_stakes(ref self: T);
 
-    fn get_land(self: @T, land_location: u64) -> Land;
+    fn get_land(self: @T, land_location: u16) -> Land;
     fn get_pending_taxes_for_land(
-        self: @T, land_location: u64, owner: ContractAddress,
+        self: @T, land_location: u16, owner: ContractAddress,
     ) -> Array<TokenInfo>;
-    fn get_current_auction_price(self: @T, land_location: u64) -> u256;
-    fn get_next_claim_info(self: @T, land_location: u64) -> Array<ClaimInfo>;
-    fn get_neighbors_yield(self: @T, land_location: u64) -> LandYieldInfo;
+    fn get_current_auction_price(self: @T, land_location: u16) -> u256;
+    fn get_next_claim_info(self: @T, land_location: u16) -> Array<ClaimInfo>;
+    fn get_neighbors_yield(self: @T, land_location: u16) -> LandYieldInfo;
     fn get_active_auctions(self: @T) -> u8;
-    fn get_auction(self: @T, land_location: u64) -> Auction;
-    fn get_time_to_nuke(self: @T, land_location: u64) -> u64;
-    fn get_unclaimed_taxes_per_neighbor(self: @T, land_location: u64) -> u256;
+    fn get_auction(self: @T, land_location: u16) -> Auction;
+    fn get_time_to_nuke(self: @T, land_location: u16) -> u64;
+    fn get_unclaimed_taxes_per_neighbor(self: @T, land_location: u16) -> u256;
     // returns (pending_taxes, unclaimed_taxes)
     fn get_claimable_taxes_for_land(
-        self: @T, land_location: u64, owner: ContractAddress,
+        self: @T, land_location: u16, owner: ContractAddress,
     ) -> (Array<TokenInfo>, Array<TokenInfo>);
-    //  fn get_neighbors(self: @T, land_location: u64) -> Array<(Land, LandYieldInfo)>;
+    //  fn get_neighbors(self: @T, land_location: u16) -> Array<(Land, LandYieldInfo)>;
 }
 
 // dojo decorator
@@ -138,7 +138,7 @@ pub mod actions {
     pub struct LandNukedEvent {
         #[key]
         owner_nuked: ContractAddress,
-        land_location: u64,
+        land_location: u16,
     }
 
 
@@ -148,7 +148,7 @@ pub mod actions {
         #[key]
         buyer: ContractAddress,
         #[key]
-        land_location: u64,
+        land_location: u16,
         sold_price: u256,
         seller: ContractAddress,
         token_used: ContractAddress,
@@ -158,7 +158,7 @@ pub mod actions {
     #[dojo::event]
     pub struct RemainingStakeEvent {
         #[key]
-        land_location: u64,
+        land_location: u16,
         remaining_stake: u256,
     }
 
@@ -166,7 +166,7 @@ pub mod actions {
     #[dojo::event]
     pub struct NewAuctionEvent {
         #[key]
-        land_location: u64,
+        land_location: u16,
         start_time: u64,
         start_price: u256,
         floor_price: u256,
@@ -176,7 +176,7 @@ pub mod actions {
     #[dojo::event]
     pub struct AuctionFinishedEvent {
         #[key]
-        land_location: u64,
+        land_location: u16,
         buyer: ContractAddress,
         start_time: u64,
         final_time: u64,
@@ -202,12 +202,12 @@ pub mod actions {
         active_auctions: u8,
         main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
-        active_auction_queue: Map<u64, bool>,
-        staked_lands: Map<u64, bool>, // New storage variable to track staked lands
-        used_lands_in_circle: Map<(u64, u8), Vec<u64>>,
-        current_circle: u64,
-        current_section: Map<u64, u8>,
-        completed_lands_per_section: Map<(u64, u8), u64>,
+        active_auction_queue: Map<u16, bool>,
+        staked_lands: Map<u16, bool>, // New storage variable to track staked lands
+        used_lands_in_circle: Map<(u16, u8), Vec<u16>>,
+        current_circle: u16,
+        current_section: Map<u16, u8>,
+        completed_lands_per_section: Map<(u16, u8), u16>,
     }
 
     fn dojo_init(
@@ -215,7 +215,7 @@ pub mod actions {
         token_address: ContractAddress,
         start_price: u256,
         floor_price: u256,
-        decay_rate: u64,
+        decay_rate: u16,
         ekubo_core_address: ContractAddress,
     ) {
         self.main_currency.write(token_address);
@@ -230,7 +230,7 @@ pub mod actions {
     impl ActionsImpl of IActions<ContractState> {
         fn buy(
             ref self: ContractState,
-            land_location: u64,
+            land_location: u16,
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
@@ -292,7 +292,7 @@ pub mod actions {
         }
 
 
-        fn claim(ref self: ContractState, land_location: u64) {
+        fn claim(ref self: ContractState, land_location: u16) {
             assert(is_valid_position(land_location), 'Land location not valid');
             let caller = get_caller_address();
             let mut world = self.world_default();
@@ -305,7 +305,7 @@ pub mod actions {
             self.internal_claim(store, land);
         }
 
-        fn claim_all(ref self: ContractState, land_locations: Array<u64>) {
+        fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
             let caller = get_caller_address();
             let mut world = self.world_default();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
@@ -323,7 +323,7 @@ pub mod actions {
 
         fn bid(
             ref self: ContractState,
-            land_location: u64,
+            land_location: u16,
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
@@ -374,7 +374,7 @@ pub mod actions {
         }
 
 
-        fn increase_price(ref self: ContractState, land_location: u64, new_price: u256) {
+        fn increase_price(ref self: ContractState, land_location: u16, new_price: u256) {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -393,7 +393,7 @@ pub mod actions {
             store.set_land(land);
         }
 
-        fn increase_stake(ref self: ContractState, land_location: u64, amount_to_stake: u256) {
+        fn increase_stake(ref self: ContractState, land_location: u16, amount_to_stake: u256) {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -420,7 +420,7 @@ pub mod actions {
                 );
         }
 
-        fn level_up(ref self: ContractState, land_location: u64) -> bool {
+        fn level_up(ref self: ContractState, land_location: u16) -> bool {
             assert(is_valid_position(land_location), 'Land location not valid');
 
             let mut world = self.world_default();
@@ -447,7 +447,7 @@ pub mod actions {
             let mut store = StoreTrait::new(world);
             let mut active_lands: Array<Land> = ArrayTrait::new();
 
-            let mut i: u64 = 0;
+            let mut i: u16 = 0;
             loop {
                 if i >= GRID_WIDTH * GRID_WIDTH {
                     break;
@@ -470,12 +470,12 @@ pub mod actions {
         //GETTERS FUNCTIONS
 
         fn get_pending_taxes_for_land(
-            self: @ContractState, land_location: u64, owner: ContractAddress,
+            self: @ContractState, land_location: u16, owner: ContractAddress,
         ) -> Array<TokenInfo> {
             self.taxes._get_pending_taxes(owner, land_location)
         }
 
-        fn get_land(self: @ContractState, land_location: u64) -> Land {
+        fn get_land(self: @ContractState, land_location: u16) -> Land {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
@@ -484,7 +484,7 @@ pub mod actions {
         }
 
 
-        fn get_current_auction_price(self: @ContractState, land_location: u64) -> u256 {
+        fn get_current_auction_price(self: @ContractState, land_location: u16) -> u256 {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
@@ -496,7 +496,7 @@ pub mod actions {
             auction.get_current_price_decay_rate()
         }
 
-        fn get_next_claim_info(self: @ContractState, land_location: u64) -> Array<ClaimInfo> {
+        fn get_next_claim_info(self: @ContractState, land_location: u16) -> Array<ClaimInfo> {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
@@ -527,7 +527,7 @@ pub mod actions {
             claim_info
         }
 
-        fn get_neighbors_yield(self: @ContractState, land_location: u64) -> LandYieldInfo {
+        fn get_neighbors_yield(self: @ContractState, land_location: u16) -> LandYieldInfo {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
@@ -567,24 +567,24 @@ pub mod actions {
             self.active_auctions.read()
         }
 
-        fn get_auction(self: @ContractState, land_location: u64) -> Auction {
+        fn get_auction(self: @ContractState, land_location: u16) -> Auction {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             store.auction(land_location)
         }
 
-        fn get_time_to_nuke(self: @ContractState, land_location: u64) -> u64 {
+        fn get_time_to_nuke(self: @ContractState, land_location: u16) -> u64 {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            let num_neighbors = get_land_neighbors(store, land_location).len();
+            let num_neighbors = get_land_neighbors(store, land.location).len();
 
             get_time_to_nuke(land, num_neighbors.try_into().unwrap()).try_into().unwrap()
         }
 
-        fn get_unclaimed_taxes_per_neighbor(self: @ContractState, land_location: u64) -> u256 {
+        fn get_unclaimed_taxes_per_neighbor(self: @ContractState, land_location: u16) -> u256 {
             let world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
@@ -592,7 +592,7 @@ pub mod actions {
         }
 
         fn get_claimable_taxes_for_land(
-            self: @ContractState, land_location: u64, owner: ContractAddress,
+            self: @ContractState, land_location: u16, owner: ContractAddress,
         ) -> (Array<TokenInfo>, Array<TokenInfo>) {
             let world = self.world_default();
             let store = StoreTrait::new(world);
@@ -623,10 +623,10 @@ pub mod actions {
 
         fn auction(
             ref self: ContractState,
-            land_location: u64,
+            land_location: u16,
             start_price: u256,
             floor_price: u256,
-            decay_rate: u64,
+            decay_rate: u16,
             is_from_nuke: bool,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -662,7 +662,7 @@ pub mod actions {
                 );
         }
 
-        fn nuke(ref self: ContractState, land_location: u64, has_liquidity_requirements: bool) {
+        fn nuke(ref self: ContractState, land_location: u16, has_liquidity_requirements: bool) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
@@ -782,7 +782,7 @@ pub mod actions {
         fn finalize_land_purchase(
             ref self: ContractState,
             mut store: Store,
-            land_location: u64,
+            land_location: u16,
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
@@ -853,7 +853,7 @@ pub mod actions {
         }
 
         fn _claim_and_discount_taxes(
-            ref self: ContractState, taxes: Array<TokenInfo>, owner: ContractAddress, location: u64,
+            ref self: ContractState, taxes: Array<TokenInfo>, owner: ContractAddress, location: u16,
         ) {
             if taxes.len() != 0 {
                 self.stake._discount_total_stake(taxes.span());
@@ -895,7 +895,7 @@ pub mod actions {
             }
         }
 
-        fn select_next_auction_location(ref self: ContractState) -> u64 {
+        fn select_next_auction_location(ref self: ContractState) -> u16 {
             let circle = self.current_circle.read();
             let section = self.current_section.read(circle);
             let section_len = lands_per_section(circle);
@@ -912,7 +912,7 @@ pub mod actions {
         }
 
 
-        fn get_used_index(ref self: ContractState, circle: u64, section: u8) -> Array<u64> {
+        fn get_used_index(ref self: ContractState, circle: u16, section: u8) -> Array<u16> {
             let mut index = array![];
             let vec_len = self.used_lands_in_circle.entry((circle, section)).len();
             let mut i = 0;
@@ -924,7 +924,7 @@ pub mod actions {
         }
 
         fn handle_circle_completion_and_increment_section(
-            ref self: ContractState, circle: u64, section: u8,
+            ref self: ContractState, circle: u16, section: u8,
         ) {
             self.increment_section_count(circle, section);
             self.handle_circle_completion(circle);
@@ -934,17 +934,17 @@ pub mod actions {
             let section_len = lands_per_section(circle);
 
             let used_lands = self.get_used_index(circle, section);
-            if used_lands.len().into() == section_len {
+            if used_lands.len() == section_len.into() {
                 self.advance_section(circle);
             }
         }
 
-        fn increment_section_count(ref self: ContractState, circle: u64, section: u8) {
+        fn increment_section_count(ref self: ContractState, circle: u16, section: u8) {
             let current_section_count = self.completed_lands_per_section.read((circle, section));
             self.completed_lands_per_section.write((circle, section), current_section_count + 1);
         }
 
-        fn handle_circle_completion(ref self: ContractState, circle: u64) {
+        fn handle_circle_completion(ref self: ContractState, circle: u16) {
             let section = self.current_section.read(circle);
             let current_section_count = self.completed_lands_per_section.read((circle, section));
             let section_len = lands_per_section(circle);
@@ -954,12 +954,12 @@ pub mod actions {
             }
         }
 
-        fn advance_section(ref self: ContractState, circle: u64) {
+        fn advance_section(ref self: ContractState, circle: u16) {
             let section = self.current_section.read(circle);
             self.current_section.write(circle, section + 1);
         }
 
-        fn advance_circle(ref self: ContractState, circle: u64) {
+        fn advance_circle(ref self: ContractState, circle: u16) {
             self.current_circle.write(circle + 1);
             self.current_section.write(circle + 1, 0);
         }

@@ -8,7 +8,7 @@ use ekubo::types::keys::PoolKey as EkuboPoolKey;
 #[dojo::model]
 pub struct Land {
     #[key]
-    pub location: u64, // 64 x 64 land
+    pub location: u16, // 64 x 64 land
     pub block_date_bought: u64,
     pub owner: ContractAddress,
     pub sell_price: u256,
@@ -67,7 +67,7 @@ impl PoolKeyConversion of PoolKeyTrait {
 impl LandImpl of LandTrait {
     #[inline(always)]
     fn new(
-        location: u64,
+        location: u16,
         owner: ContractAddress,
         token_used: ContractAddress,
         sell_price: u256,

@@ -214,7 +214,7 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
 fn validate_staking_state(
     store: Store,
     contract_address: ContractAddress,
-    land_locations: Span<u64>,
+    land_locations: Span<u16>,
     tokens: Span<IERC20CamelDispatcher>,
     should_have_balance: bool,
 ) {
@@ -247,7 +247,7 @@ pub fn clear_events(address: ContractAddress) {
 }
 
 
-fn capture_location_of_new_auction(address: ContractAddress) -> Option<u64> {
+fn capture_location_of_new_auction(address: ContractAddress) -> Option<u16> {
     let selector_from_names = selector_from_names(@"ponzi_land", @"NewAuctionEvent");
     let mut location = Option::None;
     loop {
@@ -301,7 +301,7 @@ fn initialize_land(
     actions_system: IActionsDispatcher,
     main_currency: IERC20CamelDispatcher,
     owner: ContractAddress,
-    location: u64,
+    location: u16,
     sell_price: u256,
     stake_amount: u256,
     token_for_sale: IERC20CamelDispatcher,
@@ -352,7 +352,7 @@ fn setup_buyer_with_tokens(
 }
 
 // Helper function for verifying taxes and stake after a claim
-fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u64, store: Store) {
+fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u16, store: Store) {
     let land = store.land(land_location);
     let taxes = actions_system.get_pending_taxes_for_land(land_location, land.owner);
     assert(taxes.len() > 0, 'must have pending taxes');
@@ -362,7 +362,7 @@ fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u64
 // Helper function for land verification
 fn verify_land(
     store: Store,
-    location: u64,
+    location: u16,
     expected_owner: ContractAddress,
     expected_price: u256,
     expected_pool: PoolKey,
@@ -386,7 +386,7 @@ fn bid_and_verify_next_auctions(
     actions_system: IActionsDispatcher,
     store: Store,
     main_currency: IERC20CamelDispatcher,
-    locations: Array<u64>,
+    locations: Array<u16>,
     next_direction: u8, // 0=left, 1=up, 2=right, 3=down
     pool_key: PoolKey,
 ) {
@@ -425,7 +425,7 @@ fn bid_and_verify_next_auctions(
 fn create_land_with_neighbors(
     mut store: Store,
     actions_system: IActionsDispatcher,
-    location: u64,
+    location: u16,
     owner: ContractAddress,
     token_used: IERC20CamelDispatcher,
     sell_price: u256,
@@ -435,7 +435,7 @@ fn create_land_with_neighbors(
     token_used_neighbor_1: IERC20CamelDispatcher,
     token_used_neighbor_2: IERC20CamelDispatcher,
     token_used_neighbor_3: IERC20CamelDispatcher,
-) -> Array<u64> {
+) -> Array<u16> {
     // Create the main land
     let land = LandTrait::new(
         location,
@@ -909,7 +909,7 @@ fn test_level_up() {
         10000,
         erc20_neighbor,
     );
-    set_block_timestamp((TWO_DAYS_IN_SECONDS / TIME_SPEED.into()) + 100);
+    set_block_timestamp((TWO_DAYS_IN_SECONDS.into() / TIME_SPEED.into()) + 100);
 
     set_contract_address(RECIPIENT());
     actions_system.level_up(2080);
@@ -1017,7 +1017,7 @@ fn test_organic_auction() {
     );
 
     // Initial head locations
-    let heads: Array<u64> = array![2080, 1050, 1002, 1007];
+    let heads: Array<u16> = array![2080, 1050, 1002, 1007];
 
     let pool = pool_key(main_currency.contract_address);
     set_block_timestamp(10000);
@@ -1025,7 +1025,7 @@ fn test_organic_auction() {
     bid_and_verify_next_auctions(actions_system, store, main_currency, heads.clone(), 0, pool);
 
     // Get LEFT locations
-    let mut left_locations: Array<u64> = ArrayTrait::new();
+    let mut left_locations: Array<u16> = ArrayTrait::new();
     let mut i = 0;
     loop {
         if i >= heads.len() {
@@ -1043,7 +1043,7 @@ fn test_organic_auction() {
     );
 
     // Get UP locations
-    let mut up_locations: Array<u64> = ArrayTrait::new();
+    let mut up_locations: Array<u16> = ArrayTrait::new();
     i = 0;
     loop {
         if i >= left_locations.len() {
@@ -1060,7 +1060,7 @@ fn test_organic_auction() {
     );
 
     // Get RIGHT locations
-    let mut right_locations: Array<u64> = ArrayTrait::new();
+    let mut right_locations: Array<u16> = ArrayTrait::new();
     i = 0;
     loop {
         if i >= up_locations.len() {
@@ -1073,7 +1073,7 @@ fn test_organic_auction() {
     };
 
     // Get second RIGHT locations
-    let mut right2_locations: Array<u64> = ArrayTrait::new();
+    let mut right2_locations: Array<u16> = ArrayTrait::new();
     i = 0;
     loop {
         if i >= right_locations.len() {

@@ -5,30 +5,30 @@ use keccak::keccak_u256s_le_inputs;
 use core::integer::u256_from_felt252;
 
 
-fn lands_in_circle(circle_number: u64) -> u64 {
+fn lands_in_circle(circle_number: u16) -> u16 {
     return circle_number * 8;
 }
 
-fn lands_per_section(circle_number: u64) -> u64 {
+fn lands_per_section(circle_number: u16) -> u16 {
     return lands_in_circle(circle_number) / 4;
 }
 
 
-fn is_section_completed(lands_completed: u64, circle: u64) -> bool {
+fn is_section_completed(lands_completed: u16, circle: u16) -> bool {
     return lands_completed == lands_per_section(circle);
 }
 
 
-fn get_circle_land_position(circle: u64, index: u64) -> u64 {
-    let center: u64 = GRID_WIDTH / 2;
+fn get_circle_land_position(circle: u16, index: u16) -> u16 {
+    let center: u16 = GRID_WIDTH / 2;
     let lands_per_section = lands_per_section(circle);
     let total_lands = lands_in_circle(circle);
     assert(index < total_lands, 'Invalid index for circle');
     let section = index / lands_per_section;
     let offset = index % lands_per_section;
 
-    let mut row: u64 = 0;
-    let mut col: u64 = 0;
+    let mut row: u16 = 0;
+    let mut col: u16 = 0;
     match section {
         0 => { // Top
             row = center - circle;
@@ -55,8 +55,8 @@ fn get_circle_land_position(circle: u64, index: u64) -> u64 {
     return position_to_index(row, col);
 }
 
-fn generate_circle(circle: u64) -> Array<u64> {
-    let mut lands: Array<u64> = ArrayTrait::new();
+fn generate_circle(circle: u16) -> Array<u16> {
+    let mut lands: Array<u16> = ArrayTrait::new();
     let lands_per_section = lands_per_section(circle);
 
     let mut section = 0;
@@ -74,7 +74,7 @@ fn generate_circle(circle: u64) -> Array<u64> {
 }
 
 
-fn get_random_index(max: u64) -> u64 {
+fn get_random_index(max: u16) -> u16 {
     let caller = get_caller_address();
     let block = get_block_number() - 1;
     let caller_felt252: felt252 = caller.into();
@@ -86,7 +86,7 @@ fn get_random_index(max: u64) -> u64 {
     return index.try_into().unwrap();
 }
 
-fn get_random_available_index(circle: u64, used_lands: Array<u64>) -> u64 {
+fn get_random_available_index(circle: u16, used_lands: Array<u16>) -> u16 {
     let section_len = lands_per_section(circle);
     let rand = get_random_index(section_len.into());
     let mut index = rand;

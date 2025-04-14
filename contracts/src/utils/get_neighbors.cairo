@@ -7,7 +7,7 @@ use ponzi_land::helpers::coord::{
 };
 
 
-fn get_land_neighbors(mut store: Store, land_location: u64) -> Array<Land> {
+fn get_land_neighbors(mut store: Store, land_location: u16) -> Array<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
 
     for direction in get_directions(land_location) {
@@ -17,7 +17,7 @@ fn get_land_neighbors(mut store: Store, land_location: u64) -> Array<Land> {
     lands
 }
 
-fn add_land_neighbor(mut store: Store, ref lands: Array<Land>, land_location: Option<u64>) {
+fn add_land_neighbor(mut store: Store, ref lands: Array<Land>, land_location: Option<u16>) {
     match land_location {
         Option::Some(location) => {
             let land = store.land(location);
@@ -29,7 +29,7 @@ fn add_land_neighbor(mut store: Store, ref lands: Array<Land>, land_location: Op
     }
 }
 
-fn get_auction_neighbors(mut store: Store, land_location: u64) -> Array<Auction> {
+fn get_auction_neighbors(mut store: Store, land_location: u16) -> Array<Auction> {
     let mut auctions: Array<Auction> = ArrayTrait::new();
 
     for direction in get_directions(land_location) {
@@ -40,7 +40,7 @@ fn get_auction_neighbors(mut store: Store, land_location: u64) -> Array<Auction>
 }
 
 fn add_auction_neighbor(
-    mut store: Store, ref auctions: Array<Auction>, land_location: Option<u64>,
+    mut store: Store, ref auctions: Array<Auction>, land_location: Option<u16>,
 ) {
     match land_location {
         Option::Some(location) => {
@@ -54,7 +54,7 @@ fn add_auction_neighbor(
 }
 
 
-fn get_average_price(mut store: Store, land_location: u64) -> u256 {
+fn get_average_price(mut store: Store, land_location: u16) -> u256 {
     let neighbors = get_auction_neighbors(store, land_location);
 
     if neighbors.len() == 0 {
@@ -71,7 +71,7 @@ fn get_average_price(mut store: Store, land_location: u64) -> u256 {
     (total_price / neighbors.len().into()) * FACTOR_FOR_SELL_PRICE.into()
 }
 
-fn get_directions(land_location: u64) -> Array<Option<u64>> {
+fn get_directions(land_location: u16) -> Array<Option<u16>> {
     array![
         left(land_location),
         right(land_location),
