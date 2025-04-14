@@ -53,6 +53,9 @@ pub struct Pool {
     /// The total value locked of token1 in the pool
     pub tvl1_total: Felt,
 
+    pub fees0_24h: Felt,
+    pub fees1_24h: Felt,
+
     /// The change in total value locked of token0 in the last 24 hours
     pub tvl0_delta_24h: Felt,
     /// The change in total value locked of token1 in the last 24 hours
@@ -76,6 +79,9 @@ fn get_pool<'a>(token0: &'a str, token1: &'a str, raw_pool: &RawPool) -> Result<
 
         tvl0_total: Felt::from_str(&raw_pool.tvl0_total).map_err(|_| Error::InvalidPoolValue)?,
         tvl1_total: Felt::from_str(&raw_pool.tvl1_total).map_err(|_| Error::InvalidPoolValue)?,
+
+        fees0_24h: Felt::from_str(&raw_pool.fees0_24h).map_err(|_| Error::InvalidPoolValue)?,
+        fees1_24h: Felt::from_str(&raw_pool.fees1_24h).map_err(|_| Error::InvalidPoolValue)?,
 
         tvl0_delta_24h: Felt::from_str(&raw_pool.tvl0_delta_24h)
             .map_err(|_| Error::InvalidPoolValue)?,
