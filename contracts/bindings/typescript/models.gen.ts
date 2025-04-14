@@ -2,8 +2,6 @@ import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
 import { CairoCustomEnum, CairoOption, CairoOptionVariant, BigNumberish } from 'starknet';
 
-type WithFieldOrder<T> = T & { fieldOrder: string[] };
-
 // Type definition for `ponzi_land::models::auction::Auction` struct
 export interface Auction {
 	land_location: BigNumberish;
@@ -163,42 +161,42 @@ export interface VerifierUpdatedEventValue {
 }
 
 // Type definition for `ponzi_land::models::land::Level` enum
-export type Level = {
-	Zero: string;
-	First: string;
-	Second: string;
-}
+export const level = [
+	'Zero',
+	'First',
+	'Second',
+] as const;
+export type Level = { [key in typeof level[number]]: string };
 export type LevelEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
 	ponzi_land: {
-		Auction: WithFieldOrder<Auction>,
-		AuctionValue: WithFieldOrder<AuctionValue>,
-		Land: WithFieldOrder<Land>,
-		LandValue: WithFieldOrder<LandValue>,
-		PoolKey: WithFieldOrder<PoolKey>,
-		AuctionFinishedEvent: WithFieldOrder<AuctionFinishedEvent>,
-		AuctionFinishedEventValue: WithFieldOrder<AuctionFinishedEventValue>,
-		LandBoughtEvent: WithFieldOrder<LandBoughtEvent>,
-		LandBoughtEventValue: WithFieldOrder<LandBoughtEventValue>,
-		LandNukedEvent: WithFieldOrder<LandNukedEvent>,
-		LandNukedEventValue: WithFieldOrder<LandNukedEventValue>,
-		NewAuctionEvent: WithFieldOrder<NewAuctionEvent>,
-		NewAuctionEventValue: WithFieldOrder<NewAuctionEventValue>,
-		RemainingStakeEvent: WithFieldOrder<RemainingStakeEvent>,
-		RemainingStakeEventValue: WithFieldOrder<RemainingStakeEventValue>,
-		AddressAuthorizedEvent: WithFieldOrder<AddressAuthorizedEvent>,
-		AddressAuthorizedEventValue: WithFieldOrder<AddressAuthorizedEventValue>,
-		AddressRemovedEvent: WithFieldOrder<AddressRemovedEvent>,
-		AddressRemovedEventValue: WithFieldOrder<AddressRemovedEventValue>,
-		VerifierUpdatedEvent: WithFieldOrder<VerifierUpdatedEvent>,
-		VerifierUpdatedEventValue: WithFieldOrder<VerifierUpdatedEventValue>,
+		Auction: Auction,
+		AuctionValue: AuctionValue,
+		Land: Land,
+		LandValue: LandValue,
+		PoolKey: PoolKey,
+		AuctionFinishedEvent: AuctionFinishedEvent,
+		AuctionFinishedEventValue: AuctionFinishedEventValue,
+		LandBoughtEvent: LandBoughtEvent,
+		LandBoughtEventValue: LandBoughtEventValue,
+		LandNukedEvent: LandNukedEvent,
+		LandNukedEventValue: LandNukedEventValue,
+		NewAuctionEvent: NewAuctionEvent,
+		NewAuctionEventValue: NewAuctionEventValue,
+		RemainingStakeEvent: RemainingStakeEvent,
+		RemainingStakeEventValue: RemainingStakeEventValue,
+		AddressAuthorizedEvent: AddressAuthorizedEvent,
+		AddressAuthorizedEventValue: AddressAuthorizedEventValue,
+		AddressRemovedEvent: AddressRemovedEvent,
+		AddressRemovedEventValue: AddressRemovedEventValue,
+		VerifierUpdatedEvent: VerifierUpdatedEvent,
+		VerifierUpdatedEventValue: VerifierUpdatedEventValue,
 	},
 }
 export const schema: SchemaType = {
 	ponzi_land: {
 		Auction: {
-			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate', 'sold_at_price'],
 			land_location: 0,
 			start_time: 0,
 		start_price: 0,
@@ -208,7 +206,6 @@ export const schema: SchemaType = {
 		sold_at_price: new CairoOption(CairoOptionVariant.None),
 		},
 		AuctionValue: {
-			fieldOrder: ['start_time', 'start_price', 'floor_price', 'is_finished', 'decay_rate', 'sold_at_price'],
 			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
@@ -217,7 +214,6 @@ export const schema: SchemaType = {
 		sold_at_price: new CairoOption(CairoOptionVariant.None),
 		},
 		Land: {
-			fieldOrder: ['location', 'block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time', 'stake_amount', 'level'],
 			location: 0,
 			block_date_bought: 0,
 			owner: "",
@@ -232,7 +228,6 @@ export const schema: SchemaType = {
 				Second: undefined, }),
 		},
 		LandValue: {
-			fieldOrder: ['block_date_bought', 'owner', 'sell_price', 'token_used', 'pool_key', 'last_pay_time', 'stake_amount', 'level'],
 			block_date_bought: 0,
 			owner: "",
 		sell_price: 0,
@@ -246,7 +241,6 @@ export const schema: SchemaType = {
 				Second: undefined, }),
 		},
 		PoolKey: {
-			fieldOrder: ['token0', 'token1', 'fee', 'tick_spacing', 'extension'],
 			token0: "",
 			token1: "",
 			fee: 0,
@@ -254,7 +248,6 @@ export const schema: SchemaType = {
 			extension: "",
 		},
 		AuctionFinishedEvent: {
-			fieldOrder: ['land_location', 'buyer', 'start_time', 'final_time', 'final_price'],
 			land_location: 0,
 			buyer: "",
 			start_time: 0,
@@ -262,14 +255,12 @@ export const schema: SchemaType = {
 		final_price: 0,
 		},
 		AuctionFinishedEventValue: {
-			fieldOrder: ['buyer', 'start_time', 'final_time', 'final_price'],
 			buyer: "",
 			start_time: 0,
 			final_time: 0,
 		final_price: 0,
 		},
 		LandBoughtEvent: {
-			fieldOrder: ['buyer', 'land_location', 'sold_price', 'seller', 'token_used'],
 			buyer: "",
 			land_location: 0,
 		sold_price: 0,
@@ -277,67 +268,54 @@ export const schema: SchemaType = {
 			token_used: "",
 		},
 		LandBoughtEventValue: {
-			fieldOrder: ['sold_price', 'seller', 'token_used'],
 		sold_price: 0,
 			seller: "",
 			token_used: "",
 		},
 		LandNukedEvent: {
-			fieldOrder: ['owner_nuked', 'land_location'],
 			owner_nuked: "",
 			land_location: 0,
 		},
 		LandNukedEventValue: {
-			fieldOrder: ['land_location'],
 			land_location: 0,
 		},
 		NewAuctionEvent: {
-			fieldOrder: ['land_location', 'start_time', 'start_price', 'floor_price'],
 			land_location: 0,
 			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
 		},
 		NewAuctionEventValue: {
-			fieldOrder: ['start_time', 'start_price', 'floor_price'],
 			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
 		},
 		RemainingStakeEvent: {
-			fieldOrder: ['land_location', 'remaining_stake'],
 			land_location: 0,
 		remaining_stake: 0,
 		},
 		RemainingStakeEventValue: {
-			fieldOrder: ['remaining_stake'],
 		remaining_stake: 0,
 		},
 		AddressAuthorizedEvent: {
-			fieldOrder: ['address', 'authorized_at'],
 			address: "",
 			authorized_at: 0,
 		},
 		AddressAuthorizedEventValue: {
-			fieldOrder: ['authorized_at'],
 			authorized_at: 0,
 		},
 		AddressRemovedEvent: {
-			fieldOrder: ['address', 'removed_at'],
 			address: "",
 			removed_at: 0,
 		},
 		AddressRemovedEventValue: {
-			fieldOrder: ['removed_at'],
 			removed_at: 0,
 		},
 		VerifierUpdatedEvent: {
-			fieldOrder: ['new_verifier', 'old_verifier'],
 			new_verifier: 0,
 			old_verifier: 0,
 		},
 		VerifierUpdatedEventValue: {
-			fieldOrder: ['old_verifier'],
 			old_verifier: 0,
 		},
 	},
