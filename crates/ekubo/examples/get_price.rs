@@ -1,4 +1,4 @@
-use ekubo::{contract::pool_price::PoolKey, EkuboClient};
+use ekubo::EkuboClient;
 use starknet::{
     core::types::Felt,
     providers::{jsonrpc::HttpTransport, JsonRpcClient, Url},
@@ -39,7 +39,7 @@ pub async fn main() {
 
     println!("=====================\n");
 
-    if pools.len() == 0 {
+    if pools.is_empty() {
         println!("No pools found");
         return;
     }

@@ -5,13 +5,7 @@ use contract::pool_price::read_pool_price;
 use math::u256fd128::U256FD128;
 use price::PairRatio;
 use reqwest::Client as ReqwestClient;
-use starknet::{
-    core::{
-        codec::{Decode, Encode},
-        types::{BlockId, BlockTag, Felt, FunctionCall, U256},
-    },
-    macros::selector,
-};
+use starknet::core::types::Felt;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -60,8 +54,8 @@ where
         Ok(get_all_pools(
             &self.http_client,
             self.ekubo_api,
-            &*token0.to_hex_string(),
-            &*token1.to_hex_string(),
+            &token0.to_hex_string(),
+            &token1.to_hex_string(),
         )
         .await?)
     }
