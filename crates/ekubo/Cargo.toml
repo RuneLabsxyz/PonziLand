@@ -10,8 +10,12 @@ starknet.workspace = true
 thiserror.workspace = true
 trait-variant = "0.1.2"
 uint = "0.10.0"
+reqwest = { version = "0.12.15", features = ["json"] }
+serde = { version = "1.0.219", features = ["derive"] }
+url = "2.5.4"
 
 [dev-dependencies]
+mockito = "1.7.0"
 tokio = { workspace = true, features = ["full"] }
 
 [[example]]

@@ -1,5 +1,10 @@
+use crate::api::pool::Pool;
+use crate::contract::pool_price::PoolKey;
+use api::pool::get_all_pools;
+use contract::pool_price::read_pool_price;
 use math::u256fd128::U256FD128;
 use price::PairRatio;
+use reqwest::Client as ReqwestClient;
 use starknet::{
     core::{
         codec::{Decode, Encode},
@@ -7,80 +12,62 @@ use starknet::{
     },
     macros::selector,
 };
+use std::sync::Arc;
 use thiserror::Error;
 
+pub mod api;
+pub mod contract;
 pub mod math;
-mod price;
+pub mod price;
 
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Pool not found")]
     PoolNotFound,
-    #[error("Invalid price")]
-    InvalidPrice,
+    #[error(transparent)]
+    ApiError(#[from] api::Error),
     #[error("RPC error")]
-    RpcError,
-}
-
-#[derive(Clone, PartialEq, Debug, Decode, Encode)]
-pub struct PoolKey {
-    pub token0: Felt,
-    pub token1: Felt,
-    pub fee: u128,
-    pub tick_spacing: u32,
-    pub extension: Felt,
-}
-
-#[derive(Clone, Copy, PartialEq, Debug, Decode, Encode)]
-pub struct I129 {
-    pub value: u128,
-    pub sign: bool,
-}
-
-#[derive(Clone, PartialEq, Debug, Decode, Encode)]
-pub struct LiquidityResponse {
-    pub sqrt_ratio: U256,
-    pub tick: I129,
+    RpcError(#[from] crate::contract::Error),
+    #[error("HTTP request error")]
+    HttpError(#[from] reqwest::Error),
 }
 
 pub struct EkuboClient<'a, Client>
 where
-    Client: starknet::providers::Provider,
+    Client: starknet::providers::Provider + Send + Sync,
 {
     contract_address: Felt,
     rpc_client: &'a Client,
+    // Allows to pass a reqwest client if needed
+    http_client: Arc<ReqwestClient>,
+    ekubo_api: &'a str,
 }
 
 impl<'a, Client> EkuboClient<'a, Client>
 where
-    Client: starknet::providers::Provider,
+    Client: starknet::providers::Provider + Send + Sync,
 {
-    pub fn new(contract_address: Felt, rpc_client: &'a Client) -> Self {
+    pub fn new(contract_address: Felt, rpc_client: &'a Client, ekubo_api: &'a str) -> Self {
         Self {
             contract_address,
             rpc_client,
+            http_client: Arc::new(ReqwestClient::new()),
+            ekubo_api,
         }
     }
 
-    pub async fn read_pool_price(&self, pool: PoolKey) -> Result<PairRatio, Error> {
-        let mut call_data = Vec::new();
-        pool.encode(&mut call_data).unwrap();
+    pub async fn get_pools(&self, token0: Felt, token1: Felt) -> Result<Vec<Pool>, Error> {
+        Ok(get_all_pools(
+            &self.http_client,
+            self.ekubo_api,
+            &*token0.to_hex_string(),
+            &*token1.to_hex_string(),
+        )
+        .await?)
+    }
 
-        let response = self
-            .rpc_client
-            .call(
-                FunctionCall {
-                    contract_address: self.contract_address,
-                    entry_point_selector: selector!("get_pool_price"),
-                    calldata: call_data,
-                },
-                BlockId::Tag(BlockTag::Latest),
-            )
-            .await
-            .map_err(|_| Error::RpcError)?;
-
-        let response = LiquidityResponse::decode(response.iter().collect::<Vec<&Felt>>()).unwrap();
-
+    pub async fn read_pool_price(&self, pool: &PoolKey) -> Result<PairRatio, Error> {
+        let response = read_pool_price(self.rpc_client, self.contract_address, pool).await?;
         // Then do the conversion
         // Let's compute the price from this result.
         // The value sqrt_ratio is a 64.128 fixed point number.

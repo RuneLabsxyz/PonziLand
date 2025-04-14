@@ -20,6 +20,10 @@ in {
     colorized-logs
     wrangler
     graphite-cli
+
+    # Cargo dependencies
+    pkgs.openssl
+    pkgs.pkg-config
   ];
 
   languages.javascript = {
