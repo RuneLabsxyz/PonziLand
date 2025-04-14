@@ -75,17 +75,6 @@
     const result = await getAggregatedTaxes(land);
 
     aggregatedTaxes = result.taxes;
-
-    const nukables = result.nukables;
-
-    nukables.forEach((land) => {
-      if (land.nukable) {
-        nukeStore.pending.set(land.location, true);
-      } else {
-        // remove from nukeStore.pending if in
-        nukeStore.pending.delete(land.location);
-      }
-    });
   }
   let aggregatedTaxes: TaxData[] = $state([]);
 

@@ -15,28 +15,18 @@ export type TaxData = {
 export const getAggregatedTaxes = async (
   land: LandWithActions,
 ): Promise<{
-  nukables: { location: string; nukable: boolean }[];
   taxes: TaxData[];
 }> => {
   if (!land || !land.getNextClaim || !land.getPendingTaxes) {
     return {
-      nukables: [],
       taxes: [],
     };
   }
-
-  const locationsToNuke: { location: string; nukable: boolean }[] = [];
 
   // aggregate the two arrays with total tax per token
   const tokenTaxMap: Record<string, CurrencyAmount> = {};
 
   for (const tax of (await land.getNextClaim()) ?? []) {
-    if (tax.canBeNuked) {
-      locationsToNuke.push({ location: tax.landLocation, nukable: true });
-    } else {
-      locationsToNuke.push({ location: tax.landLocation, nukable: false });
-    }
-
     if (tax.amount.isZero()) {
       continue;
     }
@@ -79,11 +69,8 @@ export const getAggregatedTaxes = async (
       totalTax: totalTax,
     };
   });
-
-  // Convert the map to an array of objects
   return {
     taxes,
-    nukables: locationsToNuke,
   };
 };
 

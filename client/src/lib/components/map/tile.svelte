@@ -18,9 +18,8 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
-  import { onMount } from 'svelte';
-  import { getAggregatedTaxes } from '$lib/utils/taxes';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
+  import { locationsToNuke } from '$lib/stores/nuke.svelte';
 
   let {
     land,
@@ -85,38 +84,16 @@
     uiStore.modalType = 'bid';
   };
 
-  async function setNukables() {
-    if (land.type === 'house') {
-      // TODO: Add an alternative indexer that calls the view function on the behalf of the user
-      // to avoid destroying the RPC node.
-      const aggregatedTaxes = await getAggregatedTaxes(land);
-      const nukables = aggregatedTaxes.nukables;
+  let isNukable = $state(false);
 
-      nukables.forEach((land) => {
-        if (land.nukable) {
-          // add to nukeStore.pending if not already in
-          if (!nukeStore.pending.has(land.location)) {
-            nukeStore.pending.set(land.location, true);
-          }
-        } else {
-          // remove from nukeStore.pending if in
-          if (nukeStore.pending.has(land.location)) {
-            nukeStore.pending.delete(land.location);
-          }
-        }
+  $effect(() => {
+    if (land.type === 'grass') return;
+    if (land.type === 'house' && land.token) {
+      locationsToNuke.callNukableLocation(land).then((res) => {
+        isNukable = res;
       });
-    }
-  }
-
-  $effect(() => {
-    setNukables();
-  });
-
-  $effect(() => {
-    if (nukeStore.nuking.has(land.location)) {
-      setTimeout(() => {
-        nukeStore.nuking.delete(land.location);
-      }, 5000);
+    } else {
+      isNukable = false;
     }
   });
 </script>
@@ -195,7 +172,7 @@
     </div>
   {/if}
 
-  {#if nukeStore.pending.has(land.location)}
+  {#if isNukable}
     <div
       class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}

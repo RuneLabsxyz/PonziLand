@@ -18,8 +18,6 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from '$lib/components/map/rates-overlay.svelte';
-  import { onMount } from 'svelte';
-  import { getAggregatedTaxes } from '$lib/utils/taxes';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
 
   let { land, dragged, scale } = $props<{
