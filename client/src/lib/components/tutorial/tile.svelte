@@ -4,7 +4,6 @@
   import { type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
-  import { nukeStore } from '$lib/stores/nuke.svelte';
   import {
     selectedLand,
     selectedLandMeta,
@@ -145,7 +144,7 @@
     </div>
   {/if}
 
-  {#if nukeStore.pending.has(land.location)}
+  {#if false}
     <div
       class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}

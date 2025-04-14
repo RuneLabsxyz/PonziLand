@@ -4,7 +4,6 @@
   import { type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
-  import { nukeStore } from '$lib/stores/nuke.svelte';
   import {
     selectedLand,
     selectedLandMeta,
@@ -32,7 +31,7 @@
   }>();
 
   let address = $derived(account.address);
-  let isNuking = $derived(nukeStore.nuking.has(land.location));
+  let isNuking = $state(false);
 
   let isOwner = $derived.by(() => {
     if (land.type === 'grass') return false;
@@ -87,7 +86,9 @@
   let isNukable = $state(false);
 
   $effect(() => {
-    if (land.type === 'grass') return;
+    if (land.type === 'grass' && isNukable) {
+      isNuking = true;
+    }
     if (land.type === 'house' && land.token) {
       locationsToNuke.callNukableLocation(land).then((res) => {
         isNukable = res;
