@@ -2,6 +2,7 @@ use std::fmt::Display;
 
 use crate::math::u256fd128::U256FD128;
 
+#[derive(Debug, Clone)]
 pub struct PairRatio(pub U256FD128);
 
 impl PairRatio {

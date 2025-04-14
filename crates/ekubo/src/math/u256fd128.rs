@@ -74,6 +74,28 @@ impl From<starknet::core::types::U256> for U256FD128 {
     }
 }
 
+impl From<U256FD128> for f64 {
+    fn from(value: U256FD128) -> Self {
+        let sign = if value.is_negative() { -1.0 } else { 1.0 };
+        let abs_val = value.abs();
+
+        // Extract whole number part (bits above 128)
+        let whole = (abs_val.0 >> 128).as_u128() as f64;
+
+        // Extract fractional part (bits 0-127)
+        let frac_bits = abs_val.0 & ((U256::one() << 128) - U256::one());
+        let frac = if !frac_bits.is_zero() {
+            // Convert fraction bits to f64, maintaining precision
+            let frac_f64 = frac_bits.as_u128() as f64;
+            frac_f64 / 2.0f64.powi(128)
+        } else {
+            0.0
+        };
+
+        sign * (whole + frac)
+    }
+}
+
 impl U256FD128 {
     const DECIMAL_BITS: u32 = 128;
 

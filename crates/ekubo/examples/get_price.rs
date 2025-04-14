@@ -23,7 +23,7 @@ pub async fn main() {
         Felt::from_hex("0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384")
             .unwrap(),
         &client,
-        "https://starknet-sepolia-api.ekubo.org",
+        "https://starknet-sepolia-api.ekubo.org".to_string(),
     );
 
     // Find the best pool for the pair

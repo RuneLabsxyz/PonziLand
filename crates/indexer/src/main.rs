@@ -1,40 +1,66 @@
-use std::env;
+use std::{env, sync::Arc};
 
+use anyhow::{Context, Result};
 use axum::{routing::get, Json, Router};
 use config::Conf;
 use confique::Config;
+use monitoring::listen_monitoring;
+use routes::{price::PriceRoute, tokens::TokenRoute};
 use serde::{Deserialize, Serialize};
+use service::{ekubo::EkuboService, token::TokenService};
+use state::AppState;
 use tokio::{
     select,
     signal::unix::{signal, SignalKind},
 };
-use tracing::{error, info};
+use tracing::info;
+use worker::MonitorManager;
 
 pub mod config;
 pub mod service;
+pub mod worker;
+
+pub mod state;
+
+pub mod routes;
+
+pub mod monitoring;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     // initialize tracing
     tracing_subscriber::fmt::init();
 
-    let config_path = env::var("CONFIG_PATH");
+    let config_path = env::var("CONFIG_PATH").unwrap_or("./config.toml".to_string());
 
     let mut config = Conf::builder();
 
-    if let Ok(path) = config_path {
-        config = config.file(path);
+    if let Ok(true) = std::fs::exists(&config_path) {
+        config = config.file(config_path);
     }
 
-    let config = match config.env().load() {
-        Ok(config) => config,
-        Err(error) => {
-            error!("Failed to load configuration: {}", error);
-            std::process::exit(1);
-        }
+    let config = config
+        .env()
+        .load()
+        .with_context(|| "Impossible to read config")?;
+
+    let monitor = MonitorManager::new();
+
+    let token_service = Arc::new(TokenService::new(&config));
+    let ekubo = EkuboService::new(&config, token_service.clone(), &monitor).await;
+
+    let app_state = AppState {
+        token_service: token_service.clone(),
+        ekubo_service: ekubo.clone(),
     };
+
     // build our application with a route
     let app = Router::new()
+        .nest("/tokens", TokenRoute::new(token_service).router())
+        .nest(
+            "/price",
+            PriceRoute::new().router().with_state(app_state.clone()),
+        )
         // `GET /` goes to `root`
         .route("/", get(root));
 
@@ -45,7 +71,7 @@ async fn main() {
 
     info!("Listening on http://{}", listener.local_addr().unwrap());
 
-    let (stop_tx, stop_rx) = tokio::sync::oneshot::channel();
+    let (stop_tx, mut stop_rx) = tokio::sync::oneshot::channel();
 
     // Handle Ctrl + C
     tokio::spawn(async move {
@@ -59,12 +85,20 @@ async fn main() {
         stop_tx.send(()).unwrap();
     });
 
+    let http = axum::serve(listener, app);
+    let monitor = monitor.build().run();
+    let monitoring = listen_monitoring(&config).await;
+
     select! {
-        _ = axum::serve(listener, app) => {
-        },
-        _ = stop_rx => {
+        _ = http => {},
+        _ = monitor => {},
+        _ = monitoring => {},
+        _ = &mut stop_rx => {
+            info!("Cancellation requested.");
         }
-    };
+    }
+
+    Ok(())
 }
 
 #[derive(Debug, Serialize, Deserialize)]

@@ -5,7 +5,7 @@ use contract::pool_price::read_pool_price;
 use math::u256fd128::U256FD128;
 use price::PairRatio;
 use reqwest::Client as ReqwestClient;
-use starknet::core::types::Felt;
+pub use starknet::core::types::Felt;
 use std::sync::Arc;
 use thiserror::Error;
 
@@ -26,22 +26,22 @@ pub enum Error {
     HttpError(#[from] reqwest::Error),
 }
 
-pub struct EkuboClient<'a, Client>
+pub struct EkuboClient<Client>
 where
     Client: starknet::providers::Provider + Send + Sync,
 {
     contract_address: Felt,
-    rpc_client: &'a Client,
+    rpc_client: Client,
     // Allows to pass a reqwest client if needed
     http_client: Arc<ReqwestClient>,
-    ekubo_api: &'a str,
+    ekubo_api: String,
 }
 
-impl<'a, Client> EkuboClient<'a, Client>
+impl<Client> EkuboClient<Client>
 where
     Client: starknet::providers::Provider + Send + Sync + std::fmt::Debug,
 {
-    pub fn new(contract_address: Felt, rpc_client: &'a Client, ekubo_api: &'a str) -> Self {
+    pub fn new(contract_address: Felt, rpc_client: Client, ekubo_api: String) -> Self {
         Self {
             contract_address,
             rpc_client,
@@ -53,15 +53,15 @@ where
     pub async fn get_pools(&self, token0: Felt, token1: Felt) -> Result<Vec<Pool>, Error> {
         Ok(get_all_pools(
             &self.http_client,
-            self.ekubo_api,
-            &token0.to_hex_string(),
-            &token1.to_hex_string(),
+            &self.ekubo_api,
+            &token0.to_fixed_hex_string(),
+            &token1.to_fixed_hex_string(),
         )
         .await?)
     }
 
     pub async fn read_pool_price(&self, pool: &PoolKey) -> Result<PairRatio, Error> {
-        let response = read_pool_price(self.rpc_client, self.contract_address, pool).await?;
+        let response = read_pool_price(&self.rpc_client, self.contract_address, pool).await?;
         // Then do the conversion
         // Let's compute the price from this result.
         // The value sqrt_ratio is a 64.128 fixed point number.

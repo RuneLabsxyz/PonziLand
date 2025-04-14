@@ -95,7 +95,7 @@ fn get_pool<'a>(token0: &'a str, token1: &'a str, raw_pool: &RawPool) -> Result<
 
 #[derive(Debug, Deserialize)]
 struct Response {
-    #[serde(rename = "topPools")]
+    #[serde(rename = "topPools", default)]
     pub top_pools: Vec<RawPool>,
 }
 

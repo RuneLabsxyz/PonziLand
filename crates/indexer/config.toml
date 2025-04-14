@@ -1,0 +1,28 @@
+default_token = "eSTRK"
+
+[ekubo]
+api_url = "https://starknet-sepolia-api.ekubo.org"
+core_contract_address = "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
+
+[starknet]
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
+
+[[token]]
+symbol = "eSTRK"
+address = "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0"
+
+[[token]]
+symbol = "ePAPER"
+address = "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825"
+
+[[token]]
+symbol = "eLORDS"
+address = "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b"
+
+[[token]]
+symbol = "eBROTHER"
+address = "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe"
+
+[[token]]
+symbol = "ePAL"
+address = "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706"

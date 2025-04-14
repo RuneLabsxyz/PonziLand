@@ -17,6 +17,7 @@ reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 url.workspace = true
 tracing = { optional = true, workspace = true }
+chrono = "0.4.40"
 
 [dev-dependencies]
 mockito.workspace = true
