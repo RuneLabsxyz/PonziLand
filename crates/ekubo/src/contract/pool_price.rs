@@ -39,7 +39,8 @@ pub struct LiquidityResponse {
     pub tick: I129,
 }
 
-pub async fn read_pool_price<T: starknet::providers::Provider + Send + Sync>(
+#[cfg_attr(feature = "tracing", tracing::instrument)]
+pub async fn read_pool_price<T: starknet::providers::Provider + Send + Sync + std::fmt::Debug>(
     rpc_client: T,
     contract_address: Felt,
     pool: &PoolKey,

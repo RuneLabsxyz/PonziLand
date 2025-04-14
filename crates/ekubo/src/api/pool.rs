@@ -99,6 +99,7 @@ struct Response {
     pub top_pools: Vec<RawPool>,
 }
 
+#[cfg_attr(feature = "tracing", tracing::instrument)]
 pub(crate) async fn get_all_pools<'a>(
     client: &Client,
     base_url: &str,

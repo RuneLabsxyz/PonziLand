@@ -39,7 +39,7 @@ where
 
 impl<'a, Client> EkuboClient<'a, Client>
 where
-    Client: starknet::providers::Provider + Send + Sync,
+    Client: starknet::providers::Provider + Send + Sync + std::fmt::Debug,
 {
     pub fn new(contract_address: Felt, rpc_client: &'a Client, ekubo_api: &'a str) -> Self {
         Self {

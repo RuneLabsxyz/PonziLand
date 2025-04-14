@@ -3,6 +3,9 @@ name = "ekubo"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+tracing = ["dep:tracing"]
+
 [dependencies]
 safe_decimal_macro = { git = "https://github.com/invariant-labs/decimal.git" }
 ekubo_sdk.workspace = true
@@ -13,6 +16,7 @@ uint.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 serde = { workspace = true, features = ["derive"] }
 url.workspace = true
+tracing = { optional = true, workspace = true }
 
 [dev-dependencies]
 mockito.workspace = true
