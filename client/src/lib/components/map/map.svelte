@@ -169,53 +169,55 @@
   }
 </script>
 
-<div class="map-wrapper" bind:this={mapWrapper}>
-  <!-- Column numbers -->
-  <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
-    {#each Array(GRID_SIZE) as _, i}
-      <div
-        class="coordinate"
-        style="width: {TILE_SIZE * $cameraPosition.scale}px"
-      >
-        {i}
-      </div>
-    {/each}
-  </div>
-
-  <div class="map-with-rows">
-    <!-- Row numbers -->
-    <div class="row-numbers" style="top: {$cameraPosition.offsetY}px">
+<div class="overflow-hidden h-screen w-screen">
+  <div class="map-wrapper" bind:this={mapWrapper}>
+    <!-- Column numbers -->
+    <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
       {#each Array(GRID_SIZE) as _, i}
         <div
           class="coordinate"
-          style="height: {TILE_SIZE * $cameraPosition.scale}px"
+          style="width: {TILE_SIZE * $cameraPosition.scale}px"
         >
           {i}
         </div>
       {/each}
     </div>
 
-    <!-- Map container -->
-    <!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
-    <button
-      class="map-container"
-      role="application"
-      aria-label="Draggable map"
-      onwheel={handleWheel}
-      onmousedown={handleMouseDown}
-      onmousemove={handleMouseMove}
-      onmouseup={handleMouseUp}
-      onmouseleave={handleMouseUp}
-      style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale});"
-    >
-      {#each tiles as row, y}
-        <div class="row">
-          {#each row as tile, x}
-            <Tile land={tile} {dragged} scale={$cameraPosition.scale} />
-          {/each}
-        </div>
-      {/each}
-    </button>
+    <div class="map-with-rows">
+      <!-- Row numbers -->
+      <div class="row-numbers" style="top: {$cameraPosition.offsetY}px">
+        {#each Array(GRID_SIZE) as _, i}
+          <div
+            class="coordinate"
+            style="height: {TILE_SIZE * $cameraPosition.scale}px"
+          >
+            {i}
+          </div>
+        {/each}
+      </div>
+
+      <!-- Map container -->
+      <!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+      <button
+        class="map-container"
+        role="application"
+        aria-label="Draggable map"
+        onwheel={handleWheel}
+        onmousedown={handleMouseDown}
+        onmousemove={handleMouseMove}
+        onmouseup={handleMouseUp}
+        onmouseleave={handleMouseUp}
+        style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale});"
+      >
+        {#each tiles as row, y}
+          <div class="row">
+            {#each row as tile, x}
+              <Tile land={tile} {dragged} scale={$cameraPosition.scale} />
+            {/each}
+          </div>
+        {/each}
+      </button>
+    </div>
   </div>
 </div>
 
