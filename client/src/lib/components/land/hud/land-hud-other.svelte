@@ -3,7 +3,7 @@
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import { shortenHex } from '$lib/utils';
   import LandOverview from '../../land/land-overview.svelte';
-  import { usernames } from '$lib/stores/accounts';
+  import { usernamesStore } from '$lib/stores/account.svelte';
 </script>
 
 <div class="flex gap-4 relative items-center p-4">
@@ -24,7 +24,7 @@
             @TODO: handle in server so we can remove this  
           -->
           {#if $selectedLandMeta?.owner}
-            {$usernames[
+            {usernamesStore.getUsernames()[
               $selectedLandMeta?.owner
                 ?.replace('0x00', '0x')
                 .replace('0x0', '0x')

@@ -26,7 +26,7 @@
   //Helpers
   import { formatAddress, formatValue } from './helpers';
 
-  import { usernames, updateUsernames } from '$lib/stores/accounts';
+  import { usernamesStore } from '$lib/stores/account.svelte';
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
@@ -150,7 +150,7 @@
     try {
       const addresses = userRankings.map((user) => user.address);
       const fetchedUsernames = await fetchUsernamesBatch(addresses);
-      updateUsernames(fetchedUsernames);
+      usernamesStore.updateUsernames(fetchedUsernames);
     } catch (error) {
       console.error('Error fetching usernames:', error);
     }
@@ -170,7 +170,7 @@
 
       if (VERIFIED_ONLY) {
         userRankings = userRankings.filter(
-          (user) => padAddress(user.address)! in $usernames,
+          (user) => padAddress(user.address)! in usernamesStore.getUsernames(),
         );
       }
 
@@ -227,7 +227,7 @@
               <span
                 class="font-mono"
                 class:text-red-500={user.address === address}
-                >{$usernames[padAddress(user.address)!] ||
+                >{usernamesStore.getUsernames()[padAddress(user.address)!] ||
                   formatAddress(user.address)}</span
               >
               {#if user.address === address}
@@ -252,7 +252,8 @@
         <span class="text-sm">Your rank:</span>
         <span class="font-bold">{userRank}</span>
         <span class="font-mono text-red-500 text-sm"
-          >{$usernames[address] || formatAddress(address)}</span
+          >{usernamesStore.getUsernames()[address] ||
+            formatAddress(address)}</span
         >
         <span class="ml-auto font-bold">
           {formatValue(
