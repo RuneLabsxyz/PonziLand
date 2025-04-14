@@ -8,14 +8,14 @@ safe_decimal_macro = { git = "https://github.com/invariant-labs/decimal.git" }
 ekubo_sdk.workspace = true
 starknet.workspace = true
 thiserror.workspace = true
-trait-variant = "0.1.2"
-uint = "0.10.0"
-reqwest = { version = "0.12.15", features = ["json"] }
-serde = { version = "1.0.219", features = ["derive"] }
-url = "2.5.4"
+trait-variant.workspace = true
+uint.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+serde = { workspace = true, features = ["derive"] }
+url.workspace = true
 
 [dev-dependencies]
-mockito = "1.7.0"
+mockito.workspace = true
 tokio = { workspace = true, features = ["full"] }
 
 [[example]]
