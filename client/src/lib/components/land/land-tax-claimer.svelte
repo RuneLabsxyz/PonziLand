@@ -1,7 +1,11 @@
 <script lang="ts">
   import { type LandWithActions } from '$lib/api/land.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { claimAllOfToken, claimStore } from '$lib/stores/claim.svelte';
+  import {
+    claimAllOfToken,
+    claimStore,
+    claimSingleLand,
+  } from '$lib/stores/claim.svelte';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
@@ -53,6 +57,20 @@
     );
   }
 
+  async function handleSingleClaim(e: Event) {
+    console.log('claiming from single land');
+    fetchTaxes();
+
+    if (!land.token) {
+      console.error("Land doesn't have a token");
+      return;
+    }
+
+    claimSingleLand(land, dojo, account()?.getWalletAccount()!).catch((e) => {
+      console.error('error claiming from coin', e);
+    });
+  }
+
   async function fetchTaxes() {
     const result = await getAggregatedTaxes(land);
 
@@ -87,7 +105,7 @@
 <div class="relative w-full h-full">
   <div class="flex flex-col-reverse items-center animate-bounce">
     {#if aggregatedTaxes.length > 0 && timing && !animating}
-      <button onclick={handleClaimFromCoin} class="flex items-center">
+      <button onclick={handleSingleClaim} class="flex items-center">
         <img
           src="/ui/icons/Icon_Coin2.png"
           alt="coins"

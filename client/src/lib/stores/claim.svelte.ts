@@ -78,3 +78,40 @@ export async function claimAllOfToken(
       });
     });
 }
+
+export async function claimSingleLand(
+  land: LandWithActions,
+  { client: sdk, accountManager }: ReturnType<typeof useDojo>,
+  account: Account | AccountInterface,
+) {
+  const result = await getAggregatedTaxes(land);
+
+  await sdk.client.actions
+    .claim(account, land.location as BigNumberish)
+    .then(() => {
+      claimStore.value[land.location].lastClaimTime = Date.now();
+      claimStore.value[land.location].animating = true;
+      claimStore.value[land.location].claimable = false;
+
+      setTimeout(() => {
+        claimStore.value[land.location].animating = false;
+      }, 2000);
+
+      setTimeout(() => {
+        if (land.type === 'house') {
+          claimStore.value[land.location].claimable = true;
+        }
+      }, 30 * 1000);
+
+      claimQueue.update((queue) => {
+        return [
+          ...queue,
+          ...result.taxes.map((tax) => {
+            const token = getTokenInfo(tax.tokenAddress);
+            tax.totalTax.setToken(token);
+            return tax.totalTax;
+          }),
+        ];
+      });
+    });
+}
