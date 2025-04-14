@@ -505,14 +505,14 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land.location);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
-            let time_to_nuke = self.get_time_to_nuke(land.location);
-
             //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
                     if neighbor.stake_amount > 0 {
                         let tax_per_neighbor = self
                             .get_unclaimed_taxes_per_neighbor(neighbor.location);
+
+                        let time_to_nuke = self.get_time_to_nuke(neighbor.location);
 
                         let claim_info_per_neighbor = ClaimInfo {
                             token_address: neighbor.token_used,
