@@ -8,6 +8,8 @@
   import LandHudEmpty from './land-hud-empty.svelte';
   import LandHudOther from './land-hud-other.svelte';
   import LandHudOwned from './land-hud-owned.svelte';
+  import LandHudPro from './land-hud-pro.svelte';
+  import { proMode } from '$lib/stores/ui.store.svelte';
 
   const { store, client: sdk } = useDojo();
 
@@ -22,6 +24,8 @@
       <LandHudAuction />
     {:else if $selectedLandMeta.type === 'grass'}
       <LandHudEmpty />
+    {:else if proMode.isProMode}
+      <LandHudPro />
     {:else if isOwner}
       <LandHudOwned />
     {:else}
