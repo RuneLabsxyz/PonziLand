@@ -7,6 +7,8 @@
   import {
     fetchEkuboPairData,
     calculatePriceFromPool,
+    getTokenPrices,
+    type TokenPrice,
   } from '../defi/ekubo/requests';
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceChart from './PriceChart.svelte';
@@ -44,6 +46,7 @@
   let pairCards: PairCardData[] = $state([]);
   let loading = $state(true);
   let error = $state('');
+  let tokenPrices: TokenPrice[] = $state([]);
 
   /**
    * @notice Retrieves historical token balances for a specific date
@@ -118,16 +121,36 @@
   async function loadPairData() {
     const pairTokens = tokens.filter((t) => t.address !== baseToken);
     try {
+      // Fetch token prices first
+      tokenPrices = await getTokenPrices();
+
       const promises = pairTokens.map(async (token) => {
         const data = await fetchEkuboPairData(baseToken, token.address);
-        if (!baseTokenDetails?.decimals) {
-          throw new Error('Base token decimals not found');
-        }
-        const currentRate = calculatePriceFromPool(
-          data.topPools[0],
-          baseTokenDetails.decimals,
-          token.decimals,
+
+        // Find the token price from the API response
+        const tokenPrice = tokenPrices.find(
+          (tp) => tp.address === token.address,
         );
+        let currentRate;
+
+        if (tokenPrice) {
+          // Use the ratio from the API if available
+          currentRate = CurrencyAmount.fromUnscaled(
+            tokenPrice.ratio.toString(),
+            baseTokenDetails,
+          );
+        } else {
+          // Fallback to calculating from pool if price not available
+          if (!baseTokenDetails?.decimals) {
+            throw new Error('Base token decimals not found');
+          }
+          currentRate = calculatePriceFromPool(
+            data.topPools[0],
+            baseTokenDetails.decimals,
+            token.decimals,
+          );
+        }
+
         const historicalDate = data.tvlDeltaByTokenByDate.length
           ? data.tvlDeltaByTokenByDate[0].date
           : new Date().toISOString();
