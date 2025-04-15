@@ -5,7 +5,33 @@ use ponzi_land::models::auction::Auction;
 use ponzi_land::helpers::coord::{
     left, right, up, down, max_neighbors, up_left, up_right, down_left, down_right,
 };
+use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
+use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
 
+
+fn process_neighbors_of_neighbors(
+    mut store: Store, neighbors: Array<Land>,
+) -> Felt252Dict<Nullable<Array<Land>>> {
+    let mut neighbors_with_their_neighbors: Felt252Dict<Nullable<Array<Land>>> = Default::default();
+
+    for neighbor in neighbors {
+        let their_neighbors = get_land_neighbors(store, neighbor.location);
+        neighbors_with_their_neighbors
+            .insert(neighbor.location.into(), NullableTrait::new(their_neighbors));
+    };
+
+    neighbors_with_their_neighbors
+}
+
+fn get_neighbors_of_neighbors(
+    ref dict: Felt252Dict<Nullable<Array<Land>>>, location: u16,
+) -> Array<Land> {
+    let (entry, arr) = dict.entry(location.into());
+    let array = arr.deref_or(array![]);
+    let neighbors = array.clone();
+    dict = entry.finalize(NullableTrait::new(array));
+    neighbors
+}
 
 fn get_land_neighbors(mut store: Store, land_location: u16) -> Array<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
