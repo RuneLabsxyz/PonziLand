@@ -37,6 +37,7 @@
   const promisesToWait = (async () => {
     if (account != null) {
       validWallets = (await account.wait()).getAvailableWallets();
+      console.log('validWallets', validWallets);
     }
   })();
 
@@ -93,7 +94,7 @@
             {@const image =
               typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
             <Button
-              class="flex flex-row justify-start"
+              class="flex flex-row justify-start w-full min-h-[60px] p-3"
               on:click={() => login(wallet.id)}
             >
               <img
@@ -101,8 +102,17 @@
                 alt={wallet.name + ' logo'}
                 class="h-10 p-2 pr-4"
               />
-              <div>
-                {wallet.name}
+              <div class="flex flex-col items-start text-left">
+                <div class="text-lg">
+                  {wallet.name}
+                </div>
+                {#if wallet.id == 'controller'}
+                  <div class="text-sm opacity-70 text-orange-500">
+                    no fees + sessions!
+                  </div>
+                {:else}
+                  <div class="text-sm opacity-70 text-green-600">Standard</div>
+                {/if}
               </div>
             </Button>
           {/each}
