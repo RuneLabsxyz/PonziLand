@@ -8,7 +8,7 @@ use ekubo::{price::PairRatio, EkuboClient};
 use starknet::providers::{jsonrpc::HttpTransport, JsonRpcClient};
 use tracing::{error, info};
 
-use crate::{config::Conf, monitoring::namespace_layer::MonitoringLayer, worker::MonitorManager};
+use crate::{config::Conf, monitoring::apalis::MonitoringLayer, worker::MonitorManager};
 
 use super::token::TokenService;
 

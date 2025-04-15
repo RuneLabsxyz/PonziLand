@@ -1,16 +1,15 @@
 use std::future::ready;
 
-use axum::{routing::get, Router};
+use ::axum::{routing::get, serve, serve::Serve, Router};
 use metrics_exporter_prometheus::{PrometheusBuilder, PrometheusHandle};
 use tracing::info;
 
 use crate::config::Conf;
 
-pub mod namespace_layer;
+pub mod apalis;
+pub mod axum;
 
-pub async fn listen_monitoring(
-    config: &Conf,
-) -> axum::serve::Serve<tokio::net::TcpListener, Router, Router> {
+pub async fn listen_monitoring(config: &Conf) -> Serve<tokio::net::TcpListener, Router, Router> {
     let recorder = recorder();
 
     // run our app with hyper, listening globally on the chosen address and port
@@ -34,7 +33,7 @@ pub async fn listen_monitoring(
             get(move || ready(recorder.render())),
         );
 
-    axum::serve(listener, app)
+    serve(listener, app)
 }
 
 pub fn recorder() -> PrometheusHandle {

@@ -29,3 +29,5 @@ ekubo = { path = "../ekubo" }
 url = { workspace = true, features = ["serde"] }
 starknet.workspace = true
 arc-swap = "1.7.1"
+metrics = "0.24.1"
+pin-project-lite = "0.2.16"

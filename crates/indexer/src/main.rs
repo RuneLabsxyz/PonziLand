@@ -1,7 +1,7 @@
 use std::{env, sync::Arc};
 
 use anyhow::{Context, Result};
-use axum::{routing::get, Json, Router};
+use axum::{middleware, routing::get, Json, Router};
 use config::Conf;
 use confique::Config;
 use monitoring::listen_monitoring;
@@ -62,7 +62,8 @@ async fn main() -> Result<()> {
             PriceRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
-        .route("/", get(root));
+        .route("/", get(root))
+        .layer(middleware::from_fn(crate::monitoring::axum::track_metrics));
 
     // run our app with hyper, listening globally on the chosen address and port
     let listener = tokio::net::TcpListener::bind(format!("{}:{}", config.address, config.port))

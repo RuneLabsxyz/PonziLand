@@ -33,6 +33,7 @@ in {
 
   languages.rust = {
     enable = true;
+    mold.enable = true;
   };
 
   cachix = {
