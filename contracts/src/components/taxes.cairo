@@ -10,7 +10,8 @@ mod TaxesComponent {
     use starknet::info::{get_contract_address, get_block_timestamp};
 
     use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
+        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
+        MutableVecTrait,
     };
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
@@ -18,7 +19,7 @@ mod TaxesComponent {
     use ponzi_land::models::land::Land;
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
-    use ponzi_land::utils::get_neighbors::{get_land_neighbors};
+    use ponzi_land::utils::get_neighbors::{get_neighbors_of_neighbors};
     use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
@@ -33,15 +34,10 @@ mod TaxesComponent {
 
     #[storage]
     struct Storage {
-        //                         (land_owner,location) -> token_index
-        pending_taxes_length: Map<(ContractAddress, u16), u64>,
-        //                 (land_owner,token_index) -> token_info
-        pending_taxes: Map<(ContractAddress, u64), TokenInfo>,
-        //                         (land_owner,location,token_index) -> token_info
-        pending_taxes_for_land: Map<(ContractAddress, u16, u64), TokenInfo>,
-        //this for the current version of cairo with dojo don't work
-    //pending_taxes:Map<ContractAddress,Vec<TokenInfo>>
-
+        //  land_owner,location,token_address -> amount
+        pending_taxes_for_land: Map<(ContractAddress, u16, ContractAddress), u256>,
+        //land_owner,location -> token_address
+        pending_tokens_for_land: Map<(ContractAddress, u16), Vec<ContractAddress>>,
     }
 
     // Events
@@ -58,12 +54,13 @@ mod TaxesComponent {
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
         fn _calculate_and_distribute(
-            ref self: ComponentState<TContractState>, mut store: Store, land_location: u16,
+            ref self: ComponentState<TContractState>,
+            mut store: Store,
+            ref land: Land,
+            ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
         ) -> bool {
-            let mut land = store.land(land_location);
-
             //generate taxes for each neighbor of neighbor
-            let neighbors = get_land_neighbors(store, land_location);
+            let neighbors = get_neighbors_of_neighbors(ref neighbors_dict, land.location);
 
             //if we dont have neighbors we dont have to pay taxes
             let neighbors_with_owners = neighbors.len();
@@ -95,7 +92,7 @@ mod TaxesComponent {
             let mut i = 0;
             let mut last_neighbor = neighbors_with_owners - 1;
 
-            while i < neighbors.len() {
+            while i < neighbors_with_owners {
                 let neighbor = neighbors[i];
                 let extra_amount = if i == last_neighbor {
                     remainder_tax
@@ -103,11 +100,14 @@ mod TaxesComponent {
                     0
                 };
 
-                self._add_taxes(ref land, *neighbor, tax_per_neighbor + extra_amount, store);
+                self._add_taxes(land, *neighbor, tax_per_neighbor + extra_amount, store);
 
                 i += 1;
             };
+
+            //update the land
             land.last_pay_time = current_time;
+            land.stake_amount -= tax_to_distribute;
             store.set_land(land);
 
             is_nuke
@@ -116,48 +116,30 @@ mod TaxesComponent {
 
         fn _add_taxes(
             ref self: ComponentState<TContractState>,
-            ref tax_payer: Land,
+            tax_payer: Land,
             tax_recipient: Land,
             amount: u256,
             mut store: Store,
         ) {
-            // to see how many of diferents tokens the person can have in that land_location
-            let taxes_length = self
-                .pending_taxes_length
-                .read((tax_recipient.owner, tax_recipient.location));
-            //to see if the token of new taxes already exists
-            let mut found = false;
-            //find existing token and sum the amount
-            for mut i in 0..taxes_length {
-                let mut token_info = self
-                    .pending_taxes_for_land
-                    .read((tax_recipient.owner, tax_recipient.location, i));
+            let token_addresses = self
+                .pending_tokens_for_land
+                .entry((tax_recipient.owner, tax_recipient.location));
 
-                if token_info.token_address == tax_payer.token_used {
-                    token_info.amount += amount;
-
-                    self
-                        .pending_taxes_for_land
-                        .write((tax_recipient.owner, tax_recipient.location, i), token_info);
-
-                    found = true;
-
+            let mut exists = false;
+            for mut i in 0..token_addresses.len() {
+                if token_addresses.at(i).read() == tax_payer.token_used {
+                    exists = true;
                     break;
-                }
+                };
             };
 
-            if !found {
-                let token_info = TokenInfo { token_address: tax_payer.token_used, amount };
-
-                self
-                    .pending_taxes_for_land
-                    .write((tax_recipient.owner, tax_recipient.location, taxes_length), token_info);
-                self
-                    .pending_taxes_length
-                    .write((tax_recipient.owner, tax_recipient.location), taxes_length + 1);
+            if !exists {
+                token_addresses.append().write(tax_payer.token_used);
             };
-            tax_payer.stake_amount -= amount;
-            store.set_land(tax_payer);
+
+            let key = (tax_recipient.owner, tax_recipient.location, tax_payer.token_used);
+            let current_tax_amount = self.pending_taxes_for_land.read(key);
+            self.pending_taxes_for_land.write(key, current_tax_amount + amount);
         }
 
         fn _claim(
@@ -187,35 +169,27 @@ mod TaxesComponent {
             land_location: u16,
             token_info: TokenInfo,
         ) {
-            //to see the quantity of token in total
-            let taxes_length = self.pending_taxes_length.read((owner_land, land_location));
-
-            for mut i in 0..taxes_length {
-                let mut pending_tax = self
-                    .pending_taxes_for_land
-                    .read((owner_land, land_location, i));
-
-                if pending_tax.amount > 0 && pending_tax.token_address == token_info.token_address {
-                    self
-                        .pending_taxes_for_land
-                        .write(
-                            (owner_land, land_location, i),
-                            TokenInfo { token_address: pending_tax.token_address, amount: 0 },
-                        );
-                }
-            };
+            let key = (owner_land, land_location, token_info.token_address);
+            let current_tax_amount = self.pending_taxes_for_land.read(key);
+            if current_tax_amount > 0 {
+                self.pending_taxes_for_land.write(key, current_tax_amount - token_info.amount);
+            } else {
+                self.pending_taxes_for_land.write(key, 0);
+            }
         }
 
         fn _get_pending_taxes(
             self: @ComponentState<TContractState>, owner_land: ContractAddress, land_location: u16,
         ) -> Array<TokenInfo> {
-            let taxes_length = self.pending_taxes_length.read((owner_land, land_location));
             let mut taxes: Array<TokenInfo> = ArrayTrait::new();
-
-            for mut i in 0..taxes_length {
-                let tax = self.pending_taxes_for_land.read((owner_land, land_location, i));
-                if tax.amount > 0 {
-                    taxes.append(tax);
+            let token_addresses = self.pending_tokens_for_land.entry((owner_land, land_location));
+            for mut i in 0..token_addresses.len() {
+                let token_address = token_addresses.at(i).read();
+                let amount = self
+                    .pending_taxes_for_land
+                    .read((owner_land, land_location, token_address));
+                if amount > 0 {
+                    taxes.append(TokenInfo { token_address, amount });
                 }
             };
             taxes

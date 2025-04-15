@@ -86,7 +86,9 @@ pub mod actions {
     use ponzi_land::utils::common_strucs::{
         TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes,
     };
-    use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
+    use ponzi_land::utils::get_neighbors::{
+        get_land_neighbors, get_average_price, process_neighbors_of_neighbors,
+    };
     use ponzi_land::utils::spiral::{get_next_position, SpiralState};
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::utils::stake::{calculate_refund_amount};
@@ -697,15 +699,18 @@ pub mod actions {
         fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
             //generate taxes for each neighbor of claimer
             let neighbors = get_land_neighbors(store, land.location);
+            let mut neighbors_dict = process_neighbors_of_neighbors(store, neighbors.clone());
+
             if neighbors.len() != 0 {
-                for neighbor in neighbors {
-                    let is_nuke = self.taxes._calculate_and_distribute(store, neighbor.location);
+                for mut neighbor in neighbors {
+                    let is_nuke = self
+                        .taxes
+                        ._calculate_and_distribute(store, ref neighbor, ref neighbors_dict);
                     let has_liquidity_requirements = self
                         .check_liquidity_pool_requirements(
                             neighbor.token_used, neighbor.sell_price, neighbor.pool_key,
                         );
 
-                    let neighbor = store.land(neighbor.location);
                     if is_nuke || !has_liquidity_requirements {
                         self.nuke(neighbor.location, has_liquidity_requirements);
                     }

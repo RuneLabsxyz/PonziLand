@@ -4,10 +4,6 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 
 #[starknet::component]
 mod StakeComponent {
-    //core imports
-    use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
-    use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
-
     //use dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
 
