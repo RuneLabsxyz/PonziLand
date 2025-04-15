@@ -1,5 +1,5 @@
 use axum::{extract::State, routing::get, Json, Router};
-use ekubo::price::PairRatio;
+use ekubo::{contract::pool_price::PoolKey, price::PairRatio};
 use serde::Serialize;
 use std::sync::Arc;
 
@@ -26,6 +26,7 @@ pub struct TokenWithPrice {
     pub symbol: String,
     pub address: String,
     pub ratio: Option<Price>,
+    pub best_pool: Option<PoolKey>,
 }
 pub struct PriceRoute;
 
@@ -53,10 +54,21 @@ impl PriceRoute {
             .iter()
             .map(|token| {
                 let ratio = ekubo_service.get_price_of(&token.address.to_fixed_hex_string());
-                TokenWithPrice {
-                    symbol: token.symbol.clone(),
-                    address: token.address.to_fixed_hex_string(),
-                    ratio: ratio.as_ref().map(|e| Price(e.clone())),
+
+                if let Some(ratio) = ratio {
+                    TokenWithPrice {
+                        symbol: token.symbol.clone(),
+                        address: token.address.to_fixed_hex_string(),
+                        ratio: Some(Price(ratio.ratio)),
+                        best_pool: Some(ratio.pool),
+                    }
+                } else {
+                    TokenWithPrice {
+                        symbol: token.symbol.clone(),
+                        address: token.address.to_fixed_hex_string(),
+                        ratio: None,
+                        best_pool: None,
+                    }
                 }
             })
             .collect();

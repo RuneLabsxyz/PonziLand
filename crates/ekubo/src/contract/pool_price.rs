@@ -1,4 +1,5 @@
 use super::Error;
+use serde::{Deserialize, Serialize};
 use starknet::{
     core::{
         codec::{Decode, Encode},
@@ -8,7 +9,7 @@ use starknet::{
 };
 use std::fmt::Display;
 
-#[derive(Clone, PartialEq, Debug, Decode, Encode)]
+#[derive(Clone, PartialEq, Debug, Decode, Encode, Serialize, Deserialize)]
 pub struct PoolKey {
     pub token0: Felt,
     pub token1: Felt,

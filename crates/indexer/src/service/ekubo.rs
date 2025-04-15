@@ -4,7 +4,7 @@ use apalis::prelude::*;
 use apalis_cron::{CronContext, CronStream, Schedule};
 use arc_swap::ArcSwap;
 use chrono::Utc;
-use ekubo::{price::PairRatio, EkuboClient};
+use ekubo::{contract::pool_price::PoolKey, price::PairRatio, EkuboClient};
 use starknet::providers::{jsonrpc::HttpTransport, JsonRpcClient};
 use tracing::{error, info};
 
@@ -32,9 +32,15 @@ pub struct EkuboService {
     client: ekubo::EkuboClient<JsonRpcClient<HttpTransport>>,
 }
 
+#[derive(Debug, Clone)]
+pub struct EkuboTokenInformation {
+    pub ratio: PairRatio,
+    pub pool: PoolKey,
+}
+
 #[derive(Default, Debug)]
 pub struct PriceInformation {
-    inner: HashMap<String, PairRatio>,
+    inner: HashMap<String, EkuboTokenInformation>,
 }
 
 impl EkuboService {
@@ -74,7 +80,7 @@ impl EkuboService {
         this
     }
 
-    pub fn get_price_of(&self, token: &str) -> Option<PairRatio> {
+    pub fn get_price_of(&self, token: &str) -> Option<EkuboTokenInformation> {
         self.exchange_rate.load().inner.get(token).cloned()
     }
 
@@ -113,9 +119,13 @@ impl EkuboService {
                 price.inverse()
             };
 
-            price_info
-                .inner
-                .insert(token.address.to_fixed_hex_string(), price);
+            price_info.inner.insert(
+                token.address.to_fixed_hex_string(),
+                EkuboTokenInformation {
+                    pool: pool.key,
+                    ratio: price,
+                },
+            );
         }
 
         info!("Finished ekubo update!");
