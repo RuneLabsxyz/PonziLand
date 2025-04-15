@@ -13,6 +13,9 @@ pub struct Conf {
     #[config(default = "0.0.0.0", env = "LISTEN_ADDRESS")]
     pub address: String,
 
+    #[config(default = [], env = "CORS_ORIGINS")]
+    pub cors_origins: Vec<String>,
+
     /// The port to listen on for monitoring.
     #[config(nested)]
     pub monitoring: Monitoring,

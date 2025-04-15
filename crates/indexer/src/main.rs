@@ -1,7 +1,12 @@
 use std::{env, sync::Arc};
 
 use anyhow::{Context, Result};
-use axum::{middleware, routing::get, Json, Router};
+use axum::{
+    http::{HeaderValue, Method},
+    middleware,
+    routing::get,
+    Json, Router,
+};
 use config::Conf;
 use confique::Config;
 use monitoring::listen_monitoring;
@@ -13,6 +18,7 @@ use tokio::{
     select,
     signal::unix::{signal, SignalKind},
 };
+use tower_http::cors::{Any, CorsLayer};
 use tracing::info;
 use worker::MonitorManager;
 
@@ -54,6 +60,24 @@ async fn main() -> Result<()> {
         ekubo_service: ekubo.clone(),
     };
 
+    let cors = CorsLayer::new()
+        // allow `GET` and `POST` when accessing the resource
+        .allow_methods([Method::GET, Method::POST]);
+
+    let cors = if config.cors_origins.len() == 1 && config.cors_origins[0] == "*" {
+        cors.allow_origin(Any)
+    } else {
+        let origins = config
+            .cors_origins
+            .iter()
+            .map(|e| HeaderValue::from_str(e))
+            .collect::<Result<Vec<HeaderValue>, _>>()?;
+
+        info!("Registered origins: {:#?}", origins);
+
+        cors.allow_origin(origins)
+    };
+
     // build our application with a route
     let app = Router::new()
         .nest("/tokens", TokenRoute::new(token_service).router())
@@ -63,6 +87,7 @@ async fn main() -> Result<()> {
         )
         // `GET /` goes to `root`
         .route("/", get(root))
+        .layer(cors)
         .layer(middleware::from_fn(crate::monitoring::axum::track_metrics));
 
     // run our app with hyper, listening globally on the chosen address and port

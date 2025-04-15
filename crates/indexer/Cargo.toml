@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+#tower-http = { workspace = true, features = ["cors"] }
 apalis = { version = "0.7.0", features = [
     "tracing",
     "catch-panic",
@@ -13,8 +14,10 @@ apalis = { version = "0.7.0", features = [
 ] }
 chrono = "0.4.40"
 apalis-cron = "0.7.0"
-# We need to add websocket support
-axum = { workspace = true, features = ["ws", "macros"] }
+axum = { workspace = true, features = [
+    "ws",
+    "macros",
+] } # We need to add websocket support
 confique = { workspace = true, features = ["toml"] }
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
@@ -31,3 +34,5 @@ starknet.workspace = true
 arc-swap = "1.7.1"
 metrics = "0.24.1"
 pin-project-lite = "0.2.16"
+tower-http = { workspace = true, features = ["cors"] }
+http = { workspace = true }

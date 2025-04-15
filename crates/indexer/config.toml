@@ -1,5 +1,12 @@
 default_token = "eSTRK"
 
+cors_origins = [
+    "http://localhost:3000",
+    "https://localhost:3000",
+    "https://*.ponzi.land",
+    "https://ponzi.land",
+]
+
 [ekubo]
 api_url = "https://starknet-sepolia-api.ekubo.org"
 core_contract_address = "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
