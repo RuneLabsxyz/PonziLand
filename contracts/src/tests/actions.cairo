@@ -1181,12 +1181,68 @@ fn test_claim_all() {
         main_currency,
     );
 
+    let next_location_4 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_4.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        next_location_4.unwrap(),
+        100,
+        50,
+        main_currency,
+    );
+
+    let next_location_5 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_5.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        next_location_5.unwrap(),
+        100,
+        50,
+        main_currency,
+    );
+
+    let next_location_6 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_6.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        next_location_6.unwrap(),
+        100,
+        50,
+        main_currency,
+    );
+
+    let next_location_7 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_7.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        next_location_7.unwrap(),
+        100,
+        50,
+        main_currency,
+    );
+
     set_block_timestamp(5000 / TIME_SPEED.into());
     set_contract_address(RECIPIENT());
 
     let neighbor_land_before_claim = store.land(next_location_1.unwrap());
 
-    let land_locations = array![2080, next_location_2.unwrap(), next_location_3.unwrap()];
+    let land_locations = array![
+        2080,
+        next_location_2.unwrap(),
+        next_location_3.unwrap(),
+        next_location_4.unwrap(),
+        next_location_5.unwrap(),
+        next_location_6.unwrap(),
+        next_location_7.unwrap(),
+    ];
     actions_system.claim_all(land_locations);
 
     //Get claimer lands and verify taxes

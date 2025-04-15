@@ -19,7 +19,7 @@ mod TaxesComponent {
     use ponzi_land::models::land::Land;
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
-    use ponzi_land::utils::get_neighbors::{get_neighbors_of_neighbors};
+    use ponzi_land::utils::get_neighbors::{neighbors_with_their_neighbors};
     use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
@@ -36,7 +36,7 @@ mod TaxesComponent {
     struct Storage {
         //  land_owner,location,token_address -> amount
         pending_taxes_for_land: Map<(ContractAddress, u16, ContractAddress), u256>,
-        //land_owner,location -> token_address
+        //land_owner,location ->  token_addresses
         pending_tokens_for_land: Map<(ContractAddress, u16), Vec<ContractAddress>>,
     }
 
@@ -60,7 +60,7 @@ mod TaxesComponent {
             ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
         ) -> bool {
             //generate taxes for each neighbor of neighbor
-            let neighbors = get_neighbors_of_neighbors(ref neighbors_dict, land.location);
+            let neighbors = neighbors_with_their_neighbors(ref neighbors_dict, land.location);
 
             //if we dont have neighbors we dont have to pay taxes
             let neighbors_with_owners = neighbors.len();
@@ -105,7 +105,7 @@ mod TaxesComponent {
                 i += 1;
             };
 
-            //update the land
+            // Distribute taxes for land
             land.last_pay_time = current_time;
             land.stake_amount -= tax_to_distribute;
             store.set_land(land);

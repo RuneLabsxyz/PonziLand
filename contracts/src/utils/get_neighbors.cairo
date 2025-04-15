@@ -23,7 +23,7 @@ fn process_neighbors_of_neighbors(
     neighbors_with_their_neighbors
 }
 
-fn get_neighbors_of_neighbors(
+fn neighbors_with_their_neighbors(
     ref dict: Felt252Dict<Nullable<Array<Land>>>, location: u16,
 ) -> Array<Land> {
     let (entry, arr) = dict.entry(location.into());
@@ -33,27 +33,35 @@ fn get_neighbors_of_neighbors(
     neighbors
 }
 
+
 fn get_land_neighbors(mut store: Store, land_location: u16) -> Array<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
+    let mut land_cache = LandCacheImpl::new();
 
-    for direction in get_directions(land_location) {
-        add_land_neighbor(store, ref lands, direction);
+    for location in get_directions(land_location) {
+        match location {
+            Option::Some(loc) => {
+                let land = land_cache.get(loc);
+                match land {
+                    Option::Some(land) => { if !land.owner.is_zero() {
+                        lands.append(land);
+                    } },
+                    Option::None => {
+                        let land = store.land(loc);
+                        land_cache.insert(loc, land);
+                        if !land.owner.is_zero() {
+                            lands.append(land);
+                        }
+                    },
+                }
+            },
+            Option::None => {},
+        }
     };
 
     lands
 }
 
-fn add_land_neighbor(mut store: Store, ref lands: Array<Land>, land_location: Option<u16>) {
-    match land_location {
-        Option::Some(location) => {
-            let land = store.land(location);
-            if !land.owner.is_zero() {
-                lands.append(land);
-            }
-        },
-        Option::None => {},
-    }
-}
 
 fn get_auction_neighbors(mut store: Store, land_location: u16) -> Array<Auction> {
     let mut auctions: Array<Auction> = ArrayTrait::new();
@@ -108,4 +116,41 @@ fn get_directions(land_location: u16) -> Array<Option<u16>> {
         down_left(land_location),
         down_right(land_location),
     ]
+}
+
+
+#[derive(Drop, Serde)]
+struct LandCache {
+    locations: Array<u16>,
+    lands: Array<Land>,
+}
+
+#[generate_trait]
+impl LandCacheImpl of LandCacheTrait {
+    fn new() -> LandCache {
+        LandCache { locations: ArrayTrait::new(), lands: ArrayTrait::new() }
+    }
+
+    fn get(self: @LandCache, location: u16) -> Option<Land> {
+        let len = self.locations.len();
+        let mut found = false;
+        let mut index = 0;
+        for i in 0..len {
+            if *self.locations.at(i) == location {
+                found = true;
+                index = i;
+                break;
+            }
+        };
+
+        if found {
+            return Option::Some(*self.lands.at(index));
+        }
+        Option::None
+    }
+
+    fn insert(ref self: LandCache, location: u16, land: Land) {
+        self.locations.append(location);
+        self.lands.append(land);
+    }
 }
