@@ -1,0 +1,11 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:3031"
+      - "8081:9090"
+    volumes:
+      - type: bind
+        source: ./crates/indexer/config.toml
+        target: /config.toml
+        read_only: true

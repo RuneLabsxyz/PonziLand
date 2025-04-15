@@ -21,6 +21,9 @@ in {
     wrangler
     graphite-cli
 
+    # Utilities
+    just
+
     # Cargo dependencies
     pkgs.openssl
     pkgs.pkg-config
