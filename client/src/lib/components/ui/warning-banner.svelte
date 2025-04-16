@@ -1,4 +1,5 @@
 <script lang="ts">
+  // This is only for the tournament!
   import { fade, slide } from 'svelte/transition';
 
   let message =
