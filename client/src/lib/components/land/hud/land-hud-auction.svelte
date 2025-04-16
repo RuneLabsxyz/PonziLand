@@ -1,21 +1,9 @@
 <script lang="ts">
-  import { getAuctionDataFromLocation } from '$lib/api/auction.svelte';
-  import type { LandSetup } from '$lib/api/land.svelte';
-  import { useLands } from '$lib/api/land.svelte';
-  import type { Auction } from '$lib/models.gen';
   import { selectedLand, selectedLandMeta } from '$lib/stores/stores.svelte';
-  import { toHexWithPadding } from '$lib/utils';
-  import Button from '../../ui/button/button.svelte';
-  import BuySellForm from '../../buy/buy-sell-form.svelte';
-  import type { Token } from '$lib/interfaces';
+
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import BigNumber from 'bignumber.js';
   import LandOverview from '../land-overview.svelte';
 
-  let extended = $state(false);
-  let loading = $state(false);
-
-  let auctionInfo = $state<Auction>();
   let currentPrice = $state<CurrencyAmount>();
   let priceDisplay = $derived(currentPrice?.toString());
 
