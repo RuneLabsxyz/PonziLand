@@ -7,8 +7,13 @@
   import { toHexWithPadding } from '$lib/utils';
   import data from '$lib/data.json';
   import { GAME_SPEED } from '$lib/const';
+  import type { SelectedLand } from '$lib/stores/stores.svelte';
 
-  let land = $derived($selectedLandMeta);
+  let {
+    land,
+  }: {
+    land: SelectedLand;
+  } = $props();
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
   let tokenPrices = $state<
@@ -120,7 +125,7 @@
         <div
           class="{totalYieldValue - burnRate >= 0
             ? 'text-green-500'
-            : 'text-red-500'} text-2xl"
+            : 'text-red-500'} text-2xl text-ponzi-number"
         >
           {totalYieldValue - burnRate >= 0 ? '+ ' : '- '}{Math.abs(
             totalYieldValue - burnRate,
@@ -131,14 +136,16 @@
       <div class="flex w-full justify-between">
         <div class="flex flex-col items-center">
           <div class="text-xs">Earning / day :</div>
-          <div class="text-green-500 text-sm">
+          <div class="text-green-500 text-sm text-ponzi-number">
             + {totalYieldValue.toFixed(2)}
           </div>
         </div>
 
         <div class="flex flex-col items-center">
           <div class="text-xs">Burning / day :</div>
-          <div class="text-red-500 text-sm">+ {burnRate.toFixed(2)}</div>
+          <div class="text-red-500 text-sm text-ponzi-number">
+            + {burnRate.toFixed(2)}
+          </div>
         </div>
       </div>
       <div class="flex text-xs justify-between w-full pt-2">
@@ -148,3 +155,9 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .text-ponzi-number {
+    font-family: 'PonziNumber', sans-serif;
+  }
+</style>
