@@ -5,9 +5,7 @@
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { estimateNukeTime } from '$lib/utils/taxes';
-  import BigNumber from 'bignumber.js';
-
-  const GAME_SPEED = 4;
+  import { GAME_SPEED } from '$lib/const';
 
   let {
     land,

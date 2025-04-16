@@ -6,10 +6,7 @@
   import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
   import { toHexWithPadding } from '$lib/utils';
   import data from '$lib/data.json';
-
-  const GAME_SPEED = 4;
-  const baseToken: bigint =
-    3219024689000964803732091987493897389180507899988411919123226523374805008288n;
+  import { GAME_SPEED } from '$lib/const';
 
   let land = $derived($selectedLandMeta);
 
@@ -17,13 +14,15 @@
   let tokenPrices = $state<
     { symbol: string; address: string; ratio: number | null }[]
   >([]);
-  let formattedYields = $state<{ amount: string; baseValue: string | null }[]>(
-    [],
-  );
-  let totalYieldValue = $state();
+  let formattedYields = $state<
+    { amount: string; baseValue: string | CurrencyAmount }[]
+  >([]);
+  let totalYieldValue: number = $state(0);
 
   //TODO correctly calculate this
-  let burnRate = $derived(land?.sellPrice.rawValue().dividedBy(4));
+  let burnRate: number = $derived(
+    land?.sellPrice.rawValue().dividedBy(4).toNumber() || 0,
+  );
 
   $effect(() => {
     if (land == undefined) return;
@@ -57,7 +56,7 @@
 
               // Calculate base token value if ratio exists
               let baseValue = null;
-              if (priceInfo?.ratio !== null) {
+              if (priceInfo?.ratio !== null && priceInfo) {
                 const baseAmount = amount
                   .rawValue()
                   .dividedBy(priceInfo.ratio || 0);

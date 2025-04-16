@@ -8,9 +8,7 @@
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
-  import { GRID_SIZE } from '$lib/const';
-
-  const TILE_SIZE = 32;
+  import { GRID_SIZE, TILE_SIZE } from '$lib/const';
 
   // Camera position
   const MIN_SCALE = 0.6;

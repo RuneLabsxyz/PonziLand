@@ -11,8 +11,6 @@
   import LandHudPro from './land-hud-pro.svelte';
   import { proMode } from '$lib/stores/ui.store.svelte';
 
-  const { store, client: sdk } = useDojo();
-
   const address = $derived(account.address);
 
   let isOwner = $derived($selectedLandMeta?.owner == padAddress(address ?? ''));

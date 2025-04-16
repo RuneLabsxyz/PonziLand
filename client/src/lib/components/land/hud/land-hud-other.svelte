@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { useDojo } from '$lib/contexts/dojo';
   import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import { shortenHex } from '$lib/utils';
   import LandOverview from '../../land/land-overview.svelte';
