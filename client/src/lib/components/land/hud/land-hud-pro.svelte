@@ -125,26 +125,33 @@
         <div
           class="{totalYieldValue - burnRate >= 0
             ? 'text-green-500'
-            : 'text-red-500'} text-2xl text-ponzi-number"
+            : 'text-red-500'} text-2xl text-ponzi-number flex items-center justify-center"
         >
-          {totalYieldValue - burnRate >= 0 ? '+ ' : '- '}{Math.abs(
-            totalYieldValue - burnRate,
-          ).toFixed(2)}
+          <span
+            >{totalYieldValue - burnRate >= 0 ? '+ ' : '- '}{Math.abs(
+              totalYieldValue - burnRate,
+            ).toFixed(2)}</span
+          >
+          <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-5 w-5" />
         </div>
       </div>
 
       <div class="flex w-full justify-between">
         <div class="flex flex-col items-center">
           <div class="text-xs">Earning / day :</div>
-          <div class="text-green-500 text-sm text-ponzi-number">
-            + {totalYieldValue.toFixed(2)}
+          <div
+            class="text-green-500 text-sm text-ponzi-number flex items-center"
+          >
+            <span>+ {totalYieldValue.toFixed(2)}</span>
+            <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
           </div>
         </div>
 
         <div class="flex flex-col items-center">
           <div class="text-xs">Burning / day :</div>
-          <div class="text-red-500 text-sm text-ponzi-number">
-            + {burnRate.toFixed(2)}
+          <div class="text-red-500 text-sm text-ponzi-number flex items-center">
+            <span>+ {burnRate.toFixed(2)}</span>
+            <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
           </div>
         </div>
       </div>
