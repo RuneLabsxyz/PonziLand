@@ -19,10 +19,21 @@
   >([]);
   let totalYieldValue: number = $state(0);
 
-  //TODO correctly calculate this
-  let burnRate: number = $derived(
-    land?.sellPrice.rawValue().dividedBy(4).toNumber() || 0,
-  );
+  let burnRate: number = $derived(calculateBurnRate()?.toNumber() || 0);
+
+  function calculateBurnRate() {
+    if (land == undefined) return;
+    let landInfo = land.sellPrice
+      .rawValue()
+      .multipliedBy(0.02)
+      .multipliedBy(GAME_SPEED);
+
+    let burnRate = landInfo.multipliedBy(
+      yieldInfo?.yield_info.filter((y) => y.percent_rate).length ?? 0,
+    );
+
+    return burnRate;
+  }
 
   $effect(() => {
     if (land == undefined) return;
