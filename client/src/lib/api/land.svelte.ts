@@ -16,6 +16,7 @@ import type { BigNumberish } from 'starknet';
 import { derived, get, type Readable } from 'svelte/store';
 import { Neighbors } from './neighbors';
 import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
+import { notificationQueue } from '$lib/stores/event.store.svelte';
 
 export type TransactionResult = Promise<
   | {
@@ -299,7 +300,8 @@ export function useLands(): LandsStore | undefined {
   return {
     ...landEntityStore,
     buyLand(location, setup) {
-      return sdk.client.actions.buy(
+      let txCount = notificationQueue.addNewNotification();
+      let res = sdk.client.actions.buy(
         account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
@@ -309,6 +311,11 @@ export function useLands(): LandsStore | undefined {
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
+      notificationQueue.updateNotification(
+        txCount,
+        res?.transaction_hash ?? null,
+      );
+      return res;
     },
 
     // TODO(#53): Split this action in two, and migrate the call to the session account

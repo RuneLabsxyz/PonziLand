@@ -6,6 +6,7 @@
   import { cameraPosition, cameraTransition } from '$lib/stores/camera';
   import { claimStore } from '$lib/stores/claim.svelte';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
+  import { getNukeData } from '$lib/stores/nuke.svelte';
   import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
   import { GRID_SIZE, TILE_SIZE } from '$lib/const';
@@ -30,6 +31,16 @@
   let tileStore = useTiles();
 
   let tiles = $derived($tileStore ?? []);
+
+  let nukeData = $derived(() => {
+    if (!landStore) return [];
+    const nukeData = getNukeData();
+    return nukeData;
+  });
+
+  $effect(() => {
+    console.log('nukeData', nukeData);
+  });
 
   $effect(() => {
     const address = account.address;
