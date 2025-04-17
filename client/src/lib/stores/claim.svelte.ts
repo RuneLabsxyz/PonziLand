@@ -90,7 +90,7 @@ export async function claimSingleLand(
   await sdk.client.actions
     .claim(account, land.location as BigNumberish)
     .then((value) => {
-      notificationQueue.addNotification(value.transaction_hash);
+      notificationQueue.addNotification(value.transaction_hash, 'claim');
 
       claimStore.value[land.location].lastClaimTime = Date.now();
       claimStore.value[land.location].animating = true;

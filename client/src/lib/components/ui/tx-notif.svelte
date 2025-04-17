@@ -11,16 +11,18 @@
       <Card>
         {#if notification.pending == true}
           <div class="flex items-center gap-2">
-            <span>{notification.txCount}. </span>
             <div
               class="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"
             ></div>
+            <span>{notification.txCount}. </span>
+            <span class="text-ponzi-number">{notification.functionName}</span>
             <span>Pending</span>
           </div>
         {:else if notification.isValid}
           <div class="flex items-center gap-2">
-            <span>{notification.txCount}. </span>
             <span class="text-green-500">✓</span>
+            <span>{notification.txCount}. </span>
+            <span class="text-ponzi-number">{notification.functionName}</span>
             <span class="text-sm font-mono truncate">
               {notification.txhash?.slice(0, 10)}...{notification.txhash?.slice(
                 -8,
@@ -29,8 +31,9 @@
           </div>
         {:else}
           <div class="flex items-center gap-2">
-            <span>{notification.txCount}. </span>
             <span class="text-red-500">✕</span>
+            <span>{notification.txCount}. </span>
+            <span class="text-ponzi-number">{notification.functionName}</span>
             <span>Error: Transaction reverted</span>
           </div>
         {/if}
@@ -38,3 +41,9 @@
     {/each}
   </div>
 </div>
+
+<style>
+  .text-ponzi-number {
+    font-family: 'PonziNumber', sans-serif;
+  }
+</style>

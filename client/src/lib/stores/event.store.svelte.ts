@@ -14,6 +14,7 @@ class NotificationQueue {
     pending: boolean;
     txhash: string | null;
     isValid: boolean | null;
+    functionName: string;
   }[] = $state([]);
 
   private txCount = 0;
@@ -22,19 +23,20 @@ class NotificationQueue {
     return this.queue;
   }
 
-  public registerNotification() {
+  public registerNotification(functionName: string) {
     this.txCount++;
     this.queue.push({
       txCount: this.txCount,
       pending: true,
       txhash: null,
       isValid: null,
+      functionName,
     });
     return this.queue[this.queue.length - 1];
   }
 
-  public async addNotification(txhash: string | null) {
-    const notification = this.registerNotification();
+  public async addNotification(txhash: string | null, functionName: string) {
+    const notification = this.registerNotification(functionName);
     if (txhash) {
       await accountManager!
         .getProvider()

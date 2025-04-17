@@ -200,7 +200,10 @@ export function useLands(): LandsStore | undefined {
             account()?.getAccount()!,
             land.location,
           );
-          notificationQueue.addNotification(res?.transaction_hash ?? null);
+          notificationQueue.addNotification(
+            res?.transaction_hash ?? null,
+            'claim',
+          );
           return res;
         },
         nuke() {
@@ -328,7 +331,7 @@ export function useLands(): LandsStore | undefined {
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
-      notificationQueue.addNotification(res?.transaction_hash ?? null);
+      notificationQueue.addNotification(res?.transaction_hash ?? null, 'claim');
       return res;
     },
     auctionLand(location, startPrice, floorPrice, decayRate) {
