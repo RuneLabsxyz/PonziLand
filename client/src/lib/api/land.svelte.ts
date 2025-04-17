@@ -315,7 +315,10 @@ export function useLands(): LandsStore | undefined {
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
-      notificationQueue.addNotification(res?.transaction_hash ?? null);
+      notificationQueue.addNotification(
+        res?.transaction_hash ?? null,
+        'buy land',
+      );
       return res;
     },
 

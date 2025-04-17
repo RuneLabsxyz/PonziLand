@@ -59,7 +59,8 @@ function getNukeQuery() {
     .includeHashedKeys();
 }
 
-export async function getNukeData() {
+//TODO make this work
+export const getNukeData = async () => {
   const { client: sdk } = useDojo();
 
   const query = getNukeQuery();
@@ -75,4 +76,4 @@ export async function getNukeData() {
     },
   });
   return nukeData;
-}
+};
