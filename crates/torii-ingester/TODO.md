@@ -1,0 +1,2 @@
+- One day, come up with a solution to convert SQL queries of historic events to actual gRPC structs to make it easier to understand.
+- Handle incremental schema updates of the events (they are stored as JSON for a reason...)
