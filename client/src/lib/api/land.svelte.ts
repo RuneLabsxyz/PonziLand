@@ -195,11 +195,13 @@ export function useLands(): LandsStore | undefined {
             amount.toBignumberish(),
           );
         },
-        claim() {
-          return sdk.client.actions.claim(
+        async claim() {
+          let res = await sdk.client.actions.claim(
             account()?.getAccount()!,
             land.location,
           );
+          notificationQueue.addNotification(res?.transaction_hash ?? null);
+          return res;
         },
         nuke() {
           return sdk.client.actions.nuke(
@@ -299,9 +301,8 @@ export function useLands(): LandsStore | undefined {
 
   return {
     ...landEntityStore,
-    buyLand(location, setup) {
-      let txCount = notificationQueue.addNewNotification();
-      let res = sdk.client.actions.buy(
+    async buyLand(location, setup) {
+      let res = await sdk.client.actions.buy(
         account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
@@ -311,16 +312,13 @@ export function useLands(): LandsStore | undefined {
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
-      notificationQueue.updateNotification(
-        txCount,
-        res?.transaction_hash ?? null,
-      );
+      notificationQueue.addNotification(res?.transaction_hash ?? null);
       return res;
     },
 
     // TODO(#53): Split this action in two, and migrate the call to the session account
-    bidLand(location, setup) {
-      return sdk.client.actions.bid(
+    async bidLand(location, setup) {
+      let res = await sdk.client.actions.bid(
         account()?.getWalletAccount()!,
         location,
         setup.tokenForSaleAddress,
@@ -330,6 +328,8 @@ export function useLands(): LandsStore | undefined {
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
+      notificationQueue.addNotification(res?.transaction_hash ?? null);
+      return res;
     },
     auctionLand(location, startPrice, floorPrice, decayRate) {
       return sdk.client.actions.auction(

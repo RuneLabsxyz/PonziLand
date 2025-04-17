@@ -1,9 +1,12 @@
 import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { writable } from 'svelte/store';
+import { useAccount } from '$lib/contexts/account.svelte';
 
 export type ClaimEvent = CurrencyAmount;
 
 export const claimQueue = writable<ClaimEvent[]>([]);
+
+let accountManager = $derived(useAccount());
 
 class NotificationQueue {
   public queue: {
@@ -15,7 +18,11 @@ class NotificationQueue {
 
   private txCount = 0;
 
-  public addNewNotification() {
+  public getQueue() {
+    return this.queue;
+  }
+
+  public registerNotification() {
     this.txCount++;
     this.queue.push({
       txCount: this.txCount,
@@ -23,22 +30,25 @@ class NotificationQueue {
       txhash: null,
       isValid: null,
     });
-    return this.txCount;
+    return this.queue[this.queue.length - 1];
   }
 
-  public updateNotification(txCount: number, txhash: string) {
-    const notification = this.queue.find((n) => n.txCount === txCount);
-    let isValid = true;
-
-    if (txhash === null) {
-      isValid = false;
-    }
-    if (notification) {
-      notification.pending = false;
+  public async addNotification(txhash: string | null) {
+    const notification = this.registerNotification();
+    if (txhash) {
+      await accountManager!
+        .getProvider()
+        ?.getWalletAccount()
+        ?.waitForTransaction(txhash);
       notification.txhash = txhash;
-      notification.isValid = isValid;
+      notification.isValid = true;
+      notification.pending = false;
+    } else {
+      notification.isValid = false;
+      notification.pending = false;
     }
-    setTimeout(this.removeNotification, 3600);
+
+    setTimeout(() => this.removeNotification(notification.txCount), 3600);
   }
   public removeNotification(txCount: number) {
     this.queue = this.queue.filter((n) => n.txCount !== txCount);
