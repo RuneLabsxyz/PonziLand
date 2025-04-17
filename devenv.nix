@@ -27,6 +27,9 @@ in {
     # Cargo dependencies
     pkgs.openssl
     pkgs.pkg-config
+
+    # Required for torii compilation
+    pkgs.protobuf
   ];
 
   languages.javascript = {

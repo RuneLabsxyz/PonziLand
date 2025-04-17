@@ -1,0 +1,28 @@
+[package]
+name = "torii-ingester"
+version = "0.1.0"
+edition = "2021"
+
+[[example]]
+name = "test"
+
+[dependencies]
+tracing.workspace = true
+
+starknet = { workspace = true }
+tokio.workspace = true
+tokio-stream = "0.1"
+
+reqwest = { workspace = true, features = ["json"] }
+thiserror.workspace = true
+
+serde = { workspace = true, features = ["derive"] }
+
+torii-client = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.4.1" }
+torii-grpc = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.4.1" }
+dojo-world = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.4.1" }
+dojo-types = { git = "https://github.com/dojoengine/dojo.git", tag = "v1.4.1" }
+serde_json.workspace = true
+tracing-subscriber.workspace = true
+crypto-bigint = "0.5.5"
+async-stream = "0.3.6"
