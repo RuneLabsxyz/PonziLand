@@ -19,7 +19,7 @@
   import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
   import { onMount } from 'svelte';
   import { toHexWithPadding } from '$lib/utils';
-  import { nukeStore } from '$lib/stores/nuke.svelte';
+  import { nukeStore, setNuking } from '$lib/stores/nuke.svelte';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -87,10 +87,9 @@
         const neighborsLocations = land.getNeighbors().locations.array;
         neighborsLocations.forEach((location) => {
           const locationString = toHexWithPadding(location);
-          if (nukeStore.pending.has(locationString)) {
-            // remove from nukeStore.pending if in
-            nukeStore.pending.delete(locationString);
-            nukeStore.nuking.set(locationString, true);
+          if (nukeStore.pending[locationString]) {
+            // remove from pending>
+            setNuking(locationString);
           }
         });
       }

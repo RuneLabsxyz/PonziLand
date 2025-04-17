@@ -9,6 +9,7 @@
   import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
 
   const TILE_SIZE = 32;
 
@@ -46,6 +47,10 @@
             land: land,
             claimable: true,
           };
+          let isNuking = $derived(nukeStore.nuking[land.location] === true);
+          if (isNuking) {
+            claimStore.value[land.location].land.type = 'auction';
+          }
         }
       }
     });

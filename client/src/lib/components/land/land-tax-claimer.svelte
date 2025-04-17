@@ -9,7 +9,7 @@
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
-  import { nukeStore } from '$lib/stores/nuke.svelte';
+  import { nukeStore, setPending } from '$lib/stores/nuke.svelte';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -80,10 +80,7 @@
 
     nukables.forEach((land) => {
       if (land.nukable) {
-        nukeStore.pending.set(land.location, true);
-      } else {
-        // remove from nukeStore.pending if in
-        nukeStore.pending.delete(land.location);
+        setPending(land.location);
       }
     });
   }
