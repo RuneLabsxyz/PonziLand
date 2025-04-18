@@ -66,5 +66,8 @@
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-top-level-await": "^1.1.0",
     "vite-plugin-wasm": "^3.3.0"
+  },
+  "patchedDependencies": {
+    "starknet@6.23.1": "patches/starknet@6.23.1.patch"
   }
 }

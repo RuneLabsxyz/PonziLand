@@ -293,6 +293,10 @@ export class AccountManager {
       const walletAccount = provider.getWalletAccount();
       if (walletAccount instanceof WalletAccount) {
         console.log('Wallet account!');
+
+        // Unregister the bugged accountsChanged from starknetjs
+        console.log(this._walletObject);
+
         walletAccount.onNetworkChanged(this.onNetworkChanged.bind(this));
         walletAccount.onAccountChange(this.onWalletChanged.bind(this));
       }
@@ -340,6 +344,7 @@ export class AccountManager {
         'networkChanged',
         this.onNetworkChanged.bind(this),
       );
+
       this._walletObject?.off(
         'accountsChanged',
         this.onWalletChanged.bind(this),
@@ -424,8 +429,10 @@ export class AccountManager {
   }
 
   private onWalletChanged(accounts?: string[]) {
-    console.log('This:', this);
-    if (accounts?.length ?? 0 == 0) {
+    console.log('This:', accounts);
+
+    if ((accounts?.length ?? 0) == 0) {
+      console.log('Disconnect due to lock!');
       this.disconnect();
       return;
     }
