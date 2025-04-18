@@ -9,6 +9,7 @@
   import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
   import { GRID_SIZE, TILE_SIZE } from '$lib/const';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
 
   // Camera position
   const MIN_SCALE = 0.6;
@@ -44,6 +45,9 @@
             land: land,
             claimable: true,
           };
+          if (nukeStore.nuking[land.location]) {
+            claimStore.value[land.location].land.type = 'auction';
+          }
         }
       }
     });

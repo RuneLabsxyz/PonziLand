@@ -18,6 +18,8 @@
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
   import { onMount } from 'svelte';
+  import { toHexWithPadding } from '$lib/utils';
+  import { nukeStore, markAsNuking } from '$lib/stores/nuke.svelte';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -80,6 +82,16 @@
         // Close the modal
         uiStore.showModal = false;
         uiStore.modalData = null;
+
+        //nuke the lands
+        const neighborsLocations = land.getNeighbors().locations.array;
+        neighborsLocations.forEach((location) => {
+          const locationString = toHexWithPadding(location);
+          if (nukeStore.pending[locationString]) {
+            // remove from pending>
+            markAsNuking(locationString);
+          }
+        });
       }
     } catch (error) {
       console.error('Error buying land', error);

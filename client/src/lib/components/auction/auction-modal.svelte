@@ -17,6 +17,8 @@
   import ThreeDots from '../loading/three-dots.svelte';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
+  import { nukeStore, markAsNuking } from '$lib/stores/nuke.svelte';
+  import { toHexWithPadding } from '$lib/utils';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -82,6 +84,14 @@
         // Close the modal
         uiStore.showModal = false;
         uiStore.modalData = null;
+
+        // Nuke neighboring lands that are nukable
+        land?.getNeighbors().locations.array.forEach((location) => {
+          const locationString = toHexWithPadding(location);
+          if (nukeStore.pending[locationString]) {
+            markAsNuking(locationString);
+          }
+        });
       } else {
         loading = false;
       }

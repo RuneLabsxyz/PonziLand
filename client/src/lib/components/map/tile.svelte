@@ -5,6 +5,11 @@
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
   import {
+    clearNuking,
+    clearPending,
+    nukeStore,
+  } from '$lib/stores/nuke.svelte';
+  import {
     selectedLand,
     selectedLandMeta,
     selectLand,
@@ -18,7 +23,6 @@
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
-  import { locationsToNuke } from '$lib/stores/nuke.svelte';
 
   let {
     land,
@@ -31,7 +35,8 @@
   }>();
 
   let address = $derived(account.address);
-  let isNuking = $state(false);
+  let isNuking = $derived(nukeStore.nuking[land.location] === true);
+  let isPending = $derived(nukeStore.pending[land.location] === true);
 
   let isOwner = $derived.by(() => {
     if (land.type === 'grass') return false;
@@ -83,18 +88,13 @@
     uiStore.modalType = 'bid';
   };
 
-  let isNukable = $state(false);
-
   $effect(() => {
-    if (land.type === 'grass' && isNukable) {
-      isNuking = true;
-    }
-    if (land.type === 'house' && land.token) {
-      locationsToNuke.callNukableLocation(land).then((res) => {
-        isNukable = res;
-      });
-    } else {
-      isNukable = false;
+    if (isNuking) {
+      setTimeout(() => {
+        land.type = 'auction';
+        clearNuking(land.location);
+        clearPending(land.location);
+      }, 5000);
     }
   });
 </script>
@@ -164,7 +164,7 @@
     {/if}
   {/if}
 
-  {#if isOwner && scale > 1.5 && land.type === 'house'}
+  {#if isOwner && scale > 1.5 && land.type === 'house' && !isNuking}
     <div
       class="absolute z-20 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
@@ -173,7 +173,7 @@
     </div>
   {/if}
 
-  {#if isNukable}
+  {#if isPending && land.type == 'house'}
     <div
       class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}
@@ -191,12 +191,12 @@
         height={32}
       />
     {/if}
-    <div class="absolute top-0 right-0 w-full h-full z-20">
+    <div class="absolute top-[-15%] right-0 w-full h-full z-20">
       <LandNukeAnimation />
     </div>
   {/if}
 
-  {#if isOwner}
+  {#if isOwner && !isNuking && land.type == 'house'}
     <div
       class={cn(
         'absolute top-0 left-1/2 -translate-x-1/2 z-20',
@@ -206,7 +206,7 @@
       onclick={handleClick}
     ></div>
   {/if}
-  {#if land.type == 'house'}
+  {#if land.type == 'house' && !isNuking}
     <div class="absolute top-0 right-0 text-[4px]" onclick={handleClick}>
       {#if estimatedNukeTime == -1}
         inf.
