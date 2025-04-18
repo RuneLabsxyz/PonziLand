@@ -144,6 +144,7 @@
     </div>
   {/if}
 
+  //TODO: add nuke explanation to the tutorial
   {#if false}
     <div
       class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
