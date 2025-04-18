@@ -17,6 +17,7 @@ import { derived, get, type Readable } from 'svelte/store';
 import { Neighbors } from './neighbors';
 import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { poseidonHash } from '@dojoengine/torii-client';
 
 export type TransactionResult = Promise<
   | {
@@ -88,13 +89,14 @@ export type LevelInfo = {
 };
 
 export type LandWithActions = LandWithMeta & {
+  wait(): Promise<void>;
   increaseStake(amount: CurrencyAmount): TransactionResult;
   increasePrice(amount: CurrencyAmount): TransactionResult;
   claim(): TransactionResult;
   nuke(): TransactionResult;
   getPendingTaxes(): Promise<PendingTax[] | undefined>;
   getNextClaim(): Promise<NextClaimInformation[] | undefined>;
-  getNukable(): Promise<bigint | undefined>;
+  getNukable(): Promise<number | undefined>;
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
   getYieldInfo(): Promise<LandYieldInfo | undefined>;
   getEstimatedNukeTime(): number | undefined;
@@ -188,6 +190,22 @@ export function useLands(): LandsStore | undefined {
             amount.toBignumberish(),
           );
         },
+        async wait() {
+          // Wait until the land changes
+          let id = poseidonHash([land.location]);
+          await store.getState().waitForEntityChange(
+            id,
+            (val) => {
+              let parsedLand = val?.models?.['ponzi_land']?.['Land'] as
+                | Land
+                | undefined;
+              return (
+                parsedLand != undefined && parsedLand.location == land.location
+              );
+            },
+            15 * 1000, // ms
+          );
+        },
         increasePrice(amount: CurrencyAmount) {
           return sdk.client.actions.increasePrice(
             account()?.getWalletAccount()!,
@@ -237,7 +255,7 @@ export function useLands(): LandsStore | undefined {
         async getNukable() {
           const result = (await sdk.client.actions.getTimeToNuke(
             land.location,
-          )) as any[] | undefined;
+          )) as unknown as number | undefined;
           return result;
         },
         async getCurrentAuctionPrice() {
@@ -286,7 +304,7 @@ export function useLands(): LandsStore | undefined {
           const expectedLevel = Math.min(
             Math.floor(boughtSince / LEVEL_UP_TIME) + 1,
             3,
-          );
+          ) as Level;
           const timeSinceLastLevelUp = boughtSince % LEVEL_UP_TIME;
           const levelUpTime = expectedLevel < 3 ? LEVEL_UP_TIME : 0;
 

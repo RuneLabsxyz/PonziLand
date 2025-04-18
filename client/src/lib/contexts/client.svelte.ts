@@ -4,6 +4,7 @@ import { schema, type SchemaType as Schema } from '$lib/models.gen';
 import { wrappedActions } from '$lib/api/contracts/approve';
 import { dojoConfig } from '$lib/dojoConfig';
 import { getContext, setContext } from 'svelte';
+import { poseidonHash } from '@dojoengine/torii-client';
 
 let dojoKey = Symbol('dojo');
 

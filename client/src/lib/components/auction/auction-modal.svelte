@@ -19,6 +19,7 @@
   import CloseButton from '../ui/close-button.svelte';
   import { nukeStore, markAsNuking } from '$lib/stores/nuke.svelte';
   import { toHexWithPadding } from '$lib/utils';
+  import { notificationQueue } from '$lib/stores/event.store.svelte';
 
   let landStore = useLands();
   let accountManager = useAccount();
@@ -75,11 +76,13 @@
       );
 
       if (result?.transaction_hash) {
-        await accountManager!
-          .getProvider()
-          ?.getWalletAccount()
-          ?.waitForTransaction(result.transaction_hash);
+        // Only wait for the land update, not the total TX confirmation (should be fine)
+        await $selectedLand.wait();
+
         console.log('Bought land with TX: ', result.transaction_hash);
+
+        // Still wait for the tx, just to rollback in the event of an issue
+        notificationQueue.addNotification(result.transaction_hash, 'buy land');
 
         // Close the modal
         uiStore.showModal = false;
