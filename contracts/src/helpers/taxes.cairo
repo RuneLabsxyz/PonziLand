@@ -37,6 +37,11 @@ pub fn get_tax_rate_per_neighbor(land: Land) -> u256 {
 pub fn get_time_to_nuke(land: Land, num_neighbors: u8) -> u256 {
     let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land);
     let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
+
+    if total_tax_rate == 0 || TIME_SPEED == 0 {
+        return 0;
+    }
+
     let current_time: u256 = get_block_timestamp().into();
     // Calculate how many seconds it takes for taxes to equal stake amount
     // The tax accumulation per second is: (total_tax_rate * TIME_SPEED) / (100 * BASE_TIME)
