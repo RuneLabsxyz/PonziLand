@@ -23,7 +23,6 @@
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
-  import { locationsToNuke } from '$lib/stores/nuke.svelte';
 
   let {
     land,
@@ -92,9 +91,10 @@
   $effect(() => {
     if (isNuking) {
       setTimeout(() => {
+        land.type = 'auction';
         clearNuking(land.location);
         clearPending(land.location);
-      }, 4000);
+      }, 5000);
     }
   });
 </script>
