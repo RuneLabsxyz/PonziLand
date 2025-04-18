@@ -785,7 +785,7 @@ pub mod actions {
                 .emit_event(
                     @AuctionFinishedEvent {
                         land_location: land.location,
-                        buyer: land.owner,
+                        buyer: caller,
                         start_time: auction.start_time,
                         final_time: get_block_timestamp(),
                         final_price: auction.get_current_price_decay_rate(),
