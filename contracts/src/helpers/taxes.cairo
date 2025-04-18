@@ -19,17 +19,20 @@ pub fn get_taxes_per_neighbor(land: Land) -> u256 {
 }
 
 pub fn get_tax_rate_per_neighbor(land: Land) -> u256 {
+    let max_n = max_neighbors(land.location);
+    if max_n == 0 {
+        return 0;
+    }
+
     let discount_for_level = calculate_discount_for_level(land.level);
 
     if discount_for_level > 0 {
-        land.sell_price
-            * TAX_RATE.into()
-            * discount_for_level.into()
-            / (max_neighbors(land.location).into() * 100)
+        land.sell_price * TAX_RATE.into() * discount_for_level.into() / (max_n.into() * 100)
     } else {
-        land.sell_price * TAX_RATE.into() / (max_neighbors(land.location).into())
+        land.sell_price * TAX_RATE.into() / (max_n.into())
     }
 }
+
 
 pub fn get_time_to_nuke(land: Land, num_neighbors: u8) -> u256 {
     let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land);
