@@ -17,7 +17,7 @@
   import ThreeDots from '../loading/three-dots.svelte';
   import { Card } from '../ui/card';
   import CloseButton from '../ui/close-button.svelte';
-  import { nukeStore, setNuking } from '$lib/stores/nuke.svelte';
+  import { nukeStore, markAsNuking } from '$lib/stores/nuke.svelte';
   import { toHexWithPadding } from '$lib/utils';
 
   let landStore = useLands();
@@ -89,7 +89,7 @@
         land?.getNeighbors().locations.array.forEach((location) => {
           const locationString = toHexWithPadding(location);
           if (nukeStore.pending[locationString]) {
-            setNuking(locationString);
+            markAsNuking(locationString);
           }
         });
       } else {

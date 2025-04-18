@@ -6,7 +6,7 @@ import { getAggregatedTaxes } from '$lib/utils/taxes';
 import type { BigNumberish } from 'ethers';
 import type { Account, AccountInterface } from 'starknet';
 import { claimQueue } from './event.store.svelte';
-import { setNuking } from './nuke.svelte';
+import { markAsNuking } from './nuke.svelte';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 
 export let claimStore: {
@@ -99,7 +99,7 @@ export async function claimSingleLand(
 
       result.nukables.forEach((land) => {
         if (land.nukable) {
-          setNuking(land.location);
+          markAsNuking(land.location);
           claimStore.value[land.location].land.type = 'auction';
         }
       });

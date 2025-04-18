@@ -16,7 +16,7 @@ export function clearPending(location: string) {
   nukeStore.pending = newPending;
 }
 
-export function setNuking(location: string) {
+export function markAsNuking(location: string) {
   clearPending(location);
   nukeStore.nuking = { ...nukeStore.nuking, [location]: true };
 }

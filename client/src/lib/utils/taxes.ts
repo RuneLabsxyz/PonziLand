@@ -31,11 +31,10 @@ export const getAggregatedTaxes = async (
   const tokenTaxMap: Record<string, CurrencyAmount> = {};
 
   for (const tax of (await land.getNextClaim()) ?? []) {
-    if (tax.canBeNuked) {
-      locationsToNuke.push({ location: tax.landLocation, nukable: true });
-    } else {
-      locationsToNuke.push({ location: tax.landLocation, nukable: false });
-    }
+    locationsToNuke.push({
+      location: tax.landLocation,
+      nukable: tax.canBeNuked,
+    });
 
     if (tax.amount.isZero()) {
       continue;

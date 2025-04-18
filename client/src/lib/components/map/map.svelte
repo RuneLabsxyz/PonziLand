@@ -45,8 +45,7 @@
             land: land,
             claimable: true,
           };
-          let isNuking = $derived(nukeStore.nuking[land.location] === true);
-          if (isNuking) {
+          if (nukeStore.nuking[land.location]) {
             claimStore.value[land.location].land.type = 'auction';
           }
         }
