@@ -4,7 +4,7 @@ explorer = false
 events.raw = true
 
 
-events.historical = [
+sql.historical = [
     "ponzi_land-AuctionFinishedEvent",
     "ponzi_land-LandNukedEvent",
     "ponzi_land-LandBoughtEvent",

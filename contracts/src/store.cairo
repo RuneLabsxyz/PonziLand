@@ -42,23 +42,7 @@ impl StoreImpl of StoreTrait {
     // Deleter
     #[inline(always)]
     fn delete_land(mut self: Store, mut land: Land) {
-        //TODO:Waiting for a fix of dojo
-        // self.world.erase_model(@land);
-        let pool_key = PoolKey {
-            token0: ContractAddressZeroable::zero(),
-            token1: ContractAddressZeroable::zero(),
-            fee: 0,
-            tick_spacing: 0,
-            extension: ContractAddressZeroable::zero(),
-        };
-
-        land.owner = ContractAddressZeroable::zero();
-        land.block_date_bought = 0;
-        land.sell_price = 0;
-        land.token_used = ContractAddressZeroable::zero();
-        land.pool_key = pool_key;
-        land.last_pay_time = 0;
-        land.stake_amount = 0;
-        self.world.write_model(@land);
+        //Red: Attempt to see if it is still an issue with torii:
+        self.world.erase_model(@land);
     }
 }
