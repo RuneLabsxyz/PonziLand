@@ -18,6 +18,7 @@ tuple_to_hex() {
     dec=$(( x * 64 + y ))
     # Convert to hex and pad to exactly 64 characters
     printf "0x%064x\n" "$dec"
+    printf "=> %d\n" "$dec"
 }
 
 if [ $# -eq 1 ]; then
