@@ -25,6 +25,8 @@ trait IActions<T> {
         liquidity_pool: PoolKey,
     );
 
+    fn recreate_auction(ref self: T, land_location: u16);
+
     fn claim(ref self: T, land_location: u16);
 
     fn claim_all(ref self: T, land_locations: Array<u16>);
@@ -373,6 +375,28 @@ pub mod actions {
                     caller,
                     auction,
                 );
+        }
+
+        fn recreate_auction(ref self: ContractState, land_location: u16) {
+            assert(is_valid_position(land_location), 'Land location not valid');
+            let caller = get_caller_address();
+            let mut world = self.world_default();
+            let contract_owner = world.auth_dispatcher().get_owner();
+            assert(contract_owner == caller, 'action not permitted');
+
+            let mut store = StoreTrait::new(world);
+            let mut land = store.land(land_location);
+            assert(land.owner == ContractAddressZeroable::zero(), 'land must be without owner');
+            store.delete_land(land);
+
+            let sell_price = get_average_price(store, land_location);
+            let sell_price = if sell_price > MIN_AUCTION_PRICE {
+                sell_price
+            } else {
+                MIN_AUCTION_PRICE
+            };
+
+            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
         }
 
 
