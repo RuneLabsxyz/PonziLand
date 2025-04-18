@@ -8,6 +8,7 @@
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
   import { getSocialink } from '$lib/accounts/social/index.svelte';
+  import ProMode from '../ui/pro-mode.svelte';
 
   setup();
 
@@ -36,8 +37,9 @@
 </script>
 
 <div class="fixed top-0 right-0 z-50">
-  <div class="absolute top-2 left-0" style="transform: translateX(-120%);">
-    <div class="flex flex-col gap-2">
+  <div class="absolute top-2 left-0" style="transform: translateX(-105%);">
+    <div class="flex flex-col gap-2 items-end">
+      <ProMode />
       <WalletHelp />
       <a
         href="https://x.com/ponzidotland"

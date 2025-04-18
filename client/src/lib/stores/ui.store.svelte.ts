@@ -11,3 +11,19 @@ export let uiStore = $state<{
   modalData: null,
   toolbarActive: null,
 });
+
+class ProMode {
+  public isPro = $state();
+
+  get isProMode() {
+    return this.isPro;
+  }
+  constructor() {
+    this.isPro = false;
+  }
+  toggle() {
+    this.isPro = !this.isPro;
+  }
+}
+
+export const proMode = new ProMode();

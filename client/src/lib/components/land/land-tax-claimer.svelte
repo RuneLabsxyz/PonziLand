@@ -9,7 +9,7 @@
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
-  import { nukeStore, setPending } from '$lib/stores/nuke.svelte';
+  import { setPending } from '$lib/stores/nuke.svelte';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;

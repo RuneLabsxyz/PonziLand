@@ -9,15 +9,11 @@
   } from './request';
   import { useAvnu, type SwapPriceParams } from '$lib/utils/avnu.svelte';
   import {
-    fetchEkuboPairData,
-    calculatePriceFromPool,
+    getTokenPrices,
+    type TokenPrice,
   } from '$lib/components/defi/ekubo/requests';
   //Types
   import type { Token } from '$lib/interfaces';
-  import type {
-    EkuboApiResponse,
-    PoolInfo,
-  } from '$lib/components/defi/ekubo/requests';
 
   //UI
   import Card from '../../ui/card/card.svelte';
@@ -26,7 +22,7 @@
   //Helpers
   import { formatAddress, formatValue } from './helpers';
 
-  import { usernames, updateUsernames } from '$lib/stores/accounts';
+  import { usernamesStore } from '$lib/stores/account.svelte';
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
@@ -34,6 +30,7 @@
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
   let userRankings = $state<Array<{ address: string; totalValue: number }>>([]);
   let isLoading = $state(true);
+  let tokenPrices = $state<TokenPrice[]>([]);
 
   const VERIFIED_ONLY = true;
 
@@ -41,61 +38,43 @@
 
   /**
    * @notice Calculates the price of a token amount in base currency (estark)
-   * @dev Uses Avnu SDK to fetch swap prices for price conversion
+   * @dev Uses API to fetch token prices
    * @param tokenAddress The address of the token to price
-   * @param amount The amount of tokens to price
-   * @returns The price in base currency as a number
+   * @returns The price in base currency as a CurrencyAmount
    */
-  async function getPriceInBaseCurrency(
-    tokenAddress: string,
-  ): Promise<CurrencyAmount> {
+  function getPriceInBaseCurrency(tokenAddress: string): CurrencyAmount {
     if (!tokenAddress) {
       throw new Error('Invalid token address');
     }
+    const tokenPrice = tokenPrices.find((tp) => tp.address === tokenAddress);
 
-    try {
-      let response: EkuboApiResponse = await fetchEkuboPairData(
-        tokenAddress,
-        baseToken,
-      );
-
-      let price = calculatePriceFromPool(response.topPools[0]);
-
-      return price;
-    } catch (error) {
-      throw new Error(
-        `Error fetching price for token ${tokenAddress}: ${error}`,
-      );
+    if (tokenPrice) {
+      return CurrencyAmount.fromUnscaled(tokenPrice.ratio);
     }
+    return CurrencyAmount.fromScaled(0);
   }
 
   /**
    * @notice Calculates token prices for all unique tokens
-   * @dev Creates a cache of token prices to avoid redundant API calls
+   * @dev Creates a cache of token prices from the API
    * @returns Record of token addresses to their CurrencyAmount prices
    */
   async function calculateTokenPrices(): Promise<
     Record<string, CurrencyAmount>
   > {
-    const uniqueTokens = new Set<string>();
     const tokenPriceCache: Record<string, CurrencyAmount> = {};
+    try {
+      tokenPrices = await getTokenPrices();
 
-    for (const tokens of Object.values(leaderboardData)) {
-      for (const tokenAddress in tokens) {
-        if (tokenAddress !== baseToken) {
-          uniqueTokens.add(tokenAddress);
-        }
+      // Create a cache of token prices
+      for (const tokenPrice of tokenPrices) {
+        tokenPriceCache[tokenPrice.address] = CurrencyAmount.fromUnscaled(
+          tokenPrice.ratio,
+        );
       }
-    }
-
-    for (const tokenAddress of uniqueTokens) {
-      try {
-        const priceForOneUnit = await getPriceInBaseCurrency(tokenAddress);
-        tokenPriceCache[tokenAddress] = priceForOneUnit;
-      } catch (error) {
-        console.error(`Failed to get price for token ${tokenAddress}:`, error);
-        tokenPriceCache[tokenAddress] = CurrencyAmount.fromScaled(0);
-      }
+    } catch (error) {
+      console.error('Failed to fetch token prices from API:', error);
+      tokenPrices = [];
     }
 
     return tokenPriceCache;
@@ -150,7 +129,7 @@
     try {
       const addresses = userRankings.map((user) => user.address);
       const fetchedUsernames = await fetchUsernamesBatch(addresses);
-      updateUsernames(fetchedUsernames);
+      usernamesStore.updateUsernames(fetchedUsernames);
     } catch (error) {
       console.error('Error fetching usernames:', error);
     }
@@ -170,7 +149,7 @@
 
       if (VERIFIED_ONLY) {
         userRankings = userRankings.filter(
-          (user) => padAddress(user.address)! in $usernames,
+          (user) => padAddress(user.address)! in usernamesStore.getUsernames(),
         );
       }
 
@@ -227,7 +206,7 @@
               <span
                 class="font-mono"
                 class:text-red-500={user.address === address}
-                >{$usernames[padAddress(user.address)!] ||
+                >{usernamesStore.getUsernames()[padAddress(user.address)!] ||
                   formatAddress(user.address)}</span
               >
               {#if user.address === address}
@@ -252,7 +231,8 @@
         <span class="text-sm">Your rank:</span>
         <span class="font-bold">{userRank}</span>
         <span class="font-mono text-red-500 text-sm"
-          >{$usernames[address] || formatAddress(address)}</span
+          >{usernamesStore.getUsernames()[address] ||
+            formatAddress(address)}</span
         >
         <span class="ml-auto font-bold">
           {formatValue(

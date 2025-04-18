@@ -29,13 +29,13 @@
 </script>
 
 <div class="flex gap-4 relative items-center p-4">
-  <div class="absolute -top-8 left-0 right-0">
+  <div class="absolute -top-8 -left-7">
     <div class="flex justify-center">
       <div class="h-10 w-10">
         <img
           src="/ui/icons/Icon_Crown.png"
           alt="owner"
-          style="image-rendering: pixelated;"
+          style="image-rendering: pixelated; transform: rotate(-30deg);"
         />
       </div>
     </div>

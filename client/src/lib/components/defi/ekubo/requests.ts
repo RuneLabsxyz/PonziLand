@@ -35,6 +35,12 @@ export interface EkuboApiResponse {
   topPools: PoolInfo[];
 }
 
+export interface TokenPrice {
+  symbol: string;
+  address: string;
+  ratio: number;
+}
+
 /**
  * @notice Fetches pair data from Ekubo API for two tokens
  * @dev Makes an HTTP request to the Ekubo API endpoint
@@ -91,4 +97,20 @@ export function calculatePriceFromPool(
   const adjustedPrice = rawPrice * decimalAdjustment;
 
   return CurrencyAmount.fromScaled(adjustedPrice);
+}
+
+export async function getTokenPrices(): Promise<TokenPrice[]> {
+  const url = 'https://api.ponzi.land/price';
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching token prices:', error);
+    throw error;
+  }
 }

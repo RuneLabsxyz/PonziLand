@@ -4,90 +4,6 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_auth_addAuthorized_calldata = (address: string): DojoCall => {
-		return {
-			contractName: "auth",
-			entrypoint: "add_authorized",
-			calldata: [address],
-		};
-	};
-
-	const auth_addAuthorized = async (snAccount: Account | AccountInterface, address: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_auth_addAuthorized_calldata(address),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_auth_addAuthorizedWithSignature_calldata = (signature: Array<BigNumberish>): DojoCall => {
-		return {
-			contractName: "auth",
-			entrypoint: "add_authorized_with_signature",
-			calldata: [signature],
-		};
-	};
-
-	const auth_addAuthorizedWithSignature = async (snAccount: Account | AccountInterface, signature: Array<BigNumberish>) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_auth_addAuthorizedWithSignature_calldata(signature),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_auth_addVerifier_calldata = (newVerifier: string): DojoCall => {
-		return {
-			contractName: "auth",
-			entrypoint: "add_verifier",
-			calldata: [newVerifier],
-		};
-	};
-
-	const auth_addVerifier = async (snAccount: Account | AccountInterface, newVerifier: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_auth_addVerifier_calldata(newVerifier),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_actions_auction_calldata = (landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, decayRate: BigNumberish, isFromNuke: boolean): DojoCall => {
-		return {
-			contractName: "actions",
-			entrypoint: "auction",
-			calldata: [landLocation, startPrice, floorPrice, decayRate, isFromNuke],
-		};
-	};
-
-	const actions_auction = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, startPrice: BigNumberish, floorPrice: BigNumberish, decayRate: BigNumberish, isFromNuke: boolean) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_actions_auction_calldata(landLocation, startPrice, floorPrice, decayRate, isFromNuke),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_actions_bid_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey): DojoCall => {
 		return {
 			contractName: "actions",
@@ -124,23 +40,6 @@ export function setupWorld(provider: DojoProvider) {
 				build_actions_buy_calldata(landLocation, tokenForSale, sellPrice, amountToStake, liquidityPool),
 				"ponzi_land",
 			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_auth_canTakeAction_calldata = (address: string): DojoCall => {
-		return {
-			contractName: "auth",
-			entrypoint: "can_take_action",
-			calldata: [address],
-		};
-	};
-
-	const auth_canTakeAction = async (address: string) => {
-		try {
-			return await provider.call("ponzi_land", build_auth_canTakeAction_calldata(address));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -223,6 +122,23 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_getClaimableTaxesForLand_calldata = (landLocation: BigNumberish, owner: string): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "get_claimable_taxes_for_land",
+			calldata: [landLocation, owner],
+		};
+	};
+
+	const actions_getClaimableTaxesForLand = async (landLocation: BigNumberish, owner: string) => {
+		try {
+			return await provider.call("ponzi_land", build_actions_getClaimableTaxesForLand_calldata(landLocation, owner));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_getCurrentAuctionPrice_calldata = (landLocation: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
@@ -291,34 +207,51 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_auth_getOwner_calldata = (): DojoCall => {
+	const build_actions_getPendingTaxesForLand_calldata = (landLocation: BigNumberish, owner: string): DojoCall => {
 		return {
-			contractName: "auth",
-			entrypoint: "get_owner",
-			calldata: [],
+			contractName: "actions",
+			entrypoint: "get_pending_taxes_for_land",
+			calldata: [landLocation, owner],
 		};
 	};
 
-	const auth_getOwner = async () => {
+	const actions_getPendingTaxesForLand = async (landLocation: BigNumberish, owner: string) => {
 		try {
-			return await provider.call("ponzi_land", build_auth_getOwner_calldata());
+			return await provider.call("ponzi_land", build_actions_getPendingTaxesForLand_calldata(landLocation, owner));
 		} catch (error) {
 			console.error(error);
 			throw error;
 		}
 	};
 
-	const build_actions_getPendingTaxesForLand_calldata = (landLocation: BigNumberish, ownerLand: string): DojoCall => {
+	const build_actions_getTimeToNuke_calldata = (landLocation: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
-			entrypoint: "get_pending_taxes_for_land",
-			calldata: [landLocation, ownerLand],
+			entrypoint: "get_time_to_nuke",
+			calldata: [landLocation],
 		};
 	};
 
-	const actions_getPendingTaxesForLand = async (landLocation: BigNumberish, ownerLand: string) => {
+	const actions_getTimeToNuke = async (landLocation: BigNumberish) => {
 		try {
-			return await provider.call("ponzi_land", build_actions_getPendingTaxesForLand_calldata(landLocation, ownerLand));
+			return await provider.call("ponzi_land", build_actions_getTimeToNuke_calldata(landLocation));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_getUnclaimedTaxesPerNeighbor_calldata = (landLocation: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "get_unclaimed_taxes_per_neighbor",
+			calldata: [landLocation],
+		};
+	};
+
+	const actions_getUnclaimedTaxesPerNeighbor = async (landLocation: BigNumberish) => {
+		try {
+			return await provider.call("ponzi_land", build_actions_getUnclaimedTaxesPerNeighbor_calldata(landLocation));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -388,48 +321,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_auth_lockActions_calldata = (): DojoCall => {
-		return {
-			contractName: "auth",
-			entrypoint: "lock_actions",
-			calldata: [],
-		};
-	};
-
-	const auth_lockActions = async (snAccount: Account | AccountInterface) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_auth_lockActions_calldata(),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_actions_nuke_calldata = (landLocation: BigNumberish): DojoCall => {
-		return {
-			contractName: "actions",
-			entrypoint: "nuke",
-			calldata: [landLocation],
-		};
-	};
-
-	const actions_nuke = async (snAccount: Account | AccountInterface, landLocation: BigNumberish) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_actions_nuke_calldata(landLocation),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_actions_reimburseStakes_calldata = (): DojoCall => {
 		return {
 			contractName: "actions",
@@ -443,6 +334,124 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_reimburseStakes_calldata(),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_addAuthorized_calldata = (address: string): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "add_authorized",
+			calldata: [address],
+		};
+	};
+
+	const auth_addAuthorized = async (snAccount: Account | AccountInterface, address: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_auth_addAuthorized_calldata(address),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_addAuthorizedWithSignature_calldata = (signature: Array<BigNumberish>): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "add_authorized_with_signature",
+			calldata: [signature],
+		};
+	};
+
+	const auth_addAuthorizedWithSignature = async (snAccount: Account | AccountInterface, signature: Array<BigNumberish>) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_auth_addAuthorizedWithSignature_calldata(signature),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_addVerifier_calldata = (newVerifier: string): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "add_verifier",
+			calldata: [newVerifier],
+		};
+	};
+
+	const auth_addVerifier = async (snAccount: Account | AccountInterface, newVerifier: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_auth_addVerifier_calldata(newVerifier),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_canTakeAction_calldata = (address: string): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "can_take_action",
+			calldata: [address],
+		};
+	};
+
+	const auth_canTakeAction = async (address: string) => {
+		try {
+			return await provider.call("ponzi_land", build_auth_canTakeAction_calldata(address));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_getOwner_calldata = (): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "get_owner",
+			calldata: [],
+		};
+	};
+
+	const auth_getOwner = async () => {
+		try {
+			return await provider.call("ponzi_land", build_auth_getOwner_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_lockActions_calldata = (): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "lock_actions",
+			calldata: [],
+		};
+	};
+
+	const auth_lockActions = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_auth_lockActions_calldata(),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -538,6 +547,44 @@ export function setupWorld(provider: DojoProvider) {
 
 
 	return {
+		actions: {
+			bid: actions_bid,
+			buildBidCalldata: build_actions_bid_calldata,
+			buy: actions_buy,
+			buildBuyCalldata: build_actions_buy_calldata,
+			claim: actions_claim,
+			buildClaimCalldata: build_actions_claim_calldata,
+			claimAll: actions_claimAll,
+			buildClaimAllCalldata: build_actions_claimAll_calldata,
+			getActiveAuctions: actions_getActiveAuctions,
+			buildGetActiveAuctionsCalldata: build_actions_getActiveAuctions_calldata,
+			getAuction: actions_getAuction,
+			buildGetAuctionCalldata: build_actions_getAuction_calldata,
+			getClaimableTaxesForLand: actions_getClaimableTaxesForLand,
+			buildGetClaimableTaxesForLandCalldata: build_actions_getClaimableTaxesForLand_calldata,
+			getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
+			buildGetCurrentAuctionPriceCalldata: build_actions_getCurrentAuctionPrice_calldata,
+			getLand: actions_getLand,
+			buildGetLandCalldata: build_actions_getLand_calldata,
+			getNeighborsYield: actions_getNeighborsYield,
+			buildGetNeighborsYieldCalldata: build_actions_getNeighborsYield_calldata,
+			getNextClaimInfo: actions_getNextClaimInfo,
+			buildGetNextClaimInfoCalldata: build_actions_getNextClaimInfo_calldata,
+			getPendingTaxesForLand: actions_getPendingTaxesForLand,
+			buildGetPendingTaxesForLandCalldata: build_actions_getPendingTaxesForLand_calldata,
+			getTimeToNuke: actions_getTimeToNuke,
+			buildGetTimeToNukeCalldata: build_actions_getTimeToNuke_calldata,
+			getUnclaimedTaxesPerNeighbor: actions_getUnclaimedTaxesPerNeighbor,
+			buildGetUnclaimedTaxesPerNeighborCalldata: build_actions_getUnclaimedTaxesPerNeighbor_calldata,
+			increasePrice: actions_increasePrice,
+			buildIncreasePriceCalldata: build_actions_increasePrice_calldata,
+			increaseStake: actions_increaseStake,
+			buildIncreaseStakeCalldata: build_actions_increaseStake_calldata,
+			levelUp: actions_levelUp,
+			buildLevelUpCalldata: build_actions_levelUp_calldata,
+			reimburseStakes: actions_reimburseStakes,
+			buildReimburseStakesCalldata: build_actions_reimburseStakes_calldata,
+		},
 		auth: {
 			addAuthorized: auth_addAuthorized,
 			buildAddAuthorizedCalldata: build_auth_addAuthorized_calldata,
@@ -559,42 +606,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetVerifierCalldata: build_auth_setVerifier_calldata,
 			unlockActions: auth_unlockActions,
 			buildUnlockActionsCalldata: build_auth_unlockActions_calldata,
-		},
-		actions: {
-			auction: actions_auction,
-			buildAuctionCalldata: build_actions_auction_calldata,
-			bid: actions_bid,
-			buildBidCalldata: build_actions_bid_calldata,
-			buy: actions_buy,
-			buildBuyCalldata: build_actions_buy_calldata,
-			claim: actions_claim,
-			buildClaimCalldata: build_actions_claim_calldata,
-			claimAll: actions_claimAll,
-			buildClaimAllCalldata: build_actions_claimAll_calldata,
-			getActiveAuctions: actions_getActiveAuctions,
-			buildGetActiveAuctionsCalldata: build_actions_getActiveAuctions_calldata,
-			getAuction: actions_getAuction,
-			buildGetAuctionCalldata: build_actions_getAuction_calldata,
-			getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
-			buildGetCurrentAuctionPriceCalldata: build_actions_getCurrentAuctionPrice_calldata,
-			getLand: actions_getLand,
-			buildGetLandCalldata: build_actions_getLand_calldata,
-			getNeighborsYield: actions_getNeighborsYield,
-			buildGetNeighborsYieldCalldata: build_actions_getNeighborsYield_calldata,
-			getNextClaimInfo: actions_getNextClaimInfo,
-			buildGetNextClaimInfoCalldata: build_actions_getNextClaimInfo_calldata,
-			getPendingTaxesForLand: actions_getPendingTaxesForLand,
-			buildGetPendingTaxesForLandCalldata: build_actions_getPendingTaxesForLand_calldata,
-			increasePrice: actions_increasePrice,
-			buildIncreasePriceCalldata: build_actions_increasePrice_calldata,
-			increaseStake: actions_increaseStake,
-			buildIncreaseStakeCalldata: build_actions_increaseStake_calldata,
-			levelUp: actions_levelUp,
-			buildLevelUpCalldata: build_actions_levelUp_calldata,
-			nuke: actions_nuke,
-			buildNukeCalldata: build_actions_nuke_calldata,
-			reimburseStakes: actions_reimburseStakes,
-			buildReimburseStakesCalldata: build_actions_reimburseStakes_calldata,
 		},
 	};
 }

@@ -32,7 +32,7 @@ sozo -P sepolia build
 
 # Deploy the project
 echo "Deploying to Sepolia..."
-sozo -P sepolia migrate -vvvvv
+sozo -P sepolia migrate
 
 # Deployment succeeded message
 echo "Deployment completed successfully."

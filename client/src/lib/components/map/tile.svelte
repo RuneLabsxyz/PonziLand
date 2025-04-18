@@ -22,9 +22,8 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
-  import { onMount } from 'svelte';
-  import { getAggregatedTaxes } from '$lib/utils/taxes';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
+  import { locationsToNuke } from '$lib/stores/nuke.svelte';
 
   let {
     land,

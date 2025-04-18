@@ -8,20 +8,28 @@
   import LandHudEmpty from './land-hud-empty.svelte';
   import LandHudOther from './land-hud-other.svelte';
   import LandHudOwned from './land-hud-owned.svelte';
-
-  const { store, client: sdk } = useDojo();
+  import LandHudPro from './land-hud-pro.svelte';
+  import LandNukeTime from '../land-nuke-time.svelte';
+  import { proMode } from '$lib/stores/ui.store.svelte';
 
   const address = $derived(account.address);
 
   let isOwner = $derived($selectedLandMeta?.owner == padAddress(address ?? ''));
+
+  let land = $derived($selectedLandMeta);
 </script>
 
 {#if $selectedLandMeta}
-  <Card class="fixed bottom-0 right-0 z-50 w-96 bg-ponzi">
+  <Card class="fixed bottom-0 right-0 z-50 w-104 bg-ponzi">
+    {#if $selectedLandMeta.type === 'house'}
+      <LandNukeTime {land} />
+    {/if}
     {#if $selectedLandMeta.type === 'auction'}
       <LandHudAuction />
     {:else if $selectedLandMeta.type === 'grass'}
       <LandHudEmpty />
+    {:else if proMode.isProMode}
+      <LandHudPro {land} />
     {:else if isOwner}
       <LandHudOwned />
     {:else}

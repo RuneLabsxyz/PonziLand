@@ -4,7 +4,6 @@
   import { type LandWithActions } from '$lib/api/land.svelte';
   import type { Tile } from '$lib/api/tile-store.svelte';
   import { moveCameraToLocation } from '$lib/stores/camera';
-  import { nukeStore } from '$lib/stores/nuke.svelte';
   import {
     selectedLand,
     selectedLandMeta,
@@ -18,8 +17,6 @@
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from '$lib/components/map/rates-overlay.svelte';
-  import { onMount } from 'svelte';
-  import { getAggregatedTaxes } from '$lib/utils/taxes';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
 
   let { land, dragged, scale } = $props<{
@@ -147,7 +144,8 @@
     </div>
   {/if}
 
-  {#if nukeStore.pending.has(land.location)}
+  //TODO: add nuke explanation to the tutorial
+  {#if false}
     <div
       class="absolute bottom-1/4 left-1/2 -translate-x-1/2 text-ponzi animate-pulse text-[4px]"
       onclick={handleClick}

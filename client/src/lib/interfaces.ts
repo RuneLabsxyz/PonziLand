@@ -26,9 +26,9 @@ export interface Token {
     icon: string;
     biome: Coordinates;
     building: {
-      1: Coordinates & AnimationMeta;
-      2: Coordinates & AnimationMeta;
-      3: Coordinates & AnimationMeta;
+      1: Coordinates & Partial<AnimationMeta>;
+      2: Coordinates & Partial<AnimationMeta>;
+      3: Coordinates & Partial<AnimationMeta>;
     };
   };
 }

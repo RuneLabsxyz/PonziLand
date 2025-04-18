@@ -260,6 +260,28 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const build_actions_getTimeToNuke_calldata = (
+    landLocation: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'actions',
+      entrypoint: 'get_time_to_nuke',
+      calldata: [landLocation],
+    };
+  };
+
+  const actions_getTimeToNuke = async (landLocation: BigNumberish) => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_actions_getTimeToNuke_calldata(landLocation),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const build_actions_claimAll_calldata = (
     landLocations: Array<BigNumberish>,
   ): DojoCall => {
@@ -743,6 +765,8 @@ export function setupWorld(provider: DojoProvider) {
       buildClaimAllCalldata: build_actions_claimAll_calldata,
       getActiveAuctions: actions_getActiveAuctions,
       buildGetActiveAuctionsCalldata: build_actions_getActiveAuctions_calldata,
+      getTimeToNuke: actions_getTimeToNuke,
+      buildGetTimeToNukeCalldata: build_actions_getTimeToNuke_calldata,
       getAuction: actions_getAuction,
       buildGetAuctionCalldata: build_actions_getAuction_calldata,
       getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
