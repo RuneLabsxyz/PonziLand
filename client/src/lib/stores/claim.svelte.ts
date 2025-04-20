@@ -69,7 +69,6 @@ export async function claimSingleLand(
     });
 }
 
-
 async function handlePostClaim(
   lands: LandWithActions[],
   result: { nukables: any[]; taxes: any[] },
