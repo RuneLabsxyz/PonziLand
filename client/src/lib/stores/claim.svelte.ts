@@ -25,60 +25,34 @@ export async function claimAllOfToken(
   { client: sdk, accountManager }: ReturnType<typeof useDojo>,
   account: Account | AccountInterface,
 ) {
-  // get all the lands with the same token
   const landsWithThisToken = Object.values(claimStore.value)
     .filter((claim) => claim.land.token?.address === token.address)
     .map((claim) => claim.land);
 
-  const aggregatedTaxes = await Promise.all(
-    landsWithThisToken.map(async (land) => {
-      const result = await getAggregatedTaxes(land);
-      return result.taxes;
-    }),
-  );
+  const landsToClaim: LandWithActions[][] = [];
+  for (let i = 0; i < landsWithThisToken.length; i += 10) {
+    landsToClaim.push(landsWithThisToken.slice(i, i + 10));
+  }
 
-  // call claim multicall to claim all the tokens at once
-  await sdk.client.actions
-    .claimAll(
-      account,
-      landsWithThisToken.map((land) => land.location as BigNumberish),
-    )
-    .then(() => {
-      // update the last claim time for all the lands
-      landsWithThisToken.forEach((land) => {
-        claimStore.value[land.location].lastClaimTime = Date.now();
-        claimStore.value[land.location].animating = true;
-        claimStore.value[land.location].claimable = false;
-      });
+  for (const batch of landsToClaim) {
+    const batchAggregatedTaxes = await Promise.all(
+      batch.map(async (land) => {
+        const result = await getAggregatedTaxes(land);
+        return result;
+      }),
+    );
 
-      setTimeout(() => {
-        landsWithThisToken.forEach((land) => {
-          claimStore.value[land.location].animating = false;
+    await sdk.client.actions
+      .claimAll(
+        account,
+        batch.map((land) => land.location as BigNumberish),
+      )
+      .then((value) => {
+        batchAggregatedTaxes.forEach((result) => {
+          handlePostClaim(batch, result, value.transaction_hash);
         });
-      }, 2000);
-
-      setTimeout(() => {
-        landsWithThisToken.forEach((land) => {
-          if (land.type === 'house') {
-            claimStore.value[land.location].claimable = true;
-          }
-        });
-      }, 30 * 1000);
-
-      claimQueue.update((queue) => {
-        return [
-          ...queue,
-          ...aggregatedTaxes.flatMap((taxData) => {
-            return taxData.map((tax) => {
-              const token = getTokenInfo(tax.tokenAddress);
-              tax.totalTax.setToken(token);
-              console.log('total tax when updating queue', tax.totalTax);
-              return tax.totalTax;
-            });
-          }),
-        ];
       });
-    });
+  }
 }
 
 export async function claimSingleLand(
@@ -91,38 +65,60 @@ export async function claimSingleLand(
   await sdk.client.actions
     .claim(account, land.location as BigNumberish)
     .then((value) => {
-      notificationQueue.addNotification(value.transaction_hash, 'claim');
-
-      claimStore.value[land.location].lastClaimTime = Date.now();
-      claimStore.value[land.location].animating = true;
-      claimStore.value[land.location].claimable = false;
-
-      result.nukables.forEach((land) => {
-        if (land.nukable) {
-          markAsNuking(land.location);
-          claimStore.value[land.location].land.type = 'auction';
-        }
-      });
-
-      setTimeout(() => {
-        claimStore.value[land.location].animating = false;
-      }, 2000);
-
-      setTimeout(() => {
-        if (land.type === 'house') {
-          claimStore.value[land.location].claimable = true;
-        }
-      }, 30 * 1000);
-
-      claimQueue.update((queue) => {
-        return [
-          ...queue,
-          ...result.taxes.map((tax) => {
-            const token = getTokenInfo(tax.tokenAddress);
-            tax.totalTax.setToken(token);
-            return tax.totalTax;
-          }),
-        ];
-      });
+      handlePostClaim([land], result, value.transaction_hash);
     });
+}
+
+// Agregar esta función helper al inicio del archivo
+async function handlePostClaim(
+  lands: LandWithActions[],
+  result: { nukables: any[]; taxes: any[] },
+  transactionHash: string,
+) {
+  if (transactionHash) {
+    notificationQueue.addNotification(transactionHash, 'claim');
+  }
+
+  // Update claim states for all lands
+  lands.forEach((land) => {
+    claimStore.value[land.location].lastClaimTime = Date.now();
+    claimStore.value[land.location].animating = true;
+    claimStore.value[land.location].claimable = false;
+  });
+
+  // Handle nukables
+  result.nukables.forEach((land) => {
+    if (land.nukable) {
+      markAsNuking(land.location);
+      claimStore.value[land.location].land.type = 'auction';
+    }
+  });
+
+  // Animation timeout
+  setTimeout(() => {
+    lands.forEach((land) => {
+      claimStore.value[land.location].animating = false;
+    });
+  }, 2000);
+
+  // Claimable timeout
+  setTimeout(() => {
+    lands.forEach((land) => {
+      if (land.type === 'house') {
+        claimStore.value[land.location].claimable = true;
+      }
+    });
+  }, 30 * 1000);
+
+  // Update claim queue
+  claimQueue.update((queue) => {
+    return [
+      ...queue,
+      ...result.taxes.map((tax) => {
+        const token = getTokenInfo(tax.tokenAddress);
+        tax.totalTax.setToken(token);
+        return tax.totalTax;
+      }),
+    ];
+  });
 }

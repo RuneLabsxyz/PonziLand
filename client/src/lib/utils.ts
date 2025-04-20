@@ -170,3 +170,16 @@ export function ensureNumber(value: BigNumberish) {
     return value;
   }
 }
+
+export function groupLands(lands: LandWithActions[]) {
+  const map = new Map();
+  for (const land of lands) {
+    const key = `${land.token?.name}__${land.token?.address}`;
+    if (!map.has(key)) {
+      map.set(key, []);
+    }
+    map.get(key).push(land);
+  }
+
+  return Array.from(map.entries());
+}

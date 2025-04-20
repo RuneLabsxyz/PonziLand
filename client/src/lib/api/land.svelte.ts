@@ -243,7 +243,7 @@ export function useLands(): LandsStore | undefined {
         },
         async getNextClaim() {
           const result = (await sdk.client.actions.getNextClaimInfo(
-            ensureNumber(land.location),
+            land.location,
           )) as any[] | undefined;
           return result?.map((claim) => ({
             amount: CurrencyAmount.fromUnscaled(claim.amount),

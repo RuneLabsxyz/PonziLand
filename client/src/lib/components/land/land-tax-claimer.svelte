@@ -41,22 +41,6 @@
   });
   let timing = $derived(claimStore.value[land.location].claimable);
 
-  async function handleClaimFromCoin(e: Event) {
-    console.log('claiming from coin');
-    fetchTaxes();
-
-    if (!land.token) {
-      console.error("Land doesn't have a token");
-      return;
-    }
-
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!).catch(
-      (e) => {
-        console.error('error claiming from coin', e);
-      },
-    );
-  }
-
   async function handleSingleClaim(e: Event) {
     console.log('claiming from single land');
     fetchTaxes();
@@ -73,7 +57,6 @@
 
   async function fetchTaxes() {
     const result = await getAggregatedTaxes(land);
-
     aggregatedTaxes = result.taxes;
 
     const nukables = result.nukables;
