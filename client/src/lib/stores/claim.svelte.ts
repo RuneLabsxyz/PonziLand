@@ -69,7 +69,7 @@ export async function claimSingleLand(
     });
 }
 
-// Agregar esta función helper al inicio del archivo
+
 async function handlePostClaim(
   lands: LandWithActions[],
   result: { nukables: any[]; taxes: any[] },
