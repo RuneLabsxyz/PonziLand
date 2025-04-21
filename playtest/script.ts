@@ -1,17 +1,5 @@
 #!/usr/bin/env bun
 
-import {
-  CairoCustomEnum,
-  CairoOption,
-  CairoOptionVariant,
-  CallData,
-} from "starknet";
-import {
-  doTransaction,
-  forEachToken,
-  getContractAddress,
-  setAccess,
-} from "./scripts/utils";
 import { parseArgs } from "util";
 import { exit } from "process";
 import dotenv from "dotenv";
@@ -24,6 +12,7 @@ import path from "path";
 import { mint } from "./scripts/commands/mint";
 import { setupPool } from "./scripts/commands/setup_pool";
 import { worldOwner } from "./scripts/commands/dojo_owner";
+import { whitelist } from "./scripts/commands/whitelist";
 
 const SOCIALINK_SIGNER_ADDRESS =
   "0x008ea9029cec9c339e0513a17336e9af43278ebd81858aee0af110c3e810fce6";
@@ -90,6 +79,9 @@ switch (command) {
     break;
   case "owner":
     await worldOwner(config, commandPositionals);
+    break;
+  case "whitelist":
+    await whitelist(config, commandPositionals);
     break;
   case undefined:
     console.log("No command provided!");

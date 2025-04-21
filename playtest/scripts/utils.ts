@@ -70,7 +70,10 @@ export async function doTransaction(call: Call | Call[]) {
   }
 }
 
-export function getContractAddress(contractName: string) {
+export async function getContractAddress(contractName: string) {
+  const manifest = await file(
+    `${context?.config.basePath}/../contracts/manifest_${context?.config.environment}.json`,
+  ).json();
   const selector = "ponzi_land-" + contractName;
   const contract = manifest.contracts.find((c) => c.tag === selector);
   if (!contract) throw new Error(`Contract ${contractName} not found`);

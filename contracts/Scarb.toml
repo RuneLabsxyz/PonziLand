@@ -21,6 +21,8 @@ ekubo = { git = "https://github.com/EkuboProtocol/abis", rev = "edb6de8c9baf515f
 
 [profile.mainnet]
 
+[profile.mainnet-test]
+
 [[target.starknet-contract]]
 build-external-contracts = ["dojo::world::world_contract::world"]
 
