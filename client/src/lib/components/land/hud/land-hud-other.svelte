@@ -23,11 +23,8 @@
             @TODO: handle in server so we can remove this  
           -->
           {#if $selectedLandMeta?.owner}
-            {usernamesStore.getUsernames()[
-              $selectedLandMeta?.owner
-                ?.replace('0x00', '0x')
-                .replace('0x0', '0x')
-            ] || shortenHex($selectedLandMeta?.owner)}
+            {usernamesStore.getUsernames()[$selectedLandMeta?.owner] ||
+              shortenHex($selectedLandMeta?.owner)}
           {/if}
         </a>
       </p>
