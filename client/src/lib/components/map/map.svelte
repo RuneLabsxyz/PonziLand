@@ -3,13 +3,18 @@
   import type { LandsStore } from '$lib/api/land.svelte';
   import { useLands } from '$lib/api/land.svelte';
   import { useTiles } from '$lib/api/tile-store.svelte';
-  import { cameraPosition, cameraTransition } from '$lib/stores/camera';
+  import {
+    cameraPosition,
+    cameraTransition,
+    moveCameraToLocation,
+  } from '$lib/stores/camera';
   import { claimStore } from '$lib/stores/claim.svelte';
   import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { padAddress } from '$lib/utils';
   import Tile from './tile.svelte';
   import { GRID_SIZE, TILE_SIZE } from '$lib/const';
   import { nukeStore } from '$lib/stores/nuke.svelte';
+  import { onMount } from 'svelte';
 
   // Camera position
   const MIN_SCALE = 0.6;
@@ -31,6 +36,10 @@
   let tileStore = useTiles();
 
   let tiles = $derived($tileStore ?? []);
+
+  onMount(() => {
+    moveCameraToLocation(2080, 3);
+  });
 
   $effect(() => {
     const address = account.address;

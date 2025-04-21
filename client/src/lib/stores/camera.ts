@@ -47,11 +47,11 @@ export function moveCameraTo(
   });
 }
 
-export function moveCameraToLocation(location: number) {
+export function moveCameraToLocation(location: number, targetScale?: number) {
   const MAP_SIZE = 64;
 
   const tileX = location % MAP_SIZE;
   const tileY = Math.floor(location / MAP_SIZE);
 
-  moveCameraTo(tileX + 1, tileY + 1);
+  moveCameraTo(tileX + 1, tileY + 1, targetScale);
 }
