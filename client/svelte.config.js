@@ -6,7 +6,7 @@ import process from 'node:process';
 import dotenv from 'dotenv';
 dotenv.config();
 
-const profile = process.env.DOJO_PROFILE?.toLowerCase() ?? 'dev';
+let profile = process.env.DOJO_PROFILE?.toLowerCase() ?? 'dev';
 
 process.env.PUBLIC_DOJO_PROFILE = profile;
 
@@ -39,6 +39,28 @@ const profiles = {
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
+    PUBLIC_DOJO_BURNER_ADDRESS: null,
+    PUBLIC_DOJO_BURNER_PRIVATE: null,
+    BYPASS_TOKEN: '',
+    PUBLIC_SOCIALINK_URL: 'https://social.ponzi.land',
+  },
+  'mainnet-test': {
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
+    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-testing/torii',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
+    PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
+    PUBLIC_EKUBO_URL: 'https://main net-api.ekubo.org',
+    PUBLIC_DOJO_BURNER_ADDRESS: null,
+    PUBLIC_DOJO_BURNER_PRIVATE: null,
+    BYPASS_TOKEN: '',
+    PUBLIC_SOCIALINK_URL: 'https://social.ponzi.land',
+  },
+  mainnet: {
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
+    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-tourney/torii',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
+    PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
+    PUBLIC_EKUBO_URL: 'https://main net-api.ekubo.org',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',

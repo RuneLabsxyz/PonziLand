@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "dev:sepolia": "DOJO_PROFILE=sepolia vite dev",
+    "dev:test": "DOJO_PROFILE=mainnet-test vite dev",
     "build": "vite build",
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
     "preview": "vite preview",
