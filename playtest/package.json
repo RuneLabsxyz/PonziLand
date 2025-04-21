@@ -1,9 +1,14 @@
 {
   "dependencies": {
     "bignumber.js": "^9.1.2",
-    "starknet": "^6.23.1"
+    "starknet": "^7.1.0"
   },
+  "type": "module",
   "devDependencies": {
-    "@types/bun": "^1.2.4"
+    "@ledgerhq/hw-transport-node-hid": "^6.29.5",
+    "@types/bun": "^1.2.4",
+    "@types/prompts": "^2.4.9",
+    "dotenv": "^16.5.0",
+    "prompts": "^2.4.2"
   }
 }

@@ -1,0 +1,43 @@
+[world]
+name = "Ponzi Land"
+description = "The official Dojo Starter guide, the quickest and most streamlined way to get your Dojo Autonomous World up and running. This guide will assist you with the initial setup, from cloning the repository to deploying your world."
+cover_uri = "file://assets/cover.png"
+icon_uri = "file://assets/icon.png"
+website = "https://github.com/dojoengine/dojo-starter"
+seed = "ponzi_land-tourney"
+
+[world.socials]
+x = "https://x.com/ohayo_dojo"
+discord = "https://discord.gg/FB2wR6uF"
+github = "https://github.com/dojoengine/dojo-starter"
+telegram = "https://t.me/dojoengine"
+
+[namespace]
+default = "ponzi_land"
+
+
+[env]
+rpc_url = "https://api.cartridge.gg/x/starknet/mainnet"
+ipfs_config.url = "https://ipfs.infura.io:5001"
+ipfs_config.username = "2EBrzr7ZASQZKH32sl2xWauXPSA"
+ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
+#world = "0x0159a8d45365dce1aa357933e2e2e0a9290a41f275e100ae549092c3bb91067d"
+
+[writers]
+# We need to be a writer to add events...
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth"]
+
+[init_call_args]
+"ponzi_land-actions" = [
+    "0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # Token address (eSTRK)
+    "128000000000000000000",                                              # start price (low)
+    "0",                                                                  # start price (high)
+    "1000000000000000000",                                                # floor price (low)
+    "0",                                                                  # floor price (high)
+    "100",                                                                # Decay rate (100)
+    "0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b", # Ekubo core contract address
+]
+"ponzi_land-auth" = [
+    "0x021fBAE9F9343873ab25eC14d287A1170b676C73c97906790ef91F5428dBdbad", # Owner address
+    "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
+]

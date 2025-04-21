@@ -51,12 +51,6 @@ export abstract class CommonStarknetWallet implements AccountProvider {
     // This is where we need to catch errors if the user cancelled
     const result = await this._wallet.requestAccounts(true);
 
-    this._walletObject.on('accountsChanged', (res) => {
-      if (res == null || res.length == 0) {
-        // disconnect
-      }
-    });
-
     if (typeof result == 'string') {
       // This is extracted from the example https://github.com/PhilippeR26/Starknet-WalletAccount/blob/main/src/app/components/client/WalletHandle/SelectWallet.tsx
       // not sure why this means that the wallet is not compatible, but welp

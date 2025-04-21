@@ -19,15 +19,25 @@ in {
     bc
     colorized-logs
     wrangler
+
     graphite-cli
 
     # Utilities
     just
 
     # Cargo dependencies
-    pkgs.openssl
-    pkgs.pkg-config
+    openssl
+    pkg-config
+
+    # Depdencies for ledger interconnection
+    node-gyp
+    systemd
+    udev
+    libusb1
+    pkgs.stdenv.cc.cc
   ];
+
+  env.LD_LIBRARY_PATH = lib.makeLibraryPath config.packages;
 
   languages.javascript = {
     enable = true;
