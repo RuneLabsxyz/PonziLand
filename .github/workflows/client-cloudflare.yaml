@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   sepolia-deployment:
-    name: Deploy UI to cloudflare (Sepolia)
+    name: Deploy UI to cloudflare (Mainnet, temp)
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +46,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Build frontend for sepolia
-        run: bun run build:sepolia
+        run: bun run build:mainnet
         working-directory: ./client
         env:
           LAYERSWAP_TOKEN: ${{ secrets.LAYERSWAP_TOKEN }}
