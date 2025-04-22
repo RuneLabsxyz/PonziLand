@@ -1,8 +1,30 @@
-import type { Tile } from '$lib/api/tile-store.svelte';
 import { toHexWithPadding } from '$lib/utils';
 import data from '$lib/data.json';
 
 export const MAP_SIZE = 16;
+
+interface BaseTile {
+  location: string;
+  timeToNuke: number;
+  owner?: string;
+}
+
+interface GrassTile extends BaseTile {
+  type: 'grass';
+}
+
+interface AuctionTile extends BaseTile {
+  type: 'auction';
+}
+
+interface HouseTile extends BaseTile {
+  type: 'house';
+  level: 1 | 2 | 3;
+  token: (typeof data.availableTokens)[number];
+}
+
+// Union type for all possible tiles
+export type Tile = GrassTile | AuctionTile | HouseTile;
 
 function createFakeTiles(): Tile[][] {
   return Array(MAP_SIZE)
@@ -13,45 +35,76 @@ function createFakeTiles(): Tile[][] {
         .map((_, j) => ({
           location: toHexWithPadding(i * MAP_SIZE + j),
           type: 'grass',
+          timeToNuke: 10000000,
         })),
     );
 }
 
 class TileState {
   public tilesStore: Tile[][] = $state(createFakeTiles());
+  public nuke = $state(false);
+  public displayRates = $state(false);
 
+  getDisplayRates() {
+    return this.displayRates;
+  }
+
+  setDisplayRates(displayRates: boolean) {
+    this.displayRates = displayRates;
+  }
   getTiles() {
     return this.tilesStore;
   }
 
-  addAuction(): void {
-    if (this.tilesStore[8] && this.tilesStore[8][8]) {
-      this.tilesStore[8][8] = {
-        ...this.tilesStore[8][8],
+  getNuke() {
+    return this.nuke;
+  }
+
+  setNuke(nuke: boolean) {
+    this.nuke = nuke;
+  }
+
+  addAuction(x: number = 8, y: number = 8): void {
+    if (this.tilesStore[x] && this.tilesStore[x][y]) {
+      this.tilesStore[x][y] = {
+        ...this.tilesStore[x][y],
         type: 'auction',
         owner: '0x',
       };
     }
   }
 
-  removeAuction(): void {
-    if (this.tilesStore[8] && this.tilesStore[8][8]) {
-      this.tilesStore[8][8] = {
-        ...this.tilesStore[8][8],
+  removeAuction(x: number = 8, y: number = 8): void {
+    if (this.tilesStore[x] && this.tilesStore[x][y]) {
+      this.tilesStore[x][y] = {
+        ...this.tilesStore[x][y],
         type: 'grass',
       };
     }
   }
 
-  buyAuction(): void {
-    if (this.tilesStore[8] && this.tilesStore[8][8]) {
-      this.tilesStore[8][8] = {
-        ...this.tilesStore[8][8],
+  buyAuction(x: number = 8, y: number = 8, tokenId: number = 0): void {
+    if (this.tilesStore[x] && this.tilesStore[x][y]) {
+      this.tilesStore[x][y] = {
+        ...this.tilesStore[x][y],
         type: 'house',
-        level: 1,
-        token: data.availableTokens[0],
+        level: 1 as 1 | 2 | 3,
+        token: data.availableTokens[tokenId],
       };
     }
+  }
+
+  reduceTimeToNuke(x: number, y: number): void {
+    if (this.tilesStore[x] && this.tilesStore[x][y]) {
+      this.tilesStore[x][y].timeToNuke = this.tilesStore[x][y].timeToNuke / 2;
+    }
+  }
+
+  getNukeTime(x: number, y: number): number {
+    if (this.tilesStore[x] && this.tilesStore[x][y]) {
+      return this.tilesStore[x][y].timeToNuke;
+    }
+    return 0;
   }
 
   levelUp(x: number, y: number): void {
@@ -61,9 +114,10 @@ class TileState {
       this.tilesStore[x][y].type === 'house' &&
       'level' in this.tilesStore[x][y]
     ) {
+      console.log('This is a house');
       this.tilesStore[x][y] = {
         ...this.tilesStore[x][y],
-        level: this.tilesStore[x][y].level + 1,
+        level: (Number(this.tilesStore[x][y].level) + 1) as 1 | 2 | 3,
       };
     }
   }

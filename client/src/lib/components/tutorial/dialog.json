@@ -21,57 +21,77 @@
   },
   {
     "_step": "5",
-    "text": "The land price will decrease over time, until a player buys it.\n\nThe higher the price, the more XP and tokens you'll get !",
-    "image_id": 1
-  },
-  {
-    "_step": "6",
-    "text": "Choose a token to buy the land to get a building from the community you want ! ",
+    "text": "The land price will decrease over time, until a player buys it.\n\n This is what we call a dutch auction. Make sure to snipe!",
     "image_id": 2
   },
   {
+    "_step": "6",
+    "text": "You need to provide 3 inputs:\n\n1. The token you want to sell the land for\n2. The price you sell the land for\n3. The stake you are willing to put in the land",
+    "image_id": 4
+  },
+  {
     "_step": "7",
-    "text": "Check out the leaderboard to see top players.",
-    "image_id": 3
+    "text": "When you buy a land you must set a SELL PRICE. As the tax rate you pay to your 8 neighbors is a % of the sell price.",
+    "image_id": 1
   },
   {
     "_step": "8",
-    "text": "Visit the shop to buy new items.",
+    "text": "What a beautiful stark land.\n\n The token you sell the land for is represented by the buiding.",
     "image_id": 4
   },
   {
     "_step": "9",
-    "text": "Complete tasks to earn rewards.",
-    "image_id": 1
-  },
-  {
-    "_step": "10",
-    "text": "Join a community to interact with other players.",
-    "image_id": 2
-  },
-  {
-    "_step": "11",
-    "text": "Participate in events to win exclusive prizes.",
+    "text": "OHHHHH, Look your house leveled up!! This is great.\n\n You can level up your house twice. You can only do it if you own the land for long enough.",
     "image_id": 3
   },
   {
+    "_step": "10",
+    "text": "Wouh. That's a cool castle.",
+    "image_id": 1
+  },
+  {
+    "_step": "11",
+    "text": "New auctions! let's see if other players will buy them!",
+    "image_id": 2
+  },
+  {
     "_step": "12",
-    "text": "Use the help section if you need assistance.",
+    "text": "Look we can see a $PAPER $LORDS and $BROTHER land. \n\n That means we'll be getting some juicy taxes from our neighbors! \n Look at all the tokens we are getting for only 5 $STARK!",
     "image_id": 4
   },
   {
     "_step": "13",
-    "text": "Keep an eye on notifications for updates.",
+    "text": "Also that shield to the top right is how many days your stake will last.",
     "image_id": 1
   },
   {
     "_step": "14",
-    "text": "You can log out from the settings menu.",
-    "image_id": 2
+    "text": "Also that shield to the top right is how many days your stake will last.",
+    "image_id": 1
   },
   {
     "_step": "15",
-    "text": "Thank you for completing the tutorial!",
+    "text": "If it hits 0 something bad will happen.",
+    "image_id": 2
+  },
+  {
+    "_step": "16",
+    "text": "So make sure that never happens....",
+    "image_id": 4
+  },
+  {
+    "_step": "17",
+    "text": "Wait what's going on? Why is the Stake going down so fast?",
+    "image_id": 3
+  },
+  {
+    "_step": "18",
+    "text": "Quickly, REFILL THE STAKE!!!!",
+    "image_id": 3
+  },
+  {
+    "_step": "19",
+    "text": "NOOOOOO",
     "image_id": 3
   }
 ]
