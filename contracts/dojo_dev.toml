@@ -15,6 +15,7 @@ telegram = "https://t.me/dojoengine"
 [namespace]
 default = "ponzi_land"
 auth = "ponzi_land_auth"
+token_registry = "ponzi_land_token_registry"
 
 [env]
 rpc_url = "http://localhost:5050/"

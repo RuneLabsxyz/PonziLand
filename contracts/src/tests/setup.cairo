@@ -7,7 +7,7 @@ mod setup {
     use core::serde::Serde;
     // Dojo imports
 
-    use dojo::world::{WorldStorageTrait, WorldStorage};
+    use dojo::world::{WorldStorageTrait, WorldStorage, IWorldDispatcherTrait, IWorldDispatcher};
     use dojo_cairo_test::{
         spawn_test_world, NamespaceDef, TestResource, ContractDefTrait, ContractDef,
         WorldStorageTestTrait,
@@ -23,8 +23,12 @@ mod setup {
     };
     use ponzi_land::models::land::{Land, m_Land, LandStake, m_LandStake};
     use ponzi_land::models::auction::{Auction, m_Auction};
+
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
+    use ponzi_land::systems::token_registry::{
+        token_registry, ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
+    };
 
     fn RECIPIENT() -> ContractAddress {
         contract_address_const::<'RECIPIENT'>()
@@ -37,6 +41,7 @@ mod setup {
         ICoreDispatcher,
         IEkuboCoreTestingDispatcher,
         IAuthDispatcher,
+        ITokenRegistryDispatcher,
     ) {
         let ndef = namespace_def();
 
@@ -57,8 +62,20 @@ mod setup {
         let actions_system = IActionsDispatcher { contract_address: action_contract_address };
         let (auth_contract_address, _) = world.dns(@"auth").unwrap();
         let auth_system = IAuthDispatcher { contract_address: auth_contract_address };
+        let (token_registry_contract_address, _) = world.dns(@"token_registry").unwrap();
+        let token_registry_dispatcher = ITokenRegistryDispatcher {
+            contract_address: token_registry_contract_address,
+        };
 
-        (world, actions_system, erc20, core_dispatcher, testing_dispatcher, auth_system)
+        (
+            world,
+            actions_system,
+            erc20,
+            core_dispatcher,
+            testing_dispatcher,
+            auth_system,
+            token_registry_dispatcher,
+        )
     }
 
 
@@ -70,6 +87,7 @@ mod setup {
                 TestResource::Model(m_LandStake::TEST_CLASS_HASH),
                 TestResource::Model(m_Auction::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
+                TestResource::Contract(token_registry::TEST_CLASS_HASH),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(
                     actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
@@ -124,6 +142,13 @@ mod setup {
                     .with_init_calldata([RECIPIENT().into(), // owner
                     0.into() // verifier
                     ].span()),
+            );
+
+        contract_defs
+            .append(
+                ContractDefTrait::new(@"ponzi_land", @"token_registry")
+                    .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
+                    .with_init_calldata([0x1, erc20_address].span()),
             );
 
         contract_defs.span()

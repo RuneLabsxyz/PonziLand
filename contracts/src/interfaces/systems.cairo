@@ -5,6 +5,9 @@ use dojo::world::{
 
 pub use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 
+pub use ponzi_land::systems::token_registry::{
+    ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
+};
 
 #[generate_trait]
 pub impl SystemsImpl of SystemsTrait {
@@ -30,5 +33,15 @@ pub impl SystemsImpl of SystemsTrait {
     #[inline(always)]
     fn auth_dispatcher(self: @WorldStorage) -> IAuthDispatcher {
         (IAuthDispatcher { contract_address: self.auth_address() })
+    }
+
+    #[inline(always)]
+    fn token_registry_address(self: @WorldStorage) -> ContractAddress {
+        (self.contract_address(@"token_registry"))
+    }
+
+    #[inline(always)]
+    fn token_registry_dispatcher(self: @WorldStorage) -> ITokenRegistryDispatcher {
+        (ITokenRegistryDispatcher { contract_address: self.token_registry_address() })
     }
 }

@@ -1,6 +1,7 @@
 mod systems {
     mod actions;
     mod auth;
+    mod token_registry;
 }
 
 mod interfaces {

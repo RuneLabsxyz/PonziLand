@@ -24,6 +24,8 @@ use ponzi_land::tests::setup::{
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::systems::actions::actions::{InternalImpl, NewAuctionEvent};
 use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait};
+
 use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{
@@ -151,6 +153,19 @@ struct Signature {
     s: felt252,
 }
 
+
+fn authorize_token(dispatcher: ITokenRegistryDispatcher, token_address: ContractAddress) {
+    // We need to temporarily mock ourselves to the 0x0 contract
+    // to have ownership over the world.
+    let prev_address = starknet::get_contract_address();
+
+    set_contract_address(0x0.try_into().unwrap());
+
+    dispatcher.register_token(token_address);
+
+    set_contract_address(prev_address);
+}
+
 fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
     //PRIVATE KEY => 0x1234567890987654321
     let public_key: felt252 =
@@ -273,8 +288,15 @@ fn capture_location_of_new_auction(address: ContractAddress) -> Option<u16> {
 
 
 // Helper functions for common test setup and actions
-fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCoreTestingDispatcher) {
-    let (world, actions_system, erc20, _, testing_dispatcher, auth_system) = create_setup();
+fn setup_test() -> (
+    Store,
+    IActionsDispatcher,
+    IERC20CamelDispatcher,
+    IEkuboCoreTestingDispatcher,
+    ITokenRegistryDispatcher,
+) {
+    let (world, actions_system, erc20, _, testing_dispatcher, auth_system, token_registry) =
+        create_setup();
     set_contract_address(RECIPIENT());
     // Setup authorization
     authorize_all_addresses(auth_system);
@@ -286,7 +308,7 @@ fn setup_test() -> (Store, IActionsDispatcher, IERC20CamelDispatcher, IEkuboCore
 
     let store = StoreTrait::new(world);
 
-    (store, actions_system, erc20, testing_dispatcher)
+    (store, actions_system, erc20, testing_dispatcher, token_registry)
 }
 
 pub enum Direction {
@@ -548,7 +570,7 @@ fn create_land_with_neighbors(
 
 #[test]
 fn test_buy_action() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
@@ -589,7 +611,7 @@ fn test_buy_action() {
 #[test]
 #[should_panic]
 fn test_invalid_land() {
-    let (_, actions_system, erc20, _) = setup_test();
+    let (_, actions_system, erc20, _, _) = setup_test();
 
     // Attempt to buy land at invalid position (11000)
     actions_system.buy(11000, erc20.contract_address, 10, 12, pool_key(erc20.contract_address));
@@ -598,7 +620,7 @@ fn test_invalid_land() {
 //test for now without auction
 #[test]
 fn test_bid_and_buy_action() {
-    let (store, actions_system, main_currency, _ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, _ekubo_testing_dispatcher, _) = setup_test();
 
     let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
 
@@ -636,16 +658,19 @@ fn test_bid_and_buy_action() {
 //TODO:when we have the new expansion for auction we can test with more lands
 #[test]
 fn test_claim_and_add_taxes() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher) =
+        setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
     // Deploy ERC20 tokens for neighbors
-    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+    let (erc20_neighbor_1, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+
     set_block_number(234324);
     set_block_timestamp(100 / TIME_SPEED.into());
     set_contract_address(RECIPIENT());
@@ -710,16 +735,20 @@ fn test_claim_and_add_taxes() {
 #[test]
 fn test_nuke_action() {
     // Setup environment
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_registry) =
+        setup_test();
     //set a liquidity pool with amount for each token
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000,
         );
 
-    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+    let (erc20_neighbor_1, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
+
+    // Trust the token
+    authorize_token(token_registry, erc20_neighbor_1.contract_address);
 
     set_block_timestamp(100 / TIME_SPEED.into());
     set_block_number(324);
@@ -784,7 +813,7 @@ fn test_nuke_action() {
 
 #[test]
 fn test_increase_price_and_stake() {
-    let (store, actions_system, main_currency, _) = setup_test();
+    let (store, actions_system, main_currency, _, _) = setup_test();
 
     let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
 
@@ -818,7 +847,7 @@ fn test_increase_price_and_stake() {
 #[ignore]
 fn test_detailed_tax_calculation() {
     set_block_timestamp(1000);
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
@@ -881,7 +910,8 @@ fn test_detailed_tax_calculation() {
 
 #[test]
 fn test_level_up() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher) =
+        setup_test();
 
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
@@ -892,6 +922,9 @@ fn test_level_up() {
     let (erc20_neighbor, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
+
+    authorize_token(token_dispatcher, erc20_neighbor.contract_address);
+
     set_block_number(234);
     set_block_timestamp(100);
 
@@ -923,7 +956,7 @@ fn test_level_up() {
 
 #[test]
 fn check_success_liquidity_pool() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
     set_block_number(234);
     set_block_timestamp(100);
     //simulate liquidity pool from ekubo with amount
@@ -964,7 +997,7 @@ fn check_success_liquidity_pool() {
 #[test]
 #[should_panic]
 fn check_invalid_liquidity_pool() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
 
     set_block_timestamp(100);
     //simulate liquidity pool from ekubo with amount
@@ -1005,7 +1038,7 @@ fn check_invalid_liquidity_pool() {
 #[test]
 #[ignore]
 fn test_organic_auction() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
 
     set_block_timestamp(10);
     ekubo_testing_dispatcher
@@ -1097,7 +1130,7 @@ fn test_organic_auction() {
 
 //TODO:when we have the new expansion for auction we can test with more lands
 fn test_reimburse_stakes() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
 
     set_block_timestamp(10);
     ekubo_testing_dispatcher
@@ -1125,7 +1158,8 @@ fn test_reimburse_stakes() {
 
 #[test]
 fn test_claim_all() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher) =
+        setup_test();
 
     set_block_timestamp(10);
     ekubo_testing_dispatcher
@@ -1135,9 +1169,12 @@ fn test_claim_all() {
 
     let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
     // Deploy ERC20 tokens for neighbors
-    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+    let (erc20_neighbor_1, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
+
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+
     set_block_number(234);
     set_block_timestamp(100 / TIME_SPEED.into());
 
@@ -1262,7 +1299,7 @@ fn test_claim_all() {
 #[test]
 fn test_time_to_nuke() {
     // Setup environment
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
 
     //set a liquidity pool with amount for each token
     ekubo_testing_dispatcher
@@ -1320,7 +1357,7 @@ fn test_time_to_nuke() {
 //TODO:this test can be more exhaustive
 #[test]
 fn test_circle_expansion() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(

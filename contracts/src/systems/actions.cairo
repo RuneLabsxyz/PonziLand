@@ -78,6 +78,10 @@ pub mod actions {
 
     use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 
+    use ponzi_land::systems::token_registry::{
+        ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
+    };
+
     use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
@@ -247,10 +251,8 @@ pub mod actions {
 
             assert(caller != land.owner, 'you already own this land');
             assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
-            assert(
-                self.check_liquidity_pool_requirements(token_for_sale, sell_price, liquidity_pool),
-                'Invalid liquidity_pool in buy',
-            );
+
+            world.token_registry_dispatcher().ensure_token_authorized(token_for_sale);
 
             let seller = land.owner;
             let sold_price = land.sell_price;
@@ -332,24 +334,22 @@ pub mod actions {
 
             let mut land = store.land(land_location);
 
-            assert(
-                self.check_liquidity_pool_requirements(token_for_sale, sell_price, liquidity_pool),
-                'Invalid liquidity_pool in bid',
-            );
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
             assert(sell_price > 0, 'sell_price > 0');
             assert(amount_to_stake > 0, 'amount_to_stake > 0');
 
+            // Validate that the token is authorized to be used
+            world.token_registry_dispatcher().ensure_token_authorized(token_for_sale);
+
             //auction part
 
             //Validate if the land can be buyed because is an auction happening for that land
             let mut auction = store.auction(land_location);
+            // Red: Why check the active auction queue?
             assert(self.active_auction_queue.read(land_location), 'auction not started');
 
             let current_price = auction.get_current_price_decay_rate();
-            land.sell_price = sell_price;
-            store.set_land(land);
 
             self.internal_claim(store, land);
 
@@ -710,10 +710,11 @@ pub mod actions {
                     let is_nuke = self
                         .taxes
                         ._calculate_and_distribute(store, neighbor, ref neighbors_dict);
+
                     let has_liquidity_requirements = self
-                        .check_liquidity_pool_requirements(
-                            neighbor.token_used, neighbor.sell_price, neighbor.pool_key,
-                        );
+                        .world_default()
+                        .token_registry_dispatcher()
+                        .is_token_authorized(neighbor.token_used);
 
                     if is_nuke || !has_liquidity_requirements {
                         self.nuke(neighbor.location, has_liquidity_requirements);
@@ -742,6 +743,9 @@ pub mod actions {
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
             let pay_to_us_status = self.payable.pay_to_us(caller, validation_result);
             assert(pay_to_us_status, errors::ERC20_PAY_FOR_BID_FAILED);
+
+            // Red: If we create a new trait here,
+            // I don't think we need to create the land before.
             self
                 .finalize_land_purchase(
                     store,
@@ -757,6 +761,8 @@ pub mod actions {
             auction.is_finished = true;
             auction.sold_at_price = Option::Some(sold_at_price);
             store.set_auction(auction);
+            // Red: We're reading the active auctions here, and it's not going to change after that,
+            // reuse it
             self.active_auctions.write(self.active_auctions.read() - 1);
             self.active_auction_queue.write(land.location, false);
 
@@ -775,6 +781,7 @@ pub mod actions {
             //TODO:we have to define the correct decay rate
 
             // Math.max(sold_at_price * 10, auction.floor_price)
+            // Red: ...reused here.
             if self.active_auctions.read() < MAX_AUCTIONS {
                 let asking_price = sold_at_price * FACTOR_FOR_SELL_PRICE.into();
                 let asking_price = if asking_price > MIN_AUCTION_PRICE {
