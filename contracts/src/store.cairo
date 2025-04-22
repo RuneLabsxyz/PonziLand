@@ -1,7 +1,7 @@
 use dojo::world::{WorldStorage};
 use dojo::model::{ModelStorage, ModelValueStorage};
 
-use ponzi_land::models::land::{Land, PoolKey};
+use ponzi_land::models::land::{Land, PoolKey, LandStake};
 use ponzi_land::models::auction::Auction;
 use starknet::contract_address::ContractAddressZeroable;
 
@@ -24,6 +24,11 @@ impl StoreImpl of StoreTrait {
     }
 
     #[inline(always)]
+    fn land_stake(self: Store, land_location: u16) -> LandStake {
+        self.world.read_model(land_location)
+    }
+
+    #[inline(always)]
     fn auction(self: Store, land_location: u16) -> Auction {
         self.world.read_model(land_location)
     }
@@ -32,6 +37,10 @@ impl StoreImpl of StoreTrait {
     #[inline(always)]
     fn set_land(mut self: Store, land: Land) {
         self.world.write_model(@land);
+    }
+
+    fn set_land_stake(mut self: Store, land_stake: LandStake) {
+        self.world.write_model(@land_stake);
     }
 
     #[inline(always)]

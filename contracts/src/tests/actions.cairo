@@ -24,7 +24,7 @@ use ponzi_land::tests::setup::{
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
 use ponzi_land::systems::actions::actions::{InternalImpl, NewAuctionEvent};
 use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
-use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKey};
+use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{
     BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE,
@@ -221,14 +221,14 @@ fn validate_staking_state(
     let mut i = 0;
     while i < land_locations.len() {
         let location = *land_locations.at(i);
-        let land = store.land(location);
+        let land_stake = store.land_stake(location);
         let token = *tokens.at(i);
         let balance = token.balanceOf(contract_address);
         if should_have_balance {
-            assert(land.stake_amount > 0, 'Stake > 0 expected');
-            assert(balance > 0, 'Balnce > 0 expected');
+            assert(land_stake.amount > 0, 'Stake > 0 expected');
+            assert(balance > 0, 'Balance > 0 expected');
         } else {
-            assert(land.stake_amount == 0, 'Stake == 0 expected');
+            assert(land_stake.amount == 0, 'Stake == 0 expected');
             assert(balance == 0, 'Balance == 0 expected');
         }
 
@@ -354,9 +354,10 @@ fn setup_buyer_with_tokens(
 // Helper function for verifying taxes and stake after a claim
 fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u16, store: Store) {
     let land = store.land(land_location);
+    let land_stake = store.land_stake(land_location);
     let taxes = actions_system.get_pending_taxes_for_land(land_location, land.owner);
     assert(taxes.len() > 0, 'must have pending taxes');
-    assert(land.stake_amount < 1000, 'must have less stake');
+    assert(land_stake.amount < 1000, 'must have less stake');
 }
 
 // Helper function for land verification
@@ -371,10 +372,11 @@ fn verify_land(
     expected_token_used: ContractAddress,
 ) {
     let land = store.land(location);
+    let land_stake = store.land_stake(location);
     assert(land.owner == expected_owner, 'incorrect owner');
     assert(land.sell_price == expected_price, 'incorrect price');
     assert(land.pool_key == expected_pool, 'incorrect pool');
-    assert(land.stake_amount == expected_stake, 'incorrect stake');
+    assert(land_stake.amount == expected_stake, 'incorrect stake');
     assert(
         land.block_date_bought * TIME_SPEED.into() == expected_block_date_bought,
         'incorrect date bought',
@@ -443,14 +445,13 @@ fn create_land_with_neighbors(
         token_used.contract_address,
         sell_price,
         pool_key(token_used.contract_address),
-        last_pay_time,
         block_date_bought,
-        stake_amount,
     );
     setup_buyer_with_tokens(
         token_used, actions_system, owner, actions_system.contract_address, stake_amount,
     );
-
+    let land_stake = LandStake { location, amount: stake_amount, last_pay_time };
+    store.world.write_model_test(@land_stake);
     store.world.write_model_test(@land);
 
     // Create neighbors
@@ -463,9 +464,7 @@ fn create_land_with_neighbors(
             token_used_neighbor_1.contract_address,
             sell_price,
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_1.contract_address),
-            last_pay_time,
             block_date_bought,
-            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_1,
@@ -474,6 +473,8 @@ fn create_land_with_neighbors(
             actions_system.contract_address,
             stake_amount,
         );
+        let left_land_stake = LandStake { location: left_loc, amount: stake_amount, last_pay_time };
+        store.world.write_model_test(@left_land_stake);
         store.world.write_model_test(@left_land);
     }
     if let Option::Some(right_loc) = right(location) {
@@ -484,9 +485,7 @@ fn create_land_with_neighbors(
             token_used_neighbor_2.contract_address,
             sell_price,
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_2.contract_address),
-            last_pay_time,
             block_date_bought,
-            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_2,
@@ -495,6 +494,10 @@ fn create_land_with_neighbors(
             actions_system.contract_address,
             stake_amount,
         );
+        let right_land_stake = LandStake {
+            location: right_loc, amount: stake_amount, last_pay_time,
+        };
+        store.world.write_model_test(@right_land_stake);
         store.world.write_model_test(@right_land);
     }
     if let Option::Some(up_loc) = up(location) {
@@ -505,9 +508,7 @@ fn create_land_with_neighbors(
             token_used_neighbor_3.contract_address,
             sell_price,
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_3.contract_address),
-            last_pay_time,
             block_date_bought,
-            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_3,
@@ -516,6 +517,8 @@ fn create_land_with_neighbors(
             actions_system.contract_address,
             stake_amount,
         );
+        let up_land_stake = LandStake { location: up_loc, amount: stake_amount, last_pay_time };
+        store.world.write_model_test(@up_land_stake);
         store.world.write_model_test(@up_land);
     }
     if let Option::Some(down_loc) = down(location) {
@@ -526,9 +529,7 @@ fn create_land_with_neighbors(
             token_used_neighbor_1.contract_address,
             sell_price,
             neighbor_pool_key(token_used.contract_address, token_used_neighbor_1.contract_address),
-            last_pay_time,
             block_date_bought,
-            stake_amount,
         );
         setup_buyer_with_tokens(
             token_used_neighbor_1,
@@ -537,6 +538,8 @@ fn create_land_with_neighbors(
             actions_system.contract_address,
             stake_amount,
         );
+        let down_land_stake = LandStake { location: down_loc, amount: stake_amount, last_pay_time };
+        store.world.write_model_test(@down_land_stake);
         store.world.write_model_test(@down_land);
     }
 
@@ -664,7 +667,7 @@ fn test_claim_and_add_taxes() {
         500,
         erc20_neighbor_1,
     );
-    let neighbor_land_before_claim = store.land(next_auction_location.unwrap());
+    let neighbor_land_before_claim = store.land_stake(next_auction_location.unwrap());
 
     // Simulate time difference to generate taxes
     set_block_timestamp(5000 / TIME_SPEED.into());
@@ -678,13 +681,13 @@ fn test_claim_and_add_taxes() {
     assert(erc20_neighbor_1.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
 
     // Verify the neighbors of the claimer land
-    let neighbor_land_after_claim = store.land(next_auction_location.unwrap());
+    let neighbor_land_after_claim = store.land_stake(next_auction_location.unwrap());
     assert(
         neighbor_land_after_claim.last_pay_time == 5000 / TIME_SPEED.into(),
         'err in neighbor last_pay',
     );
     assert(
-        neighbor_land_after_claim.stake_amount < neighbor_land_before_claim.stake_amount,
+        neighbor_land_after_claim.amount < neighbor_land_before_claim.amount,
         'must have less stake',
     );
 
@@ -700,8 +703,8 @@ fn test_claim_and_add_taxes() {
             neighbor_pool_key(main_currency.contract_address, erc20_neighbor_1.contract_address),
         );
     // verify the claim when occurs a buy
-    let claimer_land = store.land(2080);
-    assert(claimer_land.last_pay_time == 6000 / TIME_SPEED.into(), 'Err in 2080 last_pay');
+    let claimer_land_stake = store.land_stake(2080);
+    assert(claimer_land_stake.last_pay_time == 6000 / TIME_SPEED.into(), 'Err in 2080 last_pay');
 }
 
 #[test]
@@ -738,8 +741,7 @@ fn test_nuke_action() {
         erc20_neighbor_1,
     );
 
-    let neighbor_land_before_claim = store.land(neighbor_land_location.unwrap());
-    assert(neighbor_land_before_claim.owner == NEIGHBOR_1(), 'err in neighbor owner');
+    let neighbor_land_before_claim = store.land_stake(neighbor_land_location.unwrap());
 
     let balance_before_claim = erc20_neighbor_1.balanceOf(RECIPIENT());
 
@@ -748,9 +750,10 @@ fn test_nuke_action() {
     set_contract_address(RECIPIENT());
     actions_system.claim(2080);
 
-    let neighbor_land_after_claim = store.land(neighbor_land_location.unwrap());
+    let neighbor_land_after_claim = store.land_stake(neighbor_land_location.unwrap());
+
     assert(
-        neighbor_land_after_claim.stake_amount < neighbor_land_before_claim.stake_amount,
+        neighbor_land_after_claim.amount < neighbor_land_before_claim.amount,
         'must have less stake',
     );
 
@@ -802,13 +805,13 @@ fn test_increase_price_and_stake() {
 
     //increase the stake
     main_currency.approve(actions_system.contract_address, 2000);
-    let land = store.land(2080);
-    assert(land.stake_amount == 1000, 'stake has to be 1000');
+    let land_stake = store.land_stake(2080);
+    assert(land_stake.amount == 1000, 'stake has to be 1000');
 
     actions_system.increase_stake(2080, 2000);
 
-    let land = store.land(2080);
-    assert(land.stake_amount == 3000, 'stake has to be 3000');
+    let land_stake = store.land_stake(2080);
+    assert(land_stake.amount == 3000, 'stake has to be 3000');
 }
 
 #[test]
@@ -863,12 +866,10 @@ fn test_detailed_tax_calculation() {
     set_contract_address(RECIPIENT());
     actions_system.claim(1280);
 
-    // Verify the tax calculations
-    let land_1281 = store.land(1281);
-    assert(land_1281.last_pay_time == 5600, 'Wrong last pay time');
-
     // Verify stake amount was reduced by correct tax amount
-    assert(land_1281.stake_amount == 9717, // 10000 - 283
+    let land_1281_stake = store.land_stake(1281);
+    assert(land_1281_stake.last_pay_time == 5600, 'Wrong last pay time');
+    assert(land_1281_stake.amount == 9717, // 10000 - 283
     'Wrong stake amount after tax');
 
     // Verify taxes for central land (1280)
@@ -1232,7 +1233,7 @@ fn test_claim_all() {
     set_block_timestamp(5000 / TIME_SPEED.into());
     set_contract_address(RECIPIENT());
 
-    let neighbor_land_before_claim = store.land(next_location_1.unwrap());
+    let neighbor_land_before_claim = store.land_stake(next_location_1.unwrap());
 
     let land_locations = array![
         2080,
@@ -1246,13 +1247,13 @@ fn test_claim_all() {
     actions_system.claim_all(land_locations);
 
     //Get claimer lands and verify taxes
-    let neighbor_land_after_claim = store.land(next_location_1.unwrap());
+    let neighbor_land_after_claim = store.land_stake(next_location_1.unwrap());
     let first_land_taxes = actions_system.get_pending_taxes_for_land(2080, RECIPIENT());
 
     assert(first_land_taxes.len() == 0, 'first have pending taxes');
     assert(erc20_neighbor_1.balanceOf(RECIPIENT()) > 0, 'has to receive tokens');
     assert(
-        neighbor_land_before_claim.stake_amount > neighbor_land_after_claim.stake_amount,
+        neighbor_land_before_claim.amount > neighbor_land_after_claim.amount,
         'stake amount should be less',
     );
 }
@@ -1293,23 +1294,23 @@ fn test_time_to_nuke() {
     let block_timestamp = get_block_timestamp();
 
     let land: Land = store.land(2080);
-
+    let land_stake = store.land_stake(2080);
     let time_to_nuke = actions_system.get_time_to_nuke(2080);
     let tax_rate = get_tax_rate_per_neighbor(land);
     set_block_timestamp(block_timestamp + time_to_nuke / 4);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080) * 4;
-    let remaining_stake = land.stake_amount - unclaimed_taxes;
+    let remaining_stake = land_stake.amount - unclaimed_taxes;
     set_block_timestamp(10000 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080);
 
-    assert!(unclaimed_taxes * 4 < land.stake_amount, "stake should be more than unclaimed taxes");
+    assert!(unclaimed_taxes * 4 < land_stake.amount, "stake should be more than unclaimed taxes");
     assert!(new_time_to_nuke > 0, "should not be nukable yet");
 
     set_block_timestamp(10000 + time_to_nuke);
 
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080);
-    assert!(unclaimed_taxes * 4 >= land.stake_amount, "stake should be <= unclaimed taxes");
+    assert!(unclaimed_taxes * 4 >= land_stake.amount, "stake should be <= unclaimed taxes");
 
     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
     assert!(new_time_to_nuke == 0, "should be nukable now");

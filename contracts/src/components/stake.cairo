@@ -17,7 +17,7 @@ mod StakeComponent {
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
     use ponzi_land::helpers::coord::{max_neighbors};
-    use ponzi_land::models::land::Land;
+    use ponzi_land::models::land::{Land, LandStake};
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, GRID_WIDTH};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
@@ -52,10 +52,7 @@ mod StakeComponent {
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
         fn _add(
-            ref self: ComponentState<TContractState>,
-            amount: u256,
-            mut land: Land,
-            mut store: Store,
+            ref self: ComponentState<TContractState>, amount: u256, land: Land, mut store: Store,
         ) {
             //initialize and validate token balance
             let mut payable = get_dep_component_mut!(ref self, Payable);
@@ -72,13 +69,18 @@ mod StakeComponent {
 
             let current_total = self.token_stakes.read(land.token_used);
             self.token_stakes.write(land.token_used, current_total + amount);
-            land.stake_amount = land.stake_amount + amount;
-            store.set_land(land);
+
+            //update land stake amount
+            let mut land_stake = store.land_stake(land.location);
+            land_stake.amount = land_stake.amount + amount;
+            land_stake.last_pay_time = get_block_timestamp();
+            store.set_land_stake(land_stake);
         }
 
 
-        fn _refund(ref self: ComponentState<TContractState>, mut store: Store, mut land: Land) {
-            let stake_amount = land.stake_amount;
+        fn _refund(ref self: ComponentState<TContractState>, mut store: Store, land: Land) {
+            let mut land_stake = store.land_stake(land.location);
+            let stake_amount = land_stake.amount;
             assert(stake_amount > 0, 'amount to refund is 0');
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
@@ -98,18 +100,19 @@ mod StakeComponent {
                 panic!("Attempting to refund more than what's staked");
             }
 
-            land.stake_amount = 0;
-            store.set_land(land);
+            land_stake.amount = 0;
+            store.set_land_stake(land_stake);
         }
 
         fn _reimburse(
             ref self: ComponentState<TContractState>, mut store: Store, active_lands: Span<Land>,
         ) {
             for mut land in active_lands {
-                let mut land = *land;
+                let land = *land;
+                let mut land_stake = store.land_stake(land.location);
                 let token_ratio = self.__generate_token_ratio(land.token_used);
-                let refund_amount = calculate_refund_amount(land.stake_amount, token_ratio);
-                self.__process_refund(land, store, refund_amount);
+                let refund_amount = calculate_refund_amount(land_stake.amount, token_ratio);
+                self.__process_refund(land, store, refund_amount, land_stake);
             };
         }
 
@@ -151,9 +154,10 @@ mod StakeComponent {
 
         fn __process_refund(
             ref self: ComponentState<TContractState>,
-            mut land: Land,
+            land: Land,
             mut store: Store,
             refund_amount: u256,
+            mut land_stake: LandStake,
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
@@ -170,8 +174,8 @@ mod StakeComponent {
                 panic!("Attempting to refund more than what's staked");
             };
 
-            land.stake_amount = 0;
-            store.set_land(land);
+            land_stake.amount = 0;
+            store.set_land_stake(land_stake);
         }
     }
 }

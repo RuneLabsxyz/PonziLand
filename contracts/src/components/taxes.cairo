@@ -16,14 +16,14 @@ mod TaxesComponent {
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
     use ponzi_land::helpers::coord::max_neighbors;
-    use ponzi_land::models::land::Land;
+    use ponzi_land::models::land::{Land, LandStake};
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::utils::get_neighbors::{neighbors_with_their_neighbors};
     use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
-    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
+    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor};
 
     // Local imports
     use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
@@ -56,30 +56,31 @@ mod TaxesComponent {
         fn _calculate_and_distribute(
             ref self: ComponentState<TContractState>,
             mut store: Store,
-            ref land: Land,
+            land: Land,
             ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
         ) -> bool {
             //generate taxes for each neighbor of neighbor
             let neighbors = neighbors_with_their_neighbors(ref neighbors_dict, land.location);
+            let mut land_stake = store.land_stake(land.location);
 
             //if we dont have neighbors we dont have to pay taxes
             let neighbors_with_owners = neighbors.len();
             if neighbors_with_owners == 0 {
-                land.last_pay_time = get_block_timestamp();
-                store.set_land(land);
+                land_stake.last_pay_time = get_block_timestamp();
+                store.set_land_stake(land_stake);
                 return false;
             }
             let current_time = get_block_timestamp();
             // Calculate the tax per neighbor (divided by the maximum possible neighbors)
-            let tax_per_neighbor = get_taxes_per_neighbor(land);
+            let tax_per_neighbor = get_taxes_per_neighbor(land, land_stake);
 
             // Calculate the total tax to distribute (only to existing neighbors)
             let tax_to_distribute = tax_per_neighbor * neighbors_with_owners.into();
 
             //if we dont have enough stake to pay the taxes,we distrubute the total amount of stake
             //and after we nuke the land
-            let (tax_to_distribute, is_nuke) = if land.stake_amount <= tax_to_distribute {
-                (land.stake_amount, true)
+            let (tax_to_distribute, is_nuke) = if land_stake.amount <= tax_to_distribute {
+                (land_stake.amount, true)
             } else {
                 (tax_to_distribute, false)
             };
@@ -106,9 +107,10 @@ mod TaxesComponent {
             };
 
             // Distribute taxes for land
-            land.last_pay_time = current_time;
-            land.stake_amount -= tax_to_distribute;
-            store.set_land(land);
+
+            land_stake.last_pay_time = current_time;
+            land_stake.amount -= tax_to_distribute;
+            store.set_land_stake(land_stake);
 
             is_nuke
         }

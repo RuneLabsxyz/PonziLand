@@ -21,7 +21,7 @@ mod setup {
     use ponzi_land::mocks::ekubo_core::{
         MockEkuboCore, IEkuboCoreTesting, IEkuboCoreTestingDispatcher,
     };
-    use ponzi_land::models::land::{Land, m_Land};
+    use ponzi_land::models::land::{Land, m_Land, LandStake, m_LandStake};
     use ponzi_land::models::auction::{Auction, m_Auction};
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
@@ -67,6 +67,7 @@ mod setup {
             namespace: "ponzi_land",
             resources: [
                 TestResource::Model(m_Land::TEST_CLASS_HASH),
+                TestResource::Model(m_LandStake::TEST_CLASS_HASH),
                 TestResource::Model(m_Auction::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
@@ -120,9 +121,11 @@ mod setup {
             .append(
                 ContractDefTrait::new(@"ponzi_land", @"auth")
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
-                    .with_init_calldata([RECIPIENT().into(), // owner
-                    0.into() // verifier
-                    ].span()),
+                    .with_init_calldata(
+                        [RECIPIENT().into(), // owner
+                        0.into() // verifier
+                        ].span(),
+                    ),
             );
 
         contract_defs.span()

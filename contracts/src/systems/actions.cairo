@@ -78,7 +78,7 @@ pub mod actions {
 
     use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 
-    use ponzi_land::models::land::{Land, LandTrait, Level, PoolKeyConversion, PoolKey};
+    use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
     use ponzi_land::components::stake::StakeComponent;
@@ -419,7 +419,7 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
 
-            let mut land = store.land(land_location);
+            let land = store.land(land_location);
 
             assert(land.owner == caller, 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
@@ -460,7 +460,8 @@ pub mod actions {
                 }
                 if self.staked_lands.read(i) {
                     let land = store.land(i);
-                    if !land.owner.is_zero() && land.stake_amount > 0 {
+                    let land_stake = store.land_stake(i);
+                    if !land.owner.is_zero() && land_stake.amount > 0 {
                         active_lands.append(land);
                     }
                 }
@@ -514,7 +515,8 @@ pub mod actions {
             //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
-                    if neighbor.stake_amount > 0 {
+                    let land_stake = store.land_stake(neighbor.location);
+                    if land_stake.amount > 0 {
                         let tax_per_neighbor = self
                             .get_unclaimed_taxes_per_neighbor(neighbor.location);
 
@@ -538,14 +540,14 @@ pub mod actions {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
-
             let neighbors = get_land_neighbors(store, land.location);
             let neighbors_count = neighbors.len();
 
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors_count > 0 {
                 for neighbor in neighbors {
-                    if neighbor.stake_amount > 0 {
+                    let land_stake = store.land_stake(neighbor.location);
+                    if land_stake.amount > 0 {
                         let token = neighbor.token_used;
                         let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
                         let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
@@ -584,17 +586,20 @@ pub mod actions {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
-
+            let land_stake = store.land_stake(land_location);
             let num_neighbors = get_land_neighbors(store, land.location).len();
 
-            get_time_to_nuke(land, num_neighbors.try_into().unwrap()).try_into().unwrap()
+            get_time_to_nuke(land, land_stake, num_neighbors.try_into().unwrap())
+                .try_into()
+                .unwrap()
         }
 
         fn get_unclaimed_taxes_per_neighbor(self: @ContractState, land_location: u16) -> u256 {
             let world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
-            get_taxes_per_neighbor(land)
+            let land_stake = store.land_stake(land_location);
+            get_taxes_per_neighbor(land, land_stake)
         }
 
         fn get_claimable_taxes_for_land(
@@ -666,13 +671,14 @@ pub mod actions {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
+            let mut land_stake = store.land_stake(land.location);
 
-            if !has_liquidity_requirements && land.stake_amount > 0 {
+            if !has_liquidity_requirements && land_stake.amount > 0 {
                 self.stake._refund(store, land);
-                land = store.land(land_location);
+                land_stake = store.land_stake(land.location);
             }
 
-            assert(land.stake_amount == 0, 'land not valid to nuke');
+            assert(land_stake.amount == 0, 'land not valid to nuke');
 
             let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
             if pending_taxes.len() != 0 {
@@ -703,7 +709,7 @@ pub mod actions {
                 for mut neighbor in neighbors {
                     let is_nuke = self
                         .taxes
-                        ._calculate_and_distribute(store, ref neighbor, ref neighbors_dict);
+                        ._calculate_and_distribute(store, neighbor, ref neighbors_dict);
                     let has_liquidity_requirements = self
                         .check_liquidity_pool_requirements(
                             neighbor.token_used, neighbor.sell_price, neighbor.pool_key,
@@ -797,8 +803,6 @@ pub mod actions {
                 sell_price,
                 liquidity_pool,
                 get_block_timestamp(),
-                get_block_timestamp(),
-                0,
             );
             store.set_land(land);
 
