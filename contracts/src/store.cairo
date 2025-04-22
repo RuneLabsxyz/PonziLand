@@ -39,6 +39,7 @@ impl StoreImpl of StoreTrait {
         self.world.write_model(@land);
     }
 
+    #[inline(always)]
     fn set_land_stake(mut self: Store, land_stake: LandStake) {
         self.world.write_model(@land_stake);
     }
