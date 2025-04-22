@@ -69,9 +69,6 @@ mod setup {
                 TestResource::Model(m_Land::TEST_CLASS_HASH),
                 TestResource::Model(m_Auction::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
-                TestResource::Event(
-                    actions::e_RemainingStakeEvent::TEST_CLASS_HASH.try_into().unwrap(),
-                ),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(
                     actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
