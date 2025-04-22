@@ -38,13 +38,6 @@
 
   function handleClick() {
     console.log('clicked', dragged);
-    if (dragged) return;
-
-    if (selected) {
-      moveCameraToLocation(Number(land.location));
-    }
-
-    selectLand(land as LandWithActions);
   }
 
   const handleBuyLandClick = () => {
