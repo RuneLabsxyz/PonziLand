@@ -21,7 +21,7 @@
           contractAddress: manifest.contracts.find(
             (e) => e.tag === 'ponzi_land-auth',
           )?.address!,
-          entrypoint: 'ensure_deployed',
+          entrypoint: 'ensure_deploy',
           calldata: [],
         },
         {
