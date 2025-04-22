@@ -8,6 +8,7 @@
   import { constants } from 'starknet';
   import { state as accountState } from '$lib/account.svelte';
   import { onMount } from 'svelte';
+  import manifest from '$manifest';
 
   let copied = $state(false);
 
@@ -17,10 +18,11 @@
       ?.getWalletAccount()
       ?.execute(
         {
-          contractAddress:
-            '0x02d2a4804f83c34227314dba41d5c2f8a546a500d34e30bb5078fd36b5af2d77',
-          entrypoint: 'set_status',
-          calldata: ['1'],
+          contractAddress: manifest.contracts.find(
+            (e) => e.tag === 'ponzi_land-auth',
+          )?.address!,
+          entrypoint: 'ensure_deployed',
+          calldata: [],
         },
         {
           version: constants.TRANSACTION_VERSION.V3,

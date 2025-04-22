@@ -2120,7 +2120,7 @@
     },
     {
       "address": "0x4fd627bd763990aae476a8eb506856342c1143e9274d72c2d97d9b28d0318f8",
-      "class_hash": "0x531cfd15a6f245c976674f50f81025e29cef683ae93e4e20090c99e98c0ed4a",
+      "class_hash": "0x296099ec178733ba8e99b159cb046791021617cff5731426b7922b6bc89c880",
       "abi": [
         {
           "type": "impl",
@@ -2299,6 +2299,13 @@
             },
             {
               "type": "function",
+              "name": "ensure_deploy",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "can_take_action",
               "inputs": [
                 {
@@ -2450,6 +2457,7 @@
         "remove_verifier",
         "lock_actions",
         "unlock_actions",
+        "ensure_deploy",
         "upgrade"
       ]
     }
