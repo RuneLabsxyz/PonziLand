@@ -46,5 +46,7 @@ export const getAuctions = async () => {
       }
     },
   });
+  console.log('Auctions:', auctions);
+
   return auctions;
 };

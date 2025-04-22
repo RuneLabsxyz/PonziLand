@@ -49,18 +49,18 @@ const profiles = {
     PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-testing/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
-    PUBLIC_EKUBO_URL: 'https://main net-api.ekubo.org',
+    PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
-    PUBLIC_SOCIALINK_URL: 'https://social.ponzi.land',
+    PUBLIC_SOCIALINK_URL: 'https://sociallink.ponzi.land',
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
     PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-tourney/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
-    PUBLIC_EKUBO_URL: 'https://main net-api.ekubo.org',
+    PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
@@ -83,6 +83,8 @@ for (const val of Object.entries(envProfile)) {
 
 console.log(process.env['BYPASS_TOKEN']);
 
+const manifestPath = `../contracts/manifest_${profile}.json`;
+console.log('Manifest: ', manifestPath);
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
   // Consult https://svelte.dev/docs/kit/integrations
@@ -95,7 +97,7 @@ const config = {
     // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter: adapter(),
     alias: {
-      $manifest: `../contracts/manifest_${profile}.json`,
+      $manifest: manifestPath,
     },
   },
 };
