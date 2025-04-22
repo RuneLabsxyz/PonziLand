@@ -16,6 +16,7 @@ trait IAuth<T> {
 
     fn lock_actions(ref self: T);
     fn unlock_actions(ref self: T);
+    fn ensure_deploy(ref self: T);
 
     //getter
     fn can_take_action(self: @T, address: ContractAddress) -> bool;
@@ -154,6 +155,11 @@ pub mod auth {
         fn unlock_actions(ref self: ContractState) {
             assert(self.owner.read() == get_caller_address(), 'not the owner');
             self.actions_locked.write(false);
+        }
+
+        fn ensure_deploy(ref self: ContractState) {
+            let caller = get_caller_address();
+            assert(caller != ContractAddressZeroable::zero(), 'zero address');
         }
 
         //getter
