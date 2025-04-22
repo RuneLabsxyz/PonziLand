@@ -197,12 +197,17 @@
   {/if}
 
   {#if isOwner && !isNuking && land.type == 'house'}
+    <img
+      src="/ui/icons/Icon_Crown.png"
+      alt="owner"
+      class="absolute z-20"
+      style="top: -1.5px; width: 7px; height: 7px; image-rendering: pixelated; transform: rotate(-30deg); pointer-events: none;"
+    />
     <div
       class={cn(
         'absolute top-0 left-1/2 -translate-x-1/2 z-20',
         scale > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
       )}
-      style="background-image: url('/ui/icons/Icon_Crown.png'); background-size: contain; background-repeat: no-repeat;"
       onclick={handleClick}
     ></div>
   {/if}
