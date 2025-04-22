@@ -694,25 +694,23 @@ pub mod actions {
             self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
         }
 
-        fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
+        fn internal_claim(ref self: ContractState, mut store: Store, mut land: Land) {
             //generate taxes for each neighbor of claimer
-            let neighbors = get_land_neighbors(store, land.location);
-            let mut neighbors_dict = process_neighbors_of_neighbors(store, neighbors.clone());
-
+            let mut neighbors = get_land_neighbors(store, land.location);
+            let is_nuke = self.taxes._calculate_and_distribute(store, ref land, ref neighbors);
+            let mut id = 0;
             if neighbors.len() != 0 {
                 for mut neighbor in neighbors {
-                    let is_nuke = self
-                        .taxes
-                        ._calculate_and_distribute(store, ref neighbor, ref neighbors_dict);
                     let has_liquidity_requirements = self
                         .check_liquidity_pool_requirements(
                             neighbor.token_used, neighbor.sell_price, neighbor.pool_key,
                         );
 
-                    if is_nuke || !has_liquidity_requirements {
+                    if !has_liquidity_requirements {
                         self.nuke(neighbor.location, has_liquidity_requirements);
                     }
                 };
+                id += 1;
             }
 
             //claim taxes for the land
@@ -863,24 +861,29 @@ pub mod actions {
         }
 
         fn _distribute_adjusted_taxes(ref self: ContractState, active_lands: Array<Land>) {
-            for land in active_lands.span() {
-                let land = *land;
-                let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
-                let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-                for tax in taxes.span() {
-                    let tax = *tax;
-                    let token_ratio = self.stake._get_token_ratios(tax.token_address);
-                    let adjuested_tax_amount = calculate_refund_amount(tax.amount, token_ratio);
-                    adjusted_taxes
-                        .append(
-                            TokenInfo {
-                                token_address: tax.token_address, amount: adjuested_tax_amount,
-                            },
-                        )
-                };
+            for land in active_lands
+                .span() {
+                    let land = *land;
+                    let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
+                    let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
+                    for tax in taxes
+                        .span() {
+                            let tax = *tax;
+                            let token_ratio = self.stake._get_token_ratios(tax.token_address);
+                            let adjuested_tax_amount = calculate_refund_amount(
+                                tax.amount, token_ratio
+                            );
+                            adjusted_taxes
+                                .append(
+                                    TokenInfo {
+                                        token_address: tax.token_address,
+                                        amount: adjuested_tax_amount,
+                                    },
+                                )
+                        };
 
-                self._claim_and_discount_taxes(adjusted_taxes, land.owner, land.location);
-            };
+                    self._claim_and_discount_taxes(adjusted_taxes, land.owner, land.location);
+                };
         }
 
         fn generate_new_auctions(ref self: ContractState, start_price: u256) {

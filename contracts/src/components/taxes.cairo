@@ -38,6 +38,7 @@ mod TaxesComponent {
         pending_taxes_for_land: Map<(ContractAddress, u16, ContractAddress), u256>,
         //land_owner,location ->  token_addresses
         pending_tokens_for_land: Map<(ContractAddress, u16), Vec<ContractAddress>>,
+        last_claim_time: Map<(u16, u16), u64>,
     }
 
     // Events
@@ -57,57 +58,56 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>,
             mut store: Store,
             ref land: Land,
-            ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
-        ) -> bool {
-            //generate taxes for each neighbor of neighbor
-            let neighbors = neighbors_with_their_neighbors(ref neighbors_dict, land.location);
-
-            //if we dont have neighbors we dont have to pay taxes
-            let neighbors_with_owners = neighbors.len();
-            if neighbors_with_owners == 0 {
-                land.last_pay_time = get_block_timestamp();
-                store.set_land(land);
-                return false;
-            }
+            ref neighbors: Array<Land>,
+        ) -> Array<bool> {
             let current_time = get_block_timestamp();
-            // Calculate the tax per neighbor (divided by the maximum possible neighbors)
-            let tax_per_neighbor = get_taxes_per_neighbor(land);
+            let mut is_nuke: Array<bool> = ArrayTrait::new();
 
-            // Calculate the total tax to distribute (only to existing neighbors)
-            let tax_to_distribute = tax_per_neighbor * neighbors_with_owners.into();
+            for i in 0
+                ..neighbors
+                    .len() {
+                        let mut neighbor = *neighbors.at(i);
+                        let pair = (land.location, neighbor.location);
 
-            //if we dont have enough stake to pay the taxes,we distrubute the total amount of stake
-            //and after we nuke the land
-            let (tax_to_distribute, is_nuke) = if land.stake_amount <= tax_to_distribute {
-                (land.stake_amount, true)
-            } else {
-                (tax_to_distribute, false)
-            };
+                        let last_time = self.last_claim_time.read(pair);
+                        let last_time = if last_time == 0 {
+                            land.block_date_bought
+                        } else {
+                            last_time
+                        };
+                        let elapsed_time = (current_time - last_time) * TIME_SPEED.into();
 
-            //distribute the taxes to each neighbor
-            let tax_per_neighbor = tax_to_distribute / neighbors_with_owners.into();
-            let remainder_tax = tax_to_distribute % neighbors_with_owners.into();
+                        if elapsed_time == 0 {
+                            continue;
+                        }
 
-            //for distribute the remainder_tax to the last neighbor
-            let mut i = 0;
-            let mut last_neighbor = neighbors_with_owners - 1;
+                        let rate = get_tax_rate_per_neighbor(land);
+                        let mut tax_to_distribute = (rate * elapsed_time.into())
+                            / (100 * BASE_TIME.into());
 
-            while i < neighbors_with_owners {
-                let neighbor = neighbors[i];
-                let extra_amount = if i == last_neighbor {
-                    remainder_tax
-                } else {
-                    0
-                };
+                        if neighbor.stake_amount <= tax_to_distribute {
+                            tax_to_distribute = neighbor.stake_amount;
+                            neighbor.stake_amount = 0;
+                            is_nuke.append(true);
+                        } else {
+                            neighbor.stake_amount -= tax_to_distribute;
+                            is_nuke.append(false);
+                        };
 
-                self._add_taxes(land, *neighbor, tax_per_neighbor + extra_amount, store);
+                        if tax_to_distribute > 0 {
+                            let mut payable = get_dep_component_mut!(ref self, Payable);
+                            let validation = payable
+                                .validate(neighbor.token_used, neighbor.owner, tax_to_distribute);
 
-                i += 1;
-            };
+                            let success = payable.transfer(land.owner, validation);
+                            assert(success, 'ERC20_TRANSFER_CLAIM_FAILED');
 
-            // Distribute taxes for land
-            land.last_pay_time = current_time;
-            land.stake_amount -= tax_to_distribute;
+                            self.last_claim_time.write(pair, current_time);
+                        }
+                        neighbor.last_pay_time = current_time;
+                        store.set_land(neighbor);
+                    };
+
             store.set_land(land);
 
             is_nuke
@@ -126,12 +126,14 @@ mod TaxesComponent {
                 .entry((tax_recipient.owner, tax_recipient.location));
 
             let mut exists = false;
-            for mut i in 0..token_addresses.len() {
-                if token_addresses.at(i).read() == tax_payer.token_used {
-                    exists = true;
-                    break;
-                };
-            };
+            for mut i in 0
+                ..token_addresses
+                    .len() {
+                        if token_addresses.at(i).read() == tax_payer.token_used {
+                            exists = true;
+                            break;
+                        };
+                    };
 
             if !exists {
                 token_addresses.append().write(tax_payer.token_used);
@@ -183,15 +185,17 @@ mod TaxesComponent {
         ) -> Array<TokenInfo> {
             let mut taxes: Array<TokenInfo> = ArrayTrait::new();
             let token_addresses = self.pending_tokens_for_land.entry((owner_land, land_location));
-            for mut i in 0..token_addresses.len() {
-                let token_address = token_addresses.at(i).read();
-                let amount = self
-                    .pending_taxes_for_land
-                    .read((owner_land, land_location, token_address));
-                if amount > 0 {
-                    taxes.append(TokenInfo { token_address, amount });
-                }
-            };
+            for mut i in 0
+                ..token_addresses
+                    .len() {
+                        let token_address = token_addresses.at(i).read();
+                        let amount = self
+                            .pending_taxes_for_land
+                            .read((owner_land, land_location, token_address));
+                        if amount > 0 {
+                            taxes.append(TokenInfo { token_address, amount });
+                        }
+                    };
             taxes
         }
     }

@@ -354,8 +354,6 @@ fn setup_buyer_with_tokens(
 // Helper function for verifying taxes and stake after a claim
 fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u16, store: Store) {
     let land = store.land(land_location);
-    let taxes = actions_system.get_pending_taxes_for_land(land_location, land.owner);
-    assert(taxes.len() > 0, 'must have pending taxes');
     assert(land.stake_amount < 1000, 'must have less stake');
 }
 
@@ -673,8 +671,6 @@ fn test_claim_and_add_taxes() {
 
     // Get claimer land and verify taxes
     let claimer_land = store.land(2080);
-    let claimer_land_taxes = actions_system.get_pending_taxes_for_land(2080, claimer_land.owner);
-    assert(claimer_land_taxes.len() == 0, 'have pending taxes');
     assert(erc20_neighbor_1.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
 
     // Verify the neighbors of the claimer land
@@ -869,7 +865,7 @@ fn test_detailed_tax_calculation() {
 
     // Verify stake amount was reduced by correct tax amount
     assert(land_1281.stake_amount == 9717, // 10000 - 283
-    'Wrong stake amount after tax');
+     'Wrong stake amount after tax');
 
     // Verify taxes for central land (1280)
     let pending_taxes = actions_system.get_pending_taxes_for_land(1280, RECIPIENT());
