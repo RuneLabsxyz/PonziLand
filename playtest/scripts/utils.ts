@@ -1,6 +1,7 @@
 import { $, env, file, color } from "bun";
 import manifest from "../../contracts/manifest_sepolia.json";
 import holders from "../query-results.json";
+import { readFileSync } from "fs";
 import {
   Account,
   CairoCustomEnum,
@@ -104,13 +105,21 @@ export async function setAccess(
   address: string,
   role: string,
 ) {
+  // read the ABI of the Test contract
+  const { abi: testAbi } = await context!.provider.getClassAt(contractAddress);
+  if (testAbi === undefined) {
+    throw new Error("no abi.");
+  }
+
+  const callData = new CallData(testAbi).compile("set_access", [
+    address,
+    new CairoCustomEnum({ [role]: {} }),
+  ]);
+
   return {
     contractAddress,
     entrypoint: "set_access",
-    calldata: CallData.compile({
-      address,
-      access: new CairoCustomEnum({ [role]: {} }),
-    }),
+    calldata: callData,
   } satisfies Call;
 }
 

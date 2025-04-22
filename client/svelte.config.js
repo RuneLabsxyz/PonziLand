@@ -53,7 +53,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
-    PUBLIC_SOCIALINK_URL: 'https://sociallink.ponzi.land',
+    PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',

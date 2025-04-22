@@ -13,6 +13,7 @@ import { mint } from "./scripts/commands/mint";
 import { setupPool } from "./scripts/commands/setup_pool";
 import { worldOwner } from "./scripts/commands/dojo_owner";
 import { whitelist } from "./scripts/commands/whitelist";
+import { ensurePermissions } from "./scripts/commands/ensure_permissions";
 
 const SOCIALINK_SIGNER_ADDRESS =
   "0x008ea9029cec9c339e0513a17336e9af43278ebd81858aee0af110c3e810fce6";
@@ -82,6 +83,9 @@ switch (command) {
     break;
   case "whitelist":
     await whitelist(config, commandPositionals);
+    break;
+  case "ensure-permissions":
+    await ensurePermissions(config, commandPositionals);
     break;
   case undefined:
     console.log("No command provided!");
