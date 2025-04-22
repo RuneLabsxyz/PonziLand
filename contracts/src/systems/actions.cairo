@@ -424,7 +424,6 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
             self.stake._add(amount_to_stake, land, store);
-
         }
 
         fn level_up(ref self: ContractState, land_location: u16) -> bool {
@@ -660,13 +659,7 @@ pub mod actions {
             land.token_used = self.main_currency.read();
 
             store.set_land(land);
-            store
-                .world
-                .emit_event(
-                    @NewAuctionEvent {
-                        land_location, start_price, floor_price,
-                    },
-                );
+            store.world.emit_event(@NewAuctionEvent { land_location, start_price, floor_price });
         }
 
         fn nuke(ref self: ContractState, land_location: u16, has_liquidity_requirements: bool) {
