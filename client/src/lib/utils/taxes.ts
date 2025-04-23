@@ -212,6 +212,7 @@ export const estimateTax = (sellPrice: number) => {
   };
 };
 
+// TODO: edge case land in the corners or edges of the map
 export function calculateBurnRate(
   land: LandWithActions,
   neighborCount: number,
