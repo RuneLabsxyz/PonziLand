@@ -114,7 +114,6 @@ class TileState {
       this.tilesStore[x][y].type === 'house' &&
       'level' in this.tilesStore[x][y]
     ) {
-      console.log('This is a house');
       this.tilesStore[x][y] = {
         ...this.tilesStore[x][y],
         level: (Number(this.tilesStore[x][y].level) + 1) as 1 | 2 | 3,
