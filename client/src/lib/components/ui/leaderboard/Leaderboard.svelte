@@ -63,8 +63,11 @@
     try {
       tokenPrices = await getTokenPrices();
 
+      console.log('Token prices:', tokenPrices);
+
       // Create a cache of token prices
       for (const tokenPrice of tokenPrices) {
+        if (tokenPrice.ratio == null) continue;
         tokenPriceCache[tokenPrice.address] = CurrencyAmount.fromUnscaled(
           tokenPrice.ratio,
         );
