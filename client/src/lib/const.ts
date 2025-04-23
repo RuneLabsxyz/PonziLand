@@ -3,8 +3,8 @@ export const GAME_SPEED = 20;
 export const GRID_SIZE = 64;
 export const TAX_RATE = 2; // as a percentage
 
-export const DATE_GATE: Date | undefined = undefined;
-export const CLOSING_DATE: Date | undefined = new Date('2025-03-23T11:00:00Z');
+export const DATE_GATE: Date | undefined = new Date('2025-04-24T16:00:00Z');
+export const CLOSING_DATE: Date | undefined = undefined;
 
 /**
  * Time to level up a buildings, in seconds.

@@ -4,7 +4,7 @@
   import { onMount } from 'svelte';
 
   let currentDate = $state(Date.now());
-  let durationLeft = $derived(DATE_GATE?.getTime() ?? Infinity - currentDate);
+  let durationLeft = $derived((DATE_GATE?.getTime() ?? Infinity) - currentDate);
 
   let secondsLeft = $derived(Math.floor(durationLeft / 1000) % 60);
 
