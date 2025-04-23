@@ -1,13 +1,9 @@
 import { address_blacklist } from '$lib/data.json';
 import { areAddressesEquals } from './helpers';
 import { PUBLIC_DOJO_TORII_URL } from '$env/static/public';
+import { BASE_TOKEN } from '$lib/const';
 
 const blackList = address_blacklist.map((e) => BigInt(e));
-
-// @notice This token is used to rank users in the leaderboard.
-// @notice The token is Emulated stark token.
-export const baseToken =
-  '0x71de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0';
 
 export async function fetchTokenBalances() {
   try {
@@ -27,7 +23,7 @@ export async function fetchTokenBalances() {
           )
           SELECT account_address, contract_address, balance
           FROM ranked_balances
-          WHERE rank <= 50 OR contract_address = '${baseToken}'
+          WHERE rank <= 50 OR contract_address = '${BASE_TOKEN}'
           ORDER BY contract_address, balance DESC;
         `,
     });
@@ -82,6 +78,7 @@ export function parseTokenBalances(
 export async function fetchUsernamesBatch(
   addresses: string[],
 ): Promise<Record<string, string>> {
+  console.log('Fetching usernames for addresses:', addresses);
   try {
     const response = await fetch('https://social.ponzi.land/api/user/lookup', {
       method: 'POST',
@@ -104,6 +101,8 @@ export async function fetchUsernamesBatch(
         usernameMap[user.address] = user.username;
       }
     });
+
+    console.log('Fetched usernames:', usernameMap);
 
     return usernameMap;
   } catch (error) {

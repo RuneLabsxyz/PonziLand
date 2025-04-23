@@ -3,7 +3,6 @@
   import type { Token } from '$lib/interfaces';
   import type { TokenTVL, TokenVolume } from './requests';
   import type { EkuboApiResponse } from '../defi/ekubo/requests';
-  import { baseToken } from './requests';
   import {
     fetchEkuboPairData,
     calculatePriceFromPool,
@@ -16,6 +15,7 @@
   import BuyInfo from './buyInfo.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
   import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
+  import { BASE_TOKEN } from '$lib/const';
 
   let {
     tokens,
@@ -24,7 +24,7 @@
   } = $props();
 
   // Find base token details
-  const baseTokenDetails = tokens.find((t) => t.address === baseToken);
+  const baseTokenDetails = tokens.find((t) => t.address === BASE_TOKEN);
 
   interface HistoricalPrice {
     date: string;
@@ -119,13 +119,13 @@
    * @returns Promise that resolves when all pair data is loaded
    */
   async function loadPairData() {
-    const pairTokens = tokens.filter((t) => t.address !== baseToken);
+    const pairTokens = tokens.filter((t) => t.address !== BASE_TOKEN);
     try {
       // Fetch token prices first
       tokenPrices = await getTokenPrices();
 
       const promises = pairTokens.map(async (token) => {
-        const data = await fetchEkuboPairData(baseToken, token.address);
+        const data = await fetchEkuboPairData(BASE_TOKEN, token.address);
 
         // Find the token price from the API response
         const tokenPrice = tokenPrices.find(
@@ -256,8 +256,8 @@
               <div class="bg-black/20 rounded-lg p-3 space-y-2">
                 {#each card.volumeByToken as vol}
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-300">
-                      {vol.token === baseToken
+                    <span class="text-BASE_TOKEN-300">
+                      {vol.token === BASE_TOKEN
                         ? baseTokenDetails?.symbol
                         : card.tokenDetails.symbol}:
                     </span>
@@ -265,7 +265,7 @@
                       <div class="text-white font-mono">
                         {CurrencyAmount.fromUnscaled(
                           vol.volume,
-                          vol.token === baseToken
+                          vol.token === BASE_TOKEN
                             ? baseTokenDetails
                             : card.tokenDetails,
                         ).toString()}
@@ -273,7 +273,7 @@
                       <div class="text-xs text-gray-400">
                         Fees: {CurrencyAmount.fromUnscaled(
                           vol.fees,
-                          vol.token === baseToken
+                          vol.token === BASE_TOKEN
                             ? baseTokenDetails
                             : card.tokenDetails,
                         ).toString()}

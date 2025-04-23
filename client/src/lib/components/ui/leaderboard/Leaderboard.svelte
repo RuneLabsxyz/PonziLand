@@ -2,11 +2,7 @@
   import accountData from '$lib/account.svelte';
   import { onMount } from 'svelte';
 
-  import {
-    fetchTokenBalances,
-    baseToken,
-    fetchUsernamesBatch,
-  } from './request';
+  import { fetchTokenBalances, fetchUsernamesBatch } from './request';
   import { useAvnu, type SwapPriceParams } from '$lib/utils/avnu.svelte';
   import {
     getTokenPrices,
@@ -25,6 +21,7 @@
   import { usernamesStore } from '$lib/stores/account.svelte';
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { BASE_TOKEN } from '$lib/const';
 
   const address = $derived(accountData.address);
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
@@ -93,7 +90,7 @@
       let totalInBaseCurrency = 0n;
 
       for (const [tokenAddress, balance] of Object.entries(tokens)) {
-        if (tokenAddress === baseToken) {
+        if (tokenAddress === BASE_TOKEN) {
           totalInBaseCurrency +=
             BigInt(balance.toString()) / 1000000000000000000n;
         } else if (tokenPriceCache[tokenAddress]) {
