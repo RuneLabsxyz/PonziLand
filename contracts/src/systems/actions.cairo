@@ -1,7 +1,7 @@
 use starknet::ContractAddress;
 
 use dojo::world::WorldStorage;
-use ponzi_land::models::land::{Land, PoolKey};
+use ponzi_land::models::land::{Land, LandStake};
 use ponzi_land::models::auction::Auction;
 use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 
@@ -29,7 +29,6 @@ trait IActions<T> {
 
     fn claim_all(ref self: T, land_locations: Array<u16>);
 
-
     fn increase_price(ref self: T, land_location: u16, new_price: u256);
 
     fn increase_stake(ref self: T, land_location: u16, amount_to_stake: u256);
@@ -38,7 +37,7 @@ trait IActions<T> {
 
     fn reimburse_stakes(ref self: T);
 
-    fn get_land(self: @T, land_location: u16) -> Land;
+    fn get_land(self: @T, land_location: u16) -> (Land,LandStake);
     fn get_pending_taxes_for_land(
         self: @T, land_location: u16, owner: ContractAddress,
     ) -> Array<TokenInfo>;
@@ -53,7 +52,6 @@ trait IActions<T> {
     fn get_claimable_taxes_for_land(
         self: @T, land_location: u16, owner: ContractAddress,
     ) -> (Array<TokenInfo>, Array<TokenInfo>);
-    //  fn get_neighbors(self: @T, land_location: u16) -> Array<(Land, LandYieldInfo)>;
 }
 
 // dojo decorator
@@ -471,12 +469,13 @@ pub mod actions {
             self.taxes._get_pending_taxes(owner, land_location)
         }
 
-        fn get_land(self: @ContractState, land_location: u16) -> Land {
+        fn get_land(self: @ContractState, land_location: u16) -> (Land, LandStake) {
             assert(is_valid_position(land_location), 'Land location not valid');
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
-            land
+            let land_stake = store.land_stake(land_location);
+            (land, land_stake)
         }
 
 
