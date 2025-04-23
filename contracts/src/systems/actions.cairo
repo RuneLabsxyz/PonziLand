@@ -14,7 +14,6 @@ trait IActions<T> {
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
-        liquidity_pool: PoolKey,
     );
     fn buy(
         ref self: T,
@@ -22,7 +21,6 @@ trait IActions<T> {
         token_for_sale: ContractAddress,
         sell_price: u256,
         amount_to_stake: u256,
-        liquidity_pool: PoolKey,
     );
 
     fn recreate_auction(ref self: T, land_location: u16);
@@ -232,7 +230,6 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: PoolKey,
         ) {
             assert(is_valid_position(land_location), 'Land location not valid');
             assert(sell_price > 0, 'sell_price > 0');
@@ -269,13 +266,7 @@ pub mod actions {
 
             self
                 .finalize_land_purchase(
-                    store,
-                    land_location,
-                    token_for_sale,
-                    sell_price,
-                    amount_to_stake,
-                    liquidity_pool,
-                    caller,
+                    store, land_location, token_for_sale, sell_price, amount_to_stake, caller,
                 );
 
             store
@@ -323,7 +314,6 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: PoolKey,
         ) {
             let mut world = self.world_default();
 
@@ -361,7 +351,6 @@ pub mod actions {
                     sell_price,
                     current_price,
                     amount_to_stake,
-                    liquidity_pool,
                     caller,
                     auction,
                 );
@@ -735,7 +724,6 @@ pub mod actions {
             sell_price: u256,
             sold_at_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: PoolKey,
             caller: ContractAddress,
             mut auction: Auction,
         ) {
@@ -748,13 +736,7 @@ pub mod actions {
             // I don't think we need to create the land before.
             self
                 .finalize_land_purchase(
-                    store,
-                    land.location,
-                    token_for_sale,
-                    sell_price,
-                    amount_to_stake,
-                    liquidity_pool,
-                    caller,
+                    store, land.location, token_for_sale, sell_price, amount_to_stake, caller,
                 );
             self.staked_lands.write(land.location, true);
 
@@ -800,16 +782,10 @@ pub mod actions {
             token_for_sale: ContractAddress,
             sell_price: u256,
             amount_to_stake: u256,
-            liquidity_pool: PoolKey,
             caller: ContractAddress,
         ) {
             let land = LandTrait::new(
-                land_location,
-                caller,
-                token_for_sale,
-                sell_price,
-                liquidity_pool,
-                get_block_timestamp(),
+                land_location, caller, token_for_sale, sell_price, get_block_timestamp(),
             );
             store.set_land(land);
 

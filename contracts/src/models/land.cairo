@@ -13,7 +13,6 @@ pub struct Land {
     pub owner: ContractAddress,
     pub sell_price: u256,
     pub token_used: ContractAddress,
-    pub pool_key: PoolKey, // The Liquidity Pool Key
     //we will use this for taxes
     pub level: Level,
 }
@@ -79,17 +78,8 @@ impl LandImpl of LandTrait {
         owner: ContractAddress,
         token_used: ContractAddress,
         sell_price: u256,
-        pool_key: PoolKey,
         block_date_bought: u64,
     ) -> Land {
-        Land {
-            location,
-            owner,
-            token_used,
-            sell_price,
-            pool_key,
-            block_date_bought,
-            level: Level::Zero,
-        }
+        Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
 }

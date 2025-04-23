@@ -343,14 +343,7 @@ fn initialize_land(
     let allowance = token_for_sale.allowance(owner, actions_system.contract_address);
     assert(allowance >= stake_amount, 'Buyer approval failed');
 
-    actions_system
-        .bid(
-            location,
-            token_for_sale.contract_address,
-            sell_price,
-            stake_amount,
-            neighbor_pool_key(main_currency.contract_address, token_for_sale.contract_address),
-        );
+    actions_system.bid(location, token_for_sale.contract_address, sell_price, stake_amount);
 }
 
 // Helper function for setting up a buyer with tokens
@@ -388,7 +381,6 @@ fn verify_land(
     location: u16,
     expected_owner: ContractAddress,
     expected_price: u256,
-    expected_pool: PoolKey,
     expected_stake: u256,
     expected_block_date_bought: u64,
     expected_token_used: ContractAddress,
@@ -397,7 +389,6 @@ fn verify_land(
     let land_stake = store.land_stake(location);
     assert(land.owner == expected_owner, 'incorrect owner');
     assert(land.sell_price == expected_price, 'incorrect price');
-    assert(land.pool_key == expected_pool, 'incorrect pool');
     assert(land_stake.amount == expected_stake, 'incorrect stake');
     assert(
         land.block_date_bought * TIME_SPEED.into() == expected_block_date_bought,
@@ -411,8 +402,7 @@ fn bid_and_verify_next_auctions(
     store: Store,
     main_currency: IERC20CamelDispatcher,
     locations: Array<u16>,
-    next_direction: u8, // 0=left, 1=up, 2=right, 3=down
-    pool_key: PoolKey,
+    next_direction: u8 // 0=left, 1=up, 2=right, 3=down
 ) {
     // Bid on all locations
     let mut i = 0;
@@ -421,7 +411,7 @@ fn bid_and_verify_next_auctions(
             break;
         }
         let location = *locations.at(i);
-        actions_system.bid(location, main_currency.contract_address, 2, 10, pool_key);
+        actions_system.bid(location, main_currency.contract_address, 2, 10);
         i += 1;
     };
 
@@ -462,12 +452,7 @@ fn create_land_with_neighbors(
 ) -> Array<u16> {
     // Create the main land
     let land = LandTrait::new(
-        location,
-        owner,
-        token_used.contract_address,
-        sell_price,
-        pool_key(token_used.contract_address),
-        block_date_bought,
+        location, owner, token_used.contract_address, sell_price, block_date_bought,
     );
     setup_buyer_with_tokens(
         token_used, actions_system, owner, actions_system.contract_address, stake_amount,
@@ -485,7 +470,6 @@ fn create_land_with_neighbors(
             NEIGHBOR_1(),
             token_used_neighbor_1.contract_address,
             sell_price,
-            neighbor_pool_key(token_used.contract_address, token_used_neighbor_1.contract_address),
             block_date_bought,
         );
         setup_buyer_with_tokens(
@@ -506,7 +490,6 @@ fn create_land_with_neighbors(
             NEIGHBOR_2(),
             token_used_neighbor_2.contract_address,
             sell_price,
-            neighbor_pool_key(token_used.contract_address, token_used_neighbor_2.contract_address),
             block_date_bought,
         );
         setup_buyer_with_tokens(
@@ -529,7 +512,6 @@ fn create_land_with_neighbors(
             NEIGHBOR_3(),
             token_used_neighbor_3.contract_address,
             sell_price,
-            neighbor_pool_key(token_used.contract_address, token_used_neighbor_3.contract_address),
             block_date_bought,
         );
         setup_buyer_with_tokens(
@@ -550,7 +532,6 @@ fn create_land_with_neighbors(
             NEIGHBOR_1(),
             token_used_neighbor_1.contract_address,
             sell_price,
-            neighbor_pool_key(token_used.contract_address, token_used_neighbor_1.contract_address),
             block_date_bought,
         );
         setup_buyer_with_tokens(
@@ -586,26 +567,10 @@ fn test_buy_action() {
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     // Perform buy action
-    actions_system
-        .buy(
-            2080,
-            main_currency.contract_address,
-            100,
-            120,
-            pool_key(main_currency.contract_address),
-        );
+    actions_system.buy(2080, main_currency.contract_address, 100, 120);
 
     // Verify results
-    verify_land(
-        store,
-        2080,
-        NEW_BUYER(),
-        100,
-        pool_key(main_currency.contract_address),
-        120,
-        100,
-        main_currency.contract_address,
-    );
+    verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
 #[test]
@@ -614,17 +579,13 @@ fn test_invalid_land() {
     let (_, actions_system, erc20, _, _) = setup_test();
 
     // Attempt to buy land at invalid position (11000)
-    actions_system.buy(11000, erc20.contract_address, 10, 12, pool_key(erc20.contract_address));
+    actions_system.buy(11000, erc20.contract_address, 10, 12);
 }
 
 //test for now without auction
 #[test]
 fn test_bid_and_buy_action() {
-    let (store, actions_system, main_currency, _ekubo_testing_dispatcher, _) = setup_test();
-
-    let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
-
-    // We do not need to set liquidity pool here as it is between the same currency
+    let (store, actions_system, main_currency, _, _) = setup_test();
 
     // Set initial timestamp
     set_block_timestamp(100);
@@ -634,24 +595,17 @@ fn test_bid_and_buy_action() {
     initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
 
     // Validate bid/buy updates
-    verify_land(store, 2080, RECIPIENT(), 100, pool, 50, 100, main_currency.contract_address);
+    verify_land(store, 2080, RECIPIENT(), 100, 50, 100, main_currency.contract_address);
 
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     set_block_timestamp(160);
-    actions_system.buy(2080, main_currency.contract_address, 300, 500, pool);
+    actions_system.buy(2080, main_currency.contract_address, 300, 500);
 
     // Validate buy action updates
     verify_land(
-        store,
-        2080,
-        NEW_BUYER(),
-        300,
-        pool,
-        500,
-        160 * TIME_SPEED.into(),
-        main_currency.contract_address,
+        store, 2080, NEW_BUYER(), 300, 500, 160 * TIME_SPEED.into(), main_currency.contract_address,
     );
 }
 
@@ -719,14 +673,7 @@ fn test_claim_and_add_taxes() {
     set_block_timestamp(6000 / TIME_SPEED.into());
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(erc20_neighbor_1, actions_system, NEIGHBOR_1(), NEW_BUYER(), 2500);
-    actions_system
-        .buy(
-            next_auction_location.unwrap(),
-            erc20_neighbor_1.contract_address,
-            100,
-            100,
-            neighbor_pool_key(main_currency.contract_address, erc20_neighbor_1.contract_address),
-        );
+    actions_system.buy(next_auction_location.unwrap(), erc20_neighbor_1.contract_address, 100, 100);
     // verify the claim when occurs a buy
     let claimer_land_stake = store.land_stake(2080);
     assert(claimer_land_stake.last_pay_time == 6000 / TIME_SPEED.into(), 'Err in 2080 last_pay');
@@ -799,7 +746,6 @@ fn test_nuke_action() {
         neighbor_land_location.unwrap(),
         ContractAddressZeroable::zero(),
         MIN_AUCTION_PRICE,
-        deleted_pool_key(),
         0,
         0,
         main_currency.contract_address,
@@ -815,17 +761,13 @@ fn test_nuke_action() {
 fn test_increase_price_and_stake() {
     let (store, actions_system, main_currency, _, _) = setup_test();
 
-    let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
-
-    // We are setting up a pool with itself, so no need to setup liquidity
-
     //create land
     set_block_timestamp(100);
     set_block_number(234);
     initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 1000, main_currency);
 
     //verify the land
-    verify_land(store, 2080, RECIPIENT(), 1000, pool, 1000, 100, main_currency.contract_address);
+    verify_land(store, 2080, RECIPIENT(), 1000, 1000, 100, main_currency.contract_address);
 
     //increase the price
     actions_system.increase_price(2080, 2300);
@@ -972,26 +914,10 @@ fn check_success_liquidity_pool() {
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     // Perform buy action
-    actions_system
-        .buy(
-            2080,
-            main_currency.contract_address,
-            100,
-            120,
-            pool_key(main_currency.contract_address),
-        );
+    actions_system.buy(2080, main_currency.contract_address, 100, 120);
 
     // Verify results
-    verify_land(
-        store,
-        2080,
-        NEW_BUYER(),
-        100,
-        pool_key(main_currency.contract_address),
-        120,
-        100,
-        main_currency.contract_address,
-    );
+    verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
 #[test]
@@ -1013,26 +939,10 @@ fn check_invalid_liquidity_pool() {
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     // Perform buy action
-    actions_system
-        .buy(
-            2080,
-            main_currency.contract_address,
-            100,
-            120,
-            pool_key(main_currency.contract_address),
-        );
+    actions_system.buy(2080, main_currency.contract_address, 100, 120);
 
     // Verify results
-    verify_land(
-        store,
-        2080,
-        NEW_BUYER(),
-        100,
-        pool_key(main_currency.contract_address),
-        120,
-        100,
-        main_currency.contract_address,
-    );
+    verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
 #[test]
@@ -1053,10 +963,9 @@ fn test_organic_auction() {
     // Initial head locations
     let heads: Array<u16> = array![2080, 1050, 1002, 1007];
 
-    let pool = pool_key(main_currency.contract_address);
     set_block_timestamp(10000);
     // Step 1: Bid on heads and verify LEFT auctions
-    bid_and_verify_next_auctions(actions_system, store, main_currency, heads.clone(), 0, pool);
+    bid_and_verify_next_auctions(actions_system, store, main_currency, heads.clone(), 0);
 
     // Get LEFT locations
     let mut left_locations: Array<u16> = ArrayTrait::new();
@@ -1072,9 +981,7 @@ fn test_organic_auction() {
     set_block_timestamp(100000);
 
     // Step 2: Bid on LEFT locations and verify UP auctions
-    bid_and_verify_next_auctions(
-        actions_system, store, main_currency, left_locations.clone(), 1, pool,
-    );
+    bid_and_verify_next_auctions(actions_system, store, main_currency, left_locations.clone(), 1);
 
     // Get UP locations
     let mut up_locations: Array<u16> = ArrayTrait::new();
@@ -1089,9 +996,7 @@ fn test_organic_auction() {
     };
     set_block_timestamp(100000);
 
-    bid_and_verify_next_auctions(
-        actions_system, store, main_currency, up_locations.clone(), 2, pool,
-    );
+    bid_and_verify_next_auctions(actions_system, store, main_currency, up_locations.clone(), 2);
 
     // Get RIGHT locations
     let mut right_locations: Array<u16> = ArrayTrait::new();
@@ -1120,9 +1025,7 @@ fn test_organic_auction() {
     };
 
     // Step 4: Bid on second RIGHT locations and verify DOWN auctions
-    bid_and_verify_next_auctions(
-        actions_system, store, main_currency, right2_locations.clone(), 3, pool,
-    );
+    bid_and_verify_next_auctions(actions_system, store, main_currency, right2_locations.clone(), 3);
 
     let final_active_auctions = actions_system.get_active_auctions();
     assert(final_active_auctions <= MAX_AUCTIONS, 'Too many active auctions');
@@ -1167,7 +1070,6 @@ fn test_claim_all() {
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
 
-    let pool = neighbor_pool_key(main_currency.contract_address, main_currency.contract_address);
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
