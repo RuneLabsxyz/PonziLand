@@ -159,8 +159,6 @@ export function useLands(): LandsStore | undefined {
       .getEntitiesByModel('ponzi_land', 'LandStake')
       .map((e) => e.models['ponzi_land']['LandStake'] as LandStake);
 
-    console.log('landsStakes', landsStakes);
-
     const lands: (LandWithStake | Land)[] = s
       .getEntitiesByModel('ponzi_land', 'Land')
       .map((e) => {
