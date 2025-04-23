@@ -131,12 +131,7 @@ export function setupWorld(provider: DojoProvider) {
     return {
       contractName: 'actions',
       entrypoint: 'bid',
-      calldata: [
-        landLocation,
-        tokenForSale,
-        sellPrice,
-        amountToStake,
-      ],
+      calldata: [landLocation, tokenForSale, sellPrice, amountToStake],
     };
   };
 
@@ -173,12 +168,7 @@ export function setupWorld(provider: DojoProvider) {
     return {
       contractName: 'actions',
       entrypoint: 'buy',
-      calldata: [
-        landLocation,
-        tokenForSale,
-        sellPrice,
-        amountToStake,
-      ],
+      calldata: [landLocation, tokenForSale, sellPrice, amountToStake],
     };
   };
 

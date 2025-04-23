@@ -40,7 +40,6 @@ export interface Land {
   level: LevelEnum;
 }
 
-
 // Type definition for `ponzi_land::models::land::LandValue` struct
 export interface LandValue {
   block_date_bought: BigNumberish;
@@ -52,15 +51,15 @@ export interface LandValue {
 
 // Type definition for `ponzi_land::models::land::LandStake` struct
 export interface LandStake {
-	location: BigNumberish;
-	last_pay_time: BigNumberish;
-	amount: BigNumberish;
+  location: BigNumberish;
+  last_pay_time: BigNumberish;
+  amount: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::LandStakeValue` struct
 export interface LandStakeValue {
-	last_pay_time: BigNumberish;
-	amount: BigNumberish;
+  last_pay_time: BigNumberish;
+  amount: BigNumberish;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
@@ -115,7 +114,6 @@ export interface NewAuctionEventValue {
   start_price: BigNumberish;
   floor_price: BigNumberish;
 }
-
 
 // Type definition for `ponzi_land::systems::auth::auth::AddressAuthorizedEvent` struct
 export interface AddressAuthorizedEvent {
@@ -260,11 +258,7 @@ export const schema: SchemaType = {
       }),
     },
     LandStake: {
-      fieldOrder: [
-        'location',
-        'last_pay_time',
-        'amount',
-      ],
+      fieldOrder: ['location', 'last_pay_time', 'amount'],
       location: 0,
       last_pay_time: 0,
       amount: 0,
@@ -275,11 +269,7 @@ export const schema: SchemaType = {
       amount: 0,
     },
     AuctionFinishedEvent: {
-      fieldOrder: [
-        'land_location',
-        'buyer',
-        'final_price',
-      ],
+      fieldOrder: ['land_location', 'buyer', 'final_price'],
       land_location: 0,
       buyer: '',
       final_price: 0,

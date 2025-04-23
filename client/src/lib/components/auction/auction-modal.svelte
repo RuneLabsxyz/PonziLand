@@ -10,7 +10,6 @@
   } from '$lib/stores/stores.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
   import { onMount } from 'svelte';
   import BuySellForm from '../buy/buy-sell-form.svelte';
   import LandOverview from '../land/land-overview.svelte';
@@ -55,7 +54,6 @@
       tokenForSaleAddress: selectedToken?.address as string,
       salePrice: sellAmount,
       amountToStake: stakeAmount,
-      liquidityPool: getLiquidityPoolFromToken(selectedToken!),
       tokenAddress: $selectedLandMeta?.tokenAddress as string,
       currentPrice: currentPrice, // Include a 10% margin on the bet amount
     };

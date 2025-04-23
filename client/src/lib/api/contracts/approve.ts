@@ -1,5 +1,4 @@
 import { setupWorld } from '$lib/contracts.gen';
-import type { PoolKey } from '$lib/models.gen';
 import {
   DojoProvider,
   getContractByName,
@@ -61,7 +60,6 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: PoolKey,
     /* Added parameters required for approval */
     buyingToken: string,
     currentPrice: BigNumberish,
@@ -93,7 +91,6 @@ export async function wrappedActions(provider: DojoProvider) {
         tokenForSale,
         sellPrice,
         amountToStake,
-        liquidityPool,
       ),
     );
 
@@ -106,8 +103,6 @@ export async function wrappedActions(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-
-    liquidityPool: PoolKey,
 
     /* Added arguments for approval */
     currentToken: string,
@@ -141,7 +136,6 @@ export async function wrappedActions(provider: DojoProvider) {
           tokenForSale,
           sellPrice,
           amountToStake,
-          liquidityPool,
         ),
       );
 

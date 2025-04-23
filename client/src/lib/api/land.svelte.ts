@@ -3,8 +3,8 @@ import data from '$lib/data.json';
 import type { LandYieldInfo, Token } from '$lib/interfaces';
 import type {
   Land,
+  LandStake,
   SchemaType as PonziLandSchemaType,
-  PoolKey,
 } from '$lib/models.gen';
 import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -32,7 +32,6 @@ export type LandSetup = {
   tokenForSaleAddress: string;
   salePrice: CurrencyAmount;
   amountToStake: CurrencyAmount;
-  liquidityPool: PoolKey;
   tokenAddress: string;
   currentPrice: CurrencyAmount | null;
 };
@@ -125,6 +124,7 @@ export function useLands(): LandsStore | undefined {
     const query = new QueryBuilder<PonziLandSchemaType>()
       .namespace('ponzi_land', (ns) => {
         ns.entity('Land', (e) => e.build());
+        ns.entity('LandStake', (e) => e.build());
       })
       .build();
     // also query initial
@@ -152,14 +152,33 @@ export function useLands(): LandsStore | undefined {
   })();
 
   const landEntityStore = derived([landStore], ([s]) => {
-    const landWithActions: LandWithActions[] = s
+    const lands = s
       .getEntitiesByModel('ponzi_land', 'Land')
-      .map((e) => e.models['ponzi_land']['Land'] as Land)
+      .map((e) => e.models['ponzi_land']['Land'] as Land);
+
+    const landsStakes = s
+      .getEntitiesByModel('ponzi_land', 'LandStake')
+      .map((e) => e.models['ponzi_land']['LandStake'] as LandStake);
+
+    const landStakeMap = new Map<string, LandStake>();
+    for (const landStake of landsStakes) {
+      landStakeMap.set(
+        toHexWithPadding(ensureNumber(landStake.location)),
+        landStake,
+      );
+    }
+
+    const landWithActions: LandWithActions[] = lands
       .map((land) => {
         // ------------------------
         // Land With Meta data here
         // ------------------------
         //
+
+        // Get the land stake
+        const locationHex = toHexWithPadding(ensureNumber(land.location));
+        const landStake = landStakeMap.get(locationHex);
+
         const token = data.availableTokens.find(
           (token) => token.address === land.token_used,
         );
@@ -175,12 +194,14 @@ export function useLands(): LandsStore | undefined {
           sellPrice: CurrencyAmount.fromUnscaled(land.sell_price),
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
-          stakeAmount: CurrencyAmount.fromUnscaled(land.stake_amount),
+          stakeAmount: CurrencyAmount.fromUnscaled(landStake?.amount ?? 0),
+          lastPayTime: landStake?.last_pay_time ?? 0,
           token,
         };
       })
       .map((land) => ({
         ...land,
+
         // Add functions
         increaseStake(amount: CurrencyAmount) {
           return sdk.client.actions.increaseStake(
@@ -286,7 +307,7 @@ export function useLands(): LandsStore | undefined {
               location: land.location,
               source: landWithActions,
             }).getNeighbors().length,
-            toNumber(land.last_pay_time),
+            toNumber(land.lastPayTime),
           );
         },
         getNeighbors() {
@@ -329,7 +350,6 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice.toBignumberish(),
         setup.amountToStake.toBignumberish(),
-        setup.liquidityPool,
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
@@ -348,7 +368,6 @@ export function useLands(): LandsStore | undefined {
         setup.tokenForSaleAddress,
         setup.salePrice.toBignumberish(),
         setup.amountToStake.toBignumberish(),
-        setup.liquidityPool,
         setup.tokenAddress,
         setup.currentPrice!.toBignumberish(),
       );
