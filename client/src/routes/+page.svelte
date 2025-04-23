@@ -150,7 +150,7 @@
 
   <Button
     variant="red"
-    on:click={startGame}
+    onclick={startGame}
     class="z-[3] text-xl px-12 py-4 font-bold">Play</Button
   >
 </main>

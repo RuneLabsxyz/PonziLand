@@ -3,4 +3,4 @@
   import Invitation from '$lib/components/socialink/Invitation.svelte';
 </script>
 
-<Invitation onfinish={() => goto('/game')} />
+<Invitation onfinish={() => goto('/tutorial')} />
