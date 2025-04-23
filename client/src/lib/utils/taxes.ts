@@ -217,7 +217,6 @@ export function calculateBurnRate(
   land: LandWithActions,
   neighborCount: number,
 ) {
-  console.log('landlandland', land.sellPrice.toBigint());
   let discount_for_level = calculateDiscount(land.level);
   land.token;
   let maxN = 8;
