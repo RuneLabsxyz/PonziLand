@@ -23,6 +23,7 @@
   import Button from '../ui/button/button.svelte';
   import RatesOverlay from './rates-overlay.svelte';
   import NukeExplosion from '../animation/nuke-explosion.svelte';
+  import { AI_AGENT_ADDRESS } from '$lib/const';
 
   let {
     land,
@@ -37,6 +38,16 @@
   let address = $derived(account.address);
   let isNuking = $derived(nukeStore.nuking[land.location] === true);
   let isPending = $derived(nukeStore.pending[land.location] === true);
+
+  let isAiAgent = $state(false);
+
+  $effect(() => {
+    if (AI_AGENT_ADDRESS == land?.owner) {
+      isAiAgent = true;
+    } else {
+      isAiAgent = false;
+    }
+  });
 
   let isOwner = $derived.by(() => {
     if (land.type === 'grass') return false;
@@ -218,6 +229,11 @@
       {:else}
         <LandNukeShield {estimatedNukeTime} />
       {/if}
+    </div>
+  {/if}
+  {#if isAiAgent}
+    <div class="absolute top-0 lefr-0 text-[4px]">
+      <img src="/extra/ai.png" alt="" class="w-[8px]" />
     </div>
   {/if}
 </div>
