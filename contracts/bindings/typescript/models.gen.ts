@@ -30,10 +30,20 @@ export interface Land {
 	owner: string;
 	sell_price: BigNumberish;
 	token_used: string;
-	pool_key: PoolKey;
-	last_pay_time: BigNumberish;
-	stake_amount: BigNumberish;
 	level: LevelEnum;
+}
+
+// Type definition for `ponzi_land::models::land::LandStake` struct
+export interface LandStake {
+	location: BigNumberish;
+	last_pay_time: BigNumberish;
+	amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::land::LandStakeValue` struct
+export interface LandStakeValue {
+	last_pay_time: BigNumberish;
+	amount: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::LandValue` struct
@@ -42,35 +52,19 @@ export interface LandValue {
 	owner: string;
 	sell_price: BigNumberish;
 	token_used: string;
-	pool_key: PoolKey;
-	last_pay_time: BigNumberish;
-	stake_amount: BigNumberish;
 	level: LevelEnum;
-}
-
-// Type definition for `ponzi_land::models::land::PoolKey` struct
-export interface PoolKey {
-	token0: string;
-	token1: string;
-	fee: BigNumberish;
-	tick_spacing: BigNumberish;
-	extension: string;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
 export interface AuctionFinishedEvent {
 	land_location: BigNumberish;
 	buyer: string;
-	start_time: BigNumberish;
-	final_time: BigNumberish;
 	final_price: BigNumberish;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEventValue` struct
 export interface AuctionFinishedEventValue {
 	buyer: string;
-	start_time: BigNumberish;
-	final_time: BigNumberish;
 	final_price: BigNumberish;
 }
 
@@ -104,27 +98,14 @@ export interface LandNukedEventValue {
 // Type definition for `ponzi_land::systems::actions::actions::NewAuctionEvent` struct
 export interface NewAuctionEvent {
 	land_location: BigNumberish;
-	start_time: BigNumberish;
 	start_price: BigNumberish;
 	floor_price: BigNumberish;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::NewAuctionEventValue` struct
 export interface NewAuctionEventValue {
-	start_time: BigNumberish;
 	start_price: BigNumberish;
 	floor_price: BigNumberish;
-}
-
-// Type definition for `ponzi_land::systems::actions::actions::RemainingStakeEvent` struct
-export interface RemainingStakeEvent {
-	land_location: BigNumberish;
-	remaining_stake: BigNumberish;
-}
-
-// Type definition for `ponzi_land::systems::actions::actions::RemainingStakeEventValue` struct
-export interface RemainingStakeEventValue {
-	remaining_stake: BigNumberish;
 }
 
 // Type definition for `ponzi_land::systems::auth::auth::AddressAuthorizedEvent` struct
@@ -174,8 +155,9 @@ export interface SchemaType extends ISchemaType {
 		Auction: Auction,
 		AuctionValue: AuctionValue,
 		Land: Land,
+		LandStake: LandStake,
+		LandStakeValue: LandStakeValue,
 		LandValue: LandValue,
-		PoolKey: PoolKey,
 		AuctionFinishedEvent: AuctionFinishedEvent,
 		AuctionFinishedEventValue: AuctionFinishedEventValue,
 		LandBoughtEvent: LandBoughtEvent,
@@ -184,8 +166,6 @@ export interface SchemaType extends ISchemaType {
 		LandNukedEventValue: LandNukedEventValue,
 		NewAuctionEvent: NewAuctionEvent,
 		NewAuctionEventValue: NewAuctionEventValue,
-		RemainingStakeEvent: RemainingStakeEvent,
-		RemainingStakeEventValue: RemainingStakeEventValue,
 		AddressAuthorizedEvent: AddressAuthorizedEvent,
 		AddressAuthorizedEventValue: AddressAuthorizedEventValue,
 		AddressRemovedEvent: AddressRemovedEvent,
@@ -219,45 +199,37 @@ export const schema: SchemaType = {
 			owner: "",
 		sell_price: 0,
 			token_used: "",
-		pool_key: { token0: "", token1: "", fee: 0, tick_spacing: 0, extension: "", },
-			last_pay_time: 0,
-		stake_amount: 0,
 		level: new CairoCustomEnum({ 
 					Zero: "",
 				First: undefined,
 				Second: undefined, }),
+		},
+		LandStake: {
+			location: 0,
+			last_pay_time: 0,
+		amount: 0,
+		},
+		LandStakeValue: {
+			last_pay_time: 0,
+		amount: 0,
 		},
 		LandValue: {
 			block_date_bought: 0,
 			owner: "",
 		sell_price: 0,
 			token_used: "",
-		pool_key: { token0: "", token1: "", fee: 0, tick_spacing: 0, extension: "", },
-			last_pay_time: 0,
-		stake_amount: 0,
 		level: new CairoCustomEnum({ 
 					Zero: "",
 				First: undefined,
 				Second: undefined, }),
 		},
-		PoolKey: {
-			token0: "",
-			token1: "",
-			fee: 0,
-			tick_spacing: 0,
-			extension: "",
-		},
 		AuctionFinishedEvent: {
 			land_location: 0,
 			buyer: "",
-			start_time: 0,
-			final_time: 0,
 		final_price: 0,
 		},
 		AuctionFinishedEventValue: {
 			buyer: "",
-			start_time: 0,
-			final_time: 0,
 		final_price: 0,
 		},
 		LandBoughtEvent: {
@@ -281,21 +253,12 @@ export const schema: SchemaType = {
 		},
 		NewAuctionEvent: {
 			land_location: 0,
-			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
 		},
 		NewAuctionEventValue: {
-			start_time: 0,
 		start_price: 0,
 		floor_price: 0,
-		},
-		RemainingStakeEvent: {
-			land_location: 0,
-		remaining_stake: 0,
-		},
-		RemainingStakeEventValue: {
-		remaining_stake: 0,
 		},
 		AddressAuthorizedEvent: {
 			address: "",
@@ -324,9 +287,10 @@ export enum ModelsMapping {
 	Auction = 'ponzi_land-Auction',
 	AuctionValue = 'ponzi_land-AuctionValue',
 	Land = 'ponzi_land-Land',
+	LandStake = 'ponzi_land-LandStake',
+	LandStakeValue = 'ponzi_land-LandStakeValue',
 	LandValue = 'ponzi_land-LandValue',
 	Level = 'ponzi_land-Level',
-	PoolKey = 'ponzi_land-PoolKey',
 	AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
 	AuctionFinishedEventValue = 'ponzi_land-AuctionFinishedEventValue',
 	LandBoughtEvent = 'ponzi_land-LandBoughtEvent',
@@ -335,8 +299,6 @@ export enum ModelsMapping {
 	LandNukedEventValue = 'ponzi_land-LandNukedEventValue',
 	NewAuctionEvent = 'ponzi_land-NewAuctionEvent',
 	NewAuctionEventValue = 'ponzi_land-NewAuctionEventValue',
-	RemainingStakeEvent = 'ponzi_land-RemainingStakeEvent',
-	RemainingStakeEventValue = 'ponzi_land-RemainingStakeEventValue',
 	AddressAuthorizedEvent = 'ponzi_land-AddressAuthorizedEvent',
 	AddressAuthorizedEventValue = 'ponzi_land-AddressAuthorizedEventValue',
 	AddressRemovedEvent = 'ponzi_land-AddressRemovedEvent',

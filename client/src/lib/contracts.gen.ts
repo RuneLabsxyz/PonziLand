@@ -127,7 +127,6 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: models.PoolKey,
   ): DojoCall => {
     return {
       contractName: 'actions',
@@ -137,7 +136,6 @@ export function setupWorld(provider: DojoProvider) {
         tokenForSale,
         sellPrice,
         amountToStake,
-        liquidityPool,
       ],
     };
   };
@@ -148,7 +146,6 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: models.PoolKey,
   ) => {
     try {
       return await provider.execute(
@@ -158,7 +155,6 @@ export function setupWorld(provider: DojoProvider) {
           tokenForSale,
           sellPrice,
           amountToStake,
-          liquidityPool,
         ),
         'ponzi_land',
       );
@@ -173,7 +169,6 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: models.PoolKey,
   ): DojoCall => {
     return {
       contractName: 'actions',
@@ -183,7 +178,6 @@ export function setupWorld(provider: DojoProvider) {
         tokenForSale,
         sellPrice,
         amountToStake,
-        liquidityPool,
       ],
     };
   };
@@ -194,7 +188,6 @@ export function setupWorld(provider: DojoProvider) {
     tokenForSale: string,
     sellPrice: BigNumberish,
     amountToStake: BigNumberish,
-    liquidityPool: models.PoolKey,
   ) => {
     try {
       return await provider.execute(
@@ -204,7 +197,6 @@ export function setupWorld(provider: DojoProvider) {
           tokenForSale,
           sellPrice,
           amountToStake,
-          liquidityPool,
         ),
         'ponzi_land',
       );

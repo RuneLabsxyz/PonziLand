@@ -4,19 +4,19 @@ import * as models from "./models.gen";
 
 export function setupWorld(provider: DojoProvider) {
 
-	const build_actions_bid_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey): DojoCall => {
+	const build_actions_bid_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
 			entrypoint: "bid",
-			calldata: [landLocation, tokenForSale, sellPrice, amountToStake, liquidityPool],
+			calldata: [landLocation, tokenForSale, sellPrice, amountToStake],
 		};
 	};
 
-	const actions_bid = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey) => {
+	const actions_bid = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_bid_calldata(landLocation, tokenForSale, sellPrice, amountToStake, liquidityPool),
+				build_actions_bid_calldata(landLocation, tokenForSale, sellPrice, amountToStake),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -25,19 +25,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_buy_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey): DojoCall => {
+	const build_actions_buy_calldata = (landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
 			entrypoint: "buy",
-			calldata: [landLocation, tokenForSale, sellPrice, amountToStake, liquidityPool],
+			calldata: [landLocation, tokenForSale, sellPrice, amountToStake],
 		};
 	};
 
-	const actions_buy = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish, liquidityPool: models.PoolKey) => {
+	const actions_buy = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, tokenForSale: string, sellPrice: BigNumberish, amountToStake: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_actions_buy_calldata(landLocation, tokenForSale, sellPrice, amountToStake, liquidityPool),
+				build_actions_buy_calldata(landLocation, tokenForSale, sellPrice, amountToStake),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -321,6 +321,27 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_recreateAuction_calldata = (landLocation: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "recreate_auction",
+			calldata: [landLocation],
+		};
+	};
+
+	const actions_recreateAuction = async (snAccount: Account | AccountInterface, landLocation: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_recreateAuction_calldata(landLocation),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_reimburseStakes_calldata = (): DojoCall => {
 		return {
 			contractName: "actions",
@@ -416,6 +437,27 @@ export function setupWorld(provider: DojoProvider) {
 	const auth_canTakeAction = async (address: string) => {
 		try {
 			return await provider.call("ponzi_land", build_auth_canTakeAction_calldata(address));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_auth_ensureDeploy_calldata = (): DojoCall => {
+		return {
+			contractName: "auth",
+			entrypoint: "ensure_deploy",
+			calldata: [],
+		};
+	};
+
+	const auth_ensureDeploy = async (snAccount: Account | AccountInterface) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_auth_ensureDeploy_calldata(),
+				"ponzi_land",
+			);
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -544,6 +586,82 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_token_registry_ensureTokenAuthorized_calldata = (tokenAddress: string): DojoCall => {
+		return {
+			contractName: "token_registry",
+			entrypoint: "ensure_token_authorized",
+			calldata: [tokenAddress],
+		};
+	};
+
+	const token_registry_ensureTokenAuthorized = async (tokenAddress: string) => {
+		try {
+			return await provider.call("ponzi_land", build_token_registry_ensureTokenAuthorized_calldata(tokenAddress));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_token_registry_isTokenAuthorized_calldata = (tokenAddress: string): DojoCall => {
+		return {
+			contractName: "token_registry",
+			entrypoint: "is_token_authorized",
+			calldata: [tokenAddress],
+		};
+	};
+
+	const token_registry_isTokenAuthorized = async (tokenAddress: string) => {
+		try {
+			return await provider.call("ponzi_land", build_token_registry_isTokenAuthorized_calldata(tokenAddress));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_token_registry_registerToken_calldata = (tokenAddress: string): DojoCall => {
+		return {
+			contractName: "token_registry",
+			entrypoint: "register_token",
+			calldata: [tokenAddress],
+		};
+	};
+
+	const token_registry_registerToken = async (snAccount: Account | AccountInterface, tokenAddress: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_token_registry_registerToken_calldata(tokenAddress),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_token_registry_removeToken_calldata = (tokenAddress: string): DojoCall => {
+		return {
+			contractName: "token_registry",
+			entrypoint: "remove_token",
+			calldata: [tokenAddress],
+		};
+	};
+
+	const token_registry_removeToken = async (snAccount: Account | AccountInterface, tokenAddress: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_token_registry_removeToken_calldata(tokenAddress),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 
 
 	return {
@@ -582,6 +700,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildIncreaseStakeCalldata: build_actions_increaseStake_calldata,
 			levelUp: actions_levelUp,
 			buildLevelUpCalldata: build_actions_levelUp_calldata,
+			recreateAuction: actions_recreateAuction,
+			buildRecreateAuctionCalldata: build_actions_recreateAuction_calldata,
 			reimburseStakes: actions_reimburseStakes,
 			buildReimburseStakesCalldata: build_actions_reimburseStakes_calldata,
 		},
@@ -594,6 +714,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildAddVerifierCalldata: build_auth_addVerifier_calldata,
 			canTakeAction: auth_canTakeAction,
 			buildCanTakeActionCalldata: build_auth_canTakeAction_calldata,
+			ensureDeploy: auth_ensureDeploy,
+			buildEnsureDeployCalldata: build_auth_ensureDeploy_calldata,
 			getOwner: auth_getOwner,
 			buildGetOwnerCalldata: build_auth_getOwner_calldata,
 			lockActions: auth_lockActions,
@@ -606,6 +728,16 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetVerifierCalldata: build_auth_setVerifier_calldata,
 			unlockActions: auth_unlockActions,
 			buildUnlockActionsCalldata: build_auth_unlockActions_calldata,
+		},
+		token_registry: {
+			ensureTokenAuthorized: token_registry_ensureTokenAuthorized,
+			buildEnsureTokenAuthorizedCalldata: build_token_registry_ensureTokenAuthorized_calldata,
+			isTokenAuthorized: token_registry_isTokenAuthorized,
+			buildIsTokenAuthorizedCalldata: build_token_registry_isTokenAuthorized_calldata,
+			registerToken: token_registry_registerToken,
+			buildRegisterTokenCalldata: build_token_registry_registerToken_calldata,
+			removeToken: token_registry_removeToken,
+			buildRemoveTokenCalldata: build_token_registry_removeToken_calldata,
 		},
 	};
 }
