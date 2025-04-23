@@ -37,7 +37,7 @@ trait IActions<T> {
 
     fn reimburse_stakes(ref self: T);
 
-    fn get_land(self: @T, land_location: u16) -> (Land,LandStake);
+    fn get_land(self: @T, land_location: u16) -> (Land, LandStake);
     fn get_pending_taxes_for_land(
         self: @T, land_location: u16, owner: ContractAddress,
     ) -> Array<TokenInfo>;
