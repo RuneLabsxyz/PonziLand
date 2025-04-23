@@ -22,7 +22,7 @@
 
 {#if $selectedLandMeta}
   <Card class="fixed bottom-0 right-0 z-50 w-104 bg-ponzi">
-    {#if isOwner}{:else}
+    {#if !isOwner && $selectedLandMeta.type === 'house'}
       <LandOwnerInfo {land} />
     {/if}
     {#if $selectedLandMeta.type === 'house'}
