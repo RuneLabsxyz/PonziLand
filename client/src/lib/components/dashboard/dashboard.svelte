@@ -26,6 +26,7 @@
   // Find base token details
   const baseTokenDetails = tokens.find((t) => t.address === BASE_TOKEN);
 
+  let tokenRates = $state<{ token: string; rate: number }[]>([]);
   interface HistoricalPrice {
     date: string;
     price: number;
@@ -121,35 +122,14 @@
   async function loadPairData() {
     const pairTokens = tokens.filter((t) => t.address !== BASE_TOKEN);
     try {
-      // Fetch token prices first
-      tokenPrices = await getTokenPrices();
-
       const promises = pairTokens.map(async (token) => {
         const data = await fetchEkuboPairData(BASE_TOKEN, token.address);
 
-        // Find the token price from the API response
-        const tokenPrice = tokenPrices.find(
-          (tp) => tp.address === token.address,
+        let currentRate = calculatePriceFromPool(
+          data.topPools[0],
+          baseTokenDetails.decimals,
+          token.decimals,
         );
-        let currentRate;
-
-        if (tokenPrice) {
-          // Use the ratio from the API if available
-          currentRate = CurrencyAmount.fromUnscaled(
-            tokenPrice.ratio.toString(),
-            baseTokenDetails,
-          );
-        } else {
-          // Fallback to calculating from pool if price not available
-          if (!baseTokenDetails?.decimals) {
-            throw new Error('Base token decimals not found');
-          }
-          currentRate = calculatePriceFromPool(
-            data.topPools[0],
-            baseTokenDetails.decimals,
-            token.decimals,
-          );
-        }
 
         const historicalDate = data.tvlDeltaByTokenByDate.length
           ? data.tvlDeltaByTokenByDate[0].date
@@ -180,7 +160,19 @@
     }
   }
 
-  onMount(() => {
+  async function getPrices() {
+    return getTokenPrices().then((prices) => {
+      tokenPrices = prices;
+      tokenRates = prices.map((price) => ({
+        token: price.address,
+        rate: price.ratio,
+      }));
+      return prices;
+    });
+  }
+
+  onMount(async () => {
+    await getPrices();
     loadPairData();
   });
 </script>
@@ -235,7 +227,9 @@
               <div class="flex justify-between items-center mb-2">
                 <span class="text-gray-300">Current Rate:</span>
                 <span class="text-white font-mono font-bold">
-                  {card.currentRate.toString()}
+                  {tokenRates
+                    .find((rate) => rate.token === card.token)
+                    ?.rate.toFixed(2) ?? 'N/A'}
                 </span>
               </div>
               <div class="flex justify-between items-center text-sm">
