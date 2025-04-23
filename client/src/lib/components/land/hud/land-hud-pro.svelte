@@ -8,6 +8,8 @@
   import data from '$lib/data.json';
   import { GAME_SPEED } from '$lib/const';
   import type { SelectedLand } from '$lib/stores/stores.svelte';
+  import { calculateBurnRate } from '$lib/utils/taxes';
+  import type { LandWithActions } from '$lib/api/land.svelte';
 
   let {
     land,
@@ -24,20 +26,13 @@
   >([]);
   let totalYieldValue: number = $state(0);
 
-  let burnRate: number = $derived(calculateBurnRate()?.toNumber() || 0);
+  let burnRate = $derived(
+    calculateBurnRate(land as LandWithActions, getNumberOfNeighbours() || 0),
+  );
 
-  function calculateBurnRate() {
+  function getNumberOfNeighbours() {
     if (land == undefined) return;
-    let landInfo = land.sellPrice
-      .rawValue()
-      .multipliedBy(0.02)
-      .multipliedBy(GAME_SPEED);
-
-    let burnRate = landInfo.multipliedBy(
-      yieldInfo?.yield_info.filter((y) => y.percent_rate).length ?? 0,
-    );
-
-    return burnRate;
+    return yieldInfo?.yield_info.filter((info) => info.percent_rate).length;
   }
 
   $effect(() => {
@@ -123,13 +118,15 @@
       <div class="text-center pb-2 text-xl low-opacity text-ponzi-number">
         Total Tokens Earned
         <div
-          class="{totalYieldValue - burnRate >= 0
+          class="{totalYieldValue - Number(burnRate.toString()) >= 0
             ? 'text-green-500'
             : 'text-red-500'} text-2xl flex items-center justify-center"
         >
           <span
-            >{totalYieldValue - burnRate >= 0 ? '+ ' : '- '}{Math.abs(
-              totalYieldValue - burnRate,
+            >{totalYieldValue - Number(burnRate.toString()) >= 0
+              ? '+ '
+              : '- '}{Math.abs(
+              totalYieldValue - Number(burnRate.toString()),
             ).toFixed(2)}</span
           >
           <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-5 w-5" />
@@ -148,7 +145,7 @@
         <div class="flex flex-col items-center text-ponzi-number">
           <div class="text-xs">Burning / day :</div>
           <div class="text-red-500 text-sm flex items-center">
-            <span>- {burnRate.toFixed(2)}</span>
+            <span>- {burnRate.toString()}</span>
             <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
           </div>
         </div>
