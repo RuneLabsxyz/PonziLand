@@ -12,7 +12,7 @@
     "SN_MAIN": {
       "policies": {
         "contracts": {
-          "0x61ac47e85a6705902ed2468dabdddddba319558d2074dfd6ded85dcfde7881b": {
+          "0x77eeeef469121d1761bb25efbfce7650f5c7fbf00d63cb1b778b774783b2c6": {
             "name": "PonziLand Systems",
             "description": "Main game contract",
             "methods": [
@@ -53,7 +53,7 @@
               }
             ]
           },
-          "0x6536c8870c6dec8364b552f7e638c8b611ea90c352cc3299b5beed594b044af": {
+          "0x524624cb89898776386140c36093d1bc4dd1654d125f0f677c9cd2b122463ff": {
             "name": "PonziLand Auth System",
             "description": "Contract to allow authorized players to play",
             "methods": [
