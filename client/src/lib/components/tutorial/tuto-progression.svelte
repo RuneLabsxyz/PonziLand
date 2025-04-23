@@ -141,7 +141,7 @@
     <img
       src={`/tutorial/ui/${activeImage}.png`}
       alt={`Tutorial ${activeImage} interface`}
-      class="max-w-[80vw] max-h-[80vh]"
+      class="max-w-[80vw] max-h-[50vh] pt-10"
     />
   {/if}
 </div>
@@ -226,28 +226,11 @@
   <span class="mt-1 text-sm font-bold text-white text-ponzi">Previous</span>
 </button>
 {#if ponziMaster}
-  <div
-    class="fixed inset-y-0 left-[12.5%] z-[998] flex items-center justify-center"
-    transition:fly={{ x: -1000, duration: 1000, delay: 1000 }}
-  >
-    <img
-      src="/tutorial/PONZIMASTER.png"
-      alt="Ponzi master"
-      class="h-auto w-[500px]"
-    />
-  </div>
-  <div
-    class="fixed top-8 pt-28 left-1/2 -translate-x-1/2 z-[998] flex flex-col items-center justify-center gap-4"
-    transition:fly={{ y: 1000, duration: 1000, delay: 2000 }}
-  >
-    <img src="/logo.png" alt="Logo" class="h-auto w-[500px]" />
-    <Button onclick={() => goto('/game')}>Start Game</Button>
-  </div>
-  <div
-    class="fixed inset-y-0 right-[12.5%] z-[998] flex items-center justify-center text-white text-4xl font-bold"
-    transition:fly={{ x: 1000, duration: 1000, delay: 1000 }}
-  >
-    <div class="max-w-[400px] text-center text-ponzi-number leading-relaxed">
+  <div class="fixed inset-0 z-[998] flex justify-evenly items-center">
+    <div
+      class="w-[500px] text-center text-ponzi-number text-white text-4xl font-bold leading-relaxed"
+      transition:fly={{ x: -1000, duration: 1000, delay: 1000 }}
+    >
       HAHAHAHAHA
       <br />
       THis is what the PONZI LAND is about.
@@ -256,6 +239,21 @@
       <br />
       Welcome to the arena
     </div>
+
+    <div
+      class="w-[500px] flex flex-col items-center justify-center gap-4"
+      transition:fly={{ y: 1000, duration: 1000, delay: 2000 }}
+    >
+      <img src="/logo.png" alt="Logo" class="h-auto w-full" />
+      <Button onclick={() => goto('/game')}>Start Game</Button>
+    </div>
+
+    <img
+      src="/tutorial/PONZIMASTER.png"
+      alt="Ponzi master"
+      class="h-auto w-[500px]"
+      transition:fly={{ x: 1000, duration: 1000, delay: 1000 }}
+    />
   </div>
 {/if}
 {#if vignette > 0}

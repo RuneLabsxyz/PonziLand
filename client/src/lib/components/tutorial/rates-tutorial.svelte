@@ -1,10 +1,6 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land.svelte';
-  import { GAME_SPEED } from '$lib/const';
-  import type { Token } from '$lib/interfaces';
   import { Arrow } from '$lib/components/ui/arrows';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { getNeighbourYieldArray } from '$lib/utils/taxes';
   import data from '$lib/data.json';
   import { tileState } from './stores.svelte';
 
