@@ -159,13 +159,13 @@
           ${land?.token?.symbol}
         </div>
       </div>
-      <div class="flex text-xs justify-between w-full pt-2">
+      <div class="flex text-xs justify-between w-full">
         <div class="low-opacity">Stake Amount :</div>
         <div class="text-opacity-30">
           {land?.stakeAmount}
         </div>
       </div>
-      <div class="flex text-xs justify-between w-full pt-2">
+      <div class="flex text-xs justify-between w-full">
         <div class="low-opacity">Sell Price :</div>
         <div class="text-opacity-30">
           {land?.sellPrice}
