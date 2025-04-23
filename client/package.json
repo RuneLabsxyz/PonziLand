@@ -5,10 +5,10 @@
   "scripts": {
     "dev": "vite dev",
     "dev:sepolia": "DOJO_PROFILE=sepolia vite dev",
-    "dev:mainnet": "DOJO_PROFILE=mainnet-test vite dev",
+    "dev:mainnet": "DOJO_PROFILE=mainnet vite dev",
     "build": "vite build",
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
-    "build:mainnet": "DOJO_PROFILE=mainnet-test vite build",
+    "build:mainnet": "DOJO_PROFILE=mainnet vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
