@@ -5,7 +5,8 @@ import data from '$lib/data.json';
 import { Redo } from 'lucide-svelte';
 import { MAP_SIZE } from '$lib/api/tile-store.svelte';
 import { toHexWithPadding } from '$lib/utils';
-import { GAME_SPEED } from '$lib/const';
+import { GAME_SPEED, TAX_RATE } from '$lib/const';
+import type { Land } from '$lib/models.gen';
 export type TaxData = {
   tokenAddress: string;
   tokenSymbol: string;
@@ -210,3 +211,43 @@ export const estimateTax = (sellPrice: number) => {
     ratePerNeighbour: maxRatePerNeighbour,
   };
 };
+
+export function calculateBurnRate(
+  land: LandWithActions,
+  neighborCount: number,
+) {
+  console.log('landlandland', land.sellPrice.toBigint());
+  let discount_for_level = calculateDiscount(land.level);
+  land.token;
+  let maxN = 8;
+
+  if (discount_for_level > 0) {
+    return CurrencyAmount.fromRaw(
+      land.sellPrice
+        .rawValue()
+        .multipliedBy(TAX_RATE)
+        .multipliedBy(discount_for_level)
+        .dividedBy(maxN * 100)
+        .multipliedBy(neighborCount),
+    );
+  } else {
+    return CurrencyAmount.fromRaw(
+      land.sellPrice
+        .rawValue()
+        .multipliedBy(2)
+        .dividedBy(maxN)
+        .multipliedBy(neighborCount),
+    );
+  }
+}
+
+function calculateDiscount(level: number) {
+  if (level == 1) {
+    return 0;
+  } else if (level == 2) {
+    return 15;
+  } else if (level == 3) {
+    return 30;
+  }
+  return 0;
+}

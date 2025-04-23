@@ -5,6 +5,7 @@
   import { Arrow } from '$lib/components/ui/arrows';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
+  import { calculateBurnRate } from '$lib/utils/taxes';
 
   let {
     land,
@@ -26,24 +27,9 @@
     yieldInfo.filter((info) => (info?.percent_rate ?? 0n) !== 0n).length,
   );
 
-  let tokenBurnRatePerNeighbor: CurrencyAmount = $derived(
-    CurrencyAmount.fromRaw(
-      land.sellPrice
-        .rawValue()
-        .multipliedBy(0.02)
-        .dividedBy(8)
-        .multipliedBy(GAME_SPEED),
-    ),
-  );
-
-  let tokenBurnRate = $derived(
-    CurrencyAmount.fromRaw(
-      tokenBurnRatePerNeighbor.rawValue().multipliedBy(numberOfNeighbours),
-    ),
-  );
+  let tokenBurnRate = $derived(calculateBurnRate(land, numberOfNeighbours));
 
   $effect(() => {
-    console.log('land from rates', land);
     if (land) {
       getNeighbourYieldArray(land).then((res) => {
         yieldInfo = res;
