@@ -119,8 +119,8 @@
   {/if}
 
   {#if formattedYields.length > 0}
-    <div class="yield-info flex flex-col items-center text-ponzi-number">
-      <div class="text-center pb-2 text-xl low-opacity">
+    <div class="yield-info flex flex-col items-center">
+      <div class="text-center pb-2 text-xl low-opacity text-ponzi-number">
         Total Tokens Earned
         <div
           class="{totalYieldValue - burnRate >= 0
@@ -137,7 +137,7 @@
       </div>
 
       <div class="flex w-full justify-between low-opacity">
-        <div class="flex flex-col items-center">
+        <div class="flex flex-col items-center text-ponzi-number">
           <div class="text-xs">Earning / day :</div>
           <div class="text-green-500 text-sm flex items-center">
             <span>+ {totalYieldValue.toFixed(2)}</span>
@@ -145,7 +145,7 @@
           </div>
         </div>
 
-        <div class="flex flex-col items-center">
+        <div class="flex flex-col items-center text-ponzi-number">
           <div class="text-xs">Burning / day :</div>
           <div class="text-red-500 text-sm flex items-center">
             <span>- {burnRate.toFixed(2)}</span>
@@ -157,6 +157,18 @@
         <div class="low-opacity">Token :</div>
         <div class="text-opacity-30">
           ${land?.token?.symbol}
+        </div>
+      </div>
+      <div class="flex text-xs justify-between w-full pt-2">
+        <div class="low-opacity">Stake Amount :</div>
+        <div class="text-opacity-30">
+          {land?.stakeAmount}
+        </div>
+      </div>
+      <div class="flex text-xs justify-between w-full pt-2">
+        <div class="low-opacity">Sell Price :</div>
+        <div class="text-opacity-30">
+          {land?.sellPrice}
         </div>
       </div>
     </div>
