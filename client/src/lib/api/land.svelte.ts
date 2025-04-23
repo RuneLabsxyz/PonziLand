@@ -199,7 +199,9 @@ export function useLands(): LandsStore | undefined {
           tokenUsed: getTokenInfo(land.token_used)?.name ?? 'Unknown Token',
           tokenAddress: land.token_used,
           stakeAmount: CurrencyAmount.fromUnscaled(landStake?.amount ?? 0),
-          lastPayTime: landStake?.last_pay_time ? Number(landStake.last_pay_time) : 0,
+          lastPayTime: landStake?.last_pay_time
+            ? Number(landStake.last_pay_time)
+            : 0,
           token,
         };
       })
