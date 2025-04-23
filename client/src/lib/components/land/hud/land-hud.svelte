@@ -10,6 +10,7 @@
   import LandHudOwned from './land-hud-owned.svelte';
   import LandHudPro from './land-hud-pro.svelte';
   import LandNukeTime from '../land-nuke-time.svelte';
+  import LandOwnerInfo from '../land-owner-info.svelte';
   import { proMode } from '$lib/stores/ui.store.svelte';
 
   const address = $derived(account.address);
@@ -21,6 +22,9 @@
 
 {#if $selectedLandMeta}
   <Card class="fixed bottom-0 right-0 z-50 w-104 bg-ponzi">
+    {#if isOwner}{:else}
+      <LandOwnerInfo {land} />
+    {/if}
     {#if $selectedLandMeta.type === 'house'}
       <LandNukeTime {land} />
     {/if}
@@ -29,7 +33,7 @@
     {:else if $selectedLandMeta.type === 'grass'}
       <LandHudEmpty />
     {:else if proMode.isProMode}
-      <LandHudPro {land} />
+      <LandHudPro {land} {isOwner} />
     {:else if isOwner}
       <LandHudOwned />
     {:else}

@@ -13,8 +13,10 @@
 
   let {
     land,
+    isOwner,
   }: {
     land: SelectedLand;
+    isOwner: boolean;
   } = $props();
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
@@ -96,19 +98,20 @@
 </script>
 
 <div class="flex items-center justify-center gap-4 p-4 relative">
-  <!-- Absolute-positioned crown -->
-  <div class="absolute -top-8 -left-7">
-    <div class="flex justify-center">
-      <div class="h-10 w-10">
-        <img
-          src="/ui/icons/Icon_Crown.png"
-          alt="owner"
-          style="image-rendering: pixelated; transform: rotate(-30deg);"
-        />
+  {#if isOwner}
+    <!-- Absolute-positioned crown -->
+    <div class="absolute -top-8 -left-7">
+      <div class="flex justify-center">
+        <div class="h-10 w-10">
+          <img
+            src="/ui/icons/Icon_Crown.png"
+            alt="owner"
+            style="image-rendering: pixelated; transform: rotate(-30deg);"
+          />
+        </div>
       </div>
     </div>
-  </div>
-
+  {/if}
   {#if $selectedLandMeta}
     <LandOverview land={$selectedLandMeta} />
   {/if}
