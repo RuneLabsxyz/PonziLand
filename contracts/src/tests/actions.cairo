@@ -255,7 +255,7 @@ fn validate_staking_state(
 pub fn clear_events(address: ContractAddress) {
     loop {
         match starknet::testing::pop_log_raw(address) {
-            core::option::Option::Some(event) => {},
+            core::option::Option::Some(_) => {},
             core::option::Option::None => { break; },
         };
     }
@@ -1214,8 +1214,7 @@ fn test_time_to_nuke() {
     );
     set_block_number(234);
     set_block_timestamp(10000);
-    let block_timestamp = get_block_timestamp();
-    let neighbors_location = create_land_with_neighbors(
+    create_land_with_neighbors(
         store,
         actions_system,
         2080,
@@ -1232,13 +1231,9 @@ fn test_time_to_nuke() {
 
     let block_timestamp = get_block_timestamp();
 
-    let land: Land = store.land(2080);
     let land_stake = store.land_stake(2080);
     let time_to_nuke = actions_system.get_time_to_nuke(2080);
-    let tax_rate = get_tax_rate_per_neighbor(land);
     set_block_timestamp(block_timestamp + time_to_nuke / 4);
-    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080) * 4;
-    let remaining_stake = land_stake.amount - unclaimed_taxes;
     set_block_timestamp(10000 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080);
@@ -1267,7 +1262,7 @@ fn test_circle_expansion() {
         );
     // Deploy ERC20 tokens for neighbors
 
-    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+    let (_, _, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
