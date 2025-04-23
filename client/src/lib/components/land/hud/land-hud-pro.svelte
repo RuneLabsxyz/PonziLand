@@ -138,7 +138,7 @@
 
       <div class="flex w-full justify-between low-opacity">
         <div class="flex flex-col items-center text-ponzi-number">
-          <div class="text-xs">Earning / day :</div>
+          <div class="text-xs">Earning / hour :</div>
           <div class="text-green-500 text-sm flex items-center">
             <span>+ {totalYieldValue.toFixed(2)}</span>
             <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
@@ -146,7 +146,7 @@
         </div>
 
         <div class="flex flex-col items-center text-ponzi-number">
-          <div class="text-xs">Burning / day :</div>
+          <div class="text-xs">Burning / hour :</div>
           <div class="text-red-500 text-sm flex items-center">
             <span>- {burnRate.toString()}</span>
             <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
