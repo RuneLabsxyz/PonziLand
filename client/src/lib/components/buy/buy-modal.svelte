@@ -16,7 +16,6 @@
   import BuySellForm from './buy-sell-form.svelte';
 
   import { uiStore } from '$lib/stores/ui.store.svelte';
-  import { getLiquidityPoolFromToken } from '$lib/utils/liquidityPools';
   import { onMount } from 'svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { nukeStore, markAsNuking } from '$lib/stores/nuke.svelte';
@@ -57,7 +56,6 @@
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: sellAmount,
       amountToStake: stakeAmount,
-      liquidityPool: getLiquidityPoolFromToken(selectedToken!),
       tokenAddress: land?.tokenAddress ?? '',
       currentPrice: land?.sellPrice ?? null,
     };
