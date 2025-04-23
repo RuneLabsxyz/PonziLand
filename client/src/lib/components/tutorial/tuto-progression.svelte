@@ -233,7 +233,7 @@
     >
       HAHAHAHAHA
       <br />
-      THis is what the PONZI LAND is about.
+      This is what the PONZI LAND is about.
       <br />
       Fight or Die.
       <br />
