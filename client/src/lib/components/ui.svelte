@@ -8,6 +8,7 @@
   import WalletLookup from './wallet/wallet-lookup.svelte';
   import WarningBanner from './ui/warning-banner.svelte';
   import TxNotificationZone from './ui/tx-notification-zone.svelte';
+  import InfoModal from './ui/info-modal.svelte';
 </script>
 
 <div class="z-50 absolute top-0 left-0">
@@ -25,6 +26,8 @@
   <WarningBanner />
 
   <TxNotificationZone />
+
+  <InfoModal isDisplay={uiStore.modalInfo} />
 
   <!-- Modals -->
   {#if uiStore.showModal}
