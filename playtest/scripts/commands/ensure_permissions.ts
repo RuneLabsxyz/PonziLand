@@ -10,6 +10,7 @@ import {
 
 export async function ensurePermissions(config: Configuration, args: string[]) {
   console.log("Setting up wallet...");
+
   await connect(config);
 
   // Get the tokens
@@ -21,12 +22,17 @@ export async function ensurePermissions(config: Configuration, args: string[]) {
   const granterAddress = data.tokenGranterAddress;
 
   console.log("=== Ensuring that tokens are mintable");
+  const skipTokens = args.includes("--skip-tokens");
+
+  console.log("Skip tokens:", skipTokens);
+
   const multicall = await Promise.all(
     data.tokens.map(async (token: Token) => {
-      console.log(`Ensuring ${token.name} is mintable... (${token.address})`);
       return await setAccess(token.address, granterAddress, "Minter");
     }),
   );
+
+  multicall.push(await setAccess(granterAddress, socialinkAddress, "Minter"));
 
   const calls = [
     {
@@ -34,8 +40,7 @@ export async function ensurePermissions(config: Configuration, args: string[]) {
       entrypoint: "add_verifier",
       calldata: [socialinkAddress],
     },
-    ...multicall,
-    await setAccess(granterAddress, socialinkAddress, "Minter"),
+    ...(skipTokens ? [] : multicall),
   ];
 
   await doTransaction(calls);

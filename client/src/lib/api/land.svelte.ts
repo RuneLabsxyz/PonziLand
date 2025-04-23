@@ -28,6 +28,8 @@ export type TransactionResult = Promise<
 
 export type Level = 1 | 2 | 3;
 
+export type LandWithStake = Land & LandStake;
+
 export type LandSetup = {
   tokenForSaleAddress: string;
   salePrice: CurrencyAmount;
@@ -51,10 +53,11 @@ export type LandsStore = Readable<LandWithActions[]> & {
   ): TransactionResult;
 };
 
-export type LandWithMeta = Omit<Land, 'location' | 'level'> & {
+export type LandWithMeta = Omit<Land | LandWithStake, 'location' | 'level'> & {
   location: string;
   // Type conversions
   stakeAmount: CurrencyAmount;
+  lastPayTime: number;
   sellPrice: CurrencyAmount;
 
   type: 'auction' | 'house' | 'grass';
@@ -152,21 +155,25 @@ export function useLands(): LandsStore | undefined {
   })();
 
   const landEntityStore = derived([landStore], ([s]) => {
-    const lands = s
-      .getEntitiesByModel('ponzi_land', 'Land')
-      .map((e) => e.models['ponzi_land']['Land'] as Land);
-
     const landsStakes = s
       .getEntitiesByModel('ponzi_land', 'LandStake')
       .map((e) => e.models['ponzi_land']['LandStake'] as LandStake);
 
-    const landStakeMap = new Map<string, LandStake>();
-    for (const landStake of landsStakes) {
-      landStakeMap.set(
-        toHexWithPadding(ensureNumber(landStake.location)),
-        landStake,
-      );
-    }
+    const lands: (LandWithStake | Land)[] = s
+      .getEntitiesByModel('ponzi_land', 'Land')
+      .map((e) => {
+        const land = e.models['ponzi_land']['Land'] as Land;
+        const locationHex = toHexWithPadding(ensureNumber(land.location));
+        const landStake = landsStakes.find(
+          (stake) => stake.location === locationHex,
+        );
+        return {
+          ...land,
+          ...(landStake ?? {}),
+        };
+      });
+
+    //
 
     const landWithActions: LandWithActions[] = lands
       .map((land) => {
@@ -175,13 +182,11 @@ export function useLands(): LandsStore | undefined {
         // ------------------------
         //
 
-        // Get the land stake
-        const locationHex = toHexWithPadding(ensureNumber(land.location));
-        const landStake = landStakeMap.get(locationHex);
-
         const token = data.availableTokens.find(
           (token) => token.address === land.token_used,
         );
+
+        const landStake: LandWithStake | null = 'amount' in land ? land : null;
 
         return {
           ...land,
