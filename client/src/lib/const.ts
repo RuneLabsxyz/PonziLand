@@ -15,3 +15,6 @@ export const TILE_SIZE = 32;
 export const NAME_SPACE = 'ponzi_land';
 export const BASE_TOKEN =
   '0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58';
+
+export const AI_AGENT_ADDRESS =
+  '0x01b8d06ce689f96806e034091756aa7bc8fddf17e5d3b2021e8f83b9f71f4b26';
