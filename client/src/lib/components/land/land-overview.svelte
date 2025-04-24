@@ -5,6 +5,7 @@
   import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
   import { onMount } from 'svelte';
   import { Progress } from '../ui/progress';
+  import Button from '../ui/button/button.svelte';
 
   const { land, size = 'sm' }: { land: LandWithActions; size?: 'sm' | 'lg' } =
     $props();
@@ -75,6 +76,15 @@
           class={cn('w-full p-0 h-2')}
           color={levelUpInfo.canLevelUp ? 'green' : undefined}
         ></Progress>
+      </div>
+      <div class="flex h-8 pt-2">
+        {#if levelUpInfo?.canLevelUp}
+          <Button
+            onclick={async () => {
+              console.log('Result of levelup: ', await land?.levelUp());
+            }}>Level Up</Button
+          >
+        {/if}
       </div>
     </div>
   {/if}
