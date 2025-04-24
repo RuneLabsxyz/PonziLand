@@ -5,6 +5,7 @@
   import type { Token } from '$lib/interfaces/token';
   import data from '$lib/data.json';
   import { toHexWithPadding } from '$lib/utils';
+  import * as Avatar from '$lib/components/ui/avatar/index.js';
 
   let {
     yieldInfo,
@@ -65,9 +66,10 @@
     >
   </div>
   <div class="flex justify-between items-center text-red-400">
-    <span class="low-opacity">Burning / hour</span><span
-      >{burnRate.toString()} {land?.token?.symbol}</span
-    >
+    <span class="low-opacity">Burning / hour</span>
+    <span class="flex items-center gap-2">
+      {burnRate.toString()}
+    </span>
   </div>
 
   {#if yieldData}
@@ -75,8 +77,20 @@
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">
-          <span class="low-opacity">{_yield.amount.toString()}</span>
-          <span>{_yield.token.symbol}</span>
+          <span>
+            <Avatar.Root class="h-6 w-6">
+              <Avatar.Image
+                src="/tokens/{_yield.token.symbol}/icon.png"
+                alt={_yield.token.symbol}
+              />
+            </Avatar.Root>
+          </span>
+          <span class="low-opacity">
+            {_yield.amount.toString()}
+            <span class="text-ponzi-number text-white"
+              >{_yield.token.symbol}</span
+            >
+          </span>
         </div>
       {/each}
     </div>
