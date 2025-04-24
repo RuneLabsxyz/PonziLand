@@ -5,8 +5,10 @@
 
   let {
     land,
+    isOwner,
   }: {
     land?: SelectedLand;
+    isOwner: boolean;
   } = $props();
 
   let isAiAgent = $state(false);
@@ -21,7 +23,15 @@
 </script>
 
 <div class="absolute left-0 -translate-y-12">
-  {#if isAiAgent}
+  {#if isOwner}
+    <div class="-translate-x-6 translate-y-2">
+      <img
+        src="/ui/icons/Icon_Crown.png"
+        alt="owner"
+        style="transform: rotate(-30deg); width: 50px"
+      />
+    </div>
+  {:else if isAiAgent}
     <div class="-translate-x-6 translate-y-2">
       <img src="/extra/ai.png" alt="" />
     </div>

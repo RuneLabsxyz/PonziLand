@@ -5,8 +5,9 @@
   import { usePlayerLands } from '$lib/stores/stores.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { groupLands } from '$lib/utils';
-  import LandInfoCard from '../land/land-info-card.svelte';
+  import LandHudInfo from '../land/hud/land-hud-info.svelte';
   import { ScrollArea } from '../ui/scroll-area';
+  import Card from '../ui/card/card.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -42,7 +43,8 @@
         </div>
         <div class="flex flex-col gap-2">
           {#each lands as land}
-            <LandInfoCard {land} />
+            <LandHudInfo {land} isOwner={false} />
+            <hr class="border-t border-gray-300 w-full my-2" />
           {/each}
         </div>
         <div class="flex justify-end mt-2">

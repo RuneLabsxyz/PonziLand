@@ -6,7 +6,7 @@
   import ThreeDots from '../loading/three-dots.svelte';
   import LandOverview from './land-overview.svelte';
   import LandYieldInfo from './land-yield-info.svelte';
-  import LandHudPro from './hud/land-hud-pro.svelte';
+  import LandHudInfo from './hud/land-hud-info.svelte';
   import { proMode } from '$lib/stores/ui.store.svelte';
 
   let { land }: { land: LandWithActions } = $props();
@@ -43,70 +43,40 @@
   >
     <LandOverview {land} />
   </button>
-  {#if land.type == 'house'}
-    {#if proMode.isProMode}
-      <LandHudPro {land} isOwner={false} isSidebar={true} />
-    {:else}
-      <div class="w-full flex flex-col mt-3">
-        {#if land.tokenUsed}
-          <div class="flex justify-between">
-            <p class="opacity-50">Token</p>
-            <p>
-              {land.token?.name}
-            </p>
-          </div>
-        {/if}
-        <div class="flex justify-between">
-          <p class="opacity-50">Sell price</p>
-          <p>
-            {land.sellPrice}
-          </p>
-        </div>
-        <div class="flex justify-between">
-          <p class="opacity-50">Stake Remaining</p>
-          <p>
-            {land.stakeAmount}
-          </p>
-        </div>
-        <LandYieldInfo {land} bind:expanded />
-      </div>
-    {/if}
-  {/if}
-  {#if land.type == 'auction'}
-    <div class="w-full flex flex-col">
-      {#if land.tokenUsed}
-        <div class="flex justify-between">
-          <p class="opacity-50">Token</p>
-          <p>
-            {land.token?.name}
-          </p>
-        </div>
-      {/if}
+
+  <div class="w-full flex flex-col">
+    {#if land.tokenUsed}
       <div class="flex justify-between">
-        <p class="opacity-50">Start price</p>
-        <p class="break-all">
-          {land.sellPrice}
+        <p class="opacity-50">Token</p>
+        <p>
+          {land.token?.name}
         </p>
       </div>
-
-      <div class="flex justify-between">
-        <p class="opacity-50">Current</p>
-        {#await land.getCurrentAuctionPrice()}
-          <p class="break-all">
-            loading price <ThreeDots />
-          </p>
-        {:then currentprice}
-          <p class="break-all text-ponzi-number text-[#f2b545]">
-            {#if currentprice?.rawValue().toNumber() == 0}
-              free
-            {:else}
-              {currentprice?.rawValue().toNumber().toLocaleString()}
-            {/if}
-          </p>
-        {/await}
-      </div>
+    {/if}
+    <div class="flex justify-between">
+      <p class="opacity-50">Start price</p>
+      <p class="break-all">
+        {land.sellPrice}
+      </p>
     </div>
-  {/if}
+
+    <div class="flex justify-between">
+      <p class="opacity-50">Current</p>
+      {#await land.getCurrentAuctionPrice()}
+        <p class="break-all">
+          loading price <ThreeDots />
+        </p>
+      {:then currentprice}
+        <p class="break-all text-ponzi-number text-[#f2b545]">
+          {#if currentprice?.rawValue().toNumber() == 0}
+            free
+          {:else}
+            {currentprice?.rawValue().toNumber().toLocaleString()}
+          {/if}
+        </p>
+      {/await}
+    </div>
+  </div>
 </div>
 
 <style>
