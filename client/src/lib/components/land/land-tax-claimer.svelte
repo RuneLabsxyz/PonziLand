@@ -91,7 +91,7 @@
         <img
           src="/ui/icons/Icon_Coin2.png"
           alt="coins"
-          class="h-3 w-3 -mt-1 coin unselectable"
+          class="h-[8px] w-[8px] -mt-1 coin unselectable"
         />
       </button>
     {/if}
