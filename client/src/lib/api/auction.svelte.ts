@@ -1,50 +1,42 @@
 import { useDojo } from '$lib/contexts/dojo';
-import type { SchemaType } from '$lib/models.gen';
+import { ModelsMapping, type SchemaType } from '$lib/models.gen';
 import { toHexWithPadding } from '$lib/utils';
-import { QueryBuilder } from '@dojoengine/sdk';
+import {
+  KeysClause,
+  MemberClause,
+  QueryBuilder,
+  ToriiQueryBuilder,
+} from '@dojoengine/sdk';
 
 export const getAuctionDataFromLocation = async (location: string) => {
   const { client: sdk } = useDojo();
 
-  const query = new QueryBuilder<SchemaType>()
-    .namespace('ponzi_land', (ns) => {
-      ns.entity('Auction', (a) => a.eq('land_location', location.toString()));
-    })
-    .build();
+  const query = new ToriiQueryBuilder()
+    .withClause(
+      MemberClause(
+        ModelsMapping.Auction,
+        'land_location',
+        'Eq',
+        location.toString(),
+      ).build(),
+    )
+    .addEntityModel(ModelsMapping.Auction);
+
   // also query initial
-  const auction = await sdk.getEntities({
+  return await sdk.getEntities({
     query,
-    callback: (response) => {
-      if (response.error || response.data == null) {
-        console.log('Got an error!', response.error);
-      } else {
-        console.log('Data Auction for selected land', response.data);
-        return response.data;
-      }
-    },
   });
-  return auction;
 };
 
 export const getAuctions = async () => {
   const { client: sdk } = useDojo();
 
-  const query = new QueryBuilder<SchemaType>()
-    .namespace('ponzi_land', (ns) => {
-      ns.entity('Auction', (a) => a.build());
-    })
-    .build();
+  const query = new ToriiQueryBuilder()
+    .addEntityModel(ModelsMapping.Auction)
+    .includeHashedKeys();
 
   const auctions = await sdk.getEntities({
     query,
-    callback: (response) => {
-      if (response.error || response.data == null) {
-        console.log('Got an error!', response.error);
-      } else {
-        console.log('Data of all the auctions', response.data);
-        return response.data;
-      }
-    },
   });
   console.log('Auctions:', auctions);
 

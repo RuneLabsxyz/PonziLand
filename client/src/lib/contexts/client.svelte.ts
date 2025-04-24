@@ -16,23 +16,19 @@ async function _setupDojo(config: DojoConfig) {
     return undefined;
   }
 
-  const initialized = await init(
-    {
-      client: {
-        rpcUrl: config.rpcUrl,
-        toriiUrl: config.toriiUrl,
-        relayUrl: config.relayUrl,
-        worldAddress: config.manifest.world.address,
-      },
-      domain: {
-        name: 'ponzi_land',
-        version: '1.0',
-        chainId: 'KATANA',
-        revision: '1',
-      },
+  const initialized = await init<Schema>({
+    client: {
+      toriiUrl: config.toriiUrl,
+      relayUrl: config.relayUrl,
+      worldAddress: config.manifest.world.address,
     },
-    schema,
-  );
+    domain: {
+      name: 'ponzi_land',
+      version: '1.0',
+      chainId: 'KATANA',
+      revision: '1',
+    },
+  });
 
   const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
   return {

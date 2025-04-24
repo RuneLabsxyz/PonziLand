@@ -1,23 +1,38 @@
 import { useDojo } from '$lib/contexts/dojo';
 import data from '$lib/data.json';
 import type { LandYieldInfo, Token } from '$lib/interfaces';
-import type {
-  Land,
-  LandStake,
-  SchemaType as PonziLandSchemaType,
+import {
+  type Land,
+  type LandStake,
+  type SchemaType as PonziLandSchemaType,
+  ModelsMapping,
 } from '$lib/models.gen';
 import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { fromDojoLevel } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
-import { QueryBuilder, type SubscribeParams } from '@dojoengine/sdk';
+import {
+  QueryBuilder,
+  ToriiQueryBuilder,
+  type StandardizedQueryResult,
+  type SubscribeParams,
+} from '@dojoengine/sdk';
 import { toNumber } from 'ethers';
 import type { BigNumberish } from 'starknet';
-import { derived, get, type Readable } from 'svelte/store';
+import {
+  derived,
+  get,
+  writable,
+  type Readable,
+  readonly,
+  type Writable,
+  readable,
+} from 'svelte/store';
 import { Neighbors } from './neighbors';
 import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { poseidonHash } from '@dojoengine/torii-client';
+import { updated } from '$app/stores';
 
 export type TransactionResult = Promise<
   | {
@@ -44,13 +59,6 @@ export type LandsStore = Readable<LandWithActions[]> & {
   /// Buy an empty / nuked land.
   /// NOTE: This function may be removed later.
   bidLand(location: BigNumberish, setup: LandSetup): TransactionResult;
-
-  auctionLand(
-    location: BigNumberish,
-    startPrice: CurrencyAmount,
-    floorPrice: CurrencyAmount,
-    decayRate: BigNumberish,
-  ): TransactionResult;
 };
 
 export type LandWithMeta = Omit<Land | LandWithStake, 'location' | 'level'> & {
@@ -95,7 +103,6 @@ export type LandWithActions = LandWithMeta & {
   increaseStake(amount: CurrencyAmount): TransactionResult;
   increasePrice(amount: CurrencyAmount): TransactionResult;
   claim(): TransactionResult;
-  nuke(): TransactionResult;
   getPendingTaxes(): Promise<PendingTax[] | undefined>;
   getNextClaim(): Promise<NextClaimInformation[] | undefined>;
   getNukable(): Promise<number | undefined>;
@@ -124,33 +131,37 @@ export function useLands(): LandsStore | undefined {
   };
 
   (async () => {
-    const query = new QueryBuilder<PonziLandSchemaType>()
+    /*const query = new QueryBuilder<PonziLandSchemaType>()
       .namespace('ponzi_land', (ns) => {
         ns.entity('Land', (e) => e.build());
         ns.entity('LandStake', (e) => e.build());
       })
-      .build();
+      .build();*/
+    const query = new ToriiQueryBuilder()
+      .addEntityModel(ModelsMapping.Land)
+      .addEntityModel(ModelsMapping.LandStake)
+      .includeHashedKeys();
+
     // also query initial
-    await sdk.getEntities({
+    let response = await sdk.getEntities({
       query,
-      callback: (response) => {
-        if (response.error || response.data == null) {
-          console.log('Got an error!', response.error);
-        } else {
-          get(landStore).setEntities(response.data.flat(1));
-        }
-      },
     });
+
+    get(landStore).setEntities(response);
+
+    // Subscribe to updates
     await sdk.subscribeEntityQuery({
       query,
       callback: (response) => {
         if (response.error || response.data == null) {
           console.log('Got an error!', response.error);
         } else {
-          get(landStore).setEntities(response.data.flat(1));
+          get(landStore).mergeEntities(response.data);
         }
       },
-      options: {},
+      options: {
+        logging: true,
+      },
     } as SubscribeParams<PonziLandSchemaType>);
   })();
 
@@ -256,12 +267,6 @@ export function useLands(): LandsStore | undefined {
           );
           return res;
         },
-        nuke() {
-          return sdk.client.actions.nuke(
-            account()?.getAccount()!,
-            land.location,
-          );
-        },
         async getPendingTaxes() {
           const result = (await sdk.client.actions.getPendingTaxesForLand(
             land.location,
@@ -352,8 +357,28 @@ export function useLands(): LandsStore | undefined {
     return landWithActions;
   });
 
+  let hasUpdated = false;
+
+  const landEntityDebouncedStore = readable<LandWithActions[]>([], (set) => {
+    // Subscribe to land store updates
+    let lastState: LandWithActions[] | null = null;
+    let subscription = landEntityStore.subscribe((land) => {
+      lastState = land;
+    });
+
+    const id = setInterval(() => {
+      if (lastState != null) {
+        console.log('Updating state!');
+        set(lastState);
+        lastState = null;
+      }
+    }, 250);
+
+    return () => clearInterval(id);
+  });
+
   return {
-    ...landEntityStore,
+    ...landEntityDebouncedStore,
     async buyLand(location, setup) {
       let res = await sdk.client.actions.buy(
         account()?.getWalletAccount()!,
@@ -387,16 +412,6 @@ export function useLands(): LandsStore | undefined {
         'buy land',
       );
       return res;
-    },
-    auctionLand(location, startPrice, floorPrice, decayRate) {
-      return sdk.client.actions.auction(
-        account()?.getWalletAccount()!,
-        location,
-        startPrice.toBignumberish(),
-        floorPrice.toBignumberish(),
-        decayRate,
-        false,
-      );
     },
   };
 }

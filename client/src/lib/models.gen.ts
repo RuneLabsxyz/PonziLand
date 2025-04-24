@@ -7,8 +7,6 @@ import {
   type BigNumberish,
 } from 'starknet';
 
-type WithFieldOrder<T> = T & { fieldOrder: string[] };
-
 // Type definition for `ponzi_land::models::auction::Auction` struct
 export interface Auction {
   land_location: BigNumberish;
@@ -40,15 +38,6 @@ export interface Land {
   level: LevelEnum;
 }
 
-// Type definition for `ponzi_land::models::land::LandValue` struct
-export interface LandValue {
-  block_date_bought: BigNumberish;
-  owner: string;
-  sell_price: BigNumberish;
-  token_used: string;
-  level: LevelEnum;
-}
-
 // Type definition for `ponzi_land::models::land::LandStake` struct
 export interface LandStake {
   location: BigNumberish;
@@ -60,6 +49,15 @@ export interface LandStake {
 export interface LandStakeValue {
   last_pay_time: BigNumberish;
   amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::land::LandValue` struct
+export interface LandValue {
+  block_date_bought: BigNumberish;
+  owner: string;
+  sell_price: BigNumberish;
+  token_used: string;
+  level: LevelEnum;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
@@ -149,49 +147,37 @@ export interface VerifierUpdatedEventValue {
 }
 
 // Type definition for `ponzi_land::models::land::Level` enum
-export type Level = {
-  Zero: string;
-  First: string;
-  Second: string;
-};
+export const level = ['Zero', 'First', 'Second'] as const;
+export type Level = { [key in (typeof level)[number]]: string };
 export type LevelEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
   ponzi_land: {
-    Auction: WithFieldOrder<Auction>;
-    AuctionValue: WithFieldOrder<AuctionValue>;
-    Land: WithFieldOrder<Land>;
-    LandValue: WithFieldOrder<LandValue>;
-    LandStake: WithFieldOrder<LandStake>;
-    LandStakeValue: WithFieldOrder<LandStakeValue>;
-    AuctionFinishedEvent: WithFieldOrder<AuctionFinishedEvent>;
-    AuctionFinishedEventValue: WithFieldOrder<AuctionFinishedEventValue>;
-    LandBoughtEvent: WithFieldOrder<LandBoughtEvent>;
-    LandBoughtEventValue: WithFieldOrder<LandBoughtEventValue>;
-    LandNukedEvent: WithFieldOrder<LandNukedEvent>;
-    LandNukedEventValue: WithFieldOrder<LandNukedEventValue>;
-    NewAuctionEvent: WithFieldOrder<NewAuctionEvent>;
-    NewAuctionEventValue: WithFieldOrder<NewAuctionEventValue>;
-    AddressAuthorizedEvent: WithFieldOrder<AddressAuthorizedEvent>;
-    AddressAuthorizedEventValue: WithFieldOrder<AddressAuthorizedEventValue>;
-    AddressRemovedEvent: WithFieldOrder<AddressRemovedEvent>;
-    AddressRemovedEventValue: WithFieldOrder<AddressRemovedEventValue>;
-    VerifierUpdatedEvent: WithFieldOrder<VerifierUpdatedEvent>;
-    VerifierUpdatedEventValue: WithFieldOrder<VerifierUpdatedEventValue>;
+    Auction: Auction;
+    AuctionValue: AuctionValue;
+    Land: Land;
+    LandStake: LandStake;
+    LandStakeValue: LandStakeValue;
+    LandValue: LandValue;
+    AuctionFinishedEvent: AuctionFinishedEvent;
+    AuctionFinishedEventValue: AuctionFinishedEventValue;
+    LandBoughtEvent: LandBoughtEvent;
+    LandBoughtEventValue: LandBoughtEventValue;
+    LandNukedEvent: LandNukedEvent;
+    LandNukedEventValue: LandNukedEventValue;
+    NewAuctionEvent: NewAuctionEvent;
+    NewAuctionEventValue: NewAuctionEventValue;
+    AddressAuthorizedEvent: AddressAuthorizedEvent;
+    AddressAuthorizedEventValue: AddressAuthorizedEventValue;
+    AddressRemovedEvent: AddressRemovedEvent;
+    AddressRemovedEventValue: AddressRemovedEventValue;
+    VerifierUpdatedEvent: VerifierUpdatedEvent;
+    VerifierUpdatedEventValue: VerifierUpdatedEventValue;
   };
 }
 export const schema: SchemaType = {
   ponzi_land: {
     Auction: {
-      fieldOrder: [
-        'land_location',
-        'start_time',
-        'start_price',
-        'floor_price',
-        'is_finished',
-        'decay_rate',
-        'sold_at_price',
-      ],
       land_location: 0,
       start_time: 0,
       start_price: 0,
@@ -201,14 +187,6 @@ export const schema: SchemaType = {
       sold_at_price: new CairoOption(CairoOptionVariant.None),
     },
     AuctionValue: {
-      fieldOrder: [
-        'start_time',
-        'start_price',
-        'floor_price',
-        'is_finished',
-        'decay_rate',
-        'sold_at_price',
-      ],
       start_time: 0,
       start_price: 0,
       floor_price: 0,
@@ -217,36 +195,7 @@ export const schema: SchemaType = {
       sold_at_price: new CairoOption(CairoOptionVariant.None),
     },
     Land: {
-      fieldOrder: [
-        'location',
-        'block_date_bought',
-        'owner',
-        'sell_price',
-        'token_used',
-        'level',
-      ],
       location: 0,
-      block_date_bought: 0,
-      owner: '',
-      sell_price: 0,
-      token_used: '',
-      level: new CairoCustomEnum({
-        Zero: '',
-        First: undefined,
-        Second: undefined,
-      }),
-    },
-    LandValue: {
-      fieldOrder: [
-        'block_date_bought',
-        'owner',
-        'sell_price',
-        'token_used',
-        'pool_key',
-        'last_pay_time',
-        'stake_amount',
-        'level',
-      ],
       block_date_bought: 0,
       owner: '',
       sell_price: 0,
@@ -258,35 +207,35 @@ export const schema: SchemaType = {
       }),
     },
     LandStake: {
-      fieldOrder: ['location', 'last_pay_time', 'amount'],
       location: 0,
       last_pay_time: 0,
       amount: 0,
     },
     LandStakeValue: {
-      fieldOrder: ['last_pay_time', 'amount'],
       last_pay_time: 0,
       amount: 0,
     },
+    LandValue: {
+      block_date_bought: 0,
+      owner: '',
+      sell_price: 0,
+      token_used: '',
+      level: new CairoCustomEnum({
+        Zero: '',
+        First: undefined,
+        Second: undefined,
+      }),
+    },
     AuctionFinishedEvent: {
-      fieldOrder: ['land_location', 'buyer', 'final_price'],
       land_location: 0,
       buyer: '',
       final_price: 0,
     },
     AuctionFinishedEventValue: {
-      fieldOrder: ['buyer', 'final_price'],
       buyer: '',
       final_price: 0,
     },
     LandBoughtEvent: {
-      fieldOrder: [
-        'buyer',
-        'land_location',
-        'sold_price',
-        'seller',
-        'token_used',
-      ],
       buyer: '',
       land_location: 0,
       sold_price: 0,
@@ -294,56 +243,45 @@ export const schema: SchemaType = {
       token_used: '',
     },
     LandBoughtEventValue: {
-      fieldOrder: ['sold_price', 'seller', 'token_used'],
       sold_price: 0,
       seller: '',
       token_used: '',
     },
     LandNukedEvent: {
-      fieldOrder: ['owner_nuked', 'land_location'],
       owner_nuked: '',
       land_location: 0,
     },
     LandNukedEventValue: {
-      fieldOrder: ['land_location'],
       land_location: 0,
     },
     NewAuctionEvent: {
-      fieldOrder: ['land_location', 'start_price', 'floor_price'],
       land_location: 0,
       start_price: 0,
       floor_price: 0,
     },
     NewAuctionEventValue: {
-      fieldOrder: ['start_price', 'floor_price'],
       start_price: 0,
       floor_price: 0,
     },
     AddressAuthorizedEvent: {
-      fieldOrder: ['address', 'authorized_at'],
       address: '',
       authorized_at: 0,
     },
     AddressAuthorizedEventValue: {
-      fieldOrder: ['authorized_at'],
       authorized_at: 0,
     },
     AddressRemovedEvent: {
-      fieldOrder: ['address', 'removed_at'],
       address: '',
       removed_at: 0,
     },
     AddressRemovedEventValue: {
-      fieldOrder: ['removed_at'],
       removed_at: 0,
     },
     VerifierUpdatedEvent: {
-      fieldOrder: ['new_verifier', 'old_verifier'],
       new_verifier: 0,
       old_verifier: 0,
     },
     VerifierUpdatedEventValue: {
-      fieldOrder: ['old_verifier'],
       old_verifier: 0,
     },
   },
@@ -352,9 +290,9 @@ export enum ModelsMapping {
   Auction = 'ponzi_land-Auction',
   AuctionValue = 'ponzi_land-AuctionValue',
   Land = 'ponzi_land-Land',
-  LandValue = 'ponzi_land-LandValue',
   LandStake = 'ponzi_land-LandStake',
   LandStakeValue = 'ponzi_land-LandStakeValue',
+  LandValue = 'ponzi_land-LandValue',
   Level = 'ponzi_land-Level',
   AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
   AuctionFinishedEventValue = 'ponzi_land-AuctionFinishedEventValue',
@@ -364,8 +302,6 @@ export enum ModelsMapping {
   LandNukedEventValue = 'ponzi_land-LandNukedEventValue',
   NewAuctionEvent = 'ponzi_land-NewAuctionEvent',
   NewAuctionEventValue = 'ponzi_land-NewAuctionEventValue',
-  RemainingStakeEvent = 'ponzi_land-RemainingStakeEvent',
-  RemainingStakeEventValue = 'ponzi_land-RemainingStakeEventValue',
   AddressAuthorizedEvent = 'ponzi_land-AddressAuthorizedEvent',
   AddressAuthorizedEventValue = 'ponzi_land-AddressAuthorizedEventValue',
   AddressRemovedEvent = 'ponzi_land-AddressRemovedEvent',
