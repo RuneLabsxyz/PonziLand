@@ -6,6 +6,8 @@
   import ThreeDots from '../loading/three-dots.svelte';
   import LandOverview from './land-overview.svelte';
   import LandYieldInfo from './land-yield-info.svelte';
+  import LandHudPro from './hud/land-hud-pro.svelte';
+  import { proMode } from '$lib/stores/ui.store.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -42,29 +44,33 @@
     <LandOverview {land} />
   </button>
   {#if land.type == 'house'}
-    <div class="w-full flex flex-col mt-3">
-      {#if land.tokenUsed}
+    {#if proMode.isProMode}
+      <LandHudPro {land} isOwner={false} isSidebar={true} />
+    {:else}
+      <div class="w-full flex flex-col mt-3">
+        {#if land.tokenUsed}
+          <div class="flex justify-between">
+            <p class="opacity-50">Token</p>
+            <p>
+              {land.token?.name}
+            </p>
+          </div>
+        {/if}
         <div class="flex justify-between">
-          <p class="opacity-50">Token</p>
+          <p class="opacity-50">Sell price</p>
           <p>
-            {land.token?.name}
+            {land.sellPrice}
           </p>
         </div>
-      {/if}
-      <div class="flex justify-between">
-        <p class="opacity-50">Sell price</p>
-        <p>
-          {land.sellPrice}
-        </p>
+        <div class="flex justify-between">
+          <p class="opacity-50">Stake Remaining</p>
+          <p>
+            {land.stakeAmount}
+          </p>
+        </div>
+        <LandYieldInfo {land} bind:expanded />
       </div>
-      <div class="flex justify-between">
-        <p class="opacity-50">Stake Remaining</p>
-        <p>
-          {land.stakeAmount}
-        </p>
-      </div>
-      <LandYieldInfo {land} bind:expanded />
-    </div>
+    {/if}
   {/if}
   {#if land.type == 'auction'}
     <div class="w-full flex flex-col">

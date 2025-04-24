@@ -14,9 +14,11 @@
   let {
     land,
     isOwner,
+    isSidebar,
   }: {
     land: SelectedLand;
     isOwner: boolean;
+    isSidebar: boolean;
   } = $props();
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
@@ -112,7 +114,7 @@
       </div>
     </div>
   {/if}
-  {#if $selectedLandMeta}
+  {#if $selectedLandMeta && !isSidebar}
     <LandOverview land={$selectedLandMeta} />
   {/if}
 

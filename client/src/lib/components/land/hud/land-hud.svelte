@@ -33,7 +33,7 @@
     {:else if $selectedLandMeta.type === 'grass'}
       <LandHudEmpty />
     {:else if proMode.isProMode}
-      <LandHudPro {land} {isOwner} />
+      <LandHudPro {land} {isOwner} isSidebar={false} />
     {:else if isOwner}
       <LandHudOwned />
     {:else}
