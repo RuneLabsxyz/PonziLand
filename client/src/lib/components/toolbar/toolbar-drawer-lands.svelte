@@ -33,7 +33,7 @@
   }
 
   let playerLandsStore = usePlayerLands();
-  const groupedLands = groupLands($playerLandsStore);
+  const groupedLands = $derived(groupLands($playerLandsStore));
 </script>
 
 <div class="text-lg font-semibold">My Lands</div>

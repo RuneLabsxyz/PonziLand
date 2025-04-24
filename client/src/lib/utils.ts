@@ -173,6 +173,7 @@ export function ensureNumber(value: BigNumberish) {
 
 export function groupLands(lands: LandWithActions[]) {
   const map = new Map();
+  console.log('lands after group', lands);
   for (const land of lands) {
     const key = `${land.token?.name}__${land.token?.address}`;
     if (!map.has(key)) {

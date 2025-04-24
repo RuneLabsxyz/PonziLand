@@ -91,7 +91,8 @@ export function usePlayerLands() {
       return [];
     }
     const address = padAddress(accountAddress); // here to prevent controller address removing zeros from the start
-    return $landsStore.filter((land) => land.owner == address);
+    const lands = $landsStore.filter((land) => land.owner == address);
+    return lands;
   });
 }
 
