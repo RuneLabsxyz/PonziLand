@@ -31,6 +31,9 @@
 
   const VERIFIED_ONLY = true;
 
+  let kicker =
+    '0x5735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58';
+
   let userRank = $state<number | null>(null);
 
   /**
@@ -54,23 +57,20 @@
   /**
    * @notice Calculates token prices for all unique tokens
    * @dev Creates a cache of token prices from the API
-   * @returns Record of token addresses to their CurrencyAmount prices
+   * @returns Record of token addresses to their price ratios
    */
-  async function calculateTokenPrices(): Promise<
-    Record<string, CurrencyAmount>
-  > {
-    const tokenPriceCache: Record<string, CurrencyAmount> = {};
+  async function calculateTokenPrices(): Promise<Record<string, number>> {
+    const tokenPriceCache: Record<string, number> = {};
     try {
       tokenPrices = await getTokenPrices();
-
-      console.log('Token prices:', tokenPrices);
-
       // Create a cache of token prices
       for (const tokenPrice of tokenPrices) {
         if (tokenPrice.ratio == null) continue;
-        tokenPriceCache[tokenPrice.address] = CurrencyAmount.fromUnscaled(
-          tokenPrice.ratio,
-        );
+        if (tokenPrice.best_pool.token0 === kicker) {
+          tokenPriceCache[tokenPrice.best_pool.token1] = tokenPrice.ratio;
+        } else if (tokenPrice.best_pool.token1 === kicker) {
+          tokenPriceCache[tokenPrice.best_pool.token0] = tokenPrice.ratio;
+        }
       }
     } catch (error) {
       console.error('Failed to fetch token prices from API:', error);
@@ -86,39 +86,30 @@
    * @returns Array of user addresses and their total asset values, sorted by value
    */
   async function calculateUserAssets() {
-    const userAssets: Array<{ address: string; totalValue: bigint }> = [];
+    const userAssets: Array<{ address: string; totalValue: number }> = [];
     const tokenPriceCache = await calculateTokenPrices();
 
     for (const [accountAddress, tokens] of Object.entries(leaderboardData)) {
-      let totalInBaseCurrency = 0n;
+      let totalValue = 0;
 
       for (const [tokenAddress, balance] of Object.entries(tokens)) {
         if (tokenAddress === BASE_TOKEN) {
-          totalInBaseCurrency +=
-            BigInt(balance.toString()) / 1000000000000000000n;
+          // For base token (eSTRK), add directly to total
+          totalValue += Number(balance / 10 ** 18);
         } else if (tokenPriceCache[tokenAddress]) {
+          // For other tokens, convert to base token value using ratio
           const tokenPrice = tokenPriceCache[tokenAddress];
-          const balanceAmount = CurrencyAmount.fromUnscaled(balance);
-          const valueInBase = balanceAmount
-            .rawValue()
-            .multipliedBy(tokenPrice.rawValue());
-          totalInBaseCurrency +=
-            BigInt(Math.floor(Number(valueInBase))) / 1000000000000000000n;
+          totalValue += Number(balance / 10 ** 18) * tokenPrice;
         }
       }
 
       userAssets.push({
         address: accountAddress,
-        totalValue: totalInBaseCurrency,
+        totalValue,
       });
     }
 
-    return userAssets
-      .map((user) => ({
-        address: user.address,
-        totalValue: Number(user.totalValue),
-      }))
-      .sort((a, b) => b.totalValue - a.totalValue);
+    return userAssets.sort((a, b) => b.totalValue - a.totalValue);
   }
 
   /**
@@ -217,7 +208,7 @@
               {/if}
             </div>
             <div class="font-bold">
-              {formatValue(user.totalValue.toString())}
+              {Math.floor(user.totalValue)}
             </div>
           </div>
         {/each}
