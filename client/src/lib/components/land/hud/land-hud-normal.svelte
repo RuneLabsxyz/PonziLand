@@ -52,16 +52,20 @@
 
 <div class="flex flex-col items-stretch px-4 relative w-[300px] pt-2">
   <div class="flex justify-between items-center text-ponzi-number">
-    <span>Token</span><span>{land?.token?.symbol}</span>
+    <span class="low-opacity">Token</span><span>{land?.token?.symbol}</span>
   </div>
   <div class="flex justify-between items-center">
-    <span>Sell price</span><span>{land?.sellPrice?.toString()}</span>
+    <span class="low-opacity">Sell price</span><span
+      >{land?.sellPrice?.toString()}</span
+    >
   </div>
   <div class="flex justify-between items-center">
-    <span>Stake Remaining</span><span>{land?.stakeAmount}</span>
+    <span class="low-opacity">Stake Remaining</span><span
+      >{land?.stakeAmount}</span
+    >
   </div>
-  <div class="flex justify-between items-center">
-    <span>Burning / hour</span><span
+  <div class="flex justify-between items-center text-red-400">
+    <span class="low-opacity">Burning / hour</span><span
       >{burnRate.toString()} {land?.token?.symbol}</span
     >
   </div>
@@ -70,8 +74,8 @@
     <div class="flex flex-col pt-4">
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
-        <div class="flex justify-between items-center">
-          <span>{_yield.amount.toString()}</span>
+        <div class="flex justify-between items-center text-green-400">
+          <span class="low-opacity">{_yield.amount.toString()}</span>
           <span>{_yield.token.symbol}</span>
         </div>
       {/each}
