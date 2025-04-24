@@ -9,16 +9,25 @@
   import { ScrollArea } from '../ui/scroll-area';
   import TokenDisplay from '../ui/token-display/token-display.svelte';
   import type { Token } from '$lib/interfaces';
+  import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { BASE_TOKEN } from '$lib/const';
 
   const { store, client: sdk, accountManager } = useDojo();
 
   let tokenBalances = $state<
     { token: Token; balance: Promise<bigint | null>; icon: string }[]
   >([]);
+  
+  let tokenPrices = $state<
+    { symbol: string; address: string; ratio: number | null }[]
+  >([]);
+  
+  let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
 
   const address = $derived(accountData.address);
 
-  function fetchBalanceData() {
+  async function fetchBalanceData() {
     const account = accountManager!.getProvider()?.getWalletAccount();
 
     if (!account || !address) {
@@ -34,14 +43,60 @@
         icon: token.images.icon,
       };
     });
+    
+    tokenPrices = await getTokenPrices();
+    calculateTotalBalance();
+  }
+  
+  async function calculateTotalBalance() {
+    if (!tokenBalances.length || !tokenPrices.length) return;
+    
+    let totalValue = 0;
+    
+        const resolvedBalances = await Promise.all(
+      tokenBalances.map(async (tb) => {
+        return {
+          token: tb.token,
+          balance: await tb.balance
+        };
+      })
+    );
+    
+    for (const { token, balance } of resolvedBalances) {
+      if (balance === null) continue;
+      
+      const amount = CurrencyAmount.fromUnscaled(balance.toString(), token);
+      
+      if (token.address === BASE_TOKEN) {
+        totalValue += Number(amount.rawValue());
+      } else {
+        const priceInfo = tokenPrices.find(p => p.address === token.address);
+        if (priceInfo?.ratio !== null && priceInfo) {
+          totalValue += Number(amount.rawValue().dividedBy(priceInfo.ratio || 0));
+        }
+      }
+    }
+    const baseToken = data.availableTokens.find(token => token.address === BASE_TOKEN);
+    if (baseToken) {
+      totalBalanceInBaseToken = CurrencyAmount.fromScaled(totalValue.toString(), baseToken);
+    }
   }
 
   $effect(() => {
     fetchBalanceData();
   });
 </script>
+    
+{#if totalBalanceInBaseToken}
+<div class="mt-2 pt-2 border-t border-gray-700 pb-4">
+  <div class="flex justify-between items-center">
+    <span class="text-sm font-bold">Your score:</span>
+    <span class="font-bold text-green-500">{totalBalanceInBaseToken.toString()}</span>
+  </div>
+</div>
+{/if}
 
-<div class="flex justify-between items-center mr-3 mb-2">
+<div class="flex justify-between items-center mr-3 mb-2">  
   <div class="font-bold text-stroke-none">BALANCE</div>
   <button onclick={fetchBalanceData} aria-label="Refresh balance">
     <svg
