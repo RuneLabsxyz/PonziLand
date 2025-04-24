@@ -82,7 +82,6 @@
 
         console.log('Bought land with TX: ', result.transaction_hash);
 
-
         // Close the modal
         uiStore.showModal = false;
         uiStore.modalData = null;
