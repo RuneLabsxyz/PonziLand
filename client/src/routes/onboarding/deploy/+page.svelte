@@ -12,6 +12,8 @@
 
   let copied = $state(false);
 
+  let account = useAccount();
+
   async function sendDummyTransaction() {
     const { transaction_hash } = await useAccount()
       ?.getProvider()
@@ -31,11 +33,12 @@
 
     console.log('Sent dummy transaction!', transaction_hash);
 
-    goto('/onboarding/register');
+    window.location.href = '/onboarding/register';
   }
 
   onMount(() => {
     console.log('Profile:', PUBLIC_DOJO_PROFILE);
+    console.log('Account:', account?.getProviderName());
   });
 </script>
 
@@ -48,10 +51,18 @@
     You need to make your first transaction before you can start playing on
     PonziLand.
   </p>
-  <p>
-    While clicking on the button below will allow you to do it, you might need
-    to transfer some STRK tokens to your account.
-  </p>
+
+  {#if account?.getProviderName() != 'controller'}
+    <p>
+      While clicking on the button below will allow you to do it, you might need
+      to transfer some STRK tokens to your account.
+    </p>
+  {:else}
+    <p>
+      As we are paying for fees during the tournament, you only have to click
+      the button below to deploy your account!
+    </p>
+  {/if}
 
   {#if PUBLIC_DOJO_PROFILE == 'sepolia'}
     <div>
