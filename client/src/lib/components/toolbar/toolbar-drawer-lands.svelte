@@ -8,6 +8,9 @@
   import LandHudInfo from '../land/hud/land-hud-info.svelte';
   import { ScrollArea } from '../ui/scroll-area';
   import LandNukeTime from '../land/land-nuke-time.svelte';
+  import { moveCameraTo } from '$lib/stores/camera';
+  import { selectLand } from '$lib/stores/stores.svelte';
+  import { parseLocation } from '$lib/utils';
 
   const dojo = useDojo();
   const account = () => {
@@ -43,10 +46,21 @@
         </div>
         <div class="flex flex-col gap-2">
           {#each lands as land}
-            <LandHudInfo {land} isOwner={false} showLand={true} />
-            <div class="translate-y-4 p-4">
-              <LandNukeTime {land} />
-            </div>
+            <button
+              onclick={() => {
+                moveCameraTo(
+                  parseLocation(land.location)[0] + 1,
+                  parseLocation(land.location)[1] + 1,
+                );
+                selectLand(land);
+              }}
+            >
+              <LandHudInfo {land} isOwner={false} showLand={true} />
+              <div class="translate-y-4 p-4">
+                <LandNukeTime {land} />
+              </div>
+            </button>
+
             <hr class="border-t border-gray-300 w-full my-2" />
           {/each}
         </div>
