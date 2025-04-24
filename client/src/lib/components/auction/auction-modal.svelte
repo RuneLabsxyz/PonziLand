@@ -70,15 +70,16 @@
         $selectedLand?.location,
         landSetup,
       );
-
       if (result?.transaction_hash) {
         // Only wait for the land update, not the total TX confirmation (should be fine)
-        await $selectedLand.wait();
+        const txPromise = accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+        const landPromise = $selectedLand.wait();
 
+        await Promise.any([txPromise, landPromise]);
         console.log('Bought land with TX: ', result.transaction_hash);
-
-        // Still wait for the tx, just to rollback in the event of an issue
-        notificationQueue.addNotification(result.transaction_hash, 'buy land');
 
         // Close the modal
         uiStore.showModal = false;
