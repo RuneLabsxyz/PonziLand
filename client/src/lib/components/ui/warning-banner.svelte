@@ -3,7 +3,7 @@
   import { fade, slide } from 'svelte/transition';
 
   let message =
-    'WARNING: All tokens are fake and hold no long-term value. This is for tournament purposes only.';
+    'WARNING: All tokens are fake and hold no real world value. This is for tournament purposes only.';
   let backgroundColor = '#ffcc00';
   let textColor = '#000';
 
