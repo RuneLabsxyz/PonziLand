@@ -45,7 +45,9 @@
       </p>
       <div class="flex justify-center gap-4">
         <Button onclick={() => goto('/tutorial')}>Tutorial</Button>
-        <Button onclick={() => goto('https://docs.ponzi.land')}>Docs</Button>
+        <a href="https://docs.ponzi.land" target="_blank"
+          ><Button>Docs</Button></a
+        >
       </div>
     </div>
   </Card>
