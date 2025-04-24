@@ -49,20 +49,4 @@
   .text-ponzi-number {
     font-family: 'PonziNumber', sans-serif;
   }
-
-  @keyframes fadeOut {
-    0% {
-      opacity: 1;
-    }
-    70% {
-      opacity: 1;
-    }
-    100% {
-      opacity: 0;
-    }
-  }
-
-  .animate-fade-out {
-    animation: fadeOut 2s forwards;
-  }
 </style>
