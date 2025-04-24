@@ -55,7 +55,7 @@
     {#if land}
       <div class="flex h-full w-full">
         <div class="flex flex-col w-full items-center justify-center min-w-80">
-          <LandOverview {land} size="lg" />
+          <LandOverview {land} isOwner={true} size="lg" />
           <div class="flex items-center gap-2 mt-6">
             <div class="text-3xl text-ponzi-number text-white">
               {land?.token?.symbol}

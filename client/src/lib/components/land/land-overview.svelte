@@ -7,8 +7,11 @@
   import { Progress } from '../ui/progress';
   import Button from '../ui/button/button.svelte';
 
-  const { land, size = 'sm' }: { land: LandWithActions; size?: 'sm' | 'lg' } =
-    $props();
+  const {
+    land,
+    size = 'sm',
+    isOwner = false,
+  }: { land: LandWithActions; size?: 'sm' | 'lg'; isOwner: boolean } = $props();
 
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
   let levelUpInfo = $state(land.getLevelInfo());
@@ -78,7 +81,7 @@
         ></Progress>
       </div>
       <div class="flex h-8 pt-2">
-        {#if levelUpInfo?.canLevelUp}
+        {#if levelUpInfo?.canLevelUp && isOwner}
           <Button
             onclick={async () => {
               console.log('Result of levelup: ', await land?.levelUp());

@@ -130,7 +130,7 @@
 <div class="flex flex-row">
   <div class="py-4 pl-4">
     {#if showLand}
-      <LandOverview {land} />
+      <LandOverview {land} {isOwner} />
     {/if}
   </div>
   {#if proMode.isPro}

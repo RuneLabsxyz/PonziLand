@@ -55,7 +55,7 @@
                 selectLand(land);
               }}
             >
-              <LandHudInfo {land} isOwner={false} showLand={true} />
+              <LandHudInfo {land} isOwner={true} showLand={true} />
               <div class="translate-y-4 p-4">
                 <LandNukeTime {land} />
               </div>
