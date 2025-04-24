@@ -7,6 +7,7 @@
   import { groupLands } from '$lib/utils';
   import LandHudInfo from '../land/hud/land-hud-info.svelte';
   import { ScrollArea } from '../ui/scroll-area';
+  import LandNukeTime from '../land/land-nuke-time.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -43,6 +44,9 @@
         <div class="flex flex-col gap-2">
           {#each lands as land}
             <LandHudInfo {land} isOwner={false} showLand={true} />
+            <div class="translate-y-4 p-4">
+              <LandNukeTime {land} />
+            </div>
             <hr class="border-t border-gray-300 w-full my-2" />
           {/each}
         </div>
