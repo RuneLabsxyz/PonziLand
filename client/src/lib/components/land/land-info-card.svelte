@@ -5,9 +5,6 @@
   import { parseLocation } from '$lib/utils';
   import ThreeDots from '../loading/three-dots.svelte';
   import LandOverview from './land-overview.svelte';
-  import LandYieldInfo from './land-yield-info.svelte';
-  import LandHudInfo from './hud/land-hud-info.svelte';
-  import { proMode } from '$lib/stores/ui.store.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 

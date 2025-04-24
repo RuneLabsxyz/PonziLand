@@ -7,7 +7,6 @@
   import { groupLands } from '$lib/utils';
   import LandHudInfo from '../land/hud/land-hud-info.svelte';
   import { ScrollArea } from '../ui/scroll-area';
-  import Card from '../ui/card/card.svelte';
 
   const dojo = useDojo();
   const account = () => {
