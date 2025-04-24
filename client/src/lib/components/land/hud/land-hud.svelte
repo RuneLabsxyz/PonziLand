@@ -23,7 +23,11 @@
       <LandOwnerInfo {land} {isOwner} />
     {/if}
     {#if $selectedLandMeta.type === 'house'}
-      <LandNukeTime {land} />
+      <div class="absolute right-0 -translate-y-12">
+        <Card>
+          <LandNukeTime {land} />
+        </Card>
+      </div>
     {/if}
     {#if $selectedLandMeta.type === 'auction'}
       <LandHudAuction />
