@@ -4,6 +4,7 @@
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { onMount } from 'svelte';
+  import { writable } from 'svelte/store';
   import BuyInsights from '../buy/buy-insights.svelte';
   import Button from '../ui/button/button.svelte';
   import { Card } from '../ui/card';
@@ -13,13 +14,20 @@
   import Label from '../ui/label/label.svelte';
   import LandOverview from './land-overview.svelte';
   import LandHudInfo from './hud/land-hud-info.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
 
   const handleCancel = () => {
     uiStore.showModal = false;
   };
 
+  let accountManager = useAccount();
+  let disabled = writable(false);
   let land: SelectedLand = $state();
   let stakeIncrease = $state('100');
+
+  onMount(() => {
+    land = $selectedLandMeta;
+  });
 
   let stakeAfter = $derived.by(() => {
     if (!land) return -1;
@@ -28,19 +36,31 @@
     return total;
   });
 
-  const handleIncreaseStake = () => {
+  const handleIncreaseStake = async () => {
     console.log('Increase stake', stakeIncrease);
 
-    $selectedLandMeta
-      ?.increaseStake(
-        CurrencyAmount.fromScaled(stakeIncrease, $selectedLandMeta.token),
-      )
-      .then((res) => console.log('increase success', res));
-  };
+    if (!land) {
+      console.error('No land selected');
+      return;
+    }
 
-  onMount(() => {
-    land = $selectedLandMeta;
-  });
+    let result = await land?.increaseStake(
+      CurrencyAmount.fromScaled(stakeIncrease, land.token),
+    );
+    disabled.set(true);
+    if (result?.transaction_hash) {
+      const txPromise = accountManager!
+        .getProvider()
+        ?.getWalletAccount()
+        ?.waitForTransaction(result.transaction_hash);
+      const landPromise = land.wait();
+
+      await Promise.any([txPromise, landPromise]);
+      disabled.set(false);
+      handleCancel();
+      console.log('Stake increased', result.transaction_hash);
+    }
+  };
 </script>
 
 <div
@@ -75,7 +95,9 @@
           </Card>
           <Label class="font-bold">Stake Increase</Label>
           <Input class="w-full" bind:value={stakeIncrease} />
-          <Button onclick={handleIncreaseStake}>Increase stake</Button>
+          <Button disabled={$disabled} onclick={handleIncreaseStake}
+            >Increase stake</Button
+          >
 
           <BuyInsights
             {land}

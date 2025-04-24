@@ -209,13 +209,18 @@ export function useLands(): LandsStore | undefined {
         ...land,
 
         // Add functions
-        increaseStake(amount: CurrencyAmount) {
-          return sdk.client.actions.increaseStake(
+        async increaseStake(amount: CurrencyAmount) {
+          let res = await sdk.client.actions.increaseStake(
             account()?.getWalletAccount()!,
             land.location,
             land.token_used,
             amount.toBignumberish(),
           );
+          notificationQueue.addNotification(
+            res?.transaction_hash ?? null,
+            'increase stake',
+          );
+          return res;
         },
         async wait() {
           // Wait until the land changes
