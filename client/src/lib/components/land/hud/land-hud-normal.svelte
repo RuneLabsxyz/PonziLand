@@ -78,7 +78,6 @@
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">
           <span>
-            {console.log(_yield.token)}
             <Avatar.Root class="h-6 w-6">
               <Avatar.Image
                 src={_yield.token.images.icon}
