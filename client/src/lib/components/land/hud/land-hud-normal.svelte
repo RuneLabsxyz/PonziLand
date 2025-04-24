@@ -61,7 +61,9 @@
     <span>Stake Remaining</span><span>{land?.stakeAmount}</span>
   </div>
   <div class="flex justify-between items-center">
-    <span>Burning / hour</span><span>{burnRate.toString()}</span>
+    <span>Burning / hour</span><span
+      >{burnRate.toString()} {land?.token?.symbol}</span
+    >
   </div>
 
   {#if yieldData}
