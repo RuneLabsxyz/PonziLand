@@ -30,7 +30,7 @@
     {:else if $selectedLandMeta.type === 'grass'}
       <LandHudEmpty />
     {:else}
-      <LandHudInfo {land} {isOwner} />
+      <LandHudInfo {land} {isOwner} showLand={true} />
     {/if}
   </Card>
 {/if}

@@ -14,9 +14,11 @@
   let {
     land,
     isOwner,
+    showLand,
   }: {
     land: SelectedLand;
     isOwner: boolean;
+    showLand: boolean;
   } = $props();
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
@@ -99,7 +101,9 @@
 
 <div class="flex flex-row">
   <div class="py-4 pl-4">
-    <LandOverview {land} />
+    {#if showLand}
+      <LandOverview {land} />
+    {/if}
   </div>
   {#if proMode.isPro}
     <LandHudPro {totalYieldValue} {burnRate} {land} />

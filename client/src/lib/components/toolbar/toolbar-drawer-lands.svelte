@@ -42,7 +42,7 @@
         </div>
         <div class="flex flex-col gap-2">
           {#each lands as land}
-            <LandHudInfo {land} isOwner={false} />
+            <LandHudInfo {land} isOwner={false} showLand={true} />
             <hr class="border-t border-gray-300 w-full my-2" />
           {/each}
         </div>

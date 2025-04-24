@@ -12,7 +12,7 @@
   import Input from '../ui/input/input.svelte';
   import Label from '../ui/label/label.svelte';
   import LandOverview from './land-overview.svelte';
-  import LandYieldInfo from './land-yield-info.svelte';
+  import LandHudInfo from './hud/land-hud-info.svelte';
 
   const handleCancel = () => {
     uiStore.showModal = false;
@@ -68,21 +68,11 @@
           </div>
         </div>
         <div class="flex flex-col gap-2 text-stroke-none w-96">
-          <div class="w-full flex flex-col">
-            <div class="flex justify-between">
-              <p class="opacity-50">Sell price</p>
-              <p>
-                {land.sellPrice}
-              </p>
+          <Card>
+            <div class="flex items-center justify-center">
+              <LandHudInfo {land} isOwner={false} showLand={false} />
             </div>
-            <div class="flex justify-between">
-              <p class="opacity-50">Stake Remaining</p>
-              <p>
-                {land.stakeAmount}
-              </p>
-            </div>
-            <LandYieldInfo {land} />
-          </div>
+          </Card>
           <Label class="font-bold">Stake Increase</Label>
           <Input class="w-full" bind:value={stakeIncrease} />
           <Button onclick={handleIncreaseStake}>Increase stake</Button>
