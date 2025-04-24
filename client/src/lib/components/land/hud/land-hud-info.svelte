@@ -11,6 +11,8 @@
   import LandHudPro from './land-hud-pro.svelte';
   import LandHudNormal from './land-hud-normal.svelte';
   import LandOverview from '../land-overview.svelte';
+  import { BASE_TOKEN } from '$lib/const';
+
   let {
     land,
     isOwner,
@@ -33,6 +35,32 @@
   let burnRate = $derived(
     calculateBurnRate(land as LandWithActions, getNumberOfNeighbours() || 0),
   );
+
+  let burnRateInBaseToken: CurrencyAmount = $state(
+    CurrencyAmount.fromScaled('0'),
+  );
+
+  $effect(() => {
+    if (tokenPrices) {
+      if (land?.token?.address === BASE_TOKEN) {
+        burnRateInBaseToken = burnRate;
+      } else {
+        const tokenPrice = tokenPrices.find(
+          (p) => p.address === land?.token?.address,
+        );
+        console.log('tokenPrice', tokenPrice);
+        if (tokenPrice) {
+          burnRateInBaseToken = CurrencyAmount.fromScaled(
+            burnRate
+              .rawValue()
+              .dividedBy(tokenPrice.ratio || 0)
+              .toString(),
+            land?.token,
+          );
+        }
+      }
+    }
+  });
 
   function getNumberOfNeighbours() {
     if (land == undefined) return;
@@ -106,7 +134,7 @@
     {/if}
   </div>
   {#if proMode.isPro}
-    <LandHudPro {totalYieldValue} {burnRate} {land} />
+    <LandHudPro {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
   {:else if land}
     <LandHudNormal {yieldInfo} {burnRate} {land} />
   {/if}
