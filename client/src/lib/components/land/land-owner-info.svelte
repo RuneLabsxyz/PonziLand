@@ -14,6 +14,7 @@
   } = $props();
 
   let isAiAgent = $state(false);
+  let showCopied = $state(false);
 
   $effect(() => {
     if (AI_AGENT_ADDRESS == land?.owner) {
@@ -26,6 +27,19 @@
   export function formatAddress(address: string): string {
     if (!address) return '';
     return `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
+  }
+
+  function copyToClipboard(text: string) {
+    if (!text) return;
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        showCopied = true;
+        setTimeout(() => {
+          showCopied = false;
+        }, 2000);
+      })
+      .catch((err) => console.error('Failed to copy text: ', err));
   }
 </script>
 
@@ -45,9 +59,25 @@
   {:else}
     <Card>
       <div class="flex items-center gap-2 text-ponzi-number">
-        <span>
+        <span
+          class="cursor-pointer hover:opacity-80 relative"
+          onclick={() => copyToClipboard(land?.owner || '')}
+          title={land?.owner || 'Unknown address'}
+          role="button"
+          tabindex="0"
+          onkeydown={(e) =>
+            e.key === 'Enter' && copyToClipboard(land?.owner || '')}
+        >
           {usernamesStore.getUsernames()[padAddress(land?.owner || '')!] ||
             formatAddress(land?.owner || '')}
+
+          {#if showCopied}
+            <span
+              class="absolute -top-6 left-0 text-xs bg-green-700 text-white px-2 py-1 rounded animate-fade-out"
+            >
+              Copied!
+            </span>
+          {/if}
         </span>
       </div>
     </Card>
@@ -57,5 +87,21 @@
 <style>
   .text-ponzi-number {
     font-family: 'PonziNumber', sans-serif;
+  }
+
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .animate-fade-out {
+    animation: fadeOut 2s forwards;
   }
 </style>
