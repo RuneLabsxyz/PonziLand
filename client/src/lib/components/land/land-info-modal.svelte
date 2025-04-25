@@ -23,11 +23,34 @@
   let accountManager = useAccount();
   let disabled = writable(false);
   let land: SelectedLand = $state();
+  let actionType = $state('stake'); // 'stake' or 'price'
   let stakeIncrease = $state('100');
+  let priceIncrease = $state('0');
 
   onMount(() => {
     land = $selectedLandMeta;
+    if (land?.sellPrice) {
+      priceIncrease = land.sellPrice.toString();
+    }
   });
+
+  let priceError = $derived.by(() => {
+    if (!land || !priceIncrease) return null;
+
+    try {
+      const newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
+      if (newPrice.rawValue().isLessThanOrEqualTo(land.sellPrice.rawValue())) {
+        return 'New price must be higher than the current price';
+      }
+      return null;
+    } catch {
+      return 'Invalid price value';
+    }
+  });
+
+  let isPriceValid = $derived.by(
+    () => !!land && !!priceIncrease && !priceError,
+  );
 
   let stakeAfter = $derived.by(() => {
     if (!land) return -1;
@@ -59,6 +82,30 @@
       disabled.set(false);
       handleCancel();
       console.log('Stake increased', result.transaction_hash);
+    }
+  };
+
+  const handleIncreasePrice = async () => {
+    if (!land) {
+      console.error('No land selected');
+      return;
+    }
+
+    let result = await land?.increasePrice(
+      CurrencyAmount.fromScaled(priceIncrease, land.token),
+    );
+    disabled.set(true);
+    if (result?.transaction_hash) {
+      const txPromise = accountManager!
+        .getProvider()
+        ?.getWalletAccount()
+        ?.waitForTransaction(result.transaction_hash);
+      const landPromise = land.wait();
+
+      await Promise.any([txPromise, landPromise]);
+      disabled.set(false);
+      handleCancel();
+      console.log('Price increased', result.transaction_hash);
     }
   };
 </script>
@@ -93,16 +140,54 @@
               <LandHudInfo {land} isOwner={false} showLand={false} />
             </div>
           </Card>
-          <Label class="font-bold">Stake Increase</Label>
-          <Input class="w-full" bind:value={stakeIncrease} />
-          <Button disabled={$disabled} onclick={handleIncreaseStake}
-            >Increase stake</Button
-          >
 
+          <div class="flex-1">
+            <div class="flex border-b mb-4">
+              <button
+                class={`flex-1 py-2 text-center font-medium transition-all duration-200 border-b-2 
+    ${actionType === 'stake' ? 'text-white border-white' : 'text-gray-400 border-transparent'}`}
+                onclick={() => (actionType = 'stake')}
+              >
+                Increase Stake
+              </button>
+              <button
+                class={`flex-1 py-2 text-center font-medium transition-all duration-200 border-b-2 
+    ${actionType === 'price' ? 'text-white border-white' : 'text-gray-400 border-transparent'}`}
+                onclick={() => (actionType = 'price')}
+              >
+                Increase Price
+              </button>
+            </div>
+            {#if actionType === 'stake'}
+              <div class="space-y-3">
+                <Label>Amount to add to stake</Label>
+                <Input bind:value={stakeIncrease} placeholder="Enter amount" />
+                <Button
+                  disabled={$disabled}
+                  onclick={handleIncreaseStake}
+                  class="w-full"
+                >
+                  Confirm Stake
+                </Button>
+              </div>
+            {:else}
+              <div class="space-y-3">
+                <Label>Enter the new price</Label>
+                <Input bind:value={priceIncrease} placeholder="Enter amount" />
+                <Button
+                  disabled={$disabled || !isPriceValid}
+                  onclick={handleIncreasePrice}
+                  class="w-full"
+                >
+                  Confirm Price
+                </Button>
+              </div>
+            {/if}
+          </div>
           <BuyInsights
             {land}
             selectedToken={land.token}
-            sellAmountVal={land.sellPrice.toString()}
+            sellAmountVal={priceIncrease}
             stakeAmountVal={stakeAfter.toString()}
           />
         </div>

@@ -238,12 +238,17 @@ export function useLands(): LandsStore | undefined {
             15 * 1000, // ms
           );
         },
-        increasePrice(amount: CurrencyAmount) {
-          return sdk.client.actions.increasePrice(
+        async increasePrice(amount: CurrencyAmount) {
+          let res = await sdk.client.actions.increasePrice(
             account()?.getWalletAccount()!,
             land.location,
             amount.toBignumberish(),
           );
+          notificationQueue.addNotification(
+            res?.transaction_hash ?? null,
+            'increase price',
+          );
+          return res;
         },
         async claim() {
           let res = await sdk.client.actions.claim(
