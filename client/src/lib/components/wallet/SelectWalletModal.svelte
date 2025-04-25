@@ -16,9 +16,11 @@
   import { ENABLE_RAMP } from '$lib/flags';
   import { Dice3 } from 'lucide-svelte';
   import { validators } from 'tailwind-merge';
+  import { ChevronDown, ChevronUp } from 'lucide-svelte';
 
   let visible = $state(false);
   let loading = $state(true);
+  let showAllWallets = $state(false);
 
   let validWallets: StarknetWindowObject[] = $state([]);
 
@@ -90,32 +92,94 @@
         </div>
 
         <div class="flex flex-col justify-stretch gap-2">
-          {#each validWallets as wallet}
-            {@const image =
-              typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
-            <Button
-              class="flex flex-row justify-start w-full min-h-[60px] p-3"
-              on:click={() => login(wallet.id)}
-            >
-              <img
-                src={image}
-                alt={wallet.name + ' logo'}
-                class="h-10 p-2 pr-4"
-              />
-              <div class="flex flex-col items-start text-left">
-                <div class="text-lg">
-                  {wallet.name}
-                </div>
-                {#if wallet.id == 'controller'}
-                  <div class="text-sm opacity-70 text-orange-500">
-                    no fees + sessions!
+          {#if validWallets.length >= 2}
+            {#if !showAllWallets}
+              {@const controllerWallet = validWallets.find(wallet => wallet.id === 'controller')}
+              {#if controllerWallet}
+                {@const image = typeof controllerWallet.icon == 'string' ? controllerWallet.icon : controllerWallet.icon.light}
+                <Button
+                  class="flex flex-row justify-start w-full min-h-[60px] p-3"
+                  on:click={() => login(controllerWallet.id)}
+                >
+                  <img
+                    src={image}
+                    alt={controllerWallet.name + ' logo'}
+                    class="h-10 p-2 pr-4"
+                  />
+                  <div class="flex flex-col items-start text-left">
+                    <div class="text-lg">
+                      {controllerWallet.name}
+                    </div>
+                    <div class="text-sm opacity-70 text-green-500">
+                      FREE GAS!
+                    </div>
                   </div>
-                {:else}
-                  <div class="text-sm opacity-70 text-green-600">Standard</div>
-                {/if}
-              </div>
-            </Button>
-          {/each}
+                </Button>
+                <Button 
+                  class="text-sm flex items-center justify-center mt-2 text-sm opacity-50"
+                  variant="red"
+                  on:click={() => showAllWallets = true}
+                >
+                  <ChevronDown class="h-4 w-4 mr-1" />
+                  <span>Want to use a different wallet?</span>
+                </Button>
+              {/if}
+            {:else}
+              {#each validWallets as wallet}
+                {@const image =
+                  typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
+                <Button
+                  class="flex flex-row justify-start w-full min-h-[60px] p-3"
+                  on:click={() => login(wallet.id)}
+                >
+                  <img
+                    src={image}
+                    alt={wallet.name + ' logo'}
+                    class="h-10 p-2 pr-4"
+                  />
+                  <div class="flex flex-col items-start text-left">
+                    <div class="text-lg">
+                      {wallet.name}
+                    </div>
+                    {#if wallet.id == 'controller'}
+                      <div class="text-sm opacity-70 text-green-500">
+                        FREE GAS!
+                      </div>
+                    {:else}
+                      <div class="text-sm opacity-70 text-red-600">Standard</div>
+                    {/if}
+                  </div>
+                </Button>
+              {/each}
+              <Button 
+                class="text-sm flex items-center justify-center mt-2"
+                on:click={() => showAllWallets = false}
+              >
+                <ChevronUp class="h-4 w-4 mr-1" />
+                <span>Show fewer options</span>
+              </Button>
+            {/if}
+          {:else}
+            {#each validWallets as wallet}
+              {@const image =
+                typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
+              <Button
+                class="flex flex-row justify-start w-full min-h-[60px] p-3"
+                on:click={() => login(wallet.id)}
+              >
+                <img
+                  src={image}
+                  alt={wallet.name + ' logo'}
+                  class="h-10 p-2 pr-4"
+                />
+                <div class="flex flex-col items-start text-left">
+                  <div class="text-lg">
+                    Login
+                  </div>
+                </div>
+              </Button>
+            {/each}
+          {/if}
           {#if ENABLE_RAMP}
             _________________________
             <Button
