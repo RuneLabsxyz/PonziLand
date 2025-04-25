@@ -302,7 +302,7 @@ pub mod actions {
                     let land = store.land(land_location);
                     if land.owner != caller {
                         continue;
-                    } 
+                    }
                     self.internal_claim(store, land);
                 }
             };
