@@ -94,9 +94,14 @@
         <div class="flex flex-col justify-stretch gap-2">
           {#if validWallets.length >= 2}
             {#if !showAllWallets}
-              {@const controllerWallet = validWallets.find(wallet => wallet.id === 'controller')}
+              {@const controllerWallet = validWallets.find(
+                (wallet) => wallet.id === 'controller',
+              )}
               {#if controllerWallet}
-                {@const image = typeof controllerWallet.icon == 'string' ? controllerWallet.icon : controllerWallet.icon.light}
+                {@const image =
+                  typeof controllerWallet.icon == 'string'
+                    ? controllerWallet.icon
+                    : controllerWallet.icon.light}
                 <Button
                   class="flex flex-row justify-start w-full min-h-[60px] p-3"
                   on:click={() => login(controllerWallet.id)}
@@ -115,10 +120,10 @@
                     </div>
                   </div>
                 </Button>
-                <Button 
+                <Button
                   class="text-sm flex items-center justify-center mt-2 text-sm opacity-50"
                   variant="red"
-                  on:click={() => showAllWallets = true}
+                  on:click={() => (showAllWallets = true)}
                 >
                   <ChevronDown class="h-4 w-4 mr-1" />
                   <span>Want to use a different wallet?</span>
@@ -127,7 +132,9 @@
             {:else}
               {#each validWallets as wallet}
                 {@const image =
-                  typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
+                  typeof wallet.icon == 'string'
+                    ? wallet.icon
+                    : wallet.icon.light}
                 <Button
                   class="flex flex-row justify-start w-full min-h-[60px] p-3"
                   on:click={() => login(wallet.id)}
@@ -146,14 +153,16 @@
                         FREE GAS!
                       </div>
                     {:else}
-                      <div class="text-sm opacity-70 text-red-600">Standard</div>
+                      <div class="text-sm opacity-70 text-red-600">
+                        Standard
+                      </div>
                     {/if}
                   </div>
                 </Button>
               {/each}
-              <Button 
+              <Button
                 class="text-sm flex items-center justify-center mt-2"
-                on:click={() => showAllWallets = false}
+                on:click={() => (showAllWallets = false)}
               >
                 <ChevronUp class="h-4 w-4 mr-1" />
                 <span>Show fewer options</span>
@@ -162,7 +171,9 @@
           {:else}
             {#each validWallets as wallet}
               {@const image =
-                typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
+                typeof wallet.icon == 'string'
+                  ? wallet.icon
+                  : wallet.icon.light}
               <Button
                 class="flex flex-row justify-start w-full min-h-[60px] p-3"
                 on:click={() => login(wallet.id)}
@@ -173,9 +184,7 @@
                   class="h-10 p-2 pr-4"
                 />
                 <div class="flex flex-col items-start text-left">
-                  <div class="text-lg">
-                    Login
-                  </div>
+                  <div class="text-lg">Login</div>
                 </div>
               </Button>
             {/each}
