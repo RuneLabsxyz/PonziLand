@@ -2,6 +2,7 @@ import { useDojo } from '$lib/contexts/dojo';
 import data from '$lib/data.json';
 import type { LandYieldInfo, Token } from '$lib/interfaces';
 import {
+  type Auction,
   type Land,
   type LandStake,
   type SchemaType as PonziLandSchemaType,
@@ -131,27 +132,33 @@ export function useLands(): LandsStore | undefined {
   };
 
   (async () => {
-    /*const query = new QueryBuilder<PonziLandSchemaType>()
-      .namespace('ponzi_land', (ns) => {
-        ns.entity('Land', (e) => e.build());
-        ns.entity('LandStake', (e) => e.build());
-      })
-      .build();*/
-    const query = new ToriiQueryBuilder()
+    // also query initial
+    let response: StandardizedQueryResult<PonziLandSchemaType> = [];
+    let page = 0;
+    do {
+      const pagedQuery = ToriiQueryBuilder.withPagination(page, 100)
+        .addEntityModel(ModelsMapping.Land)
+        .addEntityModel(ModelsMapping.Auction)
+        .addEntityModel(ModelsMapping.LandStake)
+        .includeHashedKeys();
+
+      response = await sdk.getEntities({
+        query: pagedQuery,
+      });
+      get(landStore).setEntities(response);
+
+      page++;
+    } while (response.length != 0);
+
+    const baseQuery = new ToriiQueryBuilder()
       .addEntityModel(ModelsMapping.Land)
+      .addEntityModel(ModelsMapping.Auction)
       .addEntityModel(ModelsMapping.LandStake)
       .includeHashedKeys();
 
-    // also query initial
-    let response = await sdk.getEntities({
-      query,
-    });
-
-    get(landStore).setEntities(response);
-
     // Subscribe to updates
     await sdk.subscribeEntityQuery({
-      query,
+      query: baseQuery,
       callback: (response) => {
         if (response.error || response.data == null) {
           console.log('Got an error!', response.error);
@@ -170,6 +177,10 @@ export function useLands(): LandsStore | undefined {
       .getEntitiesByModel('ponzi_land', 'LandStake')
       .map((e) => e.models['ponzi_land']['LandStake'] as LandStake);
 
+    const auctions = s
+      .getEntitiesByModel('ponzi_land', 'Auction')
+      .map((e) => e.models['ponzi_land']['Auction'] as Auction);
+
     const lands: (LandWithStake | Land)[] = s
       .getEntitiesByModel('ponzi_land', 'Land')
       .map((e) => {
@@ -182,8 +193,6 @@ export function useLands(): LandsStore | undefined {
           ...(landStake ?? {}),
         };
       });
-
-    //
 
     const landWithActions: LandWithActions[] = lands
       .map((land) => {

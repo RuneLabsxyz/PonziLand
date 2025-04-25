@@ -39,6 +39,6 @@ export const getAuctions = async () => {
     query,
   });
   console.log('Auctions:', auctions);
-
+  console.log('Auctions length:', auctions.length);
   return auctions;
 };

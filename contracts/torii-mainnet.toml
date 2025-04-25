@@ -5,6 +5,7 @@ explorer = false
 [events]
 raw = true
 
+
 [sql]
 historical = [
     "ponzi_land-AddressAuthorizedEvent",
@@ -21,9 +22,12 @@ historical = [
 
 
 [indexing]
+pending = true
+transactions = true
+
 contracts = [
     "erc20:0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # eSTRK
-    "erc20:0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # ePAPER
+    "erc20:0x0415c058a41cc80e7368562564c96fc4e3c03b23e32ba07a5c8cadc262b50c3c", # ePAPER
     "erc20:0x04b66d22d3001daad50fb853c0c1cb3b96d1745acb295bae4a6d54b29125ed09", # eLORDS
     "erc20:0x01920ef3c5e765454dd3f6aeb5420ef524830e0b5f9a95ec2e1b9ee2073a16d1", # eBROTHER
     "erc20:0x079aba4c89e9cc3495318d2479fe93601e1188ff5d9a8823e3dc736d74bb437f", # ePAL
