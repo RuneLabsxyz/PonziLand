@@ -1,6 +1,10 @@
 import { address_blacklist } from '$lib/data.json';
 import { areAddressesEquals } from './helpers';
-import { PUBLIC_DOJO_TORII_URL } from '$env/static/public';
+import {
+  PUBLIC_DOJO_TORII_URL,
+  PUBLIC_SOCIALINK_URL,
+} from '$env/static/public';
+
 import { BASE_TOKEN } from '$lib/const';
 
 const blackList = address_blacklist.map((e) => BigInt(e));
@@ -80,7 +84,7 @@ export async function fetchUsernamesBatch(
 ): Promise<Record<string, string>> {
   console.log('Fetching usernames for addresses:', addresses);
   try {
-    const response = await fetch('https://social.ponzi.land/api/user/lookup', {
+    const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/lookup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

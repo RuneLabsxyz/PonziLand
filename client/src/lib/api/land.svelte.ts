@@ -45,6 +45,7 @@ export type TransactionResult = Promise<
 export type Level = 1 | 2 | 3;
 
 export type LandWithStake = Land & LandStake;
+export type LandAuction = Land & Auction;
 
 export type LandSetup = {
   tokenForSaleAddress: string;
@@ -62,7 +63,10 @@ export type LandsStore = Readable<LandWithActions[]> & {
   bidLand(location: BigNumberish, setup: LandSetup): TransactionResult;
 };
 
-export type LandWithMeta = Omit<Land | LandWithStake, 'location' | 'level'> & {
+export type LandWithMeta = Omit<
+  Land | LandWithStake | LandAuction,
+  'location' | 'level'
+> & {
   location: string;
   // Type conversions
   stakeAmount: CurrencyAmount;
@@ -188,9 +192,14 @@ export function useLands(): LandsStore | undefined {
         const landStake = landsStakes.find(
           (stake) => stake.location === land.location,
         );
+        const auction = auctions.find(
+          (auction) => auction.land_location === land.location,
+        );
+
         return {
           ...land,
           ...(landStake ?? {}),
+          ...(auction ?? {}),
         };
       });
 
