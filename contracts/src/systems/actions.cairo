@@ -300,7 +300,9 @@ pub mod actions {
                 if !self.active_auction_queue.read(land_location) {
                     assert(is_valid_position(land_location), 'Land location not valid');
                     let land = store.land(land_location);
-                    assert(land.owner == caller, 'not the owner');
+                    if land.owner != caller {
+                        continue;
+                    } 
                     self.internal_claim(store, land);
                 }
             };
