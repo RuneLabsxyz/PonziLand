@@ -12,6 +12,7 @@
   import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { BASE_TOKEN } from '$lib/const';
+  import { padAddress } from '$lib/utils';
 
   const { store, client: sdk, accountManager } = useDojo();
 
@@ -67,7 +68,7 @@
 
       const amount = CurrencyAmount.fromUnscaled(balance.toString(), token);
 
-      if (token.address === BASE_TOKEN) {
+      if (padAddress(token.address) === BASE_TOKEN) {
         totalValue += Number(amount.rawValue());
       } else {
         const priceInfo = tokenPrices.find((p) => p.address === token.address);
