@@ -183,7 +183,9 @@
     </button>
   </div>
 
-  <ScrollArea class={`${leaderboardSize === 1 ? 'h-96' : 'h-32'} w-full text-white`}>
+  <ScrollArea
+    class={`${leaderboardSize === 1 ? 'h-96' : 'h-32'} w-full text-white`}
+  >
     <div class="mr-3 flex flex-col gap-1">
       {#if isLoading}
         <div class="text-center py-2">Loading leaderboard data...</div>
