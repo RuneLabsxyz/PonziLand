@@ -303,7 +303,7 @@
       </div>
 
       <div class="col-span-full">
-        <Leaderboard />
+        <Leaderboard leaderboardSize={96} />
       </div>
     </div>
   </div>

@@ -23,6 +23,8 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { BASE_TOKEN } from '$lib/const';
 
+  let { leaderboardSize = 32 } = $props();
+
   const address = $derived(accountData.address);
   let leaderboardData = $state<Record<string, Record<string, number>>>({});
   let userRankings = $state<Array<{ address: string; totalValue: number }>>([]);
@@ -181,7 +183,7 @@
     </button>
   </div>
 
-  <ScrollArea class="h-36 w-full text-white">
+  <ScrollArea class="h-{leaderboardSize} w-full text-white">
     <div class="mr-3 flex flex-col gap-1">
       {#if isLoading}
         <div class="text-center py-2">Loading leaderboard data...</div>
