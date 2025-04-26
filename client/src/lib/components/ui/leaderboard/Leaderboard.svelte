@@ -21,7 +21,7 @@
   import { usernamesStore } from '$lib/stores/account.svelte';
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { BASE_TOKEN } from '$lib/const';
+  import { AI_AGENT_ADDRESS, BASE_TOKEN } from '$lib/const';
 
   let { leaderboardSize = 0 } = $props();
 
@@ -66,13 +66,9 @@
     try {
       tokenPrices = await getTokenPrices();
       // Create a cache of token prices
+
       for (const tokenPrice of tokenPrices) {
-        if (tokenPrice.ratio == null) continue;
-        if (tokenPrice.best_pool.token0 === kicker) {
-          tokenPriceCache[tokenPrice.best_pool.token1] = tokenPrice.ratio;
-        } else if (tokenPrice.best_pool.token1 === kicker) {
-          tokenPriceCache[tokenPrice.best_pool.token0] = tokenPrice.ratio;
-        }
+        tokenPriceCache[padAddress(tokenPrice.address)!] = tokenPrice.ratio;
       }
     } catch (error) {
       console.error('Failed to fetch token prices from API:', error);
@@ -92,16 +88,23 @@
     const tokenPriceCache = await calculateTokenPrices();
 
     for (const [accountAddress, tokens] of Object.entries(leaderboardData)) {
+      if (padAddress(accountAddress) === AI_AGENT_ADDRESS) {
+        continue;
+      }
+
       let totalValue = 0;
 
-      for (const [tokenAddress, balance] of Object.entries(tokens)) {
+      for (const [rawTokenAddress, balanceStr] of Object.entries(tokens)) {
+        const balance = Number(balanceStr);
+        const tokenAddress = padAddress(rawTokenAddress)!;
         if (tokenAddress === BASE_TOKEN) {
+          console.log('eyyyyyyyyy');
           // For base token (eSTRK), add directly to total
           totalValue += Number(balance / 10 ** 18);
         } else if (tokenPriceCache[tokenAddress]) {
           // For other tokens, convert to base token value using ratio
           const tokenPrice = tokenPriceCache[tokenAddress];
-          totalValue += Number(balance / 10 ** 18) * tokenPrice;
+          totalValue += Number(balance / 10 ** 18) / tokenPrice;
         }
       }
 

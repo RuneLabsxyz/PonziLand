@@ -35,10 +35,19 @@ export interface EkuboApiResponse {
   topPools: PoolInfo[];
 }
 
+export interface PoolKey {
+  token0: string;
+  token1: string;
+  fee: number;
+  tick_spacing: number;
+  extension: string;
+}
+
 export interface TokenPrice {
   symbol: string;
   address: string;
   ratio: number;
+  best_pool: PoolKey;
 }
 
 /**
