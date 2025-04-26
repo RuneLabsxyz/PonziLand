@@ -20,6 +20,6 @@
       {proMode.isProMode ? 'translate-x-6' : 'translate-x-1'}"
       ></span>
     </div>
-    <span class="text-sm font-medium w-[85px]">Mugen Mode</span>
+    <span class="text-sm font-medium w-[85px]">Noob Mode</span>
   </button>
 </Card>
