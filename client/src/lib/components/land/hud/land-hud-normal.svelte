@@ -32,7 +32,7 @@
         const currentAmount = yieldsByToken.get(yield_entry.token) || 0n;
         yieldsByToken.set(
           yield_entry.token,
-          currentAmount + (yield_entry.per_hour / 5n),
+          currentAmount + yield_entry.per_hour / 5n,
         );
       }
 
