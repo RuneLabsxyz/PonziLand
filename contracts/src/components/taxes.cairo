@@ -72,7 +72,6 @@ mod TaxesComponent {
             let current_time = get_block_timestamp();
             // Calculate the tax per neighbor (divided by the maximum possible neighbors)
             let tax_per_neighbor = get_taxes_per_neighbor(land, land_stake);
-
             // Calculate the total tax to distribute (only to existing neighbors)
             let tax_to_distribute = tax_per_neighbor * neighbors_with_owners.into();
 

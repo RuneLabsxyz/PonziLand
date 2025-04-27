@@ -27,7 +27,7 @@ pub fn get_tax_rate_per_neighbor(land: Land) -> u256 {
     let discount_for_level = calculate_discount_for_level(land.level);
 
     if discount_for_level > 0 {
-        land.sell_price * TAX_RATE.into() * discount_for_level.into() / (max_n.into() * 100)
+        land.sell_price * TAX_RATE.into() * (100 - discount_for_level).into() / (max_n.into() * 100)
     } else {
         land.sell_price * TAX_RATE.into() / (max_n.into())
     }
