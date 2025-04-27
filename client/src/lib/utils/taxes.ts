@@ -218,7 +218,6 @@ export function calculateBurnRate(
   neighborCount: number,
 ) {
   let discount_for_level = calculateDiscount(land.level);
-  land.token;
   let maxN = 8;
 
   if (discount_for_level > 0) {
@@ -226,7 +225,7 @@ export function calculateBurnRate(
       land.sellPrice
         .rawValue()
         .multipliedBy(TAX_RATE)
-        .multipliedBy(discount_for_level)
+        .multipliedBy(100 - discount_for_level)
         .dividedBy(maxN * 100)
         .multipliedBy(neighborCount),
     );
@@ -234,7 +233,7 @@ export function calculateBurnRate(
     return CurrencyAmount.fromRaw(
       land.sellPrice
         .rawValue()
-        .multipliedBy(2)
+        .multipliedBy(TAX_RATE)
         .dividedBy(maxN)
         .multipliedBy(neighborCount),
     );
