@@ -46,16 +46,18 @@ const { values, positionals } = parseArgs({
   allowPositionals: true,
 });
 
+const basePath = path.dirname(import.meta.path);
+
 console.log(`Loading environment for '${values.env}'`);
 // Load the environment
 const { parsed: env } = dotenv.config({
-  path: `.env.${values.env}`,
+  path: `${basePath}/.env.${values.env}`,
 });
 
 const config: Configuration = {
   environment: values.env,
   rpc: values.rpc || env!.STARKNET_RPC,
-  basePath: path.dirname(import.meta.path),
+  basePath,
   owner: values.owner || env!.OWNER,
   forceLedger: values.ledger,
 };

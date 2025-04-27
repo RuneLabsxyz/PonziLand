@@ -30,7 +30,7 @@ fi
 
 
 # Grant editor to the DOJO_ACCOUNT_ADDRESS
-../playtest/script.ts owner grant --env mainnet "$DOJO_ACCOUNT_ADDRESS"
+../playtest/script.ts owner grant --ledger --env mainnet "$DOJO_ACCOUNT_ADDRESS"
 echo "Author granted for $DOJO_ACCOUNT_ADDRESS!"
 
 # Build the project
@@ -45,7 +45,7 @@ sozo -P mainnet migrate
 echo "Deployment completed successfully."
 
 # Revoke owner role from the DOJO_ACCOUNT_ADDRESS
-../playtest/script.ts owner revoke --env mainnet "$DOJO_ACCOUNT_ADDRESS"
+../playtest/script.ts owner revoke --ledger --env mainnet "$DOJO_ACCOUNT_ADDRESS"
 echo "Owner role revoked for $DOJO_ACCOUNT_ADDRESS!"
 
 echo "Validating for walnut"
