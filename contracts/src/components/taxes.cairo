@@ -20,7 +20,6 @@ mod TaxesComponent {
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::utils::get_neighbors::{neighbors_with_their_neighbors};
-    use ponzi_land::utils::level_up::calculate_discount_for_level;
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
     use ponzi_land::helpers::taxes::{get_taxes_per_neighbor};

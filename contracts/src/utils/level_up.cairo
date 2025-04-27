@@ -4,8 +4,8 @@ use ponzi_land::consts::{FOUR_DAYS_IN_SECONDS, TWO_DAYS_IN_SECONDS};
 fn calculate_discount_for_level(level: Level) -> u16 {
     let discount_for_level: u16 = match level {
         Level::Zero => 0,
-        Level::First => 15,
-        Level::Second => 30,
+        Level::First => 10,
+        Level::Second => 15,
     };
     discount_for_level
 }

@@ -245,9 +245,9 @@ function calculateDiscount(level: number) {
   if (level == 1) {
     return 0;
   } else if (level == 2) {
-    return 15;
+    return 10;
   } else if (level == 3) {
-    return 30;
+    return 15;
   }
   return 0;
 }
