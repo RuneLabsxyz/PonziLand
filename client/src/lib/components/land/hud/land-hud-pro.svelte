@@ -18,15 +18,15 @@
     <div class="text-center pb-2 text-xl low-opacity text-ponzi-number">
       Total Tokens Earned
       <div
-        class="{totalYieldValue - Number(burnRate.toString()) >= 0
+        class="{(totalYieldValue / 5) - Number(burnRate.toString()) >= 0
           ? 'text-green-500'
           : 'text-red-500'} text-2xl flex items-center justify-center"
       >
         <span
-          >{totalYieldValue - Number(burnRate.toString()) >= 0
+          >{(totalYieldValue / 5) - Number(burnRate.toString()) >= 0
             ? '+ '
             : '- '}{Math.abs(
-            totalYieldValue - Number(burnRate.toString()),
+            (totalYieldValue / 5) - Number(burnRate.toString()),
           ).toFixed(2)}</span
         >
         <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-5 w-5" />

@@ -227,7 +227,8 @@ export function calculateBurnRate(
         .multipliedBy(TAX_RATE)
         .multipliedBy(100 - discount_for_level)
         .dividedBy(maxN * 100)
-        .multipliedBy(neighborCount),
+        .multipliedBy(neighborCount)
+        .dividedBy(5),
     );
   } else {
     return CurrencyAmount.fromRaw(
@@ -235,7 +236,8 @@ export function calculateBurnRate(
         .rawValue()
         .multipliedBy(TAX_RATE)
         .dividedBy(maxN)
-        .multipliedBy(neighborCount),
+        .multipliedBy(neighborCount)
+        .dividedBy(5),
     );
   }
 }
