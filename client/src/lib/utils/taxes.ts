@@ -223,6 +223,7 @@ export function calculateBurnRate(
   let base = land.sellPrice
     .rawValue()
     .multipliedBy(TAX_RATE)
+    .multipliedBy(GAME_SPEED)
     .dividedBy(maxN * 100)
     .multipliedBy(neighborCount);
 
