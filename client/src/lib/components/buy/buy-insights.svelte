@@ -24,7 +24,7 @@
 
   let nbNeighbors = $state(0);
 
-  let taxes = $derived(calculateBurnRate(land as LandWithActions, 1 || 0)); // 1 neighbor as this is per neighbor
+  let taxes = $derived(calculateBurnRate(land as LandWithActions, 1)); // 1 neighbor as this is per neighbor
 
   let neighbors = $derived(land?.getNeighbors());
 
