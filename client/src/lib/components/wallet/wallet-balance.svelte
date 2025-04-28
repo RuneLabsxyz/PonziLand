@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { TokenBalances } from '@dojoengine/torii-wasm/node';
   import accountData from '$lib/account.svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
@@ -13,12 +14,18 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { BASE_TOKEN } from '$lib/const';
   import { padAddress } from '$lib/utils';
+  import { onMount } from 'svelte';
+  import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
+  import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
 
   const { store, client: sdk, accountManager } = useDojo();
+  const address = $derived(accountData.address);
 
-  let tokenBalances = $state<
-    { token: Token; balance: Promise<bigint | null>; icon: string }[]
-  >([]);
+  // -------------------------------------------------
+
+  let tokenBalances = $state<{ token: Token; balance: bigint; icon: string }[]>(
+    [],
+  );
 
   let tokenPrices = $state<
     { symbol: string; address: string; ratio: number | null }[]
@@ -26,28 +33,9 @@
 
   let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
 
-  const address = $derived(accountData.address);
+  // -------------------------------------------------
 
-  async function fetchBalanceData() {
-    const account = accountManager!.getProvider()?.getWalletAccount();
-
-    if (!account || !address) {
-      return;
-    }
-    const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
-    tokenBalances = data.availableTokens.map((token) => {
-      const balance = fetchTokenBalance(token.address, account, provider);
-
-      return {
-        token,
-        balance,
-        icon: token.images.icon,
-      };
-    });
-
-    tokenPrices = await getTokenPrices();
-    calculateTotalBalance();
-  }
+  let subscriptionRef = $state<Subscription>();
 
   async function calculateTotalBalance() {
     if (!tokenBalances.length || !tokenPrices.length) return;
@@ -90,9 +78,98 @@
     }
   }
 
-  $effect(() => {
-    fetchBalanceData();
+  onMount(async () => {
+    await handleRefreshBalances();
   });
+
+  const setTokenBalances = (items: TokenBalance[]) => {
+    const itemBalances = items.map((item) => {
+      const token = data.availableTokens.find(
+        (token) => token.address === padAddress(item.contract_address),
+      );
+      if (!token) {
+        return null;
+      }
+      // Convert the balance to a BigInt
+      const balance = BigInt(item.balance);
+
+      return {
+        token,
+        balance,
+        icon: token.images.icon,
+      };
+    });
+
+    const cleanedTokenBalances = itemBalances.filter((item) => item !== null);
+
+    tokenBalances = cleanedTokenBalances as {
+      token: Token;
+      balance: bigint;
+      icon: string;
+    }[];
+  };
+
+  const handleRefreshBalances = async () => {
+    if (subscriptionRef) {
+      subscriptionRef.cancel();
+    }
+
+    const request = {
+      contractAddresses: data.availableTokens.map((token) => token.address),
+      accountAddresses: address ? [address] : [],
+      tokenIds: [],
+    };
+
+    const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
+      contractAddresses: request.contractAddresses ?? [],
+      accountAddresses: request.accountAddresses ?? [],
+      tokenIds: request.tokenIds ?? [],
+      callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
+        if (data) {
+          console.log('Token balance update:', data);
+          updateTokenBalance(data);
+          calculateTotalBalance();
+        }
+        if (error) {
+          console.error(error);
+          return;
+        }
+      },
+    });
+    // Add the subscription ref
+    subscriptionRef = subscription;
+
+    tokenPrices = await getTokenPrices();
+    setTokenBalances(tokenBalances.items);
+    calculateTotalBalance();
+  };
+
+  const updateTokenBalance = (item: TokenBalance) => {
+    const token = data.availableTokens.find(
+      (token) => token.address === padAddress(item.contract_address),
+    );
+    if (!token) {
+      return null;
+    }
+    // Convert the balance to a BigInt
+    const balance = BigInt(item.balance);
+
+    const tokenBalance = {
+      token,
+      balance,
+      icon: token.images.icon,
+    };
+
+    const index = tokenBalances.findIndex(
+      (tb) => tb.token.address === tokenBalance.token.address,
+    );
+
+    if (index !== -1) {
+      tokenBalances[index] = tokenBalance;
+    } else {
+      tokenBalances.push(tokenBalance);
+    }
+  };
 </script>
 
 {#if totalBalanceInBaseToken}
@@ -108,7 +185,7 @@
 
 <div class="flex justify-between items-center mr-3 mb-2">
   <div class="font-bold text-stroke-none">BALANCE</div>
-  <button onclick={fetchBalanceData} aria-label="Refresh balance">
+  <button onclick={handleRefreshBalances} aria-label="Refresh balance">
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 32 32"
@@ -122,7 +199,7 @@
     >
   </button>
 </div>
-
+<!-- 
 <ScrollArea class="h-36 w-full">
   <div class="mr-3 flex flex-col gap-1">
     {#each tokenBalances as tokenBalance}
@@ -145,6 +222,26 @@
           <TokenDisplay amount={balance ?? 0n} token={tokenBalance.token} />
         </div>
       {/await}
+    {/each}
+  </div>
+</ScrollArea> -->
+
+<ScrollArea class="h-36 w-full">
+  <div class="mr-3 flex flex-col gap-1">
+    {#each tokenBalances as tokenBalance}
+      <div class="flex justify-between items-center relative">
+        <Avatar.Root class="h-6 w-6">
+          <Avatar.Image
+            src={tokenBalance.token.images.icon}
+            alt={tokenBalance.token.symbol}
+          />
+          <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
+        </Avatar.Root>
+        <TokenDisplay
+          amount={tokenBalance.balance}
+          token={tokenBalance.token}
+        />
+      </div>
     {/each}
   </div>
 </ScrollArea>
