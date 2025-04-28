@@ -161,7 +161,11 @@
             {#if actionType === 'stake'}
               <div class="space-y-3">
                 <Label>Amount to add to stake</Label>
-                <Input bind:value={stakeIncrease} placeholder="Enter amount" />
+                <Input
+                  type="number"
+                  bind:value={stakeIncrease}
+                  placeholder="Enter amount"
+                />
                 <Button
                   disabled={$disabled}
                   onclick={handleIncreaseStake}
@@ -173,7 +177,11 @@
             {:else}
               <div class="space-y-3">
                 <Label>Enter the new price</Label>
-                <Input bind:value={priceIncrease} placeholder="Enter amount" />
+                <Input
+                  type="number"
+                  bind:value={priceIncrease}
+                  placeholder="Enter amount"
+                />
                 <Button
                   disabled={$disabled || !isPriceValid}
                   onclick={handleIncreasePrice}
