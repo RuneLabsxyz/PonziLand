@@ -8,23 +8,31 @@
   import { Slider } from '../ui/slider';
   import BuyInsightsNeighborGrid from './insights/buy-insights-neighbor-grid.svelte';
   import { toNumber } from 'ethers';
-  import { calculateBurnRate } from '$lib/utils/taxes';
+  import { calculateBurnRate, calculateTaxes } from '$lib/utils/taxes';
 
   let {
-    sellAmountVal,
-    stakeAmountVal,
+    sellAmountVal = undefined,
+    stakeAmountVal = undefined,
     selectedToken,
     land,
   }: {
-    sellAmountVal: string;
-    stakeAmountVal: string;
+    sellAmountVal: string | undefined;
+    stakeAmountVal: string | undefined;
     selectedToken: Token | undefined;
     land: LandWithActions;
   } = $props();
 
   let nbNeighbors = $state(0);
 
-  let taxes = $derived(calculateBurnRate(land as LandWithActions, 1)); // 1 neighbor as this is per neighbor
+  let taxes = $state(0); // 1 neighbor as this is per neighbor
+
+  $effect(() => {
+    if (sellAmountVal) {
+      taxes = calculateTaxes(Number(sellAmountVal));
+    } else {
+      taxes = Number(calculateBurnRate(land as LandWithActions, 1));
+    }
+  });
 
   let neighbors = $derived(land?.getNeighbors());
 
@@ -104,10 +112,20 @@
     };
   });
 
-  let estimatedNukeTimeSeconds = $derived.by(() => {
-    const lastPayTime =
-      land.lastPayTime == 0 ? Date.now() / 1000 : toNumber(land.lastPayTime);
-    return estimateNukeTime(land);
+  let estimatedNukeTimeSeconds = $state(0);
+
+  $effect(() => {
+    if (stakeAmountVal) {
+      let remainingHours = Number(stakeAmountVal) / (taxes * nbNeighbors);
+      let remainingSeconds = remainingHours * 3600;
+
+      const now = Date.now() / 1000;
+      const remainingNukeTimeFromNow = remainingSeconds;
+
+      estimatedNukeTimeSeconds = remainingNukeTimeFromNow;
+    } else {
+      estimatedNukeTimeSeconds = estimateNukeTime(land);
+    }
   });
 
   let estimatedTimeString = $derived.by(() => {

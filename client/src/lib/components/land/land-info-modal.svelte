@@ -187,8 +187,8 @@
           <BuyInsights
             {land}
             selectedToken={land.token}
-            sellAmountVal={priceIncrease}
-            stakeAmountVal={stakeAfter.toString()}
+            sellAmountVal={undefined}
+            stakeAmountVal={undefined}
           />
         </div>
       </div>

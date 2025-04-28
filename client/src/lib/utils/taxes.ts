@@ -239,6 +239,20 @@ export function calculateBurnRate(
   }
 }
 
+export function calculateTaxes(sellAmount: number) {
+  const taxRate = TAX_RATE;
+  const gameSpeed = GAME_SPEED;
+  const maxN = 8;
+
+  if (sellAmount <= 0 || isNaN(sellAmount)) {
+    return 0;
+  }
+
+  const taxes = (sellAmount * taxRate * gameSpeed) / (maxN * 100);
+
+  return taxes;
+}
+
 function calculateDiscount(level: number) {
   if (level == 1) {
     return 0;
