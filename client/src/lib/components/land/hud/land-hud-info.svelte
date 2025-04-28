@@ -51,10 +51,7 @@
         console.log('tokenPrice', tokenPrice);
         if (tokenPrice) {
           burnRateInBaseToken = CurrencyAmount.fromScaled(
-            burnRate
-              .rawValue()
-              .dividedBy(tokenPrice.ratio || 0)
-              .toString(),
+            burnRate.dividedBy(tokenPrice.ratio || 0).toString(),
             land?.token,
           );
         }
