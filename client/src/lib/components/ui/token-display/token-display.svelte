@@ -1,15 +1,9 @@
 <script lang="ts">
   import SwapModal from '$lib/components/swap/swap-modal.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { ToriiQueryBuilder } from '@dojoengine/sdk';
   import { Tween } from 'svelte/motion';
-
-  const { client, accountManager } = useDojo();
-  const account = accountManager!.getProvider()?.getWalletAccount();
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;

@@ -1,22 +1,20 @@
 <script lang="ts">
-  import type { TokenBalances } from '@dojoengine/torii-wasm/node';
   import accountData from '$lib/account.svelte';
-  import { fetchTokenBalance } from '$lib/accounts/balances';
+  import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
+  import { BASE_TOKEN } from '$lib/const';
   import { useDojo } from '$lib/contexts/dojo';
   import data from '$profileData';
-  import { dojoConfig } from '$lib/dojoConfig';
-  import { DojoProvider } from '@dojoengine/core';
   import { ScrollArea } from '../ui/scroll-area';
   import TokenDisplay from '../ui/token-display/token-display.svelte';
   import type { Token } from '$lib/interfaces';
-  import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { BASE_TOKEN } from '$lib/const';
   import { padAddress } from '$lib/utils';
-  import { onMount } from 'svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
   import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
+  import { onMount } from 'svelte';
+  import { ScrollArea } from '../ui/scroll-area';
+  import TokenDisplay from '../ui/token-display/token-display.svelte';
 
   const { store, client: sdk, accountManager } = useDojo();
   const address = $derived(accountData.address);
@@ -199,32 +197,6 @@
     >
   </button>
 </div>
-<!-- 
-<ScrollArea class="h-36 w-full">
-  <div class="mr-3 flex flex-col gap-1">
-    {#each tokenBalances as tokenBalance}
-      {#await tokenBalance.balance}
-        <div class="flex justify-between items-center">
-          <div class="flex flex-col items-end">
-            <div>loading...</div>
-            <span class="text-gray-500">loading</span>
-          </div>
-        </div>
-      {:then balance}
-        <div class="flex justify-between items-center relative">
-          <Avatar.Root class="h-6 w-6">
-            <Avatar.Image
-              src={tokenBalance.token.images.icon}
-              alt={tokenBalance.token.symbol}
-            />
-            <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
-          </Avatar.Root>
-          <TokenDisplay amount={balance ?? 0n} token={tokenBalance.token} />
-        </div>
-      {/await}
-    {/each}
-  </div>
-</ScrollArea> -->
 
 <ScrollArea class="h-36 w-full">
   <div class="mr-3 flex flex-col gap-1">
