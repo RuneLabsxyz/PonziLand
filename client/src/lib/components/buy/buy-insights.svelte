@@ -16,8 +16,8 @@
     selectedToken,
     land,
   }: {
-    sellAmountVal: string | undefined;
-    stakeAmountVal: string | undefined;
+    sellAmountVal?: string;
+    stakeAmountVal?: string;
     selectedToken: Token | undefined;
     land: LandWithActions;
   } = $props();
