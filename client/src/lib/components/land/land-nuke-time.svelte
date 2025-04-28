@@ -13,15 +13,7 @@
 
   function calculateNukeTime(): string | undefined {
     if (land == undefined) return;
-    console.log('Calculating nuke time...', land.stakeAmount.toString());
-    return parseNukeTime(
-      estimateNukeTime(
-        land.sellPrice.rawValue().toNumber(),
-        land.stakeAmount.rawValue().toNumber(),
-        land.getNeighbors().getNeighbors().length,
-        Number(land.lastPayTime),
-      ),
-    ).toString();
+    return parseNukeTime(estimateNukeTime(land)).toString();
   }
 
   function formatNukeTime(nukeTime: string | undefined) {

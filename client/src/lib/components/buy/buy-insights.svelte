@@ -1,8 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land.svelte';
   import type { Token } from '$lib/interfaces';
-  import { estimateNukeTime, estimateTax } from '$lib/utils/taxes';
-  import { Redo } from 'lucide-svelte';
+  import { estimateNukeTime } from '$lib/utils/taxes';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import { Label } from '../ui/label';
   import { Slider } from '../ui/slider';
