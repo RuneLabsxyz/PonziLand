@@ -8,6 +8,7 @@
   import { Slider } from '../ui/slider';
   import BuyInsightsNeighborGrid from './insights/buy-insights-neighbor-grid.svelte';
   import { toNumber } from 'ethers';
+  import { calculateBurnRate } from '$lib/utils/taxes';
 
   let {
     sellAmountVal,
@@ -21,11 +22,14 @@
     land: LandWithActions;
   } = $props();
 
-  let taxes = $derived(estimateTax(parseFloat(sellAmountVal)));
+  let nbNeighbors = $state(0);
+
+  let taxes = $derived(calculateBurnRate(land as LandWithActions, 1 || 0)); // 1 neighbor as this is per neighbor
 
   let neighbors = $derived(land?.getNeighbors());
 
-  let nbNeighbors = $state(0);
+  const maxNumberOfNeighbors = 8;
+
   $effect(() => {
     nbNeighbors = neighbors.getNeighbors().length;
   });
@@ -151,14 +155,14 @@
       <div class="flex justify-between">
         <p class="opacity-50">Per Neighbors</p>
         <p>
-          -{taxes.ratePerNeighbour}
+          -{taxes}
           <span class="opacity-50">{selectedToken?.symbol}/h</span>
         </p>
       </div>
       <div class="flex justify-between">
         <p class="opacity-50">Max:</p>
         <p>
-          -{taxes.maxRate}
+          -{Number(taxes) * maxNumberOfNeighbors}
           <span class="opacity-50">{selectedToken?.symbol}/h</span>
         </p>
       </div>
@@ -169,7 +173,7 @@
           <span class="opacity-50"> neighbors: </span>
         </p>
         <p class="text-right">
-          -{taxes.ratePerNeighbour * nbNeighbors}
+          -{Number(taxes) * nbNeighbors}
           <span class="opacity-50">{selectedToken?.symbol}/h</span>
         </p>
       </div>
