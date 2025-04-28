@@ -13,15 +13,7 @@
 
   function calculateNukeTime(): string | undefined {
     if (land == undefined) return;
-    console.log('Calculating nuke time...', land.stakeAmount.toString());
-    return parseNukeTime(
-      estimateNukeTime(
-        land.sellPrice.rawValue().toNumber(),
-        land.stakeAmount.rawValue().toNumber(),
-        land.getNeighbors().getNeighbors().length,
-        Number(land.lastPayTime),
-      ),
-    ).toString();
+    return parseNukeTime(estimateNukeTime(land)).toString();
   }
 
   function formatNukeTime(nukeTime: string | undefined) {
@@ -31,7 +23,7 @@
 </script>
 
 <div class="flex items-center gap-2 text-ponzi-number text-red-500">
-  <img src="/extra/nuke.png" alt="Nuke Shield" class="h-6 w-6" />
+  <img src="/extra/nuke.png" alt="Nuke Symbol" class="h-6 w-6" />
   <span>{formatNukeTime(nukeTime)}</span>
 </div>
 

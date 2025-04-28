@@ -107,12 +107,7 @@
   let estimatedNukeTimeSeconds = $derived.by(() => {
     const lastPayTime =
       land.lastPayTime == 0 ? Date.now() / 1000 : toNumber(land.lastPayTime);
-    return estimateNukeTime(
-      parseFloat(sellAmountVal),
-      parseFloat(stakeAmountVal),
-      nbNeighbors,
-      lastPayTime,
-    );
+    return estimateNukeTime(land);
   });
 
   let estimatedTimeString = $derived.by(() => {

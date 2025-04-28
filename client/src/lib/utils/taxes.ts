@@ -138,21 +138,26 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
 };
 
 export const estimateNukeTime = (
-  sellPrice: number,
-  remainingStake: number,
-  neighbourNumber: number,
-  lastPayTime: number,
+  land: LandWithActions,
+  neighbourNumber: number | undefined = undefined,
 ) => {
-  const tax = estimateTax(sellPrice);
+  const baseTime = 3600;
+  let sellPrice = land.sellPrice.rawValue().toNumber();
+  let remainingStake = land.stakeAmount.rawValue().toNumber();
+  let lastPayTime = Number(land.lastPayTime);
 
+  if (!neighbourNumber) {
+    neighbourNumber = land.getNeighbors().getNeighbors().length;
+  }
   if (sellPrice <= 0 || isNaN(sellPrice)) {
     return 0;
   }
-
-  const rateOfActualNeighbours = tax.ratePerNeighbour * neighbourNumber;
+  const rateOfActualNeighbours = Number(
+    calculateBurnRate(land, neighbourNumber),
+  );
 
   const remainingHours = remainingStake / rateOfActualNeighbours;
-  const remainingSeconds = remainingHours * tax.baseTime;
+  const remainingSeconds = remainingHours * baseTime;
 
   const now = Date.now() / 1000;
   const timeSinceLastPay = now - lastPayTime;

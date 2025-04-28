@@ -340,13 +340,11 @@ export function useLands(): LandsStore | undefined {
         },
         getEstimatedNukeTime() {
           return estimateNukeTime(
-            land.sellPrice.rawValue().toNumber(),
-            land.stakeAmount.rawValue().toNumber(),
+            land as LandWithActions,
             new Neighbors({
               location: land.location,
               source: landWithActions,
             }).getNeighbors().length,
-            toNumber(land.lastPayTime),
           );
         },
         getNeighbors() {
