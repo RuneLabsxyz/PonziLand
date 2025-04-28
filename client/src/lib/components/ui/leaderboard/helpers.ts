@@ -20,7 +20,10 @@ export function formatValue(value: string): string {
     ? value.replace('00x', '0x')
     : value;
 
-  const bigValue = BigInt(correctedValue);
+  // remove after decimal point
+  const cleanedDecimals = correctedValue.split('.')[0];
+
+  const bigValue = BigInt(cleanedDecimals);
 
   return bigValue.toString(10);
 }
