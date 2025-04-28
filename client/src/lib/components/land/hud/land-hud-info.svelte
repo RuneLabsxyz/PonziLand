@@ -12,6 +12,8 @@
   import LandHudNormal from './land-hud-normal.svelte';
   import LandOverview from '../land-overview.svelte';
   import { BASE_TOKEN } from '$lib/const';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
+  import Button from '$lib/components/ui/button/button.svelte';
 
   let {
     land,
@@ -128,6 +130,14 @@
   <div class="py-4 pl-4">
     {#if showLand}
       <LandOverview {land} {isOwner} />
+      <Button
+        onclick={() => {
+          uiStore.showModal = true;
+          uiStore.modalType = isOwner ? 'land-info' : 'buy';
+        }}
+      >
+        {isOwner ? 'LAND INFO' : 'BUY'}
+      </Button>
     {/if}
   </div>
   {#if proMode.isPro}
