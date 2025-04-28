@@ -72,7 +72,6 @@
       unsub();
     };
   });
-  
 </script>
 
 <div class="flex gap-2 items-center justify-end w-full text-stroke-none">
