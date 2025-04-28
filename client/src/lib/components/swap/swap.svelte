@@ -12,6 +12,7 @@
   import { onMount } from 'svelte';
   import Button from '../ui/button/button.svelte';
   import TokenSelect from './token-select.svelte';
+  import { Card } from '../ui/card';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
@@ -39,6 +40,8 @@
         buyAmount?: undefined;
       }
   ) = $props();
+
+  let noRouteAvailable = $state(false);
 
   onMount(async () => {
     if (accountManager?.getProvider()?.getAccount() == null) {
@@ -129,9 +132,16 @@
     if (!data) {
       return;
     }
+    noRouteAvailable = false;
+
     // Fetch some quotes
     avnu.fetchQuotes(data).then((q) => {
       quotes = q;
+      if (quotes.length == 0) {
+        noRouteAvailable = true;
+        return;
+      }
+
       if (data.leadingSide == 'buy') {
         sellAmountVal = CurrencyAmount.fromUnscaled(q[0].sellAmount).toString();
       } else {
@@ -224,3 +234,18 @@
   </div>
   <Button onclick={swap} disabled={quotes.length <= 0}>Swap</Button>
 </div>
+
+{#if noRouteAvailable}
+  <div class="flex justify-center mt-5">
+    <Card class="bg-red-800 text-wrap text-lg w-fit max-w-[27rem]">
+      <p class="p-2">
+        No route was found. That usually means that the liquidity pool available
+        for this token can't cover the amount you requested.
+      </p>
+      <p class="p-2">
+        Try selling the token you want to buy to re-balance the pool, or hope
+        that someone else will do it, and try again later.
+      </p>
+    </Card>
+  </div>
+{/if}
