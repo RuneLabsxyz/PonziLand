@@ -537,9 +537,9 @@ pub mod actions {
                     let land_stake = store.land_stake(neighbor.location);
                     if land_stake.amount > 0 {
                         let token = neighbor.token_used;
+                        //TODO: WHY THIS???? remove or fix after playtest
                         let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
                         let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
-
                         yield_info
                             .append(
                                 YieldInfo {
