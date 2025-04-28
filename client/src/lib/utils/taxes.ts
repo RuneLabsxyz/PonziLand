@@ -137,22 +137,23 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
   return infosFormatted;
 };
 
-export const estimateNukeTime = (
-  sellPrice: number,
-  remainingStake: number,
-  neighbourNumber: number,
-  lastPayTime: number,
-) => {
-  const tax = estimateTax(sellPrice);
+export const estimateNukeTime = (land: LandWithActions) => {
+  const baseTime = 3600;
+  let sellPrice = land.sellPrice.rawValue().toNumber();
+  let remainingStake = land.stakeAmount.rawValue().toNumber();
+  let neighbourNumber = land.getNeighbors().getNeighbors().length;
+  let lastPayTime = Number(land.lastPayTime);
 
   if (sellPrice <= 0 || isNaN(sellPrice)) {
     return 0;
   }
 
-  const rateOfActualNeighbours = tax.ratePerNeighbour * neighbourNumber;
+  const rateOfActualNeighbours = Number(
+    calculateBurnRate(land, neighbourNumber),
+  );
 
   const remainingHours = remainingStake / rateOfActualNeighbours;
-  const remainingSeconds = remainingHours * tax.baseTime;
+  const remainingSeconds = remainingHours * baseTime;
 
   const now = Date.now() / 1000;
   const timeSinceLastPay = now - lastPayTime;
@@ -183,32 +184,6 @@ export const parseNukeTime = (givenTime: number) => {
     hours,
     days,
     toString: () => parts.join(' '),
-  };
-};
-
-export const estimateTax = (sellPrice: number) => {
-  if (sellPrice <= 0 || isNaN(sellPrice)) {
-    return {
-      taxRate: 0,
-      baseTime: 0,
-      maxRate: 0,
-      ratePerNeighbour: 0,
-    };
-  }
-
-  const gameSpeed = GAME_SPEED;
-  const taxRate = 0.02;
-  const baseTime = 3600;
-  const maxNeighbours = 8;
-
-  const maxRate = sellPrice * taxRate * gameSpeed;
-  const maxRatePerNeighbour = maxRate / maxNeighbours;
-
-  return {
-    taxRate,
-    baseTime,
-    maxRate,
-    ratePerNeighbour: maxRatePerNeighbour,
   };
 };
 
