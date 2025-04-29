@@ -7,10 +7,10 @@
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import { padAddress } from '$lib/utils';
   import { AI_AGENT_ADDRESS, BASE_TOKEN } from '$lib/const';
-  import { ScrollArea } from '../../ui/scroll-area';
-  import { formatAddress, formatValue } from './helpers';
+  import { ScrollArea } from '$lib/components/ui/scroll-area';
+  import { formatAddress, formatValue } from '../helpers';
   import { onMount } from 'svelte';
-  import { fetchTokenBalances } from './request';
+  import { fetchTokenBalances } from '../request';
 
   let { leaderboardSize = 0, address } = $props();
 

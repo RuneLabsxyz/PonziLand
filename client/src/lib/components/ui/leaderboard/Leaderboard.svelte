@@ -4,7 +4,7 @@
   import { fetchUsernamesBatch, getUserAddresses } from './request';
   import Card from '../../ui/card/card.svelte';
   import { usernamesStore } from '$lib/stores/account.svelte';
-  import AssetLeaderboard from './AssetLeaderboard.svelte';
+  import AssetLeaderboard from './leaderboards/AssetLeaderboard.svelte';
 
   let { leaderboardSize = 0 } = $props();
 
