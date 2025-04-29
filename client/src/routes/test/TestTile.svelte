@@ -18,7 +18,7 @@
       }
       console.log('land changed');
       changing = true;
-      const timeoutId = setTimeout(() => (changing = false), 100);
+      const timeoutId = setTimeout(() => (changing = false), 1000);
       return () => clearTimeout(timeoutId);
     });
   });
