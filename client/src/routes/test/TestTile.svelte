@@ -49,6 +49,6 @@
 
   .land-changing {
     background-color: #ffff00 !important; /* dark yellow */
-    transition: none;
+    transition: background-color 0.5s ease-in-out;
   }
 </style>
