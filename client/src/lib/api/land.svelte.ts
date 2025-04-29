@@ -10,7 +10,7 @@ import {
 } from '$lib/models.gen';
 import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import { fromDojoLevel } from '$lib/utils/level';
+import { fromDojoLevel, type Level } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
 import {
   QueryBuilder,
@@ -41,8 +41,6 @@ export type TransactionResult = Promise<
     }
   | undefined
 >;
-
-export type Level = 1 | 2 | 3;
 
 export type LandWithStake = Land & LandStake;
 export type LandAuction = Land & Auction;

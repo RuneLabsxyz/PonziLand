@@ -1,5 +1,6 @@
-import type { Level } from '$lib/api/land.svelte';
 import type { LevelEnum as LevelModel } from '$lib/models.gen';
+
+export type Level = 1 | 2 | 3;
 
 export function getEnumVariant(level: LevelModel) {
   if (typeof level == 'string') {
