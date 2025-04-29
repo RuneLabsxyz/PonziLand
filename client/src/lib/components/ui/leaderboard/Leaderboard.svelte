@@ -5,11 +5,13 @@
   import Card from '../../ui/card/card.svelte';
   import { usernamesStore } from '$lib/stores/account.svelte';
   import AssetLeaderboard from './leaderboards/AssetLeaderboard.svelte';
+  import LandBuyLeaderboard from './leaderboards/LandBuyLeaderboard.svelte';
 
   let { leaderboardSize = 0 } = $props();
 
   const address = $derived(accountData.address);
   let loading = $state(true);
+  let displayedLeaderboard = $state(0);
 
   async function getUsernames() {
     try {
@@ -66,9 +68,31 @@
       </svg>
     </button>
   </div>
+
+  <div class="flex mb-4">
+    <button
+      class="flex-1 py-2 text-white {displayedLeaderboard === 0
+        ? 'bg-purple-600'
+        : 'bg-purple-800'}"
+      onclick={() => (displayedLeaderboard = 0)}
+    >
+      Assets
+    </button>
+    <button
+      class="flex-1 py-2 text-white {displayedLeaderboard === 1
+        ? 'bg-purple-600'
+        : 'bg-purple-800'}"
+      onclick={() => (displayedLeaderboard = 1)}
+    >
+      Land Buy
+    </button>
+  </div>
+
   {#if loading}
     <div class="text-center py-2">Loading leaderboard data...</div>
-  {:else}
+  {:else if displayedLeaderboard === 0}
     <AssetLeaderboard {leaderboardSize} {address} />
+  {:else}
+    <LandBuyLeaderboard {leaderboardSize} {address} />
   {/if}
 </Card>
