@@ -9,6 +9,22 @@ import { BASE_TOKEN } from '$lib/const';
 
 const blackList = address_blacklist.map((e) => BigInt(e));
 
+export async function getUserAddresses() {
+  try {
+    const res = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: `SELECT address FROM "ponzi_land-AddressAuthorizedEvent"`,
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error fetching addresses:', err);
+    return [];
+  }
+}
+
 export async function fetchTokenBalances() {
   try {
     const response = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {

@@ -2,15 +2,17 @@
   import accountData from '$lib/account.svelte';
   import { onMount } from 'svelte';
 
-  import { fetchTokenBalances, fetchUsernamesBatch } from './request';
-  import { useAvnu, type SwapPriceParams } from '$lib/utils/avnu.svelte';
+  import {
+    fetchTokenBalances,
+    fetchUsernamesBatch,
+    getUserAddresses,
+  } from './request';
   import {
     getTokenPrices,
     type TokenPrice,
   } from '$lib/components/defi/ekubo/requests';
   //Types
   import type { Token } from '$lib/interfaces';
-
   //UI
   import Card from '../../ui/card/card.svelte';
   import { ScrollArea } from '../../ui/scroll-area';
@@ -20,8 +22,9 @@
 
   import { usernamesStore } from '$lib/stores/account.svelte';
   import { padAddress } from '$lib/utils';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { AI_AGENT_ADDRESS, BASE_TOKEN } from '$lib/const';
+
+  import AssetLeaderboard from './AssetLeaderboard.svelte';
 
   let { leaderboardSize = 0 } = $props();
 
@@ -33,28 +36,7 @@
 
   const VERIFIED_ONLY = true;
 
-  let kicker =
-    '0x5735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58';
-
   let userRank = $state<number | null>(null);
-
-  /**
-   * @notice Calculates the price of a token amount in base currency (estark)
-   * @dev Uses API to fetch token prices
-   * @param tokenAddress The address of the token to price
-   * @returns The price in base currency as a CurrencyAmount
-   */
-  function getPriceInBaseCurrency(tokenAddress: string): CurrencyAmount {
-    if (!tokenAddress) {
-      throw new Error('Invalid token address');
-    }
-    const tokenPrice = tokenPrices.find((tp) => tp.address === tokenAddress);
-
-    if (tokenPrice) {
-      return CurrencyAmount.fromUnscaled(tokenPrice.ratio);
-    }
-    return CurrencyAmount.fromScaled(0);
-  }
 
   /**
    * @notice Calculates token prices for all unique tokens
@@ -117,17 +99,22 @@
     return userAssets.sort((a, b) => b.totalValue - a.totalValue);
   }
 
-  /**
-   * @notice Fetches usernames for all addresses in the rankings
-   * @dev Uses batch request to get usernames efficiently
-   */
-  async function fetchUsernames() {
+  async function refreshUsernames() {
     try {
-      const addresses = userRankings.map((user) => user.address);
+      const addresses = usernamesStore.getAddresses().map((a) => a.address);
+
+      if (addresses.length === 0) {
+        console.warn('No addresses to lookup.');
+        return;
+      }
+
+      console.log('Refreshing usernames for addresses:', addresses);
+
       const fetchedUsernames = await fetchUsernamesBatch(addresses);
-      usernamesStore.updateUsernames(fetchedUsernames);
+
+      await usernamesStore.updateUsernames(fetchedUsernames);
     } catch (error) {
-      console.error('Error fetching usernames:', error);
+      console.error('Error refreshing usernames:', error);
     }
   }
 
@@ -138,10 +125,18 @@
   async function refreshLeaderboard() {
     isLoading = true;
     try {
+      const addresses: Array<{ address: string }> = await getUserAddresses();
+
+      const formattedAddresses = addresses.map(({ address }) => ({
+        address: address,
+      }));
+
+      usernamesStore.addAddresses(formattedAddresses);
+
+      refreshUsernames();
+
       leaderboardData = await fetchTokenBalances();
       userRankings = await calculateUserAssets();
-
-      await fetchUsernames();
 
       if (VERIFIED_ONLY) {
         userRankings = userRankings.filter(
