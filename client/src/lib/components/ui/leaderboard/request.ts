@@ -25,6 +25,22 @@ export async function getUserAddresses() {
   }
 }
 
+export async function getBuyEvents() {
+  try {
+    const res = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: `SELECT buyer FROM "ponzi_land-LandBoughtEvent" `,
+    });
+
+    const data = await res.json();
+    return data;
+  } catch (err) {
+    console.error('Error fetching addresses:', err);
+    return [];
+  }
+}
+
 export async function fetchTokenBalances() {
   try {
     const response = await fetch(`${PUBLIC_DOJO_TORII_URL}/sql`, {
