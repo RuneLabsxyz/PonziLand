@@ -98,7 +98,6 @@ export function parseTokenBalances(
 export async function fetchUsernamesBatch(
   addresses: string[],
 ): Promise<Record<string, string>> {
-  console.log('Fetching usernames for addresses:', addresses);
   try {
     const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/lookup`, {
       method: 'POST',
@@ -121,8 +120,6 @@ export async function fetchUsernamesBatch(
         usernameMap[user.address] = user.username;
       }
     });
-
-    console.log('Fetched usernames:', usernameMap);
 
     return usernameMap;
   } catch (error) {
