@@ -1,17 +1,10 @@
 import { $, file, write } from "bun";
 import { Configuration } from "../env";
-import { COLORS, connect, Token, TokenCreation } from "../utils";
-import { byteArray, cairo, Calldata, CallData } from "starknet";
+import { COLORS, connect, doTransaction, Token, TokenCreation } from "../utils";
+import { byteArray, cairo, Calldata, CallData, Call } from "starknet";
 import fs from "fs/promises";
 
-export async function deployToken(config: Configuration, args: string[]) {
-  if (args.length != 2) {
-    console.log("Required arguments: deploy [symbol] [name]");
-    return;
-  }
-
-  const [symbol, name] = args;
-
+export async function upgradeTokens(config: Configuration, args: string[]) {
   // Compile the project (if no target directory)
   if ((await fs.exists(`${config.basePath}/target/dev`)) == false) {
     console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
@@ -54,55 +47,21 @@ export async function deployToken(config: Configuration, args: string[]) {
     `${COLORS.green}✅ Contract class declared at ${COLORS.gray}${class_hash}${COLORS.green} ! ${COLORS.reset}`,
   );
 
-  return;
-
-  console.log(
-    `${COLORS.blue}💌 Deploying contract for token ${symbol}...${COLORS.reset}`,
-  );
-
-  const contractCallData: CallData = new CallData(contractClass.abi);
-  const contractConstructor: Calldata = contractCallData.compile(
-    "constructor",
-    {
-      owner: config.owner ?? account.address,
-      name: name,
-      symbol: symbol,
-    },
-  );
-
-  // Deploy using starknet
-  let { contract_address, transaction_hash } = await account.deploy(
-    {
-      classHash: class_hash,
-      constructorCalldata: contractConstructor,
-    },
-    {},
-  );
-
-  await provider.waitForTransaction(transaction_hash);
-
-  console.log(
-    `${COLORS.blue}✅ Token ${symbol} deployed at: ${contract_address[0]}${COLORS.reset}`,
-  );
-
-  await addTokenToFile(config, {
-    symbol,
-    name,
-    address: contract_address[0],
-  });
-}
-
-async function addTokenToFile(config: Configuration, token: Token) {
-  // Read the tokens file
+  // Prepare the TX to upgrade all tokens at the same time
   const tokens = await file(
     `${config.basePath}/tokens.${config.environment}.json`,
   ).json();
 
-  tokens.tokens.push(token);
-
-  // Save the file
-  await write(
-    `${config.basePath}/tokens.${config.environment}.json`,
-    JSON.stringify(tokens, null, 2),
+  const upgradeCalls = tokens.tokens.map(
+    (token: Token) =>
+      ({
+        contractAddress: token.address,
+        entrypoint: "upgrade",
+        calldata: CallData.compile({
+          new_class_hash: class_hash,
+        }),
+      }) satisfies Call,
   );
+
+  await doTransaction(upgradeCalls);
 }

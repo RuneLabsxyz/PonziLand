@@ -32,7 +32,7 @@
   .land {
     aspect-ratio: 1;
     height: 15px;
-    transition: background-color 20s ease-out;
+    transition: background-color 10s ease-out;
   }
 
   .land-empty {
