@@ -14,6 +14,8 @@ import { setupPool } from "./scripts/commands/setup_pool";
 import { worldOwner } from "./scripts/commands/dojo_owner";
 import { whitelist } from "./scripts/commands/whitelist";
 import { ensurePermissions } from "./scripts/commands/ensure_permissions";
+import { upgradeTokens } from "./scripts/commands/upgrade_tokens";
+import { pauseGame } from "./scripts/commands/pause";
 
 const SOCIALINK_SIGNER_ADDRESS =
   "0x008ea9029cec9c339e0513a17336e9af43278ebd81858aee0af110c3e810fce6";
@@ -88,6 +90,12 @@ switch (command) {
     break;
   case "ensure-permissions":
     await ensurePermissions(config, commandPositionals);
+    break;
+  case "upgrade-tokens":
+    await upgradeTokens(config, commandPositionals);
+    break;
+  case "pause":
+    await pauseGame(config, commandPositionals);
     break;
   case undefined:
     console.log("No command provided!");

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { LandTileStore } from '$lib/api/land_tiles.svelte';
+  import Stats from '$lib/components/debug/Stats.svelte';
   import Swap from '$lib/components/swap/swap.svelte';
   import { GRID_SIZE } from '$lib/const';
 
@@ -7,6 +8,7 @@
   import { setupClient } from '$lib/contexts/client.svelte';
   import { setupStore } from '$lib/contexts/store.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
+  import Grid from './Grid.svelte';
   import TestTile from './TestTile.svelte';
 
   const store = new LandTileStore();
@@ -18,6 +20,8 @@
     // Setup the lands
   ]);
 </script>
+
+<Stats />
 
 {#await promise}
   Loading...
@@ -31,15 +35,12 @@
         {/each}
       </div>
     {/each}
+
+    <div class="bg-white">
+      <Grid {store} />
+    </div>
   </div>
 {:catch error}
+  {@debug error}
   Error: {error.message}
 {/await}
-
-<style>
-  .grid-container {
-    display: flex;
-    flex-wrap: wrap;
-    width: calc(64 * 5px);
-  }
-</style>
