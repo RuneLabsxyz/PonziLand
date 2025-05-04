@@ -4,7 +4,7 @@ export const GRID_SIZE = 64;
 export const TAX_RATE = 2; // as a percentage
 
 export const DATE_GATE: Date | undefined = new Date('2025-04-24T16:30:00Z');
-export const CLOSING_DATE: Date | undefined = undefined;
+export const CLOSING_DATE: Date | undefined = new Date('2025-05-01T00:00:00Z');
 
 /**
  * Time to level up a buildings, in seconds.
