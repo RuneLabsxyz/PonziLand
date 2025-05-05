@@ -2,13 +2,30 @@
   import SwapModal from '$lib/components/swap/swap-modal.svelte';
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
+  import { tokenStore } from '$lib/stores/tokens.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
+  import data from '$profileData';
+  import { padAddress } from '$lib/utils';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
     token: Token;
   }>();
+
+  let tokenPrice = $derived(
+    tokenStore.prices.find((p) => {
+      console.log('Token price:', p.address, token.address);
+      return padAddress(p.address) === padAddress(token.address);
+    }),
+  );
+  let baseTokenValue = $derived(
+    tokenPrice?.ratio
+      ? CurrencyAmount.fromUnscaled(amount, token)
+          .rawValue()
+          .dividedBy(tokenPrice.ratio)
+      : CurrencyAmount.fromUnscaled(amount, token),
+  );
 
   let showSwap = $state(false);
   let animating = $state(false);
@@ -68,23 +85,31 @@
   });
 </script>
 
-<div class="flex gap-2 items-center justify-end w-full text-stroke-none">
-  <div class="flex text-right justify-end w-full relative overflow-hidden">
-    {#if animating}
-      <span class="ml-3 absolute left-0 top-0 animate-in-out-left">
-        +{CurrencyAmount.fromUnscaled(increment, token)}
-      </span>
-    {/if}
-    <span class="text-sm {animating ? 'animating text-green-500' : ''}">
-      {CurrencyAmount.fromUnscaled(tweenAmount.current, token)}
+<div class="flex gap-2 justify-end w-full text-stroke-none">
+  <div class="flex flex-col items-end">
+    <div class="flex gap-2 items-center justify-end w-full">
+      <div class="flex text-right justify-end w-full relative overflow-hidden">
+        {#if animating}
+          <span class="ml-3 absolute left-0 top-0 animate-in-out-left">
+            +{CurrencyAmount.fromUnscaled(increment, token)}
+          </span>
+        {/if}
+        <span class="text-sm {animating ? 'animating text-green-500' : ''}">
+          {CurrencyAmount.fromUnscaled(tweenAmount.current, token)}
+        </span>
+      </div>
+      <div class="font-bold text-right">
+        {token.symbol}
+      </div>
+    </div>
+    <span class="text-xs text-gray-500">
+      {baseTokenValue.toString()}
+      {data.mainCurrency}
     </span>
   </div>
-  <div class="font-bold text-right">
-    {token.symbol}
-  </div>
-  <button class="text-[10px] opacity-75" onclick={() => (showSwap = true)}
-    >SWAP</button
-  >
+  <button class="text-[10px] opacity-75 h-fit mt-1" onclick={() => (showSwap = true)}>
+    SWAP
+  </button>
 </div>
 
 {#if showSwap}
