@@ -84,11 +84,15 @@
           <Button
             onclick={async () => {
               console.log('Result of levelup: ', await land?.levelUp());
-            }}>Level Up</Button
-          >
+            }}
+            >Upgrade to&nbsp;<small>lvl</small>{levelUpInfo?.expectedLevel}
+          </Button>
         </div>
       {:else}
-        <LandLevelProgress class={cn('w-full p-0 h-8 min-w-24')} {levelUpInfo} />
+        <LandLevelProgress
+          class={cn('w-full p-0 h-8 min-w-24')}
+          {levelUpInfo}
+        />
       {/if}
     </div>
   {/if}
