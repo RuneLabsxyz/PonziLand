@@ -21,6 +21,7 @@ const profiles = {
     PUBLIC_EKUBO_URL: process.env.EKUBO_URL,
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
+    PUBLIC_PONZI_API_URL: process.env.PONZI_API_URL,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -43,6 +44,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -54,6 +56,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -66,6 +69,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
   },
 };
 

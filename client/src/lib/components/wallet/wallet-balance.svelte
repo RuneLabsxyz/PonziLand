@@ -30,9 +30,6 @@
     const tokenBalances = tokenStore.balances;
     const tokenPrices = tokenStore.prices;
 
-    console.log('Token balances:', tokenBalances);
-    console.log('Token prices:', tokenPrices);
-
     if (!tokenBalances.length || !tokenPrices.length) return;
 
     let totalValue = 0;
@@ -54,7 +51,10 @@
       if (padAddress(token.address) === BASE_TOKEN) {
         totalValue += Number(amount.rawValue());
       } else {
-        const priceInfo = tokenPrices.find((p) => p.address === token.address);
+        const priceInfo = tokenPrices.find((p) => {
+          return padAddress(p.address) == padAddress(token.address);
+        });
+
         if (priceInfo?.ratio !== null && priceInfo) {
           totalValue += Number(
             amount.rawValue().dividedBy(priceInfo.ratio || 0),
@@ -94,7 +94,6 @@
       tokenIds: request.tokenIds ?? [],
       callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
         if (data) {
-          console.log('Token balance update:', data);
           updateTokenBalance(data);
           calculateTotalBalance();
         }

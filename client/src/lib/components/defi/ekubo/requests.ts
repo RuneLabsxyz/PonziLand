@@ -1,4 +1,4 @@
-import { PUBLIC_EKUBO_URL } from '$env/static/public';
+import { PUBLIC_EKUBO_URL, PUBLIC_PONZI_API_URL } from '$env/static/public';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 export interface TokenVolume {
   token: string;
@@ -109,7 +109,7 @@ export function calculatePriceFromPool(
 }
 
 export async function getTokenPrices(): Promise<TokenPrice[]> {
-  const url = 'https://api.ponzi.land/price';
+  const url = PUBLIC_PONZI_API_URL + '/price';
 
   try {
     const res = await fetch(url);
