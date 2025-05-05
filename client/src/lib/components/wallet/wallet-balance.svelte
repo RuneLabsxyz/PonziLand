@@ -13,8 +13,6 @@
   import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
   import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
   import { onMount } from 'svelte';
-  import { ScrollArea } from '../ui/scroll-area';
-  import TokenDisplay from '../ui/token-display/token-display.svelte';
   import {
     setTokenBalances,
     tokenStore,
