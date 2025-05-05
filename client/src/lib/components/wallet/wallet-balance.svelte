@@ -15,27 +15,23 @@
   import { onMount } from 'svelte';
   import { ScrollArea } from '../ui/scroll-area';
   import TokenDisplay from '../ui/token-display/token-display.svelte';
+  import {
+    setTokenBalances,
+    tokenStore,
+    updateTokenBalance,
+  } from '$lib/stores/tokens.svelte';
 
-  const { store, client: sdk, accountManager } = useDojo();
+  const { client: sdk } = useDojo();
   const address = $derived(accountData.address);
 
-  // -------------------------------------------------
-
-  let tokenBalances = $state<{ token: Token; balance: bigint; icon: string }[]>(
-    [],
-  );
-
-  let tokenPrices = $state<
-    { symbol: string; address: string; ratio: number | null }[]
-  >([]);
-
   let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
-
-  // -------------------------------------------------
 
   let subscriptionRef = $state<Subscription>();
 
   async function calculateTotalBalance() {
+    const tokenBalances = tokenStore.balances;
+    const tokenPrices = tokenStore.prices;
+
     if (!tokenBalances.length || !tokenPrices.length) return;
 
     let totalValue = 0;
@@ -44,7 +40,7 @@
       tokenBalances.map(async (tb) => {
         return {
           token: tb.token,
-          balance: await tb.balance,
+          balance: tb.balance,
         };
       }),
     );
@@ -80,33 +76,6 @@
     await handleRefreshBalances();
   });
 
-  const setTokenBalances = (items: TokenBalance[]) => {
-    const itemBalances = items.map((item) => {
-      const token = data.availableTokens.find(
-        (token) => token.address === padAddress(item.contract_address),
-      );
-      if (!token) {
-        return null;
-      }
-      // Convert the balance to a BigInt
-      const balance = BigInt(item.balance);
-
-      return {
-        token,
-        balance,
-        icon: token.images.icon,
-      };
-    });
-
-    const cleanedTokenBalances = itemBalances.filter((item) => item !== null);
-
-    tokenBalances = cleanedTokenBalances as {
-      token: Token;
-      balance: bigint;
-      icon: string;
-    }[];
-  };
-
   const handleRefreshBalances = async () => {
     if (subscriptionRef) {
       subscriptionRef.cancel();
@@ -137,36 +106,9 @@
     // Add the subscription ref
     subscriptionRef = subscription;
 
-    tokenPrices = await getTokenPrices();
+    tokenStore.prices = await getTokenPrices();
     setTokenBalances(tokenBalances.items);
     calculateTotalBalance();
-  };
-
-  const updateTokenBalance = (item: TokenBalance) => {
-    const token = data.availableTokens.find(
-      (token) => token.address === padAddress(item.contract_address),
-    );
-    if (!token) {
-      return null;
-    }
-    // Convert the balance to a BigInt
-    const balance = BigInt(item.balance);
-
-    const tokenBalance = {
-      token,
-      balance,
-      icon: token.images.icon,
-    };
-
-    const index = tokenBalances.findIndex(
-      (tb) => tb.token.address === tokenBalance.token.address,
-    );
-
-    if (index !== -1) {
-      tokenBalances[index] = tokenBalance;
-    } else {
-      tokenBalances.push(tokenBalance);
-    }
   };
 </script>
 
