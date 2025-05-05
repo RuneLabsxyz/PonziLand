@@ -11,7 +11,11 @@
     land,
     size = 'sm',
     isOwner = false,
-  }: { land: LandWithActions; size?: 'sm' | 'lg'; isOwner?: boolean } = $props();
+  }: {
+    land: LandWithActions;
+    size?: 'sm' | 'lg';
+    isOwner?: boolean;
+  } = $props();
 
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
   let levelUpInfo = $state(land.getLevelInfo());
