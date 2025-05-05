@@ -10,6 +10,7 @@
   import SelectItem from '../ui/select/select-item.svelte';
   import SelectTrigger from '../ui/select/select-trigger.svelte';
   import BuyInsights from './buy-insights.svelte';
+  import { tokenStore } from '$lib/stores/tokens.svelte';
 
   let {
     selectedToken = $bindable<Token | undefined>(),
@@ -22,6 +23,31 @@
   } = $props();
 
   let stakeAmountVal = $state(stakeAmount.toString());
+  let stakeAmountError = $derived.by(() => {
+    let parsedStake = parseFloat(stakeAmountVal);
+
+    if (isNaN(parsedStake) || parsedStake < 0) {
+      return 'Stake amount must be a number greater than 0';
+    }
+
+    // get selected token balance from tokenStore balance
+    const selectedTokenBalance = tokenStore.balances.find(
+      (balance) => balance.token.address == selectedToken?.address,
+    );
+
+    if (selectedTokenBalance == undefined) {
+      return "You don't have any of this token";
+    }
+
+    const selectedTokenAmount = CurrencyAmount.fromUnscaled(
+      selectedTokenBalance?.balance,
+      selectedToken,
+    );
+
+    if (selectedToken && selectedTokenAmount.rawValue().isLessThanOrEqualTo(parsedStake)) {
+      return `You don't have enough ${selectedToken.symbol} to stake`;
+    }
+  });
   let sellAmountVal = $state(sellAmount.toString());
 
   $effect(() => {
@@ -90,6 +116,11 @@
     <div>
       <Label class="text-lg font-semibold">Stake Amount</Label>
       <Input type="number" bind:value={stakeAmountVal} />
+      {#if stakeAmountError}
+        <Label>
+          <span class="text-red-500">{stakeAmountError}</span>
+        </Label>
+      {/if}
     </div>
     <div>
       <Label class="text-lg font-semibold">Sell Price</Label>
