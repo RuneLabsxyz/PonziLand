@@ -1,4 +1,4 @@
-import { address_blacklist } from '$lib/data.json';
+import { address_blacklist } from '$profileData';
 import { areAddressesEquals } from './helpers';
 import {
   PUBLIC_DOJO_TORII_URL,

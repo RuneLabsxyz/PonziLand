@@ -11,7 +11,7 @@
     SelectTrigger,
     SelectValue,
   } from '../ui/select';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import { goto } from '$app/navigation';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 

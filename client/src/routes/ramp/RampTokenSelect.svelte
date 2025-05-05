@@ -5,7 +5,7 @@
     SelectItem,
     SelectTrigger,
   } from '$lib/components/ui/select';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import { onMount } from 'svelte';
   import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
   import { ImageIcon } from 'lucide-svelte';

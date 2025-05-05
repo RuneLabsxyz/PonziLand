@@ -3,7 +3,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
   import { toHexWithPadding } from '$lib/utils';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import type { SelectedLand } from '$lib/stores/stores.svelte';
   import { calculateBurnRate } from '$lib/utils/taxes';
   import type { LandWithActions } from '$lib/api/land.svelte';

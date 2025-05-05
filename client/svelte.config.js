@@ -42,7 +42,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
-    PUBLIC_SOCIALINK_URL: 'https://social.ponzi.land',
+    PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -85,6 +85,8 @@ for (const val of Object.entries(envProfile)) {
 console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath = `../contracts/manifest_${profile}.json`;
+const dataPath = `data/${profile}.json`;
+
 console.log('Manifest: ', manifestPath);
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -99,6 +101,7 @@ const config = {
     adapter: adapter(),
     alias: {
       $manifest: manifestPath,
+      $profileData: dataPath,
     },
   },
 };

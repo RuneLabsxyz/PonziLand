@@ -1,5 +1,5 @@
 import { toHexWithPadding } from '$lib/utils';
-import data from '$lib/data.json';
+import data from '$profileData';
 
 export const MAP_SIZE = 16;
 

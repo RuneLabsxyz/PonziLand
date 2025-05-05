@@ -14,7 +14,7 @@ export default defineConfig({
     host: 'localhost',
     port: 3000,
     fs: {
-      allow: ['../constracts/manifest_*.json'],
+      allow: ['../constracts/manifest_*.json', 'data/'],
     },
   },
   resolve: {

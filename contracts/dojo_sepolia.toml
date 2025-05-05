@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "ponzi_land-tourney-internal-4"
+seed = "ponzi_land-wip-1"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -37,7 +37,18 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "100",
     "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
 ]
+
+
 "ponzi_land-auth" = [
     "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9",
     "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b",
+]
+
+"ponzi_land-token_registry" = [
+    "5",                                                                  # 5 tokens,
+    "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0", # eSTRK
+    "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825", # ePAPER
+    "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b", # eLORDS
+    "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe", # eBROTHER
+    "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706", # ePAL
 ]

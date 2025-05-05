@@ -5,7 +5,7 @@
     SelectItem,
     SelectTrigger,
   } from '../ui/select';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import type { Token } from '$lib/interfaces';
 
   let { value = $bindable<Token | undefined>(), ...rest } = $props();

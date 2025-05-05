@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Arrow } from '$lib/components/ui/arrows';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import { tileState } from './stores.svelte';
 
   const yieldInfo = [

@@ -8,7 +8,7 @@
   import { Input } from '../../ui/input';
   import { Label } from '../../ui/label';
   import LandOverview from '../land-overview.svelte';
-  import data from '$lib/data.json';
+  import data from '$profileData';
 
   const landStore = useLands();
 

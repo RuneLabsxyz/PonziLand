@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x7089c97c3b8232269422eedf87cc71448505df141c220433a6bec48773a8881",
-    "seed": "ponzi_land-tourney-internal-4",
+    "address": "0x51b8efb6eeaeff501ebbe78758cc08c6cbaf9e13ca09812ba11e505f818d457",
+    "seed": "ponzi_land-wip-1",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x5007534c6c59e8e01bc5d1163b646bb9b19e7e1fe566fcbedafad454616f5e6",
-      "class_hash": "0x1a96556d889f5ed0751ad8aec7042146dbaaa1f2cd6c48b7f1b988e5b0c2d13",
+      "address": "0x19b9cef5b903e9838d649f40a8bfc34fbaf644c71f8b8768ece6a6ca1c46dc0",
+      "class_hash": "0x7a5cca7f91da54172796216087a612af24ab75b8c74f167f9294661ea1dd5b",
       "abi": [
         {
           "type": "impl",
@@ -1413,32 +1413,6 @@
           "interface_name": "ponzi_land::systems::actions::IActions"
         },
         {
-          "type": "struct",
-          "name": "ponzi_land::models::land::PoolKey",
-          "members": [
-            {
-              "name": "token0",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "token1",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "fee",
-              "type": "core::integer::u128"
-            },
-            {
-              "name": "tick_spacing",
-              "type": "core::integer::u128"
-            },
-            {
-              "name": "extension",
-              "type": "core::starknet::contract_address::ContractAddress"
-            }
-          ]
-        },
-        {
           "type": "enum",
           "name": "core::bool",
           "variants": [
@@ -1495,20 +1469,26 @@
               "type": "core::starknet::contract_address::ContractAddress"
             },
             {
-              "name": "pool_key",
-              "type": "ponzi_land::models::land::PoolKey"
+              "name": "level",
+              "type": "ponzi_land::models::land::Level"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::models::land::LandStake",
+          "members": [
+            {
+              "name": "location",
+              "type": "core::integer::u16"
             },
             {
               "name": "last_pay_time",
               "type": "core::integer::u64"
             },
             {
-              "name": "stake_amount",
+              "name": "amount",
               "type": "core::integer::u256"
-            },
-            {
-              "name": "level",
-              "type": "ponzi_land::models::land::Level"
             }
           ]
         },
@@ -1659,10 +1639,6 @@
                 {
                   "name": "amount_to_stake",
                   "type": "core::integer::u256"
-                },
-                {
-                  "name": "liquidity_pool",
-                  "type": "ponzi_land::models::land::PoolKey"
                 }
               ],
               "outputs": [],
@@ -1687,10 +1663,18 @@
                 {
                   "name": "amount_to_stake",
                   "type": "core::integer::u256"
-                },
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "recreate_auction",
+              "inputs": [
                 {
-                  "name": "liquidity_pool",
-                  "type": "ponzi_land::models::land::PoolKey"
+                  "name": "land_location",
+                  "type": "core::integer::u16"
                 }
               ],
               "outputs": [],
@@ -1786,7 +1770,7 @@
               ],
               "outputs": [
                 {
-                  "type": "ponzi_land::models::land::Land"
+                  "type": "(ponzi_land::models::land::Land, ponzi_land::models::land::LandStake)"
                 }
               ],
               "state_mutability": "view"
@@ -2096,6 +2080,7 @@
         "dojo_init",
         "bid",
         "buy",
+        "recreate_auction",
         "claim",
         "claim_all",
         "increase_price",
@@ -2106,8 +2091,8 @@
       ]
     },
     {
-      "address": "0x34e91e031a62b91a87ede01acb810c19ac736a29bb6a6b13cd090a29b94e7ff",
-      "class_hash": "0x531cfd15a6f245c976674f50f81025e29cef683ae93e4e20090c99e98c0ed4a",
+      "address": "0x3b29d3a7ebed248a2f3da0cc88709962e917ec0af8e61a6085488681c3c3b8a",
+      "class_hash": "0x296099ec178733ba8e99b159cb046791021617cff5731426b7922b6bc89c880",
       "abi": [
         {
           "type": "impl",
@@ -2286,6 +2271,13 @@
             },
             {
               "type": "function",
+              "name": "ensure_deploy",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "can_take_action",
               "inputs": [
                 {
@@ -2437,6 +2429,275 @@
         "remove_verifier",
         "lock_actions",
         "unlock_actions",
+        "ensure_deploy",
+        "upgrade"
+      ]
+    },
+    {
+      "address": "0x62bf85bfeb122c6f2776eaf621db08ed28c59d1a9da411ce47cb03e0c6d75a0",
+      "class_hash": "0x6f1a12dbad7f219c5b4ac79d7a23bf5b6279150567854672ddd2ef07f105b4c",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "token_registry__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "token_registry__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [
+            {
+              "name": "tokens",
+              "type": "core::array::Array::<core::starknet::contract_address::ContractAddress>"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "impl",
+          "name": "TokenregistryImpl",
+          "interface_name": "ponzi_land::systems::token_registry::ITokenRegistry"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "ponzi_land::systems::token_registry::ITokenRegistry",
+          "items": [
+            {
+              "type": "function",
+              "name": "register_token",
+              "inputs": [
+                {
+                  "name": "token_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "remove_token",
+              "inputs": [
+                {
+                  "name": "token_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "ensure_token_authorized",
+              "inputs": [
+                {
+                  "name": "token_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "is_token_authorized",
+              "inputs": [
+                {
+                  "name": "token_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::systems::token_registry::token_registry::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [
+        "5",
+        "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
+        "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825",
+        "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b",
+        "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe",
+        "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706"
+      ],
+      "tag": "ponzi_land-token_registry",
+      "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
+      "systems": [
+        "dojo_init",
+        "register_token",
+        "remove_token",
         "upgrade"
       ]
     }
@@ -2451,9 +2712,15 @@
     },
     {
       "members": [],
-      "class_hash": "0x54be8be74024b7802978d236daf8f5ad07ca87088d7b24b419a891bc711c889",
+      "class_hash": "0x415da492013bae2545449698937692f75a09fd9a58383abf7de44a8f12e1e1e",
       "tag": "ponzi_land-Land",
       "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
+    },
+    {
+      "members": [],
+      "class_hash": "0x2f8e2f00d9a495b905c21cd589843cda40020206469f31d23812ae098862202",
+      "tag": "ponzi_land-LandStake",
+      "selector": "0x6fc377970b02dbb15634ab8c2855ba673d6ff3be113eb93bb56628d9018cadc"
     }
   ],
   "events": [
@@ -2471,7 +2738,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6baa09c078166c341e0c676c4678dabbaea5820a5a3277868528cdcb87d8415",
+      "class_hash": "0x24ca7ba06a1871cfa5f7682aac80b6f8e21668c7fc5c6c8ae233d5c09eb3659",
       "tag": "ponzi_land-AuctionFinishedEvent",
       "selector": "0x4a851acb463e71e7b60828525b2af21e21fc500b159358a7b0f0036418d3d9a"
     },
@@ -2489,15 +2756,9 @@
     },
     {
       "members": [],
-      "class_hash": "0x6151663b2f36ba449f4cb818c36c9432621067ad7f4706b1048895302167b12",
+      "class_hash": "0x26b7167d8f39f659cf51ccae56e39e27bd823b659588ac9d774fc3a707f6f45",
       "tag": "ponzi_land-NewAuctionEvent",
       "selector": "0x617c6bf5e078af2c93083a50e445f36b55cad4a6bd07a21a5a42540cb0d8f9f"
-    },
-    {
-      "members": [],
-      "class_hash": "0x9c1af90a060cdfdf23d1fc70ef35edc65424a9db2a70403375d7416d4de4d4",
-      "tag": "ponzi_land-RemainingStakeEvent",
-      "selector": "0x7021aa577bc24a67ca28766ec1ad646945d1c9b43aca6af8d53aba43bb0f5ea"
     },
     {
       "members": [],

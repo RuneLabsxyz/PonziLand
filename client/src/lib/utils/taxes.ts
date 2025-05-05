@@ -1,7 +1,7 @@
 import type { LandWithActions } from '$lib/api/land.svelte';
 import type { LandYieldInfo, Token } from '$lib/interfaces';
 import { CurrencyAmount } from './CurrencyAmount';
-import data from '$lib/data.json';
+import data from '$profileData';
 import { Redo } from 'lucide-svelte';
 import { MAP_SIZE } from '$lib/api/tile-store.svelte';
 import { toHexWithPadding } from '$lib/utils';

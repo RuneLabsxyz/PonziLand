@@ -1,0 +1,213 @@
+{
+  "ekuboPositionType": {
+    "005-01": {
+      "name": "0.05% / 0.1%",
+      "tickSpacing": 1000,
+      "fee": "170141183460469235273462165868118016"
+    },
+    "1-2": {
+      "name": "1% / 2%",
+      "tickSpacing": 19802,
+      "fee": "3402823669209384634633746074317682114"
+    }
+  },
+  "mainCurrency": "eSTRK",
+  "availableTokens": [
+    {
+      "name": "Emulated STRK",
+      "symbol": "eSTRK",
+      "address": "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
+      "liquidityPoolType": "005-01",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/eSTRK/icon.png",
+        "biome": {
+          "x": 0,
+          "y": 7
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5,
+            "frames": 6,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1152,
+            "yMax": 192
+          }
+        }
+      }
+    },
+    {
+      "name": "Emulated Paper",
+      "symbol": "ePAPER",
+      "address": "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/ePAPER/icon.svg",
+        "biome": {
+          "x": 0,
+          "y": 1
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 0,
+            "frames": 4,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 192
+          },
+          "2": {
+            "x": 3,
+            "y": 1,
+            "frames": 8,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 384
+          },
+          "3": {
+            "x": 3,
+            "y": 2,
+            "frames": 8,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 384
+          }
+        }
+      }
+    },
+    {
+      "name": "Emulated Lords",
+      "symbol": "eLORDS",
+      "address": "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/eLORDS/icon.svg",
+        "biome": {
+          "x": 0,
+          "y": 6
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 0
+          },
+          "2": {
+            "x": 0,
+            "y": 1
+          },
+          "3": {
+            "x": 0,
+            "y": 2,
+            "frames": 10,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 960,
+            "yMax": 384,
+            "boomerang": true,
+            "delay": 2000
+          }
+        }
+      }
+    },
+    {
+      "name": "Emulated Starknet Brother",
+      "symbol": "eBROTHER",
+      "address": "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe",
+      "liquidityPoolType": "005-01",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/eBROTHER/icon.png",
+        "biome": {
+          "x": 0,
+          "y": 2
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 6
+          },
+          "2": {
+            "x": 3,
+            "y": 7
+          },
+          "3": {
+            "x": 3,
+            "y": 8,
+            "frames": 7,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1344,
+            "yMax": 192
+          }
+        }
+      }
+    },
+    {
+      "name": "Emulated PAL",
+      "symbol": "ePAL",
+      "address": "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706",
+      "liquidityPoolType": "005-01",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/ePAL/icon.svg",
+        "biome": {
+          "x": 0,
+          "y": 5
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 3
+          },
+          "2": {
+            "x": 0,
+            "y": 4
+          },
+          "3": {
+            "x": 0,
+            "y": 5,
+            "frames": 9,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 576,
+            "yMax": 576
+          }
+        }
+      }
+    }
+  ],
+  "commonImages": {
+    "logo": "/images/logo.png",
+    "background": "/images/background.jpg",
+    "icons": {
+      "wallet": "/images/icons/wallet.svg",
+      "settings": "/images/icons/settings.svg"
+    }
+  },
+  "address_blacklist": [
+    "0x04f6a506b6feb38a670526241e7b81cab84006d696a3c9c6fef99f4dc8765a26",
+    "0x01c9df838eaa6790c1b7ae998c18126d236ec2b4bd86c00636fca3ce137bd1c9",
+    "0x1537422a78edbb830b46007573169e2d0c1b524f6de8f9e7775f3be1be5da5d",
+    "0x7f97648563b7f1237a5b6ffecf99f6a7574fe075f37f7475f2492bd32308a27",
+    "0x62f0ca21835f5fb7470f80eaee41dcf29f7989e14607f023f390fcfb864bc7c",
+    "0x62f7cdc18bbb4dd7606f3f5b5955006eb384cbeca3494aac7bbac0b6938c382",
+    "0x3956d129c42e33a0a5a8aa32222f50b62ae6bd554412578ddd45c6d9ec485b3",
+    "0x2cf5b3f9c255b95150231ee15d4f9645bec2661f98093e02240347b3d5aa79c",
+    "0x2220cd2757cb68b4e7ee28b233a331222ec9ef96336c8301195b61b904a6c30"
+  ]
+}

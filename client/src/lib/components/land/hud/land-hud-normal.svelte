@@ -3,7 +3,7 @@
   import type { SelectedLand } from '$lib/stores/stores.svelte';
   import type { LandYieldInfo, YieldInfo } from '$lib/interfaces';
   import type { Token } from '$lib/interfaces/token';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import { toHexWithPadding } from '$lib/utils';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
 

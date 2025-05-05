@@ -3,7 +3,7 @@
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { useDojo } from '$lib/contexts/dojo';
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import { dojoConfig } from '$lib/dojoConfig';
   import { DojoProvider } from '@dojoengine/core';
   import { ScrollArea } from '../ui/scroll-area';

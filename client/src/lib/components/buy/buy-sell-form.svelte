@@ -1,5 +1,5 @@
 <script lang="ts">
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import type { Token } from '$lib/interfaces';
   import { selectedLand } from '$lib/stores/stores.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';

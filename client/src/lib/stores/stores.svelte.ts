@@ -1,6 +1,6 @@
 import account from '$lib/account.svelte';
 import { useLands, type LandWithActions } from '$lib/api/land.svelte';
-import data from '$lib/data.json';
+import data from '$profileData';
 import type { Token } from '$lib/interfaces';
 import { padAddress } from '$lib/utils';
 import { derived, writable, type Readable } from 'svelte/store';

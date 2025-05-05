@@ -1,5 +1,5 @@
 import type { CurrencyAmount } from './utils/CurrencyAmount';
-import type data from '$lib/data.json';
+import type data from '$profileData';
 
 interface Coordinates {
   x: number;

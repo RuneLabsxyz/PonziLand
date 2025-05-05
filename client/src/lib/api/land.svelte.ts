@@ -1,5 +1,5 @@
 import { useDojo } from '$lib/contexts/dojo';
-import data from '$lib/data.json';
+import data from '$profileData';
 import type { LandYieldInfo, Token } from '$lib/interfaces';
 import {
   type Auction,

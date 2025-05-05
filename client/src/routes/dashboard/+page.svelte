@@ -1,5 +1,5 @@
 <script lang="ts">
-  import data from '$lib/data.json';
+  import data from '$profileData';
   import Card from '$lib/components/ui/card/card.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import type { Token } from '$lib/interfaces';
