@@ -44,7 +44,10 @@
       selectedToken,
     );
 
-    if (selectedToken && selectedTokenAmount.rawValue().isLessThanOrEqualTo(parsedStake)) {
+    if (
+      selectedToken &&
+      selectedTokenAmount.rawValue().isLessThanOrEqualTo(parsedStake)
+    ) {
       return `You don't have enough ${selectedToken.symbol} to stake`;
     }
   });
@@ -115,7 +118,11 @@
   <div class="flex gap-2">
     <div>
       <Label class="text-lg font-semibold">Stake Amount</Label>
-      <Input type="number" bind:value={stakeAmountVal} />
+      <Input
+        type="number"
+        bind:value={stakeAmountVal}
+        class={stakeAmountError ? 'border-red-500 border-2' : ''}
+      />
       {#if stakeAmountError}
         <Label>
           <span class="text-red-500">{stakeAmountError}</span>
