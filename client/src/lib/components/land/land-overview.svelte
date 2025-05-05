@@ -6,6 +6,7 @@
   import { onMount } from 'svelte';
   import { Progress } from '../ui/progress';
   import Button from '../ui/button/button.svelte';
+  import LandLevelProgress from './land-level-progress.svelte';
 
   const {
     land,
@@ -32,7 +33,7 @@
   const ON_IMAGE = '/ui/star/on.png';
 </script>
 
-<div class="flex flex-col">
+<div class="flex flex-col items-center">
   <div
     class="flex items-center justify-center relative
     {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
@@ -75,24 +76,20 @@
   </div>
   <!-- Also show the progress bar for the next level -->
   {#if land.type == 'house' && land.level < 3}
-    <div class="pt-4 w-full leading-none flex flex-col justify-center">
-      <div class="fw-full bg-white h-2">
-        <Progress
-          value={levelUpInfo.timeSinceLastLevelUp}
-          max={levelUpInfo.levelUpTime}
-          class={cn('w-full p-0 h-2')}
-          color={levelUpInfo.canLevelUp ? 'green' : undefined}
-        ></Progress>
-      </div>
-      <div class="flex h-8 pt-2">
-        {#if levelUpInfo?.canLevelUp && isOwner}
+    <div
+      class="my-4 w-full leading-none flex flex-col justify-center items-center"
+    >
+      {#if levelUpInfo?.canLevelUp && isOwner}
+        <div class="flex h-8 mb-4 animate-pulse">
           <Button
             onclick={async () => {
               console.log('Result of levelup: ', await land?.levelUp());
             }}>Level Up</Button
           >
-        {/if}
-      </div>
+        </div>
+      {:else}
+        <LandLevelProgress class={cn('w-full p-0 h-8 min-w-24')} {levelUpInfo} />
+      {/if}
     </div>
   {/if}
 </div>
