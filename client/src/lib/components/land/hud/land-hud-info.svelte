@@ -11,9 +11,10 @@
   import LandHudPro from './land-hud-pro.svelte';
   import LandHudNormal from './land-hud-normal.svelte';
   import LandOverview from '../land-overview.svelte';
-  import { BASE_TOKEN } from '$lib/const';
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
+
+  const BASE_TOKEN = data.mainCurrencyAddress;
 
   let {
     land,

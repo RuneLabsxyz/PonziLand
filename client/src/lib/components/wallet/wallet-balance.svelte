@@ -2,22 +2,22 @@
   import accountData from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import { BASE_TOKEN } from '$lib/const';
   import { useDojo } from '$lib/contexts/dojo';
-  import data from '$profileData';
-  import { ScrollArea } from '../ui/scroll-area';
-  import TokenDisplay from '../ui/token-display/token-display.svelte';
-  import type { Token } from '$lib/interfaces';
-  import { padAddress } from '$lib/utils';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
-  import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
-  import { onMount } from 'svelte';
   import {
     setTokenBalances,
     tokenStore,
     updateTokenBalance,
   } from '$lib/stores/tokens.svelte';
+  import { padAddress } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import data from '$profileData';
+  import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
+  import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
+  import { onMount } from 'svelte';
+  import { ScrollArea } from '../ui/scroll-area';
+  import TokenDisplay from '../ui/token-display/token-display.svelte';
+
+  const BASE_TOKEN = data.mainCurrencyAddress;
 
   const { client: sdk } = useDojo();
   const address = $derived(accountData.address);
@@ -29,6 +29,9 @@
   async function calculateTotalBalance() {
     const tokenBalances = tokenStore.balances;
     const tokenPrices = tokenStore.prices;
+
+    console.log('Token balances:', tokenBalances);
+    console.log('Token prices:', tokenPrices);
 
     if (!tokenBalances.length || !tokenPrices.length) return;
 

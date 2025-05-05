@@ -4,8 +4,8 @@ import {
   PUBLIC_DOJO_TORII_URL,
   PUBLIC_SOCIALINK_URL,
 } from '$env/static/public';
-
-import { BASE_TOKEN } from '$lib/const';
+import data from '$profileData';
+const BASE_TOKEN = data.mainCurrencyAddress;
 
 const blackList = address_blacklist.map((e) => BigInt(e));
 

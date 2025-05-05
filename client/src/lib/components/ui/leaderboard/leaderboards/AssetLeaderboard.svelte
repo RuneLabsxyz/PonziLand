@@ -5,11 +5,14 @@
   } from '$lib/components/defi/ekubo/requests';
   import { usernamesStore } from '$lib/stores/account.svelte';
   import { padAddress } from '$lib/utils';
-  import { AI_AGENT_ADDRESS, BASE_TOKEN } from '$lib/const';
+  import { AI_AGENT_ADDRESS } from '$lib/const';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { formatAddress, formatValue } from '../helpers';
   import { onMount } from 'svelte';
   import { fetchTokenBalances } from '../request';
+  import data from '$profileData';
+
+  const BASE_TOKEN = data.mainCurrencyAddress;
 
   let { leaderboardSize = 0, address } = $props();
 

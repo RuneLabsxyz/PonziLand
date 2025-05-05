@@ -15,7 +15,9 @@
   import BuyInfo from './buyInfo.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
   import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
-  import { BASE_TOKEN } from '$lib/const';
+  import data from '$profileData';
+  
+  const BASE_TOKEN = data.mainCurrencyAddress;
 
   let {
     tokens,
