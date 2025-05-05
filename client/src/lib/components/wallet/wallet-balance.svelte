@@ -142,7 +142,7 @@
 
 <ScrollArea class="h-36 w-full">
   <div class="mr-3 flex flex-col gap-1">
-    {#each tokenBalances as tokenBalance}
+    {#each tokenStore.balances as tokenBalance}
       <div class="flex justify-between items-center relative">
         <Avatar.Root class="h-6 w-6">
           <Avatar.Image
