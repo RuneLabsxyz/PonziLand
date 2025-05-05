@@ -48,7 +48,7 @@
       selectedToken &&
       selectedTokenAmount.rawValue().isLessThanOrEqualTo(parsedStake)
     ) {
-      return `You don't have enough ${selectedToken.symbol} to stake`;
+      return `You don't have enough ${selectedToken.symbol} to stake (max: ${selectedTokenAmount.toString()})`;
     }
   });
   let sellAmountVal = $state(sellAmount.toString());
