@@ -26,7 +26,9 @@
     class={cn(className, 'absolute top-0 left-0 h-6  bg-white')}
     color={levelUpInfo.canLevelUp ? 'green' : undefined}
   ></Progress>
-  <div class="font-[PonziNumber] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center">
+  <div
+    class="font-[PonziNumber] text-sm absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center"
+  >
     {remainingTime}
   </div>
 </div>
