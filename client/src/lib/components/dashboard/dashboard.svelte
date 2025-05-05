@@ -16,7 +16,7 @@
   import PlayerInfo from './PlayerInfo.svelte';
   import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
   import data from '$profileData';
-  
+
   const BASE_TOKEN = data.mainCurrencyAddress;
 
   let {
