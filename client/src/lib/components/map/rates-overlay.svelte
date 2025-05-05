@@ -6,6 +6,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getNeighbourYieldArray } from '$lib/utils/taxes';
   import { calculateBurnRate } from '$lib/utils/taxes';
+  import { displayCurrency } from '$lib/utils/currency';
 
   let {
     land,
@@ -109,8 +110,9 @@
         class="text-ponzi-number text-[3px] flex items-center justify-center leading-none relative"
       >
         <span class="whitespace-nowrap text-red-500">
-          -{tokenBurnRate.toString()} {land.token?.symbol}/h</span
-        >
+          -{displayCurrency(tokenBurnRate)}
+          {land.token?.symbol}/h
+        </span>
       </div>
     {:else}
       <div
