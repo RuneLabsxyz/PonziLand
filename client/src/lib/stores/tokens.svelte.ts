@@ -1,7 +1,7 @@
 import type { Token } from '$lib/interfaces';
 import { padAddress } from '$lib/utils';
 import type { TokenBalance } from '@dojoengine/torii-client';
-import data from '$lib/data.json';
+import data from '$profileData';
 
 export let tokenStore = $state<{
   balances: { token: Token; balance: bigint; icon: string }[];
@@ -9,6 +9,7 @@ export let tokenStore = $state<{
 }>({ balances: [], prices: [] });
 
 export const setTokenBalances = (items: TokenBalance[]) => {
+  console.log('setTokenBalances', items);
   const itemBalances = items.map((item) => {
     const token = data.availableTokens.find(
       (token) => token.address === padAddress(item.contract_address),
