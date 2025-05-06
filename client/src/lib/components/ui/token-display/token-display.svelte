@@ -27,7 +27,7 @@
           .dividedBy(tokenPrice.ratio)
       : CurrencyAmount.fromUnscaled(amount, token).rawValue();
 
-    const cleanedValue = displayCurrency(rawValue)
+    const cleanedValue = displayCurrency(rawValue);
     return cleanedValue;
   });
 

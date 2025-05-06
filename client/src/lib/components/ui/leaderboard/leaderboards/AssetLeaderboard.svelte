@@ -155,7 +155,8 @@
       <span class="text-sm">Your rank:</span>
       <span class="font-bold">{userRank}</span>
       <span class="font-mono text-red-500 text-sm">
-        {usernamesStore.getUsernames()[padAddress(address)!] || formatAddress(address)}
+        {usernamesStore.getUsernames()[padAddress(address)!] ||
+          formatAddress(address)}
       </span>
       <span class="ml-auto font-bold">
         {formatValue(
