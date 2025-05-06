@@ -154,10 +154,9 @@
     <div class="flex items-center gap-2">
       <span class="text-sm">Your rank:</span>
       <span class="font-bold">{userRank}</span>
-      <span class="font-mono text-red-500 text-sm"
-        >{usernamesStore.getUsernames()[address] ||
-          formatAddress(address)}</span
-      >
+      <span class="font-mono text-red-500 text-sm">
+        {usernamesStore.getUsernames()[padAddress(address)!] || formatAddress(address)}
+      </span>
       <span class="ml-auto font-bold">
         {formatValue(
           userRankings
