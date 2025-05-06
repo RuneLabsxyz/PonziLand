@@ -81,7 +81,6 @@
           {:else}
             <p>User: {shortenHex(padAddress(address ?? ''), 8)}</p>
           {/if}
-          <div class="h-2 w-2 rounded-full bg-green-700"></div>
           {#if copied}
             <div class="transition-opacity">Copied!</div>
           {/if}
