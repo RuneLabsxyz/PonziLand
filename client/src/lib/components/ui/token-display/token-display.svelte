@@ -7,6 +7,7 @@
   import { Tween } from 'svelte/motion';
   import data from '$profileData';
   import { padAddress } from '$lib/utils';
+  import { displayCurrency } from '$lib/utils/currency';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
@@ -19,13 +20,16 @@
       return padAddress(p.address) === padAddress(token.address);
     }),
   );
-  let baseTokenValue = $derived(
-    tokenPrice?.ratio
+  let baseTokenValue = $derived.by(() => {
+    const rawValue = tokenPrice?.ratio
       ? CurrencyAmount.fromUnscaled(amount, token)
           .rawValue()
           .dividedBy(tokenPrice.ratio)
-      : CurrencyAmount.fromUnscaled(amount, token),
-  );
+      : CurrencyAmount.fromUnscaled(amount, token).rawValue();
+
+    const cleanedValue = displayCurrency(rawValue)
+    return cleanedValue;
+  });
 
   let showSwap = $state(false);
   let animating = $state(false);
@@ -107,7 +111,10 @@
       {data.mainCurrency}
     </span>
   </div>
-  <button class="text-[10px] opacity-75 h-fit mt-1" onclick={() => (showSwap = true)}>
+  <button
+    class="text-[10px] opacity-75 h-fit mt-1"
+    onclick={() => (showSwap = true)}
+  >
     SWAP
   </button>
 </div>
