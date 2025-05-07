@@ -30,10 +30,10 @@
   }
 
   const { store, client: sdk, accountManager } = useDojo();
-  const address = $derived(accountDataProvider.address);
+  let address = $derived(accountDataProvider.address);
 
-  const connected = $derived(accountDataProvider.isConnected);
-  const username = $derived(accountDataProvider.profile?.username);
+  let connected = $derived(accountDataProvider.isConnected);
+  let username = $derived(socialink.getUser(address ?? ''));
 </script>
 
 <div class="fixed top-0 right-0 z-50">

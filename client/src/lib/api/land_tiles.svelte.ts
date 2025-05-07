@@ -1,14 +1,14 @@
 import { GRID_SIZE } from '$lib/const';
-import { derived, writable, type Readable, type Writable } from 'svelte/store';
-import { type BaseLand, EmptyLand } from './land';
-import type { ParsedEntity } from '@dojoengine/sdk';
-import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-import { toLocation, type Location } from './land/location';
-import { BuildingLand } from './land/building_land';
-import { AuctionLand } from './land/auction';
-import { Building } from 'lucide-svelte';
-import { setupInitialLands, setupLandsSubscription } from './land/torii';
 import type { Client } from '$lib/contexts/client.svelte';
+import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
+import type { ParsedEntity } from '@dojoengine/sdk';
+import { derived, writable, type Readable, type Writable } from 'svelte/store';
+import { EmptyLand, type BaseLand } from './land';
+import { AuctionLand } from './land/auction';
+import { BuildingLand } from './land/building_land';
+import { toLocation, type Location } from './land/location';
+import { setupLandsSubscription } from './land/torii';
+import type { Subscription } from '@dojoengine/torii-client';
 
 type WrappedLand = Writable<{ value: BaseLand }>;
 
@@ -36,6 +36,7 @@ function getLocationFromEntity(
 export class LandTileStore {
   private store: WrappedLand[][];
   private pendingStake: Map<Location, LandStake> = new Map();
+  private sub: Subscription | undefined;
 
   constructor() {
     // Put empty lands everywhere.
@@ -49,13 +50,23 @@ export class LandTileStore {
   }
 
   public async setup(client: Client) {
-    await setupLandsSubscription(client, (lands) => {
-      this.setEntities(lands);
-    });
+    if (this.sub) {
+      this.sub.cancel();
+      this.sub = undefined;
+    }
 
-    await setupInitialLands(client, (entities) => {
-      this.setEntities(entities);
-    });
+    const { initialEntities, subscription } = await setupLandsSubscription(
+      client,
+      (lands) => {
+        this.setEntities(lands);
+      },
+    );
+
+    // Setup the initial lands
+    this.setEntities(initialEntities);
+
+    // Store the subscription
+    this.sub = subscription;
   }
 
   public getLand(x: number, y: number): Readable<BaseLand> | undefined {

@@ -18,11 +18,12 @@ function getQuery(pagination?: { number: number; size: number }) {
       .includeHashedKeys()
   );
 }
+
 export async function setupLandsSubscription(
   client: Client,
   callback: (entities: ParsedEntity<SchemaType>[]) => void,
 ) {
-  await client.subscribeEntityQuery({
+  const subscribeResponse = await client.subscribeEntityQuery({
     query: getQuery(),
     callback: (result) => {
       if (result.error) {
@@ -32,27 +33,32 @@ export async function setupLandsSubscription(
       }
     },
   });
+  return {
+    initialEntities: subscribeResponse[0],
+    subscription: subscribeResponse[1],
+  };
 }
-export async function setupInitialLands(
-  client: Client,
-  setEntities: (entities: ParsedEntity<SchemaType>[]) => void,
-) {
-  // Fetch the total count
-  let page = 0;
 
-  while (true) {
-    const pagedQuery = getQuery({ number: page, size: 50 });
+// export async function setupInitialLands(
+//   client: Client,
+//   setEntities: (entities: ParsedEntity<SchemaType>[]) => void,
+// ) {
+//   // Fetch the total count
+//   let page = 0;
 
-    const response = await client.getEntities({
-      query: pagedQuery,
-    });
+//   while (true) {
+//     const pagedQuery = getQuery({ number: page, size: 50 });
 
-    if (response.length === 0) {
-      break;
-    }
+//     const response = await client.getEntities({
+//       query: pagedQuery,
+//     });
 
-    setEntities(response);
+//     if (response.length === 0) {
+//       break;
+//     }
 
-    page++;
-  }
-}
+//     setEntities(response);
+
+//     page++;
+//   }
+// }

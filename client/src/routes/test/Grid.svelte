@@ -6,8 +6,8 @@
   import GridTile from './GridTile.svelte';
 
   let config: Konva.StageConfig = $state({
-    width: 512,
-    height: 512,
+    width: 1024,
+    height: 1024,
   });
 
   let fps = $state(0);
