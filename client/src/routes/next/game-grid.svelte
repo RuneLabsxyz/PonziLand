@@ -3,8 +3,9 @@
   import Konva from 'konva';
   import type { LandTileStore } from '$lib/api/land_tiles.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { onMount } from 'svelte';
   import GameTile from './game-tile.svelte';
-  import { onMount, onDestroy } from 'svelte';
+  import { canvaStore } from './canva-store.svelte';
 
   let config: Konva.StageConfig = $state({
     width: window.innerWidth,
@@ -13,8 +14,6 @@
   });
 
   let fps = $state(0);
-  let handle: Konva.Stage | undefined = $state();
-  let scale = $state(1);
   let animation: Konva.Animation | undefined;
 
   // Track if we need to update the stage size
@@ -34,64 +33,51 @@
 
   function handleWheel(e: WheelEvent) {
     e.preventDefault();
-    
-    if (!handle) return;
-    
+
+    if (!canvaStore.stage) return;
+
     // Get pointer position relative to stage
-    const pointer = handle.getPointerPosition();
+    const pointer = canvaStore.stage.getPointerPosition();
     if (!pointer) return;
-    
-    const oldScale = scale;
-    
+
+    const oldScale = canvaStore.scale;
+
     // Zoom in/out with a scale factor
     const scaleBy = 1.1;
     const newScale = e.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-    
+
     // Limit zoom scale range
-    scale = Math.max(0.1, Math.min(newScale, 10));
-    
+    canvaStore.scale = Math.max(0.1, Math.min(newScale, 20));
+
     // Calculate new position to zoom toward the pointer
     const newPos = {
-      x: pointer.x - (pointer.x - handle.x()) / oldScale * scale,
-      y: pointer.y - (pointer.y - handle.y()) / oldScale * scale
+      x:
+        pointer.x -
+        ((pointer.x - canvaStore.stage.x()) / oldScale) * canvaStore.scale,
+      y:
+        pointer.y -
+        ((pointer.y - canvaStore.stage.y()) / oldScale) * canvaStore.scale,
     };
-    
+
     // Apply transformation
-    handle.scale({ x: scale, y: scale });
-    handle.position(newPos);
+    canvaStore.stage.scale({ x: canvaStore.scale, y: canvaStore.scale });
+    canvaStore.stage.position(newPos);
   }
 
   onMount(() => {
     // Add event listeners
     window.addEventListener('resize', handleResize);
     document.addEventListener('wheel', handleWheel, { passive: false });
-    
-    // Initialize the animation
-    if (handle) {
-      animation = new Konva.Animation((frame) => {
-        fps = frame?.frameRate ?? 0;
-      }, handle);
-      animation.start();
-    }
-  });
-
-  onDestroy(() => {
-    // Clean up event listeners
-    window.removeEventListener('resize', handleResize);
-    document.removeEventListener('wheel', handleWheel);
-    
-    if (animation) {
-      animation.stop();
-    }
   });
 
   $effect(() => {
-    if (animation !== undefined || handle == null) {
+    if (animation !== undefined || canvaStore.stage == null) {
       return;
     }
+    console.log('setting up animation!');
     animation = new Konva.Animation((frame) => {
       fps = frame?.frameRate ?? 0;
-    }, handle);
+    }, canvaStore.stage);
 
     animation.start();
   });
@@ -105,16 +91,16 @@
 
 <div class="fixed top-2 left-2 bg-black/50 text-white p-2 rounded z-10">
   <div>FPS: {fps.toFixed(0)}</div>
-  <div>Zoom: {(scale * 100).toFixed(0)}%</div>
+  <div>Zoom: {(canvaStore.scale * 100).toFixed(0)}%</div>
   <div class="text-xs">Drag to pan • Scroll to zoom</div>
 </div>
 
-<Stage {config} bind:handle>
+<Stage {config} bind:handle={canvaStore.stage}>
   <Layer config={{ listening: false }}>
     {#each Array(GRID_SIZE) as _, y}
       {#each Array(GRID_SIZE) as _, x}
         {@const land = store.getLand(x, y)!}
-        <GameTile {land} />
+          <GameTile {land} />
       {/each}
     {/each}
   </Layer>

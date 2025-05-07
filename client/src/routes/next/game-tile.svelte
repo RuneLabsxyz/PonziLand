@@ -1,9 +1,11 @@
 <script lang="ts">
   import type { BaseLand } from '$lib/api/land';
   import Konva from 'konva';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { Rect, Text } from 'svelte-konva';
   import type { Readable } from 'svelte/store';
+  import LandSprite from './land-sprite.svelte';
+  import { canvaStore } from './canva-store.svelte';
 
   const SIZE = 1024 / 64;
 
@@ -28,36 +30,90 @@
   });
 
   let playing = false;
+  let tween: Konva.Tween | undefined;
 
-  const tweenBack = $derived(
-    new Konva.Tween({
-      node: handle!,
-      fill,
-      duration: 10,
-      easing: Konva.Easings.EaseInOut,
-      onFinish: () => {
-        playing = false;
-      },
-    }),
-  );
+  $effect(() => {
+    // Create the tween when handle is available
+    if (handle && !tween) {
+      tween = new Konva.Tween({
+        node: handle,
+        fill,
+        duration: 0.5, // Reduced duration for better responsiveness during zooming/panning
+        easing: Konva.Easings.EaseInOut,
+        onFinish: () => {
+          playing = false;
+        },
+      });
+    }
+  });
+
+  // Update the tween when fill changes
+  $effect(() => {
+    if (tween) {
+      tween.finish(); // Stop any current animation
+    }
+  });
+
+  // React to land changes
+  let unsubscribe: (() => void) | undefined;
 
   onMount(() => {
-    return landStore.subscribe((value) => {
+    unsubscribe = landStore.subscribe((value) => {
       if (!loaded) {
         loaded = true;
         return;
       }
-      console.log('land changed');
 
-      handle!.fill('#ffff00');
+      if (!handle) return;
 
-      tweenBack.play();
+      // Flash yellow when land changes
+      handle.fill('#ffff00');
 
-      return () => {
-        // Go back to the final state
-        tweenBack.finish();
-      };
+      if (tween) {
+        tween.reset(); // Reset any current animation
+        tween.play(); // Animate back to proper color
+      }
     });
+  });
+
+  onDestroy(() => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+
+    if (tween) {
+      tween.destroy();
+    }
+  });
+
+  let isVisible = $derived.by(() => {
+    if (!canvaStore.stage) return false;
+
+    const stage = canvaStore.stage;
+    const scale = canvaStore.scale;
+
+    const stageWidth = stage.width();
+    const stageHeight = stage.height();
+
+    const stageX = stage.x();
+    const stageY = stage.y();
+
+    const visibleLeft = -stageX / scale;
+    const visibleTop = -stageY / scale;
+    const visibleRight = visibleLeft + stageWidth / scale;
+    const visibleBottom = visibleTop + stageHeight / scale;
+
+    const tileLeft = SIZE * land.location.x;
+    const tileTop = SIZE * land.location.y;
+    const tileRight = tileLeft + SIZE;
+    const tileBottom = tileTop + SIZE;
+
+    return (
+      tileRight > visibleLeft &&
+      tileLeft < visibleRight &&
+      tileBottom > visibleTop &&
+      tileTop < visibleBottom
+    );
   });
 </script>
 
@@ -68,15 +124,31 @@
     width: SIZE,
     height: SIZE,
     fill: fill,
+    strokeWidth: 0.5,
+    stroke: '#000000', // Add a subtle border to help distinguish tiles
   }}
   bind:handle
->
-</Rect>
-<Text config={{
-  x: SIZE * land.location.x,
-  y: SIZE * land.location.y,
-  width: SIZE,
-  height: SIZE,
-  text: land.location.y.toString() + land.location.x.toString(),
-  fontSize: 3,
-}}></Text>
+></Rect>
+<Text
+  config={{
+    x: SIZE * land.location.x + 1, // Small offset for better readability
+    y: SIZE * land.location.y + 1,
+    width: SIZE - 2,
+    height: SIZE - 2,
+    text: `${land.location.y},${land.location.x}`, // Format as coordinates
+    fontSize: SIZE / 5, // Proportional font size
+    fill: '#000000',
+    align: 'center',
+    verticalAlign: 'middle',
+  }}
+></Text>
+{#if isVisible}
+  <LandSprite
+    config={{
+      x: SIZE * land.location.x + 1, // Small offset for better readability
+      y: SIZE * land.location.y + 1,
+      width: SIZE - 2,
+      height: SIZE - 2,
+    }}
+  />
+{/if}
