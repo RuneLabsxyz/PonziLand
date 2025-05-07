@@ -64,10 +64,38 @@
     canvaStore.stage.position(newPos);
   }
 
+  function throttle(func: Function, limit: number) {
+    let inThrottle: boolean;
+    return function (this: any, ...args: any[]) {
+      if (!inThrottle) {
+        func.apply(this, args);
+        inThrottle = true;
+        setTimeout(() => (inThrottle = false), limit);
+      }
+    };
+  }
+
   onMount(() => {
     // Add event listeners
     window.addEventListener('resize', handleResize);
     document.addEventListener('wheel', handleWheel, { passive: false });
+  });
+
+  // Add Konva stage dragmove listener with throttling
+  $effect(() => {
+    if (canvaStore.stage) {
+      const stage = canvaStore.stage;
+      const updatePosition = throttle(() => {
+        canvaStore.position = { x: stage.x(), y: stage.y() };
+      }, 5);
+
+      stage.on('dragmove', updatePosition);
+      // Set initial position
+      updatePosition();
+      return () => {
+        stage.off('dragmove', updatePosition);
+      };
+    }
   });
 
   $effect(() => {
@@ -96,11 +124,11 @@
 </div>
 
 <Stage {config} bind:handle={canvaStore.stage}>
-  <Layer config={{ listening: false }}>
+  <Layer config={{ listening: false, imageSmoothingEnabled: false }}>
     {#each Array(GRID_SIZE) as _, y}
       {#each Array(GRID_SIZE) as _, x}
         {@const land = store.getLand(x, y)!}
-          <GameTile {land} />
+        <GameTile {land} />
       {/each}
     {/each}
   </Layer>

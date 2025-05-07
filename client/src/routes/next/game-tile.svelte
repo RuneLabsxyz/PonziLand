@@ -86,8 +86,10 @@
     }
   });
 
-  let isVisible = $derived.by(() => {
+  let isBuffered = $derived.by(() => {
     if (!canvaStore.stage) return false;
+
+    const { x, y } = canvaStore.position;
 
     const stage = canvaStore.stage;
     const scale = canvaStore.scale;
@@ -97,7 +99,39 @@
 
     const stageX = stage.x();
     const stageY = stage.y();
+    // Calculate the visible area with a buffer inversely proportional to scale
+    const buffer = (10 * SIZE) / scale // Buffer size in pixels
+    const visibleLeft = -stageX / scale - buffer;
+    const visibleTop = -stageY / scale - buffer;
+    const visibleRight = visibleLeft + stageWidth / scale + 2 * buffer;
+    const visibleBottom = visibleTop + stageHeight / scale + 2 * buffer;
 
+    const tileLeft = SIZE * land.location.x;
+    const tileTop = SIZE * land.location.y;
+    const tileRight = tileLeft + SIZE;
+    const tileBottom = tileTop + SIZE;
+
+    return (
+      tileRight > visibleLeft &&
+      tileLeft < visibleRight &&
+      tileBottom > visibleTop &&
+      tileTop < visibleBottom
+    );
+  });
+
+  let isVisible = $derived.by(() => {
+    if (!canvaStore.stage) return false;
+
+    const { x, y } = canvaStore.position;
+
+    const stage = canvaStore.stage;
+    const scale = canvaStore.scale;
+
+    const stageWidth = stage.width();
+    const stageHeight = stage.height();
+
+    const stageX = stage.x();
+    const stageY = stage.y();
     const visibleLeft = -stageX / scale;
     const visibleTop = -stageY / scale;
     const visibleRight = visibleLeft + stageWidth / scale;
@@ -138,11 +172,11 @@
     text: `${land.location.y},${land.location.x}`, // Format as coordinates
     fontSize: SIZE / 5, // Proportional font size
     fill: '#000000',
-    align: 'center',
-    verticalAlign: 'middle',
+    align: 'left',
+    verticalAlign: 'top',
   }}
 ></Text>
-{#if isVisible}
+{#if isBuffered}
   <LandSprite
     config={{
       x: SIZE * land.location.x + 1, // Small offset for better readability
@@ -150,5 +184,6 @@
       width: SIZE - 2,
       height: SIZE - 2,
     }}
+    {isVisible}
   />
 {/if}

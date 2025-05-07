@@ -4,7 +4,7 @@
   import { Sprite } from 'svelte-konva';
   import { canvaStore } from './canva-store.svelte';
 
-  let { config }: { config: Partial<Konva.SpriteConfig> } = $props();
+  let { config, isVisible }: { config: Partial<Konva.SpriteConfig>, isVisible: boolean } = $props();
 
   let handle: Konva.Sprite | undefined = $state();
 
@@ -70,7 +70,7 @@
     if (handle === undefined) {
       return;
     }
-    if (canvaStore.scale > 4) {
+    if (canvaStore.scale > 5 && isVisible) {
       handle.start()
     } else {
       handle?.stop()
