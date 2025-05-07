@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Layer, Stage } from 'svelte-konva';
+  import { Layer, Stage, Rect, Text } from 'svelte-konva';
   import Konva from 'konva';
   import type { LandTileStore } from '$lib/api/land_tiles.svelte';
   import { GRID_SIZE } from '$lib/const';
@@ -10,7 +10,6 @@
   let config: Konva.StageConfig = $state({
     width: window.innerWidth,
     height: window.innerHeight,
-    draggable: true, // Enable dragging for panning
   });
 
   let fps = $state(0);
@@ -34,7 +33,7 @@
   function handleWheel(e: WheelEvent) {
     e.preventDefault();
 
-    if (!canvaStore.stage) return;
+    if (!canvaStore.layer || !canvaStore.stage) return;
 
     // Get pointer position relative to stage
     const pointer = canvaStore.stage.getPointerPosition();
@@ -47,21 +46,21 @@
     const newScale = e.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
 
     // Limit zoom scale range
-    canvaStore.scale = Math.max(0.1, Math.min(newScale, 20));
+    canvaStore.scale = Math.max(1, Math.min(newScale, 20));
 
     // Calculate new position to zoom toward the pointer
     const newPos = {
       x:
         pointer.x -
-        ((pointer.x - canvaStore.stage.x()) / oldScale) * canvaStore.scale,
+        ((pointer.x - canvaStore.layer.x()) / oldScale) * canvaStore.scale,
       y:
         pointer.y -
-        ((pointer.y - canvaStore.stage.y()) / oldScale) * canvaStore.scale,
+        ((pointer.y - canvaStore.layer.y()) / oldScale) * canvaStore.scale,
     };
 
     // Apply transformation
-    canvaStore.stage.scale({ x: canvaStore.scale, y: canvaStore.scale });
-    canvaStore.stage.position(newPos);
+    canvaStore.layer.scale({ x: canvaStore.scale, y: canvaStore.scale });
+    canvaStore.layer.position(newPos);
   }
 
   function throttle(func: Function, limit: number) {
@@ -83,8 +82,8 @@
 
   // Add Konva stage dragmove listener with throttling
   $effect(() => {
-    if (canvaStore.stage) {
-      const stage = canvaStore.stage;
+    if (canvaStore.layer) {
+      const stage = canvaStore.layer;
       const updatePosition = throttle(() => {
         canvaStore.position = { x: stage.x(), y: stage.y() };
       }, 5);
@@ -99,13 +98,13 @@
   });
 
   $effect(() => {
-    if (animation !== undefined || canvaStore.stage == null) {
+    if (animation !== undefined || canvaStore.layer == null) {
       return;
     }
     console.log('setting up animation!');
     animation = new Konva.Animation((frame) => {
       fps = frame?.frameRate ?? 0;
-    }, canvaStore.stage);
+    }, canvaStore.layer);
 
     animation.start();
   });
@@ -124,12 +123,65 @@
 </div>
 
 <Stage {config} bind:handle={canvaStore.stage}>
-  <Layer config={{ listening: false, imageSmoothingEnabled: false }}>
+  <!-- Grid Layer -->
+  <Layer config={{ imageSmoothingEnabled: false, draggable: true }} bind:handle={canvaStore.layer}>
     {#each Array(GRID_SIZE) as _, y}
       {#each Array(GRID_SIZE) as _, x}
         {@const land = store.getLand(x, y)!}
         <GameTile {land} />
       {/each}
+    {/each}
+  </Layer>
+  
+  <!-- Fixed Ruler Layer -->
+  <Layer config={{ listening: false }}>
+    <!-- X-axis ruler background -->
+    <Rect
+      config={{
+        x: 0,
+        y: 0,
+        width: config.width,
+        height: 16,
+        fill: 'rgba(0, 0, 0, 0.5)',
+      }}
+    />
+    <!-- Y-axis ruler background -->
+    <Rect
+      config={{
+        x: 0,
+        y: 0,
+        width: 16,
+        height: config.height,
+        fill: 'rgba(0, 0, 0, 0.5)',
+      }}
+    />
+    <!-- X-axis numbers -->
+    {#each Array(GRID_SIZE) as _, x}
+        <Text
+          config={{
+            x: x * 16 * canvaStore.scale + 16 + canvaStore.position.x,
+            y: 8,
+            text: x.toString(),
+            fontSize: 8,
+            fill: 'white',  
+            align: 'center',
+            verticalAlign: 'middle',
+          }}
+        />
+    {/each}
+    <!-- Y-axis numbers -->
+    {#each Array(GRID_SIZE) as _, y}
+        <Text
+          config={{
+            x: 8,
+            y: y * 16 * canvaStore.scale + 16 + canvaStore.position.y,
+            text: y.toString(),
+            fontSize: 8,
+            fill: 'white',
+            align: 'center',
+            verticalAlign: 'middle',
+          }}
+        />
     {/each}
   </Layer>
 </Stage>

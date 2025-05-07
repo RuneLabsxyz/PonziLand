@@ -87,11 +87,11 @@
   });
 
   let isBuffered = $derived.by(() => {
-    if (!canvaStore.stage) return false;
+    if (!canvaStore.layer) return false;
 
     const { x, y } = canvaStore.position;
 
-    const stage = canvaStore.stage;
+    const stage = canvaStore.layer;
     const scale = canvaStore.scale;
 
     const stageWidth = stage.width();
@@ -120,11 +120,11 @@
   });
 
   let isVisible = $derived.by(() => {
-    if (!canvaStore.stage) return false;
+    if (!canvaStore.layer) return false;
 
     const { x, y } = canvaStore.position;
 
-    const stage = canvaStore.stage;
+    const stage = canvaStore.layer;
     const scale = canvaStore.scale;
 
     const stageWidth = stage.width();
