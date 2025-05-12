@@ -34,6 +34,7 @@ import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { poseidonHash } from '@dojoengine/torii-client';
 import { updated } from '$app/stores';
+import { useStore } from '$lib/contexts/store.svelte';
 
 export type TransactionResult = Promise<
   | {
@@ -124,7 +125,8 @@ export function useLands(): LandsStore | undefined {
     return undefined;
   }
 
-  const { store, client: sdk, accountManager } = useDojo();
+  const { client: sdk, accountManager } = useDojo();
+  const store = useStore();
 
   const landStore = derived([store], ([actualStore]) => actualStore);
 

@@ -10,14 +10,13 @@
   import { dojoConfig } from '$lib/dojoConfig';
   import GameGrid from './game-grid.svelte';
   import GameUi from './game-ui.svelte';
-
-  const store = new LandTileStore();
+  import { landStore } from './store.svelte';
 
   const promise = Promise.all([
     setupSocialink().then(() => {
       return setupAccountState();
     }),
-    setupClient(dojoConfig).then((client) => store.setup(client!)),
+    setupClient(dojoConfig).then((client) => landStore.setup(client!)),
     setupAccount(),
   ]);
 
@@ -101,7 +100,7 @@
   {#if loading}
     <LoadingScreen {value} />
   {:else}
-    <GameGrid {store} />
+    <GameGrid store={landStore} />
     <GameUi />
   {/if}
 </div>

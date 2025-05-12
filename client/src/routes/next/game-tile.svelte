@@ -206,8 +206,11 @@
     verticalAlign: 'top',
   }}
 ></Text> -->
-<LandSprite {...spriteProps} road />
 {#if land.type === 'building'}
+  <LandSprite {...spriteProps} road />
   <LandSprite {...spriteProps} biome />
+  <LandSprite {...spriteProps} />
+{:else}
+  <LandSprite {...spriteProps} road />
+  <LandSprite {...spriteProps} />
 {/if}
-<LandSprite {...spriteProps} />

@@ -35,8 +35,11 @@ function getLocationFromEntity(
 
 export class LandTileStore {
   private store: WrappedLand[][];
+  private currentLands: BaseLand[][];
+  private allLands: Readable<BaseLand[]>;
   private pendingStake: Map<Location, LandStake> = new Map();
   private sub: Subscription | undefined;
+  private updateTracker: Writable<number> = writable(0);
 
   constructor() {
     // Put empty lands everywhere.
@@ -47,6 +50,20 @@ export class LandTileStore {
           .fill(null)
           .map((_, y) => wrapLand(new EmptyLand({ x, y }))),
       );
+
+    // Initialize currentLands with EmptyLand copies
+    this.currentLands = Array(GRID_SIZE)
+      .fill(null)
+      .map((_, x) =>
+        Array(GRID_SIZE)
+          .fill(null)
+          .map((_, y) => new EmptyLand({ x, y })),
+      );
+
+    this.allLands = derived(this.updateTracker, () => {
+      // Flatten currentLands into a 1D array snapshot
+      return this.currentLands.flat();
+    });
   }
 
   public async setup(client: Client) {
@@ -72,6 +89,10 @@ export class LandTileStore {
   public getLand(x: number, y: number): Readable<BaseLand> | undefined {
     if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return undefined;
     return derived([this.store[x][y]], ([land]) => land.value);
+  }
+
+  public getAllLands(): Readable<BaseLand[]> {
+    return this.allLands;
   }
 
   private setEntities(entities: ParsedEntity<SchemaType>[]) {
@@ -139,8 +160,12 @@ export class LandTileStore {
         }
       }
 
+      this.currentLands[location.x][location.y] = newLand;
+
       // Do nothing
       return { value: newLand };
     });
+
+    this.updateTracker.update((n) => n + 1);
   }
 }
