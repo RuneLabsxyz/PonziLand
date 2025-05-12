@@ -101,6 +101,6 @@
   {#if loading}
     <LoadingScreen {value} />
   {:else}
-   <GameGrid {store}/>
+    <GameGrid {store} />
   {/if}
 </div>

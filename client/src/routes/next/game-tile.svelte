@@ -6,6 +6,7 @@
   import type { Readable } from 'svelte/store';
   import LandSprite from './land-sprite.svelte';
   import { canvaStore } from './canva-store.svelte';
+  import { BuildingLand } from '$lib/api/land/building_land';
 
   const SIZE = 1024 / 64;
 
@@ -100,7 +101,7 @@
     const stageX = stage.x();
     const stageY = stage.y();
     // Calculate the visible area with a buffer inversely proportional to scale
-    const buffer = (10 * SIZE) / scale // Buffer size in pixels
+    const buffer = (10 * SIZE) / scale; // Buffer size in pixels
     const visibleLeft = -stageX / scale - buffer;
     const visibleTop = -stageY / scale - buffer;
     const visibleRight = visibleLeft + stageWidth / scale + 2 * buffer;
@@ -149,6 +150,37 @@
       tileTop < visibleBottom
     );
   });
+
+  // Determine which props to pass to LandSprite based on land type
+  let spriteProps = $derived.by(() => {
+    const baseProps = {
+      config: {
+        x: SIZE * land.location.x,
+        y: SIZE * land.location.y,
+        width: SIZE,
+        height: SIZE,
+      },
+      isVisible,
+      seed: `${land.location.x},${land.location.y}`,
+    };
+
+    switch (land.type) {
+      case 'empty':
+        return { ...baseProps, grass: true };
+      case 'auction':
+        return { ...baseProps, auction: true };
+      case 'building':
+        if (BuildingLand.is(land)) {
+          return {
+            ...baseProps,
+            token: land.token,
+            level: land.level,
+          };
+        }
+      default:
+        return { ...baseProps, basic: true };
+    }
+  });
 </script>
 
 <Rect
@@ -158,12 +190,10 @@
     width: SIZE,
     height: SIZE,
     fill: fill,
-    strokeWidth: 0.5,
-    stroke: '#000000', // Add a subtle border to help distinguish tiles
   }}
   bind:handle
 ></Rect>
-<Text
+<!-- <Text
   config={{
     x: SIZE * land.location.x + 1, // Small offset for better readability
     y: SIZE * land.location.y + 1,
@@ -175,15 +205,9 @@
     align: 'left',
     verticalAlign: 'top',
   }}
-></Text>
-{#if isBuffered}
-  <LandSprite
-    config={{
-      x: SIZE * land.location.x + 1, // Small offset for better readability
-      y: SIZE * land.location.y + 1,
-      width: SIZE - 2,
-      height: SIZE - 2,
-    }}
-    {isVisible}
-  />
+></Text> -->
+<LandSprite {...spriteProps} road />
+{#if land.type === 'building'}
+  <LandSprite {...spriteProps} biome />
 {/if}
+<LandSprite {...spriteProps} />

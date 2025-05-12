@@ -24,7 +24,7 @@
     resizeTimeout = setTimeout(() => {
       config = {
         ...config,
-        width: window.innerWidth,
+        width: window.innerWidth, 
         height: window.innerHeight,
       };
     }, 100);
