@@ -64,8 +64,8 @@
   let SIZE = biome
     ? 256
     : road
-    ? 320
-    : token?.images.building[level].xSize ?? 256;
+      ? 320
+      : (token?.images.building[level].xSize ?? 256);
 
   let scale = $derived.by(() => {
     if (config.width && config.height) {
@@ -157,10 +157,7 @@
 <Sprite
   bind:handle
   config={{
-    x: config.x,
-    y: config.y,
-    width: config.width,
-    height: config.height,
+    ...config,
     scaleX: scale,
     scaleY: scale,
     image: images[currentAnimation()],
@@ -168,6 +165,12 @@
     animation: currentAnimation(),
     frameRate,
     frameIndex: 0,
+    shadowColor: 'black',
+    shadowOffsetX: 0,
+    shadowOffsetY: 0,
+    shadowOpacity: 0.5,
+    shadowBlur: 10,
+    shadowEnabled: hovering,
   }}
 />
 

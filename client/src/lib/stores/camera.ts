@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import { tweened } from 'svelte/motion';
+import { TILE_SIZE } from '$lib/const';
 
 export const cameraPosition = writable({
   scale: 1,
@@ -28,8 +29,6 @@ export function moveCameraTo(
   tileY: number,
   targetScale: number = 8,
 ) {
-  const TILE_SIZE = 32;
-
   // Calculate the target position in pixels
   const targetPixelX = -(tileX - 1) * TILE_SIZE * targetScale;
   const targetPixelY = -(tileY - 1) * TILE_SIZE * targetScale;

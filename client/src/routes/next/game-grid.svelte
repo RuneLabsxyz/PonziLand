@@ -125,9 +125,8 @@
     canvaStore.gridPosition = { x: gridX, y: gridY };
   }
 
-  onMount(() => {
+  $effect(() => {
     if (!canvaStore.stage || !canvaStore.layer) return;
-
     canvaStore.stage.on('mousemove', handleMouseMove);
   });
 

@@ -34,6 +34,13 @@
   let playing = false;
   let tween: Konva.Tween | undefined;
 
+  let hovering = $derived.by(() => {
+    return (
+      land.location.x === canvaStore.gridPosition.x &&
+      land.location.y === canvaStore.gridPosition.y
+    );
+  });
+
   $effect(() => {
     // Create the tween when handle is available
     if (handle && !tween) {
@@ -210,7 +217,7 @@
 {#if land.type === 'building'}
   <LandSprite {...spriteProps} road />
   <LandSprite {...spriteProps} biome />
-  <LandSprite {...spriteProps} />
+  <LandSprite {...spriteProps} {hovering} />
 {:else}
   <LandSprite {...spriteProps} road />
   <LandSprite {...spriteProps} />
