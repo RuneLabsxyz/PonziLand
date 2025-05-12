@@ -41,6 +41,7 @@ export class LandTileStore {
   private pendingStake: Map<Location, LandStake> = new Map();
   private sub: Subscription | undefined;
   private updateTracker: Writable<number> = writable(0);
+  private fakeUpdateInterval: NodeJS.Timeout | undefined;
 
   constructor() {
     // Put empty lands everywhere.
@@ -87,6 +88,52 @@ export class LandTileStore {
     this.sub = subscription;
   }
 
+  private randomLandUpdate() {
+    // Update between 20 to 100 random lands
+    const numUpdates = Math.floor(Math.random() * 81) + 20; // Random number between 20 and 100
+
+    for (let i = 0; i < numUpdates; i++) {
+      // Pick a random land
+      const x = Math.floor(Math.random() * GRID_SIZE);
+      const y = Math.floor(Math.random() * GRID_SIZE);
+      const location = { x, y };
+
+      // Randomly select a token
+      const tokens = [
+        '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
+        '0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825',
+        '0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b',
+        '0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe',
+        '0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706',
+      ];
+      const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
+
+      // Create a random update
+      const fakeLand: Land = {
+        owner:
+          '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff',
+        location: x + y * GRID_SIZE,
+        block_date_bought: Date.now(),
+        sell_price: Math.floor(Math.random() * 1000) + 500,
+        token_used: randomToken,
+        level: 'Second',
+      };
+
+      const fakeStake: LandStake = {
+        location: x + y * GRID_SIZE,
+        amount: Math.floor(Math.random() * 1000) + 500,
+        last_pay_time: Date.now(),
+      };
+
+      const buildingLand = new BuildingLand(fakeLand);
+      buildingLand.updateStake(fakeStake);
+
+      this.store[x][y].set({ value: buildingLand });
+      this.currentLands[x][y] = buildingLand;
+    }
+    this.updateTracker.update((n) => n + 1);
+  }
+
   public fakeSetup() {
     // Create level 3 building lands for the entire grid
     for (let x = 0; x < GRID_SIZE; x++) {
@@ -94,18 +141,18 @@ export class LandTileStore {
         const location = { x, y };
         const fakeLand: Land = {
           owner:
-            '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff', // Fake owner address
-          location: x + y * GRID_SIZE, // Convert x,y to a single number for BigNumberish
+            '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff',
+          location: x + y * GRID_SIZE,
           block_date_bought: 0,
           sell_price: 1000,
           token_used:
             '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
-          level: 'Second', // Level 3 in the Cairo enum
+          level: 'Second',
         };
 
         const fakeStake: LandStake = {
-          location: x + y * GRID_SIZE, // Convert x,y to a single number for BigNumberish
-          amount: 1000, // Fake stake amount
+          location: x + y * GRID_SIZE,
+          amount: 1000,
           last_pay_time: 0,
         };
 
@@ -118,6 +165,22 @@ export class LandTileStore {
       }
     }
     this.updateTracker.update((n) => n + 1);
+
+    // Start random updates every 10ms
+    this.fakeUpdateInterval = setInterval(() => {
+      this.randomLandUpdate();
+    }, 1000);
+  }
+
+  public cleanup() {
+    if (this.fakeUpdateInterval) {
+      clearInterval(this.fakeUpdateInterval);
+      this.fakeUpdateInterval = undefined;
+    }
+    if (this.sub) {
+      this.sub.cancel();
+      this.sub = undefined;
+    }
   }
 
   public getLand(x: number, y: number): Readable<BaseLand> | undefined {

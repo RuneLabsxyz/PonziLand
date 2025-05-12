@@ -1,12 +1,16 @@
 <script lang="ts">
   import { cn } from '$lib/utils';
   import { onMount, onDestroy } from 'svelte';
+  import { cameraPosition } from '$lib/stores/camera';
+
+  const MIN_SCALE_FOR_ANIMATION = 1;
 
   const {
     class: className = '',
     src,
     x: initialX = 0,
     y: initialY = 0,
+    landCoordinates = { x: 0, y: 0 },
     xSize,
     ySize,
     xMax,
@@ -26,11 +30,11 @@
   } = $props();
 
   // Calculate total frames based on sprite sheet dimensions
-  const totalFramesX = Math.floor(xMax / xSize);
-  const totalFramesY = Math.floor(yMax / ySize);
+  let totalFramesX = $derived(Math.floor(xMax / xSize));
+  let totalFramesY = $derived(Math.floor(yMax / ySize));
 
   // Default end frame if not specified
-  const endFrame = $state(
+  let endFrame = $derived(
     initialEndFrame === undefined
       ? horizontal
         ? totalFramesX - 1
@@ -76,8 +80,28 @@
     }
   });
 
+  // Effect to handle camera scale changes and viewport visibility
+  $effect(() => {
+    const scale = $cameraPosition.scale;
+    if (scale < MIN_SCALE_FOR_ANIMATION && isPlaying) {
+      stopAnimation();
+    } else if (
+      scale >= MIN_SCALE_FOR_ANIMATION &&
+      !isPlaying &&
+      animate &&
+      autoplay
+    ) {
+      startAnimation();
+    }
+  });
+
   function startAnimation() {
-    if (!animate || animationInterval) return;
+    if (
+      !animate ||
+      animationInterval ||
+      $cameraPosition.scale < MIN_SCALE_FOR_ANIMATION
+    )
+      return;
 
     isPlaying = true;
     restartTimeout = null;
@@ -148,7 +172,11 @@
 
   // Lifecycle hooks
   onMount(() => {
-    if (animate && autoplay) {
+    if (
+      animate &&
+      autoplay &&
+      $cameraPosition.scale >= MIN_SCALE_FOR_ANIMATION
+    ) {
       startAnimation();
     }
   });

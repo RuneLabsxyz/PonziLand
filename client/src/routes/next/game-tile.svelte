@@ -21,6 +21,7 @@
       config: {
         x: SIZE * land.location.x,
         y: SIZE * land.location.y,
+        landCoordinates: { x: land.location.x, y: land.location.y },
         width: SIZE,
         height: SIZE,
       },
