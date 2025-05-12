@@ -1,225 +1,288 @@
 <script lang="ts">
-  import { Layer, Stage, Rect, Text } from 'svelte-konva';
-  import Konva from 'konva';
-  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
   import { GRID_SIZE } from '$lib/const';
+
+  import { TILE_SIZE } from '$lib/const';
+  import {
+    cameraPosition,
+    cameraTransition,
+    moveCameraToLocation,
+  } from '$lib/stores/camera';
+  import { mousePosCoords } from '$lib/stores/stores.svelte';
   import { onMount } from 'svelte';
   import GameTile from './game-tile.svelte';
-  import { canvaStore } from './canva-store.svelte';
-  import { TILE_SIZE } from '$lib/const';
-  import { coordinatesToLocation } from '$lib/utils';
+  import { landStore } from './store.svelte';
 
-  let config: Konva.StageConfig = $state({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
+  // Camera position
+  const MIN_SCALE = 0.6;
+  const MAX_SCALE = 16;
+  let isDragging = $state(false);
+  let dragged = $state(false);
+  let startX = 0;
+  let startY = 0;
 
-  let fps = $state(0);
-  let animation: Konva.Animation | undefined;
-
-  // Track if we need to update the stage size
-  let resizeTimeout: ReturnType<typeof setTimeout>;
-
-  function handleResize() {
-    // Debounce resize events
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      config = {
-        ...config,
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
-    }, 100);
-  }
-
-  function handleWheel(e: WheelEvent) {
-    e.preventDefault();
-
-    if (!canvaStore.layer || !canvaStore.stage) return;
-
-    // Get pointer position relative to stage
-    const pointer = canvaStore.stage.getPointerPosition();
-    if (!pointer) return;
-
-    const oldScale = canvaStore.scale;
-
-    // Zoom in/out with a scale factor
-    const scaleBy = 1.1;
-    const newScale = e.deltaY < 0 ? oldScale * scaleBy : oldScale / scaleBy;
-
-    // Limit zoom scale range
-    canvaStore.scale = Math.max(1, Math.min(newScale, 20));
-
-    // Calculate new position to zoom toward the pointer
-    const newPos = {
-      x:
-        pointer.x -
-        ((pointer.x - canvaStore.layer.x()) / oldScale) * canvaStore.scale,
-      y:
-        pointer.y -
-        ((pointer.y - canvaStore.layer.y()) / oldScale) * canvaStore.scale,
-    };
-
-    // Apply transformation
-    canvaStore.layer.scale({ x: canvaStore.scale, y: canvaStore.scale });
-    canvaStore.layer.position(newPos);
-  }
-
-  function throttle(func: Function, limit: number) {
-    let inThrottle: boolean;
-    return function (this: any, ...args: any[]) {
-      if (!inThrottle) {
-        func.apply(this, args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
-  }
+  // Add container ref to get dimensions
+  let mapWrapper: HTMLElement;
 
   onMount(() => {
-    // Add event listeners
-    window.addEventListener('resize', handleResize);
-    document.addEventListener('wheel', handleWheel, { passive: false });
+    moveCameraToLocation(2080, 3);
   });
 
-  // Add Konva stage dragmove listener with throttling
-  $effect(() => {
-    if (canvaStore.layer) {
-      const stage = canvaStore.layer;
-      const updatePosition = throttle(() => {
-        canvaStore.rulerPosition = { x: stage.x(), y: stage.y() };
-      }, 5);
-
-      stage.on('dragmove', updatePosition);
-      // Set initial position
-      updatePosition();
-      return () => {
-        stage.off('dragmove', updatePosition);
-      };
+  function handleWheel(event: WheelEvent) {
+    event.preventDefault();
+    let delta;
+    if (event.deltaY > 0) {
+      if (event.deltaY < 5) {
+        delta = 0.99;
+      } else {
+        delta = 0.9;
+      }
+    } else {
+      if (event.deltaY > -5) {
+        delta = 1.01;
+      } else {
+        delta = 1.1;
+      }
     }
-  });
+    const newScale = Math.max(
+      MIN_SCALE,
+      Math.min(MAX_SCALE, $cameraPosition.scale * delta),
+    );
 
-  function handleMouseMove() {
-    const pointer = canvaStore.stage!.getPointerPosition();
-    if (!pointer) return;
+    // move the camera position towards the mouse position
+    const rect = mapWrapper.getBoundingClientRect(); // Assuming 'canvas' is the rendering element
+    const mouseX = event.clientX - rect.left; // Mouse X position relative to the canvas
+    const mouseY = event.clientY - rect.top; // Mouse Y position relative to the canvas
 
-    // Update raw mouse position
-    canvaStore.position = { x: pointer.x, y: pointer.y };
+    const cameraX = (mouseX - $cameraPosition.offsetX) / $cameraPosition.scale;
+    const cameraY = (mouseY - $cameraPosition.offsetY) / $cameraPosition.scale;
 
-    // Convert pointer position to layer coordinates (account for scale and position)
-    const layer = canvaStore.layer!;
-    const scale = canvaStore.scale;
+    const newOffsetX = mouseX - cameraX * newScale;
+    const newOffsetY = mouseY - cameraY * newScale;
 
-    // Inverse transform: from stage coords to layer coords
-    const layerX = (pointer.x - layer.x()) / scale;
-    const layerY = (pointer.y - layer.y()) / scale;
-
-    // Calculate grid coordinates
-    let gridX = Math.floor(layerX / TILE_SIZE);
-    let gridY = Math.floor(layerY / TILE_SIZE);
-
-    // Clamp to grid bounds
-    gridX = Math.min(Math.max(gridX, 0), GRID_SIZE - 1);
-    gridY = Math.min(Math.max(gridY, 0), GRID_SIZE - 1);
-
-    canvaStore.gridPosition = { x: gridX, y: gridY };
+    if (newScale !== $cameraPosition.scale) {
+      cameraTransition.set(
+        {
+          ...$cameraPosition,
+          scale: newScale,
+          offsetX: newOffsetX,
+          offsetY: newOffsetY,
+        },
+        {
+          duration: 0,
+        },
+      );
+      constrainOffset();
+    }
   }
 
-  $effect(() => {
-    if (!canvaStore.stage || !canvaStore.layer) return;
-    canvaStore.stage.on('mousemove', handleMouseMove);
-  });
+  function handleMouseDown(event: MouseEvent) {
+    dragged = false;
+    isDragging = true;
+    startX = event.clientX - $cameraPosition.offsetX;
+    startY = event.clientY - $cameraPosition.offsetY;
+  }
 
-  $effect(() => {
-    if (animation !== undefined || canvaStore.layer == null) {
-      return;
+  function handleMouseMove(event: MouseEvent) {
+    if (isDragging) {
+      const newOffsetX = event.clientX - startX;
+      const newOffsetY = event.clientY - startY;
+
+      // if difference is less than 5px, don't drag
+      if (
+        Math.abs(newOffsetX - $cameraPosition.offsetX) < 5 &&
+        Math.abs(newOffsetY - $cameraPosition.offsetY) < 5
+      ) {
+        return;
+      }
+      dragged = true;
+      updateOffsets(newOffsetX, newOffsetY);
     }
-    console.log('setting up animation!');
-    animation = new Konva.Animation((frame) => {
-      fps = frame?.frameRate ?? 0;
-    }, canvaStore.layer);
 
-    animation.start();
-  });
+    if (!mapWrapper) return;
 
-  let {
-    store,
-  }: {
-    store: LandTileStore;
-  } = $props();
+    const rect = mapWrapper.getBoundingClientRect();
+    const mouseX = event.clientX - rect.left - $cameraPosition.offsetX;
+    const mouseY = event.clientY - rect.top - $cameraPosition.offsetY;
+
+    const tileX = Math.floor(mouseX / (TILE_SIZE * $cameraPosition.scale));
+    const tileY = Math.floor(mouseY / (TILE_SIZE * $cameraPosition.scale));
+
+    if (tileX >= 0 && tileX < GRID_SIZE && tileY >= 0 && tileY < GRID_SIZE) {
+      $mousePosCoords = {
+        x: tileX + 1,
+        y: tileY + 1,
+        location: tileY * GRID_SIZE + tileX,
+      };
+    } else {
+      $mousePosCoords = null;
+    }
+  }
+
+  function updateOffsets(newX: number, newY: number) {
+    if (!mapWrapper) return;
+
+    const mapWidth = GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
+    const mapHeight = GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
+    const containerWidth = mapWrapper.clientWidth;
+    const containerHeight = mapWrapper.clientHeight;
+
+    const minX = Math.min(0, containerWidth - mapWidth);
+    const minY = Math.min(0, containerHeight - mapHeight);
+
+    $cameraTransition = {
+      ...$cameraPosition,
+      offsetX: Math.max(minX, Math.min(0, newX)),
+      offsetY: Math.max(minY, Math.min(0, newY)),
+    };
+  }
+
+  function constrainOffset() {
+    updateOffsets($cameraTransition.offsetX, $cameraTransition.offsetY);
+  }
+
+  function handleMouseUp() {
+    isDragging = false;
+  }
 </script>
 
-<div class="fixed top-2 left-2 bg-black/50 text-white p-2 rounded z-10">
-  <div>FPS: {fps.toFixed(0)}</div>
-  <div>Zoom: {(canvaStore.scale * 100).toFixed(0)}%</div>
-  <div>Grid: {canvaStore.gridPosition.x}, {canvaStore.gridPosition.y}</div>
-  <div>Location: {coordinatesToLocation({...canvaStore.gridPosition})}</div>
-  <div class="text-xs">Drag to pan • Scroll to zoom</div>
+<div class="overflow-hidden h-screen w-screen">
+  <div class="map-wrapper" bind:this={mapWrapper}>
+    <!-- Column numbers -->
+    <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
+      {#each Array(GRID_SIZE) as _, i}
+        <div
+          class="coordinate"
+          style="width: {TILE_SIZE * $cameraPosition.scale}px"
+        >
+          {i}
+        </div>
+      {/each}
+    </div>
+
+    <div class="map-with-rows">
+      <!-- Row numbers -->
+      <div class="row-numbers" style="top: {$cameraPosition.offsetY}px">
+        {#each Array(GRID_SIZE) as _, i}
+          <div
+            class="coordinate"
+            style="height: {TILE_SIZE * $cameraPosition.scale}px"
+          >
+            {i}
+          </div>
+        {/each}
+      </div>
+
+      <!-- Map container -->
+      <!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+      <button
+        class="map-container"
+        role="application"
+        aria-label="Draggable map"
+        onwheel={handleWheel}
+        onmousedown={handleMouseDown}
+        onmousemove={handleMouseMove}
+        onmouseup={handleMouseUp}
+        onmouseleave={handleMouseUp}
+        style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale});"
+      >
+        {#each Array(GRID_SIZE) as _, y}
+          <div class="row">
+            {#each Array(GRID_SIZE) as _, x}
+              {@const land = landStore.getLand(x, y)!}
+                <div
+                style="width: {TILE_SIZE}px; height: {TILE_SIZE}px"
+                >
+                <GameTile {land} />
+                </div>
+            {/each}
+          </div>
+        {/each}
+      </button>
+    </div>
+  </div>
 </div>
 
-<Stage {config} bind:handle={canvaStore.stage}>
-  <!-- Grid Layer -->
-  <Layer
-    config={{ imageSmoothingEnabled: false, draggable: true }}
-    bind:handle={canvaStore.layer}
-  >
-    {#each Array(GRID_SIZE) as _, y}
-      {#each Array(GRID_SIZE) as _, x}
-        {@const land = store.getLand(x, y)!}
-        <GameTile {land} />
-      {/each}
-    {/each}
-  </Layer>
-
-  <!-- Fixed Ruler Layer -->
-  <Layer config={{ listening: false }}>
-    <!-- X-axis ruler background -->
-    <Rect
-      config={{
-        x: 0,
-        y: 0,
-        width: config.width,
-        height: 16,
-        fill: 'rgba(0, 0, 0, 0.5)',
-      }}
-    />
-    <!-- Y-axis ruler background -->
-    <Rect
-      config={{
-        x: 0,
-        y: 0,
-        width: 16,
-        height: config.height,
-        fill: 'rgba(0, 0, 0, 0.5)',
-      }}
-    />
-    <!-- X-axis numbers -->
+<!-- {#each Array(GRID_SIZE) as _, y}
+  <div class="flex">
     {#each Array(GRID_SIZE) as _, x}
-      <Text
-        config={{
-          x: x * 16 * canvaStore.scale + canvaStore.rulerPosition.x,
-          y: 8,
-          text: x.toString(),
-          fontSize: 8,
-          fill: 'white',
-          align: 'center',
-          verticalAlign: 'middle',
-        }}
-      />
+      {@const land = landStore.getLand(x, y)!}
+      <div class="h-8 w-8">
+        <GameTile {land} />
+      </div>
     {/each}
-    <!-- Y-axis numbers -->
-    {#each Array(GRID_SIZE) as _, y}
-      <Text
-        config={{
-          x: 8,
-          y: y * 16 * canvaStore.scale + canvaStore.rulerPosition.y,
-          text: y.toString(),
-          fontSize: 8,
-          fill: 'white',
-          align: 'center',
-          verticalAlign: 'middle',
-        }}
-      />
-    {/each}
-  </Layer>
-</Stage>
+  </div>
+{/each} -->
+
+<style>
+  .map-wrapper {
+    position: relative;
+    margin: 32px 0 0 32px;
+    width: calc(100% - 32px);
+    height: calc(100% - 32px);
+  }
+
+  .column-numbers {
+    display: flex;
+    position: absolute;
+    top: -32px;
+    left: 0;
+    gap: 0;
+    padding-left: 0;
+    z-index: 10;
+    transform-origin: 0 0;
+    background: #2a2a2a; /* Dark grey background */
+  }
+
+  .row-numbers {
+    position: absolute;
+    left: -32px;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding-top: 0;
+    z-index: 10;
+    transform-origin: 0 0;
+    background: #2a2a2a; /* Dark grey background */
+  }
+
+  .row-numbers .coordinate {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .coordinate {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .map-with-rows {
+    display: flex;
+  }
+
+  .map-container {
+    display: flex;
+    flex-direction: column;
+    transform-origin: 0 0;
+    cursor: grab;
+    border: none;
+    padding: 0;
+    background: none;
+  }
+
+  .map-container:active {
+    cursor: grabbing;
+  }
+
+  .row {
+    display: flex;
+  }
+</style>

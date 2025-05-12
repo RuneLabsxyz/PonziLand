@@ -11,7 +11,7 @@
   import { moveCameraTo } from '$lib/stores/camera';
   import { selectLand } from '$lib/stores/stores.svelte';
   import { parseLocation } from '$lib/utils';
-  import { landStore } from '../../../routes/next/store.svelte';
+  import { landStore } from '../../../routes/konva/store.svelte';
   import { derived } from 'svelte/store';
   import { Building } from 'lucide-svelte';
   import { BuildingLand } from '$lib/api/land/building_land';

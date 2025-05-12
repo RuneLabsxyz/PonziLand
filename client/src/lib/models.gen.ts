@@ -200,11 +200,7 @@ export const schema: SchemaType = {
       owner: '',
       sell_price: 0,
       token_used: '',
-      level: new CairoCustomEnum({
-        Zero: '',
-        First: undefined,
-        Second: undefined,
-      }),
+      level: 'Second' as LevelEnum,
     },
     LandStake: {
       location: 0,

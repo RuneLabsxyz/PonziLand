@@ -9,6 +9,7 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import type { Subscription } from '@dojoengine/torii-client';
+import { CairoCustomEnum } from 'starknet';
 
 type WrappedLand = Writable<{ value: BaseLand }>;
 
@@ -84,6 +85,39 @@ export class LandTileStore {
 
     // Store the subscription
     this.sub = subscription;
+  }
+
+  public fakeSetup() {
+    // Create level 3 building lands for the entire grid
+    for (let x = 0; x < GRID_SIZE; x++) {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        const location = { x, y };
+        const fakeLand: Land = {
+          owner:
+            '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff', // Fake owner address
+          location: x + y * GRID_SIZE, // Convert x,y to a single number for BigNumberish
+          block_date_bought: 0,
+          sell_price: 1000,
+          token_used:
+            '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
+          level: 'Second', // Level 3 in the Cairo enum
+        };
+
+        const fakeStake: LandStake = {
+          location: x + y * GRID_SIZE, // Convert x,y to a single number for BigNumberish
+          amount: 1000, // Fake stake amount
+          last_pay_time: 0,
+        };
+
+        const buildingLand = new BuildingLand(fakeLand);
+        buildingLand.updateStake(fakeStake);
+
+        this.store[x][y].set({ value: buildingLand });
+        console.log('Setting land at', location, buildingLand);
+        this.currentLands[x][y] = buildingLand;
+      }
+    }
+    this.updateTracker.update((n) => n + 1);
   }
 
   public getLand(x: number, y: number): Readable<BaseLand> | undefined {
