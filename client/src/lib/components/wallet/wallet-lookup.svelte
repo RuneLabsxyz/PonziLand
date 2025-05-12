@@ -1,14 +1,14 @@
 <script lang="ts">
+  import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { getSocialink } from '$lib/accounts/social/index.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress, shortenHex } from '$lib/utils';
   import Button from '../ui/button/button.svelte';
   import Card from '../ui/card/card.svelte';
+  import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
+  import ProMode from '../ui/pro-mode.svelte';
   import WalletBalance from './wallet-balance.svelte';
   import WalletHelp from './wallet-help.svelte';
-  import accountDataProvider, { setup } from '$lib/account.svelte';
-  import Leaderboard from '../ui/leaderboard/Leaderboard.svelte';
-  import { getSocialink } from '$lib/accounts/social/index.svelte';
-  import ProMode from '../ui/pro-mode.svelte';
 
   setup();
 
@@ -29,7 +29,7 @@
     }
   }
 
-  const { store, client: sdk, accountManager } = useDojo();
+  const { client: sdk, accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
 
   let connected = $derived(accountDataProvider.isConnected);

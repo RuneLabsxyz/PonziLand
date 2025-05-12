@@ -4,12 +4,12 @@
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import { LandTileStore } from '$lib/api/land_tiles.svelte';
   import LoadingScreen from '$lib/components/loading/loading-screen.svelte';
-  import Ui from '$lib/components/ui.svelte';
   import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
   import GameGrid from './game-grid.svelte';
+  import GameUi from './game-ui.svelte';
 
   const store = new LandTileStore();
 
@@ -102,5 +102,6 @@
     <LoadingScreen {value} />
   {:else}
     <GameGrid {store} />
+    <GameUi />
   {/if}
 </div>
