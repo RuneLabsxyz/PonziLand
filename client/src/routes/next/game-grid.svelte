@@ -6,6 +6,8 @@
   import { onMount } from 'svelte';
   import GameTile from './game-tile.svelte';
   import { canvaStore } from './canva-store.svelte';
+  import { TILE_SIZE } from '$lib/const';
+  import { coordinatesToLocation } from '$lib/utils';
 
   let config: Konva.StageConfig = $state({
     width: window.innerWidth,
@@ -24,7 +26,7 @@
     resizeTimeout = setTimeout(() => {
       config = {
         ...config,
-        width: window.innerWidth, 
+        width: window.innerWidth,
         height: window.innerHeight,
       };
     }, 100);
@@ -85,7 +87,7 @@
     if (canvaStore.layer) {
       const stage = canvaStore.layer;
       const updatePosition = throttle(() => {
-        canvaStore.position = { x: stage.x(), y: stage.y() };
+        canvaStore.rulerPosition = { x: stage.x(), y: stage.y() };
       }, 5);
 
       stage.on('dragmove', updatePosition);
@@ -95,6 +97,38 @@
         stage.off('dragmove', updatePosition);
       };
     }
+  });
+
+  function handleMouseMove() {
+    const pointer = canvaStore.stage!.getPointerPosition();
+    if (!pointer) return;
+
+    // Update raw mouse position
+    canvaStore.position = { x: pointer.x, y: pointer.y };
+
+    // Convert pointer position to layer coordinates (account for scale and position)
+    const layer = canvaStore.layer!;
+    const scale = canvaStore.scale;
+
+    // Inverse transform: from stage coords to layer coords
+    const layerX = (pointer.x - layer.x()) / scale;
+    const layerY = (pointer.y - layer.y()) / scale;
+
+    // Calculate grid coordinates
+    let gridX = Math.floor(layerX / TILE_SIZE);
+    let gridY = Math.floor(layerY / TILE_SIZE);
+
+    // Clamp to grid bounds
+    gridX = Math.min(Math.max(gridX, 0), GRID_SIZE - 1);
+    gridY = Math.min(Math.max(gridY, 0), GRID_SIZE - 1);
+
+    canvaStore.gridPosition = { x: gridX, y: gridY };
+  }
+
+  onMount(() => {
+    if (!canvaStore.stage || !canvaStore.layer) return;
+
+    canvaStore.stage.on('mousemove', handleMouseMove);
   });
 
   $effect(() => {
@@ -119,12 +153,17 @@
 <div class="fixed top-2 left-2 bg-black/50 text-white p-2 rounded z-10">
   <div>FPS: {fps.toFixed(0)}</div>
   <div>Zoom: {(canvaStore.scale * 100).toFixed(0)}%</div>
+  <div>Grid: {canvaStore.gridPosition.x}, {canvaStore.gridPosition.y}</div>
+  <div>Location: {coordinatesToLocation({...canvaStore.gridPosition})}</div>
   <div class="text-xs">Drag to pan • Scroll to zoom</div>
 </div>
 
 <Stage {config} bind:handle={canvaStore.stage}>
   <!-- Grid Layer -->
-  <Layer config={{ imageSmoothingEnabled: false, draggable: true }} bind:handle={canvaStore.layer}>
+  <Layer
+    config={{ imageSmoothingEnabled: false, draggable: true }}
+    bind:handle={canvaStore.layer}
+  >
     {#each Array(GRID_SIZE) as _, y}
       {#each Array(GRID_SIZE) as _, x}
         {@const land = store.getLand(x, y)!}
@@ -132,7 +171,7 @@
       {/each}
     {/each}
   </Layer>
-  
+
   <!-- Fixed Ruler Layer -->
   <Layer config={{ listening: false }}>
     <!-- X-axis ruler background -->
@@ -157,31 +196,31 @@
     />
     <!-- X-axis numbers -->
     {#each Array(GRID_SIZE) as _, x}
-        <Text
-          config={{
-            x: x * 16 * canvaStore.scale + 16 + canvaStore.position.x,
-            y: 8,
-            text: x.toString(),
-            fontSize: 8,
-            fill: 'white',  
-            align: 'center',
-            verticalAlign: 'middle',
-          }}
-        />
+      <Text
+        config={{
+          x: x * 16 * canvaStore.scale + canvaStore.rulerPosition.x,
+          y: 8,
+          text: x.toString(),
+          fontSize: 8,
+          fill: 'white',
+          align: 'center',
+          verticalAlign: 'middle',
+        }}
+      />
     {/each}
     <!-- Y-axis numbers -->
     {#each Array(GRID_SIZE) as _, y}
-        <Text
-          config={{
-            x: 8,
-            y: y * 16 * canvaStore.scale + 16 + canvaStore.position.y,
-            text: y.toString(),
-            fontSize: 8,
-            fill: 'white',
-            align: 'center',
-            verticalAlign: 'middle',
-          }}
-        />
+      <Text
+        config={{
+          x: 8,
+          y: y * 16 * canvaStore.scale + canvaStore.rulerPosition.y,
+          text: y.toString(),
+          fontSize: 8,
+          fill: 'white',
+          align: 'center',
+          verticalAlign: 'middle',
+        }}
+      />
     {/each}
   </Layer>
 </Stage>

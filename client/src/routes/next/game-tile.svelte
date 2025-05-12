@@ -7,8 +7,9 @@
   import LandSprite from './land-sprite.svelte';
   import { canvaStore } from './canva-store.svelte';
   import { BuildingLand } from '$lib/api/land/building_land';
+  import { TILE_SIZE } from '$lib/const';
 
-  const SIZE = 1024 / 64;
+  const SIZE = TILE_SIZE;
 
   const { land: landStore }: { land: Readable<BaseLand> } = $props();
 
