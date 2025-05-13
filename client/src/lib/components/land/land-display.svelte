@@ -46,7 +46,7 @@
   bind:clientHeight={height}
   bind:clientWidth={width}
 >
-  {#if road}
+  <!-- {#if road}
     <SpriteSheet
       src="/land-display/road.png"
       y={0}
@@ -59,7 +59,7 @@
       {height}
       class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
     />
-  {/if}
+  {/if} -->
   {#if grass}
     <SpriteSheet
       src="/land-display/empty.png"
@@ -93,7 +93,7 @@
   {/if}
   {#if token}
     <SpriteSheet
-      src="/tokens/+global/biomes.png"
+      src="/tokens/+global/biomes@4x.png"
       x={token.images.biome.x}
       y={token.images.biome.y}
       xSize={256}

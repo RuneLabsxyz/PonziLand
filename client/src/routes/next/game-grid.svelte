@@ -222,6 +222,9 @@
         onmouseleave={handleMouseUp}
         style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale});"
       >
+        <!-- Road layer -->
+        <div class="road-layer"></div>
+        
         {#each Array(GRID_SIZE) as _, y}
           <div class="row">
             {#each Array(GRID_SIZE) as _, x}
@@ -262,6 +265,18 @@
     /* margin: 20rem; */
     width: calc(100% - 4rem);
     height: calc(100% - 4rem);
+  }
+
+  .road-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/land-display/road.png');
+    background-size: 32px 32px;
+    background-repeat: repeat;
+    pointer-events: none;
   }
 
   .scale-indicator {
