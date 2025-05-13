@@ -634,11 +634,9 @@ pub mod actions {
 
                 if maybe_auction.floor_price != 0 && maybe_auction.is_finished == false {
                     neighbors_array.append(LandOrAuction::Auction(maybe_auction));
-                } 
-                else if maybe_land.sell_price != 0 {
+                } else if maybe_land.sell_price != 0 {
                     neighbors_array.append(LandOrAuction::Land(maybe_land));
-                }
-                else {
+                } else {
                     neighbors_array.append(LandOrAuction::None);
                 }
             };
