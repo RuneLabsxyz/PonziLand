@@ -223,7 +223,7 @@
           <div class="row">
             {#each Array(GRID_SIZE) as _, x}
               {@const land = landStore.getLand(x, y)!}
-              <div style="width: {TILE_SIZE}px; height: {TILE_SIZE}px">
+              <div style="width: {TILE_SIZE}px; height: {TILE_SIZE}px" class="relative">
                 {#if y >= visibleTiles.startY && y < visibleTiles.endY}
                   {#if x >= visibleTiles.startX && x < visibleTiles.endX}
                     <GameTile {land} />

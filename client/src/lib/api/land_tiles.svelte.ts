@@ -9,7 +9,7 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import type { Subscription } from '@dojoengine/torii-client';
-import { CairoCustomEnum } from 'starknet';
+import { nukeStore } from '$lib/stores/nuke.svelte';
 
 type WrappedLand = Writable<{ value: BaseLand }>;
 
@@ -90,7 +90,7 @@ export class LandTileStore {
 
   private randomLandUpdate() {
     // Update between 20 to 100 random lands
-    const numUpdates = Math.floor(Math.random() * 81) + 20; // Random number between 20 and 100
+    const numUpdates = Math.floor(Math.random() * 81) + 20;
 
     for (let i = 0; i < numUpdates; i++) {
       // Pick a random land
@@ -130,8 +130,25 @@ export class LandTileStore {
 
       this.store[x][y].set({ value: buildingLand });
       this.currentLands[x][y] = buildingLand;
+
+      // Randomly trigger nuke animation (50% chance)
+      if (Math.random() < 0.5) {
+        this.triggerNukeAnimation(x, y);
+      }
     }
     this.updateTracker.update((n) => n + 1);
+  }
+
+  private triggerNukeAnimation(x: number, y: number) {
+    const location = x + y * GRID_SIZE;
+    console.log('Triggering nuke animation at', location);
+    // Mark the land as nuking
+    nukeStore.nuking[location] = true;
+    
+    // Clear the nuking state after animation duration (3.5 seconds)
+    setTimeout(() => {
+      nukeStore.nuking[location] = false;
+    }, 3500);
   }
 
   public fakeSetup() {
@@ -169,7 +186,7 @@ export class LandTileStore {
     // Start random updates every 10ms
     this.fakeUpdateInterval = setInterval(() => {
       this.randomLandUpdate();
-    }, 1000);
+    }, 100);
   }
 
   public cleanup() {
