@@ -109,8 +109,12 @@
     {#if token.images.building[level].frames}
       {@const animationMeta = token.images.building[level]}
       {#if animationMeta.frames}
+        {@const src =
+          token.symbol === 'eSTRK'
+            ? `/tokens/${token.symbol}/${level}-animated@4x.png`
+            : `/tokens/${token.symbol}/${level}-animated@4x.png`}
         <SpriteSheet
-          src={`/tokens/${token.symbol}/${level}-animated.png`}
+          src={src}
           xSize={animationMeta.xSize}
           ySize={animationMeta.ySize}
           xMax={animationMeta.xMax}

@@ -179,6 +179,9 @@
   }
 </script>
 
+<div class="scale-indicator">
+  {Math.round($cameraPosition.scale * 100)}%
+</div>
 <div class="overflow-hidden h-screen w-screen">
   <div class="map-wrapper" bind:this={mapWrapper}>
     <!-- Column numbers -->
@@ -223,7 +226,10 @@
           <div class="row">
             {#each Array(GRID_SIZE) as _, x}
               {@const land = landStore.getLand(x, y)!}
-              <div style="width: {TILE_SIZE}px; height: {TILE_SIZE}px" class="relative">
+              <div
+                style="width: {TILE_SIZE}px; height: {TILE_SIZE}px"
+                class="relative"
+              >
                 {#if y >= visibleTiles.startY && y < visibleTiles.endY}
                   {#if x >= visibleTiles.startX && x < visibleTiles.endX}
                     <GameTile {land} />
@@ -256,6 +262,18 @@
     /* margin: 20rem; */
     width: calc(100% - 4rem);
     height: calc(100% - 4rem);
+  }
+
+  .scale-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: #2a2a2a;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 50;
   }
 
   .column-numbers {

@@ -3,7 +3,7 @@
   import { onMount, onDestroy } from 'svelte';
   import { cameraPosition } from '$lib/stores/camera';
 
-  const MIN_SCALE_FOR_ANIMATION = 1;
+  const MIN_SCALE_FOR_ANIMATION = 2;
 
   const {
     class: className = '',
