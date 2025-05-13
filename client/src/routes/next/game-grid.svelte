@@ -23,6 +23,40 @@
   // Add container ref to get dimensions
   let mapWrapper: HTMLElement;
 
+  // Calculate visible tiles based on camera position and scale
+  function getVisibleTiles() {
+    if (!mapWrapper)
+      return { startX: 0, startY: 0, endX: GRID_SIZE, endY: GRID_SIZE };
+
+    const rect = mapWrapper.getBoundingClientRect();
+    const scale = $cameraPosition.scale;
+    const offsetX = $cameraPosition.offsetX;
+    const offsetY = $cameraPosition.offsetY;
+
+    // Calculate visible area in tile coordinates
+    const startX = Math.floor(-offsetX / (TILE_SIZE * scale));
+    const startY = Math.floor(-offsetY / (TILE_SIZE * scale));
+    const endX = Math.ceil((rect.width - offsetX) / (TILE_SIZE * scale));
+    const endY = Math.ceil((rect.height - offsetY) / (TILE_SIZE * scale));
+
+    // Add some padding to prevent pop-in
+    const padding = 1;
+    return {
+      startX: Math.max(0, startX - padding),
+      startY: Math.max(0, startY - padding),
+      endX: Math.min(GRID_SIZE, endX + padding),
+      endY: Math.min(GRID_SIZE, endY + padding),
+    };
+  }
+
+  // Track visible tiles
+  let visibleTiles = $state(getVisibleTiles());
+
+  // Update visible tiles when camera changes
+  $effect(() => {
+    visibleTiles = getVisibleTiles();
+  });
+
   onMount(() => {
     moveCameraToLocation(2080, 3);
   });
@@ -189,11 +223,13 @@
           <div class="row">
             {#each Array(GRID_SIZE) as _, x}
               {@const land = landStore.getLand(x, y)!}
-                <div
-                style="width: {TILE_SIZE}px; height: {TILE_SIZE}px"
-                >
-                <GameTile {land} />
-                </div>
+              <div style="width: {TILE_SIZE}px; height: {TILE_SIZE}px">
+                {#if y >= visibleTiles.startY && y < visibleTiles.endY}
+                  {#if x >= visibleTiles.startX && x < visibleTiles.endX}
+                    <GameTile {land} />
+                  {/if}
+                {/if}
+              </div>
             {/each}
           </div>
         {/each}
@@ -217,8 +253,9 @@
   .map-wrapper {
     position: relative;
     margin: 32px 0 0 32px;
-    width: calc(100% - 32px);
-    height: calc(100% - 32px);
+    /* margin: 20rem; */
+    width: calc(100% - 4rem);
+    height: calc(100% - 4rem);
   }
 
   .column-numbers {
