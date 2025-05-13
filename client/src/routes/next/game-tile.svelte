@@ -50,7 +50,6 @@
   });
 
   let isNuking = $derived.by(() => {
-    console.log(`nuking ${land.location.x}:${land.location.y} `);
     return nukeStore.nuking[land.location.x + land.location.y * GRID_SIZE];
   });
 </script>

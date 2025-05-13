@@ -141,7 +141,6 @@ export class LandTileStore {
 
   private triggerNukeAnimation(x: number, y: number) {
     const location = x + y * GRID_SIZE;
-    console.log('Triggering nuke animation at', location);
     // Mark the land as nuking
     nukeStore.nuking[location] = true;
     

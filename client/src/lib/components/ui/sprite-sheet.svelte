@@ -44,10 +44,12 @@
 
   // Animation state
   let currentFrame = $state(startFrame);
-  let animationInterval = $state();
-  let restartTimeout = $state();
+  let animationFrameId = $state<number | null>(null);
+  let restartTimeout = $state<number | null>(null);
   let isPlaying = $state(autoplay && animate);
   let direction = $state(1);
+  let lastFrameTime = $state(0);
+  let isWaiting = $state(false);
 
   // Sprite position
   let x = $state(initialX);
@@ -95,62 +97,70 @@
     }
   });
 
+  function animateFrame(timestamp: number) {
+    if (!isPlaying) return;
+
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    const elapsed = timestamp - lastFrameTime;
+
+    if (elapsed >= frameDelay && !isWaiting) {
+      currentFrame += direction;
+      lastFrameTime = timestamp;
+
+      // Check if we've reached the end frame or start frame
+      if (currentFrame >= endFrame) {
+        if (boomerang) {
+          isWaiting = true;
+          restartTimeout = window.setTimeout(() => {
+            direction = -1; // Reverse direction
+            currentFrame = endFrame; // Ensure we don't go past the end frame
+            isWaiting = false;
+          }, delay);
+        } else if (!loop) {
+          stopAnimation();
+        } else {
+          isWaiting = true;
+          restartTimeout = window.setTimeout(() => {
+            currentFrame = startFrame;
+            isWaiting = false;
+          }, delay);
+        }
+      } else if (currentFrame <= startFrame) {
+        if (boomerang) {
+          isWaiting = true;
+          restartTimeout = window.setTimeout(() => {
+            direction = 1; // Forward direction
+            currentFrame = startFrame; // Ensure we don't go past the start frame
+            isWaiting = false;
+          }, delay);
+        } else {
+          direction = 1; // Forward direction
+        }
+      }
+    }
+
+    if (isPlaying) {
+      animationFrameId = requestAnimationFrame(animateFrame);
+    }
+  }
+
   function startAnimation() {
     if (
       !animate ||
-      animationInterval ||
+      animationFrameId ||
       $cameraPosition.scale < MIN_SCALE_FOR_ANIMATION
     )
       return;
 
     isPlaying = true;
-    restartTimeout = null;
-
-    animationInterval = setInterval(async () => {
-      currentFrame += direction;
-
-      // Check if we've reached the end frame or start frame
-      if (currentFrame >= endFrame) {
-        if (boomerang) {
-          clearInterval(animationInterval);
-          animationInterval = null;
-
-          restartTimeout = setTimeout(() => {
-            direction = -1; // Reverse direction
-            startAnimation(); // Restart the animation
-          }, delay); // 1-second delay (adjust as needed)
-        } else if (!loop) {
-          stopAnimation();
-        } else {
-          // Add a delay before restarting
-          clearInterval(animationInterval);
-          animationInterval = null;
-
-          restartTimeout = setTimeout(() => {
-            currentFrame = startFrame;
-            startAnimation(); // Restart the animation
-          }, delay); // 1-second delay (adjust as needed)
-        }
-      } else if (currentFrame <= startFrame) {
-        if (boomerang) {
-          clearInterval(animationInterval);
-          animationInterval = null;
-
-          restartTimeout = setTimeout(() => {
-            direction = 1; // Forward direction
-            startAnimation(); // Restart the animation
-          }, delay); // 1-second delay (adjust as needed)
-        } else {
-          direction = 1; // Forward direction
-        }
-      }
-    }, frameDelay);
+    lastFrameTime = 0;
+    animationFrameId = requestAnimationFrame(animateFrame);
   }
 
   function stopAnimation() {
-    if (animationInterval) {
-      clearInterval(animationInterval);
-      animationInterval = null;
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
     }
 
     // Clear the restart timeout if it exists
@@ -160,6 +170,7 @@
     }
 
     isPlaying = false;
+    isWaiting = false;
   }
 
   function resetAnimation() {
