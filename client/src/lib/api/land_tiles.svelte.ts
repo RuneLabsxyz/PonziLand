@@ -11,6 +11,28 @@ import { setupLandsSubscription } from './land/torii';
 import type { Subscription } from '@dojoengine/torii-client';
 import { nukeStore } from '$lib/stores/nuke.svelte';
 
+// Constants for random updates
+const MIN_RANDOM_UPDATES = 20;
+const MAX_RANDOM_UPDATES = 50;
+const RANDOM_UPDATE_RANGE = MAX_RANDOM_UPDATES - MIN_RANDOM_UPDATES;
+
+const UPDATE_INTERVAL = 100;
+const NUKE_RATE = .1
+
+// Token addresses
+const TOKEN_ADDRESSES = [
+  '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
+  '0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825',
+  '0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b',
+  '0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe',
+  '0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706',
+];
+
+// Default values
+const DEFAULT_SELL_PRICE = 1000;
+const DEFAULT_STAKE_AMOUNT = 1000;
+const DEFAULT_OWNER = '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
+
 type WrappedLand = Writable<{ value: BaseLand }>;
 
 function wrapLand(land: BaseLand): WrappedLand {
@@ -90,7 +112,7 @@ export class LandTileStore {
 
   private randomLandUpdate() {
     // Update between 20 to 100 random lands
-    const numUpdates = Math.floor(Math.random() * 81) + 20;
+    const numUpdates = Math.floor(Math.random() * RANDOM_UPDATE_RANGE) + MIN_RANDOM_UPDATES;
 
     for (let i = 0; i < numUpdates; i++) {
       // Pick a random land
@@ -99,29 +121,21 @@ export class LandTileStore {
       const location = { x, y };
 
       // Randomly select a token
-      const tokens = [
-        '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
-        '0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825',
-        '0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b',
-        '0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe',
-        '0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706',
-      ];
-      const randomToken = tokens[Math.floor(Math.random() * tokens.length)];
+      const randomToken = TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
 
       // Create a random update
       const fakeLand: Land = {
-        owner:
-          '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff',
+        owner: DEFAULT_OWNER,
         location: x + y * GRID_SIZE,
         block_date_bought: Date.now(),
-        sell_price: Math.floor(Math.random() * 1000) + 500,
+        sell_price: Math.floor(Math.random() * DEFAULT_SELL_PRICE) + DEFAULT_SELL_PRICE/2,
         token_used: randomToken,
         level: 'Second',
       };
 
       const fakeStake: LandStake = {
         location: x + y * GRID_SIZE,
-        amount: Math.floor(Math.random() * 1000) + 500,
+        amount: Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) + DEFAULT_STAKE_AMOUNT/2,
         last_pay_time: Date.now(),
       };
 
@@ -132,7 +146,7 @@ export class LandTileStore {
       this.currentLands[x][y] = buildingLand;
 
       // Randomly trigger nuke animation (50% chance)
-      if (Math.random() < 0.5) {
+      if (Math.random() < NUKE_RATE) {
         this.triggerNukeAnimation(x, y);
       }
     }
@@ -143,7 +157,7 @@ export class LandTileStore {
     const location = x + y * GRID_SIZE;
     // Mark the land as nuking
     nukeStore.nuking[location] = true;
-    
+
     // Clear the nuking state after animation duration (3.5 seconds)
     setTimeout(() => {
       nukeStore.nuking[location] = false;
@@ -155,21 +169,21 @@ export class LandTileStore {
     for (let x = 0; x < GRID_SIZE; x++) {
       for (let y = 0; y < GRID_SIZE; y++) {
         const location = { x, y };
+        // Randomly select a token
+        const randomToken = TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
         const fakeLand: Land = {
-          owner:
-            '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff',
+          owner: DEFAULT_OWNER,
           location: x + y * GRID_SIZE,
-          block_date_bought: 0,
-          sell_price: 1000,
-          token_used:
-            '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
+          block_date_bought: Date.now(),
+          sell_price: Math.floor(Math.random() * DEFAULT_SELL_PRICE) + DEFAULT_SELL_PRICE/2,
+          token_used: randomToken,
           level: 'Second',
         };
 
         const fakeStake: LandStake = {
           location: x + y * GRID_SIZE,
-          amount: 1000,
-          last_pay_time: 0,
+          amount: Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) + DEFAULT_STAKE_AMOUNT/2,
+          last_pay_time: Date.now(),
         };
 
         const buildingLand = new BuildingLand(fakeLand);
@@ -185,7 +199,7 @@ export class LandTileStore {
     // Start random updates every 10ms
     this.fakeUpdateInterval = setInterval(() => {
       this.randomLandUpdate();
-    }, 100);
+    }, UPDATE_INTERVAL);
   }
 
   public cleanup() {

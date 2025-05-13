@@ -93,7 +93,7 @@
   {/if}
   {#if token}
     <SpriteSheet
-      src="/tokens/+global/biomes@4x.png"
+      src="/tokens/+global/biomes.png"
       x={token.images.biome.x}
       y={token.images.biome.y}
       xSize={256}
@@ -111,8 +111,8 @@
       {#if animationMeta.frames}
         {@const src =
           token.symbol === 'eSTRK'
-            ? `/tokens/${token.symbol}/${level}-animated@4x.png`
-            : `/tokens/${token.symbol}/${level}-animated@4x.png`}
+            ? `/tokens/${token.symbol}/${level}-animated.png`
+            : `/tokens/${token.symbol}/${level}-animated.png`}
         <SpriteSheet
           src={src}
           xSize={animationMeta.xSize}

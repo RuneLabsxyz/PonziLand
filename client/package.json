@@ -40,7 +40,7 @@
   "dependencies": {
     "@argent/x-sessions": "^7.0.0",
     "@avnu/avnu-sdk": "^3.0.0",
-    "@cartridge/controller": "^0.6.0",
+    "@cartridge/controller": "^0.7.13",
     "@dojoengine/core": "=1.4.4",
     "@dojoengine/create-burner": "=1.4.4",
     "@dojoengine/sdk": "=1.4.4",
@@ -48,7 +48,7 @@
     "@layerswap/sdk": "^0.1.0-alpha.2",
     "@reown/appkit": "^1.6.8",
     "@reown/appkit-adapter-ethers": "^1.6.8",
-    "@runelabsxyz/socialink-sdk": "0.0.1-next.10",
+    "@runelabsxyz/socialink-sdk": "link:@runelabsxyz/socialink-sdk",
     "@starknet-io/get-starknet-core": "^4.0.0",
     "@sv-use/core": "^1.15.1",
     "@tsparticles/engine": "^3.8.1",

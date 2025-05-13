@@ -4,8 +4,9 @@
   import NukeExplosion from '$lib/components/animation/nuke-explosion.svelte';
   import LandDisplay from '$lib/components/land/land-display.svelte';
   import LandNukeAnimation from '$lib/components/land/land-nuke-animation.svelte';
-  import { GRID_SIZE, TILE_SIZE } from '$lib/const';
+  import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
   import { nukeStore } from '$lib/stores/nuke.svelte';
+  import { cameraPosition } from '$lib/stores/camera';
   import type { Readable } from 'svelte/store';
 
   const SIZE = TILE_SIZE;
@@ -52,20 +53,48 @@
   let isNuking = $derived.by(() => {
     return nukeStore.nuking[land.location.x + land.location.y * GRID_SIZE];
   });
+
+  // Get color based on land type and token
+  let landColor = $derived.by(() => {
+    switch (land.type) {
+      case 'empty':
+        return '#4CAF50'; // Green for empty/grass
+      case 'auction':
+        return '#FFC107'; // Yellow for auction
+      case 'building':
+        if (BuildingLand.is(land) && land.token) {
+          // Use token's biome coordinates to determine color
+          const { x, y } = land.token.images.biome;
+          // Create a unique color based on biome coordinates
+          const hue = (x * 31 + y * 17) % 360;
+          return `hsl(${hue}, 70%, 50%)`;
+        }
+        return '#2196F3'; // Default blue for building without token
+      default:
+        return '#9E9E9E'; // Grey for basic
+    }
+  });
+
+  let currentScale = $derived($cameraPosition.scale);
 </script>
 
-<LandDisplay {...spriteProps} road />
-
-{#if isNuking}
-  {#if BuildingLand.is(land) && land.token}
-    <NukeExplosion
-      biomeX={land.token.images.biome.x}
-      biomeY={land.token.images.biome.y}
-      width={SIZE}
-      height={SIZE}
-    />
+{#if currentScale >= MIN_SCALE_FOR_DETAIL}
+  <LandDisplay {...spriteProps} road />
+  {#if isNuking}
+    {#if BuildingLand.is(land) && land.token}
+      <NukeExplosion
+        biomeX={land.token.images.biome.x}
+        biomeY={land.token.images.biome.y}
+        width={SIZE}
+        height={SIZE}
+      />
+    {/if}
+    <div class="absolute top-[-15%] right-0 w-full h-full z-20">
+      <LandNukeAnimation />
+    </div>
   {/if}
-  <div class="absolute top-[-15%] right-0 w-full h-full z-20">
-    <LandNukeAnimation />
-  </div>
+{:else}
+  <div
+    style="width: {SIZE}px; height: {SIZE}px; background-color: {landColor};"
+  ></div>
 {/if}

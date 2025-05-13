@@ -346,6 +346,7 @@
     border: none;
     padding: 0;
     background: none;
+    will-change: left, top;
   }
 
   .map-container:active {
