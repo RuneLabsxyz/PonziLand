@@ -10,16 +10,46 @@
   import { Info } from 'lucide-svelte';
   import Draggable from './draggable.svelte';
   import LandHud from '$lib/components/land/hud/land-hud.svelte';
+  import { widgetsStore } from '$lib/stores/widgets.store';
+  import { onMount } from 'svelte';
 
   // let { store } = $props();
+
+  onMount(() => {
+    // Initialize WalletLookup widget
+    widgetsStore.addWidget({
+      id: 'wallet-lookup',
+      type: 'wallet',
+      position: { x: 100, y: 100 },
+      isMinimized: false,
+      isOpen: true
+    });
+
+    // Initialize LandHud widget
+    widgetsStore.addWidget({
+      id: 'land-hud',
+      type: 'land-hud',
+      position: { x: 100, y: 200 },
+      isMinimized: false,
+      isOpen: true
+    });
+  });
 </script>
 
 <div class="z-50 absolute top-0 left-0 right-0 bottom-0" style="pointer-events: none;">
-  <!-- Wallet Lookup
-  <WalletLookup />
+  {#each Object.entries($widgetsStore) as [id, widget]}
+    {#if widget.isOpen}
+      <Draggable {id} type={widget.type} initialPosition={widget.position}>
+        {#if widget.type === 'wallet'}
+          <WalletLookup />
+        {:else if widget.type === 'land-hud'}
+          <LandHud />
+        {/if}
+      </Draggable>
+    {/if}
+  {/each}
 
   <TxNotificationZone />
-
   <Toolbar />
 
   <InfoModal isDisplay={uiStore.modalInfo} />
@@ -32,13 +62,5 @@
     {:else if uiStore.modalType == 'land-info'}
       <LandInfoModal />
     {/if}
-  {/if} -->
-
-  <Draggable initialPosition={{ x: 100, y: 100 }}>
-    <WalletLookup />
-  </Draggable>
-
-  <Draggable>
-    <LandHud />
-  </Draggable>
+  {/if}
 </div>
