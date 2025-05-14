@@ -7,12 +7,15 @@
   import TxNotificationZone from '$lib/components/ui/tx-notification-zone.svelte';
   import WalletLookup from '$lib/components/wallet/wallet-lookup.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
+  import { Info } from 'lucide-svelte';
+  import Draggable from './draggable.svelte';
+  import LandHud from '$lib/components/land/hud/land-hud.svelte';
 
   // let { store } = $props();
 </script>
 
-<div class="z-50 absolute top-0 left-0">
-  <!-- Wallet Lookup -->
+<div class="z-50 absolute top-0 left-0 right-0 bottom-0" style="pointer-events: none;">
+  <!-- Wallet Lookup
   <WalletLookup />
 
   <TxNotificationZone />
@@ -21,7 +24,6 @@
 
   <InfoModal isDisplay={uiStore.modalInfo} />
 
-  <!-- Modals -->
   {#if uiStore.showModal}
     {#if uiStore.modalType == 'buy'}
       <BuyModal />
@@ -30,5 +32,13 @@
     {:else if uiStore.modalType == 'land-info'}
       <LandInfoModal />
     {/if}
-  {/if}
+  {/if} -->
+
+  <Draggable initialPosition={{ x: 100, y: 100 }}>
+    <WalletLookup />
+  </Draggable>
+
+  <Draggable>
+    <LandHud />
+  </Draggable>
 </div>

@@ -1,4 +1,9 @@
-import { ensureNumber, parseLocation } from '$lib/utils';
+import {
+  coordinatesToLocation,
+  ensureNumber,
+  padAddress,
+  parseLocation,
+} from '$lib/utils';
 import type BigNumber from 'bignumber.js';
 import type { BigNumberish, CairoOption } from 'starknet';
 
@@ -10,10 +15,14 @@ export type LandType = 'empty' | 'auction' | 'building';
 export abstract class BaseLand {
   private _type: LandType;
   public readonly location: Location;
+  public readonly locationString: string;
 
   constructor(type: LandType, location: Location) {
     this._type = type;
     this.location = location;
+    this.locationString = padAddress(
+      coordinatesToLocation(location).toString(),
+    ) ?? "0x0";
   }
 
   get type() {

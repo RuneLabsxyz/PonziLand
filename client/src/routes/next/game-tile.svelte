@@ -5,20 +5,18 @@
   import NukeExplosion from '$lib/components/animation/nuke-explosion.svelte';
   import LandDisplay from '$lib/components/land/land-display.svelte';
   import LandNukeAnimation from '$lib/components/land/land-nuke-animation.svelte';
+  import LandNukeShield from '$lib/components/land/land-nuke-shield.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
+  import { GRID_SIZE, TILE_SIZE } from '$lib/const';
   import {
     cameraPosition,
-    moveCameraTo,
-    moveCameraToLocation,
+    moveCameraTo
   } from '$lib/stores/camera';
   import { nukeStore } from '$lib/stores/nuke.svelte';
-  import { selectedLandPosition } from '$lib/stores/stores.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
-  import { cn, coordinatesToLocation, padAddress } from '$lib/utils';
+  import { cn, padAddress } from '$lib/utils';
   import type { Readable } from 'svelte/store';
   import { selectedLand } from './store.svelte';
-  import LandNukeShield from '$lib/components/land/land-nuke-shield.svelte';
 
   const SIZE = TILE_SIZE;
 

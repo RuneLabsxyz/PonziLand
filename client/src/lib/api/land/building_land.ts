@@ -5,6 +5,7 @@ import { fromDojoLevel, type Level } from '$lib/utils/level';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Token } from '$lib/interfaces';
 import { getTokenInfo } from '$lib/utils';
+import type { BigNumberish } from 'starknet';
 
 export class BuildingLand extends BaseLand {
   private _owner!: string;
@@ -14,9 +15,15 @@ export class BuildingLand extends BaseLand {
   private _level!: Level;
   private _stakeAmount!: CurrencyAmount;
   private _lastPayTime!: Date;
+  private _block_date_bought: BigNumberish;
+  private _sell_price: BigNumberish;
+  private _token_used: string;
 
   constructor(land: Land) {
     super('building', toLocation(land.location)!);
+    this._block_date_bought = land.block_date_bought;
+    this._sell_price = land.sell_price;
+    this._token_used = land.token_used;
     this.update(land);
   }
 
@@ -83,6 +90,26 @@ export class BuildingLand extends BaseLand {
 
   public get lastPayTime(): Date {
     return this._lastPayTime;
+  }
+
+  public get block_date_bought(): BigNumberish {
+    return this._block_date_bought;
+  }
+
+  public get sell_price(): BigNumberish {
+    return this._sell_price;
+  }
+
+  public get token_used(): string {
+    return this._token_used;
+  }
+
+  public get tokenUsed(): string {
+    return this._token_used;
+  }
+
+  public get tokenAddress(): string {
+    return this._token.address;
   }
   //endregion
 }
