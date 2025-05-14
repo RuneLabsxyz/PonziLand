@@ -1,50 +1,106 @@
 <script lang="ts">
-  import { LandTileStore } from '$lib/api/land_tiles.svelte';
-  import Stats from '$lib/components/debug/Stats.svelte';
+  import { goto } from '$app/navigation';
+  import { refresh, setup as setupAccountState } from '$lib/account.svelte';
+  import { setupSocialink } from '$lib/accounts/social/index.svelte';
+  import LoadingScreen from '$lib/components/loading/loading-screen.svelte';
   import Map from '$lib/components/map/map.svelte';
-  import Swap from '$lib/components/swap/swap.svelte';
-  import Ui from '$lib/components/ui.svelte';
-  import { GRID_SIZE } from '$lib/const';
-
+  import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
-  import { setupStore } from '$lib/contexts/store.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
-  import Grid from './Grid.svelte';
-  import TestTile from './TestTile.svelte';
-
-  const store = new LandTileStore();
+  import GameGrid from './game-grid.svelte';
+  import GameUi from './game-ui.svelte';
+  import { landStore } from './store.svelte';
 
   const promise = Promise.all([
-    setupClient(dojoConfig).then((client) => store.setup(client!)),
+    setupSocialink().then(() => {
+      return setupAccountState();
+    }),
+    setupClient(dojoConfig).then((client) => landStore.fakeSetup()),
     setupAccount(),
-    setupStore(),
-    // Setup the lands
   ]);
+
+  let loading = $state(true);
+
+  let value = $state(10);
+
+  $effect(() => {
+    let increment = 10;
+
+    const interval = setInterval(() => {
+      value += increment;
+      if (increment > 1) {
+        increment = increment - 1;
+      }
+      if (value >= 80) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    function clearLoading() {
+      clearInterval(interval);
+      value = 100;
+      setTimeout(() => {
+        loading = false;
+      }, 200);
+    }
+
+    promise
+      .then(async ([accountState, dojo, accountManager]) => {
+        if (accountState == null) {
+          console.error('Account state is null!');
+
+          return;
+        }
+
+        if (accountManager?.getProvider()?.getAccount() == null) {
+          console.info('The user is not logged in! Attempting login.');
+          await accountManager?.getProvider()?.connect();
+        }
+
+        // Check if the user needs to signup with socialink
+        const address = accountManager
+          ?.getProvider()
+          ?.getWalletAccount()?.address;
+
+        // Make sure that we finished updating the user signup state.
+        await refresh();
+
+        // Check if the user needs to signup with socialink
+        if (address != null && !accountState.profile?.exists) {
+          console.info('The user needs to signup with socialink.');
+          goto('/onboarding/register');
+          return;
+        }
+
+        if (
+          address != null &&
+          accountState.profile?.exists &&
+          !accountState.profile?.whitelisted
+        ) {
+          console.info('The user needs to get whitelisted.');
+          goto('/onboarding/whitelist');
+          return;
+        }
+
+        console.log('Everything is ready!', dojo != undefined);
+
+        clearLoading();
+      })
+      .catch((err) => {
+        console.error('An error occurred:', err);
+        // TODO: Redirect to an error page!
+      });
+  });
 </script>
 
-<!-- <Stats /> -->
+<div class="h-screen w-screen bg-black/10 overflow-visible">
+  <SwitchChainModal />
 
-{#await promise}
-  Loading...
-{:then _}
-  <div class="flex flex-col">
-    <div class="bg-white">
-      <Grid {store} />
-    </div>
-
-    <Map />
-
-    <!-- {#each Array(GRID_SIZE) as _, y}
-      <div class="flex flex-row">
-        {#each Array(GRID_SIZE) as _, x}
-          {@const land = store.getLand(x, y)!}
-          <TestTile {land} />
-        {/each}
-      </div>
-    {/each} -->
-  </div>
-{:catch error}
-  {@debug error}
-  Error: {error.message}
-{/await}
+  {#if loading}
+    <LoadingScreen {value} />
+  {:else}
+    <GameGrid/>
+    <GameUi />
+  {/if}
+</div>

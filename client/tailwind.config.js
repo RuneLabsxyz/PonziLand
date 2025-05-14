@@ -59,6 +59,9 @@ const config = {
       },
     },
   },
+  experimental: {
+    optimizeUniversalDefaults: true,
+  },
 };
 
 export default config;

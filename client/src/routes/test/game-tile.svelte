@@ -113,7 +113,7 @@
   const handleBidClick = () => {};
 </script>
 
-<!-- {#if currentScale >= MIN_SCALE_FOR_DETAIL} -->
+{#if currentScale >= MIN_SCALE_FOR_DETAIL}
   <!-- svelte-ignore a11y_click_events_have_key_events -->
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <!-- svelte-ignore event_directive_deprecated -->
@@ -143,12 +143,11 @@
     {/if}
   </div>
   <!-- </div> -->
-<!-- {:else}
-
+{:else}
   <div
     style="width: {SIZE}px; height: {SIZE}px; background-color: {landColor};"
   ></div>
-{/if} -->
+{/if}
 
 {#if selected}
   {#if land.type === 'auction'}

@@ -16,7 +16,7 @@
     setupSocialink().then(() => {
       return setupAccountState();
     }),
-    setupClient(dojoConfig).then((client) => landStore.fakeSetup()),
+    setupClient(dojoConfig).then((client) => landStore.setup(client!)),
     setupAccount(),
   ]);
 
