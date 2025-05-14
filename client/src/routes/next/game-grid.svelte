@@ -247,7 +247,7 @@
               >
                 {#if y >= visibleTiles.startY && y < visibleTiles.endY}
                   {#if x >= visibleTiles.startX && x < visibleTiles.endX}
-                    <GameTile {land} {dragged}/>
+                    <GameTile {land} {dragged} scale={$cameraPosition.scale}/>
                   {/if}
                 {/if}
               </div>
