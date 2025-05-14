@@ -17,6 +17,7 @@
   import { cn, padAddress } from '$lib/utils';
   import type { Readable } from 'svelte/store';
   import { selectedLand } from './store.svelte';
+  import { openBuyLandWidget, openLandInfoWidget } from './game-ui.svelte';
 
   const SIZE = TILE_SIZE;
 
@@ -107,7 +108,13 @@
     selectedLand.value = land;
   }
 
-  const handleBuyLandClick = () => {};
+  const handleBuyLandClick = () => {
+    openBuyLandWidget(land);
+  };
+
+  const handleLandInfoClick = () => {
+    openLandInfoWidget(land);
+  };
 
   const handleBidClick = () => {};
 
@@ -161,16 +168,12 @@
       </Button>
     {/if}
     {#if BuildingLand.is(land)}
-      <!-- <RatesOverlay {land} /> -->
       {#if isOwner}
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
           style="transform: translate(-50%, 0) scale(0.5)"
-          onclick={() => {
-            uiStore.showModal = true;
-            uiStore.modalType = 'land-info';
-          }}
+          onclick={handleLandInfoClick}
         >
           LAND INFO
         </Button>
@@ -197,7 +200,7 @@
     <div
       class={cn(
         'absolute top-0 left-1/2 -translate-x-1/2 z-20',
-        scale > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
+        (scale ?? 1) > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
       )}
       onclick={handleClick}
     ></div>

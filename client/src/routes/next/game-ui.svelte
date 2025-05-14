@@ -1,7 +1,38 @@
+<script lang="ts" context="module">
+  import type { BaseLand } from '$lib/api/land';
+  import { widgetsStore } from '$lib/stores/widgets.store';
+
+  // Function to open buy land widget
+  export function openBuyLandWidget(land: BaseLand) {
+    widgetsStore.addWidget({
+      id: `buy-land-${land.location.x}-${land.location.y}`,
+      type: 'buy-land',
+      position: { x: 300, y: 100 },
+      isMinimized: false,
+      isOpen: true,
+      data: { land }
+    });
+  }
+
+  // Function to open land info widget
+  export function openLandInfoWidget(land: BaseLand) {
+    widgetsStore.addWidget({
+      id: `land-info-${land.location.x}-${land.location.y}`,
+      type: 'land-info',
+      position: { x: 300, y: 100 },
+      isMinimized: false,
+      isOpen: true,
+      data: { land }
+    });
+  }
+</script>
+
 <script lang="ts">
   import AuctionModal from '$lib/components/auction/auction-modal.svelte';
   import BuyModal from '$lib/components/buy/buy-modal.svelte';
+  import BuyLandWidget from '$lib/components/buy/buy-land-widget.svelte';
   import LandInfoModal from '$lib/components/land/land-info-modal.svelte';
+  import LandInfoWidget from '$lib/components/land/land-info-widget.svelte';
   import Toolbar from '$lib/components/toolbar/toolbar.svelte';
   import InfoModal from '$lib/components/ui/info-modal.svelte';
   import TxNotificationZone from '$lib/components/ui/tx-notification-zone.svelte';
@@ -10,10 +41,7 @@
   import { Info } from 'lucide-svelte';
   import Draggable from './draggable.svelte';
   import LandHud from '$lib/components/land/hud/land-hud.svelte';
-  import { widgetsStore } from '$lib/stores/widgets.store';
   import { onMount } from 'svelte';
-
-  // let { store } = $props();
 
   onMount(() => {
     // Initialize WalletLookup widget
@@ -44,6 +72,10 @@
           <WalletLookup />
         {:else if widget.type === 'land-hud'}
           <LandHud />
+        {:else if widget.type === 'buy-land' && widget.data?.land}
+          <BuyLandWidget land={widget.data.land} />
+        {:else if widget.type === 'land-info' && widget.data?.land}
+          <LandInfoWidget land={widget.data.land} />
         {/if}
       </Draggable>
     {/if}

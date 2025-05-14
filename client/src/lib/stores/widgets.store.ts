@@ -6,6 +6,7 @@ export interface WidgetState {
   position: { x: number; y: number };
   isMinimized: boolean;
   isOpen: boolean;
+  data?: Record<string, any>;
 }
 
 interface WidgetsState {
