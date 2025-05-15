@@ -17,6 +17,11 @@
     y: number;
   }
 
+  interface Dimensions {
+    width: number;
+    height: number;
+  }
+
   let {
     id,
     type,
@@ -28,6 +33,7 @@
 
   let el = $state<HTMLElement | null>(null);
   let currentPosition = $state<Position>(initialPosition);
+  let currentDimensions = $state<Dimensions | null>(null);
   let isMinimized = $state(false);
 
   onMount(() => {
@@ -70,7 +76,17 @@
               x: currentPosition.x + event.dx,
               y: currentPosition.y + event.dy,
             };
-            widgetsStore.updateWidget(id, { position: { ...currentPosition } });
+
+            currentDimensions = {
+              width: event.rect.width,
+              height: event.rect.height
+            };
+            
+            // Save both position and current dimensions
+            widgetsStore.updateWidget(id, { 
+              position: { ...currentPosition },
+              dimensions: currentDimensions || undefined
+            });
           },
         },
       })
@@ -83,6 +99,12 @@
             x = (parseFloat(x) || currentPosition.x) + event.deltaRect.left;
             y = (parseFloat(y) || currentPosition.y) + event.deltaRect.top;
 
+            // Update current dimensions
+            currentDimensions = {
+              width: event.rect.width,
+              height: event.rect.height
+            };
+
             Object.assign(event.target.style, {
               width: `${event.rect.width}px`,
               height: `${event.rect.height}px`,
@@ -91,12 +113,11 @@
 
             Object.assign(event.target.dataset, { x, y });
             currentPosition = { x, y };
+            
+            // Save both position and dimensions
             widgetsStore.updateWidget(id, { 
               position: { x, y },
-              dimensions: {
-                width: event.rect.width,
-                height: event.rect.height
-              }
+              dimensions: currentDimensions
             });
           },
         },
@@ -114,6 +135,7 @@
     // Initialize dimensions if they exist in the store
     const widget = $widgetsStore[id];
     if (widget?.dimensions) {
+      currentDimensions = widget.dimensions;
       Object.assign(el.style, {
         width: `${widget.dimensions.width}px`,
         height: `${widget.dimensions.height}px`,
@@ -133,12 +155,13 @@
     // Save current dimensions before minimizing
     if (el) {
       const rect = el.getBoundingClientRect();
+      currentDimensions = {
+        width: rect.width,
+        height: rect.height
+      };
       widgetsStore.updateWidget(id, {
         isMinimized,
-        dimensions: {
-          width: rect.width,
-          height: rect.height
-        }
+        dimensions: currentDimensions
       });
     } else {
       widgetsStore.toggleMinimize(id);
