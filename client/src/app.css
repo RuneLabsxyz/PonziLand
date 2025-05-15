@@ -65,9 +65,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
   body {
     @apply bg-background text-foreground;
   }
@@ -176,4 +173,9 @@
 }
 .button-ponzi-red:hover {
   border-image: url('/ui/button/red/hover.png') 40;
+}
+
+:root {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 5000px;
 }

@@ -1,37 +1,40 @@
 <script>
   import account from '$lib/account.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import { selectedLandMeta } from '$lib/stores/stores.svelte';
   import { padAddress } from '$lib/utils';
-  import { Card, CardContent } from '../../ui/card';
-  import LandHudAuction from './land-hud-auction.svelte';
-  import LandHudEmpty from './land-hud-empty.svelte';
+  import { selectedLandWithActions } from '../../../../routes/next/store.svelte';
+  import { Card } from '../../ui/card';
   import LandNukeTime from '../land-nuke-time.svelte';
   import LandOwnerInfo from '../land-owner-info.svelte';
+  import LandHudAuction from './land-hud-auction.svelte';
+  import LandHudEmpty from './land-hud-empty.svelte';
   import LandHudInfo from './land-hud-info.svelte';
 
   const address = $derived(account.address);
+  let landWithActions = $derived(selectedLandWithActions());
 
-  let isOwner = $derived($selectedLandMeta?.owner == padAddress(address ?? ''));
+  let isOwner = $derived(
+    landWithActions.value?.owner == padAddress(address ?? ''),
+  );
+  let land = $derived(landWithActions.value);
 
-  let land = $derived($selectedLandMeta);
+  $inspect(land);
 </script>
 
-{#if $selectedLandMeta}
-  <Card class="fixed bottom-0 right-0 z-50 w-104 bg-ponzi">
-    {#if $selectedLandMeta.type === 'house'}
+{#if land}
+  <Card class="z-50 w-104 bg-ponzi">
+    {#if land.type === 'house'}
       <LandOwnerInfo {land} {isOwner} />
     {/if}
-    {#if $selectedLandMeta.type === 'house'}
+    {#if land.type === 'house'}
       <div class="absolute right-0 -translate-y-12">
         <Card>
           <LandNukeTime {land} />
         </Card>
       </div>
     {/if}
-    {#if $selectedLandMeta.type === 'auction'}
+    {#if land.type === 'auction'}
       <LandHudAuction />
-    {:else if $selectedLandMeta.type === 'grass'}
+    {:else if land.type === 'grass'}
       <LandHudEmpty />
     {:else}
       <LandHudInfo {land} {isOwner} showLand={true} />

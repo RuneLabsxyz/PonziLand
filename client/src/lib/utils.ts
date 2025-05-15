@@ -5,6 +5,7 @@ import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 import type { BigNumberish } from 'starknet';
 import type { LandWithActions } from './api/land.svelte';
+import { GRID_SIZE } from './const';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -127,6 +128,10 @@ export function parseLocation(
 export function locationIntToString(location: number | string | undefined) {
   const [x, y] = parseLocation(location);
   return `${x}, ${y}`;
+}
+
+export function coordinatesToLocation(location: {x: number; y: number}) {
+  return location.x + location.y * GRID_SIZE;
 }
 
 export function padAddress(address: string) {

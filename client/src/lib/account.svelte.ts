@@ -1,9 +1,7 @@
-import { rei } from '@reown/appkit/networks';
+import type { UserInfo } from '@runelabsxyz/socialink-sdk';
+import { type AccountInterface } from 'starknet';
 import { getSocialink } from './accounts/social/index.svelte';
 import { useAccount, type AccountProvider } from './contexts/account.svelte';
-import { type AccountInterface } from 'starknet';
-import { Result } from 'postcss';
-import type { UserInfo } from '@runelabsxyz/socialink-sdk';
 
 export const state: {
   isConnected: boolean;

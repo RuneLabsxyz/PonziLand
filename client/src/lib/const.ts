@@ -12,6 +12,8 @@ export const CLOSING_DATE: Date | undefined = new Date('2025-05-01T00:00:00Z');
 export const LEVEL_UP_TIME = 60 * 60 * 48;
 export const TILE_SIZE = 32;
 
+export const MIN_SCALE_FOR_DETAIL = 2;
+
 export const NAME_SPACE = 'ponzi_land';
 
 export const AI_AGENT_ADDRESS =

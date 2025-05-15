@@ -10,7 +10,7 @@ import {
 } from '$lib/models.gen';
 import { ensureNumber, getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import { fromDojoLevel } from '$lib/utils/level';
+import { fromDojoLevel, type Level } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
 import {
   QueryBuilder,
@@ -34,6 +34,7 @@ import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { poseidonHash } from '@dojoengine/torii-client';
 import { updated } from '$app/stores';
+import { useStore } from '$lib/contexts/store.svelte';
 
 export type TransactionResult = Promise<
   | {
@@ -41,8 +42,6 @@ export type TransactionResult = Promise<
     }
   | undefined
 >;
-
-export type Level = 1 | 2 | 3;
 
 export type LandWithStake = Land & LandStake;
 export type LandAuction = Land & Auction;
@@ -126,7 +125,8 @@ export function useLands(): LandsStore | undefined {
     return undefined;
   }
 
-  const { store, client: sdk, accountManager } = useDojo();
+  const { client: sdk, accountManager } = useDojo();
+  const store = useStore();
 
   const landStore = derived([store], ([actualStore]) => actualStore);
 
@@ -436,3 +436,5 @@ export function useLands(): LandsStore | undefined {
     },
   };
 }
+
+  export { Level };

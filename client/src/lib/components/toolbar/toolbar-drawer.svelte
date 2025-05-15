@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Card } from '../ui/card';
   import ToolbarDrawerAuctions from './toolbar-drawer-auctions.svelte';
+  import ToolbarDrawerLandsNext from './toolbar-drawer-lands-next.svelte';
   import ToolbarDrawerLands from './toolbar-drawer-lands.svelte';
   import ToolbarDrawerPings from './toolbar-drawer-pings.svelte';
 
@@ -16,7 +17,7 @@
     {/if}
 
     {#if active === 'lands'}
-      <ToolbarDrawerLands />
+      <ToolbarDrawerLandsNext />
     {/if}
 
     {#if active === 'notifications'}

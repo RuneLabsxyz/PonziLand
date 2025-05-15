@@ -1,12 +1,16 @@
 <script lang="ts">
   import { cn } from '$lib/utils';
   import { onMount, onDestroy } from 'svelte';
+  import { cameraPosition } from '$lib/stores/camera';
+
+  const MIN_SCALE_FOR_ANIMATION = 2;
 
   const {
     class: className = '',
     src,
     x: initialX = 0,
     y: initialY = 0,
+    landCoordinates = { x: 0, y: 0 },
     xSize,
     ySize,
     xMax,
@@ -26,11 +30,11 @@
   } = $props();
 
   // Calculate total frames based on sprite sheet dimensions
-  const totalFramesX = Math.floor(xMax / xSize);
-  const totalFramesY = Math.floor(yMax / ySize);
+  let totalFramesX = $derived(Math.floor(xMax / xSize));
+  let totalFramesY = $derived(Math.floor(yMax / ySize));
 
   // Default end frame if not specified
-  const endFrame = $state(
+  let endFrame = $derived(
     initialEndFrame === undefined
       ? horizontal
         ? totalFramesX - 1
@@ -40,10 +44,12 @@
 
   // Animation state
   let currentFrame = $state(startFrame);
-  let animationInterval = $state();
-  let restartTimeout = $state();
+  let animationFrameId = $state<number | null>(null);
+  let restartTimeout = $state<number | null>(null);
   let isPlaying = $state(autoplay && animate);
   let direction = $state(1);
+  let lastFrameTime = $state(0);
+  let isWaiting = $state(false);
 
   // Sprite position
   let x = $state(initialX);
@@ -76,57 +82,85 @@
     }
   });
 
-  function startAnimation() {
-    if (!animate || animationInterval) return;
+  // Effect to handle camera scale changes and viewport visibility
+  $effect(() => {
+    const scale = $cameraPosition.scale;
+    if (scale < MIN_SCALE_FOR_ANIMATION && isPlaying) {
+      stopAnimation();
+    } else if (
+      scale >= MIN_SCALE_FOR_ANIMATION &&
+      !isPlaying &&
+      animate &&
+      autoplay
+    ) {
+      startAnimation();
+    }
+  });
 
-    isPlaying = true;
-    restartTimeout = null;
+  function animateFrame(timestamp: number) {
+    if (!isPlaying) return;
 
-    animationInterval = setInterval(async () => {
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    const elapsed = timestamp - lastFrameTime;
+
+    if (elapsed >= frameDelay && !isWaiting) {
       currentFrame += direction;
+      lastFrameTime = timestamp;
 
       // Check if we've reached the end frame or start frame
       if (currentFrame >= endFrame) {
         if (boomerang) {
-          clearInterval(animationInterval);
-          animationInterval = null;
-
-          restartTimeout = setTimeout(() => {
+          isWaiting = true;
+          restartTimeout = window.setTimeout(() => {
             direction = -1; // Reverse direction
-            startAnimation(); // Restart the animation
-          }, delay); // 1-second delay (adjust as needed)
+            currentFrame = endFrame; // Ensure we don't go past the end frame
+            isWaiting = false;
+          }, delay);
         } else if (!loop) {
           stopAnimation();
         } else {
-          // Add a delay before restarting
-          clearInterval(animationInterval);
-          animationInterval = null;
-
-          restartTimeout = setTimeout(() => {
+          isWaiting = true;
+          restartTimeout = window.setTimeout(() => {
             currentFrame = startFrame;
-            startAnimation(); // Restart the animation
-          }, delay); // 1-second delay (adjust as needed)
+            isWaiting = false;
+          }, delay);
         }
       } else if (currentFrame <= startFrame) {
         if (boomerang) {
-          clearInterval(animationInterval);
-          animationInterval = null;
-
-          restartTimeout = setTimeout(() => {
+          isWaiting = true;
+          restartTimeout = window.setTimeout(() => {
             direction = 1; // Forward direction
-            startAnimation(); // Restart the animation
-          }, delay); // 1-second delay (adjust as needed)
+            currentFrame = startFrame; // Ensure we don't go past the start frame
+            isWaiting = false;
+          }, delay);
         } else {
           direction = 1; // Forward direction
         }
       }
-    }, frameDelay);
+    }
+
+    if (isPlaying) {
+      animationFrameId = requestAnimationFrame(animateFrame);
+    }
+  }
+
+  function startAnimation() {
+    if (
+      !animate ||
+      animationFrameId ||
+      $cameraPosition.scale < MIN_SCALE_FOR_ANIMATION
+    )
+      return;
+
+    isPlaying = true;
+    lastFrameTime = 0;
+    animationFrameId = requestAnimationFrame(animateFrame);
   }
 
   function stopAnimation() {
-    if (animationInterval) {
-      clearInterval(animationInterval);
-      animationInterval = null;
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
     }
 
     // Clear the restart timeout if it exists
@@ -136,6 +170,7 @@
     }
 
     isPlaying = false;
+    isWaiting = false;
   }
 
   function resetAnimation() {
@@ -148,7 +183,11 @@
 
   // Lifecycle hooks
   onMount(() => {
-    if (animate && autoplay) {
+    if (
+      animate &&
+      autoplay &&
+      $cameraPosition.scale >= MIN_SCALE_FOR_ANIMATION
+    ) {
       startAnimation();
     }
   });
