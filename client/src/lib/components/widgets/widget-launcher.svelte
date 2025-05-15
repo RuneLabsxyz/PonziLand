@@ -5,7 +5,8 @@
   const availableWidgets = [
     { id: 'wallet-lookup', type: 'wallet', label: 'Wallet Lookup' },
     { id: 'land-hud', type: 'land-hud', label: 'Land HUD' },
-    { id: 'widget-settings', type: 'settings', label: 'Widget Settings' }
+    { id: 'widget-settings', type: 'settings', label: 'Widget Settings' },
+    { id: 'my-lands', type: 'my-lands', label: 'My Lands' }
   ];
 
   function addWidget(widgetType: string) {
