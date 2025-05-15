@@ -120,7 +120,11 @@
     padding: 8px;
     background: rgba(0, 0, 0, 0.5);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: move;
+    cursor: grab;
+  }
+
+  .window-header:active {
+    cursor: grabbing;
   }
 
   .window-title {
