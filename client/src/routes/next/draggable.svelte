@@ -1,13 +1,16 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import '@interactjs/auto-start';
+  import { widgetsStore } from '$lib/stores/widgets.store';
+  import '@interactjs/actions';
   import '@interactjs/actions/drag';
   import '@interactjs/actions/resize';
-  import '@interactjs/modifiers';
+  import '@interactjs/auto-start';
   import '@interactjs/dev-tools';
   import interact from '@interactjs/interact';
-  import { widgetsStore } from '$lib/stores/widgets.store';
-  import { X, Minus } from 'lucide-svelte';
+  import '@interactjs/modifiers';
+  import '@interactjs/snappers';
+  import '@interactjs/reflow'
+  import { Minus, X } from 'lucide-svelte';
+  import { onMount } from 'svelte';
 
   interface Position {
     x: number;
@@ -38,38 +41,53 @@
         type,
         position: { x: initialPosition.x, y: initialPosition.y },
         isMinimized: false,
-        isOpen: true
+        isOpen: true,
       });
     }
 
-    interact(el).draggable({
-      allowFrom: '.window-header',
-      modifiers: [
-        interact.modifiers.snap({
-          targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
-          range: Infinity,
-          relativePoints: [{ x: 0, y: 0 }],
-        }),
-        ...(restrictToParent
-          ? [
-              interact.modifiers.restrict({
-                restriction: el.parentNode as HTMLElement,
-                elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
-                endOnly: true,
-              }),
-            ]
-          : []),
-      ],
-      listeners: {
-        move(event) {
-          currentPosition = {
-            x: currentPosition.x + event.dx,
-            y: currentPosition.y + event.dy,
-          };
-          widgetsStore.updateWidget(id, { position: { ...currentPosition } });
+    const interactable = interact(el)
+      .draggable({
+        allowFrom: '.window-header',
+        modifiers: [
+          interact.modifiers.snap({
+            targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
+            range: Infinity,
+            relativePoints: [{ x: 0, y: 0 }],
+          }),
+          ...(restrictToParent
+            ? [
+                interact.modifiers.restrict({
+                  restriction: el.parentNode as HTMLElement,
+                  elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
+                  endOnly: true,
+                }),
+              ]
+            : []),
+        ],
+        listeners: {
+          move(event) {
+            currentPosition = {
+              x: currentPosition.x + event.dx,
+              y: currentPosition.y + event.dy,
+            };
+            widgetsStore.updateWidget(id, { position: { ...currentPosition } });
+          },
         },
-      },
-    });
+      })
+      .resizable({});
+
+    async function onWindowResize() {
+      // start a resize action and wait for inertia to finish
+      await interactable.reflow({ name: 'drag', axis: 'x' });
+
+      // start a drag action
+      await interactable.reflow({
+        name: 'resize',
+        edges: { left: true, bottom: true },
+      });
+    }
+
+    window.addEventListener('resize', onWindowResize);
   });
 
   function handleMinimize() {

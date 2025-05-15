@@ -50,6 +50,7 @@
     "@interactjs/dev-tools": "^1.10.27",
     "@interactjs/interact": "^1.10.27",
     "@interactjs/modifiers": "^1.10.27",
+    "@interactjs/reflow": "^1.10.27",
     "@interactjs/types": "^1.10.27",
     "@layerswap/sdk": "^0.1.0-alpha.2",
     "@reown/appkit": "^1.6.8",
