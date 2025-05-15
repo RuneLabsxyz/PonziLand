@@ -53,23 +53,7 @@
   import type { LandWithActions } from '$lib/api/land.svelte';
 
   onMount(() => {
-    // Initialize WalletLookup widget
-    widgetsStore.addWidget({
-      id: 'wallet-lookup',
-      type: 'wallet',
-      position: { x: 100, y: 100 },
-      isMinimized: false,
-      isOpen: true,
-    });
-
-    // Initialize LandHud widget
-    widgetsStore.addWidget({
-      id: 'land-hud',
-      type: 'land-hud',
-      position: { x: 100, y: 200 },
-      isMinimized: false,
-      isOpen: true,
-    });
+   
   });
 </script>
 
