@@ -1,5 +1,5 @@
 <script lang="ts">
-  import accountData from '$lib/account.svelte';
+  import accountData, { setup } from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/components/defi/ekubo/requests';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { useDojo } from '$lib/contexts/dojo';
@@ -81,7 +81,6 @@
     if (subscriptionRef) {
       subscriptionRef.cancel();
     }
-
     const request = {
       contractAddresses: data.availableTokens.map((token) => token.address),
       accountAddresses: address ? [address] : [],

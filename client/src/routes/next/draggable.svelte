@@ -11,6 +11,7 @@
   import '@interactjs/reflow';
   import { Minus, X } from 'lucide-svelte';
   import { onMount } from 'svelte';
+  import { Card } from '$lib/components/ui/card';
 
   interface Position {
     x: number;
@@ -27,13 +28,14 @@
     type,
     gridSize = 30,
     initialPosition = { x: 0, y: 0 } as Position,
+    initialDimensions = { width: 200, height: 50 } as Dimensions,
     restrictToParent = true,
     children,
   } = $props();
 
   let el = $state<HTMLElement | null>(null);
   let currentPosition = $state<Position>(initialPosition);
-  let currentDimensions = $state<Dimensions | null>(null);
+  let currentDimensions = $state<Dimensions>(initialDimensions);
   let isMinimized = $state(false);
 
   onMount(() => {
@@ -45,7 +47,8 @@
       widgetsStore.addWidget({
         id,
         type,
-        position: { x: initialPosition.x, y: initialPosition.y },
+        position: initialPosition,
+        dimensions: initialDimensions,
         isMinimized: false,
         isOpen: true,
       });
@@ -79,13 +82,13 @@
 
             currentDimensions = {
               width: event.rect.width,
-              height: event.rect.height
+              height: event.rect.height,
             };
-            
+
             // Save both position and current dimensions
-            widgetsStore.updateWidget(id, { 
+            widgetsStore.updateWidget(id, {
               position: { ...currentPosition },
-              dimensions: currentDimensions || undefined
+              dimensions: currentDimensions || undefined,
             });
           },
         },
@@ -95,29 +98,15 @@
         edges: { right: true, bottom: true },
         listeners: {
           move(event) {
-            let { x, y } = event.target.dataset;
-            x = (parseFloat(x) || currentPosition.x) + event.deltaRect.left;
-            y = (parseFloat(y) || currentPosition.y) + event.deltaRect.top;
-
             // Update current dimensions
             currentDimensions = {
               width: event.rect.width,
-              height: event.rect.height
+              height: event.rect.height,
             };
 
-            Object.assign(event.target.style, {
-              width: `${event.rect.width}px`,
-              height: `${event.rect.height}px`,
-              transform: `translate(${x}px, ${y}px)`,
-            });
-
-            Object.assign(event.target.dataset, { x, y });
-            currentPosition = { x, y };
-            
             // Save both position and dimensions
-            widgetsStore.updateWidget(id, { 
-              position: { x, y },
-              dimensions: currentDimensions
+            widgetsStore.updateWidget(id, {
+              dimensions: currentDimensions,
             });
           },
         },
@@ -127,20 +116,6 @@
           }),
         ],
       });
-
-    // Initialize dataset with current position
-    el.dataset.x = currentPosition.x.toString();
-    el.dataset.y = currentPosition.y.toString();
-
-    // Initialize dimensions if they exist in the store
-    const widget = $widgetsStore[id];
-    if (widget?.dimensions) {
-      currentDimensions = widget.dimensions;
-      Object.assign(el.style, {
-        width: `${widget.dimensions.width}px`,
-        height: `${widget.dimensions.height}px`,
-      });
-    }
 
     async function onWindowResize() {
       // start a resize action and wait for inertia to finish
@@ -154,14 +129,8 @@
     isMinimized = !isMinimized;
     // Save current dimensions before minimizing
     if (el) {
-      const rect = el.getBoundingClientRect();
-      currentDimensions = {
-        width: rect.width,
-        height: rect.height
-      };
       widgetsStore.updateWidget(id, {
         isMinimized,
-        dimensions: currentDimensions
       });
     } else {
       widgetsStore.toggleMinimize(id);
@@ -176,23 +145,29 @@
 <div
   bind:this={el}
   class="draggable"
-  style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:all"
+  style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:all; width:{currentDimensions?.width}px; height:{isMinimized
+    ? 0
+    : currentDimensions?.height}px;"
 >
-  <div class="window-header">
-    <div class="window-title">{type}</div>
-    <div class="window-controls">
-      <button class="window-control" onclick={handleMinimize}>
-        <Minus size={16} />
-      </button>
-      <button class="window-control" onclick={handleClose}>
-        <X size={16} />
-      </button>
+  <Card>
+    <div class="window-header">
+      <div class="window-title">{type}</div>
+      <div class="window-controls">
+        <button class="window-control" onclick={handleMinimize}>
+          <Minus size={16} />
+        </button>
+        <button class="window-control" onclick={handleClose}>
+          <X size={16} />
+        </button>
+      </div>
     </div>
-  </div>
+    {#if !isMinimized}
+      <div class="window-content">
+        {@render children()}
+      </div>
+    {/if}
+  </Card>
   {#if !isMinimized}
-    <div class="window-content">
-      {@render children()}
-    </div>
     <div class="window-resize-handle" style="pointer-events:all"></div>
   {/if}
 </div>
@@ -206,15 +181,13 @@
     border-radius: 8px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     min-width: 200px;
+    min-height: 50px;
   }
 
   .window-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px;
-    background: rgba(0, 0, 0, 0.5);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     cursor: grab;
   }
 

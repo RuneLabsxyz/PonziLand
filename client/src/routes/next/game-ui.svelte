@@ -10,6 +10,7 @@
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import Draggable from './draggable.svelte';
+  import WidgetBalance from './widgets/widget-balance.svelte';
 
   // Function to open buy land widget
   export function openBuyLandWidget(land: BaseLand) {
@@ -17,6 +18,7 @@
       id: `buy-land-${land.location.x}-${land.location.y}`,
       type: 'buy-land',
       position: { x: 300, y: 100 },
+      dimensions: { width: 200, height: 50 },
       isMinimized: false,
       isOpen: true,
       data: { location: land.location },
@@ -46,10 +48,10 @@
 
   {#each Object.entries($widgetsStore) as [id, widget]}
     {#if widget.isOpen}
-      <Draggable {id} type={widget.type} initialPosition={widget.position}>
+      <Draggable {id} type={widget.type} initialPosition={widget.position} initialDimensions={widget.dimensions}>
         {@const type = widget.type}
         {#if type === 'wallet'}
-          <WalletLookup />
+          <WidgetBalance />
         {:else if type === 'land-hud'}
           <LandHud />
         {:else if type === 'buy-land' && widget.data?.land}
