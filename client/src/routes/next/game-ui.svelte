@@ -5,7 +5,6 @@
   import LandHud from '$lib/components/land/hud/land-hud.svelte';
   import LandInfoWidget from '$lib/components/land/land-info-widget.svelte';
   import InfoModal from '$lib/components/ui/info-modal.svelte';
-  import WalletLookup from '$lib/components/wallet/wallet-lookup.svelte';
   import WidgetLauncher from '$lib/components/widgets/widget-launcher.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -33,6 +32,7 @@
       id: `land-info-${land.location}`,
       type: 'land-info',
       position: { x: 300, y: 100 },
+      dimensions: { width: 800, height: 600 },
       isMinimized: false,
       isOpen: true,
       data: { location: land.location },
