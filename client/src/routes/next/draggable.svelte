@@ -8,7 +8,7 @@
   import interact from '@interactjs/interact';
   import '@interactjs/modifiers';
   import '@interactjs/snappers';
-  import '@interactjs/reflow'
+  import '@interactjs/reflow';
   import { Minus, X } from 'lucide-svelte';
   import { onMount } from 'svelte';
 
@@ -74,17 +74,55 @@
           },
         },
       })
-      .resizable({});
+      .resizable({
+        allowFrom: '.window-resize-handle',
+        edges: { right: true, bottom: true },
+        listeners: {
+          move(event) {
+            let { x, y } = event.target.dataset;
+            x = (parseFloat(x) || currentPosition.x) + event.deltaRect.left;
+            y = (parseFloat(y) || currentPosition.y) + event.deltaRect.top;
+
+            Object.assign(event.target.style, {
+              width: `${event.rect.width}px`,
+              height: `${event.rect.height}px`,
+              transform: `translate(${x}px, ${y}px)`,
+            });
+
+            Object.assign(event.target.dataset, { x, y });
+            currentPosition = { x, y };
+            widgetsStore.updateWidget(id, { 
+              position: { x, y },
+              dimensions: {
+                width: event.rect.width,
+                height: event.rect.height
+              }
+            });
+          },
+        },
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: 200, height: 50 },
+          }),
+        ],
+      });
+
+    // Initialize dataset with current position
+    el.dataset.x = currentPosition.x.toString();
+    el.dataset.y = currentPosition.y.toString();
+
+    // Initialize dimensions if they exist in the store
+    const widget = $widgetsStore[id];
+    if (widget?.dimensions) {
+      Object.assign(el.style, {
+        width: `${widget.dimensions.width}px`,
+        height: `${widget.dimensions.height}px`,
+      });
+    }
 
     async function onWindowResize() {
       // start a resize action and wait for inertia to finish
-      await interactable.reflow({ name: 'drag', axis: 'x' });
-
-      // start a drag action
-      await interactable.reflow({
-        name: 'resize',
-        edges: { left: true, bottom: true },
-      });
+      await interactable.reflow({ name: 'drag', axis: 'xy' });
     }
 
     window.addEventListener('resize', onWindowResize);
@@ -92,7 +130,19 @@
 
   function handleMinimize() {
     isMinimized = !isMinimized;
-    widgetsStore.toggleMinimize(id);
+    // Save current dimensions before minimizing
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      widgetsStore.updateWidget(id, {
+        isMinimized,
+        dimensions: {
+          width: rect.width,
+          height: rect.height
+        }
+      });
+    } else {
+      widgetsStore.toggleMinimize(id);
+    }
   }
 
   function handleClose() {
@@ -103,7 +153,7 @@
 <div
   bind:this={el}
   class="draggable"
-  style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:auto"
+  style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:all"
 >
   <div class="window-header">
     <div class="window-title">{type}</div>
@@ -120,6 +170,7 @@
     <div class="window-content">
       {@render children()}
     </div>
+    <div class="window-resize-handle" style="pointer-events:all"></div>
   {/if}
 </div>
 
@@ -178,5 +229,31 @@
 
   .window-content {
     padding: 16px;
+  }
+
+  .window-resize-handle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: nwse-resize;
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.1),
+      rgba(255, 255, 255, 0.1) 2px,
+      transparent 2px,
+      transparent 4px
+    );
+  }
+
+  .window-resize-handle:hover {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(255, 255, 255, 0.2),
+      rgba(255, 255, 255, 0.2) 2px,
+      transparent 2px,
+      transparent 4px
+    );
   }
 </style>

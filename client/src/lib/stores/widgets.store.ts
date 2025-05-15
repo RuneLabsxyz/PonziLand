@@ -31,6 +31,7 @@ export interface WidgetState {
   position: { x: number; y: number };
   isMinimized: boolean;
   isOpen: boolean;
+  dimensions?: { width: number; height: number };
   data?: Record<string, any>;
 }
 
