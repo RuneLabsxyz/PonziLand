@@ -21,32 +21,22 @@ export const selectedLandWithActions = () => {
   return selectedLandWithActionsState;
 };
 
-let selectedLandWithActionsState = $derived.by(() => {
+export const createLandWithActions = (land: BuildingLand) => {
   const { client: sdk, accountManager } = useDojo();
   const account = () => {
     return accountManager!.getProvider();
   };
-  const land = selectedLand.value;
 
-  if (!land) {
-    return { value: null };
-  }
-
-  if (!BuildingLand.is(land)) {
-    return { value: null };
-  }
-
-  const landWithActions: LandWithActions = {
+  const landWithActions = {
     ...land,
     stakeAmount: land.stakeAmount,
     lastPayTime: land.lastPayTime.getTime() / 1000,
     sellPrice: land.sellPrice,
-    type:
-      land.type === 'empty'
-        ? 'grass'
-        : land.type === 'building'
-          ? 'house'
-          : land.type,
+    type: (land.type === 'empty'
+      ? 'grass'
+      : land.type === 'building'
+        ? 'house'
+        : land.type) as 'grass' | 'house' | 'auction',
     level: land.level,
     owner: land.owner,
     block_date_bought: land.block_date_bought,
@@ -172,6 +162,22 @@ let selectedLandWithActionsState = $derived.by(() => {
       };
     },
   };
+
+  return landWithActions;
+};
+
+let selectedLandWithActionsState = $derived.by(() => {
+  if (!selectedLand.value) {
+    return { value: null };
+  }
+
+  const land = selectedLand.value;
+
+  if (!BuildingLand.is(land)) {
+    return null;
+  }
+
+  const landWithActions: LandWithActions = createLandWithActions(land);
 
   return { value: landWithActions };
 });

@@ -3,6 +3,7 @@ import {
   ensureNumber,
   padAddress,
   parseLocation,
+  toHexWithPadding,
 } from '$lib/utils';
 import type BigNumber from 'bignumber.js';
 import type { BigNumberish, CairoOption } from 'starknet';
@@ -20,9 +21,7 @@ export abstract class BaseLand {
   constructor(type: LandType, location: Location) {
     this._type = type;
     this.location = location;
-    this.locationString = padAddress(
-      coordinatesToLocation(location).toString(),
-    ) ?? "0x0";
+    this.locationString = toHexWithPadding(coordinatesToLocation(location));
   }
 
   get type() {

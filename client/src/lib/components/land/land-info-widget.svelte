@@ -1,13 +1,14 @@
 <script lang="ts">
+  import type { LandWithActions } from '$lib/api/land.svelte';
   import LandInfoModal from './land-info-modal.svelte';
-  import type { BaseLand } from '$lib/api/land';
-  import { BuildingLand } from '$lib/api/land/building_land';
 
-  let { land } = $props<{ land: BaseLand }>();
+  let { land } = $props<{ land: LandWithActions }>();
 </script>
 
 <div class="land-info-widget">
-  <LandInfoModal {land} />
+  {#if land}
+    <LandInfoModal {land} />
+  {/if}
 </div>
 
 <style>
@@ -15,4 +16,4 @@
     min-width: 300px;
     min-height: 200px;
   }
-</style> 
+</style>

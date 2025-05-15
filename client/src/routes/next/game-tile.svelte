@@ -8,15 +8,12 @@
   import LandNukeShield from '$lib/components/land/land-nuke-shield.svelte';
   import { Button } from '$lib/components/ui/button';
   import { GRID_SIZE, TILE_SIZE } from '$lib/const';
-  import {
-    cameraPosition,
-    moveCameraTo
-  } from '$lib/stores/camera';
+  import { cameraPosition, moveCameraTo } from '$lib/stores/camera';
   import { nukeStore } from '$lib/stores/nuke.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { cn, padAddress } from '$lib/utils';
   import type { Readable } from 'svelte/store';
-  import { selectedLand } from './store.svelte';
+  import { createLandWithActions, selectedLand } from './store.svelte';
   import { openBuyLandWidget, openLandInfoWidget } from './game-ui.svelte';
 
   const SIZE = TILE_SIZE;
@@ -113,7 +110,10 @@
   };
 
   const handleLandInfoClick = () => {
-    openLandInfoWidget(land);
+    if (!BuildingLand.is(land)) return;
+
+    const landWithActions = createLandWithActions(land);
+    openLandInfoWidget(landWithActions);
   };
 
   const handleBidClick = () => {};

@@ -10,19 +10,27 @@
       position: { x: 300, y: 100 },
       isMinimized: false,
       isOpen: true,
-      data: { land }
+      data: { land },
     });
   }
 
   // Function to open land info widget
-  export function openLandInfoWidget(land: BaseLand) {
+  export function openLandInfoWidget(land: LandWithActions) {
+    console.log('openLandInfoWidget', land);
+    // Ensure land data is fully processed
+    if (!land.token || !land.location) {
+      console.warn('Land data not fully processed yet, waiting...');
+      setTimeout(() => openLandInfoWidget(land), 100);
+      return;
+    }
+    
     widgetsStore.addWidget({
-      id: `land-info-${land.location.x}-${land.location.y}`,
+      id: `land-info-${land.location}`,
       type: 'land-info',
       position: { x: 300, y: 100 },
       isMinimized: false,
       isOpen: true,
-      data: { land }
+      data: { land },
     });
   }
 </script>
@@ -42,6 +50,7 @@
   import Draggable from './draggable.svelte';
   import LandHud from '$lib/components/land/hud/land-hud.svelte';
   import { onMount } from 'svelte';
+  import type { LandWithActions } from '$lib/api/land.svelte';
 
   onMount(() => {
     // Initialize WalletLookup widget
@@ -50,7 +59,7 @@
       type: 'wallet',
       position: { x: 100, y: 100 },
       isMinimized: false,
-      isOpen: true
+      isOpen: true,
     });
 
     // Initialize LandHud widget
@@ -59,12 +68,15 @@
       type: 'land-hud',
       position: { x: 100, y: 200 },
       isMinimized: false,
-      isOpen: true
+      isOpen: true,
     });
   });
 </script>
 
-<div class="z-50 absolute top-0 left-0 right-0 bottom-0" style="pointer-events: none;">
+<div
+  class="z-50 absolute top-0 left-0 right-0 bottom-0"
+  style="pointer-events: none;"
+>
   {#each Object.entries($widgetsStore) as [id, widget]}
     {#if widget.isOpen}
       <Draggable {id} type={widget.type} initialPosition={widget.position}>
@@ -77,22 +89,10 @@
         {:else if widget.type === 'land-info' && widget.data?.land}
           <LandInfoWidget land={widget.data.land} />
         {/if}
+        <h1 class="text-white">Hello {widget.id} {widget.data}</h1>
       </Draggable>
     {/if}
   {/each}
 
-  <TxNotificationZone />
-  <Toolbar />
-
   <InfoModal isDisplay={uiStore.modalInfo} />
-
-  {#if uiStore.showModal}
-    {#if uiStore.modalType == 'buy'}
-      <BuyModal />
-    {:else if uiStore.modalType == 'bid'}
-      <AuctionModal />
-    {:else if uiStore.modalType == 'land-info'}
-      <LandInfoModal />
-    {/if}
-  {/if}
 </div>
