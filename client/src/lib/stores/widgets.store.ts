@@ -2,15 +2,15 @@ import { writable } from 'svelte/store';
 
 const DEFAULT_WIDGETS_STATE: WidgetsState = {
   walletLookup: {
-    id: 'walletLookup',
-    type: 'walletLookup',
+    id: 'wallet-lookup',
+    type: 'wallet',
     position: { x: window.innerWidth - 320, y: 20 }, // Top right
     isMinimized: false,
     isOpen: true
   },
   landHud: {
-    id: 'landHud',
-    type: 'landHud',
+    id: 'land-hud',
+    type: 'land-hud',
     position: { x: window.innerWidth - 320, y: window.innerHeight - 280 }, // Bottom right
     isMinimized: false,
     isOpen: true
@@ -31,7 +31,7 @@ interface WidgetsState {
 }
 
 function createWidgetsStore() {
-  const { subscribe, set, update } = writable<WidgetsState>({});
+  const { subscribe, set, update } = writable<WidgetsState>(DEFAULT_WIDGETS_STATE);
 
   return {
     subscribe,
