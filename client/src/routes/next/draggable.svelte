@@ -9,18 +9,22 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { X, Minus } from 'lucide-svelte';
 
+  interface Position {
+    x: number;
+    y: number;
+  }
+
   let {
     id,
     type,
     gridSize = 30,
-    inertia = true,
-    initialPosition = { x: 0, y: 0 },
+    initialPosition = { x: 0, y: 0 } as Position,
     restrictToParent = true,
     children,
   } = $props();
 
   let el = $state<HTMLElement | null>(null);
-  let currentPosition = $state<{ x: number; y: number }>(initialPosition);
+  let currentPosition = $state<Position>(initialPosition);
   let isMinimized = $state(false);
 
   onMount(() => {
@@ -36,6 +40,7 @@
     });
 
     interact(el).draggable({
+      allowFrom: '.window-header',
       modifiers: [
         interact.modifiers.snap({
           targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
@@ -82,10 +87,10 @@
   <div class="window-header">
     <div class="window-title">{type}</div>
     <div class="window-controls">
-      <button class="window-control" on:click={handleMinimize}>
+      <button class="window-control" onclick={handleMinimize}>
         <Minus size={16} />
       </button>
-      <button class="window-control" on:click={handleClose}>
+      <button class="window-control" onclick={handleClose}>
         <X size={16} />
       </button>
     </div>
@@ -122,6 +127,7 @@
     color: white;
     font-size: 14px;
     font-weight: 500;
+    user-select: none;
   }
 
   .window-controls {
