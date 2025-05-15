@@ -4,9 +4,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-  <Card>
     <div class="flex items-center justify-between p-2">
-      <span class="text-sm font-medium">Settings</span>
       <button
         class="flex items-center gap-3 px-4 py-2 rounded-lg"
         onclick={() => proMode.toggle()}
@@ -26,5 +24,4 @@
         <span class="text-sm font-medium w-[85px]">Noob Mode</span>
       </button>
     </div>
-  </Card>
 </div> 

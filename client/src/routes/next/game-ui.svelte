@@ -10,6 +10,7 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import Draggable from './draggable.svelte';
   import WidgetBalance from './widgets/widget-balance.svelte';
+  import WidgetSettings from './widgets/widget-settings.svelte';
 
   // Function to open buy land widget
   export function openBuyLandWidget(land: BaseLand) {
@@ -58,6 +59,8 @@
           <BuyLandWidget land={widget.data.land} />
         {:else if type === 'land-info' && widget.data}
           <LandInfoWidget data={widget.data} />
+        {:else if type === 'settings'}
+          <WidgetSettings />
         {/if}
       </Draggable>
     {/if}
