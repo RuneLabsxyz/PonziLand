@@ -1,5 +1,6 @@
-<script>
+<script lang="ts">
   import account from '$lib/account.svelte';
+  import { BuildingLand } from '$lib/api/land/building_land';
   import { padAddress } from '$lib/utils';
   import { selectedLandWithActions } from '../../../../routes/next/store.svelte';
   import { Card } from '../../ui/card';
@@ -13,19 +14,19 @@
   let landWithActions = $derived(selectedLandWithActions());
 
   let isOwner = $derived(
-    landWithActions.value?.owner == padAddress(address ?? ''),
+    landWithActions?.value?.owner === padAddress(address ?? ''),
   );
-  let land = $derived(landWithActions.value);
+  let land = $derived(landWithActions?.value);
 
   $inspect(land);
 </script>
 
 {#if land}
   <Card class="z-50 w-104 bg-ponzi">
-    {#if land.type === 'house'}
+    {#if BuildingLand.is(land)}
       <LandOwnerInfo {land} {isOwner} />
     {/if}
-    {#if land.type === 'house'}
+    {#if BuildingLand.is(land)}
       <div class="absolute right-0 -translate-y-12">
         <Card>
           <LandNukeTime {land} />
@@ -34,7 +35,7 @@
     {/if}
     {#if land.type === 'auction'}
       <LandHudAuction />
-    {:else if land.type === 'grass'}
+    {:else if land.type === 'empty' || land.type === 'grass'}
       <LandHudEmpty />
     {:else}
       <LandHudInfo {land} {isOwner} showLand={true} />
