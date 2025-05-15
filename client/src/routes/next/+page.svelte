@@ -3,7 +3,6 @@
   import { refresh, setup as setupAccountState } from '$lib/account.svelte';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import LoadingScreen from '$lib/components/loading/loading-screen.svelte';
-  import Map from '$lib/components/map/map.svelte';
   import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
@@ -16,7 +15,7 @@
     setupSocialink().then(() => {
       return setupAccountState();
     }),
-    setupClient(dojoConfig).then((client) => landStore.fakeSetup()),
+    setupClient(dojoConfig).then((client) => landStore.setup(client!)),
     setupAccount(),
   ]);
 

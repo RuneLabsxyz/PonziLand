@@ -1,15 +1,15 @@
 import { GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
+import { nukeStore } from '$lib/stores/nuke.svelte';
 import type { ParsedEntity } from '@dojoengine/sdk';
+import type { Subscription } from '@dojoengine/torii-client';
 import { derived, writable, type Readable, type Writable } from 'svelte/store';
 import { EmptyLand, type BaseLand } from './land';
 import { AuctionLand } from './land/auction';
 import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
-import type { Subscription } from '@dojoengine/torii-client';
-import { nukeStore } from '$lib/stores/nuke.svelte';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -17,7 +17,7 @@ const MAX_RANDOM_UPDATES = 50;
 const RANDOM_UPDATE_RANGE = MAX_RANDOM_UPDATES - MIN_RANDOM_UPDATES;
 
 const UPDATE_INTERVAL = 100;
-const NUKE_RATE = .1
+const NUKE_RATE = 0.1;
 
 // Token addresses
 const TOKEN_ADDRESSES = [
@@ -31,7 +31,8 @@ const TOKEN_ADDRESSES = [
 // Default values
 const DEFAULT_SELL_PRICE = 1000;
 const DEFAULT_STAKE_AMOUNT = 1000;
-const DEFAULT_OWNER = '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
+const DEFAULT_OWNER =
+  '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
 
 type WrappedLand = Writable<{ value: BaseLand }>;
 
@@ -58,7 +59,7 @@ function getLocationFromEntity(
 
 export class LandTileStore {
   private store: WrappedLand[][];
-  private currentLands: BaseLand[][];
+  private currentLands: Writable<BaseLand[][]>;
   private allLands: Readable<BaseLand[]>;
   private pendingStake: Map<Location, LandStake> = new Map();
   private sub: Subscription | undefined;
@@ -75,18 +76,20 @@ export class LandTileStore {
           .map((_, y) => wrapLand(new EmptyLand({ x, y }))),
       );
 
-    // Initialize currentLands with EmptyLand copies
-    this.currentLands = Array(GRID_SIZE)
-      .fill(null)
-      .map((_, x) =>
-        Array(GRID_SIZE)
-          .fill(null)
-          .map((_, y) => new EmptyLand({ x, y })),
-      );
+    // Initialize currentLands with EmptyLand copies as a writable store
+    this.currentLands = writable(
+      Array(GRID_SIZE)
+        .fill(null)
+        .map((_, x) =>
+          Array(GRID_SIZE)
+            .fill(null)
+            .map((_, y) => new EmptyLand({ x, y })),
+        )
+    );
 
-    this.allLands = derived(this.updateTracker, () => {
-      // Flatten currentLands into a 1D array snapshot
-      return this.currentLands.flat();
+    this.allLands = derived(this.currentLands, (lands) => {
+      console.log('lands updated', lands);
+      return lands.flat();
     });
   }
 
@@ -112,45 +115,53 @@ export class LandTileStore {
 
   private randomLandUpdate() {
     // Update between 20 to 100 random lands
-    const numUpdates = Math.floor(Math.random() * RANDOM_UPDATE_RANGE) + MIN_RANDOM_UPDATES;
+    const numUpdates =
+      Math.floor(Math.random() * RANDOM_UPDATE_RANGE) + MIN_RANDOM_UPDATES;
 
-    for (let i = 0; i < numUpdates; i++) {
-      // Pick a random land
-      const x = Math.floor(Math.random() * GRID_SIZE);
-      const y = Math.floor(Math.random() * GRID_SIZE);
-      const location = { x, y };
+    this.currentLands.update(lands => {
+      for (let i = 0; i < numUpdates; i++) {
+        // Pick a random land
+        const x = Math.floor(Math.random() * GRID_SIZE);
+        const y = Math.floor(Math.random() * GRID_SIZE);
+        const location = { x, y };
 
-      // Randomly select a token
-      const randomToken = TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
+        // Randomly select a token
+        const randomToken =
+          TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
 
-      // Create a random update
-      const fakeLand: Land = {
-        owner: DEFAULT_OWNER,
-        location: x + y * GRID_SIZE,
-        block_date_bought: Date.now(),
-        sell_price: Math.floor(Math.random() * DEFAULT_SELL_PRICE) + DEFAULT_SELL_PRICE/2,
-        token_used: randomToken,
-        level: 'Second',
-      };
+        // Create a random update
+        const fakeLand: Land = {
+          owner: DEFAULT_OWNER,
+          location: x + y * GRID_SIZE,
+          block_date_bought: Date.now(),
+          sell_price:
+            Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
+            DEFAULT_SELL_PRICE / 2,
+          token_used: randomToken,
+          level: 'Second',
+        };
 
-      const fakeStake: LandStake = {
-        location: x + y * GRID_SIZE,
-        amount: Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) + DEFAULT_STAKE_AMOUNT/2,
-        last_pay_time: Date.now(),
-      };
+        const fakeStake: LandStake = {
+          location: x + y * GRID_SIZE,
+          amount:
+            Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
+            DEFAULT_STAKE_AMOUNT / 2,
+          last_pay_time: Date.now(),
+        };
 
-      const buildingLand = new BuildingLand(fakeLand);
-      buildingLand.updateStake(fakeStake);
+        const buildingLand = new BuildingLand(fakeLand);
+        buildingLand.updateStake(fakeStake);
 
-      this.store[x][y].set({ value: buildingLand });
-      this.currentLands[x][y] = buildingLand;
+        this.store[x][y].set({ value: buildingLand });
+        lands[x][y] = buildingLand;
 
-      // Randomly trigger nuke animation (50% chance)
-      if (Math.random() < NUKE_RATE) {
-        this.triggerNukeAnimation(x, y);
+        // Randomly trigger nuke animation (50% chance)
+        if (Math.random() < NUKE_RATE) {
+          this.triggerNukeAnimation(x, y);
+        }
       }
-    }
-    this.updateTracker.update((n) => n + 1);
+      return lands;
+    });
   }
 
   private triggerNukeAnimation(x: number, y: number) {
@@ -165,36 +176,43 @@ export class LandTileStore {
   }
 
   public fakeSetup() {
-    // Create level 3 building lands for the entire grid
-    for (let x = 0; x < GRID_SIZE; x++) {
-      for (let y = 0; y < GRID_SIZE; y++) {
-        const location = { x, y };
-        // Randomly select a token
-        const randomToken = TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
-        const fakeLand: Land = {
-          owner: DEFAULT_OWNER,
-          location: x + y * GRID_SIZE,
-          block_date_bought: Date.now(),
-          sell_price: Math.floor(Math.random() * DEFAULT_SELL_PRICE) + DEFAULT_SELL_PRICE/2,
-          token_used: randomToken,
-          level: 'Second',
-        };
+    this.currentLands.update(lands => {
+      // Create level 3 building lands for the entire grid
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          const location = { x, y };
+          // Randomly select a token
+          const randomToken =
+            TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
+          const fakeLand: Land = {
+            owner: DEFAULT_OWNER,
+            location: x + y * GRID_SIZE,
+            block_date_bought: Date.now(),
+            sell_price:
+              Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
+              DEFAULT_SELL_PRICE / 2,
+            token_used: randomToken,
+            level: 'Second',
+          };
 
-        const fakeStake: LandStake = {
-          location: x + y * GRID_SIZE,
-          amount: Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) + DEFAULT_STAKE_AMOUNT/2,
-          last_pay_time: Date.now(),
-        };
+          const fakeStake: LandStake = {
+            location: x + y * GRID_SIZE,
+            amount:
+              Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
+              DEFAULT_STAKE_AMOUNT / 2,
+            last_pay_time: Date.now(),
+          };
 
-        const buildingLand = new BuildingLand(fakeLand);
-        buildingLand.updateStake(fakeStake);
+          const buildingLand = new BuildingLand(fakeLand);
+          buildingLand.updateStake(fakeStake);
 
-        this.store[x][y].set({ value: buildingLand });
-        console.log('Setting land at', location, buildingLand);
-        this.currentLands[x][y] = buildingLand;
+          this.store[x][y].set({ value: buildingLand });
+          console.log('Setting land at', location, buildingLand);
+          lands[x][y] = buildingLand;
+        }
       }
-    }
-    this.updateTracker.update((n) => n + 1);
+      return lands;
+    });
 
     // Start random updates every 10ms
     this.fakeUpdateInterval = setInterval(() => {
@@ -287,12 +305,12 @@ export class LandTileStore {
         }
       }
 
-      this.currentLands[location.x][location.y] = newLand;
+      this.currentLands.update(lands => {
+        lands[location.x][location.y] = newLand;
+        return lands;
+      });
 
-      // Do nothing
       return { value: newLand };
     });
-
-    this.updateTracker.update((n) => n + 1);
   }
 }

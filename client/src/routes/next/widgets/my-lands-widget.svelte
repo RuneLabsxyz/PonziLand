@@ -39,24 +39,42 @@
   let unsubscribe: (() => void) | null = $state(null);
   const landTileStore = new LandTileStore();
 
-  onMount(() => {
+  onMount(async () => {
+    console.log('Mounting my-lands-widget');
+    
+    // Setup the store with the client
+    await landTileStore.setup(dojo.client);
+    console.log('Store setup complete');
+
     const allLands = landTileStore.getAllLands();
+    console.log('Got allLands store', allLands);
+    
     unsubscribe = allLands.subscribe((landsData) => {
-      lands = landsData
+      console.log('Received lands update', landsData);
+      if (!landsData) return;
+      
+      const filteredLands = landsData
         .filter((land): land is BuildingLand => {
           if (BuildingLand.is(land)) {
-            return land.owner === padAddress(account()?.getWalletAccount()?.address ?? '');
+            const owner = padAddress(account()?.getWalletAccount()?.address ?? '');
+            console.log('Comparing owners:', { landOwner: land.owner, userOwner: owner });
+            return land.owner === owner;
           }
           return false;
         })
         .map((land) => createLandWithActions(land));
+      
+      console.log('Filtered lands:', filteredLands);
+      lands = filteredLands;
     });
   });
 
   onDestroy(() => {
+    console.log('Unmounting my-lands-widget');
     if (unsubscribe) {
       unsubscribe();
     }
+    landTileStore.cleanup();
   });
 
   const groupedLands = $derived(groupLands(lands));
@@ -116,4 +134,4 @@
       {/if}
     </div>
   </ScrollArea>
-</div> 
+</div>
