@@ -1,15 +1,9 @@
 import {
   coordinatesToLocation,
-  ensureNumber,
-  padAddress,
-  parseLocation,
-  toHexWithPadding,
+  toHexWithPadding
 } from '$lib/utils';
-import type BigNumber from 'bignumber.js';
-import type { BigNumberish, CairoOption } from 'starknet';
 
 import { type Location } from './location';
-import type { Readable } from 'svelte/store';
 
 export type LandType = 'empty' | 'auction' | 'building';
 

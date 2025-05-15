@@ -51,6 +51,7 @@
   import LandHud from '$lib/components/land/hud/land-hud.svelte';
   import { onMount } from 'svelte';
   import type { LandWithActions } from '$lib/api/land.svelte';
+  import WidgetLauncher from '$lib/components/widgets/widget-launcher.svelte';
 
   onMount(() => {
    
@@ -61,6 +62,8 @@
   class="z-50 absolute top-0 left-0 right-0 bottom-0"
   style="pointer-events: none;"
 >
+  <WidgetLauncher />
+  
   {#each Object.entries($widgetsStore) as [id, widget]}
     {#if widget.isOpen}
       <Draggable {id} type={widget.type} initialPosition={widget.position}>
@@ -73,7 +76,6 @@
         {:else if widget.type === 'land-info' && widget.data?.land}
           <LandInfoWidget land={widget.data.land} />
         {/if}
-        <h1 class="text-white">Hello {widget.id} {widget.data}</h1>
       </Draggable>
     {/if}
   {/each}
