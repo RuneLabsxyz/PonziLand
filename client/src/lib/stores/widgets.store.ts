@@ -33,6 +33,7 @@ export interface WidgetState {
   isOpen: boolean;
   dimensions?: { width: number; height: number };
   data?: Record<string, any>;
+  zIndex?: number;
 }
 
 interface WidgetsState {
@@ -164,9 +165,11 @@ function createWidgetsStore() {
           console.error('Invalid widget data:', widget);
           return state;
         }
+        // Set initial z-index to be above existing widgets
+        const maxZIndex = Math.max(...Object.values(state).map(w => w.zIndex || 0), 0);
         const newState = {
           ...state,
-          [widget.id]: widget,
+          [widget.id]: { ...widget, zIndex: maxZIndex + 1 },
         };
         saveState(newState);
         return newState;
@@ -221,6 +224,20 @@ function createWidgetsStore() {
       set(DEFAULT_WIDGETS_STATE);
       saveState(DEFAULT_WIDGETS_STATE);
     },
+    bringToFront: (id: string) =>
+      update((state) => {
+        if (!state[id]) {
+          console.error('Widget not found:', id);
+          return state;
+        }
+        const maxZIndex = Math.max(...Object.values(state).map(w => w.zIndex || 0), 0);
+        const newState = {
+          ...state,
+          [id]: { ...state[id], zIndex: maxZIndex + 1 },
+        };
+        saveState(newState);
+        return newState;
+      }),
   };
 }
 

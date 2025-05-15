@@ -38,6 +38,10 @@
   let currentDimensions = $state<Dimensions>(initialDimensions);
   let isMinimized = $state(false);
 
+  function handleClick() {
+    widgetsStore.bringToFront(id);
+  }
+
   onMount(() => {
     if (!el) return;
 
@@ -142,7 +146,8 @@
   class="draggable overflow-hidden"
   style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:all; width:{currentDimensions?.width}px; height:{isMinimized
     ? 0
-    : currentDimensions?.height}px;"
+    : currentDimensions?.height}px; z-index: {$widgetsStore[id]?.zIndex || 0};"
+  onclick={handleClick}
 >
   <Card>
     <div class="window-header">
