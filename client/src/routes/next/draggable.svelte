@@ -80,11 +80,6 @@
               y: currentPosition.y + event.dy,
             };
 
-            currentDimensions = {
-              width: event.rect.width,
-              height: event.rect.height,
-            };
-
             // Save both position and current dimensions
             widgetsStore.updateWidget(id, {
               position: { ...currentPosition },
@@ -144,7 +139,7 @@
 
 <div
   bind:this={el}
-  class="draggable"
+  class="draggable overflow-hidden"
   style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:all; width:{currentDimensions?.width}px; height:{isMinimized
     ? 0
     : currentDimensions?.height}px;"
