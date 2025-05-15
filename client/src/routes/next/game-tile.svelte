@@ -15,6 +15,7 @@
   import type { Readable } from 'svelte/store';
   import { createLandWithActions, selectedLand } from './store.svelte';
   import { openBuyLandWidget, openLandInfoWidget } from './game-ui.svelte';
+  import RatesOverlay from '$lib/components/map/rates-overlay.svelte';
 
   const SIZE = TILE_SIZE;
 
@@ -168,6 +169,7 @@
       </Button>
     {/if}
     {#if BuildingLand.is(land)}
+      <RatesOverlay land={createLandWithActions(land)} />
       {#if isOwner}
         <Button
           size="sm"
