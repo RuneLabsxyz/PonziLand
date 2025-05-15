@@ -30,14 +30,17 @@
   onMount(() => {
     if (!el) return;
 
-    // Add widget to store
-    widgetsStore.addWidget({
-      id,
-      type,
-      position: { x: initialPosition.x, y: initialPosition.y },
-      isMinimized: false,
-      isOpen: true
-    });
+    // Add widget to store if it doesn't exist
+    const currentWidget = $widgetsStore[id];
+    if (!currentWidget) {
+      widgetsStore.addWidget({
+        id,
+        type,
+        position: { x: initialPosition.x, y: initialPosition.y },
+        isMinimized: false,
+        isOpen: true
+      });
+    }
 
     interact(el).draggable({
       allowFrom: '.window-header',

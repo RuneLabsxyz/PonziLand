@@ -1,6 +1,15 @@
 <script lang="ts" context="module">
   import type { BaseLand } from '$lib/api/land';
+  import type { LandWithActions } from '$lib/api/land.svelte';
+  import BuyLandWidget from '$lib/components/buy/buy-land-widget.svelte';
+  import LandHud from '$lib/components/land/hud/land-hud.svelte';
+  import LandInfoWidget from '$lib/components/land/land-info-widget.svelte';
+  import InfoModal from '$lib/components/ui/info-modal.svelte';
+  import WalletLookup from '$lib/components/wallet/wallet-lookup.svelte';
+  import WidgetLauncher from '$lib/components/widgets/widget-launcher.svelte';
+  import { uiStore } from '$lib/stores/ui.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import Draggable from './draggable.svelte';
 
   // Function to open buy land widget
   export function openBuyLandWidget(land: BaseLand) {
@@ -10,52 +19,23 @@
       position: { x: 300, y: 100 },
       isMinimized: false,
       isOpen: true,
-      data: { land },
+      data: { location: land.location },
     });
   }
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
     console.log('openLandInfoWidget', land);
-    // Ensure land data is fully processed
-    if (!land.token || !land.location) {
-      console.warn('Land data not fully processed yet, waiting...');
-      setTimeout(() => openLandInfoWidget(land), 100);
-      return;
-    }
-    
+
     widgetsStore.addWidget({
       id: `land-info-${land.location}`,
       type: 'land-info',
       position: { x: 300, y: 100 },
       isMinimized: false,
       isOpen: true,
-      data: { land },
+      data: { location: land.location },
     });
   }
-</script>
-
-<script lang="ts">
-  import AuctionModal from '$lib/components/auction/auction-modal.svelte';
-  import BuyModal from '$lib/components/buy/buy-modal.svelte';
-  import BuyLandWidget from '$lib/components/buy/buy-land-widget.svelte';
-  import LandInfoModal from '$lib/components/land/land-info-modal.svelte';
-  import LandInfoWidget from '$lib/components/land/land-info-widget.svelte';
-  import Toolbar from '$lib/components/toolbar/toolbar.svelte';
-  import InfoModal from '$lib/components/ui/info-modal.svelte';
-  import TxNotificationZone from '$lib/components/ui/tx-notification-zone.svelte';
-  import WalletLookup from '$lib/components/wallet/wallet-lookup.svelte';
-  import { uiStore } from '$lib/stores/ui.store.svelte';
-  import { Info } from 'lucide-svelte';
-  import Draggable from './draggable.svelte';
-  import LandHud from '$lib/components/land/hud/land-hud.svelte';
-  import { onMount } from 'svelte';
-  import type { LandWithActions } from '$lib/api/land.svelte';
-  import WidgetLauncher from '$lib/components/widgets/widget-launcher.svelte';
-
-  onMount(() => {
-   
-  });
 </script>
 
 <div
@@ -63,18 +43,19 @@
   style="pointer-events: none;"
 >
   <WidgetLauncher />
-  
+
   {#each Object.entries($widgetsStore) as [id, widget]}
     {#if widget.isOpen}
       <Draggable {id} type={widget.type} initialPosition={widget.position}>
-        {#if widget.type === 'wallet'}
+        {@const type = widget.type}
+        {#if type === 'wallet'}
           <WalletLookup />
-        {:else if widget.type === 'land-hud'}
+        {:else if type === 'land-hud'}
           <LandHud />
-        {:else if widget.type === 'buy-land' && widget.data?.land}
+        {:else if type === 'buy-land' && widget.data?.land}
           <BuyLandWidget land={widget.data.land} />
-        {:else if widget.type === 'land-info' && widget.data?.land}
-          <LandInfoWidget land={widget.data.land} />
+        {:else if type === 'land-info' && widget.data}
+          <LandInfoWidget data={widget.data} />
         {/if}
       </Draggable>
     {/if}
