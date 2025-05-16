@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { Card } from '$lib/components/ui/card';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import '@interactjs/actions';
   import '@interactjs/actions/drag';
@@ -7,11 +8,10 @@
   import '@interactjs/dev-tools';
   import interact from '@interactjs/interact';
   import '@interactjs/modifiers';
-  import '@interactjs/snappers';
   import '@interactjs/reflow';
+  import '@interactjs/snappers';
   import { Minus, X } from 'lucide-svelte';
   import { onMount } from 'svelte';
-  import { Card } from '$lib/components/ui/card';
 
   interface Position {
     x: number;
@@ -141,6 +141,8 @@
   }
 </script>
 
+<!-- svelte-ignore a11y_click_events_have_key_events -->
+<!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={el}
   class="draggable overflow-hidden"
@@ -149,7 +151,7 @@
     : currentDimensions?.height}px; z-index: {$widgetsStore[id]?.zIndex || 0};"
   onclick={handleClick}
 >
-  <Card>
+  <Card class="w-full h-full">
     <div class="window-header">
       <div class="window-title">{type}</div>
       <div class="window-controls">
@@ -224,7 +226,9 @@
   }
 
   .window-content {
-    padding: 16px;
+    padding: 1rem 0;
+    height: 100%;
+    width: 100%;
   }
 
   .window-resize-handle {

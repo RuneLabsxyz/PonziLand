@@ -3,15 +3,15 @@
   import type { LandWithActions } from '$lib/api/land.svelte';
   import BuyLandWidget from '$lib/components/buy/buy-land-widget.svelte';
   import LandHud from '$lib/components/land/hud/land-hud.svelte';
-  import LandInfoWidget from '$lib/components/land/land-info-widget.svelte';
+  import WidgetLandInfo from './widgets/widget-land-info.svelte';
   import InfoModal from '$lib/components/ui/info-modal.svelte';
   import WidgetLauncher from '$lib/components/widgets/widget-launcher.svelte';
   import { uiStore } from '$lib/stores/ui.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import Draggable from './draggable.svelte';
   import WidgetBalance from './widgets/widget-balance.svelte';
+  import WidgetMyLands from './widgets/widget-my-lands.svelte';
   import WidgetSettings from './widgets/widget-settings.svelte';
-  import MyLandsWidget from './widgets/my-lands-widget.svelte';
 
   // Function to open buy land widget
   export function openBuyLandWidget(land: BaseLand) {
@@ -50,7 +50,12 @@
 
   {#each Object.entries($widgetsStore) as [id, widget]}
     {#if widget.isOpen}
-      <Draggable {id} type={widget.type} initialPosition={widget.position} initialDimensions={widget.dimensions}>
+      <Draggable
+        {id}
+        type={widget.type}
+        initialPosition={widget.position}
+        initialDimensions={widget.dimensions}
+      >
         {@const type = widget.type}
         {#if type === 'wallet'}
           <WidgetBalance />
@@ -59,11 +64,11 @@
         {:else if type === 'buy-land' && widget.data?.land}
           <BuyLandWidget land={widget.data.land} />
         {:else if type === 'land-info' && widget.data}
-          <LandInfoWidget data={widget.data} />
+          <WidgetLandInfo data={widget.data} />
         {:else if type === 'settings'}
           <WidgetSettings />
         {:else if type === 'my-lands'}
-          <MyLandsWidget />
+          <WidgetMyLands />
         {/if}
       </Draggable>
     {/if}
