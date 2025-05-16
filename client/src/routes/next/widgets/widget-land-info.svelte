@@ -142,8 +142,10 @@
         class="flex flex-col items-center justify-center h-full w-full landinfo-content"
       >
         <div class="flex flex-col items-center justify-center min-w-80">
-          <LandOverview {land} isOwner={true} size="lg" />
-          <div class="flex items-center gap-2 mt-6">
+          <div class="py-8">
+            <LandOverview {land} isOwner={true} size="lg" />
+          </div>
+          <div class="flex items-center gap-2">
             <div class="text-3xl text-ponzi-number text-white">
               {land.token?.symbol}
             </div>
