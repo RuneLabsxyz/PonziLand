@@ -7,7 +7,7 @@
   import type { SelectedLand } from '$lib/stores/stores.svelte';
   import { calculateBurnRate } from '$lib/utils/taxes';
   import type { LandWithActions } from '$lib/api/land.svelte';
-  import { proMode } from '$lib/stores/ui.store.svelte';
+  import { settingsStore } from '$lib/stores/ui.store.svelte';
   import LandHudPro from './land-hud-pro.svelte';
   import LandHudNormal from './land-hud-normal.svelte';
   import LandOverview from '../land-overview.svelte';
@@ -141,7 +141,7 @@
       </Button>
     {/if}
   </div>
-  {#if proMode.isPro}
+  {#if settingsStore.isProMode}
     <LandHudPro {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
   {:else if land}
     <LandHudNormal {yieldInfo} {burnRate} {land} />
