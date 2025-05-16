@@ -33,6 +33,9 @@ pub struct Conf {
     pub torii: ToriiConfig,
 
     #[config(nested)]
+    pub database: DatabaseConfig,
+
+    #[config(nested)]
     pub gg_xyz: GgXyzConfig,
 
     pub default_token: String,
@@ -50,6 +53,12 @@ pub struct ToriiConfig {
     pub world_address: Felt,
     #[config(env = "TORII_URL")]
     pub torii_url: Url,
+}
+
+#[derive(Config, Debug, Clone)]
+pub struct DatabaseConfig {
+    #[config(env = "DATABASE_URL")]
+    pub url: Url,
 }
 
 #[derive(Config, Debug, Clone)]

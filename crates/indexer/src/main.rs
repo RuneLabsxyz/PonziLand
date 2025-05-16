@@ -16,7 +16,7 @@ use monitoring::listen_monitoring;
 use routes::{price::PriceRoute, tokens::TokenRoute};
 use serde::{Deserialize, Serialize};
 use service::{ekubo::EkuboService, token::TokenService};
-use sqlx::{postgres::PgConnectOptions, PgPool};
+use sqlx::{postgres::PgConnectOptions, ConnectOptions, PgPool};
 use state::AppState;
 use tokio::{
     select,
@@ -75,7 +75,10 @@ async fn main() -> Result<()> {
         .await
         .with_context(|| "Error while setting up ekubo config")?;
 
-    let options = PgConnectOptions::new().application_name("sql-migrator");
+    let options = PgConnectOptions::from_url(&config.database.url)
+        .with_context(|| "Error while setting up database connection")?
+        .application_name("ponzidexer");
+
     let pool = PgPool::connect_with(options)
         .await
         .with_context(|| "Impossible to connect to database")?;
