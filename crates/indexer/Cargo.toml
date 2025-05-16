@@ -46,7 +46,7 @@ sqlx = { workspace = true, features = [
     "bigdecimal",
 ] }
 dotenv = "0.15.0"
+migrations = { path = "../migrations" }
 
 [lints]
 workspace = true
-

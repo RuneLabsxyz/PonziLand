@@ -12,6 +12,7 @@ use axum::{
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
+use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{price::PriceRoute, tokens::TokenRoute};
 use serde::{Deserialize, Serialize};
@@ -82,6 +83,12 @@ async fn main() -> Result<()> {
     let pool = PgPool::connect_with(options)
         .await
         .with_context(|| "Impossible to connect to database")?;
+
+    // Run migrations
+    MIGRATOR
+        .run(&pool)
+        .await
+        .with_context(|| "Error while migrating database")?;
 
     let chaindata_service = ChainDataService::new(
         pool.clone(),

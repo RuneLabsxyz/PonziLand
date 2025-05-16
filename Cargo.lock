@@ -3197,6 +3197,7 @@ dependencies = [
  "http 1.3.1",
  "metrics",
  "metrics-exporter-prometheus",
+ "migrations",
  "pin-project-lite",
  "serde",
  "sqlx",
