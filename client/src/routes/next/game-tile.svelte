@@ -106,10 +106,6 @@
     selectedLand.value = land;
   }
 
-  const handleBuyLandClick = () => {
-    openBuyLandWidget(land);
-  };
-
   const handleLandInfoClick = () => {
     if (!BuildingLand.is(land)) return;
 
@@ -184,7 +180,7 @@
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
           style="transform: translate(-50%, 0) scale(0.5)"
-          onclick={handleBuyLandClick}
+          onclick={handleLandInfoClick}
         >
           BUY LAND
         </Button>
