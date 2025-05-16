@@ -80,8 +80,8 @@
   const groupedLands = $derived(groupLands(lands));
 </script>
 
-<div class="p-4 rounded-lg text-white">
-  <ScrollArea class="h-[400px] w-[300px]">
+<div class="relative h-full w-full">
+  <ScrollArea class="w-full h-full" type="scroll">
     <div class="flex flex-col items-center">
       {#each groupedLands as [key, lands]}
         <div class="w-full mb-4">
@@ -135,3 +135,22 @@
     </div>
   </ScrollArea>
 </div>
+
+<style>
+  .landinfo-container {
+    container-type: inline-size;
+    container-name: landinfo;
+  }
+
+  @container landinfo (min-width: 700px) {
+    .landinfo-content {
+      flex-direction: row;
+    }
+  }
+
+  @container landinfo (max-width: 699px) {
+    .landinfo-content {
+      flex-direction: column;
+    }
+  }
+</style>
