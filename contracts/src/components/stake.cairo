@@ -52,7 +52,11 @@ mod StakeComponent {
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
         fn _add(
-            ref self: ComponentState<TContractState>, amount: u256, land: Land, mut store: Store,
+            ref self: ComponentState<TContractState>,
+            amount: u256,
+            land: Land,
+            mut land_stake: LandStake,
+            mut store: Store,
         ) {
             //initialize and validate token balance
             let mut payable = get_dep_component_mut!(ref self, Payable);
@@ -71,7 +75,7 @@ mod StakeComponent {
             self.token_stakes.write(land.token_used, current_total + amount);
 
             //update land stake amount
-            let mut land_stake = store.land_stake(land.location);
+
             land_stake.amount = land_stake.amount + amount;
             land_stake.last_pay_time = get_block_timestamp();
             store.set_land_stake(land_stake);

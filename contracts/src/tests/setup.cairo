@@ -98,6 +98,7 @@ mod setup {
                 TestResource::Event(
                     actions::e_LandBoughtEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
+                TestResource::Event(actions::e_AddStakeEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Contract(auth::TEST_CLASS_HASH),
                 TestResource::Event(
                     auth::e_AddressAuthorizedEvent::TEST_CLASS_HASH.try_into().unwrap(),

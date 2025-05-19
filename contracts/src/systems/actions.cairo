@@ -179,6 +179,16 @@ pub mod actions {
         final_price: u256,
     }
 
+    #[derive(Drop, Serde)]
+    #[dojo::event]
+    pub struct AddStakeEvent {
+        #[key]
+        land_location: u16,
+        new_stake_amount: u256,
+        owner: ContractAddress,
+    }
+
+
     mod errors {
         const ERC20_PAY_FOR_BUY_FAILED: felt252 = 'ERC20: pay for buy failed';
         const ERC20_PAY_FOR_BID_FAILED: felt252 = 'ERC20: pay for bid failed';
@@ -414,7 +424,12 @@ pub mod actions {
 
             assert(land.owner == caller, 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
-            self.stake._add(amount_to_stake, land, store);
+            let mut land_stake = store.land_stake(land.location);
+            self.stake._add(amount_to_stake, land, land_stake, store);
+            let new_stake_amount = land_stake.amount + amount_to_stake;
+            store
+                .world
+                .emit_event(@AddStakeEvent { land_location, new_stake_amount, owner: caller })
         }
 
         fn level_up(ref self: ContractState, land_location: u16) -> bool {
@@ -818,8 +833,8 @@ pub mod actions {
                 land_location, caller, token_for_sale, sell_price, get_block_timestamp(),
             );
             store.set_land(land);
-
-            self.stake._add(amount_to_stake, land, store);
+            let mut land_stake = store.land_stake(land.location);
+            self.stake._add(amount_to_stake, land, land_stake, store);
         }
 
         fn update_level(
