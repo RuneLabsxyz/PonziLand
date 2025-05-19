@@ -16,7 +16,7 @@ world_address = "0x51b8efb6eeaeff501ebbe78758cc08c6cbaf9e13ca09812ba11e505f818d4
 torii_url = "https://api.cartridge.gg/x/ponziland-sepolia-internal/torii"
 
 [gg_xyz]
-enabled = true
+enabled = false
 api_url = "https://api-staging.gg.xyz"
 
 [starknet]

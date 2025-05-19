@@ -1,17 +1,12 @@
-use ponziland_models::events::EventData;
-use sqlx::prelude::FromRow;
-
-use crate::define_id;
-
 use super::{
     actions::{
         AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel, NewAuctionEventModel,
     },
     auth::{AddressAuthorizedEventModel, AddressRemovedEventModel, VerifierUpdatedEventModel},
-    EventType,
+    EventId as Id, EventType,
 };
-
-define_id!(Id, Uuid);
+use ponziland_models::events::EventData;
+use sqlx::prelude::FromRow;
 
 #[derive(FromRow, Clone, Debug)]
 pub struct Event {
@@ -29,6 +24,20 @@ pub enum DataModel {
     AddressAuthorized(AddressAuthorizedEventModel),
     AddressRemoved(AddressRemovedEventModel),
     VerifierUpdated(VerifierUpdatedEventModel),
+}
+
+impl DataModel {
+    pub fn set_id(&mut self, id: Id) {
+        match self {
+            DataModel::AuctionFinished(model) => model.id = id,
+            DataModel::LandBought(model) => model.id = id,
+            DataModel::LandNuked(model) => model.id = id,
+            DataModel::NewAuction(model) => model.id = id,
+            DataModel::AddressAuthorized(model) => model.id = id,
+            DataModel::AddressRemoved(model) => model.id = id,
+            DataModel::VerifierUpdated(model) => model.id = id,
+        }
+    }
 }
 
 impl From<EventData> for DataModel {

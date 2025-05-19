@@ -2,7 +2,10 @@ use chaindata_models::events::{Event, EventId, EventType, FetchedEvent};
 use chrono::{DateTime, Utc};
 use sqlx::{query, query_as};
 
-use crate::{events::base::EventDataRepository, Database};
+use crate::{
+    events::{base::EventDataRepository, event_data},
+    Database,
+};
 
 pub struct Repository {
     db: Database,
@@ -85,8 +88,12 @@ impl Repository {
         .id
         .into();
 
+        // Force the ID to be the same
+        let mut event_data = event.data;
+        event_data.set_id(id);
+
         // Insert the event data
-        EventDataRepository::save(&mut *tx, &event.data).await?;
+        EventDataRepository::save(&mut *tx, &event_data).await?;
 
         // Commit the TX
         tx.commit().await?;

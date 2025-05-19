@@ -44,6 +44,7 @@ pub enum RawToriiData {
         name: String,
         data: Value,
         at: DateTime<Utc>,
+        event_id: String,
     },
     Grpc(Struct),
 }
@@ -250,6 +251,7 @@ impl ToriiClient {
                     let event = RawToriiData::Json {
                         name: elem.selector,
                         data: elem.data,
+                        event_id: elem.event_id,
                         // TODO: Migrate this to something else than panics
                         at: NaiveDateTime::parse_from_str(&elem.created_at, "%F %T")
                             .unwrap()

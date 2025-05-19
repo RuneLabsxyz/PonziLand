@@ -18,6 +18,9 @@ historical = [
     "ponzi_land-RemainingStakeEvent",
 
     "ponzi_land-VerifierUpdatedEvent",
+
+    "ponzi_land-Land",
+    "ponzi_land-LandStake",
 ]
 
 
