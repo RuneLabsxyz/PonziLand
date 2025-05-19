@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct AuctionFinishedEventModel {
-    pub id: EventId,
+    pub id: Option<EventId>,
     pub location: Location,
     pub buyer: String,
     pub price: U256,
@@ -18,7 +18,7 @@ pub struct AuctionFinishedEventModel {
 impl From<AuctionFinishedEvent> for AuctionFinishedEventModel {
     fn from(event: AuctionFinishedEvent) -> Self {
         Self {
-            id: EventId(sqlx::types::Uuid::new_v4()),
+            id: None,
             location: event.land_location.into(),
             buyer: format!("{:#x}", event.buyer),
             price: event.final_price.into(),

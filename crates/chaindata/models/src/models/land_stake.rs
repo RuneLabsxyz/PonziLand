@@ -4,15 +4,14 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 
 use crate::{
+    events::EventId,
     shared::{Location, U256},
     utils::date::naive_from_u64,
 };
 
-crate::define_id!(Id, Uuid);
-
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Model {
-    pub id: Id,
+    pub id: EventId,
     pub at: NaiveDateTime,
     pub location: Location,
     pub last_pay_time: NaiveDateTime,
@@ -21,9 +20,9 @@ pub struct Model {
 
 impl Model {
     #[must_use]
-    pub fn from_at(land: &LandStake, at: NaiveDateTime) -> Self {
+    pub fn from_at(land: &LandStake, id: EventId, at: NaiveDateTime) -> Self {
         Self {
-            id: Id::new(),
+            id,
             at,
             location: land.location.into(),
             last_pay_time: naive_from_u64(land.last_pay_time),

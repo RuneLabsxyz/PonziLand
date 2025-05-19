@@ -6,7 +6,7 @@
       {
         "ordinal": 0,
         "name": "id: _",
-        "type_info": "Uuid"
+        "type_info": "Text"
       },
       {
         "ordinal": 1,
@@ -36,7 +36,7 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Text"
       ]
     },
     "nullable": [

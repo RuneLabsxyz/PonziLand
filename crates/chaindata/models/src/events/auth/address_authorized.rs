@@ -6,7 +6,7 @@ use crate::{events::EventId, utils::date::naive_from_u64};
 
 #[derive(Debug, Clone, FromRow)]
 pub struct AddressAuthorizedEventModel {
-    pub id: EventId,
+    pub id: Option<EventId>,
     pub at: NaiveDateTime,
     pub address: String,
 }
@@ -14,7 +14,7 @@ pub struct AddressAuthorizedEventModel {
 impl From<AddressAuthorizedEvent> for AddressAuthorizedEventModel {
     fn from(event: AddressAuthorizedEvent) -> Self {
         Self {
-            id: EventId(sqlx::types::Uuid::new_v4()),
+            id: None,
             at: naive_from_u64(event.authorized_at),
             address: format!("{:#x}", event.address),
         }

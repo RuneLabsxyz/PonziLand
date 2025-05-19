@@ -13,32 +13,32 @@ CREATE TYPE event_type AS ENUM (
 );
 
 CREATE TABLE event (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     at timestamp without time zone NOT NULL,
     event_type event_type NOT NULL
 );
 
 CREATE TABLE event_auction_finished (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     location INT4 NOT NULL,
     buyer text NOT NULL,
     price uint_256 NOT NULL
 );
 
 CREATE TABLE event_address_authorized (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     at timestamp without time zone NOT NULL,
     address text NOT NULL
 );
 
 CREATE TABLE event_address_removed (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     at timestamp without time zone NOT NULL,
     address text NOT NULL
 );
 
 CREATE TABLE event_land_bought (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     location INT4 NOT NULL,
     buyer text NOT NULL,
     seller text NOT NULL,
@@ -47,14 +47,14 @@ CREATE TABLE event_land_bought (
 );
 
 CREATE TABLE event_new_auction (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     location INT4 NOT NULL,
     starting_price uint_256 NOT NULL,
     floor_price uint_256 NOT NULL
 );
 
 CREATE TABLE event_land_nuked (
-    id uuid NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     location INT4 NOT NULL,
     owner text NOT NULL
 );

@@ -6,7 +6,7 @@ use crate::{events::EventId, shared::Location};
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct LandNukedEventModel {
-    pub id: EventId,
+    pub id: Option<EventId>,
     pub location: Location,
     pub owner: String,
 }
@@ -14,7 +14,7 @@ pub struct LandNukedEventModel {
 impl From<LandNukedEvent> for LandNukedEventModel {
     fn from(event: LandNukedEvent) -> Self {
         Self {
-            id: EventId(sqlx::types::Uuid::new_v4()),
+            id: None,
             location: event.land_location.into(),
             owner: format!("{:#x}", event.owner_nuked),
         }

@@ -1,5 +1,6 @@
+use chrono::NaiveDateTime;
 use serde_json::Value;
-use torii_ingester::error::ToriiConversionError;
+use torii_ingester::{RawToriiData, error::ToriiConversionError};
 use torii_ingester::prelude::Struct;
 
 use super::actions::{AuctionFinishedEvent, LandBoughtEvent, LandNukedEvent, NewAuctionEvent};
@@ -20,6 +21,37 @@ pub enum EventData {
 pub struct Event {
     pub at: chrono::NaiveDateTime,
     pub data: EventData,
+    pub event_id: String,
+}
+
+impl Event {
+    /// Parse raw Torii data into an Event.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the raw Torii data cannot be parsed into the corresponding event.
+    pub fn parse(data: RawToriiData) -> Result<Self, ToriiConversionError> {
+        match data {
+            RawToriiData::Json { name, data, at, event_id } => {
+                let event_data = EventData::from_json(&name, data)?;
+                Ok(Self {
+                    at: at.naive_utc(),
+                    data: event_data,
+                    event_id,
+                })
+            }
+            RawToriiData::Grpc(structure) => {
+                // For GRPC, we currently don't have an event_id
+                // This might need to be addressed in a future update
+                let event_data = EventData::try_from(structure.clone())?;
+                Ok(Self {
+                    at: chrono::Utc::now().naive_utc(), // Use current time for GRPC events
+                    data: event_data,
+                    event_id: String::new(), // Empty string for now
+                })
+            }
+        }
+    }
 }
 
 impl EventData {

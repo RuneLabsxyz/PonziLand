@@ -5,7 +5,7 @@ use crate::events::EventId;
 
 #[derive(Debug, Clone, FromRow)]
 pub struct VerifierUpdatedEventModel {
-    pub id: EventId,
+    pub id: Option<EventId>,
     pub new_verifier: String,
     pub old_verifier: String,
 }
@@ -13,7 +13,7 @@ pub struct VerifierUpdatedEventModel {
 impl From<VerifierUpdatedEvent> for VerifierUpdatedEventModel {
     fn from(event: VerifierUpdatedEvent) -> Self {
         Self {
-            id: EventId(sqlx::types::Uuid::new_v4()),
+            id: None,
             new_verifier: format!("{:#x}", event.new_verifier),
             old_verifier: format!("{:#x}", event.old_verifier),
         }

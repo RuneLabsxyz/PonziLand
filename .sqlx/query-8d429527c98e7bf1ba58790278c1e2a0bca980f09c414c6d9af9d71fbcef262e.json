@@ -6,12 +6,12 @@
       {
         "ordinal": 0,
         "name": "id",
-        "type_info": "Uuid"
+        "type_info": "Text"
       }
     ],
     "parameters": {
       "Left": [
-        "Uuid",
+        "Text",
         "Timestamp",
         "Int4",
         "Timestamp",

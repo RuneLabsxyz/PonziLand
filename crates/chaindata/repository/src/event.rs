@@ -86,11 +86,12 @@ impl Repository {
         .fetch_one(&mut *tx)
         .await?
         .id
-        .into();
+        .parse()
+        .expect("Database format issue");
 
         // Force the ID to be the same
         let mut event_data = event.data;
-        event_data.set_id(id);
+        event_data.set_id(id.clone());
 
         // Insert the event data
         EventDataRepository::save(&mut *tx, &event_data).await?;

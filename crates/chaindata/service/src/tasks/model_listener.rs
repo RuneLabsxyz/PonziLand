@@ -60,13 +60,14 @@ impl ModelListenerTask {
 
     #[allow(clippy::match_wildcard_for_single_variants)]
     async fn process_model(&self, model_data: RawToriiData) {
-        let (model, at) = Model::parse(model_data).expect("Error while parsing model data");
-        match model {
+        let model = Model::parse(model_data).expect("Error while parsing model data");
+        match model.model {
             Model::Land(land) => {
                 self.land_repository
                     .save(LandModel::from_at(
                         &land,
-                        at.unwrap_or(Utc::now()).naive_utc(),
+                        model.event_id.unwrap().parse().unwrap(),
+                        model.timestamp.unwrap_or(Utc::now()).naive_utc(),
                     ))
                     .await
                     .expect("Failed to save land model");
@@ -75,7 +76,8 @@ impl ModelListenerTask {
                 self.land_stake_repository
                     .save(LandStakeModel::from_at(
                         &land_stake,
-                        at.unwrap_or(Utc::now()).naive_utc(),
+                        model.event_id.unwrap().parse().unwrap(),
+                        model.timestamp.unwrap_or(Utc::now()).naive_utc(),
                     ))
                     .await
                     .expect("Failed to save land stake model");

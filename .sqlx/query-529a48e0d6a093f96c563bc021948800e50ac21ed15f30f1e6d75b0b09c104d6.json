@@ -1,12 +1,12 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id as \"id: LandStakeId\",\n                at,\n                location as \"location: Location\",\n                last_pay_time,\n                amount as \"amount: _\"\n            FROM land_stake\n            WHERE id = $1\n            ",
+  "query": "\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                last_pay_time,\n                amount as \"amount: _\"\n            FROM land_stake\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id: LandStakeId",
-        "type_info": "Uuid"
+        "name": "id: _",
+        "type_info": "Text"
       },
       {
         "ordinal": 1,
@@ -31,7 +31,7 @@
     ],
     "parameters": {
       "Left": [
-        "Uuid"
+        "Text"
       ]
     },
     "nullable": [
@@ -42,5 +42,5 @@
       false
     ]
   },
-  "hash": "9bb68daa32f2e2d0cde2da59171056e066f42fd4771b206ba17552fa8d3ccfdf"
+  "hash": "529a48e0d6a093f96c563bc021948800e50ac21ed15f30f1e6d75b0b09c104d6"
 }

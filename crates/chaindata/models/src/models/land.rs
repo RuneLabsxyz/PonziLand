@@ -1,3 +1,4 @@
+use crate::events::EventId;
 use crate::shared::{Location, U256};
 use crate::utils::date::naive_from_u64;
 use chrono::NaiveDateTime;
@@ -5,11 +6,6 @@ use ponziland_models::models::{Land, Level as RawLevel};
 use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 use sqlx::Type;
-
-use crate::define_id;
-
-define_id!(Id, Uuid);
-
 // Unfortunately, we need to re-declare level to have the iterop with the database working with sqlx.
 // Importing the sqlx crate in the external ponziland-models one seems ridiculous, and prevents usage from external users.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Copy, Type)]
@@ -32,7 +28,7 @@ impl From<RawLevel> for Level {
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
 pub struct Model {
-    pub id: Id,
+    pub id: EventId,
     pub at: NaiveDateTime,
     pub location: Location,
     pub bought_at: NaiveDateTime,
@@ -44,9 +40,9 @@ pub struct Model {
 
 impl Model {
     #[must_use]
-    pub fn from_at(land: &Land, at: NaiveDateTime) -> Self {
+    pub fn from_at(land: &Land, id: EventId, at: NaiveDateTime) -> Self {
         Self {
-            id: Id::new(),
+            id,
             at,
             location: land.location.into(),
             bought_at: naive_from_u64(land.block_date_bought),

@@ -1,12 +1,12 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id as \"id: LandId\",\n                at,\n                location as \"location: Location\",\n                bought_at,\n                owner,\n                sell_price as \"sell_price: _\",\n                token_used,\n                level as \"level: _\"\n            FROM land\n            WHERE location = $1 AND at <= $2\n            ORDER BY at DESC\n            LIMIT 1\n            ",
+  "query": "\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                bought_at,\n                owner,\n                sell_price as \"sell_price: _\",\n                token_used,\n                level as \"level: _\"\n            FROM land\n            WHERE id = $1\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id: LandId",
-        "type_info": "Uuid"
+        "name": "id: _",
+        "type_info": "Text"
       },
       {
         "ordinal": 1,
@@ -46,8 +46,7 @@
     ],
     "parameters": {
       "Left": [
-        "Int4",
-        "Timestamp"
+        "Text"
       ]
     },
     "nullable": [
@@ -61,5 +60,5 @@
       false
     ]
   },
-  "hash": "d4c740eea7667732d9de6b51c993db0a1fc07e4e328ec0895c25f6d7e3370eee"
+  "hash": "f0cff68cac9d2b39b97791577132a8209d60b923d3219ebc5115eaec7dee0b0f"
 }

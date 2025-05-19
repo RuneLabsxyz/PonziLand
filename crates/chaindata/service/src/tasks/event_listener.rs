@@ -41,18 +41,23 @@ impl EventListenerTask {
                 debug!("Processing GRPC event");
 
                 FetchedEvent {
-                    id: EventId::new(),
+                    id: EventId::new_test(0, 0, 0),
                     at: Utc::now().naive_utc(),
                     data: EventData::try_from(data)
                         .expect("An error occurred while deserializing model")
                         .into(),
                 }
             }
-            RawToriiData::Json { name, data, at } => {
+            RawToriiData::Json {
+                name,
+                data,
+                at,
+                event_id,
+            } => {
                 debug!("Processing JSON event");
 
                 FetchedEvent {
-                    id: EventId::new(),
+                    id: EventId::parse_from_torii(&event_id).unwrap(),
                     at: at.naive_utc(),
                     data: EventData::from_json(&name, data.clone())
                         .unwrap_or_else(|_| {

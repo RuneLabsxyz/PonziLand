@@ -29,13 +29,13 @@ pub enum DataModel {
 impl DataModel {
     pub fn set_id(&mut self, id: Id) {
         match self {
-            DataModel::AuctionFinished(model) => model.id = id,
-            DataModel::LandBought(model) => model.id = id,
-            DataModel::LandNuked(model) => model.id = id,
-            DataModel::NewAuction(model) => model.id = id,
-            DataModel::AddressAuthorized(model) => model.id = id,
-            DataModel::AddressRemoved(model) => model.id = id,
-            DataModel::VerifierUpdated(model) => model.id = id,
+            DataModel::AuctionFinished(model) => model.id = Some(id),
+            DataModel::LandBought(model) => model.id = Some(id),
+            DataModel::LandNuked(model) => model.id = Some(id),
+            DataModel::NewAuction(model) => model.id = Some(id),
+            DataModel::AddressAuthorized(model) => model.id = Some(id),
+            DataModel::AddressRemoved(model) => model.id = Some(id),
+            DataModel::VerifierUpdated(model) => model.id = Some(id),
         }
     }
 }

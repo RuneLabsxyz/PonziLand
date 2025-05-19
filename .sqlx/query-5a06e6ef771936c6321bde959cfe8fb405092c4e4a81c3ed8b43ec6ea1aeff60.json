@@ -1,12 +1,12 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            WITH latest_lands AS (\n                SELECT DISTINCT ON (location)\n                    id, at, location, bought_at, owner, sell_price, token_used, level\n                FROM land\n                WHERE at <= $1\n                ORDER BY location, at DESC\n            )\n            SELECT\n                id as \"id: LandId\",\n                at,\n                location as \"location: Location\",\n                bought_at,\n                owner,\n                sell_price as \"sell_price: _\",\n                token_used,\n                level as \"level: _\"\n            FROM latest_lands\n            ",
+  "query": "\n            WITH latest_lands AS (\n                SELECT DISTINCT ON (location)\n                    id, at, location, bought_at, owner, sell_price, token_used, level\n                FROM land\n                WHERE at <= $1\n                ORDER BY location, at DESC\n            )\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                bought_at,\n                owner,\n                sell_price as \"sell_price: _\",\n                token_used,\n                level as \"level: _\"\n            FROM latest_lands\n            ",
   "describe": {
     "columns": [
       {
         "ordinal": 0,
-        "name": "id: LandId",
-        "type_info": "Uuid"
+        "name": "id: _",
+        "type_info": "Text"
       },
       {
         "ordinal": 1,
@@ -60,5 +60,5 @@
       false
     ]
   },
-  "hash": "d7e705329f0ba0a6a27164dc70acf30917c65ef5bf3aa92a90bf99d24c4eec58"
+  "hash": "5a06e6ef771936c6321bde959cfe8fb405092c4e4a81c3ed8b43ec6ea1aeff60"
 }

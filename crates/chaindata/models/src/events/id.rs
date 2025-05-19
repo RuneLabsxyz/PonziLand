@@ -1,9 +1,9 @@
 use serde::{Deserialize, Serialize};
-use std::cell::OnceCell;
 use std::cmp::Ordering;
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::str::FromStr;
+use std::sync::OnceLock;
 use torii_ingester::prelude::Felt;
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -14,7 +14,7 @@ pub struct Id {
 
     // Internal cached string representation
     #[serde(skip)]
-    string_repr: OnceCell<String>,
+    string_repr: OnceLock<String>,
 }
 
 impl Debug for Id {
@@ -62,16 +62,33 @@ impl Id {
             block_id,
             tx_hash,
             event_idx,
-            string_repr: OnceCell::new(),
+            string_repr: OnceLock::new(),
         })
     }
 
+    // Testing function, that creates a new block for testing
+    // should NEVER be used in production code
+    #[cfg_attr(
+        not(test),
+        deprecated(note = "This function should not only be used for testing")
+    )]
+    #[must_use]
+    pub fn new_test(block_id: u64, tx_hash: u64, event_idx: u32) -> Self {
+        Self {
+            block_id: block_id.into(),
+            tx_hash: tx_hash.into(),
+            event_idx,
+            string_repr: OnceLock::new(),
+        }
+    }
+
+    #[must_use]
     pub fn new(block_id: Felt, tx_hash: Felt, event_idx: u32) -> Self {
         Self {
             block_id,
             tx_hash,
             event_idx,
-            string_repr: OnceCell::new(),
+            string_repr: OnceLock::new(),
         }
     }
 
@@ -154,7 +171,7 @@ impl FromStr for Id {
             .parse::<u32>()
             .map_err(|_| "Invalid event_idx".to_string())?;
 
-        let cell = OnceCell::new();
+        let cell = OnceLock::new();
         cell.set(s.to_string()).unwrap(); // PANIC SAFETY: This is never going to panic, as we just created the value
 
         Ok(Self {
