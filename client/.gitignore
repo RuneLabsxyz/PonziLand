@@ -25,3 +25,5 @@ vite.config.ts.timestamp-*
 
 .vscode
 .wrangler
+
+bunfig.toml
