@@ -5,12 +5,13 @@
  
   import { cn, hexStringToNumber } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import LandDisplay from '../land/land-display.svelte';
-  import LandNukeAnimation from '../land/land-nuke-animation.svelte';
-  import LandNukeShield from '../land/land-nuke-shield.svelte';
-  import LandTaxClaimer from '../land/land-tax-claimer.svelte';
+  import LandDisplay from '$lib/components/+game-map/land/land-display.svelte';
+  import LandNukeAnimation from '$lib/components/+game-map/land/land-nuke-animation.svelte';
+  import LandNukeShield from '$lib/components/+game-map/land/land-nuke-shield.svelte';
+  import LandTaxClaimer from '$lib/components/+game-map/land/land-tax-claimer.svelte';
   import RatesOverlay from './rates-tutorial.svelte';
   import { tileState } from './stores.svelte';
+  import { selectedLand } from '$lib/stores/store.svelte';
 
   // Create a simple modal store since uiStore is not found
   const modalStore = {
@@ -30,12 +31,15 @@
 
   const estimatedNukeTime = $derived(land.timeToNuke);
 
-  let selected = $derived($selectedLandPosition === land.location);
+  let selected = $derived(selectedLand.value?.location === land.location);
 
   let hovering = $state(false);
 
   function handleClick() {
     console.log('clicked', dragged);
+    if (!dragged) {
+      selectedLand.value = land;
+    }
   }
 
   const handleBuyLandClick = () => {
@@ -44,7 +48,7 @@
     modalStore.showModal = true;
     modalStore.modalType = 'buy';
     modalStore.modalData = {
-      location: hexStringToNumber($selectedLandMeta!.location),
+      location: hexStringToNumber(land.location),
       sellPrice: CurrencyAmount.fromScaled(0),
       tokenUsed: '',
       tokenAddress: '',
