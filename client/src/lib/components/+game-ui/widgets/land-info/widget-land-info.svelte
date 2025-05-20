@@ -44,7 +44,7 @@
   let sellAmount = $state<CurrencyAmount>(CurrencyAmount.fromScaled(1));
 
   let currentPrice = $state<CurrencyAmount>();
-  let priceDisplay = $derived(currentPrice?.rawValue().toString() ?? '');
+  let priceDisplay = $derived(currentPrice?.toString() ?? '');
 
   const address = $derived(account.address);
   let isOwner = $derived(land?.owner === padAddress(address ?? ''));
@@ -246,7 +246,7 @@
   });
 
   $effect(() => {
-    if (land?.type === 'auction') {
+    if (land?.type == 'auction') {
       fetchCurrentPrice();
 
       const interval = setInterval(() => {

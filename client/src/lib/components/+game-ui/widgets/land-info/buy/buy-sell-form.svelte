@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { LandWithActions } from '$lib/api/land';
   import type { Token } from '$lib/interfaces';
   import { tokenStore } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -27,7 +27,7 @@
   let sellAmountVal = $state(sellAmount.toString());
   let error = $state<string | null>(null);
 
-  const validateForm = () => {
+  const validateForm = async () => {
     error = null;
 
     if (!selectedToken) {
@@ -64,8 +64,20 @@
     );
 
     // Check if the land's current price is affordable
-    if (
+    if (land.type === 'auction') {
+      // For auction lands, get the current auction price
+      const currentAuctionPrice = await land.getCurrentAuctionPrice();
+      if (!currentAuctionPrice || !land.token) {
+        error = 'Unable to get current auction price';
+        return false;
+      }
+      if (selectedTokenAmount.rawValue().isLessThan(currentAuctionPrice.rawValue())) {
+        error = `This land is too expensive. Current auction price: ${currentAuctionPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
+        return false;
+      }
+    } else if (
       land.sellPrice &&
+      land.token &&
       selectedTokenAmount.rawValue().isLessThan(land.sellPrice.rawValue())
     ) {
       error = `This land is too expensive. Current price: ${land.sellPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
@@ -73,9 +85,20 @@
     }
 
     // Check if the total amount (stake + sell) is affordable
-    const totalRequired = parsedStake + parsedSell;
+    let totalRequired;
+    if (land.type === 'auction') {
+      const currentAuctionPrice = await land.getCurrentAuctionPrice();
+      if (!currentAuctionPrice || !land.token) {
+        error = 'Unable to get current auction price';
+        return false;
+      }
+      totalRequired = parsedStake + currentAuctionPrice.rawValue().toNumber();
+    } else {
+      totalRequired = parsedStake + parsedSell;
+    }
+
     if (selectedTokenAmount.rawValue().isLessThan(totalRequired)) {
-      error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, price: ${parsedSell}). Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
+      error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, ${land.type === 'auction' ? 'current auction price' : 'price'}: ${land.type === 'auction' ? (await land.getCurrentAuctionPrice())?.toString() : parsedSell}). Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
       return false;
     }
 
@@ -133,22 +156,6 @@
       {/each}
     </SelectContent>
   </Select>
-  <button
-    class="flex items-center gap-2 my-2 text-lg text-[#1F75BC] hover:opacity-75 disabled:opacity-50"
-    disabled
-  >
-    <div class="w-6 h-6 bg-[#1F75BC] relative">
-      <div
-        class="w-4 h-1 bg-white absolute left-1/2 top-1/2"
-        style="transform: translate(-50%, -50%);"
-      ></div>
-      <div
-        class="w-4 h-1 bg-white absolute left-1/2 top-1/2"
-        style="transform: translate(-50%, -50%) rotate(-90deg); transform-origin: 50% 50%;"
-      ></div>
-    </div>
-    Add Token Manually ◭ coming soon ◭
-  </button>
   <div class="flex gap-2">
     <div>
       <Label class="text-lg font-semibold">Stake Amount</Label>
