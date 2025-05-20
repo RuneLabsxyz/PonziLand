@@ -1,6 +1,10 @@
 import type { LandYieldInfo, Token } from '$lib/interfaces';
 import type { Auction, Land, LandStake } from '$lib/models.gen';
-import { coordinatesToLocation, toHexWithPadding, getTokenInfo } from '$lib/utils';
+import {
+  coordinatesToLocation,
+  toHexWithPadding,
+  getTokenInfo,
+} from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { type Level, fromDojoLevel } from '$lib/utils/level';
 import type { BigNumberish } from 'starknet';
@@ -104,19 +108,27 @@ export abstract class BaseLand {
     this._type = type;
     this.location = location;
     console.log('[BASELAND] Creating base land with location', location);
-    
+
     // Ensure location coordinates are valid numbers
-    if (typeof location.x !== 'number' || typeof location.y !== 'number' || 
-        isNaN(location.x) || isNaN(location.y)) {
+    if (
+      typeof location.x !== 'number' ||
+      typeof location.y !== 'number' ||
+      isNaN(location.x) ||
+      isNaN(location.y)
+    ) {
       console.error('Invalid location coordinates:', location);
       throw new Error('Invalid location coordinates');
     }
-    
+
     this.locationString = toHexWithPadding(coordinatesToLocation(location));
     this._token = token;
     this._sellPrice = CurrencyAmount.fromUnscaled(0, token);
     this._stakeAmount = CurrencyAmount.fromUnscaled(0, token);
-    const defaultLevel = { variant: 'First', unwrap: () => ({}), activeVariant: 'First' } as unknown as CairoCustomEnum;
+    const defaultLevel = {
+      variant: 'First',
+      unwrap: () => ({}),
+      activeVariant: 'First',
+    } as unknown as CairoCustomEnum;
     this._level = fromDojoLevel(defaultLevel);
   }
 

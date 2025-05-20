@@ -41,7 +41,7 @@
 
   onMount(async () => {
     console.log('Mounting my-lands-widget');
-    
+
     try {
       if (!dojo.client) {
         console.error('Dojo client is not initialized');
@@ -63,29 +63,29 @@
 
       const allLands = landTileStore.getAllLands();
       console.log('Got allLands store', allLands);
-      
+
       unsubscribe = allLands.subscribe((landsData) => {
         console.log('Received lands update', landsData);
         if (!landsData) {
           console.log('No lands data received');
           return;
         }
-        
+
         const filteredLands = landsData
           .filter((land): land is BuildingLand => {
             if (BuildingLand.is(land)) {
               const landOwner = padAddress(land.owner);
-              console.log('Comparing owners:', { 
+              console.log('Comparing owners:', {
                 landOwner,
                 userAddress,
-                isMatch: landOwner === userAddress 
+                isMatch: landOwner === userAddress,
               });
               return landOwner === userAddress;
             }
             return false;
           })
           .map((land) => createLandWithActions(land));
-        
+
         console.log('Filtered lands:', filteredLands);
         lands = filteredLands;
       });

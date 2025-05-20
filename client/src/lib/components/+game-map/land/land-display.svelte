@@ -114,7 +114,7 @@
             ? `/tokens/${token.symbol}/${level}-animated.png`
             : `/tokens/${token.symbol}/${level}-animated.png`}
         <SpriteSheet
-          src={src}
+          {src}
           xSize={animationMeta.xSize}
           ySize={animationMeta.ySize}
           xMax={animationMeta.xMax}

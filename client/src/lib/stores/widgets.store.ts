@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 const STORAGE_KEY = 'ponziland-widgets-state';
 
 const DEFAULT_WIDGETS_STATE: WidgetsState = {
-  'wallet': {
+  wallet: {
     id: 'wallet',
     type: 'wallet',
     position: { x: window.innerWidth - 320, y: 20 }, // Top right
@@ -17,7 +17,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: true,
   },
-  'settings': {
+  settings: {
     id: 'settings',
     type: 'settings',
     position: { x: 20, y: 20 }, // Top left
@@ -30,7 +30,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     position: { x: 20, y: window.innerHeight - 280 }, // Bottom left
     isMinimized: false,
     isOpen: false,
-  }
+  },
 };
 
 export interface WidgetState {

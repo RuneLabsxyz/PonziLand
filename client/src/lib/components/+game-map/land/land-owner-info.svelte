@@ -3,7 +3,7 @@
   import CopyAddress from '$lib/components/ui/copy-address.svelte';
   import type { LandWithActions } from '$lib/api/land';
   import { AI_AGENT_ADDRESS } from '$lib/const';
-  
+
   let {
     land,
     isOwner,

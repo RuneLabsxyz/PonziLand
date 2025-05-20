@@ -6,9 +6,7 @@ export type Location = {
   y: number;
 };
 
-export function toLocation(
-  value: BigNumberish,
-): Location {
+export function toLocation(value: BigNumberish): Location {
   // If value is object, return it
   if (typeof value === 'object') {
     return value;

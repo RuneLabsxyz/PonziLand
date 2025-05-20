@@ -142,7 +142,7 @@ export const createLandWithActions = (land: BuildingLand | AuctionLand) => {
     getNeighbors() {
       return new Neighbors({
         location: land.locationString,
-        source: get(landStore.getAllLands())
+        source: get(landStore.getAllLands()),
       });
     },
     getLevelInfo() {
@@ -230,7 +230,7 @@ export function getNeighboringLands(location: string): BaseLand[] {
   const landsArray = Array.isArray(allLands) ? allLands : [];
   const neighbors = new Neighbors({
     location,
-    source: landsArray
+    source: landsArray,
   });
   return neighbors.getNeighbors();
 }

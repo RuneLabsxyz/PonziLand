@@ -263,7 +263,11 @@ export class LandTileStore {
 
       if (landModel !== undefined && Object.keys(landModel).length === 0) {
         // Land model is being deleted, delete the entire land
-        console.log('[LANDSTOREUPDATE] Deleting land at', location, previousLand);
+        console.log(
+          '[LANDSTOREUPDATE] Deleting land at',
+          location,
+          previousLand,
+        );
         const newLand = new EmptyLand(location);
         this.currentLands.update((lands) => {
           lands[location.x][location.y] = newLand;
@@ -284,18 +288,33 @@ export class LandTileStore {
       // If we get an auction, go ahead with the auction
       const auctionModel = entity.models.ponzi_land?.Auction;
       if (auctionModel !== undefined && auctionModel.is_finished == false) {
-        console.log('[LANDSTOREUPDATE] Got Auction land at', location, auctionModel);
+        console.log(
+          '[LANDSTOREUPDATE] Got Auction land at',
+          location,
+          auctionModel,
+        );
         if (AuctionLand.is(previousLand)) {
           previousLand.update(landModel as Land, auctionModel as Auction);
-          console.log('[LANDSTOREUPDATE] Updating auction land at', location, previousLand);
+          console.log(
+            '[LANDSTOREUPDATE] Updating auction land at',
+            location,
+            previousLand,
+          );
           this.currentLands.update((lands) => {
             lands[location.x][location.y] = previousLand;
             return lands;
           });
           return { value: previousLand };
         } else if (landModel !== undefined) {
-          console.log('[LANDSTOREUPDATE] Creating auction land at', location, landModel);
-          const newLand = new AuctionLand(landModel as Land, auctionModel as Auction);
+          console.log(
+            '[LANDSTOREUPDATE] Creating auction land at',
+            location,
+            landModel,
+          );
+          const newLand = new AuctionLand(
+            landModel as Land,
+            auctionModel as Auction,
+          );
           this.currentLands.update((lands) => {
             lands[location.x][location.y] = newLand;
             return lands;
@@ -304,15 +323,26 @@ export class LandTileStore {
             value: newLand,
           };
         } else {
-          console.log('[LANDSTOREUPDATE] Creating auction land from previous land at', location, previousLand);
-          const newLand = new AuctionLand(previousLand, auctionModel as Auction);
+          console.log(
+            '[LANDSTOREUPDATE] Creating auction land from previous land at',
+            location,
+            previousLand,
+          );
+          const newLand = new AuctionLand(
+            previousLand,
+            auctionModel as Auction,
+          );
           this.currentLands.update((lands) => {
             lands[location.x][location.y] = newLand;
             return lands;
           });
           // Nuke the land
           this.triggerNukeAnimation(location.x, location.y);
-          console.log('[LANDSTOREUPDATE] Created auction land from previous land at', location, newLand);
+          console.log(
+            '[LANDSTOREUPDATE] Created auction land from previous land at',
+            location,
+            newLand,
+          );
           return {
             value: newLand,
           };
@@ -323,7 +353,12 @@ export class LandTileStore {
       let newLand = previousLand;
 
       if (landModel !== undefined) {
-        console.log('[LANDSTOREUPDATE] AuctionLand.is(newLand)', location, landModel, AuctionLand.is(newLand));
+        console.log(
+          '[LANDSTOREUPDATE] AuctionLand.is(newLand)',
+          location,
+          landModel,
+          AuctionLand.is(newLand),
+        );
         if (AuctionLand.is(newLand) && Number(landModel.owner) == 0) {
           // Do not change the land, this is an empty update.
           console.log('[LANDSTOREUPDATE] Empty update at', location, newLand);
@@ -333,10 +368,18 @@ export class LandTileStore {
           });
           return { value: previousLand };
         } else if (BuildingLand.is(newLand)) {
-          console.log('[LANDSTOREUPDATE] Updating building land at', location, newLand);
+          console.log(
+            '[LANDSTOREUPDATE] Updating building land at',
+            location,
+            newLand,
+          );
           newLand.update(landModel as Land);
         } else {
-          console.log('[LANDSTOREUPDATE] Creating building land at', location, landModel);
+          console.log(
+            '[LANDSTOREUPDATE] Creating building land at',
+            location,
+            landModel,
+          );
           newLand = new BuildingLand(landModel as Land);
           // Check if we have a pending stake
           if (this.pendingStake.has(newLand.location)) {
@@ -349,16 +392,28 @@ export class LandTileStore {
 
       if (landStakeModel !== undefined) {
         if (BuildingLand.is(newLand)) {
-          console.log('[LANDSTOREUPDATE] Updating building land stake at', location, newLand);
+          console.log(
+            '[LANDSTOREUPDATE] Updating building land stake at',
+            location,
+            newLand,
+          );
           newLand.updateStake(landStakeModel as LandStake);
         } else {
-          console.log('[LANDSTOREUPDATE] Creating building land stake at', location, landStakeModel);
+          console.log(
+            '[LANDSTOREUPDATE] Creating building land stake at',
+            location,
+            landStakeModel,
+          );
           this.pendingStake.set(newLand.location, landStakeModel as LandStake);
         }
       }
 
       if (BuildingLand.is(newLand)) {
-        console.log('[LANDSTOREUPDATE] Updating claim store at', location, newLand);
+        console.log(
+          '[LANDSTOREUPDATE] Updating claim store at',
+          location,
+          newLand,
+        );
         claimStore.value[newLand.locationString] = {
           lastClaimTime: 0,
           animating: false,

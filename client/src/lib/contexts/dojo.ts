@@ -1,6 +1,4 @@
-import {
-  useAccount
-} from './account.svelte';
+import { useAccount } from './account.svelte';
 import { useClient } from './client.svelte';
 
 export function useDojo() {

@@ -9,7 +9,11 @@ import type { BigNumberish } from 'starknet';
 
 export class BuildingLand extends BaseLand {
   constructor(land: Land) {
-    super('building', toLocation(land.location)!, getTokenInfo(land.token_used)!);
+    super(
+      'building',
+      toLocation(land.location)!,
+      getTokenInfo(land.token_used)!,
+    );
     this._block_date_bought = land.block_date_bought;
     this._sell_price = land.sell_price;
     this._token_used = land.token_used;

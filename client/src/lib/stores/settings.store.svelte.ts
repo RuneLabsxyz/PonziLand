@@ -1,7 +1,6 @@
-
 class SettingsStore {
   private static STORAGE_KEY = 'ponziland_settings';
-  
+
   private settings = $state({
     proMode: false,
     // Add more settings here as needed
@@ -24,7 +23,10 @@ class SettingsStore {
 
   private saveSettings() {
     try {
-      localStorage.setItem(SettingsStore.STORAGE_KEY, JSON.stringify(this.settings));
+      localStorage.setItem(
+        SettingsStore.STORAGE_KEY,
+        JSON.stringify(this.settings),
+      );
     } catch (error) {
       console.error('Failed to save settings:', error);
     }

@@ -29,7 +29,7 @@
 
   const validateForm = () => {
     error = null;
-    
+
     if (!selectedToken) {
       error = 'Please select a token';
       return false;
@@ -64,7 +64,10 @@
     );
 
     // Check if the land's current price is affordable
-    if (land.sellPrice && selectedTokenAmount.rawValue().isLessThan(land.sellPrice.rawValue())) {
+    if (
+      land.sellPrice &&
+      selectedTokenAmount.rawValue().isLessThan(land.sellPrice.rawValue())
+    ) {
       error = `This land is too expensive. Current price: ${land.sellPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
       return false;
     }
@@ -157,8 +160,8 @@
     </div>
     <div>
       <Label class="text-lg font-semibold">Sell Price</Label>
-      <Input 
-        type="number" 
+      <Input
+        type="number"
         bind:value={sellAmountVal}
         class={error ? 'border-red-500 border-2' : ''}
       />
@@ -166,7 +169,9 @@
   </div>
 
   {#if error}
-    <div class="text-red-500 text-sm mt-2 p-2 bg-red-50 border border-red-200 rounded">
+    <div
+      class="text-red-500 text-sm mt-2 p-2 bg-red-50 border border-red-200 rounded"
+    >
       {error}
     </div>
   {/if}
@@ -175,4 +180,3 @@
     <BuyInsights {sellAmountVal} {stakeAmountVal} {selectedToken} {land} />
   {/if}
 </div>
-

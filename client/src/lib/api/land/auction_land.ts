@@ -5,7 +5,11 @@ import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { fromDojoLevel, type Level } from '$lib/utils/level';
 import type { BigNumberish } from 'starknet';
 import { BaseLand } from '.';
-import { locationEquals, toLocation, type Location as LandLocation } from './location';
+import {
+  locationEquals,
+  toLocation,
+  type Location as LandLocation,
+} from './location';
 
 export class AuctionLand extends BaseLand {
   private _startTime!: Date;
@@ -24,21 +28,33 @@ export class AuctionLand extends BaseLand {
     let token: Token;
 
     if (AuctionLand.isLand(landOrPrevious)) {
-      console.log('[AUCTIONLAND] Creating auction land from land', landOrPrevious);
+      console.log(
+        '[AUCTIONLAND] Creating auction land from land',
+        landOrPrevious,
+      );
       if (!landOrPrevious.location) {
         throw new Error('Land location is undefined');
       }
       location = toLocation(landOrPrevious.location);
       token = getTokenInfo(landOrPrevious.token_used)!; // Add non-null assertion since we know token info exists
     } else {
-      console.log('[AUCTIONLAND] Creating auction land from previous land', landOrPrevious);
+      console.log(
+        '[AUCTIONLAND] Creating auction land from previous land',
+        landOrPrevious,
+      );
       location = landOrPrevious.location;
       token = landOrPrevious.token;
     }
 
     console.log('[AUCTIONLAND] Location', location);
 
-    console.log('[AUCTIONLAND] Creating auction land from', landOrPrevious, auction, location, token);
+    console.log(
+      '[AUCTIONLAND] Creating auction land from',
+      landOrPrevious,
+      auction,
+      location,
+      token,
+    );
     super('auction', location, token);
 
     if (AuctionLand.isLand(landOrPrevious)) {
@@ -58,16 +74,25 @@ export class AuctionLand extends BaseLand {
       this._level = landOrPrevious.level;
       this._boughtAt = landOrPrevious.boughtAt;
       this._sellPrice = landOrPrevious.sellPrice;
-      
+
       // Update auction specific properties
       this._startTime = new Date(Number(auction.start_time));
-      this._startPrice = CurrencyAmount.fromUnscaled(auction.start_price, this._token);
-      this._floorPrice = CurrencyAmount.fromUnscaled(auction.floor_price, this._token);
+      this._startPrice = CurrencyAmount.fromUnscaled(
+        auction.start_price,
+        this._token,
+      );
+      this._floorPrice = CurrencyAmount.fromUnscaled(
+        auction.floor_price,
+        this._token,
+      );
       this._isFinished = auction.is_finished;
       this._decayRate = auction.decay_rate;
-      
+
       if (auction.sold_at_price && 'value' in auction.sold_at_price) {
-        this._soldAtPrice = CurrencyAmount.fromUnscaled(auction.sold_at_price.value as BigNumberish, this._token);
+        this._soldAtPrice = CurrencyAmount.fromUnscaled(
+          auction.sold_at_price.value as BigNumberish,
+          this._token,
+        );
       } else {
         this._soldAtPrice = undefined;
       }
@@ -95,13 +120,22 @@ export class AuctionLand extends BaseLand {
 
     // Update auction specific properties
     this._startTime = new Date(Number(auction.start_time));
-    this._startPrice = CurrencyAmount.fromUnscaled(auction.start_price, this._token);
-    this._floorPrice = CurrencyAmount.fromUnscaled(auction.floor_price, this._token);
+    this._startPrice = CurrencyAmount.fromUnscaled(
+      auction.start_price,
+      this._token,
+    );
+    this._floorPrice = CurrencyAmount.fromUnscaled(
+      auction.floor_price,
+      this._token,
+    );
     this._isFinished = auction.is_finished;
     this._decayRate = auction.decay_rate;
-    
+
     if (auction.sold_at_price && 'value' in auction.sold_at_price) {
-      this._soldAtPrice = CurrencyAmount.fromUnscaled(auction.sold_at_price.value as BigNumberish, this._token);
+      this._soldAtPrice = CurrencyAmount.fromUnscaled(
+        auction.sold_at_price.value as BigNumberish,
+        this._token,
+      );
     } else {
       this._soldAtPrice = undefined;
     }

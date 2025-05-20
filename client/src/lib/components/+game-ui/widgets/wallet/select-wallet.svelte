@@ -1,8 +1,6 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
-  import {
-    useAccount
-  } from '$lib/contexts/account.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
   import { onMount } from 'svelte';
 

@@ -99,7 +99,7 @@
   {#if loading}
     <LoadingScreen {value} />
   {:else}
-    <GameGrid/>
+    <GameGrid />
     <GameUi />
   {/if}
 </div>
