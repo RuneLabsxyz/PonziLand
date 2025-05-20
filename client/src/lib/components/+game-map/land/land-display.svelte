@@ -153,7 +153,7 @@
     {/if}
   {:else if basic}
     <div
-      style="background-image: url('/tokens/basic/castles/basic.png'); background-size: contain; background-position: center;"
+      style="background-image: url('/tokens/basic/1.png'); background-size: contain; background-position: center;"
       class="absolute h-full w-full top-0 bottom-0 left-0 right-0"
     ></div>
   {/if}
