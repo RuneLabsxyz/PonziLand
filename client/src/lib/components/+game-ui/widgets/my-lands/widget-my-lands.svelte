@@ -21,8 +21,6 @@
   };
 
   async function handleClaimFromCoin(land: LandWithActions) {
-    console.log('claiming from coin');
-
     if (!land.token) {
       console.error("Land doesn't have a token");
       return;
@@ -40,8 +38,6 @@
   const landTileStore = new LandTileStore();
 
   onMount(async () => {
-    console.log('Mounting my-lands-widget');
-
     try {
       if (!dojo.client) {
         console.error('Dojo client is not initialized');
@@ -55,17 +51,13 @@
       }
 
       const userAddress = padAddress(currentAccount.address);
-      console.log('Current user address:', userAddress);
 
       // Setup the store with the client
       await landTileStore.setup(dojo.client);
-      console.log('Store setup complete');
 
       const allLands = landTileStore.getAllLands();
-      console.log('Got allLands store', allLands);
 
       unsubscribe = allLands.subscribe((landsData) => {
-        console.log('Received lands update', landsData);
         if (!landsData) {
           console.log('No lands data received');
           return;
@@ -75,18 +67,12 @@
           .filter((land): land is BuildingLand => {
             if (BuildingLand.is(land)) {
               const landOwner = padAddress(land.owner);
-              console.log('Comparing owners:', {
-                landOwner,
-                userAddress,
-                isMatch: landOwner === userAddress,
-              });
               return landOwner === userAddress;
             }
             return false;
           })
           .map((land) => createLandWithActions(land));
 
-        console.log('Filtered lands:', filteredLands);
         lands = filteredLands;
       });
     } catch (error) {
@@ -95,7 +81,6 @@
   });
 
   onDestroy(() => {
-    console.log('Unmounting my-lands-widget');
     if (unsubscribe) {
       unsubscribe();
     }

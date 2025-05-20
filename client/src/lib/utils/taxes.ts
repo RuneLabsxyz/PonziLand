@@ -129,7 +129,6 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
   const infosFormatted = neighborYieldInfo.sort((a, b) => {
     return Number((a?.location ?? 0n) - (b?.location ?? 0n));
   });
-  console.log('yield info:', infosFormatted);
 
   return infosFormatted;
 };

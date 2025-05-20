@@ -38,7 +38,5 @@ export const getAuctions = async () => {
   const auctions = await sdk.getEntities({
     query,
   });
-  console.log('Auctions:', auctions);
-  console.log('Auctions length:', auctions.length);
   return auctions;
 };

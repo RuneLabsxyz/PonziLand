@@ -1,11 +1,10 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import Button from '$lib/components/ui/button/button.svelte';
-  import { Progress } from '$lib/components/ui/progress';
   import { cn, locationIntToString } from '$lib/utils';
   import { onMount } from 'svelte';
   import LandDisplay from './land-display.svelte';
-
+  import LandLevelProgress from './land-level-progress.svelte';
   const {
     land,
     size = 'sm',
@@ -81,7 +80,7 @@
         <div class="flex h-8 mb-4 animate-pulse">
           <Button
             onclick={async () => {
-              console.log('Result of levelup: ', await land?.levelUp());
+              await land?.levelUp();
             }}
             >Upgrade to&nbsp;<small>lvl</small>{levelUpInfo?.expectedLevel}
           </Button>

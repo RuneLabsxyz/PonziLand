@@ -28,33 +28,16 @@ export class AuctionLand extends BaseLand {
     let token: Token;
 
     if (AuctionLand.isLand(landOrPrevious)) {
-      console.log(
-        '[AUCTIONLAND] Creating auction land from land',
-        landOrPrevious,
-      );
       if (!landOrPrevious.location) {
         throw new Error('Land location is undefined');
       }
       location = toLocation(landOrPrevious.location);
       token = getTokenInfo(landOrPrevious.token_used)!; // Add non-null assertion since we know token info exists
     } else {
-      console.log(
-        '[AUCTIONLAND] Creating auction land from previous land',
-        landOrPrevious,
-      );
       location = landOrPrevious.location;
       token = landOrPrevious.token;
     }
 
-    console.log('[AUCTIONLAND] Location', location);
-
-    console.log(
-      '[AUCTIONLAND] Creating auction land from',
-      landOrPrevious,
-      auction,
-      location,
-      token,
-    );
     super('auction', location, token);
 
     if (AuctionLand.isLand(landOrPrevious)) {
@@ -100,7 +83,6 @@ export class AuctionLand extends BaseLand {
   }
 
   public update(land: Land, auction: Auction) {
-    console.log('[AUCTIONLAND] Updating auction land from', land, auction);
     // Assert that the location is the same
     if (!locationEquals(toLocation(land.location)!, this.location)) {
       console.error(

@@ -48,7 +48,6 @@
         const tokenPrice = tokenPrices.find(
           (p) => p.address === land?.token?.address,
         );
-        console.log('tokenPrice', tokenPrice);
         if (tokenPrice) {
           burnRateInBaseToken = CurrencyAmount.fromScaled(
             burnRate.dividedBy(tokenPrice.ratio || 0).toString(),

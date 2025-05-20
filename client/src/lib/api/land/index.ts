@@ -107,8 +107,6 @@ export abstract class BaseLand {
   constructor(type: LandType, location: Location, token: Token) {
     this._type = type;
     this.location = location;
-    console.log('[BASELAND] Creating base land with location', location);
-
     // Ensure location coordinates are valid numbers
     if (
       typeof location.x !== 'number' ||

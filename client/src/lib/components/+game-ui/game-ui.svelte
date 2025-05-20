@@ -21,8 +21,6 @@
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
-    console.log('openLandInfoWidget', land);
-
     widgetsStore.addWidget({
       id: `land-info-${land.location}`,
       type: 'land-info',

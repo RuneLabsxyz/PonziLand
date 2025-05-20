@@ -65,7 +65,6 @@
             (value instanceof BuildingLand || value instanceof AuctionLand)
           ) {
             land = createLandWithActions(value);
-            console.log('land.sellPrice', land.sellPrice);
             currentPrice = land.sellPrice;
           } else {
             land = null;
@@ -133,7 +132,6 @@
 
       await Promise.any([txPromise, landPromise]);
       disabled.set(false);
-      console.log('Stake increased', result.transaction_hash);
     }
   };
 
@@ -156,13 +154,10 @@
 
       await Promise.any([txPromise, landPromise]);
       disabled.set(false);
-      console.log('Price increased', result.transaction_hash);
     }
   };
 
   async function handleBuyClick() {
-    console.log('Buy land');
-
     const landSetup: LandSetup = {
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: sellAmount,
@@ -170,8 +165,6 @@
       tokenAddress: land?.tokenAddress ?? '',
       currentPrice: land?.sellPrice ?? null,
     };
-
-    console.log('landSetup', landSetup);
 
     if (!land) {
       console.error('No land selected');
@@ -215,8 +208,6 @@
       currentPrice: currentPrice, // Include a 10% margin on the bet amount
     };
 
-    console.log('Buying from land:', landSetup);
-
     if (!land?.location) {
       loading = false;
       return;
@@ -232,7 +223,6 @@
           ?.waitForTransaction(result.transaction_hash);
         const landPromise = land.wait();
         await Promise.any([txPromise, landPromise]);
-        console.log('Bought land with TX: ', result.transaction_hash);
         // Nuke neighboring lands that are nukable
         land?.getNeighbors().locations.array.forEach((location) => {
           const locationString = toHexWithPadding(location);

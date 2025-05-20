@@ -40,11 +40,6 @@
     }
   });
   let timing = $derived.by(() => {
-    console.log('land.location', land.location);
-    console.log(
-      'claimStore.value[land.location]',
-      claimStore.value[land.location],
-    );
     return claimStore.value[land.location]?.claimable ?? false;
   });
 

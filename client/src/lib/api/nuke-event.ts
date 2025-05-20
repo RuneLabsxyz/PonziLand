@@ -26,7 +26,6 @@ export const getNukeData = async () => {
       if (response.error || response.data == null) {
         console.log('Got an error!', response.error);
       } else {
-        console.log('Data of all the nukes', response.data);
         return response.data;
       }
     },

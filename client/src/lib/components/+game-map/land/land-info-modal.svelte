@@ -70,7 +70,6 @@
 
       await Promise.any([txPromise, landPromise]);
       disabled.set(false);
-      console.log('Stake increased', result.transaction_hash);
     }
   };
 
@@ -93,7 +92,6 @@
 
       await Promise.any([txPromise, landPromise]);
       disabled.set(false);
-      console.log('Price increased', result.transaction_hash);
     }
   };
 </script>

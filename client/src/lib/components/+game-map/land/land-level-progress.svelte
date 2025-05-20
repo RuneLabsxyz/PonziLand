@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { LevelInfo } from '$lib/api/land.svelte';
+  import type { LevelInfo } from '$lib/api/land';
   import { cn } from '$lib/utils';
-  import { Progress } from '../ui/progress';
+  import { Progress } from '$lib/components/ui/progress';
 
   let { levelUpInfo, class: className } = $props<{
     levelUpInfo: LevelInfo;

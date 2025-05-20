@@ -37,7 +37,7 @@ export class SvelteController extends Controller implements AccountProvider {
         throw 'Empty response!';
       }
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   }
 

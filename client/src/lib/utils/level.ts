@@ -7,8 +7,6 @@ export function getEnumVariant(level: LevelModel) {
     return level;
   }
 
-  console.log('level:', level, typeof level);
-
   return (
     Object.entries(level ?? {}).filter(([k, v]) => v != undefined)?.[0]?.[0] ??
     undefined

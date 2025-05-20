@@ -15,8 +15,6 @@
     landWithActions?.value?.owner === padAddress(address ?? ''),
   );
   let land = $derived(landWithActions?.value);
-
-  $inspect(land);
 </script>
 
 {#if land}

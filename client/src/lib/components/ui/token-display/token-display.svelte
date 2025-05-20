@@ -16,7 +16,6 @@
 
   let tokenPrice = $derived(
     tokenStore.prices.find((p) => {
-      console.log('Token price:', p.address, token.address);
       return padAddress(p.address) === padAddress(token.address);
     }),
   );
