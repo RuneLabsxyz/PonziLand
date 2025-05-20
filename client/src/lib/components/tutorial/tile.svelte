@@ -2,7 +2,7 @@
   import type { Tile } from './stores.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
- 
+
   import { cn, hexStringToNumber } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandDisplay from '$lib/components/+game-map/land/land-display.svelte';
@@ -17,7 +17,7 @@
   const modalStore = {
     showModal: false,
     modalType: '',
-    modalData: null as any
+    modalData: null as any,
   };
 
   let { land, dragged, scale } = $props<{

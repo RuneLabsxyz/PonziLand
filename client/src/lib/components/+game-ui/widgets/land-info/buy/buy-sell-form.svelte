@@ -71,7 +71,11 @@
         error = 'Unable to get current auction price';
         return false;
       }
-      if (selectedTokenAmount.rawValue().isLessThan(currentAuctionPrice.rawValue())) {
+      if (
+        selectedTokenAmount
+          .rawValue()
+          .isLessThan(currentAuctionPrice.rawValue())
+      ) {
         error = `This land is too expensive. Current auction price: ${currentAuctionPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
         return false;
       }
