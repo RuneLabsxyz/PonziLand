@@ -12,8 +12,8 @@ api_url = "https://starknet-sepolia-api.ekubo.org"
 core_contract_address = "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
 
 [torii]
-world_address = "0x51b8efb6eeaeff501ebbe78758cc08c6cbaf9e13ca09812ba11e505f818d457"
-torii_url = "https://api.cartridge.gg/x/ponziland-sepolia-internal/torii"
+world_address = "0x628b6af861259ce9ce22e8df6ebd5fbf4fde9a7d4e6eba086aa8dd32325f3b0"
+torii_url = "https://api.cartridge.gg/x/ponziland-tourney/torii"
 
 [gg_xyz]
 enabled = false

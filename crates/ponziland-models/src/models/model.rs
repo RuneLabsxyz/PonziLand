@@ -57,11 +57,14 @@ impl Model {
     /// # Errors
     ///
     /// Returns an error if the raw Torii data cannot be parsed into the corresponding model.
-    pub fn parse(
-        data: RawToriiData,
-    ) -> Result<ParsedModel, ToriiConversionError> {
+    pub fn parse(data: RawToriiData) -> Result<ParsedModel, ToriiConversionError> {
         Ok(match data {
-            RawToriiData::Json { name, data, at, event_id } => ParsedModel {
+            RawToriiData::Json {
+                name,
+                data,
+                at,
+                event_id,
+            } => ParsedModel {
                 model: Self::from_json(&name, data)?,
                 timestamp: Some(at),
                 event_id: Some(event_id),

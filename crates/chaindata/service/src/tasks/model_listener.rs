@@ -1,6 +1,9 @@
 use std::{cmp::max, sync::Arc};
 
-use chaindata_models::models::{LandModel, LandStakeModel};
+use chaindata_models::{
+    events::EventId,
+    models::{LandModel, LandStakeModel},
+};
 use chaindata_repository::{LandRepository, LandStakeRepository};
 use chrono::{DateTime, Utc};
 use ponziland_models::models::Model;
@@ -66,7 +69,7 @@ impl ModelListenerTask {
                 self.land_repository
                     .save(LandModel::from_at(
                         &land,
-                        model.event_id.unwrap().parse().unwrap(),
+                        EventId::parse_from_torii(&model.event_id.unwrap()).unwrap(),
                         model.timestamp.unwrap_or(Utc::now()).naive_utc(),
                     ))
                     .await
@@ -76,7 +79,7 @@ impl ModelListenerTask {
                 self.land_stake_repository
                     .save(LandStakeModel::from_at(
                         &land_stake,
-                        model.event_id.unwrap().parse().unwrap(),
+                        EventId::parse_from_torii(&model.event_id.unwrap()).unwrap(),
                         model.timestamp.unwrap_or(Utc::now()).naive_utc(),
                     ))
                     .await

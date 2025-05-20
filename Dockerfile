@@ -1,4 +1,4 @@
-FROM rust:1.86 as builder
+FROM rust:1.86 AS builder
 WORKDIR /app
 COPY ./Cargo.* .
 COPY ./crates ./crates
