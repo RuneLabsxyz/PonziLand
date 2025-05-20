@@ -2,7 +2,7 @@
   import SwapModal from '$lib/components/swap/swap-modal.svelte';
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { tokenStore } from '$lib/stores/tokens.svelte';
+  import { tokenStore } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
   import data from '$profileData';

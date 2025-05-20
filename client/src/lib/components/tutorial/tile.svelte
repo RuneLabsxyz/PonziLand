@@ -1,25 +1,23 @@
 <script lang="ts">
-  import { uiStore } from '$lib/stores/ui.store.svelte';
-  import account from '$lib/account.svelte';
-  import { type LandWithActions } from '$lib/api/land.svelte';
-  import type { Tile } from '$lib/api/tile-store.svelte';
-  import { moveCameraToLocation } from '$lib/stores/camera';
-  import {
-    selectedLand,
-    selectedLandMeta,
-    selectLand,
-  } from '$lib/stores/stores.svelte';
-  import { selectedLandPosition } from '$lib/stores/stores.svelte';
-  import { cn, hexStringToNumber, padAddress } from '$lib/utils';
+  import type { Tile } from './stores.svelte';
+  import Button from '$lib/components/ui/button/button.svelte';
+  import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
+ 
+  import { cn, hexStringToNumber } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandDisplay from '../land/land-display.svelte';
   import LandNukeAnimation from '../land/land-nuke-animation.svelte';
   import LandNukeShield from '../land/land-nuke-shield.svelte';
   import LandTaxClaimer from '../land/land-tax-claimer.svelte';
-  import Button from '$lib/components/ui/button/button.svelte';
   import RatesOverlay from './rates-tutorial.svelte';
-  import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
   import { tileState } from './stores.svelte';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+
+  // Create a simple modal store since uiStore is not found
+  const modalStore = {
+    showModal: false,
+    modalType: '',
+    modalData: null as any
+  };
 
   let { land, dragged, scale } = $props<{
     land: Tile;
@@ -43,9 +41,9 @@
   const handleBuyLandClick = () => {
     console.log('Buy land clicked');
 
-    uiStore.showModal = true;
-    uiStore.modalType = 'buy';
-    uiStore.modalData = {
+    modalStore.showModal = true;
+    modalStore.modalType = 'buy';
+    modalStore.modalData = {
       location: hexStringToNumber($selectedLandMeta!.location),
       sellPrice: CurrencyAmount.fromScaled(0),
       tokenUsed: '',
@@ -57,8 +55,8 @@
   const handleBidClick = () => {
     console.log('Bid land clicked');
 
-    uiStore.showModal = true;
-    uiStore.modalType = 'bid';
+    modalStore.showModal = true;
+    modalStore.modalType = 'bid';
   };
 
   //TODO: handle nuke animation based on tutorial state
@@ -110,8 +108,8 @@
           class="absolute bottom-0 left-1/2 z-20"
           style="transform: translate(-50%, 0) scale(0.5)"
           onclick={() => {
-            uiStore.showModal = true;
-            uiStore.modalType = 'land-info';
+            modalStore.showModal = true;
+            modalStore.modalType = 'land-info';
           }}
         >
           LAND INFO
