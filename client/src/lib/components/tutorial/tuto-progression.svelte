@@ -2,9 +2,9 @@
   import { goto } from '$app/navigation';
   import Button from '$lib/components/ui/button/button.svelte';
   import { selectedLand } from '$lib/stores/store.svelte';
+  import { onDestroy } from 'svelte';
   import { get } from 'svelte/store';
   import { fly } from 'svelte/transition';
-  import { onDestroy } from 'svelte';
   import dialogData from './dialog.json';
   import { tutorialLandStore, tutorialProgression } from './stores.svelte';
 
@@ -176,17 +176,25 @@
         style="transform: scale(1.5);"
       />
     </div>
-    <div
-      class="relative flex h-[180px] w-[600px] items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
-      style="background-image: url('/ui/ramp/chat-box.png'); background-size: cover;"
-    >
-      <div class="mx-14 p-4 text-left text-black" style="width: 550px;">
-        <div class="relative text-md">
-          <span class="block" style="white-space: pre-line;"
-            >{@html formatText(currentDialog.text)}</span
-          >
+    <div class="flex flex-col items-end">
+      <div
+        class="relative flex h-[180px] w-[600px] items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
+        style="background-image: url('/ui/ramp/chat-box.png'); background-size: cover;"
+      >
+        <div class="mx-14 p-4 text-left text-black" style="width: 550px;">
+          <div class="relative text-md">
+            <span class="block" style="white-space: pre-line;"
+              >{@html formatText(currentDialog.text)}</span
+            >
+          </div>
         </div>
       </div>
+      <Button
+        class="top-0 right-0 m-2 mr-6 bg-blue-500 text-white rounded "
+        on:click={() => goto('/game')}
+      >
+        Skip Tutorial
+      </Button>
     </div>
   {/if}
 </div>
