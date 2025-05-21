@@ -131,10 +131,10 @@
 
   let estimatedNukeTime = $derived.by(() => {
     if (!BuildingLand.is(land)) return -1;
-    const estimatedNukeTime = 100000;
-    if (!estimatedNukeTime) return -1;
-
-    return estimatedNukeTime;
+    const landWithActions = createLandWithActions(land, () =>
+      globalLandStore.getAllLands(),
+    );
+    return landWithActions.getEstimatedNukeTime();
   });
 </script>
 
