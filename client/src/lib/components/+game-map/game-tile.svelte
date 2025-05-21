@@ -1,25 +1,25 @@
 <script lang="ts">
   import account from '$lib/account.svelte';
   import type { BaseLand } from '$lib/api/land';
+  import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
+  import { Button } from '$lib/components/ui/button';
   import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
+  import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
+  import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
+  import { nukeStore } from '$lib/stores/nuke.store.svelte';
+  import {
+    landStore as globalLandStore,
+    selectedLand,
+  } from '$lib/stores/store.svelte';
+  import { cn, padAddress } from '$lib/utils';
+  import { createLandWithActions } from '$lib/utils/land-actions';
+  import type { Readable } from 'svelte/store';
+  import { openLandInfoWidget } from '../+game-ui/game-ui.svelte';
   import LandDisplay from './land/land-display.svelte';
   import LandNukeAnimation from './land/land-nuke-animation.svelte';
   import LandNukeShield from './land/land-nuke-shield.svelte';
-  import { Button } from '$lib/components/ui/button';
-  import { GRID_SIZE, TILE_SIZE, MIN_SCALE_FOR_DETAIL } from '$lib/const';
-  import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
-  import { nukeStore } from '$lib/stores/nuke.store.svelte';
-  import { cn, padAddress } from '$lib/utils';
-  import type { Readable } from 'svelte/store';
-  import {
-    selectedLand,
-    landStore as globalLandStore,
-  } from '$lib/stores/store.svelte';
-  import { createLandWithActions } from '$lib/utils/land-actions';
-  import { openLandInfoWidget } from '../+game-ui/game-ui.svelte';
   import RatesOverlay from './land/land-rates-overlay.svelte';
-  import { AuctionLand } from '$lib/api/land/auction_land';
   import LandTaxClaimer from './land/land-tax-claimer.svelte';
 
   const SIZE = TILE_SIZE;
@@ -235,8 +235,15 @@
 
   {#if BuildingLand.is(land) && isOwner && land.type === 'building' && !isNuking}
     <div
-      class="absolute z-20 top-1 left-1/2"
-      style="transform: translate(-50%, -100%)"
+      class={cn(
+        'absolute z-20',
+        currentScale < MIN_SCALE_FOR_DETAIL
+          ? 'bottom-1/4 right-0'
+          : 'top-1 left-1/2',
+      )}
+      style="transform: {currentScale < MIN_SCALE_FOR_DETAIL
+        ? 'translate(-50%, -100%) scale(1.5)'
+        : 'translate(-50%, -100%)'}"
     >
       <LandTaxClaimer
         land={createLandWithActions(land, () => globalLandStore.getAllLands())}
@@ -270,7 +277,7 @@
       url('/ui/stripe-texture.png');
     background-size: 25% 25%;
     background-repeat: repeat;
-    opacity: .5;
+    opacity: 0.5;
     pointer-events: none;
   }
   .building-overlay {
@@ -280,5 +287,17 @@
     left: 10%;
     border-radius: 6px;
     box-sizing: border-box;
+  }
+  .centered-tax-shield {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    width: 80%;
+    pointer-events: auto;
   }
 </style>
