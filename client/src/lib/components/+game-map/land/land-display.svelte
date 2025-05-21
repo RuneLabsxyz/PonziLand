@@ -1,10 +1,9 @@
 <script lang="ts">
+  import SpriteSheet from '$lib/components/ui/sprite-sheet.svelte';
   import type { Token } from '$lib/interfaces';
   import { cn } from '$lib/utils';
   import 'seedrandom';
   import seedrandom from 'seedrandom';
-  import SpriteSheet from '$lib/components/ui/sprite-sheet.svelte';
-  import type { Level } from '$lib/api/land.svelte';
 
   let {
     class: className = '',
@@ -92,6 +91,20 @@
     />
   {/if}
   {#if token}
+    <!-- Biome Shadow -->
+    <SpriteSheet
+      src="/tokens/+global/biomes-shadow.png"
+      x={token.images.biome.x}
+      y={token.images.biome.y}
+      xSize={256}
+      xMax={2048}
+      ySize={256}
+      yMax={3328}
+      {width}
+      {height}
+      class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0"
+    />
+    <!-- Main Biome -->
     <SpriteSheet
       src="/tokens/+global/biomes.png"
       x={token.images.biome.x}

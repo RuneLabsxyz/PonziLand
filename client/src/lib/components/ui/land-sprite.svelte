@@ -1,10 +1,8 @@
 <script lang="ts">
+  import type { Token } from '$lib/interfaces';
   import Konva from 'konva';
   import { onDestroy, onMount } from 'svelte';
   import { Sprite } from 'svelte-konva';
-  import { canvaStore } from './canva-store.svelte';
-  import type { Token } from '$lib/interfaces';
-  import type { Level } from '$lib/api/land.svelte';
 
   let {
     config,
