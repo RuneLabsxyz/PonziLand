@@ -123,8 +123,15 @@
 }
 
 .stroke-3d-red {
-  -webkit-text-stroke: 0.25em #5a1c33;
+  --stroke-bottom-offset: 0.3em;
   paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #5a1c33,
+    -0.1em 0.25em 0px #5a1c33,
+    0.1em var(--stroke-bottom-offset) 0px #5a1c33,
+    -0.1em var(--stroke-bottom-offset) 0px #5a1c33;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #5a1c33;
 }
 
 @font-face {
@@ -200,12 +207,19 @@
 .button-ponzi-red {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('/ui/button/red/default.png') 40;
+  border-image-source: url('/ui/button/red/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
   image-rendering: pixelated;
   background-color: #832849;
 }
 .button-ponzi-red:hover {
-  border-image: url('/ui/button/red/hover.png') 40;
+  border-image-source: url('/ui/button/red/hover.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
+  background-color: #b6a2ad;
 }
 
 :root {

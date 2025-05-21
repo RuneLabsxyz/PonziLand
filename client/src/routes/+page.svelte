@@ -150,9 +150,12 @@
 
   <Button
     variant="red"
+    size="lg"
     onclick={startGame}
-    class="z-[3] text-xl px-12 py-4 font-bold">Play</Button
+    class="z-[3] text-3xl px-12 py-4 font-bold"
   >
+    PLAY
+  </Button>
 </main>
 
 <style>
