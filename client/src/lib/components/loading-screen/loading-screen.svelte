@@ -19,7 +19,7 @@
     opacity: 1,
     easing: easingFunction,
   }}
-  class="Container absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center flex-col z-[1000] overflow-visible"
+  class="Container absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center flex-col z-[1000] overflow-visible scale-[1.3]"
 >
   <LoadingImage imageUrl="/logo.png" maskProgress={value} />
   <div class="flex gap-2 items-center justify-center z-50">
