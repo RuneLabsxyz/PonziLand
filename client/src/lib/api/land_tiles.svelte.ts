@@ -11,7 +11,7 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { claimStore } from '$lib/stores/claim.store.svelte';
-import { createLandWithActions } from '$lib/stores/store.svelte';
+import { createLandWithActions } from '$lib/utils/land-actions';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -215,11 +215,19 @@ export class LandTileStore {
       }
       return lands;
     });
+  }
 
-    // Start random updates every 10ms
+  public startRandomUpdates() {
     this.fakeUpdateInterval = setInterval(() => {
       this.randomLandUpdate();
     }, UPDATE_INTERVAL);
+  }
+
+  public stopRandomUpdates() {
+    if (this.fakeUpdateInterval) {
+      clearInterval(this.fakeUpdateInterval);
+      this.fakeUpdateInterval = undefined;
+    }
   }
 
   public cleanup() {
@@ -249,7 +257,7 @@ export class LandTileStore {
     });
   }
 
-  private updateLand(entity: ParsedEntity<SchemaType>): void {
+  public updateLand(entity: ParsedEntity<SchemaType>): void {
     const location = getLocationFromEntity(entity);
     if (location === undefined) return;
 
@@ -348,7 +356,7 @@ export class LandTileStore {
         claimStore.value[newLand.locationString] = {
           lastClaimTime: 0,
           animating: false,
-          land: createLandWithActions(newLand),
+          land: createLandWithActions(newLand, () => this.getAllLands()),
           claimable: true,
         };
       }
@@ -359,6 +367,16 @@ export class LandTileStore {
       });
 
       return { value: newLand };
+    });
+  }
+
+  public updateLandDirectly(x: number, y: number, land: BaseLand): void {
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    this.store[x][y].set({ value: land });
+    this.currentLands.update((lands) => {
+      lands[x][y] = land;
+      return lands;
     });
   }
 }

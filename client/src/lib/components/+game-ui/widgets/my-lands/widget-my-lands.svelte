@@ -8,11 +8,9 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
-  import {
-    createLandWithActions,
-    selectedLand,
-  } from '$lib/stores/store.svelte';
+  import { selectedLand } from '$lib/stores/store.svelte';
   import { groupLands, padAddress, parseLocation } from '$lib/utils';
+  import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
 
   const dojo = useDojo();
@@ -71,7 +69,7 @@
             }
             return false;
           })
-          .map((land) => createLandWithActions(land));
+          .map((land) => createLandWithActions(land, () => allLands));
 
         lands = filteredLands;
       });

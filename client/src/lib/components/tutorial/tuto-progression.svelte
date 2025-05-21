@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { tutorialProgression, tileState } from './stores.svelte';
-  import { selectedLandPosition } from '$lib/stores/stores.svelte';
-  import { toHexWithPadding } from '$lib/utils';
-  import dialogData from './dialog.json';
-  import { fly } from 'svelte/transition';
-  import Button from '$lib/components/ui/button/button.svelte';
   import { goto } from '$app/navigation';
+  import Button from '$lib/components/ui/button/button.svelte';
+  import { selectedLand } from '$lib/stores/store.svelte';
+  import { get } from 'svelte/store';
+  import { fly } from 'svelte/transition';
+  import dialogData from './dialog.json';
+  import { tutorialLandStore, tutorialProgression } from './stores.svelte';
 
   const step = tutorialProgression();
 
@@ -46,14 +46,17 @@
   // Tutorial progression handler:
   function changeMap() {
     if (step.value === 3) {
-      tileState.addAuction();
+      tutorialLandStore.addAuction();
     } else if (step.value < 3) {
-      tileState.removeAuction();
+      tutorialLandStore.removeAuction();
     }
     if (step.value === 4) {
-      // Select the auction tile at position [8][8]
-      const auctionLocation = toHexWithPadding(8 * 16 + 8);
-      selectedLandPosition.set(auctionLocation);
+      // Select the auction tile at position [32][32]
+      const landStore = tutorialLandStore.getLand(32, 32);
+      if (landStore) {
+        const land = get(landStore);
+        selectedLand.value = land;
+      }
     }
     if (step.value === 5) {
       activeImage = 'auction';
@@ -64,32 +67,32 @@
     }
 
     if (step.value === 8) {
-      tileState.buyAuction();
+      tutorialLandStore.buyAuction(32, 32);
     }
     if (step.value === 9) {
-      tileState.levelUp(8, 8);
+      tutorialLandStore.levelUp(32, 32);
     }
     if (step.value === 10) {
-      tileState.levelUp(8, 8);
+      tutorialLandStore.levelUp(32, 32);
     }
     if (step.value === 11) {
-      tileState.addAuction(7, 8);
-      tileState.addAuction(9, 8);
-      tileState.addAuction(9, 9);
+      tutorialLandStore.addAuction(31, 32);
+      tutorialLandStore.addAuction(33, 32);
+      tutorialLandStore.addAuction(33, 33);
     } else if (step.value <= 11) {
-      tileState.removeAuction(7, 8);
-      tileState.removeAuction(9, 8);
-      tileState.removeAuction(9, 9);
-      tileState.setDisplayRates(false);
+      tutorialLandStore.removeAuction(31, 32);
+      tutorialLandStore.removeAuction(33, 32);
+      tutorialLandStore.removeAuction(33, 33);
+      tutorialLandStore.setDisplayRates(false);
     }
     if (step.value === 12) {
-      tileState.buyAuction(7, 8, 1);
-      tileState.buyAuction(9, 8, 2);
-      tileState.buyAuction(9, 9, 3);
-      tileState.setDisplayRates(true);
+      tutorialLandStore.buyAuction(31, 32, 1);
+      tutorialLandStore.buyAuction(33, 32, 2);
+      tutorialLandStore.buyAuction(33, 33, 3);
+      tutorialLandStore.setDisplayRates(true);
     }
     if (step.value >= 13) {
-      tileState.setDisplayRates(false);
+      tutorialLandStore.setDisplayRates(false);
       startAutoDecreaseNukeTime();
     }
   }
@@ -113,24 +116,25 @@
     }, 16);
 
     const vignetteInterval = setInterval(() => {
-      vignette += 0.05;
-    }, 50);
+      vignette += 0.02;
+    }, 100);
 
     const nukeInterval = setInterval(() => {
-      tileState.reduceTimeToNuke(8, 8);
+      tutorialLandStore.reduceTimeToNuke(32, 32);
       step.increment();
 
-      if (tileState.getNukeTime(8, 8) <= 80000) {
+      if (tutorialLandStore.getNukeTime(32, 32) <= 20000) {
         clearInterval(nukeInterval);
         clearInterval(vignetteInterval);
 
-        tileState.setNuke(true);
+        tutorialLandStore.setNuke(true);
         setTimeout(() => {
-          tileState.removeAuction(8, 8);
+          tutorialLandStore.removeAuction(32, 32);
+          tutorialLandStore.startRandomUpdates();
         }, 1000);
         ponziMaster = true;
       }
-    }, 4000);
+    }, 1000);
   }
 </script>
 

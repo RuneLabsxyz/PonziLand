@@ -13,9 +13,10 @@
   import { cn, padAddress } from '$lib/utils';
   import type { Readable } from 'svelte/store';
   import {
-    createLandWithActions,
     selectedLand,
+    landStore as globalLandStore,
   } from '$lib/stores/store.svelte';
+  import { createLandWithActions } from '$lib/utils/land-actions';
   import { openLandInfoWidget } from '../+game-ui/game-ui.svelte';
   import RatesOverlay from './land/land-rates-overlay.svelte';
   import { AuctionLand } from '$lib/api/land/auction_land';
@@ -24,12 +25,12 @@
   const SIZE = TILE_SIZE;
 
   const {
-    land: landStore,
+    land: landReadable,
     dragged,
     scale,
   }: { land: Readable<BaseLand>; dragged?: boolean; scale?: number } = $props();
 
-  let land = $derived($landStore);
+  let land = $derived($landReadable);
   let address = $derived(account.address);
 
   let isOwner = $derived.by(() => {
@@ -113,14 +114,18 @@
   const handleLandInfoClick = () => {
     if (!BuildingLand.is(land)) return;
 
-    const landWithActions = createLandWithActions(land);
+    const landWithActions = createLandWithActions(land, () =>
+      globalLandStore.getAllLands(),
+    );
     openLandInfoWidget(landWithActions);
   };
 
   const handleBidClick = () => {
     if (!AuctionLand.is(land)) return;
 
-    const landWithActions = createLandWithActions(land);
+    const landWithActions = createLandWithActions(land, () =>
+      globalLandStore.getAllLands(),
+    );
     openLandInfoWidget(landWithActions);
   };
 
@@ -174,7 +179,9 @@
       </Button>
     {/if}
     {#if BuildingLand.is(land)}
-      <RatesOverlay land={createLandWithActions(land)} />
+      <RatesOverlay
+        land={createLandWithActions(land, () => globalLandStore.getAllLands())}
+      />
       {#if isOwner}
         <Button
           size="sm"
@@ -228,7 +235,9 @@
       class="absolute z-20 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
     >
-      <LandTaxClaimer land={createLandWithActions(land)} />
+      <LandTaxClaimer
+        land={createLandWithActions(land, () => globalLandStore.getAllLands())}
+      />
     </div>
   {/if}
 </div>

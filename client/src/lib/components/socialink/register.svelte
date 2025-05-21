@@ -2,8 +2,8 @@
   import { refresh } from '$lib/account.svelte';
   import { checkUsername, register } from '$lib/accounts/social/index.svelte';
   import { debounce } from '$lib/utils/debounce.svelte';
-  import ThreeDots from '$lib/components/ui/loading/three-dots.svelte';
   import { Button } from '$lib/components/ui/button';
+  import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
 
   const {
     onfinish,

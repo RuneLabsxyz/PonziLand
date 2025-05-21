@@ -1,22 +1,17 @@
 <script lang="ts">
-  import { setupSocialink } from '$lib/accounts/social/index.svelte';
-  import { Card } from '$lib/components/ui/card';
-  import OnboardingWalletInfo from '$lib/components/wallet/onboarding-wallet-info.svelte';
-  import { useAccount, setupAccount } from '$lib/contexts/account.svelte';
-  import accountDataProvider, { setup } from '$lib/account.svelte';
-  import { Account } from 'starknet';
-  import { Button } from '$lib/components/ui/button';
   import { goto } from '$app/navigation';
-  import SwitchChainModal from '$lib/components/wallet/SwitchChainModal.svelte';
+  import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { setupSocialink } from '$lib/accounts/social/index.svelte';
+  import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
+  import { Card } from '$lib/components/ui/card';
 
-  const accountManager = useAccount();
+  import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
 
   const { children } = $props();
 
   // Setup socialink
   const setupPromise = (async () => {
     await setupSocialink();
-    const account = await setupAccount();
     setup();
 
     // Once all is ready, check for a redirect
