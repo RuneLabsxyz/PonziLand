@@ -130,8 +130,8 @@
     {/if}
   </div>
   {#if settingsStore.isProMode}
-    <LandHudPro {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
-  {:else if land}
     <LandHudNormal {yieldInfo} {burnRate} {land} />
+  {:else if land}
+    <LandHudPro {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
   {/if}
 </div>

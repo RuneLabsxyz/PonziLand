@@ -20,7 +20,7 @@
             {settingsStore.isProMode ? 'translate-x-6' : 'translate-x-1'}"
         ></span>
       </div>
-      <span class="text-sm font-medium w-[85px]">Noob Mode</span>
+      <span class="text-sm font-medium w-[85px]">Pro Mode</span>
     </button>
   </div>
 </div>
