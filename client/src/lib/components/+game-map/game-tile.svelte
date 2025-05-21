@@ -175,10 +175,10 @@
       <Button
         size="sm"
         class="absolute bottom-0 left-1/2 z-20"
-        style="transform: translate(-50%, 0) scale(0.5)"
+        style="transform: translate(-50%, 25%) scale(0.5)"
         onclick={handleBidClick}
       >
-        BID
+        BUY LAND
       </Button>
     {/if}
     {#if BuildingLand.is(land)}
@@ -189,7 +189,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 0) scale(0.5)"
+          style="transform: translate(-50%, 25%) scale(0.5)"
           onclick={handleLandInfoClick}
         >
           LAND INFO
@@ -198,7 +198,7 @@
         <Button
           size="sm"
           class="absolute bottom-0 left-1/2 z-20"
-          style="transform: translate(-50%, 0) scale(0.5)"
+          style="transform: translate(-50%, 25%) scale(0.5)"
           onclick={handleLandInfoClick}
         >
           BUY LAND
