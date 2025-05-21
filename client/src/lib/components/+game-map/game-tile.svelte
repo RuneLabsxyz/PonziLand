@@ -207,7 +207,7 @@
     {/if}
   {/if}
 
-  {#if isOwner && !isNuking && BuildingLand.is(land)}
+  {#if isOwner && !isNuking && BuildingLand.is(land) && currentScale >= MIN_SCALE_FOR_DETAIL}
     <img
       src="/ui/icons/Icon_Crown.png"
       alt="owner"
@@ -224,7 +224,16 @@
   {/if}
 
   {#if BuildingLand.is(land) && !isNuking}
-    <div class="absolute top-0 right-0 text-[4px]" onclick={handleClick}>
+    <div
+      class={cn(
+        'absolute z-20',
+        currentScale < MIN_SCALE_FOR_DETAIL && isOwner
+          ? 'top-1/2 -translate-y-1/2 left-1/3 -translate-x-1/2 text-[4px] mt-0.5 ml-0.5'
+          : 'top-0 right-0 text-[4px]',
+      )}
+      style={currentScale < MIN_SCALE_FOR_DETAIL && isOwner ? 'scale: 1.8' : ''}
+      onclick={handleClick}
+    >
       {#if estimatedNukeTime == -1}
         inf.
       {:else}
@@ -237,11 +246,11 @@
     <div
       class={cn(
         'absolute z-20',
-        currentScale < MIN_SCALE_FOR_DETAIL
-          ? 'bottom-1/4 right-0'
+        currentScale < MIN_SCALE_FOR_DETAIL && isOwner
+          ? 'bottom-1/4 right-0 mr-0.5'
           : 'top-1 left-1/2',
       )}
-      style="transform: {currentScale < MIN_SCALE_FOR_DETAIL
+      style="transform: {currentScale < MIN_SCALE_FOR_DETAIL && isOwner
         ? 'translate(-50%, -100%) scale(1.5)'
         : 'translate(-50%, -100%)'}"
     >
