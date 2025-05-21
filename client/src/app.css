@@ -99,6 +99,34 @@
   paint-order: stroke fill;
 }
 
+.font-ponzi-number {
+  font-family: 'PonziNumber', sans-serif;
+  line-height: normal;
+}
+
+.stroke-3d {
+  -webkit-text-stroke: 0.25em #000;
+  paint-order: stroke fill;
+  text-shadow: 0 1px #000;
+}
+
+.stroke-3d-blue {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #072f3d,
+    -0.1em 0.25em 0px #072f3d,
+    0.1em var(--stroke-bottom-offset) 0px #072f3d,
+    -0.1em var(--stroke-bottom-offset) 0px #072f3d;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #072f3d;
+}
+
+.stroke-3d-red {
+  -webkit-text-stroke: 0.25em #5a1c33;
+  paint-order: stroke fill;
+}
+
 @font-face {
   font-family: 'PonziDS';
   font-size: small;
@@ -152,33 +180,21 @@
   box-shadow: inset 4px 4px 0 0 #0b0c13;
 }
 
-/* .text-ponzi .font-black {
-  -webkit-text-stroke: 0.08em white;
-  text-shadow: none;
-  letter-spacing: 0.2ch;
-}
-
-.text-ponzi .font-bold {
-  -webkit-text-stroke: 0.04em white;
-  text-shadow: none;
-  letter-spacing: 0.15ch;
-}
-
-.text-ponzi .font-semibold {
-  -webkit-text-stroke: 0.01em white;
-  text-shadow: none;
-  letter-spacing: 0.15ch;
-} */
-
 .button-ponzi-blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('/ui/button/blue/default.png') 40;
+  border-image-source: url('/ui/button/blue/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
   image-rendering: pixelated;
   background-color: #136a88;
 }
 .button-ponzi-blue:hover {
-  border-image: url('/ui/button/blue/hover.png') 40;
+  border-image-source: url('/ui/button/blue/hover.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
   background-color: #71d2f8;
 }
 .button-ponzi-red {

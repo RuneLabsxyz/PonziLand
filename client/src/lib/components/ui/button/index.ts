@@ -3,15 +3,15 @@ import type { Button as ButtonPrimitive } from 'bits-ui';
 import Root from './button.svelte';
 
 const buttonVariants = tv({
-  base: 'text-ponzi flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium disabled:pointer-events-none disabled:opacity-50',
+  base: 'font-ponzi-number text-white flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium disabled:pointer-events-none disabled:opacity-50',
   variants: {
     variant: {
-      blue: 'button-ponzi-blue',
-      red: 'button-ponzi-red',
+      blue: 'button-ponzi-blue stroke-3d-blue',
+      red: 'button-ponzi-red stroke-3d-red',
     },
     size: {
       default: 'h-10 px-4 pb-1',
-      sm: 'h-[8px] text-[4px] pb-[1.5px] px-[4px]',
+      sm: 'h-[8px] text-[4px] px-[4px] pb-[7px] pt-[6px]',
       lg: 'h-11 rounded-md px-8',
       icon: 'h-10 w-10',
     },
