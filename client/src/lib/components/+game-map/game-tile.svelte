@@ -7,7 +7,7 @@
   import LandNukeAnimation from './land/land-nuke-animation.svelte';
   import LandNukeShield from './land/land-nuke-shield.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { GRID_SIZE, TILE_SIZE } from '$lib/const';
+  import { GRID_SIZE, TILE_SIZE, MIN_SCALE_FOR_DETAIL } from '$lib/const';
   import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import { cn, padAddress } from '$lib/utils';
@@ -153,6 +153,9 @@
   onblur={() => (hovering = false)}
 >
   <LandDisplay {...spriteProps} {hovering} {selected} />
+  {#if currentScale < MIN_SCALE_FOR_DETAIL && isOwner}
+    <div class="tile-overlay pointer-events-none building-overlay"></div>
+  {/if}
   {#if isNuking}
     {#if BuildingLand.is(land) && land.token}
       <NukeExplosion
@@ -254,5 +257,28 @@
   .tile {
     width: var(--size);
     height: var(--size);
+  }
+  .tile-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    background:
+      linear-gradient(rgba(0, 0, 46, 0.8), rgba(0, 0, 46, 0.8)),
+      url('/ui/stripe-texture.png');
+    background-size: 25% 25%;
+    background-repeat: repeat;
+    opacity: .5;
+    pointer-events: none;
+  }
+  .building-overlay {
+    width: 80%;
+    height: 80%;
+    top: 10%;
+    left: 10%;
+    border-radius: 6px;
+    box-sizing: border-box;
   }
 </style>
