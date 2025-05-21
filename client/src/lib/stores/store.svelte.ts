@@ -27,7 +27,9 @@ let selectedLandWithActionsState = $derived.by(() => {
     return null;
   }
 
-  const landWithActions: LandWithActions = createLandWithActions(land, () => landStore.getAllLands());
+  const landWithActions: LandWithActions = createLandWithActions(land, () =>
+    landStore.getAllLands(),
+  );
 
   return { value: landWithActions };
 });

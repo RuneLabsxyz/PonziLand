@@ -14,11 +14,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
   import { markAsNuking, nukeStore } from '$lib/stores/nuke.store.svelte';
-  import {
-    bidLand,
-    buyLand,
-    landStore,
-  } from '$lib/stores/store.svelte';
+  import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
   import { padAddress, parseLocation, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
@@ -63,10 +59,7 @@
 
       if (landReadable) {
         unsubscribe = landReadable.subscribe((value) => {
-          if (
-            value &&
-            (BuildingLand.is(value) || AuctionLand.is(value))
-          ) {
+          if (value && (BuildingLand.is(value) || AuctionLand.is(value))) {
             land = createLandWithActions(value, () => landStore.getAllLands());
             currentPrice = land.sellPrice;
           } else {

@@ -12,7 +12,10 @@
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import { cn, padAddress } from '$lib/utils';
   import type { Readable } from 'svelte/store';
-  import { selectedLand, landStore as globalLandStore } from '$lib/stores/store.svelte';
+  import {
+    selectedLand,
+    landStore as globalLandStore,
+  } from '$lib/stores/store.svelte';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { openLandInfoWidget } from '../+game-ui/game-ui.svelte';
   import RatesOverlay from './land/land-rates-overlay.svelte';
@@ -111,14 +114,18 @@
   const handleLandInfoClick = () => {
     if (!BuildingLand.is(land)) return;
 
-    const landWithActions = createLandWithActions(land, () => globalLandStore.getAllLands());
+    const landWithActions = createLandWithActions(land, () =>
+      globalLandStore.getAllLands(),
+    );
     openLandInfoWidget(landWithActions);
   };
 
   const handleBidClick = () => {
     if (!AuctionLand.is(land)) return;
 
-    const landWithActions = createLandWithActions(land, () => globalLandStore.getAllLands());
+    const landWithActions = createLandWithActions(land, () =>
+      globalLandStore.getAllLands(),
+    );
     openLandInfoWidget(landWithActions);
   };
 
@@ -172,7 +179,9 @@
       </Button>
     {/if}
     {#if BuildingLand.is(land)}
-      <RatesOverlay land={createLandWithActions(land, () => globalLandStore.getAllLands())} />
+      <RatesOverlay
+        land={createLandWithActions(land, () => globalLandStore.getAllLands())}
+      />
       {#if isOwner}
         <Button
           size="sm"
@@ -226,7 +235,9 @@
       class="absolute z-20 top-1 left-1/2"
       style="transform: translate(-50%, -100%)"
     >
-      <LandTaxClaimer land={createLandWithActions(land, () => globalLandStore.getAllLands())} />
+      <LandTaxClaimer
+        land={createLandWithActions(land, () => globalLandStore.getAllLands())}
+      />
     </div>
   {/if}
 </div>

@@ -6,7 +6,6 @@
   import { Card } from '$lib/components/ui/card';
 
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
-  
 
   const { children } = $props();
 

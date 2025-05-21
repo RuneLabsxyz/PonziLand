@@ -15,7 +15,7 @@ import type { Readable } from 'svelte/store';
 
 export const createLandWithActions = (
   land: BuildingLand | AuctionLand,
-  getAllLands: () => Readable<BaseLand[]>
+  getAllLands: () => Readable<BaseLand[]>,
 ) => {
   const { client: sdk, accountManager } = useDojo();
   const account = () => {
@@ -159,4 +159,4 @@ export const createLandWithActions = (
   };
 
   return landWithActions;
-}; 
+};

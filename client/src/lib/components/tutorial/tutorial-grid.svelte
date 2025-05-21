@@ -81,8 +81,10 @@
     const mouseY = event.clientY - rect.top;
 
     // Calculate the position of the mouse in tile coordinates before scaling
-    const tileXBefore = (mouseX - $cameraPosition.offsetX) / ($cameraPosition.scale * TILE_SIZE);
-    const tileYBefore = (mouseY - $cameraPosition.offsetY) / ($cameraPosition.scale * TILE_SIZE);
+    const tileXBefore =
+      (mouseX - $cameraPosition.offsetX) / ($cameraPosition.scale * TILE_SIZE);
+    const tileYBefore =
+      (mouseY - $cameraPosition.offsetY) / ($cameraPosition.scale * TILE_SIZE);
 
     // Calculate new offsets to keep the mouse position fixed
     const newOffsetX = mouseX - tileXBefore * newScale * TILE_SIZE;
@@ -313,4 +315,4 @@
   .row {
     display: flex;
   }
-</style> 
+</style>
