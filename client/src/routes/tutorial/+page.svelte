@@ -6,6 +6,7 @@
   import { GRID_SIZE } from '$lib/const';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
+  import { onDestroy } from 'svelte';
 
   let loading = $state(true);
   let value = $state(10);
@@ -52,6 +53,10 @@
         console.error('An error occurred during tutorial setup:', err);
         // TODO: Handle error state appropriately
       });
+  });
+
+  onDestroy(() => {
+    tutorialLandStore.stopRandomUpdates();
   });
 </script>
 

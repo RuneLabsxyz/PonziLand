@@ -4,6 +4,7 @@
   import { selectedLand } from '$lib/stores/store.svelte';
   import { get } from 'svelte/store';
   import { fly } from 'svelte/transition';
+  import { onDestroy } from 'svelte';
   import dialogData from './dialog.json';
   import { tutorialLandStore, tutorialProgression } from './stores.svelte';
 
@@ -24,6 +25,16 @@
   let ponziMaster = $state(false);
 
   let flashOpacity = $state(0);
+
+  let fadeOutInterval = $state<NodeJS.Timeout | undefined>(undefined);
+  let vignetteInterval = $state<NodeJS.Timeout | undefined>(undefined);
+  let nukeInterval = $state<NodeJS.Timeout | undefined>(undefined);
+
+  onDestroy(() => {
+    if (fadeOutInterval) clearInterval(fadeOutInterval);
+    if (vignetteInterval) clearInterval(vignetteInterval);
+    if (nukeInterval) clearInterval(nukeInterval);
+  });
 
   function formatText(text: string) {
     return text.replaceAll('\n', '<br>');
@@ -105,27 +116,30 @@
     const startTime = Date.now();
     const fadeOutDuration = 1000;
 
-    const fadeOutInterval = setInterval(() => {
+    fadeOutInterval = setInterval(() => {
       const elapsed = Date.now() - startTime;
       if (elapsed >= fadeOutDuration) {
-        clearInterval(fadeOutInterval);
+        if (fadeOutInterval) clearInterval(fadeOutInterval);
+        fadeOutInterval = undefined;
         flashOpacity = 0;
         return;
       }
       flashOpacity = 0.7 * (1 - elapsed / fadeOutDuration);
     }, 16);
 
-    const vignetteInterval = setInterval(() => {
+    vignetteInterval = setInterval(() => {
       vignette += 0.02;
     }, 100);
 
-    const nukeInterval = setInterval(() => {
+    nukeInterval = setInterval(() => {
       tutorialLandStore.reduceTimeToNuke(32, 32);
       step.increment();
 
       if (tutorialLandStore.getNukeTime(32, 32) <= 20000) {
-        clearInterval(nukeInterval);
-        clearInterval(vignetteInterval);
+        if (nukeInterval) clearInterval(nukeInterval);
+        if (vignetteInterval) clearInterval(vignetteInterval);
+        nukeInterval = undefined;
+        vignetteInterval = undefined;
 
         tutorialLandStore.setNuke(true);
         setTimeout(() => {
