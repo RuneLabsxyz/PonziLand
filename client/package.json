@@ -34,8 +34,7 @@
     "tailwindcss": "^3.4.15",
     "typescript": "^5.0.0",
     "vite": "^5.0.3",
-    "vitest": "^3.0.3",
-    "wrangler": "^3.101.0"
+    "vitest": "^3.0.3"
   },
   "dependencies": {
     "@argent/x-sessions": "^7.0.0",
@@ -78,7 +77,8 @@
     "tsparticles": "^3.8.1",
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-top-level-await": "^1.1.0",
-    "vite-plugin-wasm": "^3.3.0"
+    "vite-plugin-wasm": "^3.3.0",
+    "wrangler": "^4.16.0"
   },
   "patchedDependencies": {
     "starknet@6.23.1": "patches/starknet@6.23.1.patch"
