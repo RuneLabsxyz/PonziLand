@@ -114,7 +114,7 @@
 {#if totalBalanceInBaseToken}
   <div class="mt-2 pt-2 border-t border-gray-700 pb-4">
     <div class="flex justify-between items-center">
-      <span class="text-sm font-bold">Your score:</span>
+      <span class=" font-bold">Your score:</span>
       <span class="font-bold text-green-500"
         >{totalBalanceInBaseToken.toString()}</span
       >

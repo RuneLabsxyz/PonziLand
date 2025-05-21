@@ -180,9 +180,7 @@
   </div>
 
   {#if error}
-    <div
-      class="text-red-500 text-sm mt-2 p-2 bg-red-50 border border-red-200 rounded"
-    >
+    <div class="text-red-500 mt-2 p-2 bg-red-50 border border-red-200 rounded">
       {error}
     </div>
   {/if}

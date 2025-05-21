@@ -164,7 +164,7 @@
       <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
     {/if}
   </div>
-  <div class="w-full flex flex-col gap-4 mr-8 text-xs">
+  <div class="w-full flex flex-col gap-4 mr-8">
     <div class="w-full text-stroke-none flex flex-col leading-4 mt-3">
       <div class="flex justify-between">
         <p class="opacity-50">Per Neighbors</p>

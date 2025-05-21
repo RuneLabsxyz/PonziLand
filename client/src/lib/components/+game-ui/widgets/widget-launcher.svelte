@@ -31,7 +31,7 @@
   <div class="bg-black/80 rounded-lg p-2 flex gap-2">
     {#each availableWidgets as widget}
       <button
-        class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-md text-white text-sm flex items-center gap-2 transition-colors"
+        class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-md text-white flex items-center gap-2 transition-colors"
         onclick={() => addWidget(widget.type)}
       >
         <Plus size={16} />

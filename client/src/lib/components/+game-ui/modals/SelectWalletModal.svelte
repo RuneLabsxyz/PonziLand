@@ -103,13 +103,11 @@
                     <div class="text-lg">
                       {controllerWallet.name}
                     </div>
-                    <div class="text-sm opacity-70 text-green-500">
-                      FREE GAS!
-                    </div>
+                    <div class=" opacity-70 text-green-500">FREE GAS!</div>
                   </div>
                 </Button>
                 <Button
-                  class="text-sm flex items-center justify-center mt-2 text-sm opacity-50"
+                  class=" flex items-center justify-center mt-2  opacity-50"
                   variant="red"
                   on:click={() => (showAllWallets = true)}
                 >
@@ -137,19 +135,15 @@
                       {wallet.name}
                     </div>
                     {#if wallet.id == 'controller'}
-                      <div class="text-sm opacity-70 text-green-500">
-                        FREE GAS!
-                      </div>
+                      <div class=" opacity-70 text-green-500">FREE GAS!</div>
                     {:else}
-                      <div class="text-sm opacity-70 text-red-600">
-                        Standard
-                      </div>
+                      <div class=" opacity-70 text-red-600">Standard</div>
                     {/if}
                   </div>
                 </Button>
               {/each}
               <Button
-                class="text-sm flex items-center justify-center mt-2"
+                class=" flex items-center justify-center mt-2"
                 on:click={() => (showAllWallets = false)}
               >
                 <ChevronUp class="h-4 w-4 mr-1" />

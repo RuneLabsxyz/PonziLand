@@ -32,7 +32,7 @@
   {#if land}
     <LandOverview {land} />
   {/if}
-  <div class="w-full flex flex-col leading-none text-sm">
+  <div class="w-full flex flex-col leading-none">
     <div class="flex justify-between text-yellow-500">
       <p class="opacity-50">Owner:</p>
       <p>Under Auction</p>

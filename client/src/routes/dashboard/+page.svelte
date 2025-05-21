@@ -28,7 +28,7 @@
               />
               <span class="font-bold">{token.symbol}</span>
             </div>
-            <span class="font-mono text-sm">{token.address}</span>
+            <span class="font-mono">{token.address}</span>
           </div>
         {/each}
       </div>

@@ -234,7 +234,7 @@
                     ?.rate.toFixed(2) ?? 'N/A'}
                 </span>
               </div>
-              <div class="flex justify-between items-center text-sm">
+              <div class="flex justify-between items-center">
                 <span class="text-gray-300"
                   >Historical ({new Date(
                     card.historicalDate,
@@ -251,7 +251,7 @@
               <h4 class="text-white font-semibold mb-2">Volume</h4>
               <div class="bg-black/20 rounded-lg p-3 space-y-2">
                 {#each card.volumeByToken as vol}
-                  <div class="flex justify-between text-sm">
+                  <div class="flex justify-between">
                     <span class="text-BASE_TOKEN-300">
                       {vol.token === BASE_TOKEN
                         ? baseTokenDetails?.symbol
@@ -266,7 +266,7 @@
                             : card.tokenDetails,
                         ).toString()}
                       </div>
-                      <div class="text-xs text-gray-400">
+                      <div class=" text-gray-400">
                         Fees: {CurrencyAmount.fromUnscaled(
                           vol.fees,
                           vol.token === BASE_TOKEN

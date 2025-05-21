@@ -53,7 +53,7 @@
               formatAddress(user.address)}</span
           >
           {#if user.address === address}
-            <span class="text-xs bg-primary/30 px-1 rounded">You</span>
+            <span class=" bg-primary/30 px-1 rounded">You</span>
           {/if}
           {#if index === 0}
             <img src="/extra/crown.png" alt="Crown" class="w-4 h-4" />

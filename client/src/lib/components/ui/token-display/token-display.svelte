@@ -97,7 +97,7 @@
             +{CurrencyAmount.fromUnscaled(increment, token)}
           </span>
         {/if}
-        <span class="text-sm {animating ? 'animating text-green-500' : ''}">
+        <span class=" {animating ? 'animating text-green-500' : ''}">
           {CurrencyAmount.fromUnscaled(tweenAmount.current, token)}
         </span>
       </div>
@@ -105,7 +105,7 @@
         {token.symbol}
       </div>
     </div>
-    <span class="text-xs text-gray-500">
+    <span class=" text-gray-500">
       {baseTokenValue.toString()}
       {data.mainCurrency}
     </span>

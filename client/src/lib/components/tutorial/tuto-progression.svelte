@@ -219,7 +219,7 @@
       class="h-auto w-[60px] -scale-x-100"
     />
   </div>
-  <span class="mt-1 text-sm font-bold text-white text-ponzi">Next</span>
+  <span class="mt-1 font-bold text-white text-ponzi">Next</span>
 </button>
 
 <div
@@ -249,7 +249,7 @@
       class="h-auto w-[60px]"
     />
   </div>
-  <span class="mt-1 text-sm font-bold text-white text-ponzi">Previous</span>
+  <span class="mt-1 font-bold text-white text-ponzi">Previous</span>
 </button>
 {#if ponziMaster}
   <div class="fixed inset-0 z-[998] flex justify-evenly items-center">

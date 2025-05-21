@@ -23,7 +23,7 @@
             <span class="text-green-500">✓</span>
             <span>{notification.txCount}. </span>
             <span class="text-ponzi-number">{notification.functionName}</span>
-            <span class="text-sm font-mono truncate">
+            <span class=" font-mono truncate">
               {notification.txhash?.slice(0, 10)}...{notification.txhash?.slice(
                 -8,
               )}

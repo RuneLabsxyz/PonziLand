@@ -68,12 +68,12 @@
 </div>
 {#if connected}
   <Card class="shadow-ponzi w-72">
-    <div class="flex justify-between items-center text-sm">
+    <div class="flex justify-between items-center">
       <button type="button" class="flex gap-2 items-center" onclick={copy}>
         {#if username}
           <p>
             User: {username}
-            <span class="opacity-50 text-sm"
+            <span class="opacity-50"
               >{shortenHex(padAddress(address ?? ''), 8)}</span
             >
           </p>
@@ -139,12 +139,12 @@
   </div>
   {#if connected}
     <Card class="shadow-ponzi w-72">
-      <div class="flex justify-between items-center text-sm">
+      <div class="flex justify-between items-center">
         <button type="button" class="flex gap-2 items-center" onclick={copy}>
           {#if username}
             <p>
               User: {username}
-              <span class="opacity-50 text-sm"
+              <span class="opacity-50"
                 >{shortenHex(padAddress(address ?? ''), 8)}</span
               >
             </p>

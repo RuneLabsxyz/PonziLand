@@ -128,11 +128,9 @@
         </div>
       {/each}
       {#if lands.length === 0}
-        <div class="text-center text-sm text-gray-400">
-          You don't own any lands yet
-        </div>
+        <div class="text-center text-gray-400">You don't own any lands yet</div>
         <button
-          class="text-sm text-yellow-500 hover:opacity-90 hover:cursor-pointer"
+          class=" text-yellow-500 hover:opacity-90 hover:cursor-pointer"
           onclick={() => {
             // uiStore.toolbarActive = 'auctions';
           }}

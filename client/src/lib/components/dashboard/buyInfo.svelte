@@ -100,7 +100,7 @@
           </div>
 
           <!-- Token Details -->
-          <div class="text-sm text-gray-300">
+          <div class=" text-gray-300">
             <div class="flex justify-between items-center mb-1">
               <span>Token Address:</span>
               <span class="font-mono"

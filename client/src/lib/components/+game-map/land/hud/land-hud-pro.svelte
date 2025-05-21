@@ -35,34 +35,34 @@
 
     <div class="flex w-full justify-between low-opacity">
       <div class="flex flex-col items-center text-ponzi-number">
-        <div class="text-xs">Earning / hour :</div>
-        <div class="text-green-500 text-sm flex items-center">
+        <div class="">Earning / hour :</div>
+        <div class="text-green-500 flex items-center">
           <span>+ {totalYieldValue.toFixed(2)}</span>
           <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
         </div>
       </div>
 
       <div class="flex flex-col items-center text-ponzi-number">
-        <div class="text-xs">Burning / hour :</div>
-        <div class="text-red-500 text-sm flex items-center">
+        <div class="">Burning / hour :</div>
+        <div class="text-red-500 flex items-center">
           <span>- {burnRate.toString()}</span>
           <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
         </div>
       </div>
     </div>
-    <div class="flex text-xs justify-between w-full pt-2">
+    <div class="flex justify-between w-full pt-2">
       <div class="low-opacity">Token :</div>
       <div class="text-opacity-30">
         ${land?.token?.symbol}
       </div>
     </div>
-    <div class="flex text-xs justify-between w-full">
+    <div class="flex justify-between w-full">
       <div class="low-opacity">Stake Amount :</div>
       <div class="text-opacity-30">
         {land?.stakeAmount}
       </div>
     </div>
-    <div class="flex text-xs justify-between w-full">
+    <div class="flex justify-between w-full">
       <div class="low-opacity">Sell Price :</div>
       <div class="text-opacity-30">
         {land?.sellPrice}

@@ -31,13 +31,13 @@
 </script>
 
 {#if connected}
-  <div class="flex justify-between items-center text-sm">
+  <div class="flex justify-between items-center">
     <button type="button" class="flex gap-2 items-center" onclick={copy}>
       {#await username then info}
         {#if info.exists}
           <p>
             User: {info.username}
-            <span class="opacity-50 text-sm"
+            <span class="opacity-50"
               >{shortenHex(padAddress(address ?? ''), 8)}</span
             >
           </p>

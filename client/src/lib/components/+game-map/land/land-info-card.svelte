@@ -18,7 +18,7 @@
 </script>
 
 <div
-  class="p-3 text-left text-stroke-0 text-xs text-ponzi relative flex gap-4 items-start even:bg-[#1b1b2a] odd:bg-[#252536] {land.location ==
+  class="p-3 text-left text-stroke-0 text-ponzi relative flex gap-4 items-start even:bg-[#1b1b2a] odd:bg-[#252536] {land.location ==
   $selectedLandMeta?.location
     ? 'border border-yellow-400'
     : ''}"

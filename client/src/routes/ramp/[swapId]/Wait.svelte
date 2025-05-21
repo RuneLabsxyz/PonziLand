@@ -65,10 +65,10 @@
 
 <Progress {max} value={max - until.total('seconds')} />
 <div class="flex justify-between">
-  <span class="text-sm opacity-75">
+  <span class=" opacity-75">
     Current: {formatDuration(now.since(transferTimeInstant))}
   </span>
-  <span class="text-sm opacity-75">
+  <span class=" opacity-75">
     Estimated: {formatDuration(duration)}
   </span>
 </div>

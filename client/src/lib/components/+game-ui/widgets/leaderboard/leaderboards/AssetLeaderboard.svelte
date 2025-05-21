@@ -134,7 +134,7 @@
                 formatAddress(user.address)}</span
             >
             {#if user.address === address}
-              <span class="text-xs bg-primary/30 px-1 rounded">You</span>
+              <span class=" bg-primary/30 px-1 rounded">You</span>
             {/if}
             {#if index === 0}
               <img src="/extra/crown.png" alt="Crown" class="w-4 h-4" />
@@ -152,9 +152,9 @@
 {#if userRank !== null && !isLoading && address}
   <div class="mt-2 px-2 py-1 text-white border-t border-white/20">
     <div class="flex items-center gap-2">
-      <span class="text-sm">Your rank:</span>
+      <span class="">Your rank:</span>
       <span class="font-bold">{userRank}</span>
-      <span class="font-mono text-red-500 text-sm">
+      <span class="font-mono text-red-500">
         {usernamesStore.getUsernames()[padAddress(address)!] ||
           formatAddress(address)}
       </span>

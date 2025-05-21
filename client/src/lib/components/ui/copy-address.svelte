@@ -47,7 +47,7 @@
 
   {#if showCopied}
     <span
-      class="absolute -top-6 left-0 text-xs bg-green-700 text-white px-2 py-1 rounded animate-fade-out"
+      class="absolute -top-6 left-0 bg-green-700 text-white px-2 py-1 rounded animate-fade-out"
     >
       Copied!
     </span>

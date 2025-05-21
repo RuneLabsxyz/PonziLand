@@ -3,7 +3,7 @@ import type { Button as ButtonPrimitive } from 'bits-ui';
 import Root from './button.svelte';
 
 const buttonVariants = tv({
-  base: 'font-ponzi-number text-white flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium disabled:pointer-events-none disabled:opacity-50',
+  base: 'font-ponzi-number text-white flex items-center justify-center whitespace-nowrap rounded-md  font-medium disabled:pointer-events-none disabled:opacity-50',
   variants: {
     variant: {
       blue: 'button-ponzi-blue stroke-3d-blue',

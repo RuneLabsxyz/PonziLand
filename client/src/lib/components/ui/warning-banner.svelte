@@ -17,9 +17,9 @@
     transition:slide={{ duration: 300, axis: 'y' }}
   >
     <div class="relative px-4 py-1 flex items-center justify-center">
-      <p class="text-center font-bold text-sm md:text-base pr-8">{message}</p>
+      <p class="text-center font-bold md:text-base pr-8">{message}</p>
       <button
-        class="absolute right-2 top-1/2 -translate-y-1/2 font-bold text-sm hover:underline px-2"
+        class="absolute right-2 top-1/2 -translate-y-1/2 font-bold hover:underline px-2"
         onclick={() => (isVisible = false)}
       >
         X
