@@ -11,7 +11,7 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { claimStore } from '$lib/stores/claim.store.svelte';
-import { createLandWithActions } from '$lib/stores/store.svelte';
+import { createLandWithActions } from '$lib/utils/land-actions';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -348,7 +348,7 @@ export class LandTileStore {
         claimStore.value[newLand.locationString] = {
           lastClaimTime: 0,
           animating: false,
-          land: createLandWithActions(newLand),
+          land: createLandWithActions(newLand, () => this.getAllLands()),
           claimable: true,
         };
       }

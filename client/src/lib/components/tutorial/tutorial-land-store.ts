@@ -9,6 +9,7 @@ import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { coordinatesToLocation } from '$lib/utils';
 import { CairoOption, CairoOptionVariant } from 'starknet';
 import { get } from 'svelte/store';
+import { writable } from 'svelte/store';
 
 // Token addresses for tutorial
 export const TOKEN_ADDRESSES = [
@@ -24,18 +25,18 @@ export const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
 
 export class TutorialLandStore extends LandTileStore {
-  public displayRates = $state(false);
+  private _displayRates = writable(false);
 
   constructor() {
     super();
   }
 
   getDisplayRates() {
-    return this.displayRates;
+    return get(this._displayRates);
   }
 
   setDisplayRates(displayRates: boolean) {
-    this.displayRates = displayRates;
+    this._displayRates.set(displayRates);
   }
 
   protected setLand(x: number, y: number, land: BaseLand) {

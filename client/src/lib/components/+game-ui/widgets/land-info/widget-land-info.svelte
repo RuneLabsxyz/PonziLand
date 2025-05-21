@@ -17,11 +17,11 @@
   import {
     bidLand,
     buyLand,
-    createLandWithActions,
     landStore,
   } from '$lib/stores/store.svelte';
   import { padAddress, parseLocation, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { writable } from 'svelte/store';
   import BuyInsights from './buy/buy-insights.svelte';
@@ -47,7 +47,10 @@
   let priceDisplay = $derived(currentPrice?.toString() ?? '');
 
   const address = $derived(account.address);
-  let isOwner = $derived(land?.owner === padAddress(address ?? ''));
+  let isOwner = $derived.by(() => {
+    if (!land || !address) return false;
+    return land.owner === padAddress(address);
+  });
 
   let fetching = $state(false);
 
@@ -62,9 +65,9 @@
         unsubscribe = landReadable.subscribe((value) => {
           if (
             value &&
-            (value instanceof BuildingLand || value instanceof AuctionLand)
+            (BuildingLand.is(value) || AuctionLand.is(value))
           ) {
-            land = createLandWithActions(value);
+            land = createLandWithActions(value, () => landStore.getAllLands());
             currentPrice = land.sellPrice;
           } else {
             land = null;
