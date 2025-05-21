@@ -1,9 +1,8 @@
 <script lang="ts">
-  import { tutorialLandStore } from './stores.svelte';
-  import GameGrid from '$lib/components/+game-map/game-grid.svelte';
+  import TutorialGrid from './tutorial-grid.svelte';
 </script>
 
-<GameGrid />
+<TutorialGrid />
 
 <style>
   :global(body) {

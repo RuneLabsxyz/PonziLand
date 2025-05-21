@@ -1,57 +1,50 @@
 import { BaseLand, EmptyLand } from '$lib/api/land';
-import { AuctionLand } from '$lib/api/land/auction_land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { LandTileStore } from '$lib/api/land_tiles.svelte';
 import { GRID_SIZE } from '$lib/const';
-import type { Auction, Land, LandStake } from '$lib/models.gen';
+import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { cameraTransition } from '$lib/stores/camera.store';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { coordinatesToLocation } from '$lib/utils';
+import type { ParsedEntity } from '@dojoengine/sdk';
 import { CairoOption, CairoOptionVariant } from 'starknet';
 import { get } from 'svelte/store';
-import { writable } from 'svelte/store';
 
 // Token addresses for tutorial
 export const TOKEN_ADDRESSES = [
-  '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7', // ETH
-  '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8', // USDC
-  '0x00da114221cb83fa859dbdb4c44beeaa0bb37c7537ad5ae66fe5e0efd20e6eb3', // USDT
+  '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
+  '0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825',
+  '0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b',
+  '0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe',
+  '0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706',
 ];
 
 // Default values for tutorial
 export const DEFAULT_SELL_PRICE = 1000;
-export const DEFAULT_STAKE_AMOUNT = 1000;
+export const DEFAULT_STAKE_AMOUNT = 1280000 * 10 ** 18;
 export const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
 
 export class TutorialLandStore extends LandTileStore {
-  private _displayRates = writable(false);
+  private _displayRates = false;
 
   constructor() {
     super();
   }
 
   getDisplayRates() {
-    return get(this._displayRates);
+    return this._displayRates;
   }
 
   setDisplayRates(displayRates: boolean) {
-    this._displayRates.set(displayRates);
-  }
-
-  protected setLand(x: number, y: number, land: BaseLand) {
-    // @ts-ignore: currentLands is private in base, but we need to update for tutorial
-    this.currentLands.update((lands) => {
-      lands[x][y] = land;
-      return lands;
-    });
+    this._displayRates = displayRates;
   }
 
   // Tutorial-specific methods
-  addAuction(x: number = 8, y: number = 8): void {
+  addAuction(x: number = 32, y: number = 32): void {
     const location = x + y * GRID_SIZE;
     const fakeLand: Land = {
-      owner: '0x',
+      owner: '0x00',
       location,
       block_date_bought: Date.now(),
       sell_price: DEFAULT_SELL_PRICE,
@@ -69,15 +62,23 @@ export class TutorialLandStore extends LandTileStore {
       sold_at_price: new CairoOption(CairoOptionVariant.None),
     };
 
-    const auctionLand = new AuctionLand(fakeLand, fakeAuction);
-    this.setLand(x, y, auctionLand);
+    console.log('Adding auction', location);
+    this.updateLand({
+      entityId: `land_${location}`,
+      models: {
+        ponzi_land: {
+          Land: fakeLand,
+          Auction: fakeAuction,
+        },
+      },
+    } as ParsedEntity<SchemaType>);
   }
 
-  removeAuction(x: number = 8, y: number = 8): void {
-    this.setLand(x, y, new EmptyLand({ x, y }));
+  removeAuction(x: number = 32, y: number = 32): void {
+    this.updateLandDirectly(x, y, new EmptyLand({ x, y }));
   }
 
-  buyAuction(x: number = 8, y: number = 8, tokenId: number = 0): void {
+  buyAuction(x: number = 32, y: number = 32, tokenId: number = 0): void {
     const location = x + y * GRID_SIZE;
     const fakeLand: Land = {
       owner: DEFAULT_OWNER,
@@ -85,7 +86,7 @@ export class TutorialLandStore extends LandTileStore {
       block_date_bought: Date.now(),
       sell_price: DEFAULT_SELL_PRICE,
       token_used: TOKEN_ADDRESSES[tokenId],
-      level: 'First',
+      level: 'Zero',
     };
 
     const fakeStake: LandStake = {
@@ -96,7 +97,7 @@ export class TutorialLandStore extends LandTileStore {
 
     const buildingLand = new BuildingLand(fakeLand);
     buildingLand.updateStake(fakeStake);
-    this.setLand(x, y, buildingLand);
+    this.updateLandDirectly(x, y, buildingLand);
   }
 
   levelUp(x: number, y: number): void {
@@ -106,14 +107,15 @@ export class TutorialLandStore extends LandTileStore {
     const currentLand = get(landStore);
     if (!currentLand || currentLand.type !== 'building') return;
 
-    const levels = ['First', 'Second', 'Third'];
+    const levels = ['Zero', 'First', 'Second', 'Third'];
     const currentLevel = currentLand.level;
-    const nextLevelIndex = levels.indexOf(currentLevel) + 1;
+    const nextLevelIndex = currentLevel;
     if (nextLevelIndex >= levels.length) return;
 
+    const location = coordinatesToLocation(currentLand.location);
     const fakeLand: Land = {
       owner: currentLand.owner,
-      location: coordinatesToLocation(currentLand.location),
+      location,
       block_date_bought: currentLand.block_date_bought,
       sell_price: currentLand.sell_price,
       token_used: currentLand.token_used,
@@ -121,14 +123,13 @@ export class TutorialLandStore extends LandTileStore {
     };
 
     const buildingLand = new BuildingLand(fakeLand);
-    if (BuildingLand.is(currentLand)) {
-      buildingLand.updateStake({
-        location: coordinatesToLocation(currentLand.location),
-        amount: currentLand.stakeAmount.rawValue().toString(),
-        last_pay_time: currentLand.lastPayTime.getTime(),
-      });
-    }
-    this.setLand(x, y, buildingLand);
+    buildingLand.updateStake({
+      location,
+      amount: DEFAULT_STAKE_AMOUNT,
+      last_pay_time: currentLand.lastPayTime.getTime(),
+    });
+    console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
+    this.updateLandDirectly(x, y, buildingLand);
   }
 
   reduceTimeToNuke(x: number, y: number): void {
@@ -138,26 +139,18 @@ export class TutorialLandStore extends LandTileStore {
     const currentLand = get(landStore);
     if (!currentLand || currentLand.type !== 'building') return;
 
-    const fakeStake: LandStake = {
-      location: coordinatesToLocation(currentLand.location),
-      amount: BuildingLand.is(currentLand)
-        ? currentLand.stakeAmount.rawValue().div(2).toString()
-        : DEFAULT_STAKE_AMOUNT / 2,
-      last_pay_time: Date.now(),
-    };
+    const location = coordinatesToLocation(currentLand.location);
 
     if (BuildingLand.is(currentLand)) {
-      const buildingLand = new BuildingLand({
-        owner: currentLand.owner,
-        location: coordinatesToLocation(currentLand.location),
-        block_date_bought: currentLand.block_date_bought,
-        sell_price: currentLand.sell_price,
-        token_used: currentLand.token_used,
-        level: currentLand.level,
+      currentLand.updateStake({
+        location,
+        amount: currentLand.stakeAmount.toBigint() / 2n,
+        last_pay_time: Date.now(),
       });
-      buildingLand.updateStake(fakeStake);
-      this.setLand(x, y, buildingLand);
     }
+    console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
+
+    this.updateLandDirectly(x, y, currentLand);
   }
 
   getNukeTime(x: number, y: number): number {
@@ -174,11 +167,11 @@ export class TutorialLandStore extends LandTileStore {
 
   setNuke(nuke: boolean): void {
     if (nuke) {
-      const location = 8 + 8 * GRID_SIZE;
+      const location = 32 + 32 * GRID_SIZE;
       nukeStore.nuking[location] = true;
       setTimeout(() => {
         nukeStore.nuking[location] = false;
-        this.removeAuction(8, 8);
+        this.removeAuction(32, 32);
       }, 3500);
     }
   }

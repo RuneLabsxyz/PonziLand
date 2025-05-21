@@ -10,12 +10,17 @@
   import GameGrid from '$lib/components/+game-map/game-grid.svelte';
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import { landStore } from '$lib/stores/store.svelte';
+  import { tutorialLandStore } from '$lib/components/tutorial/stores.svelte';
 
   const promise = Promise.all([
     setupSocialink().then(() => {
       return setupAccountState();
     }),
-    setupClient(dojoConfig).then((client) => landStore.setup(client!)),
+    setupClient(dojoConfig).then((client) => {
+      landStore.setup(client!);
+      landStore.stopRandomUpdates();
+      tutorialLandStore.stopRandomUpdates();
+    }),
     setupAccount(),
   ]);
 

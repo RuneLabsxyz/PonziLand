@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { tutorialProgression, tutorialLandStore } from './stores.svelte';
-  import { selectedLand } from '$lib/stores/store.svelte';
-  import { toHexWithPadding } from '$lib/utils';
-  import dialogData from './dialog.json';
-  import { fly } from 'svelte/transition';
-  import Button from '$lib/components/ui/button/button.svelte';
   import { goto } from '$app/navigation';
+  import Button from '$lib/components/ui/button/button.svelte';
+  import { selectedLand } from '$lib/stores/store.svelte';
   import { get } from 'svelte/store';
+  import { fly } from 'svelte/transition';
+  import dialogData from './dialog.json';
+  import { tutorialLandStore, tutorialProgression } from './stores.svelte';
 
   const step = tutorialProgression();
 
@@ -52,8 +51,8 @@
       tutorialLandStore.removeAuction();
     }
     if (step.value === 4) {
-      // Select the auction tile at position [8][8]
-      const landStore = tutorialLandStore.getLand(8, 8);
+      // Select the auction tile at position [32][32]
+      const landStore = tutorialLandStore.getLand(32, 32);
       if (landStore) {
         const land = get(landStore);
         selectedLand.value = land;
@@ -68,28 +67,28 @@
     }
 
     if (step.value === 8) {
-      tutorialLandStore.buyAuction();
+      tutorialLandStore.buyAuction(32, 32);
     }
     if (step.value === 9) {
-      tutorialLandStore.levelUp(8, 8);
+      tutorialLandStore.levelUp(32, 32);
     }
     if (step.value === 10) {
-      tutorialLandStore.levelUp(8, 8);
+      tutorialLandStore.levelUp(32, 32);
     }
     if (step.value === 11) {
-      tutorialLandStore.addAuction(7, 8);
-      tutorialLandStore.addAuction(9, 8);
-      tutorialLandStore.addAuction(9, 9);
+      tutorialLandStore.addAuction(31, 32);
+      tutorialLandStore.addAuction(33, 32);
+      tutorialLandStore.addAuction(33, 33);
     } else if (step.value <= 11) {
-      tutorialLandStore.removeAuction(7, 8);
-      tutorialLandStore.removeAuction(9, 8);
-      tutorialLandStore.removeAuction(9, 9);
+      tutorialLandStore.removeAuction(31, 32);
+      tutorialLandStore.removeAuction(33, 32);
+      tutorialLandStore.removeAuction(33, 33);
       tutorialLandStore.setDisplayRates(false);
     }
     if (step.value === 12) {
-      tutorialLandStore.buyAuction(7, 8, 1);
-      tutorialLandStore.buyAuction(9, 8, 2);
-      tutorialLandStore.buyAuction(9, 9, 3);
+      tutorialLandStore.buyAuction(31, 32, 1);
+      tutorialLandStore.buyAuction(33, 32, 2);
+      tutorialLandStore.buyAuction(33, 33, 3);
       tutorialLandStore.setDisplayRates(true);
     }
     if (step.value >= 13) {
@@ -117,24 +116,25 @@
     }, 16);
 
     const vignetteInterval = setInterval(() => {
-      vignette += 0.05;
-    }, 50);
+      vignette += 0.02;
+    }, 100);
 
     const nukeInterval = setInterval(() => {
-      tutorialLandStore.reduceTimeToNuke(8, 8);
+      tutorialLandStore.reduceTimeToNuke(32, 32);
       step.increment();
 
-      if (tutorialLandStore.getNukeTime(8, 8) <= 80000) {
+      if (tutorialLandStore.getNukeTime(32, 32) <= 20000) {
         clearInterval(nukeInterval);
         clearInterval(vignetteInterval);
 
         tutorialLandStore.setNuke(true);
         setTimeout(() => {
-          tutorialLandStore.removeAuction(8, 8);
+          tutorialLandStore.removeAuction(32, 32);
+          tutorialLandStore.startRandomUpdates();
         }, 1000);
         ponziMaster = true;
       }
-    }, 4000);
+    }, 1000);
   }
 </script>
 

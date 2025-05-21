@@ -4,12 +4,14 @@
   import { tutorialLandStore } from '$lib/components/tutorial/stores.svelte';
   import TutorialUi from '$lib/components/tutorial/ui.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { setupClient } from '$lib/contexts/client.svelte';
+  import { dojoConfig } from '$lib/dojoConfig';
 
   let loading = $state(true);
   let value = $state(10);
 
   const promise = new Promise<void>((resolve) => {
-    tutorialLandStore.fakeSetup();
+    setupClient(dojoConfig)
     // Use setTimeout to ensure the setup is complete and any state updates are processed
     setTimeout(() => {
       // Set initial camera position to center of map
