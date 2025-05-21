@@ -43,20 +43,23 @@ impl Eq for Id {}
 
 impl Id {
     /// Parses the eventID from the torii SQL provider.
-    pub fn parse_from_torii(s: &str) -> Result<Self, String> {
+    ///
+    /// # Errors
+    /// Returns an error if the input string is not in the correct format.
+    pub fn parse_from_torii(s: &str) -> Result<Self, Error> {
         let parts: Vec<&str> = s.split(':').collect();
         if parts.len() != 3 {
-            return Err("Invalid format".to_string());
+            return Err(Error::InvalidFormat);
         }
 
         let block_id = parts[0]
             .parse()
-            .map_err(|_| "Invalid block ID".to_string())?;
+            .map_err(|_| Error::InvalidPart("block ID"))?;
         let tx_hash = parts[1]
             .parse()
-            .map_err(|_| "Invalid transaction hash".to_string())?;
+            .map_err(|_| Error::InvalidPart("transaction hash"))?;
         let event_idx = u32::from_str_radix(parts[2].trim_start_matches("0x"), 16)
-            .map_err(|_| "Invalid event index".to_string())?;
+            .map_err(|_| Error::InvalidPart("event index"))?;
 
         Ok(Self {
             block_id,
@@ -68,10 +71,6 @@ impl Id {
 
     // Testing function, that creates a new block for testing
     // should NEVER be used in production code
-    #[cfg_attr(
-        not(test),
-        deprecated(note = "This function should not only be used for testing")
-    )]
     #[must_use]
     pub fn new_test(block_id: u64, tx_hash: u64, event_idx: u32) -> Self {
         Self {
@@ -112,6 +111,8 @@ use sqlx::encode::{Encode, IsNull};
 use sqlx::postgres::PgTypeInfo;
 use sqlx::types::Type;
 
+use crate::error::Error;
+
 impl Type<sqlx::Postgres> for Id {
     fn type_info() -> PgTypeInfo {
         <String as Type<sqlx::Postgres>>::type_info()
@@ -135,41 +136,41 @@ impl<'r> Decode<'r, sqlx::Postgres> for Id {
 }
 
 impl FromStr for Id {
-    type Err = String;
+    type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // Parse "bk_{block_id}:tx_{tx_hash}:e_{event_idx}"
         let parts: Vec<&str> = s.split(':').collect();
         if parts.len() != 3 {
-            return Err("Invalid event ID format".to_string());
+            return Err(Error::InvalidFormat);
         }
 
         let block_part = parts[0];
         if !block_part.starts_with("bk_") {
-            return Err("Invalid block part format".to_string());
+            return Err(Error::InvalidPart("block ID"));
         }
         let block_id_prefix = &block_part[3..];
         let block_id =
-            Felt::from_hex(block_id_prefix).map_err(|_| "Invalid block id prefix".to_string())?;
+            Felt::from_hex(block_id_prefix).map_err(|_| Error::InvalidPart("block ID"))?;
 
         let tx_part = parts[1];
         if !tx_part.starts_with("tx_") {
-            return Err("Invalid tx part format".to_string());
+            return Err(Error::InvalidPart("transaction hash"));
         }
         let tx_hash_prefix = &tx_part[3..];
 
         // In a real implementation, you'd need to fetch the full tx_hash from the database
         // or have a way to reconstruct it. For this example, we'll pad with zeros.
         let tx_hash =
-            Felt::from_hex(tx_hash_prefix).map_err(|_| "Invalid tx hash prefix".to_string())?;
+            Felt::from_hex(tx_hash_prefix).map_err(|_| Error::InvalidPart("transaction hash"))?;
 
         let event_part = parts[2];
         if !event_part.starts_with("e_") {
-            return Err("Invalid event part format".to_string());
+            return Err(Error::InvalidPart("event index"));
         }
         let event_idx = event_part[2..]
             .parse::<u32>()
-            .map_err(|_| "Invalid event_idx".to_string())?;
+            .map_err(|_| Error::InvalidPart("event index"))?;
 
         let cell = OnceLock::new();
         cell.set(s.to_string()).unwrap(); // PANIC SAFETY: This is never going to panic, as we just created the value

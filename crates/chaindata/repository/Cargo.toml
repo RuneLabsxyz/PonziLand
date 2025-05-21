@@ -15,6 +15,7 @@ sqlx = { workspace = true, features = [
     "bigdecimal",
 ] }
 chaindata-models = { path = "../models" }
+thiserror.workspace = true
 
 [dev-dependencies]
 migrations = { path = "../../migrations" }

@@ -1,4 +1,4 @@
-use crate::Database;
+use crate::{Database, Error};
 use chaindata_models::{events::EventId, models::LandModel, shared::Location};
 use chrono::NaiveDateTime;
 use sqlx::{query, query_as};
@@ -16,8 +16,8 @@ impl Repository {
     /// Saves a land model to the database
     /// # Errors
     /// Returns an error if the land could not be saved.
-    pub async fn save(&self, land: LandModel) -> Result<EventId, sqlx::Error> {
-        query!(
+    pub async fn save(&self, land: LandModel) -> Result<EventId, Error> {
+        Ok(query!(
             r#"
             INSERT INTO land (
                 id, at, location, bought_at, owner, sell_price, token_used, level
@@ -35,8 +35,9 @@ impl Repository {
             land.level as _
         )
         .fetch_one(&mut *(self.db.acquire().await?))
-        .await
-        .map(|row| row.id.parse().expect("Wrong format!"))
+        .await?
+        .id
+        .parse()?)
     }
 
     /// Gets the latest land model at a specific location at or before the given timestamp
@@ -161,7 +162,7 @@ mod tests {
     use migrations::MIGRATOR;
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn test_save_and_get_land(pool: sqlx::PgPool) -> sqlx::Result<()> {
+    async fn test_save_and_get_land(pool: sqlx::PgPool) -> Result<(), Error> {
         let repo = Repository::new(pool);
 
         // Create a test land model
@@ -214,7 +215,7 @@ mod tests {
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn test_land_versioning(pool: sqlx::PgPool) -> sqlx::Result<()> {
+    async fn test_land_versioning(pool: sqlx::PgPool) -> Result<(), Error> {
         let repo = Repository::new(pool);
 
         // Create a location

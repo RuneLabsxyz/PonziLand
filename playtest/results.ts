@@ -10,7 +10,7 @@ try {
       SELECT account_address, balance, symbol
       FROM token_balances bal
       LEFT JOIN tokens t ON t.id = bal.token_id
-      WHERE t.symbol = "eBTC"
+      WHERE t.symbol = "eLORDS"
       ORDER BY balance DESC
       LIMIT 30;
     `,
@@ -32,7 +32,7 @@ try {
         ?.username,
       amount: new BigNumber(element.balance).shiftedBy(-18),
     };
-    if (entry.discord != undefined) {
+    if (entry.discord != undefined && entry.discord != "knownasred") {
       entries.push(entry);
     }
   }
@@ -53,7 +53,7 @@ try {
     validator = validator.plus(percentage);
     console.log(
       `${index + 1}. ${entry.username} (${entry.discord})
-      - ${entry.amount.toFixed(8)} eBTC, ${percentage.toFixed(6)}% of total supply`,
+      - ${entry.amount.toFixed(8)} eLORDS, ${percentage.toFixed(6)}% of total supply`,
     );
     index++;
   }

@@ -1246,6 +1246,7 @@ dependencies = [
  "ponziland-models",
  "serde",
  "sqlx",
+ "thiserror 2.0.12",
  "torii-ingester",
  "uuid 1.16.0",
 ]
@@ -1259,6 +1260,7 @@ dependencies = [
  "chrono",
  "migrations",
  "sqlx",
+ "thiserror 2.0.12",
 ]
 
 [[package]]

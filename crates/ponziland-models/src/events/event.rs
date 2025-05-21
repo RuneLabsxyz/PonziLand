@@ -1,7 +1,6 @@
-use chrono::NaiveDateTime;
 use serde_json::Value;
-use torii_ingester::{RawToriiData, error::ToriiConversionError};
 use torii_ingester::prelude::Struct;
+use torii_ingester::{error::ToriiConversionError, RawToriiData};
 
 use super::actions::{AuctionFinishedEvent, LandBoughtEvent, LandNukedEvent, NewAuctionEvent};
 use super::auth::{AddressAuthorizedEvent, AddressRemovedEvent, VerifierUpdatedEvent};
@@ -32,7 +31,12 @@ impl Event {
     /// Returns an error if the raw Torii data cannot be parsed into the corresponding event.
     pub fn parse(data: RawToriiData) -> Result<Self, ToriiConversionError> {
         match data {
-            RawToriiData::Json { name, data, at, event_id } => {
+            RawToriiData::Json {
+                name,
+                data,
+                at,
+                event_id,
+            } => {
                 let event_data = EventData::from_json(&name, data)?;
                 Ok(Self {
                     at: at.naive_utc(),

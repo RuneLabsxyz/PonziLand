@@ -19,6 +19,7 @@ torii-ingester = { path = "../../torii-ingester" }
 num-bigint = "0.4.6"
 num-traits = "0.2.19"
 chrono.workspace = true
+thiserror.workspace = true
 
 [dev-dependencies]
 migrations = { path = "../../migrations" }

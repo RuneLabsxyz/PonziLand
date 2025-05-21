@@ -2,7 +2,7 @@ use chaindata_models::{events::EventId, models::LandStakeModel, shared::Location
 use chrono::NaiveDateTime;
 use sqlx::{query, query_as};
 
-use crate::Database;
+use crate::{Database, Error};
 
 pub struct Repository {
     db: Database,
@@ -19,8 +19,8 @@ impl Repository {
     /// # Errors
     ///
     /// Returns an error if the database operation fails.
-    pub async fn save(&self, land_stake: LandStakeModel) -> Result<EventId, sqlx::Error> {
-        query!(
+    pub async fn save(&self, land_stake: LandStakeModel) -> Result<EventId, Error> {
+        Ok(query!(
             r#"
             INSERT INTO land_stake (
                 id, at, location, last_pay_time, amount
@@ -35,8 +35,9 @@ impl Repository {
             land_stake.amount as _
         )
         .fetch_one(&mut *(self.db.acquire().await?))
-        .await
-        .map(|row| row.id.parse().expect("Failed to parse EventId"))
+        .await?
+        .id
+        .parse()?)
     }
 
     /// Gets the latest land stake model at a specific location at or before the given timestamp
@@ -153,7 +154,7 @@ mod tests {
     use std::str::FromStr;
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn test_save_and_get_land_stake(pool: sqlx::PgPool) -> sqlx::Result<()> {
+    async fn test_save_and_get_land_stake(pool: sqlx::PgPool) -> Result<(), Error> {
         let repo = Repository::new(pool);
 
         // Create a test land stake model
@@ -205,7 +206,7 @@ mod tests {
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
-    async fn test_land_stake_versioning(pool: sqlx::PgPool) -> sqlx::Result<()> {
+    async fn test_land_stake_versioning(pool: sqlx::PgPool) -> Result<(), Error> {
         let repo = Repository::new(pool);
 
         // Create a location

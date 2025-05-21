@@ -24,7 +24,7 @@ use tokio::{
     signal::unix::{signal, SignalKind},
 };
 use tower_http::cors::{Any, CorsLayer};
-use tracing::{error, info, level_filters::LevelFilter};
+use tracing::{info, level_filters::LevelFilter};
 use tracing_subscriber::EnvFilter;
 use worker::MonitorManager;
 
@@ -57,9 +57,8 @@ async fn main() -> Result<()> {
         config = config.file(config_path);
     }
 
-    if let Err(e) = dotenv::dotenv() {
-        error!("Impossible to load dotenv config: {}", e);
-    }
+    // Just useful for dev
+    let _ = dotenv::dotenv();
 
     let config = config
         .env()
