@@ -43,7 +43,7 @@
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
-  let sliderValue = $state([transparency * 100]);
+  let sliderValue = $state(transparency * 100);
 
   let showDropdown = $state(false);
   let dropdownEl = $state<HTMLElement | null>(null);
@@ -54,15 +54,15 @@
       ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0};opacity:${transparency}`
       : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
           isMinimized ? 0 : currentDimensions?.height
-        }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`
+        }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
   );
 
   function handleClick() {
     widgetsStore.bringToFront(id);
   }
 
-  function handleTransparencyChange(value: number[]) {
-    const newValue = Math.max(10, Math.min(100, value[0])) / 100;
+  function handleTransparencyChange(value: number) {
+    const newValue = Math.max(10, Math.min(100, value)) / 100;
     transparency = newValue;
     widgetsStore.updateWidget(id, { transparency: newValue });
   }
@@ -190,7 +190,7 @@
   <Card class="w-full h-full">
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title">{type}</div>
-      <div class="window-controls">
+      <div class="window-controls text-white">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <button class="window-control">
@@ -198,27 +198,22 @@
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
-            <DropdownMenu.Group>
-              <DropdownMenu.Label>Widget Settings</DropdownMenu.Label>
-              <DropdownMenu.Separator />
-              <DropdownMenu.Item>
-                <div class="dropdown-item">
-                  <label for="transparency" class="dropdown-label">
-                    Transparency
-                  </label>
-                  <div class="slider-container">
-                    <Slider
-                      bind:value={sliderValue}
-                      max={100}
-                      min={10}
-                      step={10}
-                      onValueChange={handleTransparencyChange}
-                    />
-                    <span class="transparency-value">{Math.round(transparency * 100)}%</span>
-                  </div>
-                </div>
-              </DropdownMenu.Item>
-            </DropdownMenu.Group>
+            <Card style="opacity: {transparency}">
+              <DropdownMenu.Group>
+                <DropdownMenu.Label>Transparency</DropdownMenu.Label>
+                <Slider
+                  type="single"
+                  bind:value={sliderValue}
+                  max={100}
+                  min={10}
+                  step={10}
+                  onValueChange={handleTransparencyChange}
+                />
+                <span class="transparency-value text-white"
+                  >{Math.round(transparency * 100)}%</span
+                >
+              </DropdownMenu.Group>
+            </Card>
           </DropdownMenu.Content>
         </DropdownMenu.Root>
         {#if !disableControls}
@@ -339,13 +334,14 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 8px;
     min-width: 200px;
   }
 
-  .dropdown-label {
-    color: var(--foreground);
-    font-size: 14px;
+  :global(.dropdown-item [data-radix-dropdown-menu-item]) {
+    padding: 0;
+  }
+
+  :global(.dropdown-item [data-radix-dropdown-menu-label]) {
     font-weight: 500;
   }
 
@@ -353,11 +349,6 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-
-  .transparency-value {
-    color: var(--muted-foreground);
-    font-size: 12px;
-    text-align: right;
+    padding: 0 0 8px;
   }
 </style>
