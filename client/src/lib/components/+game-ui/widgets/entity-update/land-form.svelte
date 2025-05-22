@@ -7,17 +7,24 @@
   import { level } from '$lib/models.gen';
   import TokenSelect from './token-select.svelte';
   import { CairoCustomEnum } from 'starknet';
+  import { onMount } from 'svelte';
 
   let { onSubmit, loading = false } = $props<{
     onSubmit: (land: Partial<Land>) => void;
     loading?: boolean;
   }>();
 
-  let owner = $state('');
+  let owner = $state('0x123');
   let sellPrice = $state('');
   let tokenUsed = $state('');
-  let blockDateBought = $state('');
+  let blockDateBought = $state(Date.now().toString());
   let selectedLevel = $state<CairoCustomEnum>(new CairoCustomEnum({ [level[0]]: '' }));
+
+  onMount(() => {
+    // Set initial values
+    owner = '0x123';
+    blockDateBought = Date.now().toString();
+  });
 
   function handleSubmit() {
     const land: Partial<Land> = {};

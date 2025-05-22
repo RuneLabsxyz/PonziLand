@@ -3,25 +3,28 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import type { LandStake } from '$lib/models.gen';
-  import { padAddress } from '$lib/utils';
+  import TokenSelect from './token-select.svelte';
+  import { onMount } from 'svelte';
 
   let { onSubmit, loading = false } = $props<{
     onSubmit: (stake: Partial<LandStake>) => void;
     loading?: boolean;
   }>();
 
-  let owner = $state('');
   let amount = $state('');
-  let tokenUsed = $state('');
-  let blockDateBought = $state('');
+  let lastPayTime = $state(Date.now().toString());
+  let tokenUsed = $state(''); // Keep this for UI but don't submit it
+
+  onMount(() => {
+    // Set initial last pay time to current timestamp
+    lastPayTime = Date.now().toString();
+  });
 
   function handleSubmit() {
     const stake: Partial<LandStake> = {};
     
-    if (owner) stake.owner = padAddress(owner);
     if (amount) stake.amount = amount;
-    if (tokenUsed) stake.token_used = tokenUsed;
-    if (blockDateBought) stake.block_date_bought = blockDateBought;
+    if (lastPayTime) stake.last_pay_time = lastPayTime;
 
     onSubmit(stake);
   }
@@ -29,20 +32,12 @@
 
 <form on:submit|preventDefault={handleSubmit} class="space-y-4">
   <div>
-    <Label>Owner Address</Label>
-    <Input bind:value={owner} placeholder="0x..." />
-  </div>
-  <div>
     <Label>Amount</Label>
-    <Input type="number" bind:value={amount} placeholder="1000000" />
+    <Input type="number" bind:value={amount} placeholder="1000000" disabled={loading} />
   </div>
   <div>
-    <Label>Token Used</Label>
-    <Input bind:value={tokenUsed} placeholder="0x..." />
-  </div>
-  <div>
-    <Label>Block Date Bought</Label>
-    <Input type="number" bind:value={blockDateBought} placeholder="1234567890" />
+    <Label>Last Pay Time</Label>
+    <Input type="number" bind:value={lastPayTime} placeholder="1234567890" disabled={loading} />
   </div>
   <Button type="submit" class="w-full" disabled={loading}>
     {#if loading}
