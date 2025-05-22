@@ -37,6 +37,18 @@
   let currentPosition = $state<Position>(initialPosition);
   let currentDimensions = $state<Dimensions>(initialDimensions);
   let isMinimized = $state(false);
+  let isFixed = $state($widgetsStore[id]?.fixed || false);
+  let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
+  let disableControls = $state($widgetsStore[id]?.disableControls || false);
+
+  // Compute the style string based on whether the widget is fixed or not
+  let styleString = $derived(
+    isFixed
+      ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0}`
+      : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
+          isMinimized ? 0 : currentDimensions?.height
+        }px; z-index: ${$widgetsStore[id]?.zIndex || 0}`
+  );
 
   function handleClick() {
     widgetsStore.bringToFront(id);
@@ -55,73 +67,81 @@
         dimensions: initialDimensions,
         isMinimized: false,
         isOpen: true,
+        fixed: false,
+        fixedStyles: '',
       });
+    } else {
+      isFixed = currentWidget.fixed || false;
+      fixedStyles = currentWidget.fixedStyles || '';
     }
 
-    const interactable = interact(el)
-      .draggable({
-        allowFrom: '.window-header',
-        modifiers: [
-          interact.modifiers.snap({
-            targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
-            range: Infinity,
-            relativePoints: [{ x: 0, y: 0 }],
-          }),
-          ...(restrictToParent
-            ? [
-                interact.modifiers.restrict({
-                  restriction: el.parentNode as HTMLElement,
-                  elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
-                  endOnly: true,
-                }),
-              ]
-            : []),
-        ],
-        listeners: {
-          move(event) {
-            currentPosition = {
-              x: currentPosition.x + event.dx,
-              y: currentPosition.y + event.dy,
-            };
+    // Only set up interact if the widget is not fixed
+    if (!isFixed) {
+      const interactable = interact(el)
+        .draggable({
+          allowFrom: '.window-header',
+          modifiers: [
+            interact.modifiers.snap({
+              targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
+              range: Infinity,
+              relativePoints: [{ x: 0, y: 0 }],
+            }),
+            ...(restrictToParent
+              ? [
+                  interact.modifiers.restrict({
+                    restriction: el.parentNode as HTMLElement,
+                    elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
+                    endOnly: true,
+                  }),
+                ]
+              : []),
+          ],
+          listeners: {
+            move(event) {
+              currentPosition = {
+                x: currentPosition.x + event.dx,
+                y: currentPosition.y + event.dy,
+              };
 
-            // Save both position and current dimensions
-            widgetsStore.updateWidget(id, {
-              position: { ...currentPosition },
-              dimensions: currentDimensions || undefined,
-            });
+              // Save both position and current dimensions
+              widgetsStore.updateWidget(id, {
+                position: { ...currentPosition },
+                dimensions: currentDimensions || undefined,
+              });
+            },
           },
-        },
-      })
-      .resizable({
-        allowFrom: '.window-resize-handle',
-        edges: { right: true, bottom: true },
-        listeners: {
-          move(event) {
-            // Update current dimensions
-            currentDimensions = {
-              width: event.rect.width,
-              height: event.rect.height,
-            };
+        })
+        .resizable({
+          allowFrom: '.window-resize-handle',
+          edges: { right: true, bottom: true },
+          listeners: {
+            move(event) {
+              // Update current dimensions
+              currentDimensions = {
+                width: event.rect.width,
+                height: event.rect.height,
+              };
 
-            // Save both position and dimensions
-            widgetsStore.updateWidget(id, {
-              dimensions: currentDimensions,
-            });
+              // Save both position and dimensions
+              widgetsStore.updateWidget(id, {
+                dimensions: currentDimensions,
+              });
+            },
           },
-        },
-        modifiers: [
-          interact.modifiers.restrictSize({
-            min: { width: 200, height: 50 },
-          }),
-        ],
-      });
+          modifiers: [
+            interact.modifiers.restrictSize({
+              min: { width: 200, height: 50 },
+            }),
+          ],
+        });
 
-    async function onWindowResize() {
-      // start a resize action and wait for inertia to finish
-      await interactable.reflow({ name: 'drag', axis: 'xy' });
+      async function onWindowResize() {
+        // start a resize action and wait for inertia to finish
+        await interactable.reflow({ name: 'drag', axis: 'xy' });
+      }
+
+      window.addEventListener('resize', onWindowResize);
     }
-
-    window.addEventListener('resize', onWindowResize);
   });
 
   function handleMinimize() {
@@ -146,21 +166,22 @@
 <div
   bind:this={el}
   class="draggable overflow-hidden"
-  style="transform: translate({currentPosition.x}px, {currentPosition.y}px); pointer-events:all; width:{currentDimensions?.width}px; height:{isMinimized
-    ? 0
-    : currentDimensions?.height}px; z-index: {$widgetsStore[id]?.zIndex || 0};"
+  class:fixed={isFixed}
+  style={styleString}
   onclick={handleClick}
 >
   <Card class="w-full h-full">
-    <div class="window-header">
+    <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title">{type}</div>
       <div class="window-controls">
-        <button class="window-control" onclick={handleMinimize}>
-          <Minus size={16} />
-        </button>
-        <button class="window-control" onclick={handleClose}>
-          <X size={16} />
-        </button>
+        {#if !disableControls}
+          <button class="window-control" onclick={handleMinimize}>
+            <Minus size={16} />
+          </button>
+          <button class="window-control" onclick={handleClose}>
+            <X size={16} />
+          </button>
+        {/if}
       </div>
     </div>
     {#if !isMinimized}
@@ -169,7 +190,7 @@
       </div>
     {/if}
   </Card>
-  {#if !isMinimized}
+  {#if !isMinimized && !isFixed}
     <div class="window-resize-handle" style="pointer-events:all"></div>
   {/if}
 </div>
@@ -186,6 +207,12 @@
     min-height: 50px;
   }
 
+  .draggable.fixed {
+    pointer-events: all;
+    /* Remove transform and position styles when fixed as they'll be handled by fixedStyles */
+    transform: none !important;
+  }
+
   .window-header {
     display: flex;
     justify-content: space-between;
@@ -193,7 +220,11 @@
     cursor: grab;
   }
 
-  .window-header:active {
+  .window-header.no-drag {
+    cursor: default;
+  }
+
+  .window-header:active:not(.no-drag) {
     cursor: grabbing;
   }
 

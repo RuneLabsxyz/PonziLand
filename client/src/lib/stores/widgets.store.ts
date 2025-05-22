@@ -9,6 +9,9 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     position: { x: window.innerWidth - 320, y: 20 }, // Top right
     isMinimized: false,
     isOpen: true,
+    fixed: true,
+    fixedStyles: 'width: 320px; height: auto; top: 20px; right: 20px; transform: none;',
+    disableControls: true // Wallet widget should not be closable
   },
   'land-hud': {
     id: 'land-hud',
@@ -16,6 +19,9 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     position: { x: window.innerWidth - 320, y: window.innerHeight - 280 }, // Bottom right
     isMinimized: false,
     isOpen: true,
+    fixed: true,
+    fixedStyles: 'width: 320px; height: 260px; bottom: 20px; right: 20px; transform: none;',
+    disableControls: true // Land HUD should not be closable
   },
   settings: {
     id: 'settings',
@@ -42,6 +48,9 @@ export interface WidgetState {
   dimensions?: { width: number; height: number };
   data?: Record<string, any>;
   zIndex?: number;
+  fixed?: boolean; // Whether the widget should be fixed in position
+  fixedStyles?: string; // Custom styles to apply when fixed
+  disableControls?: boolean; // Whether to disable minimize and close buttons
 }
 
 interface WidgetsState {
