@@ -34,7 +34,7 @@
 </script>
 
 <div
-  class="z-50 absolute top-0 left-0 right-0 bottom-0"
+  class="z-40 absolute top-0 left-0 right-0 bottom-0"
   style="pointer-events: none;"
 >
   <WidgetLauncher />

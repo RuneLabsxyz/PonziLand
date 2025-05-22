@@ -58,7 +58,7 @@
 
 {#if visible}
   <div
-    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]"
   >
     <Card class="flex flex-col min-w-96 bg-ponzi items-center max-w-40 p-5">
       <h2 class="text-3xl font-bold pb-5">You are on the wrong chain!</h2>
