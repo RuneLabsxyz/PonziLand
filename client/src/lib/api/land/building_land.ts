@@ -4,10 +4,31 @@ import { BaseLand } from '.';
 import { fromDojoLevel, type Level } from '$lib/utils/level';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Token } from '$lib/interfaces';
-import { getTokenInfo } from '$lib/utils';
+import { getTokenInfo, coordinatesToLocation } from '$lib/utils';
 import type { BigNumberish } from 'starknet';
 
 export class BuildingLand extends BaseLand {
+  static fromBuildingLand(land: BuildingLand): BuildingLand {
+    // Create a new Land object with the same data
+    const landData: Land = {
+      owner: land._owner,
+      location: coordinatesToLocation(land.location),
+      block_date_bought: land._block_date_bought,
+      sell_price: land._sell_price,
+      token_used: land._token_used,
+      level: land._level
+    } as unknown as Land;
+
+    // Create new instance
+    const newLand = new BuildingLand(landData);
+
+    // Copy over stake data
+    newLand._stakeAmount = land._stakeAmount;
+    newLand._lastPayTime = land._lastPayTime;
+
+    return newLand;
+  }
+
   constructor(land: Land) {
     super(
       'building',

@@ -335,8 +335,6 @@ export class LandTileStore {
           // Do not change the land, this is an empty update.
           return { value: previousLand };
         } else if (BuildingLand.is(newLand)) {
-          console.log('Updating building land', landModel);
-          console.log('Previous land', previousLand);
           // Create a new BuildingLand instance instead of updating in place
           newLand = new BuildingLand(landModel as Land);
           // Reapply stake if it exists
@@ -371,6 +369,7 @@ export class LandTileStore {
         if (BuildingLand.is(newLand)) {
           // If we already have a BuildingLand, update its stake
           newLand.updateStake(landStakeModel as LandStake);
+          newLand = BuildingLand.fromBuildingLand(newLand);
         } else if (landModel) {
           // If we have both land and stake in the same update, create BuildingLand with stake
           newLand = new BuildingLand(landModel as Land);
