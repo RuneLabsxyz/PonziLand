@@ -60,7 +60,9 @@
 </script>
 
 {#if visible}
-  <div class="bg-black opacity-60 absolute w-screen h-screen top-0 left-0 z-[99]">
+  <div
+    class="bg-black opacity-60 absolute w-screen h-screen top-0 left-0 z-[99]"
+  >
     &nbsp;
   </div>
   <Card

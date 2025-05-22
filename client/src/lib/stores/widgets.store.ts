@@ -10,9 +10,10 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: true,
     fixed: true,
-    fixedStyles: 'width: 320px; height: auto; top: 20px; right: 20px; transform: none;',
+    fixedStyles:
+      'width: 320px; height: auto; top: 20px; right: 20px; transform: none;',
     disableControls: true, // Wallet widget should not be closable
-    transparency: 0.9 // Slightly transparent by default
+    transparency: 0.9, // Slightly transparent by default
   },
   'land-hud': {
     id: 'land-hud',
@@ -21,9 +22,10 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: true,
     fixed: true,
-    fixedStyles: 'width: 320px; height: 260px; bottom: 20px; right: 20px; transform: none;',
+    fixedStyles:
+      'width: 320px; height: 260px; bottom: 20px; right: 20px; transform: none;',
     disableControls: true, // Land HUD should not be closable
-    transparency: 0.9 // Slightly transparent by default
+    transparency: 0.9, // Slightly transparent by default
   },
   settings: {
     id: 'settings',
