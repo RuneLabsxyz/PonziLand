@@ -1,6 +1,8 @@
 <script lang="ts">
   import { Card } from '$lib/components/ui/card';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import { Slider } from '$lib/components/ui/slider';
   import '@interactjs/actions';
   import '@interactjs/actions/drag';
   import '@interactjs/actions/resize';
@@ -12,7 +14,6 @@
   import '@interactjs/snappers';
   import { Minus, MoreVertical, X } from 'lucide-svelte';
   import { onMount } from 'svelte';
-  import { clickOutside } from '$lib/actions/click-outside';
 
   interface Position {
     x: number;
@@ -42,6 +43,7 @@
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
+  let sliderValue = $state([transparency * 100]);
 
   let showDropdown = $state(false);
   let dropdownEl = $state<HTMLElement | null>(null);
@@ -59,18 +61,14 @@
     widgetsStore.bringToFront(id);
   }
 
-  function handleTransparencyChange(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const value = Math.max(0.1, Math.min(1, parseFloat(input.value)));
-    widgetsStore.updateWidget(id, { transparency: value });
+  function handleTransparencyChange(value: number[]) {
+    const newValue = Math.max(10, Math.min(100, value[0])) / 100;
+    transparency = newValue;
+    widgetsStore.updateWidget(id, { transparency: newValue });
   }
 
   function toggleDropdown() {
     showDropdown = !showDropdown;
-  }
-
-  function handleClickOutside() {
-    showDropdown = false;
   }
 
   onMount(() => {
@@ -193,9 +191,36 @@
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title">{type}</div>
       <div class="window-controls">
-        <button class="window-control" onclick={toggleDropdown}>
-          <MoreVertical size={16} />
-        </button>
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger>
+            <button class="window-control">
+              <MoreVertical size={16} />
+            </button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
+            <DropdownMenu.Group>
+              <DropdownMenu.Label>Widget Settings</DropdownMenu.Label>
+              <DropdownMenu.Separator />
+              <DropdownMenu.Item>
+                <div class="dropdown-item">
+                  <label for="transparency" class="dropdown-label">
+                    Transparency
+                  </label>
+                  <div class="slider-container">
+                    <Slider
+                      bind:value={sliderValue}
+                      max={100}
+                      min={10}
+                      step={10}
+                      onValueChange={handleTransparencyChange}
+                    />
+                    <span class="transparency-value">{Math.round(transparency * 100)}%</span>
+                  </div>
+                </div>
+              </DropdownMenu.Item>
+            </DropdownMenu.Group>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
         {#if !disableControls}
           <button class="window-control" onclick={handleMinimize}>
             <Minus size={16} />
@@ -206,30 +231,6 @@
         {/if}
       </div>
     </div>
-    {#if showDropdown}
-      <div
-        bind:this={dropdownEl}
-        class="dropdown-menu"
-        use:clickOutside={handleClickOutside}
-      >
-        <div class="dropdown-item">
-          <label for="transparency" class="dropdown-label">
-            Transparency
-          </label>
-          <input
-            type="range"
-            id="transparency"
-            min="0.1"
-            max="1"
-            step="0.1"
-            value={transparency}
-            on:input={handleTransparencyChange}
-            class="transparency-slider"
-          />
-          <span class="transparency-value">{Math.round(transparency * 100)}%</span>
-        </div>
-      </div>
-    {/if}
     {#if !isMinimized}
       <div class="window-content">
         {@render children()}
@@ -334,61 +335,28 @@
     );
   }
 
-  .dropdown-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: rgba(0, 0, 0, 0.95);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px;
-    min-width: 200px;
-    z-index: 1000;
-    margin-top: 4px;
-  }
-
   .dropdown-item {
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 8px;
+    min-width: 200px;
   }
 
   .dropdown-label {
-    color: white;
+    color: var(--foreground);
     font-size: 14px;
     font-weight: 500;
   }
 
-  .transparency-slider {
-    width: 100%;
-    height: 4px;
-    -webkit-appearance: none;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    outline: none;
-  }
-
-  .transparency-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  .transparency-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: white;
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
+  .slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 
   .transparency-value {
-    color: white;
+    color: var(--muted-foreground);
     font-size: 12px;
     text-align: right;
   }
