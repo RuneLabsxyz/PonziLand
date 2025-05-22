@@ -189,7 +189,7 @@
 >
   <Card class="w-full h-full">
     <div class="window-header" class:no-drag={isFixed}>
-      <div class="window-title">{type}</div>
+      <div class="window-title font-ponzi-number">{type}</div>
       <div class="window-controls text-white">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
