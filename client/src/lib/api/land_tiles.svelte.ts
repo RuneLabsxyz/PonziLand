@@ -4,7 +4,13 @@ import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import type { ParsedEntity } from '@dojoengine/sdk';
 import type { Subscription } from '@dojoengine/torii-client';
-import { derived, writable, type Readable, type Writable, get } from 'svelte/store';
+import {
+  derived,
+  writable,
+  type Readable,
+  type Writable,
+  get,
+} from 'svelte/store';
 import { EmptyLand, type BaseLand } from './land';
 import { AuctionLand } from './land/auction_land';
 import { BuildingLand } from './land/building_land';
@@ -346,7 +352,7 @@ export class LandTileStore {
             (newLand as BuildingLand).updateStake({
               location: landModel.location,
               amount: previousLand.stakeAmount.toBigint(),
-              last_pay_time: previousLand.lastPayTime.getTime()
+              last_pay_time: previousLand.lastPayTime.getTime(),
             } as LandStake); // Type assertion since we know the object matches LandStake
           }
           console.log('New land', newLand);

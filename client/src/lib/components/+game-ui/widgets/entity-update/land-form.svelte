@@ -18,7 +18,9 @@
   let sellPrice = $state('');
   let tokenUsed = $state('');
   let blockDateBought = $state(Date.now().toString());
-  let selectedLevel = $state<CairoCustomEnum>(new CairoCustomEnum({ [level[0]]: '' }));
+  let selectedLevel = $state<CairoCustomEnum>(
+    new CairoCustomEnum({ [level[0]]: '' }),
+  );
 
   onMount(() => {
     // Set initial values
@@ -28,11 +30,12 @@
 
   function handleSubmit() {
     const land: Partial<Land> = {};
-    
+
     if (owner) land.owner = padAddress(owner);
     if (sellPrice) land.sell_price = toHexWithPadding(parseInt(sellPrice));
     if (tokenUsed) land.token_used = tokenUsed;
-    if (blockDateBought) land.block_date_bought = toHexWithPadding(parseInt(blockDateBought));
+    if (blockDateBought)
+      land.block_date_bought = toHexWithPadding(parseInt(blockDateBought));
     land.level = selectedLevel;
 
     onSubmit(land);
@@ -62,12 +65,22 @@
   </div>
   <div>
     <Label>Sell Price</Label>
-    <Input type="number" bind:value={sellPrice} placeholder="1000000" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={sellPrice}
+      placeholder="1000000"
+      disabled={loading}
+    />
   </div>
   <TokenSelect bind:value={tokenUsed} disabled={loading} />
   <div>
     <Label>Block Date Bought</Label>
-    <Input type="number" bind:value={blockDateBought} placeholder="1234567890" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={blockDateBought}
+      placeholder="1234567890"
+      disabled={loading}
+    />
   </div>
   <Button type="submit" class="w-full" disabled={loading}>
     {#if loading}
@@ -76,4 +89,4 @@
       Update Land
     {/if}
   </Button>
-</form> 
+</form>

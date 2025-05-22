@@ -16,7 +16,7 @@ export class BuildingLand extends BaseLand {
       block_date_bought: land._block_date_bought,
       sell_price: land._sell_price,
       token_used: land._token_used,
-      level: land._level
+      level: land._level,
     } as unknown as Land;
 
     // Create new instance

@@ -22,7 +22,7 @@
 
   function handleSubmit() {
     const stake: Partial<LandStake> = {};
-    
+
     if (amount) stake.amount = amount;
     if (lastPayTime) stake.last_pay_time = lastPayTime;
 
@@ -33,11 +33,21 @@
 <form on:submit|preventDefault={handleSubmit} class="space-y-4">
   <div>
     <Label>Amount</Label>
-    <Input type="number" bind:value={amount} placeholder="1000000" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={amount}
+      placeholder="1000000"
+      disabled={loading}
+    />
   </div>
   <div>
     <Label>Last Pay Time</Label>
-    <Input type="number" bind:value={lastPayTime} placeholder="1234567890" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={lastPayTime}
+      placeholder="1234567890"
+      disabled={loading}
+    />
   </div>
   <Button type="submit" class="w-full" disabled={loading}>
     {#if loading}
@@ -46,4 +56,4 @@
       Update Land Stake
     {/if}
   </Button>
-</form> 
+</form>

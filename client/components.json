@@ -3,7 +3,7 @@
   "tailwind": {
     "css": "src/app.css",
     "baseColor": "stone",
-		"config": "tailwind.config.ts"
+    "config": "tailwind.config.ts"
   },
   "aliases": {
     "components": "$lib/components",

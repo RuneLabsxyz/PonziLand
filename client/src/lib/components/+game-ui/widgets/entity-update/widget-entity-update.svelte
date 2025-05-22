@@ -60,7 +60,10 @@
       console.log('Land update successful');
     } catch (e) {
       console.error('Error updating land:', e);
-      error = e instanceof Error ? e.message : 'An error occurred while updating land';
+      error =
+        e instanceof Error
+          ? e.message
+          : 'An error occurred while updating land';
     } finally {
       loading = false;
     }
@@ -73,12 +76,19 @@
       console.log('Updating land stake:', stake);
 
       const locationValue = toHexWithPadding(coordinatesToLocation(location));
-      const parsedEntity = createParsedEntity('LandStake', stake, locationValue);
+      const parsedEntity = createParsedEntity(
+        'LandStake',
+        stake,
+        locationValue,
+      );
       landStore.updateLand(parsedEntity);
       console.log('Land stake update successful');
     } catch (e) {
       console.error('Error updating land stake:', e);
-      error = e instanceof Error ? e.message : 'An error occurred while updating land stake';
+      error =
+        e instanceof Error
+          ? e.message
+          : 'An error occurred while updating land stake';
     } finally {
       loading = false;
     }
@@ -91,12 +101,19 @@
       console.log('Updating auction:', auction);
 
       const locationValue = toHexWithPadding(coordinatesToLocation(location));
-      const parsedEntity = createParsedEntity('Auction', auction, locationValue);
+      const parsedEntity = createParsedEntity(
+        'Auction',
+        auction,
+        locationValue,
+      );
       landStore.updateLand(parsedEntity);
       console.log('Auction update successful');
     } catch (e) {
       console.error('Error updating auction:', e);
-      error = e instanceof Error ? e.message : 'An error occurred while updating auction';
+      error =
+        e instanceof Error
+          ? e.message
+          : 'An error occurred while updating auction';
     } finally {
       loading = false;
     }
@@ -164,8 +181,8 @@
     </div>
   {/if}
 
-  <Tabs.Root 
-    value={selectedType} 
+  <Tabs.Root
+    value={selectedType}
     onValueChange={(v) => {
       try {
         selectedType = v as EntityType;

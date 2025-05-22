@@ -21,14 +21,19 @@
 
   function handleSubmit() {
     const auction: Partial<Auction> = {};
-    
+
     if (startTime) auction.start_time = toHexWithPadding(parseInt(startTime));
-    if (startPrice) auction.start_price = toHexWithPadding(parseInt(startPrice));
-    if (floorPrice) auction.floor_price = toHexWithPadding(parseInt(floorPrice));
+    if (startPrice)
+      auction.start_price = toHexWithPadding(parseInt(startPrice));
+    if (floorPrice)
+      auction.floor_price = toHexWithPadding(parseInt(floorPrice));
     if (decayRate) auction.decay_rate = toHexWithPadding(parseInt(decayRate));
     auction.is_finished = isFinished;
     if (x && y) {
-      const location = coordinatesToLocation({ x: parseInt(x), y: parseInt(y) });
+      const location = coordinatesToLocation({
+        x: parseInt(x),
+        y: parseInt(y),
+      });
       auction.land_location = toHexWithPadding(location);
     }
 
@@ -39,32 +44,54 @@
 <form on:submit|preventDefault={handleSubmit} class="space-y-4">
   <div>
     <Label>Start Time</Label>
-    <Input type="number" bind:value={startTime} placeholder="1234567890" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={startTime}
+      placeholder="1234567890"
+      disabled={loading}
+    />
   </div>
   <div>
     <Label>Start Price</Label>
-    <Input type="number" bind:value={startPrice} placeholder="1000000" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={startPrice}
+      placeholder="1000000"
+      disabled={loading}
+    />
   </div>
   <div>
     <Label>Floor Price</Label>
-    <Input type="number" bind:value={floorPrice} placeholder="100000" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={floorPrice}
+      placeholder="100000"
+      disabled={loading}
+    />
   </div>
   <div>
     <Label>Decay Rate</Label>
-    <Input type="number" bind:value={decayRate} placeholder="100" disabled={loading} />
+    <Input
+      type="number"
+      bind:value={decayRate}
+      placeholder="100"
+      disabled={loading}
+    />
   </div>
   <div class="flex items-center justify-between p-2">
     <button
       type="button"
       class="flex items-center gap-3 px-4 py-2 rounded-lg"
-      on:click={() => isFinished = !isFinished}
+      on:click={() => (isFinished = !isFinished)}
       disabled={loading}
     >
       <div
         class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out
           {isFinished ? 'bg-orange-500' : 'bg-orange-500/25'}"
       >
-        <span class="sr-only">{isFinished ? 'Finished: On' : 'Finished: Off'}</span>
+        <span class="sr-only"
+          >{isFinished ? 'Finished: On' : 'Finished: Off'}</span
+        >
         <span
           class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out
             {isFinished ? 'translate-x-6' : 'translate-x-1'}"
@@ -90,4 +117,4 @@
       Update Auction
     {/if}
   </Button>
-</form> 
+</form>
