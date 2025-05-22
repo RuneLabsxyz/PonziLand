@@ -11,7 +11,8 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isOpen: true,
     fixed: true,
     fixedStyles: 'width: 320px; height: auto; top: 20px; right: 20px; transform: none;',
-    disableControls: true // Wallet widget should not be closable
+    disableControls: true, // Wallet widget should not be closable
+    transparency: 0.9 // Slightly transparent by default
   },
   'land-hud': {
     id: 'land-hud',
@@ -21,7 +22,8 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isOpen: true,
     fixed: true,
     fixedStyles: 'width: 320px; height: 260px; bottom: 20px; right: 20px; transform: none;',
-    disableControls: true // Land HUD should not be closable
+    disableControls: true, // Land HUD should not be closable
+    transparency: 0.9 // Slightly transparent by default
   },
   settings: {
     id: 'settings',
@@ -51,6 +53,7 @@ export interface WidgetState {
   fixed?: boolean; // Whether the widget should be fixed in position
   fixedStyles?: string; // Custom styles to apply when fixed
   disableControls?: boolean; // Whether to disable minimize and close buttons
+  transparency?: number; // Widget transparency (0-1, where 0 is fully transparent and 1 is fully opaque)
 }
 
 interface WidgetsState {

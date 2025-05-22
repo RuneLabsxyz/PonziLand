@@ -40,14 +40,15 @@
   let isFixed = $state($widgetsStore[id]?.fixed || false);
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
+  let transparency = $state($widgetsStore[id]?.transparency ?? 1);
 
   // Compute the style string based on whether the widget is fixed or not
   let styleString = $derived(
     isFixed
-      ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0}`
+      ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0};opacity:${transparency}`
       : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
           isMinimized ? 0 : currentDimensions?.height
-        }px; z-index: ${$widgetsStore[id]?.zIndex || 0}`
+        }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`
   );
 
   function handleClick() {
