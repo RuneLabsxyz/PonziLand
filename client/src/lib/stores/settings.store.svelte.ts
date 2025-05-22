@@ -2,7 +2,7 @@ class SettingsStore {
   private static STORAGE_KEY = 'ponziland_settings';
 
   private settings = $state({
-    proMode: false,
+    noobMode: false,
     // Add more settings here as needed
   });
 
@@ -32,12 +32,12 @@ class SettingsStore {
     }
   }
 
-  get isProMode() {
-    return this.settings.proMode;
+  get isNoobMode() {
+    return this.settings.noobMode;
   }
 
-  toggleProMode() {
-    this.settings.proMode = !this.settings.proMode;
+  toggleNoobMode() {
+    this.settings.noobMode = !this.settings.noobMode;
     this.saveSettings();
   }
 }
