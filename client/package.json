@@ -16,6 +16,7 @@
     "test:watch": "bun vitest --config ./vitest.config.ts --watch"
   },
   "devDependencies": {
+    "@lucide/svelte": "^0.482.0",
     "@sveltejs/adapter-cloudflare": "3",
     "@sveltejs/kit": "2.19.2",
     "@sveltejs/vite-plugin-svelte": "^4.0.0",

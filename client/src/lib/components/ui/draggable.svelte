@@ -10,8 +10,9 @@
   import '@interactjs/modifiers';
   import '@interactjs/reflow';
   import '@interactjs/snappers';
-  import { Minus, X } from 'lucide-svelte';
+  import { Minus, MoreVertical, X } from 'lucide-svelte';
   import { onMount } from 'svelte';
+  import { clickOutside } from '$lib/actions/click-outside';
 
   interface Position {
     x: number;
@@ -42,6 +43,9 @@
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
 
+  let showDropdown = $state(false);
+  let dropdownEl = $state<HTMLElement | null>(null);
+
   // Compute the style string based on whether the widget is fixed or not
   let styleString = $derived(
     isFixed
@@ -53,6 +57,20 @@
 
   function handleClick() {
     widgetsStore.bringToFront(id);
+  }
+
+  function handleTransparencyChange(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const value = Math.max(0.1, Math.min(1, parseFloat(input.value)));
+    widgetsStore.updateWidget(id, { transparency: value });
+  }
+
+  function toggleDropdown() {
+    showDropdown = !showDropdown;
+  }
+
+  function handleClickOutside() {
+    showDropdown = false;
   }
 
   onMount(() => {
@@ -175,6 +193,9 @@
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title">{type}</div>
       <div class="window-controls">
+        <button class="window-control" onclick={toggleDropdown}>
+          <MoreVertical size={16} />
+        </button>
         {#if !disableControls}
           <button class="window-control" onclick={handleMinimize}>
             <Minus size={16} />
@@ -185,6 +206,30 @@
         {/if}
       </div>
     </div>
+    {#if showDropdown}
+      <div
+        bind:this={dropdownEl}
+        class="dropdown-menu"
+        use:clickOutside={handleClickOutside}
+      >
+        <div class="dropdown-item">
+          <label for="transparency" class="dropdown-label">
+            Transparency
+          </label>
+          <input
+            type="range"
+            id="transparency"
+            min="0.1"
+            max="1"
+            step="0.1"
+            value={transparency}
+            on:input={handleTransparencyChange}
+            class="transparency-slider"
+          />
+          <span class="transparency-value">{Math.round(transparency * 100)}%</span>
+        </div>
+      </div>
+    {/if}
     {#if !isMinimized}
       <div class="window-content">
         {@render children()}
@@ -287,5 +332,64 @@
       transparent 2px,
       transparent 4px
     );
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(0, 0, 0, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 8px;
+    min-width: 200px;
+    z-index: 1000;
+    margin-top: 4px;
+  }
+
+  .dropdown-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .dropdown-label {
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .transparency-slider {
+    width: 100%;
+    height: 4px;
+    -webkit-appearance: none;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    outline: none;
+  }
+
+  .transparency-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .transparency-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+  }
+
+  .transparency-value {
+    color: white;
+    font-size: 12px;
+    text-align: right;
   }
 </style>
