@@ -4,7 +4,7 @@ import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import type { ParsedEntity } from '@dojoengine/sdk';
 import type { Subscription } from '@dojoengine/torii-client';
-import { derived, writable, type Readable, type Writable } from 'svelte/store';
+import { derived, writable, type Readable, type Writable, get } from 'svelte/store';
 import { EmptyLand, type BaseLand } from './land';
 import { AuctionLand } from './land/auction_land';
 import { BuildingLand } from './land/building_land';
@@ -12,6 +12,7 @@ import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { claimStore } from '$lib/stores/claim.store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -261,6 +262,8 @@ export class LandTileStore {
     const location = getLocationFromEntity(entity);
     if (location === undefined) return;
 
+    console.log('Updating land', entity);
+
     // TODO: Handle the land being deleted, but that requires a more complex logic (mapping from/to the hashed location)
     const landStore = this.store[location.x][location.y];
     landStore.update(({ value: previousLand }) => {
@@ -332,22 +335,48 @@ export class LandTileStore {
           // Do not change the land, this is an empty update.
           return { value: previousLand };
         } else if (BuildingLand.is(newLand)) {
-          newLand.update(landModel as Land);
-        } else {
+          console.log('Updating building land', landModel);
+          console.log('Previous land', previousLand);
+          // Create a new BuildingLand instance instead of updating in place
           newLand = new BuildingLand(landModel as Land);
-          // Check if we have a pending stake
-          if (this.pendingStake.has(newLand.location)) {
-            const pendingStake = this.pendingStake.get(newLand.location)!;
+          // Reapply stake if it exists
+          if (landStakeModel) {
+            (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
+          } else if (BuildingLand.is(previousLand)) {
+            // If no new stake but previous land had stake, reapply it
+            // We know stakeAmount is defined because it's always initialized in BuildingLand
+            (newLand as BuildingLand).updateStake({
+              location: landModel.location,
+              amount: previousLand.stakeAmount.toBigint(),
+              last_pay_time: previousLand.lastPayTime.getTime()
+            } as LandStake); // Type assertion since we know the object matches LandStake
+          }
+          console.log('New land', newLand);
+        } else {
+          // Create new BuildingLand and immediately apply any pending stake
+          newLand = new BuildingLand(landModel as Land);
+          // Check both current and pending stakes
+          const pendingStake = this.pendingStake.get(newLand.location);
+          if (pendingStake) {
             (newLand as BuildingLand).updateStake(pendingStake);
             this.pendingStake.delete(newLand.location);
+          } else if (landStakeModel) {
+            // If we have a stake model in the current update, apply it immediately
+            (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
           }
         }
       }
 
       if (landStakeModel !== undefined) {
         if (BuildingLand.is(newLand)) {
+          // If we already have a BuildingLand, update its stake
           newLand.updateStake(landStakeModel as LandStake);
+        } else if (landModel) {
+          // If we have both land and stake in the same update, create BuildingLand with stake
+          newLand = new BuildingLand(landModel as Land);
+          (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
         } else {
+          // Store stake for later if we don't have a BuildingLand yet
           this.pendingStake.set(newLand.location, landStakeModel as LandStake);
         }
       }

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ScrollArea as ScrollAreaPrimitive } from 'bits-ui';
+  import { ScrollArea as ScrollAreaPrimitive } from 'bits-ui-old';
   import { cn } from '$lib/utils.js';
 
   type $$Props = ScrollAreaPrimitive.ScrollbarProps & {

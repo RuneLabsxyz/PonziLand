@@ -6,6 +6,7 @@
   import WidgetMyLands from './my-lands/widget-my-lands.svelte';
   import WidgetSettings from './settings/widget-settings.svelte';
   import WidgetWallet from './wallet/widget-wallet.svelte';
+  import WidgetEntityUpdate from './entity-update/widget-entity-update.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -27,6 +28,8 @@
         <WidgetSettings />
       {:else if type === 'my-lands'}
         <WidgetMyLands />
+      {:else if type === 'entity-update'}
+        <WidgetEntityUpdate />
       {/if}
     </Draggable>
   {/if}

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ScrollArea as ScrollAreaPrimitive } from 'bits-ui';
+  import { ScrollArea as ScrollAreaPrimitive } from 'bits-ui-old';
   import { Scrollbar } from './index.js';
   import { cn } from '$lib/utils.js';
 

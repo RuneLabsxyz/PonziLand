@@ -9,4 +9,5 @@ export const availableWidgets: Widget[] = [
   { id: 'land-hud', type: 'land-hud', label: 'Land HUD' },
   { id: 'settings', type: 'settings', label: 'Settings' },
   { id: 'my-lands', type: 'my-lands', label: 'My Lands' },
+  { id: 'entity-update', type: 'entity-update', label: 'Entity Update' },
 ];

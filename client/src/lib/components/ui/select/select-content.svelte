@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Select as SelectPrimitive } from 'bits-ui';
+  import { Select as SelectPrimitive } from 'bits-ui-old';
   import { scale } from 'svelte/transition';
   import { cn, flyAndScale } from '$lib/utils.js';
 
