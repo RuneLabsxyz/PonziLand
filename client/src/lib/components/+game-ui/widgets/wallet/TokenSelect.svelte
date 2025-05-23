@@ -14,13 +14,13 @@
 
 <Select onSelectedChange={(v) => (value = v?.value as string)}>
   <SelectTrigger
-    class="w-full bg-[#282835] text-white rounded font-ponzi-number"
+    class="w-full bg-[#282835] text-[#D9D9D9] rounded font-ponzi-number stroke-3d-black"
   >
     {#if value}
       {#each data.availableTokens as token}
         {#if token.address === value}
           <div class="flex gap-2 items-center">
-            <TokenAvatar token={token} />
+            <TokenAvatar token={token} class="h-6 w-6 border-2 border-black" />
             {token.symbol}
           </div>
         {/if}
