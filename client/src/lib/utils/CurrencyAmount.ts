@@ -72,7 +72,7 @@ export class CurrencyAmount {
    * @returns A human-readable string representing the CurrencyAmount
    */
   public toString(): string {
-    return displayCurrency(this.value, 0); // The scale is 0 because the array is correcly indicated
+    return displayCurrency(this.value); // The scale is 0 because the array is correcly indicated
   }
 
   /**

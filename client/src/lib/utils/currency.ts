@@ -27,42 +27,45 @@ export function toCalldata(
   return displayAmount.shiftedBy(scale);
 }
 
-export function displayCurrency(
-  number: BigNumber | null,
-  scale: number = 0,
-): string {
-  if (number == null) {
-    return 'N/A';
-  }
+/**
+ * Format a numeric input into a human-readable currency string with suffixes:
+ * - B for Billion
+ * - M for Million
+ * - K for Thousand
+ * - Preserves small decimals with optional zero tail hint
+ *
+ * @param value - The number to format (string | number | BigNumber)
+ * @returns Formatted currency string
+ */
+export function displayCurrency(value: string | number | BigNumber): string {
+  const bn = new BigNumber(value);
+  const abs = bn.abs();
 
-  const bn = number.dividedBy(new BigNumber(10).pow(scale));
+  let suffix = '';
+  let formatted: string;
 
-  const negative = bn.isNegative();
-  const absVal = bn.abs();
+  if (abs.isGreaterThanOrEqualTo(1_000_000_000)) {
+    formatted = bn.dividedBy(1_000_000_000).toFormat(2);
+    suffix = 'B';
+  } else if (abs.isGreaterThanOrEqualTo(1_000_000)) {
+    formatted = bn.dividedBy(1_000_000).toFormat(2);
+    suffix = 'M';
+  } else if (abs.isGreaterThanOrEqualTo(1_000)) {
+    formatted = bn.dividedBy(1_000).toFormat(2);
+    suffix = 'K';
+  } else if (abs.isGreaterThanOrEqualTo(1)) {
+    formatted = bn.toFormat(2);
+  } else {
+    // Very small number < 1 — show full precision
+    formatted = bn.toFixed(20);
 
-  // 1) If it's exactly 0, just return "0":
-  if (absVal.isZero()) {
-    return '0';
-  }
+    const decimalStr = formatted.split('.')[1] ?? '';
+    const leadingZeros = decimalStr.match(/^0*/)?.[0].length ?? 0;
 
-  // 2) If >= 1, show integer part fully + up to 2 decimal places:
-  if (absVal.isGreaterThanOrEqualTo(1)) {
-    // Force exactly two decimals, then strip trailing ".00" if present:
-    let str = absVal.toFixed(2); // e.g. "123.00", "123.45"
-
-    if (str.endsWith('.00')) {
-      str = str.slice(0, -3); // drop the .00
+    if (leadingZeros >= 3) {
+      formatted += ` (0.${'0'.repeat(leadingZeros)}…)`;
     }
-
-    return negative ? '-' + str : str;
   }
 
-  // 3) If 0 < amount < 1, show two significant digits with all leading zeros:
-  //    e.g. 0.000321 => "0.00032" (standard rounding: 3.21e-4 → 3.2e-4)
-  //         0.000326 => "0.00033"
-  const twoSig = absVal.toPrecision(2); // might produce scientific notation, e.g. "3.2e-4"
-  // Convert the (possibly scientific) string back into normal decimal notation:
-  const normalStr = new BigNumber(twoSig).toString(); // e.g. "0.00032"
-
-  return negative ? '-' + normalStr : normalStr;
+  return formatted + suffix;
 }

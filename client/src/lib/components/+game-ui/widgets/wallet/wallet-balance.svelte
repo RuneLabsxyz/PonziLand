@@ -16,6 +16,8 @@
   import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
   import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
   import { onMount } from 'svelte';
+  import TokenValueDisplay from './token-value-display.svelte';
+  import WalletSwap from './wallet-swap.svelte';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
   const baseToken = data.availableTokens.find(
@@ -157,7 +159,11 @@
         />
         <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
       </Avatar.Root>
-      <div
+      <TokenValueDisplay
+        amount={tokenBalance.balance}
+        token={tokenBalance.token}
+      />
+      <!-- <div
         class="flex flex-1 items-center justify-between text-xl tracking-wide"
       >
         <div class="font-ds opacity-75 text-[#6BD5DD]">
@@ -166,7 +172,7 @@
         <div class="font-ds opacity-75 text-[#D9D9D9]">
           {tokenBalance.token.symbol}
         </div>
-      </div>
+      </div> -->
       <svg
         width="16"
         height="15"
@@ -190,6 +196,9 @@
     </div>
   {/each}
 </div>
+
+
+<WalletSwap />
 
 <ScrollArea class="h-36 w-full">
   <div class="mr-3 flex flex-col gap-1">
