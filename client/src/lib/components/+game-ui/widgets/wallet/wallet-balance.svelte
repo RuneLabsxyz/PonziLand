@@ -147,58 +147,59 @@
     >
   </button>
 </div> -->
-<div>
-  {#each tokenStore.balances as tokenBalance}
-    <div
-      class="flex justify-between items-center relative gap-2 px-4 select-text"
+<div class="flex flex-col gap-4">
+  <div>
+    {#each tokenStore.balances as tokenBalance}
+      <div
+        class="flex justify-between items-center relative gap-2 px-4 select-text"
+      >
+        <Avatar.Root class="h-4 w-4">
+          <Avatar.Image
+            src={tokenBalance.token.images.icon}
+            alt={tokenBalance.token.symbol}
+          />
+          <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
+        </Avatar.Root>
+        <TokenValueDisplay
+          amount={tokenBalance.balance}
+          token={tokenBalance.token}
+        />
+        <!-- <div
+    class="flex flex-1 items-center justify-between text-xl tracking-wide"
     >
-      <Avatar.Root class="h-4 w-4">
-        <Avatar.Image
-          src={tokenBalance.token.images.icon}
-          alt={tokenBalance.token.symbol}
-        />
-        <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
-      </Avatar.Root>
-      <TokenValueDisplay
-        amount={tokenBalance.balance}
-        token={tokenBalance.token}
-      />
-      <!-- <div
-        class="flex flex-1 items-center justify-between text-xl tracking-wide"
-      >
-        <div class="font-ds opacity-75 text-[#6BD5DD]">
-          {tokenBalance.balance} M
+    <div class="font-ds opacity-75 text-[#6BD5DD]">
+      {tokenBalance.balance} M
+      </div>
+      <div class="font-ds opacity-75 text-[#D9D9D9]">
+        {tokenBalance.token.symbol}
         </div>
-        <div class="font-ds opacity-75 text-[#D9D9D9]">
-          {tokenBalance.token.symbol}
-        </div>
-      </div> -->
-      <svg
-        width="16"
-        height="15"
-        viewBox="0 0 22 21"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="11.13"
-          cy="10.6975"
-          r="9.63081"
-          stroke="white"
-          stroke-opacity="0.5"
-          stroke-width="1.28411"
-        />
-        <path
-          d="M10.2795 16.5045V8.14845H11.6722V16.5045H10.2795ZM10.2795 6.75577V5.36309H11.6722V6.75577H10.2795Z"
-          fill="white"
-        />
-      </svg>
-    </div>
-  {/each}
+        </div> -->
+        <svg
+          width="16"
+          height="15"
+          viewBox="0 0 22 21"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle
+            cx="11.13"
+            cy="10.6975"
+            r="9.63081"
+            stroke="white"
+            stroke-opacity="0.5"
+            stroke-width="1.28411"
+          />
+          <path
+            d="M10.2795 16.5045V8.14845H11.6722V16.5045H10.2795ZM10.2795 6.75577V5.36309H11.6722V6.75577H10.2795Z"
+            fill="white"
+          />
+        </svg>
+      </div>
+    {/each}
+  </div>
+
+  <WalletSwap />
 </div>
-
-
-<WalletSwap />
 
 <ScrollArea class="h-36 w-full">
   <div class="mr-3 flex flex-col gap-1">
