@@ -47,7 +47,7 @@
         class="text-ponzi-number text-[3px] flex items-center justify-center leading-none"
       >
         <span class="whitespace-nowrap text-green-300">
-          +{CurrencyAmount.fromUnscaled(info.per_hour, info.token).toString()}
+          +{CurrencyAmount.fromUnscaled(info.per_hour, info.token)}
           {info.token?.symbol}/h
         </span>
       </div>

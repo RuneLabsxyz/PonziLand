@@ -31,23 +31,22 @@
 </script>
 
 {#if connected}
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center mt-2">
     <button type="button" class="flex gap-2 items-center" onclick={copy}>
       {#await username then info}
         {#if info.exists}
-          <p>
-            User: {info.username}
+          <p class="font-ponzi-number">
+            {info.username}
             <span class="opacity-50"
-              >{shortenHex(padAddress(address ?? ''), 8)}</span
+              >{shortenHex(padAddress(address ?? ''), 4)}</span
             >
           </p>
         {:else}
           <p>
-            User: {shortenHex(padAddress(address ?? ''), 8)}
+            {shortenHex(padAddress(address ?? ''), 4)}
           </p>
         {/if}
       {/await}
-      <div class="h-2 w-2 rounded-full bg-green-700"></div>
       {#if copied}
         <div class="transition-opacity">Copied!</div>
       {/if}
