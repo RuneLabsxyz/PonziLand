@@ -11,6 +11,11 @@
   let remainingTime = $derived.by(() => {
     const time =
       (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) / 20;
+
+    if (time <= 0) {
+      return 'ready';
+    }
+
     const hours = Math.floor(time / 3600);
     const minutes = Math.floor((time % 3600) / 60);
     const seconds = time % 60;
@@ -27,7 +32,7 @@
     color={levelUpInfo.canLevelUp ? 'green' : undefined}
   ></Progress>
   <div
-    class="font-[PonziNumber] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center"
+    class="font-[PonziNumber] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center stroke-3d-black -mt-[2px]"
   >
     {remainingTime}
   </div>
