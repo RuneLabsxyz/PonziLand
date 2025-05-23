@@ -187,7 +187,7 @@
   style={styleString}
   onclick={handleClick}
 >
-  <Card class="w-full h-full">
+  <Card class="w-full h-full bg-ponzi">
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title font-ponzi-number">{type}</div>
       <div class="window-controls text-white">

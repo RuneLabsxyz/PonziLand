@@ -22,6 +22,7 @@
   import { writable } from 'svelte/store';
   import BuyInsights from './buy/buy-insights.svelte';
   import BuySellForm from './buy/buy-sell-form.svelte';
+  import LandInfos from './land-infos.svelte';
 
   let { data } = $props<{ data: { location?: string } }>();
   let land: LandWithActions | null = $state(null);
@@ -266,8 +267,11 @@
   };
 </script>
 
+{#if land}
+  <LandInfos {land} />
+{/if}
 <div class="land-info-widget relative h-full w-full">
-  {#if land}
+  <!-- {#if land}
     <ScrollArea class="w-full h-full landinfo-container" type="scroll">
       <div class="flex flex-col w-full h-full items-center justify-center">
         <div
@@ -424,7 +428,7 @@
         {/if}
       </div>
     </ScrollArea>
-  {/if}
+  {/if} -->
 </div>
 
 <style>
