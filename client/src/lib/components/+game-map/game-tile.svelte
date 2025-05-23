@@ -21,6 +21,7 @@
   import LandNukeShield from './land/land-nuke-shield.svelte';
   import RatesOverlay from './land/land-rates-overlay.svelte';
   import LandTaxClaimer from './land/land-tax-claimer.svelte';
+  import data from '$profileData';
 
   const SIZE = TILE_SIZE;
 
@@ -37,6 +38,13 @@
     if (BuildingLand.is(land)) {
       return land?.owner === padAddress(address ?? '');
     }
+  });
+
+  let aiAgent = $derived.by(() => {
+    if (BuildingLand.is(land)) {
+      return data.aiAgents.find((agent) => agent.address === land.owner);
+    }
+    return null;
   });
 
   let selected = $derived(selectedLand.value == land);
@@ -221,6 +229,13 @@
       )}
       onclick={handleClick}
     ></div>
+  {:else if aiAgent && !isNuking && BuildingLand.is(land)}
+    <img
+      src={aiAgent.badgeImage}
+      alt={aiAgent.name}
+      class="absolute z-20"
+      style="top: -1.5px; width: 7px; height: 7px; image-rendering: pixelated; pointer-events: none;"
+    />
   {/if}
 
   {#if BuildingLand.is(land) && !isNuking}
