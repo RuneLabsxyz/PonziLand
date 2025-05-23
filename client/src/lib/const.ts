@@ -16,5 +16,6 @@ export const MIN_SCALE_FOR_DETAIL = 2.5;
 
 export const NAME_SPACE = 'ponzi_land';
 
-export const AI_AGENT_ADDRESS =
-  '0x0576cc90c1bd97011cc9c6351ace3a372f13290ad2f114eee05f0cc5ee78d8e7';
+import data from '$profileData';
+
+export const AI_AGENT_ADDRESSES = data.aiAgents.map(agent => agent.address);
