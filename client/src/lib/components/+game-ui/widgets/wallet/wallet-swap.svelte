@@ -8,6 +8,13 @@
   let select1 = $state(data.availableTokens[0]?.address || '');
   let input2 = $state('');
   let select2 = $state(data.availableTokens[1]?.address || '');
+
+  function handleSwap() {
+    // Swap input values
+    [input1, input2] = [input2, input1];
+    // Swap selected tokens
+    [select1, select2] = [select2, select1];
+  }
 </script>
 
 <div class="flex flex-col relative">
@@ -25,7 +32,7 @@
     />
     <TokenSelect bind:value={select2} />
   </div>
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+  <button class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer" onclick={handleSwap}>
     <svg
       width="26"
       height="26"
@@ -50,7 +57,7 @@
         stroke-linejoin="round"
       />
     </svg>
-  </div>
+  </button>
 </div>
 
 <Button class="w-full mt-2">SWAP</Button>
