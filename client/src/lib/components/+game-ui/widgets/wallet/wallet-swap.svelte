@@ -2,18 +2,137 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import data from '$profileData';
   import TokenSelect from './TokenSelect.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
+  import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { debounce } from '$lib/utils/debounce.svelte';
+  import { type Quote } from '@avnu/avnu-sdk';
+  import { onMount } from 'svelte';
+  import { fetchTokenBalance } from '$lib/accounts/balances';
+
+  let { client, accountManager } = useDojo();
+  let avnu = useAvnu();
 
   // Svelte 5 reactive states using runes
   let input1 = $state('');
   let select1 = $state(data.availableTokens[0]?.address || '');
   let input2 = $state('');
   let select2 = $state(data.availableTokens[1]?.address || '');
+  let noRouteAvailable = $state(false);
+  let quotes: Quote[] = $state([]);
+  let slippage = $state(0.5);
+  let leadingSide = $state('sell');
+
+  let sellTokenBalance: CurrencyAmount | undefined = $state();
+  let buyTokenBalance: CurrencyAmount | undefined = $state();
+
+  onMount(async () => {
+    if (accountManager?.getProvider()?.getAccount() == null) {
+      console.info('The user is not logged in! Attempting login.');
+      await accountManager?.getProvider()?.connect();
+    }
+  });
+
+  async function getTokenBalance(address?: string) {
+    if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
+      return 0;
+    }
+
+    return await fetchTokenBalance(
+      address,
+      accountManager.getProvider()?.getWalletAccount()!,
+      client.provider,
+    );
+  }
+
+  $effect(() => {
+    sellTokenBalance = undefined;
+    if (select1) {
+      getTokenBalance(select1).then((balance) => {
+        sellTokenBalance = CurrencyAmount.fromUnscaled(
+          balance ?? 0,
+          data.availableTokens.find((t) => t.address === select1),
+        );
+      });
+    }
+  });
+
+  $effect(() => {
+    buyTokenBalance = undefined;
+    if (select2) {
+      getTokenBalance(select2).then((balance) => {
+        buyTokenBalance = CurrencyAmount.fromUnscaled(
+          balance ?? 0,
+          data.availableTokens.find((t) => t.address === select2),
+        );
+      });
+    }
+  });
 
   function handleSwap() {
     // Swap input values
     [input1, input2] = [input2, input1];
     // Swap selected tokens
     [select1, select2] = [select2, select1];
+    // Update leading side
+    leadingSide = leadingSide === 'sell' ? 'buy' : 'sell';
+  }
+
+  let debouncedInput = debounce(
+    () => {
+      if (!select1 || !select2 || (!Number(input1) && !Number(input2))) {
+        return;
+      }
+
+      const sellToken = data.availableTokens.find((t) => t.address === select1);
+      const buyToken = data.availableTokens.find((t) => t.address === select2);
+
+      return {
+        leadingSide,
+        buyToken,
+        sellToken,
+        buyAmount:
+          leadingSide === 'buy' ? CurrencyAmount.fromScaled(input2) : undefined,
+        sellAmount:
+          leadingSide === 'sell'
+            ? CurrencyAmount.fromScaled(input1)
+            : undefined,
+      } as QuoteParams & { leadingSide: 'sell' | 'buy' };
+    },
+    { delay: 500 },
+  );
+
+  $effect(() => {
+    const data = debouncedInput.current;
+    if (!data) {
+      return;
+    }
+    noRouteAvailable = false;
+
+    // Fetch some quotes
+    avnu.fetchQuotes(data).then((q) => {
+      quotes = q;
+      if (quotes.length == 0) {
+        noRouteAvailable = true;
+        return;
+      }
+
+      if (data.leadingSide == 'buy') {
+        input1 = CurrencyAmount.fromUnscaled(q[0].sellAmount).toString();
+      } else {
+        input2 = CurrencyAmount.fromUnscaled(q[0].buyAmount).toString();
+      }
+    });
+  });
+
+  async function executeSwap() {
+    if (quotes.length == 0) {
+      return;
+    }
+
+    const quote = quotes[0];
+    // Execute swap
+    await avnu.executeSwap(quote, { slippage });
   }
 </script>
 
@@ -22,16 +141,19 @@
     <input
       class="w-full bg-[#282835] text-white rounded p-1"
       bind:value={input1}
+      oninput={() => (leadingSide = 'sell')}
     />
     <TokenSelect bind:value={select1} />
   </div>
-  <div class="flex gap-2 rounded border border-[#ffffff55] p-2">
+  <div class="flex gap-2 rounded border border-[#ffffff55] p-2 mt-1">
     <input
       class="w-full bg-[#282835] text-white rounded p-1"
       bind:value={input2}
+      oninput={() => (leadingSide = 'buy')}
     />
     <TokenSelect bind:value={select2} />
   </div>
+  <!-- svelte-ignore a11y_consider_explicit_label -->
   <button
     class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
     onclick={handleSwap}
@@ -63,4 +185,26 @@
   </button>
 </div>
 
-<Button class="w-full mt-2">SWAP</Button>
+<div class="flex flex-col gap-2">
+  <div class="flex items-center justify-between">
+    <label class="text-sm text-gray-400">Slippage Tolerance</label>
+    <div class="flex items-center gap-2">
+      <input
+        type="number"
+        class="w-16 bg-[#282835] text-white rounded p-1 text-right"
+        bind:value={slippage}
+      />
+      <span class="text-sm text-gray-400">%</span>
+    </div>
+  </div>
+  <Button class="w-full" onclick={executeSwap} disabled={quotes.length <= 0}>
+    SWAP
+  </Button>
+</div>
+
+{#if noRouteAvailable}
+  <div class="mt-4 p-3 bg-red-800/20 rounded text-red-400 text-sm">
+    No route was found. That usually means that the liquidity pool available for
+    this token can't cover the amount you requested.
+  </div>
+{/if}
