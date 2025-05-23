@@ -20,7 +20,7 @@
       {#each data.availableTokens as token}
         {#if token.address === value}
           <div class="flex gap-2 items-center">
-            <TokenAvatar token={token} class="h-6 w-6 border-2 border-black" />
+            <TokenAvatar {token} class="h-6 w-6 border-2 border-black" />
             {token.symbol}
           </div>
         {/if}
@@ -33,7 +33,7 @@
     {#each data.availableTokens as token}
       <SelectItem value={token.address}>
         <div class="flex gap-2 items-center font-ponzi-number text-white">
-          <TokenAvatar token={token} />
+          <TokenAvatar {token} />
           {token.symbol}
         </div>
       </SelectItem>

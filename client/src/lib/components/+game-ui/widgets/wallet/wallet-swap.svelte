@@ -201,7 +201,10 @@
         min="0"
         max="1"
         step="0.01"
-        oninput={(e: Event) => slippage = validateSlippage(parseFloat((e.target as HTMLInputElement).value))}
+        oninput={(e: Event) =>
+          (slippage = validateSlippage(
+            parseFloat((e.target as HTMLInputElement).value),
+          ))}
       />
       <span class="text-sm text-gray-400">%</span>
     </div>

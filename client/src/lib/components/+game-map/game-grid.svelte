@@ -39,8 +39,12 @@
     // Calculate visible area in tile coordinates
     const startX = Math.floor(-offsetX / (TILE_SIZE * scale));
     const startY = Math.floor(-offsetY / (TILE_SIZE * scale));
-    const endX = Math.ceil((mapDimensions.width - offsetX) / (TILE_SIZE * scale));
-    const endY = Math.ceil((mapDimensions.height - offsetY) / (TILE_SIZE * scale));
+    const endX = Math.ceil(
+      (mapDimensions.width - offsetX) / (TILE_SIZE * scale),
+    );
+    const endY = Math.ceil(
+      (mapDimensions.height - offsetY) / (TILE_SIZE * scale),
+    );
 
     // Add some padding to prevent pop-in
     const padding = 1;
@@ -69,7 +73,7 @@
         for (const entry of entries) {
           mapDimensions = {
             width: entry.contentRect.width,
-            height: entry.contentRect.height
+            height: entry.contentRect.height,
           };
         }
       });
@@ -191,7 +195,10 @@
 <div class="overflow-hidden h-screen w-screen">
   <div class="map-wrapper" bind:this={mapWrapper}>
     <!-- Column numbers -->
-    <div class="column-numbers" style="transform: translateX({$cameraPosition.offsetX}px)">
+    <div
+      class="column-numbers"
+      style="transform: translateX({$cameraPosition.offsetX}px)"
+    >
       {#each Array(GRID_SIZE) as _, i}
         <div
           class="coordinate"
@@ -204,7 +211,10 @@
 
     <div class="map-with-rows">
       <!-- Row numbers -->
-      <div class="row-numbers" style="transform: translateY({$cameraPosition.offsetY}px)">
+      <div
+        class="row-numbers"
+        style="transform: translateY({$cameraPosition.offsetY}px)"
+      >
         {#each Array(GRID_SIZE) as _, i}
           <div
             class="coordinate"
