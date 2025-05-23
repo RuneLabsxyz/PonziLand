@@ -1,5 +1,5 @@
 <script lang="ts">
-  export let isActive = false;
+  let { isActive = false }: { isActive?: boolean } = $props();
 </script>
 
 {#if isActive}

@@ -11,6 +11,6 @@
     <div class="">
       <LandOverview {land} size="lg" />
     </div>
-    <InfoTabs />
+    <InfoTabs {land} />
   </div>
 </div>
