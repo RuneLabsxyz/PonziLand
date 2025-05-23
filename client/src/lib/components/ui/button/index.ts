@@ -10,7 +10,7 @@ const buttonVariants = tv({
       red: 'button-ponzi-red stroke-3d-red',
     },
     size: {
-      default: 'h-10 px-4 pb-1',
+      default: 'h-10 px-4 pb-2  ',
       sm: 'h-[8px] text-[4px] px-[4px] pb-[7px] pt-[6px]',
       lg: 'text-3xl px-[8px] pb-2 pt-4',
       icon: 'h-10 w-10',

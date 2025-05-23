@@ -30,7 +30,11 @@
   const ON_IMAGE = '/ui/star/on.png';
 </script>
 
-<div class="flex flex-col items-center">
+<div
+  class="flex flex-col justify-center items-center {size == 'lg'
+    ? 'p-8'
+    : 'p-4'}"
+>
   <div
     class="flex items-center justify-center relative
     {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
@@ -53,19 +57,19 @@
       >
         <img
           src={land.level >= 1 ? ON_IMAGE : OFF_IMAGE}
-          class="w-5"
+          class={size == 'lg' ? 'w-8' : 'w-5'}
           alt="no star"
         />
 
         <img
           src={land.level >= 2 ? ON_IMAGE : OFF_IMAGE}
-          class="w-5"
+          class={size == 'lg' ? 'w-8' : 'w-5'}
           alt="no star"
         />
 
         <img
           src={land.level >= 3 ? ON_IMAGE : OFF_IMAGE}
-          class="w-5"
+          class={size == 'lg' ? 'w-8' : 'w-5'}
           alt="no star"
         />
       </div>
@@ -74,7 +78,9 @@
   <!-- Also show the progress bar for the next level -->
   {#if land.type == 'house' && land.level < 3}
     <div
-      class="my-4 w-full leading-none flex flex-col justify-center items-center"
+      class="my-4 {size == 'lg'
+        ? 'min-w-40'
+        : 'min-w-28'} leading-none flex flex-col justify-center items-center"
     >
       {#if levelUpInfo?.canLevelUp && isOwner}
         <div class="flex h-8 mb-4 animate-pulse">
@@ -86,10 +92,7 @@
           </Button>
         </div>
       {:else}
-        <LandLevelProgress
-          class={cn('w-full p-0 h-8 min-w-24')}
-          {levelUpInfo}
-        />
+        <LandLevelProgress class={cn('w-full p-0 h-8')} {levelUpInfo} />
       {/if}
     </div>
   {/if}
