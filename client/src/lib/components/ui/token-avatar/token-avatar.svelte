@@ -9,6 +9,7 @@
   <Avatar.Image
     src={token.images.icon}
     alt={token.symbol}
+    class="pointer-events-none select-none"
   />
   <Avatar.Fallback>{token.symbol}</Avatar.Fallback>
 </Avatar.Root> 

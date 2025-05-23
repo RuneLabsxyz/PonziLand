@@ -179,7 +179,7 @@
 <div class="overflow-hidden h-screen w-screen">
   <div class="map-wrapper" bind:this={mapWrapper}>
     <!-- Column numbers -->
-    <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
+    <div class="column-numbers" style="transform: translateX({$cameraPosition.offsetX}px)">
       {#each Array(GRID_SIZE) as _, i}
         <div
           class="coordinate"
@@ -192,7 +192,7 @@
 
     <div class="map-with-rows">
       <!-- Row numbers -->
-      <div class="row-numbers" style="top: {$cameraPosition.offsetY}px">
+      <div class="row-numbers" style="transform: translateY({$cameraPosition.offsetY}px)">
         {#each Array(GRID_SIZE) as _, i}
           <div
             class="coordinate"
@@ -295,6 +295,7 @@
     z-index: 10;
     transform-origin: 0 0;
     background: #2a2a2a; /* Dark grey background */
+    will-change: transform;
   }
 
   .row-numbers {
@@ -308,6 +309,7 @@
     z-index: 10;
     transform-origin: 0 0;
     background: #2a2a2a; /* Dark grey background */
+    will-change: transform;
   }
 
   .row-numbers .coordinate {
