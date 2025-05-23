@@ -32,7 +32,7 @@
   <SelectContent class="bg-[#282835] text-white">
     {#each data.availableTokens as token}
       <SelectItem value={token.address}>
-        <div class="flex gap-2 items-center font-ponzi-number">
+        <div class="flex gap-2 items-center font-ponzi-number text-white">
           <TokenAvatar token={token} />
           {token.symbol}
         </div>

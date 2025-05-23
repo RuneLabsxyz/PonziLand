@@ -19,7 +19,10 @@
     <TokenSelect bind:value={select1} />
   </div>
   <div class="flex gap-2 rounded border border-[#ffffff55] p-2">
-    <input class="w-full bg-[#282835] rounded" bind:value={input2} />
+    <input
+      class="w-full bg-[#282835] text-white rounded p-1"
+      bind:value={input2}
+    />
     <TokenSelect bind:value={select2} />
   </div>
   <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
