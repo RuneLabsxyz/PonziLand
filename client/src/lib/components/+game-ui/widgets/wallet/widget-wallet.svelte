@@ -31,7 +31,7 @@
 </script>
 
 {#if connected}
-  <div class="flex justify-between items-center">
+  <div class="flex justify-between items-center mt-2">
     <button type="button" class="flex gap-2 items-center" onclick={copy}>
       {#await username then info}
         {#if info.exists}
