@@ -12,4 +12,4 @@
     class="pointer-events-none select-none"
   />
   <Avatar.Fallback>{token.symbol}</Avatar.Fallback>
-</Avatar.Root> 
+</Avatar.Root>

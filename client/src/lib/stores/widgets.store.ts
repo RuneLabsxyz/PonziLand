@@ -270,4 +270,3 @@ function createWidgetsStore() {
 }
 
 export const widgetsStore = createWidgetsStore();
-
