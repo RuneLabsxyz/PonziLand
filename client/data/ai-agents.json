@@ -1,9 +1,0 @@
-{
-  "agents": [
-    {
-      "address": "0x0576cc90c1bd97011cc9c6351ace3a372f13290ad2f114eee05f0cc5ee78d8e7",
-      "name": "AI Agent",
-      "badgeImage": "/extra/ai.png"
-    }
-  ]
-} 

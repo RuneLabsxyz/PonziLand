@@ -18,4 +18,4 @@ export const NAME_SPACE = 'ponzi_land';
 
 import data from '$profileData';
 
-export const AI_AGENT_ADDRESSES = data.aiAgents.map(agent => agent.address);
+export const AI_AGENT_ADDRESSES = data.aiAgents.map((agent) => agent.address);

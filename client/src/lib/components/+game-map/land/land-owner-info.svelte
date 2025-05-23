@@ -13,11 +13,11 @@
     isOwner: boolean;
   } = $props();
 
-  let aiAgent = $state<typeof data.aiAgents[0] | null>(null);
+  let aiAgent = $state<(typeof data.aiAgents)[0] | null>(null);
 
   $effect(() => {
     if (land?.owner) {
-      const agent = data.aiAgents.find(agent => agent.address === land.owner);
+      const agent = data.aiAgents.find((agent) => agent.address === land.owner);
       aiAgent = agent || null;
     } else {
       aiAgent = null;
