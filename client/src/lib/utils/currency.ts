@@ -62,9 +62,11 @@ export function displayCurrency(value: string | number | BigNumber): string {
     const decimalStr = formatted.split('.')[1] ?? '';
     const leadingZeros = decimalStr.match(/^0*/)?.[0].length ?? 0;
 
-    if (leadingZeros >= 3) {
-      formatted += ` (0.${'0'.repeat(leadingZeros)}…)`;
-    }
+    // Calculate the number of significant digits to show (at least 3)
+    const significantDigits = Math.max(3, leadingZeros + 3);
+
+    // Format the number to show only the minimum number of leading zeros and at least 3 significant digits
+    formatted = bn.toFixed(significantDigits);
   }
 
   return formatted + suffix;

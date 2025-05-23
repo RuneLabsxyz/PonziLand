@@ -1,8 +1,8 @@
 <script lang="ts">
   import accountData from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
-  import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import TokenDisplay from '$lib/components/ui/token-display/token-display.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import {
@@ -30,6 +30,8 @@
   let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
 
   let subscriptionRef = $state<Subscription>();
+
+  let errorMessage = $state<string | null>(null);
 
   async function calculateTotalBalance() {
     const tokenBalances = tokenStore.balances;
@@ -81,46 +83,56 @@
   });
 
   const handleRefreshBalances = async () => {
-    if (subscriptionRef) {
-      subscriptionRef.cancel();
+    errorMessage = null;
+    try {
+      if (subscriptionRef) {
+        subscriptionRef.cancel();
+      }
+      const request = {
+        contractAddresses: data.availableTokens.map((token) => token.address),
+        accountAddresses: address ? [address] : [],
+        tokenIds: [],
+      };
+
+      const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
+        contractAddresses: request.contractAddresses ?? [],
+        accountAddresses: request.accountAddresses ?? [],
+        tokenIds: request.tokenIds ?? [],
+        callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
+          if (data) {
+            updateTokenBalance(data);
+            calculateTotalBalance();
+          }
+          if (error) {
+            console.error(error);
+            errorMessage = 'Failed to refresh balances. Please try again.';
+            return;
+          }
+        },
+      });
+      // Add the subscription ref
+      subscriptionRef = subscription;
+
+      tokenStore.prices = await getTokenPrices();
+      setTokenBalances(tokenBalances.items);
+      calculateTotalBalance();
+    } catch (err) {
+      errorMessage = 'Failed to refresh balances. Please check your connection and try again.';
+      console.error(err);
     }
-    const request = {
-      contractAddresses: data.availableTokens.map((token) => token.address),
-      accountAddresses: address ? [address] : [],
-      tokenIds: [],
-    };
-
-    const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
-      contractAddresses: request.contractAddresses ?? [],
-      accountAddresses: request.accountAddresses ?? [],
-      tokenIds: request.tokenIds ?? [],
-      callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
-        if (data) {
-          updateTokenBalance(data);
-          calculateTotalBalance();
-        }
-        if (error) {
-          console.error(error);
-          return;
-        }
-      },
-    });
-    // Add the subscription ref
-    subscriptionRef = subscription;
-
-    tokenStore.prices = await getTokenPrices();
-    setTokenBalances(tokenBalances.items);
-    calculateTotalBalance();
   };
 </script>
 
+{#if errorMessage}
+  <div class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center">
+    {errorMessage}
+  </div>
+{/if}
+
 {#if totalBalanceInBaseToken && baseToken}
   <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
-    <Avatar.Root class="h-6 w-6">
-      <Avatar.Image src={baseToken.images.icon} alt={baseToken.symbol} />
-      <Avatar.Fallback>{baseToken.symbol}</Avatar.Fallback>
-    </Avatar.Root>
-    <div class="flex flex-1 items-center justify-between">
+    <TokenAvatar token={baseToken} class="h-6 w-6" />
+    <div class="flex flex-1 items-center justify-between select-text">
       <div class="font-ponzi-number">
         {totalBalanceInBaseToken.toString()}
       </div>
@@ -153,13 +165,7 @@
       <div
         class="flex justify-between items-center relative gap-2 px-4 select-text"
       >
-        <Avatar.Root class="h-4 w-4">
-          <Avatar.Image
-            src={tokenBalance.token.images.icon}
-            alt={tokenBalance.token.symbol}
-          />
-          <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
-        </Avatar.Root>
+        <TokenAvatar token={tokenBalance.token} />
         <TokenValueDisplay
           amount={tokenBalance.balance}
           token={tokenBalance.token}
@@ -205,13 +211,7 @@
   <div class="mr-3 flex flex-col gap-1">
     {#each tokenStore.balances as tokenBalance}
       <div class="flex justify-between items-center relative">
-        <Avatar.Root class="h-6 w-6">
-          <Avatar.Image
-            src={tokenBalance.token.images.icon}
-            alt={tokenBalance.token.symbol}
-          />
-          <Avatar.Fallback>{tokenBalance.token.symbol}</Avatar.Fallback>
-        </Avatar.Root>
+        <TokenAvatar token={tokenBalance.token} />
         <TokenDisplay
           amount={tokenBalance.balance}
           token={tokenBalance.token}
