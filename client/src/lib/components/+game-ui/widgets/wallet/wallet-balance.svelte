@@ -117,14 +117,17 @@
       setTokenBalances(tokenBalances.items);
       calculateTotalBalance();
     } catch (err) {
-      errorMessage = 'Failed to refresh balances. Please check your connection and try again.';
+      errorMessage =
+        'Failed to refresh balances. Please check your connection and try again.';
       console.error(err);
     }
   };
 </script>
 
 {#if errorMessage}
-  <div class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center">
+  <div
+    class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center"
+  >
     {errorMessage}
   </div>
 {/if}
@@ -206,17 +209,3 @@
 
   <WalletSwap />
 </div>
-
-<ScrollArea class="h-36 w-full">
-  <div class="mr-3 flex flex-col gap-1">
-    {#each tokenStore.balances as tokenBalance}
-      <div class="flex justify-between items-center relative">
-        <TokenAvatar token={tokenBalance.token} />
-        <TokenDisplay
-          amount={tokenBalance.balance}
-          token={tokenBalance.token}
-        />
-      </div>
-    {/each}
-  </div>
-</ScrollArea>

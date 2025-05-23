@@ -11,7 +11,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isOpen: true,
     fixed: true,
     fixedStyles:
-      'width: 320px; height: auto; top: 20px; right: 20px; transform: none;',
+      'width: 320px; height: auto; top: 0px; right: 0px; transform: none;',
     disableControls: true, // Wallet widget should not be closable
     transparency: 0.9, // Slightly transparent by default
   },
@@ -23,7 +23,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isOpen: true,
     fixed: true,
     fixedStyles:
-      'width: 320px; height: 260px; bottom: 20px; right: 20px; transform: none;',
+      'width: 320px; height: 260px; bottom: 0px; right: 0px; transform: none;',
     disableControls: true, // Land HUD should not be closable
     transparency: 0.9, // Slightly transparent by default
   },
@@ -33,6 +33,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     position: { x: 20, y: 20 }, // Top left
     isMinimized: false,
     isOpen: false,
+    dimensions: { width: 320, height: 200 }, // Default size for settings widget
   },
   'my-lands': {
     id: 'my-lands',
@@ -125,22 +126,21 @@ function loadState(): WidgetsState {
       return DEFAULT_WIDGETS_STATE;
     }
 
+    // Start with default widgets
+    const finalState = { ...DEFAULT_WIDGETS_STATE };
+
     // Process each widget's data after loading
-    const processedState: WidgetsState = {};
     for (const [id, widget] of Object.entries(parsed)) {
+      // Skip default widgets - they should always use their default configuration
+      if (id in DEFAULT_WIDGETS_STATE) continue;
+
       const processedWidget = processWidgetDataAfterLoad(widget);
       if (processedWidget) {
-        processedState[id] = processedWidget;
+        finalState[id] = processedWidget;
       }
     }
 
-    // If no valid widgets were found, return defaults
-    if (Object.keys(processedState).length === 0) {
-      console.warn('No valid widgets found in saved state, using defaults');
-      return DEFAULT_WIDGETS_STATE;
-    }
-
-    return processedState;
+    return finalState;
   } catch (e) {
     console.error('Failed to load widgets state:', e);
     // Clear corrupted data
@@ -270,3 +270,4 @@ function createWidgetsStore() {
 }
 
 export const widgetsStore = createWidgetsStore();
+

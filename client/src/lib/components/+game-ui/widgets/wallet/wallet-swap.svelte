@@ -134,6 +134,11 @@
     // Execute swap
     await avnu.executeSwap(quote, { slippage });
   }
+
+  function validateSlippage(value: number) {
+    if (isNaN(value)) return 0.5;
+    return Math.max(0, Math.min(1, value));
+  }
 </script>
 
 <div class="flex flex-col relative">
@@ -191,8 +196,12 @@
     <div class="flex items-center gap-2">
       <input
         type="number"
-        class="w-16 bg-[#282835] text-white rounded p-1 text-right"
+        class="w-12 bg-[#282835] text-white rounded p-1"
         bind:value={slippage}
+        min="0"
+        max="1"
+        step="0.01"
+        oninput={(e: Event) => slippage = validateSlippage(parseFloat((e.target as HTMLInputElement).value))}
       />
       <span class="text-sm text-gray-400">%</span>
     </div>
