@@ -41,6 +41,11 @@ export function displayCurrency(value: string | number | BigNumber): string {
   const bn = new BigNumber(value);
   const abs = bn.abs();
 
+  // Special case for zero
+  if (bn.isZero()) {
+    return '0';
+  }
+
   let suffix = '';
   let formatted: string;
 
