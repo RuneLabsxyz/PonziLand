@@ -1,7 +1,11 @@
 <script lang="ts">
-  import { Button } from '$lib/components/ui/button';
+  import type { LandWithActions } from '$lib/api/land';
+  import IncreaseStake from './increase-stake.svelte';
 
-  export let isActive = false;
+  let {
+    land,
+    isActive = false,
+  }: { land: LandWithActions; isActive?: boolean } = $props();
 </script>
 
 {#if isActive}
@@ -27,10 +31,11 @@
         <div>info</div>
       </div>
     </div>
-    <div class="flex">
-      <div class="w-full">Increase Stake component</div>
+    <div class="flex gap-4">
+      <div class="w-full">
+        <IncreaseStake {land} />
+      </div>
       <div class="w-full">Increase Price component</div>
-      <!-- <Button>Buy land (if not owner)</Button>\ -->
     </div>
   </div>
 {/if}
