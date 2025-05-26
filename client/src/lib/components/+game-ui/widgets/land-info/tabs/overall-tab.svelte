@@ -1,17 +1,15 @@
 <script lang="ts">
+  import account from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import type { LandWithActions } from '$lib/api/land';
-  import LandHudPro from '$lib/components/+game-map/land/hud/land-hud-pro.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo } from '$lib/interfaces';
-  import { toHexWithPadding } from '$lib/utils';
+  import { padAddress, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate } from '$lib/utils/taxes';
   import data from '$profileData';
   import IncreasePrice from './increase-price.svelte';
   import IncreaseStake from './increase-stake.svelte';
-  import { useAccount } from '$lib/contexts/account.svelte';
-  import { padAddress } from '$lib/utils';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
 
@@ -20,8 +18,7 @@
     isActive = false,
   }: { land: LandWithActions; isActive?: boolean } = $props();
 
-  let accountManager = useAccount();
-  let address = $derived(accountManager?.getProvider()?.getAccount()?.address);
+  const address = $derived(account.address);
   let isOwner = $derived(
     !!land && !!address && padAddress(land.owner) === padAddress(address),
   );

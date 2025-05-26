@@ -182,7 +182,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={el}
-  class="draggable overflow-hidden"
+  class="draggable relative"
   class:fixed={isFixed}
   style={styleString}
   onclick={handleClick}

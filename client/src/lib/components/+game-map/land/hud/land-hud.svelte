@@ -20,7 +20,9 @@
 {#if land}
   <Card class="z-50 w-104 bg-ponzi">
     {#if land}
-      <LandOwnerInfo {land} {isOwner} />
+      <div class="absolute left-0 -translate-y-12">
+        <LandOwnerInfo {land} {isOwner} />
+      </div>
       <div class="absolute right-0 -translate-y-12">
         <Card>
           <LandNukeTime {land} />

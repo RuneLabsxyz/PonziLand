@@ -25,27 +25,25 @@
   });
 </script>
 
-<div class="absolute left-0 -translate-y-12">
-  {#if isOwner}
-    <div class="-translate-x-6 translate-y-2">
-      <img
-        src="/ui/icons/Icon_Crown.png"
-        alt="owner"
-        style="transform: rotate(-30deg); width: 50px"
-      />
-    </div>
-  {:else if aiAgent}
-    <div class="-translate-x-6 translate-y-2">
-      <img src={aiAgent.badgeImage} alt={aiAgent.name} />
-    </div>
-  {:else}
-    <Card>
-      <div class="flex items-center gap-2 text-ponzi-number">
-        <CopyAddress address={land?.owner || ''} showUsername={true} />
-      </div>
-    </Card>
-  {/if}
-</div>
+{#if isOwner}
+  <div class="-translate-x-6 translate-y-2">
+    <img
+      src="/ui/icons/Icon_Crown.png"
+      alt="owner"
+      style="transform: rotate(-30deg); width: 50px"
+    />
+  </div>
+{:else if aiAgent}
+  <div class="-translate-x-6 translate-y-2">
+    <img src={aiAgent.badgeImage} alt={aiAgent.name} />
+  </div>
+{:else}
+  <Card>
+    <div class="flex items-center gap-2 text-ponzi-number">
+      <CopyAddress address={land?.owner || ''} showUsername={true} />
+    </div></Card
+  >
+{/if}
 
 <style>
   .text-ponzi-number {
