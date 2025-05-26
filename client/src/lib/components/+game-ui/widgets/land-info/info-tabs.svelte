@@ -15,7 +15,7 @@
   }
 </script>
 
-<div class="w-full h-full flex flex-col mt-6">
+<div class="w-full h-full flex flex-col mt-6 mr-6">
   <div class="flex gap-2 w-full justify-center">
     <Button
       class="w-full {activeTab === 'overall' ? '' : 'opacity-50'}"

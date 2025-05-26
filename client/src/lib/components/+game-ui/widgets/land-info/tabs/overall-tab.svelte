@@ -2,6 +2,7 @@
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import type { LandWithActions } from '$lib/api/land';
   import LandHudPro from '$lib/components/+game-map/land/hud/land-hud-pro.svelte';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo } from '$lib/interfaces';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -16,6 +17,10 @@
     land,
     isActive = false,
   }: { land: LandWithActions; isActive?: boolean } = $props();
+
+  let baseToken = $derived(
+    data.availableTokens.find((token) => token.address === BASE_TOKEN),
+  );
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
   let tokenPrices = $state<
@@ -118,43 +123,47 @@
 </script>
 
 {#if isActive}
-  <!-- Overall tab content will go here -->
   <div class="w-full flex flex-col gap-2">
+    <!-- Yields -->
     <div class="flex w-full justify-center">
-      <div class="text-center pb-2 text-xl low-opacity text-ponzi-number">
-        Total Tokens Earned
+      <div class="text-center pb-2 text-ponzi-number">
+        <span class="opacity-50">Total Tokens Earned</span>
         <div
           class="{totalYieldValue - Number(burnRate.toString()) >= 0
             ? 'text-green-500'
-            : 'text-red-500'} text-2xl flex items-center justify-center"
+            : 'text-red-500'} text-2xl flex items-center justify-center gap-2"
         >
-          <span
-            >{totalYieldValue - Number(burnRate.toString()) >= 0
+          <span class="stroke-3d-black">
+            {totalYieldValue - Number(burnRate.toString()) >= 0
               ? '+ '
               : '- '}{Math.abs(
               totalYieldValue - Number(burnRate.toString()),
-            ).toFixed(2)}</span
-          >
-          <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-5 w-5" />
+            ).toFixed(2)}
+          </span>
+          <TokenAvatar token={baseToken} class="border border-white w-6 h-6" />
         </div>
       </div>
     </div>
     <div class="flex w-full justify-between">
       <div class="flex flex-col items-center text-ponzi-number">
-        <div class="">Earning / hour :</div>
-        <div class="text-green-500 flex items-center">
-          <span>+ {totalYieldValue.toFixed(2)}</span>
-          <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
+        <div class="opacity-50 text-sm">Earning / hour :</div>
+        <div class="text-green-500 flex items-center gap-2">
+          <span class="text-xl stroke-3d-black"
+            >+ {totalYieldValue.toFixed(2)}</span
+          >
+          <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
         </div>
       </div>
       <div class="flex flex-col items-center text-ponzi-number">
-        <div class="">Burning / hour :</div>
-        <div class="text-red-500 flex items-center">
-          <span>- {burnRate.toString()}</span>
-          <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
+        <div class="opacity-50 text-sm">Burning / hour :</div>
+        <div class="text-red-500 flex items-center gap-2">
+          <span class="text-xl stroke-3d-black">- {burnRate.toString()}</span>
+          <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
         </div>
       </div>
     </div>
+
+    <!-- Infos -->
     <div class="flex flex-col gap-2 rounded bg-[#1E1E2D] p-4">
       <div class="w-full flex gap-2 items-center">
         <div class="flex-1 h-[1px] bg-white"></div>
@@ -174,6 +183,8 @@
         <div>{land?.sellPrice}</div>
       </div>
     </div>
+
+    <!-- Interaction -->
     <div class="flex gap-4">
       <div class="w-full">
         <IncreaseStake {land} />
