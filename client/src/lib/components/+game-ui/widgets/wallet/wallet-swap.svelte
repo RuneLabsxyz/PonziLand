@@ -137,6 +137,7 @@
 <div class="flex flex-col relative">
   <div class="flex gap-2 rounded border border-[#ffffff55] p-2">
     <input
+      type="number"
       class="w-full bg-[#282835] text-white rounded p-1"
       bind:value={input1}
       oninput={() => (leadingSide = 'sell')}
@@ -145,6 +146,7 @@
   </div>
   <div class="flex gap-2 rounded border border-[#ffffff55] p-2 mt-1">
     <input
+      type="number"
       class="w-full bg-[#282835] text-white rounded p-1"
       bind:value={input2}
       oninput={() => (leadingSide = 'buy')}

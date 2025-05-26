@@ -6,23 +6,48 @@
   import { writable } from 'svelte/store';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { tokenStore } from '$lib/stores/tokens.store.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
   let accountManager = useAccount();
   let disabled = writable(false);
-  let stakeIncrease = $state('100');
+  let stakeIncrease = $state('0.1');
+
+  let stakeError = $derived.by(() => {
+    if (!land || !stakeIncrease) return null;
+    try {
+      const amount = CurrencyAmount.fromScaled(stakeIncrease, land.token);
+      const tokenBalance = tokenStore.balances.find(
+        (b) => b.token.address === land.token?.address,
+      );
+      if (!tokenBalance) return 'Token balance not found';
+      const balanceAmount = CurrencyAmount.fromUnscaled(
+        tokenBalance.balance,
+        land.token,
+      );
+      if (amount.rawValue().isGreaterThan(balanceAmount.rawValue())) {
+        return `Not enough balance to increase stake. Requested: ${amount.toString()}, Available: ${balanceAmount.toString()}`;
+      }
+      if (amount.rawValue().isLessThanOrEqualTo(0)) {
+        return 'Stake amount must be greater than 0';
+      }
+      return null;
+    } catch {
+      return 'Invalid stake value';
+    }
+  });
+
+  let isStakeValid = $derived(() => !!land && !!stakeIncrease && !stakeError);
 
   const handleIncreaseStake = async () => {
     if (!land) {
       console.error('No land selected');
       return;
     }
-
     let result = await land.increaseStake(
       CurrencyAmount.fromScaled(stakeIncrease, land.token),
     );
-    disabled.set(true);
     if (result?.transaction_hash) {
       const txPromise = accountManager!
         .getProvider()
@@ -31,7 +56,6 @@
       const landPromise = land.wait();
 
       await Promise.any([txPromise, landPromise]);
-      disabled.set(false);
     }
   };
 </script>
@@ -44,7 +68,14 @@
       bind:value={stakeIncrease}
       placeholder="Enter amount"
     />
-    <Button disabled={$disabled} on:click={handleIncreaseStake} class="w-full">
+    {#if stakeError}
+      <p class="text-red-500 text-sm">{stakeError}</p>
+    {/if}
+    <Button
+      disabled={$disabled || !isStakeValid}
+      on:click={handleIncreaseStake}
+      class="w-full"
+    >
       Confirm Stake
     </Button>
   </div>

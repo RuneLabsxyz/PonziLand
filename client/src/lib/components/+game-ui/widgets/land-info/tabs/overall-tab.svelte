@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import IncreaseStake from './increase-stake.svelte';
+  import IncreasePrice from './increase-price.svelte';
 
   let {
     land,
@@ -35,7 +36,9 @@
       <div class="w-full">
         <IncreaseStake {land} />
       </div>
-      <div class="w-full">Increase Price component</div>
+      <div class="w-full">
+        <IncreasePrice {land} />
+      </div>
     </div>
   </div>
 {/if}
