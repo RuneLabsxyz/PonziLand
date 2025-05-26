@@ -10,6 +10,8 @@
   import data from '$profileData';
   import IncreasePrice from './increase-price.svelte';
   import IncreaseStake from './increase-stake.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
+  import { padAddress } from '$lib/utils';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
 
@@ -17,6 +19,12 @@
     land,
     isActive = false,
   }: { land: LandWithActions; isActive?: boolean } = $props();
+
+  let accountManager = useAccount();
+  let address = $derived(accountManager?.getProvider()?.getAccount()?.address);
+  let isOwner = $derived(
+    !!land && !!address && padAddress(land.owner) === padAddress(address),
+  );
 
   let baseToken = $derived(
     data.availableTokens.find((token) => token.address === BASE_TOKEN),
@@ -125,7 +133,7 @@
 {#if isActive}
   <div class="w-full flex flex-col gap-2">
     <!-- Yields -->
-    <div class="flex w-full justify-center">
+    <div class="flex w-full justify-center select-text">
       <div class="text-center pb-2 text-ponzi-number">
         <span class="opacity-50">Total Tokens Earned</span>
         <div
@@ -144,7 +152,7 @@
         </div>
       </div>
     </div>
-    <div class="flex w-full justify-between">
+    <div class="flex w-full justify-between select-text">
       <div class="flex flex-col items-center text-ponzi-number">
         <div class="opacity-50 text-sm">Earning / hour :</div>
         <div class="text-green-500 flex items-center gap-2">
@@ -164,34 +172,36 @@
     </div>
 
     <!-- Infos -->
-    <div class="flex flex-col gap-2 rounded bg-[#1E1E2D] p-4">
+    <div class="flex flex-col rounded bg-[#1E1E2D] px-4 pb-2 select-text">
       <div class="w-full flex gap-2 items-center">
         <div class="flex-1 h-[1px] bg-white"></div>
         <div class="">Main informations</div>
         <div class="flex-1 h-[1px] bg-white"></div>
       </div>
       <div class="flex justify-between items-center">
-        <div>Token :</div>
+        <div class="opacity-50">Token</div>
         <div>{land?.token?.name}</div>
       </div>
       <div class="flex justify-between items-center">
-        <div>Stake Amount :</div>
+        <div class="opacity-50">Stake Amount</div>
         <div>{land?.stakeAmount}</div>
       </div>
       <div class="flex justify-between items-center">
-        <div>Sell Price :</div>
+        <div class="opacity-50">Sell Price</div>
         <div>{land?.sellPrice}</div>
       </div>
     </div>
 
     <!-- Interaction -->
-    <div class="flex gap-4">
-      <div class="w-full">
-        <IncreaseStake {land} />
+    {#if isOwner}
+      <div class="flex gap-4">
+        <div class="w-full">
+          <IncreaseStake {land} />
+        </div>
+        <div class="w-full">
+          <IncreasePrice {land} />
+        </div>
       </div>
-      <div class="w-full">
-        <IncreasePrice {land} />
-      </div>
-    </div>
+    {/if}
   </div>
 {/if}
