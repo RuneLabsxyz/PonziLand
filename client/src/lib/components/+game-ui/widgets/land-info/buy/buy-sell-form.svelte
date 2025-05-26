@@ -1,15 +1,14 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import type { Token } from '$lib/interfaces';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import data from '$profileData';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
   import { Select, SelectContent } from '$lib/components/ui/select';
   import SelectItem from '$lib/components/ui/select/select-item.svelte';
   import SelectTrigger from '$lib/components/ui/select/select-trigger.svelte';
-  import BuyInsights from './buy-insights.svelte';
+  import type { Token } from '$lib/interfaces';
+  import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import data from '$profileData';
 
   let {
     selectedToken = $bindable<Token | undefined>(),
@@ -186,6 +185,6 @@
   {/if}
 
   {#if land}
-    <BuyInsights {sellAmountVal} {stakeAmountVal} {selectedToken} {land} />
+    <!-- <BuyInsights {sellAmountVal} {stakeAmountVal} {selectedToken} {land} /> -->
   {/if}
 </div>

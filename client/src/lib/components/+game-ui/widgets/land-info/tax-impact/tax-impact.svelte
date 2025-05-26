@@ -1,7 +1,7 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land.svelte';
-  import LandNukeShield from '$lib/components/+game-map/land/land-nuke-shield.svelte';
-  import { Label } from '$lib/components/ui/label';
+  import type { LandWithActions } from '$lib/api/land';
+  import { BuildingLand } from '$lib/api/land/building_land';
+  import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
   import { Slider } from '$lib/components/ui/slider';
   import type { Token } from '$lib/interfaces';
   import {
@@ -9,7 +9,7 @@
     calculateTaxes,
     estimateNukeTime,
   } from '$lib/utils/taxes';
-  import BuyInsightsNeighborGrid from '../tax-impact/buy-insights-neighbor-grid.svelte';
+  import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
 
   let {
     sellAmountVal = undefined,
@@ -157,79 +157,18 @@
   });
 </script>
 
-<Label class="font-semibold text-xl mt-3">Neighborhood Overview</Label>
-<div class="flex w-full justify-between items-center gap-4">
-  <div class="w-64 flex items-center justify-center">
-    {#if filteredNeighbors}
-      <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
-    {/if}
-  </div>
-  <div class="w-full flex flex-col gap-4 mr-8">
-    <div class="w-full text-stroke-none flex flex-col leading-4 mt-3">
-      <div class="flex justify-between">
-        <p class="opacity-50">Per Neighbors</p>
-        <p>
-          -{taxes}
-          <span class="opacity-50">{selectedToken?.symbol}/h</span>
-        </p>
-      </div>
-      <div class="flex justify-between">
-        <p class="opacity-50">Max:</p>
-        <p>
-          -{Number(taxes) * maxNumberOfNeighbors}
-          <span class="opacity-50">{selectedToken?.symbol}/h</span>
-        </p>
-      </div>
-      <div class="flex justify-between">
-        <p class="">
-          <span class="opacity-50"> For </span>
-          {nbNeighbors}
-          <span class="opacity-50"> neighbors: </span>
-        </p>
-        <p class="text-right">
-          -{Number(taxes) * nbNeighbors}
-          <span class="opacity-50">{selectedToken?.symbol}/h</span>
-        </p>
-      </div>
+<div class="w-full flex flex-col gap-2">
+  <h2 class="font-ponzi-number">Neighborhood Tax Impact</h2>
+  <p class="leading-none -mt-1 opacity-75">
+    You can get an estimation of your land survival time in function of its
+    neighbors
+  </p>
+  <div class="flex gap-2">
+    <div>
+      {#if filteredNeighbors}
+        <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
+      {/if}
     </div>
-
-    <div class="flex flex-col gap-4">
-      <div class="flex justify-between text-gray-400">
-        {#each Array(8) as _, i}
-          <span
-            class={i + 1 == neighbors.getNeighbors().length
-              ? 'text-white font-bold'
-              : ''}
-          >
-            {i + 1}
-          </span>
-        {/each}
-      </div>
-      <Slider
-        min={1}
-        max={8}
-        step={1}
-        value={[nbNeighbors]}
-        onValueChange={(val) => {
-          nbNeighbors = val[0];
-        }}
-      />
-    </div>
-    <div class="flex gap-2 items-center">
-      <LandNukeShield
-        estimatedNukeTime={estimatedNukeTimeSeconds}
-        class="h-10 w-10"
-      />
-      <div class="flex flex-col gap-1">
-        <span>
-          <span class="text-gray-400"> nuke in </span>
-          {estimatedTimeString}
-        </span>
-
-        <span class="">
-          {estimatedNukeDate}
-        </span>
-      </div>
-    </div>
+    <PonziSlider bind:value={nbNeighbors} />
   </div>
 </div>

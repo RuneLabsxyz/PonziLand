@@ -23,7 +23,7 @@ get along, so we shut typescript up by casting `value` to `never`.
   bind:value={value as never}
   {orientation}
   class={cn(
-    "relative flex touch-none select-none items-center data-[orientation='vertical']:h-full data-[orientation='vertical']:min-h-44 data-[orientation='horizontal']:w-full data-[orientation='vertical']:w-auto data-[orientation='vertical']:flex-col",
+    "relative flex touch-none select-none items-center data-[orientation='vertical']:min-h-24 data-[orientation='horizontal']:w-full data-[orientation='vertical']:w-auto data-[orientation='vertical']:flex-col",
     className,
   )}
   {...restProps}

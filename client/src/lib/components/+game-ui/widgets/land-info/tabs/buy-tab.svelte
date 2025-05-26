@@ -6,6 +6,7 @@
   import type { TabType } from '$lib/interfaces';
   import BuyInsights from '../buy/buy-insights.svelte';
   import data from '$profileData';
+  import TaxImpact from '../tax-impact/tax-impact.svelte';
 
   let {
     land,
@@ -51,7 +52,7 @@
         <Input id="sell" type="number" bind:value={sellPrice} />
       </div>
     </div>
-    <BuyInsights
+    <TaxImpact
       sellAmountVal={sellPrice}
       stakeAmountVal={stake}
       {selectedToken}
