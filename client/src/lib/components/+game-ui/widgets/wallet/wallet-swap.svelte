@@ -1,7 +1,6 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
   import data from '$profileData';
-  import TokenSelect from './TokenSelect.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -9,6 +8,7 @@
   import { type Quote } from '@avnu/avnu-sdk';
   import { onMount } from 'svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
+  import TokenSelect from '$lib/components/swap/token-select.svelte';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();

@@ -3,7 +3,6 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import type { LandStake } from '$lib/models.gen';
-  import TokenSelect from './token-select.svelte';
   import { onMount } from 'svelte';
 
   let { onSubmit, loading = false } = $props<{
