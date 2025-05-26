@@ -24,19 +24,20 @@
     >
       OVERALL
     </Button>
-    <Button
+    <!-- <Button
       class="w-full {activeTab === 'daily' ? '' : 'opacity-50'}"
       variant={activeTab === 'daily' ? 'blue' : undefined}
       on:click={() => setActiveTab('daily')}
     >
       DAILY
-    </Button>
+    </Button> -->
     <Button
+      disabled
       class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
       variant={activeTab === 'history' ? 'blue' : undefined}
       on:click={() => setActiveTab('history')}
     >
-      HISTORY
+      HISTORY (todo)
     </Button>
   </div>
 

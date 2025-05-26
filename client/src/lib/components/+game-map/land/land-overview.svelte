@@ -30,11 +30,7 @@
   const ON_IMAGE = '/ui/star/on.png';
 </script>
 
-<div
-  class="flex flex-col justify-center items-center {size == 'lg'
-    ? 'p-8'
-    : 'p-4'}"
->
+<div class="flex flex-col justify-center items-center">
   <div
     class="flex items-center justify-center relative
     {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
@@ -78,7 +74,7 @@
   <!-- Also show the progress bar for the next level -->
   {#if land.type == 'house' && land.level < 3}
     <div
-      class="my-4 {size == 'lg'
+      class="mt-6 {size == 'lg'
         ? 'min-w-40'
         : 'min-w-28'} leading-none flex flex-col justify-center items-center"
     >

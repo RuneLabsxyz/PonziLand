@@ -1,12 +1,14 @@
 <script lang="ts">
+  import account from '$lib/account.svelte';
   import type { LandWithActions } from '$lib/api/land';
+  import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import LandOwnerInfo from '$lib/components/+game-map/land/land-owner-info.svelte';
-  import InfoTabs from './info-tabs.svelte';
-  import account from '$lib/account.svelte';
-  import { padAddress } from '$lib/utils';
-  import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
   import Card from '$lib/components/ui/card/card.svelte';
+  import PriceDisplay from '$lib/components/ui/price-display.svelte';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import { padAddress } from '$lib/utils';
+  import InfoTabs from './info-tabs.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -14,19 +16,28 @@
   let isOwner = $derived(land?.owner === padAddress(address ?? ''));
 </script>
 
+<div class="absolute left-0 top-0 -translate-y-full">
+  {#if !isOwner}
+    <LandOwnerInfo {land} {isOwner} />
+  {/if}
+</div>
+<div class="absolute top-0 right-0 -translate-y-full">
+  <Card>
+    <LandNukeTime {land} />
+  </Card>
+</div>
 <div class="h-full w-full flex flex-col">
   <div class="w-full flex">
-    <div class="flex flex-col items-center">
-      <div class="absolute left-0 top-0 -translate-y-full">
-        {#if !isOwner}
-          <LandOwnerInfo {land} {isOwner} />
-        {/if}
+    <div class="flex flex-col items-center px-8 pt-8">
+      <LandOverview {land} {isOwner} size="lg" />
+      <div
+        class="mt-6 text-ponzi-number text-2xl flex items-center gap-2 stroke-3d-black"
+      >
+        {land.token?.symbol}
+        <TokenAvatar token={land.token} class="w-7 h-7" />
       </div>
-      <LandOverview {land} size="lg" />
-      <div class="absolute top-0 right-0 -translate-y-full">
-        <Card>
-          <LandNukeTime {land} />
-        </Card>
+      <div class="flex items-center gap-1 pt-5">
+        <PriceDisplay price={land.sellPrice} token={land.token} />
       </div>
     </div>
     <InfoTabs {land} />

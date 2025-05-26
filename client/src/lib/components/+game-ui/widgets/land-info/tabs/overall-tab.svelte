@@ -5,6 +5,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo } from '$lib/interfaces';
   import { padAddress, toHexWithPadding } from '$lib/utils';
+  import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate } from '$lib/utils/taxes';
   import data from '$profileData';
@@ -141,9 +142,9 @@
           <span class="stroke-3d-black">
             {totalYieldValue - Number(burnRate.toString()) >= 0
               ? '+ '
-              : '- '}{Math.abs(
-              totalYieldValue - Number(burnRate.toString()),
-            ).toFixed(2)}
+              : '- '}{displayCurrency(
+              Math.abs(totalYieldValue - Number(burnRate.toString())),
+            )}
           </span>
           <TokenAvatar token={baseToken} class="border border-white w-6 h-6" />
         </div>
@@ -154,7 +155,7 @@
         <div class="opacity-50 text-sm">Earning / hour :</div>
         <div class="text-green-500 flex items-center gap-2">
           <span class="text-xl stroke-3d-black"
-            >+ {totalYieldValue.toFixed(2)}</span
+            >+ {displayCurrency(totalYieldValue)}</span
           >
           <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
         </div>
@@ -162,7 +163,9 @@
       <div class="flex flex-col items-center text-ponzi-number">
         <div class="opacity-50 text-sm">Burning / hour :</div>
         <div class="text-red-500 flex items-center gap-2">
-          <span class="text-xl stroke-3d-black">- {burnRate.toString()}</span>
+          <span class="text-xl stroke-3d-black"
+            >- {displayCurrency(burnRate)}</span
+          >
           <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
         </div>
       </div>
@@ -170,7 +173,7 @@
 
     <!-- Infos -->
     <div class="flex flex-col rounded bg-[#1E1E2D] px-4 pb-2 select-text">
-      <div class="w-full flex gap-2 items-center">
+      <div class="w-full flex gap-2 items-center opacity-50">
         <div class="flex-1 h-[1px] bg-white"></div>
         <div class="">Main informations</div>
         <div class="flex-1 h-[1px] bg-white"></div>
