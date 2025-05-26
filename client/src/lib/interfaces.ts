@@ -68,3 +68,5 @@ export interface LandYieldInfo {
   yield_info: Array<YieldInfo>;
   remaining_stake_time: bigint;
 }
+
+export type TabType = 'overall' | 'buy' | 'history';

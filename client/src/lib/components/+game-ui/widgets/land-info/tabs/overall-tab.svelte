@@ -2,8 +2,9 @@
   import account from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import type { LandWithActions } from '$lib/api/land';
+  import { Button } from '$lib/components/ui/button';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import type { LandYieldInfo } from '$lib/interfaces';
+  import type { LandYieldInfo, TabType } from '$lib/interfaces';
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -16,8 +17,13 @@
 
   let {
     land,
+    activeTab = $bindable(),
     isActive = false,
-  }: { land: LandWithActions; isActive?: boolean } = $props();
+  }: {
+    land: LandWithActions;
+    activeTab: TabType;
+    isActive?: boolean;
+  } = $props();
 
   const address = $derived(account.address);
   let isOwner = $derived(
@@ -202,6 +208,8 @@
           <IncreasePrice {land} />
         </div>
       </div>
+    {:else}
+      <Button onclick={() => (activeTab = 'buy')}>BUY</Button>
     {/if}
   </div>
 {/if}

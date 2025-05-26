@@ -15,7 +15,7 @@
 
 {#if isActive}
   <div class="w-full h-full">
-    <!-- History tab content will go here -->
-    <p>Historical data and information</p>
+    <!-- Daily tab content will go here -->
+    <p>Daily statistics and information</p>
   </div>
 {/if}
