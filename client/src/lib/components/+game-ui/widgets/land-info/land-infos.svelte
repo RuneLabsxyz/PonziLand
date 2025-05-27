@@ -17,9 +17,7 @@
 </script>
 
 <div class="absolute left-0 top-0 -translate-y-full">
-  {#if !isOwner}
-    <LandOwnerInfo {land} {isOwner} />
-  {/if}
+  <LandOwnerInfo {land} {isOwner} />
 </div>
 <div class="absolute top-0 right-0 -translate-y-full">
   <Card>
