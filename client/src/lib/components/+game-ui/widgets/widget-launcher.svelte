@@ -27,28 +27,13 @@
   }
 </script>
 
-<!-- 
-<div class="fixed bottom-4 left-4" style="pointer-events: all;">
-  <div class="bg-black/80 rounded-lg p-2 flex gap-2">
-    {#each availableWidgets as widget}
-      <button
-        class="px-3 py-2 bg-white/10 hover:bg-white/20 rounded-md text-white flex items-center gap-2 transition-colors"
-        onclick={() => addWidget(widget.type)}
-      >
-        <Plus size={16} />
-        {widget.label}
-      </button>
-    {/each}
-  </div>
-</div> -->
-
 <div
-  class="fixed bottom-4 left-4 flex gap-2 items-center"
+  class="fixed bottom-2 left-2 flex gap-2 items-center"
   style="pointer-events: all;"
 >
   {#each availableWidgets as widget}
     <Button
-      class="w-24 h-24 flex flex-col gap-2"
+      class="w-24 h-24 flex flex-col gap-1"
       onclick={() => addWidget(widget.type)}
     >
       <img src={widget.icon} class="w-16 h-16" alt="" />
