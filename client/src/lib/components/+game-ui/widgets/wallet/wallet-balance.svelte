@@ -1,9 +1,7 @@
 <script lang="ts">
   import accountData from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
-  import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import TokenDisplay from '$lib/components/ui/token-display/token-display.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import {
     setTokenBalances,
@@ -146,22 +144,6 @@
   </div>
 {/if}
 
-<!-- <div class="flex justify-between items-center mr-3 mb-2">
-  <div class="font-bold text-stroke-none">BALANCE</div>
-  <button onclick={handleRefreshBalances} aria-label="Refresh balance">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 32 32"
-      width="32px"
-      height="32px"
-      fill="currentColor"
-      class="h-5 w-5"
-      ><path
-        d="M 6 4 L 6 6 L 4 6 L 4 8 L 2 8 L 2 10 L 6 10 L 6 26 L 17 26 L 17 24 L 8 24 L 8 10 L 12 10 L 12 8 L 10 8 L 10 6 L 8 6 L 8 4 L 6 4 z M 15 6 L 15 8 L 24 8 L 24 22 L 20 22 L 20 24 L 22 24 L 22 26 L 24 26 L 24 28 L 26 28 L 26 26 L 28 26 L 28 24 L 30 24 L 30 22 L 26 22 L 26 6 L 15 6 z"
-      /></svg
-    >
-  </button>
-</div> -->
 <div class="flex flex-col gap-4">
   <div>
     {#each tokenStore.balances as tokenBalance}
@@ -173,16 +155,6 @@
           amount={tokenBalance.balance}
           token={tokenBalance.token}
         />
-        <!-- <div
-    class="flex flex-1 items-center justify-between text-xl tracking-wide"
-    >
-    <div class="font-ds opacity-75 text-[#6BD5DD]">
-      {tokenBalance.balance} M
-      </div>
-      <div class="font-ds opacity-75 text-[#D9D9D9]">
-        {tokenBalance.token.symbol}
-        </div>
-        </div> -->
         <svg
           width="16"
           height="15"

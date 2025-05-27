@@ -26,13 +26,6 @@
   let sellTokenBalance: CurrencyAmount | undefined = $state();
   let buyTokenBalance: CurrencyAmount | undefined = $state();
 
-  onMount(async () => {
-    if (accountManager?.getProvider()?.getAccount() == null) {
-      console.info('The user is not logged in! Attempting login.');
-      await accountManager?.getProvider()?.connect();
-    }
-  });
-
   async function getTokenBalance(address?: string) {
     if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
       return 0;
