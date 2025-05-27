@@ -3,14 +3,14 @@
     getTokenPrices,
     type TokenPrice,
   } from '$lib/api/defi/ekubo/requests';
+  import { ScrollArea } from '$lib/components/ui/scroll-area';
+  import { AI_AGENT_ADDRESSES } from '$lib/const';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { padAddress } from '$lib/utils';
-  import { AI_AGENT_ADDRESS } from '$lib/const';
-  import { ScrollArea } from '$lib/components/ui/scroll-area';
-  import { formatAddress, formatValue } from '../helpers';
-  import { onMount } from 'svelte';
-  import { fetchTokenBalances } from '../request';
   import data from '$profileData';
+  import { onMount } from 'svelte';
+  import { formatAddress, formatValue } from '../helpers';
+  import { fetchTokenBalances } from '../request';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
 
@@ -56,7 +56,7 @@
     const tokenPriceCache = await calculateTokenPrices();
 
     for (const [accountAddress, tokens] of Object.entries(leaderboardData)) {
-      if (padAddress(accountAddress) === AI_AGENT_ADDRESS) {
+      if (AI_AGENT_ADDRESSES.includes(padAddress(accountAddress) ?? '')) {
         continue;
       }
 
