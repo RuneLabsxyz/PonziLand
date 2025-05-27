@@ -12,6 +12,8 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
+  import account from '$lib/account.svelte';
+  import { padAddress } from '$lib/utils';
 
   let {
     land,
@@ -22,6 +24,10 @@
     activeTab: TabType;
     isActive?: boolean;
   } = $props();
+
+  let isOwner = $derived(
+    padAddress(account.address ?? '') == padAddress(land.owner),
+  );
 
   let tokenValue: string = $state('');
   let selectedToken = $derived(
@@ -209,7 +215,7 @@
       <Button
         onclick={handleBuyClick}
         class="mt-3 w-full"
-        disabled={!isFormValid}
+        disabled={!isFormValid || isOwner}
       >
         BUY FOR<span class="text-yellow-500">&nbsp;{land.sellPrice}&nbsp;</span>
         {land.token?.symbol}
