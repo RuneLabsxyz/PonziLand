@@ -27,21 +27,6 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     disableControls: true, // Land HUD should not be closable
     transparency: 0.9, // Slightly transparent by default
   },
-  settings: {
-    id: 'settings',
-    type: 'settings',
-    position: { x: 20, y: 20 }, // Top left
-    isMinimized: false,
-    isOpen: false,
-    dimensions: { width: 320, height: 200 }, // Default size for settings widget
-  },
-  'my-lands': {
-    id: 'my-lands',
-    type: 'my-lands',
-    position: { x: 20, y: window.innerHeight - 280 }, // Bottom left
-    isMinimized: false,
-    isOpen: false,
-  },
 };
 
 export interface WidgetState {
@@ -194,7 +179,7 @@ function createWidgetsStore() {
         );
         const newState = {
           ...state,
-          [widget.id]: { ...widget, zIndex: maxZIndex + 1 },
+          [widget.id]: { ...widget, zIndex: maxZIndex + 1, isMinimized: false },
         };
         saveState(newState);
         return newState;

@@ -3,6 +3,11 @@
   import type { LandWithActions } from '$lib/api/land.svelte';
   import WidgetLauncher from '$lib/components/+game-ui/widgets/widget-launcher.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import {
+    hexStringToNumber,
+    locationIntToString,
+    parseLocation,
+  } from '$lib/utils';
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
 
@@ -22,7 +27,7 @@
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
     widgetsStore.addWidget({
-      id: `land-info-${land.location}`,
+      id: `land-info ${locationIntToString(land.location)} #${hexStringToNumber(land.location)}`,
       type: 'land-info',
       position: { x: 100, y: 100 },
       dimensions: { width: 800, height: 600 },
