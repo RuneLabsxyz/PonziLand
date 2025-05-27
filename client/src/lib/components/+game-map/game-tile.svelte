@@ -153,7 +153,7 @@
 <!-- <div class="relative {selected ? 'selected' : ''}"> -->
 <div
   onmouseup={handleClick}
-  class={`relative tile`}
+  class={`relative tile ${hovering || selected ? 'z-30' : ''}`}
   style="--size: {SIZE}px;"
   onmouseover={() => (hovering = true)}
   onfocus={() => (hovering = true)}
