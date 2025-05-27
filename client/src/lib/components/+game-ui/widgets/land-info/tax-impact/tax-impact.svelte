@@ -242,5 +242,4 @@
       </div>
     </div>
   </div>
-  <Button class="mt-3">BUY FOR {land.sellPrice} {land.token?.symbol}</Button>
 </div>

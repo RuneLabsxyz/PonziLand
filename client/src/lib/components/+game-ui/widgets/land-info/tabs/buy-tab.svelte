@@ -1,10 +1,14 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land';
+  import type { LandSetup, LandWithActions } from '$lib/api/land';
+  import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
-  import BuyInsights from '../buy/buy-insights.svelte';
+  import { buyLand } from '$lib/stores/store.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
 
@@ -19,12 +23,61 @@
   } = $props();
 
   let tokenValue: string = $state('');
-  let stake: string = $state('');
-  let sellPrice: string = $state('');
-
   let selectedToken = $derived(
     data.availableTokens.find((token) => token.address === tokenValue),
   );
+  let stake: string = $state('');
+  let stakeAmount: CurrencyAmount = $derived(
+    CurrencyAmount.fromScaled(stake, selectedToken),
+  );
+  let sellPrice: string = $state('');
+  let sellPriceAmount: CurrencyAmount = $derived(
+    CurrencyAmount.fromScaled(sellPrice, selectedToken),
+  );
+  let loading = $state(false);
+
+  let accountManager = useAccount();
+
+  async function handleBuyClick() {
+    console.log('Buy land');
+
+    const landSetup: LandSetup = {
+      tokenForSaleAddress: selectedToken?.address || '',
+      salePrice: stakeAmount,
+      amountToStake: sellPriceAmount,
+      tokenAddress: land?.tokenAddress ?? '',
+      currentPrice: land?.sellPrice ?? null,
+    };
+
+    if (!land) {
+      console.error('No land selected');
+      return;
+    }
+
+    loading = true;
+
+    try {
+      // const result = await landStore?.buyLand(land?.location, landSetup);
+      const result = await buyLand(land.location, landSetup);
+
+      if (result?.transaction_hash) {
+        // Only wait for the land update, not the total TX confirmation (should be fine)
+        const txPromise = accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+        const landPromise = land.wait();
+
+        await Promise.any([txPromise, landPromise]);
+
+        console.log('Bought land with TX: ', result.transaction_hash);
+      }
+    } catch (error) {
+      console.error('Error buying land', error);
+    } finally {
+      loading = false;
+    }
+  }
 </script>
 
 {#if isActive}
@@ -58,5 +111,15 @@
       {selectedToken}
       {land}
     />
+    {#if loading}
+      <Button class="mt-3 w-full" disabled>
+        buying <ThreeDots />
+      </Button>
+    {:else}
+      <Button onclick={handleBuyClick} class="mt-3 w-full">
+        BUY FOR<span class="text-yellow-500">&nbsp;{land.sellPrice}&nbsp;</span>
+        {land.token?.symbol}
+      </Button>
+    {/if}
   </div>
 {/if}
