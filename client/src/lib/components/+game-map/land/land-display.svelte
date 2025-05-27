@@ -110,9 +110,9 @@
       x={token.images.biome.x}
       y={token.images.biome.y}
       xSize={256}
-      xMax={2048}
+      xMax={1024}
       ySize={256}
-      yMax={3328}
+      yMax={1280}
       {width}
       {height}
       class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
@@ -154,7 +154,7 @@
         x={token.images.building[level].x}
         y={token.images.building[level].y}
         xSize={256}
-        xMax={1536}
+        xMax={3072}
         ySize={256}
         yMax={5376}
         {width}
