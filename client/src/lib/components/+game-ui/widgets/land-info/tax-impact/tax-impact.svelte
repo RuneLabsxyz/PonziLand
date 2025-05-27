@@ -1,9 +1,11 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import { BuildingLand } from '$lib/api/land/building_land';
+  import Button from '$lib/components/ui/button/button.svelte';
   import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
   import { Slider } from '$lib/components/ui/slider';
   import type { Token } from '$lib/interfaces';
+  import { displayCurrency } from '$lib/utils/currency';
   import {
     calculateBurnRate,
     calculateTaxes,
@@ -132,16 +134,27 @@
   let estimatedTimeString = $derived.by(() => {
     const time = estimatedNukeTimeSeconds;
 
-    if (time == 0) {
+    if (time === 0) {
       return '0s';
     }
-    // format seconds to dd hh mm ss
+
     const days = Math.floor(time / (3600 * 24));
     const hours = Math.floor((time % (3600 * 24)) / 3600);
     const minutes = Math.floor((time % 3600) / 60);
     const seconds = Math.floor(time % 60);
 
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    const parts = [
+      days ? `${days}d` : '',
+      hours ? `${hours}h` : '',
+      minutes ? `${minutes}m` : '',
+      seconds ? `${seconds}s` : '',
+    ];
+
+    const final = parts.filter(Boolean).join(' ');
+    if (!final) {
+      return 'Now !!!';
+    }
+    return final;
   });
 
   let estimatedNukeDate = $derived.by(() => {
@@ -170,5 +183,64 @@
       {/if}
     </div>
     <PonziSlider bind:value={nbNeighbors} />
+    <div class="flex flex-col flex-1 ml-4 justify-center tracking-wide">
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div>
+          <span class="opacity-50">For</span>
+          <span class="text-xl text-blue-300 leading-none">{nbNeighbors}</span>
+          <span class="opacity-50"> neighbors </span>
+        </div>
+        <div class="opacity-75">
+          -{displayCurrency(Number(taxes) * nbNeighbors)}
+          {selectedToken?.symbol}
+        </div>
+      </div>
+      <hr class="my-1 opacity-50" />
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div class="opacity-25">Per neighbors / h</div>
+        <div class="opacity-25">
+          -{displayCurrency(Number(taxes))}
+          {selectedToken?.symbol}
+        </div>
+      </div>
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div class="opacity-25">Max / h</div>
+        <div class="opacity-25">
+          -{displayCurrency(Number(taxes) * maxNumberOfNeighbors)}
+          {selectedToken?.symbol}
+        </div>
+      </div>
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div>
+          <span class="opacity-25">Nuke time with</span>
+          <span class="text-blue-300 leading-none">{nbNeighbors}</span>
+          <span class="opacity-25"> neighbors </span>
+        </div>
+        <div
+          class=" {estimatedTimeString.includes('Now')
+            ? 'text-red-500'
+            : 'text-green-500'}"
+        >
+          {estimatedTimeString}
+        </div>
+      </div>
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div></div>
+        <div class="opacity-25">
+          {estimatedNukeDate}
+        </div>
+      </div>
+    </div>
   </div>
+  <Button class="mt-3">BUY FOR {land.sellPrice} {land.token?.symbol}</Button>
 </div>
