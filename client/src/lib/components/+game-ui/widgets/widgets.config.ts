@@ -2,12 +2,14 @@ export interface Widget {
   id: string;
   type: string;
   label: string;
+  icon: string;
 }
 
 export const availableWidgets: Widget[] = [
-  { id: 'wallet', type: 'wallet', label: 'Wallet Lookup' },
-  { id: 'land-hud', type: 'land-hud', label: 'Land HUD' },
-  { id: 'settings', type: 'settings', label: 'Settings' },
-  { id: 'my-lands', type: 'my-lands', label: 'My Lands' },
-  { id: 'entity-update', type: 'entity-update', label: 'Entity Update' },
+  {
+    id: 'my-lands',
+    type: 'my-lands',
+    label: 'My Lands',
+    icon: '/ui/icons/Icon_MyLand.png',
+  },
 ];

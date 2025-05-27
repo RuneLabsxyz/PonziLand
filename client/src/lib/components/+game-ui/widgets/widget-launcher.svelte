@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
   import { widgetsStore } from '$lib/stores/widgets.store';
-  import { Plus } from 'lucide-svelte';
   import { availableWidgets } from './widgets.config';
 
   function addWidget(widgetType: string) {
@@ -27,6 +27,7 @@
   }
 </script>
 
+<!-- 
 <div class="fixed bottom-4 left-4" style="pointer-events: all;">
   <div class="bg-black/80 rounded-lg p-2 flex gap-2">
     {#each availableWidgets as widget}
@@ -39,4 +40,21 @@
       </button>
     {/each}
   </div>
+</div> -->
+
+<div
+  class="fixed bottom-4 left-4 flex gap-2 items-center"
+  style="pointer-events: all;"
+>
+  {#each availableWidgets as widget}
+    <Button
+      class="w-24 h-24 flex flex-col gap-2"
+      onclick={() => addWidget(widget.type)}
+    >
+      <img src={widget.icon} class="w-16 h-16" alt="" />
+      <div class="font-ponzi-number stroke-3d-black text-[11px]">
+        {widget.label}
+      </div>
+    </Button>
+  {/each}
 </div>
