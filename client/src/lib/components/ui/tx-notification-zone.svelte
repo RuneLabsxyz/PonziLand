@@ -23,7 +23,15 @@
             <span class="text-green-500">✓</span>
             <span>{notification.txCount}. </span>
             <span class="text-ponzi-number">{notification.functionName}</span>
-            <span class=" font-mono truncate">
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <span
+              class="font-mono truncate pointer-events-auto"
+              onclick={() => {
+                navigator.clipboard.writeText(notification.txhash ?? '');
+                alert('Copied to clipboard');
+              }}
+            >
               {notification.txhash?.slice(0, 10)}...{notification.txhash?.slice(
                 -8,
               )}

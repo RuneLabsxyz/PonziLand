@@ -121,10 +121,16 @@ export const createLandWithActions = (
       return result;
     },
     async levelUp() {
-      return await sdk.client.actions.levelUp(
+      let res = await sdk.client.actions.levelUp(
         account()?.getAccount()!,
         land.locationString,
       );
+
+      notificationQueue.addNotification(
+        res?.transaction_hash ?? null,
+        'leveling up',
+      );
+      return res;
     },
     getEstimatedNukeTime() {
       return estimateNukeTime(
