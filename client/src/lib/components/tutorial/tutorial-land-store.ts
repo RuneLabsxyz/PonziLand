@@ -107,7 +107,7 @@ export class TutorialLandStore extends LandTileStore {
     const currentLand = get(landStore);
     if (!currentLand || currentLand.type !== 'building') return;
 
-    const levels = ['Zero', 'First', 'Second', 'Third'];
+    const levels = ['Zero', 'First', 'Second'];
     const currentLevel = currentLand.level;
     const nextLevelIndex = currentLevel;
     if (nextLevelIndex >= levels.length) return;

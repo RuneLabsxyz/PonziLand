@@ -1,24 +1,17 @@
 import { GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
+import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
+import { createLandWithActions } from '$lib/utils/land-actions';
 import type { ParsedEntity } from '@dojoengine/sdk';
 import type { Subscription } from '@dojoengine/torii-client';
-import {
-  derived,
-  writable,
-  type Readable,
-  type Writable,
-  get,
-} from 'svelte/store';
+import { derived, writable, type Readable, type Writable } from 'svelte/store';
 import { EmptyLand, type BaseLand } from './land';
 import { AuctionLand } from './land/auction_land';
 import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
-import { claimStore } from '$lib/stores/claim.store.svelte';
-import { createLandWithActions } from '$lib/utils/land-actions';
-import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
