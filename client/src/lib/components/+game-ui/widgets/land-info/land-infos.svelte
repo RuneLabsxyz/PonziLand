@@ -14,6 +14,40 @@
 
   let address = $derived(account.address);
   let isOwner = $derived(land?.owner === padAddress(address ?? ''));
+
+  let currentPrice = $state(land.sellPrice);
+  let fetching = $state(false);
+
+  $effect(() => {
+    if (land.type == 'auction') {
+      fetchCurrentPrice();
+
+      const interval = setInterval(() => {
+        if (land.type == 'auction') {
+          fetchCurrentPrice();
+        } else {
+          currentPrice == land.sellPrice;
+        }
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  });
+
+  const fetchCurrentPrice = () => {
+    if (!land) {
+      return;
+    }
+
+    fetching = true;
+
+    land?.getCurrentAuctionPrice().then((res) => {
+      if (res) {
+        currentPrice = res;
+      }
+      fetching = false;
+    });
+  };
 </script>
 
 <div class="absolute left-0 top-0 -translate-y-full">
@@ -35,8 +69,11 @@
         <TokenAvatar token={land.token} class="w-7 h-7" />
       </div>
       <div class="flex items-center gap-1 pt-5">
-        <PriceDisplay price={land.sellPrice} token={land.token} />
+        <PriceDisplay price={currentPrice} token={land.token} />
       </div>
+      {#if fetching}
+        Fetching auction price...
+      {/if}
     </div>
     <InfoTabs {land} />
   </div>

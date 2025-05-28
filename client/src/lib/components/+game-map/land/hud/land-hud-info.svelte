@@ -1,6 +1,6 @@
 <script lang="ts">
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
-  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { LandWithActions } from '$lib/api/land';
   import type { LandYieldInfo } from '$lib/interfaces';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { toHexWithPadding } from '$lib/utils';

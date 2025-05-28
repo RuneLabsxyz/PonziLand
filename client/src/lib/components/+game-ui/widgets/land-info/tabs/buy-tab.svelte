@@ -7,7 +7,7 @@
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
-  import { buyLand } from '$lib/stores/store.svelte';
+  import { bidLand, buyLand } from '$lib/stores/store.svelte';
   import { tokenStore } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
@@ -115,12 +115,18 @@
       return;
     }
 
+    let currentPrice: CurrencyAmount | undefined = land.sellPrice;
+
+    if (land.type == 'auction') {
+      currentPrice = await land.getCurrentAuctionPrice();
+    }
+
     const landSetup: LandSetup = {
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: stakeAmount,
       amountToStake: sellPriceAmount,
       tokenAddress: land?.tokenAddress ?? '',
-      currentPrice: land?.sellPrice ?? null,
+      currentPrice: currentPrice ?? null,
     };
 
     if (!land) {
@@ -132,7 +138,14 @@
 
     try {
       // const result = await landStore?.buyLand(land?.location, landSetup);
-      const result = await buyLand(land.location, landSetup);
+
+      let result;
+
+      if (land.type == 'auction') {
+        result = await bidLand(land.location, landSetup);
+      } else {
+        result = await buyLand(land.location, landSetup);
+      }
 
       if (result?.transaction_hash) {
         // Only wait for the land update, not the total TX confirmation (should be fine)
@@ -217,7 +230,19 @@
         class="mt-3 w-full"
         disabled={!isFormValid || isOwner}
       >
-        BUY FOR<span class="text-yellow-500">&nbsp;{land.sellPrice}&nbsp;</span>
+        BUY FOR <span class="text-yellow-500">
+          &nbsp;
+          {#if land.type == 'auction'}
+            {#await land?.getCurrentAuctionPrice()}
+              fetching...
+            {:then price}
+              {price}
+            {/await}
+          {:else}
+            {land.sellPrice}
+          {/if}
+          &nbsp;
+        </span>
         {land.token?.symbol}
       </Button>
     {/if}

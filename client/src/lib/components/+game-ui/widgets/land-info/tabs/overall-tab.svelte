@@ -188,13 +188,25 @@
         <div class="opacity-50">Token</div>
         <div>{land?.token?.name}</div>
       </div>
+      {#if land.type !== 'auction'}
+        <div class="flex justify-between items-center">
+          <div class="opacity-50">Stake Amount</div>
+          <div>{land?.stakeAmount}</div>
+        </div>
+      {/if}
       <div class="flex justify-between items-center">
-        <div class="opacity-50">Stake Amount</div>
-        <div>{land?.stakeAmount}</div>
-      </div>
-      <div class="flex justify-between items-center">
-        <div class="opacity-50">Sell Price</div>
-        <div>{land?.sellPrice}</div>
+        <div class="opacity-50">Sell price</div>
+        {#if land.type == 'auction'}
+          <div>
+            {#await land?.getCurrentAuctionPrice()}
+              fetching...
+            {:then price}
+              {price}
+            {/await}
+          </div>
+        {:else}
+          <div>{land.sellPrice}</div>
+        {/if}
       </div>
     </div>
 

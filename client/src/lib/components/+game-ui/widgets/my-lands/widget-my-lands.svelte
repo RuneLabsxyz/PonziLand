@@ -4,6 +4,7 @@
   import { LandTileStore } from '$lib/api/land_tiles.svelte';
   import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
   import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
+  import { Button } from '$lib/components/ui/button';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
@@ -109,21 +110,18 @@
                 }}
               >
                 <LandHudInfo {land} isOwner={true} showLand={true} />
-                <div class="translate-y-4 p-4">
-                  <LandNukeTime {land} />
-                </div>
               </button>
 
               <hr class="border-t border-gray-300 w-full my-2" />
             {/each}
           </div>
           <div class="flex justify-end mt-2">
-            <button
-              class="my-2 px-4 py-2 rounded bg-yellow-500 text-white hover:opacity-90 transition"
-              onclick={() => handleClaimFromCoin(lands[0])}
-            >
+            <Button class="my-2" onclick={() => handleClaimFromCoin(lands[0])}>
               Claim All
-            </button>
+              <span class="text-yellow-500">
+                &nbsp;{lands[0].token.symbol}
+              </span>
+            </Button>
           </div>
         </div>
       {/each}
@@ -141,22 +139,3 @@
     </div>
   </ScrollArea>
 </div>
-
-<style>
-  .landinfo-container {
-    container-type: inline-size;
-    container-name: landinfo;
-  }
-
-  @container landinfo (min-width: 700px) {
-    .landinfo-content {
-      flex-direction: row;
-    }
-  }
-
-  @container landinfo (max-width: 699px) {
-    .landinfo-content {
-      flex-direction: column;
-    }
-  }
-</style>
