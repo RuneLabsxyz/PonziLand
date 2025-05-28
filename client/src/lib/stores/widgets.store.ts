@@ -27,6 +27,22 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     disableControls: true, // Land HUD should not be closable
     transparency: 0.9, // Slightly transparent by default
   },
+  settings: {
+    id: 'settings',
+    type: 'settings',
+    position: { x: 20, y: 20 }, // Top left
+    isMinimized: false,
+    isOpen: false,
+    dimensions: { width: 320, height: 200 }, // Default size for settings widget
+  },
+  'my-lands': {
+    id: 'my-lands',
+    type: 'my-lands',
+    position: { x: 20, y: 10 }, // Bottom left
+    dimensions: { width: 400, height: 600 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {
