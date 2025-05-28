@@ -86,7 +86,7 @@
     <div class="flex flex-col">
       {#each lands as land}
         <button
-          class="w-full text-left hover:bg-white/10 p-2 rounded transition-colors"
+          class="w-full text-left hover:bg-white/10 p-2 land-button"
           onclick={() => {
             moveCameraTo(
               parseLocation(land.location)[0] + 1,
@@ -105,3 +105,13 @@
     </div>
   </ScrollArea>
 </div>
+
+<style>
+  .land-button:nth-child(odd) {
+    background-color: hsl(240, 19%, 18%);
+  }
+
+  .land-button:nth-child(odd):hover {
+    background-color: hsl(240, 19%, 20%);
+  }
+</style>

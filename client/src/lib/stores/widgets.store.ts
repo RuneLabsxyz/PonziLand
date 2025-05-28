@@ -39,7 +39,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     id: 'my-lands',
     type: 'my-lands',
     position: { x: 20, y: 10 }, // Bottom left
-    dimensions: { width: 400, height: 600 },
+    dimensions: { width: 450, height: 600 },
     isMinimized: false,
     isOpen: false,
   },
