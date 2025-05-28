@@ -143,7 +143,7 @@
           horizontal={true}
           autoplay={true}
           delay={animationMeta.delay}
-          class="absolute h-full w-full top-0 bottom-0 left-0 right-0 -translate-y-[3px] scale-75 {selected
+          class="absolute h-full w-full -translate-y-[15%] scale-75 {selected
             ? 'selected'
             : ''} {hovering ? 'hovering' : ''}"
         />
