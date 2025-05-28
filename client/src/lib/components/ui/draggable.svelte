@@ -187,7 +187,7 @@
   style={styleString}
   onclick={handleClick}
 >
-  <Card class="w-full h-full bg-ponzi">
+  <Card class="w-full h-full bg-ponzi flex flex-col">
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title font-ponzi-number">{id}</div>
       <div class="window-controls text-white">
@@ -226,11 +226,11 @@
         {/if}
       </div>
     </div>
-    {#if !isMinimized}
-      <div class="window-content">
+    <div class="w-full h-full">
+      {#if !isMinimized}
         {@render children()}
-      </div>
-    {/if}
+      {/if}
+    </div>
   </Card>
   {#if !isMinimized && !isFixed}
     <div class="window-resize-handle" style="pointer-events:all"></div>
@@ -296,11 +296,6 @@
 
   .window-control:hover {
     background: rgba(255, 255, 255, 0.1);
-  }
-
-  .window-content {
-    height: 100%;
-    width: 100%;
   }
 
   .window-resize-handle {

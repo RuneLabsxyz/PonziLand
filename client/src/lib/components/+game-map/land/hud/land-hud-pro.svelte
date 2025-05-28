@@ -45,18 +45,18 @@
     <div class="flex flex-col items-center text-ponzi-number">
       <div class="opacity-50 text-sm">Earning / hour :</div>
       <div class="text-green-500 flex items-center gap-2">
-        <span class="text-xl stroke-3d-black"
-          >+ {displayCurrency(totalYieldValue)}</span
-        >
+        <span class="text-xl stroke-3d-black">
+          +&nbsp;{displayCurrency(totalYieldValue)}
+        </span>
         <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
       </div>
     </div>
     <div class="flex flex-col items-center text-ponzi-number">
       <div class="opacity-50 text-sm">Burning / hour :</div>
       <div class="text-red-500 flex items-center gap-2">
-        <span class="text-xl stroke-3d-black"
-          >- {displayCurrency(burnRate)}</span
-        >
+        <span class="text-xl stroke-3d-black">
+          -&nbsp;{displayCurrency(burnRate.rawValue())}
+        </span>
         <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
       </div>
     </div>

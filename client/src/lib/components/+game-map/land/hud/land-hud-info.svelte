@@ -124,7 +124,7 @@
 </script>
 
 <div class="flex flex-row">
-  <div class="py-4 pl-4">
+  <div class="py-4">
     {#if showLand}
       <LandOverview {land} {isOwner} />
     {/if}

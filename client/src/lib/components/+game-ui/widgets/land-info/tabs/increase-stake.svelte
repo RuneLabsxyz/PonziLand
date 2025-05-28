@@ -76,7 +76,7 @@
       on:click={handleIncreaseStake}
       class="w-full"
     >
-      Confirm Stake
+      Increase Stake
     </Button>
   </div>
 </div>

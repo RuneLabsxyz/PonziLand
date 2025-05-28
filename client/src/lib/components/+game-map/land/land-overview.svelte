@@ -30,7 +30,11 @@
   const ON_IMAGE = '/ui/star/on.png';
 </script>
 
-<div class="flex flex-col justify-center items-center">
+<div
+  class="flex flex-col justify-center items-center {size == 'lg'
+    ? 'w-48'
+    : 'w-24'}"
+>
   <div
     class="flex items-center justify-center relative
     {size == 'lg' ? 'h-48 w-48' : 'h-24 w-24'}"
@@ -81,10 +85,12 @@
       {#if levelUpInfo?.canLevelUp && isOwner}
         <div class="flex h-8 mb-4 animate-pulse">
           <Button
+            size="md"
             onclick={async () => {
               await land?.levelUp();
             }}
-            >Upgrade to&nbsp;<small>lvl</small>{levelUpInfo?.expectedLevel}
+            >Upgrade to&nbsp;<small>lvl</small
+            >&nbsp;{levelUpInfo?.expectedLevel}
           </Button>
         </div>
       {:else}
