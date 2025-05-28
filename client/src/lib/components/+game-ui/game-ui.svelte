@@ -1,13 +1,8 @@
 <script lang="ts" context="module">
-  import type { BaseLand } from '$lib/api/land';
-  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { BaseLand, LandWithActions } from '$lib/api/land';
   import WidgetLauncher from '$lib/components/+game-ui/widgets/widget-launcher.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
-  import {
-    hexStringToNumber,
-    locationIntToString,
-    parseLocation,
-  } from '$lib/utils';
+  import { hexStringToNumber, locationIntToString } from '$lib/utils';
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
 

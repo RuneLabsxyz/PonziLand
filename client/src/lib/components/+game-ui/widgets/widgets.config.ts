@@ -12,6 +12,12 @@ export const availableWidgets: Widget[] = [
     label: 'My Lands',
     icon: '/ui/icons/Icon_Thin_MyLand.png',
   },
+  {
+    id: 'auctions',
+    type: 'auctions',
+    label: 'Auctions',
+    icon: '/ui/icons/Icon_Thin_Auction.png',
+  },
   // {
   //   id: 'notifications',
   //   type: 'notifications',

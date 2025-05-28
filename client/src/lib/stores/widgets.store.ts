@@ -38,7 +38,15 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
   'my-lands': {
     id: 'my-lands',
     type: 'my-lands',
-    position: { x: 20, y: 10 }, // Bottom left
+    position: { x: 20, y: 10 },
+    dimensions: { width: 450, height: 600 },
+    isMinimized: false,
+    isOpen: false,
+  },
+  auctions: {
+    id: 'auctions',
+    type: 'auctions',
+    position: { x: 40, y: 30 },
     dimensions: { width: 450, height: 600 },
     isMinimized: false,
     isOpen: false,

@@ -7,6 +7,7 @@
   import WidgetSettings from './settings/widget-settings.svelte';
   import WidgetWallet from './wallet/widget-wallet.svelte';
   import WidgetEntityUpdate from './entity-update/widget-entity-update.svelte';
+  import WidgetAuctions from './auctions/widget-auctions.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -30,6 +31,8 @@
         <WidgetMyLands />
       {:else if type === 'entity-update'}
         <WidgetEntityUpdate />
+      {:else if type === 'auctions'}
+        <WidgetAuctions />
       {/if}
     </Draggable>
   {/if}

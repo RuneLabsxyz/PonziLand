@@ -36,7 +36,7 @@
       class="w-24 h-24 flex flex-col gap-1"
       onclick={() => addWidget(widget.type)}
     >
-      <img src={widget.icon} class="w-16 h-16" alt="" />
+      <img src={widget.icon} class="w-16 h-14" alt="" />
       <div class="font-ponzi-number stroke-3d-black text-[11px]">
         {widget.label}
       </div>
