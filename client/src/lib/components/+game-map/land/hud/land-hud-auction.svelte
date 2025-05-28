@@ -28,7 +28,9 @@
   };
 </script>
 
-<div class="flex gap-4 relative items-center border-ponzi-auction -m-2 p-6">
+<div
+  class="flex gap-4 relative items-center border-ponzi-auction -mt-8 -m-2 p-6 pt-12"
+>
   {#if land}
     <LandOverview {land} />
   {/if}

@@ -22,8 +22,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: true,
     fixed: true,
-    fixedStyles:
-      'width: 320px; height: 260px; bottom: 0px; right: 0px; transform: none;',
+    fixedStyles: 'width: 500px; bottom: 0px; right: 0px; transform: none;',
     disableControls: true, // Land HUD should not be closable
     transparency: 0.9, // Slightly transparent by default
   },

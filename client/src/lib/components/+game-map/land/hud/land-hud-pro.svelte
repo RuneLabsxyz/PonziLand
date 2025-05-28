@@ -21,7 +21,7 @@
   );
 </script>
 
-<div class="w-full flex flex-col gap-2 px-5">
+<div class="w-full flex flex-col gap-2">
   <div class="flex w-full justify-center select-text">
     <div class="text-center pb-2 text-ponzi-number">
       <span class="opacity-50">Total Tokens Earned</span>

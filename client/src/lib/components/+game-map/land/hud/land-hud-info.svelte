@@ -123,12 +123,10 @@
   });
 </script>
 
-<div class="flex flex-row">
-  <div class="py-4">
-    {#if showLand}
-      <LandOverview {land} {isOwner} />
-    {/if}
-  </div>
+<div class="flex flex-row gap-6 px-6">
+  {#if showLand}
+    <LandOverview {land} {isOwner} />
+  {/if}
   {#if settingsStore.isNoobMode}
     <LandHudNormal {yieldInfo} {burnRate} {land} />
   {:else if land}
