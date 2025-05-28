@@ -3,8 +3,6 @@ import type { LevelEnum as LevelModel } from '$lib/models.gen';
 export type Level = 1 | 2 | 3;
 
 export function getEnumVariant(level: LevelModel): string {
-  console.log('getenumvariant', level);
-
   // If level is a string, return it directly
   if (typeof level === 'string') {
     return level;
@@ -47,7 +45,6 @@ export function getEnumVariant(level: LevelModel): string {
 
 export function fromDojoLevel(level: LevelModel): Level {
   const enumVariant = getEnumVariant(level);
-  console.log('from dojo level', enumVariant);
 
   switch (enumVariant) {
     case 'Zero':
