@@ -304,7 +304,7 @@
     padding: 4px 8px;
     border-radius: 4px;
     font-size: 12px;
-    z-index: 50;
+    z-index: 20;
   }
 
   .column-numbers {
