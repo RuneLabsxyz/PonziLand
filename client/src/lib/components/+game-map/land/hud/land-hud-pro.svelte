@@ -1,6 +1,9 @@
 <script lang="ts">
-  import type { SelectedLand } from '$lib/stores/stores.svelte';
+  import type { LandWithActions } from '$lib/api/land';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import { displayCurrency } from '$lib/utils/currency';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import data from '$profileData';
 
   let {
     totalYieldValue,
@@ -9,60 +12,69 @@
   }: {
     totalYieldValue: number;
     burnRate: CurrencyAmount;
-    land: SelectedLand;
+    land: LandWithActions;
   } = $props();
+
+  const BASE_TOKEN = data.mainCurrencyAddress;
+  let baseToken = $derived(
+    data.availableTokens.find((token) => token.address === BASE_TOKEN),
+  );
 </script>
 
-<div class="flex items-center justify-center gap-4 p-4 relative">
-  <div class="yield-info flex flex-col items-center">
-    <div class="text-center pb-2 text-xl low-opacity text-ponzi-number">
-      Total Tokens Earned
+<div class="w-full flex flex-col gap-2 px-5">
+  <div class="flex w-full justify-center select-text">
+    <div class="text-center pb-2 text-ponzi-number">
+      <span class="opacity-50">Total Tokens Earned</span>
       <div
         class="{totalYieldValue - Number(burnRate.toString()) >= 0
           ? 'text-green-500'
-          : 'text-red-500'} text-2xl flex items-center justify-center"
+          : 'text-red-500'} text-2xl flex items-center justify-center gap-2"
       >
-        <span
-          >{totalYieldValue - Number(burnRate.toString()) >= 0
+        <span class="stroke-3d-black">
+          {totalYieldValue - Number(burnRate.toString()) >= 0
             ? '+ '
-            : '- '}{Math.abs(
-            totalYieldValue - Number(burnRate.toString()),
-          ).toFixed(2)}</span
+            : '- '}{displayCurrency(
+            Math.abs(totalYieldValue - Number(burnRate.toString())),
+          )}
+        </span>
+        <TokenAvatar token={baseToken} class="border border-white w-6 h-6" />
+      </div>
+    </div>
+  </div>
+  <div class="flex w-full justify-between select-text">
+    <div class="flex flex-col items-center text-ponzi-number">
+      <div class="opacity-50 text-sm">Earning / hour :</div>
+      <div class="text-green-500 flex items-center gap-2">
+        <span class="text-xl stroke-3d-black"
+          >+ {displayCurrency(totalYieldValue)}</span
         >
-        <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-5 w-5" />
+        <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
       </div>
     </div>
-
-    <div class="flex w-full justify-between low-opacity">
-      <div class="flex flex-col items-center text-ponzi-number">
-        <div class="">Earning / hour :</div>
-        <div class="text-green-500 flex items-center">
-          <span>+ {totalYieldValue.toFixed(2)}</span>
-          <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
-        </div>
-      </div>
-
-      <div class="flex flex-col items-center text-ponzi-number">
-        <div class="">Burning / hour :</div>
-        <div class="text-red-500 flex items-center">
-          <span>- {burnRate.toString()}</span>
-          <img src="/tokens/eSTRK/icon.png" alt="" class="ml-1 h-4 w-4" />
-        </div>
+    <div class="flex flex-col items-center text-ponzi-number">
+      <div class="opacity-50 text-sm">Burning / hour :</div>
+      <div class="text-red-500 flex items-center gap-2">
+        <span class="text-xl stroke-3d-black"
+          >- {displayCurrency(burnRate)}</span
+        >
+        <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
       </div>
     </div>
-    <div class="flex justify-between w-full pt-2">
+  </div>
+  <div class="flex flex-col">
+    <div class="flex justify-between w-full pt-2 leading-none">
       <div class="low-opacity">Token :</div>
       <div class="text-opacity-30">
         ${land?.token?.symbol}
       </div>
     </div>
-    <div class="flex justify-between w-full">
+    <div class="flex justify-between w-full leading-none">
       <div class="low-opacity">Stake Amount :</div>
       <div class="text-opacity-30">
         {land?.stakeAmount}
       </div>
     </div>
-    <div class="flex justify-between w-full">
+    <div class="flex justify-between w-full leading-none">
       <div class="low-opacity">Sell Price :</div>
       <div class="text-opacity-30">
         {land?.sellPrice}
