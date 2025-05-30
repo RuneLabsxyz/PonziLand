@@ -22,6 +22,7 @@
   import RatesOverlay from './land/land-rates-overlay.svelte';
   import LandTaxClaimer from './land/land-tax-claimer.svelte';
   import data from '$profileData';
+  import { biomeSelect_sound, hover_sound } from '$lib/sfx';
 
   const SIZE = TILE_SIZE;
 
@@ -116,6 +117,8 @@
       moveCameraTo(land.location.x + 1, land.location.y + 1);
     }
 
+    biomeSelect_sound.play();
+
     selectedLand.value = land;
   }
 
@@ -144,6 +147,17 @@
     );
     return landWithActions.getEstimatedNukeTime();
   });
+
+  const onFocus = () => {
+    hovering = true;
+    // if (land.type !== 'empty') {
+    //   hover_sound.play();
+    // }
+  };
+
+  const onBlur = () => {
+    hovering = false;
+  };
 </script>
 
 <!-- {#if currentScale >= MIN_SCALE_FOR_DETAIL} -->
@@ -155,10 +169,10 @@
   onmouseup={handleClick}
   class={`relative tile ${hovering || selected ? 'z-30' : ''}`}
   style="--size: {SIZE}px;"
-  onmouseover={() => (hovering = true)}
-  onfocus={() => (hovering = true)}
-  onmouseout={() => (hovering = false)}
-  onblur={() => (hovering = false)}
+  onmouseover={onFocus}
+  onfocus={onFocus}
+  onmouseout={onBlur}
+  onblur={onBlur}
 >
   <LandDisplay {...spriteProps} {hovering} {selected} />
   {#if currentScale < MIN_SCALE_FOR_DETAIL && isOwner}
