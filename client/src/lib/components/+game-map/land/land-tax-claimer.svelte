@@ -10,6 +10,7 @@
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import Particles from '@tsparticles/svelte';
   import { particlesConfig } from './particlesConfig';
+  import { claim_sound } from '$lib/sfx';
 
   let onParticlesLoaded = (event: any) => {
     const particlesContainer = event.detail.particles;
@@ -52,9 +53,13 @@
       return;
     }
 
-    claimSingleLand(land, dojo, account()?.getWalletAccount()!).catch((e) => {
-      console.error('error claiming from coin', e);
-    });
+    claimSingleLand(land, dojo, account()?.getWalletAccount()!)
+      .then(() => {
+        claim_sound.play();
+      })
+      .catch((e) => {
+        console.error('error claiming from coin', e);
+      });
   }
 
   async function fetchTaxes() {

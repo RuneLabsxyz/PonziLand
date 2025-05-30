@@ -2,6 +2,7 @@
   import { Button as ButtonPrimitive } from 'bits-ui-old';
   import { type Events, type Props, buttonVariants } from './index.js';
   import { cn } from '$lib/utils.js';
+  import { click_sound } from '$lib/sfx.js';
 
   type $$Props = Props;
   type $$Events = Events;
@@ -18,7 +19,9 @@
   class={cn(buttonVariants({ variant, size, className }))}
   type="button"
   {...$$restProps}
-  on:click
+  on:click={() => {
+    click_sound.play();
+  }}
   on:keydown
 >
   <slot />
