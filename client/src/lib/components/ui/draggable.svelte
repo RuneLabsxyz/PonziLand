@@ -53,7 +53,11 @@
     isFixed
       ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0};opacity:${transparency}`
       : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
-          isMinimized ? 0 : currentDimensions?.height
+          isMinimized
+            ? 0
+            : currentDimensions?.height == 0
+              ? 'auto'
+              : currentDimensions.height
         }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
   );
 

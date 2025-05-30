@@ -25,7 +25,7 @@
       id: `land-info ${locationIntToString(land.location)} #${hexStringToNumber(land.location)}`,
       type: 'land-info',
       position: { x: 100, y: 100 },
-      dimensions: { width: 800, height: 600 },
+      dimensions: { width: 800, height: 0 },
       isMinimized: false,
       isOpen: true,
       data: { location: land.location },
