@@ -176,6 +176,7 @@
   onblur={onBlur}
 >
   <LandDisplay {...spriteProps} {hovering} {selected} />
+
   {#if currentScale < MIN_SCALE_FOR_DETAIL && isOwner}
     <div class="tile-overlay pointer-events-none building-overlay"></div>
   {/if}
