@@ -93,7 +93,7 @@
                     ? controllerWallet.icon
                     : controllerWallet.icon.light}
                 <Button
-                  class="flex flex-row justify-start w-full min-h-[60px] p-3"
+                  class="flex flex-row justify-start w-full min-h-[60px]"
                   onclick={() => login(controllerWallet.id)}
                 >
                   <img
@@ -101,15 +101,15 @@
                     alt={controllerWallet.name + ' logo'}
                     class="h-10 p-2 pr-4"
                   />
-                  <div class="flex flex-col items-start text-left">
+                  <div class="flex gap-4 items-center text-left text-sm">
                     <div class="text-lg">
                       {controllerWallet.name}
                     </div>
-                    <div class=" opacity-70 text-green-500">FREE GAS!</div>
+                    <div class="opacity-70 text-green-500">FREE GAS!</div>
                   </div>
                 </Button>
                 <Button
-                  class=" flex items-center justify-center mt-2  opacity-50"
+                  size="md"
                   variant="red"
                   onclick={() => (showAllWallets = true)}
                 >
@@ -124,7 +124,7 @@
                     ? wallet.icon
                     : wallet.icon.light}
                 <Button
-                  class="flex flex-row justify-start w-full min-h-[60px] p-3"
+                  class="flex flex-row justify-start w-full min-h-[60px]"
                   onclick={() => login(wallet.id)}
                 >
                   <img
@@ -132,24 +132,25 @@
                     alt={wallet.name + ' logo'}
                     class="h-10 p-2 pr-4"
                   />
-                  <div class="flex flex-col items-start text-left">
+                  <div class="flex gap-4 items-center text-left">
                     <div class="text-lg">
                       {wallet.name}
                     </div>
                     {#if wallet.id == 'controller'}
-                      <div class=" opacity-70 text-green-500">FREE GAS!</div>
+                      <div class=" opacity-70 text-green-500 text-sm">
+                        FREE GAS!
+                      </div>
                     {:else}
-                      <div class=" opacity-70 text-red-600">Standard</div>
+                      <div class=" opacity-70 text-red-600 text-sm">
+                        Standard
+                      </div>
                     {/if}
                   </div>
                 </Button>
               {/each}
-              <Button
-                class=" flex items-center justify-center mt-2"
-                onclick={() => (showAllWallets = false)}
-              >
+              <Button size="md" onclick={() => (showAllWallets = false)}>
                 <ChevronUp class="h-4 w-4 mr-1" />
-                <span>Show fewer options</span>
+                Show fewer options
               </Button>
             {/if}
           {:else}

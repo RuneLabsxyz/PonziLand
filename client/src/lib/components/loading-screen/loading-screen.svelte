@@ -2,6 +2,7 @@
   import { fly } from 'svelte/transition';
   import LoadingImage from './loading-image.svelte';
   import messages from './loading-messages.json';
+  import RotatingCoin from './rotating-coin.svelte';
 
   let { value } = $props();
 
@@ -24,7 +25,7 @@
   <LoadingImage imageUrl="/logo.png" maskProgress={value} />
   <div class="flex gap-2 items-center justify-center z-50">
     <p class="text-white text-lg leading-none">{randomPhrase}</p>
-    <img src="/ui/ramp/coinGif.gif" alt="Loading" class="w-3 h-3" />
+    <RotatingCoin />
   </div>
 </div>
 

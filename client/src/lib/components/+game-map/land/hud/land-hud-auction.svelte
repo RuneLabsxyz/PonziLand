@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import { baseToken } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land-overview.svelte';
 
@@ -43,7 +44,7 @@
       <p class="opacity-50">Current Price</p>
       <p class="text-right">
         {priceDisplay}
-        {land.token?.symbol}
+        {baseToken?.symbol}
       </p>
     </div>
   </div>

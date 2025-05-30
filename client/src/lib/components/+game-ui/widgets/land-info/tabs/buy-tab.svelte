@@ -8,7 +8,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { bidLand, buyLand } from '$lib/stores/store.svelte';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
@@ -245,7 +245,11 @@
           {/if}
           &nbsp;
         </span>
-        {land.token?.symbol}
+        {#if land.type == 'auction'}
+          {baseToken?.symbol}
+        {:else}
+          {land.token?.symbol}
+        {/if}
       </Button>
     {/if}
   </div>

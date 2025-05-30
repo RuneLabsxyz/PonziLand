@@ -13,6 +13,7 @@
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
+  import { baseToken } from '$lib/stores/tokens.store.svelte';
   import { groupLands, padAddress, parseLocation } from '$lib/utils';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
@@ -111,7 +112,7 @@
             {#await land.getCurrentAuctionPrice() then price}
               <div class="flex gap-1 items-center">
                 <PriceDisplay {price} />
-                <TokenAvatar class="w-8 h-8" token={land.token} />
+                <TokenAvatar class="w-8 h-8" token={baseToken} />
               </div>
             {/await}
           </div>
