@@ -73,7 +73,7 @@
     {/if}
     <Button
       disabled={$disabled || !isStakeValid}
-      on:click={handleIncreaseStake}
+      onclick={handleIncreaseStake}
       class="w-full"
     >
       Increase Stake
