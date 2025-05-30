@@ -208,9 +208,16 @@ function createWidgetsStore() {
           ...Object.values(state).map((w) => w.zIndex || 0),
           0,
         );
+
+        console.log('zindex', maxZIndex);
         const newState = {
           ...state,
-          [widget.id]: { ...widget, zIndex: maxZIndex + 1, isMinimized: false },
+          [widget.id]: {
+            ...widget,
+            zIndex: maxZIndex + 3,
+            isMinimized: false,
+            isOpen: true,
+          },
         };
         saveState(newState);
         return newState;
