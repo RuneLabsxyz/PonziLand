@@ -9,6 +9,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { padAddress } from '$lib/utils';
   import InfoTabs from './info-tabs.svelte';
+  import { baseToken } from '$lib/stores/tokens.store.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -65,11 +66,20 @@
       <div
         class="mt-6 text-ponzi-number text-2xl flex items-center gap-2 stroke-3d-black"
       >
-        {land.token?.symbol}
-        <TokenAvatar token={land.token} class="w-7 h-7" />
+        {#if land.type == 'auction'}
+          {baseToken?.symbol}
+          <TokenAvatar token={baseToken} class="w-7 h-7" />
+        {:else}
+          {land.token?.symbol}
+          <TokenAvatar token={land.token} class="w-7 h-7" />
+        {/if}
       </div>
       <div class="flex items-center gap-1 pt-5">
-        <PriceDisplay price={currentPrice} token={land.token} />
+        {#if land.type == 'auction'}
+          <PriceDisplay price={currentPrice} token={baseToken} />
+        {:else}
+          <PriceDisplay price={currentPrice} token={land.token} />
+        {/if}
       </div>
       {#if fetching}
         Fetching auction price...

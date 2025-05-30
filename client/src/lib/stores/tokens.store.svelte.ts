@@ -8,6 +8,11 @@ export let tokenStore = $state<{
   prices: { symbol: string; address: string; ratio: number | null }[];
 }>({ balances: [], prices: [] });
 
+const BASE_TOKEN = data.mainCurrencyAddress;
+export const baseToken = data.availableTokens.find(
+  (token) => token.address === BASE_TOKEN,
+);
+
 export const setTokenBalances = (items: TokenBalance[]) => {
   console.log('setTokenBalances', items);
   const itemBalances = items.map((item) => {
