@@ -45,7 +45,7 @@
     <div class="self-center text-xl font-bold mx-2">or</div>
 
     <Button
-      on:click={() => {
+      onclick={() => {
         goto('/ramp');
       }}>Phantom</Button
     >
