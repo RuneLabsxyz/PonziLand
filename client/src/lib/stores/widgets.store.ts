@@ -50,6 +50,14 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  help: {
+    id: 'help',
+    type: 'help',
+    position: { x: 500, y: 100 },
+    dimensions: { width: 400, height: 400 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {
@@ -200,9 +208,16 @@ function createWidgetsStore() {
           ...Object.values(state).map((w) => w.zIndex || 0),
           0,
         );
+
+        console.log('zindex', maxZIndex);
         const newState = {
           ...state,
-          [widget.id]: { ...widget, zIndex: maxZIndex + 1, isMinimized: false },
+          [widget.id]: {
+            ...widget,
+            zIndex: maxZIndex + 3,
+            isMinimized: false,
+            isOpen: true,
+          },
         };
         saveState(newState);
         return newState;
@@ -213,9 +228,14 @@ function createWidgetsStore() {
           console.error('Widget not found:', id);
           return state;
         }
+        // Set initial z-index to be above existing widgets
+        const maxZIndex = Math.max(
+          ...Object.values(state).map((w) => w.zIndex || 0),
+          0,
+        );
         const newState = {
           ...state,
-          [id]: { ...state[id], ...updates },
+          [id]: { ...state[id], ...updates, zIndex: maxZIndex + 3 },
         };
         saveState(newState);
         return newState;

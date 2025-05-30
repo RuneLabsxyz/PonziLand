@@ -8,6 +8,7 @@
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
+  import { widgetsStore } from '$lib/stores/widgets.store';
   import { groupLands, padAddress, parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
@@ -102,6 +103,26 @@
           <LandHudInfo {land} isOwner={true} showLand={true} />
         </button>
       {/each}
+      {#if lands.length === 0}
+        <div class="text-center text-gray-400">You don't own any lands yet</div>
+        <button
+          class="text-yellow-500 hover:opacity-90 hover:cursor-pointer"
+          onclick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            widgetsStore.addWidget({
+              id: 'auctions',
+              type: 'auctions',
+              position: { x: 40, y: 30 },
+              dimensions: { width: 450, height: 600 },
+              isMinimized: false,
+              isOpen: true,
+            });
+          }}
+        >
+          See ongoing auctions
+        </button>
+      {/if}
     </div>
   </ScrollArea>
 </div>

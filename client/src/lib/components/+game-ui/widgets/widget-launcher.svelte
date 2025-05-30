@@ -10,9 +10,7 @@
     // Check if widget already exists
     if ($widgetsStore[widget.id]) {
       // If it exists but is closed, just open it
-      if (!$widgetsStore[widget.id].isOpen) {
-        widgetsStore.updateWidget(widget.id, { isOpen: true });
-      }
+      widgetsStore.updateWidget(widget.id, { isOpen: true });
       return;
     }
 
