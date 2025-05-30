@@ -94,7 +94,7 @@
                     : controllerWallet.icon.light}
                 <Button
                   class="flex flex-row justify-start w-full min-h-[60px] p-3"
-                  on:click={() => login(controllerWallet.id)}
+                  onclick={() => login(controllerWallet.id)}
                 >
                   <img
                     src={image}
@@ -111,7 +111,7 @@
                 <Button
                   class=" flex items-center justify-center mt-2  opacity-50"
                   variant="red"
-                  on:click={() => (showAllWallets = true)}
+                  onclick={() => (showAllWallets = true)}
                 >
                   <ChevronDown class="h-4 w-4 mr-1" />
                   <span>Want to use a different wallet?</span>
@@ -125,7 +125,7 @@
                     : wallet.icon.light}
                 <Button
                   class="flex flex-row justify-start w-full min-h-[60px] p-3"
-                  on:click={() => login(wallet.id)}
+                  onclick={() => login(wallet.id)}
                 >
                   <img
                     src={image}
@@ -146,7 +146,7 @@
               {/each}
               <Button
                 class=" flex items-center justify-center mt-2"
-                on:click={() => (showAllWallets = false)}
+                onclick={() => (showAllWallets = false)}
               >
                 <ChevronUp class="h-4 w-4 mr-1" />
                 <span>Show fewer options</span>
@@ -160,7 +160,7 @@
                   : wallet.icon.light}
               <Button
                 class="flex flex-row justify-start w-full min-h-[60px] p-3"
-                on:click={() => login(wallet.id)}
+                onclick={() => login(wallet.id)}
               >
                 <img
                   src={image}
@@ -177,7 +177,7 @@
             _________________________
             <Button
               class="flex flex-row justify-start"
-              on:click={() => {
+              onclick={() => {
                 visible = false;
                 goto('/ramp');
               }}>Phantom</Button

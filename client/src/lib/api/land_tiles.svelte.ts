@@ -12,6 +12,7 @@ import { AuctionLand } from './land/auction_land';
 import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
+import { nuke_sound } from '$lib/sfx';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -319,6 +320,7 @@ export class LandTileStore {
           });
           // Nuke the land
           this.triggerNukeAnimation(location.x, location.y);
+          nuke_sound.play();
 
           return {
             value: newLand,
