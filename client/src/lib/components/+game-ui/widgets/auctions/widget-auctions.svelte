@@ -1,11 +1,8 @@
 <script lang="ts">
-  import type { BaseLand, LandWithActions } from '$lib/api/land';
+  import type { LandWithActions } from '$lib/api/land';
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
-  import LandHudAuction from '$lib/components/+game-map/land/hud/land-hud-auction.svelte';
-  import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
-  import { Button } from '$lib/components/ui/button';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
@@ -14,7 +11,7 @@
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { baseToken } from '$lib/stores/tokens.store.svelte';
-  import { groupLands, padAddress, parseLocation } from '$lib/utils';
+  import { padAddress, parseLocation } from '$lib/utils';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
@@ -45,6 +42,7 @@
 
   let lands = $state<LandWithPrice[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
+  let sortAscending = $state(true);
 
   // Function to fetch and update price for a land
   async function updateLandPrice(landWithPrice: LandWithPrice) {
@@ -67,7 +65,11 @@
     return [...landsToSort].sort((a, b) => {
       // If both have prices, sort by price (ascending)
       if (a.price && b.price) {
-        return a.price.rawValue().minus(b.price.rawValue());
+        const comparison = a.price
+          .rawValue()
+          .minus(b.price.rawValue())
+          .toNumber();
+        return sortAscending ? comparison : -comparison; // Adjusted for ascending/descending
       }
       // If only one has a price, prioritize the one with price
       if (a.price && !b.price) return -1;
@@ -132,7 +134,24 @@
   });
 </script>
 
-<div class="h-full w-full pb-4">
+<div class="h-full w-full pb-16">
+  <div class="flex items-center justify-between p-2 border-b border-white/10">
+    <h3 class="text-sm font-medium">Sorting</h3>
+    <button
+      class="flex items-center gap-1 px-2 py-1 text-xs bg-white/10 hover:bg-white/20 rounded transition-colors"
+      onclick={() => {
+        sortAscending = !sortAscending;
+        lands = sortLandsByPrice(lands);
+      }}
+    >
+      Price
+      {#if sortAscending}
+        ↑
+      {:else}
+        ↓
+      {/if}
+    </button>
+  </div>
   <ScrollArea class="h-full w-full" type="scroll">
     <div class="flex flex-col">
       {#each lands as land}
