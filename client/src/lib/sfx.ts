@@ -1,20 +1,8 @@
-import { Howl, Howler } from 'howler';
+import { Sound, useSound } from 'svelte-sound';
 
-const claimSound = new Howl({ src: [] });
+export const click_sound = new Sound('/sfx/PL_ButtonClick2.wav');
+export const click_directive = useSound('/sfx/PL_ButtonClick2.wav', ['click']);
 
-const sfx = {
-  playSound: (soundFile: string) => {
-    const sound = new Howl({
-      src: [soundFile],
-      html5: true, // Use HTML5 Audio for larger files
-    });
-    sound.play();
-  },
-  claim: () => {
-    claimSound.play();
-  },
-  // You can add more methods for different sounds if needed
-};
+export const buy_sound = new Sound('/sfx/PL_BuildingBuy.wav');
 
-// Export the sfx object for use in other files
-export default sfx;
+export const claim_sound = new Sound('/sfx/PL_Claim1.wav');

@@ -20,14 +20,14 @@
     <Button
       class="w-full {activeTab === 'overall' ? '' : 'opacity-50'}"
       variant={activeTab === 'overall' ? 'blue' : undefined}
-      on:click={() => setActiveTab('overall')}
+      onclick={() => setActiveTab('overall')}
     >
       OVERALL
     </Button>
     <Button
       class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
       variant={activeTab === 'buy' ? 'blue' : undefined}
-      on:click={() => setActiveTab('buy')}
+      onclick={() => setActiveTab('buy')}
     >
       BUY
     </Button>
@@ -35,7 +35,7 @@
       disabled
       class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
       variant={activeTab === 'history' ? 'blue' : undefined}
-      on:click={() => setActiveTab('history')}
+      onclick={() => setActiveTab('history')}
     >
       HISTORY (todo)
     </Button>
