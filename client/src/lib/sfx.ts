@@ -10,3 +10,7 @@ export const claim_sound = new Sound('/sfx/PL_Claim1.wav');
 export const biomeSelect_sound = new Sound('/sfx/PL_BiomeSelect1.wav');
 
 export const hover_sound = new Sound('/sfx/PL_Hover1.wav');
+
+export const launchGame_sound = new Sound('/sfx/PL_LaunchGame.wav');
+
+export const nuke_sound = new Sound('/sfx/PL_Nuke1.wav');

@@ -11,6 +11,7 @@
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import { tutorialLandStore } from '$lib/components/tutorial/stores.svelte';
+  import { launchGame_sound } from '$lib/sfx';
 
   const promise = Promise.all([
     setupSocialink().then(() => {
@@ -88,8 +89,8 @@
         }
 
         console.log('Everything is ready!', dojo != undefined);
-
         clearLoading();
+        launchGame_sound.play();
       })
       .catch((err) => {
         console.error('An error occurred:', err);

@@ -117,7 +117,8 @@
       moveCameraTo(land.location.x + 1, land.location.y + 1);
     }
 
-    biomeSelect_sound.play();
+    if (land.type !== 'empty' && selectedLand.value != land)
+      biomeSelect_sound.play();
 
     selectedLand.value = land;
   }
