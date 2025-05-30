@@ -33,7 +33,13 @@
   let totalYieldValue: number = $state(0);
 
   let burnRate = $derived(
-    calculateBurnRate(land as LandWithActions, getNumberOfNeighbours() || 0),
+    CurrencyAmount.fromScaled(
+      calculateBurnRate(
+        land as LandWithActions,
+        getNumberOfNeighbours() || 0,
+      ).toNumber(),
+      land.token,
+    ),
   );
 
   let burnRateInBaseToken: CurrencyAmount = $state(
@@ -50,7 +56,10 @@
         );
         if (tokenPrice) {
           burnRateInBaseToken = CurrencyAmount.fromScaled(
-            burnRate.dividedBy(tokenPrice.ratio || 0).toString(),
+            burnRate
+              .rawValue()
+              .dividedBy(tokenPrice.ratio || 0)
+              .toString(),
             land?.token,
           );
         }
