@@ -48,7 +48,8 @@ const profiles = {
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
-    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-testing/torii',
+    PUBLIC_DOJO_TORII_URL:
+      'https://api.cartridge.gg/x/ponziland-tourney-2/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
@@ -88,7 +89,8 @@ for (const val of Object.entries(envProfile)) {
 console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath = `../contracts/manifest_${profile}.json`;
-const dataPath = `data/${profile}.json`;
+// Replace profile mainnet-test to mainnet
+const dataPath = `data/${profile.replace('-test', '')}.json`;
 
 console.log('Manifest: ', manifestPath);
 /** @type {import('@sveltejs/kit').Config} */

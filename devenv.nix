@@ -18,7 +18,6 @@ in {
     jq
     bc
     colorized-logs
-    wrangler
 
     graphite-cli
 
@@ -26,7 +25,6 @@ in {
     just
 
     # Cargo dependencies
-    openssl
     pkg-config
 
     # Depdencies for ledger interconnection
