@@ -75,19 +75,24 @@
   {/if}
   {#if auction}
     <SpriteSheet
-      src="/land-display/empty.png"
-      x={3}
-      y={2}
+      src="/land-display/auction-idle.png"
       xSize={256}
-      xMax={1024}
+      xMax={1280}
       ySize={256}
-      yMax={768}
+      yMax={512}
       {width}
       {height}
-      class={cn('absolute h-full w-full top-0 bottom-0 left-0 right-0', {
+      class={cn('Biome absolute h-full w-full top-0 bottom-0 left-0 right-0', {
         selected: selected,
         hovering: hovering,
       })}
+      animate={true}
+      frameDelay={100}
+      startFrame={0}
+      endFrame={9}
+      loop={true}
+      horizontal={true}
+      autoplay={true}
     />
   {/if}
   {#if token}
