@@ -1,18 +1,18 @@
 <script lang="ts">
-  import type { BaseLand, LandWithActions } from '$lib/api/land';
+  import type { LandWithActions } from '$lib/api/land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
-  import { Button } from '$lib/components/ui/button';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
-  import { groupLands, padAddress, parseLocation } from '$lib/utils';
+  import { padAddress, parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
+  // Assuming this exists
 
   const dojo = useDojo();
   const account = () => {
@@ -34,6 +34,107 @@
 
   let lands = $state<LandWithActions[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
+
+  // Filter and grouping state
+  let selectedToken = $state<string>('all');
+  let selectedLevel = $state<string>('all');
+  let groupByToken = $state<boolean>(false);
+  let sortBy = $state<'location' | 'level' | 'date' | 'price'>('price');
+  let sortOrder = $state<'asc' | 'desc'>('asc');
+
+  // Derived states for filtering and grouping
+  let availableTokens = $derived.by(() => {
+    const tokens = new Set<string>();
+    lands.forEach((land) => {
+      if (land.token_used) {
+        tokens.add(land.token_used);
+      }
+    });
+    return Array.from(tokens).sort();
+  });
+
+  let availableLevels = $derived.by(() => {
+    const levels = new Set<string>();
+    lands.forEach((land) => {
+      if (land.level) {
+        levels.add(land.level.toString());
+      }
+    });
+    return Array.from(levels).sort();
+  });
+
+  let filteredLands = $derived.by(() => {
+    let filtered = lands.filter((land) => {
+      // Token filter
+      if (selectedToken !== 'all' && land.token_used !== selectedToken) {
+        return false;
+      }
+
+      // Level filter
+      if (selectedLevel !== 'all' && land.level?.toString() !== selectedLevel) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Sort lands
+    filtered.sort((a, b) => {
+      let comparison = 0;
+
+      switch (sortBy) {
+        case 'location':
+          const locA = parseLocation(a.location);
+          const locB = parseLocation(b.location);
+          comparison = locA[0] - locB[0] || locA[1] - locB[1];
+          break;
+        case 'level':
+          comparison = (a.level || 0) - (b.level || 0);
+          break;
+        case 'date':
+          comparison =
+            Number(a.block_date_bought) - Number(b.block_date_bought);
+          break;
+        case 'price':
+          comparison = Number(a.sell_price) - Number(b.sell_price);
+          break;
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
+
+    return filtered;
+  });
+
+  let groupedLands = $derived.by(() => {
+    if (!groupByToken) {
+      return { 'All Lands': filteredLands };
+    }
+
+    const groups: { [key: string]: LandWithActions[] } = {};
+
+    filteredLands.forEach((land) => {
+      const token = land.token_used || 'No Token';
+      if (!groups[token]) {
+        groups[token] = [];
+      }
+      groups[token].push(land);
+    });
+
+    return groups;
+  });
+
+  function handleLandClick(land: LandWithActions) {
+    moveCameraTo(
+      parseLocation(land.location)[0] + 1,
+      parseLocation(land.location)[1] + 1,
+    );
+    const coordinates = parseLocation(land.location);
+    const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
+    if (baseLand) {
+      selectedLand.value = get(baseLand);
+    }
+  }
 
   onMount(async () => {
     try {
@@ -82,26 +183,103 @@
   });
 </script>
 
-<div class="h-full w-full pb-4">
-  <ScrollArea class="h-full w-full" type="scroll">
-    <div class="flex flex-col">
-      {#each lands as land}
-        <button
-          class="w-full text-left hover:bg-white/10 p-2 land-button"
-          onclick={() => {
-            moveCameraTo(
-              parseLocation(land.location)[0] + 1,
-              parseLocation(land.location)[1] + 1,
-            );
-            const coordinates = parseLocation(land.location);
-            const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
-            if (baseLand) {
-              selectedLand.value = get(baseLand);
-            }
-          }}
+<div class="h-full w-full flex flex-col pb-4">
+  <!-- Filters and Controls -->
+  <div class="p-4 border-b border-gray-700 space-y-3">
+    <!-- Filter Row 1 -->
+    <div class="flex gap-3 items-center flex-wrap">
+      <!-- <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-300">Token:</label>
+        <select
+          bind:value={selectedToken}
+          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
         >
-          <LandHudInfo {land} isOwner={true} showLand={true} />
-        </button>
+          <option value="all">All Tokens</option>
+          {#each availableTokens as token}
+            <option value={token}>{token}</option>
+          {/each}
+        </select>
+      </div> -->
+
+      <!-- <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-300">Level:</label>
+        <select
+          bind:value={selectedLevel}
+          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
+        >
+          <option value="all">All Levels</option>
+          {#each availableLevels as level}
+            <option value={level}>Level {level}</option>
+          {/each}
+        </select>
+      </div> -->
+
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          bind:checked={groupByToken}
+          id="groupByToken"
+          class="rounded"
+        />
+        <label for="groupByToken" class="text-sm font-medium text-gray-300">
+          Group by Token
+        </label>
+      </div>
+    </div>
+
+    <!-- Filter Row 2 -->
+    <div class="flex gap-3 items-center flex-wrap">
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-300">Sort by:</label>
+        <select
+          bind:value={sortBy}
+          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
+        >
+          <option value="date">Purchase Date</option>
+          <option value="price">Price</option>
+          <!-- <option value="level">Level</option>
+        <option value="location">Location</option> -->
+        </select>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <select
+          bind:value={sortOrder}
+          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
+        >
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+      </div>
+
+      <div class="text-sm text-gray-400 ml-auto">
+        {filteredLands.length} land{filteredLands.length !== 1 ? 's' : ''}
+      </div>
+    </div>
+  </div>
+  <!-- Lands List -->
+  <ScrollArea type="scroll">
+    <div class="flex flex-col">
+      {#each Object.entries(groupedLands) as [groupName, groupLands]}
+        {#if groupByToken && Object.keys(groupedLands).length > 1}
+          <div
+            class="px-4 py-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-10"
+          >
+            <h3 class="font-semibold text-gray-200">
+              {groupName} ({groupLands.length})
+            </h3>
+          </div>
+        {/if}
+
+        {#each groupLands as land, index}
+          <button
+            class="w-full text-left hover:bg-white/10 p-2 land-button"
+            class:group-item={groupByToken}
+            onclick={() => handleLandClick(land)}
+          >
+            <LandHudInfo {land} isOwner={true} showLand={true} />
+          </button>
+        {/each}
       {/each}
       {#if lands.length === 0}
         <div class="text-center text-gray-400">You don't own any lands yet</div>
@@ -123,16 +301,39 @@
           See ongoing auctions
         </button>
       {/if}
+      {#if filteredLands.length === 0}
+        <div class="p-8 text-center text-gray-400">
+          <p>No lands found matching your filters.</p>
+        </div>
+      {/if}
     </div>
   </ScrollArea>
 </div>
 
 <style>
-  .land-button:nth-child(odd) {
+  /* .land-button:nth-child(odd) {
     background-color: hsl(240, 19%, 18%);
   }
 
   .land-button:nth-child(odd):hover {
     background-color: hsl(240, 19%, 20%);
+  } */
+
+  .group-item {
+    margin-left: 0;
+    border-left: 3px solid transparent;
+  }
+
+  .group-item:hover {
+    border-left-color: #60a5fa;
+  }
+
+  select {
+    color: white;
+  }
+
+  select option {
+    background-color: #1f2937;
+    color: white;
   }
 </style>
