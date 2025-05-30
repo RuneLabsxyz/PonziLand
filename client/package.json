@@ -71,6 +71,7 @@
     "colorjs.io": "^0.5.2",
     "ethers": "^6.13.5",
     "gsap": "^3.12.7",
+    "howler": "^2.2.4",
     "lucide-svelte": "^0.471.0",
     "seedrandom": "^3.0.5",
     "starknet": "6.23.1",
