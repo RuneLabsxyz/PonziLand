@@ -102,5 +102,5 @@
   </p>
 
   <span class="self-end h-full grow">&nbsp;</span>
-  <Button on:click={sendDummyTransaction}>Send transaction</Button>
+  <Button onclick={sendDummyTransaction}>Send transaction</Button>
 </div>

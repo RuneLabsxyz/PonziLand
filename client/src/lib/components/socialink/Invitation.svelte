@@ -58,7 +58,7 @@
 
     <span class="self-end h-full grow">&nbsp;</span>
 
-    <Button class="mt-4 self-stretch" on:click={startInvitation}
+    <Button class="mt-4 self-stretch" onclick={startInvitation}
       >Validate Account</Button
     >
   </div>

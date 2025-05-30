@@ -191,7 +191,7 @@
       </div>
       <Button
         class="top-0 right-0 m-2 mr-6 bg-blue-500 text-white rounded "
-        on:click={() => goto('/game')}
+        onclick={() => goto('/game')}
       >
         Skip Tutorial
       </Button>

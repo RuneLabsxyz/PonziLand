@@ -67,7 +67,7 @@
     {/if}
     <Button
       disabled={$disabled || !isPriceValid}
-      on:click={handleIncreasePrice}
+      onclick={handleIncreasePrice}
       class="w-full"
     >
       Confirm Price

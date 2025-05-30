@@ -54,7 +54,7 @@
         typeof wallet.icon == 'string' ? wallet.icon : wallet.icon.light}
       <Button
         class="flex flex-row justify-start"
-        on:click={() => login(wallet.id)}
+        onclick={() => login(wallet.id)}
       >
         <img src={image} alt={wallet.name + ' logo'} class="h-10 p-2 pr-4" />
         <div>
