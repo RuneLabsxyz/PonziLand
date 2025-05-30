@@ -78,8 +78,8 @@
       "images": {
         "icon": "/tokens/ePAPER/icon.svg",
         "biome": {
-          "x": 0,
-          "y": 3
+          "x": 3,
+          "y": 0
         },
         "building": {
           "1": {

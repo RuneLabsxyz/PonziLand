@@ -124,8 +124,8 @@
 
     const landSetup: LandSetup = {
       tokenForSaleAddress: selectedToken?.address || '',
-      salePrice: stakeAmount,
-      amountToStake: sellPriceAmount,
+      salePrice: sellPriceAmount,
+      amountToStake: stakeAmount,
       tokenAddress: land?.tokenAddress ?? '',
       currentPrice: currentPrice ?? null,
     };
