@@ -228,9 +228,14 @@ function createWidgetsStore() {
           console.error('Widget not found:', id);
           return state;
         }
+        // Set initial z-index to be above existing widgets
+        const maxZIndex = Math.max(
+          ...Object.values(state).map((w) => w.zIndex || 0),
+          0,
+        );
         const newState = {
           ...state,
-          [id]: { ...state[id], ...updates },
+          [id]: { ...state[id], ...updates, zIndex: maxZIndex + 3 },
         };
         saveState(newState);
         return newState;
