@@ -2,8 +2,10 @@
   import type { LandWithActions } from '$lib/api/land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
+  import { Button } from '$lib/components/ui/button';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
+  import { claim_sound } from '$lib/sfx';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
@@ -19,17 +21,38 @@
     return dojo.accountManager?.getProvider();
   };
 
-  async function handleClaimFromCoin(land: LandWithActions) {
+  // Method 1: Using setInterval with counter
+  function soundAtInterval(nbLands) {
+    let count = 0;
+
+    const intervalId = setInterval(() => {
+      count++;
+      claim_sound.play();
+
+      if (count >= nbLands) {
+        clearInterval(intervalId);
+      }
+    }, 200);
+  }
+
+  async function handleClaimFromCoin(
+    land: LandWithActions | undefined,
+    nbLands: number = 1,
+  ) {
+    if (!land) return;
+
     if (!land.token) {
       console.error("Land doesn't have a token");
       return;
     }
 
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!).catch(
-      (e) => {
+    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
+      .then(() => {
+        soundAtInterval(nbLands);
+      })
+      .catch((e) => {
         console.error('error claiming from coin', e);
-      },
-    );
+      });
   }
 
   let lands = $state<LandWithActions[]>([]);
@@ -38,7 +61,7 @@
   // Filter and grouping state
   let selectedToken = $state<string>('all');
   let selectedLevel = $state<string>('all');
-  let groupByToken = $state<boolean>(false);
+  let groupByToken = $state<boolean>(true);
   let sortBy = $state<'location' | 'level' | 'date' | 'price'>('price');
   let sortOrder = $state<'asc' | 'desc'>('asc');
 
@@ -262,16 +285,28 @@
     <div class="flex flex-col">
       {#each Object.entries(groupedLands) as [groupName, groupLands]}
         {#if groupByToken && Object.keys(groupedLands).length > 1}
+          {@const token = groupLands.at(0)?.token}
           <div
-            class="px-4 py-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-10"
+            class="px-4 py-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-10 flex gap-2 items-center"
           >
             <h3 class="font-semibold text-gray-200">
-              {groupName} ({groupLands.length})
+              {token?.name} ({groupLands.length})
             </h3>
+            <Button
+              size="md"
+              onclick={() => {
+                handleClaimFromCoin(groupLands.at(0), groupLands.length);
+              }}
+            >
+              CLAIM ALL
+              <span class="text-yellow-500">
+                &nbsp;{token?.symbol}&nbsp;
+              </span>
+            </Button>
           </div>
         {/if}
 
-        {#each groupLands as land, index}
+        {#each groupLands as land}
           <button
             class="w-full text-left hover:bg-white/10 p-2 land-button"
             class:group-item={groupByToken}

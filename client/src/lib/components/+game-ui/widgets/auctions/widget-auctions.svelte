@@ -22,19 +22,6 @@
     return dojo.accountManager?.getProvider();
   };
 
-  async function handleClaimFromCoin(land: LandWithActions) {
-    if (!land.token) {
-      console.error("Land doesn't have a token");
-      return;
-    }
-
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!).catch(
-      (e) => {
-        console.error('error claiming from coin', e);
-      },
-    );
-  }
-
   interface LandWithPrice extends LandWithActions {
     price: CurrencyAmount | null;
     priceLoading: boolean;
