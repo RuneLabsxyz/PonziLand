@@ -50,9 +50,10 @@
   });
 </script>
 
-<div class="flex flex-col items-stretch px-4 relative w-[300px] pt-2">
+<div class="flex flex-col items-stretch relative w-full leading-none">
   <div class="flex justify-between items-center text-ponzi-number">
-    <span class="low-opacity">Token</span><span>{land?.token?.symbol}</span>
+    <span>Token</span>
+    <span>{land?.token?.symbol}</span>
   </div>
   <div class="flex justify-between items-center">
     <span class="low-opacity">Sell price</span><span
@@ -84,11 +85,9 @@
               />
             </Avatar.Root>
           </span>
-          <span class="low-opacity">
+          <span>
             {_yield.amount.toString()}
-            <span class="text-ponzi-number text-white"
-              >{_yield.token.symbol}</span
-            >
+            <span class="text-white">{_yield.token.symbol}</span>
           </span>
         </div>
       {/each}

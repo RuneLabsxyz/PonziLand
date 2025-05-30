@@ -50,6 +50,14 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  help: {
+    id: 'help',
+    type: 'help',
+    position: { x: 500, y: 100 },
+    dimensions: { width: 400, height: 400 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {
