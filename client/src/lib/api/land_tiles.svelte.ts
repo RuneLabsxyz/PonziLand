@@ -64,7 +64,7 @@ export class LandTileStore {
   private store: WrappedLand[][];
   private currentLands: Writable<BaseLand[][]>;
   private allLands: Readable<BaseLand[]>;
-  private pendingStake: Map<Location, LandStake> = new Map();
+  private pendingStake: Map<string, LandStake> = new Map(); // Use string key for better lookup
   private sub: Subscription | undefined;
   private updateTracker: Writable<number> = writable(0);
   private fakeUpdateInterval: NodeJS.Timeout | undefined;
@@ -258,20 +258,52 @@ export class LandTileStore {
     });
   }
 
+  // Helper method to get pending stake key
+  private getPendingStakeKey(location: Location): string {
+    return `${location.x}-${location.y}`;
+  }
+
+  // Helper method to check and apply pending stake
+  private checkAndApplyPendingStake(
+    land: BuildingLand,
+    location: Location,
+  ): BuildingLand {
+    const pendingStakeKey = this.getPendingStakeKey(location);
+    const pendingStake = this.pendingStake.get(pendingStakeKey);
+
+    if (pendingStake) {
+      console.log(
+        'Applying pending stake for location',
+        location,
+        pendingStake,
+      );
+      land.updateStake(pendingStake);
+      this.pendingStake.delete(pendingStakeKey);
+    }
+
+    return land;
+  }
+
   public updateLand(entity: ParsedEntity<SchemaType>): void {
     const location = getLocationFromEntity(entity);
     if (location === undefined) return;
 
     console.log('Updating land', entity);
 
-    // TODO: Handle the land being deleted, but that requires a more complex logic (mapping from/to the hashed location)
     const landStore = this.store[location.x][location.y];
+    const pendingStakeKey = this.getPendingStakeKey(location);
+
     landStore.update(({ value: previousLand }) => {
       const landModel = entity.models.ponzi_land?.Land;
+      const auctionModel = entity.models.ponzi_land?.Auction;
+      const landStakeModel = entity.models.ponzi_land?.LandStake;
 
+      // Handle land deletion
       if (landModel !== undefined && Object.keys(landModel).length === 0) {
         // Land model is being deleted, delete the entire land
         const newLand = new EmptyLand(location);
+        // Clear any pending stake for this location
+        this.pendingStake.delete(pendingStakeKey);
         this.currentLands.update((lands) => {
           lands[location.x][location.y] = newLand;
           return lands;
@@ -279,7 +311,18 @@ export class LandTileStore {
         return { value: newLand };
       }
 
+      // Handle empty land case
       if (EmptyLand.is(previousLand) && landModel == undefined) {
+        // If we only have a stake update for an empty land, store it as pending
+        if (landStakeModel !== undefined) {
+          console.log(
+            'Storing stake for empty land at location',
+            location,
+            landStakeModel,
+          );
+          this.pendingStake.set(pendingStakeKey, landStakeModel as LandStake);
+        }
+
         this.currentLands.update((lands) => {
           lands[location.x][location.y] = previousLand;
           return lands;
@@ -287,100 +330,88 @@ export class LandTileStore {
         return { value: previousLand };
       }
 
-      // If we get an auction, go ahead with the auction
-      const auctionModel = entity.models.ponzi_land?.Auction;
+      // Handle auction case
       if (auctionModel !== undefined && auctionModel.is_finished == false) {
+        let newLand: AuctionLand;
+
         if (AuctionLand.is(previousLand)) {
           previousLand.update(landModel as Land, auctionModel as Auction);
-          this.currentLands.update((lands) => {
-            lands[location.x][location.y] = previousLand;
-            return lands;
-          });
-          return { value: previousLand };
+          newLand = previousLand;
         } else if (landModel !== undefined) {
-          const newLand = new AuctionLand(
-            landModel as Land,
-            auctionModel as Auction,
-          );
-          this.currentLands.update((lands) => {
-            lands[location.x][location.y] = newLand;
-            return lands;
-          });
-          return {
-            value: newLand,
-          };
+          newLand = new AuctionLand(landModel as Land, auctionModel as Auction);
         } else {
-          const newLand = new AuctionLand(
-            previousLand,
-            auctionModel as Auction,
-          );
-          this.currentLands.update((lands) => {
-            lands[location.x][location.y] = newLand;
-            return lands;
-          });
+          newLand = new AuctionLand(previousLand, auctionModel as Auction);
           // Nuke the land
           this.triggerNukeAnimation(location.x, location.y);
           nuke_sound.play();
-
-          return {
-            value: newLand,
-          };
         }
+
+        this.currentLands.update((lands) => {
+          lands[location.x][location.y] = newLand;
+          return lands;
+        });
+        return { value: newLand };
       }
 
-      const landStakeModel = entity.models.ponzi_land?.LandStake;
       let newLand = previousLand;
 
+      // Handle land model updates
       if (landModel !== undefined) {
         if (AuctionLand.is(newLand) && Number(landModel.owner) == 0) {
           // Do not change the land, this is an empty update.
           return { value: previousLand };
-        } else if (BuildingLand.is(newLand)) {
-          // Create a new BuildingLand instance instead of updating in place
+        } else {
+          // Create new BuildingLand
           newLand = new BuildingLand(landModel as Land);
-          // Reapply stake if it exists
-          if (landStakeModel) {
+
+          // First, check for pending stake and apply it
+          newLand = this.checkAndApplyPendingStake(
+            newLand as BuildingLand,
+            location,
+          );
+
+          // Then, if we have a current stake update, apply it (this will override pending stake)
+          if (landStakeModel !== undefined) {
+            console.log('Applying current stake update', landStakeModel);
             (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
-          } else if (BuildingLand.is(previousLand)) {
-            // If no new stake but previous land had stake, reapply it
-            // We know stakeAmount is defined because it's always initialized in BuildingLand
+          } else if (
+            BuildingLand.is(previousLand) &&
+            previousLand.stakeAmount
+          ) {
+            // If no new stake but previous land had stake, preserve it
             (newLand as BuildingLand).updateStake({
               location: landModel.location,
               amount: previousLand.stakeAmount.toBigint(),
               last_pay_time: previousLand.lastPayTime.getTime(),
-            } as LandStake); // Type assertion since we know the object matches LandStake
+            } as LandStake);
           }
-          console.log('New land', newLand);
-        } else {
-          // Create new BuildingLand and immediately apply any pending stake
-          newLand = new BuildingLand(landModel as Land);
-          // Check both current and pending stakes
-          const pendingStake = this.pendingStake.get(newLand.location);
-          if (pendingStake) {
-            (newLand as BuildingLand).updateStake(pendingStake);
-            this.pendingStake.delete(newLand.location);
-          } else if (landStakeModel) {
-            // If we have a stake model in the current update, apply it immediately
-            (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
-          }
-        }
-      }
 
-      if (landStakeModel !== undefined) {
+          console.log('New land created', newLand);
+        }
+      } else if (landStakeModel !== undefined) {
+        // We only have a stake update
         if (BuildingLand.is(newLand)) {
-          // If we already have a BuildingLand, update its stake
+          // Apply stake to existing BuildingLand
+          console.log(
+            'Updating stake on existing BuildingLand',
+            landStakeModel,
+          );
           newLand.updateStake(landStakeModel as LandStake);
           newLand = BuildingLand.fromBuildingLand(newLand);
-        } else if (landModel) {
-          // If we have both land and stake in the same update, create BuildingLand with stake
-          newLand = new BuildingLand(landModel as Land);
-          (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
         } else {
-          // Store stake for later if we don't have a BuildingLand yet
-          this.pendingStake.set(newLand.location, landStakeModel as LandStake);
+          // Store stake as pending since we don't have a BuildingLand yet
+          console.log(
+            'Storing pending stake for non-BuildingLand',
+            location,
+            landStakeModel,
+          );
+          this.pendingStake.set(pendingStakeKey, landStakeModel as LandStake);
+          // Return early, no land change needed
+          return { value: previousLand };
         }
       }
 
+      // Update claim store for BuildingLand
       if (BuildingLand.is(newLand)) {
         claimStore.value[newLand.locationString] = {
           lastClaimTime: 0,
@@ -390,6 +421,7 @@ export class LandTileStore {
         };
       }
 
+      // Update the currentLands store
       this.currentLands.update((lands) => {
         lands[location.x][location.y] = newLand;
         return lands;
