@@ -102,9 +102,59 @@
     return null;
   });
 
+  let balanceError = $derived.by(() => {
+    let requiredAmount =
+      land.type === 'auction' ? sellPriceAmount : stakeAmount;
+    let userBalance;
+
+    console.log(requiredAmount);
+
+    if (land.type === 'auction') {
+      userBalance = tokenStore.balances.find(
+        (balance) => balance.token.address === baseToken?.address,
+      );
+    } else {
+      userBalance = tokenStore.balances.find(
+        (balance) => balance.token.address === land.token?.address,
+      );
+    }
+
+    if (userBalance === undefined) return 'You do not have any of this token';
+
+    const userTokenAmount = CurrencyAmount.fromUnscaled(
+      userBalance?.balance,
+      land.type === 'auction' ? baseToken : land.token,
+    );
+
+    // If the selected token is the same as the token being used for the purchase, add the stake amount
+    if (
+      land.type === 'auction' &&
+      selectedToken?.address === baseToken?.address
+    ) {
+      requiredAmount = requiredAmount.add(stakeAmount);
+    } else if (
+      land.type !== 'auction' &&
+      selectedToken?.address === land.token?.address
+    ) {
+      requiredAmount = requiredAmount.add(stakeAmount);
+    }
+
+    console.log(
+      'userAmount',
+      userTokenAmount.toString(),
+      'requiredAmount',
+      requiredAmount.toString(),
+    );
+    if (userTokenAmount.rawValue().isLessThan(requiredAmount.rawValue())) {
+      return `Insufficient balance. You need ${requiredAmount.toString()} ${land.type === 'auction' ? baseToken?.symbol : land.token?.symbol}`;
+    }
+
+    return null; // No error
+  });
+
   // Check if form is valid
   let isFormValid = $derived(
-    !tokenError && !stakeAmountError && !sellPriceError,
+    !tokenError && !stakeAmountError && !sellPriceError && !balanceError,
   );
 
   async function handleBuyClick() {
@@ -122,11 +172,16 @@
       currentPrice = await land.getCurrentAuctionPrice();
     }
 
+    console.log('baseToken', baseToken?.address);
+
     const landSetup: LandSetup = {
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: sellPriceAmount,
       amountToStake: stakeAmount,
-      tokenAddress: land?.tokenAddress ?? '',
+      tokenAddress:
+        land.type == 'auction'
+          ? (baseToken?.address ?? '')
+          : (land.tokenAddress ?? ''),
       currentPrice: currentPrice ?? null,
     };
 
@@ -221,6 +276,10 @@
       {selectedToken}
       {land}
     />
+
+    {#if balanceError}
+      <p class="text-red-500 text-sm mt-1">{balanceError}</p>
+    {/if}
 
     {#if loading}
       <Button class="mt-3 w-full" disabled>
