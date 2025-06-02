@@ -7,6 +7,7 @@
   import { fly } from 'svelte/transition';
   import dialogData from './dialog.json';
   import { tutorialLandStore, tutorialProgression } from './stores.svelte';
+  import { Card } from '../ui/card';
 
   const step = tutorialProgression();
 
@@ -177,18 +178,13 @@
       />
     </div>
     <div class="flex flex-col items-end">
-      <div
-        class="relative flex h-[180px] w-[600px] items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
-        style="background-image: url('/ui/ramp/chat-box.png'); background-size: cover;"
+      <Card
+        class="bg-ponzi relative flex h-[180px] w-[600px] items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
       >
-        <div class="mx-14 p-4 text-left text-black" style="width: 550px;">
-          <div class="relative text-md">
-            <span class="block" style="white-space: pre-line;"
-              >{@html formatText(currentDialog.text)}</span
-            >
-          </div>
-        </div>
-      </div>
+        <span class="text-white">
+          {@html formatText(currentDialog.text)}
+        </span>
+      </Card>
       <Button
         class="top-0 right-0 m-2 mr-6 bg-blue-500 text-white rounded "
         onclick={() => goto('/game')}
