@@ -21,6 +21,11 @@
       "symbol": "eSG",
       "name": "eq StarGate Token",
       "address": "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5"
+    },
+    {
+      "symbol": "nftLORDS",
+      "name": "Eq Nft LORDS",
+      "address": "0xdcdc180a8b4b9cef2d039462ad30de95c5609178a1c2bc55779309c07d45db"
     }
   ]
 }
