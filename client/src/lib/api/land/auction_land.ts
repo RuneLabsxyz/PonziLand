@@ -52,7 +52,8 @@ export class AuctionLand extends BaseLand {
       this._sell_price = landOrPrevious.sell_price;
       this._token_used = landOrPrevious.token_used;
       this._stakeAmount = landOrPrevious.stakeAmount;
-      this._lastPayTime = landOrPrevious.lastPayTime;
+      this._neighborsInfo = landOrPrevious.neighborsInfo;
+      this._neighborsInfoPacked = landOrPrevious.neighborsInfoPacked;
       this._owner = toHexWithPadding(0);
       this._level = landOrPrevious.level;
       this._boughtAt = landOrPrevious.boughtAt;
@@ -132,8 +133,6 @@ export class AuctionLand extends BaseLand {
       landStake.amount,
       this._token,
     );
-
-    this._lastPayTime = new Date(Number(landStake.last_pay_time));
   }
 
   static is(land: BaseLand): land is AuctionLand {
@@ -163,10 +162,6 @@ export class AuctionLand extends BaseLand {
 
   public get stakeAmount(): CurrencyAmount {
     return this._stakeAmount;
-  }
-
-  public get lastPayTime(): Date {
-    return this._lastPayTime;
   }
 
   public get block_date_bought(): BigNumberish {

@@ -23,6 +23,7 @@ impl EventDataRepository {
             EventDataModel::AddressAuthorized(event) => Self::save_event(conn, event),
             EventDataModel::AddressRemoved(event) => Self::save_event(conn, event),
             EventDataModel::VerifierUpdated(event) => Self::save_event(conn, event),
+            EventDataModel::LandTransfer(event) => Self::save_event(conn, event),
         }
         .await
     }

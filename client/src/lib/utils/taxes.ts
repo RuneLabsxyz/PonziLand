@@ -16,7 +16,7 @@ export const getAggregatedTaxes = async (
   nukables: { location: string; nukable: boolean }[];
   taxes: TaxData[];
 }> => {
-  if (!land || !land.getNextClaim || !land.getPendingTaxes) {
+  if (!land || !land.getNextClaim) {
     return {
       nukables: [],
       taxes: [],
@@ -34,22 +34,6 @@ export const getAggregatedTaxes = async (
       nukable: tax.canBeNuked,
     });
 
-    if (tax.amount.isZero()) {
-      continue;
-    }
-
-    const token: Token | undefined = data.availableTokens.find(
-      (t) => t.address == tax.tokenAddress,
-    );
-
-    const tokenAddress = token?.address ?? tax.tokenAddress;
-
-    tokenTaxMap[tokenAddress] = (
-      tokenTaxMap[tokenAddress] || CurrencyAmount.fromScaled(0, token)
-    ).add(tax.amount);
-  }
-
-  for (const tax of (await land.getPendingTaxes()) ?? []) {
     if (tax.amount.isZero()) {
       continue;
     }
@@ -140,7 +124,6 @@ export const estimateNukeTime = (
   const baseTime = 3600;
   let sellPrice = land.sellPrice.rawValue().toNumber();
   let remainingStake = land.stakeAmount.rawValue().toNumber();
-  let lastPayTime = Number(land.lastPayTime);
 
   if (!neighbourNumber) {
     neighbourNumber = land.getNeighbors().getNeighbors().length;
@@ -148,16 +131,27 @@ export const estimateNukeTime = (
   if (sellPrice <= 0 || isNaN(sellPrice)) {
     return 0;
   }
+  if (neighbourNumber === 0) {
+    return 0;
+  }
   const rateOfActualNeighbours = Number(
     calculateBurnRate(land, neighbourNumber),
   );
+  if (rateOfActualNeighbours <= 0) {
+    return 0;
+  }
 
   const remainingHours = remainingStake / rateOfActualNeighbours;
   const remainingSeconds = remainingHours * baseTime;
 
   const now = Date.now() / 1000;
-  const timeSinceLastPay = now - lastPayTime;
-  const remainingNukeTimeFromNow = remainingSeconds - timeSinceLastPay;
+  let earliestClaimNeighborTime =
+    land.neighborsInfo.earliestClaimNeighborTime / 1000;
+  const timeSinceEarliestClaim = Math.max(0, now - earliestClaimNeighborTime);
+  const remainingNukeTimeFromNow = Math.max(
+    0,
+    remainingSeconds - timeSinceEarliestClaim,
+  );
 
   return remainingNukeTimeFromNow;
 };

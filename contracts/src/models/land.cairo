@@ -3,8 +3,7 @@ use starknet::contract_address::ContractAddressZeroable;
 use ponzi_land::utils::common_strucs::{TokenInfo};
 use ekubo::types::keys::PoolKey as EkuboPoolKey;
 
-
-#[derive(Drop, Serde, Debug, Copy)]
+#[derive(Drop, Serde, Copy, Debug)]
 #[dojo::model]
 pub struct Land {
     #[key]
@@ -13,19 +12,17 @@ pub struct Land {
     pub owner: ContractAddress,
     pub sell_price: u256,
     pub token_used: ContractAddress,
-    //we will use this for taxes
     pub level: Level,
 }
-
-
-#[derive(Drop, Serde, Debug, Copy)]
+#[derive(Drop, Serde, Copy)]
 #[dojo::model]
 pub struct LandStake {
     #[key]
     pub location: u16,
-    pub last_pay_time: u64,
     pub amount: u256,
+    pub neighbors_info_packed: u128,
 }
+
 
 #[derive(Serde, Drop, Copy, PartialEq, Introspect, Debug)]
 pub enum Level {
@@ -83,3 +80,4 @@ impl LandImpl of LandTrait {
         Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
 }
+

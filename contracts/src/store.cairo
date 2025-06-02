@@ -51,8 +51,9 @@ impl StoreImpl of StoreTrait {
 
     // Deleter
     #[inline(always)]
-    fn delete_land(mut self: Store, mut land: Land) {
+    fn delete_land(mut self: Store, mut land: Land, mut land_stake: LandStake) {
         //Red: Attempt to see if it is still an issue with torii:
         self.world.erase_model(@land);
+        self.world.erase_model(@land_stake);
     }
 }
