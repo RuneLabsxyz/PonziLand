@@ -3,11 +3,6 @@ use super::{AccessControl};
 
 #[derive(Clone, Drop, Serde, starknet::Store, PartialEq)]
 enum TokenType {
-    ePAPER,
-    eLORDS,
-    eBROTHER,
-    ePAL,
-    eETH,
     #[default]
     eSTRK,
 }
@@ -16,22 +11,7 @@ use super::IPlaytestTokenDispatcher;
 
 fn get_dispatcher(token: TokenType) -> IPlaytestTokenDispatcher {
     let contract_address = match token {
-        TokenType::ePAPER => 0x0415c058a41cc80e7368562564c96fc4e3c03b23e32ba07a5c8cadc262b50c3c
-            .try_into()
-            .unwrap(),
-        TokenType::eLORDS => 0x04b66d22d3001daad50fb853c0c1cb3b96d1745acb295bae4a6d54b29125ed09
-            .try_into()
-            .unwrap(),
-        TokenType::eBROTHER => 0x01920ef3c5e765454dd3f6aeb5420ef524830e0b5f9a95ec2e1b9ee2073a16d1
-            .try_into()
-            .unwrap(),
-        TokenType::ePAL => 0x079aba4c89e9cc3495318d2479fe93601e1188ff5d9a8823e3dc736d74bb437f
-            .try_into()
-            .unwrap(),
-        TokenType::eETH => 0x038217779933c147320af3239e2dd098312e3074e0898001c79939c2e676fe8c
-            .try_into()
-            .unwrap(),
-        TokenType::eSTRK => 0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58
+        TokenType::eSTRK => 0x56893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb
             .try_into()
             .unwrap(),
     };
@@ -84,19 +64,17 @@ mod PlayTestToken {
 
     #[abi(embed_v0)]
     impl PlaytestMinter of super::IPlaytestMinter<ContractState> {
-        fn mint_player(ref self: ContractState, address: ContractAddress, token: TokenType) {
+        fn mint_player(ref self: ContractState, address: ContractAddress) {
             assert(
                 self.access_control.entry(get_caller_address()).read() != AccessControl::None,
                 'Users cannot mint tokens',
             );
             assert(!self.has_minted(address), 'Token already minted');
-            assert(token != TokenType::eSTRK, 'Cannot mint STRK token');
 
             // Give out the tokens (18 decimals)
-            get_dispatcher(token.clone()).mint(address, 5000_000000000000000000);
             get_dispatcher(TokenType::eSTRK).mint(address, 1500_000000000000000000);
 
-            self.minted.entry(address).write(Option::Some(token));
+            self.minted.entry(address).write(Option::Some(TokenType::eSTRK));
         }
 
         fn set_access(ref self: ContractState, address: ContractAddress, access: AccessControl) {
