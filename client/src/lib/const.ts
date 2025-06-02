@@ -1,5 +1,5 @@
 // Shared constants with the contracts
-export const GAME_SPEED = 20;
+export const GAME_SPEED = 5;
 export const GRID_SIZE = 64;
 export const TAX_RATE = 2; // as a percentage
 
