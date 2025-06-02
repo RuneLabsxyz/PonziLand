@@ -26,7 +26,8 @@ export const createLandWithActions = (
   const landWithActions = {
     ...land,
     stakeAmount: land.stakeAmount,
-    lastPayTime: land.lastPayTime?.getTime() ?? 0 / 1000,
+    neighborsInfo: land.neighborsInfo,
+    neighborsInfoPacked: land.neighborsInfoPacked,
     sellPrice: land.sellPrice,
     type: (land.type === 'empty'
       ? 'grass'
@@ -78,17 +79,6 @@ export const createLandWithActions = (
       );
       notificationQueue.addNotification(res?.transaction_hash ?? null, 'claim');
       return res;
-    },
-    async getPendingTaxes() {
-      const result = (await sdk.client.actions.getPendingTaxesForLand(
-        land.locationString,
-        account()!.getWalletAccount()!.address,
-      )) as any[] | undefined;
-
-      return result?.map((tax) => ({
-        amount: CurrencyAmount.fromUnscaled(tax.amount),
-        tokenAddress: toHexWithPadding(tax.token_address),
-      }));
     },
     async getNextClaim() {
       const result = (await sdk.client.actions.getNextClaimInfo(

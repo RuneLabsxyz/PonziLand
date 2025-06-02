@@ -12,19 +12,12 @@
   }>();
 
   let amount = $state('');
-  let lastPayTime = $state(Date.now().toString());
   let tokenUsed = $state(''); // Keep this for UI but don't submit it
-
-  onMount(() => {
-    // Set initial last pay time to current timestamp
-    lastPayTime = Date.now().toString();
-  });
 
   function handleSubmit() {
     const stake: Partial<LandStake> = {};
 
     if (amount) stake.amount = amount;
-    if (lastPayTime) stake.last_pay_time = lastPayTime;
 
     onSubmit(stake);
   }
@@ -37,15 +30,6 @@
       type="number"
       bind:value={amount}
       placeholder="1000000"
-      disabled={loading}
-    />
-  </div>
-  <div>
-    <Label>Last Pay Time</Label>
-    <Input
-      type="number"
-      bind:value={lastPayTime}
-      placeholder="1234567890"
       disabled={loading}
     />
   </div>

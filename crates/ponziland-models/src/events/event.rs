@@ -2,7 +2,9 @@ use serde_json::Value;
 use torii_ingester::prelude::Struct;
 use torii_ingester::{error::ToriiConversionError, RawToriiData};
 
-use super::actions::{AuctionFinishedEvent, LandBoughtEvent, LandNukedEvent, NewAuctionEvent};
+use super::actions::{
+    AuctionFinishedEvent, LandBoughtEvent, LandNukedEvent, LandTransferEvent, NewAuctionEvent,
+};
 use super::auth::{AddressAuthorizedEvent, AddressRemovedEvent, VerifierUpdatedEvent};
 
 #[derive(Clone, Debug)]
@@ -14,6 +16,7 @@ pub enum EventData {
     AddressAuthorized(AddressAuthorizedEvent),
     AddressRemoved(AddressRemovedEvent),
     VerifierUpdated(VerifierUpdatedEvent),
+    LandTransfer(LandTransferEvent),
 }
 
 #[derive(Clone, Debug)]
@@ -81,6 +84,9 @@ impl EventData {
             "ponzi_land-VerifierUpdatedEvent" => {
                 EventData::VerifierUpdated(serde_json::from_value(json)?)
             }
+            "ponzi_land-LandTransferEvent" => {
+                EventData::LandTransfer(serde_json::from_value(json)?)
+            }
             name => Err(ToriiConversionError::UnknownVariant {
                 enum_name: "Events".to_string(),
                 variant_name: name.to_string(),
@@ -111,6 +117,9 @@ impl TryFrom<Struct> for EventData {
             }
             "ponzi_land-VerifierUpdatedEvent" => {
                 EventData::VerifierUpdated(VerifierUpdatedEvent::try_from(value)?)
+            }
+            "ponzi_land-LandTransferEvent" => {
+                EventData::LandTransfer(LandTransferEvent::try_from(value)?)
             }
             name => Err(ToriiConversionError::UnknownVariant {
                 enum_name: "Events".to_string(),

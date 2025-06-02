@@ -8,8 +8,8 @@ use crate::shared::Location;
 pub struct LandStake {
     pub location: Location,
     #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub last_pay_time: u64,
     pub amount: U256,
+    pub neighbors_info_packed: u128,
 }
 
 impl TryFrom<Struct> for LandStake {
@@ -18,8 +18,8 @@ impl TryFrom<Struct> for LandStake {
     fn try_from(entity: Struct) -> Result<Self, Self::Error> {
         Ok(Self {
             location: get!(entity, "location", Location)?,
-            last_pay_time: get!(entity, "last_pay_time", u64)?,
             amount: get!(entity, "amount", U256)?,
+            neighbors_info_packed: get!(entity, "neighbors_info_packed", u128)?,
         })
     }
 }

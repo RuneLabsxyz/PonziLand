@@ -151,7 +151,7 @@ export class LandTileStore {
           amount:
             Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
             DEFAULT_STAKE_AMOUNT / 2,
-          last_pay_time: Date.now(),
+          neighbors_info_packed: 0,
         };
 
         const buildingLand = new BuildingLand(fakeLand);
@@ -206,7 +206,7 @@ export class LandTileStore {
             amount:
               Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
               DEFAULT_STAKE_AMOUNT / 2,
-            last_pay_time: Date.now(),
+            neighbors_info_packed: 0,
           };
 
           const buildingLand = new BuildingLand(fakeLand);
@@ -387,7 +387,6 @@ export class LandTileStore {
             (newLand as BuildingLand).updateStake({
               location: landModel.location,
               amount: previousLand.stakeAmount.toBigint(),
-              last_pay_time: previousLand.lastPayTime.getTime(),
             } as LandStake);
           }
 
@@ -419,7 +418,6 @@ export class LandTileStore {
       // Update claim store for BuildingLand
       if (BuildingLand.is(newLand)) {
         claimStore.value[newLand.locationString] = {
-          lastClaimTime: 0,
           animating: false,
           land: createLandWithActions(newLand, () => this.getAllLands()),
           claimable: true,

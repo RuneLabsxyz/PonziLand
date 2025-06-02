@@ -22,10 +22,6 @@ export type TransactionResult = Promise<
   | undefined
 >;
 
-export type PendingTax = {
-  amount: CurrencyAmount;
-  tokenAddress: string;
-};
 
 export type NextClaimInformation = {
   amount: CurrencyAmount;
@@ -39,6 +35,12 @@ export type LevelInfo = {
   expectedLevel: Level;
   timeSinceLastLevelUp: number;
   levelUpTime: number;
+};
+
+export type NeighborsInfo = {
+  earliestClaimNeighborTime: number;
+  numActiveNeighbors: number;
+  earliestClaimNeighborLocation: string;
 };
 
 export type LandWithStake = Land & LandStake;
@@ -58,8 +60,11 @@ export type LandWithMeta = Omit<
 > & {
   location: string;
   // Type conversions
+  //Land stake
   stakeAmount: CurrencyAmount;
-  lastPayTime: number;
+  neighborsInfoPacked: BigNumberish;
+  neighborsInfo: NeighborsInfo;
+
   sellPrice: CurrencyAmount;
 
   type: 'auction' | 'house' | 'grass';
@@ -78,7 +83,6 @@ export type LandWithActions = LandWithMeta & {
   increaseStake(amount: CurrencyAmount): TransactionResult;
   increasePrice(amount: CurrencyAmount): TransactionResult;
   claim(): TransactionResult;
-  getPendingTaxes(): Promise<PendingTax[] | undefined>;
   getNextClaim(): Promise<NextClaimInformation[] | undefined>;
   getNukable(): Promise<number | undefined>;
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
@@ -98,8 +102,15 @@ export abstract class BaseLand {
   protected _sellPrice: CurrencyAmount;
   protected _token: Token;
   protected _level: Level;
+
+  protected _neighborsInfoPacked: BigNumberish = 0;
+  protected _neighborsInfo: NeighborsInfo = {
+    earliestClaimNeighborTime: Date.now(),
+    numActiveNeighbors: 0,
+    earliestClaimNeighborLocation: '',
+  };
   protected _stakeAmount: CurrencyAmount;
-  protected _lastPayTime: Date = new Date(0);
+
   protected _block_date_bought: BigNumberish = 0;
   protected _sell_price: BigNumberish = 0;
   protected _token_used: string = '';
@@ -159,10 +170,6 @@ export abstract class BaseLand {
     return this._stakeAmount;
   }
 
-  public get lastPayTime(): Date {
-    return this._lastPayTime;
-  }
-
   public get block_date_bought(): BigNumberish {
     return this._block_date_bought;
   }
@@ -181,6 +188,30 @@ export abstract class BaseLand {
 
   public get tokenAddress(): string {
     return this._token.address;
+  }
+
+  public get neighborsInfo(): NeighborsInfo {
+    if (!this._neighborsInfo) {
+      this._neighborsInfo = this._unpackNeighborInfo(this._neighborsInfoPacked);
+    }
+    return this._neighborsInfo;
+  }
+
+  public get neighborsInfoPacked(): BigNumberish {
+    return this._neighborsInfoPacked;
+  }
+
+  private _unpackNeighborInfo(packed: BigNumberish): NeighborsInfo {
+    const packedNum = BigInt(packed.toString());
+    const location = Number(packedNum & BigInt(0xffff));
+    const neighbors = Number((packedNum >> BigInt(16)) & BigInt(0xff));
+    const time = Number(packedNum >> BigInt(24));
+
+    return {
+      earliestClaimNeighborTime: time * 1000, // Convert to milliseconds
+      numActiveNeighbors: neighbors,
+      earliestClaimNeighborLocation: toHexWithPadding(location),
+    };
   }
 
   // You should always be able to get the neighbors of a land

@@ -1,6 +1,7 @@
 use super::{
     actions::{
-        AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel, NewAuctionEventModel,
+        AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+        LandTransferEventModel, NewAuctionEventModel,
     },
     auth::{AddressAuthorizedEventModel, AddressRemovedEventModel, VerifierUpdatedEventModel},
     EventId as Id, EventType,
@@ -24,6 +25,7 @@ pub enum DataModel {
     AddressAuthorized(AddressAuthorizedEventModel),
     AddressRemoved(AddressRemovedEventModel),
     VerifierUpdated(VerifierUpdatedEventModel),
+    LandTransfer(LandTransferEventModel),
 }
 
 impl DataModel {
@@ -36,6 +38,7 @@ impl DataModel {
             DataModel::AddressAuthorized(model) => model.id = Some(id),
             DataModel::AddressRemoved(model) => model.id = Some(id),
             DataModel::VerifierUpdated(model) => model.id = Some(id),
+            DataModel::LandTransfer(model) => model.id = Some(id),
         }
     }
 }
@@ -56,6 +59,7 @@ impl From<EventData> for DataModel {
             EventData::VerifierUpdated(verifier_updated_event) => {
                 DataModel::VerifierUpdated(verifier_updated_event.into())
             }
+            EventData::LandTransfer(data) => DataModel::LandTransfer(data.into()),
         }
     }
 }
