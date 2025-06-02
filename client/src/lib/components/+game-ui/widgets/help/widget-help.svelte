@@ -6,30 +6,31 @@
   import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
   import accountData from '$lib/account.svelte';
 
-
   let claimState = $state('idle');
 
   async function claimTokens() {
     if (claimState === 'loading') return;
-    
+
     claimState = 'loading';
     try {
       if (!accountData.address) {
         throw new Error('No address found');
       }
-      const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/${accountData.address}/mint`, {
-        method: 'POST',
-      });
+      const response = await fetch(
+        `${PUBLIC_SOCIALINK_URL}/api/user/${accountData.address}/mint`,
+        {
+          method: 'POST',
+        },
+      );
 
       if (!response.ok) {
         throw new Error('Failed to claim tokens');
       }
-      
+
       claimState = 'success';
       setTimeout(() => {
         claimState = 'idle';
       }, 2000);
-      
     } catch (error) {
       claimState = 'error';
       setTimeout(() => {
@@ -60,8 +61,8 @@
           ><Button>Docs</Button></a
         >
       </div>
-      <Button 
-        onclick={claimTokens} 
+      <Button
+        onclick={claimTokens}
         disabled={claimState !== 'idle'}
         class="relative"
       >
