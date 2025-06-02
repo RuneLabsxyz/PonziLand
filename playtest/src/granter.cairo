@@ -21,7 +21,7 @@ fn get_dispatcher(token: TokenType) -> IPlaytestTokenDispatcher {
 
 #[starknet::interface]
 trait IPlaytestMinter<TContractState> {
-    fn mint_player(ref self: TContractState, address: ContractAddress, token: TokenType);
+    fn mint_player(ref self: TContractState, address: ContractAddress);
     fn has_minted(self: @TContractState, address: ContractAddress) -> bool;
     fn set_access(ref self: TContractState, address: ContractAddress, access: AccessControl);
     fn set_mint_status(

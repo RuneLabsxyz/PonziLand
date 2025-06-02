@@ -32,7 +32,7 @@ export async function ensurePermissions(config: Configuration, args: string[]) {
     }),
   );
 
-  //multicall.push(await setAccess(granterAddress, socialinkAddress, "Minter"));
+  multicall.push(await setAccess(granterAddress, socialinkAddress, "Minter"));
 
   const calls = [
     /*{

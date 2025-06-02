@@ -58,7 +58,7 @@ jobs:
         uses: andykenward/github-actions-cloudflare-pages@v2.3.2
         id: page
         # Do not deploy to cloudflare pages if it's a PR with main (check if the on is PR, and ref is main)
-        if: "!(github.event_name == 'push' && github.ref == 'refs/heads/main')"
+        # if: "!(github.event_name == 'push' && github.ref == 'refs/heads/main')"
         with:
           cloudflare-api-token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           cloudflare-account-id: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
