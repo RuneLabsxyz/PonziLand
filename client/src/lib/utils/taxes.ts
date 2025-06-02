@@ -213,20 +213,23 @@ export const estimateTax = (sellPrice: number) => {
   };
 };
 
+export function burnForOneNeighbor(land: LandWithActions) {
+  const maxN = 8;
+  return land.sellPrice
+    .rawValue()
+    .multipliedBy(TAX_RATE)
+    .multipliedBy(GAME_SPEED)
+    .dividedBy(maxN * 100);
+}
+
 // TODO: edge case land in the corners or edges of the map
 export function calculateBurnRate(
   land: LandWithActions,
   neighborCount: number,
 ) {
   const discount_for_level = calculateDiscount(land.level);
-  const maxN = 8;
 
-  let base = land.sellPrice
-    .rawValue()
-    .multipliedBy(TAX_RATE)
-    .multipliedBy(GAME_SPEED)
-    .dividedBy(maxN * 100)
-    .multipliedBy(neighborCount);
+  let base = burnForOneNeighbor(land).multipliedBy(neighborCount);
 
   if (discount_for_level > 0) {
     return base.multipliedBy(100 - discount_for_level).dividedBy(100);

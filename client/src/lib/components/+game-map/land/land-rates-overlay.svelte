@@ -1,6 +1,9 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import {
+    tutorialLandStore,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
   import { Arrow } from '$lib/components/ui/arrows';
   import type { Token } from '$lib/interfaces';
   import { displayCurrency } from '$lib/utils/currency';
@@ -34,7 +37,7 @@
       console.log('land', land);
       if (tutorialState.tutorialEnabled) {
         // TODO function to fill with store values
-        yieldInfo = [];
+        yieldInfo = tutorialLandStore.getNeighborsYield(land.location);
         console.log('tutorial');
       } else {
         getNeighbourYieldArray(land).then((res) => {

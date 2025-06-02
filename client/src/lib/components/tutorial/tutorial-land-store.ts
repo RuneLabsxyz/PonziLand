@@ -1,11 +1,22 @@
-import { EmptyLand } from '$lib/api/land';
+import { EmptyLand, type LandWithActions } from '$lib/api/land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { LandTileStore } from '$lib/api/land_tiles.svelte';
-import { GRID_SIZE } from '$lib/const';
+import { Neighbors } from '$lib/api/neighbors';
+import { GAME_SPEED, GRID_SIZE, TAX_RATE } from '$lib/const';
+import type { Token } from '$lib/interfaces';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { cameraTransition } from '$lib/stores/camera.store';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
-import { coordinatesToLocation } from '$lib/utils';
+import {
+  coordinatesToLocation,
+  padAddress,
+  toBigInt,
+  toHexWithPadding,
+} from '$lib/utils';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { createLandWithActions } from '$lib/utils/land-actions';
+import { burnForOneNeighbor } from '$lib/utils/taxes';
+import data from '$profileData';
 import type { ParsedEntity } from '@dojoengine/sdk';
 import { CairoOption, CairoOptionVariant } from 'starknet';
 import { get } from 'svelte/store';
@@ -202,5 +213,93 @@ export class TutorialLandStore extends LandTileStore {
       },
       { duration: 0 },
     );
+  }
+
+  // Add this method to the TutorialLandStore class
+  getNeighborsYield(landLocation: string): Array<{
+    token: Token | undefined;
+    sell_price: bigint;
+    percent_rate: bigint;
+    location: bigint;
+    per_hour: bigint;
+  } | null> {
+    const neighbors = this.getLandNeighbors(landLocation); // Implement this method to get neighbors
+    const yieldInfo: Array<{
+      token: Token | undefined;
+      sell_price: bigint;
+      percent_rate: bigint;
+      location: bigint;
+      per_hour: bigint;
+    } | null> = [];
+
+    console.log('Neighbors:', neighbors);
+
+    for (const neighbor of neighbors) {
+      if (neighbor === null) {
+        yieldInfo.push(null);
+        continue;
+      }
+      const landStake = neighbor.stakeAmount;
+      if (landStake.rawValue().isGreaterThan(0)) {
+        const token = data.availableTokens.find(
+          (token) =>
+            padAddress(token.address) === padAddress(neighbor.token_used),
+        );
+        const rate = (TAX_RATE * GAME_SPEED) / 8; // Adjust this based on your logic
+        const ratePerHour = this.getTaxRatePerNeighbor(neighbor); // Implement this method to calculate tax rate per neighbor
+
+        yieldInfo.push({
+          token,
+          sell_price: BigInt(neighbor.sell_price),
+          percent_rate: BigInt(rate * 100),
+          per_hour: CurrencyAmount.fromScaled(
+            ratePerHour.toNumber(),
+            token,
+          ).toBigint(),
+          location: toBigInt(neighbor.location) ?? 0n,
+        });
+      }
+    }
+    console.log('Yield info for neighbors:', yieldInfo);
+    return yieldInfo;
+  }
+
+  // Implement the method to get neighbors
+  getLandNeighbors(landLocation: string): Array<LandWithActions | null> {
+    const allLands = this.getAllLands();
+    const neighbors = new Neighbors({
+      location: landLocation,
+      source: get(allLands),
+    });
+
+    const filledArray = neighbors.locations.array.map((loc) => {
+      return neighbors
+        .getNeighbors()
+        .find((l) => l.locationString === toHexWithPadding(loc));
+    });
+
+    const arrayWithUndefined = [
+      ...filledArray.slice(0, 4), // Elements 0-4
+      undefined, // Insert undefined after position 4
+      ...filledArray.slice(4), // Rest of the elements
+    ];
+
+    const neiborsWithActions = arrayWithUndefined.map((land) => {
+      if (!land) {
+        return null;
+      }
+      if (BuildingLand.is(land)) {
+        return createLandWithActions(land, this.getAllLands);
+      } else {
+        return null;
+      }
+    });
+
+    return neiborsWithActions;
+  }
+
+  // Implement the method to calculate tax rate per neighbor
+  getTaxRatePerNeighbor(neighbor: LandWithActions) {
+    return burnForOneNeighbor(neighbor);
   }
 }
