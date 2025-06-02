@@ -156,6 +156,9 @@
     const landWithActions = createLandWithActions(land, () =>
       globalLandStore.getAllLands(),
     );
+    if (tutorialState.tutorialEnabled) {
+      return tutorialLandStore.getEstimatedNukeTime(landWithActions);
+    }
     return landWithActions.getEstimatedNukeTime();
   });
 

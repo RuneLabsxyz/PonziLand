@@ -302,4 +302,44 @@ export class TutorialLandStore extends LandTileStore {
   getTaxRatePerNeighbor(neighbor: LandWithActions) {
     return burnForOneNeighbor(neighbor);
   }
+
+  setStake(amount: number = 100, x: number = 32, y: number = 32): void {
+    const landStore = this.getLand(x, y);
+    if (!landStore) return;
+
+    const currentLand = get(landStore);
+    if (!currentLand || currentLand.type !== 'building') return;
+
+    const location = coordinatesToLocation(currentLand.location);
+
+    if (BuildingLand.is(currentLand)) {
+      currentLand.updateStake({
+        location,
+        amount: amount,
+        last_pay_time: Date.now(),
+      });
+    }
+    console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
+
+    this.updateLandDirectly(x, y, currentLand);
+  }
+
+  getEstimatedNukeTime(land: LandWithActions) {
+    // This function estimates the time until a nuke can be used based on the stake amount
+
+    // Get number of neighbors
+    const neighbors = this.getNeighborsYield(land.location);
+    const neighborCount = neighbors.filter(
+      (n) => n !== null && n.token !== undefined,
+    ).length;
+
+    const burnForOneNeighbor = this.getTaxRatePerNeighbor(land);
+
+    // Calculate the estimated time based on the stake amount and neighbor count
+    const stakeAmount = land.stakeAmount.rawValue().toNumber();
+    const estimatedTime =
+      stakeAmount / (burnForOneNeighbor.toNumber() * neighborCount);
+
+    return estimatedTime;
+  }
 }

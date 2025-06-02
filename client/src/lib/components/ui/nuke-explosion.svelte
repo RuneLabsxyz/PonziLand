@@ -31,8 +31,8 @@
   <div
     class="absolute h-full w-full top-0 bottom-0 left-0 right-0 overflow-hidden z-20"
     style="mask-image: url('/tokens/+global/biomes.png'); mask-position: {-biomeX *
-      width}px {-biomeY * height}px; mask-size: {(2048 / 256) *
-      width}px {(3328 / 256) * height}px;"
+      width}px {-biomeY * height}px; mask-size: {(1024 / 256) *
+      width}px {(1280 / 256) * height}px;"
   >
     <div
       class="flashing-biome absolute h-full w-full top-0 bottom-0 left-0 right-0"

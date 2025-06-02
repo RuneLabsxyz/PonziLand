@@ -82,4 +82,16 @@ export function changeMap() {
   if (tutorialState.tutorialProgress >= 13) {
     tutorialLandStore.setDisplayRates(false);
   }
+
+  if (tutorialState.tutorialProgress === 14) {
+    tutorialLandStore.setStake(10000000000000000000);
+  }
+
+  if (tutorialState.tutorialProgress === 15) {
+    tutorialLandStore.setNuke(true);
+  }
+
+  if (tutorialState.tutorialProgress === 19) {
+    tutorialLandStore.addAuction();
+  }
 }
