@@ -211,32 +211,6 @@
   <div class="p-4 border-b border-gray-700 space-y-3">
     <!-- Filter Row 1 -->
     <div class="flex gap-3 items-center flex-wrap">
-      <!-- <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-300">Token:</label>
-        <select
-          bind:value={selectedToken}
-          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
-        >
-          <option value="all">All Tokens</option>
-          {#each availableTokens as token}
-            <option value={token}>{token}</option>
-          {/each}
-        </select>
-      </div> -->
-
-      <!-- <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-300">Level:</label>
-        <select
-          bind:value={selectedLevel}
-          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
-        >
-          <option value="all">All Levels</option>
-          {#each availableLevels as level}
-            <option value={level}>Level {level}</option>
-          {/each}
-        </select>
-      </div> -->
-
       <div class="flex items-center gap-2">
         <input
           type="checkbox"
@@ -260,8 +234,6 @@
         >
           <option value="date">Purchase Date</option>
           <option value="price">Price</option>
-          <!-- <option value="level">Level</option>
-        <option value="location">Location</option> -->
         </select>
       </div>
 
@@ -346,14 +318,6 @@
 </div>
 
 <style>
-  /* .land-button:nth-child(odd) {
-    background-color: hsl(240, 19%, 18%);
-  }
-
-  .land-button:nth-child(odd):hover {
-    background-color: hsl(240, 19%, 20%);
-  } */
-
   .group-item {
     margin-left: 0;
     border-left: 3px solid transparent;
