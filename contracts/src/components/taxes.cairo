@@ -35,10 +35,10 @@ mod TaxesComponent {
 
     #[storage]
     struct Storage {
-        //  land_owner,location,token_address -> amount
-        pending_taxes_for_land: Map<(ContractAddress, u16, ContractAddress), u256>,
-        //land_owner,location ->  token_addresses
-        pending_tokens_for_land: Map<(ContractAddress, u16), Vec<ContractAddress>>,
+        //tax_payer,tax_reciever -> timestamp
+        last_claim_time: Map<(u16, u16), u64>,
+        //               tax_reciever,tax_payer -> amount
+        claimed_amount: Map<(u16, u16), u256>,
     }
 
     // Events
@@ -60,157 +60,281 @@ mod TaxesComponent {
         +Drop<TContractState>,
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
-        fn _calculate_and_distribute(
+        fn register_bidirectional_tax_relations(
+            ref self: ComponentState<TContractState>, land_a: Land, land_b: Land, store: Store,
+        ) {
+            self._register_unidirectional_tax_relation(land_a, land_b, store);
+            self._register_unidirectional_tax_relation(land_b, land_a, store);
+        }
+
+        fn _register_unidirectional_tax_relation(
+            ref self: ComponentState<TContractState>,
+            tax_receiver: Land,
+            tax_payer: Land,
+            store: Store,
+        ) {
+            let current_timestamp = get_block_timestamp();
+            self
+                .last_claim_time
+                .write((tax_payer.location, tax_receiver.location), current_timestamp);
+            self.claimed_amount.write((tax_receiver.location, tax_payer.location), 0);
+        }
+
+
+        fn get_elapsed_time_since_last_claim(
+            self: @ComponentState<TContractState>, claimer_location: u16, payer_location: u16,
+        ) -> u64 {
+            let last_claim_time = self.last_claim_time.read((claimer_location, payer_location));
+            let elapsed_time = if get_block_timestamp() > last_claim_time {
+                get_block_timestamp() - last_claim_time
+            } else {
+                0
+            };
+            elapsed_time
+        }
+
+        fn calculate_and_distribute_taxes(
             ref self: ComponentState<TContractState>,
             mut store: Store,
-            land: Land,
+            claimer: Land,
+            direct_neighbor: Land,
             ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
+            from_buy: bool,
         ) -> bool {
-            //generate taxes for each neighbor of neighbor
-            let neighbors = neighbors_with_their_neighbors(ref neighbors_dict, land.location);
-            let mut land_stake = store.land_stake(land.location);
+            let neighbors_of_direct_neighbor = neighbors_with_their_neighbors(
+                ref neighbors_dict, direct_neighbor.location,
+            );
+            let mut land_stake = store.land_stake(direct_neighbor.location);
 
-            //if we dont have neighbors we dont have to pay taxes
-            let neighbors_with_owners = neighbors.len();
-            if neighbors_with_owners == 0 {
-                land_stake.last_pay_time = get_block_timestamp();
-                store.set_land_stake(land_stake);
-                return false;
-            }
-            let current_time = get_block_timestamp();
-            // Calculate the tax per neighbor (divided by the maximum possible neighbors)
-            let tax_per_neighbor = get_taxes_per_neighbor(land, land_stake);
-            // Calculate the total tax to distribute (only to existing neighbors)
-            let tax_to_distribute = tax_per_neighbor * neighbors_with_owners.into();
+            let mut tax_amount_for_neighbor: Array<(u16, ContractAddress, u256)> =
+                ArrayTrait::new();
+            let total_already_claimed = self
+                ._calculate_total_claimed(direct_neighbor, neighbors_of_direct_neighbor.span());
 
-            //if we dont have enough stake to pay the taxes,we distrubute the total amount of stake
-            //and after we nuke the land
-            let (tax_to_distribute, is_nuke) = if land_stake.amount <= tax_to_distribute {
-                (land_stake.amount, true)
+            let (total_taxes, tax_for_claimer) = self
+                ._calculate_taxes_for_all_neighbors(
+                    claimer,
+                    direct_neighbor,
+                    neighbors_of_direct_neighbor.span(),
+                    land_stake.amount,
+                    total_already_claimed,
+                    ref tax_amount_for_neighbor,
+                );
+            let is_nuke = if land_stake.amount <= total_taxes {
+                self._process_nuke(store, direct_neighbor, tax_amount_for_neighbor);
+                land_stake.amount = 0;
+                true
+            } else if !from_buy {
+                self
+                    ._process_claim(
+                        store, claimer, direct_neighbor, tax_for_claimer, land_stake.amount,
+                    );
+                land_stake.amount -= tax_for_claimer;
+                false
             } else {
-                (tax_to_distribute, false)
+                self._process_buy(store, direct_neighbor, ref land_stake, tax_amount_for_neighbor);
+                false
             };
 
-            //distribute the taxes to each neighbor
-            let tax_per_neighbor = tax_to_distribute / neighbors_with_owners.into();
-            let remainder_tax = tax_to_distribute % neighbors_with_owners.into();
-
-            //for distribute the remainder_tax to the last neighbor
-            let mut i = 0;
-            let mut last_neighbor = neighbors_with_owners - 1;
-
-            while i < neighbors_with_owners {
-                let neighbor = neighbors[i];
-                let extra_amount = if i == last_neighbor {
-                    remainder_tax
-                } else {
-                    0
-                };
-
-                self._add_taxes(land, *neighbor, tax_per_neighbor + extra_amount, store);
-
-                i += 1;
-            };
-
-            // Distribute taxes for land
-
-            land_stake.last_pay_time = current_time;
-            land_stake.amount -= tax_to_distribute;
             store.set_land_stake(land_stake);
-
             is_nuke
         }
 
-
-        fn _add_taxes(
+        fn _calculate_taxes_for_all_neighbors(
             ref self: ComponentState<TContractState>,
-            tax_payer: Land,
-            tax_recipient: Land,
-            amount: u256,
-            mut store: Store,
-        ) {
-            let token_addresses = self
-                .pending_tokens_for_land
-                .entry((tax_recipient.owner, tax_recipient.location));
+            claimer: Land,
+            direct_neighbor: Land,
+            neighbors_of_direct_neighbor: Span<Land>,
+            land_stake_amount: u256,
+            total_already_claimed: u256,
+            ref tax_amount_for_neighbor: Array<(u16, ContractAddress, u256)>,
+        ) -> (u256, u256) {
+            let mut total_taxes: u256 = 0;
+            let mut tax_for_claimer: u256 = 0;
 
-            let mut exists = false;
-            for mut i in 0..token_addresses.len() {
-                if token_addresses.at(i).read() == tax_payer.token_used {
-                    exists = true;
-                    break;
+            for neighbor in neighbors_of_direct_neighbor {
+                let neighbor = *neighbor;
+                let last_claim_time = self
+                    .last_claim_time
+                    .read((neighbor.location, direct_neighbor.location));
+                let elapsed_time = if get_block_timestamp() > last_claim_time {
+                    get_block_timestamp() - last_claim_time
+                } else {
+                    0
                 };
-            };
+                if elapsed_time > 0 {
+                    let tax_per_neighbor = get_taxes_per_neighbor(direct_neighbor, elapsed_time);
+                    total_taxes += tax_per_neighbor;
 
-            if !exists {
-                token_addresses.append().write(tax_payer.token_used);
-            };
+                    let individual_total_already_claimed = self
+                        .claimed_amount
+                        .read((neighbor.location, direct_neighbor.location));
+                    let estimated_original_stake = land_stake_amount + total_already_claimed;
+                    let max_per_neighbor = estimated_original_stake
+                        / neighbors_of_direct_neighbor.len().into();
 
-            let key = (tax_recipient.owner, tax_recipient.location, tax_payer.token_used);
-            let current_tax_amount = self.pending_taxes_for_land.read(key);
-            self.pending_taxes_for_land.write(key, current_tax_amount + amount);
-            store
-                .world
-                .emit_event(
-                    @LandTransferEvent {
-                        from_location: tax_payer.location,
-                        to_location: tax_recipient.location,
-                        token_address: tax_payer.token_used,
-                        amount: amount,
-                    },
+                    // Calculate available tax avoiding overflow
+                    let available_tax_for_claimer = if tax_per_neighbor
+                        + individual_total_already_claimed > max_per_neighbor {
+                        if max_per_neighbor > individual_total_already_claimed {
+                            max_per_neighbor - individual_total_already_claimed
+                        } else {
+                            0
+                        }
+                    } else {
+                        tax_per_neighbor
+                    };
+
+                    if available_tax_for_claimer > 0 {
+                        tax_amount_for_neighbor
+                            .append((neighbor.location, neighbor.owner, available_tax_for_claimer));
+                        if neighbor.location == claimer.location {
+                            tax_for_claimer += available_tax_for_claimer;
+                        }
+                    }
+                }
+            };
+            (total_taxes, tax_for_claimer)
+        }
+
+        fn _calculate_total_claimed(
+            ref self: ComponentState<TContractState>,
+            direct_neighbor: Land,
+            neighbors_of_direct_neighbor: Span<Land>,
+        ) -> u256 {
+            let mut total_already_claimed: u256 = 0;
+            for neighbor in neighbors_of_direct_neighbor {
+                let neighbor = *neighbor;
+                let individual_total_already_claimed = self
+                    .claimed_amount
+                    .read((neighbor.location, direct_neighbor.location));
+                total_already_claimed += individual_total_already_claimed;
+            };
+            total_already_claimed
+        }
+
+        fn _process_nuke(
+            ref self: ComponentState<TContractState>,
+            store: Store,
+            nuked_land: Land,
+            neighbors_of_nuked_land: Array<(u16, ContractAddress, u256)>,
+        ) {
+            for (_, neighbor_address, tax_amount) in neighbors_of_nuked_land {
+                self
+                    ._transfer_tokens(
+                        neighbor_address,
+                        nuked_land.owner,
+                        TokenInfo { token_address: nuked_land.token_used, amount: tax_amount },
+                    );
+            }
+        }
+
+        fn _process_buy(
+            ref self: ComponentState<TContractState>,
+            store: Store,
+            direct_neighbor: Land,
+            ref land_stake: LandStake,
+            neighbors_of_direct_neighbor: Array<(u16, ContractAddress, u256)>,
+        ) {
+            let mut total_real_taxes: u256 = 0;
+            for (neighbor_location, neighbor_address, tax_amount) in neighbors_of_direct_neighbor {
+                self
+                    ._execute_claim(
+                        store,
+                        neighbor_location,
+                        neighbor_address,
+                        direct_neighbor,
+                        tax_amount,
+                        land_stake.amount,
+                        true,
+                    );
+                total_real_taxes += tax_amount;
+                self.claimed_amount.write((neighbor_location, direct_neighbor.location), 0);
+            };
+            land_stake.amount -= total_real_taxes;
+        }
+
+        fn _process_claim(
+            ref self: ComponentState<TContractState>,
+            store: Store,
+            claimer: Land,
+            direct_neighbor: Land,
+            tax_for_claimer: u256,
+            land_stake_amount: u256,
+        ) {
+            self
+                ._execute_claim(
+                    store,
+                    claimer.location,
+                    claimer.owner,
+                    direct_neighbor,
+                    tax_for_claimer,
+                    land_stake_amount,
+                    false,
                 );
         }
 
-        fn _claim(
+        fn _transfer_tokens(
             ref self: ComponentState<TContractState>,
-            taxes: Array<TokenInfo>,
-            owner_land: ContractAddress,
-            land_location: u16,
-        ) {
-            let mut payable = get_dep_component_mut!(ref self, Payable);
-            for token_info in taxes {
-                if token_info.amount > 0 {
-                    let validation_result = payable
-                        .validate(
-                            token_info.token_address, get_contract_address(), token_info.amount,
-                        );
-
-                    let status = payable.transfer(owner_land, validation_result);
-                    assert(status, errors::ERC20_TRANSFER_CLAIM_FAILED);
-                    self._remove_pending_taxes(owner_land, land_location, token_info);
-                }
-            }
-        }
-
-        fn _remove_pending_taxes(
-            ref self: ComponentState<TContractState>,
-            owner_land: ContractAddress,
-            land_location: u16,
+            tax_receiver: ContractAddress,
+            tax_payer: ContractAddress,
             token_info: TokenInfo,
         ) {
-            let key = (owner_land, land_location, token_info.token_address);
-            let current_tax_amount = self.pending_taxes_for_land.read(key);
-            if current_tax_amount > 0 {
-                self.pending_taxes_for_land.write(key, current_tax_amount - token_info.amount);
-            } else {
-                self.pending_taxes_for_land.write(key, 0);
-            }
+            let mut payable = get_dep_component_mut!(ref self, Payable);
+            let validation_result = payable
+                .validate(token_info.token_address, get_contract_address(), token_info.amount);
+            let status = payable.transfer(tax_receiver, validation_result);
+            assert(status, errors::ERC20_TRANSFER_CLAIM_FAILED);
         }
 
-        fn _get_pending_taxes(
-            self: @ComponentState<TContractState>, owner_land: ContractAddress, land_location: u16,
-        ) -> Array<TokenInfo> {
-            let mut taxes: Array<TokenInfo> = ArrayTrait::new();
-            let token_addresses = self.pending_tokens_for_land.entry((owner_land, land_location));
-            for mut i in 0..token_addresses.len() {
-                let token_address = token_addresses.at(i).read();
-                let amount = self
-                    .pending_taxes_for_land
-                    .read((owner_land, land_location, token_address));
-                if amount > 0 {
-                    taxes.append(TokenInfo { token_address, amount });
+        fn _execute_claim(
+            ref self: ComponentState<TContractState>,
+            mut store: Store,
+            claimer_location: u16,
+            claimer_address: ContractAddress,
+            direct_neighbor: Land,
+            available_tax_for_claimer: u256,
+            land_stake_amount: u256,
+            from_buy: bool,
+        ) {
+            if available_tax_for_claimer > 0 && available_tax_for_claimer < land_stake_amount {
+                self
+                    ._transfer_tokens(
+                        claimer_address,
+                        direct_neighbor.owner,
+                        TokenInfo {
+                            token_address: direct_neighbor.token_used,
+                            amount: available_tax_for_claimer,
+                        },
+                    );
+
+                store
+                    .world
+                    .emit_event(
+                        @LandTransferEvent {
+                            from_location: direct_neighbor.location,
+                            to_location: claimer_location,
+                            token_address: direct_neighbor.token_used,
+                            amount: available_tax_for_claimer,
+                        },
+                    );
+
+                if !from_buy {
+                    let individual_total_already_claimed = self
+                        .claimed_amount
+                        .read((claimer_location, direct_neighbor.location));
+                    self
+                        .claimed_amount
+                        .write(
+                            (claimer_location, direct_neighbor.location),
+                            individual_total_already_claimed + available_tax_for_claimer,
+                        );
                 }
-            };
-            taxes
+
+                self
+                    .last_claim_time
+                    .write((direct_neighbor.location, claimer_location), get_block_timestamp());
+            }
         }
     }
 }

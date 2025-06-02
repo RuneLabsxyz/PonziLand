@@ -366,14 +366,6 @@ fn setup_buyer_with_tokens(
     assert(allowance >= amount, 'Buyer approval failed');
 }
 
-// Helper function for verifying taxes and stake after a claim
-fn verify_taxes_and_stake(actions_system: IActionsDispatcher, land_location: u16, store: Store) {
-    let land = store.land(land_location);
-    let land_stake = store.land_stake(land_location);
-    let taxes = actions_system.get_pending_taxes_for_land(land_location, land.owner);
-    assert(taxes.len() > 0, 'must have pending taxes');
-    assert(land_stake.amount < 1000, 'must have less stake');
-}
 
 // Helper function for land verification
 fn verify_land(
@@ -655,16 +647,10 @@ fn test_claim_and_add_taxes() {
 
     // Get claimer land and verify taxes
     let claimer_land = store.land(2080);
-    let claimer_land_taxes = actions_system.get_pending_taxes_for_land(2080, claimer_land.owner);
-    assert(claimer_land_taxes.len() == 0, 'have pending taxes');
     assert(erc20_neighbor_1.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
 
     // Verify the neighbors of the claimer land
     let neighbor_land_after_claim = store.land_stake(next_auction_location.unwrap());
-    assert(
-        neighbor_land_after_claim.last_pay_time == 5000 / TIME_SPEED.into(),
-        'err in neighbor last_pay',
-    );
     assert(
         neighbor_land_after_claim.amount < neighbor_land_before_claim.amount,
         'must have less stake',
@@ -675,8 +661,6 @@ fn test_claim_and_add_taxes() {
     setup_buyer_with_tokens(erc20_neighbor_1, actions_system, NEIGHBOR_1(), NEW_BUYER(), 2500);
     actions_system.buy(next_auction_location.unwrap(), erc20_neighbor_1.contract_address, 100, 100);
     // verify the claim when occurs a buy
-    let claimer_land_stake = store.land_stake(2080);
-    assert(claimer_land_stake.last_pay_time == 6000 / TIME_SPEED.into(), 'Err in 2080 last_pay');
 }
 
 #[test]
@@ -750,10 +734,6 @@ fn test_nuke_action() {
         0,
         main_currency.contract_address,
     );
-
-    // Verify that pending taxes were paid to the owner during nuke
-    let pending_taxes_recipient = actions_system.get_pending_taxes_for_land(2080, RECIPIENT());
-    assert(pending_taxes_recipient.len() == 0, 'Should not have pending taxes');
 }
 
 
@@ -842,10 +822,6 @@ fn test_detailed_tax_calculation() {
     assert(land_1281_stake.last_pay_time == 5600, 'Wrong last pay time');
     assert(land_1281_stake.amount == 9717, // 10000 - 283
     'Wrong stake amount after tax');
-
-    // Verify taxes for central land (1280)
-    let pending_taxes = actions_system.get_pending_taxes_for_land(1280, RECIPIENT());
-    assert(pending_taxes.len() == 0, 'Wrong number of tax entries');
 
     assert(erc20_neighbor.balanceOf(RECIPIENT()) == 283, 'Wrong tax amount calculated');
 }
@@ -1187,9 +1163,7 @@ fn test_claim_all() {
 
     //Get claimer lands and verify taxes
     let neighbor_land_after_claim = store.land_stake(next_location_1.unwrap());
-    let first_land_taxes = actions_system.get_pending_taxes_for_land(2080, RECIPIENT());
 
-    assert(first_land_taxes.len() == 0, 'first have pending taxes');
     assert(erc20_neighbor_1.balanceOf(RECIPIENT()) > 0, 'has to receive tokens');
     assert(
         neighbor_land_before_claim.amount > neighbor_land_after_claim.amount,
@@ -1236,14 +1210,14 @@ fn test_time_to_nuke() {
     set_block_timestamp(block_timestamp + time_to_nuke / 4);
     set_block_timestamp(10000 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
-    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
 
-    assert!(unclaimed_taxes * 4 < land_stake.amount, "stake should be more than unclaimed taxes");
+    assert!(unclaimed_taxes < land_stake.amount, "stake should be more than unclaimed taxes");
     assert!(new_time_to_nuke > 0, "should not be nukable yet");
 
     set_block_timestamp(10000 + time_to_nuke);
 
-    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbor(2080);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
     assert!(unclaimed_taxes * 4 >= land_stake.amount, "stake should be <= unclaimed taxes");
 
     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
@@ -1298,4 +1272,208 @@ fn test_circle_expansion() {
     assert_eq!(land_2.owner, RECIPIENT(), "land 2 owner");
     assert_eq!(land_3.owner, RECIPIENT(), "land 3 owner");
     assert_eq!(land_4.owner, RECIPIENT(), "land 4 owner");
+}
+
+
+#[test]
+fn test_new_claim() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher) =
+        setup_test();
+    //set a liquidity pool with amount
+    ekubo_testing_dispatcher
+        .set_pool_liquidity(
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
+        );
+    // Deploy ERC20 tokens for neighbors
+    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
+
+    set_block_number(234324);
+    set_block_timestamp(100 / TIME_SPEED.into());
+    set_contract_address(RECIPIENT());
+
+    //first we clear all the events
+    clear_events(store.world.dispatcher.contract_address);
+    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 500, main_currency);
+    //and now we can capture NewAuctionEvent
+    let next_auction_location = capture_location_of_new_auction(
+        store.world.dispatcher.contract_address,
+    );
+    assert(next_auction_location.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_auction_location.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_1,
+    );
+
+    let next_location_2 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_2.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_2(),
+        next_location_2.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_2,
+    );
+
+    let next_location_3 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_3.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_3(),
+        next_location_3.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_3,
+    );
+
+    // let next_location_4 =
+    // capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    // assert(next_location_4.is_some(), 'No new auction location found');
+    // initialize_land(
+    //     actions_system,
+    //     main_currency,
+    //     RECIPIENT(),
+    //     next_location_4.unwrap(),
+    //     1000,
+    //     200,
+    //     main_currency,
+    // );
+
+    // let neighbor_land_before_claim = store.land_stake(next_auction_location.unwrap());
+    // println!(
+    //     "neighbor 1 location {} amount before claim {}",
+    //     next_auction_location.unwrap(),
+    //     neighbor_land_before_claim.amount,
+    // );
+
+    // let neighbor_4_before_claim = store.land_stake(next_location_4.unwrap());
+    // println!(
+    //     "neighbor location {} amount before claim {}",
+    //     next_location_4.unwrap(),
+    //     neighbor_4_before_claim.amount,
+    // );
+    // Simulate time difference to generate taxes
+    set_block_timestamp(2000);
+    set_contract_address(RECIPIENT());
+    actions_system.claim(2080);
+
+    // let neighbor_land_after_claim = store.land_stake(next_auction_location.unwrap());
+    // println!(
+    //     "neighbor 1 location {} after claim {}",
+    //     next_auction_location.unwrap(),
+    //     neighbor_land_after_claim.amount,
+    // );
+    // let neighbor_4_after_claim = store.land_stake(next_location_4.unwrap());
+    // println!("location {} after claim {}", next_location_4.unwrap(),
+    // neighbor_4_after_claim.amount);
+    // let neighbor_2_after_claim = store.land_stake(next_location_2.unwrap());
+    // println!(
+    //     "NEIGHBOR 2 location {} after claim {}",
+    //     next_location_2.unwrap(),
+    //     neighbor_2_after_claim.amount,
+    // );
+    // let neighbor_3_after_claim = store.land_stake(next_location_3.unwrap());
+    // println!(
+    //     "NEIGHBOR 3 location {} after claim {}",
+    //     next_location_3.unwrap(),
+    //     neighbor_3_after_claim.amount,
+    // );
+
+    set_block_timestamp(4000);
+    set_contract_address(RECIPIENT());
+    // actions_system.claim(2080);
+
+    // Setup new buyer with tokens and approvals
+    setup_buyer_with_tokens(erc20_neighbor_3, actions_system, NEIGHBOR_3(), NEW_BUYER(), 10000);
+
+    // Perform buy action
+    actions_system.buy(next_location_3.unwrap(), erc20_neighbor_3.contract_address, 1000, 200);
+
+    set_block_timestamp(8000);
+    set_contract_address(RECIPIENT());
+    actions_system.claim(2080);
+
+    set_block_timestamp(12000);
+    set_contract_address(RECIPIENT());
+    actions_system.claim(2080);
+
+    let balance_of_recipient_erc20_1 = erc20_neighbor_1.balanceOf(RECIPIENT());
+    let balance_of_recipient_erc20_2 = erc20_neighbor_2.balanceOf(RECIPIENT());
+    let balance_of_recipient_erc20_3 = erc20_neighbor_3.balanceOf(RECIPIENT());
+    println!("balance of recipient erc20 1 {}", balance_of_recipient_erc20_1);
+    println!("balance of recipient erc20 2 {}", balance_of_recipient_erc20_2);
+    println!("balance of recipient erc20 3 {}", balance_of_recipient_erc20_3);
+
+    let balance_neighbor_1_of_erc20_2 = erc20_neighbor_2.balanceOf(NEIGHBOR_1());
+    let balance_neighbor_1_of_erc20_3 = erc20_neighbor_3.balanceOf(NEIGHBOR_1());
+    println!("balance of neighbor 1 erc20 2 {}", balance_neighbor_1_of_erc20_2);
+    println!("balance of neighbor 1 erc20 3 {}", balance_neighbor_1_of_erc20_3);
+
+    let balance_neighbor_2_of_erc20_1 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
+    let balance_neighbor_2_of_erc20_3 = erc20_neighbor_3.balanceOf(NEIGHBOR_2());
+    println!("balance of neighbor 2 erc20 1 {}", balance_neighbor_2_of_erc20_1);
+    println!("balance of neighbor 2 erc20 3 {}", balance_neighbor_2_of_erc20_3);
+
+    let balance_neighbor_3_of_erc20_1 = erc20_neighbor_1.balanceOf(NEIGHBOR_3());
+    let balance_neighbor_3_of_erc20_2 = erc20_neighbor_2.balanceOf(NEIGHBOR_3());
+    println!("balance of neighbor 3 erc20 1 {}", balance_neighbor_3_of_erc20_1);
+    println!("balance of neighbor 3 erc20 2 {}", balance_neighbor_3_of_erc20_2);
+
+    let stake_neighbor_2 = store.land_stake(next_location_2.unwrap());
+    println!("stake neighbor 2 {}", stake_neighbor_2.amount);
+
+    // set_block_timestamp(4000 / TIME_SPEED.into());
+    // actions_system.claim(2080);
+
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_2(),
+        next_location_2.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_2,
+    );
+
+    set_block_timestamp(16000);
+    set_contract_address(NEIGHBOR_2());
+    actions_system.claim(next_location_2.unwrap());
+
+    // set_block_timestamp(6000 / TIME_SPEED.into());
+    // actions_system.claim(2080);
+    // set_contract_address(RECIPIENT());
+    // set_block_timestamp(8000);
+    // actions_system.claim(next_location_4.unwrap());
+
+    // set_contract_address(NEIGHBOR_1());
+    // set_block_timestamp(35000);
+    // actions_system.claim(next_auction_location.unwrap());
+
+    // let neighbor_land_after_claim = store.land_stake(next_auction_location.unwrap());
+    // println!(
+    //     "neighbor location {} amount after claim {}",
+    //     next_auction_location.unwrap(),
+    //     neighbor_land_after_claim.amount,
+    // );
+
+    // let neighbor_4_after_claim = store.land_stake(next_location_4.unwrap());
+    // println!(
+    //     "neighbor location {} amount after claim {}",
+    //     next_location_4.unwrap(),
+    //     neighbor_4_after_claim.amount,
+    // );
+
+    clear_events(store.world.dispatcher.contract_address);
 }
