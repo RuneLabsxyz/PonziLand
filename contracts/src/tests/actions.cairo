@@ -1270,7 +1270,6 @@ fn test_circle_expansion() {
     assert!(lands_of_circle_1.len() == 8, "circle 1 should have 8 lands");
 
     set_block_number(400);
-    set_block_timestamp(1000 / TIME_SPEED.into());
     set_contract_address(RECIPIENT());
 
     //first we clear all the events
