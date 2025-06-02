@@ -40,15 +40,18 @@ export async function setupLandsSubscription(
     },
   });
   let data = subscribeResponse[0];
+
+  initialEntities.push(...data.getItems());
+
   // Continue while we get data
-  while (data.getItems().length > 0) {
-    // Add the current data
-    initialEntities.push(...data.getItems());
+  while (data.cursor != undefined) {
     // Make a new request with the next page
     let query = data.getNextQuery(getQuery());
     data = await client.getEntities({
-      query,
+      query: query,
     });
+
+    initialEntities.push(...data.getItems());
   }
 
   return {
