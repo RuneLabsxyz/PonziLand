@@ -1,7 +1,11 @@
 <script lang="ts">
   import LoadingScreen from '$lib/components/loading-screen/loading-screen.svelte';
   import TutorialMap from '$lib/components/tutorial/map.svelte';
-  import { tutorialLandStore } from '$lib/components/tutorial/stores.svelte';
+  import {
+    tutorialEnabled,
+    tutorialLandStore,
+    tutorialProgression,
+  } from '$lib/components/tutorial/stores.svelte';
   import TutorialUi from '$lib/components/tutorial/ui.svelte';
   import { GRID_SIZE } from '$lib/const';
   import { setupClient } from '$lib/contexts/client.svelte';
@@ -47,6 +51,7 @@
     promise
       .then(() => {
         console.log('Tutorial setup complete!');
+        tutorialEnabled.value = true;
         clearLoading();
       })
       .catch((err) => {

@@ -1,5 +1,9 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import {
+    tutorialEnabled,
+    tutorialProgression,
+  } from '$lib/components/tutorial/stores.svelte';
   import { Arrow } from '$lib/components/ui/arrows';
   import type { Token } from '$lib/interfaces';
   import { displayCurrency } from '$lib/utils/currency';
@@ -22,7 +26,7 @@
     } | null)[]
   >([]);
 
-  const numberOfNeighbours = $derived(
+  let numberOfNeighbours = $derived(
     yieldInfo.filter((info) => (info?.percent_rate ?? 0n) !== 0n).length,
   );
 
@@ -30,9 +34,16 @@
 
   $effect(() => {
     if (land) {
-      getNeighbourYieldArray(land).then((res) => {
-        yieldInfo = res;
-      });
+      console.log('land', land);
+      if (tutorialEnabled.value) {
+        // TODO function to fill with store values
+        yieldInfo = [];
+        console.log('tutorial');
+      } else {
+        getNeighbourYieldArray(land).then((res) => {
+          yieldInfo = res;
+        });
+      }
     }
   });
 </script>
