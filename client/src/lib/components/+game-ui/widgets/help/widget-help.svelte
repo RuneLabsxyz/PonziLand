@@ -3,6 +3,40 @@
   import { Button } from '$lib/components/ui/button';
   import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
   import WidgetSettings from '../settings/widget-settings.svelte';
+  import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
+  import accountData from '$lib/account.svelte';
+
+
+  let claimState = $state('idle');
+
+  async function claimTokens() {
+    if (claimState === 'loading') return;
+    
+    claimState = 'loading';
+    try {
+      if (!accountData.address) {
+        throw new Error('No address found');
+      }
+      const response = await fetch(`${PUBLIC_SOCIALINK_URL}/api/user/${accountData.address}/mint`, {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to claim tokens');
+      }
+      
+      claimState = 'success';
+      setTimeout(() => {
+        claimState = 'idle';
+      }, 2000);
+      
+    } catch (error) {
+      claimState = 'error';
+      setTimeout(() => {
+        claimState = 'idle';
+      }, 2000);
+    }
+  }
 </script>
 
 <div class="w-full h-full pb-4">
@@ -26,6 +60,22 @@
           ><Button>Docs</Button></a
         >
       </div>
+      <Button 
+        onclick={claimTokens} 
+        disabled={claimState !== 'idle'}
+        class="relative"
+      >
+        {#if claimState === 'loading'}
+          Loading...
+        {:else if claimState === 'success'}
+          ✓ Claimed!
+        {:else if claimState === 'error'}
+          ✗ Failed
+        {:else}
+          No tokens? Claim here!
+        {/if}
+      </Button>
+
       <div class="flex justify-center gap-4 mt-2">
         <!-- svelte-ignore a11y_consider_explicit_label -->
         <a
