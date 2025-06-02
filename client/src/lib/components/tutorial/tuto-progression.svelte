@@ -8,6 +8,7 @@
   import dialogData from './dialog.json';
   import { tutorialLandStore, tutorialProgression } from './stores.svelte';
   import { Card } from '../ui/card';
+  import TypingEffect from './typing-effect.svelte';
 
   const step = tutorialProgression();
 
@@ -169,28 +170,40 @@
   class="fixed left-0 right-0 top-8 mx-auto z-[9999] flex w-fit max-w-2xl items-center gap-4"
 >
   {#if currentDialog}
-    <div class="h-24 w-24 flex-shrink-0 mt-4">
-      <img
-        src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
-        alt="Ponzi Worker"
-        class="h-full w-full object-contain"
-        style="transform: scale(1.5);"
-      />
-    </div>
     <div class="flex flex-col items-end">
       <Card
-        class="bg-ponzi relative flex h-[180px] w-[600px] items-center justify-center text-ponzi text-stroke-0 text-stroke-none"
+        class="flex flex-col bg-ponzi relative w-[600px] text-ponzids text-xl tracking-wide"
       >
-        <span class="text-white">
-          {@html formatText(currentDialog.text)}
-        </span>
+        <div class="flex gap-4 mt-6">
+          <div class="h-36 w-36 flex-shrink-0">
+            <img
+              src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
+              alt="Ponzi Worker"
+              class="h-full w-full object-contain"
+            />
+          </div>
+          <div class="text-white mt-4">
+            <!-- {@html formatText(currentDialog.text)} -->
+            <TypingEffect
+              html={formatText(currentDialog.text)}
+              speed={10}
+              onComplete={() => console.log('Dialog complete!')}
+            />
+          </div>
+        </div>
+        <div class="w-full flex gap-6 items-center justify-center p-4">
+          <Button size="md" onclick={previousStep}>prev.</Button>
+          <div class="text-ponzi-number">{step.value}/25</div>
+          <Button size="md" onclick={nextStep}>next</Button>
+        </div>
+        <Button
+          size="md"
+          class="top-0 right-0 absolute m-2 bg-blue-500 text-white rounded "
+          onclick={() => goto('/game')}
+        >
+          Skip Tutorial
+        </Button>
       </Card>
-      <Button
-        class="top-0 right-0 m-2 mr-6 bg-blue-500 text-white rounded "
-        onclick={() => goto('/game')}
-      >
-        Skip Tutorial
-      </Button>
     </div>
   {/if}
 </div>
