@@ -16,6 +16,7 @@ import { whitelist } from "./scripts/commands/whitelist";
 import { ensurePermissions } from "./scripts/commands/ensure_permissions";
 import { upgradeTokens } from "./scripts/commands/upgrade_tokens";
 import { pauseGame } from "./scripts/commands/pause";
+import { registerTokens } from "./scripts/commands/whitelist_tokens";
 
 const SOCIALINK_SIGNER_ADDRESS =
   "0x008ea9029cec9c339e0513a17336e9af43278ebd81858aee0af110c3e810fce6";
@@ -96,6 +97,9 @@ switch (command) {
     break;
   case "pause":
     await pauseGame(config, commandPositionals);
+    break;
+  case "register-tokens":
+    await registerTokens(config, commandPositionals);
     break;
   case undefined:
     console.log("No command provided!");

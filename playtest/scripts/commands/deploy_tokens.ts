@@ -54,8 +54,6 @@ export async function deployToken(config: Configuration, args: string[]) {
     `${COLORS.green}✅ Contract class declared at ${COLORS.gray}${class_hash}${COLORS.green} ! ${COLORS.reset}`,
   );
 
-  return;
-
   console.log(
     `${COLORS.blue}💌 Deploying contract for token ${symbol}...${COLORS.reset}`,
   );

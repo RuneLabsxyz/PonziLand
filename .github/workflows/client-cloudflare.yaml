@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   sepolia-deployment:
-    name: Deploy UI to cloudflare (Mainnet, temp)
+    name: Deploy UI to cloudflare (mainnet-sepolia, temp)
     runs-on: ubuntu-latest
 
     steps:
@@ -45,7 +45,7 @@ jobs:
         working-directory: ./client
         run: bun install --frozen-lockfile
 
-      - name: Build frontend for sepolia
+      - name: Build frontend for mainnet
         run: bun run build:mainnet
         working-directory: ./client
         env:

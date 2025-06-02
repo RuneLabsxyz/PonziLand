@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x628b6af861259ce9ce22e8df6ebd5fbf4fde9a7d4e6eba086aa8dd32325f3b0",
-    "seed": "tourney-for-real",
+    "address": "0x76b1269937debcb70fb5f59dea1c6f9ce24c9415b23876f623385933a6d2681",
+    "seed": "ponzi_land-testing-3",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x77eeeef469121d1761bb25efbfce7650f5c7fbf00d63cb1b778b774783b2c6",
-      "class_hash": "0x591caccbf8f0567e96a7997fa520debd6923771cdaa0db0567d72ea0d4d59da",
+      "address": "0x71136a37f392136762d6c5121b34dac6bda3738cd5fc3799dcb87d12530d770",
+      "class_hash": "0x9602a46c4ad514dfa0e83a4aa376f078082a2f4545752ed96c8156335da6a7",
       "abi": [
         {
           "type": "impl",
@@ -1613,6 +1613,24 @@
             {
               "name": "sold_at_price",
               "type": "core::option::Option::<core::integer::u256>"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "ponzi_land::utils::common_strucs::LandOrAuction",
+          "variants": [
+            {
+              "name": "None",
+              "type": "()"
+            },
+            {
+              "name": "Land",
+              "type": "ponzi_land::models::land::Land"
+            },
+            {
+              "name": "Auction",
+              "type": "ponzi_land::models::auction::Auction"
             }
           ]
         },
@@ -1921,6 +1939,33 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_game_speed",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u64"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_neighbors",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::array::Array::<ponzi_land::utils::common_strucs::LandOrAuction>"
+                }
+              ],
+              "state_mutability": "view"
             }
           ]
         },
@@ -2091,7 +2136,7 @@
       ]
     },
     {
-      "address": "0x524624cb89898776386140c36093d1bc4dd1654d125f0f677c9cd2b122463ff",
+      "address": "0x6447191aac18bf5d28045091bb64c1c4c5bc29053a41ae849184f00abe5ab5",
       "class_hash": "0x296099ec178733ba8e99b159cb046791021617cff5731426b7922b6bc89c880",
       "abi": [
         {
@@ -2434,7 +2479,7 @@
       ]
     },
     {
-      "address": "0x2dfcfa5d89b883136cfc96f16e4ba6d69802d09f98653f949354a15e437c20d",
+      "address": "0x3bd872a895484e0b2032a2f6c7a1142f3466412708198de594b4694089009e1",
       "class_hash": "0x6f1a12dbad7f219c5b4ac79d7a23bf5b6279150567854672ddd2ef07f105b4c",
       "abi": [
         {

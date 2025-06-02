@@ -26,6 +26,21 @@
       "name": "Emulated PAL",
       "symbol": "ePAL",
       "address": "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706"
+    },
+    {
+      "symbol": "eWNT",
+      "name": "Equivalent Wolf Nation Token",
+      "address": "0x51963b44627ae242dcf2bf846b38cca391688c1634a190eaeaf29c63890515e"
+    },
+    {
+      "symbol": "eQQ",
+      "name": "Equivalent Quack Quack",
+      "address": "0x41c9a2f8a8439ce6a9e5e670ba7cd62b214f52547326dece6de981bc1fd0c11"
+    },
+    {
+      "symbol": "eSG",
+      "name": "Equivalent Everai's StarGate token",
+      "address": "0x5bb176eadd857d0226042f3e317efcc9b2ea4de0836dcc0ae4224c3ee820cc1"
     }
   ]
 }

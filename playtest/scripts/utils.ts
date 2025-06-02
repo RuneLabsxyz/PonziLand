@@ -21,6 +21,7 @@ export type Token = {
   name: string;
   symbol: string;
   address: string;
+  default?: true;
 };
 
 export type TokenCreation = Omit<Token, "address">;

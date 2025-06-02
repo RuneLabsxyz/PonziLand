@@ -4,6 +4,7 @@ import {
   Account,
   LedgerSigner,
   LedgerSigner221,
+  LedgerSigner231,
   Provider,
   constants,
   getLedgerPathBuffer221,
@@ -27,7 +28,7 @@ async function getAddressFromAccountFile(ledger: boolean = false) {
 export async function getLedgerAccount(provider: Provider): Promise<Account> {
   prompt("Connect your ledger, enter your PIN and click enter to continue...");
   const myLedgerTransport = await TransportNodeHid.create();
-  const myLedgerSigner = new LedgerSigner221(myLedgerTransport, 0, "argentx");
+  const myLedgerSigner = new LedgerSigner231(myLedgerTransport, 0, "argentx");
 
   // Proxy the signer
   const myLedgerSignerProxy = new Proxy(myLedgerSigner, {

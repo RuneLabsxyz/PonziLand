@@ -32,14 +32,14 @@ export async function ensurePermissions(config: Configuration, args: string[]) {
     }),
   );
 
-  multicall.push(await setAccess(granterAddress, socialinkAddress, "Minter"));
+  //multicall.push(await setAccess(granterAddress, socialinkAddress, "Minter"));
 
   const calls = [
-    {
+    /*{
       contractAddress: await getContractAddress("auth"),
       entrypoint: "add_verifier",
       calldata: [socialinkAddress],
-    },
+    },*/
     ...(skipTokens ? [] : multicall),
   ];
 

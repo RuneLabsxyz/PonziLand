@@ -8,10 +8,10 @@
         "oxalica": "oxalica"
       },
       "locked": {
-        "lastModified": 1744122875,
+        "lastModified": 1744873279,
         "owner": "knownasred",
         "repo": "cairo-nix",
-        "rev": "b339b33a2da7ee036872d3da535a8c03b01cd822",
+        "rev": "fe197bf10c37de0ccd668e48dd6dd516cb08b6c9",
         "type": "github"
       },
       "original": {
@@ -23,10 +23,10 @@
     "devenv": {
       "locked": {
         "dir": "src/modules",
-        "lastModified": 1737321981,
+        "lastModified": 1748795434,
         "owner": "cachix",
         "repo": "devenv",
-        "rev": "a30b871f21bfc987b65356909d04186a18adf0c6",
+        "rev": "02334cb7e3d69847e2ce793719147e63d56e2f7c",
         "type": "github"
       },
       "original": {
@@ -39,10 +39,10 @@
     "flake-compat": {
       "flake": false,
       "locked": {
-        "lastModified": 1733328505,
+        "lastModified": 1747046372,
         "owner": "edolstra",
         "repo": "flake-compat",
-        "rev": "ff81ac966bb2cae68946d5ed5fc4994f96d0ffec",
+        "rev": "9100a0f413b0c601e0533d1d94ffd501ce2e7885",
         "type": "github"
       },
       "original": {
@@ -68,10 +68,31 @@
         "type": "github"
       }
     },
+    "git-hooks": {
+      "inputs": {
+        "flake-compat": "flake-compat",
+        "gitignore": "gitignore",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1747372754,
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "rev": "80479b6ec16fefd9c1db3ea13aeb038c60530f46",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cachix",
+        "repo": "git-hooks.nix",
+        "type": "github"
+      }
+    },
     "gitignore": {
       "inputs": {
         "nixpkgs": [
-          "pre-commit-hooks",
+          "git-hooks",
           "nixpkgs"
         ]
       },
@@ -93,10 +114,10 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1743800763,
+        "lastModified": 1745925850,
         "owner": "nix-community",
         "repo": "naersk",
-        "rev": "ed0232117731a4c19d3ee93aa0c382a8fe754b01",
+        "rev": "38bc60bbc157ae266d4a0c96671c6c742ee17a5f",
         "type": "github"
       },
       "original": {
@@ -107,10 +128,10 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1744032190,
+        "lastModified": 1748792178,
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "b0b4b5f8f621bfe213b8b21694bab52ecfcbf30b",
+        "rev": "5929de975bcf4c7c8d8b5ca65c8cd9ef9e44523e",
         "type": "github"
       },
       "original": {
@@ -122,10 +143,10 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1744120788,
+        "lastModified": 1748850610,
         "owner": "nixos",
         "repo": "nixpkgs",
-        "rev": "a62d20dd366a941a588bfe3c814826cf631a0554",
+        "rev": "10e046fb1c3f5f4bb044787697f5a51223f8ea28",
         "type": "github"
       },
       "original": {
@@ -137,10 +158,10 @@
     },
     "nixpkgs_3": {
       "locked": {
-        "lastModified": 1733477122,
+        "lastModified": 1746807397,
         "owner": "cachix",
         "repo": "devenv-nixpkgs",
-        "rev": "7bd9e84d0452f6d2e63b6e6da29fe73fac951857",
+        "rev": "c5208b594838ea8e6cca5997fbf784b7cca1ca90",
         "type": "github"
       },
       "original": {
@@ -158,36 +179,15 @@
         ]
       },
       "locked": {
-        "lastModified": 1744079607,
+        "lastModified": 1748832016,
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "f6b62cc99c25e79a1c17e9fca91dc6b6faebec6c",
+        "rev": "7ec2ea005b600dac9436a7c5c6b66d960cbfcea2",
         "type": "github"
       },
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "type": "github"
-      }
-    },
-    "pre-commit-hooks": {
-      "inputs": {
-        "flake-compat": "flake-compat",
-        "gitignore": "gitignore",
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1737301351,
-        "owner": "cachix",
-        "repo": "pre-commit-hooks.nix",
-        "rev": "15a87cedeb67e3dbc8d2f7b9831990dffcf4e69f",
-        "type": "github"
-      },
-      "original": {
-        "owner": "cachix",
-        "repo": "pre-commit-hooks.nix",
         "type": "github"
       }
     },
@@ -195,8 +195,11 @@
       "inputs": {
         "cairo-nix": "cairo-nix",
         "devenv": "devenv",
+        "git-hooks": "git-hooks",
         "nixpkgs": "nixpkgs_3",
-        "pre-commit-hooks": "pre-commit-hooks"
+        "pre-commit-hooks": [
+          "git-hooks"
+        ]
       }
     },
     "systems": {
