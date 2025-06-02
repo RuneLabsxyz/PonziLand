@@ -54,7 +54,7 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     id: 'help',
     type: 'help',
     position: { x: 500, y: 100 },
-    dimensions: { width: 400, height: 400 },
+    dimensions: { width: 400, height: 500 },
     isMinimized: false,
     isOpen: false,
   },
@@ -217,11 +217,26 @@ function createWidgetsStore() {
           0,
         );
 
+        // If a widget already has this position offset it by 10px and retry if another exists at this position
+        const position = { ...widget.position };
+        let offset = 0;
+
+        while (
+          Object.values(state).some(
+            (w) => w.position.x === position.x && w.position.y === position.y,
+          )
+        ) {
+          offset += 10;
+          position.x = widget.position.x + offset;
+          position.y = widget.position.y + offset;
+        }
+
         console.log('zindex', maxZIndex);
         const newState = {
           ...state,
           [widget.id]: {
             ...widget,
+            position,
             zIndex: maxZIndex + 3,
             isMinimized: false,
             isOpen: true,

@@ -22,7 +22,7 @@
   };
 
   // Method 1: Using setInterval with counter
-  function soundAtInterval(nbLands) {
+  function soundAtInterval(nbLands: number) {
     let count = 0;
 
     const intervalId = setInterval(() => {

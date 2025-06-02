@@ -7,7 +7,7 @@
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
   import LoadingScreen from '$lib/components/loading-screen/loading-screen.svelte';
   import {
-    tutorialEnabled,
+    tutorialState,
     tutorialLandStore,
   } from '$lib/components/tutorial/stores.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
@@ -93,7 +93,7 @@
 
         console.log('Everything is ready!', dojo != undefined);
 
-        tutorialEnabled.value = false;
+        tutorialState.tutorialEnabled = false;
         clearLoading();
         launchGame_sound.play();
       })

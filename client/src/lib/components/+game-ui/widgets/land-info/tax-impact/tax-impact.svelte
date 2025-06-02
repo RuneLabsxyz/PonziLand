@@ -1,9 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { BuildingLand } from '$lib/api/land/building_land';
-  import Button from '$lib/components/ui/button/button.svelte';
   import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
-  import { Slider } from '$lib/components/ui/slider';
   import type { Token } from '$lib/interfaces';
   import { displayCurrency } from '$lib/utils/currency';
   import {

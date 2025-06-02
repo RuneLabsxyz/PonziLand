@@ -1,8 +1,8 @@
 <script lang="ts">
   import { Card } from '$lib/components/ui/card';
-  import { widgetsStore } from '$lib/stores/widgets.store';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Slider } from '$lib/components/ui/slider';
+  import { widgetsStore } from '$lib/stores/widgets.store';
   import '@interactjs/actions';
   import '@interactjs/actions/drag';
   import '@interactjs/actions/resize';
@@ -33,12 +33,12 @@
     initialDimensions = { width: 200, height: 50 } as Dimensions,
     restrictToParent = true,
     children,
+    isMinimized = $bindable(false),
   } = $props();
 
   let el = $state<HTMLElement | null>(null);
   let currentPosition = $state<Position>(initialPosition);
   let currentDimensions = $state<Dimensions>(initialDimensions);
-  let isMinimized = $state(false);
   let isFixed = $state($widgetsStore[id]?.fixed || false);
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
@@ -46,8 +46,6 @@
   let sliderValue = $state(transparency * 100);
 
   let showDropdown = $state(false);
-  let dropdownEl = $state<HTMLElement | null>(null);
-
   // Compute the style string based on whether the widget is fixed or not
   let styleString = $derived(
     isFixed
@@ -230,10 +228,8 @@
         {/if}
       </div>
     </div>
-    <div class="w-full h-full">
-      {#if !isMinimized}
-        {@render children()}
-      {/if}
+    <div class="w-full h-full {isMinimized ? 'hidden' : ''}">
+      {@render children()}
     </div>
   </Card>
   {#if !isMinimized && !isFixed}

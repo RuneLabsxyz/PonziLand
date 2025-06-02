@@ -3,14 +3,14 @@
   import LoadingScreen from '$lib/components/loading-screen/loading-screen.svelte';
   import TutorialMap from '$lib/components/tutorial/map.svelte';
   import {
-    tutorialEnabled,
+    tutorialState,
     tutorialLandStore,
-    tutorialProgression,
   } from '$lib/components/tutorial/stores.svelte';
   import TutorialUi from '$lib/components/tutorial/ui.svelte';
   import { GRID_SIZE } from '$lib/const';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
+  import { widgetsStore } from '$lib/stores/widgets.store';
   import { onDestroy } from 'svelte';
 
   let loading = $state(true);
@@ -53,7 +53,8 @@
     promise
       .then(() => {
         console.log('Tutorial setup complete!');
-        tutorialEnabled.value = true;
+        tutorialState.tutorialEnabled = true;
+        widgetsStore.resetToDefault();
         clearLoading();
       })
       .catch((err) => {

@@ -6,7 +6,7 @@
   import { get } from 'svelte/store';
   import { fly } from 'svelte/transition';
   import dialogData from './dialog.json';
-  import { tutorialLandStore, tutorialProgression } from './stores.svelte';
+  import { tutorialLandStore } from './stores.svelte';
   import { Card } from '../ui/card';
   import TypingEffect from './typing-effect.svelte';
 

@@ -1,4 +1,4 @@
-import { BaseLand, EmptyLand } from '$lib/api/land';
+import { EmptyLand } from '$lib/api/land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { LandTileStore } from '$lib/api/land_tiles.svelte';
 import { GRID_SIZE } from '$lib/const';
@@ -20,7 +20,7 @@ export const TOKEN_ADDRESSES = [
 ];
 
 // Default values for tutorial
-export const DEFAULT_SELL_PRICE = 1000;
+export const DEFAULT_SELL_PRICE = 1000000000000000000;
 export const DEFAULT_STAKE_AMOUNT = 1280000 * 10 ** 18;
 export const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
@@ -49,6 +49,7 @@ export class TutorialLandStore extends LandTileStore {
       block_date_bought: Date.now(),
       sell_price: DEFAULT_SELL_PRICE,
       token_used: TOKEN_ADDRESSES[0],
+      //@ts-ignore
       level: 'First',
     };
 
@@ -86,6 +87,7 @@ export class TutorialLandStore extends LandTileStore {
       block_date_bought: Date.now(),
       sell_price: DEFAULT_SELL_PRICE,
       token_used: TOKEN_ADDRESSES[tokenId],
+      //@ts-ignore
       level: 'Zero',
     };
 

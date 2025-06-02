@@ -10,6 +10,7 @@
   import { padAddress } from '$lib/utils';
   import InfoTabs from './info-tabs.svelte';
   import { baseToken } from '$lib/stores/tokens.store.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -32,6 +33,9 @@
       }, 5000);
 
       return () => clearInterval(interval);
+    } else {
+      currentPrice = land.sellPrice;
+      fetching = false;
     }
   });
 
@@ -74,7 +78,11 @@
           <TokenAvatar token={land.token} class="w-7 h-7" />
         {/if}
       </div>
-      <div class="flex items-center gap-1 pt-5">
+      <div
+        class="flex items-center gap-1 mt-5 {tutorialState.tutorialProgress == 5
+          ? 'border border-yellow-500 animate-pulse'
+          : ''}"
+      >
         {#if land.type == 'auction'}
           <PriceDisplay price={currentPrice} token={baseToken} />
         {:else}

@@ -23,10 +23,7 @@
   import LandTaxClaimer from './land/land-tax-claimer.svelte';
   import data from '$profileData';
   import { biomeSelect_sound, hover_sound } from '$lib/sfx';
-  import {
-    tutorialEnabled,
-    tutorialLandStore,
-  } from '../tutorial/stores.svelte';
+  import { tutorialState, tutorialLandStore } from '../tutorial/stores.svelte';
 
   const SIZE = TILE_SIZE;
 
@@ -131,7 +128,7 @@
     if (!BuildingLand.is(land)) return;
 
     const landWithActions = createLandWithActions(land, () => {
-      if (tutorialEnabled) return tutorialLandStore.getAllLands();
+      if (tutorialState.tutorialEnabled) return tutorialLandStore.getAllLands();
       return globalLandStore.getAllLands();
     });
 
@@ -144,7 +141,7 @@
     if (!AuctionLand.is(land)) return;
 
     const landWithActions = createLandWithActions(land, () => {
-      if (tutorialEnabled) return tutorialLandStore.getAllLands();
+      if (tutorialState.tutorialEnabled) return tutorialLandStore.getAllLands();
 
       return globalLandStore.getAllLands();
     });

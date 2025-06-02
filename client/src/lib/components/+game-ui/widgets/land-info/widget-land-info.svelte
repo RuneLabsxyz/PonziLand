@@ -8,7 +8,7 @@
   import { onDestroy, onMount } from 'svelte';
   import LandInfos from './land-infos.svelte';
   import {
-    tutorialEnabled,
+    tutorialState,
     tutorialLandStore,
   } from '$lib/components/tutorial/stores.svelte';
 
@@ -21,7 +21,9 @@
 
     try {
       const [x, y] = parseLocation(data.location);
-      const store = tutorialEnabled ? tutorialLandStore : landStore;
+      const store = tutorialState.tutorialEnabled
+        ? tutorialLandStore
+        : landStore;
       const landReadable = store.getLand(x, y);
 
       if (landReadable) {

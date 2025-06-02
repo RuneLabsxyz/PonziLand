@@ -36,7 +36,7 @@
   },
   {
     "_step": "8",
-    "text": "What a beautiful stark land.\n\n The token you sell the land for is represented by the buiding.",
+    "text": "You now own a beautiful stark land ! The token you sell the land for is represented by the buiding.",
     "image_id": 4
   },
   {
@@ -51,22 +51,22 @@
   },
   {
     "_step": "11",
-    "text": "New auctions! let's see if other players will buy them!",
+    "text": "New auctions on the map! let's see if other players will buy them!",
     "image_id": 2
   },
   {
     "_step": "12",
-    "text": "Look we can see a $PAPER $LORDS and $BROTHER land. \n\n That means we'll be getting some juicy taxes from our neighbors! \n Look at all the tokens we are getting for only 5 $STARK!",
+    "text": "Look we can see a $PAPER $LORDS and $BROTHER land. \n\n That means we'll be getting some juicy taxes from our neighbors! \n Look at all the tokens we are getting for only our STRK land!",
     "image_id": 4
   },
   {
     "_step": "13",
-    "text": "Also that shield to the top right is how many days your stake will last.",
+    "text": "Also that shield to the top right is how many days your stake will last. You can hover it to see the estimated amount.",
     "image_id": 1
   },
   {
     "_step": "14",
-    "text": "Also that shield to the top right is how many days your stake will last.",
+    "text": "Be careful, the more neighbors you have the more tokens you get but the faster your stake will go down.",
     "image_id": 1
   },
   {

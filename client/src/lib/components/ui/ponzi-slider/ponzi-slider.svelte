@@ -1,10 +1,10 @@
 <script>
   let {
-    min = 1,
+    min = 0,
     max = 8,
     value = $bindable(2),
     step = 1,
-    labels = ['1', '2', '3', '4', '5', '6', '7', '8'],
+    labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8'],
   } = $props();
 
   let sliderElement = $state();

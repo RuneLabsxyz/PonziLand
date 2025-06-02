@@ -15,6 +15,10 @@
   import account from '$lib/account.svelte';
   import { padAddress } from '$lib/utils';
   import { buy_sound } from '$lib/sfx';
+  import {
+    nextStep,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
 
   let {
     land,
@@ -36,11 +40,11 @@
   );
   let stake: string = $state('');
   let stakeAmount: CurrencyAmount = $derived(
-    CurrencyAmount.fromScaled(stake, selectedToken),
+    CurrencyAmount.fromScaled(stake ?? 0, selectedToken),
   );
   let sellPrice: string = $state('');
   let sellPriceAmount: CurrencyAmount = $derived(
-    CurrencyAmount.fromScaled(sellPrice, selectedToken),
+    CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken),
   );
   let loading = $state(false);
 
@@ -103,8 +107,7 @@
   });
 
   let balanceError = $derived.by(() => {
-    let requiredAmount =
-      land.type === 'auction' ? sellPriceAmount : stakeAmount;
+    let requiredAmount = land.type === 'auction' ? land.sellPrice : stakeAmount;
     let userBalance;
 
     console.log(requiredAmount);
@@ -159,6 +162,11 @@
 
   async function handleBuyClick() {
     console.log('Buy land');
+
+    if (tutorialState.tutorialProgress == 7) {
+      nextStep();
+      return;
+    }
 
     // Double-check validation before proceeding
     if (!isFormValid) {
@@ -232,7 +240,12 @@
       Determines the land you are going to build. You stake this token and will
       receive this token when bought
     </p>
-    <TokenSelect bind:value={tokenValue} />
+    <TokenSelect
+      bind:value={tokenValue}
+      class={tutorialState.tutorialProgress == 6
+        ? 'border border-yellow-500 animate-pulse'
+        : ''}
+    />
     {#if tokenError}
       <p class="text-red-500 text-sm mt-1">{tokenError}</p>
     {/if}
@@ -247,7 +260,11 @@
           id="stake"
           type="number"
           bind:value={stake}
-          class={stakeAmountError ? 'border-red-500' : ''}
+          class="{stakeAmountError
+            ? 'border-red-500'
+            : ''} {tutorialState.tutorialProgress == 6
+            ? 'border border-yellow-500 animate-pulse'
+            : ''}"
         />
         {#if stakeAmountError}
           <p class="text-red-500 text-sm mt-1">{stakeAmountError}</p>
@@ -262,7 +279,11 @@
           id="sell"
           type="number"
           bind:value={sellPrice}
-          class={sellPriceError ? 'border-red-500' : ''}
+          class="{sellPriceError
+            ? 'border-red-500'
+            : ''} {tutorialState.tutorialProgress == 6
+            ? 'border border-yellow-500 animate-pulse'
+            : ''}"
         />
         {#if sellPriceError}
           <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
@@ -270,12 +291,18 @@
       </div>
     </div>
 
-    <TaxImpact
-      sellAmountVal={sellPrice}
-      stakeAmountVal={stake}
-      {selectedToken}
-      {land}
-    />
+    <div
+      class="w-full {tutorialState.tutorialProgress == 7
+        ? 'border border-yellow-500 animate-pulse'
+        : ''}"
+    >
+      <TaxImpact
+        sellAmountVal={sellPrice}
+        stakeAmountVal={stake}
+        {selectedToken}
+        {land}
+      />
+    </div>
 
     {#if balanceError}
       <p class="text-red-500 text-sm mt-1">{balanceError}</p>

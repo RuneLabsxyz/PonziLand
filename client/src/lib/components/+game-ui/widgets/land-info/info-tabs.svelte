@@ -5,6 +5,7 @@
   import HistoryTab from './tabs/history-tab.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -24,13 +25,25 @@
     >
       OVERALL
     </Button>
-    <Button
-      class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
-      variant={activeTab === 'buy' ? 'blue' : undefined}
-      onclick={() => setActiveTab('buy')}
-    >
-      BUY
-    </Button>
+    {#if tutorialState.tutorialProgress == 6}
+      <div class="w-full border border-yellow-500 animate-pulse">
+        <Button
+          class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
+          variant={activeTab === 'buy' ? 'blue' : undefined}
+          onclick={() => setActiveTab('buy')}
+        >
+          BUY
+        </Button>
+      </div>
+    {:else}
+      <Button
+        class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
+        variant={activeTab === 'buy' ? 'blue' : undefined}
+        onclick={() => setActiveTab('buy')}
+      >
+        BUY
+      </Button>
+    {/if}
     <Button
       disabled
       class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"

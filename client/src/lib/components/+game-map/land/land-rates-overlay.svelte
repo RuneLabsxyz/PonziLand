@@ -1,9 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import {
-    tutorialEnabled,
-    tutorialProgression,
-  } from '$lib/components/tutorial/stores.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   import { Arrow } from '$lib/components/ui/arrows';
   import type { Token } from '$lib/interfaces';
   import { displayCurrency } from '$lib/utils/currency';
@@ -35,7 +32,7 @@
   $effect(() => {
     if (land) {
       console.log('land', land);
-      if (tutorialEnabled.value) {
+      if (tutorialState.tutorialEnabled) {
         // TODO function to fill with store values
         yieldInfo = [];
         console.log('tutorial');
