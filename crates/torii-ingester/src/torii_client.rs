@@ -189,13 +189,13 @@ impl ToriiClient {
     ) -> Result<impl Stream<Item = RawToriiData>, Error> {
         let r#where = r#where.into();
         self.do_request(move |current_offset| {
-            format!(r#"
+            format!(r"
                 SELECT concat( m.namespace, '-', m.name) as selector, e.data as data, e.event_id as event_id, e.created_at as created_at
                 FROM entities_historical e
                 LEFT JOIN models m on e.model_id = m.id
                 WHERE {where}
                 LIMIT 100 OFFSET {current_offset};
-                "#)
+                ")
         })
     }
 
@@ -205,13 +205,13 @@ impl ToriiClient {
     ) -> Result<impl Stream<Item = RawToriiData>, Error> {
         let r#where = r#where.into();
         self.do_request(move |current_offset| {
-            format!(r#"
+            format!(r"
                 SELECT concat(m.namespace, '-',  m.name) as selector, em.data as data, em.event_id as event_id, em.created_at as created_at
                 FROM event_messages_historical em
                 LEFT JOIN models m on em.model_id = m.id
                 WHERE {where}
                 LIMIT 100 OFFSET {current_offset};
-                "#)
+                ")
         })
     }
 

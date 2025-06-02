@@ -92,7 +92,7 @@ pub async fn main() {
         Commands::Migrate {} => migrate().await,
         Commands::Add { name } => create_new_migration(name).await,
         Commands::Recreate {} => recreate_database().await,
-    };
+    }
 }
 
 async fn recreate_database() {

@@ -116,55 +116,42 @@ impl Task for EventListenerTask {
     const NAME: &'static str = "EventListenerTask";
 
     async fn do_task(self: std::sync::Arc<Self>, mut rx: tokio::sync::oneshot::Receiver<()>) {
-        // Loop with a wait
+        info!("Starting EventListenerTask with 10-second polling interval");
+
         loop {
-            // Start both a sql catch up and a torii event listener
+            // Poll for new events from the database
             let last_check = self
                 .event_repository
                 .get_last_event_date()
                 .await
-                .expect("Too bad...");
+                .expect("Failed to get last event date");
 
-            let events_catchup = self
+            info!("Polling for events after: {:?}", last_check);
+
+            // Get all events that occurred after the last check
+            let events_stream = self
                 .client
                 .get_all_events_after(last_check)
-                .expect("Error while fetching entities");
+                .expect("Error while fetching events");
 
-            let events_listener = self
-                .client
-                .subscribe_events()
-                .await
-                .expect("Error while subscribing for events");
+            // Collect all events from the stream
+            let events: Vec<RawToriiData> = events_stream.collect().await;
 
-            // Join the two streams (on the heap to not anger the borrow checker)
-            let mut events = Box::pin(events_catchup.merge(events_listener));
+            if events.is_empty() {
+                debug!("No new events found");
+            } else {
+                info!("Found {} new events to process", events.len());
 
-            // Process events
-            loop {
-                select! {
-                    maybe_event = events.next() => {
-                        if let Some(event) = maybe_event {
-                            info!("Processing new event");
-                            self.process_event(event).await;
-                        } else {
-                            info!("Event stream completed, exiting event processing loop before connecting again.");
-                            break;
-                        }
-                    },
-                    stop_result = &mut rx => {
-                        match stop_result {
-                            Ok(()) => info!("Received stop signal, shutting down event processing"),
-                            Err(e) => info!("Stop channel closed unexpectedly: {}", e),
-                        }
-                        return;
-                    }
+                // Process each event
+                for event in events {
+                    self.process_event(event).await;
                 }
             }
 
-            // Wait for 10 seconds before connecting again (and check the stop result at the same time)
+            // Wait for 10 seconds before the next poll (or until stop signal)
             select! {
                 () = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
-                    info!("Finished waiting, catching up and logging in again...");
+                    debug!("Polling interval completed, checking for new events...");
                 },
                 stop_result = &mut rx => {
                     match stop_result {

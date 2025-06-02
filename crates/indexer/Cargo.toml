@@ -40,7 +40,6 @@ http = { workspace = true }
 sqlx = { workspace = true, features = [
     "derive",
     "runtime-tokio",
-    "tls-rustls",
     "postgres",
     "uuid",
     "chrono",

@@ -31,8 +31,9 @@ impl SqlClient {
         let mut url = torii_url
             .into_url()
             .map_err(|e| Error::InvalidUrlError(Some(e)))?;
-        if let Some(segment) = url.path_segments() {
-            if segment.last() != Some("sql") {
+        #[allow(unused_mut)]
+        if let Some(mut segment) = url.path_segments() {
+            if segment.next_back() != Some("sql") {
                 let mut segments = url
                     .path_segments_mut()
                     .map_err(|()| Error::InvalidUrlError(None))?;
