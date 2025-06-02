@@ -18,6 +18,7 @@ in {
     jq
     bc
     colorized-logs
+    openssl
 
     graphite-cli
 

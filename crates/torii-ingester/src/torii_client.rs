@@ -10,7 +10,7 @@ use thiserror::Error;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::Stream;
-use torii_client::client::Client as GrpcClient;
+use torii_client::Client as GrpcClient;
 
 // TODO(Red): Make sure we loose no messages between the catchup and the listen
 // (Maybe add the listen at the same time we do the catchup, and if we keep the event IDs somewhere, we can work with this system)
@@ -18,9 +18,9 @@ use torii_client::client::Client as GrpcClient;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Error while starting torii: {0}")]
-    ToriiInitializationError(torii_client::client::error::Error),
+    ToriiInitializationError(torii_client::error::Error),
     #[error("Error while setting up subscription: {0}")]
-    GrpcSubscriptionError(torii_client::client::error::Error),
+    GrpcSubscriptionError(torii_client::error::Error),
     #[error("SQL Query error: {0}")]
     SqlError(#[from] super::torii_sql::Error),
 }
@@ -132,7 +132,7 @@ impl ToriiClient {
     pub async fn subscribe_events(&self) -> Result<impl Stream<Item = RawToriiData>, Error> {
         let grpc_stream = self
             .grpc_client
-            .on_event_message_updated(vec![])
+            .on_event_message_updated(None)
             .await
             .map_err(Error::GrpcSubscriptionError)?;
 
@@ -161,7 +161,7 @@ impl ToriiClient {
     pub async fn subscribe_entities(&self) -> Result<impl Stream<Item = RawToriiData>, Error> {
         let grpc_stream = self
             .grpc_client
-            .on_entity_updated(vec![]) // Get everything
+            .on_entity_updated(None) // Get everything
             .await
             .map_err(Error::GrpcSubscriptionError)?;
 
