@@ -47,9 +47,10 @@
       <LandDisplay token={land.token} level={land.level} class="scale-125" />
     {/if}
     <div class="absolute top-0 left-0 -mt-1 leading-none">
-      <span class="text-ponzi {size == 'lg' ? 'text-xl' : 'text-lg'}"
-        >{locationIntToString(land.location)}</span
-      >
+      <span class="text-ponzi {size == 'lg' ? 'text-xl' : 'text-lg'}">
+        {locationIntToString(land.location)}
+      </span>
+      <span class="opacity-50">#{new Number(land.location).toString()}</span>
     </div>
     {#if land.type == 'house'}
       <div
