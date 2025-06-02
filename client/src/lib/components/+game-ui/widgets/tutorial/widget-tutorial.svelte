@@ -1,14 +1,16 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
+  import {
+    tutorialLandStore,
+    tutorialProgression,
+  } from '$lib/components/tutorial/stores.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import { selectedLand } from '$lib/stores/store.svelte';
   import { onDestroy } from 'svelte';
   import { get } from 'svelte/store';
-  import { fly } from 'svelte/transition';
-  import dialogData from './dialog.json';
-  import { tutorialLandStore, tutorialProgression } from './stores.svelte';
-  import { Card } from '../ui/card';
-  import TypingEffect from './typing-effect.svelte';
+  import dialogData from '$lib/components/tutorial/dialog.json';
+  import TypingEffect from '$lib/components/tutorial/typing-effect.svelte';
+  import { Card } from '$lib/components/ui/card';
 
   const step = tutorialProgression();
 
@@ -154,100 +156,34 @@
   }
 </script>
 
-<div
-  class="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
->
-  {#if activeImage !== ''}
-    <img
-      src={`/tutorial/ui/${activeImage}.png`}
-      alt={`Tutorial ${activeImage} interface`}
-      class="max-w-[80vw] max-h-[50vh] pt-10"
-    />
-  {/if}
-</div>
-
-<div
-  class="pointer-events-auto fixed left-0 right-0 top-8 mx-auto z-50 flex w-fit max-w-2xl items-center gap-4"
->
-  {#if currentDialog}
-    <div class="flex flex-col items-end">
-      <Card
-        class="flex flex-col bg-ponzi relative w-[600px] text-ponzids text-xl tracking-wide"
-      >
-        <div class="flex gap-4 mt-6">
-          <div class="h-36 w-36 flex-shrink-0">
-            <img
-              src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
-              alt="Ponzi Worker"
-              class="h-full w-full object-contain"
-            />
-          </div>
-          <div class="text-white mt-4">
-            <!-- {@html formatText(currentDialog.text)} -->
-            <TypingEffect
-              html={formatText(currentDialog.text)}
-              speed={10}
-              onComplete={() => console.log('Dialog complete!')}
-            />
-          </div>
-        </div>
-        <div class="w-full flex gap-6 items-center justify-center p-4">
-          <Button size="md" onclick={previousStep}>prev.</Button>
-          <div class="font-ponzi-number text-white">{step.value}/25</div>
-          <Button size="md" onclick={nextStep}>next</Button>
-        </div>
-        <Button
-          size="md"
-          class="top-0 right-0 absolute m-2 bg-blue-500 text-white rounded "
-          onclick={() => goto('/game')}
-        >
-          Skip Tutorial
-        </Button>
-      </Card>
+{#if currentDialog}
+  <div class="flex gap-4 mt-6">
+    <div class="h-36 w-36 flex-shrink-0">
+      <img
+        src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
+        alt="Ponzi Worker"
+        class="h-full w-full object-contain"
+      />
     </div>
-  {/if}
-</div>
-
-{#if ponziMaster}
-  <div class="fixed inset-0 z-[998] flex justify-evenly items-center">
-    <div
-      class="w-[500px] text-center text-ponzi-number text-white text-4xl font-bold leading-relaxed"
-      transition:fly={{ x: -1000, duration: 1000, delay: 1000 }}
-    >
-      HAHAHAHAHA
-      <br />
-      This is what the PONZI LAND is about.
-      <br />
-      Fight or Die.
-      <br />
-      Welcome to the arena
+    <div class="text-white mt-4">
+      <!-- {@html formatText(currentDialog.text)} -->
+      <TypingEffect
+        html={formatText(currentDialog.text)}
+        speed={10}
+        onComplete={() => console.log('Dialog complete!')}
+      />
     </div>
-
-    <div
-      class="w-[500px] flex flex-col items-center justify-center gap-4"
-      transition:fly={{ y: 1000, duration: 1000, delay: 2000 }}
-    >
-      <img src="/logo.png" alt="Logo" class="h-auto w-full" />
-      <Button onclick={() => goto('/game')}>Start Game</Button>
-    </div>
-
-    <img
-      src="/tutorial/PONZIMASTER.png"
-      alt="Ponzi master"
-      class="h-auto w-[500px]"
-      transition:fly={{ x: 1000, duration: 1000, delay: 1000 }}
-    />
   </div>
-{/if}
-{#if vignette > 0}
-  <div
-    class="fixed inset-0 pointer-events-none z-[9998]"
-    style="box-shadow: inset 0 0 {vignette * 100}px rgba(0,0,0,{vignette})"
-  ></div>
-{/if}
-{#if flashOpacity > 0}
-  <div
-    class="fixed inset-0 pointer-events-none z-[9999] bg-white"
-    style="opacity: {flashOpacity}; transition: opacity 100ms ease-in, opacity 1000ms ease-out"
-  ></div>
+  <div class="w-full flex gap-6 items-center justify-center p-4">
+    <Button size="md" onclick={previousStep}>prev.</Button>
+    <div class="font-ponzi-number text-white">{step.value}/25</div>
+    <Button size="md" onclick={nextStep}>next</Button>
+  </div>
+  <Button
+    size="md"
+    class="top-0 right-0 absolute m-2 bg-blue-500 text-white rounded "
+    onclick={() => goto('/game')}
+  >
+    Skip Tutorial
+  </Button>
 {/if}

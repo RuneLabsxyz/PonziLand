@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import LoadingScreen from '$lib/components/loading-screen/loading-screen.svelte';
   import TutorialMap from '$lib/components/tutorial/map.svelte';
   import {
@@ -17,6 +18,7 @@
 
   const promise = new Promise<void>((resolve) => {
     setupClient(dojoConfig);
+    setupSocialink();
     // Use setTimeout to ensure the setup is complete and any state updates are processed
     setTimeout(() => {
       // Set initial camera position to center of map

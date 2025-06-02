@@ -58,6 +58,14 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  tutorial: {
+    id: 'tutorial',
+    type: 'tutorial',
+    position: { x: 100, y: 100 },
+    dimensions: { width: 600, height: 400 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {
