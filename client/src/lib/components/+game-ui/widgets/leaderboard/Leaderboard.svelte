@@ -30,12 +30,6 @@
     }
   }
 
-  async function refreshLeaderboard() {
-    loading = true;
-    await getUsernames();
-    loading = false;
-  }
-
   onMount(async () => {
     const addresses: Array<{ address: string }> = await getUserAddresses();
 
@@ -48,6 +42,12 @@
     await getUsernames();
     loading = false;
   });
+
+  async function refreshLeaderboard() {
+    loading = true;
+    await getUsernames();
+    loading = false;
+  }
 </script>
 
 <Card class="shadow-ponzi w-72">

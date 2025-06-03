@@ -41,8 +41,8 @@
   <Card>
     <div class="flex items-center gap-2 text-ponzi-number">
       <CopyAddress address={land?.owner || ''} showUsername={true} />
-    </div></Card
-  >
+    </div>
+  </Card>
 {/if}
 
 <style>

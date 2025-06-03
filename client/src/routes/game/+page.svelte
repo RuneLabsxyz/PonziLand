@@ -5,6 +5,10 @@
   import GameGrid from '$lib/components/+game-map/game-grid.svelte';
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
+  import {
+    fetchUsernamesBatch,
+    getUserAddresses,
+  } from '$lib/components/+game-ui/widgets/leaderboard/request';
   import LoadingScreen from '$lib/components/loading-screen/loading-screen.svelte';
   import {
     tutorialLandStore,
@@ -14,7 +18,9 @@
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
   import { gameSounds } from '$lib/sfx';
+  import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { landStore } from '$lib/stores/store.svelte';
+  import { onMount } from 'svelte';
 
   const promise = Promise.all([
     setupSocialink().then(() => {
@@ -101,6 +107,35 @@
         console.error('An error occurred:', err);
         // TODO: Redirect to an error page!
       });
+  });
+
+  async function getUsernames() {
+    try {
+      const addresses = usernamesStore.getAddresses().map((a) => a.address);
+
+      if (addresses.length === 0) {
+        console.warn('No addresses to lookup.');
+        return;
+      }
+
+      const fetchedUsernames = await fetchUsernamesBatch(addresses);
+
+      await usernamesStore.updateUsernames(fetchedUsernames);
+    } catch (error) {
+      console.error('Error refreshing usernames:', error);
+    }
+  }
+
+  onMount(async () => {
+    const addresses: Array<{ address: string }> = await getUserAddresses();
+
+    const formattedAddresses = addresses.map(({ address }) => ({
+      address: address,
+    }));
+
+    usernamesStore.addAddresses(formattedAddresses);
+
+    await getUsernames();
   });
 </script>
 
