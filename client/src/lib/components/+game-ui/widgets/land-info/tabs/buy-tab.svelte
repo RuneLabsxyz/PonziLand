@@ -18,6 +18,7 @@
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
+  import { onMount } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
 
   let {
@@ -106,8 +107,24 @@
     return null;
   });
 
+  let auctionPrice = $state();
+
+  onMount(() => {
+    if (land.type === 'auction') {
+      land.getCurrentAuctionPrice().then((price) => {
+        auctionPrice = price;
+      });
+    }
+  });
+
   let balanceError = $derived.by(() => {
-    let requiredAmount = land.type === 'auction' ? land.sellPrice : stakeAmount;
+    let requiredAmount;
+    if (land.type === 'auction' && auctionPrice) {
+      requiredAmount = auctionPrice;
+    } else {
+      requiredAmount = stakeAmount;
+    }
+
     let userBalance;
 
     console.log(requiredAmount);
