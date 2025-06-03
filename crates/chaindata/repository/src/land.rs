@@ -2,6 +2,7 @@ use crate::{Database, Error};
 use chaindata_models::{events::EventId, models::LandModel, shared::Location};
 use chrono::NaiveDateTime;
 use sqlx::{query, query_as};
+use std::collections::HashMap;
 
 pub struct Repository {
     db: Database,
@@ -146,6 +147,33 @@ impl Repository {
         .fetch_one(&mut *(self.db.acquire().await?))
         .await
         .map(|row| row.latest_time)
+    }
+
+    /// Gets the total distribution of tokens for all lands
+    ///
+    /// # Errors
+    /// Returns an error if the database could not be accessed
+    #[allow(clippy::cast_sign_loss)] // We are fine
+    pub async fn get_land_distribution(&self) -> Result<HashMap<String, u64>, sqlx::Error> {
+        query!(
+            r#"
+            SELECT token_used, count(*)
+            FROM (
+                SELECT *,
+                       ROW_NUMBER() OVER (PARTITION BY location ORDER BY id DESC) as rn
+                FROM land
+            ) ranked
+            WHERE rn = 1 AND owner <> '0'
+            GROUP BY token_used
+            "#
+        )
+        .fetch_all(&mut *(self.db.acquire().await?))
+        .await
+        .map(|rows| {
+            rows.into_iter()
+                .map(|row| (row.token_used, row.count.unwrap_or(0) as u64))
+                .collect()
+        })
     }
 }
 

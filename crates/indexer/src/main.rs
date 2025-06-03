@@ -9,12 +9,13 @@ use axum::{
     routing::get,
     Json, Router,
 };
+use chaindata_repository::LandRepository;
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
-use routes::{price::PriceRoute, tokens::TokenRoute};
+use routes::{lands::LandsRoute, price::PriceRoute, tokens::TokenRoute};
 use serde::{Deserialize, Serialize};
 use service::{ekubo::EkuboService, token::TokenService};
 use sqlx::{postgres::PgConnectOptions, ConnectOptions, PgPool};
@@ -39,6 +40,7 @@ pub mod routes;
 pub mod monitoring;
 
 #[tokio::main]
+#[allow(clippy::too_many_lines)] //TODO: Split the state into multiple functions / files
 async fn main() -> Result<()> {
     // initialize tracing
     let filter = EnvFilter::builder()
@@ -105,9 +107,12 @@ async fn main() -> Result<()> {
     // Start it for the test
     chaindata_service.start();
 
+    let land_repository = Arc::new(LandRepository::new(pool.clone()));
+
     let app_state = AppState {
         token_service: token_service.clone(),
         ekubo_service: ekubo.clone(),
+        land_repository,
     };
 
     let cors = CorsLayer::new()
@@ -134,6 +139,10 @@ async fn main() -> Result<()> {
         .nest(
             "/price",
             PriceRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
+            "/lands",
+            LandsRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))
