@@ -10,7 +10,10 @@
   import data from '$profileData';
   import { tutorialState } from '../tutorial/stores.svelte';
 
-  let { value = $bindable<string>(), class: className } = $props();
+  let {
+    value = $bindable<string>(),
+    class: className,
+  }: { value: string; class?: string } = $props();
 </script>
 
 <Select onSelectedChange={(v) => (value = v?.value as string)}>

@@ -71,6 +71,14 @@
     leadingSide = leadingSide === 'sell' ? 'buy' : 'sell';
   }
 
+  function setPercentage(percentage: number) {
+    if (!sellTokenBalance) return;
+
+    const amount = sellTokenBalance.rawValue().times(percentage / 100);
+    input1 = amount.toString();
+    leadingSide = 'sell';
+  }
+
   let debouncedInput = debounce(
     () => {
       if (!select1 || !select2 || (!Number(input1) && !Number(input2))) {
@@ -111,9 +119,13 @@
       }
 
       if (data.leadingSide == 'buy') {
-        input1 = CurrencyAmount.fromUnscaled(q[0].sellAmount).toString();
+        input1 = CurrencyAmount.fromUnscaled(q[0].sellAmount)
+          .rawValue()
+          .toString();
       } else {
-        input2 = CurrencyAmount.fromUnscaled(q[0].buyAmount).toString();
+        input2 = CurrencyAmount.fromUnscaled(q[0].buyAmount)
+          .rawValue()
+          .toString();
       }
     });
   });
@@ -134,55 +146,71 @@
   }
 </script>
 
-<div class="flex flex-col relative">
-  <div class="flex gap-2 rounded border border-[#ffffff55] p-2">
-    <input
-      type="number"
-      class="w-full bg-[#282835] text-white rounded p-1"
-      bind:value={input1}
-      oninput={() => (leadingSide = 'sell')}
-    />
-    <TokenSelect bind:value={select1} />
+<div class="flex flex-col">
+  <div class="flex w-full gap-1 mt-1 items-center">
+    <Button size="md" class="w-full" onclick={() => setPercentage(25)}>
+      25%
+    </Button>
+    <Button size="md" class="w-full" onclick={() => setPercentage(50)}>
+      50%
+    </Button>
+    <Button size="md" class="w-full" onclick={() => setPercentage(75)}>
+      75%
+    </Button>
+    <Button size="md" class="w-full" onclick={() => setPercentage(100)}>
+      Max
+    </Button>
   </div>
-  <div class="flex gap-2 rounded border border-[#ffffff55] p-2 mt-1">
-    <input
-      type="number"
-      class="w-full bg-[#282835] text-white rounded p-1"
-      bind:value={input2}
-      oninput={() => (leadingSide = 'buy')}
-    />
-    <TokenSelect bind:value={select2} />
-  </div>
-  <!-- svelte-ignore a11y_consider_explicit_label -->
-  <button
-    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
-    onclick={handleSwap}
-  >
-    <svg
-      width="26"
-      height="26"
-      viewBox="0 0 26 26"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
+  <div class="flex flex-col relative">
+    <div class="flex gap-2 rounded border border-[#ffffff55] p-2">
+      <input
+        type="number"
+        class="w-full bg-[#282835] text-white rounded p-1"
+        bind:value={input1}
+        oninput={() => (leadingSide = 'sell')}
+      />
+      <TokenSelect bind:value={select1} />
+    </div>
+    <div class="flex gap-2 rounded border border-[#ffffff55] p-2 mt-1">
+      <input
+        type="number"
+        class="w-full bg-[#282835] text-white rounded p-1"
+        bind:value={input2}
+        oninput={() => (leadingSide = 'buy')}
+      />
+      <TokenSelect bind:value={select2} />
+    </div>
+    <!-- svelte-ignore a11y_consider_explicit_label -->
+    <button
+      class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer"
+      onclick={handleSwap}
     >
-      <circle
-        cx="12.9365"
-        cy="13.1347"
-        r="11.6736"
-        fill="#10101A"
-        stroke="#57575E"
-        stroke-width="1.45921"
-      />
-      <path
-        d="M10.3827 8.02734V15.8384M10.3827 8.02734L7.8291 10.631M10.3827 8.02734L12.9363 10.631M15.4899 18.2418V10.4307M15.4899 18.2418L18.0435 15.6381M15.4899 18.2418L12.9363 15.6381"
-        stroke="white"
-        stroke-opacity="0.5"
-        stroke-width="1.24462"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-    </svg>
-  </button>
+      <svg
+        width="26"
+        height="26"
+        viewBox="0 0 26 26"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle
+          cx="12.9365"
+          cy="13.1347"
+          r="11.6736"
+          fill="#10101A"
+          stroke="#57575E"
+          stroke-width="1.45921"
+        />
+        <path
+          d="M10.3827 8.02734V15.8384M10.3827 8.02734L7.8291 10.631M10.3827 8.02734L12.9363 10.631M15.4899 18.2418V10.4307M15.4899 18.2418L18.0435 15.6381M15.4899 18.2418L12.9363 15.6381"
+          stroke="white"
+          stroke-opacity="0.5"
+          stroke-width="1.24462"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </button>
+  </div>
 </div>
 
 <div class="flex flex-col gap-2">
