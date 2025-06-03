@@ -15,22 +15,17 @@
   "mainCurrencyAddress": "0x056893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb",
   "aiAgents": [
     {
-      "address": "0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff",
-      "name": "Ponzius",
-      "badgeImage": "/extra/ai.png"
-    },
-    {
-      "address": "0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff",
+      "address": "0x78a5a96b945a532256cac2a0e65d6c4961e35158e8e797f66e78c6a6c5210de",
       "name": "WolfNation",
       "badgeImage": "/tokens/eWNT/ai.png"
     },
     {
-      "address": "0x041fbe2d9a755d0f6f2117a423ec7a66c034787d19771323015444bdcfb98499",
+      "address": "0x4edcac6e45ce75836437859a3aab25a83740da4507c8002bd53dffca0efe298",
       "name": "DucksAgent",
       "badgeImage": "/tokens/eQQ/ai.png"
     },
     {
-      "address": "0x002c732ae443abfa5115589acf2d099fe3029284fd8db5431dd306489ec2b941",
+      "address": "0x56106a470b036cad4b2e80846f88e3fd226d7bf7319ac2f895fd75e0ad0f687",
       "name": "EveraiAgent",
       "badgeImage": "/tokens/eSG/ai.png"
     }
