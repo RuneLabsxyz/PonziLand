@@ -14,6 +14,9 @@
 
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
   let estimatedDaysString = $derived.by(() => {
+    if (estimatedNukeTime <= 0) {
+      return '💀'; // Or any indicator for nuked state
+    }
     if (estimatedDays === Infinity) {
       return '∞';
     } else if (estimatedDays > 365) {
@@ -21,22 +24,27 @@
     }
     return estimatedDays.toString();
   });
+
   let estimatedTimeString = $derived.by(() => {
     // Convert estimatedNukeTime to a human-readable string
     if (estimatedNukeTime === Infinity) return 'no neighbors = no tax';
-    if (estimatedNukeTime < 0) return 'N/A';
+    if (estimatedNukeTime <= 0) return 'NUKABLE !';
     const days = Math.floor(estimatedNukeTime / 60 / 60 / 24);
     const hours = Math.floor((estimatedNukeTime / 60 / 60) % 24);
     const minutes = Math.floor((estimatedNukeTime / 60) % 60);
     const seconds = Math.floor(estimatedNukeTime % 60);
     return `${days}d ${hours}h ${minutes}m ${seconds}s`;
   });
+
   let estimatedNukeDate = $derived.by(() => {
     const time = estimatedNukeTime;
     const date = new Date();
     date.setSeconds(date.getSeconds() + time);
     return date.toLocaleString();
   });
+
+  // Check if nuke time has passed
+  let isNuked = $derived(estimatedNukeTime <= 0);
 
   // Define thresholds with corresponding background images
   const thresholds: { [key: number]: { image: string; color: string } } = {
@@ -86,26 +94,47 @@
 
 <Tooltip.Root>
   <Tooltip.Trigger>
-    <div
-      class={cn(
-        'nuke-shield h-2 w-2 flex items-center justify-center leading-none',
-        ClassName,
-      )}
-      style="background-image: {getStyle(estimatedDays)
-        .image}; color: {getStyle(estimatedDays).color}"
-    >
-      {estimatedDaysString}
-    </div>
+    {#if isNuked}
+      <!-- Nuclear explosion icon when nuked -->
+      <div
+        class={cn(
+          'nuke-shield h-2 w-2 flex items-center justify-center leading-none nuclear-icon',
+          ClassName,
+        )}
+        style="color: #FF0000;"
+      >
+        <img
+          style="image-rendering: pixelated;"
+          src="/extra/nuke.png"
+          alt="Nuclear Explosion Icon"
+        />
+      </div>
+    {:else}
+      <!-- Shield icon when not nuked -->
+      <div
+        class={cn(
+          'nuke-shield h-2 w-2 flex items-center justify-center leading-none',
+          ClassName,
+        )}
+        style="background-image: {getStyle(estimatedDays)
+          .image}; color: {getStyle(estimatedDays).color}"
+      >
+        {estimatedDaysString}
+      </div>
+    {/if}
   </Tooltip.Trigger>
   <Tooltip.Content
-    class="border-ponzi bg-ponzi text-ponzi flex gap-2  items-center justify-center"
+    class="border-ponzi bg-ponzi text-ponzi flex gap-2 items-center justify-center"
   >
     <div class="flex flex-col">
       <span>
         <span class="opacity-50"> Estimated nuke date: </span>
         <span>{estimatedNukeDate}</span>
       </span>
-      <span><span class="opacity-50">in</span> {estimatedTimeString}</span>
+      <span>
+        <span class="opacity-50">in</span>
+        {estimatedTimeString}
+      </span>
     </div>
     <a
       href="https://docs.ponzi.land/docs/%E2%9A%99%EF%B8%8F%20Mechanics/nukeing"
@@ -125,5 +154,11 @@
     font-family: 'PonziNumber';
     -webkit-text-stroke: 0.25em black;
     paint-order: stroke fill;
+  }
+
+  .nuclear-icon {
+    background-image: none !important;
+    -webkit-text-stroke: none;
+    paint-order: normal;
   }
 </style>
