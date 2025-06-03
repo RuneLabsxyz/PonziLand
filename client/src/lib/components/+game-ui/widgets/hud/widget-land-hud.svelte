@@ -18,14 +18,16 @@
 </script>
 
 {#if land}
-  <div class="absolute left-0 top-0 -translate-y-full">
-    <LandOwnerInfo {land} {isOwner} />
-  </div>
-  <div class="absolute right-0 top-0 -translate-y-full">
-    <Card>
-      <LandNukeTime {land} />
-    </Card>
-  </div>
+  {#if land.type !== 'auction'}
+    <div class="absolute left-0 top-0 -translate-y-full">
+      <LandOwnerInfo {land} {isOwner} />
+    </div>
+    <div class="absolute right-0 top-0 -translate-y-full">
+      <Card>
+        <LandNukeTime {land} />
+      </Card>
+    </div>
+  {/if}
   {#if land.type === 'auction'}
     <LandHudAuction {land} />
   {:else if land.type === 'grass'}
