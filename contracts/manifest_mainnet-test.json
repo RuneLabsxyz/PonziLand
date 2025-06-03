@@ -1313,7 +1313,7 @@
   "contracts": [
     {
       "address": "0x71136a37f392136762d6c5121b34dac6bda3738cd5fc3799dcb87d12530d770",
-      "class_hash": "0x4876bdafe9e405b507687d329402a54751a23da7870c9ba883d20715d33800c",
+      "class_hash": "0x2f0bbd0acfce185472f97aaece27a062a8371719539e34b54017d8b92deada1",
       "abi": [
         {
           "type": "impl",
@@ -1966,6 +1966,18 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "set_main_token",
+              "inputs": [
+                {
+                  "name": "token_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
             }
           ]
         },
@@ -2132,6 +2144,7 @@
         "increase_stake",
         "level_up",
         "reimburse_stakes",
+        "set_main_token",
         "upgrade"
       ]
     },

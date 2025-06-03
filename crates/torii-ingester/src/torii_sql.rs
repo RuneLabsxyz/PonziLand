@@ -72,11 +72,15 @@ impl SqlClient {
         T: DeserializeOwned,
         Q: Into<String> + Debug,
     {
+        let query = query.into();
+
+        info!("Making query: {}", query);
+
         // Make a request to the sql endpoint
         let response = self
             .client
             .post(self.sql_url.clone())
-            .body(query.into())
+            .body(query)
             .send()
             .await
             .map_err(Error::RequestError)?;

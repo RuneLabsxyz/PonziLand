@@ -70,10 +70,12 @@ impl EventListenerTask {
             }
         };
 
-        self.event_repository
-            .save_event(event.clone())
-            .await
-            .expect("An error occurred while saving event");
+        if let Err(error) = self.event_repository.save_event(event.clone()).await {
+            error!("Failed to save event: {}", error);
+            // Stop processing that evernt
+            return;
+        }
+        info!("Successfully saved event!");
 
         if let Some(gg_api) = &self.gg_api {
             // If the event is used to submit something to gg, send it.
@@ -126,26 +128,31 @@ impl Task for EventListenerTask {
                 .await
                 .expect("Failed to get last event date");
 
-            info!("Polling for events after: {:?}", last_check);
+            // Subtract 1 second to avoid missing events due to timestamp precision issues
+            let safe_last_check = last_check - chrono::Duration::seconds(1);
 
-            // Get all events that occurred after the last check
-            let events_stream = self
+            info!(
+                "Polling for events after: {:?} (with 1s safety buffer)",
+                safe_last_check
+            );
+
+            // Get all events that occurred after the last check (with safety buffer)
+            let mut events_stream = self
                 .client
-                .get_all_events_after(last_check)
+                .get_all_events_after(safe_last_check)
                 .expect("Error while fetching events");
 
-            // Collect all events from the stream
-            let events: Vec<RawToriiData> = events_stream.collect().await;
+            // Process events as they go
+            let mut event_count = 0;
+            while let Some(event) = events_stream.next().await {
+                self.process_event(event).await;
+                event_count += 1;
+            }
 
-            if events.is_empty() {
-                debug!("No new events found");
+            if event_count > 0 {
+                info!("Processed {} new events", event_count);
             } else {
-                info!("Found {} new events to process", events.len());
-
-                // Process each event
-                for event in events {
-                    self.process_event(event).await;
-                }
+                debug!("No new events found");
             }
 
             // Wait for 10 seconds before the next poll (or until stop signal)

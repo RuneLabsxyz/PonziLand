@@ -87,7 +87,7 @@ impl ToriiClient {
         })
     }
 
-    /// Get all events after a given instant.
+    /// Get all events after a given instant with microsecond precision.
     ///
     /// # Errors
     /// Returns an error if the SQL query fails.

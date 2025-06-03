@@ -1,43 +1,47 @@
-default_token = "eSTRK"
+default_token = "nftSTRK"
 
 cors_origins = [
     "http://localhost:3000",
     "https://localhost:3000",
     "https://*.ponzi.land",
+    "https://play.ponzi.land",
     "https://ponzi.land",
 ]
 
+
 [ekubo]
-api_url = "https://starknet-sepolia-api.ekubo.org"
-core_contract_address = "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
-
-[torii]
-world_address = "0x628b6af861259ce9ce22e8df6ebd5fbf4fde9a7d4e6eba086aa8dd32325f3b0"
-torii_url = "https://api.cartridge.gg/x/ponziland-tourney/torii"
-
-[gg_xyz]
-enabled = false
-api_url = "https://api-staging.gg.xyz"
+api_url = "https://starknet-mainnet-api.ekubo.org"
+core_contract_address = "0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b"
 
 [starknet]
-rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
+rpc_url = "https://api.cartridge.gg/x/starknet/mainnet"
+
+
+[torii]
+world_address = "0x76b1269937debcb70fb5f59dea1c6f9ce24c9415b23876f623385933a6d2681"
+torii_url = "https://api.cartridge.gg/x/ponziland-tourney-2/torii"
+
+[gg_xyz]
+enabled = false                                                              # Disabling while we wai>
+api_url = "https://api.gg.xyz"
+api_key = "bcce698e9960f43f0bfc9274c69c8b8150dd203cadb82e1bc05b554b0c5b6b6f"
 
 [[token]]
-symbol = "eSTRK"
-address = "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0"
+symbol = "nftSTRK"
+address = "0x056893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb"
 
 [[token]]
-symbol = "ePAPER"
-address = "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825"
+symbol = "eWNT"
+address = "0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e"
 
 [[token]]
-symbol = "eLORDS"
-address = "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b"
+symbol = "eQQ"
+address = "0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4"
 
 [[token]]
-symbol = "eBROTHER"
-address = "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe"
+symbol = "eSG"
+address = "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5"
 
 [[token]]
-symbol = "ePAL"
-address = "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706"
+symbol = "nftLORDS"
+address = "0xdcdc180a8b4b9cef2d039462ad30de95c5609178a1c2bc55779309c07d45db"

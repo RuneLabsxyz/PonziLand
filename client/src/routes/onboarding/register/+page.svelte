@@ -13,6 +13,11 @@
       goto('/onboarding/whitelist');
     }
 
+    if (accountDataProvider.address == undefined) {
+      console.error('Account address is undefined or null');
+      return;
+    }
+
     accountManager
       ?.getStarknetProvider()
       .getClassAt(accountDataProvider.address!)
@@ -20,6 +25,7 @@
         // Account exists, so we can proceed to registration (the current page)
       })
       .catch((error) => {
+        console.error(error);
         goto('/onboarding/deploy');
         return;
       });

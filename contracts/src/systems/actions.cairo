@@ -54,6 +54,8 @@ trait IActions<T> {
     ) -> (Array<TokenInfo>, Array<TokenInfo>);
     fn get_game_speed(self: @T) -> u64;
     fn get_neighbors(self: @T, land_location: u16) -> Array<LandOrAuction>;
+
+    fn set_main_token(ref self: T, token_address: ContractAddress) -> ();
 }
 
 // dojo decorator
@@ -234,6 +236,13 @@ pub mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
+        fn set_main_token(ref self: ContractState, token_address: ContractAddress) -> () {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            self.main_currency.write(token_address);
+        }
+
+
         fn buy(
             ref self: ContractState,
             land_location: u16,
