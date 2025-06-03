@@ -1,23 +1,24 @@
 <script lang="ts">
+  import account from '$lib/account.svelte';
   import type { LandSetup, LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import {
+    nextStep,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
+  import { gameSounds } from '$lib/sfx';
   import { bidLand, buyLand } from '$lib/stores/store.svelte';
   import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
-  import account from '$lib/account.svelte';
-  import { padAddress } from '$lib/utils';
-  import {
-    nextStep,
-    tutorialState,
-  } from '$lib/components/tutorial/stores.svelte';
 
   let {
     land,
@@ -219,6 +220,7 @@
         const landPromise = land.wait();
 
         await Promise.any([txPromise, landPromise]);
+        gameSounds.play('buy');
         console.log('Bought land with TX: ', result.transaction_hash);
       }
     } catch (error) {

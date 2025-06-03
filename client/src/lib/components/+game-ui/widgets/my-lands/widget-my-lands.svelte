@@ -5,6 +5,7 @@
   import { Button } from '$lib/components/ui/button';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
+  import { gameSounds } from '$lib/sfx';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
@@ -26,6 +27,7 @@
 
     const intervalId = setInterval(() => {
       count++;
+      gameSounds.play('claim');
 
       if (count >= nbLands) {
         clearInterval(intervalId);

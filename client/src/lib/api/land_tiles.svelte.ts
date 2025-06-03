@@ -1,6 +1,7 @@
 import { GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
+import { gameSounds } from '$lib/sfx';
 import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
@@ -341,7 +342,11 @@ export class LandTileStore {
         } else {
           newLand = new AuctionLand(previousLand, auctionModel as Auction);
           // Nuke the land
-          this.triggerNukeAnimation(location.x, location.y);
+          gameSounds.play('nuke');
+          setTimeout(
+            () => this.triggerNukeAnimation(location.x, location.y),
+            1000,
+          );
         }
 
         this.currentLands.update((lands) => {

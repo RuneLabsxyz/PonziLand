@@ -7,12 +7,13 @@
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
   import LoadingScreen from '$lib/components/loading-screen/loading-screen.svelte';
   import {
-    tutorialState,
     tutorialLandStore,
+    tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
+  import { gameSounds } from '$lib/sfx';
   import { landStore } from '$lib/stores/store.svelte';
 
   const promise = Promise.all([
@@ -94,6 +95,7 @@
 
         tutorialState.tutorialEnabled = false;
         clearLoading();
+        gameSounds.play('launchGame');
       })
       .catch((err) => {
         console.error('An error occurred:', err);

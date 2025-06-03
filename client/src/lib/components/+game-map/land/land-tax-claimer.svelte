@@ -1,6 +1,7 @@
 <script lang="ts">
   import { type LandWithActions } from '$lib/api/land';
   import { useDojo } from '$lib/contexts/dojo';
+  import { gameSounds } from '$lib/sfx';
   import { claimSingleLand, claimStore } from '$lib/stores/claim.store.svelte';
   import {
     clearPending,
@@ -52,7 +53,9 @@
     }
 
     claimSingleLand(land, dojo, account()?.getWalletAccount()!)
-      .then(() => {})
+      .then(() => {
+        gameSounds.play('claim');
+      })
       .catch((e) => {
         console.error('error claiming from coin', e);
       });

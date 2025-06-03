@@ -6,6 +6,7 @@
   import { Button } from '$lib/components/ui/button';
   import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
   import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
+  import { gameSounds } from '$lib/sfx';
   import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import {
@@ -14,15 +15,15 @@
   } from '$lib/stores/store.svelte';
   import { cn, padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
+  import data from '$profileData';
   import type { Readable } from 'svelte/store';
   import { openLandInfoWidget } from '../+game-ui/game-ui.svelte';
+  import { tutorialLandStore, tutorialState } from '../tutorial/stores.svelte';
   import LandDisplay from './land/land-display.svelte';
   import LandNukeAnimation from './land/land-nuke-animation.svelte';
   import LandNukeShield from './land/land-nuke-shield.svelte';
   import RatesOverlay from './land/land-rates-overlay.svelte';
   import LandTaxClaimer from './land/land-tax-claimer.svelte';
-  import data from '$profileData';
-  import { tutorialState, tutorialLandStore } from '../tutorial/stores.svelte';
 
   const SIZE = TILE_SIZE;
 
@@ -116,6 +117,9 @@
     if (selected) {
       moveCameraTo(land.location.x + 1, land.location.y + 1);
     }
+
+    if (land.type !== 'empty' && selectedLand.value != land)
+      gameSounds.play('biomeSelect');
 
     selectedLand.value = land;
   }
