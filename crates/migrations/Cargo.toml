@@ -8,7 +8,12 @@ path = "./lib.rs"
 
 [dependencies]
 tokio = { workspace = true, features = ["full"] }
-sqlx = { workspace = true, features = ["derive", "runtime-tokio", "postgres"] }
+sqlx = { workspace = true, features = [
+    "derive",
+    "runtime-tokio",
+    "postgres",
+    "tls-native-tls",
+] }
 tracing-subscriber.workspace = true
 clap = { workspace = true, features = ["derive"] }
 tracing.workspace = true

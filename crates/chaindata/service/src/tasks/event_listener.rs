@@ -4,6 +4,7 @@ use chaindata_models::events::{EventDataModel, EventId, FetchedEvent};
 use chaindata_repository::event::Repository as EventRepository;
 use chrono::Utc;
 use ponziland_models::events::EventData;
+use sqlx::error::DatabaseError;
 use tokio::select;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
@@ -70,9 +71,17 @@ impl EventListenerTask {
             }
         };
 
-        if let Err(error) = self.event_repository.save_event(event.clone()).await {
-            error!("Failed to save event: {}", error);
-            // Stop processing that evernt
+        if let Err(chaindata_repository::Error::SqlError(err)) =
+            self.event_repository.save_event(event.clone()).await
+        {
+            if !err
+                .as_database_error()
+                .is_some_and(DatabaseError::is_unique_violation)
+            {
+                error!("Failed to save event: {}", err);
+            }
+
+            // It is a duplicate, so ignore it
             return;
         }
         info!("Successfully saved event!");

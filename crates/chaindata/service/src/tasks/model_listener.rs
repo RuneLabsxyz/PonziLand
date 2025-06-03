@@ -7,10 +7,11 @@ use chaindata_models::{
 use chaindata_repository::{LandRepository, LandStakeRepository};
 use chrono::{DateTime, Utc};
 use ponziland_models::models::Model;
+use sqlx::error::DatabaseError;
 use tokio::select;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
-use tracing::{debug, info};
+use tracing::{debug, error, info};
 
 use super::Task;
 
@@ -64,7 +65,7 @@ impl ModelListenerTask {
     #[allow(clippy::match_wildcard_for_single_variants)]
     async fn process_model(&self, model_data: RawToriiData) {
         let model = Model::parse(model_data).expect("Error while parsing model data");
-        match model.model {
+        let result = match model.model {
             Model::Land(land) => {
                 self.land_repository
                     .save(LandModel::from_at(
@@ -73,7 +74,6 @@ impl ModelListenerTask {
                         model.timestamp.unwrap_or(Utc::now()).naive_utc(),
                     ))
                     .await
-                    .expect("Failed to save land model");
             }
             Model::LandStake(land_stake) => {
                 self.land_stake_repository
@@ -83,12 +83,25 @@ impl ModelListenerTask {
                         model.timestamp.unwrap_or(Utc::now()).naive_utc(),
                     ))
                     .await
-                    .expect("Failed to save land stake model");
             }
             _ => {
                 //TODO: Implement this later
+                return;
             }
+        };
+
+        if let Err(chaindata_repository::Error::SqlError(err)) = result {
+            if !err
+                .as_database_error()
+                .is_some_and(DatabaseError::is_unique_violation)
+            {
+                error!("Failed to save event: {}", err);
+            }
+
+            // It is a duplicate, so ignore it
+            return;
         }
+        info!("Successfully saved event!");
     }
 }
 
@@ -106,26 +119,27 @@ impl Task for ModelListenerTask {
                 .await
                 .expect("Failed to retrieve last update time");
 
+            let last_check = last_check - chrono::Duration::seconds(1);
+
             info!("Polling for models after: {:?}", last_check);
 
             // Get all entities that were updated after the last check
-            let models_stream = self
+            let mut models_stream = self
                 .client
                 .get_all_entities_after(last_check)
                 .expect("Error while fetching entities");
 
-            // Collect all models from the stream
-            let models: Vec<RawToriiData> = models_stream.collect().await;
+            // Process models as they go
+            let mut model_count = 0;
+            while let Some(model) = models_stream.next().await {
+                self.process_model(model).await;
+                model_count += 1;
+            }
 
-            if models.is_empty() {
-                debug!("No new models found");
+            if model_count > 0 {
+                info!("Processed {} new models", model_count);
             } else {
-                info!("Found {} new models to process", models.len());
-
-                // Process each model
-                for model in models {
-                    self.process_model(model).await;
-                }
+                debug!("No new models found");
             }
 
             // Wait for 10 seconds before the next poll (or until stop signal)
