@@ -95,6 +95,6 @@
         Fetching auction price...
       {/if}
     </div>
-    <InfoTabs {land} />
+    <InfoTabs {land} auctionPrice={currentPrice} />
   </div>
 </div>

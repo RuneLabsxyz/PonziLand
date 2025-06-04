@@ -19,10 +19,12 @@
     land,
     activeTab = $bindable(),
     isActive = false,
+    auctionPrice,
   }: {
     land: LandWithActions;
     activeTab: TabType;
     isActive?: boolean;
+    auctionPrice?: CurrencyAmount;
   } = $props();
 
   const address = $derived(account.address);
@@ -196,13 +198,9 @@
       {/if}
       <div class="flex justify-between items-center">
         <div class="opacity-50">Sell price</div>
-        {#if land.type == 'auction'}
+        {#if land.type == 'auction' && auctionPrice}
           <div>
-            {#await land?.getCurrentAuctionPrice()}
-              fetching...
-            {:then price}
-              {price}
-            {/await}
+            {auctionPrice.toString()}
           </div>
         {:else}
           <div>{land.sellPrice}</div>

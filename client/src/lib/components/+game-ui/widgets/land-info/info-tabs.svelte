@@ -6,8 +6,12 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
-  let { land }: { land: LandWithActions } = $props();
+  let {
+    land,
+    auctionPrice,
+  }: { land: LandWithActions; auctionPrice?: CurrencyAmount } = $props();
 
   let activeTab = $state<TabType>('overall');
 
@@ -55,8 +59,18 @@
   </div>
 
   <div class="w-full h-full mt-4">
-    <OverallTab {land} bind:activeTab isActive={activeTab === 'overall'} />
-    <BuyTab {land} bind:activeTab isActive={activeTab === 'buy'} />
+    <OverallTab
+      {land}
+      bind:activeTab
+      isActive={activeTab === 'overall'}
+      {auctionPrice}
+    />
+    <BuyTab
+      {land}
+      bind:activeTab
+      isActive={activeTab === 'buy'}
+      {auctionPrice}
+    />
     <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
   </div>
 </div>

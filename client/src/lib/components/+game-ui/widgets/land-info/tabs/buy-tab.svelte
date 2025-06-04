@@ -23,12 +23,14 @@
 
   let {
     land,
+    auctionPrice,
     activeTab = $bindable(),
     isActive = false,
   }: {
     land: LandWithActions;
     activeTab: TabType;
     isActive?: boolean;
+    auctionPrice?: CurrencyAmount;
   } = $props();
 
   let isOwner = $derived(
@@ -107,69 +109,71 @@
     return null;
   });
 
-  let auctionPrice = $state();
-
-  onMount(() => {
-    if (land.type === 'auction') {
-      land.getCurrentAuctionPrice().then((price) => {
-        auctionPrice = price;
-      });
-    }
-  });
-
   let balanceError = $derived.by(() => {
-    let requiredAmount;
-    if (land.type === 'auction' && auctionPrice) {
-      requiredAmount = auctionPrice;
-    } else {
-      requiredAmount = stakeAmount;
-    }
-
-    let userBalance;
-
-    console.log(requiredAmount);
-
-    if (land.type === 'auction') {
-      userBalance = tokenStore.balances.find(
+    if (land.type == 'auction') {
+      const landPrice = auctionPrice;
+      if (!landPrice) {
+        return 'Auction price is not available';
+      }
+      const baseTokenBalance = tokenStore.balances.find(
         (balance) => balance.token.address === baseToken?.address,
       );
-    } else {
-      userBalance = tokenStore.balances.find(
+      if (!baseTokenBalance) {
+        return `You don't have any ${baseToken?.symbol}`;
+      }
+      const baseTokenAmount = CurrencyAmount.fromUnscaled(
+        baseTokenBalance.balance,
+        baseToken,
+      );
+      if (baseTokenAmount.rawValue().isLessThan(landPrice.rawValue())) {
+        return `You don't have enough ${baseToken?.symbol} to buy this land (max: ${baseTokenAmount.toString()})`;
+      }
+      // If has enough for price then check if the selected token is baseToken and add the stake amount
+      if (selectedToken?.address === baseToken?.address) {
+        const totalCost = landPrice.add(stakeAmount);
+        if (baseTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
+          return `You don't have enough ${baseToken?.symbol} to buy this land and stake (max: ${baseTokenAmount.toString()})`;
+        }
+      }
+    }
+
+    // If not auction, Do the same checks but with land.token for baseToken and selectedToken
+    if (land.type !== 'auction') {
+      console.log('Checking land token balance for buy');
+      const landTokenBalance = tokenStore.balances.find(
         (balance) => balance.token.address === land.token?.address,
       );
+      if (!landTokenBalance) {
+        return `You don't have any ${land.token?.symbol}`;
+      }
+      const landTokenAmount = CurrencyAmount.fromUnscaled(
+        landTokenBalance.balance,
+        land.token,
+      );
+      if (landTokenAmount.rawValue().isLessThan(land.sellPrice.rawValue())) {
+        return `You don't have enough ${land.token?.symbol} to buy this land (max: ${landTokenAmount.toString()})`;
+      }
+
+      const selectedAddress = padAddress(selectedToken?.address ?? '');
+      const landTokenAddress = padAddress(land.token?.address ?? '');
+      console.log(
+        'selectedAddress',
+        selectedAddress,
+        'landTokenAddress',
+        landTokenAddress,
+      );
+
+      // if selectedToken is land.token, check if has enough for stake
+      if (selectedAddress === landTokenAddress) {
+        const totalCost = land.sellPrice.add(stakeAmount);
+        console.log('totalCost', totalCost);
+        if (landTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
+          return `You don't have enough ${land.token?.symbol} to stake (max: ${landTokenAmount.toString()})`;
+        }
+      }
     }
 
-    if (userBalance === undefined) return 'You do not have any of this token';
-
-    const userTokenAmount = CurrencyAmount.fromUnscaled(
-      userBalance?.balance,
-      land.type === 'auction' ? baseToken : land.token,
-    );
-
-    // If the selected token is the same as the token being used for the purchase, add the stake amount
-    if (
-      land.type === 'auction' &&
-      selectedToken?.address === baseToken?.address
-    ) {
-      requiredAmount = requiredAmount.add(stakeAmount);
-    } else if (
-      land.type !== 'auction' &&
-      selectedToken?.address === land.token?.address
-    ) {
-      requiredAmount = requiredAmount.add(stakeAmount);
-    }
-
-    console.log(
-      'userAmount',
-      userTokenAmount.toString(),
-      'requiredAmount',
-      requiredAmount.toString(),
-    );
-    if (userTokenAmount.rawValue().isLessThan(requiredAmount.rawValue())) {
-      return `Insufficient balance. You need ${requiredAmount.toString()} ${land.type === 'auction' ? baseToken?.symbol : land.token?.symbol}`;
-    }
-
-    return null; // No error
+    return null;
   });
 
   // Check if form is valid
