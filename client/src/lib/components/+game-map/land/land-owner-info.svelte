@@ -4,6 +4,7 @@
   import type { LandWithActions } from '$lib/api/land';
   import { AI_AGENT_ADDRESSES } from '$lib/const';
   import data from '$profileData';
+  import { padAddress } from '$lib/utils';
 
   let {
     land,
@@ -17,7 +18,9 @@
 
   $effect(() => {
     if (land?.owner) {
-      const agent = data.aiAgents.find((agent) => agent.address === land.owner);
+      const agent = data.aiAgents.find(
+        (agent) => padAddress(agent.address) === padAddress(land.owner),
+      );
       aiAgent = agent || null;
     } else {
       aiAgent = null;

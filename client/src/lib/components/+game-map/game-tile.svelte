@@ -44,7 +44,9 @@
 
   let aiAgent = $derived.by(() => {
     if (BuildingLand.is(land)) {
-      return data.aiAgents.find((agent) => agent.address === land.owner);
+      return data.aiAgents.find(
+        (agent) => padAddress(agent.address) === padAddress(land.owner),
+      );
     }
     return null;
   });
