@@ -20,9 +20,42 @@ export let claimStore: {
   };
 } = $state({ value: {} });
 
+export async function claimALL(
+  { client: sdk }: ReturnType<typeof useDojo>,
+  account: Account | AccountInterface,
+) {
+  const playerLandsToClaim = Object.values(claimStore.value)
+    .filter((claim) => claim.land.owner === padAddress(account.address))
+    .map((claim) => claim.land);
+
+  const landsToClaim: LandWithActions[][] = [];
+  for (let i = 0; i < playerLandsToClaim.length; i += 10) {
+    landsToClaim.push(playerLandsToClaim.slice(i, i + 10));
+  }
+  for (const batch of landsToClaim) {
+    const batchAggregatedTaxes = await Promise.all(
+      batch.map(async (land) => {
+        const result = await getAggregatedTaxes(land);
+        return result;
+      }),
+    );
+
+    await sdk.client.actions
+      .claimAll(
+        account,
+        batch.map((land) => land.location as BigNumberish),
+      )
+      .then((value) => {
+        batchAggregatedTaxes.forEach((result) => {
+          handlePostClaim(batch, result, value.transaction_hash);
+        });
+      });
+  }
+}
+
 export async function claimAllOfToken(
   token: Token,
-  { client: sdk, accountManager }: ReturnType<typeof useDojo>,
+  { client: sdk }: ReturnType<typeof useDojo>,
   account: Account | AccountInterface,
 ) {
   const landsWithThisToken = Object.values(claimStore.value)

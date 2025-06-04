@@ -7,7 +7,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { gameSounds } from '$lib/sfx';
   import { moveCameraTo } from '$lib/stores/camera.store';
-  import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
+  import { claimALL, claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress, parseLocation } from '$lib/utils';
@@ -33,6 +33,16 @@
         clearInterval(intervalId);
       }
     }, 200);
+  }
+
+  async function handleClaimALL() {
+    claimALL(dojo, account()?.getWalletAccount()!)
+      .then(() => {
+        soundAtInterval(lands.length);
+      })
+      .catch((e) => {
+        console.error('error claiming ALL', e);
+      });
   }
 
   async function handleClaimFromCoin(
@@ -255,8 +265,17 @@
   <!-- Lands List -->
   <ScrollArea type="scroll">
     <div class="flex flex-col">
+      {#if !groupByToken}
+        <Button
+          size="md"
+          class="sticky top-0 z-10"
+          onclick={() => {
+            handleClaimALL();
+          }}>CLAIM AAAAALLLLL</Button
+        >
+      {/if}
       {#each Object.entries(groupedLands) as [groupName, groupLands]}
-        {#if groupByToken && Object.keys(groupedLands).length > 1}
+        {#if groupByToken && Object.keys(groupedLands).length >= 1}
           {@const token = groupLands.at(0)?.token}
           <div
             class="px-4 py-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-10 flex gap-2 items-center"
