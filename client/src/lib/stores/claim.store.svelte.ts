@@ -20,7 +20,7 @@ export let claimStore: {
   };
 } = $state({ value: {} });
 
-export async function claimALL(
+export async function claimAll(
   { client: sdk }: ReturnType<typeof useDojo>,
   account: Account | AccountInterface,
 ) {

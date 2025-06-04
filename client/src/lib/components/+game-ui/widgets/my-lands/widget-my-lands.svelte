@@ -7,7 +7,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { gameSounds } from '$lib/sfx';
   import { moveCameraTo } from '$lib/stores/camera.store';
-  import { claimALL, claimAllOfToken } from '$lib/stores/claim.store.svelte';
+  import { claimAll, claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress, parseLocation } from '$lib/utils';
@@ -36,7 +36,7 @@
   }
 
   async function handleClaimALL() {
-    claimALL(dojo, account()?.getWalletAccount()!)
+    claimAll(dojo, account()?.getWalletAccount()!)
       .then(() => {
         soundAtInterval(lands.length);
       })
