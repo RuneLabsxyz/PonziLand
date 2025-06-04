@@ -189,7 +189,7 @@
           <span class="text-xl text-blue-300 leading-none">{nbNeighbors}</span>
           <span class="opacity-50"> neighbors </span>
         </div>
-        <div class="opacity-75">
+        <div class="text-red-500">
           -{displayCurrency(Number(taxes) * nbNeighbors)}
           {selectedToken?.symbol}
         </div>
@@ -198,8 +198,8 @@
       <div
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
-        <div class="opacity-25">Per neighbors / h</div>
-        <div class="opacity-25">
+        <div class="opacity-50">Per neighbors / h</div>
+        <div class="text-red-500">
           -{displayCurrency(Number(taxes))}
           {selectedToken?.symbol}
         </div>
@@ -207,8 +207,8 @@
       <div
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
-        <div class="opacity-25">Max / h</div>
-        <div class="opacity-25">
+        <div class="opacity-50">Max / h</div>
+        <div class="text-red-500">
           -{displayCurrency(Number(taxes) * maxNumberOfNeighbors)}
           {selectedToken?.symbol}
         </div>
@@ -217,9 +217,9 @@
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
         <div>
-          <span class="opacity-25">Nuke time with</span>
+          <span class="opacity-50">Nuke time with</span>
           <span class="text-blue-300 leading-none">{nbNeighbors}</span>
-          <span class="opacity-25"> neighbors </span>
+          <span class="opacity-50"> neighbors </span>
         </div>
         <div
           class=" {estimatedTimeString.includes('Now')
@@ -229,14 +229,14 @@
           {estimatedTimeString}
         </div>
       </div>
-      <div
+      <!-- <div
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
-        <div></div>
-        <div class="opacity-25">
+        <div class="opacity-50">Nuke date</div>
+        <div class="opacity-50">
           {estimatedNukeDate}
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>

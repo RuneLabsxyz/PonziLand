@@ -182,6 +182,7 @@
   );
 
   async function handleBuyClick() {
+    loading = true;
     console.log('Buy land');
 
     if (tutorialState.tutorialProgress == 7) {
@@ -219,8 +220,6 @@
       return;
     }
 
-    loading = true;
-
     try {
       // const result = await landStore?.buyLand(land?.location, landSetup);
 
@@ -246,6 +245,7 @@
       }
     } catch (error) {
       console.error('Error buying land', error);
+      loading = false;
     } finally {
       loading = false;
     }
@@ -336,7 +336,7 @@
       <Button
         onclick={handleBuyClick}
         class="mt-3 w-full"
-        disabled={!isFormValid || isOwner}
+        disabled={!isFormValid || isOwner || loading}
       >
         BUY FOR <span class="text-yellow-500">
           &nbsp;
