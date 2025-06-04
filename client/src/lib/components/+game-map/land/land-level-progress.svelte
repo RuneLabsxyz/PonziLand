@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { LevelInfo } from '$lib/api/land';
-  import { cn } from '$lib/utils';
   import { Progress } from '$lib/components/ui/progress';
+  import { GAME_SPEED } from '$lib/const';
+  import { cn } from '$lib/utils';
 
   let { levelUpInfo, class: className } = $props<{
     levelUpInfo: LevelInfo;
@@ -10,7 +11,7 @@
 
   let remainingTime = $derived.by(() => {
     const time =
-      (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) / 20;
+      (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) / GAME_SPEED;
 
     if (time <= 0) {
       return 'ready';
@@ -28,11 +29,11 @@
   <Progress
     value={levelUpInfo.timeSinceLastLevelUp}
     max={levelUpInfo.levelUpTime}
-    class={cn(className, 'absolute top-0 left-0 h-6  bg-white')}
-    color={levelUpInfo.canLevelUp ? 'green' : undefined}
+    class={cn(className, 'absolute top-0 left-0 h-5  bg-[#fff2]')}
+    color={levelUpInfo.canLevelUp ? 'green' : '#F2B445'}
   ></Progress>
   <div
-    class="font-[PonziNumber] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center stroke-3d-black -mt-[2px]"
+    class="text-xs font-ponzi-number absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center stroke-3d-black -mt-[2px]"
   >
     {remainingTime}
   </div>
