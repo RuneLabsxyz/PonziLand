@@ -56,7 +56,10 @@
   $effect(() => {
     if (tokenPrices) {
       if (land?.token?.address === BASE_TOKEN) {
-        burnRateInBaseToken = burnRate;
+        burnRateInBaseToken = CurrencyAmount.fromScaled(
+          burnRate.toNumber(),
+          land?.token,
+        );
       } else {
         const tokenPrice = tokenPrices.find(
           (p) => p.address === land?.token?.address,
