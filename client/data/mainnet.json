@@ -28,6 +28,11 @@
       "address": "0x56106a470b036cad4b2e80846f88e3fd226d7bf7319ac2f895fd75e0ad0f687",
       "name": "EveraiAgent",
       "badgeImage": "/tokens/eSG/ai.png"
+    },
+    {
+      "address": "0x55061ab2add8cf1ef0ff8a83dd6dc138f00e41fb6670c1d372787c695bb036",
+      "name": "BlobertAgent",
+      "badgeImage": "/tokens/nftLORDS/ai.png"
     }
   ],
   "availableTokens": [
