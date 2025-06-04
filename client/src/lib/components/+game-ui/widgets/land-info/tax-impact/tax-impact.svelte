@@ -229,14 +229,6 @@
           {estimatedTimeString}
         </div>
       </div>
-      <!-- <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div class="opacity-50">Nuke date</div>
-        <div class="opacity-50">
-          {estimatedNukeDate}
-        </div>
-      </div> -->
     </div>
   </div>
 </div>
