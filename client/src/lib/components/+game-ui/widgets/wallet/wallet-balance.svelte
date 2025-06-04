@@ -155,26 +155,32 @@
           amount={tokenBalance.balance}
           token={tokenBalance.token}
         />
-        <svg
-          width="16"
-          height="15"
-          viewBox="0 0 22 21"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
+        <a
+          href="/dashboard#{tokenBalance.token.symbol}"
+          target="_blank"
+          aria-label="View on dashboard"
         >
-          <circle
-            cx="11.13"
-            cy="10.6975"
-            r="9.63081"
-            stroke="white"
-            stroke-opacity="0.5"
-            stroke-width="1.28411"
-          />
-          <path
-            d="M10.2795 16.5045V8.14845H11.6722V16.5045H10.2795ZM10.2795 6.75577V5.36309H11.6722V6.75577H10.2795Z"
-            fill="white"
-          />
-        </svg>
+          <svg
+            width="16"
+            height="15"
+            viewBox="0 0 22 21"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <circle
+              cx="11.13"
+              cy="10.6975"
+              r="9.63081"
+              stroke="white"
+              stroke-opacity="0.5"
+              stroke-width="1.28411"
+            />
+            <path
+              d="M10.2795 16.5045V8.14845H11.6722V16.5045H10.2795ZM10.2795 6.75577V5.36309H11.6722V6.75577H10.2795Z"
+              fill="white"
+            />
+          </svg>
+        </a>
       </div>
     {/each}
   </div>

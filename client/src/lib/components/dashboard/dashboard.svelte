@@ -175,8 +175,19 @@
 
   onMount(async () => {
     await getPrices();
-    loadPairData();
+    await loadPairData();
+    scrollToHash();
   });
+
+  function scrollToHash() {
+    const hash = window.location.hash;
+    if (hash) {
+      const element = document.querySelector(hash);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  }
 </script>
 
 {#if loading}
@@ -192,7 +203,10 @@
     <h1 class="text-2xl mb-4 text-white">Token Pairs</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each pairCards as card}
-        <Card class="shadow-ponzi overflow-hidden">
+        <Card
+          class="shadow-ponzi overflow-hidden"
+          id={card.tokenDetails.symbol}
+        >
           <div class="p-4">
             <!-- Pair Header -->
             <div class="flex items-center gap-3 mb-4">
