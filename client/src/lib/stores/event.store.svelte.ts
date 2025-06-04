@@ -38,12 +38,13 @@ class NotificationQueue {
   public async addNotification(txhash: string | null, functionName: string) {
     const notification = this.registerNotification(functionName);
     if (txhash) {
-      await accountManager!
+      const res = await accountManager!
         .getProvider()
         ?.getWalletAccount()
         ?.waitForTransaction(txhash);
+      console.log('waitForTransaction', res);
       notification.txhash = txhash;
-      notification.isValid = true;
+      notification.isValid = res?.isSuccess() ?? false;
       notification.pending = false;
     } else {
       notification.isValid = false;
