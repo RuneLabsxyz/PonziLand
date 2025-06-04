@@ -35,7 +35,7 @@
     }, 200);
   }
 
-  async function handleClaimALL() {
+  async function handleClaimAll() {
     claimAll(dojo, account()?.getWalletAccount()!)
       .then(() => {
         soundAtInterval(lands.length);
@@ -270,7 +270,7 @@
           size="md"
           class="sticky top-0 z-10"
           onclick={() => {
-            handleClaimALL();
+            handleClaimAll();
           }}>CLAIM AAAAALLLLL</Button
         >
       {/if}
