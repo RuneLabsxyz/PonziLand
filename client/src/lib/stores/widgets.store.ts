@@ -53,8 +53,8 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
   help: {
     id: 'help',
     type: 'help',
-    position: { x: 500, y: 100 },
-    dimensions: { width: 400, height: 500 },
+    position: { x: 400, y: 100 },
+    dimensions: { width: 450, height: 600 },
     isMinimized: false,
     isOpen: false,
   },

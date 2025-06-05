@@ -21,9 +21,6 @@ class SettingsStore {
       }
       // Ensure volume is within bounds
       this.settings.volume = Math.max(0, Math.min(100, this.settings.volume));
-      // Initialize game sounds volume
-      const gameVolume = this.settings.volume / 100;
-      gameSounds.setVolume(gameVolume);
     } catch (error) {
       console.error('Failed to load settings:', error);
     }
