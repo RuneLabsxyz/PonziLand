@@ -1,8 +1,11 @@
+import { gameSounds } from '$lib/stores/sfx.svelte';
+
 class SettingsStore {
   private static STORAGE_KEY = 'ponziland_settings';
 
   private settings = $state({
     noobMode: false,
+    volume: 50,
     // Add more settings here as needed
   });
 
@@ -16,6 +19,11 @@ class SettingsStore {
       if (savedSettings) {
         this.settings = JSON.parse(savedSettings);
       }
+      // Ensure volume is within bounds
+      this.settings.volume = Math.max(0, Math.min(100, this.settings.volume));
+      // Initialize game sounds volume
+      const gameVolume = this.settings.volume / 100;
+      gameSounds.setVolume(gameVolume);
     } catch (error) {
       console.error('Failed to load settings:', error);
     }
@@ -36,9 +44,26 @@ class SettingsStore {
     return this.settings.noobMode;
   }
 
+  get volume() {
+    return this.settings.volume;
+  }
+
   toggleNoobMode() {
     this.settings.noobMode = !this.settings.noobMode;
     this.saveSettings();
+  }
+
+  setVolume(volume: number) {
+    // Clamp volume between 0 and 100
+    this.settings.volume = Math.max(0, Math.min(100, volume));
+    // Update game sounds volume
+    const gameVolume = this.settings.volume / 100;
+    gameSounds.setVolume(gameVolume);
+    // Save the updated settings
+    this.saveSettings();
+    // Optionally, play a sound to indicate volume change
+    console.log(`Volume set to ${gameVolume}`);
+    gameSounds.play('click', { volume: gameVolume });
   }
 }
 

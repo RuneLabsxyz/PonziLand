@@ -1,7 +1,7 @@
 <script lang="ts">
   import { type LandWithActions } from '$lib/api/land';
   import { useDojo } from '$lib/contexts/dojo';
-  import { gameSounds } from '$lib/sfx';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
   import { claimSingleLand, claimStore } from '$lib/stores/claim.store.svelte';
   import {
     clearPending,

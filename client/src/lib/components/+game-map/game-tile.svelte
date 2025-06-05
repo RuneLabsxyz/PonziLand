@@ -6,7 +6,7 @@
   import { Button } from '$lib/components/ui/button';
   import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
   import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
-  import { gameSounds } from '$lib/sfx';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
   import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import {

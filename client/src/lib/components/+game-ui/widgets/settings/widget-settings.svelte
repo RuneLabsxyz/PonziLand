@@ -1,26 +1,52 @@
 <script lang="ts">
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { Slider } from '$lib/components/ui/slider';
+  import { Label } from '$lib/components/ui/label';
+  import { Volume2, VolumeX } from 'lucide-svelte';
 </script>
 
-<div class="flex flex-col gap-2">
-  <div class="flex items-center justify-between p-2">
+<div class="flex flex-col gap-4 p-5">
+  <!-- Volume Slider -->
+  <div class="flex flex-col gap-2 p-2">
+    <div class="flex items-center justify-between">
+      <Label for="volume-slider" class="font-medium">SFX Volume</Label>
+      <span class="text-sm text-muted-foreground">{settingsStore.volume}%</span>
+    </div>
+    <Slider
+      type="single"
+      id="volume-slider"
+      value={settingsStore.volume}
+      onValueChange={(value) => settingsStore.setVolume(value)}
+      max={100}
+      min={0}
+      step={1}
+      class="w-full"
+    />
+  </div>
+  <div class="flex justify-evenly">
+    <!-- Pro / Noob mode Button -->
     <button
-      class="flex items-center gap-3 px-4 py-2 rounded-lg"
+      class="w-full justify-center flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted/50 transition-colors"
       onclick={() => settingsStore.toggleNoobMode()}
     >
-      <div
-        class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ease-in-out
-          {settingsStore.isNoobMode ? 'bg-orange-500' : 'bg-orange-500/25'}"
-      >
-        <span class="sr-only"
-          >{settingsStore.isNoobMode ? 'Pro Mode: On' : 'Pro Mode: Off'}</span
-        >
-        <span
-          class="inline-block h-5 w-5 transform rounded-full bg-white transition duration-200 ease-in-out
-            {settingsStore.isNoobMode ? 'translate-x-6' : 'translate-x-1'}"
-        ></span>
-      </div>
-      <span class=" font-medium w-[85px]">Pro Mode</span>
+      {#if settingsStore.isNoobMode}
+        <Label class="font-medium cursor-pointer">Pro Mode</Label>
+      {:else}
+        <Label class="font-medium cursor-pointer">Noob Mode</Label>
+      {/if}
     </button>
+
+    <!-- Mute SFX Button -->
+
+    <!-- <button
+      class="w-full flex items-center justify-center gap-3 px-4 py-2 rounded-lg hover:bg-muted/50 transition-colors"
+      onclick={() => settingsStore.toggleMuteSFX()}
+    >
+      {#if settingsStore.isMuteSFX}
+        <Label class="font-medium cursor-pointer">SFX Off</Label>
+      {:else}
+        <Label class="font-medium cursor-pointer">SFX On</Label>
+      {/if}
+    </button> -->
   </div>
 </div>

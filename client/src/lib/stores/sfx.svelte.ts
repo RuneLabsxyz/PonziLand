@@ -1,4 +1,4 @@
-import { createAudioStore } from '@elron/svelte-audio-store';
+import { createAudioStore } from '$lib/stores/AudioStore';
 const sounds = {
   click: '/sfx/PL_ButtonClick2.wav',
   buy: '/sfx/PL_BuildingBuy.wav',
@@ -9,4 +9,4 @@ const sounds = {
   nuke: '/sfx/PL_Nuke1.wav',
 };
 
-export const gameSounds = createAudioStore(sounds);
+export let gameSounds = $state(createAudioStore(sounds));

@@ -42,6 +42,7 @@
 
 <div class="w-full h-full pb-4">
   <ScrollArea class="w-full h-full">
+    <WidgetSettings />
     <div class="flex flex-col gap-4 p-6">
       <img
         src="/tutorial/PONZIMASTER.png"
@@ -104,7 +105,5 @@
         </a>
       </div>
     </div>
-
-    <WidgetSettings />
   </ScrollArea>
 </div>

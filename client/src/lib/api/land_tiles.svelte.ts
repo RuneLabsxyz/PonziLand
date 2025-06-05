@@ -1,7 +1,7 @@
 import { GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-import { gameSounds } from '$lib/sfx';
+import { gameSounds } from '$lib/stores/sfx.svelte';
 import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';

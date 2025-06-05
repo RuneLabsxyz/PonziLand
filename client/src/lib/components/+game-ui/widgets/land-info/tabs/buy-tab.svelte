@@ -12,13 +12,12 @@
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
-  import { gameSounds } from '$lib/sfx';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand } from '$lib/stores/store.svelte';
   import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import { onMount } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
 
   let {

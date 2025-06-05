@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { gameSounds } from '$lib/sfx.js';
+  import { gameSounds } from '$lib/stores/sfx.svelte.js';
   import { cn } from '$lib/utils.js';
   import { Button as ButtonPrimitive } from 'bits-ui-old';
   import { type Events, type Props, buttonVariants } from './index.js';
