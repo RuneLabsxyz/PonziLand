@@ -44,17 +44,11 @@
 
 <div class="flex flex-col items-center flex-grow p-5">
   <div class="flex flex-col flex-grow max-w-96 gap-2">
-    <h1 class="text-2xl font-bold mb-5 self-center">Whitelist</h1>
-    <p>PonziLand is not yet available to everyone.</p>
+    <h1 class="text-2xl font-bold mb-5 self-center">Onboarding</h1>
     <p>
-      You can click on the "Validate Account" button below to check if you meet
-      the requirements to start playing, and jump in the action if you meet
-      them.
+      You must connect your Wallet to your Discord account to start playing.
     </p>
-    <p>
-      If you are not eligible, don't worry. Keep an eye on our Twitter account
-      to get notified when the game releases!
-    </p>
+    <p>This version of the game is free to play for everyone!</p>
 
     <span class="self-end h-full grow">&nbsp;</span>
 
