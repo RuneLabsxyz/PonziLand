@@ -31,6 +31,8 @@
 
   let animating = $state(false);
   let increment = $state(0);
+  let startingAmount = $state(0n); // Track the starting amount when processing begins
+  let accumulatedIncrements = $state(0n); // Track total increments during processing
 
   let tweenAmount = Tween.of(() => Number(amount), {
     delay: 500,
@@ -43,9 +45,13 @@
 
   const processQueue = () => {
     const nextEvent = localQueue[0];
-    increment = Number(nextEvent.toBigint());
+    const nextIncrement = nextEvent.toBigint();
+
+    increment = Number(nextIncrement);
+    accumulatedIncrements += nextIncrement;
     animating = true;
-    tweenAmount.set(Number(nextEvent.toBigint() + amount)).then(() => {
+
+    tweenAmount.set(Number(startingAmount + accumulatedIncrements)).then(() => {
       setTimeout(() => {
         animating = false;
         // remove from local queue
@@ -57,6 +63,9 @@
           processQueue();
         } else {
           processing = false;
+          // Reset tracking when done processing
+          startingAmount = amount;
+          accumulatedIncrements = 0n;
         }
       }, 750);
     });
@@ -72,6 +81,9 @@
         // trigger updates
         if (processing == false) {
           processing = true;
+          // Set starting amount when we begin processing
+          startingAmount = amount;
+          accumulatedIncrements = 0n;
           processQueue();
         }
 
@@ -84,6 +96,11 @@
       unsub();
     };
   });
+
+  // Derived value for display
+  let displayAmount = $derived(
+    CurrencyAmount.fromUnscaled(BigInt(tweenAmount.current), token),
+  );
 </script>
 
 <div class="flex flex-1 items-center justify-between text-xl tracking-wide">
@@ -92,7 +109,7 @@
       ? 'animating scale-110 text-yellow-500 font-bold'
       : ''}"
   >
-    <div>{CurrencyAmount.fromUnscaled(tweenAmount.current, token)}</div>
+    <div>{displayAmount}</div>
     <div class="relative">
       {#if animating}
         <span class="absolute left-0 animate-in-out-left">
