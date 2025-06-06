@@ -7,6 +7,8 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
   import data from '$profileData';
+  import { coinbit } from '@reown/appkit/networks';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
@@ -43,6 +45,20 @@
   const localQueue: CurrencyAmount[] = [];
   let processing = $state(false);
 
+  // Method 1: Using setInterval with counter
+  function soundAtInterval(nbLands: number) {
+    let count = 0;
+
+    const intervalId = setInterval(() => {
+      count++;
+      gameSounds.play('coin1');
+
+      if (count >= nbLands) {
+        clearInterval(intervalId);
+      }
+    }, 60);
+  }
+
   const processQueue = () => {
     const nextEvent = localQueue[0];
     const nextIncrement = nextEvent.toBigint();
@@ -69,6 +85,7 @@
         }
       }, 750);
     });
+    soundAtInterval(10);
   };
 
   $effect(() => {
@@ -84,7 +101,7 @@
           // Set starting amount when we begin processing
           startingAmount = amount;
           accumulatedIncrements = 0n;
-          processQueue();
+          setTimeout(processQueue, 500);
         }
 
         // remove from global queue
