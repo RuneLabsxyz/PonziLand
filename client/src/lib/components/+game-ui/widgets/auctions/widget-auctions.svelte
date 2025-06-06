@@ -121,10 +121,9 @@
 </script>
 
 <div class="h-full w-full pb-16">
-  <div class="flex items-center justify-between p-2 border-b border-white/10">
-    <h3 class="text-sm font-medium">Sorting</h3>
+  <div class="flex items-center justify-end py-2 border-white/10">
     <button
-      class="flex items-center gap-1 px-2 py-1 text-xs bg-white/10 hover:bg-white/20 rounded transition-colors"
+      class="flex items-center gap-2 text-sm font-medium bg-blue-500 px-2"
       onclick={() => {
         sortAscending = !sortAscending;
         lands = sortLandsByPrice(lands);
@@ -132,9 +131,9 @@
     >
       Price
       {#if sortAscending}
-        ↑
+        ▴
       {:else}
-        ↓
+        ▾
       {/if}
     </button>
   </div>
@@ -142,7 +141,7 @@
     <div class="flex flex-col">
       {#each lands as land}
         <button
-          class="w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
+          class="relative w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
           onclick={() => {
             moveCameraTo(
               parseLocation(land.location)[0] + 1,
@@ -156,7 +155,7 @@
           }}
         >
           {#if land}
-            <LandOverview {land} />
+            <LandOverview size="xs" {land} />
           {/if}
           <div
             class="w-full flex items-center justify-start leading-none text-xl"
@@ -178,6 +177,7 @@
               </div>
             {/if}
           </div>
+          <div class="absolute bottom-0 right-0 p-2"></div>
         </button>
       {/each}
     </div>
