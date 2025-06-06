@@ -8,7 +8,6 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
-  import { claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { baseToken } from '$lib/stores/tokens.store.svelte';
   import { padAddress, parseLocation } from '$lib/utils';
@@ -143,7 +142,7 @@
     <div class="flex flex-col">
       {#each lands as land}
         <button
-          class="w-full text-left flex gap-2 hover:bg-white/10 p-2 land-button"
+          class="w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
           onclick={() => {
             moveCameraTo(
               parseLocation(land.location)[0] + 1,
@@ -159,21 +158,23 @@
           {#if land}
             <LandOverview {land} />
           {/if}
-          <div class="w-full flex items-center justify-end leading-none">
+          <div
+            class="w-full flex items-center justify-start leading-none text-xl"
+          >
             {#if land.priceLoading}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Loading...</span>
-                <TokenAvatar class="w-8 h-8" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={baseToken} />
               </div>
             {:else if land.price}
               <div class="flex gap-1 items-center">
                 <PriceDisplay price={land.price} />
-                <TokenAvatar class="w-8 h-8" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={baseToken} />
               </div>
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>
-                <TokenAvatar class="w-8 h-8" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={baseToken} />
               </div>
             {/if}
           </div>
@@ -185,10 +186,10 @@
 
 <style>
   .land-button:nth-child(odd) {
-    background-color: hsl(240, 19%, 18%);
+    background-color: #fff1;
   }
 
   .land-button:nth-child(odd):hover {
-    background-color: hsl(240, 19%, 20%);
+    background-color: #fff1;
   }
 </style>
