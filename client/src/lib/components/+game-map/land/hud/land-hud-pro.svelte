@@ -61,7 +61,7 @@
       </div>
     </div>
   </div>
-  <div class="flex flex-col">
+  <div class="flex flex-col text-xl">
     <div class="flex justify-between w-full pt-2 leading-none">
       <div class="low-opacity">Token :</div>
       <div class="text-opacity-30">
