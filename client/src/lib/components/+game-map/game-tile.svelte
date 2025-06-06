@@ -190,7 +190,7 @@
   onmouseout={onBlur}
   onblur={onBlur}
 >
-  <LandDisplay {...spriteProps} {hovering} {selected} />
+  <LandDisplay {...spriteProps} {hovering} {selected} road />
 
   {#if currentScale < MIN_SCALE_FOR_DETAIL && isOwner}
     <div class="tile-overlay pointer-events-none building-overlay"></div>
