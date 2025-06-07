@@ -9,6 +9,7 @@
   import { onMount } from 'svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import { notificationQueue } from '$lib/stores/event.store.svelte';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
@@ -137,7 +138,9 @@
 
     const quote = quotes[0];
     // Execute swap
-    await avnu.executeSwap(quote, { slippage });
+    await avnu.executeSwap(quote, { slippage }).then((res) => {
+      notificationQueue.addNotification(res?.transactionHash ?? null, 'swap');
+    });
   }
 
   function validateSlippage(value: number) {
