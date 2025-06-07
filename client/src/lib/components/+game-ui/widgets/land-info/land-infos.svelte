@@ -81,7 +81,8 @@
         {/if}
       </div>
       <div
-        class="flex items-center gap-1 mt-5 {tutorialState.tutorialProgress == 5
+        class="flex text-2xl items-center gap-1 mt-5 {tutorialState.tutorialProgress ==
+        5
           ? 'border border-yellow-500 animate-pulse'
           : ''}"
       >

@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import PriceDisplay from '$lib/components/ui/price-display.svelte';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { baseToken } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land-overview.svelte';
@@ -35,17 +37,21 @@
   {#if land}
     <LandOverview {land} />
   {/if}
-  <div class="w-full flex flex-col leading-none">
-    <div class="flex justify-between text-yellow-500">
-      <p class="opacity-50">Owner:</p>
-      <p>Under Auction</p>
-    </div>
-    <div class="flex justify-between text-yellow-500">
-      <p class="opacity-50">Current Price</p>
-      <p class="text-right">
-        {priceDisplay}
-        {baseToken?.symbol}
-      </p>
+  <div
+    class="w-full flex flex-col leading-none justify-center items-center gap-2"
+  >
+    <span class="text-yellow-500 text-2xl text-ponzi-number">UNDER AUCTION</span
+    >
+    {#if currentPrice}
+      <PriceDisplay price={currentPrice} />
+    {:else}
+      <div class="text-ponzi-number text-center">Loading...</div>
+    {/if}
+    <div
+      class="text-ponzi-number text-xl flex items-center gap-2 stroke-3d-black"
+    >
+      {baseToken?.symbol}
+      <TokenAvatar token={baseToken} class="w-5 h-5" />
     </div>
   </div>
 </div>
