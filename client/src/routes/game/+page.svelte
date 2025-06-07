@@ -67,11 +67,6 @@
           return;
         }
 
-        if (accountManager?.getProvider()?.getAccount() == null) {
-          console.info('The user is not logged in! Attempting login.');
-          await accountManager?.getProvider()?.connect();
-        }
-
         // Check if the user needs to signup with socialink
         const address = accountManager
           ?.getProvider()

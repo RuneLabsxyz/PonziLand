@@ -43,13 +43,6 @@
 
   let noRouteAvailable = $state(false);
 
-  onMount(async () => {
-    if (accountManager?.getProvider()?.getAccount() == null) {
-      console.info('The user is not logged in! Attempting login.');
-      await accountManager?.getProvider()?.connect();
-    }
-  });
-
   async function getTokenBalance(address?: string) {
     // Only do it on the browser
     if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
