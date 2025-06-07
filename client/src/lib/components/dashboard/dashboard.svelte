@@ -16,8 +16,12 @@
   import PlayerInfo from './PlayerInfo.svelte';
   import PriceChart from './PriceChart.svelte';
   import type { TokenVolume } from './requests';
+  import { mainnet } from '@reown/appkit/networks';
+  import { baseToken } from '$lib/stores/tokens.store.svelte';
+  import { BASE_URL } from '@avnu/avnu-sdk';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
+  const BASE_TOKEN_NUMERIC = BigInt(BASE_TOKEN).toString(10);
 
   let {
     tokens,
@@ -91,9 +95,13 @@
     const historicalBalances = getHistoricalBalances(data, targetDate);
     const tokens = Object.keys(historicalBalances);
     if (tokens.length < 2) return 0;
-    const balance0 = historicalBalances[tokens[0]];
-    const balance1 = historicalBalances[tokens[1]];
-    return Number(balance0) / Number(balance1);
+
+    const mainTokenIndex = tokens.indexOf(BASE_TOKEN_NUMERIC);
+    const otherTokenIndex = mainTokenIndex === 0 ? 1 : 0;
+
+    const balance0 = historicalBalances[tokens[mainTokenIndex]];
+    const balance1 = historicalBalances[tokens[otherTokenIndex]];
+    return Number(balance1) / Number(balance0);
   }
 
   /**
@@ -167,7 +175,7 @@
       tokenPrices = prices;
       tokenRates = prices.map((price) => ({
         token: price.address,
-        rate: price.ratio,
+        rate: 1 / price.ratio,
       }));
       return prices;
     });
@@ -212,19 +220,19 @@
             <div class="flex items-center gap-3 mb-4">
               <div class="flex items-center -space-x-2">
                 <img
-                  src={baseTokenDetails?.images.icon}
-                  alt={baseTokenDetails?.symbol}
+                  src={card.tokenDetails.images.icon}
+                  alt={card.tokenDetails.symbol}
                   class="w-8 h-8 rounded-full border-2 border-gray-800 z-10"
                 />
                 <img
-                  src={card.tokenDetails.images.icon}
-                  alt={card.tokenDetails.symbol}
+                  src={baseTokenDetails?.images.icon}
+                  alt={baseTokenDetails?.symbol}
                   class="w-8 h-8 rounded-full border-2 border-gray-800"
                 />
               </div>
               <h3 class="text-lg font-bold text-white">
-                {baseTokenDetails?.symbol || 'Base'} / {card.tokenDetails
-                  .symbol}
+                {card.tokenDetails.symbol} / {baseTokenDetails?.symbol ||
+                  'Base'}
               </h3>
             </div>
 

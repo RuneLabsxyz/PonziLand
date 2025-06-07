@@ -101,7 +101,7 @@ export function calculatePriceFromPool(
     throw new Error('Token0 reserve is zero, cannot compute price.');
   }
 
-  const rawPrice = Number(reserve1) / Number(reserve0);
+  const rawPrice = Number(reserve0) / Number(reserve1);
   const decimalAdjustment = Math.pow(10, token1Decimals - token0Decimals);
   const adjustedPrice = rawPrice * decimalAdjustment;
 
