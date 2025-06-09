@@ -75,7 +75,7 @@
   </div>
   <div class="flex">
     <Button size="md" class="w-full mt-2" onclick={openNftLink}
-      >Get more tokens</Button
+      >Claim token drop</Button
     >
   </div>
 
