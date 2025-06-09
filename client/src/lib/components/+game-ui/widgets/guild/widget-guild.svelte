@@ -15,6 +15,8 @@
 
   let teamInfo = $state<any>(null);
   let selectedTeam = $state<Team | null>(null);
+  let isLoading = $state(false);
+  let hasError = $state(false);
 
   const teams = [
     {
@@ -41,6 +43,8 @@
       return null;
     }
     try {
+      isLoading = true;
+      hasError = false;
       const result = await socialink.joinTeamFlow(
         accountDataProvider.address,
         selectedTeam,
@@ -49,19 +53,20 @@
 
       if (result.ok) {
         console.log(`Successfully joined ${selectedTeam}!`);
-
         console.log('New team stats:', result.data?.teamStats);
-
+        teamInfo = result.data?.team;
         return result.data?.team;
       } else {
         console.error('Failed to join team:', result.error);
-
+        hasError = true;
         return null;
       }
     } catch (error) {
       console.error('Error joining team:', error);
-
+      hasError = true;
       return null;
+    } finally {
+      isLoading = false;
     }
   }
 
@@ -69,13 +74,14 @@
     const response = await fetch(url);
     const data = await response.json();
     teamInfo = data.team;
+    console.log('Team info:', teamInfo);
   });
 </script>
 
-<div class="w-full h-full pt-12">
+<div class="w-full h-full">
   {#if !teamInfo}
-    <div class="flex flex-col gap-6">
-      <div class="flex gap-4 w-full justify-around py-6">
+    <div class="flex flex-col gap-4">
+      <div class="flex gap-1 w-full justify-around py-8">
         {#each teams as team}
           <div
             class="flex flex-col items-center cursor-pointer"
@@ -87,32 +93,45 @@
             <img
               src={team.image}
               alt={`${team.name} Png`}
-              class="w-32 h-32 transition-all duration-200"
+              class="w-48 h-48 transition-all duration-200"
               class:ring-4={selectedTeam === team.id}
               class:ring-blue-500={selectedTeam === team.id}
               class:ring-offset-2={selectedTeam === team.id}
             />
-            <span class="text-base mt-3">{team.name}</span>
+            <span class="text-sm mt-2">{team.name}</span>
           </div>
         {/each}
       </div>
 
-      <div class="text-center text-white px-8 mb-6 text-lg leading-relaxed">
-        <p>
-          Select your team below. <br />
-          <strong>This choice is final and cannot be changed later.</strong>
-          <br />
-          Choose wisely — your team will represent you in the game!
-        </p>
+      <div class="text-center text-white mb-4 text-xl">
+        Select your team below. This choice cannot be changed later.
       </div>
 
       <Button
-        class="px-8 py-3 bg-blue-500 text-white rounded-lg text-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mx-auto"
-        disabled={!selectedTeam}
+        variant="blue"
+        class="mx-auto"
+        disabled={!selectedTeam || isLoading}
         onclick={joinTeam}
       >
-        Join Team
+        {#if isLoading}
+          Loading...
+        {:else if hasError}
+          Failed
+        {:else}
+          Join Team
+        {/if}
       </Button>
+    </div>
+  {:else}
+    <div class="flex flex-col items-center justify-center h-full gap-4">
+      <img
+        src={teams.find((t) => t.id === teamInfo.teamName)?.image}
+        alt="Team Image"
+        class="w-48 h-48"
+      />
+      <div class="text-center text-white text-xl">
+        Your guild is {teamInfo.teamName}
+      </div>
     </div>
   {/if}
 </div>
