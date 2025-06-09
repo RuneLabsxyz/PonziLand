@@ -66,6 +66,14 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  guild: {
+    id: 'guild',
+    type: 'guild',
+    position: { x: 100, y: 100 },
+    dimensions: { width: 800, height: 600 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {

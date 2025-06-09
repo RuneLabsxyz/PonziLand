@@ -24,6 +24,12 @@ export const availableWidgets: Widget[] = [
     label: 'Help',
     icon: '/ui/icons/Icon_Book.png',
   },
+  {
+    id: 'guild',
+    type: 'guild',
+    label: 'Guild',
+    icon: '/ui/icons/Icon_Thin_Guild.png',
+  },
   // {
   //   id: 'notifications',
   //   type: 'notifications',
