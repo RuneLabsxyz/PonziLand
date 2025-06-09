@@ -74,6 +74,14 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  leaderboard: {
+    id: 'leaderboard',
+    type: 'leaderboard',
+    position: { x: window.innerWidth - 320, y: 600 },
+    dimensions: { width: 320, height: 300 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {

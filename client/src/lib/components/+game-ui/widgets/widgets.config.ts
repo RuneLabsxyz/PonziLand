@@ -30,6 +30,12 @@ export const availableWidgets: Widget[] = [
     label: 'Guild',
     icon: '/ui/icons/Icon_Thin_Guild.png',
   },
+  {
+    id: 'leaderboard',
+    type: 'leaderboard',
+    label: 'Leaderboard',
+    icon: '/ui/icons/Icon_Thin_Leaderboard.png',
+  },
   // {
   //   id: 'notifications',
   //   type: 'notifications',

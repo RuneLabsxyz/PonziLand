@@ -12,6 +12,7 @@
   import WidgetTutorial from './tutorial/widget-tutorial.svelte';
   import WidgetNftLink from './nft-link/widget-nft-link.svelte';
   import WidgetGuild from './guild/widget-guild.svelte';
+  import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -47,6 +48,8 @@
         <WidgetNftLink />
       {:else if type === 'guild'}
         <WidgetGuild />
+      {:else if type === 'leaderboard'}
+        <WidgetLeaderboard />
       {/if}
     </Draggable>
   {/if}
