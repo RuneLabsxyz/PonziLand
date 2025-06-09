@@ -1,6 +1,7 @@
 import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { writable } from 'svelte/store';
 import { useAccount } from '$lib/contexts/account.svelte';
+import { sendError } from '$lib/monitoring/faro';
 
 export type ClaimEvent = CurrencyAmount;
 
@@ -49,6 +50,16 @@ class NotificationQueue {
     } else {
       notification.isValid = false;
       notification.pending = false;
+    }
+
+    if (!notification.isValid) {
+      sendError(
+        new Error(`Transaction failed for ${notification.functionName}`),
+        {
+          txhash: notification.txhash,
+          address: accountManager?.getProvider()?.getWalletAccount()?.address,
+        },
+      );
     }
 
     setTimeout(() => this.removeNotification(notification.txCount), 3600);

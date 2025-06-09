@@ -219,11 +219,8 @@
       return;
     }
 
+    let result;
     try {
-      // const result = await landStore?.buyLand(land?.location, landSetup);
-
-      let result;
-
       if (land.type == 'auction') {
         result = await bidLand(land.location, landSetup);
       } else {
@@ -243,7 +240,10 @@
         console.log('Bought land with TX: ', result.transaction_hash);
       }
     } catch (error) {
-      console.error('Error buying land', error);
+      console.error(
+        `Error buying land for account ${accountManager!.getProvider()?.getWalletAccount()?.address} for location ${land.location} , transaction hash: ${result?.transaction_hash}`,
+        error,
+      );
       loading = false;
     } finally {
       loading = false;
