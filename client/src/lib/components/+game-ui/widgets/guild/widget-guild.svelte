@@ -3,29 +3,66 @@
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import { onMount } from 'svelte';
   import { Button } from '$lib/components/ui/button';
+  import { getSocialink } from '$lib/accounts/social/index.svelte';
+
+  const socialink = getSocialink();
+
+  type Team = 'Wolf Nation' | 'Blobert' | 'Everai' | 'Ducks everywhere';
 
   let url = $derived(
     `${PUBLIC_SOCIALINK_URL}/api/user/${accountDataProvider.address}/team/info`,
   );
 
   let teamInfo = $state<any>(null);
-  let selectedTeam = $state<string | null>(null);
+  let selectedTeam = $state<Team | null>(null);
 
   const teams = [
-    { id: 'duck', name: 'Duck Team', image: '/extra/agents/duck.png' },
-    { id: 'wolf', name: 'Wolf Team', image: '/extra/agents/wolf.png' },
-    { id: 'everai', name: 'Everai Team', image: '/extra/agents/everai.png' },
-    { id: 'blobert', name: 'Blobert Team', image: '/extra/agents/blobert.png' },
+    {
+      id: 'Ducks everywhere',
+      name: 'Duck Team',
+      image: '/extra/agents/duck.png',
+    },
+    { id: 'Wolf Nation', name: 'Wolf Team', image: '/extra/agents/wolf.png' },
+    { id: 'Everai', name: 'Everai Team', image: '/extra/agents/everai.png' },
+    { id: 'Blobert', name: 'Blobert Team', image: '/extra/agents/blobert.png' },
   ];
 
-  function selectTeam(teamId: string) {
+  function selectTeam(teamId: Team) {
     selectedTeam = teamId;
   }
 
   async function joinTeam() {
-    if (!selectedTeam) return;
-    // TODO: Implement team joining logic
-    console.log('Joining team:', selectedTeam);
+    if (
+      !accountDataProvider.address ||
+      !selectedTeam ||
+      !accountDataProvider.walletAccount
+    ) {
+      console.error('User address or team name is missing');
+      return null;
+    }
+    try {
+      const result = await socialink.joinTeamFlow(
+        accountDataProvider.address,
+        selectedTeam,
+        accountDataProvider.walletAccount,
+      );
+
+      if (result.ok) {
+        console.log(`Successfully joined ${selectedTeam}!`);
+
+        console.log('New team stats:', result.data?.teamStats);
+
+        return result.data?.team;
+      } else {
+        console.error('Failed to join team:', result.error);
+
+        return null;
+      }
+    } catch (error) {
+      console.error('Error joining team:', error);
+
+      return null;
+    }
   }
 
   onMount(async () => {
@@ -42,8 +79,8 @@
         {#each teams as team}
           <div
             class="flex flex-col items-center cursor-pointer"
-            onclick={() => selectTeam(team.id)}
-            onkeydown={(e) => e.key === 'Enter' && selectTeam(team.id)}
+            onclick={() => selectTeam(team.id as Team)}
+            onkeydown={(e) => e.key === 'Enter' && selectTeam(team.id as Team)}
             role="button"
             tabindex="0"
           >
