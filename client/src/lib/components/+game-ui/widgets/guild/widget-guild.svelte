@@ -14,14 +14,12 @@
   );
 
   let teamInfo = $state<any>(null);
-<<<<<<< HEAD
   let selectedTeam = $state<Team | null>(null);
   let isLoading = $state(false);
   let hasError = $state(false);
   let isInitialLoading = $state(true);
-=======
   let selectedTeam = $state<string | null>(null);
->>>>>>> b6e48858 (feat: add teamInfo check for ui)
+  let selectedTeam = $state<Team | null>(null);
 
   const teams = [
     {
