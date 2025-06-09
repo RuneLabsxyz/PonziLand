@@ -22,6 +22,7 @@ const profiles = {
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
     PUBLIC_PONZI_API_URL: process.env.PONZI_API_URL,
+    PUBLIC_FARO_COLLECTOR_URL: process.env.FARO_COLLECTOR_URL,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -32,6 +33,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE:
       '0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912',
     BYPASS_TOKEN: '',
+    PUBLIC_FARO_COLLECTOR_URL: null,
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -45,6 +47,7 @@ const profiles = {
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
+    PUBLIC_FARO_COLLECTOR_URL: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -58,6 +61,7 @@ const profiles = {
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
+    PUBLIC_FARO_COLLECTOR_URL: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -71,6 +75,7 @@ const profiles = {
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
+    PUBLIC_FARO_COLLECTOR_URL: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
   },
 };
 

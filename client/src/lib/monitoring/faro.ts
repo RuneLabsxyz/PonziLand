@@ -1,18 +1,28 @@
 import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 
-const faro = initializeFaro({
-  url: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
-  app: {
-    name: 'Ponziland ',
-    version: '1.0.0',
-    environment: 'production',
-  },
-  instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
-});
+
+let faro = null;
+
+if (process.env.PUBLIC_DOJO_PROFILE !== 'dev' && process.env.PUBLIC_FARO_COLLECTOR_URL) {
+    faro = initializeFaro({
+        url: process.env.PUBLIC_FARO_COLLECTOR_URL,
+        app: {
+            name: 'Ponziland ',
+            version: 'ded7df3e539ef56fa717255ce3565a0aee66461c',
+            environment: process.env.PUBLIC_DOJO_PROFILE,
+        },
+        instrumentations: [...getWebInstrumentations(), new TracingInstrumentation()],
+    });
+
+}
 
 export const sendError = (error: Error, tags?: Record<string, any>) => {
-  faro.api.pushError(error, { context: tags });
+    if (faro) {
+        faro.api.pushError(error, { context: tags });
+    } else {
+        console.warn('Faro not initialized, error not sent');
+    }
 };
 
 export default faro;
