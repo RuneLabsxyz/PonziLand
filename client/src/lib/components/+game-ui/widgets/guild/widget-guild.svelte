@@ -17,9 +17,12 @@
   let selectedTeam = $state<Team | null>(null);
   let isLoading = $state(false);
   let hasError = $state(false);
+<<<<<<< HEAD
   let isInitialLoading = $state(true);
   let selectedTeam = $state<string | null>(null);
   let selectedTeam = $state<Team | null>(null);
+=======
+>>>>>>> 7a2bff3d (feat: display your guild)
 
   const teams = [
     {
