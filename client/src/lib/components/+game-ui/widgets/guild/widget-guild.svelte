@@ -17,6 +17,7 @@
   let selectedTeam = $state<Team | null>(null);
   let isLoading = $state(false);
   let hasError = $state(false);
+  let isInitialLoading = $state(true);
 
   const teams = [
     {
@@ -71,15 +72,24 @@
   }
 
   onMount(async () => {
-    const response = await fetch(url);
-    const data = await response.json();
-    teamInfo = data.team;
-    console.log('Team info:', teamInfo);
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      teamInfo = data.team;
+    } catch (error) {
+      console.error('Failed to fetch team info:', error);
+    } finally {
+      isInitialLoading = false;
+    }
   });
 </script>
 
 <div class="w-full h-full">
-  {#if !teamInfo}
+  {#if isInitialLoading}
+    <div class="flex items-center justify-center h-full">
+      <span class="text-white text-xl">Loading...</span>
+    </div>
+  {:else if !teamInfo}
     <div class="flex flex-col gap-4">
       <div class="flex gap-1 w-full justify-around py-8">
         {#each teams as team}
@@ -92,7 +102,7 @@
           >
             <img
               src={team.image}
-              alt={`${team.name} Png`}
+              alt={team.name}
               class="w-48 h-48 transition-all duration-200"
               class:ring-4={selectedTeam === team.id}
               class:ring-blue-500={selectedTeam === team.id}
@@ -123,10 +133,12 @@
       </Button>
     </div>
   {:else}
-    <div class="flex flex-col items-center justify-center h-full gap-4">
+    <div
+      class="flex flex-col items-center justify-center h-full gap-4 text-ponzi-number"
+    >
       <img
         src={teams.find((t) => t.id === teamInfo.teamName)?.image}
-        alt="Team Image"
+        alt={teamInfo.teamName}
         class="w-48 h-48"
       />
       <div class="text-center text-white text-xl">
