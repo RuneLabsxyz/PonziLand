@@ -2,6 +2,13 @@
   import { Button } from '$lib/components/ui/button';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { availableWidgets } from './widgets.config';
+  import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
+  import accountDataProvider, { setup } from '$lib/account.svelte';
+  import { onMount } from 'svelte';
+
+  let url = $derived(
+    `${PUBLIC_SOCIALINK_URL}/api/user/${accountDataProvider.address}/team/info`,
+  );
 
   function addWidget(widgetType: string) {
     const widget = availableWidgets.find((w) => w.type === widgetType);
@@ -23,6 +30,19 @@
       isOpen: true,
     });
   }
+
+
+  onMount(async () => {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.team === null) {
+        addWidget('guild');
+      }
+    } catch (error) {
+      console.error('Failed to fetch team info:', error);
+    }
+  });
 </script>
 
 <div
