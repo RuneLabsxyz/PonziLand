@@ -47,7 +47,8 @@ const profiles = {
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
-    PUBLIC_FARO_COLLECTOR_URL: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_FARO_COLLECTOR_URL:
+      'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -61,7 +62,8 @@ const profiles = {
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
-    PUBLIC_FARO_COLLECTOR_URL: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_FARO_COLLECTOR_URL:
+      'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -75,7 +77,8 @@ const profiles = {
     BYPASS_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
-    PUBLIC_FARO_COLLECTOR_URL: 'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_FARO_COLLECTOR_URL:
+      'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
   },
 };
 
