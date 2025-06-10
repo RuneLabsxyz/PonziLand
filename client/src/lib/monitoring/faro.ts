@@ -5,10 +5,7 @@ import { dev as isDev } from '$app/environment';
 let faro = null;
 const gitHash = process.env.GIT_HASH;
 
-if (
-  !isDev &&
-  process.env.PUBLIC_FARO_COLLECTOR_URL
-) {
+if (!isDev && process.env.PUBLIC_FARO_COLLECTOR_URL) {
   faro = initializeFaro({
     url: process.env.PUBLIC_FARO_COLLECTOR_URL,
     app: {
