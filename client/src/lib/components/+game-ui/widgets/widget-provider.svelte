@@ -20,6 +20,7 @@
       initialPosition={widget.position}
       initialDimensions={widget.dimensions}
       bind:isMinimized={widget.isMinimized}
+      disableResize={widget.disableResize}
     >
       {@const type = widget.type}
       {#if type === 'wallet'}

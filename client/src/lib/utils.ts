@@ -130,6 +130,11 @@ export function locationIntToString(location: number | string | undefined) {
   return `${x}, ${y}`;
 }
 
+export function locationToCoordinates(location: number | string | undefined) {
+  const [x, y] = parseLocation(location);
+  return { x, y };
+}
+
 export function coordinatesToLocation(location: { x: number; y: number }) {
   return location.x + location.y * GRID_SIZE;
 }

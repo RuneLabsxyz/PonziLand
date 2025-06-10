@@ -19,3 +19,5 @@ export const NAME_SPACE = 'ponzi_land';
 import data from '$profileData';
 
 export const AI_AGENT_ADDRESSES = data.aiAgents.map((agent) => agent.address);
+
+export const DEFAULT_TIMEOUT = 30000; // Default timeout for waiting operations

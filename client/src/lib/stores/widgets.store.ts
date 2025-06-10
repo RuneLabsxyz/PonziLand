@@ -81,6 +81,7 @@ export interface WidgetState {
   fixedStyles?: string; // Custom styles to apply when fixed
   disableControls?: boolean; // Whether to disable minimize and close buttons
   transparency?: number; // Widget transparency (0-1, where 0 is fully transparent and 1 is fully opaque)
+  disableResize?: boolean;
 }
 
 interface WidgetsState {
