@@ -4,6 +4,7 @@
   import { onMount } from 'svelte';
   import { Button } from '$lib/components/ui/button';
   import { getSocialink } from '$lib/accounts/social/index.svelte';
+  import GuildRankings from './guild-rankings.svelte';
 
   const socialink = getSocialink();
 
@@ -143,6 +144,10 @@
       />
       <div class="text-center text-white text-xl">
         Your guild is {teamInfo.teamName}
+      </div>
+      
+      <div class="w-full mt-8">
+        <GuildRankings />
       </div>
     </div>
   {/if}
