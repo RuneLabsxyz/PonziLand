@@ -22,9 +22,9 @@
 
   // Claiming state management
   let claimingAll = $state(false);
-  let claimingTokens = $state<Set<string>>(new Set());
-  let claimCooldowns = $state<Map<string, number>>(new Map());
-  let timerIntervals = $state<Map<string, NodeJS.Timeout>>(new Map());
+  let claimingTokens = $state<string[]>([]);
+  let claimCooldowns = $state<Record<string, number>>({});
+  let timerIntervals: Record<string, NodeJS.Timeout> = {};
 
   // Method 1: Using setInterval with counter
   function soundAtInterval(nbLands: number) {
@@ -40,35 +40,37 @@
     }, 200);
   }
 
-  function startCooldown(key: string, duration: number = 10000) {
-    claimCooldowns.set(key, duration / 1000);
+  function startCooldown(key: string, duration: number = 30000) {
+    claimCooldowns = { ...claimCooldowns, [key]: duration / 1000 };
 
     const intervalId = setInterval(() => {
-      const currentTime = claimCooldowns.get(key);
+      const currentTime = claimCooldowns[key];
       if (currentTime && currentTime > 0) {
-        claimCooldowns.set(key, currentTime - 1);
+        claimCooldowns = { ...claimCooldowns, [key]: currentTime - 1 };
       } else {
-        claimCooldowns.delete(key);
+        const { [key]: removed, ...rest } = claimCooldowns;
+        claimCooldowns = rest;
         clearInterval(intervalId);
-        timerIntervals.delete(key);
+        delete timerIntervals[key];
       }
     }, 1000);
 
-    timerIntervals.set(key, intervalId);
+    timerIntervals[key] = intervalId;
   }
 
   async function handleClaimAll() {
     claimingAll = true;
-
-    try {
-      await claimAll(dojo, account()?.getWalletAccount()!);
-      soundAtInterval(lands.length);
-      startCooldown('all');
-    } catch (e) {
-      console.error('error claiming ALL', e);
-    } finally {
-      claimingAll = false;
-    }
+    claimAll(dojo, account()?.getWalletAccount()!)
+      .then(() => {
+        soundAtInterval(lands.length);
+        startCooldown('all');
+      })
+      .catch((e) => {
+        console.error('error claiming ALL', e);
+      })
+      .finally(() => {
+        claimingAll = false;
+      });
   }
 
   async function handleClaimFromCoin(
@@ -81,17 +83,19 @@
     }
 
     const tokenKey = land.token.symbol || land.token.name || 'unknown';
-    claimingTokens.add(tokenKey);
+    claimingTokens = [...claimingTokens, tokenKey];
 
-    try {
-      await claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!);
-      soundAtInterval(nbLands);
-      startCooldown(tokenKey);
-    } catch (e) {
-      console.error('error claiming from coin', e);
-    } finally {
-      claimingTokens.delete(tokenKey);
-    }
+    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
+      .then(() => {
+        soundAtInterval(nbLands);
+        startCooldown(tokenKey);
+      })
+      .catch((e) => {
+        console.error('error claiming from coin', e);
+      })
+      .finally(() => {
+        claimingTokens = claimingTokens.filter((t) => t !== tokenKey);
+      });
   }
 
   let lands = $state<LandWithActions[]>([]);
@@ -243,10 +247,9 @@
       unsubscribe();
     }
     // Clean up any remaining timers
-    timerIntervals.forEach((interval) => {
+    Object.values(timerIntervals).forEach((interval) => {
       clearInterval(interval);
     });
-    timerIntervals.clear();
   });
 </script>
 
@@ -304,15 +307,15 @@
         <Button
           size="md"
           class="sticky top-0 z-10"
-          disabled={claimingAll || claimCooldowns.has('all')}
+          disabled={claimingAll || 'all' in claimCooldowns}
           onclick={() => {
             handleClaimAll();
           }}
         >
           {#if claimingAll}
             CLAIMING...
-          {:else if claimCooldowns.has('all')}
-            CLAIM ALL ({claimCooldowns.get('all')}s)
+          {:else if 'all' in claimCooldowns}
+            CLAIM ALL ({claimCooldowns['all']}s)
           {:else}
             CLAIM AAAAALLLLL
           {/if}
@@ -330,16 +333,16 @@
             </h3>
             <Button
               size="md"
-              disabled={claimingTokens.has(tokenKey) ||
-                claimCooldowns.has(tokenKey)}
+              disabled={claimingTokens.includes(tokenKey) ||
+                tokenKey in claimCooldowns}
               onclick={() => {
                 handleClaimFromCoin(groupLands.at(0), groupLands.length);
               }}
             >
-              {#if claimingTokens.has(tokenKey)}
+              {#if claimingTokens.includes(tokenKey)}
                 CLAIMING...
-              {:else if claimCooldowns.has(tokenKey)}
-                CLAIM ALL ({claimCooldowns.get(tokenKey)}s)
+              {:else if tokenKey in claimCooldowns}
+                CLAIM ALL ({claimCooldowns[tokenKey]}s)
               {:else}
                 CLAIM ALL
               {/if}
