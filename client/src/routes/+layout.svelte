@@ -1,9 +1,11 @@
 <script lang="ts">
   import SelectWalletModal from '$lib/components/+game-ui/modals/SelectWalletModal.svelte';
 
+  import { setupFaro } from '$lib/contexts/faro';
   import { setupAccount } from '$lib/contexts/account.svelte';
-
   import '../app.css';
+
+  setupFaro();
   setupAccount();
 </script>
 
