@@ -135,18 +135,20 @@
     </div>
   {:else}
     <div
-      class="flex flex-col items-center justify-center h-full gap-4 text-ponzi-number"
+      class="flex flex-col items-center h-full gap-2 py-6"
     >
-      <img
-        src={teams.find((t) => t.id === teamInfo.teamName)?.image}
-        alt={teamInfo.teamName}
-        class="w-48 h-48"
-      />
-      <div class="text-center text-white text-xl">
-        Your guild is {teamInfo.teamName}
+      <div class="flex-shrink-0">
+        <img
+          src={teams.find((t) => t.id === teamInfo.teamName)?.image}
+          alt={teamInfo.teamName}
+          class="w-48 h-48"
+        />
+        <div class="text-center text-white text-xl mt-2">
+          Your guild is {teamInfo.teamName}
+        </div>
       </div>
       
-      <div class="w-full mt-8">
+      <div class="flex-1 w-full min-h-0 overflow-hidden">
         <GuildRankings />
       </div>
     </div>

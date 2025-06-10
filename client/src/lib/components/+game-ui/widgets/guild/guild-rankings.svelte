@@ -82,29 +82,29 @@
 </script>
 
 <div class="flex flex-col h-full w-full">
-  <h2 class="text-2xl font-bold text-white mb-6 text-center">Guild Rankings</h2>
+  <h2 class="text-2xl font-bold text-white mb-4 text-center flex-shrink-0">Guild Rankings</h2>
 
   {#if isLoading}
-    <div class="text-white text-center">Loading rankings...</div>
+    <div class="text-white text-center flex-shrink-0">Loading rankings...</div>
   {:else if error}
-    <div class="text-red-500 text-center">{error}</div>
+    <div class="text-red-500 text-center flex-shrink-0">{error}</div>
   {:else}
-    <div class="flex-1 min-h-0 overflow-y-auto px-4">
-      <div class="w-full max-w-2xl mx-auto space-y-4 pb-4">
+    <div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+      <div class="w-full max-w-2xl mx-auto space-y-2 px-2">
         {#each rankings as rank, i}
-          <div class="flex items-center bg-black/50 p-4 rounded-lg">
-            <div class="flex-shrink-0 w-12 text-2xl font-bold text-ponzi-number">
+          <div class="flex items-center bg-black/50 p-3 rounded-lg">
+            <div class="flex-shrink-0 w-10 text-xl font-bold text-ponzi-number">
               #{i + 1}
             </div>
-            <div class="flex-shrink-0 w-12 h-12 mx-4">
+            <div class="flex-shrink-0 w-10 h-10 mx-2">
               <img 
                 src={rank.guildInfo.image} 
                 alt={rank.guildInfo.name}
                 class="w-full h-full object-contain"
               />
             </div>
-            <div class="flex-grow">
-              <div class="text-lg font-semibold text-white">
+            <div class="flex-grow min-w-0">
+              <div class="text-base font-semibold text-white truncate">
                 {rank.guildInfo.name}
               </div>
               <div class="text-sm text-gray-400">
