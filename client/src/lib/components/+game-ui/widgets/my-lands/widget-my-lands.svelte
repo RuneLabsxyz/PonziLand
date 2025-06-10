@@ -262,33 +262,6 @@
         Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
       </button>
     </div>
-    <!-- 
-    <div class="flex gap-3 items-center flex-wrap">
-      <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-300">Sort by:</label>
-        <select
-          bind:value={sortBy}
-          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
-        >
-          <option value="date">Purchase Date</option>
-          <option value="price">Price</option>
-        </select>
-      </div>
-
-      <div class="flex items-center gap-2">
-        <select
-          bind:value={sortOrder}
-          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-      </div>
-
-      <div class="text-sm text-gray-400 ml-auto">
-        {filteredLands.length} land{filteredLands.length !== 1 ? 's' : ''}
-      </div>
-    </div> -->
   </div>
   <!-- Lands List -->
   <ScrollArea type="scroll">
