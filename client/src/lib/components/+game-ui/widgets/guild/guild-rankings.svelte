@@ -33,41 +33,45 @@
 
   // Map token addresses to guild info with normalized addresses as keys
   const guildMap = new Map(
-    data.availableTokens.map(token => [normalizeAddress(token.address), {
-      name: token.name,
-      image: token.images.icon
-    }])
+    data.availableTokens.map((token) => [
+      normalizeAddress(token.address),
+      {
+        name: token.name,
+        image: token.images.icon,
+      },
+    ]),
   );
 
   async function fetchRankings() {
     try {
       const response = await fetch('https://api.ponzi.land/lands/distribution');
       const data = await response.json();
-      
+
       // Transform and sort the distributions
       rankings = data.distributions
         .map((dist: Distribution) => {
           const hexAddress = toHexAddress(dist.token_address);
-          const guildInfo = guildMap.get(hexAddress) || { 
+          const guildInfo = guildMap.get(hexAddress) || {
             name: 'Unknown Guild',
-            image: '/tokens/nftSTRK/icon.png'
+            image: '/tokens/nftSTRK/icon.png',
           };
-          
+
           console.log('Mapping address:', {
             original: dist.token_address,
             hex: hexAddress,
             normalized: normalizeAddress(hexAddress),
             found: !!guildMap.get(hexAddress),
-            guildInfo
+            guildInfo,
           });
-          
+
           return {
             ...dist,
-            guildInfo
+            guildInfo,
           };
         })
-        .sort((a: RankingEntry, b: RankingEntry) => b.land_count - a.land_count);
-        
+        .sort(
+          (a: RankingEntry, b: RankingEntry) => b.land_count - a.land_count,
+        );
     } catch (err) {
       error = 'Failed to load guild rankings';
       console.error('Error fetching rankings:', err);
@@ -82,14 +86,18 @@
 </script>
 
 <div class="flex flex-col h-full w-full">
-  <h2 class="text-2xl font-bold text-white mb-4 text-center flex-shrink-0">Guild Rankings</h2>
+  <h2 class="text-2xl font-bold text-white mb-4 text-center flex-shrink-0">
+    Guild Rankings
+  </h2>
 
   {#if isLoading}
     <div class="text-white text-center flex-shrink-0">Loading rankings...</div>
   {:else if error}
     <div class="text-red-500 text-center flex-shrink-0">{error}</div>
   {:else}
-    <div class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+    <div
+      class="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+    >
       <div class="w-full max-w-2xl mx-auto space-y-2 px-2">
         {#each rankings as rank, i}
           <div class="flex items-center bg-black/50 p-3 rounded-lg">
@@ -97,8 +105,8 @@
               #{i + 1}
             </div>
             <div class="flex-shrink-0 w-10 h-10 mx-2">
-              <img 
-                src={rank.guildInfo.image} 
+              <img
+                src={rank.guildInfo.image}
                 alt={rank.guildInfo.name}
                 class="w-full h-full object-contain"
               />

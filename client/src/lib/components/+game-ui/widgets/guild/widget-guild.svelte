@@ -134,9 +134,7 @@
       </Button>
     </div>
   {:else}
-    <div
-      class="flex flex-col items-center h-full gap-2 py-6"
-    >
+    <div class="flex flex-col items-center h-full gap-2 py-6">
       <div class="flex-shrink-0">
         <img
           src={teams.find((t) => t.id === teamInfo.teamName)?.image}
@@ -147,7 +145,7 @@
           Your guild is {teamInfo.teamName}
         </div>
       </div>
-      
+
       <div class="flex-1 w-full min-h-0 overflow-hidden">
         <GuildRankings />
       </div>
