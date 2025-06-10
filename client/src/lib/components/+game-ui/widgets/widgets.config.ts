@@ -34,7 +34,7 @@ export const availableWidgets: Widget[] = [
     id: 'leaderboard',
     type: 'leaderboard',
     label: 'Leaderboard',
-    icon: '/ui/icons/Icon_Thin_Leaderboard.png',
+    icon: '/ui/icons/Icon_Cup.png',
   },
   // {
   //   id: 'notifications',
