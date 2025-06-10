@@ -1,7 +1,7 @@
 import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { writable } from 'svelte/store';
 import { useAccount } from '$lib/contexts/account.svelte';
-import { sendError } from '$lib/monitoring/faro';
+import { sendError } from '$lib/contexts/faro';
 
 export type ClaimEvent = CurrencyAmount;
 

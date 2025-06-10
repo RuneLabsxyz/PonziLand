@@ -1,17 +1,28 @@
-import { getWebInstrumentations, initializeFaro } from '@grafana/faro-web-sdk';
+import {
+  getWebInstrumentations,
+  initializeFaro,
+  type Faro,
+} from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 import { dev as isDev } from '$app/environment';
-import { PUBLIC_GIT_COMMIT_HASH } from '$env/static/public';
+import {
+  PUBLIC_GIT_COMMIT_HASH,
+  PUBLIC_FARO_COLLECTOR_URL,
+  PUBLIC_DOJO_PROFILE,
+} from '$env/static/public';
 
-let faro = null;
+let faro: Faro | null = null;
 
-if (!isDev && process.env.PUBLIC_FARO_COLLECTOR_URL) {
+export function setupFaro() {
+  if (isDev || faro || !PUBLIC_FARO_COLLECTOR_URL) {
+    return;
+  }
   faro = initializeFaro({
-    url: process.env.PUBLIC_FARO_COLLECTOR_URL,
+    url: PUBLIC_FARO_COLLECTOR_URL,
     app: {
       name: 'Ponziland ',
       version: PUBLIC_GIT_COMMIT_HASH,
-      environment: process.env.PUBLIC_DOJO_PROFILE,
+      environment: PUBLIC_DOJO_PROFILE,
     },
     instrumentations: [
       ...getWebInstrumentations(),
@@ -25,6 +36,7 @@ export const sendError = (error: Error, tags?: Record<string, any>) => {
     faro.api.pushError(error, { context: tags });
   } else {
     console.warn('Faro not initialized, error not sent');
+    console.error(error);
   }
 };
 

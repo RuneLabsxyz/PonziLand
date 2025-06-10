@@ -23,6 +23,7 @@ const profiles = {
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
     PUBLIC_PONZI_API_URL: process.env.PONZI_API_URL,
     PUBLIC_FARO_COLLECTOR_URL: process.env.FARO_COLLECTOR_URL,
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -34,6 +35,7 @@ const profiles = {
       '0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912',
     BYPASS_TOKEN: '',
     PUBLIC_FARO_COLLECTOR_URL: null,
+    PUBLIC_GIT_COMMIT_HASH: null,
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -49,6 +51,7 @@ const profiles = {
     PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -64,6 +67,7 @@ const profiles = {
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -79,6 +83,7 @@ const profiles = {
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
 };
 
