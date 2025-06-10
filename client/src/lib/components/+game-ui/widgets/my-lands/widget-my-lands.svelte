@@ -14,12 +14,17 @@
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
-  // Assuming this exists
 
   const dojo = useDojo();
   const account = () => {
     return dojo.accountManager?.getProvider();
   };
+
+  // Claiming state management
+  let claimingAll = $state(false);
+  let claimingTokens = $state<Set<string>>(new Set());
+  let claimCooldowns = $state<Map<string, number>>(new Map());
+  let timerIntervals = $state<Map<string, NodeJS.Timeout>>(new Map());
 
   // Method 1: Using setInterval with counter
   function soundAtInterval(nbLands: number) {
@@ -35,34 +40,58 @@
     }, 200);
   }
 
+  function startCooldown(key: string, duration: number = 10000) {
+    claimCooldowns.set(key, duration / 1000);
+
+    const intervalId = setInterval(() => {
+      const currentTime = claimCooldowns.get(key);
+      if (currentTime && currentTime > 0) {
+        claimCooldowns.set(key, currentTime - 1);
+      } else {
+        claimCooldowns.delete(key);
+        clearInterval(intervalId);
+        timerIntervals.delete(key);
+      }
+    }, 1000);
+
+    timerIntervals.set(key, intervalId);
+  }
+
   async function handleClaimAll() {
-    claimAll(dojo, account()?.getWalletAccount()!)
-      .then(() => {
-        soundAtInterval(lands.length);
-      })
-      .catch((e) => {
-        console.error('error claiming ALL', e);
-      });
+    claimingAll = true;
+
+    try {
+      await claimAll(dojo, account()?.getWalletAccount()!);
+      soundAtInterval(lands.length);
+      startCooldown('all');
+    } catch (e) {
+      console.error('error claiming ALL', e);
+    } finally {
+      claimingAll = false;
+    }
   }
 
   async function handleClaimFromCoin(
     land: LandWithActions | undefined,
     nbLands: number = 1,
   ) {
-    if (!land) return;
-
-    if (!land.token) {
+    if (!land || !land.token) {
       console.error("Land doesn't have a token");
       return;
     }
 
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
-      .then(() => {
-        soundAtInterval(nbLands);
-      })
-      .catch((e) => {
-        console.error('error claiming from coin', e);
-      });
+    const tokenKey = land.token.symbol || land.token.name || 'unknown';
+    claimingTokens.add(tokenKey);
+
+    try {
+      await claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!);
+      soundAtInterval(nbLands);
+      startCooldown(tokenKey);
+    } catch (e) {
+      console.error('error claiming from coin', e);
+    } finally {
+      claimingTokens.delete(tokenKey);
+    }
   }
 
   let lands = $state<LandWithActions[]>([]);
@@ -213,6 +242,11 @@
     if (unsubscribe) {
       unsubscribe();
     }
+    // Clean up any remaining timers
+    timerIntervals.forEach((interval) => {
+      clearInterval(interval);
+    });
+    timerIntervals.clear();
   });
 </script>
 
@@ -270,14 +304,24 @@
         <Button
           size="md"
           class="sticky top-0 z-10"
+          disabled={claimingAll || claimCooldowns.has('all')}
           onclick={() => {
             handleClaimAll();
-          }}>CLAIM AAAAALLLLL</Button
+          }}
         >
+          {#if claimingAll}
+            CLAIMING...
+          {:else if claimCooldowns.has('all')}
+            CLAIM ALL ({claimCooldowns.get('all')}s)
+          {:else}
+            CLAIM AAAAALLLLL
+          {/if}
+        </Button>
       {/if}
       {#each Object.entries(groupedLands) as [groupName, groupLands]}
         {#if groupByToken && Object.keys(groupedLands).length >= 1}
           {@const token = groupLands.at(0)?.token}
+          {@const tokenKey = token?.symbol || token?.name || 'unknown'}
           <div
             class="px-4 py-2 bg-gray-800 border-b border-gray-700 sticky top-0 z-10 flex gap-2 items-center"
           >
@@ -286,11 +330,19 @@
             </h3>
             <Button
               size="md"
+              disabled={claimingTokens.has(tokenKey) ||
+                claimCooldowns.has(tokenKey)}
               onclick={() => {
                 handleClaimFromCoin(groupLands.at(0), groupLands.length);
               }}
             >
-              CLAIM ALL
+              {#if claimingTokens.has(tokenKey)}
+                CLAIMING...
+              {:else if claimCooldowns.has(tokenKey)}
+                CLAIM ALL ({claimCooldowns.get(tokenKey)}s)
+              {:else}
+                CLAIM ALL
+              {/if}
               <span class="text-yellow-500">
                 &nbsp;{token?.symbol}&nbsp;
               </span>
