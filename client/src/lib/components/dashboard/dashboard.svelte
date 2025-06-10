@@ -327,7 +327,9 @@
       </div>
 
       <div class="col-span-full">
-        <Leaderboard leaderboardSize={1} />
+        <Card class="shadow-ponzi w-72">
+          <Leaderboard leaderboardSize={1} />
+        </Card>
       </div>
     </div>
   </div>

@@ -7,6 +7,8 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
   import data from '$profileData';
+  import { coinbit } from '@reown/appkit/networks';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
@@ -31,6 +33,8 @@
 
   let animating = $state(false);
   let increment = $state(0);
+  let startingAmount = $state(0n); // Track the starting amount when processing begins
+  let accumulatedIncrements = $state(0n); // Track total increments during processing
 
   let tweenAmount = Tween.of(() => Number(amount), {
     delay: 500,
@@ -41,11 +45,29 @@
   const localQueue: CurrencyAmount[] = [];
   let processing = $state(false);
 
+  // Method 1: Using setInterval with counter
+  function soundAtInterval(nbLands: number) {
+    let count = 0;
+
+    const intervalId = setInterval(() => {
+      count++;
+      gameSounds.play('coin1');
+
+      if (count >= nbLands) {
+        clearInterval(intervalId);
+      }
+    }, 60);
+  }
+
   const processQueue = () => {
     const nextEvent = localQueue[0];
-    increment = Number(nextEvent.toBigint());
+    const nextIncrement = nextEvent.toBigint();
+
+    increment = Number(nextIncrement);
+    accumulatedIncrements += nextIncrement;
     animating = true;
-    tweenAmount.set(Number(nextEvent.toBigint() + amount)).then(() => {
+
+    tweenAmount.set(Number(startingAmount + accumulatedIncrements)).then(() => {
       setTimeout(() => {
         animating = false;
         // remove from local queue
@@ -57,9 +79,13 @@
           processQueue();
         } else {
           processing = false;
+          // Reset tracking when done processing
+          startingAmount = amount;
+          accumulatedIncrements = 0n;
         }
       }, 750);
     });
+    soundAtInterval(10);
   };
 
   $effect(() => {
@@ -72,7 +98,10 @@
         // trigger updates
         if (processing == false) {
           processing = true;
-          processQueue();
+          // Set starting amount when we begin processing
+          startingAmount = amount;
+          accumulatedIncrements = 0n;
+          setTimeout(processQueue, 500);
         }
 
         // remove from global queue
@@ -84,6 +113,11 @@
       unsub();
     };
   });
+
+  // Derived value for display
+  let displayAmount = $derived(
+    CurrencyAmount.fromUnscaled(BigInt(tweenAmount.current), token),
+  );
 </script>
 
 <div class="flex flex-1 items-center justify-between text-xl tracking-wide">
@@ -92,7 +126,7 @@
       ? 'animating scale-110 text-yellow-500 font-bold'
       : ''}"
   >
-    <div>{CurrencyAmount.fromUnscaled(tweenAmount.current, token)}</div>
+    <div>{displayAmount}</div>
     <div class="relative">
       {#if animating}
         <span class="absolute left-0 animate-in-out-left">

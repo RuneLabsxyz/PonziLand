@@ -34,6 +34,7 @@
     restrictToParent = true,
     children,
     isMinimized = $bindable(false),
+    disableResize = false,
   } = $props();
 
   let el = $state<HTMLElement | null>(null);
@@ -96,41 +97,42 @@
 
     // Only set up interact if the widget is not fixed
     if (!isFixed) {
-      const interactable = interact(el)
-        .draggable({
-          allowFrom: '.window-header',
-          modifiers: [
-            interact.modifiers.snap({
-              targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
-              range: Infinity,
-              relativePoints: [{ x: 0, y: 0 }],
-            }),
-            ...(restrictToParent
-              ? [
-                  interact.modifiers.restrict({
-                    restriction: el.parentNode as HTMLElement,
-                    elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
-                    endOnly: true,
-                  }),
-                ]
-              : []),
-          ],
-          listeners: {
-            move(event) {
-              currentPosition = {
-                x: currentPosition.x + event.dx,
-                y: currentPosition.y + event.dy,
-              };
+      const interactable = interact(el).draggable({
+        allowFrom: '.window-header',
+        modifiers: [
+          interact.modifiers.snap({
+            targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
+            range: Infinity,
+            relativePoints: [{ x: 0, y: 0 }],
+          }),
+          ...(restrictToParent
+            ? [
+                interact.modifiers.restrict({
+                  restriction: el.parentNode as HTMLElement,
+                  elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
+                  endOnly: true,
+                }),
+              ]
+            : []),
+        ],
+        listeners: {
+          move(event) {
+            currentPosition = {
+              x: currentPosition.x + event.dx,
+              y: currentPosition.y + event.dy,
+            };
 
-              // Save both position and current dimensions
-              widgetsStore.updateWidget(id, {
-                position: { ...currentPosition },
-                dimensions: currentDimensions || undefined,
-              });
-            },
+            // Save both position and current dimensions
+            widgetsStore.updateWidget(id, {
+              position: { ...currentPosition },
+              dimensions: currentDimensions || undefined,
+            });
           },
-        })
-        .resizable({
+        },
+      });
+
+      if (!disableResize) {
+        interactable.resizable({
           allowFrom: '.window-resize-handle',
           edges: { right: true, bottom: true },
           listeners: {
@@ -153,6 +155,7 @@
             }),
           ],
         });
+      }
 
       async function onWindowResize() {
         // start a resize action and wait for inertia to finish
@@ -232,7 +235,7 @@
       {@render children()}
     </div>
   </Card>
-  {#if !isMinimized && !isFixed}
+  {#if !isMinimized && !isFixed && !disableResize}
     <div class="window-resize-handle" style="pointer-events:all"></div>
   {/if}
 </div>

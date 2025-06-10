@@ -66,6 +66,22 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  guild: {
+    id: 'guild',
+    type: 'guild',
+    position: { x: 100, y: 100 },
+    dimensions: { width: 800, height: 600 },
+    isMinimized: false,
+    isOpen: false,
+  },
+  leaderboard: {
+    id: 'leaderboard',
+    type: 'leaderboard',
+    position: { x: window.innerWidth - 320, y: 600 },
+    dimensions: { width: 320, height: 300 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export interface WidgetState {
@@ -81,6 +97,7 @@ export interface WidgetState {
   fixedStyles?: string; // Custom styles to apply when fixed
   disableControls?: boolean; // Whether to disable minimize and close buttons
   transparency?: number; // Widget transparency (0-1, where 0 is fully transparent and 1 is fully opaque)
+  disableResize?: boolean;
 }
 
 interface WidgetsState {

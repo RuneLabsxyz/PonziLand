@@ -34,9 +34,7 @@
   });
 </script>
 
-<ScrollArea
-  class={`${leaderboardSize === 1 ? 'h-96' : 'h-32'} w-full text-white`}
->
+<ScrollArea class={`h-full w-full text-white`}>
   {#if isLoading}
     <div class="text-center py-2">Loading leaderboard data...</div>
   {:else if leaderboard.length === 0}

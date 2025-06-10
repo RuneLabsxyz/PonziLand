@@ -29,6 +29,7 @@
       isMinimized: false,
       isOpen: true,
       data: { location: land.location },
+      disableResize: true,
     });
   }
 </script>

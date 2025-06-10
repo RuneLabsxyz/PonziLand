@@ -5,6 +5,7 @@
   import WalletBalance from './wallet-balance.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress, shortenHex } from '$lib/utils';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   setup();
 
@@ -21,6 +22,18 @@
     } catch (e) {
       console.error('Failed to copy', e);
     }
+  }
+
+  function openNftLink() {
+    widgetsStore.addWidget({
+      id: 'nft-link',
+      type: 'nft-link',
+      position: { x: 100, y: 100 },
+      dimensions: { width: 500, height: 500 },
+      isMinimized: false,
+      isOpen: true,
+      data: {},
+    });
   }
 
   let socialink = getSocialink();
@@ -60,6 +73,12 @@
       <img src="/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
     </button>
   </div>
+  <div class="flex">
+    <Button size="md" class="w-full mt-2" onclick={openNftLink}
+      >Claim token drop</Button
+    >
+  </div>
+
   <WalletBalance />
 {:else}
   <Button

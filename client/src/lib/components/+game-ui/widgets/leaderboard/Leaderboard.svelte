@@ -50,8 +50,8 @@
   }
 </script>
 
-<Card class="shadow-ponzi w-72">
-  <div class="flex justify-between items-center mr-3 mb-2 text-white">
+<div class="w-full h-full pb-28">
+  <div class="flex justify-between items-center text-white">
     <div class="text-2xl text-shadow-none">leaderboard</div>
     <button onclick={refreshLeaderboard} aria-label="Refresh balance">
       <svg
@@ -95,4 +95,4 @@
   {:else}
     <LandBuyLeaderboard {leaderboardSize} {address} />
   {/if}
-</Card>
+</div>

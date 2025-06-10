@@ -218,48 +218,49 @@
 
 <div class="h-full w-full flex flex-col pb-4">
   <!-- Filters and Controls -->
-  <div class="p-4 border-b border-gray-700 space-y-3">
-    <!-- Filter Row 1 -->
-    <div class="flex gap-3 items-center flex-wrap">
-      <div class="flex items-center gap-2">
-        <input
-          type="checkbox"
-          bind:checked={groupByToken}
-          id="groupByToken"
-          class="rounded"
-        />
-        <label for="groupByToken" class="text-sm font-medium text-gray-300">
-          Group by Token
-        </label>
-      </div>
+  <div class="flex py-2 border-b border-gray-700 items-center justify-between">
+    <div class="flex items-center gap-2">
+      <input
+        type="checkbox"
+        bind:checked={groupByToken}
+        id="groupByToken"
+        class="rounded"
+      />
+      <label for="groupByToken" class="text-sm font-medium text-gray-300">
+        Group by Token
+      </label>
     </div>
 
-    <!-- Filter Row 2 -->
-    <div class="flex gap-3 items-center flex-wrap">
-      <div class="flex items-center gap-2">
-        <label class="text-sm font-medium text-gray-300">Sort by:</label>
-        <select
-          bind:value={sortBy}
-          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
-        >
-          <option value="date">Purchase Date</option>
-          <option value="price">Price</option>
-        </select>
-      </div>
+    <div class="flex gap-2">
+      <button
+        onclick={() => {
+          if (sortBy === 'price') {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+          }
 
-      <div class="flex items-center gap-2">
-        <select
-          bind:value={sortOrder}
-          class="bg-gray-800 border border-gray-600 rounded px-2 py-1 text-sm"
-        >
-          <option value="asc">Ascending</option>
-          <option value="desc">Descending</option>
-        </select>
-      </div>
-
-      <div class="text-sm text-gray-400 ml-auto">
-        {filteredLands.length} land{filteredLands.length !== 1 ? 's' : ''}
-      </div>
+          sortBy = 'price';
+        }}
+        class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+        'price'
+          ? 'bg-blue-500 text-white'
+          : 'text-blue-500'}"
+      >
+        Price {sortBy == 'price' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+      </button>
+      <button
+        onclick={() => {
+          if (sortBy === 'date') {
+            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+          }
+          sortBy = 'date';
+        }}
+        class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+        'date'
+          ? 'bg-blue-500 text-white'
+          : 'text-blue-500'}"
+      >
+        Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+      </button>
     </div>
   </div>
   <!-- Lands List -->

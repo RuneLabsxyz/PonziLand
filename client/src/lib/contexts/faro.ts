@@ -14,14 +14,6 @@ import {
 let faro: Faro | null = null;
 
 export function setupFaro() {
-  console.log(
-    isDev,
-    faro,
-    PUBLIC_FARO_COLLECTOR_URL,
-    PUBLIC_GIT_COMMIT_HASH,
-    PUBLIC_DOJO_PROFILE,
-    'DAT ADATA DATA',
-  );
   if (isDev || faro || !PUBLIC_FARO_COLLECTOR_URL) {
     return;
   }

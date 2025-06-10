@@ -13,9 +13,9 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { bidLand, buyLand } from '$lib/stores/store.svelte';
+  import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
   import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
-  import { padAddress } from '$lib/utils';
+  import { locationToCoordinates, padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
@@ -234,10 +234,20 @@
           ?.getWalletAccount()
           ?.waitForTransaction(result.transaction_hash);
         const landPromise = land.wait();
-
         await Promise.any([txPromise, landPromise]);
+        console.log('Buying land with TX: ', result.transaction_hash);
         gameSounds.play('buy');
-        console.log('Bought land with TX: ', result.transaction_hash);
+
+        const coordinates = locationToCoordinates(land.location);
+
+        const updatedLand = await landStore.waitForOwnerChange(
+          coordinates.x,
+          coordinates.y,
+          account.address ?? '',
+          30000,
+        );
+        console.log('Purchase confirmed on-chain:', updatedLand);
+        gameSounds.play('buy');
       }
     } catch (error) {
       console.error(

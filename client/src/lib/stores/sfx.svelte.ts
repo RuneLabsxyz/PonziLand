@@ -7,6 +7,7 @@ const sounds = {
   hover: '/sfx/PL_Hover1.wav',
   launchGame: '/sfx/PL_LaunchGame.wav',
   nuke: '/sfx/PL_Nuke1.wav',
+  coin1: '/sfx/PL_Coin.wav',
 };
 
 export let gameSounds = $state(createAudioStore(sounds));

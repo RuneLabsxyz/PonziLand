@@ -10,6 +10,9 @@
   import WidgetAuctions from './auctions/widget-auctions.svelte';
   import WidgetHelp from './help/widget-help.svelte';
   import WidgetTutorial from './tutorial/widget-tutorial.svelte';
+  import WidgetNftLink from './nft-link/widget-nft-link.svelte';
+  import WidgetGuild from './guild/widget-guild.svelte';
+  import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -20,6 +23,7 @@
       initialPosition={widget.position}
       initialDimensions={widget.dimensions}
       bind:isMinimized={widget.isMinimized}
+      disableResize={widget.disableResize}
     >
       {@const type = widget.type}
       {#if type === 'wallet'}
@@ -40,6 +44,12 @@
         <WidgetHelp />
       {:else if type === 'tutorial'}
         <WidgetTutorial />
+      {:else if type === 'nft-link'}
+        <WidgetNftLink />
+      {:else if type === 'guild'}
+        <WidgetGuild />
+      {:else if type === 'leaderboard'}
+        <WidgetLeaderboard />
       {/if}
     </Draggable>
   {/if}

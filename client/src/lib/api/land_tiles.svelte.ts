@@ -1,4 +1,4 @@
-import { GRID_SIZE } from '$lib/const';
+import { DEFAULT_TIMEOUT, GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { gameSounds } from '$lib/stores/sfx.svelte';
@@ -13,6 +13,8 @@ import { AuctionLand } from './land/auction_land';
 import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
+import { waitForLandChange, waitForLandType } from './storeWait';
+import { padAddress } from '$lib/utils';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -441,6 +443,149 @@ export class LandTileStore {
     this.currentLands.update((lands) => {
       lands[x][y] = land;
       return lands;
+    });
+  }
+
+  // Wait for a specific land to change
+  async waitForLandChange(
+    x: number,
+    y: number,
+    predicate: (land: BaseLand) => boolean,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<BaseLand> {
+    const landStore = this.getLand(x, y);
+    if (!landStore) {
+      throw new Error(`Invalid land coordinates: ${x}, ${y}`);
+    }
+    return waitForLandChange(landStore, predicate, timeout);
+  }
+
+  // Wait for land to become a specific type
+  async waitForLandType<T extends BaseLand>(
+    x: number,
+    y: number,
+    typeChecker: (land: BaseLand) => land is T,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<T> {
+    const landStore = this.getLand(x, y);
+    if (!landStore) {
+      throw new Error(`Invalid land coordinates: ${x}, ${y}`);
+    }
+    return waitForLandType(landStore, typeChecker, timeout);
+  }
+
+  // Wait for land owner to change
+  async waitForOwnerChange(
+    x: number,
+    y: number,
+    expectedOwner: string,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<BaseLand> {
+    return this.waitForLandChange(
+      x,
+      y,
+      (land) =>
+        'owner' in land && padAddress(land.owner) === padAddress(expectedOwner),
+      timeout,
+    );
+  }
+
+  // Wait for land to become empty
+  async waitForEmptyLand(
+    x: number,
+    y: number,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<BaseLand> {
+    return this.waitForLandChange(
+      x,
+      y,
+      (land) => land.constructor.name === 'EmptyLand',
+      timeout,
+    );
+  }
+
+  // Wait for land to become a building
+  async waitForBuildingLand(
+    x: number,
+    y: number,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<BaseLand> {
+    return this.waitForLandChange(
+      x,
+      y,
+      (land) => land.constructor.name === 'BuildingLand',
+      timeout,
+    );
+  }
+
+  // Wait for auction to finish
+  async waitForAuctionEnd(
+    x: number,
+    y: number,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<BaseLand> {
+    return this.waitForLandChange(
+      x,
+      y,
+      (land) => land.constructor.name !== 'AuctionLand',
+      timeout,
+    );
+  }
+
+  // Wait for stake amount to reach a certain threshold
+  async waitForStakeThreshold(
+    x: number,
+    y: number,
+    minStakeAmount: number,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<BaseLand> {
+    return this.waitForLandChange(
+      x,
+      y,
+      (land) => {
+        if ('stakeAmount' in land && land.stakeAmount) {
+          return Number(land.stakeAmount) >= minStakeAmount;
+        }
+        return false;
+      },
+      timeout,
+    );
+  }
+
+  // Wait for any land in the grid to change
+  async waitForAnyLandChange(
+    predicate: (land: BaseLand) => boolean,
+    timeout: number = DEFAULT_TIMEOUT,
+  ): Promise<{ land: BaseLand; x: number; y: number }> {
+    const allLandsStore = this.getAllLands();
+
+    return new Promise((resolve, reject) => {
+      let timeoutId: NodeJS.Timeout;
+      let unsubscribe: (() => void) | undefined;
+
+      timeoutId = setTimeout(() => {
+        if (unsubscribe) {
+          unsubscribe();
+        }
+        reject(new Error(`Wait timeout after ${timeout}ms`));
+      }, timeout);
+
+      unsubscribe = allLandsStore.subscribe((lands: BaseLand[]) => {
+        for (let i = 0; i < lands.length; i++) {
+          const land = lands[i];
+          if (predicate(land)) {
+            const x = i % GRID_SIZE;
+            const y = Math.floor(i / GRID_SIZE);
+
+            clearTimeout(timeoutId);
+            if (unsubscribe) {
+              unsubscribe();
+            }
+            resolve({ land, x, y });
+            return;
+          }
+        }
+      });
     });
   }
 }
