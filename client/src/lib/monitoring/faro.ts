@@ -3,7 +3,7 @@ import { TracingInstrumentation } from '@grafana/faro-web-tracing';
 import { dev as isDev } from '$app/environment';
 
 let faro = null;
-const gitHash = process.env.GIT_HASH;
+const gitHash = process.env.GIT_COMMIT_HASH;
 
 if (!isDev && process.env.PUBLIC_FARO_COLLECTOR_URL) {
   faro = initializeFaro({
