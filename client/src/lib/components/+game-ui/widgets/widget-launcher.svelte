@@ -31,7 +31,6 @@
     });
   }
 
-
   onMount(async () => {
     try {
       const response = await fetch(url);
