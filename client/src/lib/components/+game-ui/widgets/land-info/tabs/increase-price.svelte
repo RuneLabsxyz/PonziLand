@@ -6,6 +6,8 @@
   import { writable } from 'svelte/store';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { landStore } from '$lib/stores/store.svelte';
+  import type { CairoCustomEnum } from 'starknet';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -35,10 +37,8 @@
       console.error('No land selected');
       return;
     }
-
-    let result = await land.increasePrice(
-      CurrencyAmount.fromScaled(priceIncrease, land.token),
-    );
+    let newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
+    let result = await land.increasePrice(newPrice);
     disabled.set(true);
     if (result?.transaction_hash) {
       const txPromise = accountManager!
@@ -46,8 +46,23 @@
         ?.getWalletAccount()
         ?.waitForTransaction(result.transaction_hash);
       const landPromise = land.wait();
-
       await Promise.any([txPromise, landPromise]);
+
+      // TODO update land price
+      // TODO update land price
+      const parsedEntity = {
+        entityId: land.location, // Assuming land has an id property
+        models: {
+          ponzi_land: {
+            Land: {
+              ...land,
+              sell_price: newPrice.toBignumberish(), // Update the sell price
+            },
+          },
+        },
+      };
+      landStore.updateLand(parsedEntity); // Update the land in the store
+
       disabled.set(false);
     }
   };
