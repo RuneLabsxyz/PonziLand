@@ -72,7 +72,7 @@ const profiles = {
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
     PUBLIC_DOJO_TORII_URL:
-      'https://api.cartridge.gg/x/ponziland-tourney-2-2/torii',
+      'https://api.cartridge.gg/x/ponziland-tourney-2/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
