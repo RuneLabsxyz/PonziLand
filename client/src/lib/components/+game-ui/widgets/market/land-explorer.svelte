@@ -6,6 +6,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import CopyAddress from '$lib/components/ui/copy-address.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
@@ -14,6 +15,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { toNumber } from 'ethers';
+  import { AI_AGENT_ADDRESSES } from '$lib/const';
+  import data from '$profileData';
 
   const dojo = useDojo();
   const account = () => {
@@ -72,6 +75,13 @@
         return sortAscending ? dateB - dateA : dateA - dateB;
       }
     });
+  }
+
+  // Function to get AI agent info
+  function getAiAgent(ownerAddress: string) {
+    return data.aiAgents.find(
+      (agent) => padAddress(agent.address) === padAddress(ownerAddress),
+    );
   }
 
   onMount(async () => {
@@ -186,7 +196,7 @@
     <div class="flex flex-col">
       {#each filteredLands as land}
         <button
-          class="relative w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
+          class="relative w-full text-left flex gap-6 hover:bg-white/10 p-6 land-button"
           onclick={() => {
             moveCameraTo(
               parseLocation(land.location)[0] + 1,
@@ -217,7 +227,29 @@
               </div>
             {/if}
           </div>
-          <div class="absolute bottom-0 right-0 p-2"></div>
+          <div
+            class="absolute bottom-2 right-2 flex flex-col items-end text-xs text-gray-400"
+          >
+            <div class="flex items-center gap-1">
+              <span>Stake:</span>
+              <span>{land.stakeAmount}</span>
+            </div>
+            <div class="flex items-center gap-1">
+              <span>Owner:</span>
+              {#if getAiAgent(land.owner)}
+                <div class="flex items-center gap-1">
+                  <img
+                    src={getAiAgent(land.owner)?.badgeImage}
+                    alt={getAiAgent(land.owner)?.name}
+                    class="w-4 h-4"
+                  />
+                  <span>{getAiAgent(land.owner)?.name}</span>
+                </div>
+              {:else}
+                <CopyAddress address={land.owner} showUsername={true} />
+              {/if}
+            </div>
+          </div>
         </button>
       {/each}
       {#if filteredLands.length === 0}
