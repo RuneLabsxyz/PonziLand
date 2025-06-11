@@ -205,7 +205,7 @@
 
 <style>
   .selected {
-    --stroke-offset: 0.5px;
+    --stroke-offset: 1px;
     -webkit-filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #ff0)
       drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
       drop-shadow(var(--stroke-offset) 0 0 #ff0);
@@ -226,7 +226,7 @@
   }
 
   .hovering {
-    --stroke-offset: 0.5px;
+    --stroke-offset: 1px;
     -webkit-filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #ff0)
       drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
       drop-shadow(var(--stroke-offset) 0 0 #ff0);

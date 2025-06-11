@@ -226,7 +226,7 @@
       />
       {#if isOwner}
         <Button
-          size="sm"
+          size="grid"
           class="absolute bottom-0 left-1/2 z-20"
           style="transform: translate(-50%, 25%) scale(0.5)"
           onclick={handleLandInfoClick}
@@ -235,7 +235,7 @@
         </Button>
       {:else}
         <Button
-          size="sm"
+          size="grid"
           class="absolute bottom-0 left-1/2 z-20"
           style="transform: translate(-50%, 25%) scale(0.5)"
           onclick={handleLandInfoClick}

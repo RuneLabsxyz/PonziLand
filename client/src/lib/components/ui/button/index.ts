@@ -11,6 +11,7 @@ const buttonVariants = tv({
     },
     size: {
       default: 'h-10 px-4 pb-2  ',
+      grid: 'h-[64px] text-[32px] px-[32px] pb-[56px] pt-[48px]',
       sm: 'h-[8px] text-[4px] px-[4px] pb-[7px] pt-[6px]',
       md: 'text-xs pb-1',
       lg: 'text-3xl px-[8px] pb-2 pt-4',

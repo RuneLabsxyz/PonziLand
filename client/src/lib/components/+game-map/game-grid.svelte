@@ -239,7 +239,7 @@
         style="transform: translate({$cameraPosition.offsetX}px, {$cameraPosition.offsetY}px) scale({$cameraPosition.scale});"
       >
         <!-- Road layer -->
-        <div class="road-layer"></div>
+        <div class="road-layer" style="--size:{TILE_SIZE}px"></div>
 
         {#each Array(GRID_SIZE) as _, y}
           <div class="row">
@@ -284,13 +284,14 @@
   }
 
   .road-layer {
+    --size: 32px;
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     background-image: url('/land-display/road.png');
-    background-size: 32px 32px;
+    background-size: var(--size) var(--size);
     background-repeat: repeat;
     pointer-events: none;
   }
