@@ -17,13 +17,14 @@
   import TokenValueDisplay from './token-value-display.svelte';
   import WalletSwap from './wallet-swap.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
+  import { fetchTokenBalance } from '$lib/accounts/balances';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
   const baseToken = data.availableTokens.find(
     (token) => token.address === BASE_TOKEN,
   );
 
-  const { client: sdk } = useDojo();
+  const { client: sdk, accountManager } = useDojo();
   const address = $derived(accountData.address);
 
   let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
@@ -82,6 +83,39 @@
   onMount(async () => {
     await handleRefreshBalances();
   });
+
+  const handleManualRefreshBalances = async () => {
+    const account = accountManager?.getProvider()?.getWalletAccount();
+
+    if (!account || !address) {
+      return;
+    }
+
+    const provider = sdk.provider;
+
+    const tokenBalances = data.availableTokens.map(async (token) => {
+      const balance = await fetchTokenBalance(token.address, account, provider);
+
+      return {
+        token,
+        balance,
+        icon: token.images.icon,
+      };
+    });
+    const resolvedTokenBalances = await Promise.all(tokenBalances);
+    setTokenBalances(
+      resolvedTokenBalances.map((balance) => ({
+        ...balance,
+        account_address: account.address,
+        contract_address: balance.token.address,
+        token_id: balance.token.symbol,
+        balance: balance.balance?.toString() ?? '',
+      })),
+    );
+
+    tokenStore.prices = await getTokenPrices();
+    calculateTotalBalance();
+  };
 
   const handleRefreshBalances = async () => {
     errorMessage = null;
