@@ -6,7 +6,6 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
-  import CopyAddress from '$lib/components/ui/copy-address.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
@@ -15,8 +14,9 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { toNumber } from 'ethers';
-  import { AI_AGENT_ADDRESSES } from '$lib/const';
   import data from '$profileData';
+  import { Input } from '$lib/components/ui/input';
+  import { usernamesStore } from '$lib/stores/account.store.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -28,6 +28,21 @@
   let sortAscending = $state(true);
   let selectedTokenAddress = $state<string>('');
   let sortBy = $state<'price' | 'level'>('price');
+  let searchQuery = $state('');
+
+  // Function to get AI agent info
+  function getAiAgent(ownerAddress: string) {
+    return data.aiAgents.find(
+      (agent) => padAddress(agent.address) === padAddress(ownerAddress),
+    );
+  }
+
+  // Function to get username for an address
+  function getUsername(address: string): string | undefined {
+    const paddedAddress = padAddress(address);
+    if (!paddedAddress) return undefined;
+    return usernamesStore.getUsernames()[paddedAddress];
+  }
 
   // Derived states for filtering
   let availableTokens = $derived.by(() => {
@@ -48,6 +63,23 @@
       filtered = filtered.filter(
         (land) => land.token?.address === selectedTokenAddress,
       );
+    }
+
+    // Username search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((land) => {
+        const aiAgent = getAiAgent(land.owner);
+        if (aiAgent) {
+          return aiAgent.name.toLowerCase().includes(query);
+        }
+        const username = getUsername(land.owner);
+        if (username) {
+          return username.toLowerCase().includes(query);
+        }
+        // If no username found, search in the address
+        return land.owner.toLowerCase().includes(query);
+      });
     }
 
     return filtered;
@@ -77,11 +109,11 @@
     });
   }
 
-  // Function to get AI agent info
-  function getAiAgent(ownerAddress: string) {
-    return data.aiAgents.find(
-      (agent) => padAddress(agent.address) === padAddress(ownerAddress),
-    );
+  // Function to highlight matching text
+  function highlightMatch(text: string, query: string): string {
+    if (!query) return text;
+    const regex = new RegExp(`(${query})`, 'gi');
+    return text.replace(regex, '<span class="bg-yellow-500/50">$1</span>');
   }
 
   onMount(async () => {
@@ -133,7 +165,7 @@
 </script>
 
 <div class="h-full w-full pb-16 min-h-0">
-  <div class="flex items-center justify-between py-2 border-white/10">
+  <div class="flex flex-col gap-2 py-2 border-white/10">
     <div class="flex items-center gap-2">
       <div class="w-48">
         <TokenSelect bind:value={selectedTokenAddress} />
@@ -146,50 +178,60 @@
           reset
         </button>
       {/if}
+      <div class="flex-1">
+        <Input
+          type="text"
+          placeholder="Search by username..."
+          bind:value={searchQuery}
+          class="w-full"
+        />
+      </div>
     </div>
-    <div class="flex gap-2">
-      <button
-        class="flex items-center gap-2 text-sm font-medium {sortBy === 'price'
-          ? 'bg-blue-500'
-          : 'text-blue-500'} px-2"
-        onclick={() => {
-          if (sortBy === 'price') {
-            sortAscending = !sortAscending;
-          }
-          sortBy = 'price';
-          lands = sortLands(lands);
-        }}
-      >
-        Price
-        {#if sortBy === 'price'}
-          {#if sortAscending}
-            ▴
-          {:else}
-            ▾
+    <div class="flex justify-end">
+      <div class="flex gap-2">
+        <button
+          class="flex items-center gap-2 text-sm font-medium {sortBy === 'price'
+            ? 'bg-blue-500'
+            : 'text-blue-500'} px-2"
+          onclick={() => {
+            if (sortBy === 'price') {
+              sortAscending = !sortAscending;
+            }
+            sortBy = 'price';
+            lands = sortLands(lands);
+          }}
+        >
+          Price
+          {#if sortBy === 'price'}
+            {#if sortAscending}
+              ▴
+            {:else}
+              ▾
+            {/if}
           {/if}
-        {/if}
-      </button>
-      <button
-        class="flex items-center gap-2 text-sm font-medium {sortBy === 'level'
-          ? 'bg-blue-500'
-          : 'text-blue-500'} px-2"
-        onclick={() => {
-          if (sortBy === 'level') {
-            sortAscending = !sortAscending;
-          }
-          sortBy = 'level';
-          lands = sortLands(lands);
-        }}
-      >
-        Level
-        {#if sortBy === 'level'}
-          {#if sortAscending}
-            ▴
-          {:else}
-            ▾
+        </button>
+        <button
+          class="flex items-center gap-2 text-sm font-medium {sortBy === 'level'
+            ? 'bg-blue-500'
+            : 'text-blue-500'} px-2"
+          onclick={() => {
+            if (sortBy === 'level') {
+              sortAscending = !sortAscending;
+            }
+            sortBy = 'level';
+            lands = sortLands(lands);
+          }}
+        >
+          Level
+          {#if sortBy === 'level'}
+            {#if sortAscending}
+              ▴
+            {:else}
+              ▾
+            {/if}
           {/if}
-        {/if}
-      </button>
+        </button>
+      </div>
     </div>
   </div>
   <ScrollArea class="h-full w-full" type="scroll">
@@ -243,10 +285,20 @@
                     alt={getAiAgent(land.owner)?.name}
                     class="w-4 h-4"
                   />
-                  <span>{getAiAgent(land.owner)?.name}</span>
+                  <span>
+                    {@html highlightMatch(
+                      getAiAgent(land.owner)?.name || '',
+                      searchQuery,
+                    )}
+                  </span>
                 </div>
               {:else}
-                <CopyAddress address={land.owner} showUsername={true} />
+                <span>
+                  {@html highlightMatch(
+                    getUsername(land.owner) || land.owner,
+                    searchQuery,
+                  )}
+                </span>
               {/if}
             </div>
           </div>
