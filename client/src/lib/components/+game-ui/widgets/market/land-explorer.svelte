@@ -108,8 +108,18 @@
 
 <div class="h-full w-full pb-16 min-h-0">
   <div class="flex items-center justify-between py-2 border-white/10">
-    <div class="w-48">
-      <TokenSelect bind:value={selectedTokenAddress} />
+    <div class="flex items-center gap-2">
+      <div class="w-48">
+        <TokenSelect bind:value={selectedTokenAddress} />
+      </div>
+      {#if selectedTokenAddress}
+        <button
+          class="text-sm font-medium text-gray-400 hover:text-white"
+          onclick={() => (selectedTokenAddress = '')}
+        >
+          reset
+        </button>
+      {/if}
     </div>
     <button
       class="flex items-center gap-2 text-sm font-medium bg-blue-500 px-2"
