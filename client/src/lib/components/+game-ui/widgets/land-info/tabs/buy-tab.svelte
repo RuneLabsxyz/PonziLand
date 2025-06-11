@@ -273,6 +273,24 @@
         landStore.updateLand(parsedEntity);
         console.log('Land updated optimistically in store:', updatedLand);
 
+        // Create a parsed entity for the stake
+        const stakeEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              LandStake: {
+                location: land.location,
+                last_pay_time: Date.now(), // Set to current time or appropriate value
+                amount: stakeAmount.toBignumberish(), // Ensure this is the raw value of the stake
+              },
+            },
+          },
+        };
+
+        // Update the land store with the stake
+        landStore.updateLand(stakeEntity);
+        console.log('Stake updated in store:', stakeEntity);
+
         const coordinates = locationToCoordinates(land.location);
         const updatedLandOnIndexer = await landStore.waitForOwnerChange(
           coordinates.x,
