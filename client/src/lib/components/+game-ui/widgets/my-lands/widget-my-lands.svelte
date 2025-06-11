@@ -303,24 +303,22 @@
   <!-- Lands List -->
   <ScrollArea type="scroll">
     <div class="flex flex-col">
-      {#if !groupByToken}
-        <Button
-          size="md"
-          class="sticky top-0 z-10"
-          disabled={claimingAll || 'all' in claimCooldowns}
-          onclick={() => {
-            handleClaimAll();
-          }}
-        >
-          {#if claimingAll}
-            CLAIMING...
-          {:else if 'all' in claimCooldowns}
-            CLAIM ALL ({claimCooldowns['all']}s)
-          {:else}
-            CLAIM AAAAALLLLL
-          {/if}
-        </Button>
-      {/if}
+      <Button
+        size="md"
+        class="sticky top-0 z-10"
+        disabled={claimingAll || 'all' in claimCooldowns}
+        onclick={() => {
+          handleClaimAll();
+        }}
+      >
+        {#if claimingAll}
+          CLAIMING...
+        {:else if 'all' in claimCooldowns}
+          CLAIM ALL ({claimCooldowns['all']}s)
+        {:else}
+          CLAIM AAAAALLLLL
+        {/if}
+      </Button>
       {#each Object.entries(groupedLands) as [groupName, groupLands]}
         {#if groupByToken && Object.keys(groupedLands).length >= 1}
           {@const token = groupLands.at(0)?.token}
