@@ -164,8 +164,8 @@
   });
 </script>
 
-<div class="h-full w-full pb-16 min-h-0">
-  <div class="flex flex-col gap-2 py-2 border-white/10">
+<div class="h-full w-full pb-28 min-h-0">
+  <div class="flex flex-col gap-2 py-2 border-white/10 min-h-0">
     <div class="flex items-center gap-2">
       <div class="w-48">
         <TokenSelect bind:value={selectedTokenAddress} />
@@ -187,8 +187,12 @@
         />
       </div>
     </div>
-    <div class="flex justify-end">
-      <div class="flex gap-2">
+    <div class="flex justify-between">
+      <span class="text-sm text-gray-400 pl-1">
+        {filteredLands.length}
+        {filteredLands.length === 1 ? 'land' : 'lands'}
+      </span>
+      <div class="flex items-center gap-2">
         <button
           class="flex items-center gap-2 text-sm font-medium {sortBy === 'price'
             ? 'bg-blue-500'
@@ -234,7 +238,7 @@
       </div>
     </div>
   </div>
-  <ScrollArea class="h-full w-full" type="scroll">
+  <ScrollArea class="h-full w-full min-h-0" type="scroll">
     <div class="flex flex-col">
       {#each filteredLands as land}
         <button
