@@ -12,7 +12,7 @@ export const CLOSING_DATE: Date | undefined = undefined;
 
 // UI constants
 export const TILE_SIZE = 256;
-export const MIN_SCALE_FOR_DETAIL = 2.5;
+export const MIN_SCALE_FOR_DETAIL = 0.35;
 export const DEFAULT_TIMEOUT = 30000; // Default timeout for waiting operations
 
 // Environment constants

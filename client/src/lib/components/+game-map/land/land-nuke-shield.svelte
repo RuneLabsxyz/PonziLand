@@ -98,7 +98,7 @@
       <!-- Nuclear explosion icon when nuked -->
       <div
         class={cn(
-          'nuke-shield h-2 w-2 flex items-center justify-center leading-none nuclear-icon',
+          'nuke-shield h-16 w-16 flex items-center justify-center leading-none nuclear-icon',
           ClassName,
         )}
         style="color: #FF0000;"
@@ -113,7 +113,7 @@
       <!-- Shield icon when not nuked -->
       <div
         class={cn(
-          'nuke-shield h-2 w-2 flex items-center justify-center leading-none',
+          'nuke-shield h-16 w-16 flex items-center justify-center leading-none',
           ClassName,
         )}
         style="background-image: {getStyle(estimatedDays)

@@ -97,7 +97,7 @@
         <img
           src="/ui/icons/Icon_Coin2.png"
           alt="coins"
-          class="h-[8px] w-[8px] -mt-1 coin unselectable"
+          class="h-[64px] w-[64px] -mt-8 coin unselectable"
         />
       </button>
     {/if}
@@ -115,10 +115,12 @@
       />
     </div>
     <div
-      class="h-2 w-full flex flex-col items-center justify-end animate-fade-up"
+      class="h-16 w-full flex flex-col items-center justify-end animate-fade-up"
     >
       {#each aggregatedTaxes as tax}
-        <div class="text-ponzi text-nowrap text-claims pointer-events-none">
+        <div
+          class="text-ponzi text-2xl text-nowrap text-claims pointer-events-none"
+        >
           + {tax.totalTax}
           {tax.tokenSymbol}
         </div>

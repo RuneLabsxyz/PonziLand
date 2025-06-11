@@ -16,8 +16,8 @@
   const THROTTLE_DELAY = 10; // approximately 60fps
 
   // Camera position
-  const MIN_SCALE = 0.6;
-  const MAX_SCALE = 16;
+  const MIN_SCALE = 0.075;
+  const MAX_SCALE = 2.5;
   let isDragging = $state(false);
   let dragged = $state(false);
   let startX = 0;
@@ -65,7 +65,7 @@
   });
 
   onMount(() => {
-    moveCameraToLocation(2080, 3);
+    moveCameraToLocation(2080, 0.4);
 
     // Set up ResizeObserver
     if (mapWrapper) {

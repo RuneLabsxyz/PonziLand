@@ -27,7 +27,7 @@ cameraTransition.subscribe(($camera) => {
 export function moveCameraTo(
   tileX: number,
   tileY: number,
-  targetScale: number = 8,
+  targetScale: number = 1,
 ) {
   // Calculate the target position in pixels
   const targetPixelX = -(tileX - 1) * TILE_SIZE * targetScale;

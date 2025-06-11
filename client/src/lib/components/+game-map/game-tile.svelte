@@ -212,7 +212,7 @@
   {#if selected}
     {#if land.type === 'auction'}
       <Button
-        size="sm"
+        size="grid"
         class="absolute bottom-0 left-1/2 z-20"
         style="transform: translate(-50%, 25%) scale(0.5)"
         onclick={handleBidClick}
@@ -251,12 +251,12 @@
       src="/ui/icons/Icon_Crown.png"
       alt="owner"
       class="absolute z-20"
-      style="top: -1.5px; width: 7px; height: 7px; image-rendering: pixelated; transform: rotate(-30deg); pointer-events: none;"
+      style="top: -12px; width: 56px; height: 56px; image-rendering: pixelated; transform: rotate(-30deg); pointer-events: none;"
     />
     <div
       class={cn(
         'absolute top-0 left-1/2 -translate-x-1/2 z-20',
-        (scale ?? 1) > 1.5 ? 'w-2 h-2' : 'w-6 h-6',
+        (scale ?? 1) > 1.5 ? 'w-16 h-16' : 'w-48 h-48',
       )}
       onclick={handleClick}
     ></div>
@@ -265,7 +265,7 @@
       src={aiAgent.badgeImage}
       alt={aiAgent.name}
       class="absolute z-20"
-      style="top: -1.5px; width: 7px; height: 7px; image-rendering: pixelated; pointer-events: none;"
+      style="top: -12px; width: 56px; height: 56px; image-rendering: pixelated; pointer-events: none;"
     />
   {/if}
 
@@ -274,8 +274,8 @@
       class={cn(
         'absolute z-20',
         currentScale < MIN_SCALE_FOR_DETAIL && isOwner
-          ? 'top-1/2 -translate-y-1/2 left-1/3 -translate-x-1/2 text-[4px] mt-0.5 ml-0.5'
-          : 'top-0 right-0 text-[4px]',
+          ? 'top-1/2 -translate-y-1/2 left-1/3 -translate-x-1/2 text-[32px] mt-4 ml-4'
+          : 'top-0 right-0 text-[32px]',
       )}
       style={currentScale < MIN_SCALE_FOR_DETAIL && isOwner ? 'scale: 1.8' : ''}
       onclick={handleClick}
@@ -293,8 +293,8 @@
       class={cn(
         'absolute z-20',
         currentScale < MIN_SCALE_FOR_DETAIL && isOwner
-          ? 'bottom-1/4 right-0 mr-0.5'
-          : 'top-1 left-1/2',
+          ? 'bottom-1/4 right-0 mr-4'
+          : 'top-8 left-1/2',
       )}
       style="transform: {currentScale < MIN_SCALE_FOR_DETAIL && isOwner
         ? 'translate(-50%, -100%) scale(1.5)'
@@ -340,7 +340,6 @@
     height: 80%;
     top: 10%;
     left: 10%;
-    border-radius: 6px;
     box-sizing: border-box;
   }
   .centered-tax-shield {
