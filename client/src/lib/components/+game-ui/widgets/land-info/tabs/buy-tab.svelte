@@ -18,6 +18,7 @@
   import { locationToCoordinates, padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
+  import type { CairoCustomEnum } from 'starknet';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
 
   let {
@@ -238,15 +239,48 @@
         console.log('Buying land with TX: ', result.transaction_hash);
         gameSounds.play('buy');
 
-        const coordinates = locationToCoordinates(land.location);
+        // Optimistically update the land in the store
+        const updatedLand = {
+          ...land,
+          token: selectedToken,
+          tokenUsed: selectedToken?.address || '',
+          tokenAddress: selectedToken?.address || '',
+          token_used: selectedToken?.address || '',
+          token_address: selectedToken?.address || '',
+          owner: account.address, // Assuming the owner is the current account
+          stakeAmount: stakeAmount, // Set the stake amount
+          sell_price: sellPriceAmount.toBignumberish(), // Ensure this is a raw value
+          block_date_bought: Date.now(), // Set the current timestamp or appropriate value
+          // @ts-ignore
+          level: (land.level === 1
+            ? 'Zero'
+            : land.level === 2
+              ? 'First'
+              : 'Second') as CairoCustomEnum,
+        };
 
-        const updatedLand = await landStore.waitForOwnerChange(
+        // Create a parsed entity for the updated land
+        const parsedEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              Land: updatedLand,
+            },
+          },
+        };
+
+        // Update the land store
+        landStore.updateLand(parsedEntity);
+        console.log('Land updated optimistically in store:', updatedLand);
+
+        const coordinates = locationToCoordinates(land.location);
+        const updatedLandOnIndexer = await landStore.waitForOwnerChange(
           coordinates.x,
           coordinates.y,
           account.address ?? '',
           30000,
         );
-        console.log('Purchase confirmed on-chain:', updatedLand);
+        console.log('Purchase confirmed on-indexer:', updatedLandOnIndexer);
         gameSounds.play('buy');
       }
     } catch (error) {
