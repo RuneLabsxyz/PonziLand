@@ -7,6 +7,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { landStore } from '$lib/stores/store.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -45,9 +46,8 @@
       console.error('No land selected');
       return;
     }
-    let result = await land.increaseStake(
-      CurrencyAmount.fromScaled(stakeIncrease, land.token),
-    );
+    let amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
+    let result = await land.increaseStake(amountToAdd);
     if (result?.transaction_hash) {
       const txPromise = accountManager!
         .getProvider()
@@ -56,6 +56,28 @@
       const landPromise = land.wait();
 
       await Promise.any([txPromise, landPromise]);
+
+      // the new stake amount should be current + new stake amount
+      land.stakeAmount.setToken(land.token);
+      const currentStake =
+        land.stakeAmount || CurrencyAmount.fromScaled('0', land.token);
+      amountToAdd = currentStake.add(amountToAdd);
+
+      // Update the land stake
+      const parsedStake = {
+        entityId: land.location, // Assuming land has an id property
+        models: {
+          ponzi_land: {
+            LandStake: {
+              location: land.location, // Use the land location as the identifier
+              amount: amountToAdd.toBignumberish(), // Update the stake amount
+              last_pay_time: Date.now() / 1000, // Set the last pay time
+            },
+          },
+        },
+      };
+      console.log('Parsed stake update:', parsedStake);
+      landStore.updateLand(parsedStake); // Update the land stake in the store
     }
   };
 </script>
