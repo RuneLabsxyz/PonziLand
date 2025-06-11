@@ -154,7 +154,7 @@
           }}
         >
           {#if land}
-            <LandOverview size="xs" {land} />
+            <LandOverview size="xs" {land} hideLevelUp={true} />
           {/if}
           <div
             class="w-full flex items-center justify-start leading-none text-xl"

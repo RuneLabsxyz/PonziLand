@@ -9,10 +9,12 @@
     land,
     size = 'sm',
     isOwner = false,
+    hideLevelUp = false,
   }: {
     land: LandWithActions;
     size?: 'xs' | 'sm' | 'lg';
     isOwner?: boolean;
+    hideLevelUp?: boolean;
   } = $props();
 
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
@@ -102,7 +104,7 @@
     {/if}
   </div>
   <!-- Also show the progress bar for the next level -->
-  {#if land.type == 'house' && land.level < 3}
+  {#if land.type == 'house' && land.level < 3 && !hideLevelUp}
     <div
       class={cn('mt-6 leading-none flex flex-col justify-center items-center', {
         'min-w-40': size === 'lg',
