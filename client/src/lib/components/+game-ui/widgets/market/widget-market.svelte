@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { ScrollArea } from '$lib/components/ui/scroll-area';
-  import WidgetAuctions from '../auctions/widget-auctions.svelte';
-  import WidgetMyLands from '../my-lands/widget-my-lands.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
+  import WidgetAuctions from '../auctions/widget-auctions.svelte';
   import LandExplorer from './land-explorer.svelte';
 
   let activeTab = $state<'auctions' | 'owned'>('auctions');

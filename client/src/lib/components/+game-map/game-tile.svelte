@@ -6,11 +6,12 @@
   import { Button } from '$lib/components/ui/button';
   import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
   import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
-  import { gameSounds } from '$lib/stores/sfx.svelte';
   import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
   import {
     landStore as globalLandStore,
+    highlightedLands,
     selectedLand,
   } from '$lib/stores/store.svelte';
   import { cn, padAddress } from '$lib/utils';
@@ -35,6 +36,9 @@
 
   let land = $derived($landReadable);
   let address = $derived(account.address);
+  let isHighlighted = $derived(
+    highlightedLands.value.includes(land.locationString),
+  );
 
   let isOwner = $derived.by(() => {
     if (BuildingLand.is(land)) {
@@ -190,7 +194,12 @@
   onmouseout={onBlur}
   onblur={onBlur}
 >
-  <LandDisplay {...spriteProps} {hovering} {selected} />
+  <LandDisplay
+    {...spriteProps}
+    {hovering}
+    {selected}
+    highlighted={isHighlighted}
+  />
 
   {#if currentScale < MIN_SCALE_FOR_DETAIL && isOwner}
     <div class="tile-overlay pointer-events-none building-overlay"></div>

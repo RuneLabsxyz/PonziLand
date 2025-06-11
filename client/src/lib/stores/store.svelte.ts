@@ -12,6 +12,8 @@ export let landStore = $state(new LandTileStore());
 
 export let selectedLand = $state<{ value: BaseLand | null }>({ value: null });
 
+export let highlightedLands = $state<{ value: string[] }>({ value: [] });
+
 export const selectedLandWithActions = () => {
   return selectedLandWithActionsState;
 };

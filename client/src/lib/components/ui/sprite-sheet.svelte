@@ -214,7 +214,7 @@
       drop-shadow(var(--stroke-offset) 0 0 #ff0);
   }
 
-  .selected.Biome {
+  div.selected.Biome {
     -webkit-filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #ff0)
       drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
       drop-shadow(var(--stroke-offset) 0 0 #ff0)
@@ -235,7 +235,7 @@
       drop-shadow(var(--stroke-offset) 0 0 #ff0);
   }
 
-  .hovering.Biome {
+  div.hovering.Biome {
     -webkit-filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #ff0)
       drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
       drop-shadow(var(--stroke-offset) 0 0 #ff0)
@@ -244,5 +244,26 @@
       drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #ff0)
       drop-shadow(var(--stroke-offset) 0 0 #ff0)
       drop-shadow(0 var(--stroke-offset) 0 #ff0);
+  }
+
+  .highlighted {
+    --stroke-offset: 2px;
+    -webkit-filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #00ffff)
+      drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #00ffff)
+      drop-shadow(var(--stroke-offset) 0 0 #00ffff);
+    filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #00ffff)
+      drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #00ffff)
+      drop-shadow(var(--stroke-offset) 0 0 #00ffff);
+  }
+
+  .highlighted.Biome {
+    -webkit-filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #00ffff)
+      drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #00ffff)
+      drop-shadow(var(--stroke-offset) 0 0 #00ffff)
+      drop-shadow(0 var(--stroke-offset) 0 #00ffff);
+    filter: drop-shadow(0 calc(-1 * var(--stroke-offset)) 0 #00ffff)
+      drop-shadow(calc(-1 * var(--stroke-offset)) 0 0 #00ffff)
+      drop-shadow(var(--stroke-offset) 0 0 #00ffff)
+      drop-shadow(0 var(--stroke-offset) 0 #00ffff);
   }
 </style>

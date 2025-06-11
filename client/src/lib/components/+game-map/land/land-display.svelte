@@ -16,6 +16,7 @@
     level = 1,
     selected = false,
     hovering = false,
+    highlighted = false,
   }: {
     class?: string;
     token?: Token;
@@ -27,6 +28,7 @@
     level?: Level;
     selected?: boolean;
     hovering?: boolean;
+    highlighted?: boolean;
   } = $props();
 
   let rng = $derived(seedrandom(seed));
@@ -85,6 +87,7 @@
       class={cn('Biome absolute h-full w-full top-0 bottom-0 left-0 right-0', {
         selected: selected,
         hovering: hovering,
+        highlighted: highlighted,
       })}
       animate={true}
       frameDelay={100}
@@ -122,7 +125,7 @@
       {height}
       class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
         ? 'selected'
-        : ''} {hovering ? 'hovering' : ''}"
+        : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
     />
     {#if token.images.building[level].frames}
       {@const animationMeta = token.images.building[level]}
@@ -150,7 +153,9 @@
           delay={animationMeta.delay}
           class="absolute h-full w-full -translate-y-[15%] scale-75 {selected
             ? 'selected'
-            : ''} {hovering ? 'hovering' : ''}"
+            : ''} {hovering ? 'hovering' : ''} {highlighted
+            ? 'highlighted'
+            : ''}"
         />
       {/if}
     {:else}
@@ -166,7 +171,7 @@
         {height}
         class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
           ? 'selected'
-          : ''} {hovering ? 'hovering' : ''}"
+          : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
       />
     {/if}
   {:else if basic}

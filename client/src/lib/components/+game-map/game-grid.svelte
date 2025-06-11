@@ -1,15 +1,15 @@
 <script lang="ts">
   import { GRID_SIZE } from '$lib/const';
 
+  import GameTile from '$lib/components/+game-map/game-tile.svelte';
   import { TILE_SIZE } from '$lib/const';
   import {
     cameraPosition,
     cameraTransition,
     moveCameraToLocation,
   } from '$lib/stores/camera.store';
-  import { onMount } from 'svelte';
-  import GameTile from '$lib/components/+game-map/game-tile.svelte';
   import { landStore } from '$lib/stores/store.svelte';
+  import { onMount } from 'svelte';
 
   // Throttle mechanism
   let lastWheelTime = 0;
