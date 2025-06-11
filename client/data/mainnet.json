@@ -16,22 +16,22 @@
   "aiAgents": [
     {
       "address": "0x78a5a96b945a532256cac2a0e65d6c4961e35158e8e797f66e78c6a6c5210de",
-      "name": "WolfNation",
+      "name": "wolf agent",
       "badgeImage": "/tokens/eWNT/ai.png"
     },
     {
       "address": "0x4edcac6e45ce75836437859a3aab25a83740da4507c8002bd53dffca0efe298",
-      "name": "DucksAgent",
+      "name": "duck agent",
       "badgeImage": "/tokens/eQQ/ai.png"
     },
     {
       "address": "0x56106a470b036cad4b2e80846f88e3fd226d7bf7319ac2f895fd75e0ad0f687",
-      "name": "EveraiAgent",
+      "name": "everai agent",
       "badgeImage": "/tokens/eSG/ai.png"
     },
     {
       "address": "0x55061ab2add8cf1ef0ff8a83dd6dc138f00e41fb6670c1d372787c695bb036",
-      "name": "BlobertAgent",
+      "name": "blobert agent",
       "badgeImage": "/tokens/nftLORDS/ai.png"
     }
   ],
