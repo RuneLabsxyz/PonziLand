@@ -13,7 +13,7 @@
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
-  import data from '$profileData';
+  import { toNumber } from 'ethers';
 
   const dojo = useDojo();
   const account = () => {
@@ -24,6 +24,7 @@
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
   let selectedTokenAddress = $state<string>('');
+  let sortBy = $state<'price' | 'level'>('price');
 
   // Derived states for filtering
   let availableTokens = $derived.by(() => {
@@ -49,12 +50,27 @@
     return filtered;
   });
 
-  // Function to sort lands by price
-  function sortLandsByPrice(landsToSort: LandWithActions[]): LandWithActions[] {
+  // Function to sort lands
+  function sortLands(landsToSort: LandWithActions[]): LandWithActions[] {
     return [...landsToSort].sort((a, b) => {
-      const priceA = a.sellPrice?.rawValue().toNumber() ?? 0;
-      const priceB = b.sellPrice?.rawValue().toNumber() ?? 0;
-      return sortAscending ? priceA - priceB : priceB - priceA;
+      if (sortBy === 'price') {
+        const priceA = a.sellPrice?.rawValue().toNumber() ?? 0;
+        const priceB = b.sellPrice?.rawValue().toNumber() ?? 0;
+        return sortAscending ? priceA - priceB : priceB - priceA;
+      } else {
+        // Sort by level first, then by purchase date
+        const levelA = a.level ?? 0;
+        const levelB = b.level ?? 0;
+
+        if (levelA !== levelB) {
+          return sortAscending ? levelA - levelB : levelB - levelA;
+        }
+
+        // If levels are equal, sort by purchase date
+        const dateA = toNumber(a.block_date_bought);
+        const dateB = toNumber(b.block_date_bought);
+        return sortAscending ? dateB - dateA : dateA - dateB;
+      }
     });
   }
 
@@ -92,7 +108,7 @@
           })
           .map((land) => createLandWithActions(land, () => allLands));
 
-        lands = sortLandsByPrice(filteredLands);
+        lands = sortLands(filteredLands);
       });
     } catch (error) {
       console.error('Error in land-explorer setup:', error);
@@ -121,20 +137,50 @@
         </button>
       {/if}
     </div>
-    <button
-      class="flex items-center gap-2 text-sm font-medium bg-blue-500 px-2"
-      onclick={() => {
-        sortAscending = !sortAscending;
-        lands = sortLandsByPrice(lands);
-      }}
-    >
-      Price
-      {#if sortAscending}
-        ▴
-      {:else}
-        ▾
-      {/if}
-    </button>
+    <div class="flex gap-2">
+      <button
+        class="flex items-center gap-2 text-sm font-medium {sortBy === 'price'
+          ? 'bg-blue-500'
+          : 'text-blue-500'} px-2"
+        onclick={() => {
+          if (sortBy === 'price') {
+            sortAscending = !sortAscending;
+          }
+          sortBy = 'price';
+          lands = sortLands(lands);
+        }}
+      >
+        Price
+        {#if sortBy === 'price'}
+          {#if sortAscending}
+            ▴
+          {:else}
+            ▾
+          {/if}
+        {/if}
+      </button>
+      <button
+        class="flex items-center gap-2 text-sm font-medium {sortBy === 'level'
+          ? 'bg-blue-500'
+          : 'text-blue-500'} px-2"
+        onclick={() => {
+          if (sortBy === 'level') {
+            sortAscending = !sortAscending;
+          }
+          sortBy = 'level';
+          lands = sortLands(lands);
+        }}
+      >
+        Level
+        {#if sortBy === 'level'}
+          {#if sortAscending}
+            ▴
+          {:else}
+            ▾
+          {/if}
+        {/if}
+      </button>
+    </div>
   </div>
   <ScrollArea class="h-full w-full" type="scroll">
     <div class="flex flex-col">
@@ -154,7 +200,7 @@
           }}
         >
           {#if land}
-            <LandOverview size="xs" {land} hideLevelUp={true} />
+            <LandOverview size="xs" {land} hideLevelUp={sortBy !== 'level'} />
           {/if}
           <div
             class="w-full flex items-center justify-start leading-none text-xl"
