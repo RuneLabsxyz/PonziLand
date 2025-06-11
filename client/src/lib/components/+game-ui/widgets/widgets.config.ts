@@ -13,9 +13,9 @@ export const availableWidgets: Widget[] = [
     icon: '/ui/icons/Icon_Thin_MyLand.png',
   },
   {
-    id: 'auctions',
-    type: 'auctions',
-    label: 'Auctions',
+    id: 'market',
+    type: 'market',
+    label: 'Market',
     icon: '/ui/icons/Icon_Thin_Auction.png',
   },
   {

@@ -7,7 +7,7 @@
   import WidgetSettings from './settings/widget-settings.svelte';
   import WidgetWallet from './wallet/widget-wallet.svelte';
   import WidgetEntityUpdate from './entity-update/widget-entity-update.svelte';
-  import WidgetAuctions from './auctions/widget-auctions.svelte';
+  import WidgetMarket from './market/widget-market.svelte';
   import WidgetHelp from './help/widget-help.svelte';
   import WidgetTutorial from './tutorial/widget-tutorial.svelte';
   import WidgetNftLink from './nft-link/widget-nft-link.svelte';
@@ -38,8 +38,8 @@
         <WidgetMyLands />
       {:else if type === 'entity-update'}
         <WidgetEntityUpdate />
-      {:else if type === 'auctions'}
-        <WidgetAuctions />
+      {:else if type === 'market'}
+        <WidgetMarket />
       {:else if type === 'help'}
         <WidgetHelp />
       {:else if type === 'tutorial'}

@@ -42,9 +42,9 @@ const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
-  auctions: {
-    id: 'auctions',
-    type: 'auctions',
+  market: {
+    id: 'market',
+    type: 'market',
     position: { x: 40, y: 30 },
     dimensions: { width: 450, height: 600 },
     isMinimized: false,
