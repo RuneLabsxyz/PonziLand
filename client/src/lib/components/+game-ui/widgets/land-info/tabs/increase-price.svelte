@@ -8,6 +8,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { landStore } from '$lib/stores/store.svelte';
   import type { CairoCustomEnum } from 'starknet';
+  import { level } from '$lib/models.gen';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -48,8 +49,6 @@
       const landPromise = land.wait();
       await Promise.any([txPromise, landPromise]);
 
-      // TODO update land price
-      // TODO update land price
       const parsedEntity = {
         entityId: land.location, // Assuming land has an id property
         models: {
@@ -57,6 +56,12 @@
             Land: {
               ...land,
               sell_price: newPrice.toBignumberish(), // Update the sell price
+              // @ts-ignore
+              level: (land.level === 1
+                ? 'Zero'
+                : land.level === 2
+                  ? 'First'
+                  : 'Second') as CairoCustomEnum, // Ensure level is correctly set
             },
           },
         },

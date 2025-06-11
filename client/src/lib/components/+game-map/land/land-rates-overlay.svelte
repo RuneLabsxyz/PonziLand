@@ -36,7 +36,6 @@
     if (land) {
       console.log('land', land);
       if (tutorialState.tutorialEnabled) {
-        // TODO function to fill with store values
         yieldInfo = tutorialLandStore.getNeighborsYield(land.location);
         console.log('tutorial');
       } else {
