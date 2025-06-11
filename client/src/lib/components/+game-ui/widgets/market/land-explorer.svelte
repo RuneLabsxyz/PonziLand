@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
@@ -9,9 +8,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
-  import { baseToken } from '$lib/stores/tokens.store.svelte';
   import { padAddress, parseLocation } from '$lib/utils';
-  import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
@@ -21,47 +18,16 @@
     return dojo.accountManager?.getProvider();
   };
 
-  interface LandWithPrice extends LandWithActions {
-    price: CurrencyAmount | null;
-    priceLoading: boolean;
-  }
-
-  let lands = $state<LandWithPrice[]>([]);
+  let lands = $state<LandWithActions[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
 
-  // Function to fetch and update price for a land
-  async function updateLandPrice(landWithPrice: LandWithPrice) {
-    try {
-      landWithPrice.priceLoading = true;
-      const price = await landWithPrice.getCurrentAuctionPrice();
-      landWithPrice.price = price ?? null;
-      landWithPrice.priceLoading = false;
-
-      // Re-sort the array after price update
-      lands = sortLandsByPrice(lands);
-    } catch (error) {
-      console.error('Error fetching price for land:', error);
-      landWithPrice.priceLoading = false;
-    }
-  }
-
-  // Function to sort lands by price (null prices go to end)
-  function sortLandsByPrice(landsToSort: LandWithPrice[]): LandWithPrice[] {
+  // Function to sort lands by price
+  function sortLandsByPrice(landsToSort: LandWithActions[]): LandWithActions[] {
     return [...landsToSort].sort((a, b) => {
-      // If both have prices, sort by price (ascending)
-      if (a.price && b.price) {
-        const comparison = a.price
-          .rawValue()
-          .minus(b.price.rawValue())
-          .toNumber();
-        return sortAscending ? comparison : -comparison; // Adjusted for ascending/descending
-      }
-      // If only one has a price, prioritize the one with price
-      if (a.price && !b.price) return -1;
-      if (!a.price && b.price) return 1;
-      // If neither has a price, maintain original order
-      return 0;
+      const priceA = a.sellPrice?.rawValue().toNumber() ?? 0;
+      const priceB = b.sellPrice?.rawValue().toNumber() ?? 0;
+      return sortAscending ? priceA - priceB : priceB - priceA;
     });
   }
 
@@ -90,26 +56,19 @@
 
         const filteredLands = landsData
           .filter((land): land is BuildingLand => {
-            return AuctionLand.is(land);
+            if (BuildingLand.is(land)) {
+              const landOwner = padAddress(land.owner);
+              // Only show lands that are for sale and not owned by the current user
+              return landOwner !== userAddress && land.sell_price !== '0';
+            }
+            return false;
           })
-          .map((land): LandWithPrice => {
-            const landWithActions = createLandWithActions(land, () => allLands);
-            return {
-              ...landWithActions,
-              price: null,
-              priceLoading: false,
-            };
-          });
+          .map((land) => createLandWithActions(land, () => allLands));
 
-        lands = filteredLands;
-
-        // Fetch prices for all lands
-        lands.forEach((land) => {
-          updateLandPrice(land);
-        });
+        lands = sortLandsByPrice(filteredLands);
       });
     } catch (error) {
-      console.error('Error in my-lands-widget setup:', error);
+      console.error('Error in land-explorer setup:', error);
     }
   });
 
@@ -160,26 +119,26 @@
           <div
             class="w-full flex items-center justify-start leading-none text-xl"
           >
-            {#if land.priceLoading}
+            {#if land.sellPrice}
               <div class="flex gap-1 items-center">
-                <span class="text-sm opacity-50">Loading...</span>
-                <TokenAvatar class="w-5 h-5" token={baseToken} />
-              </div>
-            {:else if land.price}
-              <div class="flex gap-1 items-center">
-                <PriceDisplay price={land.price} />
-                <TokenAvatar class="w-5 h-5" token={baseToken} />
+                <PriceDisplay price={land.sellPrice} />
+                <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>
-                <TokenAvatar class="w-5 h-5" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
             {/if}
           </div>
           <div class="absolute bottom-0 right-0 p-2"></div>
         </button>
       {/each}
+      {#if lands.length === 0}
+        <div class="text-center text-gray-400 p-8">
+          No lands are currently for sale
+        </div>
+      {/if}
     </div>
   </ScrollArea>
 </div>
