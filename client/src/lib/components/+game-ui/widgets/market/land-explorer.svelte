@@ -5,6 +5,7 @@
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
@@ -12,6 +13,7 @@
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
+  import data from '$profileData';
 
   const dojo = useDojo();
   const account = () => {
@@ -21,6 +23,31 @@
   let lands = $state<LandWithActions[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
+  let selectedTokenAddress = $state<string>('');
+
+  // Derived states for filtering
+  let availableTokens = $derived.by(() => {
+    const tokens = new Set<string>();
+    lands.forEach((land) => {
+      if (land.token?.symbol) {
+        tokens.add(land.token.symbol);
+      }
+    });
+    return Array.from(tokens).sort();
+  });
+
+  let filteredLands = $derived.by(() => {
+    let filtered = lands;
+
+    // Token filter
+    if (selectedTokenAddress) {
+      filtered = filtered.filter(
+        (land) => land.token?.address === selectedTokenAddress,
+      );
+    }
+
+    return filtered;
+  });
 
   // Function to sort lands by price
   function sortLandsByPrice(landsToSort: LandWithActions[]): LandWithActions[] {
@@ -80,7 +107,10 @@
 </script>
 
 <div class="h-full w-full pb-16 min-h-0">
-  <div class="flex items-center justify-end py-2 border-white/10">
+  <div class="flex items-center justify-between py-2 border-white/10">
+    <div class="w-48">
+      <TokenSelect bind:value={selectedTokenAddress} />
+    </div>
     <button
       class="flex items-center gap-2 text-sm font-medium bg-blue-500 px-2"
       onclick={() => {
@@ -98,7 +128,7 @@
   </div>
   <ScrollArea class="h-full w-full" type="scroll">
     <div class="flex flex-col">
-      {#each lands as land}
+      {#each filteredLands as land}
         <button
           class="relative w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
           onclick={() => {
@@ -134,9 +164,13 @@
           <div class="absolute bottom-0 right-0 p-2"></div>
         </button>
       {/each}
-      {#if lands.length === 0}
+      {#if filteredLands.length === 0}
         <div class="text-center text-gray-400 p-8">
-          No lands are currently for sale
+          {#if lands.length === 0}
+            No lands are currently for sale
+          {:else}
+            No lands found matching your filters
+          {/if}
         </div>
       {/if}
     </div>
