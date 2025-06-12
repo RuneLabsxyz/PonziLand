@@ -122,13 +122,6 @@
     });
   }
 
-  // Function to highlight matching text
-  function highlightMatch(text: string, query: string): string {
-    if (!query) return text;
-    const regex = new RegExp(`(${query})`, 'gi');
-    return text.replace(regex, '<span class="bg-yellow-500/50">$1</span>');
-  }
-
   onMount(async () => {
     try {
       if (!dojo.client) {
@@ -302,19 +295,11 @@
                     alt={getAiAgent(land.owner)?.name}
                     class="w-4 h-4"
                   />
-                  <span>
-                    {@html highlightMatch(
-                      getAiAgent(land.owner)?.name || '',
-                      searchQuery,
-                    )}
-                  </span>
+                  <span> {getAiAgent(land.owner)?.name} </span>
                 </div>
               {:else}
                 <span>
-                  {@html highlightMatch(
-                    getUsername(land.owner) || land.owner,
-                    searchQuery,
-                  )}
+                  {getUsername(land.owner)}
                 </span>
               {/if}
             </div>
