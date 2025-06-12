@@ -76,9 +76,6 @@ function loadState(): WidgetsState {
 
     // Process each widget's data after loading
     for (const [id, widget] of Object.entries(parsed)) {
-      // Skip default widgets - they should always use their default configuration
-      if (id in DEFAULT_WIDGETS_STATE) continue;
-
       const processedWidget = processWidgetDataAfterLoad(widget);
       if (processedWidget) {
         finalState[id] = processedWidget;
