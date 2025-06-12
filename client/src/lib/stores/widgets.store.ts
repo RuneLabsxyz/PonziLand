@@ -112,6 +112,28 @@ function saveState(state: WidgetsState) {
   }
 }
 
+// Normalize z-indices to prevent them from growing too large
+function normalizeZIndices(state: WidgetsState): WidgetsState {
+  const widgets = Object.entries(state);
+  if (widgets.length === 0) return state;
+
+  // Sort widgets by their current z-index
+  const sortedWidgets = widgets.sort(
+    ([, a], [, b]) => (a.zIndex || 0) - (b.zIndex || 0),
+  );
+
+  // Assign new z-indices starting from 1
+  const newState = { ...state };
+  sortedWidgets.forEach(([id, widget], index) => {
+    newState[id] = {
+      ...widget,
+      zIndex: index + 1,
+    };
+  });
+
+  return newState;
+}
+
 function createWidgetsStore() {
   const { subscribe, set, update } = writable<WidgetsState>(
     DEFAULT_WIDGETS_STATE,
@@ -149,19 +171,19 @@ function createWidgetsStore() {
           position.y = widget.position.y + offset;
         }
 
-        console.log('zindex', maxZIndex);
         const newState = {
           ...state,
           [widget.id]: {
             ...widget,
             position,
-            zIndex: maxZIndex + 3,
+            zIndex: maxZIndex + 1,
             isMinimized: false,
             isOpen: true,
           },
         };
-        saveState(newState);
-        return newState;
+        const normalizedState = normalizeZIndices(newState);
+        saveState(normalizedState);
+        return normalizedState;
       }),
     updateWidget: (id: string, updates: Partial<WidgetState>) =>
       update((state) => {
@@ -169,17 +191,17 @@ function createWidgetsStore() {
           console.error('Widget not found:', id);
           return state;
         }
-        // Set initial z-index to be above existing widgets
         const maxZIndex = Math.max(
           ...Object.values(state).map((w) => w.zIndex || 0),
           0,
         );
         const newState = {
           ...state,
-          [id]: { ...state[id], ...updates, zIndex: maxZIndex + 3 },
+          [id]: { ...state[id], ...updates, zIndex: maxZIndex + 1 },
         };
-        saveState(newState);
-        return newState;
+        const normalizedState = normalizeZIndices(newState);
+        saveState(normalizedState);
+        return normalizedState;
       }),
     removeWidget: (id: string) =>
       update((state) => {
@@ -232,8 +254,9 @@ function createWidgetsStore() {
           ...state,
           [id]: { ...state[id], zIndex: maxZIndex + 1 },
         };
-        saveState(newState);
-        return newState;
+        const normalizedState = normalizeZIndices(newState);
+        saveState(normalizedState);
+        return normalizedState;
       }),
   };
 }
