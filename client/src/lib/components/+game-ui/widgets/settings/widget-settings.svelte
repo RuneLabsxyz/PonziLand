@@ -3,6 +3,7 @@
   import { Slider } from '$lib/components/ui/slider';
   import { Label } from '$lib/components/ui/label';
   import { Volume2, VolumeX } from 'lucide-svelte';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 </script>
 
 <div class="flex flex-col gap-4 p-5">
@@ -36,17 +37,12 @@
       {/if}
     </button>
 
-    <!-- Mute SFX Button -->
-
-    <!-- <button
-      class="w-full flex items-center justify-center gap-3 px-4 py-2 rounded-lg hover:bg-muted/50 transition-colors"
-      onclick={() => settingsStore.toggleMuteSFX()}
+    <!-- Reset UI Button -->
+    <button
+      class="w-full justify-center flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted/50 transition-colors"
+      onclick={() => widgetsStore.resetToDefault()}
     >
-      {#if settingsStore.isMuteSFX}
-        <Label class="font-medium cursor-pointer">SFX Off</Label>
-      {:else}
-        <Label class="font-medium cursor-pointer">SFX On</Label>
-      {/if}
-    </button> -->
+      <Label class="font-medium cursor-pointer">Reset UI</Label>
+    </button>
   </div>
 </div>
