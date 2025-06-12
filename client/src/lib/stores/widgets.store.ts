@@ -229,6 +229,16 @@ function createWidgetsStore() {
           console.error('Widget not found:', id);
           return state;
         }
+
+        // For land-info widgets, remove them completely
+        if (state[id].type === 'land-info') {
+          const newState = { ...state };
+          delete newState[id];
+          saveState(newState);
+          return newState;
+        }
+
+        // For other widgets, just mark them as closed
         const newState = {
           ...state,
           [id]: { ...state[id], isOpen: false },
