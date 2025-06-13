@@ -54,9 +54,7 @@
     'w-16': size === 'xs',
   })}
 >
-  <!-- svelte-ignore a11y_click_events_have_key_events -->
-  <!-- svelte-ignore a11y_no_static_element_interactions -->
-  <div
+  <button
     onclick={() => handleLandClick(land)}
     class={cn('flex items-center justify-center relative cursor-pointer', {
       'h-48 w-48': size === 'lg',
@@ -120,7 +118,7 @@
         />
       </div>
     {/if}
-  </div>
+  </button>
   <!-- Also show the progress bar for the next level -->
   {#if land.type == 'house' && land.level < 3 && !hideLevelUp}
     <div
