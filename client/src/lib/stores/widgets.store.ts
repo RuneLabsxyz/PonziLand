@@ -71,6 +71,26 @@ function loadState(): WidgetsState {
       return DEFAULT_WIDGETS_STATE;
     }
 
+    // Clean up closed land-info widgets from storage
+    const cleanedState = { ...parsed };
+    let hasChanges = false;
+    for (const [id, widget] of Object.entries(cleanedState)) {
+      if (
+        typeof widget === 'object' &&
+        widget !== null &&
+        'type' in widget &&
+        'isOpen' in widget &&
+        widget.type === 'land-info' &&
+        !widget.isOpen
+      ) {
+        delete cleanedState[id];
+        hasChanges = true;
+      }
+    }
+    if (hasChanges) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cleanedState));
+    }
+
     // Start with default widgets
     const finalState = { ...DEFAULT_WIDGETS_STATE };
 
