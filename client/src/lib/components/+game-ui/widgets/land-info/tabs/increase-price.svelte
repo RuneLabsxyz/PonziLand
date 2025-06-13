@@ -1,74 +1,83 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import { writable } from 'svelte/store';
   import { useAccount } from '$lib/contexts/account.svelte';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { landStore } from '$lib/stores/store.svelte';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import type { CairoCustomEnum } from 'starknet';
-  import { level } from '$lib/models.gen';
 
   let { land }: { land: LandWithActions } = $props();
 
   let accountManager = useAccount();
-  let disabled = writable(false);
   let priceIncrease = $state(land ? land.sellPrice.toString() : '0');
   let touched = $state(false);
+  let isLoading = $state(false);
 
   let priceError = $derived.by(() => {
     if (!land || !priceIncrease) return null;
 
-    try {
-      const newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
-      if (newPrice.rawValue().isLessThanOrEqualTo(land.sellPrice.rawValue())) {
-        return 'New price must be higher than the current price';
-      }
-      return null;
-    } catch {
-      return 'Invalid price value';
+    const newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
+    const currentPrice = land.sellPrice;
+
+    if (newPrice.rawValue().isLessThanOrEqualTo(currentPrice.rawValue())) {
+      return `New price must be higher than current price (${currentPrice.toString()})`;
     }
+    return null;
   });
 
-  let isPriceValid = $derived(() => !!land && !!priceIncrease && !priceError);
+  let isPriceValid = $derived.by(() => {
+    if (!land || !priceIncrease) return false;
+
+    const newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
+    const isValid = newPrice
+      .rawValue()
+      .isGreaterThan(land.sellPrice.rawValue());
+    return isValid;
+  });
 
   const handleIncreasePrice = async () => {
     if (!land) {
       console.error('No land selected');
       return;
     }
-    let newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
-    let result = await land.increasePrice(newPrice);
-    disabled.set(true);
-    if (result?.transaction_hash) {
-      const txPromise = accountManager!
-        .getProvider()
-        ?.getWalletAccount()
-        ?.waitForTransaction(result.transaction_hash);
-      const landPromise = land.wait();
-      await Promise.any([txPromise, landPromise]);
+    isLoading = true;
+    try {
+      let newPrice = CurrencyAmount.fromScaled(priceIncrease, land.token);
+      let result = await land.increasePrice(newPrice);
+      if (result?.transaction_hash) {
+        const txPromise = accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+        const landPromise = land.wait();
+        await Promise.any([txPromise, landPromise]);
 
-      const parsedEntity = {
-        entityId: land.location, // Assuming land has an id property
-        models: {
-          ponzi_land: {
-            Land: {
-              ...land,
-              sell_price: newPrice.toBignumberish(), // Update the sell price
-              // @ts-ignore
-              level: (land.level === 1
-                ? 'Zero'
-                : land.level === 2
-                  ? 'First'
-                  : 'Second') as CairoCustomEnum, // Ensure level is correctly set
+        const parsedEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              Land: {
+                ...land,
+                sell_price: newPrice.toBignumberish(),
+                // @ts-ignore
+                level: (land.level === 1
+                  ? 'Zero'
+                  : land.level === 2
+                    ? 'First'
+                    : 'Second') as CairoCustomEnum,
+              },
             },
           },
-        },
-      };
-      landStore.updateLand(parsedEntity); // Update the land in the store
-
-      disabled.set(false);
+        };
+        landStore.updateLand(parsedEntity);
+      }
+    } catch (error) {
+      console.error('Error increasing price:', error);
+    } finally {
+      isLoading = false;
     }
   };
 </script>
@@ -81,16 +90,21 @@
       bind:value={priceIncrease}
       placeholder="New Price"
       on:input={() => (touched = true)}
+      disabled={isLoading}
     />
     {#if touched && priceError}
       <p class="text-red-500 text-sm">{priceError}</p>
     {/if}
     <Button
-      disabled={$disabled || !isPriceValid}
+      disabled={!isPriceValid || isLoading}
       onclick={handleIncreasePrice}
       class="w-full"
     >
-      Confirm Price
+      {#if isLoading}
+        Processing&nbsp;<ThreeDots />
+      {:else}
+        Confirm Price
+      {/if}
     </Button>
   </div>
 </div>

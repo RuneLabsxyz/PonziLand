@@ -8,12 +8,14 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { tokenStore } from '$lib/stores/tokens.store.svelte';
   import { landStore } from '$lib/stores/store.svelte';
+  import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
   let accountManager = useAccount();
   let disabled = writable(false);
   let stakeIncrease = $state('0.1');
+  let isLoading = $state(false);
 
   let stakeError = $derived.by(() => {
     if (!land || !stakeIncrease) return null;
@@ -46,38 +48,45 @@
       console.error('No land selected');
       return;
     }
-    let amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
-    let result = await land.increaseStake(amountToAdd);
-    if (result?.transaction_hash) {
-      const txPromise = accountManager!
-        .getProvider()
-        ?.getWalletAccount()
-        ?.waitForTransaction(result.transaction_hash);
-      const landPromise = land.wait();
+    isLoading = true;
+    try {
+      let amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
+      let result = await land.increaseStake(amountToAdd);
+      if (result?.transaction_hash) {
+        const txPromise = accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+        const landPromise = land.wait();
 
-      await Promise.any([txPromise, landPromise]);
+        await Promise.any([txPromise, landPromise]);
 
-      // the new stake amount should be current + new stake amount
-      land.stakeAmount.setToken(land.token);
-      const currentStake =
-        land.stakeAmount || CurrencyAmount.fromScaled('0', land.token);
-      amountToAdd = currentStake.add(amountToAdd);
+        // the new stake amount should be current + new stake amount
+        land.stakeAmount.setToken(land.token);
+        const currentStake =
+          land.stakeAmount || CurrencyAmount.fromScaled('0', land.token);
+        amountToAdd = currentStake.add(amountToAdd);
 
-      // Update the land stake
-      const parsedStake = {
-        entityId: land.location, // Assuming land has an id property
-        models: {
-          ponzi_land: {
-            LandStake: {
-              location: land.location, // Use the land location as the identifier
-              amount: amountToAdd.toBignumberish(), // Update the stake amount
-              last_pay_time: Date.now() / 1000, // Set the last pay time
+        // Update the land stake
+        const parsedStake = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              LandStake: {
+                location: land.location,
+                amount: amountToAdd.toBignumberish(),
+                last_pay_time: Date.now() / 1000,
+              },
             },
           },
-        },
-      };
-      console.log('Parsed stake update:', parsedStake);
-      landStore.updateLand(parsedStake); // Update the land stake in the store
+        };
+        console.log('Parsed stake update:', parsedStake);
+        landStore.updateLand(parsedStake);
+      }
+    } catch (error) {
+      console.error('Error increasing stake:', error);
+    } finally {
+      isLoading = false;
     }
   };
 </script>
@@ -89,16 +98,21 @@
       type="number"
       bind:value={stakeIncrease}
       placeholder="Enter amount"
+      disabled={isLoading}
     />
     {#if stakeError}
       <p class="text-red-500 text-sm">{stakeError}</p>
     {/if}
     <Button
-      disabled={$disabled || !isStakeValid}
+      disabled={$disabled || !isStakeValid || isLoading}
       onclick={handleIncreaseStake}
       class="w-full"
     >
-      Increase Stake
+      {#if isLoading}
+        Processing&nbsp;<ThreeDots />
+      {:else}
+        Increase Stake
+      {/if}
     </Button>
   </div>
 </div>
