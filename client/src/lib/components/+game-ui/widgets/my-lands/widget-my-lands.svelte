@@ -269,6 +269,7 @@
     </div>
 
     <div class="flex gap-2">
+      <div class="text-gray-200">total lands ( {lands.length} )</div>
       <button
         onclick={() => {
           if (sortBy === 'price') {
@@ -303,22 +304,24 @@
   <!-- Lands List -->
   <ScrollArea type="scroll">
     <div class="flex flex-col">
-      <Button
-        size="md"
-        class="sticky top-0 z-10"
-        disabled={claimingAll || 'all' in claimCooldowns}
-        onclick={() => {
-          handleClaimAll();
-        }}
-      >
-        {#if claimingAll}
-          CLAIMING...
-        {:else if 'all' in claimCooldowns}
-          CLAIM ALL ({claimCooldowns['all']}s)
-        {:else}
-          CLAIM AAAAALLLLL
-        {/if}
-      </Button>
+      {#if lands.length > 0}
+        <Button
+          size="md"
+          class="sticky top-0 z-10"
+          disabled={claimingAll || 'all' in claimCooldowns}
+          onclick={() => {
+            handleClaimAll();
+          }}
+        >
+          {#if claimingAll}
+            CLAIMING...
+          {:else if 'all' in claimCooldowns}
+            CLAIM ALL ({claimCooldowns['all']}s)
+          {:else}
+            CLAIM AAAAALLLLL
+          {/if}
+        </Button>
+      {/if}
       {#each Object.entries(groupedLands) as [groupName, groupLands]}
         {#if groupByToken && Object.keys(groupedLands).length >= 1}
           {@const token = groupLands.at(0)?.token}
