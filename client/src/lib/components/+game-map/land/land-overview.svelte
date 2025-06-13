@@ -1,10 +1,13 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import Button from '$lib/components/ui/button/button.svelte';
-  import { cn, locationIntToString } from '$lib/utils';
+  import { cn, locationIntToString, parseLocation } from '$lib/utils';
   import { onMount } from 'svelte';
   import LandDisplay from './land-display.svelte';
   import LandLevelProgress from './land-level-progress.svelte';
+  import { moveCameraTo } from '$lib/stores/camera.store';
+  import { landStore, selectedLand } from '$lib/stores/store.svelte';
+  import { get } from 'svelte/store';
   const {
     land,
     size = 'sm',
@@ -30,6 +33,18 @@
 
   const OFF_IMAGE = '/ui/star/off.png';
   const ON_IMAGE = '/ui/star/on.png';
+
+  function handleLandClick(land: LandWithActions) {
+    moveCameraTo(
+      parseLocation(land.location)[0] + 1,
+      parseLocation(land.location)[1] + 1,
+    );
+    const coordinates = parseLocation(land.location);
+    const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
+    if (baseLand) {
+      selectedLand.value = get(baseLand);
+    }
+  }
 </script>
 
 <div
@@ -39,8 +54,11 @@
     'w-16': size === 'xs',
   })}
 >
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
-    class={cn('flex items-center justify-center relative', {
+    onclick={() => handleLandClick(land)}
+    class={cn('flex items-center justify-center relative cursor-pointer', {
       'h-48 w-48': size === 'lg',
       'h-24 w-24': size === 'sm',
       'h-[4.5rem] w-[4.5rem]': size === 'xs',
