@@ -3,6 +3,7 @@ import manifest from '$manifest';
 import {
   PUBLIC_DOJO_RPC_URL,
   PUBLIC_DOJO_TORII_URL,
+  PUBLIC_RELAY_URL,
   PUBLIC_DOJO_PROFILE,
   PUBLIC_DOJO_BURNER_ADDRESS,
   PUBLIC_DOJO_BURNER_PRIVATE,
@@ -41,6 +42,7 @@ const internalDojoConfig = createDojoConfig({
   manifest,
   rpcUrl: PUBLIC_DOJO_RPC_URL,
   toriiUrl: PUBLIC_DOJO_TORII_URL,
+  relayUrl: PUBLIC_RELAY_URL,
   masterAddress: PUBLIC_DOJO_BURNER_ADDRESS,
   masterPrivateKey: PUBLIC_DOJO_BURNER_PRIVATE,
 });

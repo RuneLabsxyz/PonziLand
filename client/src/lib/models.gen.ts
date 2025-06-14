@@ -60,6 +60,22 @@ export interface LandValue {
   level: LevelEnum;
 }
 
+// Type definition for `ponzi_land::models::message::Message` struct
+
+export interface Message {
+  identity: string;
+  channel: BigNumberish;
+  salt: BigNumberish;
+  content: string;
+  timestamp: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::message::MessageValue` struct
+export interface MessageValue {
+  content: string;
+  timestamp: BigNumberish;
+}
+
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
 export interface AuctionFinishedEvent {
   land_location: BigNumberish;
@@ -159,6 +175,8 @@ export interface SchemaType extends ISchemaType {
     LandStake: LandStake;
     LandStakeValue: LandStakeValue;
     LandValue: LandValue;
+    Message: Message;
+    MessageValue: MessageValue;
     AuctionFinishedEvent: AuctionFinishedEvent;
     AuctionFinishedEventValue: AuctionFinishedEventValue;
     LandBoughtEvent: LandBoughtEvent;
@@ -221,6 +239,17 @@ export const schema: SchemaType = {
         First: undefined,
         Second: undefined,
       }),
+    },
+    Message: {
+      identity: '',
+      channel: 0,
+      salt: 0,
+      content: '',
+      timestamp: 0,
+    },
+    MessageValue: {
+      content: '',
+      timestamp: 0,
     },
     AuctionFinishedEvent: {
       land_location: 0,
@@ -290,6 +319,8 @@ export enum ModelsMapping {
   LandStakeValue = 'ponzi_land-LandStakeValue',
   LandValue = 'ponzi_land-LandValue',
   Level = 'ponzi_land-Level',
+  Message = 'ponzi_land-Message',
+  MessageValue = 'ponzi_land-MessageValue',
   AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
   AuctionFinishedEventValue = 'ponzi_land-AuctionFinishedEventValue',
   LandBoughtEvent = 'ponzi_land-LandBoughtEvent',
