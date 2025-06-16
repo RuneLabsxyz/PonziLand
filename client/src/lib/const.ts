@@ -8,7 +8,7 @@ export const LEVEL_UP_TIME = 60 * 60 * 48;
 
 // Tournament dates
 export const DATE_GATE: Date | undefined = new Date('2025-06-02T22:30:00Z');
-export const CLOSING_DATE: Date | undefined = Date('2025-06-16T20:00:00Z');
+export const CLOSING_DATE: Date | undefined = new Date('2025-06-16T20:00:00Z');
 
 // UI constants
 export const TILE_SIZE = 256;
