@@ -273,7 +273,6 @@ pub mod actions {
             let sold_price = land.sell_price;
             let token_used = land.token_used;
 
-            // //TODO: pass this like param to internal_claim and finalize_land_purchase
             let neighbors = get_land_neighbors(store, land.location);
 
             self.internal_claim(store, land, true, neighbors.clone());
@@ -747,6 +746,8 @@ pub mod actions {
             self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
         }
 
+
+        //TODO:CHANGE OR DELETE THE FROM_BUY PARAM
         fn internal_claim(
             ref self: ContractState,
             mut store: Store,

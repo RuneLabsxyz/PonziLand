@@ -35,9 +35,9 @@ mod TaxesComponent {
 
     #[storage]
     struct Storage {
-        //tax_payer,tax_reciever -> timestamp
+        //(tax_payer,tax_reciever) -> timestamp
         last_claim_time: Map<(u16, u16), u64>,
-        //               tax_reciever,tax_payer -> amount
+        //(tax_reciever,tax_payer) -> total claimed amount
         claimed_amount: Map<(u16, u16), u256>,
     }
 
@@ -60,6 +60,7 @@ mod TaxesComponent {
         +Drop<TContractState>,
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
+        /// Establishes tax relationship between two neighboring lands in both directions
         fn register_bidirectional_tax_relations(
             ref self: ComponentState<TContractState>, land_a: Land, land_b: Land, store: Store,
         ) {
@@ -96,8 +97,8 @@ mod TaxesComponent {
         fn calculate_and_distribute_taxes(
             ref self: ComponentState<TContractState>,
             mut store: Store,
-            claimer: Land,
-            direct_neighbor: Land,
+            claimer: Land, // Land claiming the taxes
+            direct_neighbor: Land, // Neighbor being taxed
             ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
             from_buy: bool,
         ) -> bool {
@@ -132,7 +133,8 @@ mod TaxesComponent {
                 land_stake.amount -= tax_for_claimer;
                 false
             } else {
-                self._process_buy(store, direct_neighbor, ref land_stake, tax_amount_for_neighbor);
+                //TODO:DELETE THIS, WE WANT TO USE DINAMYC CALCULATION OF TAXES, WHEN BUY OR BID
+                self._process_buy(direct_neighbor, ref land_stake, tax_amount_for_neighbor);
                 false
             };
 
@@ -140,6 +142,8 @@ mod TaxesComponent {
             is_nuke
         }
 
+        /// Calculates tax distribution among all neighbors of a land
+        /// Returns (total_taxes, tax_for_claimer)
         fn _calculate_taxes_for_all_neighbors(
             ref self: ComponentState<TContractState>,
             claimer: Land,
@@ -197,10 +201,11 @@ mod TaxesComponent {
             (total_taxes, tax_for_claimer)
         }
 
+        /// Sums up all taxes already claimed from a land by its neighbors
         fn _calculate_total_claimed(
             ref self: ComponentState<TContractState>,
-            direct_neighbor: Land,
-            neighbors_of_direct_neighbor: Span<Land>,
+            direct_neighbor: Land, // The land being taxed
+            neighbors_of_direct_neighbor: Span<Land> // All neighbors of the land
         ) -> u256 {
             let mut total_already_claimed: u256 = 0;
             for neighbor in neighbors_of_direct_neighbor {
@@ -254,6 +259,7 @@ mod TaxesComponent {
             land_stake.amount -= total_real_taxes;
         }
 
+        /// Processes a regular tax claim from a neighbor
         fn _process_claim(
             ref self: ComponentState<TContractState>,
             store: Store,
@@ -287,6 +293,8 @@ mod TaxesComponent {
             assert(status, errors::ERC20_TRANSFER_CLAIM_FAILED);
         }
 
+        /// Executes the actual claim of taxes
+        /// Handles token transfer and updates claim tracking
         fn _execute_claim(
             ref self: ComponentState<TContractState>,
             mut store: Store,
@@ -320,6 +328,7 @@ mod TaxesComponent {
                     );
 
                 if !from_buy {
+                    S
                     let individual_total_already_claimed = self
                         .claimed_amount
                         .read((claimer_location, direct_neighbor.location));
