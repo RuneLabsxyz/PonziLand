@@ -9,7 +9,7 @@ pub fn get_taxes_per_neighbor(land: Land, elapsed_time: u64) -> u256 {
 
     let tax_per_neighbor: u256 = (tax_rate_per_neighbor * elapsed_time.into()) / (BASE_TIME.into());
 
-    tax_per_neighbor / max_neighbors(land.location).into()
+    tax_per_neighbor
 }
 
 

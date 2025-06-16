@@ -1393,7 +1393,7 @@ fn test_new_claim() {
 
     set_block_timestamp(4000);
     set_contract_address(RECIPIENT());
-    // actions_system.claim(2080);
+    actions_system.claim(2080);
 
     // Setup new buyer with tokens and approvals
     setup_buyer_with_tokens(erc20_neighbor_3, actions_system, NEIGHBOR_3(), NEW_BUYER(), 10000);
