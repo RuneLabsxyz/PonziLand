@@ -260,7 +260,7 @@ Subscribe to all lands:
 
 ## Example Mods
 
-TODO
+- [Djizus](https://x.com/djizus_) from the [WASD](https://x.com/WASD_0x) guild built a custom [widget](https://github.com/djizus/PonziLand/blob/main/client/src/lib/components/%2Bgame-ui/widgets/script-tools/widget-script-tools.svelte) intented to automate buys based on user selected requirements. 
 
 ---
 
