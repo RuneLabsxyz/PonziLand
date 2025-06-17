@@ -134,7 +134,7 @@ mod TaxesComponent {
                 false
             } else {
                 //TODO:DELETE THIS, WE WANT TO USE DINAMYC CALCULATION OF TAXES, WHEN BUY OR BID
-                self._process_buy(direct_neighbor, ref land_stake, tax_amount_for_neighbor);
+                self._process_buy(store, direct_neighbor, ref land_stake, tax_amount_for_neighbor);
                 false
             };
 
@@ -328,7 +328,6 @@ mod TaxesComponent {
                     );
 
                 if !from_buy {
-                    S
                     let individual_total_already_claimed = self
                         .claimed_amount
                         .read((claimer_location, direct_neighbor.location));

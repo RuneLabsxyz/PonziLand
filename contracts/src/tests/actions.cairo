@@ -1344,7 +1344,7 @@ fn test_new_claim() {
     set_contract_address(RECIPIENT());
     actions_system.claim(2080);
 
-    set_block_timestamp(4000);
+    set_block_timestamp(6000);
     set_contract_address(RECIPIENT());
     actions_system.claim(2080);
 
@@ -1354,11 +1354,11 @@ fn test_new_claim() {
     // Perform buy action
     actions_system.buy(next_location_3.unwrap(), erc20_neighbor_3.contract_address, 1000, 200);
 
-    set_block_timestamp(8000);
+    set_block_timestamp(12000);
     set_contract_address(RECIPIENT());
     actions_system.claim(2080);
 
-    set_block_timestamp(12000);
+    set_block_timestamp(29000);
     set_contract_address(RECIPIENT());
     actions_system.claim(2080);
 
@@ -1371,8 +1371,8 @@ fn test_new_claim() {
 
     let balance_neighbor_1_of_erc20_2 = erc20_neighbor_2.balanceOf(NEIGHBOR_1());
     let balance_neighbor_1_of_erc20_3 = erc20_neighbor_3.balanceOf(NEIGHBOR_1());
-    assert(balance_neighbor_1_of_erc20_2 == 0, 'no claim for neighbor 1');
-    assert(balance_neighbor_1_of_erc20_3 == 0, 'no claim for neighbor 1');
+    assert(balance_neighbor_1_of_erc20_2 > 0, 'has to receive tokens');
+    assert(balance_neighbor_1_of_erc20_3 == 0, 'no claim of erc20-3');
 
     let balance_neighbor_2_of_erc20_1 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
     let balance_neighbor_2_of_erc20_3 = erc20_neighbor_3.balanceOf(NEIGHBOR_2());
