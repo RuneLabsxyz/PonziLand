@@ -43,6 +43,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
+        "skin": "eSTRK",
         "icon": "/tokens/eSTRK/icon.png",
         "biome": {
           "x": 2,
@@ -76,6 +77,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin": "ePAPER",
         "icon": "/tokens/ePAPER/icon.svg",
         "biome": {
           "x": 3,
@@ -119,6 +121,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin": "eLORDS",
         "icon": "/tokens/eLORDS/icon.svg",
         "biome": {
           "x": 3,
@@ -154,6 +157,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
+        "skin": "eBROTHER",
         "icon": "/tokens/eBROTHER/icon.png",
         "biome": {
           "x": 1,
@@ -187,6 +191,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
+        "skin": "ePAL",
         "icon": "/tokens/ePAL/icon.svg",
         "biome": {
           "x": 1,
@@ -220,6 +225,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
+        "skin": "eWNT",
         "icon": "/tokens/eWNT/icon.png",
         "biome": {
           "x": 3,
@@ -253,6 +259,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
+        "skin": "eQQ",
         "icon": "/tokens/eQQ/icon.png",
         "biome": {
           "x": 0,
@@ -286,6 +293,7 @@
       "liquidityPoolType": "005-01",
       "decimals": 18,
       "images": {
+        "skin": "eSG",
         "icon": "/tokens/eSG/icon.png",
         "biome": {
           "x": 1,

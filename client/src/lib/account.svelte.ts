@@ -3,7 +3,7 @@ import { type AccountInterface } from 'starknet';
 import { getSocialink } from './accounts/social/index.svelte';
 import { useAccount, type AccountProvider } from './contexts/account.svelte';
 
-export const state: {
+export const accountState: {
   isConnected: boolean;
   address?: string;
   sessionAccount?: AccountInterface;
@@ -19,21 +19,21 @@ let isSetup = $state(false);
 const updateState = async (provider: AccountProvider) => {
   const walletAccount = provider.getWalletAccount();
 
-  state.isConnected = walletAccount != null;
-  state.address = walletAccount?.address;
-  state.walletAccount = walletAccount;
+  accountState.isConnected = walletAccount != null;
+  accountState.address = walletAccount?.address;
+  accountState.walletAccount = walletAccount;
 
-  const profile = await getSocialink().getUser(state.address!);
-  state.profile = profile;
-  state.providerName = useAccount()?.getProviderName();
+  const profile = await getSocialink().getUser(accountState.address!);
+  accountState.profile = profile;
+  accountState.providerName = useAccount()?.getProviderName();
 };
 
 const resetState = () => {
-  state.address = undefined;
-  state.isConnected = false;
-  state.walletAccount = undefined;
-  state.profile = undefined;
-  state.providerName = undefined;
+  accountState.address = undefined;
+  accountState.isConnected = false;
+  accountState.walletAccount = undefined;
+  accountState.profile = undefined;
+  accountState.providerName = undefined;
 };
 
 export async function refresh() {
@@ -70,7 +70,7 @@ export async function setup() {
     }
   });
 
-  return state;
+  return accountState;
 }
 
-export default state;
+export default accountState;

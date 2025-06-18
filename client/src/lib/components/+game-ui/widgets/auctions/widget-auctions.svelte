@@ -3,6 +3,8 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
+  import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
+  import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
@@ -143,15 +145,24 @@
         <button
           class="relative w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
           onclick={() => {
-            moveCameraTo(
-              parseLocation(land.location)[0] + 1,
-              parseLocation(land.location)[1] + 1,
-            );
             const coordinates = parseLocation(land.location);
             const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
             if (baseLand) {
               selectedLand.value = get(baseLand);
             }
+            gameStore.cameraControls?.setLookAt(
+              coordinates[0],
+              50,
+              coordinates[1],
+              coordinates[0],
+              0,
+              coordinates[1],
+              true,
+            );
+            const locationNumber = Number(land.location);
+            if (cursorStore.selectedTileIndex == locationNumber)
+              gameStore.cameraControls?.zoomTo(250, true);
+            cursorStore.selectedTileIndex = locationNumber;
           }}
         >
           {#if land}

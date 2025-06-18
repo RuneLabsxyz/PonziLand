@@ -1,13 +1,12 @@
-import { getContext, onMount, setContext } from 'svelte';
-import Controller from '@cartridge/controller';
-import { type DojoConfig } from '$lib/dojoConfig';
-import preset from './utils/preset.json';
-import type { AccountInterface, WalletAccount } from 'starknet';
 import type {
   AccountProvider,
   StoredSession,
 } from '$lib/contexts/account.svelte';
-import { trace, traceWallet } from './utils/walnut-trace';
+import { type DojoConfig } from '$lib/dojoConfig';
+import Controller from '@cartridge/controller';
+import type { AccountInterface, WalletAccount } from 'starknet';
+import preset from './utils/preset.json';
+import { traceWallet } from './utils/walnut-trace';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
