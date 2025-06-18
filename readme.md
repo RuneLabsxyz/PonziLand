@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://play.ponzi.land/logo.png" alt="PonziLand Logo" width="400">
+  <img src="https://play.ponzi.land/banner.png" alt="PonziLand Logo" width="400">
 </p>
 
 <p align="center">
@@ -26,8 +26,6 @@
 # PonziLand
 
 **PonziLand** is a fully onchain, token-agnostic DeFi metagame where you conquer lands, stake tokens, nuke rivals, and build your empire on Starknet. Every land is a battleground of strategy, risk, and reward—will you become a PonziLord or get rugged by your neighbors?
-
-
 
 ---
 
