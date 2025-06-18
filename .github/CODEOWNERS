@@ -1,0 +1,19 @@
+# The highest priority is given to the deployment team
+playtest    @RuneLabsxyz/deployment
+contracts/manifest_* @RuneLabsxyz/deployment
+**/scripts/** @RuneLabsxyz/deployment
+.github @RuneLabsxyz/deployment
+
+# All the client folder is managed by the frontend team
+client @RuneLabsxyz/frontend
+
+# The rest of the contract folder is managed by the contracts team
+contracts @RuneLabsxyz/contracts
+
+# All rust crates are managed by the backend team
+crates @RuneLabsxyz/backend
+Cargo.* @RuneLabsxyz/backend
+Dockerfile @RuneLabsxyz/backend
+
+
+# The rest is FFA.
