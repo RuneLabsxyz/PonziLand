@@ -39,6 +39,7 @@
         yieldInfo = tutorialLandStore.getNeighborsYield(land.location);
         console.log('tutorial');
       } else {
+        yieldInfo = [];
         getNeighbourYieldArray(land).then((res) => {
           yieldInfo = res;
         });
@@ -49,12 +50,12 @@
 
 <div
   class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20"
-  style="transform: translate(-33.33%, -33.33%); width: 300%; height: 300%;"
+  style="transform: translate(-150px, -150px); width: 300px; height: 300px;"
 >
   {#each yieldInfo as info, i}
     {#if info?.token}
       <div
-        class="text-ponzi-number text-[24px] flex items-center justify-center leading-none"
+        class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
       >
         <span class="whitespace-nowrap text-green-300">
           +{CurrencyAmount.fromUnscaled(info.per_hour, info.token)}
@@ -66,25 +67,25 @@
       {#if i === 1}
         <Arrow
           type="straight"
-          class="w-24 h-24 top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 pr-8 absolute rotate-90"
+          class="pr-2 w-8 h-8 top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 absolute rotate-90"
         />
       {/if}
       {#if i === 3}
         <Arrow
           type="straight"
-          class="w-24 h-24 top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 pr-8 absolute"
+          class="pr-2 w-8 h-8 top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 absolute"
         />
       {/if}
       {#if i === 5}
         <Arrow
           type="straight"
-          class="w-24 h-24 top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2 pr-8 absolute rotate-180"
+          class="pr-2 w-8 h-8 top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-180"
         />
       {/if}
       {#if i === 7}
         <Arrow
           type="straight"
-          class="w-24 h-24 bottom-1/3 left-1/2 -translate-x-1/2 translate-y-1/2 absolute -rotate-90 pr-8"
+          class="pr-2 w-8 h-8 bottom-1/3 left-1/2 -translate-x-1/2 translate-y-1/2 absolute -rotate-90"
         />
       {/if}
 
@@ -92,30 +93,30 @@
       {#if i === 0}
         <Arrow
           type="bent"
-          class="w-24 h-24 top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 absolute rotate-45 pr-8"
+          class="pr-2 w-8 h-8 top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 absolute rotate-45"
         />
       {/if}
       {#if i === 2}
         <Arrow
           type="bent"
-          class="w-24 h-24 top-1/3 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-[135deg] pr-8"
+          class="pr-2 w-8 h-8 top-1/3 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-[135deg]"
         />
       {/if}
       {#if i === 6}
         <Arrow
           type="bent"
-          class="w-24 h-24 bottom-1/3 left-1/3 -translate-x-1/2 translate-y-1/2 absolute -rotate-45 pr-8"
+          class="pr-2 w-8 h-8 bottom-1/3 left-1/3 -translate-x-1/2 translate-y-1/2 absolute -rotate-45"
         />
       {/if}
       {#if i === 8}
         <Arrow
           type="bent"
-          class="w-24 h-24 bottom-1/3 right-1/3 translate-x-1/2 translate-y-1/2 absolute -rotate-[135deg] pr-8"
+          class="pr-2 w-8 h-8 bottom-1/3 right-1/3 translate-x-1/2 translate-y-1/2 absolute -rotate-[135deg]"
         />
       {/if}
     {:else if i === 4}
       <div
-        class="text-ponzi-number text-[24px] flex items-center justify-center leading-none relative"
+        class="text-ponzi-number text-[8px] flex items-center justify-center leading-none relative"
       >
         <span class="whitespace-nowrap text-red-500">
           -{displayCurrency(tokenBurnRate)}
@@ -129,11 +130,3 @@
     {/if}
   {/each}
 </div>
-
-<style>
-  /* .overlay-square {
-    border-width: 0.1px;
-    border-color: #6bd5dd;
-    background-color: hsla(207, 72%, 43%, 0.4);
-  } */
-</style>

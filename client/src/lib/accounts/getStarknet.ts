@@ -4,23 +4,16 @@ import type {
 } from '$lib/contexts/account.svelte';
 import { getDojoConfig } from '$lib/dojoConfig';
 import { padAddress, toHexWithPadding } from '$lib/utils';
+import { dojoConfig } from '$lib/dojoConfig';
 import { getStarknet } from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
-import { generatedTrue } from '@tsparticles/engine';
-import { GalleryHorizontal } from 'lucide-svelte';
 import {
-  WalletAccount,
-  wallet,
-  validateAndParseAddress,
-  constants as SNconstants,
   Account,
   Provider,
-  CallData,
-  type Call,
-  selector,
-  AccountInterface,
+  constants as SNconstants,
+  WalletAccount,
 } from 'starknet';
-import { trace, traceWallet } from './utils/walnut-trace';
+import { traceWallet } from './utils/walnut-trace';
 
 export abstract class CommonStarknetWallet implements AccountProvider {
   protected _wallet?: WalletAccount;

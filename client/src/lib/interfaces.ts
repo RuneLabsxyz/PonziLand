@@ -23,6 +23,7 @@ export interface Token {
   liquidityPoolType: string;
   decimals: number;
   images: {
+    skin: string;
     icon: string;
     biome: Coordinates;
     building: {

@@ -6,7 +6,7 @@
   import SelectItem from '$lib/components/ui/select/select-item.svelte';
   import SelectTrigger from '$lib/components/ui/select/select-trigger.svelte';
   import type { Token } from '$lib/interfaces';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
 
@@ -115,7 +115,7 @@
 
   $effect(() => {
     if (selectedToken == undefined) {
-      selectedToken = data.availableTokens.find((t) => t.symbol == 'eSTRK');
+      selectedToken = data.availableTokens.find((t) => t.symbol == baseToken?.symbol);
     }
   });
 
