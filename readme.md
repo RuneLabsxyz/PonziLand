@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://play.ponzi.land/banner.png" alt="PonziLand Logo" width="400">
+  <img src="https://play.ponzi.land/banner.jpg" alt="PonziLand Logo" width="400">
 </p>
 
 <p align="center">
