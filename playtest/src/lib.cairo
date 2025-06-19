@@ -8,7 +8,7 @@ pub enum AccessControl {
     Owner,
     Minter,
     #[default]
-    None
+    None,
 }
 
 
@@ -91,7 +91,7 @@ mod PlayTestToken {
 
     #[constructor]
     fn constructor(
-        ref self: ContractState, owner: ContractAddress, name: ByteArray, symbol: ByteArray
+        ref self: ContractState, owner: ContractAddress, name: ByteArray, symbol: ByteArray,
     ) {
         self.erc20.initializer(name, symbol);
         self.ownable.initializer(owner);
@@ -133,7 +133,8 @@ mod PlayTestToken {
             let address = get_caller_address();
             let role = self.access_control.entry(address).read();
 
-            assert(role != AccessControl::None, 'Users cannot mint');
+            // Allow everyone to mint
+            //assert(role != AccessControl::None, 'Users cannot mint');
 
             self.erc20.mint(recipient, amount);
         }
