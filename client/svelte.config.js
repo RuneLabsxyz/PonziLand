@@ -38,9 +38,9 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE:
       '0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912',
     BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
     PUBLIC_FARO_COLLECTOR_URL: null,
     PUBLIC_GIT_COMMIT_HASH: null,
-    PUBLIC_GIT_COMMIT_HASH: 'dev',
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -52,6 +52,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
@@ -68,6 +69,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
@@ -84,6 +86,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_ADDRESS: null,
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:

@@ -10,8 +10,8 @@
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
     "build:mainnet": "DOJO_PROFILE=mainnet vite build",
     "preview": "vite preview",
-    "check": "DOJO_PROFILE=sepolia svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "DOJO_PROFILE=sepolia svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts",
     "test:watch": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --watch"
   },
@@ -43,6 +43,7 @@
     "@argent/x-sessions": "^7.0.0",
     "@avnu/avnu-sdk": "^3.0.0",
     "@cartridge/controller": "^0.7.13",
+    "@cartridge/presets": "^0.5.2",
     "@dojoengine/core": "=1.5.6",
     "@dojoengine/create-burner": "=1.5.6",
     "@dojoengine/sdk": "=1.5.6",

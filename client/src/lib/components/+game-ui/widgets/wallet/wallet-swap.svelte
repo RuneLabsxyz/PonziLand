@@ -6,7 +6,6 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { debounce } from '$lib/utils/debounce.svelte';
   import { type Quote } from '@avnu/avnu-sdk';
-  import { onMount } from 'svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
@@ -218,9 +217,12 @@
 
 <div class="flex flex-col gap-2">
   <div class="flex items-center justify-between">
-    <label class="text-sm text-gray-400">Slippage Tolerance</label>
+    <label class="text-sm text-gray-400" for="slippage-input"
+      >Slippage Tolerance</label
+    >
     <div class="flex items-center gap-2">
       <input
+        id="slippage-input"
         type="number"
         class="w-12 bg-[#282835] text-white rounded p-1"
         bind:value={slippage}

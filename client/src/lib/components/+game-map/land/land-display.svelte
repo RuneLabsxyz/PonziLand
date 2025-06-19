@@ -2,6 +2,7 @@
   import SpriteSheet from '$lib/components/ui/sprite-sheet.svelte';
   import type { Token } from '$lib/interfaces';
   import { cn } from '$lib/utils';
+  import type { Level } from '$lib/utils/level';
   import 'seedrandom';
   import seedrandom from 'seedrandom';
 

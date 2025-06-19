@@ -1,12 +1,12 @@
 <script lang="ts">
+  import type { LandWithActions } from '$lib/api/land';
   import { Card } from '$lib/components/ui/card';
   import { parseNukeTime, estimateNukeTime } from '$lib/utils/taxes';
-  import type { SelectedLand } from '$lib/stores/stores.svelte';
 
   let {
     land,
   }: {
-    land?: SelectedLand;
+    land?: LandWithActions;
   } = $props();
 
   let nukeTime: string | undefined = $derived(calculateNukeTime());

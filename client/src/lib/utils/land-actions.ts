@@ -133,16 +133,10 @@ export const createLandWithActions = (
       return res;
     },
     getEstimatedNukeTime() {
-      return estimateNukeTime(
-        landWithActions,
-        this.getNeighbors().getNeighbors().length,
-      );
+      return estimateNukeTime(this, land.getNeighbors().getNeighbors().length);
     },
     getNeighbors() {
-      return new Neighbors({
-        location: land.locationString,
-        source: get(getAllLands()),
-      });
+      return land.getNeighbors();
     },
     getLevelInfo() {
       const now = Math.floor(Date.now() / 1000);

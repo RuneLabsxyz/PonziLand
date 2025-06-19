@@ -1,10 +1,9 @@
 <script lang="ts">
   import { useAccount } from '$lib/contexts/account.svelte';
-  import type { SelectedLand } from '$lib/stores/stores.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
-  import BuyInsights from '../buy/buy-insights.svelte';
+  import BuyInsights from '$lib/components/+game-ui/widgets/land-info/buy/buy-insights.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import { Card } from '$lib/components/ui/card';
   import CardTitle from '$lib/components/ui/card/card-title.svelte';
@@ -12,8 +11,9 @@
   import Label from '$lib/components/ui/label/label.svelte';
   import LandHudInfo from './hud/land-hud-info.svelte';
   import LandOverview from './land-overview.svelte';
+  import type { LandWithActions } from '$lib/api/land';
 
-  let { land } = $props<{ land: SelectedLand }>();
+  let { land } = $props<{ land: LandWithActions }>();
   let accountManager = useAccount();
   let disabled = writable(false);
   let actionType = $state('stake'); // 'stake' or 'price'
@@ -123,14 +123,14 @@
         <div class="flex-1">
           <div class="flex border-b mb-4">
             <button
-              class={`flex-1 py-2 text-center font-medium transition-all duration-200 border-b-2 
+              class={`flex-1 py-2 text-center font-medium transition-all duration-200 border-b-2
     ${actionType === 'stake' ? 'text-white border-white' : 'text-gray-400 border-transparent'}`}
               onclick={() => (actionType = 'stake')}
             >
               Increase Stake
             </button>
             <button
-              class={`flex-1 py-2 text-center font-medium transition-all duration-200 border-b-2 
+              class={`flex-1 py-2 text-center font-medium transition-all duration-200 border-b-2
     ${actionType === 'price' ? 'text-white border-white' : 'text-gray-400 border-transparent'}`}
               onclick={() => (actionType = 'price')}
             >

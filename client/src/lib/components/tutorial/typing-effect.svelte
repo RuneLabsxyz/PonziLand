@@ -1,5 +1,5 @@
 <!-- TypingEffect.svelte -->
-<script>
+<script lang="ts">
   import { onMount } from 'svelte';
 
   // Props
@@ -20,14 +20,14 @@
   let lastHtml = $state('');
 
   // Extract plain text from HTML for character counting
-  function getPlainText(htmlString) {
+  function getPlainText(htmlString: string) {
     const div = document.createElement('div');
     div.innerHTML = htmlString;
     return div.textContent || div.innerText || '';
   }
 
   // Get HTML up to a certain character position
-  function getHtmlUpToPosition(htmlString, position) {
+  function getHtmlUpToPosition(htmlString: string, position: number) {
     if (position <= 0) return '';
 
     const div = document.createElement('div');
@@ -36,11 +36,11 @@
     let charCount = 0;
     let result = '';
 
-    function traverseNodes(node, targetCount) {
+    function traverseNodes(node: Node, targetCount: number) {
       if (charCount >= targetCount) return '';
 
       if (node.nodeType === Node.TEXT_NODE) {
-        const text = node.textContent;
+        const text = node.textContent ?? '';
         const remainingChars = targetCount - charCount;
 
         if (text.length <= remainingChars) {
@@ -51,7 +51,7 @@
           return text.substring(0, remainingChars);
         }
       } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const tagName = node.tagName.toLowerCase();
+        const tagName = (node as Element).tagName.toLowerCase();
         let content = '';
 
         for (let child of node.childNodes) {
@@ -60,7 +60,7 @@
         }
 
         if (content.length > 0 || charCount >= targetCount) {
-          return `<${tagName}${getAttributes(node)}>${content}</${tagName}>`;
+          return `<${tagName}${getAttributes(node as Element)}>${content}</${tagName}>`;
         }
         return '';
       }
@@ -68,7 +68,7 @@
       return '';
     }
 
-    function getAttributes(element) {
+    function getAttributes(element: Element) {
       let attrs = '';
       for (let attr of element.attributes) {
         attrs += ` ${attr.name}="${attr.value}"`;

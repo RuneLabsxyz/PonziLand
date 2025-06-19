@@ -8,6 +8,7 @@
   import TokenSelect from './token-select.svelte';
   import { CairoCustomEnum } from 'starknet';
   import { onMount } from 'svelte';
+  import { preventDefault } from 'svelte/legacy';
 
   let { onSubmit, loading = false } = $props<{
     onSubmit: (land: Partial<Land>) => void;
@@ -42,7 +43,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-4">
+<form onsubmit={preventDefault(handleSubmit)} class="space-y-4">
   <div>
     <Label>Owner Address</Label>
     <Input bind:value={owner} placeholder="0x..." disabled={loading} />
@@ -53,7 +54,7 @@
       class="w-full rounded-md border border-input bg-background px-3 py-2"
       bind:value={selectedLevel}
       disabled={loading}
-      on:change={(e) => {
+      onchange={(e) => {
         const value = e.currentTarget.value;
         selectedLevel = new CairoCustomEnum({ [value]: '' });
       }}

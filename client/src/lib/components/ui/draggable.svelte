@@ -44,6 +44,7 @@
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
+  // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
   let sliderValue = $state(transparency * 100);
 
   let showDropdown = $state(false);
@@ -325,27 +326,5 @@
       transparent 2px,
       transparent 4px
     );
-  }
-
-  .dropdown-item {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-width: 200px;
-  }
-
-  :global(.dropdown-item [data-radix-dropdown-menu-item]) {
-    padding: 0;
-  }
-
-  :global(.dropdown-item [data-radix-dropdown-menu-label]) {
-    font-weight: 500;
-  }
-
-  .slider-container {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 0 0 8px;
   }
 </style>

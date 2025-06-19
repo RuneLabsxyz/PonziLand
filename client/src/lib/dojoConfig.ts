@@ -8,11 +8,13 @@ import {
   PUBLIC_DOJO_BURNER_PRIVATE,
   PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
+
 import type {
   CallPolicy,
   ContractPolicy,
   SessionPolicies,
-} from '@cartridge/controller';
+} from '@cartridge/presets';
+
 import type { DojoConfig as DojoConfigInternal } from '@dojoengine/core';
 
 const policies: SessionPolicies = (() => {

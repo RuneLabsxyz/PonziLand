@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land.svelte';
+  import type { LandWithActions } from '$lib/api/land';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
   import { toHexWithPadding } from '$lib/utils';
@@ -39,7 +39,7 @@
         const tokenHexAddress = toHexWithPadding(token);
         const tokenData = data.availableTokens.find(
           (tokenData) => tokenData.address === tokenHexAddress,
-        );
+        )!;
         let formattedAmount = CurrencyAmount.fromUnscaled(amount, tokenData);
         return {
           amount: formattedAmount,

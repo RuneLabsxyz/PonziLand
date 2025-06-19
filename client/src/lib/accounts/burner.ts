@@ -5,7 +5,11 @@ import { BurnerManager, setupBurnerManager } from '@dojoengine/create-burner';
 import { getContext, setContext } from 'svelte';
 
 import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
-import type { AccountProvider } from '$lib/contexts/account.svelte';
+import type {
+  AccountProvider,
+  StoredSession,
+} from '$lib/contexts/account.svelte';
+import type { AccountInterface } from 'starknet';
 
 const accountKey = Symbol('dojoAccountBurner');
 
@@ -34,27 +38,28 @@ function toAccount(burner?: BurnerManager): AccountProvider | undefined {
       }
     },
 
-    getAccount() {
+    getAccount(): AccountInterface | undefined {
       return burner.account ?? undefined;
     },
 
-    getWalletAccount() {
+    getWalletAccount(): AccountInterface | undefined {
       // Burners does not have any ui, so this works.
       return this.getAccount();
     },
 
-    async setupSession() {
-      // NO-OP, we don't need a session system
-    },
-
-    async loadSession(storage) {
-      // NO-OP, we don't need a session system
-    },
-
-    supportsSession() {
-      // We do not open a popup to sign
+    supportsSession(): boolean {
       return true;
     },
+
+    async setupSession(): Promise<StoredSession | void> {
+      // NO-OP, we don't need a session system
+    },
+
+    loadSession: async function (storage: StoredSession): Promise<void> {
+      // NO-OP, we don't need a session system
+    },
+
+    icon: '',
   };
 }
 

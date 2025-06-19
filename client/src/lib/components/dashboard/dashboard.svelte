@@ -30,7 +30,7 @@
   } = $props();
 
   // Find base token details
-  const baseTokenDetails = tokens.find((t) => t.address === BASE_TOKEN);
+  const baseTokenDetails = tokens.find((t) => t.address === BASE_TOKEN)!;
 
   let tokenRates = $state<{ token: string; rate: number }[]>([]);
   interface HistoricalPrice {

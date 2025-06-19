@@ -39,7 +39,6 @@
       await account!.setupSession();
     }
 
-    visible = false;
     // resolve waiting promises.
     window.dispatchEvent(new Event('wallet_login_success'));
   }

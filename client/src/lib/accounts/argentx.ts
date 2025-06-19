@@ -65,8 +65,8 @@ async function setupSession(
   const sessionParams: CreateSessionParams = {
     sessionKey,
     allowedMethods: Object.entries(dojoConfig.policies.contracts ?? {}).flatMap(
-      (policy) =>
-        policy[1].methods.map((method) => ({
+      (policy: any[]) =>
+        policy[1].methods.map((method: any) => ({
           selector: method.entrypoint,
           'Contract Address': policy[0],
         })),

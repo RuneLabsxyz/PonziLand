@@ -142,8 +142,11 @@
 
   <div class="grid grid-cols-2 gap-4">
     <div>
-      <label class="text-sm font-medium">Entity Type</label>
+      <label class="text-sm font-medium" for="entity-type-select"
+        >Entity Type</label
+      >
       <select
+        id="entity-type-select"
         class="w-full rounded-md border border-input bg-background px-3 py-2"
         bind:value={selectedType}
         disabled={loading}
@@ -155,8 +158,11 @@
     </div>
     <div class="grid grid-cols-2 gap-2">
       <div>
-        <label class="text-sm font-medium">X Coordinate</label>
+        <label class="text-sm font-medium" for="x-coordinate-input"
+          >X Coordinate</label
+        >
         <input
+          id="x-coordinate-input"
           type="number"
           class="w-full rounded-md border border-input bg-background px-3 py-2"
           bind:value={location.x}
@@ -164,8 +170,11 @@
         />
       </div>
       <div>
-        <label class="text-sm font-medium">Y Coordinate</label>
+        <label class="text-sm font-medium" for="y-coordinate-input"
+          >Y Coordinate</label
+        >
         <input
+          id="y-coordinate-input"
           type="number"
           class="w-full rounded-md border border-input bg-background px-3 py-2"
           bind:value={location.y}

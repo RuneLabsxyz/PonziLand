@@ -17,7 +17,9 @@ interface PlayOptions {
     stop?: number;
   };
 }
-export function createAudioStore<T>(sounds: Record<T, string>) {
+export function createAudioStore<T extends string | number | symbol>(
+  sounds: Record<T, string>,
+) {
   const { subscribe, set, update } = writable<SoundInstance<T>[]>([]);
 
   /**
@@ -66,7 +68,7 @@ export function createAudioStore<T>(sounds: Record<T, string>) {
     preload: () => {
       // Preload sounds based on provided dictionary
       Object.values(sounds).forEach((src) => {
-        const audio = new Audio(src);
+        const audio = new Audio(src as string);
         audio.preload = 'auto';
         audio.load();
       });
@@ -77,9 +79,9 @@ export function createAudioStore<T>(sounds: Record<T, string>) {
      * @param options - Playback settings such as volume, pitch, and trimming.
      */
     play: (key: T, options: PlayOptions = {}) => {
-      const src = sounds[key];
+      const src = sounds[key] as string;
       if (!src) {
-        console.error(`Sound "${key}" not found.`);
+        console.error(`Sound "${String(key)}" not found.`);
         return;
       }
 

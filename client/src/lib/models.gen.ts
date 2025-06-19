@@ -200,7 +200,7 @@ export const schema: SchemaType = {
       owner: '',
       sell_price: 0,
       token_used: '',
-      level: 'Second' as LevelEnum,
+      level: 'Second' as unknown as LevelEnum,
     },
     LandStake: {
       location: 0,

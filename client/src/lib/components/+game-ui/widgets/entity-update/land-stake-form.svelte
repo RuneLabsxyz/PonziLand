@@ -4,6 +4,7 @@
   import { Label } from '$lib/components/ui/label';
   import type { LandStake } from '$lib/models.gen';
   import { onMount } from 'svelte';
+  import { preventDefault } from 'svelte/legacy';
 
   let { onSubmit, loading = false } = $props<{
     onSubmit: (stake: Partial<LandStake>) => void;
@@ -29,7 +30,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-4">
+<form onsubmit={preventDefault(handleSubmit)} class="space-y-4">
   <div>
     <Label>Amount</Label>
     <Input

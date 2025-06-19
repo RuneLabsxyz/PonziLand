@@ -20,7 +20,6 @@ export async function getUsername(address: string) {
 export async function setupSocialink() {
   const account = useAccount();
 
-  // @ts-expect-error: This causes an error due to a starknet.js version mismatch
   socialink = new Socialink(PUBLIC_SOCIALINK_URL, async () => ({
     wallet: account?.getProvider()?.getWalletAccount()!,
     provider: account?.getProviderName() as any,

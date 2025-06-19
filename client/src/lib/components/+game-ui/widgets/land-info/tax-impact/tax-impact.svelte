@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land';
+  import type { BaseLand, LandWithActions } from '$lib/api/land';
   import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
   import type { Token } from '$lib/interfaces';
   import { displayCurrency } from '$lib/utils/currency';
@@ -45,28 +45,28 @@
   let filteredNeighbors = $derived.by(() => {
     const filteredNeighbors = neighbors.getNeighbors().slice(0, nbNeighbors);
 
-    let up: LandWithActions | undefined | null = filteredNeighbors.find(
+    let up: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getUp(),
     );
-    let upRight: LandWithActions | undefined | null = filteredNeighbors.find(
+    let upRight: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getUpRight(),
     );
-    let right: LandWithActions | undefined | null = filteredNeighbors.find(
+    let right: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getRight(),
     );
-    let downRight: LandWithActions | undefined | null = filteredNeighbors.find(
+    let downRight: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getDownRight(),
     );
-    let down: LandWithActions | undefined | null = filteredNeighbors.find(
+    let down: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getDown(),
     );
-    let downLeft: LandWithActions | undefined | null = filteredNeighbors.find(
+    let downLeft: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getDownLeft(),
     );
-    let left: LandWithActions | undefined | null = filteredNeighbors.find(
+    let left: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getLeft(),
     );
-    let upLeft: LandWithActions | undefined | null = filteredNeighbors.find(
+    let upLeft: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getUpLeft(),
     );
 

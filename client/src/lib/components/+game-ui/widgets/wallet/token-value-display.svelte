@@ -150,7 +150,7 @@
     }
   }
 
-  .animating {
+  :global(.animating) {
     transform: scale(1.2);
     animation: scale-down 1s ease-in-out 1000ms forwards;
   }

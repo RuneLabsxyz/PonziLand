@@ -1,54 +1,46 @@
 <script lang="ts">
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-  } from '$lib/components/ui/select';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { tokenStore } from '$lib/stores/tokens.store.svelte';
-  import type { Token } from '$lib/interfaces';
   import { Label } from '$lib/components/ui/label';
+  import type { Token } from '$lib/interfaces';
 
-  let { value = $bindable<string>(), disabled = false } = $props<{
+  let {
+    value = $bindable<string>(),
+    disabled = false,
+    id = 'token-select',
+  } = $props<{
     value?: string;
     disabled?: boolean;
+    id?: string;
   }>();
 
-  let selectedToken = $derived(
-    tokenStore.balances.find((tb) => tb.token.address === value)?.token,
-  );
+  // Extract tokens from tokenStore.balances
+  let availableTokens = $derived(tokenStore.balances.map((tb) => tb.token));
 
-  function handleTokenChange(v: { value: Token } | undefined) {
-    value = v?.value.address;
-  }
+  // Handle the unified component's value which returns Token but we need string
+  let internalValue = $state<Token | string | undefined>(value);
+
+  // Sync external value changes to internal
+  $effect(() => {
+    internalValue = value;
+  });
+
+  // Sync internal value changes to external (convert Token to string address)
+  $effect(() => {
+    if (typeof internalValue === 'object' && internalValue?.address) {
+      value = internalValue.address;
+    } else if (typeof internalValue === 'string') {
+      value = internalValue;
+    }
+  });
 </script>
 
 <div>
-  <Label>Token Used</Label>
-  <Select value={selectedToken} onSelectedChange={handleTokenChange} {disabled}>
-    <SelectTrigger class="w-full">
-      {#if selectedToken}
-        <div class="flex gap-2 items-center">
-          <img
-            class="h-4 w-4"
-            src={selectedToken.images.icon}
-            alt={selectedToken.symbol}
-          />
-          {selectedToken.symbol}
-        </div>
-      {:else}
-        <span>Select Token</span>
-      {/if}
-    </SelectTrigger>
-    <SelectContent>
-      {#each tokenStore.balances as { token }}
-        <SelectItem value={token}>
-          <div class="flex gap-2 items-center">
-            <img class="h-4 w-4" src={token.images.icon} alt={token.symbol} />
-            {token.symbol}
-          </div>
-        </SelectItem>
-      {/each}
-    </SelectContent>
-  </Select>
+  <Label for={id}>Token Used</Label>
+  <TokenSelect
+    bind:value={internalValue}
+    tokens={availableTokens}
+    {disabled}
+    {id}
+  />
 </div>

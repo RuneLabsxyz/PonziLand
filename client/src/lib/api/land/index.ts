@@ -10,8 +10,9 @@ import { type Level, fromDojoLevel } from '$lib/utils/level';
 import type { BigNumberish } from 'starknet';
 import type { CairoCustomEnum } from 'starknet';
 
-import type { Neighbors } from '../neighbors';
+import { Neighbors } from '../neighbors';
 import { type Location } from './location';
+import { landStore } from '$lib/stores/store.svelte';
 
 export type LandType = 'empty' | 'building' | 'auction';
 
@@ -181,6 +182,11 @@ export abstract class BaseLand {
 
   public get tokenAddress(): string {
     return this._token.address;
+  }
+
+  // You should always be able to get the neighbors of a land
+  public getNeighbors(): Neighbors {
+    return Neighbors.getWithStoreAndLocation(this.locationString, landStore);
   }
 }
 

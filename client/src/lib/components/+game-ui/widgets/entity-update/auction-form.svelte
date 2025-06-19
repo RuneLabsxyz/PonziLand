@@ -4,6 +4,7 @@
   import { Label } from '$lib/components/ui/label';
   import type { Auction } from '$lib/models.gen';
   import { toHexWithPadding, coordinatesToLocation } from '$lib/utils';
+  import { preventDefault } from 'svelte/legacy';
 
   let { onSubmit, loading = false } = $props<{
     onSubmit: (auction: Partial<Auction>) => void;
@@ -41,7 +42,7 @@
   }
 </script>
 
-<form on:submit|preventDefault={handleSubmit} class="space-y-4">
+<form onsubmit={preventDefault(handleSubmit)} class="space-y-4">
   <div>
     <Label>Start Time</Label>
     <Input
@@ -82,7 +83,7 @@
     <button
       type="button"
       class="flex items-center gap-3 px-4 py-2 rounded-lg"
-      on:click={() => (isFinished = !isFinished)}
+      onclick={() => (isFinished = !isFinished)}
       disabled={loading}
     >
       <div

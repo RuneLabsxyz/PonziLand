@@ -402,13 +402,4 @@
   .group-item:hover {
     border-left-color: #60a5fa;
   }
-
-  select {
-    color: white;
-  }
-
-  select option {
-    background-color: #1f2937;
-    color: white;
-  }
 </style>

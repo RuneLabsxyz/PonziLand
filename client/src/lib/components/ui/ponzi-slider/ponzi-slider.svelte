@@ -1,4 +1,6 @@
-<script>
+<script lang="ts">
+  import type { Mouse } from 'lucide-svelte';
+
   let {
     min = 0,
     max = 8,
@@ -7,20 +9,20 @@
     labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8'],
   } = $props();
 
-  let sliderElement = $state();
+  let sliderElement: HTMLElement | undefined = $state();
   let isDragging = $state(false);
 
   // Calculate the position of the slider handle based on value
   let handlePosition = $derived(((value - min) / (max - min)) * 100);
 
-  function handleMouseDown(event) {
+  function handleMouseDown(event: MouseEvent) {
     isDragging = true;
     updateValue(event);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   }
 
-  function handleMouseMove(event) {
+  function handleMouseMove(event: MouseEvent) {
     if (isDragging) {
       updateValue(event);
     }
@@ -32,7 +34,7 @@
     document.removeEventListener('mouseup', handleMouseUp);
   }
 
-  function updateValue(event) {
+  function updateValue(event: MouseEvent) {
     if (!sliderElement) return;
 
     const rect = sliderElement.getBoundingClientRect();
@@ -44,7 +46,7 @@
     value = Math.max(min, Math.min(max, value));
   }
 
-  function handleKeyDown(event) {
+  function handleKeyDown(event: KeyboardEvent) {
     switch (event.key) {
       case 'ArrowUp':
         event.preventDefault();
@@ -62,13 +64,13 @@
   <div
     class="slider-track"
     bind:this={sliderElement}
-    on:mousedown={handleMouseDown}
+    onmousedown={handleMouseDown}
     role="slider"
     tabindex="0"
     aria-valuemin={min}
     aria-valuemax={max}
     aria-valuenow={value}
-    on:keydown={handleKeyDown}
+    onkeydown={handleKeyDown}
   >
     <!-- Track line -->
     <div class="track-line"></div>
