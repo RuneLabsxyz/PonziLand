@@ -1,0 +1,152 @@
+name: Deploy App to Cloudflare
+
+on:
+  workflow_call:
+    secrets:
+      CLOUDFLARE_API_TOKEN:
+        required: true
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  deploy-cloudflare:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [mainnet, sepolia, mainnet-test]
+    name: Deploy frontend to Cloudflare
+    outputs:
+      mainnet-success: ${{ steps.deployment-status.outputs.mainnet-success || '' }}
+      mainnet-url: ${{ steps.deployment-status.outputs.mainnet-url || '' }}
+      sepolia-success: ${{ steps.deployment-status.outputs.sepolia-success || '' }}
+      sepolia-url: ${{ steps.deployment-status.outputs.sepolia-url || '' }}
+      mainnet-test-success: ${{ steps.deployment-status.outputs.mainnet-test-success || '' }}
+      mainnet-test-url: ${{ steps.deployment-status.outputs.mainnet-test-url || '' }}
+      sha-short: ${{ steps.vars.outputs.sha_short || '' }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: bun install --frozen-lockfile
+
+      - name: Get short git hash
+        run: echo "PUBLIC_GIT_COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Build app
+        working-directory: ./client
+        run: bun run build
+        env:
+          DOJO_PROFILE: ${{ matrix.environment }}
+          PUBLIC_GIT_COMMIT_HASH: ${{ env.PUBLIC_GIT_COMMIT_HASH }}
+          # Force the auto bundler to prepare for cloudflare (otherwise it does weird things)
+          CF_PAGES: "1"
+
+      - name: Prepare git information for deployment
+        id: vars
+        run: |
+          echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "commit_message=$(git log -1 --pretty=%B | sed -n '1p')" >> $GITHUB_OUTPUT
+
+      - name: Upload version to Cloudflare
+        id: upload
+        working-directory: ./client
+        run: |
+          if bun wrangler versions upload \
+            --tag "${{ steps.vars.outputs.sha_short }}" \
+            --message "${{ steps.vars.outputs.commit_message }}" \
+            --env ${{ matrix.environment }}; then
+            echo "upload_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "upload_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Promote version as active
+        id: promote
+        # Only promote if it's a push to main
+        if: ${{ github.ref == 'refs/heads/main' }}
+        working-directory: ./client
+        run: |
+          export VERSION_ID=$(bun wrangler versions list --env ${{ matrix.environment }} --json | jq -r '.[] | select(.annotations."workers/tag" == "${{ steps.vars.outputs.sha_short }}") | .id')
+          if bun wrangler versions deploy -y $VERSION_ID@100% --env ${{ matrix.environment }} --message "Deployed version ${{ steps.vars.outputs.sha_short }} - GitHub Action"; then
+            echo "promote_success=true" >> $GITHUB_OUTPUT
+          else
+            echo "promote_success=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Set deployment status and URL
+        id: deployment-status
+        if: always()
+        run: |
+          # Determine if deployment was successful
+          if [[ "${{ steps.upload.outputs.upload_success }}" == "true" ]] && ([[ "${{ github.ref }}" != "refs/heads/main" ]] || [[ "${{ steps.promote.outputs.promote_success }}" == "true" ]]); then
+            DEPLOYMENT_SUCCESS="true"
+            DEPLOYMENT_URL="https://${{ steps.vars.outputs.sha_short }}-ponzi-land-${{ matrix.environment }}.runelabs.workers.dev/"
+          else
+            DEPLOYMENT_SUCCESS="false"
+            DEPLOYMENT_URL=""
+          fi
+
+          # Set outputs based on environment
+          echo "${{ matrix.environment }}-success=$DEPLOYMENT_SUCCESS" >> $GITHUB_OUTPUT
+          echo "${{ matrix.environment }}-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
+
+  announce-urls:
+    runs-on: ubuntu-latest
+    needs: deploy-cloudflare
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Find Comment
+        uses: peter-evans/find-comment@v1
+        id: fc
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: This comment was written by a bot!
+      - name: Render template
+        id: template
+        uses: chuhlomin/render-template@v1.4
+        with:
+          template: .github/deployment-template.md
+          vars: |
+            MAINNET_STATUS: ${{ needs.deploy-cloudflare.outputs.mainnet-success == 'true' && '✅' || '❌' }}
+            MAINNET_URL: ${{ needs.deploy-cloudflare.outputs.mainnet-success == 'true' && needs.deploy-cloudflare.outputs.mainnet-url || '-' }}
+            SEPOLIA_STATUS: ${{ needs.deploy-cloudflare.outputs.sepolia-success == 'true' && '✅' || '❌' }}
+            SEPOLIA_URL: ${{ needs.deploy-cloudflare.outputs.sepolia-success == 'true' && needs.deploy-cloudflare.outputs.sepolia-url || '-' }}
+            MAINNET_TEST_STATUS: ${{ needs.deploy-cloudflare.outputs.mainnet-test-success == 'true' && '✅' || '❌' }}
+            MAINNET_TEST_URL: ${{ needs.deploy-cloudflare.outputs.mainnet-test-success == 'true' && needs.deploy-cloudflare.outputs.mainnet-test-url || '-' }}
+
+      - name: Create comment
+        if: steps.fc.outputs.comment-id == ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: ${{ steps.template.outputs.result }}
+          edit-mode: replace
+
+      - name: Update comment
+        if: steps.fc.outputs.comment-id != ''
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          body: ${{ steps.template.outputs.result }}
+          edit-mode: replace

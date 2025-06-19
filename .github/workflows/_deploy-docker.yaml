@@ -1,10 +1,12 @@
 name: Docker
 
 on:
-  push:
-    branches:
-      - "main"
-  pull_request: {}
+  workflow_call:
+    secrets:
+      SCW_ACCESS_KEY_ID:
+        required: true
+      SCW_ACCESS_KEY_SECRET:
+        required: true
 
 jobs:
   build-indexer:
