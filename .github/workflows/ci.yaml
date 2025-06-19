@@ -1,0 +1,174 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - target/*
+
+jobs:
+  detect-changes:
+    name: Detect file changes
+    runs-on: ubuntu-latest
+    outputs:
+      contracts: ${{ steps.changes.outputs.contracts }}
+      rust: ${{ steps.changes.outputs.rust }}
+      client: ${{ steps.changes.outputs.client }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changes
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            contracts:
+              - 'contracts/**'
+            rust:
+              - 'crates/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+            client:
+              - 'client/**'
+
+  # Formatting workflows
+  format-contracts:
+    name: Format contracts
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.contracts == 'true' }}
+    uses: ./.github/workflows/formatting-contracts.yaml
+
+  format-rust:
+    name: Format Rust code
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.rust == 'true' }}
+    uses: ./.github/workflows/formatting-rust.yaml
+
+  format-client:
+    name: Format client code
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.client == 'true' }}
+    uses: ./.github/workflows/formatting-client.yaml
+
+  # Test workflows (run after formatting passes)
+  test-contracts:
+    name: Test contracts
+    needs: [detect-changes, format-contracts]
+    if: ${{ needs.detect-changes.outputs.contracts == 'true' && (needs.format-contracts.result == 'success' || needs.format-contracts.result == 'skipped') }}
+    uses: ./.github/workflows/test-contracts.yaml
+
+  test-rust:
+    name: Test Rust code
+    needs: [detect-changes, format-rust]
+    if: ${{ needs.detect-changes.outputs.rust == 'true' && (needs.format-rust.result == 'success' || needs.format-rust.result == 'skipped') }}
+    uses: ./.github/workflows/test-rust.yaml
+
+  test-client:
+    name: Test client code
+    needs: [detect-changes, format-client]
+    if: ${{ needs.detect-changes.outputs.client == 'true' && (needs.format-client.result == 'success' || needs.format-client.result == 'skipped') }}
+    uses: ./.github/workflows/test-client.yaml
+
+  # Summary job
+  ci-status:
+    name: CI Status Check
+    runs-on: ubuntu-latest
+    needs:
+      [
+        detect-changes,
+        format-contracts,
+        format-rust,
+        format-client,
+        test-contracts,
+        test-rust,
+        test-client,
+      ]
+    if: always()
+    steps:
+      - name: Report status
+        run: |
+          # Write to job summary
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+          # 📊 CI Pipeline Summary
+
+          ## 🔍 Changes Detected
+          | Component | Changed |
+          |-----------|---------|
+          | 📄 Contracts | ${{ needs.detect-changes.outputs.contracts == 'true' && '✅ Yes' || '❌ No' }} |
+          | 🦀 Rust | ${{ needs.detect-changes.outputs.rust == 'true' && '✅ Yes' || '❌ No' }} |
+          | 🌐 Client | ${{ needs.detect-changes.outputs.client == 'true' && '✅ Yes' || '❌ No' }} |
+
+          ## 🎨 Formatting Results
+          | Component | Status |
+          |-----------|--------|
+          EOF
+
+          # Add formatting results
+          contracts_format="${{ needs.format-contracts.result }}"
+          rust_format="${{ needs.format-rust.result }}"
+          client_format="${{ needs.format-client.result }}"
+
+          get_status_icon() {
+            case "$1" in
+              "success") echo "✅" ;;
+              "failure") echo "❌" ;;
+              "skipped") echo "⏭️" ;;
+              "") echo "➖" ;;
+              *) echo "⚠️" ;;
+            esac
+          }
+
+          [ "$contracts_format" != "" ] && echo "| 📄 Contracts | $(get_status_icon "$contracts_format") $contracts_format |" >> $GITHUB_STEP_SUMMARY
+          [ "$rust_format" != "" ] && echo "| 🦀 Rust | $(get_status_icon "$rust_format") $rust_format |" >> $GITHUB_STEP_SUMMARY
+          [ "$client_format" != "" ] && echo "| 🌐 Client | $(get_status_icon "$client_format") $client_format |" >> $GITHUB_STEP_SUMMARY
+
+          cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+
+          ## 🧪 Test Results
+          | Component | Status |
+          |-----------|--------|
+          EOF
+
+          # Add test results
+          contracts_test="${{ needs.test-contracts.result }}"
+          rust_test="${{ needs.test-rust.result }}"
+          client_test="${{ needs.test-client.result }}"
+
+          [ "$contracts_test" != "" ] && echo "| 📄 Contracts | $(get_status_icon "$contracts_test") $contracts_test |" >> $GITHUB_STEP_SUMMARY
+          [ "$rust_test" != "" ] && echo "| 🦀 Rust | $(get_status_icon "$rust_test") $rust_test |" >> $GITHUB_STEP_SUMMARY
+          [ "$client_test" != "" ] && echo "| 🌐 Client | $(get_status_icon "$client_test") $client_test |" >> $GITHUB_STEP_SUMMARY
+
+          # Check for failures
+          failed_jobs=()
+
+          # Check formatting failures
+          [[ "$contracts_format" == "failure" ]] && failed_jobs+=("Contracts formatting")
+          [[ "$rust_format" == "failure" ]] && failed_jobs+=("Rust formatting")
+          [[ "$client_format" == "failure" ]] && failed_jobs+=("Client formatting")
+
+          # Check test failures
+          [[ "$contracts_test" == "failure" ]] && failed_jobs+=("Contracts tests")
+          [[ "$rust_test" == "failure" ]] && failed_jobs+=("Rust tests")
+          [[ "$client_test" == "failure" ]] && failed_jobs+=("Client tests")
+
+          # Add final result to summary
+          if [ ${#failed_jobs[@]} -gt 0 ]; then
+            cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+
+          ## ❌ Failed Checks
+          EOF
+            for job in "${failed_jobs[@]}"; do
+              echo "- $job" >> $GITHUB_STEP_SUMMARY
+            done
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**❌ Pipeline failed - please fix the issues above**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            cat >> $GITHUB_STEP_SUMMARY << 'EOF'
+
+          ## ✅ All Checks Passed
+          **🎉 Pipeline completed successfully!**
+          EOF
+          fi

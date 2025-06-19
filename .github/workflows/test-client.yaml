@@ -1,0 +1,48 @@
+name: test-client
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  test-client:
+    name: Client tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "v1.1.45"
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting
+        working-directory: ./client
+        run: bun run test
+  check-client:
+    name: Check client
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "v1.1.45"
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: bun install --frozen-lockfile
+
+      - name: Check client types & usage
+        working-directory: ./client
+        run: bun run check

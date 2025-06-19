@@ -4,19 +4,32 @@ import { CurrencyAmount } from './CurrencyAmount';
 import type { Token } from '$lib/interfaces';
 import BigNumber from 'bignumber.js';
 
-const TestTokens = {
+const TestTokens: Record<string, Token> = {
   standard: {
     name: 'Standard',
     address: '0x0',
     symbol: 'STD',
-    lpAddress: '0x0',
+    liquidityPoolType: 'standard',
     decimals: 18,
     images: {
-      icon: '',
-      castle: {
-        basic: '',
-        advanced: '',
-        premium: '',
+      icon: '/tokens/eSTRK/icon.png',
+      biome: {
+        x: 2,
+        y: 3,
+      },
+      building: {
+        '1': {
+          x: 3,
+          y: 3,
+        },
+        '2': {
+          x: 3,
+          y: 4,
+        },
+        '3': {
+          x: 3,
+          y: 5,
+        },
       },
     },
   },
@@ -24,14 +37,27 @@ const TestTokens = {
     name: 'No Decimals',
     address: '0x0',
     symbol: 'ND',
-    lpAddress: '0x0',
+    liquidityPoolType: 'standard',
     decimals: 0,
     images: {
-      icon: '',
-      castle: {
-        basic: '',
-        advanced: '',
-        premium: '',
+      icon: '/tokens/eSTRK/icon.png',
+      biome: {
+        x: 2,
+        y: 3,
+      },
+      building: {
+        '1': {
+          x: 3,
+          y: 3,
+        },
+        '2': {
+          x: 3,
+          y: 4,
+        },
+        '3': {
+          x: 3,
+          y: 5,
+        },
       },
     },
   },
@@ -86,13 +112,18 @@ describe('CurrencyAmount', () => {
   });
 
   describe('Formatting', () => {
+    it('Formats zero correctly', () => {
+      const amount = CurrencyAmount.fromScaled('0', TestTokens.standard);
+      expect(amount.toString()).toBe('0');
+    });
+
     it('Formats correctly a whole number', () => {
       const amount = CurrencyAmount.fromScaled('1', TestTokens.standard);
-      expect(amount.toString()).toBe('1');
+      expect(amount.toString()).toBe('1.00');
 
       expect(
         CurrencyAmount.fromScaled('2', TestTokens.standard).toString(),
-      ).toBe('2');
+      ).toBe('2.00');
     });
 
     it('Formats correctly a number > 1 with decimals', () => {
@@ -109,16 +140,49 @@ describe('CurrencyAmount', () => {
       ).toBe('1.13');
     });
 
-    it('Formats correctly a number < 1', () => {
+    it('Formats correctly thousands with K suffix', () => {
       expect(
-        CurrencyAmount.fromScaled('0.00123', TestTokens.standard).toString(),
-      ).toBe('0.0012');
+        CurrencyAmount.fromScaled('1500', TestTokens.standard).toString(),
+      ).toBe('1.50K');
+
+      expect(
+        CurrencyAmount.fromScaled('12345', TestTokens.standard).toString(),
+      ).toBe('12.35K');
     });
 
-    it('Rounds correctly a number < 1', () => {
+    it('Formats correctly millions with M suffix', () => {
+      expect(
+        CurrencyAmount.fromScaled('1500000', TestTokens.standard).toString(),
+      ).toBe('1.50M');
+
+      expect(
+        CurrencyAmount.fromScaled('12345678', TestTokens.standard).toString(),
+      ).toBe('12.35M');
+    });
+
+    it('Formats correctly billions with B suffix', () => {
+      expect(
+        CurrencyAmount.fromScaled('1500000000', TestTokens.standard).toString(),
+      ).toBe('1.50B');
+
+      expect(
+        CurrencyAmount.fromScaled(
+          '12345678900',
+          TestTokens.standard,
+        ).toString(),
+      ).toBe('12.35B');
+    });
+
+    it('Formats correctly a number < 1 with proper precision', () => {
+      expect(
+        CurrencyAmount.fromScaled('0.00123', TestTokens.standard).toString(),
+      ).toBe('0.00123');
+    });
+
+    it('Formats correctly very small numbers with leading zeros', () => {
       expect(
         CurrencyAmount.fromScaled('0.001289', TestTokens.standard).toString(),
-      ).toBe('0.0013');
+      ).toBe('0.00129');
     });
 
     it('Formats correctly the smallest representable amount', () => {

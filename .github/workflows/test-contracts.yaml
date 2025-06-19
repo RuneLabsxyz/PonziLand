@@ -1,0 +1,38 @@
+name: test-contracts
+
+on:
+  workflow_call:
+    inputs:
+      run-extra-tests:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  test-contracts:
+    name: Run contract tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - id: setup-dojo
+        uses: runelabsxyz/setup-dojo@main
+        with:
+          version: "v1.4.0"
+
+      - name: Build contract
+        working-directory: ./contracts
+        run: sozo build
+
+      - name: Test contract
+        working-directory: ./contracts
+        run: sozo test
+
+      - name: Test contract (including long tests)
+        if: inputs.run-extra-tests
+        working-directory: ./contracts
+        run: sozo test --ignored

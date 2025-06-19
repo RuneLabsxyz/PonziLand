@@ -1,0 +1,20 @@
+on:
+  workflow_call:
+
+jobs:
+  contract-formatting:
+    name: Validate contract formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - id: setup-dojo
+        uses: runelabsxyz/setup-dojo@main
+        with:
+          version: "v1.4.0"
+
+      - name: Validate formatting
+        working-directory: ./contracts
+        run: scarb fmt --check

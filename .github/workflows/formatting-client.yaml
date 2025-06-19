@@ -1,0 +1,23 @@
+on:
+  workflow_call:
+
+jobs:
+  client-formatting:
+    name: Validate client formatting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "v1.1.45"
+
+      - name: Install dependencies
+        working-directory: ./client
+        run: bun install --frozen-lockfile
+
+      - name: Check formatting
+        working-directory: ./client
+        run: bun prettier --check .

@@ -10,10 +10,10 @@
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
     "build:mainnet": "DOJO_PROFILE=mainnet vite build",
     "preview": "vite preview",
-    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "test": "bun vitest --config ./vitest.config.ts",
-    "test:watch": "bun vitest --config ./vitest.config.ts --watch"
+    "check": "DOJO_PROFILE=sepolia svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "DOJO_PROFILE=sepolia svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts",
+    "test:watch": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --watch"
   },
   "devDependencies": {
     "@lucide/svelte": "^0.482.0",
@@ -60,7 +60,7 @@
     "@layerswap/sdk": "^0.1.0-alpha.2",
     "@reown/appkit": "^1.6.8",
     "@reown/appkit-adapter-ethers": "^1.6.8",
-    "@runelabsxyz/socialink-sdk": "0.1.0",
+    "@runelabsxyz/socialink-sdk": "0.1.1",
     "@starknet-io/get-starknet-core": "^4.0.0",
     "@sv-use/core": "^1.15.1",
     "@tsparticles/engine": "^3.8.1",
