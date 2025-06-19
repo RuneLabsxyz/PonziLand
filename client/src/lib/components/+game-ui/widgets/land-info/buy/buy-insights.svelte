@@ -208,13 +208,13 @@
         {/each}
       </div>
       <Slider
-        type="multiple"
+        type="single"
         min={1}
         max={8}
         step={1}
-        value={[nbNeighbors]}
+        value={nbNeighbors}
         onValueChange={(val) => {
-          nbNeighbors = val[0];
+          nbNeighbors = val;
         }}
       />
     </div>
