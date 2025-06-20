@@ -1,6 +1,11 @@
 {
   "tokens": [
     {
+      "symbol": "pltSTRK",
+      "name": "Ponziland test STRK",
+      "address": "0x53fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51"
+    },
+    {
       "symbol": "pltLORDS",
       "name": "Ponziland test LORDS",
       "address": "0x5cf32bf9b60c4763ef53672cfd720f57ecb4c4109aae6a7a2c551eddfd9b880"
@@ -10,11 +15,7 @@
       "name": "Ponziland test ETH",
       "address": "0x64ae0eeee87bb4ce053c8c1e1377e21de3b3add549551ed53b5a64a1b700671"
     },
-    {
-      "symbol": "pltSTRK",
-      "name": "Ponziland test STRK",
-      "address": "0x53fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51"
-    },
+
     {
       "symbol": "pltPAPER",
       "name": "Ponziland test PAPER",
