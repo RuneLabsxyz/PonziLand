@@ -1,8 +1,6 @@
 import { GRID_SIZE } from '$lib/const';
 import { locationToCoordinates, toBigInt, toHexWithPadding } from '$lib/utils';
 import type { BaseLand } from './land';
-import { BuildingLand } from './land/building_land';
-import { AuctionLand } from './land/auction_land';
 import type { LandTileStore } from './land_tiles.svelte';
 import { get } from 'svelte/store';
 
@@ -143,7 +141,7 @@ export class Neighbors {
       .filter((l) => {
         if (l === undefined) return false;
 
-        if (BuildingLand.is(l) || AuctionLand.is(l)) {
+        if (['building', 'auction'].includes(l.type)) {
           return l.owner !== toHexWithPadding(0);
         }
         return false;
@@ -160,7 +158,7 @@ export class Neighbors {
 
     const locations = this.getLocations(location).array;
     const filteredStore = landStore.filter((l) => {
-      if (BuildingLand.is(l) || AuctionLand.is(l)) {
+      if (['building', 'auction'].includes(l.type)) {
         return l.owner !== toHexWithPadding(0);
       }
       return false;

@@ -12,8 +12,7 @@ import type { CairoCustomEnum } from 'starknet';
 
 import { Neighbors } from '../neighbors';
 import { type Location } from './location';
-import { landStore } from '$lib/stores/store.svelte';
-
+import type { LandTileStore } from '../land_tiles.svelte';
 export type LandType = 'empty' | 'building' | 'auction';
 
 export type TransactionResult = Promise<
@@ -185,8 +184,8 @@ export abstract class BaseLand {
   }
 
   // You should always be able to get the neighbors of a land
-  public getNeighbors(): Neighbors {
-    return Neighbors.getWithStoreAndLocation(this.locationString, landStore);
+  public getNeighbors(store: LandTileStore): Neighbors {
+    return Neighbors.getWithStoreAndLocation(this.locationString, store);
   }
 }
 

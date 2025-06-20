@@ -55,6 +55,20 @@ in {
     export DATABASE_URL="postgres://$DBHOST/chaindata"
     export PGDATABASE=chaindata
   '';
+  tasks = {
+    "patch:deps" = {
+      exec = ''
+        if [ -f "./client/node_modules/@cloudflare/workerd-linux-64/bin/workerd" ]; then
+          echo "Patching workerd binary"
+          ${pkgs.patchelf}/bin/patchelf \
+            --set-interpreter "${pkgs.stdenv.cc.bintools.dynamicLinker}" \
+            --set-rpath "${lib.makeLibraryPath [pkgs.stdenv.cc.cc.lib pkgs.glibc pkgs.libgccjit]}" \
+            ./client/node_modules/@cloudflare/workerd-linux-64/bin/workerd
+        fi
+      '';
+      before = ["devenv:enterShell"];
+    };
+  };
 
   scripts.migrate.exec = ''
     set -e

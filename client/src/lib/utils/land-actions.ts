@@ -6,6 +6,7 @@ import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { useDojo } from '$lib/contexts/dojo';
 import type { LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { landStore } from '$lib/stores/store.svelte';
 import { toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Level } from '$lib/utils/level';
@@ -133,10 +134,13 @@ export const createLandWithActions = (
       return res;
     },
     getEstimatedNukeTime() {
-      return estimateNukeTime(this, land.getNeighbors().getNeighbors().length);
+      return estimateNukeTime(
+        this,
+        land.getNeighbors(landStore).getNeighbors().length,
+      );
     },
     getNeighbors() {
-      return land.getNeighbors();
+      return land.getNeighbors(landStore);
     },
     getLevelInfo() {
       const now = Math.floor(Date.now() / 1000);

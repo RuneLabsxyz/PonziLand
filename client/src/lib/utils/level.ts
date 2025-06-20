@@ -26,7 +26,7 @@ export function getEnumVariant(level: LevelModel): string {
   if (level && typeof level === 'object') {
     // Then try activeVariant
     if (level.activeVariant) {
-      return level.activeVariant();
+      return level.activeVariant as any as string; // Thanks to bad typing, this needs to be passed through a any
     }
     // Fallback to the original logic for other object structures
     return (
