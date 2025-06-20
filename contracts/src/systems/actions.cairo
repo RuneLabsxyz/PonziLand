@@ -275,7 +275,7 @@ pub mod actions {
 
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land, true, neighbors.clone());
+            self.internal_claim(store, land, neighbors.clone());
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
@@ -317,7 +317,7 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land, false, neighbors.clone());
+            self.internal_claim(store, land, neighbors.clone());
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
@@ -334,7 +334,7 @@ pub mod actions {
                         continue;
                     }
                     let neighbors = get_land_neighbors(store, land_location);
-                    self.internal_claim(store, land, false, neighbors.clone());
+                    self.internal_claim(store, land, neighbors.clone());
                 }
             };
         }
@@ -373,7 +373,7 @@ pub mod actions {
             let current_price = auction.get_current_price_decay_rate();
 
             let neighbors = get_land_neighbors(store, land_location);
-            self.internal_claim(store, land, true, neighbors.clone());
+            self.internal_claim(store, land, neighbors.clone());
 
             self
                 .buy_from_bid(
@@ -398,8 +398,9 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
+            let mut land_stake = store.land_stake(land_location);
             assert(land.owner == ContractAddressZeroable::zero(), 'land must be without owner');
-            store.delete_land(land);
+            store.delete_land(land, land_stake);
 
             let sell_price = get_average_price(store, land_location);
             let sell_price = if sell_price > MIN_AUCTION_PRICE {
@@ -732,7 +733,7 @@ pub mod actions {
             assert(land_stake.amount == 0, 'land not valid to nuke');
 
             let owner_nuked = land.owner;
-            store.delete_land(land);
+            store.delete_land(land, land_stake);
 
             world.emit_event(@LandNukedEvent { owner_nuked, land_location });
 
@@ -749,28 +750,22 @@ pub mod actions {
 
         //TODO:CHANGE OR DELETE THE FROM_BUY PARAM
         fn internal_claim(
-            ref self: ContractState,
-            mut store: Store,
-            land: Land,
-            from_buy: bool,
-            neighbors: Array<Land>,
+            ref self: ContractState, mut store: Store, land: Land, neighbors: Array<Land>,
         ) {
-            let mut neighbors_dict = process_neighbors_of_neighbors(store, neighbors.clone());
             if neighbors.len() != 0 {
-                for mut direct_neighbor in neighbors {
-                    let is_nuke = self
-                        .taxes
-                        .calculate_and_distribute_taxes(
-                            store, land, direct_neighbor, ref neighbors_dict, from_buy,
-                        );
+                //TODO:DIRECT NEIGHBOR TIENE QUE SER LAND_STAKE
+                for mut tax_payer in neighbors {
+                    let mut tax_payer_stake = store.land_stake(tax_payer.location);
+
+                    let is_nuke = self.taxes.claim(store, land, tax_payer, tax_payer_stake);
 
                     let has_liquidity_requirements = self
                         .world_default()
                         .token_registry_dispatcher()
-                        .is_token_authorized(direct_neighbor.token_used);
+                        .is_token_authorized(tax_payer.token_used);
 
                     if is_nuke || !has_liquidity_requirements {
-                        self.nuke(direct_neighbor.location, has_liquidity_requirements);
+                        self.nuke(tax_payer.location, has_liquidity_requirements);
                     }
                 };
             }
@@ -826,9 +821,6 @@ pub mod actions {
                 );
 
             //initialize auction for neighbors
-            //TODO:Token for sale has to be lords or the token that we choose
-            //TODO:we have to define the correct decay rate
-
             // Math.max(sold_at_price * 10, auction.floor_price)
             // Red: ...reused here.
             if self.active_auctions.read() < MAX_AUCTIONS {
@@ -852,11 +844,22 @@ pub mod actions {
             caller: ContractAddress,
             neighbors: Array<Land>,
         ) {
+            let current_time = get_block_timestamp();
             let land = LandTrait::new(
-                land_location, caller, token_for_sale, sell_price, get_block_timestamp(),
+                land_location, caller, token_for_sale, sell_price, current_time,
             );
             store.set_land(land);
+
             let mut land_stake = store.land_stake(land.location);
+            land_stake.earliest_claim_neighbor_time = current_time;
+            land_stake.num_active_neighbors = neighbors.len().try_into().unwrap();
+
+            // let neighborInfo = NeighborInfo {
+            //     earliest_claim_neighbor_time: current_time,
+            //     num_active_neighbors: neighbors.len().try_into().unwrap(),
+            // };
+            // land_stake.neighbor_info = neighborInfo;
+
             self.stake._add(amount_to_stake, land, land_stake, store);
 
             for neighbor in neighbors.span() {

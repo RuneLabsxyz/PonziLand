@@ -77,7 +77,6 @@ mod StakeComponent {
             //update land stake amount
 
             land_stake.amount = land_stake.amount + amount;
-            land_stake.last_pay_time = get_block_timestamp();
             store.set_land_stake(land_stake);
         }
 
