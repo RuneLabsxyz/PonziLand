@@ -37,25 +37,24 @@ trait IActions<T> {
 
     fn reimburse_stakes(ref self: T);
 
+    fn set_main_token(ref self: T, token_address: ContractAddress) -> ();
+
     fn get_land(self: @T, land_location: u16) -> (Land, LandStake);
-    fn get_pending_taxes_for_land(
-        self: @T, land_location: u16, owner: ContractAddress,
-    ) -> Array<TokenInfo>;
     fn get_current_auction_price(self: @T, land_location: u16) -> u256;
     fn get_next_claim_info(self: @T, land_location: u16) -> Array<ClaimInfo>;
     fn get_neighbors_yield(self: @T, land_location: u16) -> LandYieldInfo;
     fn get_active_auctions(self: @T) -> u8;
     fn get_auction(self: @T, land_location: u16) -> Auction;
     fn get_time_to_nuke(self: @T, land_location: u16) -> u64;
-    fn get_unclaimed_taxes_per_neighbor(self: @T, land_location: u16) -> u256;
-    // returns (pending_taxes, unclaimed_taxes)
-    fn get_claimable_taxes_for_land(
-        self: @T, land_location: u16, owner: ContractAddress,
-    ) -> (Array<TokenInfo>, Array<TokenInfo>);
+    fn get_unclaimed_taxes_per_neighbor(
+        self: @T, claimer_location: u16, payer_location: u16,
+    ) -> u256;
     fn get_game_speed(self: @T) -> u64;
     fn get_neighbors(self: @T, land_location: u16) -> Array<LandOrAuction>;
-
-    fn set_main_token(ref self: T, token_address: ContractAddress) -> ();
+    fn get_elapsed_time_since_last_claim(
+        self: @T, claimer_location: u16, payer_location: u16,
+    ) -> u64;
+    fn get_unclaimed_taxes_per_neighbors_total(self: @T, land_location: u16) -> u256;
 }
 
 // dojo decorator
@@ -256,6 +255,8 @@ pub mod actions {
 
             let mut world = self.world_default();
             let caller = get_caller_address();
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
 
             assert(
                 world.auth_dispatcher().can_take_action(get_caller_address()),
@@ -273,7 +274,10 @@ pub mod actions {
             let seller = land.owner;
             let sold_price = land.sell_price;
             let token_used = land.token_used;
-            self.internal_claim(store, land);
+
+            let neighbors = get_land_neighbors(store, land.location);
+
+            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
@@ -281,11 +285,19 @@ pub mod actions {
             let transfer_status = self.payable.transfer_from(caller, land.owner, validation_result);
             assert(transfer_status, errors::ERC20_PAY_FOR_BUY_FAILED);
 
-            self.stake._refund(store, land);
+            self.stake._refund(store, land, our_contract_address);
 
             self
                 .finalize_land_purchase(
-                    store, land_location, token_for_sale, sell_price, amount_to_stake, caller,
+                    store,
+                    land_location,
+                    token_for_sale,
+                    sell_price,
+                    amount_to_stake,
+                    caller,
+                    neighbors,
+                    current_time,
+                    our_contract_address,
                 );
 
             store
@@ -302,13 +314,16 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
             let caller = get_caller_address();
             let mut world = self.world_default();
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
 
             let land = store.land(land_location);
             assert(land.owner == caller, 'not the owner');
+            let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land);
+            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
@@ -316,6 +331,8 @@ pub mod actions {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
 
             for land_location in land_locations {
                 if !self.active_auction_queue.read(land_location) {
@@ -324,7 +341,11 @@ pub mod actions {
                     if land.owner != caller {
                         continue;
                     }
-                    self.internal_claim(store, land);
+                    let neighbors = get_land_neighbors(store, land_location);
+                    self
+                        .internal_claim(
+                            store, land, neighbors.clone(), current_time, our_contract_address,
+                        );
                 }
             };
         }
@@ -341,8 +362,9 @@ pub mod actions {
             let caller = get_caller_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
             let mut store = StoreTrait::new(world);
-
             let mut land = store.land(land_location);
 
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -362,7 +384,8 @@ pub mod actions {
 
             let current_price = auction.get_current_price_decay_rate();
 
-            self.internal_claim(store, land);
+            let neighbors = get_land_neighbors(store, land_location);
+            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
 
             self
                 .buy_from_bid(
@@ -374,6 +397,10 @@ pub mod actions {
                     amount_to_stake,
                     caller,
                     auction,
+                    neighbors,
+                    current_time,
+                    current_price,
+                    our_contract_address,
                 );
         }
 
@@ -386,8 +413,9 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
+            let mut land_stake = store.land_stake(land_location);
             assert(land.owner == ContractAddressZeroable::zero(), 'land must be without owner');
-            store.delete_land(land);
+            store.delete_land(land, land_stake);
 
             let sell_price = get_average_price(store, land_location);
             let sell_price = if sell_price > MIN_AUCTION_PRICE {
@@ -434,7 +462,7 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
             let mut land_stake = store.land_stake(land.location);
-            self.stake._add(amount_to_stake, land, land_stake, store);
+            self.stake._add(amount_to_stake, land, land_stake, store, get_contract_address());
             let new_stake_amount = land_stake.amount + amount_to_stake;
             store
                 .world
@@ -484,18 +512,10 @@ pub mod actions {
             };
 
             self.stake._reimburse(store, active_lands.span());
-
-            self._distribute_adjusted_taxes(active_lands);
         }
 
 
         //GETTERS FUNCTIONS
-
-        fn get_pending_taxes_for_land(
-            self: @ContractState, land_location: u16, owner: ContractAddress,
-        ) -> Array<TokenInfo> {
-            self.taxes._get_pending_taxes(owner, land_location)
-        }
 
         fn get_land(self: @ContractState, land_location: u16) -> (Land, LandStake) {
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -534,7 +554,7 @@ pub mod actions {
                     let land_stake = store.land_stake(neighbor.location);
                     if land_stake.amount > 0 {
                         let tax_per_neighbor = self
-                            .get_unclaimed_taxes_per_neighbor(neighbor.location);
+                            .get_unclaimed_taxes_per_neighbor(neighbor.location, land_location);
 
                         let time_to_nuke = self.get_time_to_nuke(neighbor.location);
 
@@ -549,6 +569,16 @@ pub mod actions {
                 }
             }
             claim_info
+        }
+
+        fn get_elapsed_time_since_last_claim(
+            self: @ContractState, claimer_location: u16, payer_location: u16,
+        ) -> u64 {
+            let current_time = get_block_timestamp();
+            let elapsed_time = self
+                .taxes
+                .get_elapsed_time_since_last_claim(claimer_location, payer_location, current_time);
+            elapsed_time
         }
 
         fn get_neighbors_yield(self: @ContractState, land_location: u16) -> LandYieldInfo {
@@ -610,36 +640,31 @@ pub mod actions {
                 .unwrap()
         }
 
-        fn get_unclaimed_taxes_per_neighbor(self: @ContractState, land_location: u16) -> u256 {
+        fn get_unclaimed_taxes_per_neighbor(
+            self: @ContractState, claimer_location: u16, payer_location: u16,
+        ) -> u256 {
+            let world = self.world_default();
+            let store = StoreTrait::new(world);
+            let payer_land = store.land(payer_location);
+            let elapsed_time = self
+                .get_elapsed_time_since_last_claim(claimer_location, payer_location);
+            get_taxes_per_neighbor(payer_land, elapsed_time)
+        }
+
+        fn get_unclaimed_taxes_per_neighbors_total(
+            self: @ContractState, land_location: u16,
+        ) -> u256 {
             let world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
-            let land_stake = store.land_stake(land_location);
-            get_taxes_per_neighbor(land, land_stake)
-        }
-
-        fn get_claimable_taxes_for_land(
-            self: @ContractState, land_location: u16, owner: ContractAddress,
-        ) -> (Array<TokenInfo>, Array<TokenInfo>) {
-            let world = self.world_default();
-            let store = StoreTrait::new(world);
-
-            let pending_taxes = self.get_pending_taxes_for_land(land_location, owner);
-
-            let neighbors = get_land_neighbors(store, land_location);
-
-            let mut unclaimed_taxes: Array<TokenInfo> = ArrayTrait::new();
-
+            let neighbors = get_land_neighbors(store, land.location);
+            let mut total = 0;
             for neighbor in neighbors {
-                let taxes_per_neighbor = self.get_unclaimed_taxes_per_neighbor(neighbor.location);
-                let tax_info = TokenInfo {
-                    token_address: neighbor.token_used, amount: taxes_per_neighbor,
-                };
-                unclaimed_taxes.append(tax_info);
+                total += self.get_unclaimed_taxes_per_neighbor(neighbor.location, land_location);
             };
-
-            (pending_taxes, unclaimed_taxes)
+            total
         }
+
 
         fn get_game_speed(self: @ContractState) -> u64 {
             TIME_SPEED.into()
@@ -710,64 +735,72 @@ pub mod actions {
             store.world.emit_event(@NewAuctionEvent { land_location, start_price, floor_price });
         }
 
-        fn nuke(ref self: ContractState, land_location: u16, has_liquidity_requirements: bool) {
+        fn nuke(ref self: ContractState, mut land: Land, has_liquidity_requirements: bool) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
-            let mut land = store.land(land_location);
             let mut land_stake = store.land_stake(land.location);
 
             if !has_liquidity_requirements && land_stake.amount > 0 {
-                self.stake._refund(store, land);
+                self.stake._refund(store, land, get_contract_address());
                 land_stake = store.land_stake(land.location);
             }
 
             assert(land_stake.amount == 0, 'land not valid to nuke');
 
-            let pending_taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-            if pending_taxes.len() != 0 {
-                self.taxes._claim(pending_taxes, land.owner, land.location);
-            }
-
             let owner_nuked = land.owner;
-            store.delete_land(land);
+            store.delete_land(land, land_stake);
 
-            world.emit_event(@LandNukedEvent { owner_nuked, land_location });
+            world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
 
-            let sell_price = get_average_price(store, land_location);
+            let sell_price = get_average_price(store, land.location);
             let sell_price = if sell_price > MIN_AUCTION_PRICE {
                 sell_price
             } else {
                 MIN_AUCTION_PRICE
             };
 
-            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
+            self.auction(land.location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
         }
 
-        fn internal_claim(ref self: ContractState, mut store: Store, land: Land) {
-            //generate taxes for each neighbor of claimer
-            let neighbors = get_land_neighbors(store, land.location);
+
+        //TODO:CHANGE OR DELETE THE FROM_BUY PARAM
+        fn internal_claim(
+            ref self: ContractState,
+            mut store: Store,
+            land: Land,
+            neighbors: Array<Land>,
+            current_time: u64,
+            our_contract_address: ContractAddress,
+        ) {
+            //TODO:DOING THIS IT'S A LITTLE MORE EXPENSIVE, see why
             let mut neighbors_dict = process_neighbors_of_neighbors(store, neighbors.clone());
 
             if neighbors.len() != 0 {
-                for mut neighbor in neighbors {
+                for mut tax_payer in neighbors {
+                    let mut tax_payer_stake = store.land_stake(tax_payer.location);
+
                     let is_nuke = self
                         .taxes
-                        ._calculate_and_distribute(store, neighbor, ref neighbors_dict);
+                        .claim(
+                            store,
+                            land,
+                            tax_payer,
+                            tax_payer_stake,
+                            current_time,
+                            our_contract_address,
+                            ref neighbors_dict,
+                        );
 
                     let has_liquidity_requirements = self
                         .world_default()
                         .token_registry_dispatcher()
-                        .is_token_authorized(neighbor.token_used);
+                        .is_token_authorized(tax_payer.token_used);
 
                     if is_nuke || !has_liquidity_requirements {
-                        self.nuke(neighbor.location, has_liquidity_requirements);
+                        self.nuke(tax_payer, has_liquidity_requirements);
                     }
                 };
             }
-
-            //claim taxes for the land
-            let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-            self._claim_and_discount_taxes(taxes, land.owner, land.location);
         }
 
         fn buy_from_bid(
@@ -780,6 +813,10 @@ pub mod actions {
             amount_to_stake: u256,
             caller: ContractAddress,
             mut auction: Auction,
+            neighbors: Array<Land>,
+            current_time: u64,
+            current_price: u256,
+            our_contract_address: ContractAddress,
         ) {
             let validation_result = self.payable.validate(land.token_used, caller, sold_at_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
@@ -790,35 +827,38 @@ pub mod actions {
             // I don't think we need to create the land before.
             self
                 .finalize_land_purchase(
-                    store, land.location, token_for_sale, sell_price, amount_to_stake, caller,
+                    store,
+                    land.location,
+                    token_for_sale,
+                    sell_price,
+                    amount_to_stake,
+                    caller,
+                    neighbors,
+                    current_time,
+                    our_contract_address,
                 );
             self.staked_lands.write(land.location, true);
 
             auction.is_finished = true;
             auction.sold_at_price = Option::Some(sold_at_price);
             store.set_auction(auction);
-            // Red: We're reading the active auctions here, and it's not going to change after that,
-            // reuse it
-            self.active_auctions.write(self.active_auctions.read() - 1);
+            let mut active_auctions = self.active_auctions.read();
+            active_auctions -= 1;
+            self.active_auctions.write(active_auctions);
+
             self.active_auction_queue.write(land.location, false);
 
             store
                 .world
                 .emit_event(
                     @AuctionFinishedEvent {
-                        land_location: land.location,
-                        buyer: caller,
-                        final_price: auction.get_current_price_decay_rate(),
+                        land_location: land.location, buyer: caller, final_price: current_price,
                     },
                 );
 
             //initialize auction for neighbors
-            //TODO:Token for sale has to be lords or the token that we choose
-            //TODO:we have to define the correct decay rate
-
             // Math.max(sold_at_price * 10, auction.floor_price)
-            // Red: ...reused here.
-            if self.active_auctions.read() < MAX_AUCTIONS {
+            if active_auctions < MAX_AUCTIONS {
                 let asking_price = sold_at_price * FACTOR_FOR_SELL_PRICE.into();
                 let asking_price = if asking_price > MIN_AUCTION_PRICE {
                     sold_at_price
@@ -837,13 +877,32 @@ pub mod actions {
             sell_price: u256,
             amount_to_stake: u256,
             caller: ContractAddress,
+            neighbors: Array<Land>,
+            current_time: u64,
+            our_contract_address: ContractAddress,
         ) {
             let land = LandTrait::new(
-                land_location, caller, token_for_sale, sell_price, get_block_timestamp(),
+                land_location, caller, token_for_sale, sell_price, current_time,
             );
             store.set_land(land);
+
             let mut land_stake = store.land_stake(land.location);
-            self.stake._add(amount_to_stake, land, land_stake, store);
+            land_stake.earliest_claim_neighbor_time = current_time;
+            land_stake.num_active_neighbors = neighbors.len().try_into().unwrap();
+
+            //TODO:DO THIS WITH BIT PACKING
+            // let neighborInfo = NeighborInfo {
+            //     earliest_claim_neighbor_time: current_time,
+            //     num_active_neighbors: neighbors.len().try_into().unwrap(),
+            // };
+            // land_stake.neighbor_info = neighborInfo;
+
+            self.stake._add(amount_to_stake, land, land_stake, store, our_contract_address);
+
+            for neighbor in neighbors.span() {
+                let neighbor = *neighbor;
+                self.taxes.register_bidirectional_tax_relations(land, neighbor, store, current_time)
+            };
         }
 
         fn update_level(
@@ -894,35 +953,6 @@ pub mod actions {
             return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
         }
 
-        fn _claim_and_discount_taxes(
-            ref self: ContractState, taxes: Array<TokenInfo>, owner: ContractAddress, location: u16,
-        ) {
-            if taxes.len() != 0 {
-                self.stake._discount_total_stake(taxes.span());
-                self.taxes._claim(taxes, owner, location);
-            }
-        }
-
-        fn _distribute_adjusted_taxes(ref self: ContractState, active_lands: Array<Land>) {
-            for land in active_lands.span() {
-                let land = *land;
-                let mut adjusted_taxes: Array<TokenInfo> = ArrayTrait::new();
-                let taxes = self.get_pending_taxes_for_land(land.location, land.owner);
-                for tax in taxes.span() {
-                    let tax = *tax;
-                    let token_ratio = self.stake._get_token_ratios(tax.token_address);
-                    let adjuested_tax_amount = calculate_refund_amount(tax.amount, token_ratio);
-                    adjusted_taxes
-                        .append(
-                            TokenInfo {
-                                token_address: tax.token_address, amount: adjuested_tax_amount,
-                            },
-                        )
-                };
-
-                self._claim_and_discount_taxes(adjusted_taxes, land.owner, land.location);
-            };
-        }
 
         fn generate_new_auctions(ref self: ContractState, start_price: u256) {
             let active_auctions = self.active_auctions.read();
