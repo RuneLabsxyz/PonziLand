@@ -6,6 +6,7 @@
   import WidgetMyLands from './my-lands/widget-my-lands.svelte';
   import WidgetSettings from './settings/widget-settings.svelte';
   import WidgetWallet from './wallet/widget-wallet.svelte';
+  import WidgetChat from './chat/widget-chat.svelte';
   import WidgetEntityUpdate from './entity-update/widget-entity-update.svelte';
   import WidgetMarket from './market/widget-market.svelte';
   import WidgetHelp from './help/widget-help.svelte';
@@ -36,6 +37,8 @@
         <WidgetSettings />
       {:else if type === 'my-lands'}
         <WidgetMyLands />
+      {:else if type === 'chat'}
+        <WidgetChat />
       {:else if type === 'entity-update'}
         <WidgetEntityUpdate />
       {:else if type === 'market'}
