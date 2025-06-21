@@ -255,6 +255,8 @@ pub mod actions {
 
             let mut world = self.world_default();
             let caller = get_caller_address();
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
 
             assert(
                 world.auth_dispatcher().can_take_action(get_caller_address()),
@@ -275,7 +277,7 @@ pub mod actions {
 
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land, neighbors.clone());
+            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
@@ -283,7 +285,7 @@ pub mod actions {
             let transfer_status = self.payable.transfer_from(caller, land.owner, validation_result);
             assert(transfer_status, errors::ERC20_PAY_FOR_BUY_FAILED);
 
-            self.stake._refund(store, land);
+            self.stake._refund(store, land, our_contract_address);
 
             self
                 .finalize_land_purchase(
@@ -294,6 +296,8 @@ pub mod actions {
                     amount_to_stake,
                     caller,
                     neighbors,
+                    current_time,
+                    our_contract_address,
                 );
 
             store
@@ -310,6 +314,8 @@ pub mod actions {
             assert(is_valid_position(land_location), 'Land location not valid');
             let caller = get_caller_address();
             let mut world = self.world_default();
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
 
@@ -317,7 +323,7 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land, neighbors.clone());
+            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
@@ -325,6 +331,8 @@ pub mod actions {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
 
             for land_location in land_locations {
                 if !self.active_auction_queue.read(land_location) {
@@ -334,7 +342,10 @@ pub mod actions {
                         continue;
                     }
                     let neighbors = get_land_neighbors(store, land_location);
-                    self.internal_claim(store, land, neighbors.clone());
+                    self
+                        .internal_claim(
+                            store, land, neighbors.clone(), current_time, our_contract_address,
+                        );
                 }
             };
         }
@@ -351,8 +362,9 @@ pub mod actions {
             let caller = get_caller_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
+            let current_time = get_block_timestamp();
+            let our_contract_address = get_contract_address();
             let mut store = StoreTrait::new(world);
-
             let mut land = store.land(land_location);
 
             assert(is_valid_position(land_location), 'Land location not valid');
@@ -373,7 +385,7 @@ pub mod actions {
             let current_price = auction.get_current_price_decay_rate();
 
             let neighbors = get_land_neighbors(store, land_location);
-            self.internal_claim(store, land, neighbors.clone());
+            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
 
             self
                 .buy_from_bid(
@@ -386,6 +398,9 @@ pub mod actions {
                     caller,
                     auction,
                     neighbors,
+                    current_time,
+                    current_price,
+                    our_contract_address,
                 );
         }
 
@@ -447,7 +462,7 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
             let mut land_stake = store.land_stake(land.location);
-            self.stake._add(amount_to_stake, land, land_stake, store);
+            self.stake._add(amount_to_stake, land, land_stake, store, get_contract_address());
             let new_stake_amount = land_stake.amount + amount_to_stake;
             store
                 .world
@@ -559,9 +574,10 @@ pub mod actions {
         fn get_elapsed_time_since_last_claim(
             self: @ContractState, claimer_location: u16, payer_location: u16,
         ) -> u64 {
+            let current_time = get_block_timestamp();
             let elapsed_time = self
                 .taxes
-                .get_elapsed_time_since_last_claim(claimer_location, payer_location);
+                .get_elapsed_time_since_last_claim(claimer_location, payer_location, current_time);
             elapsed_time
         }
 
@@ -719,14 +735,13 @@ pub mod actions {
             store.world.emit_event(@NewAuctionEvent { land_location, start_price, floor_price });
         }
 
-        fn nuke(ref self: ContractState, land_location: u16, has_liquidity_requirements: bool) {
+        fn nuke(ref self: ContractState, mut land: Land, has_liquidity_requirements: bool) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
-            let mut land = store.land(land_location);
             let mut land_stake = store.land_stake(land.location);
 
             if !has_liquidity_requirements && land_stake.amount > 0 {
-                self.stake._refund(store, land);
+                self.stake._refund(store, land, get_contract_address());
                 land_stake = store.land_stake(land.location);
             }
 
@@ -735,29 +750,46 @@ pub mod actions {
             let owner_nuked = land.owner;
             store.delete_land(land, land_stake);
 
-            world.emit_event(@LandNukedEvent { owner_nuked, land_location });
+            world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
 
-            let sell_price = get_average_price(store, land_location);
+            let sell_price = get_average_price(store, land.location);
             let sell_price = if sell_price > MIN_AUCTION_PRICE {
                 sell_price
             } else {
                 MIN_AUCTION_PRICE
             };
 
-            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
+            self.auction(land.location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
         }
 
 
         //TODO:CHANGE OR DELETE THE FROM_BUY PARAM
         fn internal_claim(
-            ref self: ContractState, mut store: Store, land: Land, neighbors: Array<Land>,
+            ref self: ContractState,
+            mut store: Store,
+            land: Land,
+            neighbors: Array<Land>,
+            current_time: u64,
+            our_contract_address: ContractAddress,
         ) {
+            //TODO:DOING THIS IT'S A LITTLE MORE EXPENSIVE, see why
+            let mut neighbors_dict = process_neighbors_of_neighbors(store, neighbors.clone());
+
             if neighbors.len() != 0 {
-                //TODO:DIRECT NEIGHBOR TIENE QUE SER LAND_STAKE
                 for mut tax_payer in neighbors {
                     let mut tax_payer_stake = store.land_stake(tax_payer.location);
 
-                    let is_nuke = self.taxes.claim(store, land, tax_payer, tax_payer_stake);
+                    let is_nuke = self
+                        .taxes
+                        .claim(
+                            store,
+                            land,
+                            tax_payer,
+                            tax_payer_stake,
+                            current_time,
+                            our_contract_address,
+                            ref neighbors_dict,
+                        );
 
                     let has_liquidity_requirements = self
                         .world_default()
@@ -765,7 +797,7 @@ pub mod actions {
                         .is_token_authorized(tax_payer.token_used);
 
                     if is_nuke || !has_liquidity_requirements {
-                        self.nuke(tax_payer.location, has_liquidity_requirements);
+                        self.nuke(tax_payer, has_liquidity_requirements);
                     }
                 };
             }
@@ -782,6 +814,9 @@ pub mod actions {
             caller: ContractAddress,
             mut auction: Auction,
             neighbors: Array<Land>,
+            current_time: u64,
+            current_price: u256,
+            our_contract_address: ContractAddress,
         ) {
             let validation_result = self.payable.validate(land.token_used, caller, sold_at_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
@@ -799,31 +834,31 @@ pub mod actions {
                     amount_to_stake,
                     caller,
                     neighbors,
+                    current_time,
+                    our_contract_address,
                 );
             self.staked_lands.write(land.location, true);
 
             auction.is_finished = true;
             auction.sold_at_price = Option::Some(sold_at_price);
             store.set_auction(auction);
-            // Red: We're reading the active auctions here, and it's not going to change after that,
-            // reuse it
-            self.active_auctions.write(self.active_auctions.read() - 1);
+            let mut active_auctions = self.active_auctions.read();
+            active_auctions -= 1;
+            self.active_auctions.write(active_auctions);
+
             self.active_auction_queue.write(land.location, false);
 
             store
                 .world
                 .emit_event(
                     @AuctionFinishedEvent {
-                        land_location: land.location,
-                        buyer: caller,
-                        final_price: auction.get_current_price_decay_rate(),
+                        land_location: land.location, buyer: caller, final_price: current_price,
                     },
                 );
 
             //initialize auction for neighbors
             // Math.max(sold_at_price * 10, auction.floor_price)
-            // Red: ...reused here.
-            if self.active_auctions.read() < MAX_AUCTIONS {
+            if active_auctions < MAX_AUCTIONS {
                 let asking_price = sold_at_price * FACTOR_FOR_SELL_PRICE.into();
                 let asking_price = if asking_price > MIN_AUCTION_PRICE {
                     sold_at_price
@@ -843,8 +878,9 @@ pub mod actions {
             amount_to_stake: u256,
             caller: ContractAddress,
             neighbors: Array<Land>,
+            current_time: u64,
+            our_contract_address: ContractAddress,
         ) {
-            let current_time = get_block_timestamp();
             let land = LandTrait::new(
                 land_location, caller, token_for_sale, sell_price, current_time,
             );
@@ -854,17 +890,18 @@ pub mod actions {
             land_stake.earliest_claim_neighbor_time = current_time;
             land_stake.num_active_neighbors = neighbors.len().try_into().unwrap();
 
+            //TODO:DO THIS WITH BIT PACKING
             // let neighborInfo = NeighborInfo {
             //     earliest_claim_neighbor_time: current_time,
             //     num_active_neighbors: neighbors.len().try_into().unwrap(),
             // };
             // land_stake.neighbor_info = neighborInfo;
 
-            self.stake._add(amount_to_stake, land, land_stake, store);
+            self.stake._add(amount_to_stake, land, land_stake, store, our_contract_address);
 
             for neighbor in neighbors.span() {
                 let neighbor = *neighbor;
-                self.taxes.register_bidirectional_tax_relations(land, neighbor, store)
+                self.taxes.register_bidirectional_tax_relations(land, neighbor, store, current_time)
             };
         }
 
