@@ -1,5 +1,3 @@
-use core::starknet::storage_access::StorePacking;
-
 use starknet::{ContractAddress, contract_address_const};
 use starknet::contract_address::ContractAddressZeroable;
 use ponzi_land::utils::common_strucs::{TokenInfo};
@@ -17,15 +15,13 @@ pub struct Land {
     //we will use this for taxes
     pub level: Level,
 }
-#[derive(Drop, Serde, Debug, Copy)]
+#[derive(Drop, Serde, Copy, IntrospectPacked)]
 #[dojo::model]
 pub struct LandStake {
     #[key]
     pub location: u16,
     pub amount: u256,
-    //TODO:THIS HAS TO BE PACKED STRUCT -> NeighborInfo
-    pub num_active_neighbors: u8,
-    pub earliest_claim_neighbor_time: u64,
+    pub neighbors_info_packed: felt252,
 }
 
 
@@ -85,36 +81,31 @@ impl LandImpl of LandTrait {
         Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
 }
-//TODO:See if we can use this trait inside of a dojo model
 
-// #[derive(Drop, Serde, Copy, Debug, Introspect)]
-// pub struct NeighborInfo {
-//     pub earliest_claim_neighbor_time: u64, // 64 bits
-//     pub num_active_neighbors: u8 // 8 bits
-// }
-// // Implement StorePacking for NeighborInfo, packing into a u128
-// impl NeighborInfoStorePacking of StorePacking<NeighborInfo, u128> {
-//     // Packs the NeighborInfo struct into a single u128
-//     fn pack(value: NeighborInfo) -> u128 {
-//         // Shift the u64 value to the left by 8 bits to make space for the u8
-//         let time_shifted: u128 = value.earliest_claim_neighbor_time.into()
-//             * 256_u128; // 2^8 =256 // Add the u8 value to the lower 8 bits
-//         let packed_value: u128 = time_shifted + value.num_active_neighbors.into();
-//         packed_value
-//     }
+pub type NeighborsInfo = (u64, u8, u16);
 
-//     // Unpacks a u128 back into a NeighborInfo struct
-//     fn unpack(value: u128) -> NeighborInfo {
-//         // Use a mask to extract the lower 8 bits (u8 value)
-//         let num_neighbors_u128 = value & 0xff_u128; // 0xff is 2^8 - 1
-//         let num_active_neighbors: u8 = num_neighbors_u128.try_into().unwrap();
+const SHIFT_16: u256 = 65536;
+const SHIFT_8: u256 = 256;
 
-//         // Shift the u128 value to the right by 8 bits to get the u64 value
-//         let time_u128 = value / 256_u128; // 2^8 = 256
-//         let earliest_claim_neighbor_time: u64 = time_u128.try_into().unwrap();
+pub fn pack_neighbors_info(
+    earliest_claim_neighbor_time: u64,
+    num_active_neighbors: u8,
+    earliest_claim_neighbor_location: u16,
+) -> felt252 {
+    let mut packed: u256 = 0;
+    packed = packed + earliest_claim_neighbor_time.into();
+    packed = packed * SHIFT_8 + num_active_neighbors.into();
+    packed = packed * SHIFT_16 + earliest_claim_neighbor_location.into();
+    packed.try_into().unwrap()
+}
 
-//         NeighborInfo { earliest_claim_neighbor_time, num_active_neighbors }
-//     }
-// }
-
+pub fn unpack_neighbors_info(packed_value: felt252) -> NeighborsInfo {
+    let mut packed: u256 = packed_value.into();
+    let location: u16 = (packed % SHIFT_16).try_into().unwrap();
+    packed = packed / SHIFT_16;
+    let neighbors: u8 = (packed % SHIFT_8).try_into().unwrap();
+    packed = packed / SHIFT_8;
+    let time: u64 = packed.try_into().unwrap();
+    (time, neighbors, location)
+}
 

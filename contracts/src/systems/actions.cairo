@@ -81,7 +81,10 @@ pub mod actions {
         ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
     };
 
-    use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
+    use ponzi_land::models::land::{
+        Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey, pack_neighbors_info,
+        unpack_neighbors_info,
+    };
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
     use ponzi_land::components::stake::StakeComponent;
@@ -739,7 +742,6 @@ pub mod actions {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land_stake = store.land_stake(land.location);
-
             if !has_liquidity_requirements && land_stake.amount > 0 {
                 self.stake._refund(store, land, get_contract_address());
                 land_stake = store.land_stake(land.location);
@@ -772,9 +774,6 @@ pub mod actions {
             current_time: u64,
             our_contract_address: ContractAddress,
         ) {
-            //TODO:DOING THIS IT'S A LITTLE MORE EXPENSIVE, see why
-            let mut neighbors_dict = process_neighbors_of_neighbors(store, neighbors.clone());
-
             if neighbors.len() != 0 {
                 for mut tax_payer in neighbors {
                     let mut tax_payer_stake = store.land_stake(tax_payer.location);
@@ -788,7 +787,6 @@ pub mod actions {
                             tax_payer_stake,
                             current_time,
                             our_contract_address,
-                            ref neighbors_dict,
                         );
 
                     let has_liquidity_requirements = self
@@ -887,15 +885,15 @@ pub mod actions {
             store.set_land(land);
 
             let mut land_stake = store.land_stake(land.location);
-            land_stake.earliest_claim_neighbor_time = current_time;
-            land_stake.num_active_neighbors = neighbors.len().try_into().unwrap();
 
-            //TODO:DO THIS WITH BIT PACKING
-            // let neighborInfo = NeighborInfo {
-            //     earliest_claim_neighbor_time: current_time,
-            //     num_active_neighbors: neighbors.len().try_into().unwrap(),
-            // };
-            // land_stake.neighbor_info = neighborInfo;
+            let (earliest_claim_time, earliest_claim_location) = self
+                .taxes
+                .initialize_claim_info(land.location, neighbors.clone(), current_time);
+
+            let neighbors_info = pack_neighbors_info(
+                earliest_claim_time, neighbors.len().try_into().unwrap(), earliest_claim_location,
+            );
+            land_stake.neighbors_info_packed = neighbors_info;
 
             self.stake._add(amount_to_stake, land, land_stake, store, our_contract_address);
 

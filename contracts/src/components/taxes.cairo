@@ -21,7 +21,7 @@ mod TaxesComponent {
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
     use ponzi_land::helpers::coord::max_neighbors;
-    use ponzi_land::models::land::{Land, LandStake};
+    use ponzi_land::models::land::{Land, LandStake, pack_neighbors_info, unpack_neighbors_info};
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::utils::get_neighbors::{neighbors_with_their_neighbors};
@@ -108,21 +108,24 @@ mod TaxesComponent {
             mut payer_stake: LandStake,
             current_time: u64,
             our_contract_address: ContractAddress,
-            ref neighbors_dict: Felt252Dict<Nullable<Array<Land>>>,
         ) -> bool {
-            let neighbors_of_tax_payer = neighbors_with_their_neighbors(
-                ref neighbors_dict, tax_payer.location,
+            let (
+                earliest_claim_neighbor_time,
+                num_active_neighbors,
+                earliest_claim_neighbor_location,
+            ) =
+                unpack_neighbors_info(
+                payer_stake.neighbors_info_packed,
             );
-            let elapsed_earliest_claim_time = if current_time > payer_stake
-                .earliest_claim_neighbor_time {
-                current_time - payer_stake.earliest_claim_neighbor_time
+            let elapsed_earliest_claim_time = if current_time > earliest_claim_neighbor_time {
+                current_time - earliest_claim_neighbor_time
             } else {
                 0
             };
             let theoretical_max_payable = get_taxes_per_neighbor(
                 tax_payer, elapsed_earliest_claim_time,
             )
-                * payer_stake.num_active_neighbors.into();
+                * num_active_neighbors.into();
 
             if payer_stake.amount > theoretical_max_payable.into() {
                 let elapsed_time = self
@@ -130,6 +133,7 @@ mod TaxesComponent {
                         claimer.location, tax_payer.location, current_time,
                     );
                 let tax_for_claimer = get_taxes_per_neighbor(tax_payer, elapsed_time);
+
                 self
                     ._execute_claim(
                         store,
@@ -138,17 +142,34 @@ mod TaxesComponent {
                         tax_payer,
                         tax_for_claimer,
                         payer_stake,
-                        neighbors_of_tax_payer,
                         current_time,
                         our_contract_address,
                     );
 
+                if claimer.location == earliest_claim_neighbor_location {
+                    let neighbors_of_tax_payer = get_land_neighbors(store, tax_payer.location);
+                    self
+                        ._update_land_stake_and_earliest_claim_info(
+                            store,
+                            claimer.location,
+                            payer_stake,
+                            neighbors_of_tax_payer,
+                            current_time,
+                            tax_for_claimer,
+                        );
+                } else {
+                    payer_stake.amount -= tax_for_claimer;
+                    store.set_land_stake(payer_stake);
+                }
+
                 return false;
             } else {
+                let neighbors_of_tax_payer = get_land_neighbors(store, tax_payer.location);
                 let is_nuke = self
                     ._calculate_taxes_and_verify_nuke(
                         store,
                         claimer,
+                        earliest_claim_neighbor_location,
                         tax_payer,
                         payer_stake,
                         neighbors_of_tax_payer,
@@ -163,6 +184,7 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>,
             store: Store,
             claimer: Land,
+            earliest_claimer_location: u16,
             tax_payer: Land,
             mut payer_stake: LandStake,
             neighbors_of_tax_payer: Array<Land>,
@@ -199,10 +221,24 @@ mod TaxesComponent {
                         tax_payer,
                         tax_for_claimer,
                         payer_stake,
-                        neighbors_of_tax_payer,
                         current_time,
                         our_contract_address,
                     );
+                if claimer.location == earliest_claimer_location {
+                    self
+                        ._update_land_stake_and_earliest_claim_info(
+                            store,
+                            claimer.location,
+                            payer_stake,
+                            neighbors_of_tax_payer,
+                            current_time,
+                            tax_for_claimer,
+                        );
+                } else {
+                    payer_stake.amount -= tax_for_claimer;
+                    store.set_land_stake(payer_stake);
+                }
+
                 false
             }
         }
@@ -352,7 +388,6 @@ mod TaxesComponent {
             tax_payer: Land,
             available_tax_for_claimer: u256,
             mut land_stake: LandStake,
-            neighbors_of_tax_payer: Array<Land>,
             current_time: u64,
             our_contract_address: ContractAddress,
         ) {
@@ -379,35 +414,63 @@ mod TaxesComponent {
                     );
 
                 self.last_claim_time.write((tax_payer.location, claimer_location), current_time);
-                land_stake.amount -= available_tax_for_claimer;
-                store.set_land_stake(land_stake);
-                self
-                    .update_earliest_claim_time(
-                        store, land_stake, neighbors_of_tax_payer, current_time,
-                    );
             }
         }
 
-        fn update_earliest_claim_time(
+        fn _update_land_stake_and_earliest_claim_info(
             ref self: ComponentState<TContractState>,
             mut store: Store,
-            mut payer_stake: LandStake,
+            claimer_location: u16,
+            mut land_stake: LandStake,
+            neighbors_of_tax_payer: Array<Land>,
+            current_time: u64,
+            available_tax_for_claimer: u256,
+        ) {
+            land_stake.amount -= available_tax_for_claimer;
+            let (new_earliest_time, new_earliest_location) = self
+                ._find_new_earliest_claim_time(
+                    land_stake.location, neighbors_of_tax_payer.clone(), current_time,
+                );
+            let neighbors_info = pack_neighbors_info(
+                new_earliest_time,
+                neighbors_of_tax_payer.len().try_into().unwrap(),
+                new_earliest_location,
+            );
+            land_stake.neighbors_info_packed = neighbors_info;
+
+            store.set_land_stake(land_stake);
+        }
+
+
+        fn _find_new_earliest_claim_time(
+            ref self: ComponentState<TContractState>,
+            payer_location: u16,
             neighbors: Array<Land>,
             current_time: u64,
-        ) {
+        ) -> (u64, u16) {
             let mut earliest_claim_time: u64 = 0;
+            let mut earliest_claim_location: u16 = 0;
             for neighbor in neighbors {
                 let elapsed_time: u64 = self
                     .get_elapsed_time_since_last_claim(
-                        neighbor.location, payer_stake.location, current_time,
+                        neighbor.location, payer_location, current_time,
                     );
 
                 if earliest_claim_time == 0 || elapsed_time < earliest_claim_time {
                     earliest_claim_time = elapsed_time;
+                    earliest_claim_location = neighbor.location;
                 };
             };
-            payer_stake.earliest_claim_neighbor_time = earliest_claim_time;
-            store.set_land_stake(payer_stake);
+            (earliest_claim_time, earliest_claim_location)
+        }
+
+        fn initialize_claim_info(
+            ref self: ComponentState<TContractState>,
+            tax_payer_location: u16,
+            neighbors: Array<Land>,
+            current_time: u64,
+        ) -> (u64, u16) {
+            self._find_new_earliest_claim_time(tax_payer_location, neighbors, current_time)
         }
     }
 }
