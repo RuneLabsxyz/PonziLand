@@ -6,22 +6,20 @@
   import {
     InstancedSprite,
     buildSpritesheet,
-    useInteractivity,
     type SpritesheetMetadata,
   } from '@threlte/extras';
   import { onMount } from 'svelte';
+  import {
+    Group,
+    InstancedMesh,
+    MeshBasicMaterial,
+    Object3D,
+    PlaneGeometry,
+  } from 'three';
   import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
   import { LandTile } from './landTile';
-  import {
-    Group,
-    PlaneGeometry,
-    MeshBasicMaterial,
-    InstancedMesh,
-    Object3D,
-    Matrix4,
-    Vector2,
-  } from 'three';
+  import { cursorStore } from './cursor.store.svelte';
 
   let { billboarding = true } = $props();
 
@@ -118,10 +116,8 @@
   const biomeAnimations = biomeAtlasMeta[0].animations.map((anim) => anim.name);
 
   let landTiles: any[] = $state([]);
-  let hoveredTileIndex: number | null = $state(null);
 
   // Create transparent interaction planes
-  let interactionPlanes: InstancedMesh = $state();
   const planeGeometry = new PlaneGeometry(1, 1);
   const planeMaterial = new MeshBasicMaterial({
     transparent: true,
@@ -133,9 +129,8 @@
     // Initialize land tiles from store
     landStore.getAllLands().subscribe((tiles) => {
       // Sort tiles by land ID to ensure proper grid positioning
-      const sortedTiles = tiles.sort((a, b) => a.id - b.id);
 
-      landTiles = sortedTiles.map((tile, index) => {
+      landTiles = tiles.map((tile, index) => {
         let tokenSymbol = 'empty';
 
         if (BuildingLand.is(tile)) {
@@ -158,6 +153,8 @@
     });
   });
 
+  let interactionPlanes: InstancedMesh | undefined = $state();
+
   function setupInteractionPlanes() {
     if (!landTiles.length) return;
 
@@ -178,7 +175,9 @@
       tempObject.position.set(gridX, 1.1, gridY); // Use grid coordinates, not tile.position
       tempObject.rotation.x = -Math.PI / 2; // Rotate to be horizontal
       tempObject.updateMatrix();
-      interactionPlanes.setMatrixAt(index, tempObject.matrix);
+      if (interactionPlanes) {
+        interactionPlanes.setMatrixAt(index, tempObject.matrix);
+      }
     });
 
     interactionPlanes.instanceMatrix.needsUpdate = true;
@@ -206,7 +205,7 @@
     const instanceId = event.instanceId;
     if (instanceId !== undefined && landTiles[instanceId]) {
       const tile = landTiles[instanceId];
-      hoveredTileIndex = instanceId; // Set the hovered tile index
+      cursorStore.hoveredTileIndex = instanceId; // Set the hovered tile index
       console.log('Hovered plane coordinates:', {
         gridX: tile.position[0],
         gridY: tile.position[2], // Using Z as Y for 2D grid coordinates
@@ -218,7 +217,7 @@
   }
 
   function handlePlaneLeave() {
-    hoveredTileIndex = null; // Clear the hovered tile index
+    cursorStore.hoveredTileIndex = null; // Clear the hovered tile index
     console.log('Left plane');
   }
 
@@ -226,6 +225,7 @@
     const instanceId = event.instanceId;
     if (instanceId !== undefined && landTiles[instanceId]) {
       const tile = landTiles[instanceId];
+      cursorStore.selectedTileIndex = instanceId;
       console.log('Clicked plane coordinates:', {
         gridX: tile.position[0],
         gridY: tile.position[2], // Using Z as Y for 2D grid coordinates
@@ -237,7 +237,10 @@
 
   // Function to get scale based on hover state
   function getTileScale(tileIndex: number): [number, number] {
-    return hoveredTileIndex === tileIndex ? [1.2, 1.2] : [1.0, 1.0];
+    return cursorStore.hoveredTileIndex === tileIndex ||
+      cursorStore.selectedTileIndex === tileIndex
+      ? [1.2, 1.2]
+      : [1.0, 1.0];
   }
 </script>
 
