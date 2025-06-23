@@ -350,7 +350,7 @@
       >
         <div class="w-[100px] h-[100px] relative">
           <Button
-            class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
+            class="absolute bottom-0 left-1/2 -translate-x-1/2 "
             size="sm"
           >
             BUY LAND
