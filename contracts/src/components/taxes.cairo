@@ -91,7 +91,7 @@ mod TaxesComponent {
             payer_location: u16,
             current_time: u64,
         ) -> u64 {
-            let last_claim_time = self.last_claim_time.read((claimer_location, payer_location));
+            let last_claim_time = self.last_claim_time.read((payer_location, claimer_location));
             let elapsed_time = if current_time > last_claim_time {
                 current_time - last_claim_time
             } else {
@@ -126,7 +126,6 @@ mod TaxesComponent {
                 tax_payer, elapsed_earliest_claim_time,
             )
                 * num_active_neighbors.into();
-
             if payer_stake.amount > theoretical_max_payable.into() {
                 let elapsed_time = self
                     .get_elapsed_time_since_last_claim(
@@ -199,7 +198,6 @@ mod TaxesComponent {
                     payer_stake.amount,
                     current_time,
                 );
-
             if total_taxes > payer_stake.amount {
                 self
                     ._distribute_for_nuke(
@@ -265,11 +263,12 @@ mod TaxesComponent {
         }
 
         fn calculate_nuke_time(
-            ref self: ComponentState<TContractState>, mut store: Store, land: Land,
+            self: @ComponentState<TContractState>,
+            mut store: Store,
+            land: Land,
+            land_stake: LandStake,
+            neighbors: Array<Land>,
         ) -> u64 {
-            let land_stake = store.land_stake(land.location);
-
-            let neighbors = get_land_neighbors(store, land.location);
             let num_neighbors = neighbors.len();
 
             let current_time = get_block_timestamp();
@@ -283,20 +282,26 @@ mod TaxesComponent {
             }
 
             let remaining_time_units = (land_stake.amount * BASE_TIME.into()) / total_tax_rate;
-            let mut min_remaining_time = 0;
+            let mut min_remaining_time = Bounded::<u64>::MAX;
 
             let mut i = 0;
             loop {
                 if i == num_neighbors {
                     break;
                 }
-
                 let neighbor = *neighbors.at(i);
-                let last_claim_time = self.last_claim_time.read((neighbor.location, land.location));
 
-                let time_since_last_claim = current_time - last_claim_time;
-
-                let current_remaining_time = remaining_time_units - time_since_last_claim.into();
+                let elapsed_time = self
+                    .get_elapsed_time_since_last_claim(
+                        neighbor.location, land.location, current_time,
+                    );
+                let current_remaining_time = if remaining_time_units
+                    .try_into()
+                    .unwrap() > elapsed_time {
+                    remaining_time_units.try_into().unwrap() - elapsed_time
+                } else {
+                    0
+                };
 
                 if current_remaining_time < min_remaining_time {
                     min_remaining_time = current_remaining_time;
@@ -304,8 +309,7 @@ mod TaxesComponent {
 
                 i += 1;
             };
-
-            let nuke_time = current_time + min_remaining_time.try_into().unwrap();
+            let nuke_time = current_time + min_remaining_time;
 
             nuke_time
         }

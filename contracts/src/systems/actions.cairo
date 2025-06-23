@@ -105,9 +105,7 @@ pub mod actions {
         is_valid_position, up, down, left, right, max_neighbors, index_to_position,
         position_to_index, up_left, up_right, down_left, down_right, get_all_neighbors,
     };
-    use ponzi_land::helpers::taxes::{
-        get_taxes_per_neighbor, get_tax_rate_per_neighbor, get_time_to_nuke,
-    };
+    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
     use ponzi_land::helpers::circle_expansion::{
         get_circle_land_position, get_random_index, lands_per_section, generate_circle,
         is_section_completed, get_random_available_index,
@@ -301,6 +299,7 @@ pub mod actions {
                     neighbors,
                     current_time,
                     our_contract_address,
+                    false,
                 );
 
             store
@@ -388,7 +387,6 @@ pub mod actions {
             let current_price = auction.get_current_price_decay_rate();
 
             let neighbors = get_land_neighbors(store, land_location);
-            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
 
             self
                 .buy_from_bid(
@@ -547,7 +545,7 @@ pub mod actions {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let land = store.land(land_location);
-
+            let current_time = get_block_timestamp();
             let neighbors = get_land_neighbors(store, land.location);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
@@ -565,7 +563,7 @@ pub mod actions {
                             token_address: neighbor.token_used,
                             amount: tax_per_neighbor,
                             land_location: neighbor.location,
-                            can_be_nuked: time_to_nuke == 0,
+                            can_be_nuked: time_to_nuke == current_time,
                         };
                         claim_info.append(claim_info_per_neighbor);
                     }
@@ -633,14 +631,11 @@ pub mod actions {
 
         fn get_time_to_nuke(self: @ContractState, land_location: u16) -> u64 {
             let mut world = self.world_default();
-            let store = StoreTrait::new(world);
+            let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
             let land_stake = store.land_stake(land_location);
-            let num_neighbors = get_land_neighbors(store, land.location).len();
-
-            get_time_to_nuke(land, land_stake, num_neighbors.try_into().unwrap())
-                .try_into()
-                .unwrap()
+            let neighbors = get_land_neighbors(store, land.location);
+            self.taxes.calculate_nuke_time(store, land, land_stake, neighbors)
         }
 
         fn get_unclaimed_taxes_per_neighbor(
@@ -721,7 +716,6 @@ pub mod actions {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
-
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
             let auction = AuctionTrait::new(
                 land_location, start_price, floor_price, false, decay_rate,
@@ -746,9 +740,7 @@ pub mod actions {
                 self.stake._refund(store, land, get_contract_address());
                 land_stake = store.land_stake(land.location);
             }
-
             assert(land_stake.amount == 0, 'land not valid to nuke');
-
             let owner_nuked = land.owner;
             store.delete_land(land, land_stake);
 
@@ -834,6 +826,7 @@ pub mod actions {
                     neighbors,
                     current_time,
                     our_contract_address,
+                    true,
                 );
             self.staked_lands.write(land.location, true);
 
@@ -878,6 +871,7 @@ pub mod actions {
             neighbors: Array<Land>,
             current_time: u64,
             our_contract_address: ContractAddress,
+            is_from_bid: bool,
         ) {
             let land = LandTrait::new(
                 land_location, caller, token_for_sale, sell_price, current_time,
@@ -899,7 +893,23 @@ pub mod actions {
 
             for neighbor in neighbors.span() {
                 let neighbor = *neighbor;
-                self.taxes.register_bidirectional_tax_relations(land, neighbor, store, current_time)
+                self
+                    .taxes
+                    .register_bidirectional_tax_relations(land, neighbor, store, current_time);
+
+                if is_from_bid {
+                    let mut neighbor_stake = store.land_stake(neighbor.location);
+                    let (current_time, current_num, current_loc) = unpack_neighbors_info(
+                        neighbor_stake.neighbors_info_packed,
+                    );
+
+                    if neighbor_stake.amount > 0 {
+                        neighbor_stake
+                            .neighbors_info_packed =
+                                pack_neighbors_info(current_time, current_num + 1, current_loc);
+                        store.set_land_stake(neighbor_stake);
+                    }
+                }
             };
         }
 

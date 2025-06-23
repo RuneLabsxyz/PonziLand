@@ -1058,61 +1058,112 @@ fn test_claim_all() {
     );
 }
 
-//TODO:CHECK THIS WHEN WE FINISH THE NEW CLAIM SYSTEM
-// #[test]
-// #[ignore]
-// fn test_time_to_nuke() {
-//     // Setup environment
-//     let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
+#[test]
+fn test_time_to_nuke() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher) =
+        setup_test();
+    //set a liquidity pool with amount
+    ekubo_testing_dispatcher
+        .set_pool_liquidity(
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
+        );
+    // Deploy ERC20 tokens for neighbors
+    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
 
-//     //set a liquidity pool with amount for each token
-//     ekubo_testing_dispatcher
-//         .set_pool_liquidity(
-//             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 1000000,
-//         );
+    set_block_number(234324);
+    set_block_timestamp(1000);
+    set_contract_address(RECIPIENT());
 
-//     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
-//         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
-//     );
-//     set_block_number(234);
-//     set_block_timestamp(10000);
-//     create_land_with_neighbors(
-//         store,
-//         actions_system,
-//         2080,
-//         RECIPIENT(),
-//         main_currency,
-//         5 * 100000000,
-//         get_block_timestamp(),
-//         get_block_timestamp(),
-//         1 * 100000000,
-//         erc20_neighbor_1,
-//         erc20_neighbor_2,
-//         erc20_neighbor_3,
-//     );
+    //first we clear all the events
+    clear_events(store.world.dispatcher.contract_address);
+    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 500, main_currency);
+    //and now we can capture NewAuctionEvent
+    let next_auction_location = capture_location_of_new_auction(
+        store.world.dispatcher.contract_address,
+    );
+    //TODO:DO A FUNCTION TO REFACTOR THIS
+    assert(next_auction_location.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_auction_location.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_1,
+    );
 
-//     let block_timestamp = get_block_timestamp();
+    let next_location_2 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_2.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_2(),
+        next_location_2.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_2,
+    );
 
-//     let land_stake = store.land_stake(2080);
-//     let time_to_nuke = actions_system.get_time_to_nuke(2080);
-//     set_block_timestamp(block_timestamp + time_to_nuke / 4);
-//     set_block_timestamp(10000 + time_to_nuke - (BASE_TIME.into() / TIME_SPEED.into()));
-//     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
-//     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
+    let next_location_3 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_3.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_3(),
+        next_location_3.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_3,
+    );
 
-//     assert!(unclaimed_taxes < land_stake.amount, "stake should be more than unclaimed taxes");
-//     assert!(new_time_to_nuke > 0, "should not be nukable yet");
+    let next_location_4 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_4.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_3(),
+        next_location_4.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_3,
+    );
 
-//     set_block_timestamp(10000 + time_to_nuke);
+    let next_location_5 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    assert(next_location_5.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_3(),
+        next_location_5.unwrap(),
+        1000,
+        200,
+        erc20_neighbor_3,
+    );
 
-//     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
-//     assert!(unclaimed_taxes * 4 >= land_stake.amount, "stake should be <= unclaimed taxes");
+    let block_timestamp = get_block_timestamp();
 
-//     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
-//     assert!(new_time_to_nuke == 0, "should be nukable now");
-// }
+    let land_stake = store.land_stake(2080);
+    let time_to_nuke = actions_system.get_time_to_nuke(2080);
+    set_block_timestamp(block_timestamp + time_to_nuke - 1);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
+    assert!(unclaimed_taxes < land_stake.amount, "stake should be > unclaimed taxes");
+    let block_timestamp = get_block_timestamp();
+    let new_block_timestamp = block_timestamp + 2000;
+    set_block_timestamp(new_block_timestamp);
 
-//TODO:this test can be more exhaustive
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
+    assert!(unclaimed_taxes * 5 >= land_stake.amount, "stake should be <= unclaimed taxes");
+
+    let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
+    assert!(new_time_to_nuke == get_block_timestamp(), "should be nukable now");
+}
+
 #[test]
 fn test_circle_expansion() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
