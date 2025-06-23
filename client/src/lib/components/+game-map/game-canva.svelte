@@ -5,7 +5,7 @@
   let billboarding = true;
 </script>
 
-<div>
+<div id="game-canvas" style="height: 100%; width: 100%;">
   <Canvas>
     <PerfMonitor />
     <T.OrthographicCamera position={[32, 50, 32]} zoom={100} makeDefault>

@@ -2,7 +2,11 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import { Button } from '$lib/components/ui/button';
-  import { landStore } from '$lib/stores/store.svelte';
+  import {
+    landStore,
+    selectedLand,
+    selectedLandWithActions,
+  } from '$lib/stores/store.svelte';
   import { T } from '@threlte/core';
   import {
     HTML,
@@ -12,6 +16,7 @@
   } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
+    Camera,
     Group,
     InstancedMesh,
     MeshBasicMaterial,
@@ -23,6 +28,7 @@
   import { buildingAtlasMeta } from './buildings';
   import { cursorStore } from './cursor.store.svelte';
   import { LandTile } from './landTile';
+  import LandRatesOverlay from '../land/land-rates-overlay.svelte';
 
   let { billboarding = true } = $props();
 
@@ -99,7 +105,7 @@
         const gridX = index % gridSize;
         const gridY = Math.floor(index / gridSize);
 
-        return new LandTile([gridX, 1, gridY], tokenSymbol, tile.level);
+        return new LandTile([gridY, 1, gridX], tokenSymbol, tile.level, tile);
       });
       setupInteractionPlanes();
     });
@@ -119,10 +125,11 @@
     const tempObject = new Object3D();
 
     landTiles.forEach((tile, index) => {
-      const gridX = index % gridSize;
-      const gridY = Math.floor(index / gridSize);
-
-      tempObject.position.set(gridX, 1.1, gridY);
+      tempObject.position.set(
+        tile.position[0],
+        tile.position[1] + 1, // Slightly above the ground
+        tile.position[2],
+      );
       tempObject.rotation.x = -Math.PI / 2;
       tempObject.updateMatrix();
       if (interactionPlanes) {
@@ -154,6 +161,7 @@
     if (cursorStore.hoveredTileIndex !== null) {
       cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
       const tile = landTiles[cursorStore.hoveredTileIndex];
+      selectedLand.value = tile.land;
       console.log('Clicked and selected hovered tile:', {
         gridX: tile.position[0],
         gridY: tile.position[2],
@@ -172,13 +180,14 @@
     const instanceId = event.instanceId;
     if (instanceId !== undefined && landTiles[instanceId]) {
       cursorStore.hoveredTileIndex = instanceId;
-      // console.log('Hovered plane coordinates:', {
-      //   gridX: tile.position[0],
-      //   gridY: tile.position[2],
-      //   landId: tile.landId,
-      //   instanceId: instanceId,
-      //   tile: tile,
-      // });
+      const tile = landTiles[instanceId];
+      console.log('Hovered plane coordinates:', {
+        gridX: tile.position[0],
+        gridY: tile.position[2],
+        landId: tile.landId,
+        instanceId: instanceId,
+        tile: tile,
+      });
     }
   }
 
@@ -198,7 +207,7 @@
       const basePosition = landTiles[cursorStore.selectedTileIndex].position;
       selectedLandTilePosition = [
         basePosition[0],
-        basePosition[1] + 0.1,
+        basePosition[1] + 2,
         basePosition[2],
       ];
     } else {
@@ -207,7 +216,7 @@
   });
 </script>
 
-<T is={Group} interactive={true} onclick={handleClickToSelectHovered}>
+<T is={Group}>
   {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet]}
     <!-- Transparent interaction planes layer (still needed for hover detection) -->
     {#if interactionPlanes}
@@ -216,6 +225,7 @@
         interactive={true}
         onpointerenter={handlePlaneHover}
         onpointerleave={handlePlaneLeave}
+        onclick={handleClickToSelectHovered}
       />
     {/if}
 
@@ -278,23 +288,29 @@
     >
       <BuildingSprite {landTiles} />
     </InstancedSprite>
-
-    <!-- Button overlay using Threlte HTML component -->
-    {#if selectedLandTilePosition}
-      <HTML
-        position={selectedLandTilePosition}
-        center={true}
-        distanceFactor={0.01}
-      >
-        <div class="w-[100px] h-[100px] relative">
-          <Button
-            class="absolute bottom-0 left-1/2 -translate-x-1/2 "
-            size="sm"
-          >
-            BUY LAND
-          </Button>
-        </div>
-      </HTML>
-    {/if}
   {/await}
 </T>
+<!-- Button overlay using Threlte HTML component -->
+{#if selectedLandTilePosition}
+  {@const land = selectedLandWithActions()?.value}
+  <HTML
+    portal={document.getElementById('game-canvas') ?? document.body}
+    position={selectedLandTilePosition}
+    zIndexRange={[10, 0]}
+    distanceFactor={0.01}
+  >
+    <Button
+      class="mt-[50px] -translate-y-full -translate-x-1/2"
+      size="sm"
+      onclick={() => {
+        console.log('Clicked to buy land:', land);
+      }}
+    >
+      BUY LAND
+    </Button>
+
+    {#if land}
+      <LandRatesOverlay {land} />
+    {/if}
+  </HTML>
+{/if}
