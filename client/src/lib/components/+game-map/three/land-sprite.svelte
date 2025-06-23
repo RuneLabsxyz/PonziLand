@@ -1,13 +1,20 @@
 <script lang="ts">
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
-  import { landStore } from '$lib/stores/store.svelte';
+  import {
+    landStore,
+    selectedLand,
+    selectedLandWithActions,
+  } from '$lib/stores/store.svelte';
   import { T } from '@threlte/core';
   import {
     InstancedSprite,
     buildSpritesheet,
     type SpritesheetMetadata,
   } from '@threlte/extras';
+  // Import the HTML component from @threlte/extras
+  import { Button } from '$lib/components/ui/button';
+  import { HTML } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
     Group,
@@ -18,8 +25,9 @@
   } from 'three';
   import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
-  import { LandTile } from './landTile';
   import { cursorStore } from './cursor.store.svelte';
+  import { LandTile } from './landTile';
+  import LandRatesOverlay from '../land/land-rates-overlay.svelte';
 
   let { billboarding = true } = $props();
 
@@ -128,8 +136,6 @@
   onMount(() => {
     // Initialize land tiles from store
     landStore.getAllLands().subscribe((tiles) => {
-      // Sort tiles by land ID to ensure proper grid positioning
-
       landTiles = tiles.map((tile, index) => {
         let tokenSymbol = 'empty';
 
@@ -242,6 +248,27 @@
       ? [1.2, 1.2]
       : [1.0, 1.0];
   }
+
+  let selectedLandTilePosition: [number, number, number] | undefined =
+    $state(undefined);
+
+  $effect(() => {
+    if (
+      cursorStore.selectedTileIndex !== null &&
+      landTiles[cursorStore.selectedTileIndex]
+    ) {
+      // The HTML component automatically handles perspective, so you might want to adjust the Y-position
+      // to lift the button slightly above the tile visually.
+      const basePosition = landTiles[cursorStore.selectedTileIndex].position;
+      selectedLandTilePosition = [
+        basePosition[0],
+        basePosition[1] + 0.1, // Adjust Y to lift the button above the tile
+        basePosition[2],
+      ];
+    } else {
+      selectedLandTilePosition = undefined;
+    }
+  });
 </script>
 
 <T is={Group}>
@@ -313,5 +340,23 @@
     >
       <BuildingSprite {landTiles} />
     </InstancedSprite>
+
+    <!-- Button overlay using Threlte HTML component -->
+    {#if selectedLandTilePosition}
+      <HTML
+        position={selectedLandTilePosition}
+        center={true}
+        distanceFactor={0.01}
+      >
+        <div class="w-[100px] h-[100px] relative">
+          <Button
+            class="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
+            size="sm"
+          >
+            BUY LAND
+          </Button>
+        </div>
+      </HTML>
+    {/if}
   {/await}
 </T>
