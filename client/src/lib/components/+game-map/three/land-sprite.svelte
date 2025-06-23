@@ -299,8 +299,11 @@
     zIndexRange={[10, 0]}
     distanceFactor={0.01}
   >
+    {#if land}
+      <LandRatesOverlay {land} />
+    {/if}
     <Button
-      class="mt-[50px] -translate-y-full -translate-x-1/2"
+      class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
       size="sm"
       onclick={() => {
         console.log('Clicked to buy land:', land);
@@ -308,9 +311,5 @@
     >
       BUY LAND
     </Button>
-
-    {#if land}
-      <LandRatesOverlay {land} />
-    {/if}
   </HTML>
 {/if}
