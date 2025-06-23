@@ -130,7 +130,10 @@
   onMount(() => {
     // Initialize land tiles from store
     landStore.getAllLands().subscribe((tiles) => {
-      landTiles = tiles.map((tile) => {
+      // Sort tiles by land ID to ensure proper grid positioning
+      const sortedTiles = tiles.sort((a, b) => a.id - b.id);
+
+      landTiles = sortedTiles.map((tile, index) => {
         let tokenSymbol = 'empty';
 
         if (BuildingLand.is(tile)) {
@@ -141,11 +144,11 @@
           tokenSymbol = 'auction';
         }
 
-        return new LandTile(
-          [tile.location.x, 1, tile.location.y],
-          tokenSymbol,
-          tile.level,
-        );
+        // Calculate grid position based on index (left to right, top to bottom)
+        const gridX = index % gridSize;
+        const gridY = Math.floor(index / gridSize);
+
+        return new LandTile([gridX, 1, gridY], tokenSymbol, tile.level);
       });
 
       // Setup interaction planes after landTiles are ready
@@ -166,11 +169,11 @@
     const tempObject = new Object3D();
 
     landTiles.forEach((tile, index) => {
-      tempObject.position.set(
-        tile.position[0],
-        tile.position[1] + 0.1,
-        tile.position[2],
-      );
+      // Calculate grid position based on index (left to right, top to bottom)
+      const gridX = index % gridSize;
+      const gridY = Math.floor(index / gridSize);
+
+      tempObject.position.set(gridX, 1.1, gridY); // Use grid coordinates, not tile.position
       tempObject.rotation.x = -Math.PI / 2; // Rotate to be horizontal
       tempObject.updateMatrix();
       interactionPlanes.setMatrixAt(index, tempObject.matrix);
@@ -202,8 +205,9 @@
     if (instanceId !== undefined && landTiles[instanceId]) {
       const tile = landTiles[instanceId];
       console.log('Hovered plane coordinates:', {
-        x: tile.position[0],
-        y: tile.position[2], // Using Z as Y for 2D grid coordinates
+        gridX: tile.position[0],
+        gridY: tile.position[2], // Using Z as Y for 2D grid coordinates
+        landId: tile.landId, // Original land ID
         instanceId: instanceId,
         tile: tile,
       });
@@ -215,8 +219,8 @@
     if (instanceId !== undefined && landTiles[instanceId]) {
       const tile = landTiles[instanceId];
       console.log('Clicked plane coordinates:', {
-        x: tile.position[0],
-        y: tile.position[2], // Using Z as Y for 2D grid coordinates
+        gridX: tile.position[0],
+        gridY: tile.position[2], // Using Z as Y for 2D grid coordinates
         instanceId: instanceId,
         tile: tile,
       });
