@@ -20,6 +20,7 @@
     InstancedMesh,
     Object3D,
     Matrix4,
+    Vector2,
   } from 'three';
 
   let { billboarding = true } = $props();
@@ -117,6 +118,7 @@
   const biomeAnimations = biomeAtlasMeta[0].animations.map((anim) => anim.name);
 
   let landTiles: any[] = $state([]);
+  let hoveredTileIndex: number | null = $state(null);
 
   // Create transparent interaction planes
   let interactionPlanes: InstancedMesh = $state();
@@ -204,6 +206,7 @@
     const instanceId = event.instanceId;
     if (instanceId !== undefined && landTiles[instanceId]) {
       const tile = landTiles[instanceId];
+      hoveredTileIndex = instanceId; // Set the hovered tile index
       console.log('Hovered plane coordinates:', {
         gridX: tile.position[0],
         gridY: tile.position[2], // Using Z as Y for 2D grid coordinates
@@ -212,6 +215,11 @@
         tile: tile,
       });
     }
+  }
+
+  function handlePlaneLeave() {
+    hoveredTileIndex = null; // Clear the hovered tile index
+    console.log('Left plane');
   }
 
   function handlePlaneClick(event: any) {
@@ -226,6 +234,11 @@
       });
     }
   }
+
+  // Function to get scale based on hover state
+  function getTileScale(tileIndex: number): [number, number] {
+    return hoveredTileIndex === tileIndex ? [1.2, 1.2] : [1.0, 1.0];
+  }
 </script>
 
 <T is={Group}>
@@ -236,7 +249,7 @@
         is={interactionPlanes}
         interactive={true}
         onpointerenter={handlePlaneHover}
-        onpointerleave={() => console.log('Left plane')}
+        onpointerleave={handlePlaneLeave}
         onclick={handlePlaneClick}
       />
     {/if}
@@ -281,6 +294,7 @@
               tile.position[1] - 0.01,
               tile.position[2],
             ]}
+            scale={getTileScale(i)}
             id={i}
           />
         {/each}
