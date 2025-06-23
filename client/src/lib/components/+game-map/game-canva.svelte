@@ -1,24 +1,37 @@
 <script lang="ts">
   import { Canvas, T } from '@threlte/core';
+  import { Grid, OrbitControls, PerfMonitor } from '@threlte/extras';
   import Scene from './game-scene.svelte';
-  import { OrbitControls, PerfMonitor } from '@threlte/extras';
   let billboarding = true;
-  let fps = 30;
 </script>
 
 <div>
   <Canvas>
     <PerfMonitor />
-    <T.PerspectiveCamera makeDefault position.z={0} position.y={50}>
+    <T.OrthographicCamera position={[32, 50, 32]} zoom={100} makeDefault>
       <OrbitControls
         enableRotate={false}
         enableZoom={true}
         enablePan={true}
         panSpeed={1.0}
         screenSpacePanning={true}
+        zoomToCursor
+        enableDamping
+        zoom0={5}
+        minZoom={10}
+        maxZoom={2000}
+        target={[32, 0, 32]}
       />
-    </T.PerspectiveCamera>
-    <Scene {billboarding} {fps} />
+    </T.OrthographicCamera>
+    <Grid
+      position={[30 - 0.5, 1, 30 - 0.5]}
+      divisions={10}
+      cellSize={1}
+      cellColor="#ffffff"
+      sectionColor="#ffff00"
+      gridSize={64 + 20}
+    />
+    <Scene {billboarding} />
   </Canvas>
 </div>
 

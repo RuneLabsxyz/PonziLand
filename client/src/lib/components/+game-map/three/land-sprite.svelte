@@ -2,129 +2,31 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import { landStore } from '$lib/stores/store.svelte';
+  import { T } from '@threlte/core';
   import {
     InstancedSprite,
     buildSpritesheet,
-    interactivity,
+    useInteractivity,
     type SpritesheetMetadata,
   } from '@threlte/extras';
   import { onMount } from 'svelte';
-  // Import Three.js
-  import { OutlineSpriteMaterial } from '$lib/materials/OutlineSpriteMaterial'; // Adjust path
+  import BuildingSprite from './building-sprite.svelte';
+  import { buildingAtlasMeta } from './buildings';
+  import { LandTile } from './landTile';
+  import {
+    Group,
+    PlaneGeometry,
+    MeshBasicMaterial,
+    InstancedMesh,
+    Object3D,
+    Matrix4,
+  } from 'three';
+
   let { billboarding = true } = $props();
-
-  // LandTile class to hold token metadata
-  class LandTile {
-    position: [number, number, number];
-    tokenName: string;
-    level: number;
-
-    constructor(
-      position: [number, number, number],
-      tokenName: string,
-      level: number,
-    ) {
-      this.position = position;
-      tokenName = tokenName || 'empty'; // Ensure tokenName is not null/undefined
-      this.tokenName = tokenName;
-      this.level = level;
-    }
-
-    // Derive building animation name from token name and level
-    getBuildingAnimationName(): string {
-      return `${this.tokenName}_${this.level}`;
-    }
-
-    // Derive biome animation name from token name
-    getBiomeAnimationName(): string {
-      return this.tokenName;
-    }
-  }
 
   // Generate grid positions and create LandTile instances
   const gridSize = 64;
-  // BUILDING
-  const buildingAtlasMeta = [
-    {
-      url: '/tokens/+global/buildings.png',
-      type: 'rowColumn',
-      width: 12,
-      height: 21,
-      animations: [
-        { name: 'lords_1', frameRange: [0, 0] },
-        { name: 'lords_2', frameRange: [12, 12] },
-        { name: 'lords_3', frameRange: [24, 24] },
-        { name: 'eLORDS_1', frameRange: [0, 0] },
-        { name: 'eLORDS_2', frameRange: [12, 12] },
-        { name: 'eLORDS_3', frameRange: [24, 24] },
-        { name: 'nftLORDS_1', frameRange: [0, 0] },
-        { name: 'nftLORDS_2', frameRange: [12, 12] },
-        { name: 'nftLORDS_3', frameRange: [24, 24] },
-        { name: 'pal_1', frameRange: [36, 36] },
-        { name: 'pal_2', frameRange: [48, 48] },
-        { name: 'pal_3', frameRange: [60, 60] },
-        { name: 'pimp_1', frameRange: [72, 72] },
-        { name: 'pimp_2', frameRange: [84, 84] },
-        { name: 'pimp_3', frameRange: [96, 96] },
-        { name: 'ekubo_1', frameRange: [108, 108] },
-        { name: 'ekubo_2', frameRange: [120, 120] },
-        { name: 'ekubo_3', frameRange: [132, 132] },
-        { name: 'sisters_1', frameRange: [144, 144] },
-        { name: 'sisters_2', frameRange: [156, 156] },
-        { name: 'sisters_3', frameRange: [168, 168] },
-        { name: 'slinky_1', frameRange: [180, 180] },
-        { name: 'slinky_2', frameRange: [192, 192] },
-        { name: 'slinky_3', frameRange: [204, 204] },
-        { name: 'btc_1', frameRange: [216, 216] },
-        { name: 'btc_2', frameRange: [228, 228] },
-        { name: 'btc_3', frameRange: [240, 240] },
 
-        { name: 'dope_1', frameRange: [3, 3] },
-        { name: 'dope_2', frameRange: [15, 15] },
-        { name: 'dope_3', frameRange: [27, 27] },
-        { name: 'strk_1', frameRange: [39, 39] },
-        { name: 'strk_2', frameRange: [51, 51] },
-        { name: 'strk_3', frameRange: [63, 63] },
-        { name: 'nftSTRK_1', frameRange: [39, 39] },
-        { name: 'nftSTRK_2', frameRange: [51, 51] },
-        { name: 'nftSTRK_3', frameRange: [63, 63] },
-        { name: 'brother_1', frameRange: [75, 75] },
-        { name: 'brother_2', frameRange: [87, 87] },
-        { name: 'brother_3', frameRange: [99, 99] },
-        { name: 'eth_1', frameRange: [111, 111] },
-        { name: 'eth_2', frameRange: [123, 123] },
-        { name: 'eth_3', frameRange: [135, 135] },
-        { name: 'circus_1', frameRange: [147, 147] },
-        // { name: 'circus_2', frameRange: [159, 159] },
-        // { name: 'circus_3', frameRange: [171, 171] },
-        { name: 'nums_1', frameRange: [183, 183] },
-        { name: 'nums_2', frameRange: [195, 195] },
-        { name: 'nums_3', frameRange: [207, 207] },
-        { name: 'flip_1', frameRange: [219, 219] },
-        { name: 'flip_2', frameRange: [231, 231] },
-        { name: 'flip_3', frameRange: [243, 243] },
-        { name: 'wnt_1', frameRange: [6, 6] },
-        { name: 'wnt_2', frameRange: [18, 18] },
-        { name: 'wnt_3', frameRange: [30, 30] },
-        { name: 'eWNT_1', frameRange: [6, 6] },
-        { name: 'eWNT_2', frameRange: [18, 18] },
-        { name: 'eWNT_3', frameRange: [30, 30] },
-        { name: 'qq_1', frameRange: [42, 42] },
-        { name: 'qq_2', frameRange: [54, 54] },
-        { name: 'qq_3', frameRange: [66, 66] },
-        { name: 'eQQ_1', frameRange: [42, 42] },
-        { name: 'eQQ_2', frameRange: [54, 54] },
-        { name: 'eQQ_3', frameRange: [66, 66] },
-        { name: 'evreai_1', frameRange: [9, 9] },
-        { name: 'evreai_2', frameRange: [21, 21] },
-        { name: 'evreai_3', frameRange: [33, 33] },
-        { name: 'eSG_1', frameRange: [9, 9] },
-        { name: 'eSG_2', frameRange: [21, 21] },
-        { name: 'eSG_3', frameRange: [33, 33] },
-        { name: 'empty', frameRange: [1, 1] },
-      ],
-    },
-  ] as const satisfies SpritesheetMetadata;
   const buildingAtlas =
     buildSpritesheet.from<typeof buildingAtlasMeta>(buildingAtlasMeta);
 
@@ -199,18 +101,6 @@
   ] as const satisfies SpritesheetMetadata;
   const roadAtlas = buildSpritesheet.from<typeof roadAtlasMeta>(roadAtlasMeta);
 
-  // Helper function to get a fallback animation name if the derived one doesn't exist
-  function getBuildingAnimationOrFallback(
-    tile: LandTile,
-    availableAnimations: string[],
-  ): string {
-    const derivedName = tile.getBuildingAnimationName();
-    if (availableAnimations.includes(derivedName)) {
-      return derivedName;
-    }
-    return 'empty';
-  }
-
   function getBiomeAnimationOrFallback(
     tile: LandTile,
     availableAnimations: string[],
@@ -224,13 +114,18 @@
     return 'empty';
   }
 
-  // Get available animation names
-  const buildingAnimations = buildingAtlasMeta[0].animations.map(
-    (anim) => anim.name,
-  );
   const biomeAnimations = biomeAtlasMeta[0].animations.map((anim) => anim.name);
 
   let landTiles: any[] = $state([]);
+
+  // Create transparent interaction planes
+  let interactionPlanes: InstancedMesh = $state();
+  const planeGeometry = new PlaneGeometry(1, 1);
+  const planeMaterial = new MeshBasicMaterial({
+    transparent: true,
+    opacity: 0,
+    alphaTest: 0.1, // This ensures the planes are still raycastable even when transparent
+  });
 
   onMount(() => {
     // Initialize land tiles from store
@@ -239,7 +134,7 @@
         let tokenSymbol = 'empty';
 
         if (BuildingLand.is(tile)) {
-          tokenSymbol = tile?.token?.symbol ?? 'empty'; // Default to 'empty' instead of console.warn
+          tokenSymbol = tile?.token?.symbol ?? 'empty';
         }
 
         if (AuctionLand.is(tile)) {
@@ -252,8 +147,37 @@
           tile.level,
         );
       });
+
+      // Setup interaction planes after landTiles are ready
+      setupInteractionPlanes();
     });
   });
+
+  function setupInteractionPlanes() {
+    if (!landTiles.length) return;
+
+    // Create instanced mesh for interaction planes
+    interactionPlanes = new InstancedMesh(
+      planeGeometry,
+      planeMaterial,
+      landTiles.length,
+    );
+
+    const tempObject = new Object3D();
+
+    landTiles.forEach((tile, index) => {
+      tempObject.position.set(
+        tile.position[0],
+        tile.position[1] + 0.1,
+        tile.position[2],
+      );
+      tempObject.rotation.x = -Math.PI / 2; // Rotate to be horizontal
+      tempObject.updateMatrix();
+      interactionPlanes.setMatrixAt(index, tempObject.matrix);
+    });
+
+    interactionPlanes.instanceMatrix.needsUpdate = true;
+  }
 
   $effect(() => {
     // Update sprite instances when landTiles or other relevant data changes
@@ -272,92 +196,101 @@
   let biomeSprite: any = $state();
   let buildingSprite: any = $state();
 
-  let getBiomeMaterial = (resolvedBiomeSpritesheet: any) => {
-    return new OutlineSpriteMaterial(
-      resolvedBiomeSpritesheet, // This is the correct spritesheet object
-      2.0, // Outline width in pixels
-      0xffff00, // Yellow color (0xRRGGBB)
-    );
-  };
+  // Handle plane interactions
+  function handlePlaneHover(event: any) {
+    const instanceId = event.instanceId;
+    if (instanceId !== undefined && landTiles[instanceId]) {
+      const tile = landTiles[instanceId];
+      console.log('Hovered plane coordinates:', {
+        x: tile.position[0],
+        y: tile.position[2], // Using Z as Y for 2D grid coordinates
+        instanceId: instanceId,
+        tile: tile,
+      });
+    }
+  }
 
-  interactivity({
-    filter: (hits, state) => {
-      // Only return the first hit
-      return hits.slice(0, 1);
-    },
-  });
-
-  import { useInteractivity } from '@threlte/extras';
-  const { pointer, pointerOverTarget } = useInteractivity();
-  $inspect($pointer, $pointerOverTarget);
+  function handlePlaneClick(event: any) {
+    const instanceId = event.instanceId;
+    if (instanceId !== undefined && landTiles[instanceId]) {
+      const tile = landTiles[instanceId];
+      console.log('Clicked plane coordinates:', {
+        x: tile.position[0],
+        y: tile.position[2], // Using Z as Y for 2D grid coordinates
+        instanceId: instanceId,
+        tile: tile,
+      });
+    }
+  }
 </script>
 
-{#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet]}
-  <!-- Road sprites-->
-  <InstancedSprite
-    count={gridSize * gridSize}
-    autoUpdate={false}
-    playmode={'PAUSE'}
-    {billboarding}
-    spritesheet={roadSpritesheet}
-    bind:ref={roadSprite}
-  >
-    {#snippet children({ Instance }: { Instance: any })}
-      {#each landTiles as tile, i}
-        <Instance
-          animationName={'default'}
-          position={[
-            tile.position[0],
-            tile.position[1] - 0.02,
-            tile.position[2],
-          ]}
-          id={i}
-        />
-      {/each}
-    {/snippet}
-  </InstancedSprite>
+<T is={Group}>
+  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet]}
+    <!-- Transparent interaction planes layer (topmost for interactions) -->
+    {#if interactionPlanes}
+      <T
+        is={interactionPlanes}
+        interactive={true}
+        onpointerenter={handlePlaneHover}
+        onpointerleave={() => console.log('Left plane')}
+        onclick={handlePlaneClick}
+      />
+    {/if}
 
-  <!-- Biome sprites (background layer) with custom outline shader -->
-  <!-- Only render if biomeOutlineMaterial is ready -->
-  <InstancedSprite
-    count={gridSize * gridSize}
-    {billboarding}
-    spritesheet={resolvedBiomeSpritesheet}
-    bind:ref={biomeSprite}
-  >
-    {#snippet children({ Instance: BiomeInstance }: { Instance: any })}
-      {#each landTiles as tile, i}
-        <BiomeInstance
-          animationName={getBiomeAnimationOrFallback(tile, biomeAnimations)}
-          position={[
-            tile.position[0],
-            tile.position[1] - 0.01,
-            tile.position[2],
-          ]}
-          id={i}
-        />
-      {/each}
-    {/snippet}
-  </InstancedSprite>
+    <!-- Road sprites-->
+    <InstancedSprite
+      count={gridSize * gridSize}
+      autoUpdate={false}
+      playmode={'PAUSE'}
+      {billboarding}
+      spritesheet={roadSpritesheet}
+      bind:ref={roadSprite}
+    >
+      {#snippet children({ Instance }: { Instance: any })}
+        {#each landTiles as tile, i}
+          <Instance
+            animationName={'default'}
+            position={[
+              tile.position[0],
+              tile.position[1] - 0.02,
+              tile.position[2],
+            ]}
+            id={i}
+          />
+        {/each}
+      {/snippet}
+    </InstancedSprite>
 
-  <!-- Building sprites (foreground layer) -->
-  <InstancedSprite
-    count={gridSize * gridSize}
-    {billboarding}
-    spritesheet={buildingSpritesheet}
-    bind:ref={buildingSprite}
-  >
-    {#snippet children({ Instance }: { Instance: any })}
-      {#each landTiles as tile, i}
-        <Instance
-          animationName={getBuildingAnimationOrFallback(
-            tile,
-            buildingAnimations,
-          )}
-          position={tile.position}
-          id={i}
-        />
-      {/each}
-    {/snippet}
-  </InstancedSprite>
-{/await}
+    <!-- Biome sprites (background layer) -->
+    <InstancedSprite
+      count={gridSize * gridSize}
+      {billboarding}
+      spritesheet={resolvedBiomeSpritesheet}
+      bind:ref={biomeSprite}
+    >
+      {#snippet children({ Instance: BiomeInstance }: { Instance: any })}
+        {#each landTiles as tile, i}
+          <BiomeInstance
+            animationName={getBiomeAnimationOrFallback(tile, biomeAnimations)}
+            position={[
+              tile.position[0],
+              tile.position[1] - 0.01,
+              tile.position[2],
+            ]}
+            id={i}
+          />
+        {/each}
+      {/snippet}
+    </InstancedSprite>
+
+    <!-- Building sprites (foreground layer) -->
+    <InstancedSprite
+      count={gridSize * gridSize}
+      {billboarding}
+      spritesheet={buildingSpritesheet}
+      bind:ref={buildingSprite}
+    >
+      <BuildingSprite {landTiles} />
+    </InstancedSprite>
+  {/await}
+</T>
