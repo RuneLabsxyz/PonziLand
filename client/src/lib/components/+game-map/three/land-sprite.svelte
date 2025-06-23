@@ -7,7 +7,7 @@
     selectedLand,
     selectedLandWithActions,
   } from '$lib/stores/store.svelte';
-  import { T } from '@threlte/core';
+  import { T, useThrelte } from '@threlte/core';
   import {
     HTML,
     InstancedSprite,
@@ -16,12 +16,12 @@
   } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
-    Camera,
     Group,
     InstancedMesh,
     MeshBasicMaterial,
     Object3D,
     PlaneGeometry,
+    Vector3, // Still good to have for target calculation
   } from 'three';
   import { biomeAtlasMeta } from './biomes';
   import BuildingSprite from './building-sprite.svelte';
@@ -29,6 +29,7 @@
   import { cursorStore } from './cursor.store.svelte';
   import { LandTile } from './landTile';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
+  import { gameStore } from './game.store.svelte';
 
   let { billboarding = true } = $props();
 
@@ -156,12 +157,31 @@
   let biomeSprite: any = $state();
   let buildingSprite: any = $state();
 
+  const { camera } = useThrelte();
+
   // Function to be called by the global click listener
   function handleClickToSelectHovered() {
     if (cursorStore.hoveredTileIndex !== null) {
-      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
       const tile = landTiles[cursorStore.hoveredTileIndex];
+
+      if (gameStore.cameraControls) {
+        gameStore.cameraControls.setLookAt(
+          tile.position[0],
+          50, // Slightly above the tile
+          tile.position[2],
+          tile.position[0],
+          tile.position[1],
+          tile.position[2],
+          true,
+        );
+
+        if (cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex) {
+          gameStore.cameraControls.zoomTo(250, true);
+        }
+      }
+      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
       selectedLand.value = tile.land;
+
       console.log('Clicked and selected hovered tile:', {
         gridX: tile.position[0],
         gridY: tile.position[2],
@@ -207,13 +227,16 @@
       const basePosition = landTiles[cursorStore.selectedTileIndex].position;
       selectedLandTilePosition = [
         basePosition[0],
-        basePosition[1] + 2,
+        basePosition[1] + 0.1,
         basePosition[2],
       ];
     } else {
       selectedLandTilePosition = undefined;
     }
   });
+
+  // Removed all animation loop (`onLoop`) and animation state variables.
+  // The camera position and lookAt are now set directly when `handleClickToSelectHovered` is called.
 </script>
 
 <T is={Group}>

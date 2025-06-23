@@ -1,7 +1,13 @@
 <script lang="ts">
   import { Canvas, T } from '@threlte/core';
-  import { Grid, OrbitControls, PerfMonitor } from '@threlte/extras';
+  import {
+    CameraControls,
+    type CameraControlsRef,
+    Grid,
+    PerfMonitor,
+  } from '@threlte/extras';
   import Scene from './game-scene.svelte';
+  import { gameStore } from './three/game.store.svelte';
   let billboarding = true;
 </script>
 
@@ -9,8 +15,8 @@
   <Canvas>
     <PerfMonitor />
     <T.OrthographicCamera position={[32, 50, 32]} zoom={100} makeDefault>
-      <OrbitControls
-        enableRotate={false}
+      <CameraControls
+        rotation={false}
         enableZoom={true}
         enablePan={true}
         panSpeed={1.0}
@@ -19,8 +25,11 @@
         enableDamping
         zoom0={5}
         minZoom={10}
-        maxZoom={2000}
-        target={[32, 0, 32]}
+        maxZoom={1000}
+        bind:ref={gameStore.cameraControls}
+        oncreate={(ref: CameraControlsRef) => {
+          ref.setLookAt(32, 50, 32, 32, 0, 32, true);
+        }}
       />
     </T.OrthographicCamera>
     <Grid
