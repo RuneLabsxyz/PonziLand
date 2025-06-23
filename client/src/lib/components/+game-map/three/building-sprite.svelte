@@ -10,16 +10,29 @@
   function getBuildingAnimationOrFallback(
     tile: LandTile,
     availableAnimations: string[],
+    tileIndex?: number,
   ): string {
     const derivedName = tile.getBuildingAnimationName();
+    let name = 'empty';
+
     if (availableAnimations.includes(derivedName)) {
-      return derivedName;
+      name = derivedName;
     }
-    return 'empty';
+
+    // if hovered or selected, use the derived name
+    if (
+      cursorStore.hoveredTileIndex === tileIndex ||
+      cursorStore.selectedTileIndex === tileIndex
+    ) {
+      if (availableAnimations.includes(derivedName + '-outline')) {
+        name = derivedName + '-outline';
+      }
+    }
+    return name;
   }
   // Get available animation names
-  const buildingAnimations = buildingAtlasMeta[0].animations.map(
-    (anim) => anim.name,
+  const buildingAnimations = buildingAtlasMeta.flatMap((item) =>
+    item.animations.map((anim) => anim.name),
   );
 
   // Function to get scale based on hover state
@@ -38,11 +51,12 @@
       const animationName = getBuildingAnimationOrFallback(
         tile,
         buildingAnimations,
+        index,
       );
 
       const scale = getTileScale(index);
 
-      updatePosition(index, tile.position, scale);
+      updatePosition(index, tile.position);
       sprite.animation.setAt(index, animationName);
     });
   });

@@ -324,7 +324,6 @@
               tile.position[1] - 0.01,
               tile.position[2],
             ]}
-            scale={getTileScale(i)}
             id={i}
           />
         {/each}
