@@ -43,7 +43,7 @@
     return claimStore.value[land.locationString]?.claimable ?? false;
   });
 
-  async function handleSingleClaim(e: Event) {
+  async function handleSingleClaim() {
     fetchTaxes();
 
     if (!land.token) {
@@ -108,8 +108,7 @@
   // Add these handler functions to your component
   function handleCoinClick(tile: LandTile, index: number) {
     console.log('Coin clicked:', tile, index);
-    // Add your click logic here
-    // For example: collect coin, play sound, update score, etc.
+    handleSingleClaim();
   }
 
   function handleCoinHover(tile: LandTile, index: number, isHovering: boolean) {

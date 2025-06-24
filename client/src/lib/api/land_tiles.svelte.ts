@@ -15,14 +15,13 @@ import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress } from '$lib/utils';
-import data from '$profileData';
 
 // Constants for random updates
-const MIN_RANDOM_UPDATES = 100;
-const MAX_RANDOM_UPDATES = 200;
+const MIN_RANDOM_UPDATES = 10;
+const MAX_RANDOM_UPDATES = 500;
 const RANDOM_UPDATE_RANGE = MAX_RANDOM_UPDATES - MIN_RANDOM_UPDATES;
 
-const UPDATE_INTERVAL = 100;
+const UPDATE_INTERVAL = 500;
 const NUKE_RATE = 0.1;
 
 // Token addresses
