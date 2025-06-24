@@ -35,6 +35,8 @@
   import Coin from './coin.svelte';
   import { padAddress } from '$lib/utils';
   import accountState from '$lib/account.svelte';
+  import NukeSprite from './nuke-sprite.svelte';
+  import { nukeStore } from '$lib/stores/nuke.store.svelte';
 
   let { billboarding = false } = $props();
 
@@ -56,6 +58,21 @@
     },
   ] as const satisfies SpritesheetMetadata;
   const roadAtlas = buildSpritesheet.from<typeof roadAtlasMeta>(roadAtlasMeta);
+
+  // Add this after your existing atlas definitions:
+  const nukeAtlasMeta = [
+    {
+      url: '/land-display/nuke-animation.png',
+      type: 'rowColumn',
+      width: 5,
+      height: 7,
+      animations: [
+        { name: 'default', frameRange: [0, 35] },
+        { name: 'empty', frameRange: [35, 35] },
+      ],
+    },
+  ] as const satisfies SpritesheetMetadata;
+  const nukeAtlas = buildSpritesheet.from<typeof nukeAtlasMeta>(nukeAtlasMeta);
 
   let landTiles: LandTile[] = $state([]);
 
@@ -133,11 +150,15 @@
     if (roadSprite) {
       roadSprite.update();
     }
+    if (nukeSprite) {
+      nukeSprite.update();
+    }
   });
 
   let roadSprite: any = $state();
   let biomeSprite: any = $state();
   let buildingSprite: any = $state();
+  let nukeSprite: any = $state();
 
   const { camera } = useThrelte();
 
@@ -206,7 +227,7 @@
 </script>
 
 <T is={Group}>
-  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet]}
+  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
     <!-- Transparent interaction planes layer (still needed for hover detection) -->
     {#if interactionPlanes}
       <T
@@ -248,6 +269,16 @@
       bind:ref={buildingSprite}
     >
       <BuildingSprite {landTiles} />
+    </InstancedSprite>
+
+    <InstancedSprite
+      count={gridSize * gridSize}
+      {billboarding}
+      spritesheet={nukeSpritesheet}
+      bind:ref={nukeSprite}
+      fps={10}
+    >
+      <NukeSprite {landTiles} />
     </InstancedSprite>
   {/await}
 </T>

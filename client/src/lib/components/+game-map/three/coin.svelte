@@ -24,15 +24,17 @@
 
   let { tile, i }: { tile: LandTile; i: number } = $props();
 
-  const land = tile.land; // TODO CREATE LAND WITH ACTIONS
+  const land = BuildingLand.is(tile.land)
+    ? createLandWithActions(tile.land, landStore.getAllLands)
+    : undefined;
 
   let animating = $derived.by(() => {
-    const claimInfo = claimStore.value[land.locationString];
+    const claimInfo = claimStore.value[land?.location];
     if (!claimInfo) return false;
 
     if (claimInfo.animating) {
       setTimeout(() => {
-        claimStore.value[land.locationString].animating = false;
+        claimStore.value[land?.location].animating = false;
       }, 2000);
       return true;
     } else {
@@ -40,27 +42,18 @@
     }
   });
   let timing = $derived.by(() => {
-    return claimStore.value[land.locationString]?.claimable ?? false;
+    return claimStore.value[land?.location]?.claimable ?? false;
   });
 
   async function handleSingleClaim() {
     fetchTaxes();
 
-    if (!land.token) {
+    if (!land) {
       console.error("Land doesn't have a token");
       return;
     }
 
-    if (!BuildingLand.is(land)) {
-      console.error('Land is not a BuildingLand');
-      return;
-    }
-
-    claimSingleLand(
-      createLandWithActions(land, landStore.getAllLands),
-      dojo,
-      account()?.getWalletAccount()!,
-    )
+    claimSingleLand(land, dojo, account()?.getWalletAccount()!)
       .then(() => {
         gameSounds.play('claim');
       })
@@ -70,14 +63,12 @@
   }
 
   async function fetchTaxes() {
-    if (!BuildingLand.is(land)) {
-      console.error('Land is not a BuildingLand');
+    if (!land || !land.location) {
+      console.error('Land or location is not defined');
       return;
     }
 
-    const LandWithActions = createLandWithActions(land, landStore.getAllLands);
-
-    const result = await getAggregatedTaxes(LandWithActions);
+    const result = await getAggregatedTaxes(land);
     aggregatedTaxes = result.taxes;
 
     const nukables = result.nukables;
@@ -94,6 +85,10 @@
   let aggregatedTaxes: TaxData[] = $state([]);
 
   $effect(() => {
+    if (!isOwner) {
+      return;
+    }
+
     fetchTaxes();
 
     const interval = setInterval(() => {

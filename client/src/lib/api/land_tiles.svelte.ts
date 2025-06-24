@@ -18,11 +18,11 @@ import { padAddress } from '$lib/utils';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 10;
-const MAX_RANDOM_UPDATES = 500;
+const MAX_RANDOM_UPDATES = 20;
 const RANDOM_UPDATE_RANGE = MAX_RANDOM_UPDATES - MIN_RANDOM_UPDATES;
 
-const UPDATE_INTERVAL = 500;
-const NUKE_RATE = 0.1;
+const UPDATE_INTERVAL = 1000;
+const NUKE_RATE = 0.5;
 
 // Token addresses
 const TOKEN_ADDRESSES = [
