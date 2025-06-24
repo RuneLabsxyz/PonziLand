@@ -1,19 +1,19 @@
 <script lang="ts">
   import { useTask } from '@threlte/core';
-  import { HTML, useInstancedSprite } from '@threlte/extras';
-  import { buildingAtlasMeta } from './buildings';
-  import type { LandTile } from './landTile';
+  import { useInstancedSprite } from '@threlte/extras';
+  import { biomeAtlasMeta } from './biomes';
   import { cursorStore } from './cursor.store.svelte';
-  import { Vector3 } from 'three';
+  import type { LandTile } from './landTile';
 
   let { landTiles } = $props();
 
-  function getBuildingAnimationOrFallback(
+  function getBiomeAnimationOrFallback(
     tile: LandTile,
     availableAnimations: string[],
     tileIndex?: number,
   ): string {
-    const derivedName = tile.getBuildingAnimationName();
+    const derivedName = tile.getBiomeAnimationName();
+
     let name = 'empty';
 
     if (availableAnimations.includes(derivedName)) {
@@ -31,31 +31,22 @@
     }
     return name;
   }
+
   // Get available animation names
-  const buildingAnimations = buildingAtlasMeta.flatMap((item) =>
+  const biomeAnimations = biomeAtlasMeta.flatMap((item) =>
     item.animations.map((anim) => anim.name),
   );
-
-  // Function to get scale based on hover state
-  function getTileScale(tileIndex: number): [number, number] {
-    return cursorStore.hoveredTileIndex === tileIndex ||
-      cursorStore.selectedTileIndex === tileIndex
-      ? [1.2, 1.2]
-      : [1.0, 1.0];
-  }
 
   const { updatePosition, sprite } = useInstancedSprite();
 
   useTask(() => {
     // iterate over landtiles
     landTiles.forEach((tile: LandTile, index: number) => {
-      const animationName = getBuildingAnimationOrFallback(
+      const animationName = getBiomeAnimationOrFallback(
         tile,
-        buildingAnimations,
+        biomeAnimations,
         index,
       );
-
-      const scale = getTileScale(index);
 
       updatePosition(index, [
         tile.position[0],

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
+  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
   import {
     landStore,
@@ -11,6 +12,7 @@
   import {
     HTML,
     InstancedSprite,
+    Text,
     buildSpritesheet,
     type SpritesheetMetadata,
   } from '@threlte/extras';
@@ -21,18 +23,18 @@
     MeshBasicMaterial,
     Object3D,
     PlaneGeometry,
-    Vector3, // Still good to have for target calculation
   } from 'three';
+  import LandRatesOverlay from '../land/land-rates-overlay.svelte';
   import { biomeAtlasMeta } from './biomes';
   import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
   import { cursorStore } from './cursor.store.svelte';
-  import { LandTile } from './landTile';
-  import LandRatesOverlay from '../land/land-rates-overlay.svelte';
   import { gameStore } from './game.store.svelte';
-  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
+  import { LandTile } from './landTile';
+  import BiomeSprite from './biome-sprite.svelte';
+  import RoadSprite from './road-sprite.svelte';
 
-  let { billboarding = true } = $props();
+  let { billboarding = false } = $props();
 
   const gridSize = 64;
 
@@ -53,36 +55,7 @@
   ] as const satisfies SpritesheetMetadata;
   const roadAtlas = buildSpritesheet.from<typeof roadAtlasMeta>(roadAtlasMeta);
 
-  function getBiomeAnimationOrFallback(
-    tile: LandTile,
-    availableAnimations: string[],
-    tileIndex?: number,
-  ): string {
-    const derivedName = tile.getBiomeAnimationName();
-
-    let name = 'empty';
-
-    if (availableAnimations.includes(derivedName)) {
-      name = derivedName;
-    }
-
-    // if hovered or selected, use the derived name
-    if (
-      cursorStore.hoveredTileIndex === tileIndex ||
-      cursorStore.selectedTileIndex === tileIndex
-    ) {
-      if (availableAnimations.includes(derivedName + '-outline')) {
-        name = derivedName + '-outline';
-      }
-    }
-    return name;
-  }
-
-  const biomeAnimations = biomeAtlasMeta.flatMap((item) =>
-    item.animations.map((anim) => anim.name),
-  );
-
-  let landTiles: any[] = $state([]);
+  let landTiles: LandTile[] = $state([]);
 
   const planeGeometry = new PlaneGeometry(1, 1);
   const planeMaterial = new MeshBasicMaterial({
@@ -211,7 +184,7 @@
       console.log('Hovered plane coordinates:', {
         gridX: tile.position[0],
         gridY: tile.position[2],
-        landId: tile.landId,
+        landId: tile.land.location,
         instanceId: instanceId,
         tile: tile,
       });
@@ -270,19 +243,7 @@
       spritesheet={roadSpritesheet}
       bind:ref={roadSprite}
     >
-      {#snippet children({ Instance }: { Instance: any })}
-        {#each landTiles as tile, i}
-          <Instance
-            animationName={'default'}
-            position={[
-              tile.position[0],
-              tile.position[1] - 0.02,
-              tile.position[2],
-            ]}
-            id={i}
-          />
-        {/each}
-      {/snippet}
+      <RoadSprite {landTiles} />
     </InstancedSprite>
 
     <!-- Biome sprites (background layer) -->
@@ -292,23 +253,7 @@
       spritesheet={resolvedBiomeSpritesheet}
       bind:ref={biomeSprite}
     >
-      {#snippet children({ Instance: BiomeInstance }: { Instance: any })}
-        {#each landTiles as tile, i}
-          <BiomeInstance
-            animationName={getBiomeAnimationOrFallback(
-              tile,
-              biomeAnimations,
-              i,
-            )}
-            position={[
-              tile.position[0],
-              tile.position[1] - 0.01,
-              tile.position[2],
-            ]}
-            id={i}
-          />
-        {/each}
-      {/snippet}
+      <BiomeSprite {landTiles} />
     </InstancedSprite>
 
     <!-- Building sprites (foreground layer) -->
@@ -322,6 +267,16 @@
     </InstancedSprite>
   {/await}
 </T>
+<!-- {#each landTiles as tile, i}
+  <Text
+    position={[tile.position[0] - 1, tile.position[1] + 0.1, tile.position[2]]}
+    text="OKDEPART"
+    fontSize={0.1}
+    color="#ffffff"
+    rotation={[-Math.PI / 2, 0, 0]}
+    {billboarding}
+  />
+{/each} -->
 <!-- Button overlay using Threlte HTML component -->
 {#if selectedLandTilePosition}
   {@const land = selectedLandWithActions()?.value}
