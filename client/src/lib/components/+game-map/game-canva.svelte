@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Canvas, T } from '@threlte/core';
   import {
+    AsciiRenderer,
     CameraControls,
     type CameraControlsRef,
     Grid,

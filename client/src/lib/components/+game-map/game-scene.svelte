@@ -8,7 +8,12 @@
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.toneMapping = 1; // No tone mapping
 
-  interactivity();
+  interactivity({
+    filter: (hits, state) => {
+      // Only return the first hit
+      return hits.slice(0, 1);
+    },
+  });
 </script>
 
 <slot />

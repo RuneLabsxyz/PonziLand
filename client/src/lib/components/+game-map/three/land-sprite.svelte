@@ -12,7 +12,6 @@
   import {
     HTML,
     InstancedSprite,
-    Text,
     buildSpritesheet,
     type SpritesheetMetadata,
   } from '@threlte/extras';
@@ -25,14 +24,17 @@
     PlaneGeometry,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
+  import BiomeSprite from './biome-sprite.svelte';
   import { biomeAtlasMeta } from './biomes';
   import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
   import { LandTile } from './landTile';
-  import BiomeSprite from './biome-sprite.svelte';
   import RoadSprite from './road-sprite.svelte';
+  import Coin from './coin.svelte';
+  import { padAddress } from '$lib/utils';
+  import accountState from '$lib/account.svelte';
 
   let { billboarding = false } = $props();
 
@@ -161,17 +163,9 @@
       }
       cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
       selectedLand.value = tile.land;
-
-      console.log('Clicked and selected hovered tile:', {
-        gridX: tile.position[0],
-        gridY: tile.position[2],
-        instanceId: cursorStore.hoveredTileIndex,
-        tile: tile,
-      });
     } else {
       // If there's no hovered tile when clicked, deselect any currently selected tile
       cursorStore.selectedTileIndex = undefined;
-      console.log('Clicked, but no tile was hovered. Deselecting.');
     }
   }
 
@@ -181,13 +175,6 @@
     if (instanceId !== undefined && landTiles[instanceId]) {
       cursorStore.hoveredTileIndex = instanceId;
       const tile = landTiles[instanceId];
-      console.log('Hovered plane coordinates:', {
-        gridX: tile.position[0],
-        gridY: tile.position[2],
-        landId: tile.land.location,
-        instanceId: instanceId,
-        tile: tile,
-      });
 
       document.body.classList.add('cursor-pointer');
     }
@@ -216,9 +203,6 @@
       selectedLandTilePosition = undefined;
     }
   });
-
-  // Removed all animation loop (`onLoop`) and animation state variables.
-  // The camera position and lookAt are now set directly when `handleClickToSelectHovered` is called.
 </script>
 
 <T is={Group}>
@@ -267,6 +251,11 @@
     </InstancedSprite>
   {/await}
 </T>
+{#each landTiles as tile, i}
+  {#if tile.land.type === 'building'}
+    <Coin {tile} {i} />
+  {/if}
+{/each}
 <!-- {#each landTiles as tile, i}
   <Text
     position={[tile.position[0] - 1, tile.position[1] + 0.1, tile.position[2]]}

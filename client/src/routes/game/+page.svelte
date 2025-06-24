@@ -14,6 +14,7 @@
     tutorialLandStore,
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
+  import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
@@ -30,7 +31,7 @@
       landStore.stopRandomUpdates();
       // landStore.startRandomUpdates();
     }),
-    // setupAccount(),
+    setupAccount(),
   ]);
 
   let loading = $state(true);
