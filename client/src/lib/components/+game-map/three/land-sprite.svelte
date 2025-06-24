@@ -30,6 +30,7 @@
   import { LandTile } from './landTile';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
   import { gameStore } from './game.store.svelte';
+  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
 
   let { billboarding = true } = $props();
 
@@ -92,22 +93,28 @@
 
   onMount(() => {
     landStore.getAllLands().subscribe((tiles) => {
-      landTiles = tiles.map((tile, index) => {
-        let tokenSymbol = 'empty';
+      landTiles = tiles
+        .sort((a, b) => {
+          const aValue = a.location.x + a.location.y * gridSize;
+          const bValue = b.location.x + b.location.y * gridSize;
+          return aValue - bValue;
+        })
+        .map((tile, index) => {
+          let tokenSymbol = 'empty';
 
-        if (BuildingLand.is(tile)) {
-          tokenSymbol = tile?.token?.symbol ?? 'empty';
-        }
+          if (BuildingLand.is(tile)) {
+            tokenSymbol = tile?.token?.symbol ?? 'empty';
+          }
 
-        if (AuctionLand.is(tile)) {
-          tokenSymbol = 'auction';
-        }
+          if (AuctionLand.is(tile)) {
+            tokenSymbol = 'auction';
+          }
 
-        const gridX = index % gridSize;
-        const gridY = Math.floor(index / gridSize);
+          const gridX = tile.location.x;
+          const gridY = tile.location.y;
 
-        return new LandTile([gridY, 1, gridX], tokenSymbol, tile.level, tile);
-      });
+          return new LandTile([gridX, 1, gridY], tokenSymbol, tile.level, tile);
+        });
       setupInteractionPlanes();
     });
   });
@@ -161,7 +168,7 @@
 
   // Function to be called by the global click listener
   function handleClickToSelectHovered() {
-    if (cursorStore.hoveredTileIndex !== null) {
+    if (cursorStore.hoveredTileIndex !== undefined) {
       const tile = landTiles[cursorStore.hoveredTileIndex];
 
       if (gameStore.cameraControls) {
@@ -190,7 +197,7 @@
       });
     } else {
       // If there's no hovered tile when clicked, deselect any currently selected tile
-      cursorStore.selectedTileIndex = null;
+      cursorStore.selectedTileIndex = undefined;
       console.log('Clicked, but no tile was hovered. Deselecting.');
     }
   }
@@ -212,7 +219,7 @@
   }
 
   function handlePlaneLeave() {
-    cursorStore.hoveredTileIndex = null;
+    cursorStore.hoveredTileIndex = undefined;
     // console.log('Left plane');
   }
 
@@ -221,7 +228,7 @@
 
   $effect(() => {
     if (
-      cursorStore.selectedTileIndex !== null &&
+      cursorStore.selectedTileIndex !== undefined &&
       landTiles[cursorStore.selectedTileIndex]
     ) {
       const basePosition = landTiles[cursorStore.selectedTileIndex].position;
@@ -324,15 +331,15 @@
   >
     {#if land}
       <LandRatesOverlay {land} />
+      <Button
+        class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+        size="sm"
+        onclick={() => {
+          openLandInfoWidget(land);
+        }}
+      >
+        BUY LAND
+      </Button>
     {/if}
-    <Button
-      class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
-      size="sm"
-      onclick={() => {
-        console.log('Clicked to buy land:', land);
-      }}
-    >
-      BUY LAND
-    </Button>
   </HTML>
 {/if}

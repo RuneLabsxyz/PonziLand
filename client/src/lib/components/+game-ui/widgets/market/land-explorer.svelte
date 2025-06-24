@@ -2,6 +2,8 @@
   import type { LandWithActions } from '$lib/api/land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
+  import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
+  import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { Input } from '$lib/components/ui/input';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
@@ -254,6 +256,22 @@
               parseLocation(land.location)[0] + 1,
               parseLocation(land.location)[1] + 1,
             );
+            const location = parseLocation(land.location);
+            gameStore.cameraControls?.setLookAt(
+              location[0],
+              50,
+              location[1],
+              location[0],
+              0,
+              location[1],
+              true,
+            );
+            console.log(
+              'location number',
+              land.location,
+              Number(land.location),
+            );
+            cursorStore.selectedTileIndex = Number(land.location);
             const coordinates = parseLocation(land.location);
             const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
             if (baseLand) {
