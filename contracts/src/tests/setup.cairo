@@ -25,7 +25,6 @@ mod setup {
     use ponzi_land::models::auction::{Auction, m_Auction};
 
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-    use ponzi_land::components::taxes::{TaxesComponent};
     use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
     use ponzi_land::systems::token_registry::{
         token_registry, ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
@@ -98,10 +97,6 @@ mod setup {
                 ),
                 TestResource::Event(
                     actions::e_LandBoughtEvent::TEST_CLASS_HASH.try_into().unwrap(),
-                ),
-                TestResource::Event(actions::e_AddStakeEvent::TEST_CLASS_HASH.try_into().unwrap()),
-                TestResource::Event(
-                    TaxesComponent::e_LandTransferEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
                 TestResource::Contract(auth::TEST_CLASS_HASH),
                 TestResource::Event(

@@ -101,37 +101,6 @@ fn is_valid_position(index: u16) -> bool {
     index < GRID_WIDTH * GRID_WIDTH
 }
 
-fn get_all_neighbors(index: u16) -> Array<u16> {
-    let mut neighbors = ArrayTrait::new();
-
-    if left(index).is_some() {
-        neighbors.append(left(index).unwrap());
-    }
-    if right(index).is_some() {
-        neighbors.append(right(index).unwrap());
-    }
-    if up(index).is_some() {
-        neighbors.append(up(index).unwrap());
-    }
-    if down(index).is_some() {
-        neighbors.append(down(index).unwrap());
-    }
-    if up_left(index).is_some() {
-        neighbors.append(up_left(index).unwrap());
-    }
-    if up_right(index).is_some() {
-        neighbors.append(up_right(index).unwrap());
-    }
-    if down_left(index).is_some() {
-        neighbors.append(down_left(index).unwrap());
-    }
-    if down_right(index).is_some() {
-        neighbors.append(down_right(index).unwrap());
-    }
-
-    neighbors
-}
-
 fn max_neighbors(index: u16) -> u8 {
     let mut count = 0;
 

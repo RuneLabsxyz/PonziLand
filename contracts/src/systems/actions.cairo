@@ -3,7 +3,7 @@ use starknet::ContractAddress;
 use dojo::world::WorldStorage;
 use ponzi_land::models::land::{Land, LandStake};
 use ponzi_land::models::auction::Auction;
-use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo, LandOrAuction};
+use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo};
 
 // define the interface
 #[starknet::interface]
@@ -52,10 +52,6 @@ trait IActions<T> {
     fn get_claimable_taxes_for_land(
         self: @T, land_location: u16, owner: ContractAddress,
     ) -> (Array<TokenInfo>, Array<TokenInfo>);
-    fn get_game_speed(self: @T) -> u64;
-    fn get_neighbors(self: @T, land_location: u16) -> Array<LandOrAuction>;
-
-    fn set_main_token(ref self: T, token_address: ContractAddress) -> ();
 }
 
 // dojo decorator
@@ -90,7 +86,7 @@ pub mod actions {
     use ponzi_land::components::payable::PayableComponent;
 
     use ponzi_land::utils::common_strucs::{
-        TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes, LandOrAuction,
+        TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes,
     };
     use ponzi_land::utils::get_neighbors::{
         get_land_neighbors, get_average_price, process_neighbors_of_neighbors,
@@ -101,7 +97,7 @@ pub mod actions {
 
     use ponzi_land::helpers::coord::{
         is_valid_position, up, down, left, right, max_neighbors, index_to_position,
-        position_to_index, up_left, up_right, down_left, down_right, get_all_neighbors,
+        position_to_index, up_left, up_right, down_left, down_right,
     };
     use ponzi_land::helpers::taxes::{
         get_taxes_per_neighbor, get_tax_rate_per_neighbor, get_time_to_nuke,
@@ -181,16 +177,6 @@ pub mod actions {
         final_price: u256,
     }
 
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct AddStakeEvent {
-        #[key]
-        land_location: u16,
-        new_stake_amount: u256,
-        owner: ContractAddress,
-    }
-
-
     mod errors {
         const ERC20_PAY_FOR_BUY_FAILED: felt252 = 'ERC20: pay for buy failed';
         const ERC20_PAY_FOR_BID_FAILED: felt252 = 'ERC20: pay for bid failed';
@@ -236,13 +222,6 @@ pub mod actions {
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn set_main_token(ref self: ContractState, token_address: ContractAddress) -> () {
-            let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
-            self.main_currency.write(token_address);
-        }
-
-
         fn buy(
             ref self: ContractState,
             land_location: u16,
@@ -433,12 +412,7 @@ pub mod actions {
 
             assert(land.owner == caller, 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
-            let mut land_stake = store.land_stake(land.location);
-            self.stake._add(amount_to_stake, land, land_stake, store);
-            let new_stake_amount = land_stake.amount + amount_to_stake;
-            store
-                .world
-                .emit_event(@AddStakeEvent { land_location, new_stake_amount, owner: caller })
+            self.stake._add(amount_to_stake, land, store);
         }
 
         fn level_up(ref self: ContractState, land_location: u16) -> bool {
@@ -640,33 +614,6 @@ pub mod actions {
 
             (pending_taxes, unclaimed_taxes)
         }
-
-        fn get_game_speed(self: @ContractState) -> u64 {
-            TIME_SPEED.into()
-        }
-
-        fn get_neighbors(self: @ContractState, land_location: u16) -> Array<LandOrAuction> {
-            let mut world = self.world_default();
-
-            let neighbors = get_all_neighbors(land_location);
-
-            let mut neighbors_array = ArrayTrait::new();
-
-            for neighbor in neighbors {
-                let maybe_auction: Auction = world.read_model(neighbor);
-                let maybe_land: Land = world.read_model(neighbor);
-
-                if maybe_auction.floor_price != 0 && maybe_auction.is_finished == false {
-                    neighbors_array.append(LandOrAuction::Auction(maybe_auction));
-                } else if maybe_land.sell_price != 0 {
-                    neighbors_array.append(LandOrAuction::Land(maybe_land));
-                } else {
-                    neighbors_array.append(LandOrAuction::None);
-                }
-            };
-
-            neighbors_array
-        }
     }
 
     #[generate_trait]
@@ -842,8 +789,8 @@ pub mod actions {
                 land_location, caller, token_for_sale, sell_price, get_block_timestamp(),
             );
             store.set_land(land);
-            let mut land_stake = store.land_stake(land.location);
-            self.stake._add(amount_to_stake, land, land_stake, store);
+
+            self.stake._add(amount_to_stake, land, store);
         }
 
         fn update_level(

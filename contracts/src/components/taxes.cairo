@@ -4,8 +4,6 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 mod TaxesComponent {
     //use dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use dojo::event::EventStorage;
-    use dojo::world::WorldStorage;
 
     // Starknet imports
     use starknet::{ContractAddress};
@@ -43,15 +41,9 @@ mod TaxesComponent {
 
     // Events
 
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct LandTransferEvent {
-        #[key]
-        from_location: u16,
-        to_location: u16,
-        token_address: ContractAddress,
-        amount: u256,
-    }
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {}
 
     #[generate_trait]
     impl InternalImpl<
@@ -148,16 +140,6 @@ mod TaxesComponent {
             let key = (tax_recipient.owner, tax_recipient.location, tax_payer.token_used);
             let current_tax_amount = self.pending_taxes_for_land.read(key);
             self.pending_taxes_for_land.write(key, current_tax_amount + amount);
-            store
-                .world
-                .emit_event(
-                    @LandTransferEvent {
-                        from_location: tax_payer.location,
-                        to_location: tax_recipient.location,
-                        token_address: tax_payer.token_used,
-                        amount: amount,
-                    },
-                );
         }
 
         fn _claim(
