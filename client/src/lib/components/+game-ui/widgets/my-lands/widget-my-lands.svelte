@@ -14,6 +14,8 @@
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
+  import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
+  import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -191,15 +193,24 @@
   });
 
   function handleLandClick(land: LandWithActions) {
-    moveCameraTo(
-      parseLocation(land.location)[0] + 1,
-      parseLocation(land.location)[1] + 1,
-    );
     const coordinates = parseLocation(land.location);
     const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
     if (baseLand) {
       selectedLand.value = get(baseLand);
     }
+    gameStore.cameraControls?.setLookAt(
+      coordinates[0],
+      50,
+      coordinates[1],
+      coordinates[0],
+      0,
+      coordinates[1],
+      true,
+    );
+
+    if (cursorStore.selectedTileIndex == Number(land.location))
+      gameStore.cameraControls?.zoomTo(250, true);
+    cursorStore.selectedTileIndex = Number(land.location);
   }
 
   onMount(async () => {
