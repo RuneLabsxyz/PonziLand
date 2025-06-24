@@ -215,12 +215,14 @@
         instanceId: instanceId,
         tile: tile,
       });
+
+      document.body.classList.add('cursor-pointer');
     }
   }
 
   function handlePlaneLeave() {
     cursorStore.hoveredTileIndex = undefined;
-    // console.log('Left plane');
+    document.body.classList.remove('cursor-pointer');
   }
 
   let selectedLandTilePosition: [number, number, number] | undefined =
