@@ -90,4 +90,15 @@
       step={100}
     />
   </Folder>
+  <Folder title="Layers">
+    <Checkbox bind:value={devsettings.showRoads} label="Show Roads" />
+    <Checkbox bind:value={devsettings.showBuildings} label="Show Buildings" />
+    <Checkbox bind:value={devsettings.showBiomes} label="Show Biomes" />
+    <Checkbox bind:value={devsettings.showCoins} label="Show Coins" />
+    <Checkbox
+      bind:value={devsettings.showLandOverlay}
+      label="Show Land Overlay"
+    />
+    <Checkbox bind:value={devsettings.showGrid} label="Show Grid" />
+  </Folder>
 </Pane>

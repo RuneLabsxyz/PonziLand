@@ -39,14 +39,16 @@
         }}
       />
     </T.OrthographicCamera>
-    <Grid
-      position={[30 - 0.5, 1, 30 - 0.5]}
-      divisions={10}
-      cellSize={1}
-      cellColor="#ffffff"
-      sectionColor="#ffff00"
-      gridSize={64 + 20}
-    />
+    {#if devsettings.showGrid}
+      <Grid
+        position={[30 - 0.5, 1, 30 - 0.5]}
+        divisions={10}
+        cellSize={1}
+        cellColor="#ffffff"
+        sectionColor="#ffff00"
+        gridSize={64 + 20}
+      />
+    {/if}
     <Scene />
   </Canvas>
   <Settings />

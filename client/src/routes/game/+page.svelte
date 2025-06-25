@@ -30,7 +30,7 @@
     setupClient(dojoConfig).then((client) => {
       landStore.setup(client!);
       landStore.stopRandomUpdates();
-      landStore.startRandomUpdates();
+      // landStore.startRandomUpdates();
     }),
     setupAccount(),
   ]);
@@ -41,7 +41,7 @@
 
   $effect(() => {
     tutorialLandStore.stopRandomUpdates();
-    tutorialLandStore.startRandomUpdates();
+    // tutorialLandStore.startRandomUpdates();
     let increment = 10;
 
     const interval = setInterval(() => {

@@ -241,7 +241,7 @@
 <T is={Group}>
   {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
     <!-- Transparent interaction planes layer (now also renders roads) -->
-    {#if interactionPlanes}
+    {#if interactionPlanes && devsettings.showRoads}
       <T
         is={interactionPlanes}
         interactive={true}
@@ -251,28 +251,29 @@
       />
     {/if}
 
-    <!-- Road sprites-->
-    <!-- Removed InstancedSprite for roads, as road texture is now on interactionPlanes -->
-
     <!-- Biome sprites (background layer) -->
-    <InstancedSprite
-      count={gridSize * gridSize}
-      {billboarding}
-      spritesheet={resolvedBiomeSpritesheet}
-      bind:ref={biomeSprite}
-    >
-      <BiomeSprite {landTiles} />
-    </InstancedSprite>
+    {#if devsettings.showBiomes}
+      <InstancedSprite
+        count={gridSize * gridSize}
+        {billboarding}
+        spritesheet={resolvedBiomeSpritesheet}
+        bind:ref={biomeSprite}
+      >
+        <BiomeSprite {landTiles} />
+      </InstancedSprite>
+    {/if}
 
     <!-- Building sprites (foreground layer) -->
-    <InstancedSprite
-      count={gridSize * gridSize}
-      {billboarding}
-      spritesheet={buildingSpritesheet}
-      bind:ref={buildingSprite}
-    >
-      <BuildingSprite {landTiles} />
-    </InstancedSprite>
+    {#if devsettings.showBuildings}
+      <InstancedSprite
+        count={gridSize * gridSize}
+        {billboarding}
+        spritesheet={buildingSpritesheet}
+        bind:ref={buildingSprite}
+      >
+        <BuildingSprite {landTiles} />
+      </InstancedSprite>
+    {/if}
 
     <InstancedSprite
       count={gridSize * gridSize}
@@ -286,15 +287,17 @@
   {/await}
 </T>
 
-<InstancedMesh limit={gridSize ** 2}>
-  <T.PlaneGeometry args={[0.3, 0.3]} />
-  <T.MeshBasicMaterial map={texture} transparent />
-  {#each landTiles as tile, i}
-    {#if tile.land.type === 'building'}
-      <Coin {tile} {i} />
-    {/if}
-  {/each}
-</InstancedMesh>
+{#if devsettings.showCoins}
+  <InstancedMesh limit={gridSize ** 2}>
+    <T.PlaneGeometry args={[0.3, 0.3]} />
+    <T.MeshBasicMaterial map={texture} transparent />
+    {#each landTiles as tile, i}
+      {#if tile.land.type === 'building'}
+        <Coin {tile} {i} />
+      {/if}
+    {/each}
+  </InstancedMesh>
+{/if}
 
 <!-- {#each landTiles as tile, i}
   <Text
@@ -307,7 +310,7 @@
   />
 {/each} -->
 <!-- Button overlay using Threlte HTML component -->
-{#if selectedLandTilePosition}
+{#if devsettings.showLandOverlay && selectedLandTilePosition}
   {@const land = selectedLandWithActions()?.value}
   <HTML
     portal={document.getElementById('game-canvas') ?? document.body}
