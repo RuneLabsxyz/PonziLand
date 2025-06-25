@@ -200,7 +200,8 @@ mod TaxesComponent {
                 );
             if total_taxes > payer_stake.amount {
                 self
-                    ._distribute_for_nuke(
+                    ._handle_nuke(
+                        store,
                         tax_payer,
                         payer_stake.amount,
                         cache_elapased_time,
@@ -241,9 +242,9 @@ mod TaxesComponent {
             }
         }
 
-
-        fn _distribute_for_nuke(
+        fn _handle_nuke(
             ref self: ComponentState<TContractState>,
+            store: Store,
             tax_payer: Land,
             tax_payer_stake_amount: u256,
             cache_elapased_time: Array<(u16, ContractAddress, u64)>,
@@ -259,7 +260,7 @@ mod TaxesComponent {
                 tax_amount_for_neighbor.append((location, neighbor_address, share_for_neighbor));
             };
 
-            self._process_nuke(tax_payer, tax_amount_for_neighbor, our_contract_address)
+            self._distribute_nuke(store, tax_payer, tax_amount_for_neighbor, our_contract_address);
         }
 
         fn calculate_nuke_time(
@@ -350,13 +351,14 @@ mod TaxesComponent {
 
 
         //TODO:verify if here we have to call the function of execute claim
-        fn _process_nuke(
+        fn _distribute_nuke(
             ref self: ComponentState<TContractState>,
+            store: Store,
             nuked_land: Land,
             neighbors_of_nuked_land: Array<(u16, ContractAddress, u256)>,
             our_contract_address: ContractAddress,
         ) {
-            for (_, neighbor_address, tax_amount) in neighbors_of_nuked_land {
+            for (neighbor_location, neighbor_address, tax_amount) in neighbors_of_nuked_land {
                 self
                     ._transfer_tokens(
                         neighbor_address,
@@ -364,6 +366,28 @@ mod TaxesComponent {
                         TokenInfo { token_address: nuked_land.token_used, amount: tax_amount },
                         our_contract_address,
                     );
+                let mut neighbor_stake = store.land_stake(neighbor_location);
+                let (
+                    earliest_claim_neighbor_time,
+                    num_active_neighbors,
+                    earliest_claim_neighbor_location,
+                ) =
+                    unpack_neighbors_info(
+                    neighbor_stake.neighbors_info_packed,
+                );
+                let num_active_neighbors = if num_active_neighbors == 0 {
+                    0
+                } else {
+                    num_active_neighbors - 1
+                };
+                neighbor_stake
+                    .neighbors_info_packed =
+                        pack_neighbors_info(
+                            earliest_claim_neighbor_time,
+                            num_active_neighbors,
+                            earliest_claim_neighbor_location,
+                        );
+                store.set_land_stake(neighbor_stake);
             }
         }
 

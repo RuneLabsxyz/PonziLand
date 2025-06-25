@@ -880,12 +880,13 @@ pub mod actions {
 
             let mut land_stake = store.land_stake(land.location);
 
-            let (earliest_claim_time, earliest_claim_location) = self
-                .taxes
-                .initialize_claim_info(land.location, neighbors.clone(), current_time);
+            //TODO:VERIFY THIS
+            // let (earliest_claim_time, earliest_claim_location) = self
+            //     .taxes
+            //     .initialize_claim_info(land.location, neighbors.clone(), current_time);
 
             let neighbors_info = pack_neighbors_info(
-                earliest_claim_time, neighbors.len().try_into().unwrap(), earliest_claim_location,
+                current_time, neighbors.len().try_into().unwrap(), 0,
             );
             land_stake.neighbors_info_packed = neighbors_info;
 
@@ -899,14 +900,34 @@ pub mod actions {
 
                 if is_from_bid {
                     let mut neighbor_stake = store.land_stake(neighbor.location);
-                    let (current_time, current_num, current_loc) = unpack_neighbors_info(
+                    let (
+                        earliest_claim_neighbor_time,
+                        num_active_neighbors,
+                        earliest_claim_neighbor_location,
+                    ) =
+                        unpack_neighbors_info(
                         neighbor_stake.neighbors_info_packed,
                     );
+                    let earliest_claim_neighbor_time = if earliest_claim_neighbor_time == 0 {
+                        current_time
+                    } else {
+                        earliest_claim_neighbor_time
+                    };
+                    let earliest_claim_neighbor_location =
+                        if earliest_claim_neighbor_location == 0 {
+                        land_location
+                    } else {
+                        earliest_claim_neighbor_location
+                    };
 
                     if neighbor_stake.amount > 0 {
                         neighbor_stake
                             .neighbors_info_packed =
-                                pack_neighbors_info(current_time, current_num + 1, current_loc);
+                                pack_neighbors_info(
+                                    earliest_claim_neighbor_time,
+                                    num_active_neighbors + 1,
+                                    earliest_claim_neighbor_location,
+                                );
                         store.set_land_stake(neighbor_stake);
                     }
                 }

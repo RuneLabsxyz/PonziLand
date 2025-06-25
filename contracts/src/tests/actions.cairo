@@ -1158,7 +1158,7 @@ fn test_time_to_nuke() {
     set_block_timestamp(new_block_timestamp);
 
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
-    assert!(unclaimed_taxes * 5 >= land_stake.amount, "stake should be <= unclaimed taxes");
+    assert!(unclaimed_taxes >= land_stake.amount, "stake should be <= unclaimed taxes");
 
     let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
     assert!(new_time_to_nuke == get_block_timestamp(), "should be nukable now");
