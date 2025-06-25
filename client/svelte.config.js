@@ -44,8 +44,7 @@ const profiles = {
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
-    PUBLIC_DOJO_TORII_URL:
-      'https://api.cartridge.gg/x/ponziland-sepolia-internal/torii',
+    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-sepolia/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
@@ -62,7 +61,7 @@ const profiles = {
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
     PUBLIC_DOJO_TORII_URL:
-      'https://api.cartridge.gg/x/ponziland-tourney-2/torii',
+      'https://api.cartridge.gg/x/ponziland-mainnet-test/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
