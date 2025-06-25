@@ -9,13 +9,13 @@
   } from '$lib/stores/nuke.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
+  import { padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import { T } from '@threlte/core';
-  import { Float, ImageMaterial } from '@threlte/extras';
+  import { Float, Instance } from '@threlte/extras';
   import { NearestFilter, TextureLoader } from 'three';
   import type { LandTile } from './landTile';
-  import { padAddress } from '$lib/utils';
 
   const dojo = useDojo();
   const account = () => {
@@ -129,30 +129,24 @@
   );
 </script>
 
-{#if aggregatedTaxes.length > 0 && timing && !animating && isOwner}
-  <T.Group
-    position={[tile.position[0], tile.position[1] + 2, tile.position[2] - 0.5]}
-    onclick={() => handleCoinClick(tile, i)}
-    onpointerenter={() => handleCoinHover(tile, i, true)}
-    onpointerleave={() => handleCoinHover(tile, i, false)}
-  >
-    <Float
-      floatingRange={[
-        [0, 0],
-        [0, 0],
-        [-0.05, 0.05],
-      ]}
-    >
-      {#if coinHovered}
+<Float
+  floatingRange={[
+    [0, 0],
+    [0, 0],
+    [-0.05, 0.05],
+  ]}
+>
+  <!-- {#if coinHovered}
         <T.Mesh rotation={[-Math.PI / 2, 0, 0]}>
           <T.PlaneGeometry args={[0.35, 0.35]} />
           <ImageMaterial {texture} />
         </T.Mesh>
-      {/if}
-      <T.Mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <T.PlaneGeometry args={[0.3, 0.3]} />
-        <ImageMaterial {texture} />
-      </T.Mesh>
-    </Float>
-  </T.Group>
-{/if}
+      {/if} -->
+  <Instance
+    onclick={() => handleCoinClick(tile, i)}
+    onpointerenter={() => handleCoinHover(tile, i, true)}
+    onpointerleave={() => handleCoinHover(tile, i, false)}
+    rotation={[-Math.PI / 2, 0, 0]}
+    position={[tile.position[0], tile.position[1] + 2, tile.position[2] - 0.5]}
+  />
+</Float>

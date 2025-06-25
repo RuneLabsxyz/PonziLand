@@ -12,15 +12,20 @@
   import { T, useThrelte } from '@threlte/core';
   import {
     HTML,
+    InstancedMesh,
     InstancedSprite,
     buildSpritesheet,
     type SpritesheetMetadata,
+    Float,
+    Instance,
+    ImageMaterial,
   } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
     Group,
-    InstancedMesh,
+    InstancedMesh as TInstancedMesh,
     MeshBasicMaterial,
+    NearestFilter,
     Object3D,
     PlaneGeometry,
     TextureLoader,
@@ -90,10 +95,10 @@
     alphaTest: 0.1,
   });
 
-  let interactionPlanes: InstancedMesh | undefined = $state();
+  let interactionPlanes: TInstancedMesh | undefined = $state();
   onMount(() => {
     // Only run once
-    interactionPlanes = new InstancedMesh(
+    interactionPlanes = new TInstancedMesh(
       planeGeometry,
       planeMaterial,
       gridSize * gridSize,
@@ -225,6 +230,11 @@
       (tile) => nukeStore.nuking[Number(tile.land.locationString)],
     );
   });
+
+  let texture = new TextureLoader().load('/ui/icons/Icon_Coin2.png');
+  texture.magFilter = NearestFilter;
+  texture.minFilter = NearestFilter;
+  texture.colorSpace = 'srgb';
 </script>
 
 <T is={Group}>
@@ -274,11 +284,17 @@
     </InstancedSprite>
   {/await}
 </T>
-{#each landTiles as tile, i}
-  {#if tile.land.type === 'building'}
-    <Coin {tile} {i} />
-  {/if}
-{/each}
+
+<InstancedMesh>
+  <T.PlaneGeometry args={[0.35, 0.35]} />
+  <T.MeshBasicMaterial map={texture} transparent />
+  {#each landTiles as tile, i}
+    {#if tile.land.type === 'building'}
+      <Coin {tile} {i} />
+    {/if}
+  {/each}
+</InstancedMesh>
+
 <!-- {#each landTiles as tile, i}
   <Text
     position={[tile.position[0] - 1, tile.position[1] + 0.1, tile.position[2]]}

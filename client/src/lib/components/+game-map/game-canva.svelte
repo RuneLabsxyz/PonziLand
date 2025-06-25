@@ -30,7 +30,7 @@
         bind:ref={gameStore.cameraControls}
         oncreate={(ref: CameraControlsRef) => {
           ref.setLookAt(32, 50, 32, 32, 0, 32, false);
-          ref.mouseButtons.left = 0b10;
+          // ref.mouseButtons.left = 0b10;
         }}
       />
     </T.OrthographicCamera>
