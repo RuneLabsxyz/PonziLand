@@ -131,7 +131,7 @@ mod PlayTestToken {
 
         fn mint(ref self: ContractState, recipient: ContractAddress, amount: u256) {
             let address = get_caller_address();
-            let role = self.access_control.entry(address).read();
+            //let role = self.access_control.entry(address).read();
 
             // Allow everyone to mint
             //assert(role != AccessControl::None, 'Users cannot mint');
@@ -150,6 +150,7 @@ mod PlayTestToken {
             let address = get_caller_address();
             let role = self.access_control.entry(address).read();
             assert(role == AccessControl::Owner, 'Only owner can upgrade');
+
             self.upgradeable.upgrade(new_class_hash);
         }
     }
