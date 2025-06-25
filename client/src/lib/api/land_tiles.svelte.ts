@@ -15,14 +15,7 @@ import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress } from '$lib/utils';
-
-// Constants for random updates
-const MIN_RANDOM_UPDATES = 10;
-const MAX_RANDOM_UPDATES = 20;
-const RANDOM_UPDATE_RANGE = MAX_RANDOM_UPDATES - MIN_RANDOM_UPDATES;
-
-const UPDATE_INTERVAL = 1000;
-const NUKE_RATE = 0.5;
+import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 
 // Token addresses
 const TOKEN_ADDRESSES = [
@@ -118,9 +111,13 @@ export class LandTileStore {
   }
 
   private randomLandUpdate() {
-    // Update between 20 to 100 random lands
+    // Use devsettings for update range and nuke rate
+    const minUpdates = devsettings.minRandomUpdates;
+    const maxUpdates = devsettings.maxRandomUpdates;
+    const nukeRate = devsettings.nukeRate;
+    const randomUpdateRange = maxUpdates - minUpdates;
     const numUpdates =
-      Math.floor(Math.random() * RANDOM_UPDATE_RANGE) + MIN_RANDOM_UPDATES;
+      Math.floor(Math.random() * randomUpdateRange) + minUpdates;
 
     this.currentLands.update((lands) => {
       for (let i = 0; i < numUpdates; i++) {
@@ -163,8 +160,8 @@ export class LandTileStore {
         this.store[x][y].set({ value: buildingLand });
         lands[x][y] = buildingLand;
 
-        // Randomly trigger nuke animation (50% chance)
-        if (Math.random() < NUKE_RATE) {
+        // Randomly trigger nuke animation
+        if (Math.random() < nukeRate) {
           this.triggerNukeAnimation(x, y);
         }
       }
@@ -226,7 +223,7 @@ export class LandTileStore {
   public startRandomUpdates() {
     this.fakeUpdateInterval = setInterval(() => {
       this.randomLandUpdate();
-    }, UPDATE_INTERVAL);
+    }, devsettings.updateInterval);
   }
 
   public stopRandomUpdates() {

@@ -21,6 +21,7 @@
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import { onMount } from 'svelte';
+  import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 
   const promise = Promise.all([
     setupSocialink().then(() => {

@@ -1,7 +1,15 @@
 <script lang="ts">
-  import { Pane, Slider, List, Checkbox } from 'svelte-tweakpane-ui';
+  import {
+    Pane,
+    Folder,
+    Slider,
+    List,
+    Checkbox,
+    Button,
+  } from 'svelte-tweakpane-ui';
   import { devsettings } from './utils/devsettings.store.svelte';
   import type { ListOptions } from 'svelte-tweakpane-ui';
+  import { landStore } from '$lib/stores/store.svelte';
 
   const cameraOptions: ListOptions<number> = {
     NONE: 0b0,
@@ -28,18 +36,58 @@
   };
 </script>
 
-<Pane title="Frustum Settings" position="fixed" x={0} y={100}>
-  <Slider
-    bind:value={devsettings.frustumPadding}
-    label="Frustum Padding"
-    min={-5}
-    max={5}
-    step={1}
-  />
-  <List
-    bind:value={devsettings.cameraControlsLeftClick}
-    label="Camera Left Click"
-    options={cameraOptions}
-  />
-  <Checkbox bind:value={devsettings.billboarding} label="Billboarding" />
+<Pane title="Dev Settings" position="fixed" x={0} y={100}>
+  <Folder title="Camera">
+    <Slider
+      bind:value={devsettings.frustumPadding}
+      label="Frustum Padding"
+      min={-5}
+      max={5}
+      step={1}
+    />
+    <List
+      bind:value={devsettings.cameraControlsLeftClick}
+      label="Camera Left Click"
+      options={cameraOptions}
+    />
+    <Checkbox bind:value={devsettings.billboarding} label="Billboarding" />
+  </Folder>
+  <Folder title="Simulation">
+    <Button
+      on:click={() => landStore.startRandomUpdates()}
+      label="Start Random Updates"
+    />
+    <Button
+      on:click={() => landStore.stopRandomUpdates()}
+      label="Stop Random Updates"
+    />
+    <Slider
+      bind:value={devsettings.minRandomUpdates}
+      label="Min Random Updates"
+      min={1}
+      max={100}
+      step={1}
+    />
+    <Slider
+      bind:value={devsettings.maxRandomUpdates}
+      label="Max Random Updates"
+      min={1}
+      max={100}
+      step={1}
+    />
+    <Slider
+      bind:value={devsettings.nukeRate}
+      label="Nuke Probability"
+      min={0}
+      max={1}
+      step={0.01}
+    />
+    <Slider
+      bind:value={devsettings.updateInterval}
+      label="Update Interval (ms)"
+      min={100}
+      max={5000}
+      step={100}
+    />
+  </Folder>
 </Pane>
