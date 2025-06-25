@@ -22,6 +22,7 @@
     MeshBasicMaterial,
     Object3D,
     PlaneGeometry,
+    TextureLoader,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
   import BiomeSprite from './biome-sprite.svelte';
@@ -78,9 +79,16 @@
 
   // At the top, outside of any reactive context:
   const planeGeometry = new PlaneGeometry(1, 1);
+  const roadTexture = new TextureLoader().load(
+    '/land-display/road.png',
+    (data) => {
+      data.colorSpace = 'srgb';
+    },
+  );
   const planeMaterial = new MeshBasicMaterial({
+    map: roadTexture,
     transparent: true,
-    opacity: 0,
+    opacity: 1,
     alphaTest: 0.1,
   });
 
@@ -98,7 +106,7 @@
     for (let x = 0; x < gridSize; x++) {
       for (let y = 0; y < gridSize; y++) {
         const index = x + y * gridSize;
-        tempObject.position.set(y, 1 + 1, x); // adjust y as needed
+        tempObject.position.set(y, 0, x); // adjust y as needed
         tempObject.rotation.x = -Math.PI / 2;
         tempObject.updateMatrix();
         interactionPlanes.setMatrixAt(index, tempObject.matrix);
@@ -216,7 +224,7 @@
 
 <T is={Group}>
   {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
-    <!-- Transparent interaction planes layer (still needed for hover detection) -->
+    <!-- Transparent interaction planes layer (now also renders roads) -->
     {#if interactionPlanes}
       <T
         is={interactionPlanes}
@@ -228,16 +236,7 @@
     {/if}
 
     <!-- Road sprites-->
-    <InstancedSprite
-      count={gridSize * gridSize}
-      autoUpdate={false}
-      playmode={'PAUSE'}
-      {billboarding}
-      spritesheet={roadSpritesheet}
-      bind:ref={roadSprite}
-    >
-      <RoadSprite {landTiles} />
-    </InstancedSprite>
+    <!-- Removed InstancedSprite for roads, as road texture is now on interactionPlanes -->
 
     <!-- Biome sprites (background layer) -->
     <InstancedSprite
