@@ -5,6 +5,8 @@
   import type { LandTile } from './landTile';
   import { cursorStore } from './cursor.store.svelte';
   import { Vector3 } from 'three';
+  import { isInFrustum } from './utils/frustumCulling';
+  import { useThrelte } from '@threlte/core';
 
   let { landTiles } = $props();
 
@@ -22,10 +24,24 @@
   }
 
   const { updatePosition, sprite } = useInstancedSprite();
+  const { camera } = useThrelte();
 
   useTask(() => {
-    // iterate over landtiles
     landTiles.forEach((tile: LandTile, index: number) => {
+      if (
+        !isInFrustum(
+          [tile.position[0], tile.position[1], tile.position[2]],
+          $camera,
+        )
+      ) {
+        // Hide instance by scaling to zero
+        updatePosition(
+          index,
+          [tile.position[0], -tile.position[2], tile.position[1]],
+          [0, 0],
+        );
+        return;
+      }
       let animationName = tile.buildingAnimationName;
       if (
         cursorStore.hoveredTileIndex === index ||
@@ -33,19 +49,13 @@
       ) {
         animationName = animationName + '-outline';
       }
-
       const scale = getTileScale(index);
-
       updatePosition(index, [
         tile.position[0],
         -tile.position[2],
         tile.position[1],
       ]);
-      sprite.lookAt(
-        0,
-        0.1, // Adjusted to center the sprite vertically
-        0,
-      );
+      sprite.lookAt(0, 0.1, 0);
       sprite.animation.setAt(index, animationName as any);
     });
   });
