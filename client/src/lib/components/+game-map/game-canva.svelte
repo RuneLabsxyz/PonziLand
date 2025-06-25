@@ -9,7 +9,13 @@
   import Scene from './game-scene.svelte';
   import { gameStore } from './three/game.store.svelte';
   import Settings from './three/Settings.svelte';
+  import { devsettings } from './three/utils/devsettings.store.svelte';
   let billboarding = false;
+  $effect(() => {
+    if (!gameStore.cameraControls) return;
+    gameStore.cameraControls.mouseButtons.left =
+      devsettings.cameraControlsLeftClick as any;
+  });
 </script>
 
 <div id="game-canvas" style="height: 100%; width: 100%;">
@@ -30,7 +36,7 @@
         bind:ref={gameStore.cameraControls}
         oncreate={(ref: CameraControlsRef) => {
           ref.setLookAt(32, 50, 32, 32, 0, 32, false);
-          // ref.mouseButtons.left = 0b10;
+          ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
         }}
       />
     </T.OrthographicCamera>
