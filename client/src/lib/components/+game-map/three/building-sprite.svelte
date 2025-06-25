@@ -7,6 +7,7 @@
   import { Vector3 } from 'three';
   import { isInFrustum } from './utils/frustumCulling';
   import { useThrelte } from '@threlte/core';
+  import { devsettings } from './utils/devsettings.store.svelte';
 
   let { landTiles } = $props();
 
@@ -32,6 +33,7 @@
         !isInFrustum(
           [tile.position[0], tile.position[1], tile.position[2]],
           $camera,
+          devsettings.frustumPadding,
         )
       ) {
         // Hide instance by scaling to zero

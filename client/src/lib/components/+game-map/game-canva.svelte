@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Canvas, T } from '@threlte/core';
   import {
-    AsciiRenderer,
     CameraControls,
     type CameraControlsRef,
     Grid,
@@ -9,6 +8,7 @@
   } from '@threlte/extras';
   import Scene from './game-scene.svelte';
   import { gameStore } from './three/game.store.svelte';
+  import Settings from './three/Settings.svelte';
   let billboarding = false;
 </script>
 
@@ -44,6 +44,7 @@
     />
     <Scene {billboarding} />
   </Canvas>
+  <Settings />
 </div>
 
 <style>
