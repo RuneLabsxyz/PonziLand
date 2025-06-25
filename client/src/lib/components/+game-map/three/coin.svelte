@@ -129,24 +129,30 @@
   );
 </script>
 
-<Float
-  floatingRange={[
-    [0, 0],
-    [0, 0],
-    [-0.05, 0.05],
-  ]}
->
-  <!-- {#if coinHovered}
+{#if isOwner}
+  <Float
+    floatingRange={[
+      [0, 0],
+      [0, 0],
+      [-0.05, 0.05],
+    ]}
+  >
+    <!-- {#if coinHovered}
         <T.Mesh rotation={[-Math.PI / 2, 0, 0]}>
           <T.PlaneGeometry args={[0.35, 0.35]} />
           <ImageMaterial {texture} />
         </T.Mesh>
       {/if} -->
-  <Instance
-    onclick={() => handleCoinClick(tile, i)}
-    onpointerenter={() => handleCoinHover(tile, i, true)}
-    onpointerleave={() => handleCoinHover(tile, i, false)}
-    rotation={[-Math.PI / 2, 0, 0]}
-    position={[tile.position[0], tile.position[1] + 2, tile.position[2] - 0.5]}
-  />
-</Float>
+    <Instance
+      onclick={() => handleCoinClick(tile, i)}
+      onpointerenter={() => handleCoinHover(tile, i, true)}
+      onpointerleave={() => handleCoinHover(tile, i, false)}
+      rotation={[-Math.PI / 2, 0, 0]}
+      position={[
+        tile.position[0],
+        tile.position[1] + 2,
+        tile.position[2] - 0.5,
+      ]}
+    />
+  </Float>
+{/if}

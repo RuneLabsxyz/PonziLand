@@ -274,13 +274,13 @@
     </InstancedSprite>
 
     <InstancedSprite
-      count={nukingTiles.length}
+      count={gridSize * gridSize}
       {billboarding}
       spritesheet={nukeSpritesheet}
       bind:ref={nukeSprite}
       fps={10}
     >
-      <NukeSprite landTiles={nukingTiles} />
+      <NukeSprite {landTiles} />
     </InstancedSprite>
   {/await}
 </T>
