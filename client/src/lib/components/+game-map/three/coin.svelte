@@ -13,7 +13,7 @@
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import { T } from '@threlte/core';
-  import { Float, Instance } from '@threlte/extras';
+  import { Billboard, Float, Instance } from '@threlte/extras';
   import { NearestFilter, TextureLoader } from 'three';
   import type { LandTile } from './landTile';
 
@@ -117,11 +117,6 @@
     }
   }
 
-  let texture = new TextureLoader().load('/ui/icons/Icon_Coin2.png');
-  texture.magFilter = NearestFilter;
-  texture.minFilter = NearestFilter;
-  texture.colorSpace = 'srgb';
-
   let coinHovered = $state(false);
   let isOwner = $derived(
     padAddress(tile.land.owner) ===
@@ -130,29 +125,31 @@
 </script>
 
 {#if isOwner}
-  <Float
-    floatingRange={[
-      [0, 0],
-      [0, 0],
-      [-0.05, 0.05],
+  <Billboard
+    position={[
+      tile.position[0],
+      tile.position[1] + 0.1,
+      tile.position[2] - 0.5,
     ]}
   >
-    <!-- {#if coinHovered}
-        <T.Mesh rotation={[-Math.PI / 2, 0, 0]}>
-          <T.PlaneGeometry args={[0.35, 0.35]} />
-          <ImageMaterial {texture} />
-        </T.Mesh>
-      {/if} -->
-    <Instance
-      onclick={() => handleCoinClick(tile, i)}
-      onpointerenter={() => handleCoinHover(tile, i, true)}
-      onpointerleave={() => handleCoinHover(tile, i, false)}
-      rotation={[-Math.PI / 2, 0, 0]}
-      position={[
-        tile.position[0],
-        tile.position[1] + 2,
-        tile.position[2] - 0.5,
+    <Float
+      floatingRange={[
+        [0, 0],
+        [0, 0],
+        [-0.05, 0.05],
       ]}
-    />
-  </Float>
+    >
+      <!-- {#if coinHovered}
+  <T.Mesh rotation={[-Math.PI / 2, 0, 0]}>
+  <T.PlaneGeometry args={[0.35, 0.35]} />
+  <ImageMaterial {texture} />
+  </T.Mesh>
+  {/if} -->
+      <Instance
+        onclick={() => handleCoinClick(tile, i)}
+        onpointerenter={() => handleCoinHover(tile, i, true)}
+        onpointerleave={() => handleCoinHover(tile, i, false)}
+      />
+    </Float>
+  </Billboard>
 {/if}

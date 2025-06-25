@@ -109,7 +109,7 @@
     for (let x = 0; x < gridSize; x++) {
       for (let y = 0; y < gridSize; y++) {
         const index = x + y * gridSize;
-        tempObject.position.set(y, 0, x); // adjust y as needed
+        tempObject.position.set(y, 1 - 0.01, x); // adjust y as needed
         tempObject.rotation.x = -Math.PI / 2;
         tempObject.updateMatrix();
         interactionPlanes.setMatrixAt(index, tempObject.matrix);
@@ -285,8 +285,8 @@
   {/await}
 </T>
 
-<InstancedMesh>
-  <T.PlaneGeometry args={[0.35, 0.35]} />
+<InstancedMesh limit={gridSize ** 2}>
+  <T.PlaneGeometry args={[0.3, 0.3]} />
   <T.MeshBasicMaterial map={texture} transparent />
   {#each landTiles as tile, i}
     {#if tile.land.type === 'building'}
