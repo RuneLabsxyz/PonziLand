@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Pane, Slider, List } from 'svelte-tweakpane-ui';
+  import { Pane, Slider, List, Checkbox } from 'svelte-tweakpane-ui';
   import { devsettings } from './utils/devsettings.store.svelte';
   import type { ListOptions } from 'svelte-tweakpane-ui';
 
@@ -41,4 +41,5 @@
     label="Camera Left Click"
     options={cameraOptions}
   />
+  <Checkbox bind:value={devsettings.billboarding} label="Billboarding" />
 </Pane>

@@ -10,7 +10,6 @@
   import { gameStore } from './three/game.store.svelte';
   import Settings from './three/Settings.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
-  let billboarding = false;
   $effect(() => {
     if (!gameStore.cameraControls) return;
     gameStore.cameraControls.mouseButtons.left =
@@ -48,7 +47,7 @@
       sectionColor="#ffff00"
       gridSize={64 + 20}
     />
-    <Scene {billboarding} />
+    <Scene />
   </Canvas>
   <Settings />
 </div>

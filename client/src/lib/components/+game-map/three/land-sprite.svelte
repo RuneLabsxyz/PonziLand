@@ -41,8 +41,9 @@
   import NukeSprite from './nuke-sprite.svelte';
   import { padAddress } from '$lib/utils';
   import Coin from './coin.svelte';
+  import { devsettings } from './utils/devsettings.store.svelte';
 
-  let { billboarding = false } = $props();
+  let billboarding = $derived(devsettings.billboarding);
 
   const gridSize = 64;
 
@@ -109,7 +110,7 @@
     for (let x = 0; x < gridSize; x++) {
       for (let y = 0; y < gridSize; y++) {
         const index = x + y * gridSize;
-        tempObject.position.set(y, 1 - 0.01, x); // adjust y as needed
+        tempObject.position.set(y, 1 - 0.03, x); // adjust y as needed
         tempObject.rotation.x = -Math.PI / 2;
         tempObject.updateMatrix();
         interactionPlanes.setMatrixAt(index, tempObject.matrix);
