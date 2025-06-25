@@ -76,11 +76,35 @@
 
   let landTiles: LandTile[] = $state([]);
 
+  // At the top, outside of any reactive context:
   const planeGeometry = new PlaneGeometry(1, 1);
   const planeMaterial = new MeshBasicMaterial({
     transparent: true,
     opacity: 0,
     alphaTest: 0.1,
+  });
+
+  let interactionPlanes: InstancedMesh | undefined = $state();
+  onMount(() => {
+    // Only run once
+    interactionPlanes = new InstancedMesh(
+      planeGeometry,
+      planeMaterial,
+      gridSize * gridSize,
+    );
+
+    const tempObject = new Object3D();
+
+    for (let x = 0; x < gridSize; x++) {
+      for (let y = 0; y < gridSize; y++) {
+        const index = x + y * gridSize;
+        tempObject.position.set(y, 1 + 1, x); // adjust y as needed
+        tempObject.rotation.x = -Math.PI / 2;
+        tempObject.updateMatrix();
+        interactionPlanes.setMatrixAt(index, tempObject.matrix);
+      }
+    }
+    interactionPlanes.instanceMatrix.needsUpdate = true;
   });
 
   onMount(() => {
@@ -101,38 +125,8 @@
 
         return new LandTile([gridX, 1, gridY], tokenSymbol, tile.level, tile);
       });
-      setupInteractionPlanes();
     });
   });
-
-  let interactionPlanes: InstancedMesh | undefined = $state();
-
-  function setupInteractionPlanes() {
-    if (!landTiles.length) return;
-
-    interactionPlanes = new InstancedMesh(
-      planeGeometry,
-      planeMaterial,
-      landTiles.length,
-    );
-
-    const tempObject = new Object3D();
-
-    landTiles.forEach((tile, index) => {
-      tempObject.position.set(
-        tile.position[0],
-        tile.position[1] + 1, // Slightly above the ground
-        tile.position[2],
-      );
-      tempObject.rotation.x = -Math.PI / 2;
-      tempObject.updateMatrix();
-      if (interactionPlanes) {
-        interactionPlanes.setMatrixAt(index, tempObject.matrix);
-      }
-    });
-
-    interactionPlanes.instanceMatrix.needsUpdate = true;
-  }
 
   $effect(() => {
     if (buildingSprite) {
