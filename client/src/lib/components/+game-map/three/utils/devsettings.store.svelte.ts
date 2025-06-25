@@ -14,4 +14,5 @@ export let devsettings = $state({
   showLandOverlay: true,
   showGrid: true,
   showUI: true,
+  showNukes: true,
 });

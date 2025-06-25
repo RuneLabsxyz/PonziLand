@@ -100,5 +100,6 @@
     <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
     <Checkbox bind:value={devsettings.showGrid} label="Grid" />
     <Checkbox bind:value={devsettings.showUI} label="UI" />
+    <Checkbox bind:value={devsettings.showNukes} label="Nukes" />
   </Folder>
 </Pane>

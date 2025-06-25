@@ -275,15 +275,17 @@
       </InstancedSprite>
     {/if}
 
-    <InstancedSprite
-      count={gridSize * gridSize}
-      {billboarding}
-      spritesheet={nukeSpritesheet}
-      bind:ref={nukeSprite}
-      fps={10}
-    >
-      <NukeSprite {landTiles} />
-    </InstancedSprite>
+    {#if devsettings.showNukes}
+      <InstancedSprite
+        count={gridSize * gridSize}
+        {billboarding}
+        spritesheet={nukeSpritesheet}
+        bind:ref={nukeSprite}
+        fps={10}
+      >
+        <NukeSprite {landTiles} />
+      </InstancedSprite>
+    {/if}
   {/await}
 </T>
 
