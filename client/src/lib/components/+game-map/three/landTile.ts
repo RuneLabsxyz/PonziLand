@@ -5,6 +5,8 @@ export class LandTile {
   tokenName: string;
   level: number;
   land: BaseLand;
+  private _buildingAnimationName: string;
+  private _biomeAnimationName: string;
 
   constructor(
     position: [number, number, number],
@@ -17,15 +19,18 @@ export class LandTile {
     this.tokenName = tokenName;
     this.level = level;
     this.land = land;
+    // Memoize animation names
+    this._buildingAnimationName = `${this.tokenName}_${this.level}`;
+    this._biomeAnimationName = this.tokenName;
   }
 
-  // Derive building animation name from token name and level
-  getBuildingAnimationName(): string {
-    return `${this.tokenName}_${this.level}`;
+  // Memoized getter for building animation name
+  get buildingAnimationName(): string {
+    return this._buildingAnimationName;
   }
 
-  // Derive biome animation name from token name
-  getBiomeAnimationName(): string {
-    return this.tokenName;
+  // Memoized getter for biome animation name
+  get biomeAnimationName(): string {
+    return this._biomeAnimationName;
   }
 }

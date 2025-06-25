@@ -8,6 +8,11 @@ export const buildingAtlasMeta = [
     width: 12,
     height: 21,
     animations: [
+      { name: 'empty', frameRange: [1, 1] },
+      { name: 'empty_1', frameRange: [1, 1] },
+      { name: 'empty_2', frameRange: [1, 1] },
+      { name: 'empty_3', frameRange: [1, 1] },
+
       { name: 'lords_1', frameRange: [0, 0] },
       { name: 'lords_2', frameRange: [12, 12] },
       { name: 'lords_3', frameRange: [24, 24] },
@@ -77,7 +82,6 @@ export const buildingAtlasMeta = [
       { name: 'eSG_1', frameRange: [9, 9] },
       { name: 'eSG_2', frameRange: [21, 21] },
       { name: 'eSG_3', frameRange: [33, 33] },
-      { name: 'empty', frameRange: [1, 1] },
     ],
   },
   {
@@ -86,6 +90,11 @@ export const buildingAtlasMeta = [
     width: 12,
     height: 21,
     animations: [
+      { name: 'empty-outline', frameRange: [1, 1] },
+      { name: 'empty_1-outline', frameRange: [1, 1] },
+      { name: 'empty_2-outline', frameRange: [1, 1] },
+      { name: 'empty_3-outline', frameRange: [1, 1] },
+
       { name: 'lords_1-outline', frameRange: [0, 0] },
       { name: 'lords_2-outline', frameRange: [12, 12] },
       { name: 'lords_3-outline', frameRange: [24, 24] },
@@ -155,7 +164,6 @@ export const buildingAtlasMeta = [
       { name: 'eSG_1-outline', frameRange: [9, 9] },
       { name: 'eSG_2-outline', frameRange: [21, 21] },
       { name: 'eSG_3-outline', frameRange: [33, 33] },
-      { name: 'empty-outline', frameRange: [1, 1] },
     ],
   },
 ] as const satisfies SpritesheetMetadata;

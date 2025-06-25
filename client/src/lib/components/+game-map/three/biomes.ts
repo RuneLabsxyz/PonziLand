@@ -72,6 +72,7 @@ export const biomeAtlasMeta = [
     height: 3,
     animations: [
       { name: 'empty', frameRange: [0, 0] },
+      { name: 'empty-outline', frameRange: [0, 0] },
       { name: 'empty_0', frameRange: [0, 0] },
       { name: 'empty_1', frameRange: [1, 1] },
       { name: 'empty_2', frameRange: [2, 2] },

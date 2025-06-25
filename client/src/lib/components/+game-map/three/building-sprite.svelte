@@ -8,29 +8,6 @@
 
   let { landTiles } = $props();
 
-  function getBuildingAnimationOrFallback(
-    tile: LandTile,
-    availableAnimations: string[],
-    tileIndex?: number,
-  ): string {
-    const derivedName = tile.getBuildingAnimationName();
-    let name = 'empty';
-
-    if (availableAnimations.includes(derivedName)) {
-      name = derivedName;
-    }
-
-    // if hovered or selected, use the derived name
-    if (
-      cursorStore.hoveredTileIndex === tileIndex ||
-      cursorStore.selectedTileIndex === tileIndex
-    ) {
-      if (availableAnimations.includes(derivedName + '-outline')) {
-        name = derivedName + '-outline';
-      }
-    }
-    return name;
-  }
   // Get available animation names
   const buildingAnimations = buildingAtlasMeta.flatMap((item) =>
     item.animations.map((anim) => anim.name),
@@ -49,11 +26,13 @@
   useTask(() => {
     // iterate over landtiles
     landTiles.forEach((tile: LandTile, index: number) => {
-      const animationName = getBuildingAnimationOrFallback(
-        tile,
-        buildingAnimations,
-        index,
-      );
+      let animationName = tile.buildingAnimationName;
+      if (
+        cursorStore.hoveredTileIndex === index ||
+        cursorStore.selectedTileIndex === index
+      ) {
+        animationName = animationName + '-outline';
+      }
 
       const scale = getTileScale(index);
 
@@ -67,7 +46,7 @@
         0.1, // Adjusted to center the sprite vertically
         0,
       );
-      sprite.animation.setAt(index, animationName);
+      sprite.animation.setAt(index, animationName as any);
     });
   });
 </script>

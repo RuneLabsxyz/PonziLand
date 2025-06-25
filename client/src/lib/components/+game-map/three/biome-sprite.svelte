@@ -7,31 +7,6 @@
 
   let { landTiles } = $props();
 
-  function getBiomeAnimationOrFallback(
-    tile: LandTile,
-    availableAnimations: string[],
-    tileIndex?: number,
-  ): string {
-    const derivedName = tile.getBiomeAnimationName();
-
-    let name = 'empty';
-
-    if (availableAnimations.includes(derivedName)) {
-      name = derivedName;
-    }
-
-    // if hovered or selected, use the derived name
-    if (
-      cursorStore.hoveredTileIndex === tileIndex ||
-      cursorStore.selectedTileIndex === tileIndex
-    ) {
-      if (availableAnimations.includes(derivedName + '-outline')) {
-        name = derivedName + '-outline';
-      }
-    }
-    return name;
-  }
-
   // Get available animation names
   const biomeAnimations = biomeAtlasMeta.flatMap((item) =>
     item.animations.map((anim) => anim.name),
@@ -42,11 +17,13 @@
   useTask(() => {
     // iterate over landtiles
     landTiles.forEach((tile: LandTile, index: number) => {
-      const animationName = getBiomeAnimationOrFallback(
-        tile,
-        biomeAnimations,
-        index,
-      );
+      let animationName = tile.biomeAnimationName;
+      if (
+        cursorStore.hoveredTileIndex === index ||
+        cursorStore.selectedTileIndex === index
+      ) {
+        animationName = animationName + '-outline';
+      }
 
       updatePosition(index, [
         tile.position[0],
@@ -58,7 +35,7 @@
         0.1, // Adjusted to center the sprite vertically
         0,
       );
-      sprite.animation.setAt(index, animationName);
+      sprite.animation.setAt(index, animationName as any);
     });
   });
 </script>

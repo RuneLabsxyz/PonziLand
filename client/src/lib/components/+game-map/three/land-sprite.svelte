@@ -85,28 +85,22 @@
 
   onMount(() => {
     landStore.getAllLands().subscribe((tiles) => {
-      landTiles = tiles
-        .sort((a, b) => {
-          const aValue = a.location.x + a.location.y * gridSize;
-          const bValue = b.location.x + b.location.y * gridSize;
-          return aValue - bValue;
-        })
-        .map((tile, index) => {
-          let tokenSymbol = 'empty';
+      landTiles = tiles.map((tile, index) => {
+        let tokenSymbol = 'empty';
 
-          if (BuildingLand.is(tile)) {
-            tokenSymbol = tile?.token?.symbol ?? 'empty';
-          }
+        if (BuildingLand.is(tile)) {
+          tokenSymbol = tile?.token?.symbol ?? 'empty';
+        }
 
-          if (AuctionLand.is(tile)) {
-            tokenSymbol = 'auction';
-          }
+        if (AuctionLand.is(tile)) {
+          tokenSymbol = 'auction';
+        }
 
-          const gridX = tile.location.x;
-          const gridY = tile.location.y;
+        const gridX = tile.location.x;
+        const gridY = tile.location.y;
 
-          return new LandTile([gridX, 1, gridY], tokenSymbol, tile.level, tile);
-        });
+        return new LandTile([gridX, 1, gridY], tokenSymbol, tile.level, tile);
+      });
       setupInteractionPlanes();
     });
   });
@@ -271,7 +265,7 @@
       <BuildingSprite {landTiles} />
     </InstancedSprite>
 
-    <InstancedSprite
+    <!-- <InstancedSprite
       count={gridSize * gridSize}
       {billboarding}
       spritesheet={nukeSpritesheet}
@@ -279,14 +273,14 @@
       fps={10}
     >
       <NukeSprite {landTiles} />
-    </InstancedSprite>
+    </InstancedSprite> -->
   {/await}
 </T>
-{#each landTiles as tile, i}
+<!-- {#each landTiles as tile, i}
   {#if tile.land.type === 'building'}
     <Coin {tile} {i} />
   {/if}
-{/each}
+{/each} -->
 <!-- {#each landTiles as tile, i}
   <Text
     position={[tile.position[0] - 1, tile.position[1] + 0.1, tile.position[2]]}
