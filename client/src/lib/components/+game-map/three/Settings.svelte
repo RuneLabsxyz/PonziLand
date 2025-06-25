@@ -55,11 +55,13 @@
   <Folder title="Simulation">
     <Button
       on:click={() => landStore.startRandomUpdates()}
-      label="Start Random Updates"
+      label="Random Updates"
+      title="Start"
     />
     <Button
       on:click={() => landStore.stopRandomUpdates()}
-      label="Stop Random Updates"
+      label="Random Updates"
+      title="Stop"
     />
     <Slider
       bind:value={devsettings.minRandomUpdates}
@@ -91,14 +93,12 @@
     />
   </Folder>
   <Folder title="Layers">
-    <Checkbox bind:value={devsettings.showRoads} label="Show Roads" />
-    <Checkbox bind:value={devsettings.showBuildings} label="Show Buildings" />
-    <Checkbox bind:value={devsettings.showBiomes} label="Show Biomes" />
-    <Checkbox bind:value={devsettings.showCoins} label="Show Coins" />
-    <Checkbox
-      bind:value={devsettings.showLandOverlay}
-      label="Show Land Overlay"
-    />
-    <Checkbox bind:value={devsettings.showGrid} label="Show Grid" />
+    <Checkbox bind:value={devsettings.showRoads} label="Roads" />
+    <Checkbox bind:value={devsettings.showBuildings} label="Buildings" />
+    <Checkbox bind:value={devsettings.showBiomes} label="Biomes" />
+    <Checkbox bind:value={devsettings.showCoins} label="Coins" />
+    <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
+    <Checkbox bind:value={devsettings.showGrid} label="Grid" />
+    <Checkbox bind:value={devsettings.showUI} label="UI" />
   </Folder>
 </Pane>

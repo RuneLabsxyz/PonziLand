@@ -13,4 +13,5 @@ export let devsettings = $state({
   showCoins: true,
   showLandOverlay: true,
   showGrid: true,
+  showUI: true,
 });

@@ -144,6 +144,8 @@
     <LoadingScreen {value} />
   {:else}
     <GameCanva />
-    <GameUi />
+    {#if devsettings.showUI}
+      <GameUi />
+    {/if}
   {/if}
 </div>
