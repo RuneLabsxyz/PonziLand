@@ -3,6 +3,7 @@
   import { BuildingLand } from '$lib/api/land/building_land';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
+  import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import {
     landStore,
     selectedLand,
@@ -32,12 +33,9 @@
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
   import { LandTile } from './landTile';
-  import RoadSprite from './road-sprite.svelte';
-  import Coin from './coin.svelte';
-  import { padAddress } from '$lib/utils';
-  import accountState from '$lib/account.svelte';
   import NukeSprite from './nuke-sprite.svelte';
-  import { nukeStore } from '$lib/stores/nuke.store.svelte';
+  import { padAddress } from '$lib/utils';
+  import Coin from './coin.svelte';
 
   let { billboarding = false } = $props();
 
@@ -220,6 +218,13 @@
       selectedLandTilePosition = undefined;
     }
   });
+
+  // Filter only nuking tiles for the nuke layer
+  let nukingTiles = $derived.by(() => {
+    return landTiles.filter(
+      (tile) => nukeStore.nuking[Number(tile.land.locationString)],
+    );
+  });
 </script>
 
 <T is={Group}>
@@ -258,22 +263,22 @@
       <BuildingSprite {landTiles} />
     </InstancedSprite>
 
-    <!-- <InstancedSprite
-      count={gridSize * gridSize}
+    <InstancedSprite
+      count={nukingTiles.length}
       {billboarding}
       spritesheet={nukeSpritesheet}
       bind:ref={nukeSprite}
       fps={10}
     >
-      <NukeSprite {landTiles} />
-    </InstancedSprite> -->
+      <NukeSprite landTiles={nukingTiles} />
+    </InstancedSprite>
   {/await}
 </T>
-<!-- {#each landTiles as tile, i}
+{#each landTiles as tile, i}
   {#if tile.land.type === 'building'}
     <Coin {tile} {i} />
   {/if}
-{/each} -->
+{/each}
 <!-- {#each landTiles as tile, i}
   <Text
     position={[tile.position[0] - 1, tile.position[1] + 0.1, tile.position[2]]}
