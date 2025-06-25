@@ -111,8 +111,7 @@ for (const val of Object.entries(envProfile)) {
 console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath = `../contracts/manifest_${profile}.json`;
-// Replace profile mainnet-test to mainnet
-const dataPath = `data/${profile.replace('-test', '')}.json`;
+const dataPath = `data/${profile}.json`;
 
 console.log('Manifest: ', manifestPath);
 

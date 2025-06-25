@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://ponzi.land"
-seed = "ponzi_land-testing-3"
+seed = "ponzi_land-wip-3"
 
 [world.socials]
 x = "https://x.com/ponzidotland"
@@ -29,7 +29,7 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 
 [init_call_args]
 "ponzi_land-actions" = [
-    "0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # Token address (eSTRK)
+    "0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51", # Token address (eSTRK)
     "128000000000000000000",                                              # start price (low)
     "0",                                                                  # start price (high)
     "1000000000000000000",                                                # floor price (low)
@@ -39,14 +39,16 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 ]
 
 "ponzi_land-auth" = [
-    "0x021fBAE9F9343873ab25eC14d287A1170b676C73c97906790ef91F5428dBdbad", # Owner address
+    "0x0515b1ef6e23a6ce07f4ca8849c11735c86c87da1249a504ead63af3aa447eef", # Owner address
     "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
 ]
 
 "ponzi_land-token_registry" = [
-    "7",                                                                  # 4 tokens,
-    "0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # nftSTRK
-    "0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e",  # ePAPER
-    "0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4",  # eLORDS
-    "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5",  # eBROTHER
+    "6",                                                                  # 6 tokens,
+    "0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51", # pltSTRK
+    "0x011f85339903777e3ed5b07fc366956bdd0795c37c20dfc01e61cd6aa850df15", # pltPAPER
+    "0x05cf32bf9b60c4763ef53672cfd720f57ecb4c4109aae6a7a2c551eddfd9b880", # pltLORDS
+    "0x06a998c40654fd0e29bcb359e998db25d9df1169b925d5558b07030ebcba38c8", # pltBROTHER
+    "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d", # pltPAL
+    "0x064ae0eeee87bb4ce053c8c1e1377e21de3b3add549551ed53b5a64a1b700671", # pltETH
 ]
