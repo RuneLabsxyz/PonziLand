@@ -245,6 +245,8 @@
   texture.magFilter = NearestFilter;
   texture.minFilter = NearestFilter;
   texture.colorSpace = 'srgb';
+
+  let coinInstancedMesh: TInstancedMesh | undefined = $state();
 </script>
 
 <T is={Group}>
@@ -307,12 +309,17 @@
     {/if}
 
     {#if devsettings.showCoins}
-      <InstancedMesh limit={gridSize ** 2}>
+      <InstancedMesh
+        bind:ref={coinInstancedMesh}
+        limit={gridSize * gridSize}
+        count={gridSize * gridSize}
+        frustumCulled={false}
+      >
         <T.PlaneGeometry args={[0.3, 0.3]} />
         <T.MeshBasicMaterial map={texture} transparent />
         {#each landTiles as tile, i}
           {#if tile.land.type === 'building'}
-            <Coin {tile} {i} />
+            <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
           {/if}
         {/each}
       </InstancedMesh>

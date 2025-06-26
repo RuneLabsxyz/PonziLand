@@ -1,4 +1,5 @@
 <script lang="ts">
+  import accountState from '$lib/account.svelte';
   import { BuildingLand } from '$lib/api/land/building_land';
   import { useDojo } from '$lib/contexts/dojo';
   import { claimSingleLand, claimStore } from '$lib/stores/claim.store.svelte';
@@ -12,13 +13,16 @@
   import { padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
-  import { Billboard, Float, Instance } from '@threlte/extras';
+  import { Float, Instance } from '@threlte/extras';
   import type { LandTile } from './landTile';
-  import accountState from '$lib/account.svelte';
 
   const dojo = useDojo();
 
-  let { tile, i }: { tile: LandTile; i: number } = $props();
+  let {
+    tile,
+    i,
+    instancedMesh,
+  }: { tile: LandTile; i: number; instancedMesh: any } = $props();
 
   let derivedTile = $derived(tile);
 
