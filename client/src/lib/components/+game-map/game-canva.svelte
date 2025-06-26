@@ -25,6 +25,10 @@
     if (!gameStore.cameraControls) return;
     gameStore.cameraControls.mouseButtons.left =
       devsettings.cameraControlsLeftClick as any;
+    gameStore.cameraControls.mouseButtons.right =
+      devsettings.cameraControlsRightClick as any;
+    gameStore.cameraControls.mouseButtons.wheel =
+      devsettings.CameraControlsWheel as any;
   });
 </script>
 
@@ -49,6 +53,8 @@
         oncreate={(ref: CameraControlsRef) => {
           ref.setLookAt(32, 50, 32, 32, 0, 32, false);
           ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
+          ref.mouseButtons.right = devsettings.cameraControlsRightClick as any;
+          ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;
         }}
       />
     </T.OrthographicCamera>

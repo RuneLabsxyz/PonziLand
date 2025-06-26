@@ -12,40 +12,45 @@
   import { padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
-  import { T } from '@threlte/core';
   import { Billboard, Float, Instance } from '@threlte/extras';
-  import { NearestFilter, TextureLoader } from 'three';
   import type { LandTile } from './landTile';
+  import accountState from '$lib/account.svelte';
 
   const dojo = useDojo();
-  const account = () => {
-    return dojo.accountManager?.getProvider();
-  };
 
   let { tile, i }: { tile: LandTile; i: number } = $props();
 
-  const land = BuildingLand.is(tile.land)
-    ? createLandWithActions(tile.land, landStore.getAllLands)
-    : undefined;
+  let derivedTile = $derived(tile);
+
+  const land = createLandWithActions(
+    tile.land as BuildingLand,
+    landStore.getAllLands,
+  );
 
   let animating = $derived.by(() => {
-    const claimInfo = claimStore.value[land?.location];
+    const claimInfo = claimStore.value[tile.land.locationString];
     if (!claimInfo) return false;
 
     if (claimInfo.animating) {
       setTimeout(() => {
-        claimStore.value[land?.location].animating = false;
+        claimStore.value[tile.land.locationString].animating = false;
       }, 2000);
       return true;
     } else {
       return false;
     }
   });
+
   let timing = $derived.by(() => {
-    return claimStore.value[land?.location]?.claimable ?? false;
+    return claimStore.value[tile.land.locationString]?.claimable ?? false;
   });
 
   async function handleSingleClaim() {
+    if (accountState.walletAccount === undefined) {
+      console.error('No wallet account found');
+      return;
+    }
+
     fetchTaxes();
 
     if (!land) {
@@ -53,7 +58,7 @@
       return;
     }
 
-    claimSingleLand(land, dojo, account()?.getWalletAccount()!)
+    claimSingleLand(land, dojo, accountState.walletAccount)
       .then(() => {
         gameSounds.play('claim');
       })
@@ -84,27 +89,13 @@
 
   let aggregatedTaxes: TaxData[] = $state([]);
 
-  $effect(() => {
-    if (!isOwner) {
-      return;
-    }
-
-    fetchTaxes();
-
-    const interval = setInterval(() => {
-      fetchTaxes();
-    }, 15 * 1000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  });
-
   // Add these handler functions to your component
   function handleCoinClick(tile: LandTile, index: number) {
     console.log('Coin clicked:', tile, index);
     handleSingleClaim();
   }
+
+  let coinHovered = $state(false);
 
   function handleCoinHover(tile: LandTile, index: number, isHovering: boolean) {
     // Add hover effects here
@@ -117,39 +108,29 @@
     }
   }
 
-  let coinHovered = $state(false);
   let isOwner = $derived(
-    padAddress(tile.land.owner) ===
-      padAddress(account()?.getWalletAccount()?.address ?? ''),
+    padAddress(tile.land.owner) === padAddress(accountState.address ?? ''),
   );
 </script>
 
-{#if isOwner}
-  <Billboard
-    position={[
-      tile.position[0],
-      tile.position[1] + 0.1,
-      tile.position[2] - 0.5,
+{#if isOwner && !animating && timing}
+  <Float
+    floatingRange={[
+      [0, 0],
+      [0, 0],
+      [-0.05, 0.05],
     ]}
   >
-    <Float
-      floatingRange={[
-        [0, 0],
-        [0, 0],
-        [-0.05, 0.05],
+    <Instance
+      position={[
+        derivedTile.position[0],
+        derivedTile.position[1] + 0.1,
+        derivedTile.position[2] - 0.5,
       ]}
-    >
-      <!-- {#if coinHovered}
-  <T.Mesh rotation={[-Math.PI / 2, 0, 0]}>
-  <T.PlaneGeometry args={[0.35, 0.35]} />
-  <ImageMaterial {texture} />
-  </T.Mesh>
-  {/if} -->
-      <Instance
-        onclick={() => handleCoinClick(tile, i)}
-        onpointerenter={() => handleCoinHover(tile, i, true)}
-        onpointerleave={() => handleCoinHover(tile, i, false)}
-      />
-    </Float>
-  </Billboard>
+      rotation={[-Math.PI / 2, 0, 0]}
+      onclick={() => handleCoinClick(tile, i)}
+      onpointerenter={() => handleCoinHover(tile, i, true)}
+      onpointerleave={() => handleCoinHover(tile, i, false)}
+    />
+  </Float>
 {/if}

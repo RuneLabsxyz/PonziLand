@@ -1,6 +1,8 @@
 export let devsettings = $state({
   frustumPadding: 2,
-  cameraControlsLeftClick: 2, // Default to TRUCK (0b10)
+  cameraControlsLeftClick: 2,
+  cameraControlsRightClick: 2,
+  CameraControlsWheel: 0b100000,
   billboarding: false,
   randomUpdates: true, // Enable/disable random land updates
   minRandomUpdates: 10,

@@ -37,7 +37,7 @@
   };
 </script>
 
-<Pane title="Dev Settings" position="fixed" x={0} y={100}>
+<Pane title="Dev Settings" position="draggable" x={0} y={120}>
   <Folder title="Camera">
     <Slider
       bind:value={devsettings.frustumPadding}
@@ -49,6 +49,16 @@
     <List
       bind:value={devsettings.cameraControlsLeftClick}
       label="Camera Left Click"
+      options={cameraOptions}
+    />
+    <List
+      bind:value={devsettings.cameraControlsRightClick}
+      label="Camera Right Click"
+      options={cameraOptions}
+    />
+    <List
+      bind:value={devsettings.CameraControlsWheel}
+      label="Camera Wheel"
       options={cameraOptions}
     />
     <Checkbox bind:value={devsettings.billboarding} label="Billboarding" />

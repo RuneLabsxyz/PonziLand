@@ -178,6 +178,19 @@ export class LandTileStore {
         const buildingLand = new BuildingLand(fakeLand);
         buildingLand.updateStake(fakeStake);
 
+        if (BuildingLand.is(buildingLand)) {
+          console.log(
+            `Updating land at (${x}, ${y}) with BuildingLand:`,
+            buildingLand,
+          );
+          claimStore.value[buildingLand.locationString] = {
+            lastClaimTime: 0,
+            animating: false,
+            land: createLandWithActions(buildingLand, () => this.getAllLands()),
+            claimable: true,
+          };
+        }
+
         this.store[x][y].set({ value: buildingLand });
         lands[x][y] = buildingLand;
 
