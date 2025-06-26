@@ -10,6 +10,17 @@
   import { gameStore } from './three/game.store.svelte';
   import Settings from './three/Settings.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
+
+  // Show dev tools if URL ends with #dev
+  let showDevTools = $state(false);
+  function checkDevHash() {
+    showDevTools = window.location.hash === '#dev';
+  }
+  if (typeof window !== 'undefined') {
+    checkDevHash();
+    window.addEventListener('hashchange', checkDevHash);
+  }
+
   $effect(() => {
     if (!gameStore.cameraControls) return;
     gameStore.cameraControls.mouseButtons.left =
@@ -19,7 +30,9 @@
 
 <div id="game-canvas" style="height: 100%; width: 100%;">
   <Canvas>
-    <PerfMonitor />
+    {#if showDevTools}
+      <PerfMonitor />
+    {/if}
     <T.OrthographicCamera position={[32, 50, 32]} zoom={100} makeDefault>
       <CameraControls
         rotation={false}
@@ -51,7 +64,9 @@
     {/if}
     <Scene />
   </Canvas>
-  <Settings />
+  {#if showDevTools}
+    <Settings />
+  {/if}
 </div>
 
 <style>

@@ -16,18 +16,15 @@
     InstancedSprite,
     buildSpritesheet,
     type SpritesheetMetadata,
-    Float,
-    Instance,
-    ImageMaterial,
   } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
     Group,
-    InstancedMesh as TInstancedMesh,
     MeshBasicMaterial,
     NearestFilter,
     Object3D,
     PlaneGeometry,
+    InstancedMesh as TInstancedMesh,
     TextureLoader,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
@@ -35,12 +32,12 @@
   import { biomeAtlasMeta } from './biomes';
   import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
+  import Coin from './coin.svelte';
   import { cursorStore } from './cursor.store.svelte';
+  import FogSprite from './fog-sprite.svelte';
   import { gameStore } from './game.store.svelte';
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
-  import { padAddress } from '$lib/utils';
-  import Coin from './coin.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
 
   let billboarding = $derived(devsettings.billboarding);
@@ -78,6 +75,18 @@
     },
   ] as const satisfies SpritesheetMetadata;
   const nukeAtlas = buildSpritesheet.from<typeof nukeAtlasMeta>(nukeAtlasMeta);
+
+  // FOG OF WAR ATLAS
+  const fogAtlasMeta = [
+    {
+      url: '/land-display/fog.png',
+      type: 'rowColumn',
+      width: 3,
+      height: 3,
+      animations: [{ name: 'default', frameRange: [0, 8] }],
+    },
+  ] as const satisfies SpritesheetMetadata;
+  const fogAtlas = buildSpritesheet.from<typeof fogAtlasMeta>(fogAtlasMeta);
 
   let landTiles: LandTile[] = $state([]);
 
@@ -239,7 +248,7 @@
 </script>
 
 <T is={Group}>
-  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
+  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet]}
     <!-- Transparent interaction planes layer (now also renders roads) -->
     {#if interactionPlanes && devsettings.showRoads}
       <T
@@ -262,6 +271,16 @@
         <BiomeSprite {landTiles} />
       </InstancedSprite>
     {/if}
+
+    <!-- FOG OF WAR LAYER -->
+    <InstancedSprite
+      count={gridSize * gridSize}
+      {billboarding}
+      spritesheet={fogSpritesheet}
+      fps={1}
+    >
+      <FogSprite {landTiles} />
+    </InstancedSprite>
 
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
@@ -286,20 +305,20 @@
         <NukeSprite {landTiles} />
       </InstancedSprite>
     {/if}
+
+    {#if devsettings.showCoins}
+      <InstancedMesh limit={gridSize ** 2}>
+        <T.PlaneGeometry args={[0.3, 0.3]} />
+        <T.MeshBasicMaterial map={texture} transparent />
+        {#each landTiles as tile, i}
+          {#if tile.land.type === 'building'}
+            <Coin {tile} {i} />
+          {/if}
+        {/each}
+      </InstancedMesh>
+    {/if}
   {/await}
 </T>
-
-{#if devsettings.showCoins}
-  <InstancedMesh limit={gridSize ** 2}>
-    <T.PlaneGeometry args={[0.3, 0.3]} />
-    <T.MeshBasicMaterial map={texture} transparent />
-    {#each landTiles as tile, i}
-      {#if tile.land.type === 'building'}
-        <Coin {tile} {i} />
-      {/if}
-    {/each}
-  </InstancedMesh>
-{/if}
 
 <!-- {#each landTiles as tile, i}
   <Text

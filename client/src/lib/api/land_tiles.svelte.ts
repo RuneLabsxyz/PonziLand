@@ -91,6 +91,27 @@ export class LandTileStore {
   }
 
   public async setup(client: Client) {
+    // Reset all values to their initial state
+    this.store = Array(GRID_SIZE)
+      .fill(null)
+      .map((_, x) =>
+        Array(GRID_SIZE)
+          .fill(null)
+          .map((_, y) => wrapLand(new EmptyLand({ x, y }))),
+      );
+
+    this.currentLands.set(
+      Array(GRID_SIZE)
+        .fill(null)
+        .map((_, x) =>
+          Array(GRID_SIZE)
+            .fill(null)
+            .map((_, y) => new EmptyLand({ x, y })),
+        ),
+    );
+
+    // allLands is a derived store, so no need to reset
+    this.pendingStake.clear();
     if (this.sub) {
       this.sub.cancel();
       this.sub = undefined;

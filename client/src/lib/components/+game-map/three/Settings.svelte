@@ -10,6 +10,7 @@
   import { devsettings } from './utils/devsettings.store.svelte';
   import type { ListOptions } from 'svelte-tweakpane-ui';
   import { landStore } from '$lib/stores/store.svelte';
+  import { useClient } from '$lib/contexts/client.svelte';
 
   const cameraOptions: ListOptions<number> = {
     NONE: 0b0,
@@ -62,6 +63,11 @@
       on:click={() => landStore.stopRandomUpdates()}
       label="Random Updates"
       title="Stop"
+    />
+    <Button
+      on:click={() => landStore.setup(useClient())}
+      label="Reload Lands"
+      title="Reload"
     />
     <Slider
       bind:value={devsettings.minRandomUpdates}
