@@ -226,5 +226,6 @@
     {:else}
       <Button onclick={() => (activeTab = 'buy')}>BUY</Button>
     {/if}
+    <Button onclick={() => (activeTab = 'quests')}>Quests</Button>
   </div>
 {/if}

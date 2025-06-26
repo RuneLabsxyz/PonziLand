@@ -7,7 +7,8 @@
   import type { TabType } from '$lib/interfaces';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-
+  import account from '$lib/account.svelte';
+  import QuestsTab from './tabs/quests.svelte';
   let {
     land,
     auctionPrice,
@@ -18,6 +19,8 @@
   function setActiveTab(tab: TabType) {
     activeTab = tab;
   }
+
+  let quest_enabled = $derived(land.quest_id != 0 || land.owner == account.address);
 </script>
 
 <div class="w-full h-full flex flex-col mt-6 mr-6">
@@ -55,7 +58,14 @@
       onclick={() => setActiveTab('history')}
     >
       HISTORY (todo)
-    </Button>
+    </Button><Button
+    disabled={!quest_enabled}
+    class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
+    variant={activeTab === 'quests' ? 'blue' : undefined}
+    onclick={() => setActiveTab('quests')}
+  >
+    QUESTS
+  </Button>
   </div>
 
   <div class="w-full h-full mt-4">
@@ -72,5 +82,6 @@
       {auctionPrice}
     />
     <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
+    <QuestsTab {land} bind:activeTab isActive={activeTab === 'quests'} />
   </div>
 </div>
