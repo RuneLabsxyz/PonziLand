@@ -69,4 +69,4 @@ export interface LandYieldInfo {
   remaining_stake_time: bigint;
 }
 
-export type TabType = 'overall' | 'buy' | 'history';
+export type TabType = 'overall' | 'buy' | 'history' | 'quests';

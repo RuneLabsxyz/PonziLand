@@ -103,3 +103,37 @@ export async function SetLandQuest(location: string) {
   );
   return res;
 }
+
+export async function RemoveLandQuest(location: string) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+
+  let res = await sdk.client.actions.remove_land_quest(
+    account()?.getWalletAccount()!,
+    location,
+  );
+  notificationQueue.addNotification(
+    res?.transaction_hash ?? null,
+    'remove quest tile',
+  );
+  return res;
+}
+
+export async function claimQuestReward(location: string) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+
+  let res = await sdk.client.actions.claim_quest_reward(
+    account()?.getWalletAccount()!,
+    location,
+  );
+  notificationQueue.addNotification(
+    res?.transaction_hash ?? null,
+    'claim quest reward',
+  );
+  return res;
+}
