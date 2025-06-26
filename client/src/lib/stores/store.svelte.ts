@@ -93,7 +93,13 @@ export async function SetLandQuest(location: string) {
     return accountManager!.getProvider();
   };
 
-  let res = await sdk.client.actions.set_land_quest(account()?.getWalletAccount()!, location);
-  notificationQueue.addNotification(res?.transaction_hash ?? null, 'set quest tile');
+  let res = await sdk.client.actions.set_land_quest(
+    account()?.getWalletAccount()!,
+    location,
+  );
+  notificationQueue.addNotification(
+    res?.transaction_hash ?? null,
+    'set quest tile',
+  );
   return res;
 }

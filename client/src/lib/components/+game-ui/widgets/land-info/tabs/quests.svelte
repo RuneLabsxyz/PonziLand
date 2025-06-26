@@ -3,7 +3,11 @@
   import type { TabType } from '$lib/interfaces';
   import account from '$lib/account.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { SetLandQuest, RemoveLandQuest, ClaimQuestReward } from '$lib/stores/store.svelte';
+  import {
+    SetLandQuest,
+    RemoveLandQuest,
+    ClaimQuestReward,
+  } from '$lib/stores/store.svelte';
 
   let {
     land,
@@ -15,25 +19,30 @@
     isActive?: boolean;
   } = $props();
 
-  const take_turn = account.execute(
-    {
-      contractAddress: "0x453816140b9fc12c9b32247f97cb4265c3e4389f7a35927229fb4acaed3e80b",
-      entryPoint: "take_turn",
-      calldata: [land.quest_id]
-    }
-  )
-
+  const take_turn = account.execute({
+    contractAddress:
+      '0x453816140b9fc12c9b32247f97cb4265c3e4389f7a35927229fb4acaed3e80b',
+    entryPoint: 'take_turn',
+    calldata: [land.quest_id],
+  });
 </script>
 
 <div class="w-full h-full">
   <p>Quests</p>
   {#if land.owner == account.address && land.quest_id == 0}
-    <Button onclick={() => SetLandQuest(land.location)}>Set as Quest Land</Button>
+    <Button onclick={() => SetLandQuest(land.location)}
+      >Set as Quest Land</Button
+    >
   {:else if land.owner == account.address && land.quest_id != 0}
-    <Button onclick={() => RemoveLandQuest(land.location)}>Unset as Quest Land</Button>
+    <Button onclick={() => RemoveLandQuest(land.location)}
+      >Unset as Quest Land</Button
+    >
   {:else if land.owner != account.address && land.quest_id != 0}
-    <Button onclick={() => take_turn()}>Play. (This would redirect to the embedded game's frontend)</Button>
-    <Button onclick={() => ClaimQuestReward(land.quest_id)}>Claim Reward</Button>
+    <Button onclick={() => take_turn()}
+      >Play. (This would redirect to the embedded game's frontend)</Button
+    >
+    <Button onclick={() => ClaimQuestReward(land.quest_id)}>Claim Reward</Button
+    >
   {:else if land.owner != account.address && land.quest_id == 0}
     <p>This land is not a quest land</p>
   {/if}
