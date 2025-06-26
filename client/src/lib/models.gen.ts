@@ -4,7 +4,7 @@ import {
   CairoCustomEnum,
   CairoOption,
   CairoOptionVariant,
-  BigNumberish,
+  type BigNumberish,
 } from 'starknet';
 
 // Type definition for `ponzi_land::models::auction::Auction` struct
