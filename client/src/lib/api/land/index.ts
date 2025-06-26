@@ -103,6 +103,7 @@ export abstract class BaseLand {
   protected _block_date_bought: BigNumberish = 0;
   protected _sell_price: BigNumberish = 0;
   protected _token_used: string = '';
+  protected _quest_id: number = 0;
 
   constructor(type: LandType, location: Location, token: Token) {
     this._type = type;
@@ -117,6 +118,8 @@ export abstract class BaseLand {
       console.error('Invalid location coordinates:', location);
       throw new Error('Invalid location coordinates');
     }
+
+    this._quest_id = 0;
 
     this.locationString = toHexWithPadding(coordinatesToLocation(location));
     this._token = token;
@@ -181,6 +184,10 @@ export abstract class BaseLand {
 
   public get tokenAddress(): string {
     return this._token.address;
+  }
+
+  public get quest_id(): number {
+    return this._quest_id;
   }
 
   // You should always be able to get the neighbors of a land

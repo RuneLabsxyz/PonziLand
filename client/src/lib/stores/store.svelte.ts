@@ -93,7 +93,7 @@ export async function SetLandQuest(location: string) {
     return accountManager!.getProvider();
   };
 
-  let res = await sdk.client.actions.set_land_quest(
+  let res = await sdk.client.quests.setLandQuest(
     account()?.getWalletAccount()!,
     location,
   );
@@ -110,7 +110,7 @@ export async function RemoveLandQuest(location: string) {
     return accountManager!.getProvider();
   };
 
-  let res = await sdk.client.actions.remove_land_quest(
+  let res = await sdk.client.quests.removeLandQuest(
     account()?.getWalletAccount()!,
     location,
   );
@@ -121,15 +121,15 @@ export async function RemoveLandQuest(location: string) {
   return res;
 }
 
-export async function claimQuestReward(location: string) {
+export async function ClaimReward(questId: number) {
   const { client: sdk, accountManager } = useDojo();
   const account = () => {
     return accountManager!.getProvider();
   };
 
-  let res = await sdk.client.actions.claim_quest_reward(
+  let res = await sdk.client.quests.claimReward(
     account()?.getWalletAccount()!,
-    location,
+    questId,
   );
   notificationQueue.addNotification(
     res?.transaction_hash ?? null,
