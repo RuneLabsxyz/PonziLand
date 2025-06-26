@@ -6,6 +6,7 @@
     List,
     Checkbox,
     Button,
+    Separator,
   } from 'svelte-tweakpane-ui';
   import { devsettings } from './utils/devsettings.store.svelte';
   import type { ListOptions } from 'svelte-tweakpane-ui';
@@ -112,10 +113,14 @@
     <Checkbox bind:value={devsettings.showRoads} label="Roads" />
     <Checkbox bind:value={devsettings.showBuildings} label="Buildings" />
     <Checkbox bind:value={devsettings.showBiomes} label="Biomes" />
+    <Separator />
     <Checkbox bind:value={devsettings.showCoins} label="Coins" />
     <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
+    <Separator />
+    <Checkbox bind:value={devsettings.showNukes} label="Nukes" />
+    <Checkbox bind:value={devsettings.showFog} label="Fog Layer" />
+    <Separator />
     <Checkbox bind:value={devsettings.showGrid} label="Grid" />
     <Checkbox bind:value={devsettings.showUI} label="UI" />
-    <Checkbox bind:value={devsettings.showNukes} label="Nukes" />
   </Folder>
 </Pane>

@@ -275,14 +275,16 @@
     {/if}
 
     <!-- FOG OF WAR LAYER -->
-    <InstancedSprite
-      count={gridSize * gridSize}
-      {billboarding}
-      spritesheet={fogSpritesheet}
-      fps={1}
-    >
-      <FogSprite {landTiles} />
-    </InstancedSprite>
+    {#if devsettings.showFog}
+      <InstancedSprite
+        count={gridSize * gridSize}
+        {billboarding}
+        spritesheet={fogSpritesheet}
+        fps={1}
+      >
+        <FogSprite {landTiles} />
+      </InstancedSprite>
+    {/if}
 
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}

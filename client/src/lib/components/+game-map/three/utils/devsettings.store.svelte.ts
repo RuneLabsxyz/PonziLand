@@ -17,4 +17,5 @@ export let devsettings = $state({
   showGrid: true,
   showUI: true,
   showNukes: true,
+  showFog: true,
 });
