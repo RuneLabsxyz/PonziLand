@@ -19,12 +19,13 @@
     isActive?: boolean;
   } = $props();
 
-  const take_turn = () => account.sessionAccount!.execute({
-    contractAddress:
-      '0x453816140b9fc12c9b32247f97cb4265c3e4389f7a35927229fb4acaed3e80b',
-    entrypoint: 'startQuest',
-    calldata: [land.quest_id],
-  });
+  const take_turn = () =>
+    account.sessionAccount!.execute({
+      contractAddress:
+        '0x453816140b9fc12c9b32247f97cb4265c3e4389f7a35927229fb4acaed3e80b',
+      entrypoint: 'startQuest',
+      calldata: [land.quest_id],
+    });
 </script>
 
 <div class="w-full h-full">
@@ -41,7 +42,8 @@
     <Button onclick={() => take_turn()}
       >Play. (This would redirect to the embedded game's frontend)</Button
     >
-    <Button onclick={() => ClaimReward(Number(land.quest_id))}>Claim Reward</Button
+    <Button onclick={() => ClaimReward(Number(land.quest_id))}
+      >Claim Reward</Button
     >
   {:else if land.owner != account.address && land.quest_id == 0}
     <p>This land is not a quest land</p>
