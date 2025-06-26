@@ -129,7 +129,7 @@ const config = {
       $manifest: manifestPath,
       $profileData: dataPath,
     },
-  },
+  }
 };
 
 export default config;

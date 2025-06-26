@@ -15,11 +15,13 @@ pub trait IQuestSystems<T> {
         expires_at: u64,
     ) -> u64;
     fn start_quest(
-        ref self: T, details_id: u64, player_address: ContractAddress, player_name: felt252,
+        ref self: T, land_location: u16, player_name: felt252,
     ) -> u64;
     fn claim_reward(ref self: T, quest_id: u64);
     fn get_quest_details(ref self: T, details_id: u64) -> QuestDetails;
     fn get_quest(ref self: T, quest_id: u64) -> Quest;
+    fn set_land_quest(ref self: T, land_location: u16, settings_id: u32);
+    fn remove_land_quest(ref self: T, land_location: u16);
 }
 
 
@@ -36,6 +38,7 @@ pub mod quests {
     };
     use ponzi_land::models::land::Land;
     use super::DEFAULT_NS;
+    use starknet::get_caller_address;
 
     const VERSION: felt252 = '0.0.1';
 
@@ -86,21 +89,59 @@ pub mod quests {
             *quest_details.id
         }
 
+        fn set_land_quest(ref self: ContractState, land_location: u16, settings_id: u32) {
+            let mut world = self.world(DEFAULT_NS());
+            let mut land: Land = world.read_model(land_location);
+
+            let caller = get_caller_address();
+
+            assert!(land.owner == caller, "Player is not the owner of the land");
+            assert!(land.quest_id == 0, "Land already has a quest");
+
+            let id = self.create_quest(
+                starknet::contract_address_const::<0x0>(), //TODO: actually use real game
+                land.location,
+                1,
+                1,
+                settings_id,
+                100,
+                1000,
+                10000000000000000,
+            );
+
+            assert!(id > 0, "Failed to create quest");
+
+            land.quest_id = id;
+            world.write_model(@land);
+        }
+
+        fn remove_land_quest(ref self: ContractState, land_location: u16) {
+            let mut world = self.world(DEFAULT_NS());
+            let mut land: Land = world.read_model(land_location);
+            assert!(land.owner == get_caller_address(), "Player is not the owner of the land");
+            assert!(land.quest_id > 0, "Land does not have a quest");
+            land.quest_id = 0;
+            world.write_model(@land);
+        }
+
         fn start_quest(
             ref self: ContractState,
-            details_id: u64,
-            player_address: ContractAddress,
+            land_location: u16,
             player_name: felt252,
         ) -> u64 {
             let mut world = self.world(DEFAULT_NS());
+            let land: Land = world.read_model(land_location);
+
+            assert!(land.quest_id != 0, "Land does not have a quest");
+            let details_id = land.quest_id;
             let mut quest_details: QuestDetails = world.read_model(details_id);
             assert(quest_details.id > 0, 'Quest details not found');
             assert(
                 quest_details.participant_count < quest_details.capacity, 'Quest is at capacity',
             );
+            let player_address = get_caller_address();
 
-            let land: Land = world.read_model(quest_details.location);
-            assert!(land.owner == player_address, "Player is not the owner of the quest land");
+            assert!(land.owner != player_address, "Player is the owner of the quest land");
 
             // Check if this realm already has a participant in this quest
             // This is now a simple model query instead of iteration
@@ -150,6 +191,7 @@ pub mod quests {
             let mut world = self.world(DEFAULT_NS());
             let mut quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.details_id);
+            let mut land: Land = world.read_model(quest_details.location);
 
             // get score for the token id
             let game_dispatcher = IGameDetailsDispatcher {
@@ -165,6 +207,10 @@ pub mod quests {
                 quest_details.target_score,
                 score,
             );
+
+            land.quest_id = 0;
+            land.owner = quest.player_address;
+            world.write_model(@land);
 
             // set quest as completed
             quest.completed = true;

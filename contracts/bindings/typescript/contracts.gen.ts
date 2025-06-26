@@ -156,6 +156,23 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_getGameSpeed_calldata = (): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "get_game_speed",
+			calldata: [],
+		};
+	};
+
+	const actions_getGameSpeed = async () => {
+		try {
+			return await provider.call("ponzi_land", build_actions_getGameSpeed_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_getLand_calldata = (landLocation: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
@@ -167,6 +184,23 @@ export function setupWorld(provider: DojoProvider) {
 	const actions_getLand = async (landLocation: BigNumberish) => {
 		try {
 			return await provider.call("ponzi_land", build_actions_getLand_calldata(landLocation));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_getNeighbors_calldata = (landLocation: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "get_neighbors",
+			calldata: [landLocation],
+		};
+	};
+
+	const actions_getNeighbors = async (landLocation: BigNumberish) => {
+		try {
+			return await provider.call("ponzi_land", build_actions_getNeighbors_calldata(landLocation));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -355,6 +389,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_actions_reimburseStakes_calldata(),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_setMainToken_calldata = (tokenAddress: string): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "set_main_token",
+			calldata: [tokenAddress],
+		};
+	};
+
+	const actions_setMainToken = async (snAccount: Account | AccountInterface, tokenAddress: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_actions_setMainToken_calldata(tokenAddress),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -586,6 +641,153 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_quests_claimReward_calldata = (questId: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "claim_reward",
+			calldata: [questId],
+		};
+	};
+
+	const quests_claimReward = async (snAccount: Account | AccountInterface, questId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_claimReward_calldata(questId),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_quests_createQuest_calldata = (gameAddress: string, location: BigNumberish, rewardResourceType: BigNumberish, rewardAmount: BigNumberish, settingsId: BigNumberish, targetScore: BigNumberish, capacity: BigNumberish, expiresAt: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "create_quest",
+			calldata: [gameAddress, location, rewardResourceType, rewardAmount, settingsId, targetScore, capacity, expiresAt],
+		};
+	};
+
+	const quests_createQuest = async (snAccount: Account | AccountInterface, gameAddress: string, location: BigNumberish, rewardResourceType: BigNumberish, rewardAmount: BigNumberish, settingsId: BigNumberish, targetScore: BigNumberish, capacity: BigNumberish, expiresAt: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_createQuest_calldata(gameAddress, location, rewardResourceType, rewardAmount, settingsId, targetScore, capacity, expiresAt),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_quests_getQuest_calldata = (questId: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "get_quest",
+			calldata: [questId],
+		};
+	};
+
+	const quests_getQuest = async (snAccount: Account | AccountInterface, questId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_getQuest_calldata(questId),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_quests_getQuestDetails_calldata = (detailsId: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "get_quest_details",
+			calldata: [detailsId],
+		};
+	};
+
+	const quests_getQuestDetails = async (snAccount: Account | AccountInterface, detailsId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_getQuestDetails_calldata(detailsId),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_quests_removeLandQuest_calldata = (landLocation: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "remove_land_quest",
+			calldata: [landLocation],
+		};
+	};
+
+	const quests_removeLandQuest = async (snAccount: Account | AccountInterface, landLocation: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_removeLandQuest_calldata(landLocation),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_quests_setLandQuest_calldata = (landLocation: BigNumberish, settingsId: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "set_land_quest",
+			calldata: [landLocation, settingsId],
+		};
+	};
+
+	const quests_setLandQuest = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, settingsId: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_setLandQuest_calldata(landLocation, settingsId),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_quests_startQuest_calldata = (landLocation: BigNumberish, playerName: BigNumberish): DojoCall => {
+		return {
+			contractName: "quests",
+			entrypoint: "start_quest",
+			calldata: [landLocation, playerName],
+		};
+	};
+
+	const quests_startQuest = async (snAccount: Account | AccountInterface, landLocation: BigNumberish, playerName: BigNumberish) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_quests_startQuest_calldata(landLocation, playerName),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_token_registry_ensureTokenAuthorized_calldata = (tokenAddress: string): DojoCall => {
 		return {
 			contractName: "token_registry",
@@ -682,8 +884,12 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetClaimableTaxesForLandCalldata: build_actions_getClaimableTaxesForLand_calldata,
 			getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
 			buildGetCurrentAuctionPriceCalldata: build_actions_getCurrentAuctionPrice_calldata,
+			getGameSpeed: actions_getGameSpeed,
+			buildGetGameSpeedCalldata: build_actions_getGameSpeed_calldata,
 			getLand: actions_getLand,
 			buildGetLandCalldata: build_actions_getLand_calldata,
+			getNeighbors: actions_getNeighbors,
+			buildGetNeighborsCalldata: build_actions_getNeighbors_calldata,
 			getNeighborsYield: actions_getNeighborsYield,
 			buildGetNeighborsYieldCalldata: build_actions_getNeighborsYield_calldata,
 			getNextClaimInfo: actions_getNextClaimInfo,
@@ -704,6 +910,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildRecreateAuctionCalldata: build_actions_recreateAuction_calldata,
 			reimburseStakes: actions_reimburseStakes,
 			buildReimburseStakesCalldata: build_actions_reimburseStakes_calldata,
+			setMainToken: actions_setMainToken,
+			buildSetMainTokenCalldata: build_actions_setMainToken_calldata,
 		},
 		auth: {
 			addAuthorized: auth_addAuthorized,
@@ -728,6 +936,22 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetVerifierCalldata: build_auth_setVerifier_calldata,
 			unlockActions: auth_unlockActions,
 			buildUnlockActionsCalldata: build_auth_unlockActions_calldata,
+		},
+		quests: {
+			claimReward: quests_claimReward,
+			buildClaimRewardCalldata: build_quests_claimReward_calldata,
+			createQuest: quests_createQuest,
+			buildCreateQuestCalldata: build_quests_createQuest_calldata,
+			getQuest: quests_getQuest,
+			buildGetQuestCalldata: build_quests_getQuest_calldata,
+			getQuestDetails: quests_getQuestDetails,
+			buildGetQuestDetailsCalldata: build_quests_getQuestDetails_calldata,
+			removeLandQuest: quests_removeLandQuest,
+			buildRemoveLandQuestCalldata: build_quests_removeLandQuest_calldata,
+			setLandQuest: quests_setLandQuest,
+			buildSetLandQuestCalldata: build_quests_setLandQuest_calldata,
+			startQuest: quests_startQuest,
+			buildStartQuestCalldata: build_quests_startQuest_calldata,
 		},
 		token_registry: {
 			ensureTokenAuthorized: token_registry_ensureTokenAuthorized,

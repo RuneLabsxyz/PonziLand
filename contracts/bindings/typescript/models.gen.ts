@@ -31,6 +31,7 @@ export interface Land {
 	sell_price: BigNumberish;
 	token_used: string;
 	level: LevelEnum;
+	quest_id: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::LandStake` struct
@@ -53,6 +54,224 @@ export interface LandValue {
 	sell_price: BigNumberish;
 	token_used: string;
 	level: LevelEnum;
+	quest_id: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::GameCounter` struct
+export interface GameCounter {
+	key: BigNumberish;
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::GameCounterValue` struct
+export interface GameCounterValue {
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::GameMetadata` struct
+export interface GameMetadata {
+	contract_address: string;
+	creator_address: string;
+	name: BigNumberish;
+	description: string;
+	developer: BigNumberish;
+	publisher: BigNumberish;
+	genre: BigNumberish;
+	image: string;
+}
+
+// Type definition for `ponzi_land::models::quest::GameMetadataValue` struct
+export interface GameMetadataValue {
+	creator_address: string;
+	name: BigNumberish;
+	description: string;
+	developer: BigNumberish;
+	publisher: BigNumberish;
+	genre: BigNumberish;
+	image: string;
+}
+
+// Type definition for `ponzi_land::models::quest::Lifecycle` struct
+export interface Lifecycle {
+	mint: BigNumberish;
+	start: CairoOption<BigNumberish>;
+	end: CairoOption<BigNumberish>;
+}
+
+// Type definition for `ponzi_land::models::quest::PlayerRegistrations` struct
+export interface PlayerRegistrations {
+	details_id: BigNumberish;
+	player_address: string;
+	quest_id: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::PlayerRegistrationsValue` struct
+export interface PlayerRegistrationsValue {
+	quest_id: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::Quest` struct
+export interface Quest {
+	id: BigNumberish;
+	details_id: BigNumberish;
+	player_address: string;
+	game_token_id: BigNumberish;
+	completed: boolean;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestCounter` struct
+export interface QuestCounter {
+	key: BigNumberish;
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestCounterValue` struct
+export interface QuestCounterValue {
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestDetails` struct
+export interface QuestDetails {
+	id: BigNumberish;
+	location: BigNumberish;
+	reward: Reward;
+	capacity: BigNumberish;
+	participant_count: BigNumberish;
+	settings_id: BigNumberish;
+	target_score: BigNumberish;
+	expires_at: BigNumberish;
+	game_address: string;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestDetailsCounter` struct
+export interface QuestDetailsCounter {
+	key: BigNumberish;
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestDetailsCounterValue` struct
+export interface QuestDetailsCounterValue {
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestDetailsValue` struct
+export interface QuestDetailsValue {
+	location: BigNumberish;
+	reward: Reward;
+	capacity: BigNumberish;
+	participant_count: BigNumberish;
+	settings_id: BigNumberish;
+	target_score: BigNumberish;
+	expires_at: BigNumberish;
+	game_address: string;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestValue` struct
+export interface QuestValue {
+	details_id: BigNumberish;
+	player_address: string;
+	game_token_id: BigNumberish;
+	completed: boolean;
+}
+
+// Type definition for `ponzi_land::models::quest::Reward` struct
+export interface Reward {
+	resource_type: BigNumberish;
+	amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::Score` struct
+export interface Score {
+	game_id: BigNumberish;
+	score: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::ScoreValue` struct
+export interface ScoreValue {
+	score: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::Settings` struct
+export interface Settings {
+	id: BigNumberish;
+	name: BigNumberish;
+	value: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsCounter` struct
+export interface SettingsCounter {
+	key: BigNumberish;
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsCounterValue` struct
+export interface SettingsCounterValue {
+	count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsDetails` struct
+export interface SettingsDetails {
+	id: BigNumberish;
+	name: BigNumberish;
+	description: string;
+	exists: boolean;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsDetailsValue` struct
+export interface SettingsDetailsValue {
+	name: BigNumberish;
+	description: string;
+	exists: boolean;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsValue` struct
+export interface SettingsValue {
+	value: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::TokenMetadata` struct
+export interface TokenMetadata {
+	token_id: BigNumberish;
+	minted_by: string;
+	player_name: BigNumberish;
+	settings_id: BigNumberish;
+	lifecycle: Lifecycle;
+}
+
+// Type definition for `ponzi_land::models::quest::TokenMetadataValue` struct
+export interface TokenMetadataValue {
+	minted_by: string;
+	player_name: BigNumberish;
+	settings_id: BigNumberish;
+	lifecycle: Lifecycle;
+}
+
+// Type definition for `ponzi_land::components::taxes::TaxesComponent::LandTransferEvent` struct
+export interface LandTransferEvent {
+	from_location: BigNumberish;
+	to_location: BigNumberish;
+	token_address: string;
+	amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::components::taxes::TaxesComponent::LandTransferEventValue` struct
+export interface LandTransferEventValue {
+	to_location: BigNumberish;
+	token_address: string;
+	amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::actions::actions::AddStakeEvent` struct
+export interface AddStakeEvent {
+	land_location: BigNumberish;
+	new_stake_amount: BigNumberish;
+	owner: string;
+}
+
+// Type definition for `ponzi_land::systems::actions::actions::AddStakeEventValue` struct
+export interface AddStakeEventValue {
+	new_stake_amount: BigNumberish;
+	owner: string;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
@@ -158,6 +377,36 @@ export interface SchemaType extends ISchemaType {
 		LandStake: LandStake,
 		LandStakeValue: LandStakeValue,
 		LandValue: LandValue,
+		GameCounter: GameCounter,
+		GameCounterValue: GameCounterValue,
+		GameMetadata: GameMetadata,
+		GameMetadataValue: GameMetadataValue,
+		Lifecycle: Lifecycle,
+		PlayerRegistrations: PlayerRegistrations,
+		PlayerRegistrationsValue: PlayerRegistrationsValue,
+		Quest: Quest,
+		QuestCounter: QuestCounter,
+		QuestCounterValue: QuestCounterValue,
+		QuestDetails: QuestDetails,
+		QuestDetailsCounter: QuestDetailsCounter,
+		QuestDetailsCounterValue: QuestDetailsCounterValue,
+		QuestDetailsValue: QuestDetailsValue,
+		QuestValue: QuestValue,
+		Reward: Reward,
+		Score: Score,
+		ScoreValue: ScoreValue,
+		Settings: Settings,
+		SettingsCounter: SettingsCounter,
+		SettingsCounterValue: SettingsCounterValue,
+		SettingsDetails: SettingsDetails,
+		SettingsDetailsValue: SettingsDetailsValue,
+		SettingsValue: SettingsValue,
+		TokenMetadata: TokenMetadata,
+		TokenMetadataValue: TokenMetadataValue,
+		LandTransferEvent: LandTransferEvent,
+		LandTransferEventValue: LandTransferEventValue,
+		AddStakeEvent: AddStakeEvent,
+		AddStakeEventValue: AddStakeEventValue,
 		AuctionFinishedEvent: AuctionFinishedEvent,
 		AuctionFinishedEventValue: AuctionFinishedEventValue,
 		LandBoughtEvent: LandBoughtEvent,
@@ -203,6 +452,7 @@ export const schema: SchemaType = {
 					Zero: "",
 				First: undefined,
 				Second: undefined, }),
+			quest_id: 0,
 		},
 		LandStake: {
 			location: 0,
@@ -222,6 +472,164 @@ export const schema: SchemaType = {
 					Zero: "",
 				First: undefined,
 				Second: undefined, }),
+			quest_id: 0,
+		},
+		GameCounter: {
+			key: 0,
+			count: 0,
+		},
+		GameCounterValue: {
+			count: 0,
+		},
+		GameMetadata: {
+			contract_address: "",
+			creator_address: "",
+			name: 0,
+		description: "",
+			developer: 0,
+			publisher: 0,
+			genre: 0,
+		image: "",
+		},
+		GameMetadataValue: {
+			creator_address: "",
+			name: 0,
+		description: "",
+			developer: 0,
+			publisher: 0,
+			genre: 0,
+		image: "",
+		},
+		Lifecycle: {
+			mint: 0,
+		start: new CairoOption(CairoOptionVariant.None),
+		end: new CairoOption(CairoOptionVariant.None),
+		},
+		PlayerRegistrations: {
+			details_id: 0,
+			player_address: "",
+			quest_id: 0,
+		},
+		PlayerRegistrationsValue: {
+			quest_id: 0,
+		},
+		Quest: {
+			id: 0,
+			details_id: 0,
+			player_address: "",
+			game_token_id: 0,
+			completed: false,
+		},
+		QuestCounter: {
+			key: 0,
+			count: 0,
+		},
+		QuestCounterValue: {
+			count: 0,
+		},
+		QuestDetails: {
+			id: 0,
+			location: 0,
+		reward: { resource_type: 0, amount: 0, },
+			capacity: 0,
+			participant_count: 0,
+			settings_id: 0,
+			target_score: 0,
+			expires_at: 0,
+			game_address: "",
+		},
+		QuestDetailsCounter: {
+			key: 0,
+			count: 0,
+		},
+		QuestDetailsCounterValue: {
+			count: 0,
+		},
+		QuestDetailsValue: {
+			location: 0,
+		reward: { resource_type: 0, amount: 0, },
+			capacity: 0,
+			participant_count: 0,
+			settings_id: 0,
+			target_score: 0,
+			expires_at: 0,
+			game_address: "",
+		},
+		QuestValue: {
+			details_id: 0,
+			player_address: "",
+			game_token_id: 0,
+			completed: false,
+		},
+		Reward: {
+			resource_type: 0,
+			amount: 0,
+		},
+		Score: {
+			game_id: 0,
+			score: 0,
+		},
+		ScoreValue: {
+			score: 0,
+		},
+		Settings: {
+			id: 0,
+			name: 0,
+			value: 0,
+		},
+		SettingsCounter: {
+			key: 0,
+			count: 0,
+		},
+		SettingsCounterValue: {
+			count: 0,
+		},
+		SettingsDetails: {
+			id: 0,
+			name: 0,
+		description: "",
+			exists: false,
+		},
+		SettingsDetailsValue: {
+			name: 0,
+		description: "",
+			exists: false,
+		},
+		SettingsValue: {
+			value: 0,
+		},
+		TokenMetadata: {
+			token_id: 0,
+			minted_by: "",
+			player_name: 0,
+			settings_id: 0,
+		lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
+		},
+		TokenMetadataValue: {
+			minted_by: "",
+			player_name: 0,
+			settings_id: 0,
+		lifecycle: { mint: 0, start: new CairoOption(CairoOptionVariant.None), end: new CairoOption(CairoOptionVariant.None), },
+		},
+		LandTransferEvent: {
+			from_location: 0,
+			to_location: 0,
+			token_address: "",
+		amount: 0,
+		},
+		LandTransferEventValue: {
+			to_location: 0,
+			token_address: "",
+		amount: 0,
+		},
+		AddStakeEvent: {
+			land_location: 0,
+		new_stake_amount: 0,
+			owner: "",
+		},
+		AddStakeEventValue: {
+		new_stake_amount: 0,
+			owner: "",
 		},
 		AuctionFinishedEvent: {
 			land_location: 0,
@@ -291,6 +699,36 @@ export enum ModelsMapping {
 	LandStakeValue = 'ponzi_land-LandStakeValue',
 	LandValue = 'ponzi_land-LandValue',
 	Level = 'ponzi_land-Level',
+	GameCounter = 'ponzi_land-GameCounter',
+	GameCounterValue = 'ponzi_land-GameCounterValue',
+	GameMetadata = 'ponzi_land-GameMetadata',
+	GameMetadataValue = 'ponzi_land-GameMetadataValue',
+	Lifecycle = 'ponzi_land-Lifecycle',
+	PlayerRegistrations = 'ponzi_land-PlayerRegistrations',
+	PlayerRegistrationsValue = 'ponzi_land-PlayerRegistrationsValue',
+	Quest = 'ponzi_land-Quest',
+	QuestCounter = 'ponzi_land-QuestCounter',
+	QuestCounterValue = 'ponzi_land-QuestCounterValue',
+	QuestDetails = 'ponzi_land-QuestDetails',
+	QuestDetailsCounter = 'ponzi_land-QuestDetailsCounter',
+	QuestDetailsCounterValue = 'ponzi_land-QuestDetailsCounterValue',
+	QuestDetailsValue = 'ponzi_land-QuestDetailsValue',
+	QuestValue = 'ponzi_land-QuestValue',
+	Reward = 'ponzi_land-Reward',
+	Score = 'ponzi_land-Score',
+	ScoreValue = 'ponzi_land-ScoreValue',
+	Settings = 'ponzi_land-Settings',
+	SettingsCounter = 'ponzi_land-SettingsCounter',
+	SettingsCounterValue = 'ponzi_land-SettingsCounterValue',
+	SettingsDetails = 'ponzi_land-SettingsDetails',
+	SettingsDetailsValue = 'ponzi_land-SettingsDetailsValue',
+	SettingsValue = 'ponzi_land-SettingsValue',
+	TokenMetadata = 'ponzi_land-TokenMetadata',
+	TokenMetadataValue = 'ponzi_land-TokenMetadataValue',
+	LandTransferEvent = 'ponzi_land-LandTransferEvent',
+	LandTransferEventValue = 'ponzi_land-LandTransferEventValue',
+	AddStakeEvent = 'ponzi_land-AddStakeEvent',
+	AddStakeEventValue = 'ponzi_land-AddStakeEventValue',
 	AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
 	AuctionFinishedEventValue = 'ponzi_land-AuctionFinishedEventValue',
 	LandBoughtEvent = 'ponzi_land-LandBoughtEvent',
