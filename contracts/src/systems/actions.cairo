@@ -757,7 +757,6 @@ pub mod actions {
         }
 
 
-        //TODO:CHANGE OR DELETE THE FROM_BUY PARAM
         fn internal_claim(
             ref self: ContractState,
             mut store: Store,
@@ -881,12 +880,12 @@ pub mod actions {
             let mut land_stake = store.land_stake(land.location);
 
             //TODO:VERIFY THIS
-            // let (earliest_claim_time, earliest_claim_location) = self
-            //     .taxes
-            //     .initialize_claim_info(land.location, neighbors.clone(), current_time);
+            let (earliest_claim_time, earliest_claim_location) = self
+                .taxes
+                .initialize_claim_info(land.location, neighbors.clone(), current_time);
 
             let neighbors_info = pack_neighbors_info(
-                current_time, neighbors.len().try_into().unwrap(), 0,
+                earliest_claim_time, neighbors.len().try_into().unwrap(), earliest_claim_location,
             );
             land_stake.neighbors_info_packed = neighbors_info;
 
@@ -899,6 +898,8 @@ pub mod actions {
                     .register_bidirectional_tax_relations(land, neighbor, store, current_time);
 
                 if is_from_bid {
+                    //TODO:do this in another function, maybe same function also for do a + 1
+                    //num_active_neighbors
                     let mut neighbor_stake = store.land_stake(neighbor.location);
                     let (
                         earliest_claim_neighbor_time,

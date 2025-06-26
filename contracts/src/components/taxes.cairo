@@ -27,7 +27,9 @@ mod TaxesComponent {
     use ponzi_land::utils::get_neighbors::{neighbors_with_their_neighbors};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
-    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
+    use ponzi_land::helpers::taxes::{
+        get_taxes_per_neighbor, get_tax_rate_per_neighbor, calculate_share_for_nuke,
+    };
     use ponzi_land::utils::get_neighbors::get_land_neighbors;
 
     // Local imports
@@ -132,7 +134,6 @@ mod TaxesComponent {
                         claimer.location, tax_payer.location, current_time,
                     );
                 let tax_for_claimer = get_taxes_per_neighbor(tax_payer, elapsed_time);
-
                 self
                     ._execute_claim(
                         store,
@@ -198,7 +199,8 @@ mod TaxesComponent {
                     payer_stake.amount,
                     current_time,
                 );
-            if total_taxes > payer_stake.amount {
+
+            if total_taxes >= payer_stake.amount {
                 self
                     ._handle_nuke(
                         store,
@@ -253,10 +255,10 @@ mod TaxesComponent {
         ) {
             let mut tax_amount_for_neighbor: Array<(u16, ContractAddress, u256)> =
                 ArrayTrait::new();
-
             for (location, neighbor_address, elapsed_time) in cache_elapased_time {
-                let share_for_neighbor = (elapsed_time / total_elapsed_time).into()
-                    * tax_payer_stake_amount;
+                let share_for_neighbor = calculate_share_for_nuke(
+                    elapsed_time, total_elapsed_time, tax_payer_stake_amount,
+                );
                 tax_amount_for_neighbor.append((location, neighbor_address, share_for_neighbor));
             };
 
@@ -350,7 +352,6 @@ mod TaxesComponent {
         }
 
 
-        //TODO:verify if here we have to call the function of execute claim
         fn _distribute_nuke(
             ref self: ComponentState<TContractState>,
             store: Store,
@@ -366,6 +367,8 @@ mod TaxesComponent {
                         TokenInfo { token_address: nuked_land.token_used, amount: tax_amount },
                         our_contract_address,
                     );
+                //TODO:do this in another function, maybe same function also for do a + 1
+                //num_active_neighbors
                 let mut neighbor_stake = store.land_stake(neighbor_location);
                 let (
                     earliest_claim_neighbor_time,
