@@ -16,6 +16,7 @@ import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress } from '$lib/utils';
 import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
+import { CairoOption } from 'starknet';
 
 // Token addresses
 const TOKEN_ADDRESSES = [
@@ -27,8 +28,8 @@ const TOKEN_ADDRESSES = [
 ];
 
 // Default values
-const DEFAULT_SELL_PRICE = 1000;
-const DEFAULT_STAKE_AMOUNT = 1000;
+const DEFAULT_SELL_PRICE = 1000000000000000000;
+const DEFAULT_STAKE_AMOUNT = 1000000000000000000;
 const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
 
@@ -158,7 +159,7 @@ export class LandTileStore {
         const fakeLand: Land = {
           owner: DEFAULT_OWNER,
           location: x + y * GRID_SIZE,
-          block_date_bought: Date.now(),
+          block_date_bought: Date.now() / 1000,
           sell_price:
             Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
             DEFAULT_SELL_PRICE / 2,
@@ -172,7 +173,7 @@ export class LandTileStore {
           amount:
             Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
             DEFAULT_STAKE_AMOUNT / 2,
-          last_pay_time: Date.now(),
+          last_pay_time: Date.now() / 1000,
         };
 
         const buildingLand = new BuildingLand(fakeLand);
@@ -226,7 +227,7 @@ export class LandTileStore {
           const fakeLand: Land = {
             owner: DEFAULT_OWNER,
             location: x + y * GRID_SIZE,
-            block_date_bought: Date.now(),
+            block_date_bought: Date.now() / 1000,
             sell_price:
               Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
               DEFAULT_SELL_PRICE / 2,
@@ -240,7 +241,7 @@ export class LandTileStore {
             amount:
               Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
               DEFAULT_STAKE_AMOUNT / 2,
-            last_pay_time: Date.now(),
+            last_pay_time: Date.now() / 1000,
           };
 
           const buildingLand = new BuildingLand(fakeLand);
@@ -250,6 +251,115 @@ export class LandTileStore {
           lands[x][y] = buildingLand;
         }
       }
+      return lands;
+    });
+  }
+
+  public palette() {
+    this.currentLands.update((lands) => {
+      const levels = ['Zero', 'First', 'Second'];
+      const totalTokens = TOKEN_ADDRESSES.length;
+      const totalLevels = levels.length;
+
+      // Calculate dimensions needed for the palette
+      const paletteWidth = totalTokens;
+      const paletteHeight = totalLevels;
+
+      // Calculate starting position to center the palette
+      const startX = Math.floor((GRID_SIZE - paletteWidth) / 2);
+      const startY = Math.floor((GRID_SIZE - paletteHeight) / 2);
+
+      // First, fill entire grid with empty lands
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const location = { x, y };
+          const emptyLand = new EmptyLand(location);
+          this.store[x][y].set({ value: emptyLand });
+          lands[x][y] = emptyLand;
+        }
+      }
+
+      // Create the palette in the center
+      let buildingCount = 0;
+
+      // Levels from top to bottom (y-axis)
+      for (let levelIndex = 0; levelIndex < totalLevels; levelIndex++) {
+        // Tokens from left to right (x-axis)
+        for (let tokenIndex = 0; tokenIndex < totalTokens; tokenIndex++) {
+          const x = startX + tokenIndex;
+          const y = startY + levelIndex;
+
+          // Make sure we're within grid bounds
+          if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+            const token = TOKEN_ADDRESSES[tokenIndex];
+            const level = levels[levelIndex];
+
+            // Create building land with specific token and level
+            const fakeLand: Land = {
+              owner: DEFAULT_OWNER,
+              location: x + y * GRID_SIZE,
+              block_date_bought: Date.now() / 1000,
+              sell_price: DEFAULT_SELL_PRICE + buildingCount * 100, // Vary prices slightly
+              token_used: token,
+              // @ts-ignore
+              level: level,
+            };
+
+            const fakeStake: LandStake = {
+              location: x + y * GRID_SIZE,
+              amount: DEFAULT_STAKE_AMOUNT + buildingCount * 50, // Vary stake amounts
+              last_pay_time: Date.now() / 1000,
+            };
+
+            const buildingLand = new BuildingLand(fakeLand);
+            buildingLand.updateStake(fakeStake);
+
+            this.store[x][y].set({ value: buildingLand });
+            lands[x][y] = buildingLand;
+
+            buildingCount++;
+          }
+        }
+      }
+
+      // Add one auction land right after the palette
+      const auctionX = startX + totalTokens;
+      const auctionY = startY;
+
+      if (auctionX < GRID_SIZE && auctionY < GRID_SIZE) {
+        const auctionToken = TOKEN_ADDRESSES[0];
+        const auctionLevel = levels[0];
+
+        const auctionLandData: Land = {
+          owner: DEFAULT_OWNER,
+          location: auctionX + auctionY * GRID_SIZE,
+          block_date_bought: Date.now() / 1000,
+          sell_price: DEFAULT_SELL_PRICE,
+          token_used: auctionToken,
+          // @ts-ignore
+          level: auctionLevel,
+        };
+
+        const auctionData: Auction = {
+          land_location: auctionX + auctionY * GRID_SIZE,
+          start_time: Date.now() / 1000,
+          start_price: '',
+          floor_price: '',
+          is_finished: false,
+          decay_rate: '',
+          sold_at_price: 0 as any,
+        };
+
+        const auctionLand = new AuctionLand(auctionLandData, auctionData);
+
+        this.store[auctionX][auctionY].set({ value: auctionLand });
+        lands[auctionX][auctionY] = auctionLand;
+      }
+
+      console.log(
+        `Palette created with ${buildingCount} building combinations (${totalTokens} tokens × ${totalLevels} levels), 1 auction land, centered at (${startX}, ${startY})`,
+      );
+
       return lands;
     });
   }

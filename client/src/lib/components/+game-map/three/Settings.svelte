@@ -80,6 +80,11 @@
       label="Reload Lands"
       title="Reload"
     />
+    <Button
+      on:click={() => landStore.palette()}
+      label="Test Lands"
+      title="Palette"
+    />
     <Slider
       bind:value={devsettings.minRandomUpdates}
       label="Min Random Updates"
