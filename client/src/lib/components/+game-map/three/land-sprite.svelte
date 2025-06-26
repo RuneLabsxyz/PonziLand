@@ -39,6 +39,7 @@
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
 
   let billboarding = $derived(devsettings.billboarding);
 
@@ -193,6 +194,7 @@
       }
       cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
       selectedLand.value = tile.land;
+      gameSounds.play('biomeSelect');
     } else {
       // If there's no hovered tile when clicked, deselect any currently selected tile
       cursorStore.selectedTileIndex = undefined;
@@ -207,6 +209,7 @@
       const tile = landTiles[instanceId];
 
       document.body.classList.add('cursor-pointer');
+      // gameSounds.play('hover');
     }
   }
 
