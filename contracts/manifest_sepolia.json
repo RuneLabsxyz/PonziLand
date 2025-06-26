@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0xadfcbeb7cd6ab21ef9b59621c628fdb673e54ec33d1b7b48e4fc63dce1ce4f",
-    "seed": "ponzi_land-wip-3",
+    "address": "0x7e3e8b4eab233129d0f96ce07494a6f5bcfa728bc0081dbc2a81cd28e406228",
+    "seed": "ponzi_land-programmable",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x215f6f3ed18d73c8a4cfec3f069717c48879feeb3f6030a4686a6a1a20c7969",
-      "class_hash": "0x7bd281cd21cd3a8b7b9063e5bf6050bd3eea35039fbd1c23cf83afef273108",
+      "address": "0x73535523a470e09f4254947834d33a53c648c75e6e43252fe76ca0364dbb61c",
+      "class_hash": "0xcfe9861541374c314b423b867e9c476f6de44c0500b29fd9bdac7ef110c4d9",
       "abi": [
         {
           "type": "impl",
@@ -1471,6 +1471,10 @@
             {
               "name": "level",
               "type": "ponzi_land::models::land::Level"
+            },
+            {
+              "name": "quest_id",
+              "type": "core::integer::u64"
             }
           ]
         },
@@ -2149,7 +2153,7 @@
       ]
     },
     {
-      "address": "0x40186a132b6a27471fe4b4b1f3402c3ead1817ae91cf9495254992d187f4b6c",
+      "address": "0x3475b26d25881a1b28a761f44bc0eb7037dabf458e0939580228194a16c026d",
       "class_hash": "0x3bd1f60febd2e5b5592a32667d5fa0bbb41c962b9712d64d59dbf97ee45b841",
       "abi": [
         {
@@ -2492,7 +2496,433 @@
       ]
     },
     {
-      "address": "0x7c231cbb0115e6d4c52e922d30a6a11c60b482fcaa649bb7b267a7735581800",
+      "address": "0x1deebf0f4117a03122c9319064375b2117c0e3ad046a1237f5c0a172e527cd1",
+      "class_hash": "0x2b9c0a4462ea8993762efb6285d0d6413042c059c00f1b6845a29253a3e4f1d",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "quests__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "quests__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "QuestSystemsImpl",
+          "interface_name": "ponzi_land::systems::quest::IQuestSystems"
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::models::quest::Reward",
+          "members": [
+            {
+              "name": "resource_type",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u128"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::models::quest::QuestDetails",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "location",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "reward",
+              "type": "ponzi_land::models::quest::Reward"
+            },
+            {
+              "name": "capacity",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "participant_count",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "settings_id",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "target_score",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "expires_at",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "game_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::models::quest::Quest",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "details_id",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "player_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "game_token_id",
+              "type": "core::integer::u64"
+            },
+            {
+              "name": "completed",
+              "type": "core::bool"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "ponzi_land::systems::quest::IQuestSystems",
+          "items": [
+            {
+              "type": "function",
+              "name": "create_quest",
+              "inputs": [
+                {
+                  "name": "game_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "location",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "reward_resource_type",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "reward_amount",
+                  "type": "core::integer::u128"
+                },
+                {
+                  "name": "settings_id",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "target_score",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "capacity",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "expires_at",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u64"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "start_quest",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "player_name",
+                  "type": "core::felt252"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u64"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "claim_reward",
+              "inputs": [
+                {
+                  "name": "quest_id",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "get_quest_details",
+              "inputs": [
+                {
+                  "name": "details_id",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "ponzi_land::models::quest::QuestDetails"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "get_quest",
+              "inputs": [
+                {
+                  "name": "quest_id",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "ponzi_land::models::quest::Quest"
+                }
+              ],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_land_quest",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "settings_id",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "remove_land_quest",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [],
+          "outputs": [],
+          "state_mutability": "view"
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::systems::quest::quests::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [],
+      "tag": "ponzi_land-quests",
+      "selector": "0x5c7181752631840c2508a57b308a7e22d1ed2f7c0e02f5f8d44c8bbb227c188",
+      "systems": [
+        "create_quest",
+        "start_quest",
+        "claim_reward",
+        "get_quest_details",
+        "get_quest",
+        "set_land_quest",
+        "remove_land_quest",
+        "upgrade"
+      ]
+    },
+    {
+      "address": "0x148a4b3b2f7ab65147c02436e2ce4f8c1015e628eac3ff39ef62ff4a545c5a7",
       "class_hash": "0x6f1a12dbad7f219c5b4ac79d7a23bf5b6279150567854672ddd2ef07f105b4c",
       "abi": [
         {
@@ -2771,7 +3201,19 @@
     },
     {
       "members": [],
-      "class_hash": "0x415da492013bae2545449698937692f75a09fd9a58383abf7de44a8f12e1e1e",
+      "class_hash": "0x7db7322a2fadfb7b72b719243e02c32ef0ab464b12c7ae664e2d5458abef0de",
+      "tag": "ponzi_land-GameCounter",
+      "selector": "0x548e556979ad124906e91a1f498be34c0e8f6ea402501e782636e6587ce1cff"
+    },
+    {
+      "members": [],
+      "class_hash": "0x1a7aae343eb93cebe6b77f0e86a772fb12346e1bb59335913c71d81e5cce706",
+      "tag": "ponzi_land-GameMetadata",
+      "selector": "0x5cd2ac7808a2074c480408bcd7243d4ea05386390213cc1964ebceb781764ba"
+    },
+    {
+      "members": [],
+      "class_hash": "0x3b424f0d2771116a9e13caa1f2d066073d3af7a0684a5430621aefbd1354d0",
       "tag": "ponzi_land-Land",
       "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
     },
@@ -2780,6 +3222,66 @@
       "class_hash": "0x2f8e2f00d9a495b905c21cd589843cda40020206469f31d23812ae098862202",
       "tag": "ponzi_land-LandStake",
       "selector": "0x6fc377970b02dbb15634ab8c2855ba673d6ff3be113eb93bb56628d9018cadc"
+    },
+    {
+      "members": [],
+      "class_hash": "0x3b01676546b0778046f744a531c23ebc0c7350439ebdb90507964072bf42a54",
+      "tag": "ponzi_land-PlayerRegistrations",
+      "selector": "0x1de44b1ee2ba52ea138419b2d80b6acaf051f12d0448ddf812135e9c5658f06"
+    },
+    {
+      "members": [],
+      "class_hash": "0x2c8ec84a8781cc38ea2961c880783f3a0df09b48da9813d2bbda024edb3773",
+      "tag": "ponzi_land-Quest",
+      "selector": "0x31d30cb645e3cf0d8972e327dabd6f2a9045a7e14868a60d777822c650f078e"
+    },
+    {
+      "members": [],
+      "class_hash": "0x44b9a84e06b38cbb02419db02ae575d012c603fc2650fa9205c54c49b7c4ddf",
+      "tag": "ponzi_land-QuestCounter",
+      "selector": "0x721f7568c70b316674009ae9b80ecbb6208bd2d537aca2b97bb46cc76a001eb"
+    },
+    {
+      "members": [],
+      "class_hash": "0x6b0b5af67a52679cc6b6f0ea74329d1e8ce5cbb9e5324a051ba0ecfa9a1313e",
+      "tag": "ponzi_land-QuestDetails",
+      "selector": "0x5dd5af65159f99fa0e80ffa47213fadeb96a2c1025708d6416678f13266bb3d"
+    },
+    {
+      "members": [],
+      "class_hash": "0x7ea291d6b4082111db18551cbffd0004c5b762e8f1905d51792e6c2088060b0",
+      "tag": "ponzi_land-QuestDetailsCounter",
+      "selector": "0x3e9660097bfc101ae38263b70e627c3f63cc89757ccd9f71c0611dc7ae67eb3"
+    },
+    {
+      "members": [],
+      "class_hash": "0x232437335d23031710d182a0db7f8a84eb03dfa5cd0bc3f8e80255cfa2ddf4f",
+      "tag": "ponzi_land-Score",
+      "selector": "0x43ccbc3c6cc0aad29d7c54031c20c0018b81e3b6056987c87615309c44b5485"
+    },
+    {
+      "members": [],
+      "class_hash": "0x50507489c1427ea0302406df9ef04f82b0642d0298571c6e883104ac2a347ff",
+      "tag": "ponzi_land-Settings",
+      "selector": "0x76e5b7d8903e1b66e68b521ff21055f3f87de67ba4fdc87c1c869a64dee7297"
+    },
+    {
+      "members": [],
+      "class_hash": "0x19a344ba332d45cf74838dd714090bfa0b6f1d38fab8932850a4494d9692b1d",
+      "tag": "ponzi_land-SettingsCounter",
+      "selector": "0x1be8e445f3d3b5890844b03a8324753f7ce62507ee8c09be2af65d0af0a7914"
+    },
+    {
+      "members": [],
+      "class_hash": "0x634e5c7a815fb470c9c8fbf863ec64a0ed2348bc0792c83db4496f9c74c4f04",
+      "tag": "ponzi_land-SettingsDetails",
+      "selector": "0x35f6a6d365c4a0373e61954ef5deaa7b25d54a49c85909b4ae0f0869b3e9386"
+    },
+    {
+      "members": [],
+      "class_hash": "0x40632ef4e27dba09ee9e328644da325f22839f9d7f67c8d326e203019ea3968",
+      "tag": "ponzi_land-TokenMetadata",
+      "selector": "0x12c2ff79915b83c75da5fd151931302f7a10af2bd8b0ecae8e91619728dcf22"
     }
   ],
   "events": [
