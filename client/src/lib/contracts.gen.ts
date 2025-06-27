@@ -1,11 +1,11 @@
-import { DojoProvider, DojoCall } from '@dojoengine/core';
+import { DojoProvider, type DojoCall } from '@dojoengine/core';
 import {
   Account,
   AccountInterface,
-  BigNumberish,
+  type BigNumberish,
   CairoOption,
   CairoCustomEnum,
-  ByteArray,
+  type ByteArray,
 } from 'starknet';
 import * as models from './models.gen';
 

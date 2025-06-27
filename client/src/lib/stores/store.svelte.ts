@@ -96,6 +96,7 @@ export async function SetLandQuest(location: string) {
   let res = await sdk.client.quests.setLandQuest(
     account()?.getWalletAccount()!,
     location,
+    'test'
   );
   notificationQueue.addNotification(
     res?.transaction_hash ?? null,
