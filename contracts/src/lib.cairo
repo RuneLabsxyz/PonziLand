@@ -17,6 +17,7 @@ mod helpers {
     mod coord;
     mod taxes;
     mod circle_expansion;
+    mod land;
 }
 
 mod components {
@@ -44,6 +45,8 @@ mod utils {
     mod level_up;
     mod spiral;
     mod stake;
+    mod packing;
+    mod math;
 }
 
 #[cfg(test)]

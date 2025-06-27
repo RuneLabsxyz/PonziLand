@@ -22,11 +22,14 @@ mod TaxesComponent {
     use starknet::contract_address::ContractAddressZeroable;
     // Internal imports
     use ponzi_land::helpers::coord::max_neighbors;
-    use ponzi_land::models::land::{Land, LandStake, pack_neighbors_info, unpack_neighbors_info};
+    use ponzi_land::models::land::{Land, LandStake};
     use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
+    use ponzi_land::utils::math::{u64_saturating_sub};
+    use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
+    use ponzi_land::helpers::land::{add_neighbor, remove_neighbor};
     use ponzi_land::helpers::taxes::{
         get_taxes_per_neighbor, get_tax_rate_per_neighbor, calculate_share_for_nuke,
     };
@@ -42,8 +45,6 @@ mod TaxesComponent {
     #[storage]
     struct Storage {
         //(tax_payer,tax_reciever) -> timestamp
-        //todo: use this to see if the land have a owner or not with the 0 for the response of the
-        //map
         last_claim_time: Map<(u16, u16), u64>,
     }
 
@@ -75,7 +76,6 @@ mod TaxesComponent {
             self._register_unidirectional_tax_relation(land_b, land_a, current_time);
         }
 
-        //todo:only pass location
         #[inline(always)]
         fn _register_unidirectional_tax_relation(
             ref self: ComponentState<TContractState>,
@@ -93,13 +93,8 @@ mod TaxesComponent {
             payer_location: u16,
             current_time: u64,
         ) -> u64 {
-            //todo do the substration function to get 0
             let last_claim_time = self.last_claim_time.read((payer_location, claimer_location));
-            let elapsed_time = if current_time > last_claim_time {
-                current_time - last_claim_time
-            } else {
-                0
-            };
+            let elapsed_time = u64_saturating_sub(current_time, last_claim_time);
             elapsed_time
         }
 
@@ -112,7 +107,6 @@ mod TaxesComponent {
             current_time: u64,
             our_contract_address: ContractAddress,
         ) -> bool {
-            //todo:use core serde to unpack
             let (
                 earliest_claim_neighbor_time,
                 num_active_neighbors,
@@ -121,11 +115,10 @@ mod TaxesComponent {
                 unpack_neighbors_info(
                 payer_stake.neighbors_info_packed,
             );
-            let elapsed_earliest_claim_time = if current_time > earliest_claim_neighbor_time {
-                current_time - earliest_claim_neighbor_time
-            } else {
-                0
-            };
+            let elapsed_earliest_claim_time = u64_saturating_sub(
+                current_time, earliest_claim_neighbor_time,
+            );
+
             let theoretical_max_payable = get_taxes_per_neighbor(
                 tax_payer, elapsed_earliest_claim_time,
             )
@@ -196,7 +189,6 @@ mod TaxesComponent {
                 ._calculate_taxes_for_all_neighbors(
                     claimer, tax_payer, neighbors_of_tax_payer, payer_stake.amount, current_time,
                 );
-
             if total_taxes >= payer_stake.amount {
                 self
                     ._handle_nuke(
@@ -207,8 +199,25 @@ mod TaxesComponent {
                         total_elapsed_time,
                         our_contract_address,
                     );
+
+                //last claim for nuked land
+                for neighbor in neighbors_of_tax_payer {
+                    let mut neghbor_stake = store.land_stake(*neighbor.location);
+
+                    self
+                        .claim(
+                            store,
+                            tax_payer,
+                            neighbor,
+                            ref neghbor_stake,
+                            current_time,
+                            our_contract_address,
+                        );
+                    store.set_land_stake(neghbor_stake);
+                };
                 payer_stake.amount = 0;
                 store.set_land_stake(payer_stake);
+
                 true
             } else {
                 self
@@ -292,13 +301,9 @@ mod TaxesComponent {
                     .get_elapsed_time_since_last_claim(
                         *neighbor.location, *land.location, current_time,
                     );
-                let current_remaining_time = if remaining_time_units
-                    .try_into()
-                    .unwrap() > elapsed_time {
-                    remaining_time_units.try_into().unwrap() - elapsed_time.into()
-                } else {
-                    0
-                };
+                let current_remaining_time = u64_saturating_sub(
+                    remaining_time_units.try_into().unwrap(), elapsed_time,
+                );
 
                 if current_remaining_time < min_remaining_time {
                     min_remaining_time = current_remaining_time;
@@ -316,7 +321,6 @@ mod TaxesComponent {
             ref self: ComponentState<TContractState>,
             claimer: @Land,
             tax_payer: @Land,
-            //todo: use last_claim for this
             neighbors_of_tax_payer: Span<Land>,
             land_stake_amount: u256,
             current_time: u64,
@@ -360,31 +364,10 @@ mod TaxesComponent {
                         TokenInfo { token_address: *nuked_land.token_used, amount: *tax_amount },
                         our_contract_address,
                     );
-                //TODO:do this in another function, maybe same function also for do a + 1
-                //num_active_neighbors
-                let mut neighbor_stake = store.land_stake(*neighbor_location);
-                let (
-                    earliest_claim_neighbor_time,
-                    num_active_neighbors,
-                    earliest_claim_neighbor_location,
-                ) =
-                    unpack_neighbors_info(
-                    neighbor_stake.neighbors_info_packed,
-                );
-                //TODO: DO a inline function for this and reuse it
-                let num_active_neighbors = if num_active_neighbors == 0 {
-                    0
-                } else {
-                    num_active_neighbors - 1
-                };
-                neighbor_stake
-                    .neighbors_info_packed =
-                        pack_neighbors_info(
-                            earliest_claim_neighbor_time,
-                            num_active_neighbors,
-                            earliest_claim_neighbor_location,
-                        );
-                store.set_land_stake(neighbor_stake);
+                if let Option::Some(updated_stake) =
+                    remove_neighbor(store.land_stake(*neighbor_location)) {
+                    store.set_land_stake(updated_stake);
+                }
             }
         }
 

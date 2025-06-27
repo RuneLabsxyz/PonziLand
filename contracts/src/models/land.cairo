@@ -3,7 +3,7 @@ use starknet::contract_address::ContractAddressZeroable;
 use ponzi_land::utils::common_strucs::{TokenInfo};
 use ekubo::types::keys::PoolKey as EkuboPoolKey;
 
-#[derive(Drop, Serde, Debug, Copy)]
+#[derive(Drop, Serde, Copy)]
 #[dojo::model]
 pub struct Land {
     #[key]
@@ -12,20 +12,19 @@ pub struct Land {
     pub owner: ContractAddress,
     pub sell_price: u256,
     pub token_used: ContractAddress,
-    //we will use this for taxes
     pub level: Level,
 }
-#[derive(Drop, Serde, Copy, IntrospectPacked)]
+#[derive(Drop, Serde, Copy)]
 #[dojo::model]
 pub struct LandStake {
     #[key]
     pub location: u16,
     pub amount: u256,
-    pub neighbors_info_packed: felt252,
+    pub neighbors_info_packed: u128,
 }
 
 
-#[derive(Serde, Drop, Copy, PartialEq, Introspect, Debug)]
+#[derive(Serde, Drop, Copy, PartialEq, Introspect)]
 pub enum Level {
     Zero,
     First,
@@ -80,33 +79,5 @@ impl LandImpl of LandTrait {
     ) -> Land {
         Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
-}
-
-pub type NeighborsInfo = (u64, u8, u16);
-
-const SHIFT_16: u256 = 65536;
-const SHIFT_8: u256 = 256;
-
-//TODO:use serde from core
-pub fn pack_neighbors_info(
-    earliest_claim_neighbor_time: u64,
-    num_active_neighbors: u8,
-    earliest_claim_neighbor_location: u16,
-) -> felt252 {
-    let mut packed: u256 = 0;
-    packed = packed + earliest_claim_neighbor_time.into();
-    packed = packed * SHIFT_8 + num_active_neighbors.into();
-    packed = packed * SHIFT_16 + earliest_claim_neighbor_location.into();
-    packed.try_into().unwrap()
-}
-
-pub fn unpack_neighbors_info(packed_value: felt252) -> NeighborsInfo {
-    let mut packed: u256 = packed_value.into();
-    let location: u16 = (packed % SHIFT_16).try_into().unwrap();
-    packed = packed / SHIFT_16;
-    let neighbors: u8 = (packed % SHIFT_8).try_into().unwrap();
-    packed = packed / SHIFT_8;
-    let time: u64 = packed.try_into().unwrap();
-    (time, neighbors, location)
 }
 

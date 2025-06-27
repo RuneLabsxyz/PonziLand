@@ -81,10 +81,7 @@ pub mod actions {
         ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
     };
 
-    use ponzi_land::models::land::{
-        Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey, pack_neighbors_info,
-        unpack_neighbors_info,
-    };
+    use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
     use ponzi_land::components::stake::StakeComponent;
@@ -94,6 +91,7 @@ pub mod actions {
     use ponzi_land::utils::common_strucs::{
         TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes, LandOrAuction,
     };
+    use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
     use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
     use ponzi_land::utils::spiral::{get_next_position, SpiralState};
     use ponzi_land::utils::level_up::{calculate_new_level};
@@ -108,6 +106,7 @@ pub mod actions {
         get_circle_land_position, get_random_index, lands_per_section, generate_circle,
         is_section_completed, get_random_available_index,
     };
+    use ponzi_land::helpers::land::{add_neighbor};
 
     use ponzi_land::consts::{
         TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID, DECAY_RATE,
@@ -276,7 +275,16 @@ pub mod actions {
 
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, @land, neighbors, current_time, our_contract_address);
+            self.internal_claim(store, @land, neighbors, current_time, our_contract_address, false);
+
+            //claim for the neighbors of the land sold
+            let land_payer_span: Span<Land> = array![land].span();
+            for neighbor in neighbors {
+                self
+                    .internal_claim(
+                        store, neighbor, land_payer_span, current_time, our_contract_address, true,
+                    );
+            };
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
@@ -323,7 +331,7 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, @land, neighbors, current_time, our_contract_address);
+            self.internal_claim(store, @land, neighbors, current_time, our_contract_address, false);
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
@@ -344,7 +352,7 @@ pub mod actions {
                     let neighbors = get_land_neighbors(store, land_location);
                     self
                         .internal_claim(
-                            store, @land, neighbors, current_time, our_contract_address,
+                            store, @land, neighbors, current_time, our_contract_address, false,
                         );
                 }
             };
@@ -765,10 +773,11 @@ pub mod actions {
         fn internal_claim(
             ref self: ContractState,
             mut store: Store,
-            land: @Land,
+            claimer_land: @Land,
             neighbors: Span<Land>,
             current_time: u64,
             our_contract_address: ContractAddress,
+            from_buy: bool,
         ) {
             if neighbors.len() != 0 {
                 for mut tax_payer in neighbors {
@@ -778,7 +787,7 @@ pub mod actions {
                         .taxes
                         .claim(
                             store,
-                            land,
+                            claimer_land,
                             tax_payer,
                             ref tax_payer_stake,
                             current_time,
@@ -790,7 +799,7 @@ pub mod actions {
                         .token_registry_dispatcher()
                         .is_token_authorized(*tax_payer.token_used);
 
-                    if is_nuke || !has_liquidity_requirements {
+                    if (is_nuke || !has_liquidity_requirements) && !from_buy {
                         self.nuke(*tax_payer, ref tax_payer_stake, has_liquidity_requirements);
                     }
                 };
@@ -833,7 +842,15 @@ pub mod actions {
                     true,
                 );
 
-            //TODO:do from bid bool here
+            //update neighbors for the new land
+            for neighbor in neighbors {
+                if let Option::Some(updated) =
+                    add_neighbor(
+                        store.land_stake(*neighbor.location), land.location, current_time,
+                    ) {
+                    store.set_land_stake(updated);
+                }
+            };
             self.staked_lands.write(land.location, true);
 
             auction.is_finished = true;
@@ -865,7 +882,6 @@ pub mod actions {
                 self.generate_new_auctions(asking_price)
             }
         }
-        //todo:don't use .clone()
         fn finalize_land_purchase(
             ref self: ContractState,
             mut store: Store,
@@ -886,20 +902,14 @@ pub mod actions {
 
             let mut land_stake = store.land_stake(land.location);
 
-            //todo:don't need this
-            let (earliest_claim_time, earliest_claim_location) = self
-                .taxes
-                .initialize_claim_info(land.location, neighbors, current_time);
-
+            //initialize neighbors_info_packed
             let neighbors_info = pack_neighbors_info(
-                earliest_claim_time, neighbors.len().try_into().unwrap(), earliest_claim_location,
+                current_time, neighbors.len().try_into().unwrap(), land.location,
             );
-
             land_stake.neighbors_info_packed = neighbors_info;
 
             self.stake._add(amount_to_stake, land, land_stake, store, our_contract_address);
 
-            //TODO:do a @ for every case, and pass this to bid function
             for neighbor in neighbors {
                 let neighbor_location = *neighbor.location;
                 self
@@ -907,44 +917,6 @@ pub mod actions {
                     .register_bidirectional_tax_relations(
                         land_location, neighbor_location, current_time,
                     );
-
-                //TODO:pass this to the bid function
-                if is_from_bid {
-                    //TODO:do this in another function, maybe same function also for do a + 1
-                    //num_active_neighbors
-                    let mut neighbor_stake = store.land_stake(neighbor_location);
-                    //TODO:use serde for this from core to pack and unpack
-                    let (
-                        earliest_claim_neighbor_time,
-                        num_active_neighbors,
-                        earliest_claim_neighbor_location,
-                    ) =
-                        unpack_neighbors_info(
-                        neighbor_stake.neighbors_info_packed,
-                    );
-                    let earliest_claim_neighbor_time = if earliest_claim_neighbor_time == 0 {
-                        current_time
-                    } else {
-                        earliest_claim_neighbor_time
-                    };
-                    let earliest_claim_neighbor_location =
-                        if earliest_claim_neighbor_location == 0 {
-                        land_location
-                    } else {
-                        earliest_claim_neighbor_location
-                    };
-
-                    if neighbor_stake.amount > 0 {
-                        neighbor_stake
-                            .neighbors_info_packed =
-                                pack_neighbors_info(
-                                    earliest_claim_neighbor_time,
-                                    num_active_neighbors + 1,
-                                    earliest_claim_neighbor_location,
-                                );
-                        store.set_land_stake(neighbor_stake);
-                    }
-                }
             }
         }
 

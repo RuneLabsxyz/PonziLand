@@ -423,26 +423,51 @@ fn bid_and_verify_next_auctions(
 
 #[test]
 fn test_buy_action() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher) =
+        setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
             PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
         );
+    let (erc20_neighbor_1, _, _) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+
     set_block_number(18710);
     set_block_timestamp(100);
 
-    // Create initial land
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
+    clear_events(store.world.dispatcher.contract_address);
+    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 500, main_currency);
 
+    let next_auction_location = capture_location_of_new_auction(
+        store.world.dispatcher.contract_address,
+    );
+    assert(next_auction_location.is_some(), 'No new auction location found');
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_auction_location.unwrap(),
+        1000,
+        500,
+        erc20_neighbor_1,
+    );
+
+    set_block_timestamp(2000);
     // Setup new buyer with tokens and approvals
-    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
+    setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 4000);
 
     // Perform buy action
     actions_system.buy(2080, main_currency.contract_address, 100, 120);
 
+    //verify that we do claim for the neighbors of the land sold
+    let balance_neighbor_1_of_main_currency = main_currency.balanceOf(NEIGHBOR_1());
+    assert(balance_neighbor_1_of_main_currency > 0, 'has to receive main currency');
+
     // Verify results
-    verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
+    verify_land(store, 2080, NEW_BUYER(), 100, 120, 2000, main_currency.contract_address);
 }
 
 #[test]
@@ -601,6 +626,10 @@ fn test_nuke_action() {
     // Claim more taxes to nuke lands
     set_block_timestamp(200000);
     actions_system.claim(2080);
+
+    //verify that the nuked land did a last claim before nuke
+    let balance_of_neighbor_land = main_currency.balanceOf(NEIGHBOR_1());
+    assert(balance_of_neighbor_land > 0, 'should have more balance');
 
     // Verify the neighbor land was nuked
     verify_land(
@@ -1312,7 +1341,7 @@ fn test_new_claim() {
 
     let balance_neighbor_2_of_erc20_1 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
     let balance_neighbor_2_of_erc20_3 = erc20_neighbor_3.balanceOf(NEIGHBOR_2());
-    assert(balance_neighbor_2_of_erc20_1 == 0, 'n2 no claim of erc20-1');
+    assert(balance_neighbor_2_of_erc20_1 > 0, 'n2 no claim of erc20-1');
     assert(balance_neighbor_2_of_erc20_3 == 0, 'n2 no claim of erc20-3');
 
     let balance_neighbor_3_of_erc20_1 = erc20_neighbor_1.balanceOf(NEIGHBOR_3());
