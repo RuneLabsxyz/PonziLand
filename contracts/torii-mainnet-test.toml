@@ -1,4 +1,4 @@
-world_address = "0x076b1269937debcb70fb5f59dea1c6f9ce24c9415b23876f623385933a6d2681"
+world_address = "0xadfcbeb7cd6ab21ef9b59621c628fdb673e54ec33d1b7b48e4fc63dce1ce4f"
 rpc = "https://api.cartridge.gg/x/starknet/mainnet"
 explorer = false
 
@@ -23,8 +23,10 @@ historical = [
 
 [indexing]
 contracts = [
-    "erc20:0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # nftSTRK
-    "erc20:0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e",  # eWNT
-    "erc20:0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4",  # eQQ
-    "erc20:0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5",  # eSG
+    "erc20:0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51", # pltSTRK
+    "erc20:0x05cf32bf9b60c4763ef53672cfd720f57ecb4c4109aae6a7a2c551eddfd9b880", # pltLORDS
+    "erc20:0x064ae0eeee87bb4ce053c8c1e1377e21de3b3add549551ed53b5a64a1b700671", # pltETH
+    "erc20:0x011f85339903777e3ed5b07fc366956bdd0795c37c20dfc01e61cd6aa850df15", # pltPAPER
+    "erc20:0x06a998c40654fd0e29bcb359e998db25d9df1169b925d5558b07030ebcba38c8", # pltBROTHER
+    "erc20:0x04367674252522f20f60fe54b65f68f97a510be8db71691f3c93ef6bc7095b75", # pltPAL
 ]
