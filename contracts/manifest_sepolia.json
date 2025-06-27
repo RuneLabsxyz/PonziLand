@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x75fc75bcd1a7f8b4bf64b74978b0f89c8cee44bb755c1dae6f82284756451ec",
-    "address": "0x51b8efb6eeaeff501ebbe78758cc08c6cbaf9e13ca09812ba11e505f818d457",
-    "seed": "ponzi_land-wip-1",
+    "address": "0xadfcbeb7cd6ab21ef9b59621c628fdb673e54ec33d1b7b48e4fc63dce1ce4f",
+    "seed": "ponzi_land-wip-3",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1312,8 +1312,8 @@
   },
   "contracts": [
     {
-      "address": "0x19b9cef5b903e9838d649f40a8bfc34fbaf644c71f8b8768ece6a6ca1c46dc0",
-      "class_hash": "0x9602a46c4ad514dfa0e83a4aa376f078082a2f4545752ed96c8156335da6a7",
+      "address": "0x215f6f3ed18d73c8a4cfec3f069717c48879feeb3f6030a4686a6a1a20c7969",
+      "class_hash": "0x7bd281cd21cd3a8b7b9063e5bf6050bd3eea35039fbd1c23cf83afef273108",
       "abi": [
         {
           "type": "impl",
@@ -1966,6 +1966,18 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "set_main_token",
+              "inputs": [
+                {
+                  "name": "token_address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
             }
           ]
         },
@@ -2111,7 +2123,7 @@
         }
       ],
       "init_calldata": [
-        "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
+        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
         "128000000000000000000",
         "0",
         "1000000000000000000",
@@ -2132,12 +2144,13 @@
         "increase_stake",
         "level_up",
         "reimburse_stakes",
+        "set_main_token",
         "upgrade"
       ]
     },
     {
-      "address": "0x3b29d3a7ebed248a2f3da0cc88709962e917ec0af8e61a6085488681c3c3b8a",
-      "class_hash": "0x296099ec178733ba8e99b159cb046791021617cff5731426b7922b6bc89c880",
+      "address": "0x40186a132b6a27471fe4b4b1f3402c3ead1817ae91cf9495254992d187f4b6c",
+      "class_hash": "0x3bd1f60febd2e5b5592a32667d5fa0bbb41c962b9712d64d59dbf97ee45b841",
       "abi": [
         {
           "type": "impl",
@@ -2479,7 +2492,7 @@
       ]
     },
     {
-      "address": "0x62bf85bfeb122c6f2776eaf621db08ed28c59d1a9da411ce47cb03e0c6d75a0",
+      "address": "0x7c231cbb0115e6d4c52e922d30a6a11c60b482fcaa649bb7b267a7735581800",
       "class_hash": "0x6f1a12dbad7f219c5b4ac79d7a23bf5b6279150567854672ddd2ef07f105b4c",
       "abi": [
         {
@@ -2730,12 +2743,13 @@
         }
       ],
       "init_calldata": [
-        "5",
-        "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
-        "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825",
-        "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b",
-        "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe",
-        "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706"
+        "6",
+        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
+        "0x02758ab836d286e13c89a434613a8d47f6e8cc20f0d2a74ae111a16553905801",
+        "0x009070eac7b5791d1c3a37fa5735e3c9be55004400543f43cbb8912d835157d5",
+        "0x05aa6c0482d24e017d3e177a7df96528e75c158476559f1012b2e944d28e8903",
+        "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d",
+        "0x01544000184b0d667f63005fee5ef39bc0514565b5580291256456db5d9e08f3"
       ],
       "tag": "ponzi_land-token_registry",
       "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
@@ -2766,15 +2780,15 @@
       "class_hash": "0x2f8e2f00d9a495b905c21cd589843cda40020206469f31d23812ae098862202",
       "tag": "ponzi_land-LandStake",
       "selector": "0x6fc377970b02dbb15634ab8c2855ba673d6ff3be113eb93bb56628d9018cadc"
-    },
-    {
-      "members": [],
-      "class_hash": "0x69d8b0cef99b8fe0129e4f9db37cfc232cdd8c9a491a22f01ca42e7e3dec455",
-      "tag": "ponzi_land-Message",
-      "selector": "0x5428dd131094a6b45d0b4c52df1998c0d19c8a9921d8905dda6556da066b6d"
     }
   ],
   "events": [
+    {
+      "members": [],
+      "class_hash": "0x4e3823631a774e997614941a6d80e71dd40a62a6d723b9516993b812e3c927b",
+      "tag": "ponzi_land-AddStakeEvent",
+      "selector": "0x78072b4b5cfe0dee3f20bd58bde0cb381b01ce9bbf48d0193ecfaea4e813683"
+    },
     {
       "members": [],
       "class_hash": "0x5500ac4d9a5868dbed77f934d7a13fec275bef771bc703c5b95e28ec82b351d",
@@ -2804,6 +2818,12 @@
       "class_hash": "0x17fc0f15266b3a8e5c6219249ae2c8ce2d5f09afd1761a4bce5cb59b1ea4980",
       "tag": "ponzi_land-LandNukedEvent",
       "selector": "0x5ab63e32ba617fc00cdaf4469b0dfffd18eacb82fa7b5036437ca7f4ce3964b"
+    },
+    {
+      "members": [],
+      "class_hash": "0x60930a41683bf874cb48e9d237a1b38b3f068add982a6d68464f6d667ab9318",
+      "tag": "ponzi_land-LandTransferEvent",
+      "selector": "0x5edc84355fabd09e6aa60c2d11c76920f69662ab39f6a499a2ffa9dfd3b70f2"
     },
     {
       "members": [],

@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "ponzi_land-wip-2"
+seed = "ponzi_land-wip-3"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -30,7 +30,7 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 
 [init_call_args]
 "ponzi_land-actions" = [
-    "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0", # Main token
+    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
     "128000000000000000000",                                              # Start price (low)
     "0",                                                                  # Start price (high)
     "1000000000000000000",                                                # Floor price (low)
@@ -45,10 +45,11 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 ]
 
 "ponzi_land-token_registry" = [
-    "5",                                                                  # 5 tokens,
-    "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0", # eSTRK
-    "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825", # ePAPER
-    "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b", # eLORDS
-    "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe", # eBROTHER
-    "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706", # ePAL
+    "6",                                                                  # 6 tokens,
+    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # pltSTRK
+    "0x02758ab836d286e13c89a434613a8d47f6e8cc20f0d2a74ae111a16553905801", # pltPAPER
+    "0x009070eac7b5791d1c3a37fa5735e3c9be55004400543f43cbb8912d835157d5", # pltLORDS
+    "0x05aa6c0482d24e017d3e177a7df96528e75c158476559f1012b2e944d28e8903", # pltBROTHER
+    "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d", # pltPAL
+    "0x01544000184b0d667f63005fee5ef39bc0514565b5580291256456db5d9e08f3", # pltETH
 ]
