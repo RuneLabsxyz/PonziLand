@@ -1,0 +1,205 @@
+{
+  "ekuboPositionType": {
+    "005-01": {
+      "name": "0.05% / 0.1%",
+      "tickSpacing": 1000,
+      "fee": "170141183460469235273462165868118016"
+    },
+    "1-2": {
+      "name": "1% / 2%",
+      "tickSpacing": 19802,
+      "fee": "3402823669209384634633746074317682114"
+    }
+  },
+  "mainCurrency": "pltSTRK",
+  "mainCurrencyAddress": "0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51",
+  "aiAgents": [],
+  "availableTokens": [
+    {
+      "name": "Ponziland test STRK",
+      "symbol": "pltSTRK",
+      "address": "0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/eSTRK/icon.png",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5,
+            "frames": 6,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1152,
+            "yMax": 192
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland test PAPER",
+      "symbol": "pltPAPER",
+      "address": "0x011f85339903777e3ed5b07fc366956bdd0795c37c20dfc01e61cd6aa850df15",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/ePAPER/icon.svg",
+        "biome": {
+          "x": 3,
+          "y": 0
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 0,
+            "frames": 4,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 192
+          },
+          "2": {
+            "x": 3,
+            "y": 1,
+            "frames": 8,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 384
+          },
+          "3": {
+            "x": 3,
+            "y": 2,
+            "frames": 8,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 768,
+            "yMax": 384
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland test LORDS",
+      "symbol": "pltLORDS",
+      "address": "0x05cf32bf9b60c4763ef53672cfd720f57ecb4c4109aae6a7a2c551eddfd9b880",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/eLORDS/icon.svg",
+        "biome": {
+          "x": 3,
+          "y": 1
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 0
+          },
+          "2": {
+            "x": 0,
+            "y": 1
+          },
+          "3": {
+            "x": 0,
+            "y": 2,
+            "frames": 10,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 960,
+            "yMax": 384,
+            "boomerang": true,
+            "delay": 2000
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland test BROTHER",
+      "symbol": "pltBROTHER",
+      "address": "0x06a998c40654fd0e29bcb359e998db25d9df1169b925d5558b07030ebcba38c8",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/eBROTHER/icon.png",
+        "biome": {
+          "x": 1,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 6
+          },
+          "2": {
+            "x": 3,
+            "y": 7
+          },
+          "3": {
+            "x": 3,
+            "y": 8,
+            "frames": 7,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1344,
+            "yMax": 192
+          }
+        }
+      }
+    },
+    {
+      "name": "Emulated PAL",
+      "symbol": "ePAL",
+      "address": "0x04367674252522f20f60fe54b65f68f97a510be8db71691f3c93ef6bc7095b75",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/ePAL/icon.svg",
+        "biome": {
+          "x": 1,
+          "y": 2
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 3
+          },
+          "2": {
+            "x": 0,
+            "y": 4
+          },
+          "3": {
+            "x": 0,
+            "y": 5,
+            "frames": 9,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 576,
+            "yMax": 576
+          }
+        }
+      }
+    }
+  ],
+  "commonImages": {
+    "logo": "/images/logo.png",
+    "background": "/images/background.jpg",
+    "icons": {
+      "wallet": "/images/icons/wallet.svg",
+      "settings": "/images/icons/settings.svg"
+    }
+  },
+  "address_blacklist": []
+}
