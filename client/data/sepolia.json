@@ -12,7 +12,7 @@
     }
   },
   "mainCurrency": "pltSTRK",
-  "mainCurrencyAddress": "0x7820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
+  "mainCurrencyAddress": "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
   "aiAgents": [
     {
       "address": "0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff",
@@ -39,7 +39,7 @@
     {
       "name": "Ponziland test STRK",
       "symbol": "pltSTRK",
-      "address": "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
+      "address": "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
@@ -181,9 +181,9 @@
       }
     },
     {
-      "name": "Emulated PAL",
-      "symbol": "ePAL",
-      "address": "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706",
+      "name": "Ponziland test PAL",
+      "symbol": "pltPAL",
+      "address": "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
