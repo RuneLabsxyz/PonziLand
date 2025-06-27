@@ -3,7 +3,7 @@ use starknet::contract_address::ContractAddressZeroable;
 use ponzi_land::utils::common_strucs::{TokenInfo};
 use ekubo::types::keys::PoolKey as EkuboPoolKey;
 
-#[derive(Drop, Serde, Copy)]
+#[derive(Drop, Serde, Copy, Debug)]
 #[dojo::model]
 pub struct Land {
     #[key]

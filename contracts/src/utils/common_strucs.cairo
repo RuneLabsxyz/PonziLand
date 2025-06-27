@@ -30,13 +30,13 @@ pub struct YieldInfo {
     location: u16,
 }
 
-#[derive(Drop, Serde)]
+#[derive(Drop, Serde, Debug)]
 pub struct LandWithTaxes {
     land: Land,
     taxes: Option<Array<TokenInfo>>,
 }
 
-#[derive(Copy, Drop, Serde)]
+#[derive(Copy, Drop, Serde, Debug)]
 pub enum LandOrAuction {
     None,
     Land: Land,
