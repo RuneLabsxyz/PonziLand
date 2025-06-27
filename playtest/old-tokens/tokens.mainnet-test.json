@@ -1,0 +1,31 @@
+{
+  "socialinkAccount": "0x018A435647a3E72e56BbbaCEc5c79022eD85b26cBF69A9FDd0461814fC6cA247",
+  "tokenGranterAddress": "0x0633a1a15badd6b56d7e4d3320e6569f2913511df0ce72a255dc6c42ff3e21dd",
+  "tokens": [
+    {
+      "symbol": "nftSTRK",
+      "name": "NFT Equivalent Stark",
+      "address": "0x056893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb"
+    },
+    {
+      "symbol": "eWNT",
+      "name": "Equivalent Wolf Nation Token",
+      "address": "0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e"
+    },
+    {
+      "symbol": "eQQ",
+      "name": "Equivalent Quack Quack",
+      "address": "0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4"
+    },
+    {
+      "symbol": "eSG",
+      "name": "eq StarGate Token",
+      "address": "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5"
+    },
+    {
+      "symbol": "nftLORDS",
+      "name": "Eq Nft LORDS",
+      "address": "0xdcdc180a8b4b9cef2d039462ad30de95c5609178a1c2bc55779309c07d45db"
+    }
+  ]
+}
