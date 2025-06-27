@@ -24,7 +24,7 @@ pub struct LandStake {
 }
 
 
-#[derive(Serde, Drop, Copy, PartialEq, Introspect)]
+#[derive(Serde, Drop, Copy, PartialEq, Introspect,Debug)]
 pub enum Level {
     Zero,
     First,
