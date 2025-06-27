@@ -15,7 +15,14 @@
     isActive?: boolean;
   } = $props();
 
-  let quest_id = $derived(land.quest_id);
+  const take_turn = account.execute(
+    {
+      contractAddress: "0x453816140b9fc12c9b32247f97cb4265c3e4389f7a35927229fb4acaed3e80b",
+      entryPoint: "take_turn",
+      calldata: [land.quest_id]
+    }
+  )
+
 </script>
 
 <div class="w-full h-full">
@@ -25,6 +32,7 @@
   {:else if land.owner == account.address && land.quest_id != 0}
     <Button onclick={() => RemoveLandQuest(land.location)}>Unset as Quest Land</Button>
   {:else if land.owner != account.address && land.quest_id != 0}
+    <Button onclick={() => take_turn()}>Play. (This would redirect to the embedded game's frontend)</Button>
     <Button onclick={() => ClaimQuestReward(land.quest_id)}>Claim Reward</Button>
   {:else if land.owner != account.address && land.quest_id == 0}
     <p>This land is not a quest land</p>
