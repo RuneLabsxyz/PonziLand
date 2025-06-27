@@ -94,9 +94,7 @@ pub mod actions {
     use ponzi_land::utils::common_strucs::{
         TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes, LandOrAuction,
     };
-    use ponzi_land::utils::get_neighbors::{
-        get_land_neighbors, get_average_price, process_neighbors_of_neighbors,
-    };
+    use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
     use ponzi_land::utils::spiral::{get_next_position, SpiralState};
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::utils::stake::{calculate_refund_amount};
@@ -278,7 +276,7 @@ pub mod actions {
 
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
+            self.internal_claim(store, @land, neighbors, current_time, our_contract_address);
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
@@ -325,7 +323,7 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, land, neighbors.clone(), current_time, our_contract_address);
+            self.internal_claim(store, @land, neighbors, current_time, our_contract_address);
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
@@ -346,7 +344,7 @@ pub mod actions {
                     let neighbors = get_land_neighbors(store, land_location);
                     self
                         .internal_claim(
-                            store, land, neighbors.clone(), current_time, our_contract_address,
+                            store, @land, neighbors, current_time, our_contract_address,
                         );
                 }
             };
@@ -552,17 +550,18 @@ pub mod actions {
             //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
-                    let land_stake = store.land_stake(neighbor.location);
+                    let neighbor_location = *neighbor.location;
+                    let land_stake = store.land_stake(neighbor_location);
                     if land_stake.amount > 0 {
                         let tax_per_neighbor = self
-                            .get_unclaimed_taxes_per_neighbor(neighbor.location, land_location);
+                            .get_unclaimed_taxes_per_neighbor(neighbor_location, land_location);
 
-                        let time_to_nuke = self.get_time_to_nuke(neighbor.location);
+                        let time_to_nuke = self.get_time_to_nuke(neighbor_location);
 
                         let claim_info_per_neighbor = ClaimInfo {
-                            token_address: neighbor.token_used,
+                            token_address: *neighbor.token_used,
                             amount: tax_per_neighbor,
-                            land_location: neighbor.location,
+                            land_location: neighbor_location,
                             can_be_nuked: time_to_nuke == current_time,
                         };
                         claim_info.append(claim_info_per_neighbor);
@@ -593,9 +592,10 @@ pub mod actions {
             let mut yield_info: Array<YieldInfo> = ArrayTrait::new();
             if neighbors_count > 0 {
                 for neighbor in neighbors {
-                    let land_stake = store.land_stake(neighbor.location);
+                    let neighbor_location = *neighbor.location;
+                    let land_stake = store.land_stake(neighbor_location);
                     if land_stake.amount > 0 {
-                        let token = neighbor.token_used;
+                        let token = *neighbor.token_used;
                         //TODO: WHY THIS???? remove or fix after playtest
                         let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
                         let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
@@ -603,10 +603,10 @@ pub mod actions {
                             .append(
                                 YieldInfo {
                                     token,
-                                    sell_price: neighbor.sell_price,
+                                    sell_price: *neighbor.sell_price,
                                     percent_rate: rate,
                                     per_hour: rate_per_hour,
-                                    location: neighbor.location,
+                                    location: neighbor_location,
                                 },
                             );
                     }
@@ -635,7 +635,7 @@ pub mod actions {
             let land = store.land(land_location);
             let land_stake = store.land_stake(land_location);
             let neighbors = get_land_neighbors(store, land.location);
-            self.taxes.calculate_nuke_time(store, land, land_stake, neighbors)
+            self.taxes.calculate_nuke_time(store, @land, @land_stake, neighbors)
         }
 
         fn get_unclaimed_taxes_per_neighbor(
@@ -646,7 +646,7 @@ pub mod actions {
             let payer_land = store.land(payer_location);
             let elapsed_time = self
                 .get_elapsed_time_since_last_claim(claimer_location, payer_location);
-            get_taxes_per_neighbor(payer_land, elapsed_time)
+            get_taxes_per_neighbor(@payer_land, elapsed_time)
         }
 
         fn get_unclaimed_taxes_per_neighbors_total(
@@ -658,7 +658,7 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land.location);
             let mut total = 0;
             for neighbor in neighbors {
-                total += self.get_unclaimed_taxes_per_neighbor(neighbor.location, land_location);
+                total += self.get_unclaimed_taxes_per_neighbor(*neighbor.location, land_location);
             };
             total
         }
@@ -732,15 +732,20 @@ pub mod actions {
             store.world.emit_event(@NewAuctionEvent { land_location, start_price, floor_price });
         }
 
-        fn nuke(ref self: ContractState, mut land: Land, has_liquidity_requirements: bool) {
+        fn nuke(
+            ref self: ContractState,
+            mut land: Land,
+            ref land_stake: LandStake,
+            has_liquidity_requirements: bool,
+        ) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
-            let mut land_stake = store.land_stake(land.location);
             if !has_liquidity_requirements && land_stake.amount > 0 {
                 self.stake._refund(store, land, get_contract_address());
                 land_stake = store.land_stake(land.location);
             }
             assert(land_stake.amount == 0, 'land not valid to nuke');
+
             let owner_nuked = land.owner;
             store.delete_land(land, land_stake);
 
@@ -760,14 +765,14 @@ pub mod actions {
         fn internal_claim(
             ref self: ContractState,
             mut store: Store,
-            land: Land,
-            neighbors: Array<Land>,
+            land: @Land,
+            neighbors: Span<Land>,
             current_time: u64,
             our_contract_address: ContractAddress,
         ) {
             if neighbors.len() != 0 {
                 for mut tax_payer in neighbors {
-                    let mut tax_payer_stake = store.land_stake(tax_payer.location);
+                    let mut tax_payer_stake = store.land_stake(*tax_payer.location);
 
                     let is_nuke = self
                         .taxes
@@ -775,7 +780,7 @@ pub mod actions {
                             store,
                             land,
                             tax_payer,
-                            tax_payer_stake,
+                            ref tax_payer_stake,
                             current_time,
                             our_contract_address,
                         );
@@ -783,10 +788,10 @@ pub mod actions {
                     let has_liquidity_requirements = self
                         .world_default()
                         .token_registry_dispatcher()
-                        .is_token_authorized(tax_payer.token_used);
+                        .is_token_authorized(*tax_payer.token_used);
 
                     if is_nuke || !has_liquidity_requirements {
-                        self.nuke(tax_payer, has_liquidity_requirements);
+                        self.nuke(*tax_payer, ref tax_payer_stake, has_liquidity_requirements);
                     }
                 };
             }
@@ -802,7 +807,7 @@ pub mod actions {
             amount_to_stake: u256,
             caller: ContractAddress,
             mut auction: Auction,
-            neighbors: Array<Land>,
+            neighbors: Span<Land>,
             current_time: u64,
             current_price: u256,
             our_contract_address: ContractAddress,
@@ -827,6 +832,8 @@ pub mod actions {
                     our_contract_address,
                     true,
                 );
+
+            //TODO:do from bid bool here
             self.staked_lands.write(land.location, true);
 
             auction.is_finished = true;
@@ -858,7 +865,7 @@ pub mod actions {
                 self.generate_new_auctions(asking_price)
             }
         }
-
+        //todo:don't use .clone()
         fn finalize_land_purchase(
             ref self: ContractState,
             mut store: Store,
@@ -867,7 +874,7 @@ pub mod actions {
             sell_price: u256,
             amount_to_stake: u256,
             caller: ContractAddress,
-            neighbors: Array<Land>,
+            neighbors: Span<Land>,
             current_time: u64,
             our_contract_address: ContractAddress,
             is_from_bid: bool,
@@ -879,28 +886,34 @@ pub mod actions {
 
             let mut land_stake = store.land_stake(land.location);
 
-            //TODO:VERIFY THIS
+            //todo:don't need this
             let (earliest_claim_time, earliest_claim_location) = self
                 .taxes
-                .initialize_claim_info(land.location, neighbors.clone(), current_time);
+                .initialize_claim_info(land.location, neighbors, current_time);
 
             let neighbors_info = pack_neighbors_info(
                 earliest_claim_time, neighbors.len().try_into().unwrap(), earliest_claim_location,
             );
+
             land_stake.neighbors_info_packed = neighbors_info;
 
             self.stake._add(amount_to_stake, land, land_stake, store, our_contract_address);
 
-            for neighbor in neighbors.span() {
-                let neighbor = *neighbor;
+            //TODO:do a @ for every case, and pass this to bid function
+            for neighbor in neighbors {
+                let neighbor_location = *neighbor.location;
                 self
                     .taxes
-                    .register_bidirectional_tax_relations(land, neighbor, store, current_time);
+                    .register_bidirectional_tax_relations(
+                        land_location, neighbor_location, current_time,
+                    );
 
+                //TODO:pass this to the bid function
                 if is_from_bid {
                     //TODO:do this in another function, maybe same function also for do a + 1
                     //num_active_neighbors
-                    let mut neighbor_stake = store.land_stake(neighbor.location);
+                    let mut neighbor_stake = store.land_stake(neighbor_location);
+                    //TODO:use serde for this from core to pack and unpack
                     let (
                         earliest_claim_neighbor_time,
                         num_active_neighbors,
@@ -932,7 +945,7 @@ pub mod actions {
                         store.set_land_stake(neighbor_stake);
                     }
                 }
-            };
+            }
         }
 
         fn update_level(

@@ -87,6 +87,7 @@ pub type NeighborsInfo = (u64, u8, u16);
 const SHIFT_16: u256 = 65536;
 const SHIFT_8: u256 = 256;
 
+//TODO:use serde from core
 pub fn pack_neighbors_info(
     earliest_claim_neighbor_time: u64,
     num_active_neighbors: u8,
