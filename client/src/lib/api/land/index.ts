@@ -78,7 +78,6 @@ export type LandWithActions = LandWithMeta & {
   increaseStake(amount: CurrencyAmount): TransactionResult;
   increasePrice(amount: CurrencyAmount): TransactionResult;
   claim(): TransactionResult;
-  getPendingTaxes(): Promise<PendingTax[] | undefined>;
   getNextClaim(): Promise<NextClaimInformation[] | undefined>;
   getNukable(): Promise<number | undefined>;
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
