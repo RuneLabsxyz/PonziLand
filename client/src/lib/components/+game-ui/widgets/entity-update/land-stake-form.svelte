@@ -24,7 +24,7 @@
     const stake: Partial<LandStake> = {};
 
     if (amount) stake.amount = amount;
-    if (lastPayTime) stake.last_pay_time = lastPayTime;
+    // if (lastPayTime) stake.last_pay_time = lastPayTime;
 
     onSubmit(stake);
   }
