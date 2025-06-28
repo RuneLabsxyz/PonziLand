@@ -138,6 +138,13 @@ export const availableWidgets: Widget[] = [
     label: 'Leaderboard',
     icon: '/ui/icons/Icon_Cup.png',
   },
+  { 
+    id: 'chat', 
+    type: 'chat', 
+    label: 'Chat',
+    icon: '/ui/icons/Icon_Chat.png',
+  },
+
   // {
   //   id: 'notifications',
   //   type: 'notifications',

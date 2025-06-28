@@ -11,6 +11,7 @@ mod interfaces {
 mod models {
     mod land;
     mod auction;
+    mod message;
 }
 
 mod helpers {

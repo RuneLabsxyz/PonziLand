@@ -5,6 +5,7 @@ import { wrappedActions } from '$lib/api/contracts/approve';
 import { dojoConfig } from '$lib/dojoConfig';
 import { getContext, setContext } from 'svelte';
 import { poseidonHash } from '@dojoengine/torii-client';
+import { PUBLIC_DOJO_CHAIN_ID } from '$env/static/public';
 
 let dojoKey = Symbol('dojo');
 
@@ -24,8 +25,8 @@ async function _setupDojo(config: DojoConfig) {
     },
     domain: {
       name: 'ponzi_land',
-      version: '1.0',
-      chainId: 'KATANA',
+      version: '1',
+      chainId: PUBLIC_DOJO_CHAIN_ID,
       revision: '1',
     },
   });

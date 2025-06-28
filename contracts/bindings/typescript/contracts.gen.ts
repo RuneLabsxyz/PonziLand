@@ -156,6 +156,23 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_actions_getGameSpeed_calldata = (): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "get_game_speed",
+			calldata: [],
+		};
+	};
+
+	const actions_getGameSpeed = async () => {
+		try {
+			return await provider.call("ponzi_land", build_actions_getGameSpeed_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_actions_getLand_calldata = (landLocation: BigNumberish): DojoCall => {
 		return {
 			contractName: "actions",
@@ -167,6 +184,23 @@ export function setupWorld(provider: DojoProvider) {
 	const actions_getLand = async (landLocation: BigNumberish) => {
 		try {
 			return await provider.call("ponzi_land", build_actions_getLand_calldata(landLocation));
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_actions_getNeighbors_calldata = (landLocation: BigNumberish): DojoCall => {
+		return {
+			contractName: "actions",
+			entrypoint: "get_neighbors",
+			calldata: [landLocation],
+		};
+	};
+
+	const actions_getNeighbors = async (landLocation: BigNumberish) => {
+		try {
+			return await provider.call("ponzi_land", build_actions_getNeighbors_calldata(landLocation));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -682,8 +716,12 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetClaimableTaxesForLandCalldata: build_actions_getClaimableTaxesForLand_calldata,
 			getCurrentAuctionPrice: actions_getCurrentAuctionPrice,
 			buildGetCurrentAuctionPriceCalldata: build_actions_getCurrentAuctionPrice_calldata,
+			getGameSpeed: actions_getGameSpeed,
+			buildGetGameSpeedCalldata: build_actions_getGameSpeed_calldata,
 			getLand: actions_getLand,
 			buildGetLandCalldata: build_actions_getLand_calldata,
+			getNeighbors: actions_getNeighbors,
+			buildGetNeighborsCalldata: build_actions_getNeighbors_calldata,
 			getNeighborsYield: actions_getNeighborsYield,
 			buildGetNeighborsYieldCalldata: build_actions_getNeighborsYield_calldata,
 			getNextClaimInfo: actions_getNextClaimInfo,
