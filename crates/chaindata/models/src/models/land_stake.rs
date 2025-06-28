@@ -30,8 +30,8 @@ impl Model {
             at,
             location: land.location.into(),
             amount: land.amount.into(),
-            earliest_claim_neighbor_time:earliest_claim_neighbor_time.into(),
-            earliest_claim_neighbor_location:earliest_claim_neighbor_location.into(),
+            earliest_claim_neighbor_time: earliest_claim_neighbor_time.into(),
+            earliest_claim_neighbor_location: earliest_claim_neighbor_location.into(),
             num_active_neighbors: num_active_neighbors.into(),
         }
     }
