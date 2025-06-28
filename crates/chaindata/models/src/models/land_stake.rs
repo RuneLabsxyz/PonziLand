@@ -14,19 +14,32 @@ pub struct Model {
     pub id: EventId,
     pub at: NaiveDateTime,
     pub location: Location,
-    pub last_pay_time: NaiveDateTime,
     pub amount: U256,
+    pub earliest_claim_neighbor_time: NaiveDateTime,
+    pub earliest_claim_neighbor_location: Location,
+    pub num_active_neighbors: u8,
 }
 
 impl Model {
     #[must_use]
     pub fn from_at(land: &LandStake, id: EventId, at: NaiveDateTime) -> Self {
+        let (earliest_claim_neighbor_time, num_active_neighbors, earliest_claim_neighbor_location) =
+            unpack_neighbors_info(land.neighbors_info_packed);
         Self {
             id,
             at,
             location: land.location.into(),
-            last_pay_time: naive_from_u64(land.last_pay_time),
             amount: land.amount.into(),
+            earliest_claim_neighbor_time:earliest_claim_neighbor_time.into(),
+            earliest_claim_neighbor_location:earliest_claim_neighbor_location.into(),
+            num_active_neighbors: num_active_neighbors.into(),
         }
     }
+}
+
+fn unpack_neighbors_info(packed: u128) -> (u64, u8, u16) {
+    let location = (packed & 0xFFFF) as u16;
+    let neighbors = ((packed >> 16) & 0xFF) as u8;
+    let time = (packed >> 24) as u64;
+    (time, neighbors, location)
 }

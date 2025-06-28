@@ -132,8 +132,6 @@ export class AuctionLand extends BaseLand {
       landStake.amount,
       this._token,
     );
-
-    this._lastPayTime = new Date(Number(landStake.last_pay_time));
   }
 
   static is(land: BaseLand): land is AuctionLand {
