@@ -6,7 +6,6 @@ use sqlx::FromRow;
 use crate::{
     events::EventId,
     shared::{Location, U256},
-    utils::date::naive_from_u64,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow)]
@@ -15,8 +14,8 @@ pub struct Model {
     pub at: NaiveDateTime,
     pub location: Location,
     pub amount: U256,
-    pub earliest_claim_neighbor_time: NaiveDateTime,
-    pub earliest_claim_neighbor_location: Location,
+    pub earliest_claim_neighbor_time: u64,
+    pub earliest_claim_neighbor_location: u16,
     pub num_active_neighbors: u8,
 }
 
