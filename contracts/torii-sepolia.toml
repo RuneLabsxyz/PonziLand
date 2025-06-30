@@ -21,6 +21,20 @@ historical = [
 
     "ponzi_land-Land",
     "ponzi_land-LandStake",
+
+
+    "ponzi_land-Quest",
+    "ponzi_land-QuestDetails",
+    "ponzi_land-PlayerRegistrations",
+    "ponzi_land-QuestCounter",
+    "ponzi_land-QuestDetailsCounter",
+    "ponzi_land-GameMetadata",
+    "ponzi_land-GameCounter",
+    "ponzi_land-TokenMetadata",
+    "ponzi_land-Score",
+    "ponzi_land-Settings",
+    "ponzi_land-SettingsDetails",
+    "ponzi_land-SettingsCounter",
 ]
 
 
