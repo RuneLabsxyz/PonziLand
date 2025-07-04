@@ -14,9 +14,7 @@ pub trait IQuestSystems<T> {
         capacity: u16,
         expires_at: u64,
     ) -> u64;
-    fn start_quest(
-        ref self: T, land_location: u16, player_name: felt252,
-    ) -> u64;
+    fn start_quest(ref self: T, land_location: u16, player_name: felt252) -> u64;
     fn claim_reward(ref self: T, quest_id: u64);
     fn get_quest_details(ref self: T, details_id: u64) -> QuestDetails;
     fn get_quest(ref self: T, quest_id: u64) -> Quest;
@@ -98,16 +96,17 @@ pub mod quests {
             assert!(land.owner == caller, "Player is not the owner of the land");
             assert!(land.quest_id == 0, "Land already has a quest");
 
-            let id = self.create_quest(
-                starknet::contract_address_const::<0x0>(), //TODO: actually use real game
-                land.location,
-                1,
-                1,
-                settings_id,
-                100,
-                1000,
-                10000000000000000,
-            );
+            let id = self
+                .create_quest(
+                    starknet::contract_address_const::<0x0>(), //TODO: actually use real game
+                    land.location,
+                    1,
+                    1,
+                    settings_id,
+                    100,
+                    1000,
+                    10000000000000000,
+                );
 
             assert!(id > 0, "Failed to create quest");
 
@@ -124,11 +123,7 @@ pub mod quests {
             world.write_model(@land);
         }
 
-        fn start_quest(
-            ref self: ContractState,
-            land_location: u16,
-            player_name: felt252,
-        ) -> u64 {
+        fn start_quest(ref self: ContractState, land_location: u16, player_name: felt252) -> u64 {
             let mut world = self.world(DEFAULT_NS());
             let land: Land = world.read_model(land_location);
 
