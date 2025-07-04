@@ -129,6 +129,7 @@ export class TutorialLandStore extends LandTileStore {
       sell_price: currentLand.sell_price,
       token_used: currentLand.token_used,
       level: levels[nextLevelIndex] as any,
+      quest_id: currentLand.quest_id,
     };
 
     const buildingLand = new BuildingLand(fakeLand);
