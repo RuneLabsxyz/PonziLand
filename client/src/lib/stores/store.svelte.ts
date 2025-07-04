@@ -86,3 +86,14 @@ export function getNeighboringLands(location: string): BaseLand[] {
   });
   return neighbors.getNeighbors();
 }
+
+export async function SetLandQuest(location: string) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+
+  let res = await sdk.client.actions.set_land_quest(account()?.getWalletAccount()!, location);
+  notificationQueue.addNotification(res?.transaction_hash ?? null, 'set quest tile');
+  return res;
+}
