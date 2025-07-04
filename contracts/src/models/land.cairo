@@ -81,6 +81,14 @@ impl LandImpl of LandTrait {
         sell_price: u256,
         block_date_bought: u64,
     ) -> Land {
-        Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero, quest_id: 0 }
+        Land {
+            location,
+            owner,
+            token_used,
+            sell_price,
+            block_date_bought,
+            level: Level::Zero,
+            quest_id: 0,
+        }
     }
 }
