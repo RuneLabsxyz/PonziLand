@@ -19,7 +19,7 @@
     isActive?: boolean;
   } = $props();
 
-  const take_turn = account.execute({
+  const take_turn = account.session_account.execute({
     contractAddress:
       '0x453816140b9fc12c9b32247f97cb4265c3e4389f7a35927229fb4acaed3e80b',
     entryPoint: 'take_turn',
