@@ -18,6 +18,7 @@
         {
           "pattern": "play.ponzi.land",
           "custom_domain": true,
+          "zone_name": "ponzi.land",
         },
       ],
     },
@@ -26,6 +27,7 @@
         {
           "pattern": "test.ponzi.land",
           "custom_domain": true,
+          "zone_name": "ponzi.land",
         },
       ],
     },
@@ -34,6 +36,7 @@
         {
           "pattern": "sepolia.ponzi.land",
           "custom_domain": true,
+          "zone_name": "ponzi.land",
         },
       ],
     },
