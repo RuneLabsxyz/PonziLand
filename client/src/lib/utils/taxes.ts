@@ -16,7 +16,7 @@ export const getAggregatedTaxes = async (
   nukables: { location: string; nukable: boolean }[];
   taxes: TaxData[];
 }> => {
-  if (!land || !land.getNextClaim || !land.getPendingTaxes) {
+  if (!land || !land.getNextClaim) {
     return {
       nukables: [],
       taxes: [],
@@ -34,22 +34,6 @@ export const getAggregatedTaxes = async (
       nukable: tax.canBeNuked,
     });
 
-    if (tax.amount.isZero()) {
-      continue;
-    }
-
-    const token: Token | undefined = data.availableTokens.find(
-      (t) => t.address == tax.tokenAddress,
-    );
-
-    const tokenAddress = token?.address ?? tax.tokenAddress;
-
-    tokenTaxMap[tokenAddress] = (
-      tokenTaxMap[tokenAddress] || CurrencyAmount.fromScaled(0, token)
-    ).add(tax.amount);
-  }
-
-  for (const tax of (await land.getPendingTaxes()) ?? []) {
     if (tax.amount.isZero()) {
       continue;
     }
