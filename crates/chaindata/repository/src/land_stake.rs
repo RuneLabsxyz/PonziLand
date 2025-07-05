@@ -31,9 +31,9 @@ impl Repository {
             land_stake.id as EventId,
             land_stake.at,
             land_stake.location as Location,
-            land_stake.earliest_claim_neighbor_time,
+            land_stake.earliest_claim_neighbor_time ,
             land_stake.earliest_claim_neighbor_location as Location,
-            land_stake.num_active_neighbors,
+            land_stake.num_active_neighbors as i16,
             land_stake.amount as _
         )
         .fetch_one(&mut *(self.db.acquire().await?))
@@ -61,7 +61,7 @@ impl Repository {
                 location as "location: Location",
                 earliest_claim_neighbor_time,
                 earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
-                num_active_neighbors,
+                num_active_neighbors as "num_active_neighbors: i16",
                 amount as "amount: _"
             FROM land_stake
             WHERE location = $1 AND at <= $2
@@ -101,7 +101,7 @@ impl Repository {
                 location as "location: Location",
                 earliest_claim_neighbor_time,
                 earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
-                num_active_neighbors,
+                num_active_neighbors as "num_active_neighbors: i16",
                 amount as "amount: _"
             FROM latest_land_stakes
             "#,
@@ -125,7 +125,7 @@ impl Repository {
                 location as "location: Location",
                 earliest_claim_neighbor_time,
                 earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
-                num_active_neighbors,
+                num_active_neighbors as "num_active_neighbors: i16",
                 amount as "amount: _"
             FROM land_stake
             WHERE id = $1
@@ -191,8 +191,14 @@ mod tests {
         assert_eq!(retrieved.id, land_stake_model.id);
         assert_eq!(retrieved.location, land_stake_model.location);
         assert_eq!(
-            retrieved.earliest_claim_neighbor_time,
-            land_stake_model.earliest_claim_neighbor_time
+            retrieved
+                .earliest_claim_neighbor_time
+                .and_utc()
+                .timestamp_micros(),
+            land_stake_model
+                .earliest_claim_neighbor_time
+                .and_utc()
+                .timestamp_micros()
         );
         assert_eq!(
             retrieved.earliest_claim_neighbor_location,
