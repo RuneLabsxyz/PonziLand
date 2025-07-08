@@ -26,9 +26,7 @@ else if [[ "$ENVIRONMENT" == "katana" ]]; then
   STARKNET_RPC_URL="http://localhost:5050/"
   STARKNET_ACCOUNT="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
   STARKNET_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
-else
-  echo "Environment file $ENV_FILE not found!"
-  exit 1
+  fi
 fi
 
 if [[ "$ENVIRONMENT" == "katana" ]]; then
@@ -39,7 +37,7 @@ else if [[ -z "$STARKNET_KEYSTORE_PASSWORD" ]]; then
   echo "No password detected, using ledger!"
   STORE_PATH="m/2645'/1195502025'/1148870696'/0'/0'/0"
   SIGN_ARGS="--ledger-path ${STORE_PATH}"
-else
+  fi
   SIGN_ARGS="--keystore $STARKNET_KEYSTORE --keystore-password $STARKNET_KEYSTORE_PASSWORD"
 fi
 
