@@ -17,7 +17,7 @@ export type Configuration = {
 async function getProvider(config: Configuration) {
   return new RpcProvider({
     nodeUrl: config.rpc ?? env.STARKNET_RPC_URL,
-    specVersion: "0.7.1",
+    specVersion: "0.8.1",
   });
 }
 

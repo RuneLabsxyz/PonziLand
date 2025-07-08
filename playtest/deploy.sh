@@ -24,7 +24,7 @@ if [ -f "$ENV_FILE" ]; then
   export $(grep -v '^#' "$ENV_FILE" | xargs)
 elif [[ "$ENVIRONMENT" == "katana" ]]; then
   echo "No .env.katana file found, using default katana configuration."
-  STARKNET_RPC_URL="http://localhost:5050/"
+  STARKNET_RPC="http://localhost:5050/"
   DOJO_ACCOUNT_ADDRESS="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
   DOJO_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
   STARKNET_ACCOUNT="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
@@ -61,6 +61,7 @@ function build_declare() {
     echo "⏳ Building contract..."
     scarb build
     echo "⏳ Declaring contract..."
+    echo "RPC: $STARKNET_RPC"
     CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT $SIGN_ARGS --rpc $STARKNET_RPC)
     echo "🚀 Declared contract at address: $CONTRACT_CLASS"
 }
