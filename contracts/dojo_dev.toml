@@ -23,17 +23,6 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
 
-[init_call_args]
-"ponzi_land-actions" = [
-    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
-    "128000000000000000000",                                              # Start price (low)
-    "0",                                                                  # Start price (high)
-    "1000000000000000000",                                                # Floor price (low)
-    "0",                                                                  # Floor price (high)
-    "100",                                                                # Decay rate
-    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
-]
-
 [writers]
 # We need to be a writer to add events...
 "ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth"]
