@@ -1,4 +1,4 @@
-
+#!/bin/bash
 
 usage() { echo "Usage: $0 [-e <mainnet|sepolia|katana>]" 1>&2; exit 1; }
 
@@ -22,23 +22,22 @@ ENV_FILE=".env.${ENVIRONMENT}"
 if [ -f "$ENV_FILE" ]; then
   echo "Loading environment variables from $ENV_FILE..."
   export $(grep -v '^#' "$ENV_FILE" | xargs)
-else 
-  if [[ "$ENVIRONMENT" == "katana" ]]; then
+elif [[ "$ENVIRONMENT" == "katana" ]]; then
+  echo "No .env.katana file found, using default katana configuration."
   STARKNET_RPC_URL="http://localhost:5050/"
-  DOJO_ACCOUNT_ADDRESSNT="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+  DOJO_ACCOUNT_ADDRESS="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
   DOJO_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
-  fi
+  STARKNET_ACCOUNT="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+  STARKNET_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 fi
 
 if [[ "$ENVIRONMENT" == "katana" ]]; then
-  STARKNET_RPC_URL="http://localhost:5050/"
-  STARKNET_ACCOUNT="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-  STARKNET_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
-else if [[ -z "$STARKNET_KEYSTORE_PASSWORD" ]]; then
+  SIGN_ARGS="--private-key $STARKNET_PRIVATE_KEY"
+elif [[ -z "$STARKNET_KEYSTORE_PASSWORD" ]]; then
   echo "No password detected, using ledger!"
   STORE_PATH="m/2645'/1195502025'/1148870696'/0'/0'/0"
   SIGN_ARGS="--ledger-path ${STORE_PATH}"
-  fi
+else
   SIGN_ARGS="--keystore $STARKNET_KEYSTORE --keystore-password $STARKNET_KEYSTORE_PASSWORD"
 fi
 
