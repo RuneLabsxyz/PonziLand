@@ -22,7 +22,6 @@ export type TransactionResult = Promise<
   | undefined
 >;
 
-
 export type NextClaimInformation = {
   amount: CurrencyAmount;
   tokenAddress: string;
