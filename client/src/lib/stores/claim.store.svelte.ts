@@ -12,7 +12,6 @@ import { notificationQueue } from '$lib/stores/event.store.svelte';
 export let claimStore: {
   value: {
     [key: string]: {
-      // lastClaimTime: number;
       claimable: boolean;
       animating: boolean;
       land: LandWithActions;
@@ -114,7 +113,6 @@ async function handlePostClaim(
 
   // Update claim states for all lands
   lands.forEach((land) => {
-    // claimStore.value[land.location].lastClaimTime = Date.now();
     claimStore.value[land.location].animating = true;
     claimStore.value[land.location].claimable = false;
   });
