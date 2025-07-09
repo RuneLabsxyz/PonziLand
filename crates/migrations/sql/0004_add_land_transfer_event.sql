@@ -1,7 +1,3 @@
-CREATE DOMAIN uint_256 AS NUMERIC
-CHECK (VALUE >= 0 AND VALUE < 2::numeric ^ 256)
-CHECK (SCALE(VALUE) = 0);
-
 ALTER TYPE event_type ADD VALUE 'ponzi_land-LandTransferEvent';
 
 CREATE TABLE event_land_transfer (
