@@ -55,6 +55,9 @@ trait IActions<T> {
         self: @T, claimer_location: u16, payer_location: u16,
     ) -> u64;
     fn get_unclaimed_taxes_per_neighbors_total(self: @T, land_location: u16) -> u256;
+    fn get_elapsed_time_since_last_claim_for_neighbors(
+        self: @T, payer_location: u16,
+    ) -> Array<(u16, u64)>;
 }
 
 // dojo decorator
@@ -588,6 +591,34 @@ pub mod actions {
                 .get_elapsed_time_since_last_claim(claimer_location, payer_location, current_time);
             elapsed_time
         }
+
+        //TODO:do the function to get 8 elapsed time for each neighbor of the claimer
+
+        fn get_elapsed_time_since_last_claim_for_neighbors(
+            self: @ContractState, payer_location: u16,
+        ) -> Array<(u16, u64)> {
+            let mut world = self.world_default();
+            let store = StoreTrait::new(world);
+            let current_time = get_block_timestamp();
+            let neighbors = get_land_neighbors(store, payer_location);
+            let mut elapsed_time: Array<(u16, u64)> = ArrayTrait::new();
+            for neighbor in neighbors {
+                let neighbor_location = *neighbor.location;
+                elapsed_time
+                    .append(
+                        (
+                            neighbor_location,
+                            self
+                                .taxes
+                                .get_elapsed_time_since_last_claim(
+                                    neighbor_location, payer_location, current_time,
+                                ),
+                        ),
+                    );
+            };
+            elapsed_time
+        }
+
 
         fn get_neighbors_yield(self: @ContractState, land_location: u16) -> LandYieldInfo {
             assert(is_valid_position(land_location), 'Land location not valid');

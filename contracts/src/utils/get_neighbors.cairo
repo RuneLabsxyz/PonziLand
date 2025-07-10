@@ -9,33 +9,6 @@ use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult
 use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
 
 
-//TODO:verify if this is needed
-// fn process_neighbors_of_neighbors(
-//     mut store: Store, neighbors: Span<Land>,
-// ) -> Felt252Dict<Nullable<Span<Land>>> {
-//     let mut neighbors_with_their_neighbors: Felt252Dict<Nullable<Span<Land>>> =
-//     Default::default();
-
-//     for neighbor in neighbors {
-//         let location = *neighbor.location;
-//         let their_neighbors = get_land_neighbors(store, location);
-//         neighbors_with_their_neighbors
-//             .insert(location.into(), NullableTrait::new(their_neighbors));
-//     };
-
-//     neighbors_with_their_neighbors
-// }
-
-// fn neighbors_with_their_neighbors(
-//     ref dict: Felt252Dict<Nullable<Span<Land>>>, location: u16,
-// ) -> Span<Land> {
-//     let (entry, arr) = dict.entry(location.into());
-//     let array = arr.deref_or(array![]);
-//     let neighbors = array.span();
-//     dict = entry.finalize(NullableTrait::new(array));
-//     neighbors
-// }
-
 fn get_land_neighbors(mut store: Store, land_location: u16) -> Span<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
     let mut land_cache = LandCacheImpl::new();
