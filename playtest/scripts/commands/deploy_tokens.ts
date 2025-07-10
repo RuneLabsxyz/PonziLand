@@ -92,9 +92,18 @@ export async function deployToken(config: Configuration, args: string[]) {
 
 async function addTokenToFile(config: Configuration, token: Token) {
   // Read the tokens file
-  const tokens = await file(
-    `${config.basePath}/tokens.${config.environment}.json`,
-  ).json();
+  const tokensPath = `${config.basePath}/tokens.${config.environment}.json`;
+
+  // Check if file exists, create it if it doesn't
+  try {
+    await file(tokensPath).json();
+  } catch (error) {
+    // File doesn't exist, create it with default structure
+    console.log(`📝 Creating tokens file: ${tokensPath}`);
+    await Bun.write(tokensPath, JSON.stringify({ tokens: [] }, null, 2));
+  }
+
+  const tokens = await file(tokensPath).json();
 
   tokens.tokens.push(token);
 
