@@ -229,6 +229,32 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const build_actions_getElapsedTimeSinceLastClaimForNeighbors_calldata = (
+    payerLocation: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'actions',
+      entrypoint: 'get_elapsed_time_since_last_claim_for_neighbors',
+      calldata: [payerLocation],
+    };
+  };
+
+  const actions_getElapsedTimeSinceLastClaimForNeighbors = async (
+    payerLocation: BigNumberish,
+  ) => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_actions_getElapsedTimeSinceLastClaimForNeighbors_calldata(
+          payerLocation,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const build_actions_getGameSpeed_calldata = (): DojoCall => {
     return {
       contractName: 'actions',
@@ -933,6 +959,10 @@ export function setupWorld(provider: DojoProvider) {
       getElapsedTimeSinceLastClaim: actions_getElapsedTimeSinceLastClaim,
       buildGetElapsedTimeSinceLastClaimCalldata:
         build_actions_getElapsedTimeSinceLastClaim_calldata,
+      getElapsedTimeSinceLastClaimForNeighbors:
+        actions_getElapsedTimeSinceLastClaimForNeighbors,
+      buildGetElapsedTimeSinceLastClaimForNeighborsCalldata:
+        build_actions_getElapsedTimeSinceLastClaimForNeighbors_calldata,
       getGameSpeed: actions_getGameSpeed,
       buildGetGameSpeedCalldata: build_actions_getGameSpeed_calldata,
       getLand: actions_getLand,
