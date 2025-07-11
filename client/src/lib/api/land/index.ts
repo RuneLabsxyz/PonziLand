@@ -90,7 +90,7 @@ export type LandWithActions = LandWithMeta & {
   getNukable(): Promise<number | undefined>;
   getCurrentAuctionPrice(): Promise<CurrencyAmount | undefined>;
   getYieldInfo(): Promise<LandYieldInfo | undefined>;
-  getEstimatedNukeTime(): number | undefined;
+  getEstimatedNukeTime(): Promise<number | undefined>;
   getNeighbors(): Neighbors;
   levelUp(): TransactionResult;
   getLevelInfo(): LevelInfo;

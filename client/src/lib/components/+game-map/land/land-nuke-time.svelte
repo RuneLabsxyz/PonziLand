@@ -9,11 +9,11 @@
     land?: LandWithActions;
   } = $props();
 
-  let nukeTime: string | undefined = $derived(calculateNukeTime());
+  let nukeTime: Promise<string | undefined> = $derived(calculateNukeTime());
 
-  function calculateNukeTime(): string | undefined {
+  async function calculateNukeTime(): Promise<string | undefined> {
     if (land == undefined) return;
-    return parseNukeTime(estimateNukeTime(land)).toString();
+    return parseNukeTime(await estimateNukeTime(land)).toString();
   }
 
   function formatNukeTime(nukeTime: string | undefined) {
@@ -24,7 +24,7 @@
 
 <div class="flex items-center gap-2 text-ponzi-number text-red-500">
   <img src="/extra/nuke.png" alt="Nuke Symbol" class="h-6 w-6" />
-  <span>{formatNukeTime(nukeTime)}</span>
+  <span>{formatNukeTime(await nukeTime)}</span>
 </div>
 
 <style>

@@ -130,8 +130,8 @@ export const createLandWithActions = (
         )) as ElapsedTimeSinceLastClaim[] | undefined;
       return res;
     },
-    getEstimatedNukeTime() {
-      return estimateNukeTime(
+    async getEstimatedNukeTime() {
+      return await estimateNukeTime(
         this,
         land.getNeighbors(landStore).getNeighbors().length,
       );
