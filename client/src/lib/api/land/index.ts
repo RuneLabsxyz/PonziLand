@@ -1,4 +1,8 @@
-import type { LandYieldInfo, Token } from '$lib/interfaces';
+import type {
+  ElapsedTimeSinceLastClaim,
+  LandYieldInfo,
+  Token,
+} from '$lib/interfaces';
 import type { Auction, Land, LandStake } from '$lib/models.gen';
 import {
   coordinatesToLocation,
@@ -90,6 +94,9 @@ export type LandWithActions = LandWithMeta & {
   getNeighbors(): Neighbors;
   levelUp(): TransactionResult;
   getLevelInfo(): LevelInfo;
+  getElapsedTimeSinceLastClaimForNeighbors(): Promise<
+    ElapsedTimeSinceLastClaim[] | undefined
+  >;
 };
 
 export abstract class BaseLand {

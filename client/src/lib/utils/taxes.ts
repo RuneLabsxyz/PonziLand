@@ -117,7 +117,7 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
   return infosFormatted;
 };
 
-export const estimateNukeTime = (
+export const estimateNukeTime = async (
   land: LandWithActions,
   neighbourNumber: number | undefined = undefined,
 ) => {
@@ -141,19 +141,26 @@ export const estimateNukeTime = (
     return 0;
   }
 
+  const elapsedTimesOfNeighbors =
+    await land.getElapsedTimeSinceLastClaimForNeighbors();
+
   const remainingHours = remainingStake / rateOfActualNeighbours;
   const remainingSeconds = remainingHours * baseTime;
 
-  const now = Date.now() / 1000;
-  let earliestClaimNeighborTime =
-    land.neighborsInfo.earliestClaimNeighborTime / 1000;
-  const timeSinceEarliestClaim = Math.max(0, now - earliestClaimNeighborTime);
-  const remainingNukeTimeFromNow = Math.max(
-    0,
-    remainingSeconds - timeSinceEarliestClaim,
-  );
+  let minRemainingSeconds = remainingSeconds;
+  if (elapsedTimesOfNeighbors && elapsedTimesOfNeighbors.length > 0) {
+    elapsedTimesOfNeighbors.forEach((neighbor) => {
+      const remainingTime = Math.max(
+        0,
+        minRemainingSeconds - Number(neighbor.elapsed_time),
+      );
+      if (remainingTime < minRemainingSeconds) {
+        minRemainingSeconds = remainingTime;
+      }
+    });
+  }
 
-  return remainingNukeTimeFromNow;
+  return minRemainingSeconds;
 };
 
 export const parseNukeTime = (givenTime: number) => {

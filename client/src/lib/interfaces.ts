@@ -69,4 +69,9 @@ export interface LandYieldInfo {
   remaining_stake_time: bigint;
 }
 
+export interface ElapsedTimeSinceLastClaim {
+  location: bigint;
+  elapsed_time: bigint;
+}
+
 export type TabType = 'overall' | 'buy' | 'history';
