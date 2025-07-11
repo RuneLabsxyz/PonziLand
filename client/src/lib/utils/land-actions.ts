@@ -4,7 +4,7 @@ import { BuildingLand } from '$lib/api/land/building_land';
 import { Neighbors } from '$lib/api/neighbors';
 import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { useDojo } from '$lib/contexts/dojo';
-import type { LandYieldInfo } from '$lib/interfaces';
+import type { ElapsedTimeSinceLastClaim, LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { landStore } from '$lib/stores/store.svelte';
 import { toHexWithPadding } from '$lib/utils';
@@ -121,6 +121,13 @@ export const createLandWithActions = (
         res?.transaction_hash ?? null,
         'leveling up',
       );
+      return res;
+    },
+    async getElapsedTimeSinceLastClaimForNeighbors() {
+      const res =
+        (await sdk.client.actions.getElapsedTimeSinceLastClaimForNeighbors(
+          land.locationString,
+        )) as ElapsedTimeSinceLastClaim[] | undefined;
       return res;
     },
     getEstimatedNukeTime() {
