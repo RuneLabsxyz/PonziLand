@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                earliest_claim_neighbor_time,\n                earliest_claim_neighbor_location as \"earliest_claim_neighbor_location: Location\",\n                num_active_neighbors as \"num_active_neighbors: i16\",\n                amount as \"amount: _\"\n            FROM land_stake\n            WHERE id = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: _",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "earliest_claim_neighbor_time",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "earliest_claim_neighbor_location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "num_active_neighbors: i16",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "amount: _",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "46b3f44128d05c4a98f84a28d65da822484fbcc5e2ed625d95d57a0ac1fc8e9b"
+}

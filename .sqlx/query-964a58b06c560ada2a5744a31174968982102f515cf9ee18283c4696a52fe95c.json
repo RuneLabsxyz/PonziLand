@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH latest_land_stakes AS (\n                SELECT DISTINCT ON (location)\n                    id, at, location, earliest_claim_neighbor_time, earliest_claim_neighbor_location, num_active_neighbors, amount\n                FROM land_stake\n                WHERE at <= $1\n                ORDER BY location, at DESC\n            )\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                earliest_claim_neighbor_time,\n                earliest_claim_neighbor_location as \"earliest_claim_neighbor_location: Location\",\n                num_active_neighbors as \"num_active_neighbors: i16\",\n                amount as \"amount: _\"\n            FROM latest_land_stakes\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: _",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "earliest_claim_neighbor_time",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "earliest_claim_neighbor_location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 5,
+        "name": "num_active_neighbors: i16",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 6,
+        "name": "amount: _",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "964a58b06c560ada2a5744a31174968982102f515cf9ee18283c4696a52fe95c"
+}

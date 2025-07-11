@@ -2,7 +2,8 @@
 
 use chaindata_models::events::{
     actions::{
-        AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel, NewAuctionEventModel,
+        AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+        LandTransferEventModel, NewAuctionEventModel,
     },
     auth::{AddressAuthorizedEventModel, AddressRemovedEventModel, VerifierUpdatedEventModel},
     EventId,
@@ -151,4 +152,12 @@ implement_repository!(VerifierUpdatedEventModel, "event_verifier_updated", {
     id,
     new_verifier,
     old_verifier
+});
+
+implement_repository!(LandTransferEventModel, "event_land_transfer", {
+    id,
+    from_location,
+    to_location,
+    token_address,
+    amount
 });

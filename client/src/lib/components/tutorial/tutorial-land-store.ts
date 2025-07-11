@@ -101,7 +101,7 @@ export class TutorialLandStore extends LandTileStore {
     const fakeStake: LandStake = {
       location,
       amount: DEFAULT_STAKE_AMOUNT,
-      last_pay_time: Date.now(),
+      neighbors_info_packed: 0,
     };
 
     const buildingLand = new BuildingLand(fakeLand);
@@ -135,7 +135,7 @@ export class TutorialLandStore extends LandTileStore {
     buildingLand.updateStake({
       location,
       amount: DEFAULT_STAKE_AMOUNT,
-      last_pay_time: currentLand.lastPayTime.getTime(),
+      neighbors_info_packed: 0,
     });
     console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
     this.updateLandDirectly(x, y, buildingLand);
@@ -154,7 +154,7 @@ export class TutorialLandStore extends LandTileStore {
       currentLand.updateStake({
         location,
         amount: currentLand.stakeAmount.toBigint() / 2n,
-        last_pay_time: Date.now(),
+        neighbors_info_packed: 0,
       });
     }
     console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
@@ -312,7 +312,7 @@ export class TutorialLandStore extends LandTileStore {
       currentLand.updateStake({
         location,
         amount: amount,
-        last_pay_time: Date.now(),
+        neighbors_info_packed: 0,
       });
     }
     console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
