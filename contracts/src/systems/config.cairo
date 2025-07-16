@@ -4,7 +4,6 @@
 // in systems such as actions, taxes, and staking.
 #[starknet::interface]
 trait IConfigSystem<T> {
-    
     /// @notice Sets the grid width, which determines the size of the land map.
     /// @param value The new grid width (number of tiles per row/column).
     /// Used throughout the game to validate land positions and compute neighbor relationships (see
@@ -394,7 +393,10 @@ mod config {
 
         fn get_liquidity_safety_multiplier(self: @ContractState) -> u8 {
             let world = self.world_default();
-            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("liquidity_safety_multiplier"))
+            world
+                .read_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("liquidity_safety_multiplier"),
+                )
         }
 
         fn get_min_auction_price(self: @ContractState) -> u256 {
@@ -404,7 +406,10 @@ mod config {
 
         fn get_min_auction_price_multiplier(self: @ContractState) -> u8 {
             let world = self.world_default();
-            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("min_auction_price_multiplier"))
+            world
+                .read_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("min_auction_price_multiplier"),
+                )
         }
 
         fn get_center_location(self: @ContractState) -> u16 {
