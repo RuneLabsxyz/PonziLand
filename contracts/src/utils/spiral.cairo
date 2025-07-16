@@ -3,7 +3,6 @@ use ponzi_land::helpers::coord::{
     down_right,
 };
 use ponzi_land::store::{Store, StoreTrait};
-use ponzi_land::consts::{MAX_AUCTIONS};
 use starknet::storage::{
     Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
 };

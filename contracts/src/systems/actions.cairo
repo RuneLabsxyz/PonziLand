@@ -110,12 +110,6 @@ pub mod actions {
         is_section_completed, get_random_available_index,
     };
     use ponzi_land::helpers::land::{add_neighbor};
-
-    use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID, DECAY_RATE,
-        FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE, GRID_WIDTH,
-        FACTOR_FOR_SELL_PRICE, CENTER_LOCATION,
-    };
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
 
@@ -230,7 +224,12 @@ pub mod actions {
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
         self.current_circle.write(1);
         self.current_section.write(1, 0);
-        self.auction(CENTER_LOCATION, start_price, floor_price, decay_rate, false);
+        let mut world = self.world_default();
+        let store = StoreTrait::new(world);
+        self
+            .auction(
+                store, store.get_center_location(), start_price, floor_price, decay_rate, false,
+            );
     }
 
 
@@ -393,7 +392,7 @@ pub mod actions {
             // Red: Why check the active auction queue?
             assert(self.active_auction_queue.read(land_location), 'auction not started');
 
-            let current_price = auction.get_current_price_decay_rate();
+            let current_price = auction.get_current_price_decay_rate(store);
 
             let neighbors = get_land_neighbors(store, land_location);
 
@@ -426,15 +425,23 @@ pub mod actions {
             let mut land_stake = store.land_stake(land_location);
             assert(land.owner == ContractAddressZeroable::zero(), 'land must be without owner');
             store.delete_land(land, land_stake);
-
+            let min_auction_price = store.get_min_auction_price();
             let sell_price = get_average_price(store, land_location);
-            let sell_price = if sell_price > MIN_AUCTION_PRICE {
+            let sell_price = if sell_price > min_auction_price {
                 sell_price
             } else {
-                MIN_AUCTION_PRICE
+                min_auction_price
             };
 
-            self.auction(land_location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
+            self
+                .auction(
+                    store,
+                    land_location,
+                    sell_price,
+                    store.get_floor_price(),
+                    store.get_decay_rate(),
+                    true,
+                );
         }
 
 
@@ -494,7 +501,7 @@ pub mod actions {
 
             let current_time = get_block_timestamp();
             let elapsed_time_since_buy = (current_time - land.block_date_bought)
-                * TIME_SPEED.into();
+                * store.get_time_speed().into();
 
             self.update_level(ref store, ref land, elapsed_time_since_buy)
         }
@@ -505,10 +512,10 @@ pub mod actions {
 
             let mut store = StoreTrait::new(world);
             let mut active_lands: Array<Land> = ArrayTrait::new();
-
+            let grid_width = store.get_grid_width();
             let mut i: u16 = 0;
             loop {
-                if i >= GRID_WIDTH * GRID_WIDTH {
+                if i >= grid_width * grid_width {
                     break;
                 }
                 if self.staked_lands.read(i) {
@@ -546,7 +553,7 @@ pub mod actions {
             if auction.is_finished {
                 return 0;
             }
-            auction.get_current_price_decay_rate()
+            auction.get_current_price_decay_rate(store)
         }
 
         fn get_next_claim_info(self: @ContractState, land_location: u16) -> Array<ClaimInfo> {
@@ -636,8 +643,8 @@ pub mod actions {
                     if land_stake.amount > 0 {
                         let token = *neighbor.token_used;
                         //TODO: WHY THIS???? remove or fix after playtest
-                        let rate = TAX_RATE.into() * TIME_SPEED.into() / 8;
-                        let rate_per_hour = get_tax_rate_per_neighbor(neighbor);
+                        let rate = store.get_tax_rate().into() * store.get_time_speed().into() / 8;
+                        let rate_per_hour = get_tax_rate_per_neighbor(neighbor, store);
                         yield_info
                             .append(
                                 YieldInfo {
@@ -685,7 +692,7 @@ pub mod actions {
             let payer_land = store.land(payer_location);
             let elapsed_time = self
                 .get_elapsed_time_since_last_claim(claimer_location, payer_location);
-            get_taxes_per_neighbor(@payer_land, elapsed_time)
+            get_taxes_per_neighbor(@payer_land, elapsed_time, store)
         }
 
         fn get_unclaimed_taxes_per_neighbors_total(
@@ -704,7 +711,9 @@ pub mod actions {
 
 
         fn get_game_speed(self: @ContractState) -> u64 {
-            TIME_SPEED.into()
+            let mut world = self.world_default();
+            let store = StoreTrait::new(world);
+            store.get_time_speed().into()
         }
 
         fn get_neighbors(self: @ContractState, land_location: u16) -> Array<LandOrAuction> {
@@ -739,6 +748,7 @@ pub mod actions {
 
         fn auction(
             ref self: ContractState,
+            mut store: Store,
             land_location: u16,
             start_price: u256,
             floor_price: u256,
@@ -749,11 +759,9 @@ pub mod actions {
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
             //we don't want generate an error if the auction is full
-            if (!is_from_nuke && self.active_auctions.read() >= MAX_AUCTIONS) {
+            if (!is_from_nuke && self.active_auctions.read() >= store.get_max_auctions()) {
                 return;
             }
-            let mut world = self.world_default();
-            let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
             assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
             let auction = AuctionTrait::new(
@@ -789,15 +797,23 @@ pub mod actions {
             store.delete_land(land, land_stake);
 
             world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
-
+            let min_auction_price = store.get_min_auction_price();
             let sell_price = get_average_price(store, land.location);
-            let sell_price = if sell_price > MIN_AUCTION_PRICE {
+            let sell_price = if sell_price > min_auction_price {
                 sell_price
             } else {
-                MIN_AUCTION_PRICE
+                min_auction_price
             };
 
-            self.auction(land.location, sell_price, FLOOR_PRICE, DECAY_RATE, true);
+            self
+                .auction(
+                    store,
+                    land.location,
+                    sell_price,
+                    store.get_floor_price(),
+                    store.get_decay_rate(),
+                    true,
+                );
         }
 
 
@@ -903,14 +919,15 @@ pub mod actions {
 
             //initialize auction for neighbors
             // Math.max(sold_at_price * 10, auction.floor_price)
-            if active_auctions < MAX_AUCTIONS {
-                let asking_price = sold_at_price * FACTOR_FOR_SELL_PRICE.into();
-                let asking_price = if asking_price > MIN_AUCTION_PRICE {
+            let min_auction_price = store.get_min_auction_price();
+            if active_auctions < store.get_max_auctions() {
+                let asking_price = sold_at_price * store.get_min_auction_price_multiplier().into();
+                let asking_price = if asking_price > min_auction_price {
                     sold_at_price
                 } else {
-                    MIN_AUCTION_PRICE
+                    min_auction_price
                 };
-                self.generate_new_auctions(asking_price)
+                self.generate_new_auctions(asking_price, store)
             }
         }
         fn finalize_land_purchase(
@@ -969,7 +986,8 @@ pub mod actions {
             self: @ContractState, sell_token: ContractAddress, sell_price: u256, pool_key: PoolKey,
         ) -> bool {
             let main_currency = self.main_currency.read();
-
+            let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
             // We need to validate that the poolkey:
             // - Is valid (token0 < token1)
             // - Contains main_currency in one of its two tokens
@@ -996,18 +1014,27 @@ pub mod actions {
                 .ekubo_dispatcher
                 .read()
                 .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
-            return (sell_price * LIQUIDITY_SAFETY_MULTIPLIER.into()) < liquidity_pool.into();
+            return (sell_price * store.get_liquidity_safety_multiplier().into()) < liquidity_pool
+                .into();
         }
 
 
-        fn generate_new_auctions(ref self: ContractState, start_price: u256) {
+        fn generate_new_auctions(ref self: ContractState, start_price: u256, store: Store) {
             let active_auctions = self.active_auctions.read();
-            let mut remaining_auctions = MAX_AUCTIONS - active_auctions;
+            let mut remaining_auctions = store.get_max_auctions() - active_auctions;
             let mut i = 0;
 
-            while i < MAX_AUCTIONS_FROM_BID && remaining_auctions > 0 {
+            while i < store.get_max_auctions_from_bid() && remaining_auctions > 0 {
                 let new_auction_location = self.select_next_auction_location();
-                self.auction(new_auction_location, start_price, FLOOR_PRICE, DECAY_RATE, false);
+                self
+                    .auction(
+                        store,
+                        new_auction_location,
+                        start_price,
+                        store.get_floor_price(),
+                        store.get_decay_rate(),
+                        false,
+                    );
                 i += 1;
                 remaining_auctions -= 1;
             }

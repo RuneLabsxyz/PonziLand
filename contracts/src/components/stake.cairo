@@ -18,7 +18,6 @@ mod StakeComponent {
     // Internal imports
     use ponzi_land::helpers::coord::{max_neighbors};
     use ponzi_land::models::land::{Land, LandStake};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, GRID_WIDTH};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::{

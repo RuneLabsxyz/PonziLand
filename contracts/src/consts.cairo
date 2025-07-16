@@ -14,7 +14,7 @@ pub const TWO_DAYS_IN_SECONDS: u32 = 2 * 24 * 60 * 60;
 pub const FOUR_DAYS_IN_SECONDS: u32 = TWO_DAYS_IN_SECONDS * 2;
 pub const LIQUIDITY_SAFETY_MULTIPLIER: u8 = 3;
 pub const MIN_AUCTION_PRICE: u256 = 500 * DECIMALS_FACTOR; // 10
-pub const FACTOR_FOR_SELL_PRICE: u8 = 10; // 10x the sale price at the start
+pub const MIN_AUCTION_PRICE_MULTIPLIER: u8 = 10; // 10x the sale price at the start
 pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
 pub const CENTER_LOCATION: u16 = 2080;
 

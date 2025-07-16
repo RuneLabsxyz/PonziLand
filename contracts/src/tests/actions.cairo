@@ -293,7 +293,7 @@ fn setup_test() -> (
     IEkuboCoreTestingDispatcher,
     ITokenRegistryDispatcher,
 ) {
-    let (world, actions_system, erc20, _, testing_dispatcher, auth_system, token_registry) =
+    let (world, actions_system, erc20, _, testing_dispatcher, auth_system, token_registry, _) =
         create_setup();
     set_contract_address(RECIPIENT());
     // Setup authorization

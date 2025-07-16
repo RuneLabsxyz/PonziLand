@@ -23,7 +23,6 @@ mod TaxesComponent {
     // Internal imports
     use ponzi_land::helpers::coord::max_neighbors;
     use ponzi_land::models::land::{Land, LandStake};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::common_strucs::{TokenInfo};
@@ -120,7 +119,7 @@ mod TaxesComponent {
             );
 
             let theoretical_max_payable = get_taxes_per_neighbor(
-                tax_payer, elapsed_earliest_claim_time,
+                tax_payer, elapsed_earliest_claim_time, store,
             )
                 * num_active_neighbors.into();
             if payer_stake.amount > theoretical_max_payable.into() {
@@ -128,7 +127,7 @@ mod TaxesComponent {
                     .get_elapsed_time_since_last_claim(
                         *claimer.location, *tax_payer.location, current_time,
                     );
-                let tax_for_claimer = get_taxes_per_neighbor(tax_payer, elapsed_time);
+                let tax_for_claimer = get_taxes_per_neighbor(tax_payer, elapsed_time, store);
                 self
                     ._execute_claim(
                         store,
@@ -187,7 +186,12 @@ mod TaxesComponent {
         ) -> bool {
             let (total_taxes, tax_for_claimer, cache_elapased_time, total_elapsed_time) = self
                 ._calculate_taxes_for_all_neighbors(
-                    claimer, tax_payer, neighbors_of_tax_payer, payer_stake.amount, current_time,
+                    claimer,
+                    tax_payer,
+                    neighbors_of_tax_payer,
+                    payer_stake.amount,
+                    current_time,
+                    store,
                 );
             if total_taxes >= payer_stake.amount {
                 self
@@ -285,15 +289,16 @@ mod TaxesComponent {
 
             let current_time = get_block_timestamp();
 
-            let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land);
+            let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land, store);
             let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
 
-            if total_tax_rate == 0 || TIME_SPEED == 0 {
+            if total_tax_rate == 0 || store.get_time_speed() == 0 {
                 let max_u64 = Bounded::<u64>::MAX;
                 return current_time + max_u64;
             }
 
-            let remaining_time_units = (*land_stake.amount * BASE_TIME.into()) / total_tax_rate;
+            let remaining_time_units = (*land_stake.amount * store.get_base_time().into())
+                / total_tax_rate;
             let mut min_remaining_time = Bounded::<u64>::MAX;
 
             for neighbor in neighbors {
@@ -324,6 +329,7 @@ mod TaxesComponent {
             neighbors_of_tax_payer: Span<Land>,
             land_stake_amount: u256,
             current_time: u64,
+            store: Store,
         ) -> (u256, u256, Array<(u16, ContractAddress, u64)>, u64) {
             let mut total_taxes: u256 = 0;
             let mut tax_for_claimer: u256 = 0;
@@ -337,7 +343,7 @@ mod TaxesComponent {
                     );
                 total_elapsed_time += elapsed_time;
                 cache_elapsed_time.append((neighbor_location, *neighbor.owner, elapsed_time));
-                let tax_per_neighbor = get_taxes_per_neighbor(tax_payer, elapsed_time);
+                let tax_per_neighbor = get_taxes_per_neighbor(tax_payer, elapsed_time, store);
                 total_taxes += tax_per_neighbor;
 
                 if neighbor_location == *claimer.location {
