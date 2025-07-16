@@ -1,4 +1,3 @@
-use ponzi_land::consts::{MIN_AUCTION_PRICE, FACTOR_FOR_SELL_PRICE};
 use ponzi_land::store::{Store, StoreTrait};
 use ponzi_land::models::land::Land;
 use ponzi_land::models::auction::Auction;
@@ -68,7 +67,7 @@ fn get_average_price(mut store: Store, land_location: u16) -> u256 {
     let neighbors = get_auction_neighbors(store, land_location);
 
     if neighbors.len() == 0 {
-        return MIN_AUCTION_PRICE;
+        return store.get_min_auction_price();
     };
 
     let mut total_price = 0;
@@ -78,7 +77,7 @@ fn get_average_price(mut store: Store, land_location: u16) -> u256 {
         total_price += neighbor.sold_at_price.unwrap();
         i += 1;
     };
-    (total_price / neighbors.len().into()) * FACTOR_FOR_SELL_PRICE.into()
+    (total_price / neighbors.len().into()) * store.get_min_auction_price_multiplier().into()
 }
 
 fn get_directions(land_location: u16) -> Array<Option<u16>> {

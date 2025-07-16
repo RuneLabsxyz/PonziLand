@@ -1,28 +1,32 @@
 use ponzi_land::utils::level_up::calculate_discount_for_level;
 use ponzi_land::helpers::coord::max_neighbors;
 use ponzi_land::models::land::{Land, LandStake};
-use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, DECIMALS_FACTOR};
+use ponzi_land::store::{Store, StoreTrait};
+use ponzi_land::consts::{DECIMALS_FACTOR};
 use starknet::{get_block_timestamp};
 
 
 #[inline(always)]
-pub fn get_taxes_per_neighbor(land: @Land, elapsed_time: u64) -> u256 {
-    let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land);
+pub fn get_taxes_per_neighbor(land: @Land, elapsed_time: u64, store: Store) -> u256 {
+    let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land, store);
 
-    let tax_per_neighbor: u256 = (tax_rate_per_neighbor * elapsed_time.into()) / (BASE_TIME.into());
+    let tax_per_neighbor: u256 = (tax_rate_per_neighbor * elapsed_time.into())
+        / (store.get_base_time().into());
 
     tax_per_neighbor
 }
 
 
-pub fn get_tax_rate_per_neighbor(land: @Land) -> u256 {
+pub fn get_tax_rate_per_neighbor(land: @Land, store: Store) -> u256 {
     let max_n = max_neighbors(*land.location);
     if max_n == 0 {
         return 0;
     }
 
     let discount_for_level = calculate_discount_for_level(*land.level);
-    let base_tax_rate = (*land.sell_price * TAX_RATE.into() * TIME_SPEED.into())
+    let base_tax_rate = (*land.sell_price
+        * store.get_tax_rate().into()
+        * store.get_time_speed().into())
         / (max_n.into() * 100); // Base rate per neighbor
 
     let discounted_tax_rate = if discount_for_level > 0 {
