@@ -60,12 +60,12 @@ impl StoreImpl of StoreTrait {
 
     // Config getters
     #[inline(always)]
-    fn get_grid_width(self: Store) -> u16 {
+    fn get_grid_width(self: Store) -> u8 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("grid_width"))
     }
 
     #[inline(always)]
-    fn get_tax_rate(self: Store) -> u16 {
+    fn get_tax_rate(self: Store) -> u8 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("tax_rate"))
     }
 
@@ -75,12 +75,12 @@ impl StoreImpl of StoreTrait {
     }
 
     #[inline(always)]
-    fn get_price_decrease_rate(self: Store) -> u16 {
+    fn get_price_decrease_rate(self: Store) -> u8 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("price_decrease_rate"))
     }
 
     #[inline(always)]
-    fn get_time_speed(self: Store) -> u32 {
+    fn get_time_speed(self: Store) -> u8 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("time_speed"))
     }
 
