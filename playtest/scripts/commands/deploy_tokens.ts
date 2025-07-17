@@ -1,7 +1,7 @@
 import { $, file, write } from "bun";
 import { Configuration } from "../env";
 import { COLORS, connect, Token, TokenCreation } from "../utils";
-import { byteArray, cairo, Calldata, CallData } from "starknet";
+import { byteArray, cairo, Calldata, CallData, Contract } from "starknet";
 import fs from "fs/promises";
 
 export async function deployToken(config: Configuration, args: string[]) {
@@ -11,6 +11,52 @@ export async function deployToken(config: Configuration, args: string[]) {
   }
 
   const [symbol, name] = args;
+
+  // Check if token already exists
+  const tokensPath = `${config.basePath}/tokens.${config.environment}.json`;
+  let existingTokens;
+  try {
+    existingTokens = await file(tokensPath).json();
+  } catch (error) {
+    // File doesn't exist, will be created later
+    existingTokens = { tokens: [] };
+  }
+
+  // Check if token with this symbol already exists
+  const existingToken = existingTokens.tokens.find((token: Token) => token.symbol === symbol);
+  
+  if (existingToken) {
+    console.log(`${COLORS.yellow}⚠️  Token with symbol ${symbol} already exists at ${existingToken.address}${COLORS.reset}`);
+    console.log(`${COLORS.blue}🔍 Verifying token symbol...${COLORS.reset}`);
+    
+    // Setup connection to verify the token
+    const { account, provider } = await connect(config);
+    
+    try {
+      // Get the contract class to access ABI
+      let contractClass = await file(
+        `${config.basePath}/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
+      ).json();
+
+      // Create contract instance
+      const contract = new Contract(contractClass.abi, existingToken.address, provider).typedV2(contractClass.abi);
+      
+      // Call the symbol function to verify
+      const contractSymbol = await contract.symbol();
+      const symbolString = cairo.shortStringFeltToStr(contractSymbol);
+      
+      if (symbolString === symbol) {
+        console.log(`${COLORS.green}✅ Token ${symbol} already deployed and verified at ${existingToken.address}${COLORS.reset}`);
+        return;
+      } else {
+        console.log(`${COLORS.red}❌ Symbol mismatch! Expected: ${symbol}, Got: ${symbolString}${COLORS.reset}`);
+        console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
+      }
+    } catch (error) {
+      console.log(`${COLORS.red}❌ Error verifying existing token: ${error}${COLORS.reset}`);
+      console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
+    }
+  }
 
   // Compile the project (if no target directory)
   if ((await fs.exists(`${config.basePath}/target/dev`)) == false) {
@@ -57,6 +103,8 @@ export async function deployToken(config: Configuration, args: string[]) {
   console.log(
     `${COLORS.blue}💌 Deploying contract for token ${symbol}...${COLORS.reset}`,
   );
+
+  
 
   const contractCallData: CallData = new CallData(contractClass.abi);
   const contractConstructor: Calldata = contractCallData.compile(
