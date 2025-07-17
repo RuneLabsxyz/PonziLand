@@ -1,7 +1,7 @@
 import { $, file, write } from "bun";
 import { Configuration } from "../env";
 import { COLORS, connect, Token, TokenCreation } from "../utils";
-import { byteArray, cairo, Calldata, CallData, Contract } from "starknet";
+import { byteArray, cairo, Calldata, CallData, Contract, type shortString } from "starknet";
 import fs from "fs/promises";
 
 export async function deployToken(config: Configuration, args: string[]) {
@@ -39,17 +39,15 @@ export async function deployToken(config: Configuration, args: string[]) {
       ).json();
 
       // Create contract instance
-      const contract = new Contract(contractClass.abi, existingToken.address, provider).typedV2(contractClass.abi);
+      const contract = new Contract(contractClass.abi, existingToken.address, provider).typedv2(contractClass.abi);
       
       // Call the symbol function to verify
-      const contractSymbol = await contract.symbol();
-      const symbolString = cairo.shortStringFeltToStr(contractSymbol);
-      
-      if (symbolString === symbol) {
+      const contractSymbol: String = await contract.symbol();
+      if (contractSymbol == symbol) {
         console.log(`${COLORS.green}✅ Token ${symbol} already deployed and verified at ${existingToken.address}${COLORS.reset}`);
         return;
       } else {
-        console.log(`${COLORS.red}❌ Symbol mismatch! Expected: ${symbol}, Got: ${symbolString}${COLORS.reset}`);
+        console.log(`${COLORS.red}❌ Symbol mismatch! Expected: ${symbol}, Got: ${contractSymbol}${COLORS.reset}`);
         console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
       }
     } catch (error) {
