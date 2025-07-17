@@ -36,14 +36,14 @@ export interface Land {
 // Type definition for `ponzi_land::models::land::LandStake` struct
 export interface LandStake {
 	location: BigNumberish;
-	last_pay_time: BigNumberish;
 	amount: BigNumberish;
+	neighbors_info_packed: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::LandStakeValue` struct
 export interface LandStakeValue {
-	last_pay_time: BigNumberish;
 	amount: BigNumberish;
+	neighbors_info_packed: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::LandValue` struct
@@ -53,6 +53,34 @@ export interface LandValue {
 	sell_price: BigNumberish;
 	token_used: string;
 	level: LevelEnum;
+}
+
+// Type definition for `ponzi_land::components::taxes::TaxesComponent::LandTransferEvent` struct
+export interface LandTransferEvent {
+	from_location: BigNumberish;
+	to_location: BigNumberish;
+	token_address: string;
+	amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::components::taxes::TaxesComponent::LandTransferEventValue` struct
+export interface LandTransferEventValue {
+	to_location: BigNumberish;
+	token_address: string;
+	amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::systems::actions::actions::AddStakeEvent` struct
+export interface AddStakeEvent {
+	land_location: BigNumberish;
+	new_stake_amount: BigNumberish;
+	owner: string;
+}
+
+// Type definition for `ponzi_land::systems::actions::actions::AddStakeEventValue` struct
+export interface AddStakeEventValue {
+	new_stake_amount: BigNumberish;
+	owner: string;
 }
 
 // Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
@@ -158,6 +186,10 @@ export interface SchemaType extends ISchemaType {
 		LandStake: LandStake,
 		LandStakeValue: LandStakeValue,
 		LandValue: LandValue,
+		LandTransferEvent: LandTransferEvent,
+		LandTransferEventValue: LandTransferEventValue,
+		AddStakeEvent: AddStakeEvent,
+		AddStakeEventValue: AddStakeEventValue,
 		AuctionFinishedEvent: AuctionFinishedEvent,
 		AuctionFinishedEventValue: AuctionFinishedEventValue,
 		LandBoughtEvent: LandBoughtEvent,
@@ -206,12 +238,12 @@ export const schema: SchemaType = {
 		},
 		LandStake: {
 			location: 0,
-			last_pay_time: 0,
 		amount: 0,
+			neighbors_info_packed: 0,
 		},
 		LandStakeValue: {
-			last_pay_time: 0,
 		amount: 0,
+			neighbors_info_packed: 0,
 		},
 		LandValue: {
 			block_date_bought: 0,
@@ -222,6 +254,26 @@ export const schema: SchemaType = {
 					Zero: "",
 				First: undefined,
 				Second: undefined, }),
+		},
+		LandTransferEvent: {
+			from_location: 0,
+			to_location: 0,
+			token_address: "",
+		amount: 0,
+		},
+		LandTransferEventValue: {
+			to_location: 0,
+			token_address: "",
+		amount: 0,
+		},
+		AddStakeEvent: {
+			land_location: 0,
+		new_stake_amount: 0,
+			owner: "",
+		},
+		AddStakeEventValue: {
+		new_stake_amount: 0,
+			owner: "",
 		},
 		AuctionFinishedEvent: {
 			land_location: 0,
@@ -291,6 +343,10 @@ export enum ModelsMapping {
 	LandStakeValue = 'ponzi_land-LandStakeValue',
 	LandValue = 'ponzi_land-LandValue',
 	Level = 'ponzi_land-Level',
+	LandTransferEvent = 'ponzi_land-LandTransferEvent',
+	LandTransferEventValue = 'ponzi_land-LandTransferEventValue',
+	AddStakeEvent = 'ponzi_land-AddStakeEvent',
+	AddStakeEventValue = 'ponzi_land-AddStakeEventValue',
 	AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
 	AuctionFinishedEventValue = 'ponzi_land-AuctionFinishedEventValue',
 	LandBoughtEvent = 'ponzi_land-LandBoughtEvent',

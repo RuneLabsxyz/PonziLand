@@ -1,8 +1,9 @@
 use dojo::world::{WorldStorage};
-use dojo::model::{ModelStorage, ModelValueStorage};
+use dojo::model::{ModelStorage, ModelValueStorage, Model};
 
 use ponzi_land::models::land::{Land, PoolKey, LandStake};
 use ponzi_land::models::auction::Auction;
+use ponzi_land::models::config::Config;
 use starknet::contract_address::ContractAddressZeroable;
 
 #[derive(Copy, Drop)]
@@ -51,8 +52,110 @@ impl StoreImpl of StoreTrait {
 
     // Deleter
     #[inline(always)]
-    fn delete_land(mut self: Store, mut land: Land) {
+    fn delete_land(mut self: Store, mut land: Land, mut land_stake: LandStake) {
         //Red: Attempt to see if it is still an issue with torii:
         self.world.erase_model(@land);
+        self.world.erase_model(@land_stake);
+    }
+
+    // Config getters
+    #[inline(always)]
+    fn get_grid_width(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("grid_width"))
+    }
+
+    #[inline(always)]
+    fn get_tax_rate(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("tax_rate"))
+    }
+
+    #[inline(always)]
+    fn get_base_time(self: Store) -> u16 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("base_time"))
+    }
+
+    #[inline(always)]
+    fn get_price_decrease_rate(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("price_decrease_rate"))
+    }
+
+    #[inline(always)]
+    fn get_time_speed(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("time_speed"))
+    }
+
+    #[inline(always)]
+    fn get_max_auctions(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("max_auctions"))
+    }
+
+    #[inline(always)]
+    fn get_max_auctions_from_bid(self: Store) -> u8 {
+        self
+            .world
+            .read_member(Model::<Config>::ptr_from_keys(1), selector!("max_auctions_from_bid"))
+    }
+
+    #[inline(always)]
+    fn get_decay_rate(self: Store) -> u16 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("decay_rate"))
+    }
+
+    #[inline(always)]
+    fn get_floor_price(self: Store) -> u256 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("floor_price"))
+    }
+
+    #[inline(always)]
+    fn get_liquidity_safety_multiplier(self: Store) -> u8 {
+        self
+            .world
+            .read_member(
+                Model::<Config>::ptr_from_keys(1), selector!("liquidity_safety_multiplier"),
+            )
+    }
+
+    #[inline(always)]
+    fn get_min_auction_price(self: Store) -> u256 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("min_auction_price"))
+    }
+
+    #[inline(always)]
+    fn get_min_auction_price_multiplier(self: Store) -> u8 {
+        self
+            .world
+            .read_member(
+                Model::<Config>::ptr_from_keys(1), selector!("min_auction_price_multiplier"),
+            )
+    }
+
+    #[inline(always)]
+    fn get_center_location(self: Store) -> u16 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("center_location"))
+    }
+
+    #[inline(always)]
+    fn get_auction_duration(self: Store) -> u32 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("auction_duration"))
+    }
+
+    #[inline(always)]
+    fn get_scaling_factor(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("scaling_factor"))
+    }
+
+    #[inline(always)]
+    fn get_linear_decay_time(self: Store) -> u16 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("linear_decay_time"))
+    }
+
+    #[inline(always)]
+    fn get_drop_rate(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("drop_rate"))
+    }
+
+    #[inline(always)]
+    fn get_rate_denominator(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("rate_denominator"))
     }
 }

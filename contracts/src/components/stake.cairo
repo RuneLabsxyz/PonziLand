@@ -9,7 +9,7 @@ mod StakeComponent {
 
     // Starknet imports
     use starknet::{ContractAddress};
-    use starknet::info::{get_contract_address, get_block_timestamp, get_caller_address};
+    use starknet::info::{get_contract_address, get_caller_address};
 
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
@@ -18,7 +18,6 @@ mod StakeComponent {
     // Internal imports
     use ponzi_land::helpers::coord::{max_neighbors};
     use ponzi_land::models::land::{Land, LandStake};
-    use ponzi_land::consts::{TAX_RATE, BASE_TIME, TIME_SPEED, GRID_WIDTH};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable};
     use ponzi_land::utils::{
@@ -57,6 +56,7 @@ mod StakeComponent {
             land: Land,
             mut land_stake: LandStake,
             mut store: Store,
+            our_contract_address: ContractAddress,
         ) {
             //initialize and validate token balance
             let mut payable = get_dep_component_mut!(ref self, Payable);
@@ -64,9 +64,8 @@ mod StakeComponent {
             assert(validation_result.status, errors::ERC20_VALIDATE_FOR_STAKE_FAILED);
 
             //transfer stake amount to game contract
-            let contract_address = get_contract_address();
 
-            let status = payable.transfer_from(land.owner, contract_address, validation_result);
+            let status = payable.transfer_from(land.owner, our_contract_address, validation_result);
             assert(status, errors::ERC20_STAKE_FAILED);
 
             assert(land.owner == get_caller_address(), 'only the owner can stake');
@@ -77,21 +76,24 @@ mod StakeComponent {
             //update land stake amount
 
             land_stake.amount = land_stake.amount + amount;
-            land_stake.last_pay_time = get_block_timestamp();
             store.set_land_stake(land_stake);
         }
 
 
-        fn _refund(ref self: ComponentState<TContractState>, mut store: Store, land: Land) {
+        fn _refund(
+            ref self: ComponentState<TContractState>,
+            mut store: Store,
+            land: Land,
+            our_contract_address: ContractAddress,
+        ) {
             let mut land_stake = store.land_stake(land.location);
             let stake_amount = land_stake.amount;
             assert(stake_amount > 0, 'amount to refund is 0');
             let mut payable = get_dep_component_mut!(ref self, Payable);
 
             //validate if the contract has sufficient balance for refund stake
-            let contract_address = get_contract_address();
             let validation_result = payable
-                .validate(land.token_used, contract_address, stake_amount);
+                .validate(land.token_used, our_contract_address, stake_amount);
             assert(validation_result.status, errors::ERC20_VALIDATE_FOR_REFUND_FAILED);
 
             let status = payable.transfer(land.owner, validation_result);

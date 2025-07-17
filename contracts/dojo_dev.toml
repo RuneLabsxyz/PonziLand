@@ -14,6 +14,8 @@ telegram = "https://t.me/dojoengine"
 
 [namespace]
 default = "ponzi_land"
+auth = "ponzi_land_auth"
+token_registry = "ponzi_land_token_registry"
 
 [env]
 rpc_url = "http://localhost:5050/"
@@ -22,33 +24,6 @@ account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5c
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
-
 [writers]
-# We need to be a writer to add events...
-"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth"]
-
-[init_call_args]
-"ponzi_land-actions" = [
-    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
-    "128000000000000000000",                                              # Start price (low)
-    "0",                                                                  # Start price (high)
-    "1000000000000000000",                                                # Floor price (low)
-    "0",                                                                  # Floor price (high)
-    "100",                                                                # Decay rate
-    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
-]
-
-"ponzi_land-auth" = [
-    "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9", # Owner
-    "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
-]
-
-"ponzi_land-token_registry" = [
-    "6",                                                                  # 6 tokens,
-    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # pltSTRK
-    "0x02758ab836d286e13c89a434613a8d47f6e8cc20f0d2a74ae111a16553905801", # pltPAPER
-    "0x009070eac7b5791d1c3a37fa5735e3c9be55004400543f43cbb8912d835157d5", # pltLORDS
-    "0x05aa6c0482d24e017d3e177a7df96528e75c158476559f1012b2e944d28e8903", # pltBROTHER
-    "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d", # pltPAL
-    "0x01544000184b0d667f63005fee5ef39bc0514565b5580291256456db5d9e08f3", # pltETH
-]
+"ponzi_land" = ["ponzi_land-actions"]
+"ponzi_land_auth" = ["ponzi_land-auth"]

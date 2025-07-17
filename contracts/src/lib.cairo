@@ -2,6 +2,7 @@ mod systems {
     mod actions;
     mod auth;
     mod token_registry;
+    mod config;
 }
 
 mod interfaces {
@@ -11,12 +12,14 @@ mod interfaces {
 mod models {
     mod land;
     mod auction;
+    mod config;
 }
 
 mod helpers {
     mod coord;
     mod taxes;
     mod circle_expansion;
+    mod land;
 }
 
 mod components {
@@ -44,6 +47,8 @@ mod utils {
     mod level_up;
     mod spiral;
     mod stake;
+    mod packing;
+    mod math;
 }
 
 #[cfg(test)]

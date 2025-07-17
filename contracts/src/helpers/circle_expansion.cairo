@@ -1,8 +1,8 @@
 use ponzi_land::helpers::coord::{position_to_index};
 use starknet::{get_caller_address, get_block_number};
-use ponzi_land::consts::GRID_WIDTH;
 use keccak::keccak_u256s_le_inputs;
 use core::integer::u256_from_felt252;
+use ponzi_land::store::{Store, StoreTrait};
 
 
 fn lands_in_circle(circle_number: u16) -> u16 {
@@ -19,8 +19,9 @@ fn is_section_completed(lands_completed: u16, circle: u16) -> bool {
 }
 
 
-fn get_circle_land_position(circle: u16, index: u16) -> u16 {
-    let center: u16 = GRID_WIDTH / 2;
+fn get_circle_land_position(circle: u16, index: u16, store: Store) -> u16 {
+    let grid_width: u8 = store.get_grid_width();
+    let center: u16 = grid_width.into() / 2;
     let lands_per_section = lands_per_section(circle);
     let total_lands = lands_in_circle(circle);
     assert(index < total_lands, 'Invalid index for circle');
@@ -49,13 +50,12 @@ fn get_circle_land_position(circle: u16, index: u16) -> u16 {
         _ => panic!("Invalid section"),
     }
 
-    assert(row < GRID_WIDTH, 'Row out of bounds');
-    assert(col < GRID_WIDTH, 'Col out of bounds');
-
-    return position_to_index(row, col);
+    assert(row < grid_width.into(), 'Row out of bounds');
+    assert(col < grid_width.into(), 'Col out of bounds');
+    return position_to_index(row, col, store.get_grid_width());
 }
 
-fn generate_circle(circle: u16) -> Array<u16> {
+fn generate_circle(circle: u16, store: Store) -> Array<u16> {
     let mut lands: Array<u16> = ArrayTrait::new();
     let lands_per_section = lands_per_section(circle);
 
@@ -64,7 +64,7 @@ fn generate_circle(circle: u16) -> Array<u16> {
         let mut i = 0;
         while i < lands_per_section {
             let index = section * lands_per_section + i;
-            let land_index = get_circle_land_position(circle, index);
+            let land_index = get_circle_land_position(circle, index, store);
             lands.append(land_index);
             i += 1;
         };

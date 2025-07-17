@@ -1,8 +1,7 @@
 use starknet::get_block_timestamp;
-use ponzi_land::consts::{
-    PRICE_DECREASE_RATE, TIME_SPEED, DECIMALS_FACTOR, AUCTION_DURATION, SCALING_FACTOR,
-    RATE_DENOMINATOR, LINEAR_DECAY_TIME, DROP_RATE,
-};
+use ponzi_land::consts::{DECIMALS_FACTOR};
+use ponzi_land::store::{Store, StoreTrait};
+
 
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
@@ -43,18 +42,18 @@ impl AuctionImpl of AuctionTrait {
 
     //TODO:REMOVE THIS AFTER TESTS
     #[inline(always)]
-    fn get_current_price(self: Auction) -> u256 {
+    fn get_current_price(self: Auction, store: Store) -> u256 {
         let current_time = get_block_timestamp();
 
         let time_passed = if current_time > self.start_time {
-            (current_time - self.start_time) * TIME_SPEED.into()
+            (current_time - self.start_time) * store.get_time_speed().into()
         } else {
             0
         };
 
         //the price will decrease 2% every 2 minutes (for tests)
         let total_decrease = self.start_price
-            * PRICE_DECREASE_RATE.into()
+            * store.get_price_decrease_rate().into()
             * time_passed.into()
             / (100 * 120);
 
@@ -79,58 +78,62 @@ impl AuctionImpl of AuctionTrait {
     // t: (progress__time)
 
     #[inline(always)]
-    fn get_current_price_decay_rate(self: Auction) -> u256 {
+    fn get_current_price_decay_rate(self: Auction, store: Store) -> u256 {
         let current_time = get_block_timestamp();
         let time_passed = if current_time > self.start_time {
-            (current_time - self.start_time) * TIME_SPEED.into()
+            (current_time - self.start_time) * store.get_time_speed().into()
         } else {
             0
         };
 
-        // if the auction has passed a week, the price is 0
-        if time_passed >= AUCTION_DURATION.into() {
+        // if the auction has passed the duration, the price is 0
+        if time_passed >= store.get_auction_duration().into() {
             return 0;
         }
 
         let mut current_price: u256 = self.start_price;
+        let linear_decay_time = store.get_linear_decay_time();
+        let drop_rate = store.get_drop_rate();
+        let rate_denominator = store.get_rate_denominator();
+        let decimals_factor = DECIMALS_FACTOR;
 
         //for the first minutes we use a linear decay
-        if time_passed <= LINEAR_DECAY_TIME.into() {
-            let time_fraction = time_passed.into() * DECIMALS_FACTOR / LINEAR_DECAY_TIME.into();
+        if time_passed <= linear_decay_time.into() {
+            let time_fraction = time_passed.into() * decimals_factor / linear_decay_time.into();
 
-            let linear_factor = DECIMALS_FACTOR
-                - (DROP_RATE.into() * time_fraction / RATE_DENOMINATOR.into()).into();
+            let linear_factor = decimals_factor
+                - (drop_rate.into() * time_fraction / rate_denominator.into()).into();
 
-            current_price = self.start_price * linear_factor / DECIMALS_FACTOR;
+            current_price = self.start_price * linear_factor / decimals_factor;
         } else {
-            // Scale the time passed by DECIMALS_FACTOR to maintain precision in integer math
-            let remaining_rate = RATE_DENOMINATOR - DROP_RATE;
+            // Scale the time passed by decimals_factor to maintain precision in integer math
+            let remaining_rate = rate_denominator - drop_rate;
             let price_after_linear = self.start_price
                 * remaining_rate.into()
-                / RATE_DENOMINATOR.into();
+                / rate_denominator.into();
 
             let progress__time: u256 = (time_passed.into()
-                * DECIMALS_FACTOR
-                / AUCTION_DURATION.into())
+                * decimals_factor
+                / store.get_auction_duration().into())
                 .into();
 
-            // k is the decay rate (adjusted by DECIMALS_FACTOR for scaling)
-            let k: u256 = (self.decay_rate.into() * DECIMALS_FACTOR)
-                / SCALING_FACTOR.into(); // 4 * 10^18 / 50
+            // k is the decay rate (adjusted by decimals_factor for scaling)
+            let k: u256 = (self.decay_rate.into() * decimals_factor)
+                / store.get_scaling_factor().into();
 
             // Calculate the denominator (1 + k * t) using scaled values for precision
-            let denominator = DECIMALS_FACTOR + (k * progress__time / DECIMALS_FACTOR);
+            let denominator = decimals_factor + (k * progress__time / decimals_factor);
 
             // Calculate the decay factor using the formula (1 / (1 + k * t))^2
             // Ensure denominator is not zero to avoid division by zero errors
             let decay_factor = if denominator != 0 {
-                let temp = (DECIMALS_FACTOR * DECIMALS_FACTOR) / denominator;
-                (temp * temp) / DECIMALS_FACTOR
+                let temp = (decimals_factor * decimals_factor) / denominator;
+                (temp * temp) / decimals_factor
             } else {
                 0
             };
 
-            current_price = price_after_linear * decay_factor / DECIMALS_FACTOR;
+            current_price = price_after_linear * decay_factor / decimals_factor;
         }
 
         if current_price > self.floor_price {
@@ -143,12 +146,16 @@ impl AuctionImpl of AuctionTrait {
 
 #[cfg(test)]
 mod tests {
-    use super::{Auction, AuctionTrait, AUCTION_DURATION};
+    use super::{Auction, AuctionTrait};
     use starknet::testing::{set_contract_address, set_block_timestamp, set_caller_address};
-    use ponzi_land::consts::TIME_SPEED;
+    use ponzi_land::tests::setup::{setup, setup::{create_setup}};
+    use ponzi_land::store::{Store, StoreTrait};
+
 
     // Simulate the price points of an auction over time with a decay rate of 2
     fn simulate_price_points() -> Array<(u64, u256)> {
+        let (world, _, _, _, _, _, _, _) = create_setup();
+        let store = StoreTrait::new(world);
         set_block_timestamp(0);
         let auction = AuctionTrait::new(1, 1000000, 0, false, 100);
 
@@ -174,14 +181,14 @@ mod tests {
 
         let mut i = 0;
         while i < time_points.len() {
-            let time: u64 = *time_points[i] / TIME_SPEED.into();
+            let time: u64 = *time_points[i] / store.get_time_speed().into();
             set_block_timestamp(time);
-            let price = auction.get_current_price_decay_rate();
+            let price = auction.get_current_price_decay_rate(store);
             // While the tests are dependent on constants, use the following code to get the price
             // points:
             // print!("idx: {}, Price: {}\n", i, price);
 
-            price_points.append((time * TIME_SPEED.into(), price));
+            price_points.append((time * store.get_time_speed().into(), price));
             i += 1;
         };
         price_points
