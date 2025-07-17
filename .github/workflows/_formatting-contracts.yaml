@@ -13,7 +13,7 @@ jobs:
       - id: setup-dojo
         uses: runelabsxyz/setup-dojo@main
         with:
-          version: "v1.4.0"
+          version: "v1.6.0-alpha.2"
 
       - name: Validate formatting
         working-directory: ./contracts

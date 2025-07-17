@@ -15,3 +15,6 @@ target/
 # Idea
 .idea/
 deployment
+
+# Database
+data/
