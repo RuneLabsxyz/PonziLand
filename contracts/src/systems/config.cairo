@@ -4,6 +4,31 @@
 // in systems such as actions, taxes, and staking.
 #[starknet::interface]
 trait IConfigSystem<T> {
+    /// @notice Set the full config.
+    /// @param the entire config model.
+    /// Only the owner can call it.
+    fn set_full_config(
+        ref self: T,
+        grid_width: u8,
+        tax_rate: u8,
+        base_time: u16,
+        price_decrease_rate: u8,
+        time_speed: u8,
+        max_auctions: u8,
+        max_auctions_from_bid: u8,
+        decay_rate: u16,
+        floor_price: u256,
+        liquidity_safety_multiplier: u8,
+        min_auction_price: u256,
+        min_auction_price_multiplier: u8,
+        center_location: u16,
+        auction_duration: u32,
+        scaling_factor: u8,
+        linear_decay_time: u16,
+        drop_rate: u8,
+        rate_denominator: u8,
+    );
+
     /// @notice Sets the grid width, which determines the size of the land map.
     /// @param value The new grid width (number of tiles per row/column).
     /// Used throughout the game to validate land positions and compute neighbor relationships (see
@@ -156,16 +181,100 @@ mod config {
         new_value: felt252,
     }
 
-    fn dojo_init(ref self: ContractState) {
+    fn dojo_init(
+        ref self: ContractState,
+        grid_width: u8,
+        tax_rate: u8,
+        base_time: u16,
+        price_decrease_rate: u8,
+        time_speed: u8,
+        max_auctions: u8,
+        max_auctions_from_bid: u8,
+        decay_rate: u16,
+        floor_price: u256,
+        liquidity_safety_multiplier: u8,
+        min_auction_price: u256,
+        min_auction_price_multiplier: u8,
+        center_location: u16,
+        auction_duration: u32,
+        scaling_factor: u8,
+        linear_decay_time: u16,
+        drop_rate: u8,
+        rate_denominator: u8,
+    ) {
         let mut world = self.world_default();
-        //initialize default config
-        let init_config: Config = ConfigTrait::initialize_default();
+        let init_config: Config = ConfigTrait::new(
+            grid_width,
+            tax_rate,
+            base_time,
+            price_decrease_rate,
+            time_speed,
+            max_auctions,
+            max_auctions_from_bid,
+            decay_rate,
+            floor_price,
+            liquidity_safety_multiplier,
+            min_auction_price,
+            min_auction_price_multiplier,
+            center_location,
+            auction_duration,
+            scaling_factor,
+            linear_decay_time,
+            drop_rate,
+            rate_denominator,
+        );
         world.write_model(@init_config);
     }
 
     #[abi(embed_v0)]
+    // Setters
     impl ConfigSystemImpl of IConfigSystem<ContractState> {
-        // Setters
+        fn set_full_config(
+            ref self: ContractState,
+            grid_width: u8,
+            tax_rate: u8,
+            base_time: u16,
+            price_decrease_rate: u8,
+            time_speed: u8,
+            max_auctions: u8,
+            max_auctions_from_bid: u8,
+            decay_rate: u16,
+            floor_price: u256,
+            liquidity_safety_multiplier: u8,
+            min_auction_price: u256,
+            min_auction_price_multiplier: u8,
+            center_location: u16,
+            auction_duration: u32,
+            scaling_factor: u8,
+            linear_decay_time: u16,
+            drop_rate: u8,
+            rate_denominator: u8,
+        ) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let new_config: Config = ConfigTrait::new(
+                grid_width,
+                tax_rate,
+                base_time,
+                price_decrease_rate,
+                time_speed,
+                max_auctions,
+                max_auctions_from_bid,
+                decay_rate,
+                floor_price,
+                liquidity_safety_multiplier,
+                min_auction_price,
+                min_auction_price_multiplier,
+                center_location,
+                auction_duration,
+                scaling_factor,
+                linear_decay_time,
+                drop_rate,
+                rate_denominator,
+            );
+            world.write_model(@new_config);
+        }
+
         fn set_grid_width(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
