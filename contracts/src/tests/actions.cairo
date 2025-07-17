@@ -389,6 +389,7 @@ fn bid_and_verify_next_auctions(
     locations: Array<u16>,
     next_direction: u8 // 0=left, 1=up, 2=right, 3=down
 ) {
+    let grid_width = store.get_grid_width();
     // Bid on all locations
     let mut i = 0;
     loop {
@@ -408,10 +409,10 @@ fn bid_and_verify_next_auctions(
         }
         let location = *locations.at(i);
         let next_auction = match next_direction {
-            0 => store.auction(left(location).unwrap()),
-            1 => store.auction(up(location).unwrap()),
-            2 => store.auction(right(location).unwrap()),
-            3 => store.auction(down(location).unwrap()),
+            0 => store.auction(left(location, grid_width).unwrap()),
+            1 => store.auction(up(location, grid_width).unwrap()),
+            2 => store.auction(right(location, grid_width).unwrap()),
+            3 => store.auction(down(location, grid_width).unwrap()),
             _ => panic_with_felt252('Invalid direction'),
         };
         assert(next_auction.start_price > 0, 'auction not started');
@@ -828,91 +829,6 @@ fn check_invalid_liquidity_pool() {
     verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
-#[test]
-#[ignore]
-fn test_organic_auction() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _) = setup_test();
-
-    set_block_timestamp(10);
-    ekubo_testing_dispatcher
-        .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
-        );
-
-    setup_buyer_with_tokens(
-        main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 900_000_000_000_000_000_000_000,
-    );
-
-    // Initial head locations
-    let heads: Array<u16> = array![2080, 1050, 1002, 1007];
-
-    set_block_timestamp(10000);
-    // Step 1: Bid on heads and verify LEFT auctions
-    bid_and_verify_next_auctions(actions_system, store, main_currency, heads.clone(), 0);
-
-    // Get LEFT locations
-    let mut left_locations: Array<u16> = ArrayTrait::new();
-    let mut i = 0;
-    loop {
-        if i >= heads.len() {
-            break;
-        }
-        let left_loc = left(*heads.at(i)).unwrap();
-        left_locations.append(left_loc);
-        i += 1;
-    };
-    set_block_timestamp(100000);
-
-    // Step 2: Bid on LEFT locations and verify UP auctions
-    bid_and_verify_next_auctions(actions_system, store, main_currency, left_locations.clone(), 1);
-
-    // Get UP locations
-    let mut up_locations: Array<u16> = ArrayTrait::new();
-    i = 0;
-    loop {
-        if i >= left_locations.len() {
-            break;
-        }
-        let up_loc = up(*left_locations.at(i)).unwrap();
-        up_locations.append(up_loc);
-        i += 1;
-    };
-    set_block_timestamp(100000);
-
-    bid_and_verify_next_auctions(actions_system, store, main_currency, up_locations.clone(), 2);
-
-    // Get RIGHT locations
-    let mut right_locations: Array<u16> = ArrayTrait::new();
-    i = 0;
-    loop {
-        if i >= up_locations.len() {
-            break;
-        }
-        let right_loc = right(*up_locations.at(i)).unwrap();
-
-        right_locations.append(right_loc);
-        i += 1;
-    };
-
-    // Get second RIGHT locations
-    let mut right2_locations: Array<u16> = ArrayTrait::new();
-    i = 0;
-    loop {
-        if i >= right_locations.len() {
-            break;
-        }
-        let right2_loc = right(*right_locations.at(i)).unwrap();
-
-        right2_locations.append(right2_loc);
-        i += 1;
-    };
-
-    // Step 4: Bid on second RIGHT locations and verify DOWN auctions
-    bid_and_verify_next_auctions(actions_system, store, main_currency, right2_locations.clone(), 3);
-
-    let final_active_auctions = actions_system.get_active_auctions();
-    assert(final_active_auctions <= MAX_AUCTIONS, 'Too many active auctions');
-}
 
 //TODO:when we have the new expansion for auction we can test with more lands
 fn test_reimburse_stakes() {
@@ -1211,7 +1127,7 @@ fn test_circle_expansion() {
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
 
-    let lands_of_circle_1 = generate_circle(1);
+    let lands_of_circle_1 = generate_circle(1, store);
     assert!(lands_of_circle_1.len() == 8, "circle 1 should have 8 lands");
 
     set_block_number(400);
