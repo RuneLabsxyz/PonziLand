@@ -1,9 +1,9 @@
-pub const GRID_WIDTH: u16 = 64;
+pub const GRID_WIDTH: u8 = 64;
 //this % is for tests now
-pub const TAX_RATE: u16 = 2;
+pub const TAX_RATE: u8 = 2;
 pub const BASE_TIME: u16 = 3600;
-pub const PRICE_DECREASE_RATE: u16 = 2;
-pub const TIME_SPEED: u32 = 5;
+pub const PRICE_DECREASE_RATE: u8 = 2;
+pub const TIME_SPEED: u8 = 5;
 pub const MAX_AUCTIONS: u8 = 16;
 pub const MAX_AUCTIONS_FROM_BID: u8 = 3;
 pub const DECAY_RATE: u16 = 200;

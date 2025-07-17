@@ -20,12 +20,13 @@ struct SpiralState {
 
 // Helper function to get next position based on direction
 #[inline(always)]
-fn get_next_position(direction: u8, location: u16) -> Option<u16> {
+fn get_next_position(direction: u8, location: u16, store: Store) -> Option<u16> {
+    let grid_width = store.get_grid_width();
     match direction {
-        0 => left(location),
-        1 => up(location),
-        2 => right(location),
-        3 => down(location),
+        0 => left(location, grid_width),
+        1 => up(location, grid_width),
+        2 => right(location, grid_width),
+        3 => down(location, grid_width),
         _ => Option::None,
     }
 }

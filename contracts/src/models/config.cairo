@@ -13,11 +13,11 @@ use ponzi_land::consts::{
 pub struct Config {
     #[key]
     pub id: u8,
-    pub grid_width: u16,
-    pub tax_rate: u16,
+    pub grid_width: u8,
+    pub tax_rate: u8,
     pub base_time: u16,
-    pub price_decrease_rate: u16,
-    pub time_speed: u32,
+    pub price_decrease_rate: u8,
+    pub time_speed: u8,
     pub max_auctions: u8,
     pub max_auctions_from_bid: u8,
     pub decay_rate: u16,
@@ -38,11 +38,11 @@ impl ConfigImpl of ConfigTrait {
     #[inline(always)]
     fn new(
         id: u8,
-        grid_width: u16,
-        tax_rate: u16,
+        grid_width: u8,
+        tax_rate: u8,
         base_time: u16,
-        price_decrease_rate: u16,
-        time_speed: u32,
+        price_decrease_rate: u8,
+        time_speed: u8,
         max_auctions: u8,
         max_auctions_from_bid: u8,
         decay_rate: u16,

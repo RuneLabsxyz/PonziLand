@@ -12,7 +12,7 @@ fn get_land_neighbors(mut store: Store, land_location: u16) -> Span<Land> {
     let mut lands: Array<Land> = ArrayTrait::new();
     let mut land_cache = LandCacheImpl::new();
 
-    for location in get_directions(land_location) {
+    for location in get_directions(land_location, store) {
         match location {
             Option::Some(loc) => {
                 let land = land_cache.get(loc);
@@ -40,7 +40,7 @@ fn get_land_neighbors(mut store: Store, land_location: u16) -> Span<Land> {
 fn get_auction_neighbors(mut store: Store, land_location: u16) -> Array<Auction> {
     let mut auctions: Array<Auction> = ArrayTrait::new();
 
-    for direction in get_directions(land_location) {
+    for direction in get_directions(land_location, store) {
         add_auction_neighbor(store, ref auctions, direction);
     };
 
@@ -80,16 +80,17 @@ fn get_average_price(mut store: Store, land_location: u16) -> u256 {
     (total_price / neighbors.len().into()) * store.get_min_auction_price_multiplier().into()
 }
 
-fn get_directions(land_location: u16) -> Array<Option<u16>> {
+fn get_directions(land_location: u16, store: Store) -> Array<Option<u16>> {
+    let grid_width = store.get_grid_width();
     array![
-        left(land_location),
-        right(land_location),
-        up(land_location),
-        down(land_location),
-        up_left(land_location),
-        up_right(land_location),
-        down_left(land_location),
-        down_right(land_location),
+        left(land_location, grid_width),
+        right(land_location, grid_width),
+        up(land_location, grid_width),
+        down(land_location, grid_width),
+        up_left(land_location, grid_width),
+        up_right(land_location, grid_width),
+        down_left(land_location, grid_width),
+        down_right(land_location, grid_width),
     ]
 }
 
