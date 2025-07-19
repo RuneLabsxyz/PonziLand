@@ -22,6 +22,7 @@ const profiles = {
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
     PUBLIC_PONZI_API_URL: process.env.PONZI_API_URL,
+    PUBLIC_RELAY_URL: process.env.RELAY_URL,
     PUBLIC_FARO_COLLECTOR_URL: process.env.FARO_COLLECTOR_URL,
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
@@ -54,6 +55,8 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
+    PUBLIC_RELAY_URL:
+      '/dns4/api.cartridge.gg/tcp/443/x-parity-wss/%2Fx%2Fponziland-sepolia-internal%2Ftorii%2Fwss',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
