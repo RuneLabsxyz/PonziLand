@@ -280,7 +280,6 @@
             ponzi_land: {
               LandStake: {
                 location: land.location,
-                last_pay_time: Date.now(), // Set to current time or appropriate value
                 amount: stakeAmount.toBignumberish(), // Ensure this is the raw value of the stake
               },
             },

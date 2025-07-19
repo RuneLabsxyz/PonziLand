@@ -19,6 +19,8 @@ pub enum EventType {
     AddressRemoved,
     #[sqlx(rename = "ponzi_land-VerifierUpdatedEvent")]
     VerifierUpdated,
+    #[sqlx(rename = "ponzi_land-LandTransferEvent")]
+    LandTransfer,
 }
 
 impl From<&EventDataModel> for EventType {
@@ -31,6 +33,7 @@ impl From<&EventDataModel> for EventType {
             EventDataModel::AddressAuthorized(_) => EventType::AddressAuthorized,
             EventDataModel::AddressRemoved(_) => EventType::AddressRemoved,
             EventDataModel::VerifierUpdated(_) => EventType::VerifierUpdated,
+            EventDataModel::LandTransfer(_) => EventType::LandTransfer,
         }
     }
 }

@@ -157,15 +157,26 @@
     openLandInfoWidget(landWithActions);
   };
 
-  let estimatedNukeTime = $derived.by(() => {
-    if (!BuildingLand.is(land)) return -1;
-    const landWithActions = createLandWithActions(land, () =>
-      globalLandStore.getAllLands(),
-    );
-    if (tutorialState.tutorialEnabled) {
-      return tutorialLandStore.getEstimatedNukeTime(landWithActions);
-    }
-    return landWithActions.getEstimatedNukeTime();
+  let estimatedNukeTime = $state(-1);
+  $effect(() => {
+    const loadNukeTime = async () => {
+      if (!BuildingLand.is(land)) return;
+
+      const landWithActions = createLandWithActions(land, () =>
+        globalLandStore.getAllLands(),
+      );
+
+      try {
+        estimatedNukeTime = tutorialState.tutorialEnabled
+          ? tutorialLandStore.getEstimatedNukeTime(landWithActions)
+          : await landWithActions.getEstimatedNukeTime();
+      } catch (error) {
+        console.error('Error loading nuke time:', error);
+        estimatedNukeTime = -1;
+      }
+    };
+
+    loadNukeTime();
   });
 
   const onFocus = () => {
