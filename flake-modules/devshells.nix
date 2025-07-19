@@ -24,6 +24,9 @@
         cairo-nix.starkli
         cairo-nix.slot
 
+        # svelte node dependencies
+        bun
+
         # Cargo dependencies
         pkg-config
         openssl
