@@ -1,10 +1,9 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
-import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
-  plugins: [sveltekit(), wasm(), mkcert()],
+  plugins: [sveltekit(), wasm()],
   build: {
     sourcemap: false,
     minify: false,

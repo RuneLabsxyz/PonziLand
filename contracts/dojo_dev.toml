@@ -14,8 +14,6 @@ telegram = "https://t.me/dojoengine"
 
 [namespace]
 default = "ponzi_land"
-auth = "ponzi_land_auth"
-token_registry = "ponzi_land_token_registry"
 
 [env]
 rpc_url = "http://localhost:5050/"
@@ -24,6 +22,54 @@ account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5c
 private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
+
 [writers]
-"ponzi_land" = ["ponzi_land-actions"]
-"ponzi_land_auth" = ["ponzi_land-auth"]
+# We need to be a writer to add events...
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
+
+[init_call_args]
+"ponzi_land-actions" = [
+    "0x16767dacd216991716e4f032f886d3a995557bb3727b8565b48c72252e157ed", # Main token
+    "128000000000000000000",                                              # Start price (low)
+    "0",                                                                  # Start price (high)
+    "1000000000000000000",                                                # Floor price (low)
+    "0",                                                                  # Floor price (high)
+    "100",                                                                # Decay rate
+    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
+]
+
+"ponzi_land-auth" = [
+    "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9", # Owner
+    "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
+]
+
+"ponzi_land-token_registry" = [
+    "6",                                                                  # 6 tokens,
+    "0x16767dacd216991716e4f032f886d3a995557bb3727b8565b48c72252e157ed", # pltSTRK
+    "0x620998f0edfbb4ee90ecff40ac95abf15bd85259ab356fe8db988a25a347156", # pltLORDS
+    "0x4fc1f071a93fbbe2531457e9fafc6b9e994326ade19056b8216b47605dc4ca0", # pltETH
+    "0xb44afa3132a07884acde78bb599e7801ca77be08cf02151a63ca5c917bff2", # pltPAPER
+    "0x64cc5351056637238a23abc446a51cdffdbbaa7cbbe2482f19365343c653dda", # pltBROTHER
+    "0x23ead1f2b2c47341beccd5a707380516416b41fb5e2f277de0a67b3512cbeac", # pltPAL
+]
+
+"ponzi_land-config" = [
+    "64",                                                                  # Grid width
+    "2",                                                                   # Tax rate
+    "3600",                                                                  # Base time
+    "2",                                                        # Price decrease rate
+    "5",                                                                 # Time speed
+    "16",                                                               # Max auctions
+    "3",                                                      # Max auctions from bid
+    "200",                                                                 # Decay rate
+    "100000000000000000","0",                                                                # Floor price
+    "3",                                               # Liquidity safety multiplier
+    "500000000000000000000","0",                                                          # Min auction price
+    "10",                                              # Min auction price multiplier
+    "2080",                                                            # Center location
+    "436800",                                                           # Auction duration
+    "50",                                                             # Scaling factor
+    "12000",                                                          # Linear time decay
+    "90",                                                                  # Drop rate
+    "100",                                                           # Rate denominator
+]
