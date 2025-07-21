@@ -29,7 +29,7 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 [init_call_args]
 "ponzi_land-actions" = [
-    "0x16767dacd216991716e4f032f886d3a995557bb3727b8565b48c72252e157ed", # Main token
+    "0x5d7cf3ad2a209be5e62ad9500732b6e8a66b513ee02ec8c9d0130daf9e97ed3", # Main token
     "128000000000000000000",                                              # Start price (low)
     "0",                                                                  # Start price (high)
     "1000000000000000000",                                                # Floor price (low)
@@ -45,12 +45,12 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 "ponzi_land-token_registry" = [
     "6",                                                                  # 6 tokens,
-    "0x16767dacd216991716e4f032f886d3a995557bb3727b8565b48c72252e157ed", # pltSTRK
-    "0x620998f0edfbb4ee90ecff40ac95abf15bd85259ab356fe8db988a25a347156", # pltLORDS
-    "0x4fc1f071a93fbbe2531457e9fafc6b9e994326ade19056b8216b47605dc4ca0", # pltETH
-    "0xb44afa3132a07884acde78bb599e7801ca77be08cf02151a63ca5c917bff2", # pltPAPER
-    "0x64cc5351056637238a23abc446a51cdffdbbaa7cbbe2482f19365343c653dda", # pltBROTHER
-    "0x23ead1f2b2c47341beccd5a707380516416b41fb5e2f277de0a67b3512cbeac", # pltPAL
+    "0x5d7cf3ad2a209be5e62ad9500732b6e8a66b513ee02ec8c9d0130daf9e97ed3", # pltSTRK
+    "0x5b91ce73fbb56f3352a92d7d6b4db72c26e93aab330bb8eaa420646b94a9801", # pltLORDS
+    "0x36d9e413530d3105a2d10d90ba95b56da0bb55554569d5a85863ec163b4a787", # pltETH
+    "0x334a64318ff31cd30b8ae23bf653e22d52a79c6539e4fb2a3b005c1bda09437", # pltPAPER
+    "0x1268c638e8e91d59a374f86dce4221cbf227af18cb6d4a8d0b5894c253be7ca", # pltBROTHER
+    "0x3bda842ae746fa37f5555d63c9a6742b74a9725f662334a002de346a9d4e47f", # pltPAL
 ]
 
 "ponzi_land-config" = [
