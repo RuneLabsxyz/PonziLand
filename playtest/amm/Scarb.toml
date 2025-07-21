@@ -1,0 +1,38 @@
+[package]
+name = "haiko_amm"
+cairo-version = "2.5.4"
+version = "1.0.0"
+edition = '2023_11'
+
+[dependencies]
+starknet = "2.5.4"
+haiko_lib = { git = "https://github.com/haiko-xyz/library.git" }
+openzeppelin = { git = "https://github.com/OpenZeppelin/cairo-contracts.git", tag = "v0.9.0" }
+snforge_std = { git = "https://github.com/foundry-rs/starknet-foundry.git", tag = "v0.19.0" }
+
+[[target.starknet-contract]]
+sierra = true
+casm = true
+allowed-libfuncs-list.name = "experimental"
+build-external-contracts = [
+  'haiko_lib::mocks::erc20::ERC20'
+]
+
+[lib]
+
+[cairo]
+sierra-replace-ids = true
+
+[tool.snforge]
+fuzzer_runs = 30
+fuzzer_seed = 88888
+
+[[tool.snforge.fork]]
+name = "MAINNET"
+url = 'https://free-rpc.nethermind.io/mainnet-juno'
+block_id.tag = "Latest"
+
+[[tool.snforge.fork]]
+name = "SEPOLIA"
+url = 'https://free-rpc.nethermind.io/sepolia-juno'
+block_id.tag = "Latest"
