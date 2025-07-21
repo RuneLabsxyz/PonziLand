@@ -4,98 +4,134 @@
 // as well as directional movement logic (left, right, up, down) within the grid bounds.
 use ponzi_land::store::{Store, StoreTrait};
 
+const TWO_POW_8: u16 = 256; // 2^8
+const MASK_8: u16 = 0xFF; // 8 bits
+const MAX_GRID_SIZE: u8 = 254;
 
-fn position_to_index(row: u16, col: u16, grid_width: u8) -> u16 {
-    assert!(row < grid_width.into(), "out of bounds");
-    assert!(col < grid_width.into(), "out of bounds");
-
-    return row * grid_width.into() + col;
+// Encode (row, col) as a stable u16 (row in high 8 bits, col in low 8 bits)
+fn position_to_index(row: u8, col: u8) -> u16 {
+    row.into() * TWO_POW_8 + col.into()
 }
 
-fn index_to_position(index: u16, grid_width: u8) -> (u16, u16) {
-    assert!(index < grid_width.into() * grid_width.into(), "out of bounds");
-
-    let row = index / grid_width.into();
-    let col = index % grid_width.into();
-
-    return (row, col);
+// Decode u16 index into (row, col)
+fn index_to_position(index: u16) -> (u8, u8) {
+    let row: u8 = (index / TWO_POW_8).try_into().unwrap();
+    let col: u8 = (index & MASK_8).try_into().unwrap();
+    (row, col)
 }
+
+fn is_valid_position(index: u16, grid_width: u8) -> bool {
+    let (row, col) = index_to_position(index);
+    row < grid_width && col < grid_width
+}
+
 
 fn left(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
+    let (row, col) = index_to_position(index);
     if col == 0 {
-        return Option::None;
+        Option::None
     } else {
-        return Option::Some(position_to_index(row, col - 1, grid_width));
+        let new_col = col - 1;
+        if row < grid_width && new_col < grid_width {
+            Option::Some(position_to_index(row, new_col))
+        } else {
+            Option::None
+        }
     }
 }
 
 fn right(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
-    if col == grid_width.into() - 1 {
-        return Option::None;
+    let (row, col) = index_to_position(index);
+    if col + 1 >= grid_width {
+        Option::None
     } else {
-        return Option::Some(position_to_index(row, col + 1, grid_width));
+        Option::Some(position_to_index(row, col + 1))
     }
 }
 
 fn up(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
+    let (row, col) = index_to_position(index);
     if row == 0 {
-        return Option::None;
+        Option::None
     } else {
-        return Option::Some(position_to_index(row - 1, col, grid_width));
+        let new_row = row - 1;
+        if new_row < grid_width && col < grid_width {
+            Option::Some(position_to_index(new_row, col))
+        } else {
+            Option::None
+        }
     }
 }
 
 fn down(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
-    if row == grid_width.into() - 1 {
-        return Option::None;
+    let (row, col) = index_to_position(index);
+    if row + 1 >= grid_width {
+        Option::None
     } else {
-        return Option::Some(position_to_index(row + 1, col, grid_width));
+        Option::Some(position_to_index(row + 1, col))
     }
 }
 
 fn up_left(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
+    let (row, col) = index_to_position(index);
     if row == 0 || col == 0 {
         Option::None
     } else {
-        Option::Some(position_to_index(row - 1, col - 1, grid_width))
+        let new_row = row - 1;
+        let new_col = col - 1;
+        if new_row < grid_width && new_col < grid_width {
+            Option::Some(position_to_index(new_row, new_col))
+        } else {
+            Option::None
+        }
     }
 }
 
 fn up_right(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
-    if row == 0 || col == grid_width.into() - 1 {
+    let (row, col) = index_to_position(index);
+    if row == 0 || col + 1 >= grid_width {
         Option::None
     } else {
-        Option::Some(position_to_index(row - 1, col + 1, grid_width))
+        let new_row = row - 1;
+        let new_col = col + 1;
+        if new_row < grid_width && new_col < grid_width {
+            Option::Some(position_to_index(new_row, new_col))
+        } else {
+            Option::None
+        }
     }
 }
 
 fn down_left(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
-    if row == grid_width.into() - 1 || col == 0 {
+    let (row, col) = index_to_position(index);
+    if row + 1 >= grid_width || col == 0 {
         Option::None
     } else {
-        Option::Some(position_to_index(row + 1, col - 1, grid_width))
+        let new_row = row + 1;
+        let new_col = col - 1;
+        if new_row < grid_width && new_col < grid_width {
+            Option::Some(position_to_index(new_row, new_col))
+        } else {
+            Option::None
+        }
     }
 }
 
 fn down_right(index: u16, grid_width: u8) -> Option<u16> {
-    let (row, col) = index_to_position(index, grid_width);
-    if row == grid_width.into() - 1 || col == grid_width.into() - 1 {
+    let (row, col) = index_to_position(index);
+    if row + 1 >= grid_width || col + 1 >= grid_width {
         Option::None
     } else {
-        Option::Some(position_to_index(row + 1, col + 1, grid_width))
+        let new_row = row + 1;
+        let new_col = col + 1;
+        if new_row < grid_width && new_col < grid_width {
+            Option::Some(position_to_index(new_row, new_col))
+        } else {
+            Option::None
+        }
     }
 }
 
-fn is_valid_position(index: u16, grid_width: u8) -> bool {
-    index < grid_width.into() * grid_width.into()
-}
 
 fn get_all_neighbors(index: u16, grid_width: u8) -> Array<u16> {
     let mut neighbors = ArrayTrait::new();
@@ -166,22 +202,24 @@ mod coord_test {
         max_neighbors,
     };
 
-    const TEST_GRID_WIDTH: u8 = 64;
+    const TEST_GRID_WIDTH: u8 = 254;
 
     #[test]
     fn test_position_to_index() {
-        assert_eq!(position_to_index(0, 0, TEST_GRID_WIDTH), 0);
-        assert_eq!(position_to_index(0, 1, TEST_GRID_WIDTH), 1);
-        assert_eq!(position_to_index(1, 0, TEST_GRID_WIDTH), TEST_GRID_WIDTH.into());
-        assert_eq!(position_to_index(1, 1, TEST_GRID_WIDTH), TEST_GRID_WIDTH.into() + 1);
+        assert_eq!(position_to_index(0, 0), 0);
+        assert_eq!(position_to_index(0, 1), 1);
+        assert_eq!(position_to_index(1, 0), 256);
+        assert_eq!(position_to_index(1, 1), 257);
+        assert_eq!(position_to_index(253, 253), 65021); // last valid land
     }
 
     #[test]
     fn test_index_to_position() {
-        assert_eq!(index_to_position(0, TEST_GRID_WIDTH), (0, 0));
-        assert_eq!(index_to_position(1, TEST_GRID_WIDTH), (0, 1));
-        assert_eq!(index_to_position(TEST_GRID_WIDTH.into(), TEST_GRID_WIDTH), (1, 0));
-        assert_eq!(index_to_position(TEST_GRID_WIDTH.into() + 1, TEST_GRID_WIDTH), (1, 1));
+        assert_eq!(index_to_position(0), (0, 0));
+        assert_eq!(index_to_position(1), (0, 1));
+        assert_eq!(index_to_position(256), (1, 0));
+        assert_eq!(index_to_position(257), (1, 1));
+        assert_eq!(index_to_position(65021), (253, 253));
     }
 
     #[test]
@@ -189,84 +227,61 @@ mod coord_test {
         // Test `left`
         assert_eq!(left(0, TEST_GRID_WIDTH), Option::None);
         assert_eq!(left(1, TEST_GRID_WIDTH), Option::Some(0));
-        assert_eq!(left(TEST_GRID_WIDTH.into(), TEST_GRID_WIDTH), Option::None);
-        assert_eq!(
-            left(TEST_GRID_WIDTH.into() + 1, TEST_GRID_WIDTH), Option::Some(TEST_GRID_WIDTH.into()),
-        );
+        assert_eq!(left(256, TEST_GRID_WIDTH), Option::None);
+        assert_eq!(left(257, TEST_GRID_WIDTH), Option::Some(256));
 
         // Test `right`
         assert_eq!(right(0, TEST_GRID_WIDTH), Option::Some(1));
         assert_eq!(right(1, TEST_GRID_WIDTH), Option::Some(2));
-        assert_eq!(right(TEST_GRID_WIDTH.into() - 1, TEST_GRID_WIDTH), Option::None);
-        assert_eq!(
-            right(TEST_GRID_WIDTH.into(), TEST_GRID_WIDTH),
-            Option::Some(TEST_GRID_WIDTH.into() + 1),
-        );
+        assert_eq!(right(256, TEST_GRID_WIDTH), Option::Some(257));
+        assert_eq!(right(257, TEST_GRID_WIDTH), Option::Some(258));
 
         // Test `up`
         assert_eq!(up(0, TEST_GRID_WIDTH), Option::None);
         assert_eq!(up(1, TEST_GRID_WIDTH), Option::None);
-        assert_eq!(up(TEST_GRID_WIDTH.into(), TEST_GRID_WIDTH), Option::Some(0));
-        assert_eq!(up(TEST_GRID_WIDTH.into() + 1, TEST_GRID_WIDTH), Option::Some(1));
+        assert_eq!(up(256, TEST_GRID_WIDTH), Option::Some(0));
+        assert_eq!(up(257, TEST_GRID_WIDTH), Option::Some(1));
 
         // Test `down`
-        assert_eq!(down(0, TEST_GRID_WIDTH), Option::Some(TEST_GRID_WIDTH.into()));
-        assert_eq!(down(1, TEST_GRID_WIDTH), Option::Some(TEST_GRID_WIDTH.into() + 1));
-        assert_eq!(
-            down(TEST_GRID_WIDTH.into(), TEST_GRID_WIDTH), Option::Some(2 * TEST_GRID_WIDTH.into()),
-        );
-        assert_eq!(
-            down(TEST_GRID_WIDTH.into() + 1, TEST_GRID_WIDTH),
-            Option::Some(2 * TEST_GRID_WIDTH.into() + 1),
-        );
-        assert_eq!(
-            down((TEST_GRID_WIDTH.into() - 1) * TEST_GRID_WIDTH.into(), TEST_GRID_WIDTH),
-            Option::None,
-        );
+        assert_eq!(down(0, TEST_GRID_WIDTH), Option::Some(256));
+        assert_eq!(down(1, TEST_GRID_WIDTH), Option::Some(257));
+        assert_eq!(down(256, TEST_GRID_WIDTH), Option::Some(512));
+        assert_eq!(down(257, TEST_GRID_WIDTH), Option::Some(513));
+        assert_eq!(down(64781, TEST_GRID_WIDTH), Option::None);
     }
 
     #[test]
     fn test_is_valid_position() {
-        assert(is_valid_position(10, TEST_GRID_WIDTH), 'has to be true');
-        assert(is_valid_position(4095, TEST_GRID_WIDTH), 'has to be true');
-        assert(!is_valid_position(4096, TEST_GRID_WIDTH), 'has to be false');
-        assert(!is_valid_position(10000, TEST_GRID_WIDTH), 'has to be false');
+        assert(is_valid_position(position_to_index(0, 10), TEST_GRID_WIDTH), 'has to be true');
+        assert(is_valid_position(position_to_index(200, 200), TEST_GRID_WIDTH), 'has to be true');
+        assert(!is_valid_position(position_to_index(255, 255), TEST_GRID_WIDTH), 'has to be false');
+        assert(!is_valid_position(position_to_index(254, 254), TEST_GRID_WIDTH), 'has to be false');
     }
 
     #[test]
     fn test_max_neighbors() {
         // Corner positions
-        assert_eq!(max_neighbors(position_to_index(0, 0, TEST_GRID_WIDTH), TEST_GRID_WIDTH), 3);
+        assert_eq!(max_neighbors(position_to_index(0, 0), TEST_GRID_WIDTH), 3);
         assert_eq!(
-            max_neighbors(
-                position_to_index(0, (TEST_GRID_WIDTH - 1).into(), TEST_GRID_WIDTH),
-                TEST_GRID_WIDTH,
-            ),
-            3,
+            max_neighbors(position_to_index(0, (TEST_GRID_WIDTH - 1).into()), TEST_GRID_WIDTH), 3,
+        );
+        assert_eq!(
+            max_neighbors(position_to_index((TEST_GRID_WIDTH - 1).into(), 0), TEST_GRID_WIDTH), 3,
         );
         assert_eq!(
             max_neighbors(
-                position_to_index((TEST_GRID_WIDTH - 1).into(), 0, TEST_GRID_WIDTH),
-                TEST_GRID_WIDTH,
-            ),
-            3,
-        );
-        assert_eq!(
-            max_neighbors(
-                position_to_index(
-                    (TEST_GRID_WIDTH - 1).into(), (TEST_GRID_WIDTH - 1).into(), TEST_GRID_WIDTH,
-                ),
+                position_to_index((TEST_GRID_WIDTH - 1).into(), (TEST_GRID_WIDTH - 1).into()),
                 TEST_GRID_WIDTH,
             ),
             3,
         );
 
         // Edge positions
-        assert_eq!(max_neighbors(position_to_index(0, 1, TEST_GRID_WIDTH), TEST_GRID_WIDTH), 5);
-        assert_eq!(max_neighbors(position_to_index(1, 0, TEST_GRID_WIDTH), TEST_GRID_WIDTH), 5);
+        assert_eq!(max_neighbors(position_to_index(0, 1), TEST_GRID_WIDTH), 5);
+        assert_eq!(max_neighbors(position_to_index(1, 0), TEST_GRID_WIDTH), 5);
 
         // Interior position
-        assert_eq!(max_neighbors(position_to_index(1, 1, TEST_GRID_WIDTH), TEST_GRID_WIDTH), 8);
+        assert_eq!(max_neighbors(position_to_index(1, 1), TEST_GRID_WIDTH), 8);
     }
 }
 

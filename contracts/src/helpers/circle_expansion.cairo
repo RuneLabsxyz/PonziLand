@@ -1,4 +1,4 @@
-use ponzi_land::helpers::coord::{position_to_index};
+use ponzi_land::helpers::coord::{position_to_index, index_to_position};
 use starknet::{get_caller_address, get_block_number};
 use keccak::keccak_u256s_le_inputs;
 use core::integer::u256_from_felt252;
@@ -21,7 +21,8 @@ fn is_section_completed(lands_completed: u16, circle: u16) -> bool {
 
 fn get_circle_land_position(circle: u16, index: u16, store: Store) -> u16 {
     let grid_width: u8 = store.get_grid_width();
-    let center: u16 = grid_width.into() / 2;
+    let center_location: u16 = store.get_center_location();
+    let (center_row, center_col) = index_to_position(center_location);
     let lands_per_section = lands_per_section(circle);
     let total_lands = lands_in_circle(circle);
     assert(index < total_lands, 'Invalid index for circle');
@@ -32,27 +33,27 @@ fn get_circle_land_position(circle: u16, index: u16, store: Store) -> u16 {
     let mut col: u16 = 0;
     match section {
         0 => { // Top
-            row = center - circle;
-            col = center - circle + offset;
+            row = center_row.into() - circle;
+            col = center_col.into() - circle + offset;
         },
         1 => { // Right
-            row = center - circle + offset;
-            col = center + circle;
+            row = center_row.into() - circle + offset;
+            col = center_col.into() + circle;
         },
         2 => { // Bottom
-            row = center + circle;
-            col = center + circle - offset;
+            row = center_row.into() + circle;
+            col = center_col.into() + circle - offset;
         },
         3 => { // Left
-            row = center + circle - offset;
-            col = center - circle;
+            row = center_row.into() + circle - offset;
+            col = center_col.into() - circle;
         },
         _ => panic!("Invalid section"),
     }
 
     assert(row < grid_width.into(), 'Row out of bounds');
     assert(col < grid_width.into(), 'Col out of bounds');
-    return position_to_index(row, col, store.get_grid_width());
+    return position_to_index(row.try_into().unwrap(), col.try_into().unwrap());
 }
 
 fn generate_circle(circle: u16, store: Store) -> Array<u16> {

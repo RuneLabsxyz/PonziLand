@@ -29,7 +29,7 @@ use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegist
 use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{
-    BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE,
+    BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE, CENTER_LOCATION,
 };
 use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
 use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
@@ -440,7 +440,9 @@ fn test_buy_action() {
     set_block_timestamp(100);
 
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 500, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 500, main_currency,
+    );
 
     let next_auction_location = capture_location_of_new_auction(
         store.world.dispatcher.contract_address,
@@ -461,14 +463,16 @@ fn test_buy_action() {
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 4000);
 
     // Perform buy action
-    actions_system.buy(2080, main_currency.contract_address, 100, 120);
+    actions_system.buy(CENTER_LOCATION, main_currency.contract_address, 100, 120);
 
     //verify that we do claim for the neighbors of the land sold
     let balance_neighbor_1_of_main_currency = main_currency.balanceOf(NEIGHBOR_1());
     assert(balance_neighbor_1_of_main_currency > 0, 'has to receive main currency');
 
     // Verify results
-    verify_land(store, 2080, NEW_BUYER(), 100, 120, 2000, main_currency.contract_address);
+    verify_land(
+        store, CENTER_LOCATION, NEW_BUYER(), 100, 120, 2000, main_currency.contract_address,
+    );
 }
 
 #[test]
@@ -490,19 +494,21 @@ fn test_bid_and_buy_action() {
     set_block_number(254);
 
     // Create initial land with auction and bid
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     // Validate bid/buy updates
-    verify_land(store, 2080, RECIPIENT(), 100, 50, 100, main_currency.contract_address);
+    verify_land(store, CENTER_LOCATION, RECIPIENT(), 100, 50, 100, main_currency.contract_address);
 
     // Setup buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     set_block_timestamp(160);
-    actions_system.buy(2080, main_currency.contract_address, 300, 500);
+    actions_system.buy(CENTER_LOCATION, main_currency.contract_address, 300, 500);
 
     // Validate buy action updates
-    verify_land(store, 2080, NEW_BUYER(), 300, 500, 160, main_currency.contract_address);
+    verify_land(store, CENTER_LOCATION, NEW_BUYER(), 300, 500, 160, main_currency.contract_address);
 }
 
 //TODO:when we have the new expansion for auction we can test with more lands
@@ -527,7 +533,9 @@ fn test_claim_and_add_taxes() {
 
     //first we clear all the events
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 500, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 500, main_currency,
+    );
     //and now we can capture NewAuctionEvent
     let next_auction_location = capture_location_of_new_auction(
         store.world.dispatcher.contract_address,
@@ -547,10 +555,10 @@ fn test_claim_and_add_taxes() {
     // Simulate time difference to generate taxes
     set_block_timestamp(5000);
     set_contract_address(RECIPIENT());
-    actions_system.claim(2080);
+    actions_system.claim(CENTER_LOCATION);
 
     // Get claimer land and verify taxes
-    let claimer_land = store.land(2080);
+    let claimer_land = store.land(CENTER_LOCATION);
     assert(erc20_neighbor_1.balanceOf(claimer_land.owner) > 0, 'fail in pay taxes');
 
     // Verify the neighbors of the claimer land
@@ -589,7 +597,7 @@ fn test_nuke_action() {
     set_block_number(324);
 
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 500, main_currency);
+    initialize_land(actions_system, main_currency, RECIPIENT(), 7967, 100, 500, main_currency);
 
     let neighbor_land_location = capture_location_of_new_auction(
         store.world.dispatcher.contract_address,
@@ -612,10 +620,10 @@ fn test_nuke_action() {
     // Large time jump to accumulate taxes
     set_block_timestamp(1100);
     set_contract_address(RECIPIENT());
-    actions_system.claim(2080);
+    actions_system.claim(7967);
 
     let neighbor_land_after_claim = store.land_stake(neighbor_land_location.unwrap());
-
+    println!("neighbor location: {}", neighbor_land_location.unwrap());
     assert(
         neighbor_land_after_claim.amount < neighbor_land_before_claim.amount,
         'must have less stake',
@@ -626,7 +634,7 @@ fn test_nuke_action() {
 
     // Claim more taxes to nuke lands
     set_block_timestamp(200000);
-    actions_system.claim(2080);
+    actions_system.claim(7967);
 
     //verify that the nuked land did a last claim before nuke
     let balance_of_neighbor_land = main_currency.balanceOf(NEIGHBOR_1());
@@ -652,24 +660,28 @@ fn test_increase_price_and_stake() {
     //create land
     set_block_timestamp(100);
     set_block_number(234);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 1000, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 1000, main_currency,
+    );
 
     //verify the land
-    verify_land(store, 2080, RECIPIENT(), 1000, 1000, 100, main_currency.contract_address);
+    verify_land(
+        store, CENTER_LOCATION, RECIPIENT(), 1000, 1000, 100, main_currency.contract_address,
+    );
 
     //increase the price
-    actions_system.increase_price(2080, 2300);
-    let land = store.land(2080);
+    actions_system.increase_price(CENTER_LOCATION, 2300);
+    let land = store.land(CENTER_LOCATION);
     assert(land.sell_price == 2300, 'has increase to 2300');
 
     //increase the stake
     main_currency.approve(actions_system.contract_address, 2000);
-    let land_stake = store.land_stake(2080);
+    let land_stake = store.land_stake(CENTER_LOCATION);
     assert(land_stake.amount == 1000, 'stake has to be 1000');
 
-    actions_system.increase_stake(2080, 2000);
+    actions_system.increase_stake(CENTER_LOCATION, 2000);
 
-    let land_stake = store.land_stake(2080);
+    let land_stake = store.land_stake(CENTER_LOCATION);
     assert(land_stake.amount == 3000, 'stake has to be 3000');
 }
 
@@ -756,7 +768,9 @@ fn test_level_up() {
 
     //first we clear all the events
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     //and now we can capture NewAuctionEvent
     let next_location_1 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
@@ -772,11 +786,13 @@ fn test_level_up() {
     set_block_timestamp((TWO_DAYS_IN_SECONDS.into() / TIME_SPEED.into()) + 100);
 
     set_contract_address(RECIPIENT());
-    actions_system.level_up(2080);
+    actions_system.level_up(CENTER_LOCATION);
 
-    let land_2080 = store.land(2080);
+    let land_CENTER_LOCATION = store.land(CENTER_LOCATION);
     let land_1050 = store.land(1050);
-    assert_eq!(land_2080.level, Level::First, "Land 2080 should be Level::First");
+    assert_eq!(
+        land_CENTER_LOCATION.level, Level::First, "Land CENTER_LOCATION should be Level::First",
+    );
     assert_eq!(land_1050.level, Level::Zero, "Land 1050 should be Level::None");
 }
 
@@ -792,16 +808,18 @@ fn check_success_liquidity_pool() {
         );
 
     // Create initial land
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     // Setup new buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     // Perform buy action
-    actions_system.buy(2080, main_currency.contract_address, 100, 120);
+    actions_system.buy(CENTER_LOCATION, main_currency.contract_address, 100, 120);
 
     // Verify results
-    verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
+    verify_land(store, CENTER_LOCATION, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
 #[test]
@@ -817,16 +835,18 @@ fn check_invalid_liquidity_pool() {
         );
 
     // Create initial land
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     // Setup new buyer with tokens and approvals
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
 
     // Perform buy action
-    actions_system.buy(2080, main_currency.contract_address, 100, 120);
+    actions_system.buy(CENTER_LOCATION, main_currency.contract_address, 100, 120);
 
     // Verify results
-    verify_land(store, 2080, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
+    verify_land(store, CENTER_LOCATION, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
 
@@ -842,9 +862,11 @@ fn test_reimburse_stakes() {
 
     set_block_timestamp(200);
 
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 500, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 500, main_currency,
+    );
 
-    let land_locations = array![2080];
+    let land_locations = array![CENTER_LOCATION];
     let tokens = array![main_currency];
 
     validate_staking_state(
@@ -881,7 +903,9 @@ fn test_claim_all() {
 
     //first we clear all the events
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     //and now we can capture NewAuctionEvent
     let next_location_1 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
@@ -974,7 +998,7 @@ fn test_claim_all() {
     let neighbor_land_before_claim = store.land_stake(next_location_1.unwrap());
 
     let land_locations = array![
-        2080,
+        CENTER_LOCATION,
         next_location_2.unwrap(),
         next_location_3.unwrap(),
         next_location_4.unwrap(),
@@ -1017,7 +1041,9 @@ fn test_time_to_nuke() {
     //first we clear all the events
     clear_events(store.world.dispatcher.contract_address);
     set_block_timestamp(1000);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 500, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 500, main_currency,
+    );
     //and now we can capture NewAuctionEvent
     let next_auction_location = capture_location_of_new_auction(
         store.world.dispatcher.contract_address,
@@ -1083,19 +1109,19 @@ fn test_time_to_nuke() {
     );
 
     let block_timestamp = get_block_timestamp();
-    let land_stake = store.land_stake(2080);
-    let time_to_nuke = actions_system.get_time_to_nuke(2080);
+    let land_stake = store.land_stake(CENTER_LOCATION);
+    let time_to_nuke = actions_system.get_time_to_nuke(CENTER_LOCATION);
 
     set_block_timestamp(time_to_nuke - block_timestamp);
-    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(CENTER_LOCATION);
     assert!(unclaimed_taxes < land_stake.amount, "stake should be > unclaimed taxes");
     assert!(time_to_nuke != get_block_timestamp(), "should be not nukable yet");
     set_block_timestamp(time_to_nuke);
 
-    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(2080);
+    let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(CENTER_LOCATION);
     assert!(unclaimed_taxes >= land_stake.amount, "stake should be <= unclaimed taxes");
 
-    let new_time_to_nuke = actions_system.get_time_to_nuke(2080);
+    let new_time_to_nuke = actions_system.get_time_to_nuke(CENTER_LOCATION);
     assert!(new_time_to_nuke == get_block_timestamp(), "should be nukable now");
 
     set_contract_address(NEIGHBOR_1());
@@ -1104,7 +1130,7 @@ fn test_time_to_nuke() {
     //verify that the land was nuked
     verify_land(
         store,
-        2080,
+        CENTER_LOCATION,
         ContractAddressZeroable::zero(),
         5000000000000000000000,
         0,
@@ -1136,7 +1162,9 @@ fn test_circle_expansion() {
     //first we clear all the events
     clear_events(store.world.dispatcher.contract_address);
     //CENTER LOCATION
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 10, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 10, 50, main_currency,
+    );
     //and now we can capture NewAuctionEvent
     initialize_land(
         actions_system, main_currency, RECIPIENT(), *lands_of_circle_1[0], 10, 50, main_currency,
@@ -1150,7 +1178,7 @@ fn test_circle_expansion() {
         actions_system, main_currency, RECIPIENT(), *lands_of_circle_1[3], 10, 50, main_currency,
     );
 
-    let land_1 = store.land(2080);
+    let land_1 = store.land(CENTER_LOCATION);
     let land_2 = store.land(*lands_of_circle_1[0]);
     let land_3 = store.land(*lands_of_circle_1[1]);
     let land_4 = store.land(*lands_of_circle_1[3]);
@@ -1185,7 +1213,9 @@ fn test_new_claim() {
 
     //first we clear all the events
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, RECIPIENT(), 2080, 1000, 5000, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 5000, main_currency,
+    );
     //and now we can capture NewAuctionEvent
     let next_auction_location = capture_location_of_new_auction(
         store.world.dispatcher.contract_address,
@@ -1229,7 +1259,7 @@ fn test_new_claim() {
 
     set_block_timestamp(time_to_nuke_neighbor_2);
     set_contract_address(RECIPIENT());
-    actions_system.claim(2080);
+    actions_system.claim(CENTER_LOCATION);
 
     let balance_of_recipient_erc20_1 = erc20_neighbor_1.balanceOf(RECIPIENT());
     let balance_of_recipient_erc20_2 = erc20_neighbor_2.balanceOf(RECIPIENT());

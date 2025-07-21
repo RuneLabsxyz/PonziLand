@@ -16,7 +16,7 @@ pub const LIQUIDITY_SAFETY_MULTIPLIER: u8 = 3;
 pub const MIN_AUCTION_PRICE: u256 = 500 * DECIMALS_FACTOR; // 10
 pub const MIN_AUCTION_PRICE_MULTIPLIER: u8 = 10; // 10x the sale price at the start
 pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
-pub const CENTER_LOCATION: u16 = 2080;
+pub const CENTER_LOCATION: u16 = 7967;
 
 const AUCTION_DURATION: u32 = 7 * 24 * 60 * 60; // 1 week in seconds
 
