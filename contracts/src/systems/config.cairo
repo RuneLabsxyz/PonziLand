@@ -1,3 +1,5 @@
+use ponzi_land::models::config::Config;
+
 // @notice Configuration system interface for PonziLand.
 // Allows the contract owner to update global economic and gameplay parameters.
 // Each setter updates a specific field in the Config model, which is then used by core game logic
@@ -152,6 +154,7 @@ trait IConfigSystem<T> {
     fn get_linear_decay_time(self: @T) -> u16;
     fn get_drop_rate(self: @T) -> u8;
     fn get_rate_denominator(self: @T) -> u8;
+    fn get_config(self: @T) -> Config;
 }
 
 #[dojo::contract]
@@ -549,6 +552,11 @@ mod config {
         fn get_rate_denominator(self: @ContractState) -> u8 {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("rate_denominator"))
+        }
+
+        fn get_config(self: @ContractState) -> Config {
+            let world = self.world_default();
+            world.read_model(Model::<Config>::ptr_from_keys(1))
         }
     }
     #[generate_trait]
