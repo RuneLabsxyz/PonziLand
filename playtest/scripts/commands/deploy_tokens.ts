@@ -59,7 +59,7 @@ export async function deployToken(config: Configuration, args: string[]) {
   // Compile the project (if no target directory)
   if ((await fs.exists(`${config.basePath}/target/dev`)) == false) {
     console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
-    const result = await $`scarb build`;
+    const result = await $`cd old-tokens && scarb build`;
     console.log(
       `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
     );
