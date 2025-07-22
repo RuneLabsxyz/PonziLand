@@ -4,7 +4,7 @@ import { COLORS, connect, Token, TokenCreation } from "../utils";
 import { byteArray, cairo, Calldata, CallData, Contract, type shortString } from "starknet";
 import fs from "fs/promises";
 
-export async function deployToken(config: Configuration, args: string[]) {
+export async function  deployToken(config: Configuration, args: string[]) {
   if (args.length != 2) {
     console.log("Required arguments: deploy [symbol] [name]");
     return;
@@ -20,6 +20,19 @@ export async function deployToken(config: Configuration, args: string[]) {
   } catch (error) {
     // File doesn't exist, will be created later
     existingTokens = { tokens: [] };
+  }
+
+  // Compile the project (if no target directory)
+  if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
+    console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
+    const result = await $`cd old-tokens && scarb build && cd ..`;
+    console.log(
+      `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
+    );
+  } else {
+    console.log(
+      `${COLORS.gray} Skipping build because target directory already exists...`,
+    );
   }
 
   // Check if token with this symbol already exists
@@ -54,19 +67,6 @@ export async function deployToken(config: Configuration, args: string[]) {
       console.log(`${COLORS.red}❌ Error verifying existing token: ${error}${COLORS.reset}`);
       console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
     }
-  }
-
-  // Compile the project (if no target directory)
-  if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
-    console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
-    const result = await $`cd old-tokens && scarb build && cd ..`;
-    console.log(
-      `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
-    );
-  } else {
-    console.log(
-      `${COLORS.gray} Skipping build because target directory already exists...`,
-    );
   }
 
   // As always, setup the ledger (we are going to need it to declare the class)
