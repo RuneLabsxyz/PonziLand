@@ -30,15 +30,5 @@
       "name": "Ponziland Test PAL",
       "address": "0x648a149efc5bd840360b109377cb9c04bbca78387055567c8f278e80dff0692"
     },
-    {
-      "symbol": "pltSTRK",
-      "name": "Ponziland Test STRK",
-      "address": "0x2c79babd25ea6eb154d8dcf2aa359f051324e585a46876936fd2622479dcb11"
-    },
-    {
-      "symbol": "pltSTRK",
-      "name": "Ponziland Test STRK",
-      "address": "0x2b8a7ef4afaab6b1e6a8e25041b85a44718132932a0ec32af5b1e19bbf0fa8a"
-    }
   ]
 }
