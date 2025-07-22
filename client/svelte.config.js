@@ -126,9 +126,10 @@ for (const val of Object.entries(envProfile)) {
 console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath = profile == 'katana' ? `/etc/config/manifest_dev.json` : `../contracts/manifest_${profile}.json`;
-const dataPath = profile == 'katana' ? `/etc/config/katana.json` : `data/${profile}.json`;
+const dataPath = profile == 'katana' ? `/etc/config/katana.json` : `${profile}.json`;
 
 console.log('Manifest: ', manifestPath);
+console.log('Data: ', dataPath);
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {

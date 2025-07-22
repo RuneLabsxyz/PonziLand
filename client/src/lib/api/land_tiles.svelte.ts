@@ -1,4 +1,5 @@
-import { DEFAULT_TIMEOUT, GRID_SIZE } from '$lib/const';
+import { DEFAULT_TIMEOUT } from '$lib/const';
+import { config } from '$lib/stores/config.store.svelte';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { gameSounds } from '$lib/stores/sfx.svelte';
@@ -73,6 +74,7 @@ export class LandTileStore {
 
   constructor() {
     // Put empty lands everywhere.
+    const GRID_SIZE = config.GRID_SIZE;
     this.store = Array(GRID_SIZE)
       .fill(null)
       .map((_, x) =>
@@ -122,6 +124,7 @@ export class LandTileStore {
     const numUpdates =
       Math.floor(Math.random() * RANDOM_UPDATE_RANGE) + MIN_RANDOM_UPDATES;
 
+    const GRID_SIZE = config.GRID_SIZE;
     this.currentLands.update((lands) => {
       for (let i = 0; i < numUpdates; i++) {
         // Pick a random land
@@ -181,6 +184,7 @@ export class LandTileStore {
   }
 
   public fakeSetup() {
+    const GRID_SIZE = config.GRID_SIZE;
     this.currentLands.update((lands) => {
       // Create level 3 building lands for the entire grid
       for (let x = 0; x < GRID_SIZE; x++) {
@@ -245,6 +249,7 @@ export class LandTileStore {
   }
 
   public getLand(x: number, y: number): Readable<BaseLand> | undefined {
+    const GRID_SIZE = config.GRID_SIZE;
     if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return undefined;
     return derived([this.store[x][y]], ([land]) => land.value);
   }
@@ -437,6 +442,7 @@ export class LandTileStore {
   }
 
   public updateLandDirectly(x: number, y: number, land: BaseLand): void {
+    const GRID_SIZE = config.GRID_SIZE;
     if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
 
     this.store[x][y].set({ value: land });
@@ -574,6 +580,7 @@ export class LandTileStore {
         for (let i = 0; i < lands.length; i++) {
           const land = lands[i];
           if (predicate(land)) {
+            const GRID_SIZE = config.GRID_SIZE;
             const x = i % GRID_SIZE;
             const y = Math.floor(i / GRID_SIZE);
 

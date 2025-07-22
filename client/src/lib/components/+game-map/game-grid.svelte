@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { GRID_SIZE } from '$lib/const';
-
+  import { config } from '$lib/stores/config.store.svelte';
   import GameTile from '$lib/components/+game-map/game-tile.svelte';
   import { TILE_SIZE } from '$lib/const';
   import {
@@ -11,6 +10,7 @@
   import { landStore } from '$lib/stores/store.svelte';
   import { onMount } from 'svelte';
 
+  const GRID_SIZE = config.GRID_SIZE;
   // Throttle mechanism
   let lastWheelTime = 0;
   const THROTTLE_DELAY = 10; // approximately 60fps
