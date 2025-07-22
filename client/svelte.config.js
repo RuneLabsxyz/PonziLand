@@ -126,7 +126,7 @@ for (const val of Object.entries(envProfile)) {
 console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath = `../contracts/manifest_${profile}.json`;
-const dataPath = `data/${profile}.json`;
+const dataPath = profile == 'katana' ? `/etc/config/katana.json` : `data/${profile}.json`;
 
 console.log('Manifest: ', manifestPath);
 
