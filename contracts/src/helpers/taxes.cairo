@@ -18,7 +18,7 @@ pub fn get_taxes_per_neighbor(land: @Land, elapsed_time: u64, store: Store) -> u
 
 
 pub fn get_tax_rate_per_neighbor(land: @Land, store: Store) -> u256 {
-    let max_n = max_neighbors(*land.location, store.get_grid_width());
+    let max_n = max_neighbors(*land.location);
     if max_n == 0 {
         return 0;
     }

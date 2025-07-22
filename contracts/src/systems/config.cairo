@@ -108,6 +108,11 @@ trait IConfigSystem<T> {
     /// actual_percentage = drop_rate / rate_denominator
     fn set_rate_denominator(ref self: T, value: u8);
 
+    /// @notice Sets the maximum number of circles that can be created.
+    /// @param value The new maximum number of circles.
+    /// Used to limit the number of lands that can be created in the game.
+    fn set_max_circles(ref self: T, value: u16);
+
     // Getters
     fn get_grid_width(self: @T) -> u16;
     fn get_tax_rate(self: @T) -> u16;
@@ -127,6 +132,7 @@ trait IConfigSystem<T> {
     fn get_linear_decay_time(self: @T) -> u16;
     fn get_drop_rate(self: @T) -> u8;
     fn get_rate_denominator(self: @T) -> u8;
+    fn get_max_circles(self: @T) -> u16;
 }
 
 #[dojo::contract]
@@ -345,6 +351,13 @@ mod config {
             world.emit_event(@ConfigUpdated { field: 'rate_denominator', new_value: value.into() });
         }
 
+        fn set_max_circles(ref self: ContractState, value: u16) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world.write_member(Model::<Config>::ptr_from_keys(1), selector!("max_circles"), value);
+            world.emit_event(@ConfigUpdated { field: 'max_circles', new_value: value.into() });
+        }
+
         // Getters implementation
         fn get_grid_width(self: @ContractState) -> u16 {
             let world = self.world_default();
@@ -440,6 +453,11 @@ mod config {
         fn get_rate_denominator(self: @ContractState) -> u8 {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("rate_denominator"))
+        }
+
+        fn get_max_circles(self: @ContractState) -> u16 {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("max_circles"))
         }
     }
     #[generate_trait]

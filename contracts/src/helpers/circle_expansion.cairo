@@ -3,6 +3,7 @@ use starknet::{get_caller_address, get_block_number};
 use keccak::keccak_u256s_le_inputs;
 use core::integer::u256_from_felt252;
 use ponzi_land::store::{Store, StoreTrait};
+use ponzi_land::consts::{MAX_GRID_SIZE, CENTER_LOCATION};
 
 
 fn lands_in_circle(circle_number: u16) -> u16 {
@@ -19,9 +20,9 @@ fn is_section_completed(lands_completed: u16, circle: u16) -> bool {
 }
 
 
-fn get_circle_land_position(circle: u16, index: u16, store: Store) -> u16 {
-    let grid_width: u8 = store.get_grid_width();
-    let center_location: u16 = store.get_center_location();
+fn get_circle_land_position(circle: u16, index: u16) -> u16 {
+    let grid_width: u8 = MAX_GRID_SIZE;
+    let center_location: u16 = CENTER_LOCATION;
     let (center_row, center_col) = index_to_position(center_location);
     let lands_per_section = lands_per_section(circle);
     let total_lands = lands_in_circle(circle);
@@ -56,7 +57,7 @@ fn get_circle_land_position(circle: u16, index: u16, store: Store) -> u16 {
     return position_to_index(row.try_into().unwrap(), col.try_into().unwrap());
 }
 
-fn generate_circle(circle: u16, store: Store) -> Array<u16> {
+fn generate_circle(circle: u16) -> Array<u16> {
     let mut lands: Array<u16> = ArrayTrait::new();
     let lands_per_section = lands_per_section(circle);
 
@@ -65,7 +66,7 @@ fn generate_circle(circle: u16, store: Store) -> Array<u16> {
         let mut i = 0;
         while i < lands_per_section {
             let index = section * lands_per_section + i;
-            let land_index = get_circle_land_position(circle, index, store);
+            let land_index = get_circle_land_position(circle, index);
             lands.append(land_index);
             i += 1;
         };

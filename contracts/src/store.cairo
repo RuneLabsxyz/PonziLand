@@ -158,4 +158,9 @@ impl StoreImpl of StoreTrait {
     fn get_rate_denominator(self: Store) -> u8 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("rate_denominator"))
     }
+
+    #[inline(always)]
+    fn get_max_circles(self: Store) -> u16 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("max_circles"))
+    }
 }
