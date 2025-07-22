@@ -20,6 +20,7 @@ struct SpiralState {
 
 
 // Helper function to get next position based on direction
+#[inline(always)]
 fn get_next_position(direction: u8, location: u16) -> Option<u16> {
     match direction {
         0 => left(location),

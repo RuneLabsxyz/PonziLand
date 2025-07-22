@@ -1,6 +1,6 @@
 import type { Land, LandStake } from '$lib/models.gen';
 import { locationEquals, toLocation } from './location';
-import { BaseLand } from '.';
+import { BaseLand, type NeighborsInfo } from '.';
 import { fromDojoLevel, type Level } from '$lib/utils/level';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Token } from '$lib/interfaces';
@@ -24,7 +24,8 @@ export class BuildingLand extends BaseLand {
 
     // Copy over stake data
     newLand._stakeAmount = land._stakeAmount;
-    newLand._lastPayTime = land._lastPayTime;
+    newLand._neighborsInfo = land._neighborsInfo;
+    newLand._neighborsInfoPacked = land._neighborsInfoPacked;
 
     return newLand;
   }
@@ -69,8 +70,6 @@ export class BuildingLand extends BaseLand {
       landStake.amount,
       this._token,
     );
-
-    this._lastPayTime = new Date(Number(landStake.last_pay_time));
   }
 
   static is(land: BaseLand): land is BuildingLand {
@@ -102,8 +101,12 @@ export class BuildingLand extends BaseLand {
     return this._stakeAmount;
   }
 
-  public get lastPayTime(): Date {
-    return this._lastPayTime;
+  public get neighborsInfo(): NeighborsInfo {
+    return this._neighborsInfo;
+  }
+
+  public get neighborsInfoPacked(): BigNumberish {
+    return this._neighborsInfoPacked;
   }
 
   public get block_date_bought(): BigNumberish {

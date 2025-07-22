@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            INSERT INTO land_stake (\n                id, at, location, last_pay_time, amount\n            )\n            VALUES ($1, $2, $3, $4, $5)\n            RETURNING id\n            ",
+  "query": "\n            INSERT INTO land_stake (\n                id, at, location, earliest_claim_neighbor_time, earliest_claim_neighbor_location, num_active_neighbors, amount\n            )\n            VALUES ($1, $2, $3, $4, $5,$6,$7)\n            RETURNING id\n            ",
   "describe": {
     "columns": [
       {
@@ -15,6 +15,8 @@
         "Timestamp",
         "Int4",
         "Timestamp",
+        "Int4",
+        "Int4",
         {
           "Custom": {
             "name": "uint_256",
@@ -29,5 +31,5 @@
       false
     ]
   },
-  "hash": "8d429527c98e7bf1ba58790278c1e2a0bca980f09c414c6d9af9d71fbcef262e"
+  "hash": "bfda722bb840b83e6de1b2164f105effa7a3d46f277ed6556e07b8b0a33a2027"
 }

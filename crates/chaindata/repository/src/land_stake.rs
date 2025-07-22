@@ -23,15 +23,17 @@ impl Repository {
         Ok(query!(
             r#"
             INSERT INTO land_stake (
-                id, at, location, last_pay_time, amount
+                id, at, location, earliest_claim_neighbor_time, earliest_claim_neighbor_location, num_active_neighbors, amount
             )
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4, $5,$6,$7)
             RETURNING id
             "#,
             land_stake.id as EventId,
             land_stake.at,
             land_stake.location as Location,
-            land_stake.last_pay_time,
+            land_stake.earliest_claim_neighbor_time ,
+            land_stake.earliest_claim_neighbor_location as Location,
+            land_stake.num_active_neighbors as i16,
             land_stake.amount as _
         )
         .fetch_one(&mut *(self.db.acquire().await?))
@@ -57,7 +59,9 @@ impl Repository {
                 id as "id: _",
                 at,
                 location as "location: Location",
-                last_pay_time,
+                earliest_claim_neighbor_time,
+                earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
+                num_active_neighbors as "num_active_neighbors: i16",
                 amount as "amount: _"
             FROM land_stake
             WHERE location = $1 AND at <= $2
@@ -86,7 +90,7 @@ impl Repository {
             r#"
             WITH latest_land_stakes AS (
                 SELECT DISTINCT ON (location)
-                    id, at, location, last_pay_time, amount
+                    id, at, location, earliest_claim_neighbor_time, earliest_claim_neighbor_location, num_active_neighbors, amount
                 FROM land_stake
                 WHERE at <= $1
                 ORDER BY location, at DESC
@@ -95,7 +99,9 @@ impl Repository {
                 id as "id: _",
                 at,
                 location as "location: Location",
-                last_pay_time,
+                earliest_claim_neighbor_time,
+                earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
+                num_active_neighbors as "num_active_neighbors: i16",
                 amount as "amount: _"
             FROM latest_land_stakes
             "#,
@@ -117,7 +123,9 @@ impl Repository {
                 id as "id: _",
                 at,
                 location as "location: Location",
-                last_pay_time,
+                earliest_claim_neighbor_time,
+                earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
+                num_active_neighbors as "num_active_neighbors: i16",
                 amount as "amount: _"
             FROM land_stake
             WHERE id = $1
@@ -159,13 +167,16 @@ mod tests {
 
         // Create a test land stake model
         let location: Location = 1234.into();
+        let neighbor_location: Location = 5678.into();
         let now = Utc::now().naive_utc();
         let last_pay_time = now - chrono::Duration::hours(1);
         let land_stake_model = LandStakeModel {
             id: EventId::new_test(0, 0, 0),
             at: now,
             location,
-            last_pay_time,
+            earliest_claim_neighbor_time: last_pay_time,
+            earliest_claim_neighbor_location: neighbor_location,
+            num_active_neighbors: 0,
             amount: U256::from_str("1000").unwrap(),
         };
 
@@ -179,6 +190,24 @@ mod tests {
         let retrieved = retrieved.unwrap();
         assert_eq!(retrieved.id, land_stake_model.id);
         assert_eq!(retrieved.location, land_stake_model.location);
+        assert_eq!(
+            retrieved
+                .earliest_claim_neighbor_time
+                .and_utc()
+                .timestamp_micros(),
+            land_stake_model
+                .earliest_claim_neighbor_time
+                .and_utc()
+                .timestamp_micros()
+        );
+        assert_eq!(
+            retrieved.earliest_claim_neighbor_location,
+            land_stake_model.earliest_claim_neighbor_location
+        );
+        assert_eq!(
+            retrieved.num_active_neighbors,
+            land_stake_model.num_active_neighbors
+        );
         assert_eq!(retrieved.amount, land_stake_model.amount);
 
         // Test get_latest_at_location
@@ -211,6 +240,7 @@ mod tests {
 
         // Create a location
         let location: Location = 5678.into();
+        let neighbor_location: Location = 5679.into();
 
         // Create first version
         let time1 = Utc::now().naive_utc();
@@ -218,7 +248,9 @@ mod tests {
             id: EventId::new_test(0, 0, 1),
             at: time1,
             location,
-            last_pay_time: time1 - chrono::Duration::hours(1),
+            earliest_claim_neighbor_time: time1 - chrono::Duration::hours(1),
+            earliest_claim_neighbor_location: neighbor_location,
+            num_active_neighbors: 0,
             amount: U256::from_str("100").unwrap(),
         };
         repo.save(land_stake1.clone()).await?;
@@ -229,7 +261,9 @@ mod tests {
             id: EventId::new_test(0, 0, 2),
             at: time2,
             location,
-            last_pay_time: time2,                   // Updated pay time
+            earliest_claim_neighbor_time: time2, // Updated pay time
+            earliest_claim_neighbor_location: neighbor_location,
+            num_active_neighbors: 0,
             amount: U256::from_str("200").unwrap(), // Updated amount
         };
         repo.save(land_stake2.clone()).await?;

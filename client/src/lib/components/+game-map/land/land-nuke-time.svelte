@@ -9,12 +9,19 @@
     land?: LandWithActions;
   } = $props();
 
-  let nukeTime: string | undefined = $derived(calculateNukeTime());
+  let nukeTime = $state<string | undefined>(undefined);
 
-  function calculateNukeTime(): string | undefined {
-    if (land == undefined) return;
-    return parseNukeTime(estimateNukeTime(land)).toString();
-  }
+  $effect(() => {
+    const calculateNukeTime = async () => {
+      if (land === undefined) {
+        nukeTime = undefined;
+        return;
+      }
+      const timeInSeconds = await estimateNukeTime(land);
+      nukeTime = parseNukeTime(timeInSeconds).toString();
+    };
+    calculateNukeTime();
+  });
 
   function formatNukeTime(nukeTime: string | undefined) {
     if (land?.getNeighbors().getNeighbors().length == 0) return 'inf';

@@ -124,7 +124,9 @@
 
       estimatedNukeTimeSeconds = remainingNukeTimeFromNow;
     } else {
-      estimatedNukeTimeSeconds = estimateNukeTime(land);
+      estimateNukeTime(land).then((time) => {
+        estimatedNukeTimeSeconds = time;
+      });
     }
   });
 

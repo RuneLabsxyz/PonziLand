@@ -4,7 +4,7 @@ import { BuildingLand } from '$lib/api/land/building_land';
 import { Neighbors } from '$lib/api/neighbors';
 import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
 import { useDojo } from '$lib/contexts/dojo';
-import type { LandYieldInfo } from '$lib/interfaces';
+import type { ElapsedTimeSinceLastClaim, LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { landStore } from '$lib/stores/store.svelte';
 import { toHexWithPadding } from '$lib/utils';
@@ -26,7 +26,8 @@ export const createLandWithActions = (
   const landWithActions = {
     ...land,
     stakeAmount: land.stakeAmount,
-    lastPayTime: land.lastPayTime?.getTime() ?? 0 / 1000,
+    neighborsInfo: land.neighborsInfo,
+    neighborsInfoPacked: land.neighborsInfoPacked,
     sellPrice: land.sellPrice,
     type: (land.type === 'empty'
       ? 'grass'
@@ -79,17 +80,6 @@ export const createLandWithActions = (
       notificationQueue.addNotification(res?.transaction_hash ?? null, 'claim');
       return res;
     },
-    async getPendingTaxes() {
-      const result = (await sdk.client.actions.getPendingTaxesForLand(
-        land.locationString,
-        account()!.getWalletAccount()!.address,
-      )) as any[] | undefined;
-
-      return result?.map((tax) => ({
-        amount: CurrencyAmount.fromUnscaled(tax.amount),
-        tokenAddress: toHexWithPadding(tax.token_address),
-      }));
-    },
     async getNextClaim() {
       const result = (await sdk.client.actions.getNextClaimInfo(
         land.locationString,
@@ -133,8 +123,15 @@ export const createLandWithActions = (
       );
       return res;
     },
-    getEstimatedNukeTime() {
-      return estimateNukeTime(
+    async getElapsedTimeSinceLastClaimForNeighbors() {
+      const res =
+        (await sdk.client.actions.getElapsedTimeSinceLastClaimForNeighbors(
+          land.locationString,
+        )) as ElapsedTimeSinceLastClaim[] | undefined;
+      return res;
+    },
+    async getEstimatedNukeTime() {
+      return await estimateNukeTime(
         this,
         land.getNeighbors(landStore).getNeighbors().length,
       );
