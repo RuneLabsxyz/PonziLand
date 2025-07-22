@@ -35,7 +35,7 @@ export async function deployToken(config: Configuration, args: string[]) {
     try {
       // Get the contract class to access ABI
       let contractClass = await file(
-        `${config.basePath}/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
+        `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
       ).json();
 
       // Create contract instance
@@ -57,9 +57,9 @@ export async function deployToken(config: Configuration, args: string[]) {
   }
 
   // Compile the project (if no target directory)
-  if ((await fs.exists(`${config.basePath}/target/dev`)) == false) {
+  if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
     console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
-    const result = await $`cd old-tokens && scarb build`;
+    const result = await $`cd old-tokens && scarb build && cd ..`;
     console.log(
       `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
     );
