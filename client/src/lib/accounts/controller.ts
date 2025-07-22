@@ -98,7 +98,7 @@ export async function setupController(
   }
 
   const controller = new SvelteController({
-    defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
+    defaultChainId: config.chainId == "SN_KATANA" ? "0x4b4154414e41" : a2hex(config.chainId), // SN_SEPOLIA in hex
     chains: [{ rpcUrl: config.rpcUrl }],
     preset: 'ponziland',
     policies: preset.chains.SN_MAIN.policies as any,
