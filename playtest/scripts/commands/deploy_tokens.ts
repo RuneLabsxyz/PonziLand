@@ -21,7 +21,6 @@ export async function  deployToken(config: Configuration, args: string[]) {
     // File doesn't exist, will be created later
     existingTokens = { tokens: [] };
   }
-  console.log(existingTokens);
 
   // Check if token with this symbol already exists
   const existingToken = existingTokens.tokens.find((token: Token) => token.symbol === symbol);

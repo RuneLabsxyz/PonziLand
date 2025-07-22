@@ -14,6 +14,11 @@
       "symbol": "pltETH",
       "name": "Ponziland Test ETH",
       "address": "0x7b51ab8659d02d517fb92cc7e18b81f4eb81678d14fb17b45530e4af11ef34d"
+    },
+    {
+      "symbol": "pltPAPER",
+      "name": "Ponziland Test PAPER",
+      "address": "0x1919f413f36daf4a0f32980fbf258c78f3fb12419d75f314c94de648095e3d7"
     }
   ]
 }

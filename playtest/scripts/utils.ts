@@ -31,6 +31,7 @@ export const COLORS = {
   gray: color("gray", "ansi"),
   red: color("#FA5053", "ansi"),
   blue: color("#90D5FF", "ansi"),
+  yellow: color("#FFD700", "ansi"),
   reset: "\u001b[0m",
 };
 
