@@ -76,11 +76,11 @@ export async function deployToken(config: Configuration, args: string[]) {
   );
 
   let contractClass = await file(
-    `${config.basePath}/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
+    `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
   ).json();
 
   let casm = await file(
-    `${config.basePath}/target/dev/testerc20_testerc20_PlayTestToken.compiled_contract_class.json`,
+    `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.compiled_contract_class.json`,
   ).json();
 
   const { transaction_hash: txHash, class_hash } = await account.declareIfNot(
