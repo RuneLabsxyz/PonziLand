@@ -1,9 +1,10 @@
 import type { LandWithActions } from '$lib/api/land';
-import { GAME_SPEED, GRID_SIZE, TAX_RATE } from '$lib/const';
+import { config } from '$lib/stores/config.store.svelte';
 import type { Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import data from '$profileData';
 import { CurrencyAmount } from './CurrencyAmount';
+import { GAME_SPEED, GRID_SIZE } from '../stores/config.store.svelte';
 export type TaxData = {
   tokenAddress: string;
   tokenSymbol: string;
@@ -89,15 +90,15 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
 
   const location = Number(land.location);
   const neighbors = [
-    location - GRID_SIZE - 1,
-    location - GRID_SIZE,
-    location - GRID_SIZE + 1,
+    location - config.gridSize - 1,
+    location - config.gridSize,
+    location - config.gridSize + 1,
     location - 1,
     location,
     location + 1,
-    location + GRID_SIZE - 1,
-    location + GRID_SIZE,
-    location + GRID_SIZE + 1,
+    location + config.gridSize - 1,
+    location + config.gridSize,
+    location + config.gridSize + 1,
   ];
 
   // assign yield info to neighbour if location matches
@@ -197,7 +198,7 @@ export const estimateTax = (sellPrice: number) => {
     };
   }
 
-  const gameSpeed = GAME_SPEED;
+  const gameSpeed = config.GAME_SPEED;
   const taxRate = 0.02;
   const baseTime = 3600;
   const maxNeighbours = 8;
@@ -217,8 +218,8 @@ export function burnForOneNeighbor(land: LandWithActions) {
   const maxN = 8;
   return land.sellPrice
     .rawValue()
-    .multipliedBy(TAX_RATE)
-    .multipliedBy(GAME_SPEED)
+    .multipliedBy(config.TAX_RATE)
+    .multipliedBy(config.GAME_SPEED)
     .dividedBy(maxN * 100);
 }
 
@@ -239,8 +240,8 @@ export function calculateBurnRate(
 }
 
 export function calculateTaxes(sellAmount: number) {
-  const taxRate = TAX_RATE;
-  const gameSpeed = GAME_SPEED;
+  const taxRate = config.TAX_RATE;
+  const gameSpeed = config.GAME_SPEED;
   const maxN = 8;
 
   if (sellAmount <= 0 || isNaN(sellAmount)) {

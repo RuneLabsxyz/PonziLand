@@ -19,6 +19,16 @@
       "symbol": "pltPAPER",
       "name": "Ponziland Test PAPER",
       "address": "0x1919f413f36daf4a0f32980fbf258c78f3fb12419d75f314c94de648095e3d7"
+    },
+    {
+      "symbol": "pltBROTHER",
+      "name": "Ponziland Test BROTHER",
+      "address": "0x37c438a5a3160be18d747463bb249d67871e98cfb6aec93c10425b60603392c"
+    },
+    {
+      "symbol": "pltPAL",
+      "name": "Ponziland Test PAL",
+      "address": "0x61faf864d91cecf90a7b0535ff6d89f04a231e7a73f8e0b57d923be5fa5aaff"
     }
   ]
 }

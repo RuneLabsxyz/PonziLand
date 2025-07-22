@@ -2,7 +2,7 @@ import type { BaseLand } from '$lib/api/land';
 import { AuctionLand } from '$lib/api/land/auction_land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { Neighbors } from '$lib/api/neighbors';
-import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
+import { config } from '$lib/stores/config.store.svelte';
 import { useDojo } from '$lib/contexts/dojo';
 import type { LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
@@ -144,14 +144,14 @@ export const createLandWithActions = (
     },
     getLevelInfo() {
       const now = Math.floor(Date.now() / 1000);
-      const boughtSince = (now - Number(land.boughtAt)) * GAME_SPEED;
+      const boughtSince = (now - Number(land.boughtAt)) * config.GAME_SPEED;
 
       const expectedLevel = Math.min(
-        Math.floor(boughtSince / LEVEL_UP_TIME) + 1,
+        Math.floor(boughtSince / config.LEVEL_UP_TIME) + 1,
         3,
       ) as Level;
-      const timeSinceLastLevelUp = boughtSince % LEVEL_UP_TIME;
-      const levelUpTime = expectedLevel < 3 ? LEVEL_UP_TIME : 0;
+      const timeSinceLastLevelUp = boughtSince % config.LEVEL_UP_TIME;
+      const levelUpTime = expectedLevel < 3 ? config.LEVEL_UP_TIME : 0;
 
       return {
         canLevelUp: expectedLevel > land.level,
