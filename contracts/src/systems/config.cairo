@@ -27,6 +27,7 @@ trait IConfigSystem<T> {
         linear_decay_time: u16,
         drop_rate: u8,
         rate_denominator: u8,
+        max_circles: u16,
     );
 
     /// @notice Sets the grid width, which determines the size of the land map.
@@ -201,6 +202,7 @@ mod config {
         linear_decay_time: u16,
         drop_rate: u8,
         rate_denominator: u8,
+        max_circles: u16,
     ) {
         let mut world = self.world_default();
         let init_config: Config = ConfigTrait::new(
@@ -222,6 +224,7 @@ mod config {
             linear_decay_time,
             drop_rate,
             rate_denominator,
+            max_circles,
         );
         world.write_model(@init_config);
     }
@@ -249,6 +252,7 @@ mod config {
             linear_decay_time: u16,
             drop_rate: u8,
             rate_denominator: u8,
+            max_circles: u16,
         ) {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
@@ -271,6 +275,7 @@ mod config {
                 linear_decay_time,
                 drop_rate,
                 rate_denominator,
+                max_circles,
             );
             world.write_model(@new_config);
         }
