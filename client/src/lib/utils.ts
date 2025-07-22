@@ -5,7 +5,7 @@ import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 import type { LandWithActions } from './api/land';
-import { GRID_SIZE } from './const';
+import { config } from './stores/config.store.svelte';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -136,7 +136,7 @@ export function locationToCoordinates(location: number | string | undefined) {
 }
 
 export function coordinatesToLocation(location: { x: number; y: number }) {
-  return location.x + location.y * GRID_SIZE;
+  return location.x + location.y * config.gridSize;
 }
 
 export function padAddress(address: string) {
