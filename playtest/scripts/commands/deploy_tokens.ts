@@ -22,19 +22,6 @@ export async function  deployToken(config: Configuration, args: string[]) {
     existingTokens = { tokens: [] };
   }
 
-  // Compile the project (if no target directory)
-  if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
-    console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
-    const result = await $`cd old-tokens && scarb build && cd ..`;
-    console.log(
-      `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
-    );
-  } else {
-    console.log(
-      `${COLORS.gray} Skipping build because target directory already exists...`,
-    );
-  }
-
   // Check if token with this symbol already exists
   const existingToken = existingTokens.tokens.find((token: Token) => token.symbol === symbol);
   
@@ -46,6 +33,19 @@ export async function  deployToken(config: Configuration, args: string[]) {
     const { account, provider } = await connect(config);
     
     try {
+        // Compile the project (if no target directory)
+      if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
+        console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
+        const result = await $`cd old-tokens && scarb build && cd ..`;
+        console.log(
+          `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
+        );
+      } else {
+        console.log(
+          `${COLORS.gray} Skipping build because target directory already exists...`,
+        );
+      }
+
       // Get the contract class to access ABI
       let contractClass = await file(
         `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
@@ -67,6 +67,19 @@ export async function  deployToken(config: Configuration, args: string[]) {
       console.log(`${COLORS.red}❌ Error verifying existing token: ${error}${COLORS.reset}`);
       console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
     }
+  }
+
+  // Compile the project (if no target directory)
+  if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
+    console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
+    const result = await $`cd old-tokens && scarb build && cd ..`;
+    console.log(
+      `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
+    );
+  } else {
+    console.log(
+      `${COLORS.gray} Skipping build because target directory already exists...`,
+    );
   }
 
   // As always, setup the ledger (we are going to need it to declare the class)
