@@ -43,9 +43,9 @@ const profiles = {
     PUBLIC_GIT_COMMIT_HASH: null,
   },
   katana: {
-    PUBLIC_DOJO_RPC_URL: 'https://katana-test:5050',
-    PUBLIC_DOJO_TORII_URL: 'https://torii-test:8080',
-    PUBLIC_DOJO_CHAIN_ID: 'SN_KATANA',
+    PUBLIC_DOJO_RPC_URL: 'http://katana-test:5050',
+    PUBLIC_DOJO_TORII_URL: 'http://torii-test:8080',
+    PUBLIC_DOJO_CHAIN_ID: 'KATANA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
     PUBLIC_DOJO_BURNER_ADDRESS: null,
