@@ -5,6 +5,7 @@ use ponzi_land::models::land::{Land, PoolKey, LandStake};
 use ponzi_land::models::auction::Auction;
 use ponzi_land::models::config::Config;
 use starknet::contract_address::ContractAddressZeroable;
+use starknet::ContractAddress;
 
 #[derive(Copy, Drop)]
 struct Store {
@@ -162,5 +163,27 @@ impl StoreImpl of StoreTrait {
     #[inline(always)]
     fn get_max_circles(self: Store) -> u16 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("max_circles"))
+    }
+
+    #[inline(always)]
+    fn get_claim_fee(self: Store) -> u128 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee"))
+    }
+
+    #[inline(always)]
+    fn get_buy_fee(self: Store) -> u128 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("buy_fee"))
+    }
+
+    #[inline(always)]
+    fn get_our_contract_for_fee(self: Store) -> ContractAddress {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_fee"))
+    }
+
+    #[inline(always)]
+    fn get_our_contract_for_auction(self: Store) -> ContractAddress {
+        self
+            .world
+            .read_member(Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_auction"))
     }
 }

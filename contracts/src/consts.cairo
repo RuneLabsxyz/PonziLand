@@ -21,6 +21,13 @@ pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
 pub const CENTER_LOCATION: u16 = 32639;
 pub const MAX_CIRCLES: u16 = 64;
 
+
+pub const SCALE_FACTOR_FOR_FEE: u128 = 10_000_000;
+pub const CLAIM_FEE: u128 = 900_000;
+pub const BUY_FEE: u128 = 990_000;
+pub const OUR_CONTRACT_FOR_FEE: felt252 =
+    0x021fBAE9F9343873ab25eC14d287A1170b676C73c97906790ef91F5428dBdbac;
+
 const AUCTION_DURATION: u32 = 7 * 24 * 60 * 60; // 1 week in seconds
 
 const SCALING_FACTOR: u8 = 50;

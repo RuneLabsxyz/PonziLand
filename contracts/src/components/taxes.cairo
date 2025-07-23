@@ -105,6 +105,8 @@ mod TaxesComponent {
             ref payer_stake: LandStake,
             current_time: u64,
             our_contract_address: ContractAddress,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) -> bool {
             let (
                 earliest_claim_neighbor_time,
@@ -138,6 +140,8 @@ mod TaxesComponent {
                         ref payer_stake,
                         current_time,
                         our_contract_address,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
 
                 if *claimer.location == earliest_claim_neighbor_location {
@@ -169,6 +173,8 @@ mod TaxesComponent {
                         neighbors_of_tax_payer,
                         current_time,
                         our_contract_address,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
                 is_nuke
             }
@@ -183,6 +189,8 @@ mod TaxesComponent {
             neighbors_of_tax_payer: Span<Land>,
             current_time: u64,
             our_contract_address: ContractAddress,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) -> bool {
             let (total_taxes, tax_for_claimer, cache_elapased_time, total_elapsed_time) = self
                 ._calculate_taxes_for_all_neighbors(
@@ -202,6 +210,8 @@ mod TaxesComponent {
                         cache_elapased_time,
                         total_elapsed_time,
                         our_contract_address,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
 
                 //last claim for nuked land
@@ -216,6 +226,8 @@ mod TaxesComponent {
                             ref neghbor_stake,
                             current_time,
                             our_contract_address,
+                            claim_fee,
+                            our_contract_for_fee,
                         );
                     store.set_land_stake(neghbor_stake);
                 };
@@ -234,6 +246,8 @@ mod TaxesComponent {
                         ref payer_stake,
                         current_time,
                         our_contract_address,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
                 if *claimer.location == earliest_claimer_location {
                     self
@@ -262,6 +276,8 @@ mod TaxesComponent {
             cache_elapased_time: Array<(u16, ContractAddress, u64)>,
             total_elapsed_time: u64,
             our_contract_address: ContractAddress,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) {
             let mut tax_amount_for_neighbor: Array<(u16, ContractAddress, u256)> =
                 ArrayTrait::new();
@@ -274,7 +290,12 @@ mod TaxesComponent {
 
             self
                 ._distribute_nuke(
-                    store, @*tax_payer, tax_amount_for_neighbor.span(), our_contract_address,
+                    store,
+                    @*tax_payer,
+                    tax_amount_for_neighbor.span(),
+                    our_contract_address,
+                    claim_fee,
+                    our_contract_for_fee,
                 );
         }
 
@@ -361,6 +382,8 @@ mod TaxesComponent {
             nuked_land: @Land,
             neighbors_of_nuked_land: Span<(u16, ContractAddress, u256)>,
             our_contract_address: ContractAddress,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) {
             for (neighbor_location, neighbor_address, tax_amount) in neighbors_of_nuked_land {
                 self
@@ -369,6 +392,8 @@ mod TaxesComponent {
                         *nuked_land.owner,
                         TokenInfo { token_address: *nuked_land.token_used, amount: *tax_amount },
                         our_contract_address,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
                 if let Option::Some(updated_stake) =
                     remove_neighbor(store.land_stake(*neighbor_location)) {
@@ -384,11 +409,19 @@ mod TaxesComponent {
             tax_payer: ContractAddress,
             token_info: TokenInfo,
             our_contract_address: ContractAddress,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) {
             let mut payable = get_dep_component_mut!(ref self, Payable);
             let validation_result = payable
                 .validate(token_info.token_address, our_contract_address, token_info.amount);
-            let status = payable.transfer(tax_receiver, validation_result);
+
+            let status = payable
+                .proccess_payment_with_fee_for_claim(
+                    tax_receiver, claim_fee, our_contract_for_fee, validation_result,
+                );
+
+            // let status = payable.transfer(tax_receiver, validation_result);
             assert(status, errors::ERC20_TRANSFER_CLAIM_FAILED);
         }
 
@@ -404,6 +437,8 @@ mod TaxesComponent {
             ref land_stake: LandStake,
             current_time: u64,
             our_contract_address: ContractAddress,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) {
             if available_tax_for_claimer > 0 && available_tax_for_claimer < land_stake.amount {
                 self
@@ -414,6 +449,8 @@ mod TaxesComponent {
                             token_address: *tax_payer.token_used, amount: available_tax_for_claimer,
                         },
                         our_contract_address,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
 
                 store

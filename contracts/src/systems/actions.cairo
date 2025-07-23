@@ -271,24 +271,46 @@ pub mod actions {
             let seller = land.owner;
             let sold_price = land.sell_price;
             let token_used = land.token_used;
-
             let neighbors = get_land_neighbors(store, land.location);
-
-            self.internal_claim(store, @land, neighbors, current_time, our_contract_address, false);
+            let our_contract_for_fee = store.get_our_contract_for_fee();
+            let claim_fee = store.get_claim_fee();
+            self
+                .internal_claim(
+                    store,
+                    @land,
+                    neighbors,
+                    current_time,
+                    our_contract_address,
+                    false,
+                    claim_fee,
+                    our_contract_for_fee,
+                );
 
             //claim for the neighbors of the land sold
             let land_payer_span: Span<Land> = array![land].span();
             for neighbor in neighbors {
                 self
                     .internal_claim(
-                        store, neighbor, land_payer_span, current_time, our_contract_address, true,
+                        store,
+                        neighbor,
+                        land_payer_span,
+                        current_time,
+                        our_contract_address,
+                        true,
+                        claim_fee,
+                        our_contract_for_fee,
                     );
             };
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
             assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
 
-            let transfer_status = self.payable.transfer_from(caller, land.owner, validation_result);
+            let buy_fee = store.get_buy_fee();
+            let transfer_status = self
+                .payable
+                .proccess_payment_with_fee_for_buy(
+                    caller, land.owner, buy_fee, our_contract_for_fee, validation_result,
+                );
             assert(transfer_status, errors::ERC20_PAY_FOR_BUY_FAILED);
 
             self.stake._refund(store, land, our_contract_address);
@@ -330,7 +352,19 @@ pub mod actions {
             assert(land.owner == caller, 'not the owner');
             let neighbors = get_land_neighbors(store, land.location);
 
-            self.internal_claim(store, @land, neighbors, current_time, our_contract_address, false);
+            let claim_fee = store.get_claim_fee();
+            let our_contract_for_fee = store.get_our_contract_for_fee();
+            self
+                .internal_claim(
+                    store,
+                    @land,
+                    neighbors,
+                    current_time,
+                    our_contract_address,
+                    false,
+                    claim_fee,
+                    our_contract_for_fee,
+                );
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
@@ -340,6 +374,8 @@ pub mod actions {
             let mut store = StoreTrait::new(world);
             let current_time = get_block_timestamp();
             let our_contract_address = get_contract_address();
+            let claim_fee = store.get_claim_fee();
+            let our_contract_for_fee = store.get_our_contract_for_fee();
 
             for land_location in land_locations {
                 if !self.active_auction_queue.read(land_location) {
@@ -351,7 +387,14 @@ pub mod actions {
                     let neighbors = get_land_neighbors(store, land_location);
                     self
                         .internal_claim(
-                            store, @land, neighbors, current_time, our_contract_address, false,
+                            store,
+                            @land,
+                            neighbors,
+                            current_time,
+                            our_contract_address,
+                            false,
+                            claim_fee,
+                            our_contract_for_fee,
                         );
                 }
             };
@@ -818,6 +861,8 @@ pub mod actions {
             current_time: u64,
             our_contract_address: ContractAddress,
             from_buy: bool,
+            claim_fee: u128,
+            our_contract_for_fee: ContractAddress,
         ) {
             if neighbors.len() != 0 {
                 for mut tax_payer in neighbors {
@@ -832,6 +877,8 @@ pub mod actions {
                             ref tax_payer_stake,
                             current_time,
                             our_contract_address,
+                            claim_fee,
+                            our_contract_for_fee,
                         );
 
                     let has_liquidity_requirements = self

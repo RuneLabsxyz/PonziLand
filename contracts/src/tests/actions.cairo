@@ -30,7 +30,7 @@ use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConvers
 use ponzi_land::models::auction::{Auction};
 use ponzi_land::consts::{
     BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE, CENTER_LOCATION,
-    MAX_CIRCLES,
+    MAX_CIRCLES, OUR_CONTRACT_FOR_FEE,
 };
 use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
 use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
@@ -521,7 +521,6 @@ fn test_bid_and_buy_action() {
     verify_land(store, CENTER_LOCATION, NEW_BUYER(), 300, 500, 160, main_currency.contract_address);
 }
 
-//TODO:when we have the new expansion for auction we can test with more lands
 #[test]
 fn test_claim_and_add_taxes() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
@@ -561,11 +560,17 @@ fn test_claim_and_add_taxes() {
         erc20_neighbor_1,
     );
     let neighbor_land_before_claim = store.land_stake(next_auction_location.unwrap());
-
+    let our_contract_for_fee_before_claim = erc20_neighbor_1
+        .balanceOf(OUR_CONTRACT_FOR_FEE.try_into().unwrap());
     // Simulate time difference to generate taxes
-    set_block_timestamp(5000);
+    let our_contract_for_fee = OUR_CONTRACT_FOR_FEE.try_into().unwrap();
+    set_block_timestamp(20000);
     set_contract_address(RECIPIENT());
     actions_system.claim(CENTER_LOCATION);
+    let our_contract_for_fee_after_claim = erc20_neighbor_1.balanceOf(our_contract_for_fee);
+    assert(
+        our_contract_for_fee_after_claim > our_contract_for_fee_before_claim, 'fail in pay fees',
+    );
 
     // Get claimer land and verify taxes
     let claimer_land = store.land(CENTER_LOCATION);
@@ -583,6 +588,12 @@ fn test_claim_and_add_taxes() {
     setup_buyer_with_tokens(erc20_neighbor_1, actions_system, NEIGHBOR_1(), NEW_BUYER(), 2500);
     actions_system.buy(next_auction_location.unwrap(), erc20_neighbor_1.contract_address, 100, 100);
     // verify the claim when occurs a buy
+    let our_contract_for_fee_after_buy = erc20_neighbor_1
+        .balanceOf(OUR_CONTRACT_FOR_FEE.try_into().unwrap());
+    assert(
+        our_contract_for_fee_after_buy > our_contract_for_fee_after_claim,
+        'fail in pay fees in buy',
+    );
 }
 
 #[test]
