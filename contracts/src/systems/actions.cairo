@@ -65,6 +65,7 @@ trait IActions<T> {
 pub mod actions {
     use super::{IActions, WorldStorage};
 
+    use openzeppelin_security::ReentrancyGuardComponent;
     use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
     use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
 
@@ -119,6 +120,11 @@ pub mod actions {
     component!(path: TaxesComponent, storage: taxes, event: TaxesEvent);
     impl TaxesInternalImpl = TaxesComponent::InternalImpl<ContractState>;
 
+    component!(
+        path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent,
+    );
+    impl ReentrancyGuardInternalImpl = ReentrancyGuardComponent::InternalImpl<ContractState>;
+
     #[event]
     #[derive(Drop, starknet::Event)]
     enum Event {
@@ -128,6 +134,8 @@ pub mod actions {
         StakeEvent: StakeComponent::Event,
         #[flat]
         TaxesEvent: TaxesComponent::Event,
+        #[flat]
+        ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
     }
 
     //events
@@ -198,6 +206,8 @@ pub mod actions {
         stake: StakeComponent::Storage,
         #[substorage(v0)]
         taxes: TaxesComponent::Storage,
+        #[substorage(v0)]
+        reentrancy_guard: ReentrancyGuardComponent::Storage,
         active_auctions: u8,
         main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
@@ -246,6 +256,7 @@ pub mod actions {
             sell_price: u256,
             amount_to_stake: u256,
         ) {
+            self.reentrancy_guard.start();
             assert(sell_price > 0, 'sell_price > 0');
             assert(amount_to_stake > 0, 'amount_to_stake > 0');
 
@@ -339,10 +350,12 @@ pub mod actions {
                         buyer: caller, land_location: land.location, sold_price, seller, token_used,
                     },
                 );
+            self.reentrancy_guard.end();
         }
 
 
         fn claim(ref self: ContractState, land_location: u16) {
+            self.reentrancy_guard.start();
             let caller = get_caller_address();
             let mut world = self.world_default();
             let current_time = get_block_timestamp();
@@ -370,9 +383,11 @@ pub mod actions {
                     claim_fee_threshold,
                     our_contract_for_fee,
                 );
+            self.reentrancy_guard.end();
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
+            self.reentrancy_guard.start();
             let caller = get_caller_address();
             let mut world = self.world_default();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
@@ -405,6 +420,7 @@ pub mod actions {
                         );
                 }
             };
+            self.reentrancy_guard.end();
         }
 
         fn bid(
@@ -414,6 +430,7 @@ pub mod actions {
             sell_price: u256,
             amount_to_stake: u256,
         ) {
+            self.reentrancy_guard.start();
             let mut world = self.world_default();
 
             let caller = get_caller_address();
@@ -458,6 +475,7 @@ pub mod actions {
                     current_price,
                     our_contract_address,
                 );
+            self.reentrancy_guard.end();
         }
 
         fn recreate_auction(ref self: ContractState, land_location: u16) {
@@ -511,6 +529,7 @@ pub mod actions {
         }
 
         fn increase_stake(ref self: ContractState, land_location: u16, amount_to_stake: u256) {
+            self.reentrancy_guard.start();
             let mut world = self.world_default();
             let caller = get_caller_address();
 
@@ -528,7 +547,8 @@ pub mod actions {
             let new_stake_amount = land_stake.amount + amount_to_stake;
             store
                 .world
-                .emit_event(@AddStakeEvent { land_location, new_stake_amount, owner: caller })
+                .emit_event(@AddStakeEvent { land_location, new_stake_amount, owner: caller });
+            self.reentrancy_guard.end();
         }
 
         fn level_up(ref self: ContractState, land_location: u16) -> bool {
@@ -551,6 +571,7 @@ pub mod actions {
         }
 
         fn reimburse_stakes(ref self: ContractState) {
+            self.reentrancy_guard.start();
             let mut world = self.world_default();
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
 
@@ -573,6 +594,7 @@ pub mod actions {
             };
 
             self.stake._reimburse(store, active_lands.span());
+            self.reentrancy_guard.end();
         }
 
 
