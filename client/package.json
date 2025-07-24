@@ -41,7 +41,6 @@
     "wrangler": "^4.20.3"
   },
   "dependencies": {
-    "@argent/x-sessions": "^7.0.0",
     "@avnu/avnu-sdk": "^3.0.0",
     "@cartridge/controller": "^0.9.2",
     "@cartridge/presets": "^0.5.2",
@@ -85,8 +84,5 @@
     "tsparticles": "^3.8.1",
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-wasm": "^3.3.0"
-  },
-  "patchedDependencies": {
-    "starknet@6.23.1": "patches/starknet@6.23.1.patch"
   }
 }

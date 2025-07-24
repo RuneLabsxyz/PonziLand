@@ -1,11 +1,11 @@
-import { GRID_SIZE } from '$lib/const';
+import { config } from '$lib/stores/config.store.svelte';
 import { locationToCoordinates, toBigInt, toHexWithPadding } from '$lib/utils';
 import type { BaseLand } from './land';
 import type { LandTileStore } from './land_tiles.svelte';
 import { get } from 'svelte/store';
 
 export class Neighbors {
-  public MAP_SIZE = GRID_SIZE;
+  public MAP_SIZE = config.GRID_SIZE;
   public location: bigint;
   public locations: {
     array: bigint[];
@@ -97,7 +97,7 @@ export class Neighbors {
     );
   }
 
-  static getLocations(location: bigint, gridSize = GRID_SIZE) {
+  static getLocations(location: bigint, gridSize = config.GRID_SIZE) {
     const MAP_SIZE = toBigInt(gridSize) ?? -1n;
 
     return {

@@ -5,7 +5,8 @@
   import { BuildingLand } from '$lib/api/land/building_land';
   import { Button } from '$lib/components/ui/button';
   import NukeExplosion from '$lib/components/ui/nuke-explosion.svelte';
-  import { GRID_SIZE, MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
+  import { MIN_SCALE_FOR_DETAIL, TILE_SIZE } from '$lib/const';
+  import { config } from '$lib/stores/config.store.svelte';
   import { cameraPosition, moveCameraTo } from '$lib/stores/camera.store';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
@@ -91,7 +92,7 @@
   });
 
   let isNuking = $derived.by(() => {
-    return nukeStore.nuking[land.location.x + land.location.y * GRID_SIZE];
+    return nukeStore.nuking[land.location.x + land.location.y * config.GRID_SIZE];
   });
 
   // Get color based on land type and token

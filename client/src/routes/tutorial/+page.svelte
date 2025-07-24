@@ -7,7 +7,7 @@
     tutorialLandStore,
   } from '$lib/components/tutorial/stores.svelte';
   import TutorialUi from '$lib/components/tutorial/ui.svelte';
-  import { GRID_SIZE } from '$lib/const';
+  import { config } from '$lib/stores/config.store.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
   import { dojoConfig } from '$lib/dojoConfig';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -22,9 +22,9 @@
     // Use setTimeout to ensure the setup is complete and any state updates are processed
     setTimeout(() => {
       // Set initial camera position to center of map
-      const centerX = Math.floor(GRID_SIZE / 2);
-      const centerY = Math.floor(GRID_SIZE / 2);
-      const location = centerX + centerY * GRID_SIZE;
+      const centerX = Math.floor(config.GRID_SIZE / 2);
+      const centerY = Math.floor(config.GRID_SIZE / 2);
+      const location = centerX + centerY * config.GRID_SIZE;
       tutorialLandStore.moveCameraToLocation(location, 3);
       resolve();
     }, 100);

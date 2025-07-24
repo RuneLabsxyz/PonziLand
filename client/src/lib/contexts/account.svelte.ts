@@ -5,7 +5,6 @@ import {
   PUBLIC_DOJO_BURNER_ADDRESS,
   PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
-import { ArgentXAccount } from '$lib/accounts/argentx';
 import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
@@ -234,7 +233,7 @@ export class AccountManager {
 
         this.getSessionFromStorage();
       } catch (e) {
-        console.error(
+        console.error( 
           'An error occurred while auto-logging the provider ',
           previousWallet,
           e,

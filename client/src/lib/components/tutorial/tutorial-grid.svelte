@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { GRID_SIZE } from '$lib/const';
   import { TILE_SIZE } from '$lib/const';
+  import { config } from '$lib/stores/config.store.svelte';
   import {
     cameraPosition,
     cameraTransition,
@@ -28,7 +28,7 @@
   // Calculate visible tiles based on camera position and scale
   function getVisibleTiles() {
     if (!mapWrapper)
-      return { startX: 0, startY: 0, endX: GRID_SIZE, endY: GRID_SIZE };
+      return { startX: 0, startY: 0, endX: config.GRID_SIZE, endY: config.GRID_SIZE };
 
     const rect = mapWrapper.getBoundingClientRect();
     const scale = $cameraPosition.scale;
@@ -46,8 +46,8 @@
     return {
       startX: Math.max(0, startX - padding),
       startY: Math.max(0, startY - padding),
-      endX: Math.min(GRID_SIZE, endX + padding),
-      endY: Math.min(GRID_SIZE, endY + padding),
+      endX: Math.min(config.GRID_SIZE, endX + padding),
+      endY: Math.min(config.GRID_SIZE, endY + padding),
     };
   }
 
@@ -126,8 +126,8 @@
   function updateOffsets(newX: number, newY: number) {
     if (!mapWrapper) return;
 
-    const mapWidth = GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
-    const mapHeight = GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
+    const mapWidth = config.GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
+    const mapHeight = config.GRID_SIZE * TILE_SIZE * $cameraPosition.scale;
     const containerWidth = mapWrapper.clientWidth;
     const containerHeight = mapWrapper.clientHeight;
 
@@ -157,7 +157,7 @@
   <div class="map-wrapper" bind:this={mapWrapper}>
     <!-- Column numbers -->
     <div class="column-numbers" style="left: {$cameraPosition.offsetX}px">
-      {#each Array(GRID_SIZE) as _, i}
+      {#each Array(config.GRID_SIZE) as _, i}
         <div
           class="coordinate"
           style="width: {TILE_SIZE * $cameraPosition.scale}px"
@@ -170,7 +170,7 @@
     <div class="map-with-rows">
       <!-- Row numbers -->
       <div class="row-numbers" style="top: {$cameraPosition.offsetY}px">
-        {#each Array(GRID_SIZE) as _, i}
+        {#each Array(config.GRID_SIZE) as _, i}
           <div
             class="coordinate"
             style="height: {TILE_SIZE * $cameraPosition.scale}px"
@@ -196,9 +196,9 @@
         <!-- Road layer -->
         <div class="road-layer"></div>
 
-        {#each Array(GRID_SIZE) as _, y}
+        {#each Array(config.GRID_SIZE) as _, y}
           <div class="row">
-            {#each Array(GRID_SIZE) as _, x}
+            {#each Array(config.GRID_SIZE) as _, x}
               {@const land = tutorialLandStore.getLand(x, y)!}
               <div
                 style="width: {TILE_SIZE}px; height: {TILE_SIZE}px"

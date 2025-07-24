@@ -2,7 +2,7 @@ import { EmptyLand, type LandWithActions } from '$lib/api/land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { LandTileStore } from '$lib/api/land_tiles.svelte';
 import { Neighbors } from '$lib/api/neighbors';
-import { GAME_SPEED, GRID_SIZE, TAX_RATE } from '$lib/const';
+import { config } from '$lib/stores/config.store.svelte';
 import type { Token } from '$lib/interfaces';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { cameraTransition } from '$lib/stores/camera.store';
@@ -241,7 +241,7 @@ export class TutorialLandStore extends LandTileStore {
           (token) =>
             padAddress(token.address) === padAddress(neighbor.token_used),
         );
-        const rate = (TAX_RATE * GAME_SPEED) / 8; // Adjust this based on your logic
+        const rate = (config.TAX_RATE * config.GAME_SPEED) / 8; // Adjust this based on your logic
         const ratePerHour = this.getTaxRatePerNeighbor(neighbor); // Implement this method to calculate tax rate per neighbor
 
         yieldInfo.push({
