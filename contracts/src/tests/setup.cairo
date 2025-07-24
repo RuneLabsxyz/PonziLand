@@ -1,6 +1,5 @@
 mod setup {
     // Starknet imports
-
     use starknet::{ContractAddress, contract_address_const};
     use starknet::testing::{set_contract_address, set_account_contract_address};
     use starknet::info::{get_contract_address, get_caller_address, get_block_timestamp};
@@ -24,7 +23,12 @@ mod setup {
     use ponzi_land::models::land::{Land, m_Land, LandStake, m_LandStake};
     use ponzi_land::models::auction::{Auction, m_Auction};
     use ponzi_land::models::config::{Config, m_Config};
-
+    use ponzi_land::consts::{
+        GRID_WIDTH, TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS,
+        MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER,
+        MIN_AUCTION_PRICE, MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION,
+        SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES,
+    };
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::components::taxes::{TaxesComponent};
     use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
@@ -133,12 +137,28 @@ mod setup {
 
     fn contract_defs(erc20_address: felt252, ekubo_core_address: felt252) -> Span<ContractDef> {
         let mut contract_defs: Array<ContractDef> = array![];
-
+        let floor_price_low = FLOOR_PRICE.low;
+        let floor_price_high = FLOOR_PRICE.high;
+        let min_auction_price_low = MIN_AUCTION_PRICE.low;
+        let min_auction_price_high = MIN_AUCTION_PRICE.high;
         contract_defs
             .append(
                 ContractDefTrait::new(@"ponzi_land", @"config")
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
-                    .with_init_calldata([].span()),
+                    .with_init_calldata(
+                        [
+                            GRID_WIDTH.into(), TAX_RATE.into(), BASE_TIME.into(),
+                            PRICE_DECREASE_RATE.into(), TIME_SPEED.into(), MAX_AUCTIONS.into(),
+                            MAX_AUCTIONS_FROM_BID.into(), DECAY_RATE.into(), floor_price_low.into(),
+                            floor_price_high.into(), LIQUIDITY_SAFETY_MULTIPLIER.into(),
+                            min_auction_price_low.into(), min_auction_price_high.into(),
+                            MIN_AUCTION_PRICE_MULTIPLIER.into(), CENTER_LOCATION.into(),
+                            AUCTION_DURATION.into(), SCALING_FACTOR.into(),
+                            LINEAR_DECAY_TIME.into(), DROP_RATE.into(), RATE_DENOMINATOR.into(),
+                            MAX_CIRCLES.into(),
+                        ]
+                            .span(),
+                    ),
             );
 
         contract_defs

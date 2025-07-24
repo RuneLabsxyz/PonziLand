@@ -38,7 +38,6 @@ pub struct Config {
 impl ConfigImpl of ConfigTrait {
     #[inline(always)]
     fn new(
-        id: u8,
         grid_width: u8,
         tax_rate: u8,
         base_time: u16,
@@ -60,7 +59,7 @@ impl ConfigImpl of ConfigTrait {
         max_circles: u16,
     ) -> Config {
         Config {
-            id,
+            id: 1,
             grid_width,
             tax_rate,
             base_time,
