@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
-  plugins: [sveltekit(), wasm(), mkcert()],
+  plugins: [sveltekit(), wasm()],
   build: {
     sourcemap: false,
     minify: false,
@@ -29,6 +29,6 @@ export default defineConfig({
   },
 
   ssr: {
-    noExternal: ['@dojoengine/torii-client'],
+    noExternal: ['@dojoengine/torii-wasm'],
   },
 });

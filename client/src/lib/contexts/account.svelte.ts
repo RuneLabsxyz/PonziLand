@@ -9,7 +9,7 @@ import { ArgentXAccount } from '$lib/accounts/argentx';
 import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
-import { dojoConfig } from '$lib/dojoConfig';
+import { loadDojoConfig } from '$lib/dojoConfig';
 import { Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
@@ -117,7 +117,8 @@ export async function Provider(
   switch (wallet.id) {
     case 'burner':
       if (USE_BURNER) {
-        return (await setupBurnerAccount(dojoConfig)) ?? null;
+        const config = await loadDojoConfig();
+        return (await setupBurnerAccount(config)) ?? null;
       }
       return null;
     case 'controller':
@@ -212,9 +213,12 @@ export class AccountManager {
   }
 
   private async setup(): Promise<AccountManager> {
+    // Load the dojo config first
+    const config = await loadDojoConfig();
+
     // If it is dev, just use the burner provider
     if (USE_BURNER) {
-      this._provider = await setupBurnerAccount(dojoConfig)!;
+      this._provider = await setupBurnerAccount(config)!;
     }
 
     const previousWallet: string | null = localStorage.getItem(
@@ -222,7 +226,7 @@ export class AccountManager {
     );
 
     // Setup cartridge before anything else
-    controller = await setupController(dojoConfig);
+    controller = await setupController(config);
 
     // Get all available wallets
     await scanObjectForWalletsCustom();
@@ -252,11 +256,23 @@ export class AccountManager {
   }
 
   getStarknetProvider() {
+    // This method requires the config to be loaded first
+    // We'll throw an error with a helpful message if not loaded
+    let config;
+    try {
+      const { getDojoConfig } = require('$lib/dojoConfig');
+      config = getDojoConfig();
+    } catch (error) {
+      throw new Error(
+        'Dojo config not loaded yet. Ensure loadDojoConfig() has been called before using getStarknetProvider().',
+      );
+    }
+
     return new StarknetProvider({
-      nodeUrl: dojoConfig.rpcUrl,
+      nodeUrl: config.rpcUrl,
       // We won't be using argent / braavos on slot deployments any time soon
       chainId:
-        dojoConfig.profile == 'mainnet'
+        config.profile == 'mainnet'
           ? SNconstants.StarknetChainId.SN_MAIN
           : SNconstants.StarknetChainId.SN_SEPOLIA,
     });

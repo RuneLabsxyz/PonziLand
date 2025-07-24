@@ -1,4 +1,4 @@
-import { dojoConfig } from '$lib/dojoConfig';
+import { getDojoConfig } from '$lib/dojoConfig';
 import {
   type SignSessionError,
   type CreateSessionParams,
@@ -48,8 +48,9 @@ async function setupSession(
   walletObject: WALLET_API.StarknetWindowObject,
 ): Promise<[Account, StoredSession]> {
   const privateKey = ec.starkCurve.utils.randomPrivateKey();
+  const config = getDojoConfig();
   const chainId =
-    dojoConfig.profile == 'mainnet'
+    config.profile == 'mainnet'
       ? constants.StarknetChainId.SN_MAIN
       : constants.StarknetChainId.SN_SEPOLIA;
 
@@ -64,7 +65,7 @@ async function setupSession(
 
   const sessionParams: CreateSessionParams = {
     sessionKey,
-    allowedMethods: Object.entries(dojoConfig.policies.contracts ?? {}).flatMap(
+    allowedMethods: Object.entries(config.policies.contracts ?? {}).flatMap(
       (policy: any[]) =>
         policy[1].methods.map((method: any) => ({
           selector: method.entrypoint,
@@ -104,7 +105,7 @@ async function setupSession(
     sessionKey,
 
     provider: new RpcProvider({
-      nodeUrl: dojoConfig.rpcUrl,
+      nodeUrl: config.rpcUrl,
       chainId: constants.StarknetChainId.SN_SEPOLIA,
     }),
   });

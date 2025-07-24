@@ -1,8 +1,8 @@
-import { DojoProvider, type DojoConfig } from '@dojoengine/core';
+import { DojoProvider } from '@dojoengine/core';
 import { init } from '@dojoengine/sdk';
 import { schema, type SchemaType as Schema } from '$lib/models.gen';
 import { wrappedActions } from '$lib/api/contracts/approve';
-import { dojoConfig } from '$lib/dojoConfig';
+import { loadDojoConfig, type DojoConfig } from '$lib/dojoConfig';
 import { getContext, setContext } from 'svelte';
 import { poseidonHash } from '@dojoengine/torii-client';
 
@@ -30,7 +30,7 @@ async function _setupDojo(config: DojoConfig) {
     },
   });
 
-  const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
+  const provider = new DojoProvider(config.manifest, config.rpcUrl);
   return {
     ...initialized,
     provider,
@@ -42,10 +42,11 @@ async function _setupDojo(config: DojoConfig) {
 let state: { value: Client | undefined } = $state({ value: undefined });
 
 // Set the context (This function CANNOT be async due to setContext not working otherwise)
-export async function setupClient(
-  config: DojoConfig,
-): Promise<Client | undefined> {
+export async function setupClient(): Promise<Client | undefined> {
   if (state?.value == undefined) {
+    // Load the dojo config first
+    const config = await loadDojoConfig();
+
     // set the value in the context
     const result = await _setupDojo(config);
 

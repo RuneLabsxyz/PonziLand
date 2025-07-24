@@ -16,7 +16,7 @@
   } from '$lib/components/tutorial/stores.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
-  import { dojoConfig } from '$lib/dojoConfig';
+
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { landStore } from '$lib/stores/store.svelte';
@@ -26,7 +26,7 @@
     setupSocialink().then(() => {
       return setupAccountState();
     }),
-    setupClient(dojoConfig).then((client) => {
+    setupClient().then((client) => {
       landStore.setup(client!);
       landStore.stopRandomUpdates();
     }),

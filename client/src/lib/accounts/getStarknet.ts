@@ -2,7 +2,7 @@ import type {
   AccountProvider,
   StoredSession,
 } from '$lib/contexts/account.svelte';
-import { dojoConfig } from '$lib/dojoConfig';
+import { getDojoConfig } from '$lib/dojoConfig';
 import { padAddress, toHexWithPadding } from '$lib/utils';
 import { getStarknet } from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
@@ -38,10 +38,10 @@ export abstract class CommonStarknetWallet implements AccountProvider {
   async connect() {
     this._wallet = await WalletAccount.connect(
       new Provider({
-        nodeUrl: dojoConfig.rpcUrl,
+        nodeUrl: getDojoConfig().rpcUrl,
         // We won't be using argent / braavos on slot deployments any time soon
         chainId:
-          dojoConfig.profile == 'mainnet'
+          getDojoConfig().profile == 'mainnet'
             ? SNconstants.StarknetChainId.SN_MAIN
             : SNconstants.StarknetChainId.SN_SEPOLIA,
       }),
