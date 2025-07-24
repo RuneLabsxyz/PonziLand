@@ -5,7 +5,7 @@ use ponzi_land::consts::{
     GRID_WIDTH, TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS,
     MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
     MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION, SCALING_FACTOR,
-    LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR,
+    LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES,
 };
 
 #[derive(Drop, Serde, Copy, Debug)]
@@ -13,11 +13,11 @@ use ponzi_land::consts::{
 pub struct Config {
     #[key]
     pub id: u8,
-    pub grid_width: u16,
-    pub tax_rate: u16,
+    pub grid_width: u8,
+    pub tax_rate: u8,
     pub base_time: u16,
-    pub price_decrease_rate: u16,
-    pub time_speed: u32,
+    pub price_decrease_rate: u8,
+    pub time_speed: u8,
     pub max_auctions: u8,
     pub max_auctions_from_bid: u8,
     pub decay_rate: u16,
@@ -31,6 +31,7 @@ pub struct Config {
     pub linear_decay_time: u16,
     pub drop_rate: u8,
     pub rate_denominator: u8,
+    pub max_circles: u16,
 }
 
 #[generate_trait]
@@ -38,11 +39,11 @@ impl ConfigImpl of ConfigTrait {
     #[inline(always)]
     fn new(
         id: u8,
-        grid_width: u16,
-        tax_rate: u16,
+        grid_width: u8,
+        tax_rate: u8,
         base_time: u16,
-        price_decrease_rate: u16,
-        time_speed: u32,
+        price_decrease_rate: u8,
+        time_speed: u8,
         max_auctions: u8,
         max_auctions_from_bid: u8,
         decay_rate: u16,
@@ -56,6 +57,7 @@ impl ConfigImpl of ConfigTrait {
         linear_decay_time: u16,
         drop_rate: u8,
         rate_denominator: u8,
+        max_circles: u16,
     ) -> Config {
         Config {
             id,
@@ -77,6 +79,7 @@ impl ConfigImpl of ConfigTrait {
             linear_decay_time,
             drop_rate,
             rate_denominator,
+            max_circles,
         }
     }
 
@@ -103,6 +106,7 @@ impl ConfigImpl of ConfigTrait {
             linear_decay_time: LINEAR_DECAY_TIME,
             drop_rate: DROP_RATE,
             rate_denominator: RATE_DENOMINATOR,
+            max_circles: MAX_CIRCLES,
         };
         default_config
     }

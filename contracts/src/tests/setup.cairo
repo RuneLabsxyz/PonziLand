@@ -100,6 +100,7 @@ mod setup {
                 TestResource::Contract(token_registry::TEST_CLASS_HASH),
                 TestResource::Contract(auth::TEST_CLASS_HASH),
                 TestResource::Contract(actions::TEST_CLASS_HASH),
+                TestResource::Event(config::e_ConfigUpdated::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(
                     actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
