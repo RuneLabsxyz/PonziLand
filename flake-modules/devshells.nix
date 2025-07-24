@@ -64,6 +64,10 @@
         export DATABASE_URL="postgres://chaindata:chaindata@localhost/chaindata"
         export PGDATABASE=chaindata
 
+        #https certification setup
+        
+        mkcert -install || true
+        
         # Patch workerd binary if it exists
         if [ -f "./client/node_modules/@cloudflare/workerd-linux-64/bin/workerd" ]; then
           echo "Patching workerd binary"
