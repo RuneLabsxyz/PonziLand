@@ -9,6 +9,7 @@
     "dev:katana": "DOJO_PROFILE=katana vite dev",
     "build": "vite build",
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
+    "build:katana": "DOJO_PROFILE=katana vite build",
     "build:mainnet": "DOJO_PROFILE=mainnet vite build",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
