@@ -1,5 +1,3 @@
-import { browser } from '$app/environment';
-
 let manifestCache: any = null;
 let manifestPromise: Promise<any> | null = null;
 /**
@@ -21,31 +19,18 @@ export async function loadManifest(): Promise<any> {
   // Create and cache the promise
   manifestPromise = (async () => {
     try {
-      if (browser) {
-        // Client-side: fetch from HTTP endpoint
-        const response = await fetch('/manifest.json');
-        if (!response.ok) {
-          throw new Error(
-            `Failed to fetch manifest: ${response.status} ${response.statusText}`,
-          );
-        }
-        manifestCache = await response.json();
-        return manifestCache;
-      } else {
-        // Server-side: use direct function call
-        manifestCache = (
-          await import('../routes/manifest.json/+server')
-        )._getManifest();
-        return manifestCache;
+      // Client-side: fetch from HTTP endpoint
+      const response = await fetch('/manifest.json');
+      if (!response.ok) {
+        throw new Error(
+          `Failed to fetch manifest: ${response.status} ${response.statusText}`,
+        );
       }
+      manifestCache = await response.json();
+      return manifestCache;
     } catch (error) {
       // Clear the promise on error so retry is possible
       manifestPromise = null;
-      if (browser) {
-        throw new Error(`Failed to load manifest from HTTP endpoint: ${error}`);
-      } else {
-        throw new Error(`Failed to load manifest on server: ${error}`);
-      }
     } finally {
       // Clear the promise once completed (success or failure)
       manifestPromise = null;

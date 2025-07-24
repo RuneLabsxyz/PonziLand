@@ -5,6 +5,7 @@ import {
   PUBLIC_DOJO_BURNER_ADDRESS,
   PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
+import { getDojoConfig } from '$lib/dojoConfig';
 import { ArgentXAccount } from '$lib/accounts/argentx';
 import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
@@ -258,15 +259,7 @@ export class AccountManager {
   getStarknetProvider() {
     // This method requires the config to be loaded first
     // We'll throw an error with a helpful message if not loaded
-    let config;
-    try {
-      const { getDojoConfig } = require('$lib/dojoConfig');
-      config = getDojoConfig();
-    } catch (error) {
-      throw new Error(
-        'Dojo config not loaded yet. Ensure loadDojoConfig() has been called before using getStarknetProvider().',
-      );
-    }
+    let config = getDojoConfig();
 
     return new StarknetProvider({
       nodeUrl: config.rpcUrl,

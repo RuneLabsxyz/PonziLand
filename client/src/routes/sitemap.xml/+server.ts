@@ -1,5 +1,7 @@
 import { dev } from '$app/environment';
 
+export const prerender = true;
+
 export const GET = async () => {
   const base = 'https://play.ponzi.land';
 
