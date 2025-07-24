@@ -7,6 +7,8 @@
   import Particles, { particlesInit } from '@tsparticles/svelte';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
+  import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
+  import accountDataProvider from '$lib/account.svelte';
 
   let particlesConfig = {
     particles: {
@@ -81,24 +83,25 @@
     await loadSlim(engine);
   });
 
+  let isLogin = $derived(accountDataProvider.isConnected);
+
   // setup account
-  //
   const account = useAccount();
 
   async function startGame() {
-    const accountProvider = account;
-    if (accountProvider == null) {
-      console.log('No accountProvider?!?');
-      return;
+    if (!isLogin) {
+      const accountProvider = account;
+      if (accountProvider == null) {
+        console.log('No accountProvider?!?');
+        return;
+      }
+      await accountProvider.promptForLogin();
     }
-    await accountProvider.promptForLogin();
-
-    console.log('Got the confirmation that it worked!');
     goto('/game');
   }
 
-  let showLogo = false;
-  let showWave = false;
+  let showLogo = $state(false);
+  let showWave = $state(false);
 
   onMount(() => {
     showLogo = true;
@@ -109,7 +112,7 @@
 </script>
 
 <main
-  class="relative flex flex-col items-center justify-start h-screen overflow-hidden"
+class="relative flex flex-col items-center justify-start h-screen overflow-hidden"
 >
   <!-- Image background -->
   <div class="absolute inset-0 overflow-hidden">
@@ -128,7 +131,7 @@
   </div>
 
   <div class="absolute inset-0 bg-black/30 z-[2]"></div>
-
+  
   {#if showLogo}
     <img
       src="/logo.png"
@@ -137,6 +140,11 @@
       transition:fly={{ y: -400, duration: 1500 }}
     />
   {/if}
+  
+  <div class="absolute top-0 right-0 m-5 z-[10] pointer-events-auto">
+    <OnboardingWalletInfo />
+  </div>
+
   {#if showWave}
     <img
       src="/home/wave.gif"
@@ -148,13 +156,13 @@
   {/if}
 
   <Button
-    variant="red"
-    size="lg"
-    onclick={startGame}
-    class="z-[3] text-3xl px-12 py-4 font-bold"
-  >
-    PLAY
-  </Button>
+  variant="red"
+  size="lg"
+  onclick={startGame}
+  class="z-[3] text-3xl px-12 py-4 font-bold"
+>
+  PLAY
+</Button>
 </main>
 
 <style>
