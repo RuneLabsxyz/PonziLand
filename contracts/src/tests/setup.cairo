@@ -23,10 +23,14 @@ mod setup {
     };
     use ponzi_land::models::land::{Land, m_Land, LandStake, m_LandStake};
     use ponzi_land::models::auction::{Auction, m_Auction};
+    use ponzi_land::models::config::{Config, m_Config};
 
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::components::taxes::{TaxesComponent};
     use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
+    use ponzi_land::systems::config::{
+        config, IConfigSystemDispatcher, IConfigSystemDispatcherTrait,
+    };
     use ponzi_land::systems::token_registry::{
         token_registry, ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
     };
@@ -43,6 +47,7 @@ mod setup {
         IEkuboCoreTestingDispatcher,
         IAuthDispatcher,
         ITokenRegistryDispatcher,
+        IConfigSystemDispatcher,
     ) {
         let ndef = namespace_def();
 
@@ -59,6 +64,8 @@ mod setup {
         let mut world = spawn_test_world([ndef].span());
         world.sync_perms_and_inits(cdf);
 
+        let (config_contract_address, _) = world.dns(@"config").unwrap();
+        let config_system = IConfigSystemDispatcher { contract_address: config_contract_address };
         let (action_contract_address, _) = world.dns(@"actions").unwrap();
         let actions_system = IActionsDispatcher { contract_address: action_contract_address };
         let (auth_contract_address, _) = world.dns(@"auth").unwrap();
@@ -76,6 +83,7 @@ mod setup {
             testing_dispatcher,
             auth_system,
             token_registry_dispatcher,
+            config_system,
         )
     }
 
@@ -87,8 +95,11 @@ mod setup {
                 TestResource::Model(m_Land::TEST_CLASS_HASH),
                 TestResource::Model(m_LandStake::TEST_CLASS_HASH),
                 TestResource::Model(m_Auction::TEST_CLASS_HASH),
-                TestResource::Contract(actions::TEST_CLASS_HASH),
+                TestResource::Model(m_Config::TEST_CLASS_HASH),
+                TestResource::Contract(config::TEST_CLASS_HASH),
                 TestResource::Contract(token_registry::TEST_CLASS_HASH),
+                TestResource::Contract(auth::TEST_CLASS_HASH),
+                TestResource::Contract(actions::TEST_CLASS_HASH),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(
                     actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
@@ -103,7 +114,6 @@ mod setup {
                 TestResource::Event(
                     TaxesComponent::e_LandTransferEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
-                TestResource::Contract(auth::TEST_CLASS_HASH),
                 TestResource::Event(
                     auth::e_AddressAuthorizedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
@@ -122,6 +132,13 @@ mod setup {
 
     fn contract_defs(erc20_address: felt252, ekubo_core_address: felt252) -> Span<ContractDef> {
         let mut contract_defs: Array<ContractDef> = array![];
+
+        contract_defs
+            .append(
+                ContractDefTrait::new(@"ponzi_land", @"config")
+                    .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
+                    .with_init_calldata([].span()),
+            );
 
         contract_defs
             .append(
