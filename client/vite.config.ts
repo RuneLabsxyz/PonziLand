@@ -10,7 +10,7 @@ export default defineConfig({
     target: 'es2022',
   },
   server: {
-    host: 'localhost',
+    host: '0.0.0.0',
     port: 3000,
     fs: {
       allow: ['../constracts/manifest_*.json', 'data/'],
