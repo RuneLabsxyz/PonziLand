@@ -65,13 +65,22 @@
   let userAddress: string | null = $state(null);
 
   let percentile: number | null = $state(null);
-  let rankTier: RankTier[] | null = $state(null);
+  let rankTier: RankTier | null = $state(null);
 
   $effect(() => {
+    if (address) {
+      fetchUserStats(address);
+    }
+  });
+
+  $effect(() => {
+    console.log('totaly a test');
     if (userStats) {
+      console.log('test 2');
       percentile =
         ((userStats.total_users - userStats.rank + 1) / userStats.total_users) *
         100;
+      console.log('this is the percentile', percentile);
     }
   });
 
@@ -203,4 +212,3 @@
     }
   }
 </style>
-
