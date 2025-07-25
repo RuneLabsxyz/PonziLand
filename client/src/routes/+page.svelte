@@ -112,7 +112,7 @@
 </script>
 
 <main
-class="relative flex flex-col items-center justify-start h-screen overflow-hidden"
+  class="relative flex flex-col items-center justify-start h-screen overflow-hidden"
 >
   <!-- Image background -->
   <div class="absolute inset-0 overflow-hidden">
@@ -131,7 +131,7 @@ class="relative flex flex-col items-center justify-start h-screen overflow-hidde
   </div>
 
   <div class="absolute inset-0 bg-black/30 z-[2]"></div>
-  
+
   {#if showLogo}
     <img
       src="/logo.png"
@@ -140,7 +140,7 @@ class="relative flex flex-col items-center justify-start h-screen overflow-hidde
       transition:fly={{ y: -400, duration: 1500 }}
     />
   {/if}
-  
+
   <div class="absolute top-0 right-0 m-5 z-[10] pointer-events-auto">
     <OnboardingWalletInfo />
   </div>
@@ -156,13 +156,13 @@ class="relative flex flex-col items-center justify-start h-screen overflow-hidde
   {/if}
 
   <Button
-  variant="red"
-  size="lg"
-  onclick={startGame}
-  class="z-[3] text-3xl px-12 py-4 font-bold"
->
-  PLAY
-</Button>
+    variant="red"
+    size="lg"
+    onclick={startGame}
+    class="z-[3] text-3xl px-12 py-4 font-bold"
+  >
+    PLAY
+  </Button>
 </main>
 
 <style>
