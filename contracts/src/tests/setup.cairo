@@ -27,7 +27,8 @@ mod setup {
         GRID_WIDTH, TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS,
         MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER,
         MIN_AUCTION_PRICE, MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION,
-        SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES,
+        SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE,
+        BUY_FEE, OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
     };
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::components::taxes::{TaxesComponent};
@@ -42,6 +43,7 @@ mod setup {
     fn RECIPIENT() -> ContractAddress {
         contract_address_const::<'RECIPIENT'>()
     }
+
 
     fn create_setup() -> (
         WorldStorage,
@@ -155,7 +157,9 @@ mod setup {
                             MIN_AUCTION_PRICE_MULTIPLIER.into(), CENTER_LOCATION.into(),
                             AUCTION_DURATION.into(), SCALING_FACTOR.into(),
                             LINEAR_DECAY_TIME.into(), DROP_RATE.into(), RATE_DENOMINATOR.into(),
-                            MAX_CIRCLES.into(),
+                            MAX_CIRCLES.into(), CLAIM_FEE.into(), BUY_FEE.into(),
+                            OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
+                            CLAIM_FEE_THRESHOLD.into(),
                         ]
                             .span(),
                     ),

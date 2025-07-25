@@ -2,7 +2,7 @@ use ponzi_land::utils::level_up::calculate_discount_for_level;
 use ponzi_land::helpers::coord::max_neighbors;
 use ponzi_land::models::land::{Land, LandStake};
 use ponzi_land::store::{Store, StoreTrait};
-use ponzi_land::consts::{DECIMALS_FACTOR};
+use ponzi_land::consts::{DECIMALS_FACTOR, SCALE_FACTOR_FOR_FEE};
 use starknet::{get_block_timestamp};
 
 
@@ -48,3 +48,13 @@ fn calculate_share_for_nuke(
     scaled_share / DECIMALS_FACTOR
 }
 
+
+//TODO: here also we can pass a ref of landStake and after do only 1 write with everything updated
+#[inline(always)]
+pub fn calculate_and_return_taxes_with_fee(
+    total_taxes_amount: u256, fee_rate: u128,
+) -> (u256, u128) {
+    let fee_amount = total_taxes_amount * fee_rate.into() / SCALE_FACTOR_FOR_FEE.into();
+    let amount_for_claimer = total_taxes_amount - fee_amount;
+    (amount_for_claimer, fee_amount.try_into().unwrap())
+}

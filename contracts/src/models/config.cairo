@@ -5,7 +5,8 @@ use ponzi_land::consts::{
     GRID_WIDTH, TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS,
     MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
     MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION, SCALING_FACTOR,
-    LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES,
+    LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE,
+    OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
 };
 
 #[derive(Drop, Serde, Copy, Debug)]
@@ -32,6 +33,11 @@ pub struct Config {
     pub drop_rate: u8,
     pub rate_denominator: u8,
     pub max_circles: u16,
+    pub claim_fee: u128,
+    pub buy_fee: u128,
+    pub our_contract_for_fee: ContractAddress,
+    pub our_contract_for_auction: ContractAddress,
+    pub claim_fee_threshold: u128,
 }
 
 #[generate_trait]
@@ -57,6 +63,11 @@ impl ConfigImpl of ConfigTrait {
         drop_rate: u8,
         rate_denominator: u8,
         max_circles: u16,
+        claim_fee: u128,
+        buy_fee: u128,
+        our_contract_for_fee: ContractAddress,
+        our_contract_for_auction: ContractAddress,
+        claim_fee_threshold: u128,
     ) -> Config {
         Config {
             id: 1,
@@ -79,6 +90,11 @@ impl ConfigImpl of ConfigTrait {
             drop_rate,
             rate_denominator,
             max_circles,
+            claim_fee,
+            buy_fee,
+            our_contract_for_fee,
+            our_contract_for_auction,
+            claim_fee_threshold,
         }
     }
 
@@ -106,6 +122,11 @@ impl ConfigImpl of ConfigTrait {
             drop_rate: DROP_RATE,
             rate_denominator: RATE_DENOMINATOR,
             max_circles: MAX_CIRCLES,
+            claim_fee: CLAIM_FEE,
+            buy_fee: BUY_FEE,
+            our_contract_for_fee: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
+            our_contract_for_auction: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
+            claim_fee_threshold: CLAIM_FEE_THRESHOLD,
         };
         default_config
     }

@@ -2,6 +2,9 @@
 // Allows the contract owner to update global economic and gameplay parameters.
 // Each setter updates a specific field in the Config model, which is then used by core game logic
 // in systems such as actions, taxes, and staking.
+
+use starknet::ContractAddress;
+
 #[starknet::interface]
 trait IConfigSystem<T> {
     /// @notice Set the full config.
@@ -28,6 +31,11 @@ trait IConfigSystem<T> {
         drop_rate: u8,
         rate_denominator: u8,
         max_circles: u16,
+        claim_fee: u128,
+        buy_fee: u128,
+        our_contract_for_fee: ContractAddress,
+        our_contract_for_auction: ContractAddress,
+        claim_fee_threshold: u128,
     );
 
     /// @notice Sets the grid width, which determines the size of the land map.
@@ -139,6 +147,28 @@ trait IConfigSystem<T> {
     /// Used to limit the number of lands that can be created in the game.
     fn set_max_circles(ref self: T, value: u16);
 
+    /// @notice Sets the claim fee.
+    /// @param value The new claim fee.
+    /// Used to calculate the fee for claiming a land. // 0.05% = 0.0005 * SCALE_FACTOR = 500
+    fn set_claim_fee(ref self: T, value: u128);
+
+    /// @notice Sets the buy fee.
+    /// @param value The new buy fee.
+    /// Used to calculate the fee for buying a land. // 0.01% = 0.0001 * SCALE_FACTOR = 100
+    fn set_buy_fee(ref self: T, value: u128);
+
+    /// @notice Sets the our contract for fee.
+    /// @param value The new our contract for fee.
+    fn set_our_contract_for_fee(ref self: T, value: ContractAddress);
+
+    /// @notice Sets the our contract for auction.
+    /// @param value The new our contract for auction.
+    fn set_our_contract_for_auction(ref self: T, value: ContractAddress);
+
+    /// @notice Sets the claim fee threshold.
+    /// @param value The new claim fee threshold.
+    fn set_claim_fee_threshold(ref self: T, value: u128);
+
     // Getters
     fn get_grid_width(self: @T) -> u16;
     fn get_tax_rate(self: @T) -> u16;
@@ -159,6 +189,9 @@ trait IConfigSystem<T> {
     fn get_drop_rate(self: @T) -> u8;
     fn get_rate_denominator(self: @T) -> u8;
     fn get_max_circles(self: @T) -> u16;
+    fn get_claim_fee(self: @T) -> u128;
+    fn get_buy_fee(self: @T) -> u128;
+    fn get_claim_fee_threshold(self: @T) -> u128;
 }
 
 #[dojo::contract]
@@ -203,6 +236,11 @@ mod config {
         drop_rate: u8,
         rate_denominator: u8,
         max_circles: u16,
+        claim_fee: u128,
+        buy_fee: u128,
+        our_contract_for_fee: ContractAddress,
+        our_contract_for_auction: ContractAddress,
+        claim_fee_threshold: u128,
     ) {
         let mut world = self.world_default();
         let init_config: Config = ConfigTrait::new(
@@ -225,6 +263,11 @@ mod config {
             drop_rate,
             rate_denominator,
             max_circles,
+            claim_fee,
+            buy_fee,
+            our_contract_for_fee,
+            our_contract_for_auction,
+            claim_fee_threshold,
         );
         world.write_model(@init_config);
     }
@@ -253,6 +296,11 @@ mod config {
             drop_rate: u8,
             rate_denominator: u8,
             max_circles: u16,
+            claim_fee: u128,
+            buy_fee: u128,
+            our_contract_for_fee: ContractAddress,
+            our_contract_for_auction: ContractAddress,
+            claim_fee_threshold: u128,
         ) {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
@@ -276,6 +324,11 @@ mod config {
                 drop_rate,
                 rate_denominator,
                 max_circles,
+                claim_fee,
+                buy_fee,
+                our_contract_for_fee,
+                our_contract_for_auction,
+                claim_fee_threshold,
             );
             world.write_model(@new_config);
         }
@@ -472,6 +525,59 @@ mod config {
             world.emit_event(@ConfigUpdated { field: 'max_circles', new_value: value.into() });
         }
 
+        fn set_claim_fee(ref self: ContractState, value: u128) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world.write_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee"), value);
+            world.emit_event(@ConfigUpdated { field: 'claim_fee', new_value: value.into() });
+        }
+
+        fn set_buy_fee(ref self: ContractState, value: u128) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world.write_member(Model::<Config>::ptr_from_keys(1), selector!("buy_fee"), value);
+            world.emit_event(@ConfigUpdated { field: 'buy_fee', new_value: value.into() });
+        }
+
+        fn set_our_contract_for_fee(ref self: ContractState, value: ContractAddress) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_fee"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'our_contract_for_fee', new_value: value.into() },
+                );
+        }
+
+        fn set_our_contract_for_auction(ref self: ContractState, value: ContractAddress) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_auction"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'our_contract_for_auction', new_value: value.into() },
+                );
+        }
+
+        fn set_claim_fee_threshold(ref self: ContractState, value: u128) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("claim_fee_threshold"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'claim_fee_threshold', new_value: value.into() },
+                );
+        }
+
         // Getters implementation
         fn get_grid_width(self: @ContractState) -> u16 {
             let world = self.world_default();
@@ -572,6 +678,21 @@ mod config {
         fn get_max_circles(self: @ContractState) -> u16 {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("max_circles"))
+        }
+
+        fn get_claim_fee(self: @ContractState) -> u128 {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee"))
+        }
+
+        fn get_buy_fee(self: @ContractState) -> u128 {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("buy_fee"))
+        }
+
+        fn get_claim_fee_threshold(self: @ContractState) -> u128 {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee_threshold"))
         }
     }
     #[generate_trait]
