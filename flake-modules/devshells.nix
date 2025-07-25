@@ -26,6 +26,7 @@
 
         # svelte node dependencies
         bun
+        nodejs_latest
 
         # Cargo dependencies
         pkg-config

@@ -9,7 +9,6 @@
   import TutorialUi from '$lib/components/tutorial/ui.svelte';
   import { GRID_SIZE } from '$lib/const';
   import { setupClient } from '$lib/contexts/client.svelte';
-  import { dojoConfig } from '$lib/dojoConfig';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { onDestroy } from 'svelte';
 
@@ -17,7 +16,7 @@
   let value = $state(10);
 
   const promise = new Promise<void>((resolve) => {
-    setupClient(dojoConfig);
+    setupClient();
     setupSocialink();
     // Use setTimeout to ensure the setup is complete and any state updates are processed
     setTimeout(() => {
