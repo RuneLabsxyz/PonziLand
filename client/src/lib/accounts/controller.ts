@@ -98,7 +98,7 @@ export async function setupController(
   }
 
   const controller = new SvelteController({
-    defaultChainId: "0x4b4154414e41", // SN_SEPOLIA in hex
+    defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
     chains: [{ rpcUrl: config.rpcUrl }],
     policies: preset.chains.SN_MAIN.policies as any,
   });

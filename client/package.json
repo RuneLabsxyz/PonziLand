@@ -85,5 +85,9 @@
     "tsparticles": "^3.8.1",
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-wasm": "^3.3.0"
+    
+  },
+  "overrides": {
+    "@starknet-react/core": "file:./patches/starknet-react-core"
   }
 }
