@@ -560,11 +560,21 @@ fn test_claim_and_add_taxes() {
         erc20_neighbor_1,
     );
     let neighbor_land_before_claim = store.land_stake(next_auction_location.unwrap());
+    let accumulated_fee_before_claim = neighbor_land_before_claim.accumulated_taxes_fee;
     let our_contract_for_fee_before_claim = erc20_neighbor_1
         .balanceOf(OUR_CONTRACT_FOR_FEE.try_into().unwrap());
     // Simulate time difference to generate taxes
     let our_contract_for_fee = OUR_CONTRACT_FOR_FEE.try_into().unwrap();
     set_block_timestamp(20000);
+    set_contract_address(RECIPIENT());
+    actions_system.claim(CENTER_LOCATION);
+    let accumulated_fee_after_claim = store
+        .land_stake(next_auction_location.unwrap())
+        .accumulated_taxes_fee;
+
+    assert(accumulated_fee_after_claim > accumulated_fee_before_claim, 'fail in accumalated fees');
+
+    set_block_timestamp(40000);
     set_contract_address(RECIPIENT());
     actions_system.claim(CENTER_LOCATION);
     let our_contract_for_fee_after_claim = erc20_neighbor_1.balanceOf(our_contract_for_fee);

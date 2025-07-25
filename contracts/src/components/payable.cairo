@@ -58,6 +58,7 @@ mod PayableComponent {
     use super::ValidationResult;
     use ponzi_land::consts::{OUR_CONTRACT_SEPOLIA_ADDRESS, SCALE_FACTOR_FOR_FEE};
     use ponzi_land::store::{Store, StoreTrait};
+    use ponzi_land::helpers::taxes::{calculate_and_return_taxes_with_fee};
 
     //TODO:move this to a file for errors
     mod errors {
@@ -149,45 +150,18 @@ mod PayableComponent {
                 errors::DIFFERENT_ERC20_TOKEN_DISPATCHER,
             );
 
-            let fee_amount = validation_result.amount
-                * fee_rate.into()
-                / SCALE_FACTOR_FOR_FEE.into();
-            let amount_for_seller = validation_result.amount - fee_amount;
+            let (amount_for_seller, fee_amount) = calculate_and_return_taxes_with_fee(
+                validation_result.amount, fee_rate,
+            );
 
             // Perform the first transfer and check if it was successful
             let fee_transfer_success = token_dispatcher
-                .transferFrom(buyer, our_contract_for_fee, fee_amount);
+                .transferFrom(buyer, our_contract_for_fee, fee_amount.try_into().unwrap());
             if !fee_transfer_success {
                 return false; // Exit early if the fee transfer fails
             }
 
             token_dispatcher.transferFrom(buyer, seller, amount_for_seller)
-        }
-
-        fn proccess_payment_with_fee_for_claim(
-            self: @ComponentState<TContractState>,
-            claimer: ContractAddress,
-            fee_rate: u128,
-            our_contract_for_fee: ContractAddress,
-            validation_result: ValidationResult,
-        ) -> bool {
-            let token_dispatcher = self.token_dispatcher.read();
-            assert(
-                token_dispatcher.contract_address == validation_result.token_address,
-                errors::DIFFERENT_ERC20_TOKEN_DISPATCHER,
-            );
-
-            let fee_amount = validation_result.amount
-                * fee_rate.into()
-                / SCALE_FACTOR_FOR_FEE.into();
-            let amount_for_claimer = validation_result.amount - fee_amount;
-            // Perform the first transfer and check if it was successful
-            let fee_transfer_success = token_dispatcher.transfer(our_contract_for_fee, fee_amount);
-            if !fee_transfer_success {
-                return false; // Exit early if the fee transfer fails
-            }
-
-            token_dispatcher.transfer(claimer, amount_for_claimer)
         }
 
         fn balance_of(

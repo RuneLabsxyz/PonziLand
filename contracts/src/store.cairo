@@ -171,6 +171,11 @@ impl StoreImpl of StoreTrait {
     }
 
     #[inline(always)]
+    fn get_claim_fee_threshold(self: Store) -> u128 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee_threshold"))
+    }
+
+    #[inline(always)]
     fn get_buy_fee(self: Store) -> u128 {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("buy_fee"))
     }

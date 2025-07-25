@@ -274,6 +274,7 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land.location);
             let our_contract_for_fee = store.get_our_contract_for_fee();
             let claim_fee = store.get_claim_fee();
+            let claim_fee_threshold = store.get_claim_fee_threshold();
             self
                 .internal_claim(
                     store,
@@ -283,6 +284,7 @@ pub mod actions {
                     our_contract_address,
                     false,
                     claim_fee,
+                    claim_fee_threshold,
                     our_contract_for_fee,
                 );
 
@@ -298,6 +300,7 @@ pub mod actions {
                         our_contract_address,
                         true,
                         claim_fee,
+                        claim_fee_threshold,
                         our_contract_for_fee,
                     );
             };
@@ -353,6 +356,7 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land.location);
 
             let claim_fee = store.get_claim_fee();
+            let claim_fee_threshold = store.get_claim_fee_threshold();
             let our_contract_for_fee = store.get_our_contract_for_fee();
             self
                 .internal_claim(
@@ -363,6 +367,7 @@ pub mod actions {
                     our_contract_address,
                     false,
                     claim_fee,
+                    claim_fee_threshold,
                     our_contract_for_fee,
                 );
         }
@@ -375,6 +380,7 @@ pub mod actions {
             let current_time = get_block_timestamp();
             let our_contract_address = get_contract_address();
             let claim_fee = store.get_claim_fee();
+            let claim_fee_threshold = store.get_claim_fee_threshold();
             let our_contract_for_fee = store.get_our_contract_for_fee();
 
             for land_location in land_locations {
@@ -394,6 +400,7 @@ pub mod actions {
                             our_contract_address,
                             false,
                             claim_fee,
+                            claim_fee_threshold,
                             our_contract_for_fee,
                         );
                 }
@@ -862,6 +869,7 @@ pub mod actions {
             our_contract_address: ContractAddress,
             from_buy: bool,
             claim_fee: u128,
+            claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
         ) {
             if neighbors.len() != 0 {
@@ -878,6 +886,7 @@ pub mod actions {
                             current_time,
                             our_contract_address,
                             claim_fee,
+                            claim_fee_threshold,
                             our_contract_for_fee,
                         );
 

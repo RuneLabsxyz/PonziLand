@@ -1,3 +1,14 @@
+//! This file contains default configuration values used EXCLUSIVELY for testing purposes.
+//! These values are not used directly by the contract during runtime.
+//!
+//! The actual configuration values are stored in the on-chain `Config` model and can be modified
+//! by the contract owner through the configuration system. These test constants are only used to:
+//! 1. Initialize the contract in test environments
+//! 2. Provide default values for test cases
+//! 3. Serve as reference for expected value ranges
+//!
+//! To modify these values in production, use the configuration system's update methods.
+
 pub const GRID_WIDTH: u8 = 64;
 pub const MAX_GRID_SIZE: u8 = 255;
 
@@ -19,12 +30,14 @@ pub const MIN_AUCTION_PRICE: u256 = 500 * DECIMALS_FACTOR; // 10
 pub const MIN_AUCTION_PRICE_MULTIPLIER: u8 = 10; // 10x the sale price at the start
 pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
 pub const CENTER_LOCATION: u16 = 32639;
-pub const MAX_CIRCLES: u16 = 64;
+pub const MAX_CIRCLES: u16 = 127;
 
 
 pub const SCALE_FACTOR_FOR_FEE: u128 = 10_000_000;
 pub const CLAIM_FEE: u128 = 900_000;
 pub const BUY_FEE: u128 = 990_000;
+// 10 is for easier tests
+pub const CLAIM_FEE_THRESHOLD: u128 = 10; //1_000_000_000_000_000; // 1e15
 pub const OUR_CONTRACT_FOR_FEE: felt252 =
     0x021fBAE9F9343873ab25eC14d287A1170b676C73c97906790ef91F5428dBdbac;
 

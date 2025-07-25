@@ -28,7 +28,7 @@ mod setup {
         MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER,
         MIN_AUCTION_PRICE, MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION,
         SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE,
-        BUY_FEE, OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
+        BUY_FEE, OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
     };
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::components::taxes::{TaxesComponent};
@@ -159,6 +159,7 @@ mod setup {
                             LINEAR_DECAY_TIME.into(), DROP_RATE.into(), RATE_DENOMINATOR.into(),
                             MAX_CIRCLES.into(), CLAIM_FEE.into(), BUY_FEE.into(),
                             OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
+                            CLAIM_FEE_THRESHOLD.into(),
                         ]
                             .span(),
                     ),
