@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
-  plugins: [sveltekit(), wasm() ],
+  plugins: [sveltekit(), wasm()],
   build: {
     sourcemap: false,
     minify: false,
