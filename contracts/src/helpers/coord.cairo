@@ -18,11 +18,6 @@ fn index_to_position(index: u16) -> (u8, u8) {
     (row, col)
 }
 
-fn is_valid_position(index: u16) -> bool {
-    let (row, col) = index_to_position(index);
-    row <= MAX_GRID_SIZE && col <= MAX_GRID_SIZE
-}
-
 
 fn left(index: u16) -> Option<u16> {
     let (row, col) = index_to_position(index);
@@ -161,11 +156,7 @@ fn max_neighbors(index: u16) -> u8 {
 
 #[cfg(test)]
 mod coord_test {
-    use super::{
-        position_to_index, index_to_position, left, right, up, down, is_valid_position,
-        max_neighbors,
-    };
-
+    use super::{position_to_index, index_to_position, left, right, up, down, max_neighbors};
     #[test]
     fn test_position_to_index() {
         assert_eq!(position_to_index(0, 0), 0);
@@ -210,14 +201,6 @@ mod coord_test {
         assert_eq!(down(256), Option::Some(512));
         assert_eq!(down(257), Option::Some(513));
         assert_eq!(down(64781), Option::Some(65037));
-    }
-
-    #[test]
-    fn test_is_valid_position() {
-        assert(is_valid_position(position_to_index(0, 10)), 'has to be true');
-        assert(is_valid_position(position_to_index(200, 200)), 'has to be true');
-        assert(is_valid_position(position_to_index(255, 255)), 'has to be true');
-        assert(is_valid_position(position_to_index(0, 0)), 'has to be true');
     }
 
     #[test]
