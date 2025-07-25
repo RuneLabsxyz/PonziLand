@@ -49,7 +49,7 @@ export async function refresh() {
 export async function setup() {
   if (isSetup) {
     return state;
-  };
+  }
 
   isSetup = true;
   const accountManager = useAccount()!;
