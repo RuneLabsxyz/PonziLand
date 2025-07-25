@@ -38,13 +38,6 @@ trait IPayable<TContractState> {
         validation_result: ValidationResult,
     ) -> bool;
 
-    fn proccess_payment_with_fee_for_claim(
-        self: @TContractState,
-        claimer: ContractAddress,
-        fee_rate: u128,
-        our_contract_for_fee: ContractAddress,
-        validation_result: ValidationResult,
-    ) -> bool;
 
     fn balance_of(
         ref self: TContractState, token_address: ContractAddress, owner: ContractAddress,
