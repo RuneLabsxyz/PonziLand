@@ -9,7 +9,7 @@
   import { fly } from 'svelte/transition';
   import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
   import accountDataProvider from '$lib/account.svelte';
-  import ExperienceSection from '$lib/portal/experience-section.svelte';
+  import PortalMain from '$lib/portal/portal-main.svelte';
 
   let particlesConfig = {
     particles: {
@@ -168,13 +168,9 @@
   >
     PLAY
   </Button>
-
-  {#if showExperience}
-    <div class="z-[3] w-full" transition:fly={{ y: 100, duration: 800 }}>
-      <ExperienceSection />
-    </div>
-  {/if}
 </main>
+
+<PortalMain />
 
 <style>
   @keyframes float {
