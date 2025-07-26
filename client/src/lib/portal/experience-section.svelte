@@ -118,15 +118,28 @@
 </script>
 
 <Card class="bg-black/90">
-  <div class="space-y-4 p-5">
+  <div class="space-y-4 p-5 min-h-[400px]">
     <h2
       class=" text-2xl text-ponzi-number text-center uppercase tracking-wider"
     >
       Experience Portal
     </h2>
-    {#if userAddress}
-      <div class="text-center py-4 text-gray-400">
-        Connect your wallet to view stats
+    {#if loading}
+      <div class="flex flex-col items-center justify-center h-[300px]">
+        <div class="text-2xl text-ponzi-number animate-pulse">
+          LOADING...
+        </div>
+        <div class="mt-4 flex gap-1">
+          <div class="w-2 h-2 bg-yellow-400 animate-bounce" style="animation-delay: 0ms"></div>
+          <div class="w-2 h-2 bg-yellow-400 animate-bounce" style="animation-delay: 150ms"></div>
+          <div class="w-2 h-2 bg-yellow-400 animate-bounce" style="animation-delay: 300ms"></div>
+        </div>
+      </div>
+    {:else if !address}
+      <div class="flex items-center justify-center h-[300px]">
+        <div class="text-center text-gray-400">
+          Connect your wallet to view stats
+        </div>
       </div>
     {:else if userStats && rankTier && percentile}
       <div class="space-y-6">
@@ -191,6 +204,13 @@
             </p>
           </div>
         {/if}
+      </div>
+    {:else if error}
+      <div class="flex items-center justify-center h-[300px]">
+        <div class="text-center text-red-400">
+          <div class="text-xl mb-2">ERROR</div>
+          <div class="text-sm">{error}</div>
+        </div>
       </div>
     {/if}
   </div>
