@@ -9,6 +9,7 @@
   import { fly } from 'svelte/transition';
   import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
   import accountDataProvider from '$lib/account.svelte';
+  import PortalMain from '$lib/portal/portal-main.svelte';
 
   let particlesConfig = {
     particles: {
@@ -102,12 +103,16 @@
 
   let showLogo = $state(false);
   let showWave = $state(false);
+  let showExperience = $state(false);
 
   onMount(() => {
     showLogo = true;
     setTimeout(() => {
       showWave = true;
     }, 3000);
+    setTimeout(() => {
+      showExperience = true;
+    }, 1500);
   });
 </script>
 
@@ -159,11 +164,13 @@
     variant="red"
     size="lg"
     onclick={startGame}
-    class="z-[3] text-3xl px-12 py-4 font-bold"
+    class="z-[3] text-3xl px-12 py-4 font-bold mb-8"
   >
     PLAY
   </Button>
 </main>
+
+<PortalMain />
 
 <style>
   @keyframes float {
