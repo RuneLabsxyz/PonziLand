@@ -58,7 +58,10 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   // Check if URL is in allowed list or is a /portal subpath
-  if (allowedUrls.includes(event.url.pathname) || event.url.pathname.startsWith('/portal/')) {
+  if (
+    allowedUrls.includes(event.url.pathname) ||
+    event.url.pathname.startsWith('/portal/')
+  ) {
     // Resolve as normal
     return await resolve(event);
   }

@@ -126,13 +126,20 @@
     </h2>
     {#if loading}
       <div class="flex flex-col items-center justify-center h-[300px]">
-        <div class="text-2xl text-ponzi-number animate-pulse">
-          LOADING...
-        </div>
+        <div class="text-2xl text-ponzi-number animate-pulse">LOADING...</div>
         <div class="mt-4 flex gap-1">
-          <div class="w-2 h-2 bg-yellow-400 animate-bounce" style="animation-delay: 0ms"></div>
-          <div class="w-2 h-2 bg-yellow-400 animate-bounce" style="animation-delay: 150ms"></div>
-          <div class="w-2 h-2 bg-yellow-400 animate-bounce" style="animation-delay: 300ms"></div>
+          <div
+            class="w-2 h-2 bg-yellow-400 animate-bounce"
+            style="animation-delay: 0ms"
+          ></div>
+          <div
+            class="w-2 h-2 bg-yellow-400 animate-bounce"
+            style="animation-delay: 150ms"
+          ></div>
+          <div
+            class="w-2 h-2 bg-yellow-400 animate-bounce"
+            style="animation-delay: 300ms"
+          ></div>
         </div>
       </div>
     {:else if !address}
