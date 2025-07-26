@@ -9,7 +9,6 @@
   import { fly } from 'svelte/transition';
   import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
   import accountDataProvider from '$lib/account.svelte';
-  import PortalMain from '$lib/portal/portal-main.svelte';
 
   let particlesConfig = {
     particles: {
@@ -169,8 +168,6 @@
     PLAY
   </Button>
 </main>
-
-<PortalMain />
 
 <style>
   @keyframes float {
