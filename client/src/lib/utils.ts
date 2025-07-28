@@ -136,7 +136,7 @@ export function locationToCoordinates(location: number | string | undefined) {
 }
 
 export function coordinatesToLocation(location: { x: number; y: number }) {
-  return location.x + location.y * config.gridSize;
+  return location.x + location.y * config.GRID_SIZE;
 }
 
 export function padAddress(address: string) {
