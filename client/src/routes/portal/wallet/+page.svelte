@@ -9,6 +9,7 @@
     TrendingUp,
   } from 'lucide-svelte';
   import Button from '$lib/components/ui/button/button.svelte';
+  import WalletBalance from '$lib/components/+game-ui/widgets/wallet/wallet-balance.svelte';
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
@@ -19,49 +20,63 @@
       <p class="text-gray-400 text-lg">Manage your assets and transactions</p>
     </div>
 
-    <!-- Balance Overview -->
-    <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 mb-8">
-      <div class="p-8">
-        <div class="flex items-center justify-between mb-6">
-          <div class="flex items-center gap-4">
+    <!-- Wallet Balance and Overview -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700">
+        <div class="p-8">
+          <div class="flex items-center gap-4 mb-6">
             <div class="p-3 bg-gray-700/50 rounded-lg">
               <Wallet class="w-6 h-6 text-purple-400" />
             </div>
-            <h2 class="text-2xl font-semibold text-white">Total Balance</h2>
+            <h2 class="text-2xl font-semibold text-white">Wallet Balances</h2>
           </div>
-          <Button variant="outline" size="sm" class="gap-2">
-            <RefreshCw class="w-4 h-4" />
-            Refresh
-          </Button>
+          <WalletBalance />
         </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="p-6 bg-gray-900/50 rounded-lg">
-            <div class="flex items-center gap-2 mb-2">
-              <Coins class="w-5 h-5 text-yellow-400" />
-              <p class="text-sm text-gray-400">ETH Balance</p>
+      </Card>
+
+      <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700">
+        <div class="p-8">
+          <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+              <div class="p-3 bg-gray-700/50 rounded-lg">
+                <Wallet class="w-6 h-6 text-purple-400" />
+              </div>
+              <h2 class="text-2xl font-semibold text-white">Total Balance</h2>
             </div>
-            <p class="text-3xl font-bold text-white">0.0000</p>
-            <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
+            <Button variant="blue" size="sm" class="gap-2">
+              <RefreshCw class="w-4 h-4" />
+              Refresh
+            </Button>
           </div>
-          <div class="p-6 bg-gray-900/50 rounded-lg">
-            <div class="flex items-center gap-2 mb-2">
-              <TrendingUp class="w-5 h-5 text-green-400" />
-              <p class="text-sm text-gray-400">Land Value</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="p-6 bg-gray-900/50 rounded-lg">
+              <div class="flex items-center gap-2 mb-2">
+                <Coins class="w-5 h-5 text-yellow-400" />
+                <p class="text-sm text-gray-400">ETH Balance</p>
+              </div>
+              <p class="text-3xl font-bold text-white">0.0000</p>
+              <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
             </div>
-            <p class="text-3xl font-bold text-white">0.0000</p>
-            <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
-          </div>
-          <div class="p-6 bg-gray-900/50 rounded-lg">
-            <div class="flex items-center gap-2 mb-2">
-              <Wallet class="w-5 h-5 text-purple-400" />
-              <p class="text-sm text-gray-400">Total Assets</p>
+            <div class="p-6 bg-gray-900/50 rounded-lg">
+              <div class="flex items-center gap-2 mb-2">
+                <TrendingUp class="w-5 h-5 text-green-400" />
+                <p class="text-sm text-gray-400">Land Value</p>
+              </div>
+              <p class="text-3xl font-bold text-white">0.0000</p>
+              <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
             </div>
-            <p class="text-3xl font-bold text-white">0.0000</p>
-            <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
+            <div class="p-6 bg-gray-900/50 rounded-lg">
+              <div class="flex items-center gap-2 mb-2">
+                <Wallet class="w-5 h-5 text-purple-400" />
+                <p class="text-sm text-gray-400">Total Assets</p>
+              </div>
+              <p class="text-3xl font-bold text-white">0.0000</p>
+              <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
+            </div>
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
 
     <!-- Actions Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -97,7 +112,7 @@
           <p class="text-gray-400 mb-6">
             Get your wallet address to receive funds
           </p>
-          <Button variant="outline" class="w-full" disabled>
+          <Button variant="red" class="w-full" disabled>
             Connect Wallet to Receive
           </Button>
         </div>

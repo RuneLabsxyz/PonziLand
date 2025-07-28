@@ -3,7 +3,7 @@
   import { ChevronLeft, ChevronRight, Home, Wallet, User } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import ExperienceSection from '$lib/portal/experience-section.svelte';
-
+  import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
   let isExpanded = $state(true);
 
   function toggleSidebar() {
@@ -18,6 +18,10 @@
     return 'home';
   });
 </script>
+
+<div class="absolute top-0 right-0 m-5 z-[10] pointer-events-auto">
+  <OnboardingWalletInfo />
+</div>
 
 <div class="h-screen bg-gray-900 overflow-hidden">
   <!-- Sidebar -->
