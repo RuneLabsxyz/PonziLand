@@ -71,7 +71,16 @@
           enable: false,
         },
         onHover: {
-          enable: false,
+          enable: true,
+          mode: 'bubble',
+        },
+      },
+      modes: {
+        bubble: {
+          distance: 100,
+          size: 8,
+          duration: 0.4,
+          opacity: 0.8,
         },
       },
     },
@@ -126,15 +135,37 @@
       class="absolute w-full h-full object-cover"
       style="transform: scale(1.2);"
     />
-    <Particles
-      id="tsparticles"
-      class="absolute z-[1] h-full w-full overflow-hidden pointer-events-none"
-      options={particlesConfig}
-      on:particlesLoaded={onParticlesLoaded}
-    />
   </div>
 
-  <div class="absolute inset-0 bg-black/30 z-[2]"></div>
+  <!-- Dynamic overlay with mouse reveal effect -->
+  <div class="absolute inset-0 z-[1] pointer-events-none overflow-hidden">
+    <div
+      class="absolute"
+      style="
+        background: radial-gradient(
+          ellipse 1000px 700px at 50% 50%, 
+          transparent 0%, 
+          rgba(0,0,0,0.1) 20%,
+          rgba(0,0,0,0.3) 35%, 
+          rgba(0,0,0,0.6) 50%, 
+          rgba(0,0,0,0.85) 65%, 
+          rgba(0,0,0,0.95) 80%, 
+          rgba(0,0,0,1) 100%
+        );
+        width: 200vw;
+        height: 200vh;
+        left: -50vw;
+        top: -50vh;
+      "
+    ></div>
+  </div>
+
+  <!-- Particles in front of overlay -->
+  <Particles
+    id="tsparticles"
+    class="absolute z-[2] h-full w-full overflow-hidden"
+    options={particlesConfig}
+  />
 
   {#if showLogo}
     <img
@@ -168,22 +199,3 @@
     PLAY
   </Button>
 </main>
-
-<style>
-  @keyframes float {
-    0% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-15px);
-    }
-    100% {
-      transform: translateY(0px);
-    }
-  }
-
-  .animate-float {
-    animation: float 3s ease-in-out infinite;
-    animation-delay: 1s;
-  }
-</style>
