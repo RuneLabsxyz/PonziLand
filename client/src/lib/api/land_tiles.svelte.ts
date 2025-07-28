@@ -74,7 +74,9 @@ export class LandTileStore {
 
   constructor() {
     // Put empty lands everywhere.
-    const GRID_SIZE = config.GRID_SIZE;
+    console.log(config)
+    console.log(config.GAME_SPEED)
+    const GRID_SIZE = config.GRID_SIZE ?? 64;
     this.store = Array(GRID_SIZE)
       .fill(null)
       .map((_, x) =>

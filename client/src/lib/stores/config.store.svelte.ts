@@ -19,7 +19,7 @@ export const config = {
     get GAME_SPEED(){
         return GAME_SPEED
     },
-    get     GRID_SIZE(){ 
+    get GRID_SIZE(){ 
         return GRID_SIZE
     },
     get TAX_RATE() {return TAX_RATE},
