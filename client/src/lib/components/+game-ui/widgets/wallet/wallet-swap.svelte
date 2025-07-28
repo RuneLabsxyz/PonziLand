@@ -10,7 +10,19 @@
   import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
 
-  let { client, accountManager } = useDojo();
+  // Try to get Dojo context, but don't crash if it's not initialized
+  let client: any = $state(null);
+  let accountManager: any = $state(null);
+
+  try {
+    const dojoContext = useDojo();
+    client = dojoContext.client;
+    accountManager = dojoContext.accountManager;
+  } catch (error) {
+    console.warn('Dojo not initialized yet:', error);
+    // Continue without Dojo - will use fallback methods
+  }
+
   let avnu = useAvnu();
 
   // Svelte 5 reactive states using runes

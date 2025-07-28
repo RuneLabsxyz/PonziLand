@@ -1,164 +1,78 @@
 <script lang="ts">
   import accountData from '$lib/account.svelte';
-  import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
+  import { getBalances, type BalanceResponse } from '$lib/api/balances';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import {
     setTokenBalances,
     tokenStore,
-    updateTokenBalance,
   } from '$lib/stores/tokens.store.svelte';
-  import { padAddress } from '$lib/utils';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
-  import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
   import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
   import WalletSwap from './wallet-swap.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
-  import { fetchTokenBalance } from '$lib/accounts/balances';
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
   const baseToken = data.availableTokens.find(
-    (token) => token.address === BASE_TOKEN,
+    (token) => token.address === data.mainCurrencyAddress,
   );
 
-  const { client: sdk, accountManager } = useDojo();
+  // Try to get Dojo context, but don't crash if it's not initialized
+  let sdk: any = $state(null);
+
+  try {
+    const dojoContext = useDojo();
+    sdk = dojoContext.client;
+  } catch (error) {
+    console.warn('Dojo not initialized yet:', error);
+    // Continue without Dojo - will use RPC fallback
+  }
+
   const address = $derived(accountData.address);
 
-  let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
-
-  let subscriptionRef = $state<Subscription>();
-
+  let balanceData = $state<BalanceResponse | null>(null);
   let errorMessage = $state<string | null>(null);
-
   let loadingBalance = $state<boolean>(false);
 
-  async function calculateTotalBalance() {
-    const tokenBalances = tokenStore.balances;
-    const tokenPrices = tokenStore.prices;
+  async function loadBalances() {
+    if (!address) return;
 
-    if (!tokenBalances.length || !tokenPrices.length) return;
+    errorMessage = null;
+    loadingBalance = true;
 
-    let totalValue = 0;
+    try {
+      console.log('Sending request to get balances');
+      const response = await getBalances(address, sdk);
+      console.log('response', response);
+      balanceData = response;
 
-    const resolvedBalances = await Promise.all(
-      tokenBalances.map(async (tb) => {
-        return {
-          token: tb.token,
-          balance: tb.balance,
-        };
-      }),
-    );
-
-    for (const { token, balance } of resolvedBalances) {
-      if (balance === null) continue;
-
-      const amount = CurrencyAmount.fromUnscaled(balance.toString(), token);
-
-      if (padAddress(token.address) === BASE_TOKEN) {
-        totalValue += Number(amount.rawValue());
-      } else {
-        const priceInfo = tokenPrices.find((p) => {
-          return padAddress(p.address) == padAddress(token.address);
-        });
-
-        if (priceInfo?.ratio !== null && priceInfo) {
-          totalValue += Number(
-            amount.rawValue().dividedBy(priceInfo.ratio || 0),
-          );
-        }
-      }
-    }
-
-    if (baseToken) {
-      totalBalanceInBaseToken = CurrencyAmount.fromScaled(
-        totalValue.toString(),
-        baseToken,
+      // Update store
+      setTokenBalances(
+        response.balances.map((balance) => ({
+          ...balance,
+          account_address: balance.account_address || address,
+          contract_address: balance.contract_address || balance.token.address,
+          token_id: balance.token_id || balance.token.symbol,
+        })),
       );
+      tokenStore.prices = response.prices;
+    } catch (err) {
+      errorMessage = 'Failed to refresh balances. Please try again.';
+      console.error(err);
+    } finally {
+      loadingBalance = false;
     }
   }
 
-  onMount(async () => {
-    await handleRefreshBalances();
+  $effect(() => {
+    if (address) {
+      loadBalances();
+    }
   });
 
-  const handleManualRefreshBalances = async () => {
-    const account = accountManager?.getProvider()?.getWalletAccount();
-
-    if (!account || !address) {
-      return;
-    }
-
-    const provider = sdk.provider;
-
-    const tokenBalances = data.availableTokens.map(async (token) => {
-      const balance = await fetchTokenBalance(token.address, account, provider);
-
-      return {
-        token,
-        balance,
-        icon: token.images.icon,
-      };
-    });
-    const resolvedTokenBalances = await Promise.all(tokenBalances);
-    setTokenBalances(
-      resolvedTokenBalances.map((balance) => ({
-        ...balance,
-        account_address: account.address,
-        contract_address: balance.token.address,
-        token_id: balance.token.symbol,
-        balance: balance.balance?.toString() ?? '',
-      })),
-    );
-
-    tokenStore.prices = await getTokenPrices();
-    calculateTotalBalance();
-  };
-
-  const handleRefreshBalances = async () => {
-    errorMessage = null;
-    loadingBalance = true;
-    try {
-      if (subscriptionRef) {
-        subscriptionRef.cancel();
-      }
-      const request = {
-        contractAddresses: data.availableTokens.map((token) => token.address),
-        accountAddresses: address ? [address] : [],
-        tokenIds: [],
-      };
-
-      const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
-        contractAddresses: request.contractAddresses ?? [],
-        accountAddresses: request.accountAddresses ?? [],
-        tokenIds: request.tokenIds ?? [],
-        callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
-          if (data) {
-            updateTokenBalance(data);
-            calculateTotalBalance();
-          }
-          if (error) {
-            console.error(error);
-            errorMessage = 'Failed to refresh balances. Please try again.';
-            return;
-          }
-        },
-      });
-      // Add the subscription ref
-      subscriptionRef = subscription;
-
-      tokenStore.prices = await getTokenPrices();
-      setTokenBalances(tokenBalances.items);
-      calculateTotalBalance();
-      loadingBalance = false;
-    } catch (err) {
-      errorMessage =
-        'Failed to refresh balances. Please check your connection and try again.';
-      console.error(err);
-    }
-  };
+  onMount(() => {
+    loadBalances();
+  });
 </script>
 
 {#if errorMessage}
@@ -169,12 +83,12 @@
   </div>
 {/if}
 
-{#if totalBalanceInBaseToken && baseToken}
+{#if balanceData?.totalBalanceInBaseToken && baseToken}
   <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
     <TokenAvatar token={baseToken} class="h-6 w-6" />
     <div class="flex flex-1 items-center justify-between select-text">
       <div class="font-ponzi-number">
-        {totalBalanceInBaseToken.toString()}
+        {balanceData.totalBalanceInBaseToken.toString()}
       </div>
       <div class="font-ponzi-number">
         {baseToken.symbol}
@@ -186,7 +100,7 @@
       </div>
     {:else}
       <button
-        onclick={handleRefreshBalances}
+        onclick={loadBalances}
         aria-label="Refresh Balances"
         class="w-6 h-6 flex items-center justify-center"
       >
