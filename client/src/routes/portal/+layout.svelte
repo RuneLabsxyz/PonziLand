@@ -25,23 +25,38 @@
     class="fixed left-0 top-0 h-full bg-black/95 border-r-2 border-purple-600/50 backdrop-blur-md z-50 flex flex-col transition-none"
     style="width: {isExpanded
       ? '20rem'
-      : '4rem'}; transition: width 150ms steps(8);"
+      : '6rem'}; transition: width 150ms steps(8);"
   >
+    <!-- Logo and Title -->
+    <div class="p-4 border-b border-purple-600/30">
+      {#if isExpanded}
+        <div class="flex items-center justify-center gap-3">
+          <img src="/logo.gif" alt="PonziLand" class="w-10 h-10" />
+          <span class="text-2xl font-bold text-white text-ponzi-number uppercase">PonziLand</span>
+        </div>
+      {:else}
+        <div class="flex justify-center">
+          <img src="/logo.gif" alt="PonziLand" class="w-10 h-10" />
+        </div>
+      {/if}
+    </div>
+
     <!-- Toggle Button -->
-    <button
+    <Button
+      variant="red"
       onclick={toggleSidebar}
-      class="absolute -right-4 top-6 bg-purple-600/80 hover:bg-purple-600 text-white rounded-full p-1.5 transition-colors duration-200 shadow-lg"
+      class="absolute -right-4 top-[18px] text-white rounded-full p-1.5"
     >
       {#if isExpanded}
         <ChevronLeft class="w-4 h-4" />
       {:else}
         <ChevronRight class="w-4 h-4" />
       {/if}
-    </button>
+    </Button>
 
     <!-- Experience Section -->
     <div
-      class="p-4 overflow-hidden"
+      class="p-4 pt-0 overflow-hidden"
       style="opacity: {isExpanded ? 1 : 0}; transition: opacity 150ms steps(4);"
     >
       <ExperienceSection />
@@ -52,10 +67,7 @@
       <div class="flex-1 px-4 pb-4 space-y-2">
         <Button
           href="/portal"
-          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white transition-colors {activeTab ===
-          'home'
-            ? 'bg-purple-600 hover:bg-purple-700'
-            : 'hover:bg-gray-800'}"
+          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white"
         >
           <Home class="w-5 h-5" />
           <span>Home</span>
@@ -63,10 +75,7 @@
 
         <Button
           href="/portal/wallet"
-          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white transition-colors {activeTab ===
-          'wallet'
-            ? 'bg-purple-600 hover:bg-purple-700'
-            : 'hover:bg-gray-800'}"
+          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white"
         >
           <Wallet class="w-5 h-5" />
           <span>Wallet</span>
@@ -74,10 +83,7 @@
 
         <Button
           href="/portal/profile"
-          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white transition-colors {activeTab ===
-          'profile'
-            ? 'bg-purple-600 hover:bg-purple-700'
-            : 'hover:bg-gray-800'}"
+          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white"
         >
           <User class="w-5 h-5" />
           <span>Profile</span>

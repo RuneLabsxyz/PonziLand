@@ -2,7 +2,6 @@
   import { Card } from '$lib/components/ui/card';
   import { Progress } from '$lib/components/ui/progress';
   import accountDataProvider, { setup } from '$lib/account.svelte';
-  import { getMockUserStats } from '$lib/api/mock-experience';
 
   let address = $derived(accountDataProvider.address);
 
@@ -69,6 +68,7 @@
   let rankTier: RankTier | null = $state(null);
 
   $effect(() => {
+    console.log('Address changed:', address);
     if (address) {
       fetchUserStats(address);
     }
@@ -91,26 +91,22 @@
   });
 
   async function fetchUserStats(address: string) {
+    loading = true;
+    error = null;
+    
     try {
-      loading = true;
-      error = null;
       const response = await fetch(
         `https://xperience.ponzi.land/api/${address}/status`,
       );
-
+      
       if (!response.ok) {
-        throw new Error('Failed to fetch user stats');
+        const errorText = await response.text();
+        throw new Error(`Failed to fetch user stats: ${response.status} ${response.statusText}`);
       }
 
       userStats = await response.json();
     } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load stats';
-      console.error('Error fetching user stats:', err);
-
-      // Use mock data when endpoint is unavailable
-      console.log('Using mock data for user stats');
-      userStats = getMockUserStats(address);
-      error = null;
+      error = err instanceof Error ? err.message : 'Unknown error occurred';
     } finally {
       loading = false;
     }
