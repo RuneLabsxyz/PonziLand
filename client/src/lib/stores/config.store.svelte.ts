@@ -1,8 +1,8 @@
 // Shared constants with the contracts
-export const GAME_SPEED = $state(5);
-export const GRID_SIZE = $state(64);
-export const TAX_RATE = $state(2); // as a percentage
-export const LEVEL_UP_TIME = $state(60 * 60 * 48);
+export const GAME_SPEED= $state<number>(5);
+export const GRID_SIZE = $state<number>(64);
+export const TAX_RATE = $state<number>(2); // as a percentage
+export const LEVEL_UP_TIME = $state<number>(60 * 60 * 48);
 
 
 export const config = {
