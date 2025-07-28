@@ -16,8 +16,12 @@ export const config = {
     },
 
     // Game constants
-    GAME_SPEED: GAME_SPEED,
-    GRID_SIZE: GRID_SIZE,
-    TAX_RATE: TAX_RATE,
-    LEVEL_UP_TIME: LEVEL_UP_TIME,
+    get GAME_SPEED(){
+        return GAME_SPEED
+    },
+    get     GRID_SIZE(){ 
+        return GRID_SIZE
+    },
+    get TAX_RATE() {return TAX_RATE},
+    get LEVEL_UP_TIME(){return  LEVEL_UP_TIME},
 }
