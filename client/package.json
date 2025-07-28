@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "dev:sepolia": "DOJO_PROFILE=sepolia vite dev",
     "dev:mainnet": "DOJO_PROFILE=mainnet vite dev",
-    "dev:katana": "DOJO_PROFILE=katana vite dev --host 0.0.0.0",
+    "dev:katana": "DOJO_PROFILE=katana vite dev",
     "build": "vite build",
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
     "build:katana": "DOJO_PROFILE=katana vite build",

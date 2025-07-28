@@ -15,7 +15,7 @@ export default defineConfig({
     fs: {
       allow: ['../constracts/manifest_*.json', 'data/'],
     },
-    allowedHosts: ['api.runelabs.xyz'],
+    allowedHosts: ['api.runelabs.xyz', 'play.ponzis.fun'],
   },
   resolve: {
     alias: {
