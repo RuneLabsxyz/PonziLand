@@ -7,7 +7,6 @@
   import Particles, { particlesInit } from '@tsparticles/svelte';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
-  import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
   import accountDataProvider from '$lib/account.svelte';
 
   let particlesConfig = {
@@ -175,10 +174,6 @@
       transition:fly={{ y: -400, duration: 1500 }}
     />
   {/if}
-
-  <div class="absolute top-0 right-0 m-5 z-[10] pointer-events-auto">
-    <OnboardingWalletInfo />
-  </div>
 
   {#if showWave}
     <img

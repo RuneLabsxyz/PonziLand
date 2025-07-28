@@ -14,7 +14,9 @@
     <!-- Profile Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- User Info Card -->
-      <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors">
+      <Card
+        class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors"
+      >
         <div class="p-8">
           <div class="flex items-center gap-4 mb-6">
             <div class="p-3 bg-gray-700/50 rounded-lg">
@@ -36,7 +38,9 @@
       </Card>
 
       <!-- Stats Card -->
-      <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors">
+      <Card
+        class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors"
+      >
         <div class="p-8">
           <div class="flex items-center gap-4 mb-6">
             <div class="p-3 bg-gray-700/50 rounded-lg">
@@ -66,7 +70,9 @@
       </Card>
 
       <!-- Activity Card -->
-      <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors">
+      <Card
+        class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors"
+      >
         <div class="p-8">
           <div class="flex items-center gap-4 mb-6">
             <div class="p-3 bg-gray-700/50 rounded-lg">
@@ -81,7 +87,9 @@
       </Card>
 
       <!-- Settings Card -->
-      <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors">
+      <Card
+        class="bg-gray-800/50 backdrop-blur-sm border border-gray-700 hover:border-gray-600 transition-colors"
+      >
         <div class="p-8">
           <div class="flex items-center gap-4 mb-6">
             <div class="p-3 bg-gray-700/50 rounded-lg">
@@ -90,11 +98,15 @@
             <h2 class="text-2xl font-semibold text-white">Preferences</h2>
           </div>
           <div class="space-y-4">
-            <label class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg cursor-pointer hover:bg-gray-900/70 transition-colors">
+            <label
+              class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg cursor-pointer hover:bg-gray-900/70 transition-colors"
+            >
               <span class="text-white">Sound Effects</span>
               <input type="checkbox" class="toggle" />
             </label>
-            <label class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg cursor-pointer hover:bg-gray-900/70 transition-colors">
+            <label
+              class="flex items-center justify-between p-4 bg-gray-900/50 rounded-lg cursor-pointer hover:bg-gray-900/70 transition-colors"
+            >
               <span class="text-white">Notifications</span>
               <input type="checkbox" class="toggle" />
             </label>

@@ -93,15 +93,17 @@
   async function fetchUserStats(address: string) {
     loading = true;
     error = null;
-    
+
     try {
       const response = await fetch(
         `https://xperience.ponzi.land/api/${address}/status`,
       );
-      
+
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Failed to fetch user stats: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `Failed to fetch user stats: ${response.status} ${response.statusText}`,
+        );
       }
 
       userStats = await response.json();
