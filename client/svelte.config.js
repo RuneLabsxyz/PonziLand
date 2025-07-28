@@ -43,8 +43,8 @@ const profiles = {
     PUBLIC_GIT_COMMIT_HASH: null,
   },
   katana: {
-    PUBLIC_DOJO_RPC_URL: 'https://api.runelabs.xyz/x/katana/katana',
-    PUBLIC_DOJO_TORII_URL: 'https://api.runelabs.xyz/torii',
+    PUBLIC_DOJO_RPC_URL: 'https://play.ponzis.fun/x/katana/katana',
+    PUBLIC_DOJO_TORII_URL: 'https://play.ponzis.fun/torii',
     PUBLIC_DOJO_CHAIN_ID: 'WP_KATANA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
