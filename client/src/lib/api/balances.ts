@@ -34,7 +34,7 @@ export interface BalanceResponse {
 export async function fetchBalancesViaRPC(
   address: string,
 ): Promise<BalanceResult[]> {
-  const provider = new RpcProvider({ nodeUrl: 'PUBLIC_DOJO_RPC_URL' });
+  const provider = new RpcProvider({ nodeUrl: PUBLIC_DOJO_RPC_URL });
 
   const balancePromises = data.availableTokens.map(async (token) => {
     try {

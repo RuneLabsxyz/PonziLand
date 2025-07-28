@@ -1,35 +1,28 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
   import data from '$profileData';
-  import { useDojo } from '$lib/contexts/dojo';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { debounce } from '$lib/utils/debounce.svelte';
   import { type Quote } from '@avnu/avnu-sdk';
-  import { fetchTokenBalance } from '$lib/accounts/balances';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
+  import type { BalanceResult } from '$lib/api/balances';
 
-  // Try to get Dojo context, but don't crash if it's not initialized
-  let client: any = $state(null);
-  let accountManager: any = $state(null);
-
-  try {
-    const dojoContext = useDojo();
-    client = dojoContext.client;
-    accountManager = dojoContext.accountManager;
-  } catch (error) {
-    console.warn('Dojo not initialized yet:', error);
-    // Continue without Dojo - will use fallback methods
+  interface Props {
+    balances: BalanceResult[];
   }
+
+  let { balances }: Props = $props();
 
   let avnu = useAvnu();
 
   // Svelte 5 reactive states using runes
   let input1 = $state('');
-  let select1 = $state(data.availableTokens[0]?.address || '');
+  let select1 = $state(data.availableTokens[0] || '');
   let input2 = $state('');
-  let select2 = $state(data.availableTokens[1]?.address || '');
+  let select2 = $state(data.availableTokens[1] || '');
+
   let noRouteAvailable = $state(false);
   let quotes: Quote[] = $state([]);
   let slippage = $state(0.5);
@@ -38,39 +31,33 @@
   let sellTokenBalance: CurrencyAmount | undefined = $state();
   let buyTokenBalance: CurrencyAmount | undefined = $state();
 
-  async function getTokenBalance(address?: string) {
-    if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
-      return 0;
-    }
-
-    return await fetchTokenBalance(
-      address,
-      accountManager.getProvider()?.getWalletAccount()!,
-      client.provider,
-    );
-  }
-
   $effect(() => {
     sellTokenBalance = undefined;
-    if (select1) {
-      getTokenBalance(select1).then((balance) => {
+    if (select1 && balances) {
+      const balance = balances.find(
+        (b) => b.contract_address === select1.address,
+      );
+      if (balance) {
         sellTokenBalance = CurrencyAmount.fromUnscaled(
-          balance ?? 0,
-          data.availableTokens.find((t) => t.address === select1),
+          balance.balance || '0',
+          balance.token,
         );
-      });
+      }
     }
   });
 
   $effect(() => {
     buyTokenBalance = undefined;
-    if (select2) {
-      getTokenBalance(select2).then((balance) => {
+    if (select2 && balances) {
+      const balance = balances.find(
+        (b) => b.contract_address === select2.address,
+      );
+      if (balance) {
         buyTokenBalance = CurrencyAmount.fromUnscaled(
-          balance ?? 0,
-          data.availableTokens.find((t) => t.address === select2),
+          balance.balance || '0',
+          balance.token,
         );
-      });
+      }
     }
   });
 
@@ -97,8 +84,12 @@
         return;
       }
 
-      const sellToken = data.availableTokens.find((t) => t.address === select1);
-      const buyToken = data.availableTokens.find((t) => t.address === select2);
+      const sellToken = data.availableTokens.find(
+        (t) => t.address === select1.address,
+      );
+      const buyToken = data.availableTokens.find(
+        (t) => t.address === select2.address,
+      );
 
       return {
         leadingSide,
@@ -125,6 +116,7 @@
     // Fetch some quotes
     avnu.fetchQuotes(data).then((q) => {
       quotes = q;
+      console.log('quotes', quotes);
       if (quotes.length == 0) {
         noRouteAvailable = true;
         return;

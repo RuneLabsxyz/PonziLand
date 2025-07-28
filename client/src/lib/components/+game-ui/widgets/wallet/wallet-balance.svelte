@@ -161,5 +161,5 @@
     {/each}
   </div>
 
-  <WalletSwap />
+  <WalletSwap balances={balanceData?.balances || []} />
 </div>
