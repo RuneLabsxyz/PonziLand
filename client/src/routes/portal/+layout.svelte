@@ -19,10 +19,10 @@
   });
 </script>
 
-<div class="min-h-screen bg-gray-900">
+<div class="h-screen bg-gray-900 overflow-hidden">
   <!-- Sidebar -->
   <div
-    class="fixed left-0 top-0 h-full bg-black/95 border-r-2 border-purple-600/50 backdrop-blur-md z-50 flex flex-col transition-none"
+    class="fixed left-0 top-0 h-screen bg-black/95 border-r-2 border-purple-600/50 backdrop-blur-md z-50 flex flex-col transition-none"
     style="width: {isExpanded
       ? '20rem'
       : '6rem'}; transition: width 150ms steps(8);"
@@ -112,11 +112,11 @@
 
   <!-- Main Content Area -->
   <div
-    class="transition-none"
+    class="h-screen overflow-y-auto transition-none"
     id="main-content"
     style="padding-left: {isExpanded
       ? '20rem'
-      : '4rem'}; transition: padding-left 150ms steps(8);"
+      : '6rem'}; transition: padding-left 150ms steps(8);"
   >
     <slot />
   </div>
