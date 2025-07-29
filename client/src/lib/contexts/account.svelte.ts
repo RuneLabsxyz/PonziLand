@@ -167,9 +167,11 @@ const checkCompatibility = async (
 ) => {
   let isCompatible: boolean = false;
   try {
+    /*
     const permissions = (await myWalletSWO.request({
       type: 'wallet_getPermissions',
     })) as string[];
+     */
     isCompatible = true;
   } catch {
     (err: any) => {
