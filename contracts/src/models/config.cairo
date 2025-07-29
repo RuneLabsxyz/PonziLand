@@ -1,3 +1,5 @@
+/// @title Config Model for PonziLand
+/// @notice Model for global configuration parameters in PonziLand.
 use starknet::ContractAddress;
 use dojo::world::{WorldStorage};
 use dojo::model::{ModelStorage, ModelValueStorage};
@@ -9,6 +11,34 @@ use ponzi_land::consts::{
     OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
 };
 
+/// Global configuration for the PonziLand game.
+/// * `id` - Unique identifier for the config (always 1 for singleton pattern).
+/// * `grid_width` - Width of the land grid. Used for land location calculations.
+/// * `tax_rate` - Base tax rate applied to land yields.
+/// * `base_time` - Base time unit for time-based calculations.
+/// * `price_decrease_rate` - Rate at which auction prices decrease over time.
+/// * `time_speed` - Multiplier for in-game time progression.
+/// * `max_auctions` - Maximum number of concurrent auctions allowed.
+/// * `max_auctions_from_bid` - Maximum number of auctions that can be created from a bid event.
+/// * `decay_rate` - Decay rate for auction price formulas.
+/// * `floor_price` - Minimum price for any auction.
+/// * `liquidity_safety_multiplier` - Multiplier to ensure sufficient liquidity in pools.
+/// * `min_auction_price` - Minimum starting price for auctions.
+/// * `min_auction_price_multiplier` - Multiplier for calculating minimum auction price based on
+/// neighbors.
+/// * `center_location` - Location of the central land plot. Used for initial auction and reference.
+/// * `auction_duration` - Duration of each auction in seconds.
+/// * `scaling_factor` - Scaling factor for price decay calculations.
+/// * `linear_decay_time` - Time period for linear price decay before switching to exponential.
+/// * `drop_rate` - Rate at which price drops during linear decay.
+/// * `rate_denominator` - Denominator for rate calculations in price decay.
+/// * `max_circles` - Maximum number of concentric circles of land expansion.
+/// * `claim_fee` - Fee charged when claiming land yield above a threshold.
+/// * `buy_fee` - Fee charged when buying land.
+/// * `our_contract_for_fee` - Address to which claim and buy fees are sent.
+/// * `our_contract_for_auction` - Address to which auction proceeds are sent.
+/// * `claim_fee_threshold` - Minimum amount required before a claim fee is charged. Used in claim
+/// logic to avoid charging small claims.
 #[derive(Drop, Serde, Copy, Debug)]
 #[dojo::model]
 pub struct Config {
