@@ -22,7 +22,7 @@ const updateState = async (provider: AccountProvider) => {
   state.isConnected = walletAccount != null;
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
-
+  console.log(state.address)
   const profile = await getSocialink().getUser(state.address!);
   state.profile = profile;
   state.providerName = useAccount()?.getProviderName();
