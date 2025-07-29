@@ -1,6 +1,10 @@
+/// @title Payable Component
+/// @notice Handles token transfers and validations
+
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 use starknet::ContractAddress;
 
+/// @notice Result of token validation
 #[derive(Drop, Serde, Debug, Copy)]
 pub struct ValidationResult {
     status: bool,
@@ -10,25 +14,48 @@ pub struct ValidationResult {
 
 #[starknet::interface]
 trait IPayable<TContractState> {
+    /// @notice Initialize the token dispatcher with a specific token
+    /// @param token_address The address of the ERC20 token to use
     fn initialize(ref self: TContractState, token_address: ContractAddress);
+
+    /// @notice Validate if an account has sufficient token balance
+    /// @param token_address The token contract address to check
+    /// @param sender The account whose balance is being checked
+    /// @param amount The required token amount
+    /// @return ValidationResult with status and token details
     fn validate(
         ref self: TContractState,
         token_address: ContractAddress,
         sender: ContractAddress,
         amount: u256,
     ) -> ValidationResult;
+
     fn transfer_from(
         self: @TContractState,
         from: ContractAddress,
         to: ContractAddress,
         validation_result: ValidationResult,
     ) -> bool;
+
     fn transfer(
         self: @TContractState, recipient: ContractAddress, validation_result: ValidationResult,
     ) -> bool;
+
+    /// @notice Transfer tokens to the contract when auctioning a land
+    /// @param sender The account sending tokens
+    /// @param validation_result Pre-validated transfer details
+    /// @return bool True if transfer was successful
     fn pay_to_us(
         self: @TContractState, sender: ContractAddress, validation_result: ValidationResult,
     ) -> bool;
+
+    /// @notice Process a payment with fee deduction
+    /// @param buyer The account making the payment
+    /// @param seller The account receiving the payment (after fees)
+    /// @param fee_rate The fee rate in basis points
+    /// @param our_contract_for_fee The address receiving the fee
+    /// @param validation_result Pre-validated transfer details
+    /// @return bool True if payment was processed successfully
     fn proccess_payment_with_fee_for_buy(
         self: @TContractState,
         buyer: ContractAddress,

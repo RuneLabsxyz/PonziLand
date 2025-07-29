@@ -1,17 +1,18 @@
-// This module handles map extraction and coordinate management for a 64x64 grid.
-// Each coordinate (row, col) represents the unique ID of a piece of land on the grid.
-// The functions allow for conversion between position-based coordinates and linear indices,
-// as well as directional movement logic (left, right, up, down) within the grid bounds.
+//@notice This module handles map extraction and coordinate management for a 255x255 grid.
+//@notice Each coordinate (row, col) represents the unique ID of a piece of land on the grid.
+//@notice The functions allow for conversion between position-based coordinates and linear indices,
+//@notice as well as directional movement logic (left, right, up, down) within the grid bounds.
+
 use ponzi_land::consts::{MAX_GRID_SIZE};
 const TWO_POW_8: u16 = 256; // 2^8
 const MASK_8: u16 = 0xFF; // 8 bits
 
-// Encode (row, col) as a stable u16 (row in high 8 bits, col in low 8 bits)
+//@notice Encode (row, col) as a stable u16 (row in high 8 bits, col in low 8 bits)
 fn position_to_index(row: u8, col: u8) -> u16 {
     row.into() * TWO_POW_8 + col.into()
 }
 
-// Decode u16 index into (row, col)
+//@notice Decode u16 index into (row, col)
 fn index_to_position(index: u16) -> (u8, u8) {
     let row: u8 = (index / TWO_POW_8).try_into().unwrap();
     let col: u8 = (index & MASK_8).try_into().unwrap();
