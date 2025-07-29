@@ -102,6 +102,7 @@ export class TutorialLandStore extends LandTileStore {
       location,
       amount: DEFAULT_STAKE_AMOUNT,
       neighbors_info_packed: 0,
+      accumulated_taxes_fee: 0, // Add this field to match the model
     };
 
     const buildingLand = new BuildingLand(fakeLand);
@@ -136,6 +137,7 @@ export class TutorialLandStore extends LandTileStore {
       location,
       amount: DEFAULT_STAKE_AMOUNT,
       neighbors_info_packed: 0,
+      accumulated_taxes_fee: 0, // Add this field to match the model
     });
     console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
     this.updateLandDirectly(x, y, buildingLand);
@@ -155,6 +157,7 @@ export class TutorialLandStore extends LandTileStore {
         location,
         amount: currentLand.stakeAmount.toBigint() / 2n,
         neighbors_info_packed: 0,
+        accumulated_taxes_fee: 0, // Add this field to match the model
       });
     }
     console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
@@ -313,6 +316,7 @@ export class TutorialLandStore extends LandTileStore {
         location,
         amount: amount,
         neighbors_info_packed: 0,
+        accumulated_taxes_fee: 0, // Add this field to match the model
       });
     }
     console.log('stake amount', currentLand.stakeAmount.rawValue().toNumber());
