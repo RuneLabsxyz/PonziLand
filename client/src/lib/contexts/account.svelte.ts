@@ -243,13 +243,7 @@ export class AccountManager {
   getStarknetProvider() {
     return new StarknetProvider({
       nodeUrl: dojoConfig.rpcUrl,
-      // We won't be using argent / braavos on slot deployments any time soon
-      chainId:
-        dojoConfig.profile == 'mainnet'
-          ? SNconstants.StarknetChainId.SN_MAIN
-          : dojoConfig.profile == 'katana'
-            ? "0x57505F4B4154414E41".toLowerCase()
-            : SNconstants.StarknetChainId.SN_SEPOLIA,
+
     });
   }
 
