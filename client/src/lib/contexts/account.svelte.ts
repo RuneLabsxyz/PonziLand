@@ -248,7 +248,7 @@ export class AccountManager {
         dojoConfig.profile == 'mainnet'
           ? SNconstants.StarknetChainId.SN_MAIN
           : dojoConfig.profile == 'katana'
-            ? SNconstants.StarknetChainId.SN_KATANA
+            ? "0x57505F4B4154414E41".toLowerCase()
             : SNconstants.StarknetChainId.SN_SEPOLIA,
     });
   }
