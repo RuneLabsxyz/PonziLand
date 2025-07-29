@@ -152,6 +152,7 @@ export class LandTileStore {
             Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
             DEFAULT_STAKE_AMOUNT / 2,
           neighbors_info_packed: 0,
+          accumulated_taxes_fee: 0,
         };
 
         const buildingLand = new BuildingLand(fakeLand);
@@ -207,6 +208,7 @@ export class LandTileStore {
               Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
               DEFAULT_STAKE_AMOUNT / 2,
             neighbors_info_packed: 0,
+            accumulated_taxes_fee: 0,
           };
 
           const buildingLand = new BuildingLand(fakeLand);
