@@ -1,12 +1,5 @@
 import { DojoProvider, type DojoCall } from '@dojoengine/core';
-import {
-  Account,
-  AccountInterface,
-  type BigNumberish,
-  CairoOption,
-  CairoCustomEnum,
-  type ByteArray,
-} from 'starknet';
+import { Account, AccountInterface, type BigNumberish } from 'starknet';
 import * as models from './models.gen';
 
 export function setupWorld(provider: DojoProvider) {
@@ -843,6 +836,1182 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const build_config_getAuctionDuration_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_auction_duration',
+      calldata: [],
+    };
+  };
+
+  const config_getAuctionDuration = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getAuctionDuration_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getBaseTime_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_base_time',
+      calldata: [],
+    };
+  };
+
+  const config_getBaseTime = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getBaseTime_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getBuyFee_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_buy_fee',
+      calldata: [],
+    };
+  };
+
+  const config_getBuyFee = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getBuyFee_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getCenterLocation_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_center_location',
+      calldata: [],
+    };
+  };
+
+  const config_getCenterLocation = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getCenterLocation_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getClaimFee_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_claim_fee',
+      calldata: [],
+    };
+  };
+
+  const config_getClaimFee = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getClaimFee_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getClaimFeeThreshold_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_claim_fee_threshold',
+      calldata: [],
+    };
+  };
+
+  const config_getClaimFeeThreshold = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getClaimFeeThreshold_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getDecayRate_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_decay_rate',
+      calldata: [],
+    };
+  };
+
+  const config_getDecayRate = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getDecayRate_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getDropRate_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_drop_rate',
+      calldata: [],
+    };
+  };
+
+  const config_getDropRate = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getDropRate_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getFloorPrice_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_floor_price',
+      calldata: [],
+    };
+  };
+
+  const config_getFloorPrice = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getFloorPrice_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getGridWidth_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_grid_width',
+      calldata: [],
+    };
+  };
+
+  const config_getGridWidth = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getGridWidth_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getLinearDecayTime_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_linear_decay_time',
+      calldata: [],
+    };
+  };
+
+  const config_getLinearDecayTime = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getLinearDecayTime_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getLiquiditySafetyMultiplier_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_liquidity_safety_multiplier',
+      calldata: [],
+    };
+  };
+
+  const config_getLiquiditySafetyMultiplier = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getLiquiditySafetyMultiplier_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getMaxAuctions_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_max_auctions',
+      calldata: [],
+    };
+  };
+
+  const config_getMaxAuctions = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getMaxAuctions_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getMaxAuctionsFromBid_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_max_auctions_from_bid',
+      calldata: [],
+    };
+  };
+
+  const config_getMaxAuctionsFromBid = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getMaxAuctionsFromBid_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getMaxCircles_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_max_circles',
+      calldata: [],
+    };
+  };
+
+  const config_getMaxCircles = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getMaxCircles_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getMinAuctionPrice_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_min_auction_price',
+      calldata: [],
+    };
+  };
+
+  const config_getMinAuctionPrice = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getMinAuctionPrice_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getMinAuctionPriceMultiplier_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_min_auction_price_multiplier',
+      calldata: [],
+    };
+  };
+
+  const config_getMinAuctionPriceMultiplier = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getMinAuctionPriceMultiplier_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getPriceDecreaseRate_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_price_decrease_rate',
+      calldata: [],
+    };
+  };
+
+  const config_getPriceDecreaseRate = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getPriceDecreaseRate_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getRateDenominator_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_rate_denominator',
+      calldata: [],
+    };
+  };
+
+  const config_getRateDenominator = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getRateDenominator_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getScalingFactor_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_scaling_factor',
+      calldata: [],
+    };
+  };
+
+  const config_getScalingFactor = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getScalingFactor_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getTaxRate_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_tax_rate',
+      calldata: [],
+    };
+  };
+
+  const config_getTaxRate = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getTaxRate_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getTimeSpeed_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_time_speed',
+      calldata: [],
+    };
+  };
+
+  const config_getTimeSpeed = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getTimeSpeed_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setAuctionDuration_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_auction_duration',
+      calldata: [value],
+    };
+  };
+
+  const config_setAuctionDuration = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setAuctionDuration_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setBaseTime_calldata = (value: BigNumberish): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_base_time',
+      calldata: [value],
+    };
+  };
+
+  const config_setBaseTime = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setBaseTime_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setBuyFee_calldata = (value: BigNumberish): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_buy_fee',
+      calldata: [value],
+    };
+  };
+
+  const config_setBuyFee = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setBuyFee_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setCenterLocation_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_center_location',
+      calldata: [value],
+    };
+  };
+
+  const config_setCenterLocation = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setCenterLocation_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setClaimFee_calldata = (value: BigNumberish): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_claim_fee',
+      calldata: [value],
+    };
+  };
+
+  const config_setClaimFee = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setClaimFee_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setClaimFeeThreshold_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_claim_fee_threshold',
+      calldata: [value],
+    };
+  };
+
+  const config_setClaimFeeThreshold = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setClaimFeeThreshold_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setDecayRate_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_decay_rate',
+      calldata: [value],
+    };
+  };
+
+  const config_setDecayRate = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setDecayRate_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setDropRate_calldata = (value: BigNumberish): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_drop_rate',
+      calldata: [value],
+    };
+  };
+
+  const config_setDropRate = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setDropRate_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setFloorPrice_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_floor_price',
+      calldata: [value],
+    };
+  };
+
+  const config_setFloorPrice = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setFloorPrice_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setFullConfig_calldata = (
+    gridWidth: BigNumberish,
+    taxRate: BigNumberish,
+    baseTime: BigNumberish,
+    priceDecreaseRate: BigNumberish,
+    timeSpeed: BigNumberish,
+    maxAuctions: BigNumberish,
+    maxAuctionsFromBid: BigNumberish,
+    decayRate: BigNumberish,
+    floorPrice: BigNumberish,
+    liquiditySafetyMultiplier: BigNumberish,
+    minAuctionPrice: BigNumberish,
+    minAuctionPriceMultiplier: BigNumberish,
+    centerLocation: BigNumberish,
+    auctionDuration: BigNumberish,
+    scalingFactor: BigNumberish,
+    linearDecayTime: BigNumberish,
+    dropRate: BigNumberish,
+    rateDenominator: BigNumberish,
+    maxCircles: BigNumberish,
+    claimFee: BigNumberish,
+    buyFee: BigNumberish,
+    ourContractForFee: string,
+    ourContractForAuction: string,
+    claimFeeThreshold: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_full_config',
+      calldata: [
+        gridWidth,
+        taxRate,
+        baseTime,
+        priceDecreaseRate,
+        timeSpeed,
+        maxAuctions,
+        maxAuctionsFromBid,
+        decayRate,
+        floorPrice,
+        liquiditySafetyMultiplier,
+        minAuctionPrice,
+        minAuctionPriceMultiplier,
+        centerLocation,
+        auctionDuration,
+        scalingFactor,
+        linearDecayTime,
+        dropRate,
+        rateDenominator,
+        maxCircles,
+        claimFee,
+        buyFee,
+        ourContractForFee,
+        ourContractForAuction,
+        claimFeeThreshold,
+      ],
+    };
+  };
+
+  const config_setFullConfig = async (
+    snAccount: Account | AccountInterface,
+    gridWidth: BigNumberish,
+    taxRate: BigNumberish,
+    baseTime: BigNumberish,
+    priceDecreaseRate: BigNumberish,
+    timeSpeed: BigNumberish,
+    maxAuctions: BigNumberish,
+    maxAuctionsFromBid: BigNumberish,
+    decayRate: BigNumberish,
+    floorPrice: BigNumberish,
+    liquiditySafetyMultiplier: BigNumberish,
+    minAuctionPrice: BigNumberish,
+    minAuctionPriceMultiplier: BigNumberish,
+    centerLocation: BigNumberish,
+    auctionDuration: BigNumberish,
+    scalingFactor: BigNumberish,
+    linearDecayTime: BigNumberish,
+    dropRate: BigNumberish,
+    rateDenominator: BigNumberish,
+    maxCircles: BigNumberish,
+    claimFee: BigNumberish,
+    buyFee: BigNumberish,
+    ourContractForFee: string,
+    ourContractForAuction: string,
+    claimFeeThreshold: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setFullConfig_calldata(
+          gridWidth,
+          taxRate,
+          baseTime,
+          priceDecreaseRate,
+          timeSpeed,
+          maxAuctions,
+          maxAuctionsFromBid,
+          decayRate,
+          floorPrice,
+          liquiditySafetyMultiplier,
+          minAuctionPrice,
+          minAuctionPriceMultiplier,
+          centerLocation,
+          auctionDuration,
+          scalingFactor,
+          linearDecayTime,
+          dropRate,
+          rateDenominator,
+          maxCircles,
+          claimFee,
+          buyFee,
+          ourContractForFee,
+          ourContractForAuction,
+          claimFeeThreshold,
+        ),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setGridWidth_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_grid_width',
+      calldata: [value],
+    };
+  };
+
+  const config_setGridWidth = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setGridWidth_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setLinearDecayTime_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_linear_decay_time',
+      calldata: [value],
+    };
+  };
+
+  const config_setLinearDecayTime = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setLinearDecayTime_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setLiquiditySafetyMultiplier_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_liquidity_safety_multiplier',
+      calldata: [value],
+    };
+  };
+
+  const config_setLiquiditySafetyMultiplier = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setLiquiditySafetyMultiplier_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setMaxAuctions_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_max_auctions',
+      calldata: [value],
+    };
+  };
+
+  const config_setMaxAuctions = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setMaxAuctions_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setMaxAuctionsFromBid_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_max_auctions_from_bid',
+      calldata: [value],
+    };
+  };
+
+  const config_setMaxAuctionsFromBid = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setMaxAuctionsFromBid_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setMaxCircles_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_max_circles',
+      calldata: [value],
+    };
+  };
+
+  const config_setMaxCircles = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setMaxCircles_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setMinAuctionPrice_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_min_auction_price',
+      calldata: [value],
+    };
+  };
+
+  const config_setMinAuctionPrice = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setMinAuctionPrice_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setMinAuctionPriceMultiplier_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_min_auction_price_multiplier',
+      calldata: [value],
+    };
+  };
+
+  const config_setMinAuctionPriceMultiplier = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setMinAuctionPriceMultiplier_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setOurContractForAuction_calldata = (
+    value: string,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_our_contract_for_auction',
+      calldata: [value],
+    };
+  };
+
+  const config_setOurContractForAuction = async (
+    snAccount: Account | AccountInterface,
+    value: string,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setOurContractForAuction_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setOurContractForFee_calldata = (
+    value: string,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_our_contract_for_fee',
+      calldata: [value],
+    };
+  };
+
+  const config_setOurContractForFee = async (
+    snAccount: Account | AccountInterface,
+    value: string,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setOurContractForFee_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setPriceDecreaseRate_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_price_decrease_rate',
+      calldata: [value],
+    };
+  };
+
+  const config_setPriceDecreaseRate = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setPriceDecreaseRate_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setRateDenominator_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_rate_denominator',
+      calldata: [value],
+    };
+  };
+
+  const config_setRateDenominator = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setRateDenominator_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setScalingFactor_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_scaling_factor',
+      calldata: [value],
+    };
+  };
+
+  const config_setScalingFactor = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setScalingFactor_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setTaxRate_calldata = (value: BigNumberish): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_tax_rate',
+      calldata: [value],
+    };
+  };
+
+  const config_setTaxRate = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setTaxRate_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setTimeSpeed_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_time_speed',
+      calldata: [value],
+    };
+  };
+
+  const config_setTimeSpeed = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setTimeSpeed_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const build_token_registry_ensureTokenAuthorized_calldata = (
     tokenAddress: string,
   ): DojoCall => {
@@ -1019,6 +2188,114 @@ export function setupWorld(provider: DojoProvider) {
       buildSetVerifierCalldata: build_auth_setVerifier_calldata,
       unlockActions: auth_unlockActions,
       buildUnlockActionsCalldata: build_auth_unlockActions_calldata,
+    },
+    config: {
+      getAuctionDuration: config_getAuctionDuration,
+      buildGetAuctionDurationCalldata: build_config_getAuctionDuration_calldata,
+      getBaseTime: config_getBaseTime,
+      buildGetBaseTimeCalldata: build_config_getBaseTime_calldata,
+      getBuyFee: config_getBuyFee,
+      buildGetBuyFeeCalldata: build_config_getBuyFee_calldata,
+      getCenterLocation: config_getCenterLocation,
+      buildGetCenterLocationCalldata: build_config_getCenterLocation_calldata,
+      getClaimFee: config_getClaimFee,
+      buildGetClaimFeeCalldata: build_config_getClaimFee_calldata,
+      getClaimFeeThreshold: config_getClaimFeeThreshold,
+      buildGetClaimFeeThresholdCalldata:
+        build_config_getClaimFeeThreshold_calldata,
+      getDecayRate: config_getDecayRate,
+      buildGetDecayRateCalldata: build_config_getDecayRate_calldata,
+      getDropRate: config_getDropRate,
+      buildGetDropRateCalldata: build_config_getDropRate_calldata,
+      getFloorPrice: config_getFloorPrice,
+      buildGetFloorPriceCalldata: build_config_getFloorPrice_calldata,
+      getGridWidth: config_getGridWidth,
+      buildGetGridWidthCalldata: build_config_getGridWidth_calldata,
+      getLinearDecayTime: config_getLinearDecayTime,
+      buildGetLinearDecayTimeCalldata: build_config_getLinearDecayTime_calldata,
+      getLiquiditySafetyMultiplier: config_getLiquiditySafetyMultiplier,
+      buildGetLiquiditySafetyMultiplierCalldata:
+        build_config_getLiquiditySafetyMultiplier_calldata,
+      getMaxAuctions: config_getMaxAuctions,
+      buildGetMaxAuctionsCalldata: build_config_getMaxAuctions_calldata,
+      getMaxAuctionsFromBid: config_getMaxAuctionsFromBid,
+      buildGetMaxAuctionsFromBidCalldata:
+        build_config_getMaxAuctionsFromBid_calldata,
+      getMaxCircles: config_getMaxCircles,
+      buildGetMaxCirclesCalldata: build_config_getMaxCircles_calldata,
+      getMinAuctionPrice: config_getMinAuctionPrice,
+      buildGetMinAuctionPriceCalldata: build_config_getMinAuctionPrice_calldata,
+      getMinAuctionPriceMultiplier: config_getMinAuctionPriceMultiplier,
+      buildGetMinAuctionPriceMultiplierCalldata:
+        build_config_getMinAuctionPriceMultiplier_calldata,
+      getPriceDecreaseRate: config_getPriceDecreaseRate,
+      buildGetPriceDecreaseRateCalldata:
+        build_config_getPriceDecreaseRate_calldata,
+      getRateDenominator: config_getRateDenominator,
+      buildGetRateDenominatorCalldata: build_config_getRateDenominator_calldata,
+      getScalingFactor: config_getScalingFactor,
+      buildGetScalingFactorCalldata: build_config_getScalingFactor_calldata,
+      getTaxRate: config_getTaxRate,
+      buildGetTaxRateCalldata: build_config_getTaxRate_calldata,
+      getTimeSpeed: config_getTimeSpeed,
+      buildGetTimeSpeedCalldata: build_config_getTimeSpeed_calldata,
+      setAuctionDuration: config_setAuctionDuration,
+      buildSetAuctionDurationCalldata: build_config_setAuctionDuration_calldata,
+      setBaseTime: config_setBaseTime,
+      buildSetBaseTimeCalldata: build_config_setBaseTime_calldata,
+      setBuyFee: config_setBuyFee,
+      buildSetBuyFeeCalldata: build_config_setBuyFee_calldata,
+      setCenterLocation: config_setCenterLocation,
+      buildSetCenterLocationCalldata: build_config_setCenterLocation_calldata,
+      setClaimFee: config_setClaimFee,
+      buildSetClaimFeeCalldata: build_config_setClaimFee_calldata,
+      setClaimFeeThreshold: config_setClaimFeeThreshold,
+      buildSetClaimFeeThresholdCalldata:
+        build_config_setClaimFeeThreshold_calldata,
+      setDecayRate: config_setDecayRate,
+      buildSetDecayRateCalldata: build_config_setDecayRate_calldata,
+      setDropRate: config_setDropRate,
+      buildSetDropRateCalldata: build_config_setDropRate_calldata,
+      setFloorPrice: config_setFloorPrice,
+      buildSetFloorPriceCalldata: build_config_setFloorPrice_calldata,
+      setFullConfig: config_setFullConfig,
+      buildSetFullConfigCalldata: build_config_setFullConfig_calldata,
+      setGridWidth: config_setGridWidth,
+      buildSetGridWidthCalldata: build_config_setGridWidth_calldata,
+      setLinearDecayTime: config_setLinearDecayTime,
+      buildSetLinearDecayTimeCalldata: build_config_setLinearDecayTime_calldata,
+      setLiquiditySafetyMultiplier: config_setLiquiditySafetyMultiplier,
+      buildSetLiquiditySafetyMultiplierCalldata:
+        build_config_setLiquiditySafetyMultiplier_calldata,
+      setMaxAuctions: config_setMaxAuctions,
+      buildSetMaxAuctionsCalldata: build_config_setMaxAuctions_calldata,
+      setMaxAuctionsFromBid: config_setMaxAuctionsFromBid,
+      buildSetMaxAuctionsFromBidCalldata:
+        build_config_setMaxAuctionsFromBid_calldata,
+      setMaxCircles: config_setMaxCircles,
+      buildSetMaxCirclesCalldata: build_config_setMaxCircles_calldata,
+      setMinAuctionPrice: config_setMinAuctionPrice,
+      buildSetMinAuctionPriceCalldata: build_config_setMinAuctionPrice_calldata,
+      setMinAuctionPriceMultiplier: config_setMinAuctionPriceMultiplier,
+      buildSetMinAuctionPriceMultiplierCalldata:
+        build_config_setMinAuctionPriceMultiplier_calldata,
+      setOurContractForAuction: config_setOurContractForAuction,
+      buildSetOurContractForAuctionCalldata:
+        build_config_setOurContractForAuction_calldata,
+      setOurContractForFee: config_setOurContractForFee,
+      buildSetOurContractForFeeCalldata:
+        build_config_setOurContractForFee_calldata,
+      setPriceDecreaseRate: config_setPriceDecreaseRate,
+      buildSetPriceDecreaseRateCalldata:
+        build_config_setPriceDecreaseRate_calldata,
+      setRateDenominator: config_setRateDenominator,
+      buildSetRateDenominatorCalldata: build_config_setRateDenominator_calldata,
+      setScalingFactor: config_setScalingFactor,
+      buildSetScalingFactorCalldata: build_config_setScalingFactor_calldata,
+      setTaxRate: config_setTaxRate,
+      buildSetTaxRateCalldata: build_config_setTaxRate_calldata,
+      setTimeSpeed: config_setTimeSpeed,
+      buildSetTimeSpeedCalldata: build_config_setTimeSpeed_calldata,
     },
     token_registry: {
       ensureTokenAuthorized: token_registry_ensureTokenAuthorized,
