@@ -1,0 +1,75 @@
+[world]
+name = "Ponzi Land"
+description = "The official Dojo Starter guide, the quickest and most streamlined way to get your Dojo Autonomous World up and running. This guide will assist you with the initial setup, from cloning the repository to deploying your world."
+cover_uri = "file://assets/cover.png"
+icon_uri = "file://assets/icon.png"
+website = "https://github.com/dojoengine/dojo-starter"
+seed = "ponzi_land"
+
+[world.socials]
+x = "https://x.com/ohayo_dojo"
+discord = "https://discord.gg/FB2wR6uF"
+github = "https://github.com/dojoengine/dojo-starter"
+telegram = "https://t.me/dojoengine"
+
+[namespace]
+default = "ponzi_land"
+
+[env]
+rpc_url = "https://play.ponzis.fun/x/katana/katana"
+# Default account for katana with seed = 0
+account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+# world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
+
+
+[writers]
+# We need to be a writer to add events...
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
+
+[init_call_args]
+"ponzi_land-actions" = [
+    "0x407b6210c493fabbbc5006364a2b6d671affbb735ee15593c37bfae14fbc2ca", # Main token
+    "128000000000000000000",                                              # Start price (low)
+    "0",                                                                  # Start price (high)
+    "1000000000000000000",                                                # Floor price (low)
+    "0",                                                                  # Floor price (high)
+    "100",                                                                # Decay rate
+    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
+]
+
+"ponzi_land-auth" = [
+    "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9", # Owner
+    "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
+]
+
+"ponzi_land-token_registry" = [
+    "6",                                                                  # 6 tokens,
+    "0x407b6210c493fabbbc5006364a2b6d671affbb735ee15593c37bfae14fbc2ca", # pltSTRK
+    "0x4af4833f95ed0c5b96dc93bf525de9d1f9d0ad89f926da9a2b00785dd66611d", # pltLORDS
+    "0xb7e2362b79ae882187b82e5febcd668276201cb5edaeeaad3f070583167c2e", # pltETH
+    "0x50c733880a518ef155798f16bfd5afc7a53801ff305132ec2a07ec44b7f8092", # pltPAPER
+    "0x41841495874249f4175888719de32ba206f41c92722f26ebac6d44257390e01", # pltBROTHER
+    "0x43572e9d0e33fb60fdf9856a6d53c32352e01bf614eaaef5349d2ad4c8824ff", # pltPAL
+]
+
+"ponzi_land-config" = [
+    "64",                                                                  # Grid width
+    "2",                                                                   # Tax rate
+    "3600",                                                                  # Base time
+    "2",                                                        # Price decrease rate
+    "5",                                                                 # Time speed
+    "16",                                                               # Max auctions
+    "3",                                                      # Max auctions from bid
+    "200",                                                                 # Decay rate
+    "100000000000000000","0",                                                                # Floor price
+    "3",                                               # Liquidity safety multiplier
+    "500000000000000000000","0",                                                          # Min auction price
+    "10",                                              # Min auction price multiplier
+    "2080",                                                            # Center location
+    "436800",                                                           # Auction duration
+    "50",                                                             # Scaling factor
+    "12000",                                                          # Linear time decay
+    "90",                                                                  # Drop rate
+    "100",                                                           # Rate denominator
+]

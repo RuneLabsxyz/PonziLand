@@ -29,6 +29,36 @@
       "symbol": "pltPAL",
       "name": "Ponziland Test PAL",
       "address": "0x178ab462150c5ba86709f49b60c97c4e9a39adcdeacf29647fd5380c9728ed6"
+    },
+    {
+      "symbol": "pltSTRK",
+      "name": "Ponziland Test STRK",
+      "address": "0x407b6210c493fabbbc5006364a2b6d671affbb735ee15593c37bfae14fbc2ca"
+    },
+    {
+      "symbol": "pltLORDS",
+      "name": "Ponziland Test LORDS",
+      "address": "0x4af4833f95ed0c5b96dc93bf525de9d1f9d0ad89f926da9a2b00785dd66611d"
+    },
+    {
+      "symbol": "pltETH",
+      "name": "Ponziland Test ETH",
+      "address": "0xb7e2362b79ae882187b82e5febcd668276201cb5edaeeaad3f070583167c2e"
+    },
+    {
+      "symbol": "pltPAPER",
+      "name": "Ponziland Test PAPER",
+      "address": "0x50c733880a518ef155798f16bfd5afc7a53801ff305132ec2a07ec44b7f8092"
+    },
+    {
+      "symbol": "pltBROTHER",
+      "name": "Ponziland Test BROTHER",
+      "address": "0x41841495874249f4175888719de32ba206f41c92722f26ebac6d44257390e01"
+    },
+    {
+      "symbol": "pltPAL",
+      "name": "Ponziland Test PAL",
+      "address": "0x43572e9d0e33fb60fdf9856a6d53c32352e01bf614eaaef5349d2ad4c8824ff"
     }
   ]
 }

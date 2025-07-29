@@ -6,6 +6,7 @@ cors_origins = [
     "https://*.ponzi.land",
     "https://play.ponzi.land",
     "https://ponzi.land",
+    "https://play.ponzis.fun"
 ]
 
 [ekubo]
