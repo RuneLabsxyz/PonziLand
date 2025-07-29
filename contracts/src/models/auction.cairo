@@ -1,16 +1,27 @@
+/// @title Auction Model for PonziLand
+/// @notice Model for representing land auctions in PonziLand.
 use starknet::get_block_timestamp;
 use ponzi_land::consts::{DECIMALS_FACTOR};
 use ponzi_land::store::{Store, StoreTrait};
 
-
+/// @notice Represents an auction for a land.
+/// @dev Used to manage the auction lifecycle, price decay, and record the final sale price for each
+/// land.
+/// * `land_location` - Unique identifier for the land being auctioned. Used as a key for storage
+/// and auction logic.
+/// * `start_time` - Timestamp when the auction started. Used for price decay and auction duration.
+/// * `start_price` - Initial price of the auction. Used as the starting point for price decay.
+/// * `floor_price` - Minimum price the auction can reach. Used as a lower bound for price decay.
+/// * `is_finished` - Whether the auction has ended. Used to control auction state and logic.
+/// * `decay_rate` - Rate at which the auction price decays over time. Used in price calculation
+/// formulas.
+/// * `sold_at_price` - The price at which the auction was finalized. Used for price history and to
+/// calculate average prices for new auctions.
 #[derive(Copy, Drop, Serde, Debug)]
 #[dojo::model]
 pub struct Auction {
-    // id:u64 // this can be the key with location, we have to see if we prefer this or with the
-    // start_time
     #[key]
-    pub land_location: u16, // 64 x 64 land
-    //the start_time can be the other key
+    pub land_location: u16,
     pub start_time: u64,
     pub start_price: u256,
     pub floor_price: u256,
@@ -40,43 +51,8 @@ impl AuctionImpl of AuctionTrait {
         }
     }
 
-    //TODO:REMOVE THIS AFTER TESTS
-    #[inline(always)]
-    fn get_current_price(self: Auction, store: Store) -> u256 {
-        let current_time = get_block_timestamp();
 
-        let time_passed = if current_time > self.start_time {
-            (current_time - self.start_time) * store.get_time_speed().into()
-        } else {
-            0
-        };
-
-        //the price will decrease 2% every 2 minutes (for tests)
-        let total_decrease = self.start_price
-            * store.get_price_decrease_rate().into()
-            * time_passed.into()
-            / (100 * 120);
-
-        let decremented_price = if self.start_price > total_decrease {
-            self.start_price - total_decrease
-        } else {
-            0
-        };
-
-        if decremented_price <= self.floor_price {
-            return self.floor_price;
-        }
-
-        decremented_price
-    }
-
-    // Formula: P(t) = P0 * (1 / (1 + k*t))^2
-
-    // P0:(start_price)
-    // m: (floor_price)
-    // k: (decay_rate)
-    // t: (progress__time)
-
+    /// @notice Calculates the current price of the auction based on the decay rate and time passed
     #[inline(always)]
     fn get_current_price_decay_rate(self: Auction, store: Store) -> u256 {
         let current_time = get_block_timestamp();

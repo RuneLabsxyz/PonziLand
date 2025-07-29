@@ -1,13 +1,20 @@
-use starknet::ContractAddress;
+/// @title PonziLand Game Actions
+/// @notice Main entry point for all game interactions
+/// This contract handles all player actions and game mechanics
 
+use starknet::ContractAddress;
 use dojo::world::WorldStorage;
 use ponzi_land::models::land::{Land, LandStake};
 use ponzi_land::models::auction::Auction;
 use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo, LandOrAuction};
 
-// define the interface
 #[starknet::interface]
 trait IActions<T> {
+    /// @notice Place a bid on a land when the auction is active and setting a sell price for the
+    /// land @param land_location The location ID of the land
+    /// @param token_for_sale The token address being used for the sale and for stake
+    /// @param sell_price The new price of the land with the new owner
+    /// @param amount_to_stake The amount of tokens to stake with the bid to pay taxes
     fn bid(
         ref self: T,
         land_location: u16,
@@ -15,6 +22,12 @@ trait IActions<T> {
         sell_price: u256,
         amount_to_stake: u256,
     );
+
+    /// @notice Purchase a land that is for sale from another user
+    /// @param land_location The location ID of the land
+    /// @param token_for_sale The token address being used for the sale and for stake
+    /// @param sell_price The agreed sale price
+    /// @param amount_to_stake The amount of tokens to stake with purchase to pay taxes
     fn buy(
         ref self: T,
         land_location: u16,
@@ -23,44 +36,72 @@ trait IActions<T> {
         amount_to_stake: u256,
     );
 
+    /// @notice Recreate an auction for a land
+    /// @param land_location The location ID of the land
     fn recreate_auction(ref self: T, land_location: u16);
 
+    /// @notice Claim yield from a land only the owner can claim
+    /// @param land_location The location ID of the land
     fn claim(ref self: T, land_location: u16);
 
+    /// @notice Claim yield from multiple lands for the same owner
+    /// @param land_locations Array of land location IDs
     fn claim_all(ref self: T, land_locations: Array<u16>);
 
+    /// @notice Increase the price of a land
+    /// @param land_location The location ID of the land
+    /// @param new_price The new price for the land
     fn increase_price(ref self: T, land_location: u16, new_price: u256);
 
+    /// @notice Increase the stake on a land
+    /// @param land_location The location ID of the land
+    /// @param amount_to_stake Additional amount to stake
     fn increase_stake(ref self: T, land_location: u16, amount_to_stake: u256);
 
+    /// @notice Level up a land after a certain amount of time has passed to get rate reduction
+    /// @param land_location The location ID of the land
     fn level_up(ref self: T, land_location: u16) -> bool;
 
+    /// @notice Reimburse all stakes when the game is over (admin function)
     fn reimburse_stakes(ref self: T);
 
+    /// @notice Set the main currency token (admin function)
+    /// @param token_address Address of the token to set as main currency
     fn set_main_token(ref self: T, token_address: ContractAddress) -> ();
 
     fn get_land(self: @T, land_location: u16) -> (Land, LandStake);
+
     fn get_current_auction_price(self: @T, land_location: u16) -> u256;
+
     fn get_next_claim_info(self: @T, land_location: u16) -> Array<ClaimInfo>;
+
     fn get_neighbors_yield(self: @T, land_location: u16) -> LandYieldInfo;
+
     fn get_active_auctions(self: @T) -> u8;
+
     fn get_auction(self: @T, land_location: u16) -> Auction;
+
     fn get_time_to_nuke(self: @T, land_location: u16) -> u64;
+
     fn get_unclaimed_taxes_per_neighbor(
         self: @T, claimer_location: u16, payer_location: u16,
     ) -> u256;
+
     fn get_game_speed(self: @T) -> u64;
+
     fn get_neighbors(self: @T, land_location: u16) -> Array<LandOrAuction>;
+
     fn get_elapsed_time_since_last_claim(
         self: @T, claimer_location: u16, payer_location: u16,
     ) -> u64;
+
     fn get_unclaimed_taxes_per_neighbors_total(self: @T, land_location: u16) -> u256;
+
     fn get_elapsed_time_since_last_claim_for_neighbors(
         self: @T, payer_location: u16,
     ) -> Array<(u16, u64)>;
 }
 
-// dojo decorator
 #[dojo::contract]
 pub mod actions {
     use super::{IActions, WorldStorage};
@@ -247,7 +288,6 @@ pub mod actions {
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
             self.main_currency.write(token_address);
         }
-
 
         fn buy(
             ref self: ContractState,
