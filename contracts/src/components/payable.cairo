@@ -65,6 +65,12 @@ trait IPayable<TContractState> {
         validation_result: ValidationResult,
     ) -> bool;
 
+    fn validate_and_execute_bid_payment(
+        ref self: TContractState,
+        token_address: ContractAddress,
+        payer: ContractAddress,
+        amount: u256,
+    ) -> bool;
 
     fn balance_of(
         ref self: TContractState, token_address: ContractAddress, owner: ContractAddress,
@@ -84,6 +90,8 @@ mod PayableComponent {
     mod errors {
         const ERC20_PAY_FAILED: felt252 = 'ERC20: pay failed';
         const DIFFERENT_ERC20_TOKEN_DISPATCHER: felt252 = 'Different token_dispatcher';
+        const ERC20_VALIDATE_AMOUNT_BID: felt252 = 'validate amount for bid failed';
+        const ERC20_PAY_FOR_BID_FAILED: felt252 = 'pay for bid failed';
     }
 
     #[storage]
@@ -182,6 +190,21 @@ mod PayableComponent {
             }
 
             token_dispatcher.transferFrom(buyer, seller, amount_for_seller)
+        }
+
+        fn validate_and_execute_bid_payment(
+            ref self: ComponentState<TContractState>,
+            token_address: ContractAddress,
+            payer: ContractAddress,
+            amount: u256,
+        ) -> bool {
+            let validation_result = self.validate(token_address, payer, amount);
+            assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
+
+            let payment_status = self.pay_to_us(payer, validation_result);
+            assert(payment_status, errors::ERC20_PAY_FOR_BID_FAILED);
+
+            true
         }
 
         fn balance_of(

@@ -68,6 +68,7 @@ pub struct Config {
     pub our_contract_for_fee: ContractAddress,
     pub our_contract_for_auction: ContractAddress,
     pub claim_fee_threshold: u128,
+    pub main_currency: ContractAddress,
 }
 
 #[generate_trait]
@@ -98,6 +99,7 @@ impl ConfigImpl of ConfigTrait {
         our_contract_for_fee: ContractAddress,
         our_contract_for_auction: ContractAddress,
         claim_fee_threshold: u128,
+        main_currency: ContractAddress,
     ) -> Config {
         Config {
             id: 1,
@@ -125,6 +127,7 @@ impl ConfigImpl of ConfigTrait {
             our_contract_for_fee,
             our_contract_for_auction,
             claim_fee_threshold,
+            main_currency,
         }
     }
 
@@ -157,6 +160,7 @@ impl ConfigImpl of ConfigTrait {
             our_contract_for_fee: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
             our_contract_for_auction: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
             claim_fee_threshold: CLAIM_FEE_THRESHOLD,
+            main_currency: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
         };
         default_config
     }

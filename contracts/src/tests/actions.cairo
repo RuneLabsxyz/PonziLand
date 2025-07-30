@@ -22,7 +22,8 @@ use ponzi_land::tests::setup::{
 };
 
 use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-use ponzi_land::systems::actions::actions::{InternalImpl, NewAuctionEvent};
+use ponzi_land::systems::actions::actions::{InternalImpl};
+use ponzi_land::components::auction::AuctionComponent::{NewAuctionEvent};
 use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
 use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait};
 use ponzi_land::systems::config::{IConfigSystemDispatcher, IConfigSystemDispatcherTrait};
@@ -339,7 +340,6 @@ fn initialize_land(
 ) {
     // Instead of creating an auction directly, we'll use one of the initial lands
     // or wait for spiral auctions to reach the desired location
-
     let auction_value = actions_system.get_current_auction_price(location);
     setup_buyer_with_tokens(
         main_currency, actions_system, RECIPIENT(), owner, auction_value + stake_amount,
@@ -349,7 +349,6 @@ fn initialize_land(
 
     let allowance = token_for_sale.allowance(owner, actions_system.contract_address);
     assert(allowance >= stake_amount, 'Buyer approval failed');
-
     actions_system.bid(location, token_for_sale.contract_address, sell_price, stake_amount);
 }
 
