@@ -164,7 +164,13 @@
         const gridX = tile.location.x;
         const gridY = tile.location.y;
 
-        return new LandTile([gridX, 1, gridY], tokenSymbol, skin, tile.level, tile);
+        return new LandTile(
+          [gridX, 1, gridY],
+          tokenSymbol,
+          skin,
+          tile.level,
+          tile,
+        );
       });
     });
   });
@@ -363,32 +369,12 @@
       </InstancedMesh>
     {/if}
 
-    // Replace the owner indicator section in your template with this:
     {#if devsettings.showOwnerIndicator}
-      <InstancedMesh
-        bind:ref={ownerInstancedMesh}
-        limit={gridSize * gridSize}
-        count={gridSize * gridSize}
-        frustumCulled={false}
-      >
-        <T.PlaneGeometry args={[0.3, 0.3]} />
-        <T.MeshBasicMaterial map={crownTexture} alphaTest={0.5} transparent />
-        <OwnerIndicator {landTiles} instancedMesh={ownerInstancedMesh} />
-      </InstancedMesh>
+      <OwnerIndicator {landTiles} instancedMesh={ownerInstancedMesh} />
     {/if}
   {/await}
 </T>
 
-<!-- {#each landTiles as tile, i}
-  <Text
-    position={[tile.position[0] - 1, tile.position[1] + 0.1, tile.position[2]]}
-    text="OKDEPART"
-    fontSize={0.1}
-    color="#ffffff"
-    rotation={[-Math.PI / 2, 0, 0]}
-    {billboarding}
-  />
-{/each} -->
 <!-- Button overlay using Threlte HTML component -->
 {#if devsettings.showLandOverlay && selectedLandTilePosition}
   {@const land = selectedLandWithActions()?.value}
@@ -412,7 +398,3 @@
     {/if}
   </HTML>
 {/if}
-<!-- 
-{#each landTiles as tile, i}
-  <OwnerIndicator land={tile.land} {tile} />
-{/each} -->

@@ -3,7 +3,8 @@
   import { BuildingLand } from '$lib/api/land/building_land';
   import { padAddress } from '$lib/utils';
   import data from '$profileData';
-  import { Instance } from '@threlte/extras';
+  import { T } from '@threlte/core';
+  import { Instance, InstancedMesh } from '@threlte/extras';
   import {
     NearestFilter,
     TextureLoader,
@@ -21,77 +22,109 @@
 
   let address = $derived(accountState.address);
 
-  // Load textures for different owner types
+  // Load crown texture
   let crownTexture = new TextureLoader().load('/ui/icons/Icon_Crown.png');
   crownTexture.magFilter = NearestFilter;
   crownTexture.minFilter = NearestFilter;
   crownTexture.colorSpace = 'srgb';
 
-  // You can add more textures for different AI agents here
-  let agentTextures: Record<string, any> = {
-    crown: crownTexture,
-    // agent1: new TextureLoader().load('/ui/icons/agent1.png'),
-    // agent2: new TextureLoader().load('/ui/icons/agent2.png'),
-  };
+  // Load AI agent textures from profile data
+  let agentTextures: Record<string, any> = {};
 
-  let visibleTiles = $derived.by(() => {
-    return landTiles
-      .map((tile, index) => {
-        const land = tile.land;
-        let shouldShow = false;
-        let ownerType: string | undefined;
+  // Load textures for each AI agent
+  data.aiAgents.forEach((agent) => {
+    const texture = new TextureLoader().load(agent.badgeImage);
+    texture.magFilter = NearestFilter;
+    texture.minFilter = NearestFilter;
+    texture.colorSpace = 'srgb';
+    agentTextures[agent.name.toLowerCase()] = texture;
+  });
 
-        if (BuildingLand.is(land)) {
-          const isOwner =
-            padAddress(land?.owner ?? '') === padAddress(address ?? '');
+  // Group tiles by owner type for efficient rendering
+  let tilesByOwnerType = $derived.by(() => {
+    const groups: Record<string, { tile: LandTile; tileIndex: number }[]> = {};
+    
+    landTiles.forEach((tile, tileIndex) => {
+      const land = tile.land;
+      let ownerType: string | undefined;
 
-          if (isOwner) {
-            shouldShow = true;
-            ownerType = 'crown';
-          } else {
-            const aiAgent = data.aiAgents.find(
-              (agent) => padAddress(agent.address) === padAddress(land.owner),
-            );
-            if (aiAgent) {
-              shouldShow = true;
-              ownerType = getAIAgentType(aiAgent);
-            }
+      if (BuildingLand.is(land)) {
+        const isOwner = padAddress(land?.owner ?? '') === padAddress(address ?? '');
+
+        if (isOwner) {
+          ownerType = 'crown';
+        } else {
+          const aiAgent = data.aiAgents.find(
+            (agent) => padAddress(agent.address) === padAddress(land.owner),
+          );
+          if (aiAgent) {
+            ownerType = getAIAgentType(aiAgent);
           }
         }
 
-        return {
-          tile,
-          index,
-          shouldShow,
-          ownerType,
-        };
-      })
-      .filter((item) => item.shouldShow);
+        if (ownerType) {
+          if (!groups[ownerType]) {
+            groups[ownerType] = [];
+          }
+          groups[ownerType].push({ tile, tileIndex });
+        }
+      }
+    });
+
+    return groups;
   });
 
   function getAIAgentType(aiAgent: any): string {
-    // Map AI agents to texture types
-    const agentMapping: Record<string, string> = {
-      agent1: 'agent1',
-      agent2: 'agent2',
-      // Add more mappings as needed
-    };
-    return agentMapping[aiAgent.name] || 'crown'; // Default to crown if no specific mapping
+    return aiAgent.name.toLowerCase();
   }
 
-  function getCurrentTexture(ownerType: string) {
-    return agentTextures[ownerType] || crownTexture;
-  }
 </script>
 
-{#each visibleTiles as { tile, index, ownerType }}
-  <Instance
-    position={[
-      tile.position[0] - 0.4,
-      tile.position[1] + 0.1, // Elevated above the tile
-      tile.position[2] - 0.5,
-    ]}
-    rotation={[-Math.PI / 2, 0, ownerType === 'crown' ? Math.PI / 6 : 0]}
-    scale={[0.8, 0.8, 0.8]}
-  />
+<!-- Crown instances for player-owned land -->
+{#if tilesByOwnerType.crown && tilesByOwnerType.crown.length > 0}
+  <InstancedMesh
+    bind:ref={instancedMesh}
+    limit={landTiles.length}
+    count={tilesByOwnerType.crown.length}
+    frustumCulled={false}
+  >
+    <T.PlaneGeometry args={[0.3, 0.3]} />
+    <T.MeshBasicMaterial map={crownTexture} alphaTest={0.5} transparent />
+    {#each tilesByOwnerType.crown as { tile }}
+      <Instance
+        position={[
+          tile.position[0] - 0.4,
+          tile.position[1] + 0.1,
+          tile.position[2] - 0.5,
+        ]}
+        rotation={[-Math.PI / 2, 0, Math.PI / 6]}
+        scale={[0.8, 0.8, 0.8]}
+      />
+    {/each}
+  </InstancedMesh>
+{/if}
+
+<!-- AI Agent instances for each agent type -->
+{#each Object.entries(tilesByOwnerType) as [ownerType, tiles]}
+  {#if ownerType !== 'crown' && tiles.length > 0 && agentTextures[ownerType]}
+    <InstancedMesh
+      limit={landTiles.length}
+      count={tiles.length}
+      frustumCulled={false}
+    >
+      <T.PlaneGeometry args={[0.3, 0.3]} />
+      <T.MeshBasicMaterial map={agentTextures[ownerType]} alphaTest={0.5} transparent />
+      {#each tiles as { tile }}
+        <Instance
+          position={[
+            tile.position[0] - 0.4,
+            tile.position[1] + 0.1,
+            tile.position[2] - 0.5,
+          ]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          scale={[0.8, 0.8, 0.8]}
+        />
+      {/each}
+    </InstancedMesh>
+  {/if}
 {/each}
