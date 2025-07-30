@@ -17,10 +17,14 @@ export const state: {
 let isSetup = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
-  const walletAccount = provider.getWalletAccount();
+  const walletAccount = provider.account;
 
   console.log(provider)
-  console.log(walletAccount)
+  if (!walletAccount) {
+    let res = await provider.keychain.connect();
+    console.log(res);
+    console.log(provider);
+  }
   state.isConnected = walletAccount != null;
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
