@@ -361,7 +361,7 @@
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[0.3, 0.3]} />
-        <T.MeshBasicMaterial map={texture} transparent />
+        <T.MeshBasicMaterial map={texture} transparent alphaTest={0.1} />
         {#each landTiles as tile, i}
           {#if tile.land.type === 'building'}
             <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
