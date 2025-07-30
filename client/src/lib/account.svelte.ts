@@ -21,6 +21,8 @@ const updateState = async (provider: AccountProvider) => {
 
   console.log(provider)
   if (!walletAccount) {
+    let deploy = await provider.keychain.deploy();
+    console.log(deploy);
     let res = await provider.keychain.connect();
     console.log(res);
     console.log(provider);
