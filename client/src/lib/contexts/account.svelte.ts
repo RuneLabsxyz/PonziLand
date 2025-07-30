@@ -182,7 +182,7 @@ const checkCompatibility = async (
 };
 
 export class AccountManager {
-  private _provider?: AccountProvider;
+  private _provider?: any;
   private _walletObject?: WALLET_API.StarknetWindowObject;
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
@@ -269,7 +269,7 @@ export class AccountManager {
       // First, ask for a login
       console.log(provider)
       console.log(walletObject)
-      let res = await provider.connect();
+      let res = await provider.keychain.connect();
       console.log(res)
       console.info('User logged-in successfully');
 
