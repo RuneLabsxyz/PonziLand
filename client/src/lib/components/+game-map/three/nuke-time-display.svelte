@@ -3,7 +3,9 @@
   import { onDestroy } from 'svelte';
   import {
     MeshBasicMaterial,
+    NearestFilter,
     PlaneGeometry,
+    TextureLoader,
   } from 'three';
   import type { LandTile } from './landTile';
   import { TextTextureCache } from './utils/text-texture';
@@ -19,15 +21,51 @@
   let { landTiles }: Props = $props();
 
   const textureCache = new TextTextureCache();
+  const textureLoader = new TextureLoader();
 
-  let nukeTimeData = $state<Map<string, { text: string; position: [number, number, number] }>>(new Map());
+  // Shield textures based on nuke time thresholds
+  const shieldTextures = {
+    blue: textureLoader.load('/ui/icons/Icon_ShieldBlue.png'),
+    grey: textureLoader.load('/ui/icons/Icon_ShieldGrey.png'),
+    yellow: textureLoader.load('/ui/icons/Icon_ShieldYellow.png'),
+    orange: textureLoader.load('/ui/icons/Icon_ShieldOrange.png'),
+    red: textureLoader.load('/ui/icons/Icon_ShieldRed.png'),
+    nuke: textureLoader.load('/extra/nuke.png'),
+  };
+
+  // Configure shield textures
+  Object.values(shieldTextures).forEach(texture => {
+    texture.magFilter = NearestFilter;
+    texture.minFilter = NearestFilter;
+    texture.colorSpace = 'srgb';
+  });
+
+  let nukeTimeData = $state<Map<string, { 
+    text: string; 
+    position: [number, number, number];
+    shieldType: keyof typeof shieldTextures;
+  }>>(new Map());
+
+  // Determine shield type based on days remaining (same logic as land-nuke-shield.svelte)
+  function getShieldType(days: number): keyof typeof shieldTextures {
+    if (days <= 0) return 'nuke';
+    if (days >= 7) return 'blue';
+    if (days >= 5) return 'grey';
+    if (days >= 3) return 'yellow';
+    if (days >= 2) return 'orange';
+    return 'red';
+  }
 
   // Calculate nuke times for all lands
   $effect(() => {
     const calculateNukeTimes = async () => {
       if (!landTiles || landTiles.length === 0) return;
 
-      const newNukeTimeData = new Map<string, { text: string; position: [number, number, number] }>();
+      const newNukeTimeData = new Map<string, { 
+        text: string; 
+        position: [number, number, number];
+        shieldType: keyof typeof shieldTextures;
+      }>();
 
       for (const tile of landTiles) {
         // Only process building lands with neighbors
@@ -59,23 +97,28 @@
             displayText = 'NUKE!';
           }
 
+          // Determine shield type based on days remaining
+          const shieldType = getShieldType(parsedTime.days);
+
           newNukeTimeData.set(tile.land.locationString, {
             text: displayText,
             position: [
-              tile.position[0],
+              tile.position[0] + 0.3, // Offset to the right
               tile.position[1] + 0.1, // Elevated above the tile
-              tile.position[2]
-            ]
+              tile.position[2] - 0.3  // Offset toward the top (negative Z is forward/top)
+            ],
+            shieldType
           });
         } catch (error) {
           console.warn('Failed to calculate nuke time for tile:', tile.land.locationString, error);
           newNukeTimeData.set(tile.land.locationString, {
             text: '?',
             position: [
-              tile.position[0],
+              tile.position[0] + 0.3, // Offset to the right
               tile.position[1] + 0.1,
-              tile.position[2]
-            ]
+              tile.position[2] - 0.3  // Offset toward the top (negative Z is forward/top)
+            ],
+            shieldType: 'grey' // Default to grey shield for errors
           });
         }
       }
@@ -86,32 +129,56 @@
     calculateNukeTimes();
   });
 
-  const geometry = new PlaneGeometry(0.4, 0.2);
+  const textGeometry = new PlaneGeometry(0.4, 0.2);
+  const shieldGeometry = new PlaneGeometry(0.3, 0.3); // Slightly larger for shield background
 
   onDestroy(() => {
     textureCache.clear();
-    geometry.dispose();
+    textGeometry.dispose();
+    shieldGeometry.dispose();
+    Object.values(shieldTextures).forEach(texture => texture.dispose());
   });
 </script>
 
-<!-- Render individual planes for each nuke time -->
+<!-- Render shield backgrounds and text for each nuke time -->
 {#each Array.from(nukeTimeData.entries()) as [, data]}
-  {@const texture = textureCache.get(data.text, {
-    fontSize: 24,
-    color: '#ff4444',
+  {@const shieldTexture = shieldTextures[data.shieldType]}
+  {@const shieldMaterial = new MeshBasicMaterial({
+    map: shieldTexture,
+    transparent: true,
+    alphaTest: 0.1,
+  })}
+  {@const shieldPosition: [number, number, number] = [
+    data.position[0],
+    data.position[1] - 0.01, // Slightly behind the text
+    data.position[2]
+  ]}
+  
+  {@const textTexture = textureCache.get(data.text, {
+    fontSize: 20,
+    color: data.shieldType === 'nuke' ? '#ff0000' : '#ffffff',
     width: 128,
     height: 64,
   })}
-  {@const material = new MeshBasicMaterial({
-    map: texture,
+  {@const textMaterial = new MeshBasicMaterial({
+    map: textTexture,
     transparent: true,
     alphaTest: 0.1,
   })}
   
+  <!-- Shield background -->
+  <T.Mesh
+    position={shieldPosition}
+    rotation={[-Math.PI / 2, 0, 0]}
+    geometry={shieldGeometry}
+    material={shieldMaterial}
+  />
+  
+  <!-- Text overlay -->
   <T.Mesh
     position={data.position}
     rotation={[-Math.PI / 2, 0, 0]}
-    {geometry}
-    {material}
+    geometry={textGeometry}
+    material={textMaterial}
   />
 {/each}
