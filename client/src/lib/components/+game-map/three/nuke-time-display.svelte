@@ -48,7 +48,6 @@
 
   // Determine shield type based on days remaining (same logic as land-nuke-shield.svelte)
   function getShieldType(days: number): keyof typeof shieldTextures {
-    if (days <= 0) return 'nuke';
     if (days >= 7) return 'blue';
     if (days >= 5) return 'grey';
     if (days >= 3) return 'yellow';
@@ -103,9 +102,9 @@
           newNukeTimeData.set(tile.land.locationString, {
             text: displayText,
             position: [
-              tile.position[0] + 0.3, // Offset to the right
+              tile.position[0] + 0.4, // Offset to the right
               tile.position[1] + 0.1, // Elevated above the tile
-              tile.position[2] - 0.3  // Offset toward the top (negative Z is forward/top)
+              tile.position[2] - 0.4  // Offset toward the top (negative Z is forward/top)
             ],
             shieldType
           });
@@ -114,9 +113,9 @@
           newNukeTimeData.set(tile.land.locationString, {
             text: '?',
             position: [
-              tile.position[0] + 0.3, // Offset to the right
+              tile.position[0] + 0.4, // Offset to the right
               tile.position[1] + 0.1,
-              tile.position[2] - 0.3  // Offset toward the top (negative Z is forward/top)
+              tile.position[2] - 0.4  // Offset toward the top (negative Z is forward/top)
             ],
             shieldType: 'grey' // Default to grey shield for errors
           });
@@ -151,7 +150,7 @@
   {@const shieldPosition: [number, number, number] = [
     data.position[0],
     data.position[1] - 0.01, // Slightly behind the text
-    data.position[2]
+    data.position[2] - .02
   ]}
   
   {@const textTexture = textureCache.get(data.text, {
