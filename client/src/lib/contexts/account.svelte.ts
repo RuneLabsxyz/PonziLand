@@ -257,40 +257,14 @@ export class AccountManager {
       throw 'Unknown provider!';
     }
 
-    const provider = await Provider(walletObject.wallet);
-    if (provider == null) {
-      throw 'Could not setup provider (not registered in account.ts)';
-    }
-
+    const controller = await setupController(dojoConfig);
+ 
     try {
       // Handle user cancelled action
-      this._provider = provider;
-      this._walletObject = walletObject.wallet;
+      let res = controller?.connect();
       // First, ask for a login
-      console.log(provider)
-      console.log(walletObject)
-      let res = await provider.keychain.connect();
       console.log(res)
       console.info('User logged-in successfully');
-      console.log(provider);
-
-      this._listeners.forEach((listener) =>
-        listener({
-          type: 'connected',
-          provider,
-        }),
-      );
-
-      const walletAccount = provider.getWalletAccount();
-      if (walletAccount instanceof WalletAccount) {
-        console.log('Wallet account!');
-
-        // Unregister the bugged accountsChanged from starknetjs
-        console.log(this._walletObject);
-
-        walletAccount.onNetworkChanged(this.onNetworkChanged.bind(this));
-        walletAccount.onAccountChange(this.onWalletChanged.bind(this));
-      }
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch (error) {
