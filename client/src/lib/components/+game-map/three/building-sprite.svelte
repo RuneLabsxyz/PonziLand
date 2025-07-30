@@ -9,7 +9,7 @@
   import { useThrelte } from '@threlte/core';
   import { devsettings } from './utils/devsettings.store.svelte';
 
-  let { landTiles, isUnzoomed = false, ownedLands = [] } = $props();
+  let { landTiles } = $props();
 
   // Get available animation names
   const buildingAnimations = buildingAtlasMeta.flatMap((item) =>
@@ -25,11 +25,6 @@
   }
 
   const { updatePosition, sprite } = useInstancedSprite();
-
-  // Helper to check if tile is owned
-  function isOwnedTile(tile: LandTile): boolean {
-    return ownedLands.some(ownedTile => ownedTile.land.locationString === tile.land.locationString);
-  }
 
   $effect(() => {
     landTiles.forEach((tile: LandTile, index: number) => {
@@ -64,12 +59,6 @@
       ]);
       sprite.lookAt(0, 0.1, 0);
       sprite.animation.setAt(index, animationName as any);
-      
-      // For now, we rely on visual feedback through animation names
-      // The darker texture effect could be implemented by:
-      // 1. Adding darker texture variants to the building atlas
-      // 2. Or using a shader-based approach for dimming
-      // 3. Or creating a semi-transparent dark overlay layer
     });
   });
 </script>

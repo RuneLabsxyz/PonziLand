@@ -17,6 +17,7 @@
     HTML,
     InstancedMesh,
     InstancedSprite,
+    Instance,
     buildSpritesheet,
     type SpritesheetMetadata,
   } from '@threlte/extras';
@@ -315,10 +316,19 @@
   shieldTexture.minFilter = NearestFilter;
   shieldTexture.colorSpace = 'srgb';
 
+  // Create dark overlay material for non-owned lands
+  const darkOverlayMaterial = new MeshBasicMaterial({
+    color: 0x000000,
+    transparent: true,
+    opacity: 0.4,
+    alphaTest: 0.01,
+  });
+
   // Add this to your state variables at the top of the main component
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
   let shieldInstancedMesh: TInstancedMesh | undefined = $state();
+  let darkOverlayMesh: TInstancedMesh | undefined = $state();
 
 
   // Calculate owned lands for unzoomed view
@@ -333,8 +343,6 @@
 </script>
 
 <T is={Group}>
-  // 4. Add the owner sprite layer to your template (in the Promise.all section)
-  // Update your Promise.all to include the owner atlas:
   {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
     <!-- Transparent interaction planes layer (now also renders roads) -->
     {#if interactionPlanes && devsettings.showRoads}
@@ -355,7 +363,7 @@
         spritesheet={resolvedBiomeSpritesheet}
         bind:ref={biomeSprite}
       >
-        <BiomeSprite {landTiles} {isUnzoomed} {ownedLands} />
+        <BiomeSprite {landTiles} />
       </InstancedSprite>
     {/if}
 
@@ -379,7 +387,7 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite {landTiles} {isUnzoomed} {ownedLands} />
+        <BuildingSprite {landTiles} />
       </InstancedSprite>
     {/if}
 
@@ -431,6 +439,35 @@
     <!-- Shield display for owned lands when unzoomed -->
     {#if isUnzoomed}
       <NukeTimeDisplay landTiles={ownedLands} isShieldMode={true} />
+    {/if}
+
+    <!-- Dark overlay for non-owned lands when unzoomed -->
+    {#if isUnzoomed && ownedLands.length > 0}
+      <InstancedMesh
+        bind:ref={darkOverlayMesh}
+        limit={gridSize * gridSize}
+        count={ownedLands.length}
+        frustumCulled={false}
+      >
+        <T.PlaneGeometry args={[1, 1]} />
+        <T.MeshBasicMaterial
+          color={0x000000}
+          transparent={true}
+          opacity={0.4}
+          alphaTest={0.01}
+        />
+        {#each ownedLands as tile}
+          <Instance
+            position={[
+              tile.position[0],
+              tile.position[1] + 0.05, // Slightly above the tile to overlay
+              tile.position[2],
+            ]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            frustumCulled={false}
+          />
+        {/each}
+      </InstancedMesh>
     {/if}
   {/await}
 </T>
