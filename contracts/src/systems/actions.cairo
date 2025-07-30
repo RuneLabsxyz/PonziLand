@@ -65,10 +65,6 @@ trait IActions<T> {
     /// @notice Reimburse all stakes when the game is over (admin function)
     fn reimburse_stakes(ref self: T);
 
-    /// @notice Set the main currency token (admin function)
-    /// @param token_address Address of the token to set as main currency
-    fn set_main_token(ref self: T, token_address: ContractAddress) -> ();
-
     fn get_land(self: @T, land_location: u16) -> (Land, LandStake);
 
     fn get_current_auction_price(self: @T, land_location: u16) -> u256;
@@ -132,6 +128,7 @@ pub mod actions {
     use ponzi_land::components::stake::StakeComponent;
     use ponzi_land::components::taxes::TaxesComponent;
     use ponzi_land::components::payable::PayableComponent;
+    use ponzi_land::components::auction::AuctionComponent;
     use ponzi_land::consts::MAX_GRID_SIZE;
     use ponzi_land::utils::common_strucs::{
         TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes, LandOrAuction,
@@ -142,6 +139,7 @@ pub mod actions {
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::utils::stake::{calculate_refund_amount};
 
+    use ponzi_land::helpers::auction::{get_suggested_sell_price};
     use ponzi_land::helpers::coord::{get_all_neighbors};
     use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
     use ponzi_land::helpers::circle_expansion::{
@@ -161,6 +159,9 @@ pub mod actions {
     component!(path: TaxesComponent, storage: taxes, event: TaxesEvent);
     impl TaxesInternalImpl = TaxesComponent::InternalImpl<ContractState>;
 
+    component!(path: AuctionComponent, storage: auction, event: AuctionEvent);
+    impl AuctionInternalImpl = AuctionComponent::InternalImpl<ContractState>;
+
     component!(
         path: ReentrancyGuardComponent, storage: reentrancy_guard, event: ReentrancyGuardEvent,
     );
@@ -175,6 +176,8 @@ pub mod actions {
         StakeEvent: StakeComponent::Event,
         #[flat]
         TaxesEvent: TaxesComponent::Event,
+        #[flat]
+        AuctionEvent: AuctionComponent::Event,
         #[flat]
         ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
     }
@@ -205,24 +208,6 @@ pub mod actions {
 
     #[derive(Drop, Serde)]
     #[dojo::event]
-    pub struct NewAuctionEvent {
-        #[key]
-        land_location: u16,
-        start_price: u256,
-        floor_price: u256,
-    }
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct AuctionFinishedEvent {
-        #[key]
-        land_location: u16,
-        buyer: ContractAddress,
-        final_price: u256,
-    }
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
     pub struct AddStakeEvent {
         #[key]
         land_location: u16,
@@ -248,47 +233,30 @@ pub mod actions {
         #[substorage(v0)]
         taxes: TaxesComponent::Storage,
         #[substorage(v0)]
+        auction: AuctionComponent::Storage,
+        #[substorage(v0)]
         reentrancy_guard: ReentrancyGuardComponent::Storage,
-        active_auctions: u8,
-        main_currency: ContractAddress,
         ekubo_dispatcher: ICoreDispatcher,
-        active_auction_queue: Map<u16, bool>,
-        staked_lands: Map<u16, bool>, // New storage variable to track staked lands
-        used_lands_in_circle: Map<(u16, u8), Vec<u16>>,
-        current_circle: u16,
-        current_section: Map<u16, u8>,
-        completed_lands_per_section: Map<(u16, u8), u16>,
+        staked_lands: Map<u16, bool> // New storage variable to track staked lands
     }
 
     fn dojo_init(
         ref self: ContractState,
-        token_address: ContractAddress,
         start_price: u256,
         floor_price: u256,
-        decay_rate: u16,
         ekubo_core_address: ContractAddress,
     ) {
-        self.main_currency.write(token_address);
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
-        self.current_circle.write(1);
-        self.current_section.write(1, 0);
         let mut world = self.world_default();
         let store = StoreTrait::new(world);
-        self
-            .auction(
-                store, store.get_center_location(), start_price, floor_price, decay_rate, false,
-            );
+        self.auction.initialize_circle_expansion();
+        let center_location = store.get_center_location();
+        self.auction.create(store, center_location, start_price, floor_price, false);
     }
 
 
     #[abi(embed_v0)]
     impl ActionsImpl of IActions<ContractState> {
-        fn set_main_token(ref self: ContractState, token_address: ContractAddress) -> () {
-            let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
-            self.main_currency.write(token_address);
-        }
-
         fn buy(
             ref self: ContractState,
             land_location: u16,
@@ -321,6 +289,7 @@ pub mod actions {
             let seller = land.owner;
             let sold_price = land.sell_price;
             let token_used = land.token_used;
+
             let neighbors = get_land_neighbors(store, land.location);
             let our_contract_for_fee = store.get_our_contract_for_fee();
             let claim_fee = store.get_claim_fee();
@@ -437,7 +406,7 @@ pub mod actions {
             let our_contract_for_fee = store.get_our_contract_for_fee();
 
             for land_location in land_locations {
-                if !self.active_auction_queue.read(land_location) {
+                if !self.auction.is_auction_active(land_location) {
                     let land = store.land(land_location);
                     if land.owner != caller {
                         continue;
@@ -469,10 +438,8 @@ pub mod actions {
         ) {
             self.reentrancy_guard.start();
             let mut world = self.world_default();
-
             let caller = get_caller_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
-
             let current_time = get_block_timestamp();
             let our_contract_address = get_contract_address();
             let mut store = StoreTrait::new(world);
@@ -489,11 +456,8 @@ pub mod actions {
 
             //Validate if the land can be buyed because is an auction happening for that land
             let mut auction = store.auction(land_location);
-            // Red: Why check the active auction queue?
-            assert(self.active_auction_queue.read(land_location), 'auction not started');
-
+            assert(self.auction.is_auction_active(land_location), 'auction not started');
             let current_price = auction.get_current_price_decay_rate(store);
-
             let neighbors = get_land_neighbors(store, land_location);
 
             self
@@ -525,23 +489,8 @@ pub mod actions {
             let mut land_stake = store.land_stake(land_location);
             assert(land.owner == ContractAddressZeroable::zero(), 'land must be without owner');
             store.delete_land(land, land_stake);
-            let min_auction_price = store.get_min_auction_price();
-            let sell_price = get_average_price(store, land_location);
-            let sell_price = if sell_price > min_auction_price {
-                sell_price
-            } else {
-                min_auction_price
-            };
-
-            self
-                .auction(
-                    store,
-                    land_location,
-                    sell_price,
-                    store.get_floor_price(),
-                    store.get_decay_rate().into(),
-                    true,
-                );
+            let sell_price = get_suggested_sell_price(store, land_location);
+            self.auction.create(store, land_location, sell_price, store.get_floor_price(), true);
         }
 
 
@@ -645,7 +594,6 @@ pub mod actions {
             let mut world = self.world_default();
             let store = StoreTrait::new(world);
             let auction = store.auction(land_location);
-
             if auction.is_finished {
                 return 0;
             }
@@ -759,7 +707,7 @@ pub mod actions {
 
 
         fn get_active_auctions(self: @ContractState) -> u8 {
-            self.active_auctions.read()
+            self.auction.get_active_auctions_count()
         }
 
         fn get_auction(self: @ContractState, land_location: u16) -> Auction {
@@ -838,38 +786,6 @@ pub mod actions {
             self.world(@"ponzi_land")
         }
 
-        fn auction(
-            ref self: ContractState,
-            mut store: Store,
-            land_location: u16,
-            start_price: u256,
-            floor_price: u256,
-            decay_rate: u16,
-            is_from_nuke: bool,
-        ) {
-            assert(start_price > 0, 'start_price > 0');
-            assert(floor_price > 0, 'floor_price > 0');
-            //we don't want generate an error if the auction is full
-            if (!is_from_nuke && self.active_auctions.read() >= store.get_max_auctions()) {
-                return;
-            }
-            let mut land = store.land(land_location);
-            assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
-            let auction = AuctionTrait::new(
-                land_location, start_price, floor_price, false, decay_rate.into(),
-            );
-
-            store.set_auction(auction);
-            self.active_auctions.write(self.active_auctions.read() + 1);
-            self.active_auction_queue.write(land_location, true);
-            land.sell_price = start_price;
-            // land.token_used = LORDS_CURRENCY;
-            land.token_used = self.main_currency.read();
-
-            store.set_land(land);
-            store.world.emit_event(@NewAuctionEvent { land_location, start_price, floor_price });
-        }
-
         fn nuke(
             ref self: ContractState,
             mut land: Land,
@@ -888,23 +804,10 @@ pub mod actions {
             store.delete_land(land, land_stake);
 
             world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
-            let min_auction_price = store.get_min_auction_price();
-            let sell_price = get_average_price(store, land.location);
-            let sell_price = if sell_price > min_auction_price {
-                sell_price
-            } else {
-                min_auction_price
-            };
 
-            self
-                .auction(
-                    store,
-                    land.location,
-                    sell_price,
-                    store.get_floor_price(),
-                    store.get_decay_rate().into(),
-                    true,
-                );
+            let sell_price = get_suggested_sell_price(store, land.location);
+
+            self.auction.create(store, land.location, sell_price, store.get_floor_price(), true);
         }
 
 
@@ -965,10 +868,7 @@ pub mod actions {
             current_price: u256,
             our_contract_address: ContractAddress,
         ) {
-            let validation_result = self.payable.validate(land.token_used, caller, sold_at_price);
-            assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
-            let pay_to_us_status = self.payable.pay_to_us(caller, validation_result);
-            assert(pay_to_us_status, errors::ERC20_PAY_FOR_BID_FAILED);
+            self.payable.validate_and_execute_bid_payment(land.token_used, caller, sold_at_price);
 
             // Red: If we create a new trait here,
             // I don't think we need to create the land before.
@@ -997,34 +897,14 @@ pub mod actions {
             };
             self.staked_lands.write(land.location, true);
 
-            auction.is_finished = true;
-            auction.sold_at_price = Option::Some(sold_at_price);
-            store.set_auction(auction);
-            let mut active_auctions = self.active_auctions.read();
-            active_auctions -= 1;
-            self.active_auctions.write(active_auctions);
+            // Finish the auction using AuctionComponent
+            self.auction.finish_auction(store, auction, caller, current_price);
 
-            self.active_auction_queue.write(land.location, false);
+            // Generate new auctions if space available
 
-            store
-                .world
-                .emit_event(
-                    @AuctionFinishedEvent {
-                        land_location: land.location, buyer: caller, final_price: current_price,
-                    },
-                );
-
-            //initialize auction for neighbors
-            // Math.max(sold_at_price * 10, auction.floor_price)
-            let min_auction_price = store.get_min_auction_price();
+            let active_auctions = self.auction.get_active_auctions_count();
             if active_auctions < store.get_max_auctions() {
-                let asking_price = sold_at_price * store.get_min_auction_price_multiplier().into();
-                let asking_price = if asking_price > min_auction_price {
-                    sold_at_price
-                } else {
-                    min_auction_price
-                };
-                self.generate_new_auctions(asking_price, store)
+                self.auction.generate_new_auctions(sold_at_price, store);
             }
         }
         fn finalize_land_purchase(
@@ -1080,11 +960,15 @@ pub mod actions {
         }
 
         fn check_liquidity_pool_requirements(
-            self: @ContractState, sell_token: ContractAddress, sell_price: u256, pool_key: PoolKey,
+            self: @ContractState,
+            store: Store,
+            sell_token: ContractAddress,
+            sell_price: u256,
+            pool_key: PoolKey,
         ) -> bool {
-            let main_currency = self.main_currency.read();
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
+            let main_currency = store.get_main_currency();
             // We need to validate that the poolkey:
             // - Is valid (token0 < token1)
             // - Contains main_currency in one of its two tokens
@@ -1113,99 +997,6 @@ pub mod actions {
                 .get_pool_liquidity(PoolKeyConversion::to_ekubo(pool_key));
             return (sell_price * store.get_liquidity_safety_multiplier().into()) < liquidity_pool
                 .into();
-        }
-
-
-        fn generate_new_auctions(ref self: ContractState, start_price: u256, store: Store) {
-            let active_auctions = self.active_auctions.read();
-            let mut remaining_auctions = store.get_max_auctions() - active_auctions;
-            let mut i = 0;
-            let current_circle = self.current_circle.read();
-
-            while i < store.get_max_auctions_from_bid()
-                && remaining_auctions > 0
-                && current_circle < store.get_max_circles() {
-                let new_auction_location = self.select_next_auction_location(store, current_circle);
-                self
-                    .auction(
-                        store,
-                        new_auction_location,
-                        start_price,
-                        store.get_floor_price(),
-                        store.get_decay_rate().into(),
-                        false,
-                    );
-                i += 1;
-                remaining_auctions -= 1;
-            }
-        }
-
-        fn select_next_auction_location(ref self: ContractState, store: Store, circle: u16) -> u16 {
-            let section = self.current_section.read(circle);
-            let section_len = lands_per_section(circle);
-
-            let used_lands = self.get_used_index(circle, section);
-            let random_index = get_random_available_index(circle, used_lands);
-            self.used_lands_in_circle.entry((circle, section)).append().write(random_index);
-
-            let index = section.into() * section_len + random_index;
-            let land_location = get_circle_land_position(circle, index);
-
-            self.handle_circle_completion_and_increment_section(circle, section);
-            return land_location;
-        }
-
-
-        fn get_used_index(ref self: ContractState, circle: u16, section: u8) -> Array<u16> {
-            let mut index = array![];
-            let vec_len = self.used_lands_in_circle.entry((circle, section)).len();
-            let mut i = 0;
-            while i < vec_len {
-                index.append(self.used_lands_in_circle.entry((circle, section)).at(i).read());
-                i += 1;
-            };
-            index
-        }
-
-        fn handle_circle_completion_and_increment_section(
-            ref self: ContractState, circle: u16, section: u8,
-        ) {
-            self.increment_section_count(circle, section);
-            self.handle_circle_completion(circle);
-
-            let circle = self.current_circle.read();
-            let section = self.current_section.read(circle);
-            let section_len = lands_per_section(circle);
-
-            let used_lands = self.get_used_index(circle, section);
-            if used_lands.len() == section_len.into() {
-                self.advance_section(circle);
-            }
-        }
-
-        fn increment_section_count(ref self: ContractState, circle: u16, section: u8) {
-            let current_section_count = self.completed_lands_per_section.read((circle, section));
-            self.completed_lands_per_section.write((circle, section), current_section_count + 1);
-        }
-
-        fn handle_circle_completion(ref self: ContractState, circle: u16) {
-            let section = self.current_section.read(circle);
-            let current_section_count = self.completed_lands_per_section.read((circle, section));
-            let section_len = lands_per_section(circle);
-
-            if section == 3 && current_section_count >= section_len {
-                self.advance_circle(circle);
-            }
-        }
-
-        fn advance_section(ref self: ContractState, circle: u16) {
-            let section = self.current_section.read(circle);
-            self.current_section.write(circle, section + 1);
-        }
-
-        fn advance_circle(ref self: ContractState, circle: u16) {
-            self.current_circle.write(circle + 1);
-            self.current_section.write(circle + 1, 0);
         }
     }
 }

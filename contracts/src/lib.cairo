@@ -20,12 +20,14 @@ mod helpers {
     mod taxes;
     mod circle_expansion;
     mod land;
+    mod auction;
 }
 
 mod components {
     mod payable;
     mod taxes;
     mod stake;
+    mod auction;
 }
 
 mod consts;

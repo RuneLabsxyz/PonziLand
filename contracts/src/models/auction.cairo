@@ -26,27 +26,19 @@ pub struct Auction {
     pub start_price: u256,
     pub floor_price: u256,
     pub is_finished: bool,
-    pub decay_rate: u16,
     pub sold_at_price: Option<u256>,
 }
 
 #[generate_trait]
 impl AuctionImpl of AuctionTrait {
     #[inline(always)]
-    fn new(
-        land_location: u16,
-        start_price: u256,
-        floor_price: u256,
-        is_finished: bool,
-        decay_rate: u16,
-    ) -> Auction {
+    fn new(land_location: u16, start_price: u256, floor_price: u256, is_finished: bool) -> Auction {
         Auction {
             land_location,
             start_time: get_block_timestamp(),
             start_price,
             floor_price,
             is_finished,
-            decay_rate,
             sold_at_price: Option::None,
         }
     }
@@ -71,6 +63,7 @@ impl AuctionImpl of AuctionTrait {
         let linear_decay_time = store.get_linear_decay_time();
         let drop_rate = store.get_drop_rate();
         let rate_denominator = store.get_rate_denominator();
+        let decay_rate = store.get_decay_rate();
         let decimals_factor = DECIMALS_FACTOR;
 
         //for the first minutes we use a linear decay
@@ -94,8 +87,7 @@ impl AuctionImpl of AuctionTrait {
                 .into();
 
             // k is the decay rate (adjusted by decimals_factor for scaling)
-            let k: u256 = (self.decay_rate.into() * decimals_factor)
-                / store.get_scaling_factor().into();
+            let k: u256 = (decay_rate.into() * decimals_factor) / store.get_scaling_factor().into();
 
             // Calculate the denominator (1 + k * t) using scaled values for precision
             let denominator = decimals_factor + (k * progress__time / decimals_factor);
@@ -133,7 +125,7 @@ mod tests {
         let (world, _, _, _, _, _, _, _) = create_setup();
         let store = StoreTrait::new(world);
         set_block_timestamp(0);
-        let auction = AuctionTrait::new(1, 1000000, 0, false, 100);
+        let auction = AuctionTrait::new(1, 1000000, 0, false);
 
         let mut price_points: Array<(u64, u256)> = ArrayTrait::new();
 
