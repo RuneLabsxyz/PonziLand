@@ -212,17 +212,27 @@
   useTask(() => {
     if (gameStore.cameraControls?.camera) {
       const currentZoom = gameStore.cameraControls.camera.zoom;
-      
+
       // Log zoom changes (throttled to avoid spam)
       if (Math.abs(currentZoom - lastLoggedZoom) > 1) {
-        console.log('Camera zoom:', currentZoom, 'isUnzoomed:', currentZoom <= ZOOM_THRESHOLD);
+        console.log(
+          'Camera zoom:',
+          currentZoom,
+          'isUnzoomed:',
+          currentZoom <= ZOOM_THRESHOLD,
+        );
         lastLoggedZoom = currentZoom;
       }
-      
+
       const newIsUnzoomed = currentZoom <= ZOOM_THRESHOLD;
       if (newIsUnzoomed !== isUnzoomed) {
         isUnzoomed = newIsUnzoomed;
-        console.log('Zoom state changed - isUnzoomed:', isUnzoomed, 'zoom:', currentZoom);
+        console.log(
+          'Zoom state changed - isUnzoomed:',
+          isUnzoomed,
+          'zoom:',
+          currentZoom,
+        );
       }
     }
   });
@@ -316,28 +326,22 @@
   shieldTexture.minFilter = NearestFilter;
   shieldTexture.colorSpace = 'srgb';
 
-  // Create dark overlay material for non-owned lands
-  const darkOverlayMaterial = new MeshBasicMaterial({
-    color: 0x000000,
-    transparent: true,
-    opacity: 0.4,
-    alphaTest: 0.01,
-  });
-
   // Add this to your state variables at the top of the main component
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
   let shieldInstancedMesh: TInstancedMesh | undefined = $state();
   let darkOverlayMesh: TInstancedMesh | undefined = $state();
 
-
   // Calculate owned lands for unzoomed view
   let ownedLands = $derived.by(() => {
     if (!isUnzoomed || !accountState.address) return [];
-    
-    return landTiles.filter(tile => {
+
+    return landTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
-      return padAddress(tile.land.owner ?? '') === padAddress(accountState.address ?? '');
+      return (
+        padAddress(tile.land.owner ?? '') ===
+        padAddress(accountState.address ?? '')
+      );
     });
   });
 </script>
@@ -414,31 +418,18 @@
         <T.MeshBasicMaterial map={texture} transparent alphaTest={0.1} />
         {#each landTiles as tile, i}
           {#if tile.land.type === 'building'}
-            {#if isUnzoomed}
-              <!-- Show coins only on owned lands when unzoomed -->
-              {#if ownedLands.some(ownedTile => ownedTile.land.locationString === tile.land.locationString)}
-                <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
-              {/if}
-            {:else}
-              <!-- Show coins normally when zoomed -->
-              <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
-            {/if}
+            <Coin {tile} {i} instancedMesh={coinInstancedMesh} isUnzoomed={isUnzoomed} />
           {/if}
         {/each}
       </InstancedMesh>
     {/if}
 
-    {#if devsettings.showOwnerIndicator}
+    {#if devsettings.showOwnerIndicator && !isUnzoomed}
       <OwnerIndicator {landTiles} instancedMesh={ownerInstancedMesh} />
     {/if}
 
     {#if devsettings.showNukeTimes}
-      <NukeTimeDisplay {landTiles} />
-    {/if}
-
-    <!-- Shield display for owned lands when unzoomed -->
-    {#if isUnzoomed}
-      <NukeTimeDisplay landTiles={ownedLands} isShieldMode={true} />
+      <NukeTimeDisplay {landTiles} isShieldMode={isUnzoomed} />
     {/if}
 
     <!-- Dark overlay for non-owned lands when unzoomed -->

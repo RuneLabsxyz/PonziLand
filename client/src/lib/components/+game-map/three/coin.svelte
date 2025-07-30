@@ -22,7 +22,13 @@
     tile,
     i,
     instancedMesh,
-  }: { tile: LandTile; i: number; instancedMesh: any } = $props();
+    isUnzoomed = false,
+  }: {
+    tile: LandTile;
+    i: number;
+    instancedMesh: any;
+    isUnzoomed: boolean;
+  } = $props();
 
   let derivedTile = $derived(tile);
 
@@ -115,6 +121,14 @@
   let isOwner = $derived(
     padAddress(tile.land.owner) === padAddress(accountState.address ?? ''),
   );
+
+  let coinPosition: [number, number, number] = $derived.by(() => {
+    return [
+      derivedTile.position[0] + (isUnzoomed ? 0.2 : 0),
+      derivedTile.position[1] + 0.1,
+      derivedTile.position[2] + (isUnzoomed ? 0 : -0.5),
+    ];
+  });
 </script>
 
 {#if isOwner && !animating && timing}
@@ -126,11 +140,7 @@
     ]}
   >
     <Instance
-      position={[
-        derivedTile.position[0],
-        derivedTile.position[1] + 0.1,
-        derivedTile.position[2] - 0.5,
-      ]}
+      position={coinPosition}
       rotation={[-Math.PI / 2, 0, 0]}
       onclick={() => handleCoinClick(tile, i)}
       onpointerenter={() => handleCoinHover(tile, i, true)}

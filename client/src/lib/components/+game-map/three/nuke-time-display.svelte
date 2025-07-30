@@ -35,17 +35,22 @@
   };
 
   // Configure shield textures
-  Object.values(shieldTextures).forEach(texture => {
+  Object.values(shieldTextures).forEach((texture) => {
     texture.magFilter = NearestFilter;
     texture.minFilter = NearestFilter;
     texture.colorSpace = 'srgb';
   });
 
-  let nukeTimeData = $state<Map<string, { 
-    text: string; 
-    position: [number, number, number];
-    shieldType: keyof typeof shieldTextures;
-  }>>(new Map());
+  let nukeTimeData = $state<
+    Map<
+      string,
+      {
+        text: string;
+        position: [number, number, number];
+        shieldType: keyof typeof shieldTextures;
+      }
+    >
+  >(new Map());
 
   // Determine shield type based on days remaining (same logic as land-nuke-shield.svelte)
   function getShieldType(days: number): keyof typeof shieldTextures {
@@ -61,11 +66,14 @@
     const calculateNukeTimes = async () => {
       if (!landTiles || landTiles.length === 0) return;
 
-      const newNukeTimeData = new Map<string, { 
-        text: string; 
-        position: [number, number, number];
-        shieldType: keyof typeof shieldTextures;
-      }>();
+      const newNukeTimeData = new Map<
+        string,
+        {
+          text: string;
+          position: [number, number, number];
+          shieldType: keyof typeof shieldTextures;
+        }
+      >();
 
       for (const tile of landTiles) {
         // Only process building lands with neighbors
@@ -75,8 +83,11 @@
 
         try {
           // Convert BaseLand to LandWithActions
-          const landWithActions = createLandWithActions(tile.land, landStore.getAllLands);
-          
+          const landWithActions = createLandWithActions(
+            tile.land,
+            landStore.getAllLands,
+          );
+
           // Check if it has neighbors
           if (landWithActions.getNeighbors()?.getNeighbors()?.length === 0) {
             continue;
@@ -84,7 +95,7 @@
 
           const timeInSeconds = await estimateNukeTime(landWithActions);
           const parsedTime = parseNukeTime(timeInSeconds);
-          
+
           // Format the time for display
           let displayText = '';
           if (parsedTime.days > 0) {
@@ -100,29 +111,29 @@
           // Determine shield type based on days remaining
           const shieldType = getShieldType(parsedTime.days);
 
-          const xOffset = isShieldMode ? -0.4 : 0.4; // Left for shield mode, right for nuke time
-          
           newNukeTimeData.set(tile.land.locationString, {
             text: displayText,
             position: [
-              tile.position[0] + xOffset,
+              tile.position[0],
               tile.position[1] + 0.1, // Elevated above the tile
-              tile.position[2] - 0.4  // Offset toward the top (negative Z is forward/top)
+              tile.position[2], // Offset toward the top (negative Z is forward/top)
             ],
-            shieldType
+            shieldType,
           });
         } catch (error) {
-          console.warn('Failed to calculate nuke time for tile:', tile.land.locationString, error);
-          const xOffset = isShieldMode ? -0.4 : 0.4; // Left for shield mode, right for nuke time
-          
+          console.warn(
+            'Failed to calculate nuke time for tile:',
+            tile.land.locationString,
+            error,
+          );
           newNukeTimeData.set(tile.land.locationString, {
             text: '?',
             position: [
-              tile.position[0] + xOffset,
+              tile.position[0],
               tile.position[1] + 0.1,
-              tile.position[2] - 0.4  // Offset toward the top (negative Z is forward/top)
+              tile.position[2], // Offset toward the top (negative Z is forward/top)
             ],
-            shieldType: 'grey' // Default to grey shield for errors
+            shieldType: 'grey', // Default to grey shield for errors
           });
         }
       }
@@ -140,7 +151,7 @@
     textureCache.clear();
     textGeometry.dispose();
     shieldGeometry.dispose();
-    Object.values(shieldTextures).forEach(texture => texture.dispose());
+    Object.values(shieldTextures).forEach((texture) => texture.dispose());
   });
 </script>
 
@@ -152,12 +163,19 @@
     transparent: true,
     alphaTest: 0.1,
   })}
-  {@const shieldPosition: [number, number, number] = [
-    data.position[0],
-    data.position[1] - 0.01, // Slightly behind the text
-    data.position[2] - .02
+
+  {@const shieldOffset = isShieldMode ? [-0.2, 0, 0] : [0.4, 0, -0.4]};
+  {@const textPosition: [number, number, number] = [
+    data.position[0] + shieldOffset[0], // Offset slightly for shield mode
+    data.position[1], // Elevated above the tile
+    data.position[2] + shieldOffset[2]  // Offset toward the top (negative Z is forward/top)
   ]}
-  
+  {@const shieldPosition: [number, number, number] = [
+    textPosition[0], // Offset slightly for shield mode
+    textPosition[1] - 0.01, // Slightly behind the text
+    textPosition[2] - .02
+  ]}
+
   {@const textTexture = textureCache.get(data.text, {
     fontSize: 20,
     color: data.shieldType === 'nuke' ? '#ff0000' : '#ffffff',
@@ -169,20 +187,22 @@
     transparent: true,
     alphaTest: 0.1,
   })}
-  
+
   <!-- Shield background -->
   <T.Mesh
     position={shieldPosition}
     rotation={[-Math.PI / 2, 0, 0]}
     geometry={shieldGeometry}
     material={shieldMaterial}
+    scale={isShieldMode ? 1.5 : 1}
   />
-  
+
   <!-- Text overlay -->
   <T.Mesh
-    position={data.position}
+    position={textPosition}
     rotation={[-Math.PI / 2, 0, 0]}
     geometry={textGeometry}
     material={textMaterial}
+    scale={isShieldMode ? 1.5 : 1}
   />
 {/each}
