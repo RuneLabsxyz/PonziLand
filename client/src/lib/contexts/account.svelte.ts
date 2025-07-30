@@ -218,7 +218,7 @@ export class AccountManager {
     // Get all available wallets
     await scanObjectForWalletsCustom();
 
-    if (previousWallet != null && previousWallet !=  "controller") {
+    if (previousWallet != null) {
       console.info('Attempting auto-login with provider', previousWallet);
       try {
         await this.selectAndLogin(previousWallet);
