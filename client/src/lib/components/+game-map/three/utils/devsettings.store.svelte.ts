@@ -19,4 +19,5 @@ export let devsettings = $state({
   showNukes: true,
   showFog: false,
   showOwnerIndicator: true,
+  showNukeTimes: true,
 });

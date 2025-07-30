@@ -131,5 +131,6 @@
       bind:value={devsettings.showOwnerIndicator}
       label="OwnerIndicator"
     />
+    <Checkbox bind:value={devsettings.showNukeTimes} label="Nuke Times" />
   </Folder>
 </Pane>

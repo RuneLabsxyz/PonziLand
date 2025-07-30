@@ -40,6 +40,7 @@
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
   import OwnerIndicator from './owner-indicator.svelte';
+  import NukeTimeDisplay from './nuke-time-display.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
 
   let billboarding = $derived(devsettings.billboarding);
@@ -371,6 +372,10 @@
 
     {#if devsettings.showOwnerIndicator}
       <OwnerIndicator {landTiles} instancedMesh={ownerInstancedMesh} />
+    {/if}
+
+    {#if devsettings.showNukeTimes}
+      <NukeTimeDisplay {landTiles} />
     {/if}
   {/await}
 </T>
