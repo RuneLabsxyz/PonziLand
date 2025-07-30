@@ -270,6 +270,7 @@ export class AccountManager {
       console.log(provider)
       console.log(walletObject)
       let res = await provider.keychain.connect();
+      console.log(provider);
       console.log(res)
       console.info('User logged-in successfully');
 
