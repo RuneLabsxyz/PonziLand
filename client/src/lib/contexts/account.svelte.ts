@@ -267,7 +267,8 @@ export class AccountManager {
       this._provider = provider;
       this._walletObject = walletObject.wallet;
       // First, ask for a login
-      await provider.connect();
+      let res = await provider.connect();
+      console.log(res)
       console.info('User logged-in successfully');
 
       this._listeners.forEach((listener) =>
