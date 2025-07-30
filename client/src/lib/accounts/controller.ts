@@ -105,10 +105,7 @@ export async function setupController(
 
   console.info('Starting controller!');
 
-  // Check if the controller is already connected
-  if (await controller.probe()) {
-    await controller.connect();
-  }
+  await controller.connect();
 
   return controller;
 }

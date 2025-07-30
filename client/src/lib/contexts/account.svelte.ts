@@ -216,12 +216,13 @@ export class AccountManager {
     controller = await setupController(dojoConfig);
 
     // Get all available wallets
-    await scanObjectForWalletsCustom();
+   // await scanObjectForWalletsCustom();
 
+   /*
     if (previousWallet != null) {
       console.info('Attempting auto-login with provider', previousWallet);
       try {
-        await this.selectAndLogin(previousWallet);
+       await this.selectAndLogin(previousWallet);
 
         this.getSessionFromStorage();
       } catch (e) {
@@ -235,7 +236,7 @@ export class AccountManager {
       }
       return this;
     }
-
+    */
     console.info('The user did not have a previous wallet selected.');
 
     // NOTE: If session is supported, extract the public & private session from local storage.
