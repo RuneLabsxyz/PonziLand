@@ -372,7 +372,7 @@
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[0.3, 0.3]} />
-        <T.MeshBasicMaterial map={crownTexture} transparent />
+        <T.MeshBasicMaterial map={crownTexture} alphaTest={0.5} transparent />
         <OwnerIndicator {landTiles} instancedMesh={ownerInstancedMesh} />
       </InstancedMesh>
     {/if}

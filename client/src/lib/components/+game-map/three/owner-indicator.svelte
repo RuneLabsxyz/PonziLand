@@ -3,13 +3,11 @@
   import { BuildingLand } from '$lib/api/land/building_land';
   import { padAddress } from '$lib/utils';
   import data from '$profileData';
-  import { T, useThrelte } from '@threlte/core';
   import { Instance } from '@threlte/extras';
   import {
     NearestFilter,
     TextureLoader,
-    Object3D,
-    type InstancedMesh as TInstancedMesh,
+    type InstancedMesh as TInstancedMesh
   } from 'three';
   import type { LandTile } from './landTile';
 
@@ -90,7 +88,7 @@
   <Instance
     position={[
       tile.position[0] - 0.4,
-      tile.position[1] + 0.5, // Elevated above the tile
+      tile.position[1] + 0.1, // Elevated above the tile
       tile.position[2] - 0.5,
     ]}
     rotation={[-Math.PI / 2, 0, ownerType === 'crown' ? Math.PI / 6 : 0]}
