@@ -1,6 +1,8 @@
 <script lang="ts">
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
+  import accountState from '$lib/account.svelte';
+  import { padAddress } from '$lib/utils';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
@@ -10,7 +12,7 @@
     selectedLand,
     selectedLandWithActions,
   } from '$lib/stores/store.svelte';
-  import { T, useThrelte } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import {
     HTML,
     InstancedMesh,
@@ -200,7 +202,29 @@
   let nukeSprite: any = $state();
   let ownerSprite: any = $state();
 
-  const { camera } = useThrelte();
+  // Camera zoom threshold detection
+  const ZOOM_THRESHOLD = 100; // Adjust this value as needed
+  let isUnzoomed = $state(false);
+
+  // Use useTask to continuously monitor camera zoom changes
+  let lastLoggedZoom = 0;
+  useTask(() => {
+    if (gameStore.cameraControls?.camera) {
+      const currentZoom = gameStore.cameraControls.camera.zoom;
+      
+      // Log zoom changes (throttled to avoid spam)
+      if (Math.abs(currentZoom - lastLoggedZoom) > 1) {
+        console.log('Camera zoom:', currentZoom, 'isUnzoomed:', currentZoom <= ZOOM_THRESHOLD);
+        lastLoggedZoom = currentZoom;
+      }
+      
+      const newIsUnzoomed = currentZoom <= ZOOM_THRESHOLD;
+      if (newIsUnzoomed !== isUnzoomed) {
+        isUnzoomed = newIsUnzoomed;
+        console.log('Zoom state changed - isUnzoomed:', isUnzoomed, 'zoom:', currentZoom);
+      }
+    }
+  });
 
   // Function to be called by the global click listener
   function handleClickToSelectHovered() {
@@ -285,9 +309,27 @@
   crownTexture.minFilter = NearestFilter;
   crownTexture.colorSpace = 'srgb';
 
+  // Add shield texture loading
+  let shieldTexture = new TextureLoader().load('/ui/icons/Icon_ShieldBlue.png');
+  shieldTexture.magFilter = NearestFilter;
+  shieldTexture.minFilter = NearestFilter;
+  shieldTexture.colorSpace = 'srgb';
+
   // Add this to your state variables at the top of the main component
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
+  let shieldInstancedMesh: TInstancedMesh | undefined = $state();
+
+
+  // Calculate owned lands for unzoomed view
+  let ownedLands = $derived.by(() => {
+    if (!isUnzoomed || !accountState.address) return [];
+    
+    return landTiles.filter(tile => {
+      if (!BuildingLand.is(tile.land)) return false;
+      return padAddress(tile.land.owner ?? '') === padAddress(accountState.address ?? '');
+    });
+  });
 </script>
 
 <T is={Group}>
@@ -313,7 +355,7 @@
         spritesheet={resolvedBiomeSpritesheet}
         bind:ref={biomeSprite}
       >
-        <BiomeSprite {landTiles} />
+        <BiomeSprite {landTiles} {isUnzoomed} {ownedLands} />
       </InstancedSprite>
     {/if}
 
@@ -337,7 +379,7 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite {landTiles} />
+        <BuildingSprite {landTiles} {isUnzoomed} {ownedLands} />
       </InstancedSprite>
     {/if}
 
@@ -364,7 +406,15 @@
         <T.MeshBasicMaterial map={texture} transparent alphaTest={0.1} />
         {#each landTiles as tile, i}
           {#if tile.land.type === 'building'}
-            <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
+            {#if isUnzoomed}
+              <!-- Show coins only on owned lands when unzoomed -->
+              {#if ownedLands.some(ownedTile => ownedTile.land.locationString === tile.land.locationString)}
+                <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
+              {/if}
+            {:else}
+              <!-- Show coins normally when zoomed -->
+              <Coin {tile} {i} instancedMesh={coinInstancedMesh} />
+            {/if}
           {/if}
         {/each}
       </InstancedMesh>
@@ -376,6 +426,11 @@
 
     {#if devsettings.showNukeTimes}
       <NukeTimeDisplay {landTiles} />
+    {/if}
+
+    <!-- Shield display for owned lands when unzoomed -->
+    {#if isUnzoomed}
+      <NukeTimeDisplay landTiles={ownedLands} isShieldMode={true} />
     {/if}
   {/await}
 </T>

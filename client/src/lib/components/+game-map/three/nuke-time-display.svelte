@@ -16,9 +16,10 @@
 
   interface Props {
     landTiles: LandTile[];
+    isShieldMode?: boolean;
   }
 
-  let { landTiles }: Props = $props();
+  let { landTiles, isShieldMode = false }: Props = $props();
 
   const textureCache = new TextTextureCache();
   const textureLoader = new TextureLoader();
@@ -99,10 +100,12 @@
           // Determine shield type based on days remaining
           const shieldType = getShieldType(parsedTime.days);
 
+          const xOffset = isShieldMode ? -0.4 : 0.4; // Left for shield mode, right for nuke time
+          
           newNukeTimeData.set(tile.land.locationString, {
             text: displayText,
             position: [
-              tile.position[0] + 0.4, // Offset to the right
+              tile.position[0] + xOffset,
               tile.position[1] + 0.1, // Elevated above the tile
               tile.position[2] - 0.4  // Offset toward the top (negative Z is forward/top)
             ],
@@ -110,10 +113,12 @@
           });
         } catch (error) {
           console.warn('Failed to calculate nuke time for tile:', tile.land.locationString, error);
+          const xOffset = isShieldMode ? -0.4 : 0.4; // Left for shield mode, right for nuke time
+          
           newNukeTimeData.set(tile.land.locationString, {
             text: '?',
             position: [
-              tile.position[0] + 0.4, // Offset to the right
+              tile.position[0] + xOffset,
               tile.position[1] + 0.1,
               tile.position[2] - 0.4  // Offset toward the top (negative Z is forward/top)
             ],
