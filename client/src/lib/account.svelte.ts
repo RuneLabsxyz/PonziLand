@@ -19,6 +19,8 @@ let isSetup = $state(false);
 const updateState = async (provider: AccountProvider) => {
   const walletAccount = provider.getWalletAccount();
 
+  console.log(provider)
+  console.log(walletAccount)
   state.isConnected = walletAccount != null;
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
@@ -26,6 +28,8 @@ const updateState = async (provider: AccountProvider) => {
 //  const profile = await getSocialink().getUser(state.address!);
  // state.profile = profile;
   state.providerName = useAccount()?.getProviderName();
+
+  console.log(state)
 };
 
 const resetState = () => {
