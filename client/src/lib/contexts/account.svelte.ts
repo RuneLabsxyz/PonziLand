@@ -99,7 +99,7 @@ export type ConnectedEvent = {
 
 export type DisconnectedEvent = {
   type: 'disconnected';
-};
+};  
 
 export type ChainChangedEvent = {
   type: 'chain_change';
@@ -266,7 +266,7 @@ export class AccountManager {
     }
 
 
-    console.log(controller)
+    console.log(this._controller)
 
     // const controller = await setupController(dojoConfig);
  
