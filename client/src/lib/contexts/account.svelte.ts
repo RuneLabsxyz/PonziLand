@@ -22,6 +22,7 @@ import {
   constants,
 } from 'starknet';
 import { getContext, setContext } from 'svelte';
+import Controller from '@cartridge/controller';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -214,7 +215,12 @@ export class AccountManager {
     );
 
     // Setup cartridge before anything else
-    controller = await setupController(config);
+    const controller = new Controller({
+      defaultChainId: "0x57505f4b4154414e41",
+      chains: [
+        { rpcUrl: config.rpcUrl }
+      ]
+    });
 
     // Get all available wallets
     await scanObjectForWalletsCustom();
@@ -276,7 +282,9 @@ export class AccountManager {
       this._provider = provider;
       this._walletObject = walletObject.wallet;
       // First, ask for a login
+      console.log(provider)
       await provider.connect();
+      console.log(provider)
       console.info('User logged-in successfully');
 
       this._listeners.forEach((listener) =>
