@@ -216,7 +216,7 @@ export class AccountManager {
     controller = await setupController(dojoConfig);
 
     // Get all available wallets
-   // await scanObjectForWalletsCustom();
+    await scanObjectForWalletsCustom();
 
    /*
     if (previousWallet != null) {
