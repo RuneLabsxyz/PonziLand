@@ -21,7 +21,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
     try {
       // This is a temporary fix for the type mismatch due to different versions of starknet.js
-      const res: WalletAccount | undefined = (await super.connect()) as any;
+      const res: WalletAccount | undefined= await super.connect();
       if (res) {
         this._account = res;
         this._username = await super.username();
@@ -98,10 +98,8 @@ export async function setupController(
   }
 
   const controller = new SvelteController({
-    defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
+    defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
     chains: [{ rpcUrl: config.rpcUrl }],
-    preset: 'ponziland',
-    policies: preset.chains.SN_MAIN.policies as any,
   });
 
   console.info('Starting controller!');
