@@ -2,6 +2,7 @@
 /// @notice Provides role-based access control for managing authorized addresses and verifiers.
 /// Allows locking and unlocking actions and ownership management. Designed for audit-readiness.
 
+// Starknet imports
 use starknet::ContractAddress;
 use starknet::{get_caller_address, get_contract_address};
 use starknet::contract_address::ContractAddressZeroable;
@@ -63,17 +64,22 @@ trait IAuth<T> {
 }
 #[dojo::contract]
 pub mod auth {
+    // Core Cairo imports
+    use core::ecdsa::check_ecdsa_signature;
+    use core::poseidon::poseidon_hash_span;
+
+    // Starknet imports
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
     };
-    use core::ecdsa::check_ecdsa_signature;
-    use core::poseidon::poseidon_hash_span;
 
+    // Dojo imports
     use dojo::world::WorldStorage;
     use dojo::event::EventStorage;
 
+    // Local imports
     use super::IAuth;
 
     /// @notice Emitted when an address is authorized.

@@ -7,34 +7,43 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 
 #[starknet::component]
 mod StakeComponent {
-    //use dojo imports
-    use dojo::model::{ModelStorage, ModelValueStorage};
     // Starknet imports
-    use starknet::{ContractAddress};
+    use starknet::ContractAddress;
     use starknet::info::{get_contract_address, get_caller_address};
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
     };
     use starknet::contract_address::ContractAddressZeroable;
-    // Internal imports
-    use ponzi_land::helpers::coord::{max_neighbors};
+
+    // Dojo imports
+    use dojo::model::{ModelStorage, ModelValueStorage};
+
+    // External dependencies
+    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+
+    // Models
     use ponzi_land::models::land::{Land, LandStake};
-    use ponzi_land::store::{Store, StoreTrait};
+
+    // Components
     use ponzi_land::components::payable::{PayableComponent, IPayable};
+
+    // Store
+    use ponzi_land::store::{Store, StoreTrait};
+
+    // Utils
     use ponzi_land::utils::{
         common_strucs::{TokenInfo, LandWithTaxes},
         stake::{calculate_refund_ratio, calculate_refund_amount},
     };
-    // Local imports
-    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
-    //TODO:create a file for errors
-    mod errors {
-        const ERC20_STAKE_FAILED: felt252 = 'ERC20: stake failed';
-        const ERC20_VALIDATE_FOR_STAKE_FAILED: felt252 = 'Not enough amount for stake';
-        const ERC20_VALIDATE_FOR_REFUND_FAILED: felt252 = 'Not enough amount for refund';
-        const ERC20_REFUND_FAILED: felt252 = 'ERC20: refund of stake failed';
-    }
+    // Helpers
+    use ponzi_land::helpers::coord::{max_neighbors};
+
+    // Errors
+    use ponzi_land::errors::{
+        ERC20_VALIDATE_FOR_STAKE_FAILED, ERC20_STAKE_FAILED, ERC20_VALIDATE_FOR_REFUND_FAILED,
+        ERC20_REFUND_FAILED,
+    };
 
     #[storage]
     struct Storage {
@@ -61,11 +70,11 @@ mod StakeComponent {
             //initialize and validate token balance
             let mut payable = get_dep_component_mut!(ref self, Payable);
             let validation_result = payable.validate(land.token_used, land.owner, amount);
-            assert(validation_result.status, errors::ERC20_VALIDATE_FOR_STAKE_FAILED);
+            assert(validation_result.status, ERC20_VALIDATE_FOR_STAKE_FAILED);
 
             //transfer stake amount to game contract
             let status = payable.transfer_from(land.owner, our_contract_address, validation_result);
-            assert(status, errors::ERC20_STAKE_FAILED);
+            assert(status, ERC20_STAKE_FAILED);
 
             assert(land.owner == get_caller_address(), 'only the owner can stake');
 
@@ -92,10 +101,10 @@ mod StakeComponent {
             //validate if the contract has sufficient balance for refund stake
             let validation_result = payable
                 .validate(land.token_used, our_contract_address, stake_amount);
-            assert(validation_result.status, errors::ERC20_VALIDATE_FOR_REFUND_FAILED);
+            assert(validation_result.status, ERC20_VALIDATE_FOR_REFUND_FAILED);
 
             let status = payable.transfer(land.owner, validation_result);
-            assert(status, errors::ERC20_REFUND_FAILED);
+            assert(status, ERC20_REFUND_FAILED);
 
             let current_total = self.token_stakes.read(land.token_used);
             if current_total >= stake_amount {
@@ -169,7 +178,7 @@ mod StakeComponent {
             let validation_result = payable
                 .validate(land.token_used, get_contract_address(), refund_amount);
             let status = payable.transfer(land.owner, validation_result);
-            assert(status, errors::ERC20_REFUND_FAILED);
+            assert(status, ERC20_REFUND_FAILED);
 
             let current_total = self.token_stakes.read(land.token_used);
             if current_total >= refund_amount {

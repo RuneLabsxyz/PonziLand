@@ -102,34 +102,48 @@ trait IActions<T> {
 pub mod actions {
     use super::{IActions, WorldStorage};
 
-    use openzeppelin_security::ReentrancyGuardComponent;
+    // Core Cairo imports
     use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
     use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
 
+    // Starknet imports
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
         MutableVecTrait,
     };
+
+    // Dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
     use dojo::event::EventStorage;
+
+    // External dependencies
+    use openzeppelin_security::ReentrancyGuardComponent;
     use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
+    // Internal systems
     use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
-
     use ponzi_land::systems::token_registry::{
         ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
     };
 
+    // Models
     use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
+    // Components
     use ponzi_land::components::stake::StakeComponent;
     use ponzi_land::components::taxes::TaxesComponent;
     use ponzi_land::components::payable::PayableComponent;
     use ponzi_land::components::auction::AuctionComponent;
+
+    // Constants and store
     use ponzi_land::consts::MAX_GRID_SIZE;
+    use ponzi_land::store::{Store, StoreTrait};
+    use ponzi_land::interfaces::systems::{SystemsTrait};
+
+    // Utils
     use ponzi_land::utils::common_strucs::{
         TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes, LandOrAuction,
     };
@@ -139,6 +153,7 @@ pub mod actions {
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::utils::stake::{calculate_refund_amount};
 
+    // Helpers
     use ponzi_land::helpers::auction::{get_suggested_sell_price};
     use ponzi_land::helpers::coord::{get_all_neighbors};
     use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
@@ -147,10 +162,16 @@ pub mod actions {
         get_random_available_index,
     };
     use ponzi_land::helpers::land::{add_neighbor};
-    use ponzi_land::store::{Store, StoreTrait};
-    use ponzi_land::interfaces::systems::{SystemsTrait};
+
+    // Errors
+    use ponzi_land::errors::{ERC20_VALIDATE_AMOUNT_BUY};
+
+    // Events
+    use ponzi_land::events::{LandNukedEvent, LandBoughtEvent, AddStakeEvent};
+
 
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
+
     impl PayableInternalImpl = PayableComponent::PayableImpl<ContractState>;
 
     component!(path: StakeComponent, storage: stake, event: StakeEvent);
@@ -180,47 +201,6 @@ pub mod actions {
         AuctionEvent: AuctionComponent::Event,
         #[flat]
         ReentrancyGuardEvent: ReentrancyGuardComponent::Event,
-    }
-
-    //events
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct LandNukedEvent {
-        #[key]
-        owner_nuked: ContractAddress,
-        land_location: u16,
-    }
-
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct LandBoughtEvent {
-        #[key]
-        buyer: ContractAddress,
-        #[key]
-        land_location: u16,
-        sold_price: u256,
-        seller: ContractAddress,
-        token_used: ContractAddress,
-    }
-
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct AddStakeEvent {
-        #[key]
-        land_location: u16,
-        new_stake_amount: u256,
-        owner: ContractAddress,
-    }
-
-
-    mod errors {
-        const ERC20_PAY_FOR_BUY_FAILED: felt252 = 'ERC20: pay for buy failed';
-        const ERC20_PAY_FOR_BID_FAILED: felt252 = 'ERC20: pay for bid failed';
-        const ERC20_VALIDATE_AMOUNT_BUY: felt252 = 'validate amount for buy failed';
-        const ERC20_VALIDATE_AMOUNT_BID: felt252 = 'validate amount for bid failed';
     }
 
     // Storage
@@ -325,15 +305,14 @@ pub mod actions {
             };
 
             let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
-            assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BUY);
+            assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BUY);
 
             let buy_fee = store.get_buy_fee();
-            let transfer_status = self
+            self
                 .payable
                 .proccess_payment_with_fee_for_buy(
                     caller, land.owner, buy_fee, our_contract_for_fee, validation_result,
                 );
-            assert(transfer_status, errors::ERC20_PAY_FOR_BUY_FAILED);
 
             self.stake._refund(store, land, our_contract_address);
 

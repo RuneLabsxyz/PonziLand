@@ -7,24 +7,39 @@
 
 #[starknet::component]
 pub mod AuctionComponent {
-    use dojo::world::WorldStorage;
-    use dojo::event::EventStorage;
+    // Core Cairo imports
+    use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
+
+    // Starknet imports
     use starknet::ContractAddress;
     use starknet::contract_address::ContractAddressZeroable;
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
         MutableVecTrait,
     };
-    use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
 
+    // Dojo imports
+    use dojo::world::WorldStorage;
+    use dojo::event::EventStorage;
+
+    // Models
     use ponzi_land::models::auction::{Auction, AuctionTrait};
     use ponzi_land::models::land::Land;
+
+    // Store
     use ponzi_land::store::{Store, StoreTrait};
+
+    // Utils
     use ponzi_land::utils::get_neighbors::{get_average_price};
+
+    // Helpers
     use ponzi_land::helpers::auction::{get_sell_price_for_new_auction_from_bid};
     use ponzi_land::helpers::circle_expansion::{
         get_circle_land_position, get_random_available_index, lands_per_section,
     };
+
+    // Events
+    use ponzi_land::events::{NewAuctionEvent, AuctionFinishedEvent};
 
 
     #[storage]
@@ -37,24 +52,6 @@ pub mod AuctionComponent {
         completed_lands_per_section: Map<(u16, u8), u16>,
     }
 
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct NewAuctionEvent {
-        #[key]
-        land_location: u16,
-        start_price: u256,
-        floor_price: u256,
-    }
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct AuctionFinishedEvent {
-        #[key]
-        land_location: u16,
-        buyer: ContractAddress,
-        final_price: u256,
-    }
 
     #[generate_trait]
     impl InternalImpl<TContractState> of InternalTrait<TContractState> {

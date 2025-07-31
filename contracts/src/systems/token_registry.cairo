@@ -1,3 +1,4 @@
+// Starknet imports
 use starknet::ContractAddress;
 
 #[starknet::interface]
@@ -27,12 +28,17 @@ pub trait ITokenRegistry<T> {
 
 #[dojo::contract]
 pub mod token_registry {
-    use super::{ITokenRegistry};
-    use dojo::world::{WorldStorage, IWorldDispatcher, IWorldDispatcherTrait};
+    // Starknet imports
+    use starknet::{ContractAddress, get_caller_address};
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry,
     };
-    use starknet::{ContractAddress, get_caller_address};
+
+    // Dojo imports
+    use dojo::world::{WorldStorage, IWorldDispatcher, IWorldDispatcherTrait};
+
+    // Local imports
+    use super::{ITokenRegistry};
 
 
     #[storage]

@@ -32,6 +32,8 @@ mod components {
 
 mod consts;
 mod store;
+mod errors;
+mod events;
 
 mod tokens {
     mod erc20;
