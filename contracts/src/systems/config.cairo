@@ -3,6 +3,7 @@
 // Each setter updates a specific field in the Config model, which is then used by core game logic
 // in systems such as actions, taxes, and staking.
 
+// Starknet imports
 use starknet::ContractAddress;
 
 #[starknet::interface]
@@ -203,15 +204,26 @@ trait IConfigSystem<T> {
 
 #[dojo::contract]
 mod config {
-    use super::IConfigSystem;
-    use ponzi_land::models::config::{Config, ConfigTrait};
+    // Starknet imports
+    use starknet::ContractAddress;
+    use starknet::get_caller_address;
+
+    // Dojo imports
     use dojo::world::{WorldStorage};
     use dojo::model::{ModelStorage, ModelValueStorage, Model};
     use dojo::event::EventStorage;
-    use starknet::ContractAddress;
-    use starknet::get_caller_address;
+
+    // Internal systems
     use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+
+    // Models
+    use ponzi_land::models::config::{Config, ConfigTrait};
+
+    // Interfaces
     use ponzi_land::interfaces::systems::{SystemsTrait};
+
+    // Local imports
+    use super::IConfigSystem;
 
 
     #[derive(Drop, Serde)]
