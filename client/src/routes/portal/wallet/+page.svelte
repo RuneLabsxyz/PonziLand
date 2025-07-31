@@ -24,7 +24,7 @@
       <div class="flex items-center gap-4">
         <p class="text-gray-400 text-lg">Manage your assets and transactions</p>
         {#if address}
-          <WalletAddress address={address} class="text-gray-400" />
+          <WalletAddress {address} class="text-gray-400" />
         {/if}
       </div>
     </div>
@@ -124,9 +124,13 @@
           {#if address}
             <div class="mb-4 p-4 bg-gray-900/50 rounded-lg">
               <p class="text-sm text-gray-400 mb-2">Your wallet address:</p>
-              <WalletAddress address={address} class="text-white text-base" />
+              <WalletAddress {address} class="text-white text-base" />
             </div>
-            <Button variant="green" class="w-full" onclick={() => navigator.clipboard.writeText(address)}>
+            <Button
+              variant="green"
+              class="w-full"
+              onclick={() => navigator.clipboard.writeText(address)}
+            >
               Copy Address
             </Button>
           {:else}

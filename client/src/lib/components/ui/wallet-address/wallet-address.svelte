@@ -8,7 +8,12 @@
     endChars?: number;
   }
 
-  let { address, class: className = '', startChars = 6, endChars = 4 }: Props = $props();
+  let {
+    address,
+    class: className = '',
+    startChars = 6,
+    endChars = 4,
+  }: Props = $props();
 
   let showTooltip = $state(false);
   let copied = $state(false);
@@ -35,8 +40,8 @@
 <div class="relative inline-flex">
   <button
     onclick={copyAddress}
-    onmouseenter={() => showTooltip = true}
-    onmouseleave={() => showTooltip = false}
+    onmouseenter={() => (showTooltip = true)}
+    onmouseleave={() => (showTooltip = false)}
     class="font-mono text-sm hover:text-purple-400 transition-colors cursor-pointer {className}"
   >
     {shortenedAddress()}
@@ -53,7 +58,9 @@
       {:else}
         <Copy class="w-3 h-3 text-gray-400" />
       {/if}
-      <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+      <div
+        class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"
+      ></div>
     </div>
   {/if}
 </div>
