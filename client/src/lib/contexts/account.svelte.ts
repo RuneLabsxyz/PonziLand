@@ -188,6 +188,7 @@ export class AccountManager {
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
   private _listeners: EventListener[] = [];
+  private _controller: Controller | undefined;
 
   constructor() {
     this._setupPromise = this.setup();
@@ -218,6 +219,8 @@ export class AccountManager {
 
     // Get all available wallets
     await scanObjectForWalletsCustom();
+
+    this._controller = controller;
 
    /*
     if (previousWallet != null) {
@@ -259,7 +262,6 @@ export class AccountManager {
       throw 'Unknown provider!';
     }
 
-    const controller = new Controller(dojoConfig);
 
     console.log(controller)
 
@@ -267,7 +269,7 @@ export class AccountManager {
  
     try {
       // Handle user cancelled action
-      let res = await controller?.connect();
+      let res = await this._controller?.connect();
       // First, ask for a login
       console.log(res)
       console.info('User logged-in successfully');
@@ -437,7 +439,6 @@ export function setupAccount(): Promise<AccountManager> {
   }
 
   const manager = new AccountManager();
-
   state = manager;
 
   return manager.wait();
