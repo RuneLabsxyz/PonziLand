@@ -17,25 +17,15 @@ export const state: {
 let isSetup = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
-  const walletAccount = provider.account;
+  const walletAccount = provider.getWalletAccount();
 
-  console.log(provider)
-  if (!walletAccount) {
-    let deploy = await provider.keychain.deploy();
-    console.log(deploy);
-    let res = await provider.keychain.connect();
-    console.log(res);
-    console.log(provider);
-  }
   state.isConnected = walletAccount != null;
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
-  console.log(walletAccount)
-//  const profile = await getSocialink().getUser(state.address!);
- // state.profile = profile;
-  state.providerName = useAccount()?.getProviderName();
 
-  console.log(state)
+  const profile = await getSocialink().getUser(state.address!);
+  state.profile = profile;
+  state.providerName = useAccount()?.getProviderName();
 };
 
 const resetState = () => {
@@ -57,9 +47,9 @@ export async function refresh() {
 }
 
 export async function setup() {
-    if (isSetup) {
-      return state;
-    }
+  if (isSetup) {
+    return state;
+  }
 
   isSetup = true;
   const accountManager = useAccount()!;

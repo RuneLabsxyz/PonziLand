@@ -21,8 +21,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
     try {
       // This is a temporary fix for the type mismatch due to different versions of starknet.js
-      const res: any = (await super.connect()) as any;
-      console.log(res);
+      const res: WalletAccount | undefined = (await super.connect()) as any;
       if (res) {
         this._account = res;
         this._username = await super.username();
@@ -88,8 +87,8 @@ function a2hex(str: string): string {
 
 export async function setupController(
   config: DojoConfig,
-): Promise<Controller | undefined> {
-  let state: { value: Controller | undefined } = {
+): Promise<SvelteController | undefined> {
+  let state: { value: SvelteController | undefined } = {
     value: undefined,
   };
 
@@ -98,12 +97,19 @@ export async function setupController(
     return undefined;
   }
 
-  const controller = new Controller({
-    defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
+  const controller = new SvelteController({
+    defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
     chains: [{ rpcUrl: config.rpcUrl }],
+    preset: 'ponziland',
+    policies: preset.chains.SN_MAIN.policies as any,
   });
 
   console.info('Starting controller!');
+
+  // Check if the controller is already connected
+  if (await controller.probe()) {
+    await controller.connect();
+  }
 
   return controller;
 }

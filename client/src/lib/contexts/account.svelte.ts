@@ -5,10 +5,11 @@ import {
   PUBLIC_DOJO_BURNER_ADDRESS,
   PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
+import { getDojoConfig } from '$lib/dojoConfig';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
-import { dojoConfig } from '$lib/dojoConfig';
-import { config, Provider as StarknetProvider } from 'starknet';
+import { loadDojoConfig } from '$lib/dojoConfig';
+import { Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
 import {
@@ -21,7 +22,6 @@ import {
   constants,
 } from 'starknet';
 import { getContext, setContext } from 'svelte';
-import Controller from '@cartridge/controller';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -90,7 +90,7 @@ const accountManager = Symbol('accountManager');
 const previousWalletSymbol = Symbol('previousWallet');
 const previousWalletSession = Symbol('walletSession');
 
-let controller: Controller | undefined;
+let controller: SvelteController | undefined;
 
 export type ConnectedEvent = {
   type: 'connected';
@@ -99,7 +99,7 @@ export type ConnectedEvent = {
 
 export type DisconnectedEvent = {
   type: 'disconnected';
-};  
+};
 
 export type ChainChangedEvent = {
   type: 'chain_change';
@@ -117,7 +117,7 @@ export async function Provider(
     case 'controller':
       return controller ?? null;
     case 'argentX':
-      return new ArgentXAccount(wallet);
+    //  return new ArgentXAccount(wallet);
     // NOTE: To add new providers, this is here.
     default:
       console.warn('Unknown provider: ', wallet.id);
@@ -168,11 +168,9 @@ const checkCompatibility = async (
 ) => {
   let isCompatible: boolean = false;
   try {
-    /*
     const permissions = (await myWalletSWO.request({
       type: 'wallet_getPermissions',
     })) as string[];
-     */
     isCompatible = true;
   } catch {
     (err: any) => {
@@ -183,12 +181,11 @@ const checkCompatibility = async (
 };
 
 export class AccountManager {
-  private _provider?: any;
+  private _provider?: AccountProvider;
   private _walletObject?: WALLET_API.StarknetWindowObject;
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
   private _listeners: EventListener[] = [];
-  private _controller: Controller | undefined;
 
   constructor() {
     this._setupPromise = this.setup();
@@ -209,42 +206,27 @@ export class AccountManager {
   }
 
   private async setup(): Promise<AccountManager> {
+    // Load the dojo config first
+    const config = await loadDojoConfig();
 
     const previousWallet: string | null = localStorage.getItem(
       previousWalletSymbol.toString(),
     );
 
-    console.log(dojoConfig)
-
     // Setup cartridge before anything else
-    const controller = new Controller({
-      defaultChainId: "0x57505f4b4154414e41",
-      chains: [
-          {
-              rpcUrl: "https://play.ponzis.fun/x/katana/katana"
-          }
-      ]});
-
-    if (await controller.probe()) {
-      console.log("probe true")
-      let res = await controller.connect();
-      console.log(res)
-    }
+    controller = await setupController(config);
 
     // Get all available wallets
     await scanObjectForWalletsCustom();
 
-    this._controller = controller;
-
-   /*
     if (previousWallet != null) {
       console.info('Attempting auto-login with provider', previousWallet);
       try {
-       await this.selectAndLogin(previousWallet);
+        await this.selectAndLogin(previousWallet);
 
         this.getSessionFromStorage();
       } catch (e) {
-        console.error( 
+        console.error(
           'An error occurred while auto-logging the provider ',
           previousWallet,
           e,
@@ -254,7 +236,7 @@ export class AccountManager {
       }
       return this;
     }
-    */
+
     console.info('The user did not have a previous wallet selected.');
 
     // NOTE: If session is supported, extract the public & private session from local storage.
@@ -262,9 +244,17 @@ export class AccountManager {
   }
 
   getStarknetProvider() {
-    return new StarknetProvider({
-      nodeUrl: dojoConfig.rpcUrl,
+    // This method requires the config to be loaded first
+    // We'll throw an error with a helpful message if not loaded
+    let config = getDojoConfig();
 
+    return new StarknetProvider({
+      nodeUrl: config.rpcUrl,
+      // We won't be using argent / braavos on slot deployments any time soon
+      chainId:
+        config.profile == 'mainnet'
+          ? SNconstants.StarknetChainId.SN_MAIN
+          : SNconstants.StarknetChainId.SN_SEPOLIA,
     });
   }
 
@@ -276,18 +266,36 @@ export class AccountManager {
       throw 'Unknown provider!';
     }
 
+    const provider = await Provider(walletObject.wallet);
+    if (provider == null) {
+      throw 'Could not setup provider (not registered in account.ts)';
+    }
 
-    console.log(this._controller)
-
-    // const controller = await setupController(dojoConfig);
- 
     try {
       // Handle user cancelled action
-      let res = await this._controller?.connect();
+      this._provider = provider;
+      this._walletObject = walletObject.wallet;
       // First, ask for a login
-      console.log(res)
+      await provider.connect();
       console.info('User logged-in successfully');
-      console.log(this._controller)
+
+      this._listeners.forEach((listener) =>
+        listener({
+          type: 'connected',
+          provider,
+        }),
+      );
+
+      const walletAccount = provider.getWalletAccount();
+      if (walletAccount instanceof WalletAccount) {
+        console.log('Wallet account!');
+
+        // Unregister the bugged accountsChanged from starknetjs
+        console.log(this._walletObject);
+
+        walletAccount.onNetworkChanged(this.onNetworkChanged.bind(this));
+        walletAccount.onAccountChange(this.onWalletChanged.bind(this));
+      }
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch (error) {
@@ -454,6 +462,7 @@ export function setupAccount(): Promise<AccountManager> {
   }
 
   const manager = new AccountManager();
+
   state = manager;
 
   return manager.wait();
