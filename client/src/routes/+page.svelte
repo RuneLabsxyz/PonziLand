@@ -7,6 +7,8 @@
   import Particles, { particlesInit } from '@tsparticles/svelte';
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
+  import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
+  import accountDataProvider from '$lib/account.svelte';
 
   let particlesConfig = {
     particles: {
@@ -81,24 +83,25 @@
     await loadSlim(engine);
   });
 
+  let isLogin = $derived(accountDataProvider.isConnected);
+
   // setup account
-  //
   const account = useAccount();
 
   async function startGame() {
-    const accountProvider = account;
-    if (accountProvider == null) {
-      console.log('No accountProvider?!?');
-      return;
+    if (!isLogin) {
+      const accountProvider = account;
+      if (accountProvider == null) {
+        console.log('No accountProvider?!?');
+        return;
+      }
+      await accountProvider.promptForLogin();
     }
-    await accountProvider.promptForLogin();
-
-    console.log('Got the confirmation that it worked!');
     goto('/game');
   }
 
-  let showLogo = false;
-  let showWave = false;
+  let showLogo = $state(false);
+  let showWave = $state(false);
 
   onMount(() => {
     showLogo = true;
@@ -137,6 +140,11 @@
       transition:fly={{ y: -400, duration: 1500 }}
     />
   {/if}
+
+  <div class="absolute top-0 right-0 m-5 z-[10] pointer-events-auto">
+    <OnboardingWalletInfo />
+  </div>
+
   {#if showWave}
     <img
       src="/home/wave.gif"
