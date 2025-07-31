@@ -214,6 +214,8 @@ export class AccountManager {
       previousWalletSymbol.toString(),
     );
 
+    console.log(dojoConfig)
+
     // Setup cartridge before anything else
     controller = new Controller({
       defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
