@@ -10,6 +10,10 @@
   } from 'lucide-svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import WalletBalance from '$lib/components/+game-ui/widgets/wallet/wallet-balance.svelte';
+  import WalletAddress from '$lib/components/ui/wallet-address/wallet-address.svelte';
+  import accountData from '$lib/account.svelte';
+
+  const address = $derived(accountData.address);
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
@@ -17,7 +21,12 @@
     <!-- Header -->
     <div class="mb-12">
       <h1 class="text-5xl font-bold text-white mb-2">Wallet</h1>
-      <p class="text-gray-400 text-lg">Manage your assets and transactions</p>
+      <div class="flex items-center gap-4">
+        <p class="text-gray-400 text-lg">Manage your assets and transactions</p>
+        {#if address}
+          <WalletAddress address={address} class="text-gray-400" />
+        {/if}
+      </div>
     </div>
 
     <!-- Wallet Balance and Overview -->
@@ -112,9 +121,19 @@
           <p class="text-gray-400 mb-6">
             Get your wallet address to receive funds
           </p>
-          <Button variant="red" class="w-full" disabled>
-            Connect Wallet to Receive
-          </Button>
+          {#if address}
+            <div class="mb-4 p-4 bg-gray-900/50 rounded-lg">
+              <p class="text-sm text-gray-400 mb-2">Your wallet address:</p>
+              <WalletAddress address={address} class="text-white text-base" />
+            </div>
+            <Button variant="green" class="w-full" onclick={() => navigator.clipboard.writeText(address)}>
+              Copy Address
+            </Button>
+          {:else}
+            <Button variant="red" class="w-full" disabled>
+              Connect Wallet to Receive
+            </Button>
+          {/if}
         </div>
       </Card>
     </div>

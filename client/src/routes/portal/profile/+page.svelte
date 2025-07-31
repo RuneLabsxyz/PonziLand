@@ -1,6 +1,11 @@
 <script lang="ts">
   import { Card } from '$lib/components/ui/card';
   import { User, Trophy, Activity, Settings } from 'lucide-svelte';
+  import accountDataProvider, { setup } from '$lib/account.svelte';
+  import WalletAddress from '$lib/components/ui/wallet-address/wallet-address.svelte';
+
+  let address = $derived(accountDataProvider.address);
+  let username = $derived(accountDataProvider.profile?.username);
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
@@ -27,11 +32,15 @@
           <div class="space-y-4">
             <div class="p-4 bg-gray-900/50 rounded-lg">
               <p class="text-sm text-gray-400 mb-1">Username</p>
-              <p class="text-white font-medium">Loading...</p>
+              <p class="text-white font-medium">{username}</p>
             </div>
             <div class="p-4 bg-gray-900/50 rounded-lg">
               <p class="text-sm text-gray-400 mb-1">Wallet Address</p>
-              <p class="text-white font-mono text-sm">Not connected</p>
+              {#if address}
+                <WalletAddress address={address} class="text-white" />
+              {:else}
+                <p class="text-gray-500 text-sm">Not connected</p>
+              {/if}
             </div>
           </div>
         </div>
