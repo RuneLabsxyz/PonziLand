@@ -262,7 +262,7 @@ export class AccountManager {
  
     try {
       // Handle user cancelled action
-      let res = controller?.connect();
+      let res = await controller?.connect();
       // First, ask for a login
       console.log(res)
       console.info('User logged-in successfully');
