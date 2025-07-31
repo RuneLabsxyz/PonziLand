@@ -4,6 +4,7 @@
   import { Button } from '$lib/components/ui/button';
   import ExperienceSection from '$lib/portal/experience-section.svelte';
   import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
+  import PhantomWalletInfo from '$lib/components/+game-ui/widgets/wallet/phantom-wallet-info.svelte';
   let isExpanded = $state(true);
 
   function toggleSidebar() {
@@ -19,8 +20,11 @@
   });
 </script>
 
-<div class="absolute top-0 right-0 m-5 z-[10] pointer-events-auto">
+<div
+  class="fixed top-0 right-0 m-5 z-[10] pointer-events-auto flex flex-col gap-2"
+>
   <OnboardingWalletInfo />
+  <PhantomWalletInfo />
 </div>
 
 <div class="h-screen bg-gray-900 overflow-hidden">

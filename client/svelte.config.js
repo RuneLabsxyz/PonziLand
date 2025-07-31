@@ -111,6 +111,7 @@ console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath = `../contracts/manifest_${profile}.json`;
 const dataPath = `data/${profile}.json`;
+const solDataPath = `data/mainnet-sol.json`;
 
 console.log('Manifest: ', manifestPath);
 
@@ -128,6 +129,7 @@ const config = {
     alias: {
       $manifest: manifestPath,
       $profileData: dataPath,
+      $solData: solDataPath,
     },
   },
 };
