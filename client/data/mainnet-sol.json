@@ -1,0 +1,23 @@
+{
+  "availableTokens": [
+    {
+      "name": "Solana",
+      "symbol": "SOL",
+      "address": "native",
+      "decimals": 9,
+      "isNative": true,
+      "images": {
+        "icon": "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png"
+      }
+    },
+    {
+      "name": "Daydreams",
+      "symbol": "DREAMS",
+      "address": "GMzuntWYJLpNuCizrSR7ZXggiMdDzTNiEmSNHHunpump",
+      "decimals": 18,
+      "images": {
+        "icon": "/tokens/DREAMS/icon.png"
+      }
+    }
+  ]
+}

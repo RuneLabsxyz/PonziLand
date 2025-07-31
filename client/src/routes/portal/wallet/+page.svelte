@@ -11,6 +11,7 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import WalletBalance from '$lib/components/+game-ui/widgets/wallet/wallet-balance.svelte';
   import WalletAddress from '$lib/components/ui/wallet-address/wallet-address.svelte';
+  import PhantomWalletDisplay from '$lib/components/+game-ui/widgets/wallet/phantom-wallet-display.svelte';
   import accountData from '$lib/account.svelte';
 
   const address = $derived(accountData.address);
@@ -44,45 +45,14 @@
       </Card>
 
       <Card class="bg-gray-800/50 backdrop-blur-sm border border-gray-700">
-        <div class="p-8">
-          <div class="flex items-center justify-between mb-6">
-            <div class="flex items-center gap-4">
-              <div class="p-3 bg-gray-700/50 rounded-lg">
-                <Wallet class="w-6 h-6 text-purple-400" />
-              </div>
-              <h2 class="text-2xl font-semibold text-white">Total Balance</h2>
+        <div class="p-8 h-full">
+          <div class="flex items-center gap-4 mb-6">
+            <div class="p-3 bg-purple-700/50 rounded-lg">
+              <Wallet class="w-6 h-6 text-purple-400" />
             </div>
-            <Button variant="blue" size="sm" class="gap-2">
-              <RefreshCw class="w-4 h-4" />
-              Refresh
-            </Button>
+            <h2 class="text-2xl font-semibold text-white">Phantom Wallet</h2>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="p-6 bg-gray-900/50 rounded-lg">
-              <div class="flex items-center gap-2 mb-2">
-                <Coins class="w-5 h-5 text-yellow-400" />
-                <p class="text-sm text-gray-400">ETH Balance</p>
-              </div>
-              <p class="text-3xl font-bold text-white">0.0000</p>
-              <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
-            </div>
-            <div class="p-6 bg-gray-900/50 rounded-lg">
-              <div class="flex items-center gap-2 mb-2">
-                <TrendingUp class="w-5 h-5 text-green-400" />
-                <p class="text-sm text-gray-400">Land Value</p>
-              </div>
-              <p class="text-3xl font-bold text-white">0.0000</p>
-              <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
-            </div>
-            <div class="p-6 bg-gray-900/50 rounded-lg">
-              <div class="flex items-center gap-2 mb-2">
-                <Wallet class="w-5 h-5 text-purple-400" />
-                <p class="text-sm text-gray-400">Total Assets</p>
-              </div>
-              <p class="text-3xl font-bold text-white">0.0000</p>
-              <p class="text-sm text-gray-500 mt-1">≈ $0.00 USD</p>
-            </div>
-          </div>
+          <PhantomWalletDisplay />
         </div>
       </Card>
     </div>
@@ -127,7 +97,6 @@
               <WalletAddress {address} class="text-white text-base" />
             </div>
             <Button
-              variant="green"
               class="w-full"
               onclick={() => navigator.clipboard.writeText(address)}
             >

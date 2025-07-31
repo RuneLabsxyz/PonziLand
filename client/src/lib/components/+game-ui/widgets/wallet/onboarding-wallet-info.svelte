@@ -25,7 +25,7 @@
   }
 </script>
 
-<div class="fixed top-0 right-0 m-5">
+<div>
   {#if accountDataProvider.isConnected}
     <Card>
       <div class="flex flex-row items-center gap-4">

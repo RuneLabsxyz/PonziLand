@@ -6,7 +6,11 @@
   import AchievementsSection from '$lib/portal/achievements-section.svelte';
 
   let address = $derived(accountDataProvider.address);
-  let username = $derived(accountDataProvider.profile?.username);
+  let username = $derived(
+    accountDataProvider.profile?.exists
+      ? accountDataProvider.profile?.username
+      : undefined,
+  );
 </script>
 
 <div class="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8">
