@@ -226,6 +226,7 @@ export class AccountManager {
       ]});
 
     if (await controller.probe()) {
+      console.log("probe true")
       let res = await controller.connect();
       console.log(res)
     }
