@@ -3,7 +3,7 @@ import { BYPASS_TOKEN } from '$env/static/private';
 import { CLOSING_DATE, DATE_GATE } from '$lib/const';
 import { redirect, type Handle } from '@sveltejs/kit';
 
-const allowedUrls = ['/maintenance', '/dashboard'];
+const allowedUrls = ['/maintenance', '/dashboard', '/portal'];
 
 export function isMaintenanceModeEnabled(
   bypassToken: string,
@@ -57,7 +57,11 @@ export const handle: Handle = async ({ event, resolve }) => {
     }
   }
 
-  if (allowedUrls.includes(event.url.pathname)) {
+  // Check if URL is in allowed list or is a /portal subpath
+  if (
+    allowedUrls.includes(event.url.pathname) ||
+    event.url.pathname.startsWith('/portal/')
+  ) {
     // Resolve as normal
     return await resolve(event);
   }
