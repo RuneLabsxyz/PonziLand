@@ -222,6 +222,8 @@ export class AccountManager {
       chains: [{ rpcUrl: dojoConfig.rpcUrl }],
     });
 
+    let res = await controller.connect();
+    console.log(res)
     // Get all available wallets
     await scanObjectForWalletsCustom();
 
