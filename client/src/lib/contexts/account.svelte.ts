@@ -21,6 +21,7 @@ import {
   constants,
 } from 'starknet';
 import { getContext, setContext } from 'svelte';
+import Controller from '@cartridge/controller';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -258,7 +259,11 @@ export class AccountManager {
       throw 'Unknown provider!';
     }
 
-    const controller = await setupController(dojoConfig);
+    const controller = new Controller(dojoConfig);
+
+    console.log(controller)
+
+    // const controller = await setupController(dojoConfig);
  
     try {
       // Handle user cancelled action

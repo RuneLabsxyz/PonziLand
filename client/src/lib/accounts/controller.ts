@@ -105,7 +105,5 @@ export async function setupController(
 
   console.info('Starting controller!');
 
-  await controller.connect();
-
   return controller;
 }
