@@ -217,10 +217,13 @@ export class AccountManager {
     console.log(dojoConfig)
 
     // Setup cartridge before anything else
-    controller = new Controller({
-      defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
-      chains: [{ rpcUrl: dojoConfig.rpcUrl }],
-    });
+    const controller = new Controller({
+      defaultChainId: "0x57505f4b4154414e41",
+      chains: [
+          {
+              rpcUrl: "https://play.ponzis.fun/x/katana/katana"
+          }
+      ]});
 
     if (await controller.probe()) {
       let res = await controller.connect();
