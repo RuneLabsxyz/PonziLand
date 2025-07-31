@@ -8,7 +8,7 @@ import {
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { dojoConfig } from '$lib/dojoConfig';
-import { Provider as StarknetProvider } from 'starknet';
+import { config, Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
 import {
@@ -90,7 +90,7 @@ const accountManager = Symbol('accountManager');
 const previousWalletSymbol = Symbol('previousWallet');
 const previousWalletSession = Symbol('walletSession');
 
-let controller: SvelteController | undefined;
+let controller: Controller | undefined;
 
 export type ConnectedEvent = {
   type: 'connected';
@@ -215,7 +215,10 @@ export class AccountManager {
     );
 
     // Setup cartridge before anything else
-    controller = await setupController(dojoConfig);
+    controller = new Controller({
+      defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
+      chains: [{ rpcUrl: dojoConfig.rpcUrl }],
+    });
 
     // Get all available wallets
     await scanObjectForWalletsCustom();
