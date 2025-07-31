@@ -2,7 +2,6 @@ import { DojoProvider, type DojoConfig } from '@dojoengine/core';
 import { init } from '@dojoengine/sdk';
 import { schema, type SchemaType as Schema } from '$lib/models.gen';
 import { wrappedActions } from '$lib/api/contracts/approve';
-import { dojoConfig } from '$lib/dojoConfig';
 import { getContext, setContext } from 'svelte';
 import { poseidonHash } from '@dojoengine/torii-client';
 
@@ -19,7 +18,6 @@ async function _setupDojo(config: DojoConfig) {
   const initialized = await init<Schema>({
     client: {
       toriiUrl: config.toriiUrl,
-      relayUrl: config.relayUrl,
       worldAddress: config.manifest.world.address,
     },
     domain: {
@@ -30,7 +28,7 @@ async function _setupDojo(config: DojoConfig) {
     },
   });
 
-  const provider = new DojoProvider(dojoConfig.manifest, dojoConfig.rpcUrl);
+  const provider = new DojoProvider(config.manifest, config.rpcUrl);
   return {
     ...initialized,
     provider,
