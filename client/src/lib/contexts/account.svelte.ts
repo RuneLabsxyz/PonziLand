@@ -222,8 +222,11 @@ export class AccountManager {
       chains: [{ rpcUrl: dojoConfig.rpcUrl }],
     });
 
-    let res = await controller.connect();
-    console.log(res)
+    if (await controller.probe()) {
+      let res = await controller.connect();
+      console.log(res)
+    }
+
     // Get all available wallets
     await scanObjectForWalletsCustom();
 
@@ -280,6 +283,7 @@ export class AccountManager {
       // First, ask for a login
       console.log(res)
       console.info('User logged-in successfully');
+      console.log(this._controller)
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch (error) {
