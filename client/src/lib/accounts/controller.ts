@@ -20,7 +20,6 @@ export class SvelteController extends Controller implements AccountProvider {
     }
 
     try {
-      // This is a temporary fix for the type mismatch due to different versions of starknet.js
       const res: WalletAccount | undefined= await super.connect();
       if (res) {
         this._account = res;
