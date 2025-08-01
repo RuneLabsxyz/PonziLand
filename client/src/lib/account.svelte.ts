@@ -23,7 +23,7 @@ const updateState = async (provider: AccountProvider) => {
   state.address = walletAccount?.address;
   state.walletAccount = walletAccount;
 
- // const profile = await getSocialink().getUser(state.address!);
+//  const profile = await getSocialink().getUser(state.address!);
  // state.profile = profile;
   state.providerName = useAccount()?.getProviderName();
 };
@@ -47,9 +47,7 @@ export async function refresh() {
 }
 
 export async function setup() {
-  if (isSetup) {
-    return state;
-  }
+  if (isSetup) return;
 
   isSetup = true;
   const accountManager = useAccount()!;

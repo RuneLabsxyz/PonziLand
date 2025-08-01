@@ -6,6 +6,8 @@ import {
   PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
 import { getDojoConfig } from '$lib/dojoConfig';
+import { ArgentXAccount } from '$lib/accounts/argentx';
+import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { loadDojoConfig } from '$lib/dojoConfig';
@@ -22,7 +24,6 @@ import {
   constants,
 } from 'starknet';
 import { getContext, setContext } from 'svelte';
-import Controller from '@cartridge/controller';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -68,8 +69,6 @@ export type AccountProvider = {
   supportsSession(): boolean;
 
   disconnect(): Promise<void>;
-
-  keychain: any;
 };
 
 const stubLocalStorage = {
@@ -117,10 +116,16 @@ export async function Provider(
   wallet: WALLET_API.StarknetWindowObject,
 ): Promise<AccountProvider | null> {
   switch (wallet.id) {
+    case 'burner':
+      if (USE_BURNER) {
+        const config = await loadDojoConfig();
+        return (await setupBurnerAccount(config)) ?? null;
+      }
+      return null;
     case 'controller':
       return controller ?? null;
     case 'argentX':
-    //  return new ArgentXAccount(wallet);
+      return new ArgentXAccount(wallet);
     // NOTE: To add new providers, this is here.
     default:
       console.warn('Unknown provider: ', wallet.id);
@@ -189,7 +194,6 @@ export class AccountManager {
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
   private _listeners: EventListener[] = [];
-  private _controller: Controller | undefined;
 
   constructor() {
     this._setupPromise = this.setup();
@@ -213,20 +217,17 @@ export class AccountManager {
     // Load the dojo config first
     const config = await loadDojoConfig();
 
+    // If it is dev, just use the burner provider
+    if (USE_BURNER) {
+      this._provider = await setupBurnerAccount(config)!;
+    }
+
     const previousWallet: string | null = localStorage.getItem(
       previousWalletSymbol.toString(),
     );
 
     // Setup cartridge before anything else
-  //  controller =  await setupController(config);
-
-    let rawController = new Controller({
-      defaultChainId: "0x57505f4b4154414e41",
-      chains: [
-        { rpcUrl: config.rpcUrl }
-      ]
-    });
-    this._controller = rawController;
+    controller = await setupController(config);
 
     // Get all available wallets
     await scanObjectForWalletsCustom();
@@ -234,11 +235,6 @@ export class AccountManager {
     if (previousWallet != null) {
       console.info('Attempting auto-login with provider', previousWallet);
       try {
-        console.log(this._controller);
-        if (await this._controller.probe()) {
-          let res = await this._controller.connect();
-          console.log('probe true, account: ', res);
-        }
         await this.selectAndLogin(previousWallet);
 
         this.getSessionFromStorage();
@@ -278,15 +274,36 @@ export class AccountManager {
       throw 'Unknown provider!';
     }
 
-    console.log(walletObject.wallet);
+    const provider = await Provider(walletObject.wallet);
+    if (provider == null) {
+      throw 'Could not setup provider (not registered in account.ts)';
+    }
 
     try {
       // Handle user cancelled action
+      this._provider = provider;
       this._walletObject = walletObject.wallet;
       // First, ask for a login
-      let res = await this._walletObject.connect();
-      console.log(res);
+      await provider.connect();
       console.info('User logged-in successfully');
+
+      this._listeners.forEach((listener) =>
+        listener({
+          type: 'connected',
+          provider,
+        }),
+      );
+
+      const walletAccount = provider.getWalletAccount();
+      if (walletAccount instanceof WalletAccount) {
+        console.log('Wallet account!');
+
+        // Unregister the bugged accountsChanged from starknetjs
+        console.log(this._walletObject);
+
+        walletAccount.onNetworkChanged(this.onNetworkChanged.bind(this));
+        walletAccount.onAccountChange(this.onWalletChanged.bind(this));
+      }
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch (error) {
