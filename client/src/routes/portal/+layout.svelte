@@ -1,6 +1,13 @@
 <script lang="ts">
   import { page } from '$app/stores';
-  import { ChevronLeft, ChevronRight, Home, Wallet, User } from 'lucide-svelte';
+  import {
+    ChevronLeft,
+    ChevronRight,
+    Home,
+    Wallet,
+    User,
+    TrendingUp,
+  } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import ExperienceSection from '$lib/portal/experience-section.svelte';
   import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
@@ -16,6 +23,7 @@
     const path = $page.url.pathname;
     if (path.includes('/wallet')) return 'wallet';
     if (path.includes('/profile')) return 'profile';
+    if (path.includes('/defi')) return 'defi';
     return 'home';
   });
 </script>
@@ -39,15 +47,15 @@
     <div class="p-4 border-b border-purple-600/30">
       {#if isExpanded}
         <div class="flex items-center justify-center gap-3">
-          <img src="/logo.gif" alt="PonziLand" class="w-10 h-10" />
+          <img src="/midgard.png" alt="PonziLand" class="w-12 h-12" />
           <span
-            class="text-2xl font-bold text-white text-ponzi-number uppercase"
-            >PonziLand</span
+            class="text-2xl pt-2 ft-bold text-white text-ponzi-number uppercase"
+            >Midgard</span
           >
         </div>
       {:else}
         <div class="flex justify-center">
-          <img src="/logo.gif" alt="PonziLand" class="w-10 h-10" />
+          <img src="/midgard.png" alt="PonziLand" class="w-10 h-10" />
         </div>
       {/if}
     </div>
@@ -73,49 +81,79 @@
       <ExperienceSection />
     </div>
 
-    {#if isExpanded}
-      <!-- Navigation Buttons -->
-      <div class="flex-1 px-4 pb-4 space-y-2">
-        <Button
-          href="/portal"
-          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white"
-        >
-          <Home class="w-5 h-5" />
-          <span>Home</span>
-        </Button>
+    <!-- Navigation Buttons -->
+    <div
+      class="px-4 pb-4 space-y-2 {!isExpanded ? 'mt-auto' : ''}"
+      style="transition: margin-top 150ms steps(8);"
+    >
+      <Button
+        href="/portal"
+        variant={activeTab === 'home' ? 'red' : 'blue'}
+        class="flex items-center gap-3 w-full {isExpanded
+          ? 'px-4 py-2'
+          : 'h-10 p-0 justify-center'} rounded-md text-white transition-all"
+      >
+        <Home class="w-5 h-5" />
+        {#if isExpanded}
+          <span
+            style="opacity: {isExpanded
+              ? 1
+              : 0}; transition: opacity 150ms steps(4);">Home</span
+          >
+        {/if}
+      </Button>
 
-        <Button
-          href="/portal/wallet"
-          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white"
-        >
-          <Wallet class="w-5 h-5" />
-          <span>Wallet</span>
-        </Button>
+      <Button
+        href="/portal/wallet"
+        variant={activeTab === 'wallet' ? 'red' : 'blue'}
+        class="flex items-center gap-3 w-full {isExpanded
+          ? 'px-4 py-2'
+          : 'h-10 p-0 justify-center'} rounded-md text-white transition-all"
+      >
+        <Wallet class="w-5 h-5" />
+        {#if isExpanded}
+          <span
+            style="opacity: {isExpanded
+              ? 1
+              : 0}; transition: opacity 150ms steps(4);">Wallet</span
+          >
+        {/if}
+      </Button>
 
-        <Button
-          href="/portal/profile"
-          class="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white"
-        >
-          <User class="w-5 h-5" />
-          <span>Profile</span>
-        </Button>
-      </div>
-    {:else}
-      <!-- Collapsed state - just icons -->
-      <div class="flex-1 px-2 py-4 space-y-2">
-        <Button class="w-full h-10 p-0" href="/portal">
-          <Home class="w-5 h-5" />
-        </Button>
+      <Button
+        href="/portal/defi"
+        variant={activeTab === 'defi' ? 'red' : 'blue'}
+        class="flex items-center gap-3 w-full {isExpanded
+          ? 'px-4 py-2'
+          : 'h-10 p-0 justify-center'} rounded-md text-white transition-all"
+      >
+        <TrendingUp class="w-5 h-5" />
+        {#if isExpanded}
+          <span
+            style="opacity: {isExpanded
+              ? 1
+              : 0}; transition: opacity 150ms steps(4);">DeFi</span
+          >
+        {/if}
+      </Button>
 
-        <Button class="w-full h-10 p-0" href="/portal/wallet">
-          <Wallet class="w-5 h-5" />
-        </Button>
-
-        <Button class="w-full h-10 p-0" href="/portal/profile">
-          <User class="w-5 h-5" />
-        </Button>
-      </div>
-    {/if}
+      <Button
+        href="/portal/profile"
+        variant={activeTab === 'profile' ? 'red' : 'blue'}
+        class="flex items-center gap-3 w-full {isExpanded
+          ? 'px-4 py-2'
+          : 'h-10 p-0 justify-center'} rounded-md text-white transition-all"
+      >
+        <User class="w-5 h-5" />
+        {#if isExpanded}
+          <span
+            style="opacity: {isExpanded
+              ? 1
+              : 0}; transition: opacity 150ms steps(4);">Profile</span
+          >
+        {/if}
+      </Button>
+    </div>
   </div>
 
   <!-- Main Content Area -->
