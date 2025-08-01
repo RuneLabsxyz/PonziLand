@@ -86,7 +86,7 @@ function a2hex(str: string): string {
 
 export async function setupController(
   config: DojoConfig,
-): Promise<Controller | undefined> {
+): Promise<SvelteController | undefined> {
   let state: { value: Controller | undefined } = {
     value: undefined,
   };
@@ -96,7 +96,7 @@ export async function setupController(
     return undefined;
   }
 
-  const controller = new Controller({
+  const controller = new SvelteController({
     defaultChainId: "0x57505f4b4154414e41", // SN_SEPOLIA in hex
     chains: [{ rpcUrl: config.rpcUrl }],
   });
