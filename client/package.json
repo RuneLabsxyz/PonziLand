@@ -77,7 +77,7 @@
     "gsap": "^3.12.7",
     "lucide-svelte": "^0.471.0",
     "seedrandom": "^3.0.5",
-    "starknet": "v8.0.0-beta.4",
+    "starknet": "v8.1.0",
     "stats.js": "^0.17.0",
     "svelte-confetti": "^2.3.1",
     "temporal-polyfill": "^0.2.5",
