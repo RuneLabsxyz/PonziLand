@@ -9,7 +9,7 @@ on:
         required: true
 
 jobs:
-  build:
+  build-indexer:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
