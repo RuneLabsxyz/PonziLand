@@ -187,6 +187,7 @@ export class AccountManager {
   private _setup: boolean = false;
   private _setupPromise: Promise<AccountManager>;
   private _listeners: EventListener[] = [];
+  private _controller: Controller | undefined;
 
   constructor() {
     this._setupPromise = this.setup();
@@ -217,12 +218,25 @@ export class AccountManager {
     // Setup cartridge before anything else
     controller =  await setupController(config);
 
+    let rawController = new Controller({
+      defaultChainId: "0x57505f4b4154414e41",
+      chains: [
+        { rpcUrl: config.rpcUrl }
+      ]
+    });
+    this._controller = rawController;
+
     // Get all available wallets
     await scanObjectForWalletsCustom();
 
     if (previousWallet != null) {
       console.info('Attempting auto-login with provider', previousWallet);
       try {
+        console.log(this._controller);
+        if (await this._controller.probe()) {
+          let res = await this._controller.connect();
+          console.log('probe true, account: ', res);
+        }
         await this.selectAndLogin(previousWallet);
 
         this.getSessionFromStorage();
