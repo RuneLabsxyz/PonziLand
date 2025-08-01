@@ -6,8 +6,6 @@ import {
   PUBLIC_DOJO_CHAIN_ID,
 } from '$env/static/public';
 import { getDojoConfig } from '$lib/dojoConfig';
-import { ArgentXAccount } from '$lib/accounts/argentx';
-import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { loadDojoConfig } from '$lib/dojoConfig';
@@ -119,13 +117,12 @@ export async function Provider(
     case 'burner':
       if (USE_BURNER) {
         const config = await loadDojoConfig();
-        return (await setupBurnerAccount(config)) ?? null;
       }
       return null;
     case 'controller':
       return controller ?? null;
     case 'argentX':
-      return new ArgentXAccount(wallet);
+    //  return new ArgentXAccount(wallet);
     // NOTE: To add new providers, this is here.
     default:
       console.warn('Unknown provider: ', wallet.id);
