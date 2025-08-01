@@ -13,33 +13,6 @@ export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
   _username?: string;
 
-  async connect(): Promise<WalletAccount | undefined> {
-    // If the user is already logged in, return the existing account
-    if (this._account) {
-      return this._account;
-    }
-
-    try {
-      const res: WalletAccount | undefined= await super.connect();
-      if (res) {
-        this._account = res;
-        this._username = await super.username();
-
-        console.info(
-          `User ${this.getUsername()} has logged in successfully!\nAddress; ${
-            this._account?.address
-          }`,
-        );
-
-        return res;
-      } else {
-        throw 'Empty response!';
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
   async setupSession(): Promise<any> {
     // no-op
   }
@@ -105,7 +78,8 @@ export async function setupController(
 
   // Check if the controller is already connected
   if (await controller.probe()) {
-    await controller.connect();
+    let res = await controller.connect();
+    console.log('probe true, account: ', res);
   }
 
   return controller;
