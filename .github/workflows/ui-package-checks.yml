@@ -1,0 +1,68 @@
+name: UI Package Checks
+
+on:
+  pull_request:
+    paths:
+      - 'pkgs/ui/**'
+      - '.github/workflows/ui-package-checks.yml'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: pkgs/ui
+        run: bun install
+
+      - name: Type checking
+        working-directory: pkgs/ui
+        run: bun run type-check
+
+      - name: Format check
+        working-directory: pkgs/ui
+        run: bun run format:check
+
+      - name: Build package
+        working-directory: pkgs/ui
+        run: bun run build
+
+      - name: Check build output
+        working-directory: pkgs/ui
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Build failed: dist directory not found"
+            exit 1
+          fi
+          
+          if [ ! -f "dist/index.js" ]; then
+            echo "Build failed: dist/index.js not found"
+            exit 1
+          fi
+          
+          if [ ! -f "dist/index.d.ts" ]; then
+            echo "Build failed: dist/index.d.ts not found"
+            exit 1
+          fi
+          
+          echo "Build successful!"
