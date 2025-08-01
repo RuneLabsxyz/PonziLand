@@ -53,6 +53,7 @@ mod utils {
     mod stake;
     mod packing;
     mod math;
+    mod validations;
 }
 
 #[cfg(test)]

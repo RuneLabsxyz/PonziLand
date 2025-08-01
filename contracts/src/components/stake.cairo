@@ -62,24 +62,23 @@ mod StakeComponent {
         fn _add(
             ref self: ComponentState<TContractState>,
             amount: u256,
-            land: Land,
+            owner: ContractAddress,
+            token_used: ContractAddress,
             mut land_stake: LandStake,
             mut store: Store,
             our_contract_address: ContractAddress,
         ) {
             //initialize and validate token balance
             let mut payable = get_dep_component_mut!(ref self, Payable);
-            let validation_result = payable.validate(land.token_used, land.owner, amount);
+            let validation_result = payable.validate(token_used, owner, amount);
             assert(validation_result.status, ERC20_VALIDATE_FOR_STAKE_FAILED);
 
             //transfer stake amount to game contract
-            let status = payable.transfer_from(land.owner, our_contract_address, validation_result);
+            let status = payable.transfer_from(owner, our_contract_address, validation_result);
             assert(status, ERC20_STAKE_FAILED);
 
-            assert(land.owner == get_caller_address(), 'only the owner can stake');
-
-            let current_total = self.token_stakes.read(land.token_used);
-            self.token_stakes.write(land.token_used, current_total + amount);
+            let current_total = self.token_stakes.read(token_used);
+            self.token_stakes.write(token_used, current_total + amount);
 
             //update land stake amount
             land_stake.amount = land_stake.amount + amount;

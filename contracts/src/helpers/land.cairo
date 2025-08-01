@@ -1,8 +1,20 @@
-// src/utils/land_helpers.cairo
-
 use starknet::ContractAddress;
-use ponzi_land::models::land::{LandStake};
+use ponzi_land::models::land::{Land, LandStake};
 use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
+use ponzi_land::store::{Store, StoreTrait};
+
+
+#[inline(always)]
+pub fn update_neighbors_info(
+    store: Store, neighbors: Span<Land>, land_location: u16, current_time: u64,
+) {
+    for neighbor in neighbors {
+        if let Option::Some(updated_neighbor) =
+            add_neighbor(store.land_stake(*neighbor.location), land_location, current_time) {
+            store.set_land_stake(updated_neighbor);
+        }
+    };
+}
 
 /// Updates neighbor information when a new neighbor is added
 pub fn add_neighbor(
