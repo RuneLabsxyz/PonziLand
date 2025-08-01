@@ -91,7 +91,7 @@ const accountManager = Symbol('accountManager');
 const previousWalletSymbol = Symbol('previousWallet');
 const previousWalletSession = Symbol('walletSession');
 
-let controller: SvelteController | undefined;
+let controller: Controller | undefined;
 
 export type ConnectedEvent = {
   type: 'connected';
@@ -215,7 +215,7 @@ export class AccountManager {
     );
 
     // Setup cartridge before anything else
-    controller = new SvelteController({
+    controller = new Controller({
       defaultChainId: "0x57505f4b4154414e41",
       chains: [
         { rpcUrl: config.rpcUrl }
