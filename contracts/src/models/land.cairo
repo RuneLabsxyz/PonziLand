@@ -130,5 +130,22 @@ impl LandImpl of LandTrait {
     ) -> Land {
         Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
+
+    /// @notice Checks if the land has an owner.
+    /// @param self The land to check.
+    /// @return bool True if the land has an owner, false otherwise.
+    #[inline(always)]
+    fn has_owner(self: @Land) -> bool {
+        !(*self.owner).is_zero()
+    }
+
+    /// @notice Checks if the given address is the owner of the land.
+    /// @param self The land to check.
+    /// @param address Address to check ownership for.
+    /// @return bool True if the address is the owner, false otherwise.
+    #[inline(always)]
+    fn is_owner(self: @Land, address: ContractAddress) -> bool {
+        *self.owner == address
+    }
 }
 

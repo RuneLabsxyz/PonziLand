@@ -52,7 +52,7 @@ mod TaxesComponent {
 
     // Helpers
     use ponzi_land::helpers::coord::max_neighbors;
-    use ponzi_land::helpers::land::{add_neighbor, remove_neighbor};
+    use ponzi_land::helpers::land::{remove_neighbor};
     use ponzi_land::helpers::taxes::{
         get_taxes_per_neighbor, get_tax_rate_per_neighbor, calculate_share_for_nuke,
         calculate_and_return_taxes_with_fee,
