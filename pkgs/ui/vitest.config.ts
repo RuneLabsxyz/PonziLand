@@ -15,7 +15,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ['./src/tests/setup.ts'],
     alias: {
-      'svelte': resolve(__dirname, 'node_modules/svelte/src/runtime/client/main.js'),
+      svelte: resolve(__dirname, 'node_modules/svelte/src/runtime/client/main.js'),
     },
   },
   resolve: {

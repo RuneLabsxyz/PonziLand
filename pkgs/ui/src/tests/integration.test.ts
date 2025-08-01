@@ -1,6 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { render } from '@testing-library/svelte';
-import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../index';
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '../index';
 
 describe('Integration Tests', () => {
   it('all components can be imported from index', () => {
@@ -23,32 +31,32 @@ describe('Integration Tests', () => {
               children: [
                 {
                   component: CardTitle,
-                  props: { children: 'Test Card' }
+                  props: { children: 'Test Card' },
                 },
                 {
                   component: CardDescription,
-                  props: { children: 'This is a test card' }
-                }
-              ]
-            }
+                  props: { children: 'This is a test card' },
+                },
+              ],
+            },
           },
           {
             component: CardContent,
             props: {
-              children: 'Card content goes here'
-            }
+              children: 'Card content goes here',
+            },
           },
           {
             component: CardFooter,
             props: {
               children: {
                 component: Button,
-                props: { children: 'Action Button' }
-              }
-            }
-          }
-        ]
-      }
+                props: { children: 'Action Button' },
+              },
+            },
+          },
+        ],
+      },
     });
 
     expect(container.textContent).toContain('Test Card');

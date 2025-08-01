@@ -9,7 +9,7 @@ describe('Button Component', () => {
         children: 'Click me',
       },
     });
-    
+
     const button = getByRole('button');
     expect(button).toBeInTheDocument();
     expect(button).toHaveTextContent('Click me');
@@ -22,7 +22,7 @@ describe('Button Component', () => {
         children: 'Button',
       },
     });
-    
+
     const button = getByRole('button');
     expect(button).toHaveClass('custom-class');
   });
@@ -35,7 +35,7 @@ describe('Button Component', () => {
         children: 'Click me',
       },
     });
-    
+
     const button = getByRole('button');
     await fireEvent.click(button);
     expect(handleClick).toHaveBeenCalledTimes(1);
@@ -48,17 +48,17 @@ describe('Button Component', () => {
         children: 'Blue Button',
       },
     });
-    
+
     let button = getByRole('button');
     expect(button).toHaveClass('button-ponzi-blue');
-    
+
     rerender({
       props: {
         variant: 'red',
         children: 'Red Button',
       },
     });
-    
+
     button = getByRole('button');
     expect(button).toHaveClass('button-ponzi-red');
   });
@@ -70,7 +70,7 @@ describe('Button Component', () => {
         children: 'Small Button',
       },
     });
-    
+
     const button = getByRole('button');
     expect(button).toHaveClass('h-[8px]');
   });

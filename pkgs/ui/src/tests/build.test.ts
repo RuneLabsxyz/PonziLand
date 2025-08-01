@@ -4,7 +4,7 @@ import { resolve } from 'path';
 
 describe('Build Output Tests', () => {
   const distPath = resolve(__dirname, '../../dist');
-  
+
   it('dist folder exists', () => {
     expect(existsSync(distPath)).toBe(true);
   });
@@ -22,13 +22,13 @@ describe('Build Output Tests', () => {
   it('exports are properly defined in index.d.ts', () => {
     const typesPath = resolve(distPath, 'index.d.ts');
     const content = readFileSync(typesPath, 'utf-8');
-    
+
     // Check for main exports
     expect(content).toContain('export { default as Button }');
     expect(content).toContain('export { default as Card }');
     expect(content).toContain('export { cn');
     // buttonVariants is exported via export * from button/index.js
-    expect(content).toContain('export * from \'./components/button/index.js\'');
+    expect(content).toContain("export * from './components/button/index.js'");
   });
 
   it('source map is generated', () => {

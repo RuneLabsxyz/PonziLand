@@ -27,10 +27,10 @@ describe('Simple Library Tests', () => {
   it('cn utility works correctly', () => {
     // Test basic class name concatenation
     expect(exports.cn('class1', 'class2')).toBe('class1 class2');
-    
+
     // Test with undefined/null values
     expect(exports.cn('class1', undefined, 'class2')).toBe('class1 class2');
-    
+
     // Test with conditional classes
     expect(exports.cn('base', false && 'conditional', 'other')).toBe('base other');
   });
@@ -38,7 +38,7 @@ describe('Simple Library Tests', () => {
   it('exports buttonVariants', () => {
     expect(exports.buttonVariants).toBeDefined();
     expect(typeof exports.buttonVariants).toBe('function');
-    
+
     // Test variant function
     const blueDefault = exports.buttonVariants({ variant: 'blue', size: 'default' });
     expect(blueDefault).toContain('button-ponzi-blue');

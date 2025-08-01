@@ -15,7 +15,7 @@ describe('Card Components', () => {
           children: 'Card content',
         },
       });
-      
+
       const card = container.querySelector('div');
       expect(card).toBeInTheDocument();
       expect(card).toHaveClass('bg-card');
@@ -29,7 +29,7 @@ describe('Card Components', () => {
           children: 'Card',
         },
       });
-      
+
       const card = container.querySelector('div');
       expect(card).toHaveClass('custom-card-class');
     });
@@ -42,7 +42,7 @@ describe('Card Components', () => {
           children: 'Header content',
         },
       });
-      
+
       const header = container.querySelector('div');
       expect(header).toHaveClass('flex', 'flex-col', 'space-y-1.5', 'p-6', 'pb-0');
     });
@@ -55,7 +55,7 @@ describe('Card Components', () => {
           children: 'Title text',
         },
       });
-      
+
       const title = container.querySelector('h3');
       expect(title).toBeInTheDocument();
       expect(title).toHaveTextContent('Title text');
@@ -69,7 +69,7 @@ describe('Card Components', () => {
           children: 'Main title',
         },
       });
-      
+
       const title = container.querySelector('h1');
       expect(title).toBeInTheDocument();
       expect(title).toHaveTextContent('Main title');
@@ -83,7 +83,7 @@ describe('Card Components', () => {
           children: 'Description text',
         },
       });
-      
+
       const desc = container.querySelector('p');
       expect(desc).toBeInTheDocument();
       expect(desc).toHaveClass('text-muted-foreground');
@@ -98,7 +98,7 @@ describe('Card Components', () => {
           children: 'Content here',
         },
       });
-      
+
       const content = container.querySelector('div');
       expect(content).toHaveClass('p-6');
     });
@@ -111,7 +111,7 @@ describe('Card Components', () => {
           children: 'Footer content',
         },
       });
-      
+
       const footer = container.querySelector('div');
       expect(footer).toHaveClass('flex', 'items-center', 'p-6', 'pt-0');
     });
