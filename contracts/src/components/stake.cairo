@@ -77,8 +77,8 @@ mod StakeComponent {
             let status = payable.transfer_from(owner, our_contract_address, validation_result);
             assert(status, ERC20_STAKE_FAILED);
 
-            let current_total = self.token_stakes.read(land.token_used);
-            self.token_stakes.write(land.token_used, current_total + amount);
+            let current_total = self.token_stakes.read(token_used);
+            self.token_stakes.write(token_used, current_total + amount);
 
             //update land stake amount
             land_stake.amount = land_stake.amount + amount;
