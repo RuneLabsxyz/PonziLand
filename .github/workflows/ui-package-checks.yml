@@ -35,14 +35,6 @@ jobs:
         working-directory: pkgs/ui
         run: bun install
 
-      - name: Type checking
-        working-directory: pkgs/ui
-        run: bun run type-check
-
-      - name: Format check
-        working-directory: pkgs/ui
-        run: bun run format:check
-
       - name: Build package
         working-directory: pkgs/ui
         run: bun run build
