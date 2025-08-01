@@ -1,0 +1,186 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.landinfo-container {
+  container-type: inline-size;
+  container-name: landinfo;
+}
+
+@container landinfo (min-width: 700px) {
+  .landinfo-content {
+    flex-direction: row;
+  }
+}
+
+@container landinfo (max-width: 699px) {
+  .landinfo-content {
+    flex-direction: column;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@font-face {
+  font-family: 'PonziNumber';
+  src: url('/fonts/PonziNumber_Regular_G7.ttf');
+}
+
+.text-ponzi-number {
+  font-family: 'PonziNumber', sans-serif;
+  line-height: normal;
+  -webkit-text-stroke: 0.25em #000;
+  paint-order: stroke fill;
+}
+
+.font-ponzi-number {
+  font-family: 'PonziNumber', sans-serif;
+  line-height: normal;
+}
+
+.stroke-3d-black {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #000,
+    -0.1em 0.25em 0px #000,
+    0.1em var(--stroke-bottom-offset) 0px #000,
+    -0.1em var(--stroke-bottom-offset) 0px #000;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #000;
+}
+
+.stroke-3d-blue {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #072f3d,
+    -0.1em 0.25em 0px #072f3d,
+    0.1em var(--stroke-bottom-offset) 0px #072f3d,
+    -0.1em var(--stroke-bottom-offset) 0px #072f3d;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #072f3d;
+}
+
+.stroke-3d-red {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #5a1c33,
+    -0.1em 0.25em 0px #5a1c33,
+    0.1em var(--stroke-bottom-offset) 0px #5a1c33,
+    -0.1em var(--stroke-bottom-offset) 0px #5a1c33;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #5a1c33;
+}
+
+@font-face {
+  font-family: 'Nintendo DS BIOS';
+  font-size: small;
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/Nintendo-DS-BIOS.ttf') format('truetype');
+}
+
+.font-ds {
+  font-family: 'Nintendo DS BIOS', sans-serif;
+}
+
+@font-face {
+  font-family: 'PonziDS';
+  font-size: small;
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/PonziDS_RegularV2.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'PonziDS';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/PonziDS2_SemiBoldV3.ttf') format('truetype');
+}
+
+.text-ponzi {
+  --text-stroke: 0.25em;
+  font-family: 'PonziDS', sans-serif;
+  line-height: normal;
+  color: #dfdfe3;
+  -webkit-text-stroke: var(--text-stroke) #000;
+  paint-order: stroke fill;
+  letter-spacing: 0.1ch;
+}
+
+.text-shadow-none {
+  text-shadow: none;
+}
+
+.text-stroke-0 {
+  --text-stroke: 0;
+}
+
+.text-stroke-none {
+  -webkit-text-stroke: 0;
+}
+
+.border-ponzi {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image: url('/ui/card/frame.png') 10 10 10 10 round round;
+  image-rendering: pixelated;
+  padding: 0.5em;
+}
+
+.bg-ponzi {
+  background-image: url('/ui/card/texture.png');
+}
+
+.shadow-ponzi {
+  box-shadow: inset 4px 4px 0 0 #0b0c13;
+}
+
+.button-ponzi-blue {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image-source: url('/ui/button/blue/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
+  image-rendering: pixelated;
+  background-color: #136a88;
+}
+.button-ponzi-blue:hover {
+  border-image-source: url('/ui/button/blue/hover.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
+  background-color: #71d2f8;
+}
+.button-ponzi-red {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image-source: url('/ui/button/red/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
+  image-rendering: pixelated;
+  background-color: #832849;
+}
+.button-ponzi-red:hover {
+  border-image-source: url('/ui/button/red/hover.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
+  background-color: #b6a2ad;
+}
+
+:root {
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 5000px;
+}

@@ -1,9 +1,13 @@
-/// <reference types="svelte" />
-
-declare namespace svelteHTML {
-  interface IntrinsicElements {
-    div: import('svelte/elements').HTMLAttributes<HTMLDivElement>;
-    button: import('svelte/elements').HTMLAttributes<HTMLButtonElement>;
-    p: import('svelte/elements').HTMLAttributes<HTMLParagraphElement>;
-  }
+// See https://svelte.dev/docs/kit/types#app.d.ts
+// for information about these interfaces
+declare global {
+	namespace App {
+		// interface Error {}
+		// interface Locals {}
+		// interface PageData {}
+		// interface PageState {}
+		// interface Platform {}
+	}
 }
+
+export {};
