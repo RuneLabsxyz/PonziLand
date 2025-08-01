@@ -1,0 +1,84 @@
+/* Typography Styles */
+
+/* Ponzi Number text style */
+.text-ponzi-number {
+  font-family: 'PonziNumber', sans-serif;
+  line-height: normal;
+  -webkit-text-stroke: 0.25em #000;
+  paint-order: stroke fill;
+}
+
+/* Ponzi DS text style */
+.text-ponzi {
+  --text-stroke: 0.25em;
+  font-family: 'PonziDS', sans-serif;
+  line-height: normal;
+  color: #dfdfe3;
+  -webkit-text-stroke: var(--text-stroke) #000;
+  paint-order: stroke fill;
+  letter-spacing: 0.1ch;
+}
+
+/* 3D stroke effects */
+.stroke-3d-black {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #000,
+    -0.1em 0.25em 0px #000,
+    0.1em var(--stroke-bottom-offset) 0px #000,
+    -0.1em var(--stroke-bottom-offset) 0px #000;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #000;
+}
+
+.stroke-3d-blue {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #072f3d,
+    -0.1em 0.25em 0px #072f3d,
+    0.1em var(--stroke-bottom-offset) 0px #072f3d,
+    -0.1em var(--stroke-bottom-offset) 0px #072f3d;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #072f3d;
+}
+
+.stroke-3d-red {
+  --stroke-bottom-offset: 0.3em;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #5a1c33,
+    -0.1em 0.25em 0px #5a1c33,
+    0.1em var(--stroke-bottom-offset) 0px #5a1c33,
+    -0.1em var(--stroke-bottom-offset) 0px #5a1c33;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #5a1c33;
+}
+
+/* Text utility classes */
+.text-white {
+  color: #ffffff;
+}
+
+.text-shadow-none {
+  text-shadow: none;
+}
+
+.text-stroke-0 {
+  --text-stroke: 0;
+}
+
+.text-stroke-none {
+  -webkit-text-stroke: 0;
+}
+
+/* Font weights */
+.font-medium {
+  font-weight: 500;
+}
+
+/* Text wrapping */
+.whitespace-nowrap {
+  white-space: nowrap;
+}
