@@ -56,7 +56,7 @@
 .button--blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image-source: url('/ui/button/blue/default.png');
+  border-image-source: url('./static/ui/button/blue/default.png');
   border-image-slice: 40;
   border-image-outset: 0;
   border-image-width: 2;
@@ -73,14 +73,14 @@
 }
 
 .button--blue:hover:not(:disabled) {
-  border-image-source: url('/ui/button/blue/hover.png');
+  border-image-source: url('./static/ui/button/blue/hover.png');
   background-color: #71d2f8;
 }
 
 .button--red {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image-source: url('/ui/button/red/default.png');
+  border-image-source: url('./static/ui/button/red/default.png');
   border-image-slice: 40;
   border-image-outset: 0;
   border-image-width: 1.5;
@@ -97,6 +97,6 @@
 }
 
 .button--red:hover:not(:disabled) {
-  border-image-source: url('/ui/button/red/hover.png');
+  border-image-source: url('./static/ui/button/red/hover.png');
   background-color: #b6a2ad;
 }

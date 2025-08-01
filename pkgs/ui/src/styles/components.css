@@ -4,13 +4,13 @@
 .border-ponzi {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image: url('/ui/card/frame.png') 10 10 10 10 round round;
+  border-image: url('../static/ui/card/frame.png') 10 10 10 10 round round;
   image-rendering: pixelated;
   padding: 0.5em;
 }
 
 .bg-ponzi {
-  background-image: url('/ui/card/texture.png');
+  background-image: url('../static/ui/card/texture.png');
 }
 
 .shadow-ponzi {
@@ -21,7 +21,7 @@
 .button-ponzi-blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image-source: url('/ui/button/blue/default.png');
+  border-image-source: url('../static/ui/button/blue/default.png');
   border-image-slice: 40;
   border-image-outset: 0;
   border-image-width: 2;
@@ -30,7 +30,7 @@
 }
 
 .button-ponzi-blue:hover {
-  border-image-source: url('/ui/button/blue/hover.png');
+  border-image-source: url('../static/ui/button/blue/hover.png');
   border-image-slice: 40;
   border-image-outset: 0;
   border-image-width: 2;
@@ -40,7 +40,7 @@
 .button-ponzi-red {
   background-clip: padding-box;
   border: solid transparent 0.4em;
-  border-image-source: url('/ui/button/red/default.png');
+  border-image-source: url('../static/ui/button/red/default.png');
   border-image-slice: 40;
   border-image-outset: 0;
   border-image-width: 1.5;
@@ -49,7 +49,7 @@
 }
 
 .button-ponzi-red:hover {
-  border-image-source: url('/ui/button/red/hover.png');
+  border-image-source: url('../static/ui/button/red/hover.png');
   border-image-slice: 40;
   border-image-outset: 0;
   border-image-width: 1.5;
