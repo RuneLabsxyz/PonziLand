@@ -1,6 +1,6 @@
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 @layer base {
   :root {
@@ -60,29 +60,29 @@
 
 @layer base {
   @font-face {
-    font-family: "Nintendo DS BIOS";
-    src: url("../assets/fonts/Nintendo-DS-BIOS.ttf") format("truetype");
+    font-family: 'Nintendo DS BIOS';
+    src: url('../assets/fonts/Nintendo-DS-BIOS.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
 
   @font-face {
-    font-family: "Ponzi DS";
-    src: url("../assets/fonts/PonziDS_RegularV2.ttf") format("truetype");
+    font-family: 'Ponzi DS';
+    src: url('../assets/fonts/PonziDS_RegularV2.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
   }
 
   @font-face {
-    font-family: "Ponzi DS";
-    src: url("../assets/fonts/PonziDS2_SemiBoldV3.ttf") format("truetype");
+    font-family: 'Ponzi DS';
+    src: url('../assets/fonts/PonziDS2_SemiBoldV3.ttf') format('truetype');
     font-weight: 600;
     font-style: normal;
   }
 
   @font-face {
-    font-family: "Ponzi Number";
-    src: url("../assets/fonts/PonziNumber_Regular_G7.ttf") format("truetype");
+    font-family: 'Ponzi Number';
+    src: url('../assets/fonts/PonziNumber_Regular_G7.ttf') format('truetype');
     font-weight: normal;
     font-style: normal;
   }
@@ -90,7 +90,7 @@
   * {
     @apply border-border;
   }
-  
+
   body {
     @apply bg-background text-foreground;
   }
@@ -98,11 +98,11 @@
 
 @layer utilities {
   .font-ponzi-number {
-    font-family: "Ponzi Number", "Nintendo DS BIOS", monospace;
+    font-family: 'Ponzi Number', 'Nintendo DS BIOS', monospace;
   }
 
   .text-ponzi-number {
-    font-family: "Ponzi Number", "Nintendo DS BIOS", monospace;
+    font-family: 'Ponzi Number', 'Nintendo DS BIOS', monospace;
     text-shadow:
       0 0 1px black,
       0 0 1px black,
@@ -117,11 +117,11 @@
   }
 
   .font-ds {
-    font-family: "Nintendo DS BIOS", monospace;
+    font-family: 'Nintendo DS BIOS', monospace;
   }
 
   .text-ponzi {
-    font-family: "Ponzi DS", "Nintendo DS BIOS", monospace;
+    font-family: 'Ponzi DS', 'Nintendo DS BIOS', monospace;
     font-weight: 600;
     text-shadow:
       0 0 2px black,
@@ -204,7 +204,7 @@
   }
 
   .border-ponzi {
-    border-image-source: url("../assets/ui/card/frame.png");
+    border-image-source: url('../assets/ui/card/frame.png');
     border-image-slice: 5 5 5 5;
     border-image-width: 5px 5px 5px 5px;
     border-image-outset: 0px 0px 0px 0px;
@@ -213,7 +213,7 @@
   }
 
   .bg-ponzi {
-    background-image: url("../assets/ui/card/texture.png");
+    background-image: url('../assets/ui/card/texture.png');
     image-rendering: pixelated;
   }
 
@@ -222,7 +222,7 @@
   }
 
   .button-ponzi-blue {
-    border-image-source: url("../assets/ui/button/blue/button-blue-default.png");
+    border-image-source: url('../assets/ui/button/blue/button-blue-default.png');
     border-image-slice: 16 16 16 16;
     border-image-width: 16px 16px 16px 16px;
     border-image-outset: 0px 0px 0px 0px;
@@ -231,11 +231,11 @@
   }
 
   .button-ponzi-blue:hover {
-    border-image-source: url("../assets/ui/button/blue/button-blue-hover.png");
+    border-image-source: url('../assets/ui/button/blue/button-blue-hover.png');
   }
 
   .button-ponzi-red {
-    border-image-source: url("../assets/ui/button/red/button-red-default.png");
+    border-image-source: url('../assets/ui/button/red/button-red-default.png');
     border-image-slice: 16 16 16 16;
     border-image-width: 16px 16px 16px 16px;
     border-image-outset: 0px 0px 0px 0px;
@@ -244,22 +244,50 @@
   }
 
   .button-ponzi-red:hover {
-    border-image-source: url("../assets/ui/button/red/button-red-hover.png");
+    border-image-source: url('../assets/ui/button/red/button-red-hover.png');
   }
 
   /* Text sizing with line heights */
-  .text-2xs { @apply text-[10px] leading-[14px]; }
-  .text-xs { @apply text-[12px] leading-[16px]; }
-  .text-sm { @apply text-[14px] leading-[20px]; }
-  .text-base { @apply text-[16px] leading-[24px]; }
-  .text-lg { @apply text-[18px] leading-[28px]; }
-  .text-xl { @apply text-[20px] leading-[28px]; }
-  .text-2xl { @apply text-[24px] leading-[32px]; }
-  .text-3xl { @apply text-[30px] leading-[36px]; }
-  .text-4xl { @apply text-[36px] leading-[40px]; }
-  .text-5xl { @apply text-[48px] leading-[48px]; }
-  .text-6xl { @apply text-[60px] leading-[60px]; }
-  .text-7xl { @apply text-[72px] leading-[72px]; }
-  .text-8xl { @apply text-[96px] leading-[96px]; }
-  .text-9xl { @apply text-[128px] leading-[128px]; }
+  .text-2xs {
+    @apply text-[10px] leading-[14px];
+  }
+  .text-xs {
+    @apply text-[12px] leading-[16px];
+  }
+  .text-sm {
+    @apply text-[14px] leading-[20px];
+  }
+  .text-base {
+    @apply text-[16px] leading-[24px];
+  }
+  .text-lg {
+    @apply text-[18px] leading-[28px];
+  }
+  .text-xl {
+    @apply text-[20px] leading-[28px];
+  }
+  .text-2xl {
+    @apply text-[24px] leading-[32px];
+  }
+  .text-3xl {
+    @apply text-[30px] leading-[36px];
+  }
+  .text-4xl {
+    @apply text-[36px] leading-[40px];
+  }
+  .text-5xl {
+    @apply text-[48px] leading-[48px];
+  }
+  .text-6xl {
+    @apply text-[60px] leading-[60px];
+  }
+  .text-7xl {
+    @apply text-[72px] leading-[72px];
+  }
+  .text-8xl {
+    @apply text-[96px] leading-[96px];
+  }
+  .text-9xl {
+    @apply text-[128px] leading-[128px];
+  }
 }

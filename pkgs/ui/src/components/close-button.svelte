@@ -2,10 +2,10 @@
   import { cn } from '$lib/utils/index.js';
   import type { MouseEventHandler } from 'svelte/elements';
 
-  const { 
-    className = '', 
+  const {
+    className = '',
     onclick,
-    iconSrc = '/ui/icons/Icon_Thin_WindowClose.png'
+    iconSrc = '/ui/icons/Icon_Thin_WindowClose.png',
   } = $props<{
     className?: string;
     onclick: MouseEventHandler<HTMLButtonElement>;

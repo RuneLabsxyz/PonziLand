@@ -8,10 +8,7 @@
 </script>
 
 <div
-  class={cn(
-    'bg-card text-card-foreground border-ponzi shadow-sm relative',
-    className,
-  )}
+  class={cn('bg-card text-card-foreground border-ponzi shadow-sm relative', className)}
   {...restProps}
 >
   <slot />

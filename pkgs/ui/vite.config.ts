@@ -7,36 +7,43 @@ export default defineConfig({
   plugins: [
     svelte({
       compilerOptions: {
-        runes: true
-      }
+        runes: true,
+      },
     }),
     dts({
       insertTypesEntry: true,
-    })
+    }),
   ],
   build: {
     lib: {
       entry: resolve(__dirname, 'src/index.ts'),
       name: 'PonzilandUI',
       formats: ['es'],
-      fileName: 'index'
+      fileName: 'index',
     },
     rollupOptions: {
-      external: ['svelte', 'svelte/store', 'svelte/motion', 'svelte/transition', 'svelte/elements', 'svelte/easing'],
+      external: [
+        'svelte',
+        'svelte/store',
+        'svelte/motion',
+        'svelte/transition',
+        'svelte/elements',
+        'svelte/easing',
+      ],
       output: {
         globals: {
-          svelte: 'Svelte'
+          svelte: 'Svelte',
         },
-        assetFileNames: 'assets/[name][extname]'
-      }
+        assetFileNames: 'assets/[name][extname]',
+      },
     },
     sourcemap: true,
     minify: false,
-    assetsInclude: ['**/*.png', '**/*.ttf']
+    assetsInclude: ['**/*.png', '**/*.ttf'],
   },
   resolve: {
     alias: {
-      '$lib': resolve(__dirname, 'src')
-    }
-  }
+      $lib: resolve(__dirname, 'src'),
+    },
+  },
 });

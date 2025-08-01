@@ -24,6 +24,7 @@ import '@ponziland/ui/styles';
 ## Styles
 
 The package includes:
+
 - Custom fonts (Nintendo DS BIOS, Ponzi DS, Ponzi Number)
 - Tailwind CSS utilities
 - Ponzi-themed styling classes
