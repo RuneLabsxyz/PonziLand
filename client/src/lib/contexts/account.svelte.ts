@@ -68,6 +68,8 @@ export type AccountProvider = {
   supportsSession(): boolean;
 
   disconnect(): Promise<void>;
+
+  keychain: any;
 };
 
 const stubLocalStorage = {
@@ -216,7 +218,7 @@ export class AccountManager {
     );
 
     // Setup cartridge before anything else
-    controller =  await setupController(config);
+  //  controller =  await setupController(config);
 
     let rawController = new Controller({
       defaultChainId: "0x57505f4b4154414e41",
@@ -291,7 +293,8 @@ export class AccountManager {
       this._walletObject = walletObject.wallet;
       // First, ask for a login
       console.log(provider)
-      await provider.connect();
+      let res = await provider.keychain.connect();
+      console.log(res);
       console.log(provider)
       console.info('User logged-in successfully');
 
