@@ -215,7 +215,7 @@ export class AccountManager {
     );
 
     // Setup cartridge before anything else
-    const controller = new Controller({
+    controller = new SvelteController({
       defaultChainId: "0x57505f4b4154414e41",
       chains: [
         { rpcUrl: config.rpcUrl }
@@ -256,11 +256,6 @@ export class AccountManager {
 
     return new StarknetProvider({
       nodeUrl: config.rpcUrl,
-      // We won't be using argent / braavos on slot deployments any time soon
-      chainId:
-        config.profile == 'mainnet'
-          ? SNconstants.StarknetChainId.SN_MAIN
-          : SNconstants.StarknetChainId.SN_SEPOLIA,
     });
   }
 
