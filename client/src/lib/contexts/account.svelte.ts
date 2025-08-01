@@ -214,11 +214,6 @@ export class AccountManager {
     // Load the dojo config first
     const config = await loadDojoConfig();
 
-    // If it is dev, just use the burner provider
-    if (USE_BURNER) {
-      this._provider = await setupBurnerAccount(config)!;
-    }
-
     const previousWallet: string | null = localStorage.getItem(
       previousWalletSymbol.toString(),
     );
