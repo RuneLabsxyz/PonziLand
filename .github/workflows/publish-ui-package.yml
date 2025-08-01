@@ -1,0 +1,89 @@
+name: Publish UI Package
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'pkgs/ui/**'
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.bun/install/cache
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        working-directory: pkgs/ui
+        run: bun install
+
+      - name: Build package
+        working-directory: pkgs/ui
+        run: bun run build
+
+      - name: Check if version changed
+        id: version-check
+        working-directory: pkgs/ui
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view @ponziland/ui version 2>/dev/null || echo "0.0.0")
+          
+          if [ "$PACKAGE_VERSION" != "$NPM_VERSION" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
+            echo "New version detected: $PACKAGE_VERSION (npm: $NPM_VERSION)"
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No version change detected: $PACKAGE_VERSION"
+          fi
+
+      - name: Publish to npm
+        if: steps.version-check.outputs.changed == 'true'
+        working-directory: pkgs/ui
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        if: steps.version-check.outputs.changed == 'true'
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ui-v${{ steps.version-check.outputs.version }}
+          release_name: "@ponziland/ui v${{ steps.version-check.outputs.version }}"
+          body: |
+            ## @ponziland/ui v${{ steps.version-check.outputs.version }}
+            
+            Published to npm: https://www.npmjs.com/package/@ponziland/ui
+            
+            ### Installation
+            ```bash
+            npm install @ponziland/ui@${{ steps.version-check.outputs.version }}
+            ```
+          draft: false
+          prerelease: false

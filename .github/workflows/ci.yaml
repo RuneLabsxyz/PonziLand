@@ -195,7 +195,6 @@ jobs:
     secrets:
       SCW_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       SCW_ACCESS_KEY_SECRET: ${{ secrets.SCW_ACCESS_KEY_SECRET }}
-
   deploy-client-docker:
     name: Deploy Client to Docker
     needs: [ci-status, detect-changes]
@@ -204,7 +203,6 @@ jobs:
     secrets:
       SCW_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       SCW_ACCESS_KEY_SECRET: ${{ secrets.SCW_ACCESS_KEY_SECRET }}
-
   # Deployment summary job
   deployment-status:
     name: Deployment Status Check
