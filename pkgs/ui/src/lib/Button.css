@@ -1,0 +1,100 @@
+/* Button component styles */
+.button {
+  font-family: 'PonziNumber', sans-serif;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  border-radius: calc(var(--radius) - 2px);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-image-source 0.2s ease;
+}
+
+.button:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Variants */
+.button--blue {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image-source: url('/ui/button/blue/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
+  image-rendering: pixelated;
+  background-color: #136a88;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #072f3d;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #072f3d,
+    -0.1em 0.25em 0px #072f3d,
+    0.1em 0.3em 0px #072f3d,
+    -0.1em 0.3em 0px #072f3d;
+}
+
+.button--blue:hover:not(:disabled) {
+  border-image-source: url('/ui/button/blue/hover.png');
+  background-color: #71d2f8;
+}
+
+.button--red {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image-source: url('/ui/button/red/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
+  image-rendering: pixelated;
+  background-color: #832849;
+  -webkit-text-stroke-width: 0.25em;
+  -webkit-text-stroke-color: #5a1c33;
+  paint-order: stroke fill;
+  text-shadow:
+    0.1em 0.25em 0px #5a1c33,
+    -0.1em 0.25em 0px #5a1c33,
+    0.1em 0.3em 0px #5a1c33,
+    -0.1em 0.3em 0px #5a1c33;
+}
+
+.button--red:hover:not(:disabled) {
+  border-image-source: url('/ui/button/red/hover.png');
+  background-color: #b6a2ad;
+}
+
+/* Sizes */
+.button--default {
+  height: 2.5rem;
+  padding: 0 1rem 0.5rem;
+}
+
+.button--grid {
+  height: 64px;
+  font-size: 32px;
+  padding: 48px 32px 56px;
+}
+
+.button--sm {
+  height: 8px;
+  font-size: 4px;
+  padding: 6px 4px 7px;
+}
+
+.button--md {
+  font-size: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.button--lg {
+  font-size: 1.875rem;
+  padding: 1rem 8px 0.5rem;
+}
+
+.button--icon {
+  height: 2.5rem;
+  width: 2.5rem;
+}

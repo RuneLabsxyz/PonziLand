@@ -1,0 +1,7 @@
+/* Test component styles */
+.test-container {
+  padding: 1.25rem;
+  background-color: #fcd34d;
+  font-family: 'PonziNumber', sans-serif;
+  color: white;
+}
