@@ -1,6 +1,5 @@
-/* Typography Styles */
+/* Typography classes */
 
-/* Ponzi Number text style */
 .text-ponzi-number {
   font-family: 'PonziNumber', sans-serif;
   line-height: normal;
@@ -8,7 +7,15 @@
   paint-order: stroke fill;
 }
 
-/* Ponzi DS text style */
+.font-ponzi-number {
+  font-family: 'PonziNumber', sans-serif;
+  line-height: normal;
+}
+
+.font-ds {
+  font-family: 'Nintendo DS BIOS', sans-serif;
+}
+
 .text-ponzi {
   --text-stroke: 0.25em;
   font-family: 'PonziDS', sans-serif;
@@ -56,11 +63,7 @@
   -webkit-text-stroke-color: #5a1c33;
 }
 
-/* Text utility classes */
-.text-white {
-  color: #ffffff;
-}
-
+/* Text utilities */
 .text-shadow-none {
   text-shadow: none;
 }
@@ -71,14 +74,4 @@
 
 .text-stroke-none {
   -webkit-text-stroke: 0;
-}
-
-/* Font weights */
-.font-medium {
-  font-weight: 500;
-}
-
-/* Text wrapping */
-.whitespace-nowrap {
-  white-space: nowrap;
 }

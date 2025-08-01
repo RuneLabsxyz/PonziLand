@@ -1,5 +1,4 @@
-/* Button Component Styles */
-
+/* Button component styles */
 .button {
   font-family: 'PonziNumber', sans-serif;
   color: white;
@@ -16,43 +15,8 @@
 .button:disabled {
   pointer-events: none;
   opacity: 0.5;
-  cursor: not-allowed;
 }
 
-/* Size variants */
-.button--default {
-  height: 2.5rem;
-  padding: 0 1rem 0.5rem;
-}
-
-.button--grid {
-  height: 64px;
-  font-size: 32px;
-  padding: 48px 32px 56px;
-}
-
-.button--sm {
-  height: 8px;
-  font-size: 4px;
-  padding: 6px 4px 7px;
-}
-
-.button--md {
-  font-size: 0.75rem;
-  padding-bottom: 0.25rem;
-}
-
-.button--lg {
-  font-size: 1.875rem;
-  padding: 1rem 8px 0.5rem;
-}
-
-.button--icon {
-  height: 2.5rem;
-  width: 2.5rem;
-}
-
-/* Variant styles */
 .button--blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
@@ -99,4 +63,38 @@
 .button--red:hover:not(:disabled) {
   border-image-source: url('/ui/button/red/hover.png');
   background-color: #b6a2ad;
+}
+
+/* Sizes */
+.button--default {
+  height: 2.5rem;
+  padding: 0 1rem 0.5rem;
+}
+
+.button--grid {
+  height: 64px;
+  font-size: 32px;
+  padding: 48px 32px 56px;
+}
+
+.button--sm {
+  height: 8px;
+  font-size: 4px;
+  padding: 6px 4px 7px;
+}
+
+.button--md {
+  font-size: 0.75rem;
+  padding-bottom: 0.25rem;
+}
+
+.button--lg {
+  font-size: 1.875rem;
+  padding: 1rem 8px 0.5rem;
+}
+
+.button--icon {
+  height: 2.5rem;
+  width: 2.5rem;
+
 }

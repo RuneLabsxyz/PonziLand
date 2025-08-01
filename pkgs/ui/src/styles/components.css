@@ -1,4 +1,22 @@
-/* Component Styles */
+/* Component styles */
+
+/* Container queries */
+.landinfo-container {
+  container-type: inline-size;
+  container-name: landinfo;
+}
+
+@container landinfo (min-width: 700px) {
+  .landinfo-content {
+    flex-direction: row;
+  }
+}
+
+@container landinfo (max-width: 699px) {
+  .landinfo-content {
+    flex-direction: column;
+  }
+}
 
 /* Ponzi theme components */
 .border-ponzi {

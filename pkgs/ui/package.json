@@ -1,6 +1,6 @@
 {
 	"name": "@ponziland/ui",
-	"version": "0.0.5",
+	"version": "0.0.6",
 	"description": "Shared UI components for PonziLand",
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",
@@ -39,7 +39,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
-		"build:css": "cp -r src/styles dist/",
+		"build:css": "cp src/styles/*.css dist/styles/",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"prepack": "svelte-kit sync && svelte-package && npm run build:css && publint",

@@ -1,0 +1,28 @@
+/* Font faces */
+@font-face {
+  font-family: 'PonziNumber';
+  src: url('/fonts/PonziNumber_Regular_G7.ttf');
+}
+
+@font-face {
+  font-family: 'Nintendo DS BIOS';
+  font-size: small;
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/Nintendo-DS-BIOS.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'PonziDS';
+  font-size: small;
+  font-style: normal;
+  font-weight: 400;
+  src: url('/fonts/PonziDS_RegularV2.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'PonziDS';
+  font-style: normal;
+  font-weight: 600;
+  src: url('/fonts/PonziDS2_SemiBoldV3.ttf') format('truetype');
+}
