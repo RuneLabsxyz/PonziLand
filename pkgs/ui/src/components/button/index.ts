@@ -31,6 +31,7 @@ type Size = VariantProps<typeof buttonVariants>['size'];
 type Props = ButtonRootProps & {
   variant?: Variant;
   size?: Size;
+  class?: string;
 };
 
 type Events = HTMLButtonAttributes;

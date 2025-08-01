@@ -1,8 +1,10 @@
 <script lang="ts">
-  import type { HTMLAttributes } from 'svelte/elements';
   import { cn } from '$lib/utils/index.js';
 
-  interface Props extends HTMLAttributes<HTMLDivElement> {}
+  interface Props {
+    class?: string;
+    [key: string]: any;
+  }
 
   let { class: className, ...restProps }: Props = $props();
 </script>
