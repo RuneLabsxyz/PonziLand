@@ -9,6 +9,7 @@ export default defineConfig({
       compilerOptions: {
         runes: true,
       },
+      prebundleSvelteLibraries: true,
     }),
     dts({
       insertTypesEntry: true,
