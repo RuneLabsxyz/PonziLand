@@ -1,21 +1,19 @@
 <script lang="ts">
   import type { HTMLAttributes } from 'svelte/elements';
   import type { HeadingLevel } from './index.js';
-  import { cn } from '$lib/utils.js';
+  import { cn } from '$lib/utils/index.js';
 
-  type $$Props = HTMLAttributes<HTMLHeadingElement> & {
+  interface Props extends HTMLAttributes<HTMLHeadingElement> {
     tag?: HeadingLevel;
-  };
+  }
 
-  let className: $$Props['class'] = undefined;
-  export let tag: $$Props['tag'] = 'h3';
-  export { className as class };
+  let { class: className, tag = 'h3', ...restProps }: Props = $props();
 </script>
 
 <svelte:element
   this={tag}
   class={cn('text-lg font-semibold leading-none tracking-tight', className)}
-  {...$$restProps}
+  {...restProps}
 >
   <slot />
 </svelte:element>

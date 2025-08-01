@@ -1,25 +1,26 @@
 <script lang="ts">
   import { cn } from '$lib/utils/index.js';
-  import { Button as ButtonPrimitive } from 'bits-ui';
-  import { type Events, type Props, buttonVariants } from './index.js';
+  import { Button } from 'bits-ui';
+  import { type Props, buttonVariants } from './index.js';
 
-  type $$Props = Props;
-  type $$Events = Events;
-
-  let className: $$Props['class'] = undefined;
-  export let variant: $$Props['variant'] = 'blue';
-  export let size: $$Props['size'] = 'default';
-  export let builders: $$Props['builders'] = [];
-  export { className as class };
+  let {
+    class: className = undefined,
+    variant = 'blue',
+    size = 'default',
+    builders = [],
+    onclick,
+    onkeydown,
+    ...restProps
+  }: Props = $props();
 </script>
 
-<ButtonPrimitive.Root
+<Button.Root
   {builders}
   class={cn(buttonVariants({ variant, size, className: className as any }))}
   type="button"
-  {...$$restProps}
-  on:click
-  on:keydown
+  {...restProps}
+  {onclick}
+  {onkeydown}
 >
   <slot />
-</ButtonPrimitive.Root>
+</Button.Root>

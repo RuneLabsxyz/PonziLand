@@ -22,15 +22,17 @@ export default defineConfig({
       fileName: 'index'
     },
     rollupOptions: {
-      external: ['svelte', 'svelte/store', 'svelte/motion', 'svelte/transition'],
+      external: ['svelte', 'svelte/store', 'svelte/motion', 'svelte/transition', 'svelte/elements', 'svelte/easing'],
       output: {
         globals: {
           svelte: 'Svelte'
-        }
+        },
+        assetFileNames: 'assets/[name][extname]'
       }
     },
     sourcemap: true,
-    minify: false
+    minify: false,
+    assetsInclude: ['**/*.png', '**/*.ttf']
   },
   resolve: {
     alias: {
