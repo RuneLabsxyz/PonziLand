@@ -272,10 +272,14 @@ export class AccountManager {
       throw 'Unknown provider!';
     }
 
+    console.log(walletObject.wallet);
+
     const provider = await Provider(walletObject.wallet);
     if (provider == null) {
       throw 'Could not setup provider (not registered in account.ts)';
     }
+
+    console.log(provider);
 
     try {
       // Handle user cancelled action
