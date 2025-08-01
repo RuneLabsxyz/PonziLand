@@ -26,6 +26,7 @@
 
         # svelte node dependencies
         bun
+        pnpm
         nodejs_latest
 
         # Cargo dependencies
