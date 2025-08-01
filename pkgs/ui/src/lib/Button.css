@@ -17,7 +17,6 @@
   opacity: 0.5;
 }
 
-/* Variants */
 .button--blue {
   background-clip: padding-box;
   border: solid transparent 0.4em;
@@ -97,4 +96,5 @@
 .button--icon {
   height: 2.5rem;
   width: 2.5rem;
+
 }

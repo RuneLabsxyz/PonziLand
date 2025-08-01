@@ -45,6 +45,10 @@
 }
 
 /* Typography */
+=======
+/* Utility Styles */
+
+/* Typography sizes */
 .text-xs {
   font-size: 0.75rem;
   line-height: 1rem;
@@ -78,6 +82,7 @@
 }
 
 /* States */
+
 .disabled\:pointer-events-none:disabled {
   pointer-events: none;
 }

@@ -23,6 +23,9 @@
 		},
 		"./styles": {
 			"import": "./dist/styles/index.css"
+		},
+		"./styles/*": {
+			"import": "./dist/styles/*"
 		}
 	},
 	"files": [
