@@ -1,0 +1,57 @@
+/* Component Styles */
+
+/* Ponzi theme components */
+.border-ponzi {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image: url('/ui/card/frame.png') 10 10 10 10 round round;
+  image-rendering: pixelated;
+  padding: 0.5em;
+}
+
+.bg-ponzi {
+  background-image: url('/ui/card/texture.png');
+}
+
+.shadow-ponzi {
+  box-shadow: inset 4px 4px 0 0 #0b0c13;
+}
+
+/* Button styles */
+.button-ponzi-blue {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image-source: url('/ui/button/blue/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
+  image-rendering: pixelated;
+  background-color: #136a88;
+}
+
+.button-ponzi-blue:hover {
+  border-image-source: url('/ui/button/blue/hover.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 2;
+  background-color: #71d2f8;
+}
+
+.button-ponzi-red {
+  background-clip: padding-box;
+  border: solid transparent 0.4em;
+  border-image-source: url('/ui/button/red/default.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
+  image-rendering: pixelated;
+  background-color: #832849;
+}
+
+.button-ponzi-red:hover {
+  border-image-source: url('/ui/button/red/hover.png');
+  border-image-slice: 40;
+  border-image-outset: 0;
+  border-image-width: 1.5;
+  background-color: #b6a2ad;
+}
