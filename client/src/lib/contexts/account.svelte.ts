@@ -280,41 +280,13 @@ export class AccountManager {
 
     console.log(walletObject.wallet);
 
-    const provider = await Provider(walletObject.wallet);
-    if (provider == null) {
-      throw 'Could not setup provider (not registered in account.ts)';
-    }
-
-    console.log(provider);
-
     try {
       // Handle user cancelled action
-      this._provider = provider;
       this._walletObject = walletObject.wallet;
       // First, ask for a login
-      console.log(provider)
-      let res = await provider.keychain.connect();
+      let res = await this._walletObject.connect();
       console.log(res);
-      console.log(provider)
       console.info('User logged-in successfully');
-
-      this._listeners.forEach((listener) =>
-        listener({
-          type: 'connected',
-          provider,
-        }),
-      );
-
-      const walletAccount = provider.getWalletAccount();
-      if (walletAccount instanceof WalletAccount) {
-        console.log('Wallet account!');
-
-        // Unregister the bugged accountsChanged from starknetjs
-        console.log(this._walletObject);
-
-        walletAccount.onNetworkChanged(this.onNetworkChanged.bind(this));
-        walletAccount.onAccountChange(this.onWalletChanged.bind(this));
-      }
 
       localStorage.setItem(previousWalletSymbol.toString(), providerId);
     } catch (error) {
