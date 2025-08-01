@@ -303,20 +303,25 @@ fn capture_location_of_new_auction(address: ContractAddress) -> Option<u16> {
 // Helper functions for common test setup and actions
 
 // Helper to setup liquidity pool with standard amount
-fn setup_liquidity_pool(ekubo_testing: IEkuboCoreTestingDispatcher, main_currency: IERC20CamelDispatcher, amount: u128) {
-    ekubo_testing.set_pool_liquidity(
-        PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), amount
-    );
+fn setup_liquidity_pool(
+    ekubo_testing: IEkuboCoreTestingDispatcher, main_currency: IERC20CamelDispatcher, amount: u128,
+) {
+    ekubo_testing
+        .set_pool_liquidity(
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), amount,
+        );
 }
 
 // Helper to deploy and authorize a neighbor token
 fn deploy_and_authorize_neighbor_token(
     ekubo_testing: IEkuboCoreTestingDispatcher,
-    main_currency: IERC20CamelDispatcher, 
+    main_currency: IERC20CamelDispatcher,
     token_registry: ITokenRegistryDispatcher,
-    neighbor_address: ContractAddress
+    neighbor_address: ContractAddress,
 ) -> IERC20CamelDispatcher {
-    let (erc20_neighbor, _, _) = deploy_erc20_with_pool(ekubo_testing, main_currency.contract_address, neighbor_address);
+    let (erc20_neighbor, _, _) = deploy_erc20_with_pool(
+        ekubo_testing, main_currency.contract_address, neighbor_address,
+    );
     authorize_token(token_registry, erc20_neighbor.contract_address);
     erc20_neighbor
 }
@@ -337,16 +342,21 @@ fn initialize_land_and_capture_next_auction(
     location: u16,
     sell_price: u256,
     stake_amount: u256,
-    token_for_sale: IERC20CamelDispatcher
+    token_for_sale: IERC20CamelDispatcher,
 ) -> u16 {
     clear_events(store.world.dispatcher.contract_address);
-    initialize_land(actions_system, main_currency, owner, location, sell_price, stake_amount, token_for_sale);
-    let next_auction_location = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+    initialize_land(
+        actions_system, main_currency, owner, location, sell_price, stake_amount, token_for_sale,
+    );
+    let next_auction_location = capture_location_of_new_auction(
+        store.world.dispatcher.contract_address,
+    );
     assert(next_auction_location.is_some(), 'No new auction location found');
     next_auction_location.unwrap()
 }
 
-// Helper to create multiple sequential lands (reduces the repetitive pattern in test_claim_all, test_time_to_nuke)
+// Helper to create multiple sequential lands (reduces the repetitive pattern in test_claim_all,
+// test_time_to_nuke)
 fn create_multiple_lands(
     store: Store,
     actions_system: IActionsDispatcher,
@@ -355,15 +365,19 @@ fn create_multiple_lands(
     owner: ContractAddress,
     sell_price: u256,
     stake_amount: u256,
-    token: IERC20CamelDispatcher
+    token: IERC20CamelDispatcher,
 ) -> Array<u16> {
     let mut locations = array![];
     let mut i = 0;
     while i < count {
-        let next_location = capture_location_of_new_auction(store.world.dispatcher.contract_address);
+        let next_location = capture_location_of_new_auction(
+            store.world.dispatcher.contract_address,
+        );
         assert(next_location.is_some(), 'No new auction location found');
         let location = next_location.unwrap();
-        initialize_land(actions_system, main_currency, owner, location, sell_price, stake_amount, token);
+        initialize_land(
+            actions_system, main_currency, owner, location, sell_price, stake_amount, token,
+        );
         locations.append(location);
         i += 1;
     };
@@ -516,11 +530,11 @@ fn bid_and_verify_next_auctions(
 fn test_buy_action() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
         setup_test();
-    
+
     // Setup liquidity pool and neighbor token
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
     let erc20_neighbor_1 = deploy_and_authorize_neighbor_token(
-        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1(),
     );
 
     // Setup test environment
@@ -528,9 +542,24 @@ fn test_buy_action() {
 
     // Initialize center land and neighbor land
     let next_auction_location = initialize_land_and_capture_next_auction(
-        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 500, main_currency
+        store,
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        CENTER_LOCATION,
+        1000,
+        500,
+        main_currency,
     );
-    initialize_land(actions_system, main_currency, NEIGHBOR_1(), next_auction_location, 1000, 500, erc20_neighbor_1);
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_auction_location,
+        1000,
+        500,
+        erc20_neighbor_1,
+    );
 
     // Setup buyer and perform buy action
     set_block_timestamp(2000);
@@ -587,11 +616,11 @@ fn test_bid_and_buy_action() {
 fn test_claim_and_add_taxes() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
         setup_test();
-    
+
     // Setup liquidity pool and neighbor token
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
     let erc20_neighbor_1 = deploy_and_authorize_neighbor_token(
-        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1()  
+        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1(),
     );
 
     // Setup test environment
@@ -599,9 +628,24 @@ fn test_claim_and_add_taxes() {
 
     // Initialize center land and neighbor land
     let next_auction_location = initialize_land_and_capture_next_auction(
-        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 500, main_currency
+        store,
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        CENTER_LOCATION,
+        1000,
+        500,
+        main_currency,
     );
-    initialize_land(actions_system, main_currency, NEIGHBOR_1(), next_auction_location, 1000, 500, erc20_neighbor_1);
+    initialize_land(
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_auction_location,
+        1000,
+        500,
+        erc20_neighbor_1,
+    );
     let neighbor_land_before_claim = store.land_stake(next_auction_location);
     let accumulated_fee_before_claim = neighbor_land_before_claim.accumulated_taxes_fee;
     let our_contract_for_fee_before_claim = erc20_neighbor_1
@@ -611,9 +655,7 @@ fn test_claim_and_add_taxes() {
     set_block_timestamp(20000);
     set_contract_address(RECIPIENT());
     actions_system.claim(CENTER_LOCATION);
-    let accumulated_fee_after_claim = store
-        .land_stake(next_auction_location)
-        .accumulated_taxes_fee;
+    let accumulated_fee_after_claim = store.land_stake(next_auction_location).accumulated_taxes_fee;
 
     assert(accumulated_fee_after_claim > accumulated_fee_before_claim, 'fail in accumalated fees');
 
@@ -829,7 +871,7 @@ fn test_level_up() {
     // Setup liquidity pool and neighbor token
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 100000);
     let erc20_neighbor = deploy_and_authorize_neighbor_token(
-        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1(),
     );
 
     // Setup test environment
@@ -837,9 +879,11 @@ fn test_level_up() {
 
     // Initialize center land and neighbor land
     let next_location_1 = initialize_land_and_capture_next_auction(
-        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency
+        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
     );
-    initialize_land(actions_system, main_currency, NEIGHBOR_1(), next_location_1, 20000, 10000, erc20_neighbor);
+    initialize_land(
+        actions_system, main_currency, NEIGHBOR_1(), next_location_1, 20000, 10000, erc20_neighbor,
+    );
     set_block_timestamp((TWO_DAYS_IN_SECONDS.into() / TIME_SPEED.into()) + 100);
 
     set_contract_address(RECIPIENT());
@@ -856,13 +900,15 @@ fn test_level_up() {
 #[test]
 fn check_success_liquidity_pool() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
-    
+
     // Setup liquidity pool and test environment
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 100000);
     setup_test_block_env(234, 100);
 
     // Create initial land
-    initialize_land(actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     // Setup buyer and perform buy action
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
@@ -882,7 +928,9 @@ fn check_invalid_liquidity_pool() {
     set_block_timestamp(100);
 
     // Create initial land
-    initialize_land(actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency);
+    initialize_land(
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
+    );
 
     // Setup buyer and perform buy action (should panic due to low liquidity)
     setup_buyer_with_tokens(main_currency, actions_system, RECIPIENT(), NEW_BUYER(), 1000);
@@ -931,7 +979,7 @@ fn test_claim_all() {
     // Setup liquidity pool and neighbor token
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
     let erc20_neighbor_1 = deploy_and_authorize_neighbor_token(
-        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1()
+        ekubo_testing_dispatcher, main_currency, token_dispatcher, NEIGHBOR_1(),
     );
 
     // Setup test environment
@@ -939,13 +987,15 @@ fn test_claim_all() {
 
     // Initialize center land and first neighbor land
     let next_location_1 = initialize_land_and_capture_next_auction(
-        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency
+        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 50, main_currency,
     );
-    initialize_land(actions_system, main_currency, NEIGHBOR_1(), next_location_1, 10000, 500, erc20_neighbor_1);
+    initialize_land(
+        actions_system, main_currency, NEIGHBOR_1(), next_location_1, 10000, 500, erc20_neighbor_1,
+    );
 
     // Create 6 additional lands for RECIPIENT
     let additional_locations = create_multiple_lands(
-        store, actions_system, main_currency, 6, RECIPIENT(), 100, 50, main_currency
+        store, actions_system, main_currency, 6, RECIPIENT(), 100, 50, main_currency,
     );
 
     set_block_timestamp(5000);
@@ -960,7 +1010,7 @@ fn test_claim_all() {
         land_locations.append(*additional_locations.at(i));
         i += 1;
     };
-    
+
     actions_system.claim_all(land_locations);
 
     //Get claimer lands and verify taxes
