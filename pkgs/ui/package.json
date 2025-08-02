@@ -27,6 +27,9 @@
 		"./styles/*": {
 			"import": "./dist/styles/*"
 		},
+		"./app.css": {
+			"import": "./dist/app.css"
+		},
 		"./static/*": {
 			"import": "./dist/static/*"
 		}
@@ -42,7 +45,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
-		"build:css": "cp -r src/styles dist/",
+		"build:css": "cp -r src/lib/styles dist/ && cp src/lib/app.css dist/",
 		"build:static": "cp -r static dist/",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
