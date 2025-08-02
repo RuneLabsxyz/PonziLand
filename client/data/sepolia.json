@@ -43,6 +43,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin": "strk",
         "icon": "/tokens/eSTRK/icon.png",
         "biome": {
           "x": 2,
@@ -76,6 +77,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin":"paper",
         "icon": "/tokens/ePAPER/icon.svg",
         "biome": {
           "x": 3,
@@ -119,6 +121,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin": "lords",
         "icon": "/tokens/eLORDS/icon.svg",
         "biome": {
           "x": 3,
@@ -154,6 +157,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin": "brother",
         "icon": "/tokens/eBROTHER/icon.png",
         "biome": {
           "x": 1,
@@ -187,6 +191,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
+        "skin": "pal",
         "icon": "/tokens/ePAL/icon.svg",
         "biome": {
           "x": 1,

@@ -36,7 +36,6 @@ export function trace<T extends (...args: any[]) => Promise<any>>(
   return new Proxy(originalFunction, {
     apply(target, thisArg, args) {
       if (target.name === 'execute') {
-        // Execute
         console.log(
           'Executing with calldata: \n',
           generateWalnutCallData(args[0] as Call[] | Call),
@@ -44,8 +43,6 @@ export function trace<T extends (...args: any[]) => Promise<any>>(
       } else {
         console.log('Calling function:', target.name, 'with arguments:', args);
       }
-      // Important - don't forget the return statement or else the function's
-      // return value is lost!
       return target.apply(thisArg, args);
     },
   });
@@ -54,11 +51,31 @@ export function trace<T extends (...args: any[]) => Promise<any>>(
 export function traceWallet(
   wallet: WalletAccount | undefined,
 ): WalletAccount | undefined {
-  if (wallet == undefined) {
+  if (!wallet) {
     return undefined;
   }
 
-  return Object.assign(wallet, {
-    execute: trace(wallet.execute),
-  });
+  // Check if wallet is already traced to avoid double-wrapping
+  if ('__isTraced' in wallet && wallet.__isTraced) {
+    return wallet;
+  }
+
+  // Create a new proxy wrapper instead of modifying the original
+  const tracedWallet = new Proxy(wallet, {
+    get(target, prop) {
+      const value = target[prop as keyof WalletAccount];
+
+      if (prop === 'execute' && typeof value === 'function') {
+        return trace(value.bind(target));
+      }
+
+      if (prop === '__isTraced') {
+        return true;
+      }
+
+      return value;
+    },
+  }) as WalletAccount & { __isTraced: boolean };
+
+  return tracedWallet;
 }
