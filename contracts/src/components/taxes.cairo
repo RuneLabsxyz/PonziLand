@@ -1,3 +1,15 @@
+/// @title Taxes Component for PonziLand
+/// @notice This component manages the complex tax system that enables yield generation
+/// between neighboring lands.
+/// The tax system is the core mechanism that creates value flow and incentivizes strategic
+/// land positioning.
+///
+/// Key concepts:
+/// - Neighbors generate taxes from each other based on land value and time elapsed
+/// - Stakes protect against "nuking" (forced sale when taxes exceed stake)
+/// - Tax rates decrease with land level progression to reward long-term holders
+/// - Fee system funds protocol operations through claim and nuke fees
+
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
 #[starknet::component]
@@ -44,7 +56,6 @@ mod TaxesComponent {
 
     #[storage]
     struct Storage {
-        //(tax_payer,tax_reciever) -> timestamp
         last_claim_time: Map<(u16, u16), u64>,
     }
 
@@ -67,7 +78,9 @@ mod TaxesComponent {
         +Drop<TContractState>,
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
-        /// Establishes tax relationship between two neighboring lands in both directions
+        /// @notice Establishes bidirectional tax relationships between two neighboring lands
+        /// @dev Creates mutual tax obligations between adjacent lands, enabling yield generation.
+        /// Called when new land is purchased or when neighbor relationships are established.
         #[inline(always)]
         fn register_bidirectional_tax_relations(
             ref self: ComponentState<TContractState>, land_a: u16, land_b: u16, current_time: u64,
@@ -76,6 +89,9 @@ mod TaxesComponent {
             self._register_unidirectional_tax_relation(land_b, land_a, current_time);
         }
 
+        /// @notice Internal function to register a unidirectional tax relationship
+        /// @dev Sets the initial claim time for tax calculations between two specific lands.
+        /// Uses tuple (payer, receiver) as key to track last claim time per relationship.
         #[inline(always)]
         fn _register_unidirectional_tax_relation(
             ref self: ComponentState<TContractState>,
@@ -86,7 +102,9 @@ mod TaxesComponent {
             self.last_claim_time.write((tax_payer_location, tax_receiver_location), current_time);
         }
 
-
+        /// @notice Calculates time elapsed since the last tax claim between specific lands
+        /// @dev Crucial for tax calculation as taxes accumulate over time.
+        /// Uses saturating subtraction to prevent underflow if timestamps are inconsistent.
         fn get_elapsed_time_since_last_claim(
             self: @ComponentState<TContractState>,
             claimer_location: u16,
@@ -98,6 +116,14 @@ mod TaxesComponent {
             elapsed_time
         }
 
+
+        /// @notice Main tax claiming function - handles both regular claims and nuke scenarios
+        /// @dev Core function that processes tax claims between neighboring lands.
+        /// Implements sophisticated algorithm:
+        /// 1) Check if land has sufficient stake for max taxes,
+        /// 2) If sufficient, process normal claim,
+        /// 3) If insufficient, trigger nuke calculation.
+        /// @return bool True if claim resulted in nuke (forced auction), false for normal claim
         fn claim(
             ref self: ComponentState<TContractState>,
             mut store: Store,
@@ -110,6 +136,9 @@ mod TaxesComponent {
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
         ) -> bool {
+            // Unpack neighbor information to determine nuke risk
+            // This packed data contains the earliest claimable time and neighbor count for
+            // efficiency
             let (
                 earliest_claim_neighbor_time,
                 num_active_neighbors,
@@ -122,11 +151,15 @@ mod TaxesComponent {
                 current_time, earliest_claim_neighbor_time,
             );
 
+            // Calculate theoretical maximum taxes if all neighbors claimed from the earliest time
+            // This is used as a quick check to determine if the land is at risk of being nuked
             let theoretical_max_payable = get_taxes_per_neighbor(
                 tax_payer, elapsed_earliest_claim_time, store,
             )
                 * num_active_neighbors.into();
+            // Safe path: land has sufficient stake to handle maximum possible taxes
             if payer_stake.amount > theoretical_max_payable.into() {
+                // Calculate actual taxes owed to this specific claimer
                 let elapsed_time = self
                     .get_elapsed_time_since_last_claim(
                         *claimer.location, *tax_payer.location, current_time,
@@ -134,6 +167,7 @@ mod TaxesComponent {
 
                 let total_taxes = get_taxes_per_neighbor(tax_payer, elapsed_time, store);
 
+                // Split taxes between claimer and protocol fee
                 let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
                     total_taxes, claim_fee,
                 );
@@ -152,7 +186,9 @@ mod TaxesComponent {
                         our_contract_for_fee,
                     );
 
+                // Handle different update paths based on claimer position
                 if *claimer.location == earliest_claim_neighbor_location {
+                    // This claimer was the earliest, so we need to recalculate neighbor timing
                     let neighbors_of_tax_payer = get_land_neighbors(store, *tax_payer.location);
                     self
                         ._update_land_stake_and_earliest_claim_info(
@@ -164,11 +200,14 @@ mod TaxesComponent {
                             total_taxes,
                         );
                 } else {
+                    // Regular claim - just reduce stake and update storage
                     payer_stake.amount -= total_taxes;
                     store.set_land_stake(payer_stake);
                 }
-                return false;
+                return false; // Normal claim, no nuke
             } else {
+                // Risk path: land may not have sufficient stake - detailed nuke calculation
+                // required
                 let neighbors_of_tax_payer = get_land_neighbors(store, *tax_payer.location);
                 let is_nuke = self
                     ._calculate_taxes_and_verify_nuke(
@@ -188,6 +227,9 @@ mod TaxesComponent {
             }
         }
 
+        /// @notice Performs detailed tax calculation to determine if a land should be nuked
+        /// @dev Called when quick nuke check suggests land may be at risk. Calculates exact taxes
+        /// owed to all neighbors and determines final nuke outcome based on total stake available.
         fn _calculate_taxes_and_verify_nuke(
             ref self: ComponentState<TContractState>,
             store: Store,
@@ -284,6 +326,10 @@ mod TaxesComponent {
             }
         }
 
+        /// @notice Handles the nuke process by distributing remaining stake to neighbors
+        /// @dev Calculates proportional shares based on elapsed claim times and processes
+        /// distributions.
+        /// Each neighbor receives stake proportional to their unclaimed time period.
         fn _handle_nuke(
             ref self: ComponentState<TContractState>,
             store: Store,
@@ -321,6 +367,10 @@ mod TaxesComponent {
                 );
         }
 
+        /// @notice Calculates when a land will be nuked if no additional stake is added
+        /// @dev Critical function for UI/gameplay - determines exact timestamp when land becomes
+        /// vulnerable to nuke. Based on current stake, tax rates, and neighbor claim patterns.
+        /// @return u64 Timestamp when land will be nuked, or MAX if safe indefinitely
         fn calculate_nuke_time(
             self: @ComponentState<TContractState>,
             mut store: Store,
@@ -363,8 +413,6 @@ mod TaxesComponent {
         }
 
 
-        /// Calculates tax distribution among all neighbors of a land
-        /// Returns (total_taxes, tax_for_claimer)
         fn _calculate_taxes_for_all_neighbors(
             ref self: ComponentState<TContractState>,
             claimer: @Land,
@@ -471,8 +519,8 @@ mod TaxesComponent {
             assert(status && status_for_transfer_fee, errors::ERC20_TRANSFER_CLAIM_FAILED);
         }
 
-        /// Executes the actual claim of taxes
-        /// Handles token transfer and updates claim tracking
+        /// @notice Executes the actual claim of taxes
+        /// @dev Handles token transfer and updates claim tracking
         fn _execute_claim(
             ref self: ComponentState<TContractState>,
             mut store: Store,
