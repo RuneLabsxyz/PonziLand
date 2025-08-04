@@ -39,7 +39,7 @@
 
     console.log('manifest', config.manifest);
 
-    let provider = account?.getProvider();
+    let provider = account?.getProvider()?.getAccount();
 
     console.log('provider', provider);
 
