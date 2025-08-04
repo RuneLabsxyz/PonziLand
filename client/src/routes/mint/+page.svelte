@@ -7,9 +7,10 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { cairo, CallData } from 'starknet';
+  import { cairo, CallData, Account, Provider } from 'starknet';
   let selectedToken: Token | undefined = $state();
   let amount = $state('1');
+  import { loadDojoConfig } from '$lib/dojoConfig';
 
   let account = useAccount();
   function mint() {
@@ -30,22 +31,33 @@
     ]);
   }
 
-  function mint_strk() {
+  async function mint_strk() {
     if (!selectedToken || !account?.getProvider()?.getWalletAccount()) return;
 
-    let walletAccount = account?.getProvider()?.getWalletAccount();
-    walletAccount?.execute([
+    let config = await loadDojoConfig();
+
+    let master_acccount = new Account( {
+      provider: new Provider({
+        nodeUrl: "https://play.ponzis.land/x/katana/katana",
+      }),
+      address: config.masterAddress,
+      signer: config.masterPrivateKey,
+    });
+
+    let res = await master_acccount.execute([
       {
         contractAddress: "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-        entrypoint: 'mint',
+        entrypoint: 'transfer',
         calldata: CallData.compile([
-          cairo.felt(walletAccount.address),
+          cairo.felt(account?.getProvider()?.getWalletAccount()?.address.toString()!),
           cairo.uint256(
             (1*10**21),
           ),
         ]),
       },
     ]);
+
+    console.log(res);
   }
 </script>
 
