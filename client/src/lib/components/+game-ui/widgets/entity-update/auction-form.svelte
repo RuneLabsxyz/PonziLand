@@ -15,7 +15,6 @@
   let startTime = $state(Math.floor(Date.now() / 1000).toString()); // Current timestamp in seconds
   let startPrice = $state('1000000'); // 1M in base units
   let floorPrice = $state('100000'); // 100K in base units
-  let decayRate = $state('100'); // 1% decay rate
   let isFinished = $state(false);
   let x = $state('32');
   let y = $state('32');
@@ -28,7 +27,6 @@
       auction.start_price = toHexWithPadding(parseInt(startPrice));
     if (floorPrice)
       auction.floor_price = toHexWithPadding(parseInt(floorPrice));
-    if (decayRate) auction.decay_rate = toHexWithPadding(parseInt(decayRate));
     auction.is_finished = isFinished;
     if (x && y) {
       const location = coordinatesToLocation({
@@ -67,15 +65,6 @@
       type="number"
       bind:value={floorPrice}
       placeholder="100000"
-      disabled={loading}
-    />
-  </div>
-  <div>
-    <Label>Decay Rate</Label>
-    <Input
-      type="number"
-      bind:value={decayRate}
-      placeholder="100"
       disabled={loading}
     />
   </div>
