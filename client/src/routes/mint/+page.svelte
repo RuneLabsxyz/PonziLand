@@ -43,11 +43,11 @@
 
     console.log('provider', provider);
 
-    let master_acccount = new Account( {
+    let master_acccount = new Account(
       provider,
-      address: config.masterAddress,
-      signer: config.masterPrivateKey,
-    });
+      config.masterAddress,
+      config.masterPrivateKey,
+    );
 
     console.log('master_acccount', master_acccount);
 
