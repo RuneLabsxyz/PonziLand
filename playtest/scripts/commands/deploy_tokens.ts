@@ -61,11 +61,13 @@ export async function  deployToken(config: Configuration, args: string[]) {
         return;
       } else {
         console.log(`${COLORS.red}❌ Symbol mismatch! Expected: ${symbol}, Got: ${contractSymbol}${COLORS.reset}`);
-        console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
+        console.log(`${COLORS.blue}🔄 Removing invalid token and proceeding with new deployment...${COLORS.reset}`);
+        await removeTokenFromFile(config, symbol);
       }
     } catch (error) {
       console.log(`${COLORS.red}❌ Error verifying existing token: ${error}${COLORS.reset}`);
-      console.log(`${COLORS.blue}🔄 Proceeding with new deployment...${COLORS.reset}`);
+      console.log(`${COLORS.blue}🔄 Removing invalid token and proceeding with new deployment...${COLORS.reset}`);
+      await removeTokenFromFile(config, symbol);
     }
   }
 
@@ -171,4 +173,22 @@ async function addTokenToFile(config: Configuration, token: Token) {
     `${config.basePath}/tokens.${config.environment}.json`,
     JSON.stringify(tokens, null, 2),
   );
+}
+
+async function removeTokenFromFile(config: Configuration, symbol: string) {
+  const tokensPath = `${config.basePath}/tokens.${config.environment}.json`;
+  
+  try {
+    const tokens = await file(tokensPath).json();
+    
+    // Filter out the token with the matching symbol
+    tokens.tokens = tokens.tokens.filter((token: Token) => token.symbol !== symbol);
+    
+    // Save the updated file
+    await write(tokensPath, JSON.stringify(tokens, null, 2));
+    
+    console.log(`${COLORS.gray}📝 Removed token ${symbol} from tokens file${COLORS.reset}`);
+  } catch (error) {
+    console.log(`${COLORS.yellow}⚠️  Could not remove token from file: ${error}${COLORS.reset}`);
+  }
 }
