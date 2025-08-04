@@ -1,5 +1,5 @@
 <script>
-  import { fontStyles } from './assets/fonts.js';
+  import { fontStyles } from './assets/fonts-embedded.js';
 </script>
 
 <svelte:head>
