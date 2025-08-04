@@ -64,7 +64,7 @@ export class SvelteController extends Controller implements AccountProvider {
   }
 
   getAccount(): AccountInterface | undefined {
-    return this._account;
+    return traceWallet(this._account);
   }
 
   getUsername(): string | undefined {
