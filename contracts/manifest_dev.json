@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x479f35c1920c5f815af247410c2e0a34d0358567a431f9b99d36d70a8b5f2ef",
-      "class_hash": "0x2e25ff9b4ecfb0692c5f787fe21217b5bd29551ff70bdca1880283f34875b3d",
+      "address": "0x1cbb3dd5c57e88713632ba03df62e18a7ebf89cbcbc237b61668bbd1d10b1dc",
+      "class_hash": "0x367b576524bc0735c4eb7779174cbf2f895db62e261ec752b661f1a0e7872",
       "abi": [
         {
           "type": "impl",
@@ -1504,6 +1504,10 @@
             },
             {
               "name": "neighbors_info_packed",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "accumulated_taxes_fee",
               "type": "core::integer::u128"
             }
           ]
@@ -2109,6 +2113,12 @@
         },
         {
           "type": "event",
+          "name": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
           "name": "ponzi_land::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
@@ -2136,12 +2146,17 @@
               "name": "TaxesEvent",
               "type": "ponzi_land::components::taxes::TaxesComponent::Event",
               "kind": "flat"
+            },
+            {
+              "name": "ReentrancyGuardEvent",
+              "type": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+              "kind": "flat"
             }
           ]
         }
       ],
       "init_calldata": [
-        "0x5ff6ea1f54c22e1f9972104dcb8d401b8512aa49cdb2e1d3806c4deec0720cb",
+        "0x85d4d4ca28aa0caf130db23f980730436f9605fe98d4cb2b9931f9a2a89a13",
         "128000000000000000000",
         "0",
         "1000000000000000000",
@@ -2510,8 +2525,8 @@
       ]
     },
     {
-      "address": "0x16589d2408ab0f3185b8428f00df43a575556dcea6a5edb9fa28c5f4b7061b6",
-      "class_hash": "0x75ae143bdb5c3829e5eef254ac8cbbaeabcd8665bf4feab3d807abc4a8be2bb",
+      "address": "0x28d20f1122bdadd1dda285056f468002a0532a9bdfb6fd2d3c2d1f7ef5d5efd",
+      "class_hash": "0x3675ae2a4f5e019d0e6ae2d2fd5c994a6df6264f570fd34c15dea2d8ed6cb9e",
       "abi": [
         {
           "type": "impl",
@@ -2652,6 +2667,30 @@
             {
               "name": "rate_denominator",
               "type": "core::integer::u8"
+            },
+            {
+              "name": "max_circles",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "claim_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "buy_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "our_contract_for_fee",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "our_contract_for_auction",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "claim_fee_threshold",
+              "type": "core::integer::u128"
             }
           ],
           "outputs": [],
@@ -2741,6 +2780,30 @@
             {
               "name": "rate_denominator",
               "type": "core::integer::u8"
+            },
+            {
+              "name": "max_circles",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "claim_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "buy_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "our_contract_for_fee",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "our_contract_for_auction",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "claim_fee_threshold",
+              "type": "core::integer::u128"
             }
           ]
         },
@@ -2753,76 +2816,8 @@
               "name": "set_full_config",
               "inputs": [
                 {
-                  "name": "grid_width",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "tax_rate",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "base_time",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "price_decrease_rate",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "time_speed",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "max_auctions",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "max_auctions_from_bid",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "decay_rate",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "floor_price",
-                  "type": "core::integer::u256"
-                },
-                {
-                  "name": "liquidity_safety_multiplier",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "min_auction_price",
-                  "type": "core::integer::u256"
-                },
-                {
-                  "name": "min_auction_price_multiplier",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "center_location",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "auction_duration",
-                  "type": "core::integer::u32"
-                },
-                {
-                  "name": "scaling_factor",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "linear_decay_time",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "drop_rate",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "rate_denominator",
-                  "type": "core::integer::u8"
+                  "name": "config",
+                  "type": "ponzi_land::models::config::Config"
                 }
               ],
               "outputs": [],
@@ -3046,6 +3041,78 @@
             },
             {
               "type": "function",
+              "name": "set_max_circles",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_claim_fee",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_buy_fee",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_our_contract_for_fee",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_our_contract_for_auction",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_claim_fee_threshold",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "get_grid_width",
               "inputs": [],
               "outputs": [
@@ -3244,11 +3311,44 @@
             },
             {
               "type": "function",
-              "name": "get_config",
+              "name": "get_max_circles",
               "inputs": [],
               "outputs": [
                 {
-                  "type": "ponzi_land::models::config::Config"
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_claim_fee",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_buy_fee",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_claim_fee_threshold",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
                 }
               ],
               "state_mutability": "view"
@@ -3383,7 +3483,13 @@
         "50",
         "12000",
         "90",
-        "100"
+        "100",
+        "127",
+        "0",
+        "0",
+        "0",
+        "0",
+        "10"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
@@ -3408,6 +3514,12 @@
         "set_linear_decay_time",
         "set_drop_rate",
         "set_rate_denominator",
+        "set_max_circles",
+        "set_claim_fee",
+        "set_buy_fee",
+        "set_our_contract_for_fee",
+        "set_our_contract_for_auction",
+        "set_claim_fee_threshold",
         "upgrade"
       ]
     },
@@ -3664,12 +3776,12 @@
       ],
       "init_calldata": [
         "6",
-        "0x5ff6ea1f54c22e1f9972104dcb8d401b8512aa49cdb2e1d3806c4deec0720cb",
-        "0x396c1a5bad098fa887301d8400baf9381bde6041e589664c140639a7195f6c8",
-        "0x470b3a13713b7cc6b2aa10c265b500b91831b0a051a4ecffbe790b73c17f3b7",
-        "0x313fdbc84818ee6701463a655aa8ddc49feef11648b6e6d115a2746ae1ee1df",
-        "0x62ff4fa699beff2f9f081883d4ff58fc5578cf917295e645675a59d758ad065",
-        "0x592c3cfee4cb72bad14896b3de8cdddf1af5a9e558360a8c0dfcf3f8c6b61bb"
+        "0x85d4d4ca28aa0caf130db23f980730436f9605fe98d4cb2b9931f9a2a89a13",
+        "0x7570c50126d66bb607141fd16c82873208c568c54dc9f2a635f8b640ece20fd",
+        "0xba5ae7a569e6e2fe3a887834719249d7abfbbacb37dd6fcf2d19494c0ea6db",
+        "0x698d81353772d8af8a400b4c79cb997ed607500b4ae03ce8d0296aec199fe79",
+        "0x9aa3a94c1b86898f28a6330b186fff47793e2a51728b4826e96b9c30dd588a",
+        "0x9ece7d3d5043365503c60cc0a733d367e95ad1836d4d602d44038e7bd840d1"
       ],
       "tag": "ponzi_land-token_registry",
       "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
@@ -3691,7 +3803,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x3521441c837edc504d0b3ea4f5ca7d1130b55eefedcc619a2e832aef87ab55b",
+      "class_hash": "0x69990eb244fdc0052134ede0c2c36a2558ec51e8587efd20a4158815bf7ded4",
       "tag": "ponzi_land-Config",
       "selector": "0x57f837833559dae8bcd922ede064d0c5227c3f139fc4c410c93bcd58aff30ee"
     },
@@ -3703,7 +3815,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x1e3f0810019b04689f2fb87afb37e38e0d182ad5935a1137db45a6092293d1f",
+      "class_hash": "0x2916b5c9fc3f46ff35d98bed1a8b08a83912fb52b098a951bf2a5ef730384b8",
       "tag": "ponzi_land-LandStake",
       "selector": "0x6fc377970b02dbb15634ab8c2855ba673d6ff3be113eb93bb56628d9018cadc"
     }

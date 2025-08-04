@@ -72,4 +72,10 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "12000",                                                          # Linear time decay
     "90",                                                                  # Drop rate
     "100",                                                           # Rate denominator
+    "127",                                                               # Max circles
+    "0",                                                                 # Claim fee
+    "0",                                                                   # Buy fee
+    "0",                                                      # Our contract for fee
+    "0",                                                  # Our contract for auction
+    "10",                                                       # Claim fee threshold
 ]

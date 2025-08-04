@@ -78,8 +78,8 @@
 
   onMount(async () => {
     try {
-      const response = await fetch(url);
-      const data = await response.json();
+   //   const response = await fetch(url);
+  //    const data = await response.json();
       teamInfo = data.team;
     } catch (error) {
       console.error('Failed to fetch team info:', error);

@@ -93,6 +93,7 @@
 
     const provider = sdk.provider;
 
+    /*
     const tokenBalances = data.availableTokens.map(async (token) => {
       const balance = await fetchTokenBalance(token.address, account, provider);
 
@@ -112,8 +113,9 @@
         balance: balance.balance?.toString() ?? '',
       })),
     );
+    */
 
-    tokenStore.prices = await getTokenPrices();
+   // tokenStore.prices = await getTokenPrices();
     calculateTotalBalance();
   };
 
@@ -149,7 +151,7 @@
       // Add the subscription ref
       subscriptionRef = subscription;
 
-      tokenStore.prices = await getTokenPrices();
+    //  tokenStore.prices = await getTokenPrices();
       setTokenBalances(tokenBalances.items);
       calculateTotalBalance();
       loadingBalance = false;
