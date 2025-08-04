@@ -19,7 +19,17 @@
       ?.getProvider()
       ?.getWalletAccount();
 
-    let transaction_hash = await account?.keychain.deploy();
+      console.log('account', account);
+
+      let transaction_hash = await account?.execute([
+        {
+          contractAddress: manifest.contracts.find(
+            (e) => e.tag === 'ponzi_land-auth',
+          )?.address!,
+          entrypoint: 'ensure_deploy',
+          calldata: [],
+        },
+      ]);
 
     console.log('Sent dummy transaction!', transaction_hash);
 
