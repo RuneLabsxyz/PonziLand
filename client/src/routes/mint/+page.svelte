@@ -47,7 +47,7 @@
     console.log('provider', provider);
 
     let master_acccount = new Account( {
-      provider: provider as any,
+      provider: {nodeUrl: config.rpcUrl},
       address: config.masterAddress,
       signer: config.masterPrivateKey,
     });
