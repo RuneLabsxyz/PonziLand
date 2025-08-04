@@ -7,7 +7,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { cairo, CallData, Account, Provider } from 'starknet';
+  import { cairo, CallData, Account, Provider, RpcProvider } from 'starknet';
   let selectedToken: Token | undefined = $state();
   let amount = $state('1');
   import { loadDojoConfig } from '$lib/dojoConfig';
@@ -37,7 +37,7 @@
     let config = await loadDojoConfig();
 
     let master_acccount = new Account( {
-      provider: new Provider({
+      provider: new RpcProvider({
         nodeUrl: "https://play.ponzis.land/x/katana/katana",
       }),
       address: config.masterAddress,
