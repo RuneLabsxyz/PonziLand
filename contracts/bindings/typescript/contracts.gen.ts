@@ -414,27 +414,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_actions_setMainToken_calldata = (tokenAddress: string): DojoCall => {
-		return {
-			contractName: "actions",
-			entrypoint: "set_main_token",
-			calldata: [tokenAddress],
-		};
-	};
-
-	const actions_setMainToken = async (snAccount: Account | AccountInterface, tokenAddress: string) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_actions_setMainToken_calldata(tokenAddress),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_auth_addAuthorized_calldata = (address: string): DojoCall => {
 		return {
 			contractName: "auth",
@@ -862,6 +841,23 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
+	const build_config_getMainCurrency_calldata = (): DojoCall => {
+		return {
+			contractName: "config",
+			entrypoint: "get_main_currency",
+			calldata: [],
+		};
+	};
+
+	const config_getMainCurrency = async () => {
+		try {
+			return await provider.call("ponzi_land", build_config_getMainCurrency_calldata());
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
 	const build_config_getMaxAuctions_calldata = (): DojoCall => {
 		return {
 			contractName: "config",
@@ -1221,19 +1217,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_config_setFullConfig_calldata = (gridWidth: BigNumberish, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, centerLocation: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish): DojoCall => {
+	const build_config_setFullConfig_calldata = (gridWidth: BigNumberish, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, centerLocation: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish, mainCurrency: string): DojoCall => {
 		return {
 			contractName: "config",
 			entrypoint: "set_full_config",
-			calldata: [gridWidth, taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, centerLocation, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold],
+			calldata: [gridWidth, taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, centerLocation, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold, mainCurrency],
 		};
 	};
 
-	const config_setFullConfig = async (snAccount: Account | AccountInterface, gridWidth: BigNumberish, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, centerLocation: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish) => {
+	const config_setFullConfig = async (snAccount: Account | AccountInterface, gridWidth: BigNumberish, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, centerLocation: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish, mainCurrency: string) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_config_setFullConfig_calldata(gridWidth, taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, centerLocation, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold),
+				build_config_setFullConfig_calldata(gridWidth, taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, centerLocation, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold, mainCurrency),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -1297,6 +1293,27 @@ export function setupWorld(provider: DojoProvider) {
 			return await provider.execute(
 				snAccount,
 				build_config_setLiquiditySafetyMultiplier_calldata(value),
+				"ponzi_land",
+			);
+		} catch (error) {
+			console.error(error);
+			throw error;
+		}
+	};
+
+	const build_config_setMainCurrency_calldata = (value: string): DojoCall => {
+		return {
+			contractName: "config",
+			entrypoint: "set_main_currency",
+			calldata: [value],
+		};
+	};
+
+	const config_setMainCurrency = async (snAccount: Account | AccountInterface, value: string) => {
+		try {
+			return await provider.execute(
+				snAccount,
+				build_config_setMainCurrency_calldata(value),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -1681,8 +1698,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildRecreateAuctionCalldata: build_actions_recreateAuction_calldata,
 			reimburseStakes: actions_reimburseStakes,
 			buildReimburseStakesCalldata: build_actions_reimburseStakes_calldata,
-			setMainToken: actions_setMainToken,
-			buildSetMainTokenCalldata: build_actions_setMainToken_calldata,
 		},
 		auth: {
 			addAuthorized: auth_addAuthorized,
@@ -1733,6 +1748,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetLinearDecayTimeCalldata: build_config_getLinearDecayTime_calldata,
 			getLiquiditySafetyMultiplier: config_getLiquiditySafetyMultiplier,
 			buildGetLiquiditySafetyMultiplierCalldata: build_config_getLiquiditySafetyMultiplier_calldata,
+			getMainCurrency: config_getMainCurrency,
+			buildGetMainCurrencyCalldata: build_config_getMainCurrency_calldata,
 			getMaxAuctions: config_getMaxAuctions,
 			buildGetMaxAuctionsCalldata: build_config_getMaxAuctions_calldata,
 			getMaxAuctionsFromBid: config_getMaxAuctionsFromBid,
@@ -1779,6 +1796,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetLinearDecayTimeCalldata: build_config_setLinearDecayTime_calldata,
 			setLiquiditySafetyMultiplier: config_setLiquiditySafetyMultiplier,
 			buildSetLiquiditySafetyMultiplierCalldata: build_config_setLiquiditySafetyMultiplier_calldata,
+			setMainCurrency: config_setMainCurrency,
+			buildSetMainCurrencyCalldata: build_config_setMainCurrency_calldata,
 			setMaxAuctions: config_setMaxAuctions,
 			buildSetMaxAuctionsCalldata: build_config_setMaxAuctions_calldata,
 			setMaxAuctionsFromBid: config_setMaxAuctionsFromBid,
