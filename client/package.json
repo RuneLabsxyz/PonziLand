@@ -47,6 +47,8 @@
     "@cartridge/presets": "^0.5.2",
     "@dojoengine/core": "=1.6.0",
     "@dojoengine/sdk": "=1.6.0",
+    "@dojoengine/create-burner": "=1.6.0",
+
     "@dojoengine/torii-client": "=1.6.0",
     "@grafana/faro-rollup-plugin": "^0.5.1",
     "@grafana/faro-web-sdk": "^1.18.2",
@@ -77,7 +79,7 @@
     "gsap": "^3.12.7",
     "lucide-svelte": "^0.471.0",
     "seedrandom": "^3.0.5",
-    "starknet": "=7.6.4",
+    "starknet": "=8.1.2",
     "stats.js": "^0.17.0",
     "svelte-confetti": "^2.3.1",
     "temporal-polyfill": "^0.2.5",
