@@ -37,6 +37,8 @@
 
     let config = await loadDojoConfig();
 
+    console.log('manifest', config.manifest);
+
     let provider = new DojoProvider({
       manifest: config.manifest,
       nodeUrl: "https://play.ponzis.fun/x/katana/katana",
