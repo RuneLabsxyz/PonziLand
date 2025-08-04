@@ -15,13 +15,10 @@
   let account = useAccount();
 
   async function sendDummyTransaction() {
-    let account = await useAccount()
+    const { transaction_hash } = await useAccount()
       ?.getProvider()
-      ?.getWalletAccount();
-
-      console.log('account', account);
-
-      let transaction_hash = await account?.execute([
+      ?.getWalletAccount()
+      ?.execute(
         {
           contractAddress: manifest.contracts.find(
             (e) => e.tag === 'ponzi_land-auth',
@@ -29,7 +26,10 @@
           entrypoint: 'ensure_deploy',
           calldata: [],
         },
-      ]);
+        {
+          version: constants.TRANSACTION_VERSION.V3,
+        },
+      )!;
 
     console.log('Sent dummy transaction!', transaction_hash);
 
