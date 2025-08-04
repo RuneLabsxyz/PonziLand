@@ -6,6 +6,7 @@
   import { getSocialink } from '$lib/accounts/social/index.svelte';
   import GuildRankings from './guild-rankings.svelte';
 
+  /*
   const socialink = getSocialink();
 
   type Team = 'Wolf Nation' | 'Blobert' | 'Everai' | 'Ducks everywhere';
@@ -13,6 +14,7 @@
   let url = $derived(
     `${PUBLIC_SOCIALINK_URL}/api/user/${accountDataProvider.address}/team/info`,
   );
+  */
 
   let teamInfo = $state<any>(null);
   let selectedTeam = $state<Team | null>(null);
@@ -47,11 +49,13 @@
     try {
       isLoading = true;
       hasError = false;
+      /*
       const result = await socialink.joinTeamFlow(
         accountDataProvider.address,
         selectedTeam,
         accountDataProvider.walletAccount,
       );
+      */
 
       if (result.ok) {
         console.log(`Successfully joined ${selectedTeam}!`);
