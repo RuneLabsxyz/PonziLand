@@ -9,7 +9,7 @@ import { getDojoConfig } from '$lib/dojoConfig';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { loadDojoConfig } from '$lib/dojoConfig';
-import { Provider as StarknetProvider } from 'starknet';
+import { RpcProvider, Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
 import {
@@ -253,7 +253,7 @@ export class AccountManager {
     // We'll throw an error with a helpful message if not loaded
     let config = getDojoConfig();
 
-    return new StarknetProvider({
+    return new RpcProvider({
       nodeUrl: config.rpcUrl,
     });
   }
