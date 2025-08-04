@@ -1,6 +1,6 @@
 // Get the wanted system from the environment
 
-import { browser } from '$app/environment';
+const browser = typeof window !== 'undefined';
 import { accountConfig } from '../consts.js';
 // import { ArgentXAccount } from '../wallets/argentx.js';
 import { setupController, SvelteController } from '../wallets/controller.js';

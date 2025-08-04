@@ -32,7 +32,9 @@ const resetState = () => {
 };
 
 export async function refresh() {
-  const accountManager = useAccount()!;
+  const accountManager = useAccount();
+  if (!accountManager) return;
+  
   const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
     await updateState(currentProvider);
@@ -44,8 +46,13 @@ export async function refresh() {
 export async function setup() {
   if (isSetup) return;
 
+  const accountManager = useAccount();
+  if (!accountManager) {
+    console.warn('Account manager not initialized. Call setupAccount() first.');
+    return;
+  }
+
   isSetup = true;
-  const accountManager = useAccount()!;
 
   // Initial state
   let currentProvider = accountManager.getProvider();
