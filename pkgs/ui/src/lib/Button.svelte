@@ -42,6 +42,7 @@
   // Get the appropriate button images (use custom if provided)
   const defaultImage = customDefaultImage || buttonImages[variant].default;
   const hoverImage = customHoverImage || buttonImages[variant].hover;
+
 </script>
 
 <!-- Include font styles -->
