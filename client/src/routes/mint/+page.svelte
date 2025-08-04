@@ -39,10 +39,10 @@
 
     console.log('manifest', config.manifest);
 
-    let provider = new DojoProvider({
-      manifest: config.manifest,
-      url: "https://play.ponzis.fun/x/katana/katana",
-    });
+    let provider = new DojoProvider(
+      config.manifest,
+      config.rpcUrl,
+    );
 
     console.log('provider', provider);
 
