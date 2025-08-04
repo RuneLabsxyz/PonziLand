@@ -39,15 +39,12 @@
 
     console.log('manifest', config.manifest);
 
-    let provider = new DojoProvider(
-      config.manifest,
-      config.rpcUrl,
-    );
+    let provider = account?.getProvider()?.getWalletAccount()?.provider;
 
     console.log('provider', provider);
 
     let master_acccount = new Account( {
-      provider: provider as RpcProvider,
+      provider,
       address: config.masterAddress,
       signer: config.masterPrivateKey,
     });
