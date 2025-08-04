@@ -38,7 +38,7 @@
 
     let master_acccount = new Account( {
       provider: new RpcProvider({
-        nodeUrl: "https://play.ponzis.land/x/katana/katana",
+        nodeUrl: "https://play.ponzis.fun/x/katana/katana",
       }),
       address: config.masterAddress,
       signer: config.masterPrivateKey,
