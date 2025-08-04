@@ -11,6 +11,7 @@
   let selectedToken: Token | undefined = $state();
   let amount = $state('1');
   import { loadDojoConfig } from '$lib/dojoConfig';
+  import { DojoProvider } from '@dojoengine/core';
 
   let account = useAccount();
   function mint() {
@@ -36,14 +37,14 @@
 
     let config = await loadDojoConfig();
 
-    let provider = new RpcProvider({
+    let provider = new DojoProvider({
       nodeUrl: "https://play.ponzis.fun/x/katana/katana",
       specVersion: '0.8.1',
 
     });
 
     let master_acccount = new Account( {
-      provider,
+      provider: provider as any,
       address: config.masterAddress,
       signer: config.masterPrivateKey,
     });
