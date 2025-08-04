@@ -37,9 +37,9 @@
     let config = await loadDojoConfig();
 
     let master_acccount = new Account( {
-      provider: new RpcProvider({
+      provider: {
         nodeUrl: "https://play.ponzis.fun/x/katana/katana",
-      }),
+      },
       address: config.masterAddress,
       signer: config.masterPrivateKey,
     });
