@@ -41,9 +41,7 @@
 
     let provider = new DojoProvider({
       manifest: config.manifest,
-      nodeUrl: "https://play.ponzis.fun/x/katana/katana",
-      specVersion: '0.8.1',
-
+      url: "https://play.ponzis.fun/x/katana/katana",
     });
 
     console.log('provider', provider);
