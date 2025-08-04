@@ -21,6 +21,7 @@ pub struct LandStake {
     pub location: u16,
     pub amount: u256,
     pub neighbors_info_packed: u128,
+    pub accumulated_taxes_fee: u128,
 }
 
 
@@ -80,4 +81,3 @@ impl LandImpl of LandTrait {
         Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
 }
-

@@ -42,6 +42,11 @@ version = "0.18.0"
 source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
 
 [[package]]
+name = "openzeppelin_security"
+version = "1.0.0"
+source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+
+[[package]]
 name = "openzeppelin_token"
 version = "0.18.0"
 source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v0.18.0#2f37306b490e63c0afa9e33ad192ba428141b487"
@@ -63,5 +68,6 @@ dependencies = [
  "dojo",
  "dojo_cairo_test",
  "ekubo",
+ "openzeppelin_security",
  "openzeppelin_token",
 ]
