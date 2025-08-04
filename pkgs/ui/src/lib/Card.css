@@ -2,22 +2,54 @@
 
 .card {
   position: relative;
-  background-color: var(--color-card);
-  color: var(--color-card-foreground);
+  background-color: var(--color-card, #1a1a1a);
+  color: white; /* White text by default, overridable with custom class */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   
   /* Border using border-image for pixelated effect */
   background-clip: padding-box;
-  border: solid transparent 0.5em;
-  border-image-source: url('./static/ui/card/frame.png');
-  border-image-slice: 16;
-  border-image-outset: 0;
-  border-image-width: 2;
+  border: solid transparent 8px; /* Fixed pixel size for pixel art */
+  border-image-source: var(--card-frame-image);
+  border-image-slice: 8 fill; /* Use fill to show the center part */
+  border-image-width: 8px; /* Fixed pixel width */
+  border-image-repeat: stretch; /* Stretch to avoid tiling issues */
   image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
   
   /* Background texture */
-  background-image: url('./static/ui/card/texture.png');
+  background-image: var(--card-texture-image);
   background-repeat: repeat;
-  background-size: 64px 64px;
+  background-size: 120px 120px; /* Use exact pixel multiples */
+  background-position: center;
+  
+  /* Ensure pixel-perfect rendering */
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  
+  /* Padding to ensure content doesn't overlap with border */
+  padding: 16px; /* Use pixel values for consistency */
+  
+  /* Prevent subpixel rendering */
+  will-change: transform;
+}
+
+/* Ensure card container snaps to pixel grid */
+.card * {
   image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+/* Additional pixel-perfect rendering hints */
+.card {
+  /* Snap position to whole pixels */
+  transform: translate3d(0, 0, 0);
+  
+  /* Disable font smoothing for pixel fonts */
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+  font-smooth: never;
 }

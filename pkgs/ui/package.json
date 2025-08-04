@@ -29,9 +29,6 @@
     },
     "./app.css": {
       "import": "./dist/app.css"
-    },
-    "./static/*": {
-      "import": "./dist/static/*"
     }
   },
   "files": [

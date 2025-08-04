@@ -25,6 +25,12 @@ const buttonImages = {
   redHover: readFileSync(join(rootDir, 'static/ui/button/red/hover.png')).toString('base64'),
 };
 
+// Read and convert card images to base64
+const cardImages = {
+  frame: readFileSync(join(rootDir, 'static/ui/card/frame.png')).toString('base64'),
+  texture: readFileSync(join(rootDir, 'static/ui/card/texture.png')).toString('base64'),
+};
+
 // Create fonts.js with embedded base64 data
 const fontsContent = `// Auto-generated file with embedded font data
 export const fonts = {
@@ -79,8 +85,17 @@ export const buttonImages = {
 };
 `;
 
+// Create card-images.js with embedded base64 data
+const cardImagesContent = `// Auto-generated file with embedded card image data
+export const cardImages = {
+  frame: 'data:image/png;base64,${cardImages.frame}',
+  texture: 'data:image/png;base64,${cardImages.texture}'
+};
+`;
+
 // Write the generated files
 writeFileSync(join(rootDir, 'src/lib/assets/fonts-embedded.js'), fontsContent);
 writeFileSync(join(rootDir, 'src/lib/assets/button-images-embedded.js'), buttonImagesContent);
+writeFileSync(join(rootDir, 'src/lib/assets/card-images-embedded.js'), cardImagesContent);
 
 console.log('Assets embedded successfully!');
