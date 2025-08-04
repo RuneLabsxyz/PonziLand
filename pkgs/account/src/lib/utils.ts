@@ -25,3 +25,22 @@ export function toHexWithPadding(value: number | bigint, paddingLength = 64) {
   
     return `0x${addressPadded}`;
   }
+
+  export function shortenHex(hex: string | null | undefined, length = 4) {
+    if (!hex) {
+      return '0xundefined';
+    }
+  
+    if (!hex.startsWith('0x')) {
+      return hex;
+    }
+  
+    if (hex.length <= 2 + 2 * length) {
+      // No shortening needed
+      return hex;
+    }
+  
+    const start = hex.slice(0, 2 + length);
+    const end = hex.slice(-length);
+    return `${start}...${end}`;
+  }

@@ -1,58 +1,126 @@
-# Svelte library
+# @ponziland/account
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+A Svelte library for Starknet wallet connection and account management, providing ready-to-use components for wallet selection and connection state management.
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+## Installation
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+```bash
+npm install @ponziland/account
 ```
 
-## Developing
+## Usage
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+### 1. Initialize the account manager
 
-```sh
+In your root layout or app component, initialize the account manager:
+
+```svelte
+<script lang="ts">
+  import { setupAccount } from '@ponziland/account';
+  import { onMount } from 'svelte';
+
+  onMount(async () => {
+    await setupAccount();
+  });
+</script>
+```
+
+### 2. Add the components
+
+Include the wallet modal and connection button in your app:
+
+```svelte
+<script lang="ts">
+  import { SelectWalletModal, OnboardingWalletInfo } from '@ponziland/account';
+</script>
+
+<!-- Wallet selection modal -->
+<SelectWalletModal />
+
+<!-- Connection button/status -->
+<OnboardingWalletInfo onconnect={() => console.log('Connected!')} />
+```
+
+### 3. Access wallet state
+
+You can access the wallet state anywhere in your application:
+
+```svelte
+<script lang="ts">
+  import { accountDataProvider, useAccount } from '@ponziland/account';
+
+  // Access reactive state
+  $: isConnected = accountDataProvider.isConnected;
+  $: address = accountDataProvider.address;
+
+  // Access account manager methods
+  const accountManager = useAccount();
+  
+  async function disconnect() {
+    accountManager?.disconnect();
+  }
+</script>
+
+{#if isConnected}
+  <p>Connected: {address}</p>
+  <button onclick={disconnect}>Disconnect</button>
+{/if}
+```
+
+## Components
+
+### SelectWalletModal
+
+A modal that displays available Starknet wallets for connection. It automatically appears when `promptForLogin()` is called.
+
+### OnboardingWalletInfo
+
+A component that shows the current connection status and provides a connect button when disconnected.
+
+Props:
+- `onconnect?: () => void` - Callback function called after successful connection
+
+## API
+
+### setupAccount()
+
+Initializes the account manager. Must be called once before using any other features.
+
+### useAccount()
+
+Returns the account manager instance with methods for wallet interaction:
+
+- `promptForLogin(): Promise<void>` - Shows the wallet selection modal
+- `disconnect(): void` - Disconnects the current wallet
+- `getAvailableWallets()` - Returns list of available wallets
+- `getProvider()` - Returns the current wallet provider
+- `setupSession()` - Sets up session for supported wallets
+
+### accountDataProvider
+
+Reactive state object containing:
+
+- `isConnected: boolean` - Connection status
+- `address?: string` - Connected wallet address
+- `walletAccount?: AccountInterface` - Starknet account interface
+- `providerName?: string` - Name of the connected wallet
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
-
-## Building
-
-To build your library:
-
-```sh
-npm pack
-```
-
-To create a production version of your showcase app:
-
-```sh
+# Build the package
 npm run build
+
+# Preview the package
+npm run preview
 ```
 
-You can preview the production build with `npm run preview`.
+## License
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```sh
-npm publish
-```
+MIT

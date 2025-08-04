@@ -19,9 +19,10 @@
     // And if a login is asked (with the event wallet_login), open the popup with the found wallets,
     // wait for a successful login, and possibly open a popup to ask for the session popup explaining how it works.
   
-    const account = useAccount();
+    let account = $state<ReturnType<typeof useAccount>>();
   
     const promisesToWait = (async () => {
+      account = useAccount();
       if (account != null) {
         validWallets = (await account.wait()).getAvailableWallets();
         console.log('validWallets', validWallets);
