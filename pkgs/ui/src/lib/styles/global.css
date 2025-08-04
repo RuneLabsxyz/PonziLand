@@ -68,34 +68,7 @@ body {
   color: var(--color-foreground);
 }
 
-/* Font faces */
-@font-face {
-  font-family: 'PonziNumber';
-  src: url('../static/fonts/PonziNumber_Regular_G7.ttf');
-}
-
-@font-face {
-  font-family: 'Nintendo DS BIOS';
-  font-size: small;
-  font-style: normal;
-  font-weight: 400;
-  src: url('../static/fonts/Nintendo-DS-BIOS.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'PonziDS';
-  font-size: small;
-  font-style: normal;
-  font-weight: 400;
-  src: url('../static/fonts/PonziDS_RegularV2.ttf') format('truetype');
-}
-
-@font-face {
-  font-family: 'PonziDS';
-  font-style: normal;
-  font-weight: 600;
-  src: url('../static/fonts/PonziDS2_SemiBoldV3.ttf') format('truetype');
-}
+/* Font faces are now loaded via components that need them */
 
 /* Utility classes */
 .font-ponzi-number {

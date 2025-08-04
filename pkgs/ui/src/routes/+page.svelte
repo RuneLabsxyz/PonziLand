@@ -1,6 +1,6 @@
 <script>
   import Button from '$lib/Button.svelte';
-  import Test from '$lib/Test.svelte';
+  import Card from '$lib/Card.svelte';
 </script>
 
 <div class="container">
@@ -27,14 +27,12 @@
     <h2>Cards</h2>
     <div class="ponzi-card">
       <h3>Card Example</h3>
+      <Card> <div>This is a test card</div> </Card>
       <p>This is a PonziLand styled card with custom border and texture.</p>
     </div>
   </section>
 
-  <section>
-    <h2>Test Component</h2>
-    <Test />
-  </section>
+
 </div>
 
 <style>

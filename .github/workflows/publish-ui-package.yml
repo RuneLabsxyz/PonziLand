@@ -68,22 +68,3 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Create GitHub Release
-        if: steps.version-check.outputs.changed == 'true'
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ui-v${{ steps.version-check.outputs.version }}
-          release_name: "@ponziland/ui v${{ steps.version-check.outputs.version }}"
-          body: |
-            ## @ponziland/ui v${{ steps.version-check.outputs.version }}
-            
-            Published to npm: https://www.npmjs.com/package/@ponziland/ui
-            
-            ### Installation
-            ```bash
-            npm install @ponziland/ui@${{ steps.version-check.outputs.version }}
-            ```
-          draft: false
-          prerelease: false
