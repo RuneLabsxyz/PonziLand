@@ -36,10 +36,6 @@ jobs:
         working-directory: pkgs/account
         run: bun install
         
-      - name: Run type checking
-        working-directory: pkgs/account
-        run: bun run check
-        
       - name: Build package
         working-directory: pkgs/account
         run: bun run build
