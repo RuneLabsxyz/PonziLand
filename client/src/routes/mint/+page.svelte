@@ -43,13 +43,17 @@
 
     });
 
+    console.log('provider', provider);
+
     let master_acccount = new Account( {
       provider: provider as any,
       address: config.masterAddress,
       signer: config.masterPrivateKey,
     });
 
-  console.log('account', account);
+    console.log('master_acccount', master_acccount);
+
+    console.log('account', account);
     let player_account = account?.getProvider()?.getWalletAccount();
     console.log('player_account', player_account);
 
