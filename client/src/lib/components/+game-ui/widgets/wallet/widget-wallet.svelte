@@ -36,7 +36,7 @@
     });
   }
 
-  let socialink = getSocialink();
+ // let socialink = getSocialink();
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
   let username = $derived(socialink.getUser(address ?? ''));
