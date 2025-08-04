@@ -6,13 +6,10 @@
   color: white; /* White text by default, overridable with custom class */
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   
-  /* Border using border-image for pixelated effect */
+  /* Fixed border thickness approach */
   background-clip: padding-box;
-  border: solid transparent 8px; /* Fixed pixel size for pixel art */
-  border-image-source: var(--card-frame-image);
-  border-image-slice: 8 fill; /* Use fill to show the center part */
-  border-image-width: 8px; /* Fixed pixel width */
-  border-image-repeat: stretch; /* Stretch to avoid tiling issues */
+  border: solid transparent 0.4em;
+  border-image: var(--card-frame-image) 10 10 10 10 round round;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
@@ -30,7 +27,7 @@
   transform: translateZ(0);
   
   /* Padding to ensure content doesn't overlap with border */
-  padding: 16px; /* Use pixel values for consistency */
+  padding: 0.5em;
   
   /* Prevent subpixel rendering */
   will-change: transform;
