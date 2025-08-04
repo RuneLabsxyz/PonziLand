@@ -49,12 +49,19 @@
       signer: config.masterPrivateKey,
     });
 
+  console.log('account', account);
+    let player_account = account?.getProvider()?.getWalletAccount();
+    console.log('player_account', player_account);
+
+    let player_address = player_account?.address.toString()!;
+    console.log('player_address', player_address);
+
     let res = await master_acccount.execute([
       {
         contractAddress: "0x4718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
         entrypoint: 'transfer',
         calldata: CallData.compile([
-          cairo.felt(account?.getProvider()?.getWalletAccount()?.address.toString()!),
+          cairo.felt(player_address),
           cairo.uint256(
             (1*10**21),
           ),
