@@ -39,7 +39,7 @@
 
   let tokenValue: string = $state('');
   let selectedToken = $derived(
-    data.availableTokens.find((token) => token.address === tokenValue),
+    data.availableTokens.find((token) => token.address === tokenValue.address),
   );
   let stake: string = $state('');
   let stakeAmount: CurrencyAmount = $derived(
