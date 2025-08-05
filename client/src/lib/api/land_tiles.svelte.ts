@@ -14,7 +14,7 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
-import { padAddress } from '$lib/utils';
+import { padAddress, coordinatesToLocation } from '$lib/utils';
 
 // Constants for random updates
 const MIN_RANDOM_UPDATES = 20;
@@ -136,7 +136,7 @@ export class LandTileStore {
         // Create a random update
         const fakeLand: Land = {
           owner: DEFAULT_OWNER,
-          location: x + y * GRID_SIZE,
+          location: coordinatesToLocation({ x, y }),
           block_date_bought: Date.now(),
           sell_price:
             Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
@@ -147,7 +147,7 @@ export class LandTileStore {
         };
 
         const fakeStake: LandStake = {
-          location: x + y * GRID_SIZE,
+          location: coordinatesToLocation({ x, y }),
           amount:
             Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
             DEFAULT_STAKE_AMOUNT / 2,
@@ -171,7 +171,7 @@ export class LandTileStore {
   }
 
   private triggerNukeAnimation(x: number, y: number) {
-    const location = x + y * GRID_SIZE;
+    const location = coordinatesToLocation({ x, y });
     // Mark the land as nuking
     nukeStore.nuking[location] = true;
 
@@ -192,7 +192,7 @@ export class LandTileStore {
             TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
           const fakeLand: Land = {
             owner: DEFAULT_OWNER,
-            location: x + y * GRID_SIZE,
+            location: coordinatesToLocation({ x, y }),
             block_date_bought: Date.now(),
             sell_price:
               Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
@@ -203,7 +203,7 @@ export class LandTileStore {
           };
 
           const fakeStake: LandStake = {
-            location: x + y * GRID_SIZE,
+            location: coordinatesToLocation({ x, y }),
             amount:
               Math.floor(Math.random() * DEFAULT_STAKE_AMOUNT) +
               DEFAULT_STAKE_AMOUNT / 2,

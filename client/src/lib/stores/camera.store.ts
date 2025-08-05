@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { tweened } from 'svelte/motion';
 import { TILE_SIZE } from '$lib/const';
+import { parseLocation } from '$lib/utils';
 
 export const cameraPosition = writable({
   scale: 1,
@@ -47,10 +48,8 @@ export function moveCameraTo(
 }
 
 export function moveCameraToLocation(location: number, targetScale?: number) {
-  const MAP_SIZE = 64;
-
-  const tileX = location % MAP_SIZE;
-  const tileY = Math.floor(location / MAP_SIZE);
+  // Use correct coordinate system matching contracts
+  const [tileX, tileY] = parseLocation(location);
 
   moveCameraTo(tileX + 1, tileY + 1, targetScale);
 }

@@ -5,7 +5,7 @@ import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 import type { LandWithActions } from './api/land';
-import { GRID_SIZE } from './const';
+import { COORD_MULTIPLIER, COORD_MASK } from './const';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -118,11 +118,13 @@ export function parseLocation(
     location = parseInt(location, 16);
   }
 
-  // 64 grid give 0, 0
-  const x = location % 64;
-  const y = Math.floor(location / 64);
+  // New coordinate system matching contracts/src/helpers/coord.cairo
+  // index_to_position: row = index / COORD_MULTIPLIER, col = index & COORD_MASK
+  const col = location & COORD_MASK; // Extract low 8 bits (col)
+  const row = Math.floor(location / COORD_MULTIPLIER); // Extract high 8 bits (row)
 
-  return [x, y];
+  // Return as [x, y] where x=col, y=row
+  return [col, row];
 }
 
 export function locationIntToString(location: number | string | undefined) {
@@ -136,7 +138,9 @@ export function locationToCoordinates(location: number | string | undefined) {
 }
 
 export function coordinatesToLocation(location: { x: number; y: number }) {
-  return location.x + location.y * GRID_SIZE;
+  // New coordinate system matching contracts/src/helpers/coord.cairo
+  // position_to_index: row * COORD_MULTIPLIER + col, where row=y, col=x
+  return location.y * COORD_MULTIPLIER + location.x;
 }
 
 export function padAddress(address: string) {
