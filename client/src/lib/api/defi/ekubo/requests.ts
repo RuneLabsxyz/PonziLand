@@ -112,12 +112,12 @@ export async function getTokenPrices(): Promise<TokenPrice[]> {
   const url = PUBLIC_PONZI_API_URL + '/price';
 
   try {
-    const res = await fetch(url);
+  //  const res = await fetch(url);
     if (!res.ok) {
       throw new Error('Network response was not ok');
     }
-    const data = await res.json();
-    return data;
+//    const data = await res.json();
+    return [];
   } catch (error) {
     console.error('Error fetching token prices:', error);
     throw error;
