@@ -182,7 +182,7 @@
 
   // Check if form is valid
   let isFormValid = $derived(
-    !tokenError && !stakeAmountError && !sellPriceError && //!balanceError, //TODO: Fix reading balances
+    !tokenError && !stakeAmountError && !sellPriceError //&& !balanceError, //TODO: Fix reading balances
   );
 
   async function handleBuyClick() {
