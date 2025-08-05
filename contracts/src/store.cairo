@@ -191,4 +191,9 @@ impl StoreImpl of StoreTrait {
             .world
             .read_member(Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_auction"))
     }
+
+    #[inline(always)]
+    fn get_main_currency(self: Store) -> ContractAddress {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"))
+    }
 }

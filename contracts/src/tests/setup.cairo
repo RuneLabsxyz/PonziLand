@@ -32,6 +32,7 @@ mod setup {
     };
     use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
     use ponzi_land::components::taxes::{TaxesComponent};
+    use ponzi_land::components::auction::{AuctionComponent};
     use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
     use ponzi_land::systems::config::{
         config, IConfigSystemDispatcher, IConfigSystemDispatcherTrait,
@@ -43,7 +44,6 @@ mod setup {
     fn RECIPIENT() -> ContractAddress {
         contract_address_const::<'RECIPIENT'>()
     }
-
 
     fn create_setup() -> (
         WorldStorage,
@@ -98,6 +98,12 @@ mod setup {
         let ndef = NamespaceDef {
             namespace: "ponzi_land",
             resources: [
+                TestResource::Event(
+                    AuctionComponent::e_AuctionFinishedEvent::TEST_CLASS_HASH.try_into().unwrap(),
+                ),
+                TestResource::Event(
+                    AuctionComponent::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
+                ),
                 TestResource::Model(m_Land::TEST_CLASS_HASH),
                 TestResource::Model(m_LandStake::TEST_CLASS_HASH),
                 TestResource::Model(m_Auction::TEST_CLASS_HASH),
@@ -108,12 +114,6 @@ mod setup {
                 TestResource::Contract(actions::TEST_CLASS_HASH),
                 TestResource::Event(config::e_ConfigUpdated::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(actions::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
-                TestResource::Event(
-                    actions::e_NewAuctionEvent::TEST_CLASS_HASH.try_into().unwrap(),
-                ),
-                TestResource::Event(
-                    actions::e_AuctionFinishedEvent::TEST_CLASS_HASH.try_into().unwrap(),
-                ),
                 TestResource::Event(
                     actions::e_LandBoughtEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
@@ -159,29 +159,11 @@ mod setup {
                             LINEAR_DECAY_TIME.into(), DROP_RATE.into(), RATE_DENOMINATOR.into(),
                             MAX_CIRCLES.into(), CLAIM_FEE.into(), BUY_FEE.into(),
                             OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
-                            CLAIM_FEE_THRESHOLD.into(),
+                            CLAIM_FEE_THRESHOLD.into(), erc20_address.into(),
                         ]
                             .span(),
                     ),
             );
-
-        contract_defs
-            .append(
-                ContractDefTrait::new(@"ponzi_land", @"actions")
-                    .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
-                    .with_init_calldata(
-                        [
-                            erc20_address, 2_u256.low.into(), // start_price (low)
-                            2_u256.high.into(), // start_price (high)
-                            1.into(), // floor_price (low)
-                            0.into(), // floor_price (high)
-                            200.into(), // decay_rate
-                            ekubo_core_address,
-                        ]
-                            .span(),
-                    ),
-            );
-
         contract_defs
             .append(
                 ContractDefTrait::new(@"ponzi_land", @"auth")
@@ -196,6 +178,22 @@ mod setup {
                 ContractDefTrait::new(@"ponzi_land", @"token_registry")
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
                     .with_init_calldata([0x1, erc20_address].span()),
+            );
+
+        contract_defs
+            .append(
+                ContractDefTrait::new(@"ponzi_land", @"actions")
+                    .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
+                    .with_init_calldata(
+                        [
+                            2_u256.low.into(), // start_price (low)
+                            2_u256.high.into(), // start_price (high)
+                            1.into(), // floor_price (low)
+                            0.into(), // floor_price (high)
+                            ekubo_core_address,
+                        ]
+                            .span(),
+                    ),
             );
 
         contract_defs.span()

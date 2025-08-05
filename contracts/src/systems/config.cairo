@@ -36,6 +36,7 @@ trait IConfigSystem<T> {
         our_contract_for_fee: ContractAddress,
         our_contract_for_auction: ContractAddress,
         claim_fee_threshold: u128,
+        main_currency: ContractAddress,
     );
 
     /// @notice Sets the grid width, which determines the size of the land map.
@@ -169,6 +170,11 @@ trait IConfigSystem<T> {
     /// @param value The new claim fee threshold.
     fn set_claim_fee_threshold(ref self: T, value: u128);
 
+
+    /// @notice Sets the main currency for auctions.
+    /// @param value The new main currency.
+    fn set_main_currency(ref self: T, value: ContractAddress);
+
     // Getters
     fn get_grid_width(self: @T) -> u16;
     fn get_tax_rate(self: @T) -> u16;
@@ -192,6 +198,7 @@ trait IConfigSystem<T> {
     fn get_claim_fee(self: @T) -> u128;
     fn get_buy_fee(self: @T) -> u128;
     fn get_claim_fee_threshold(self: @T) -> u128;
+    fn get_main_currency(self: @T) -> ContractAddress;
 }
 
 #[dojo::contract]
@@ -241,6 +248,7 @@ mod config {
         our_contract_for_fee: ContractAddress,
         our_contract_for_auction: ContractAddress,
         claim_fee_threshold: u128,
+        main_currency: ContractAddress,
     ) {
         let mut world = self.world_default();
         let init_config: Config = ConfigTrait::new(
@@ -268,6 +276,7 @@ mod config {
             our_contract_for_fee,
             our_contract_for_auction,
             claim_fee_threshold,
+            main_currency,
         );
         world.write_model(@init_config);
     }
@@ -301,6 +310,7 @@ mod config {
             our_contract_for_fee: ContractAddress,
             our_contract_for_auction: ContractAddress,
             claim_fee_threshold: u128,
+            main_currency: ContractAddress,
         ) {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
@@ -329,6 +339,7 @@ mod config {
                 our_contract_for_fee,
                 our_contract_for_auction,
                 claim_fee_threshold,
+                main_currency,
             );
             world.write_model(@new_config);
         }
@@ -578,6 +589,14 @@ mod config {
                 );
         }
 
+        fn set_main_currency(ref self: ContractState, value: ContractAddress) {
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            world
+                .write_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"), value);
+            world.emit_event(@ConfigUpdated { field: 'main_currency', new_value: value.into() });
+        }
+
         // Getters implementation
         fn get_grid_width(self: @ContractState) -> u16 {
             let world = self.world_default();
@@ -693,6 +712,11 @@ mod config {
         fn get_claim_fee_threshold(self: @ContractState) -> u128 {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee_threshold"))
+        }
+
+        fn get_main_currency(self: @ContractState) -> ContractAddress {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"))
         }
     }
     #[generate_trait]
