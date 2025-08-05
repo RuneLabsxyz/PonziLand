@@ -49,7 +49,6 @@ mod utils {
     mod common_strucs;
     mod get_neighbors;
     mod level_up;
-    mod spiral;
     mod stake;
     mod packing;
     mod math;
