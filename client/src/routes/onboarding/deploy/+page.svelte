@@ -16,10 +16,18 @@
 
   async function sendDummyTransaction() {
 
+    let mainnet_rpc = new RpcProvider({
+      nodeUrl: 'https://api.cartridge.gg/x/starknet/mainnet',
+    });
+
+    let class_hash = await mainnet_rpc.getClassByHash("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf")
+
+    console.log('Class hash:', class_hash);
+
     const { transaction_hash } = await useAccount()
       ?.getProvider()
       ?.getWalletAccount()
-      ?.deploySelf("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf");
+      ?.deploySelf("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf", {version: constants.TRANSACTION_VERSION.V3});
 
     console.log('Sent dummy transaction!', transaction_hash);
 
