@@ -20,6 +20,7 @@
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
+  import { setupConfigStore } from '$lib/stores/config.store.svelte';
   import { onMount } from 'svelte';
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -28,10 +29,13 @@
     setupSocialink().then(() => {
       return setupAccountState();
     }),
-    setupClient().then((client) => {
+    setupClient().then(async (client) => {
+      // Initialize both stores with Dojo client
       landStore.setup(client!);
       landStore.stopRandomUpdates();
-      // landStore.startRandomUpdates();
+
+      // Setup config subscription - this loads dynamic config from blockchain
+      await setupConfigStore(client!);
     }),
     setupAccount(),
   ]);

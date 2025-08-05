@@ -10,6 +10,9 @@
   import { gameStore } from './three/game.store.svelte';
   import Debug from './three/debug/Debug.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
+  import { GRID_SIZE } from '$lib/const';
+
+  const CENTER = Math.floor(GRID_SIZE / 2);
 
   // Show dev tools if URL ends with #dev
   let showDevTools = $state(false);
@@ -37,7 +40,11 @@
     {#if showDevTools}
       <PerfMonitor />
     {/if}
-    <T.OrthographicCamera position={[32, 50, 32]} zoom={100} makeDefault>
+    <T.OrthographicCamera
+      position={[CENTER, 50, CENTER]}
+      zoom={100}
+      makeDefault
+    >
       <CameraControls
         rotation={false}
         enableZoom={true}
@@ -51,7 +58,7 @@
         maxZoom={1000}
         bind:ref={gameStore.cameraControls}
         oncreate={(ref: CameraControlsRef) => {
-          ref.setLookAt(32, 50, 32, 32, 0, 32, false);
+          ref.setLookAt(CENTER, 50, CENTER, CENTER, 0, CENTER, false);
           ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
           ref.mouseButtons.right = devsettings.cameraControlsRightClick as any;
           ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;
@@ -60,12 +67,12 @@
     </T.OrthographicCamera>
     {#if devsettings.showGrid}
       <Grid
-        position={[30 - 0.5, 1, 30 - 0.5]}
-        divisions={10}
+        position={[CENTER - 0.5, 1, CENTER - 0.5]}
+        divisions={GRID_SIZE}
         cellSize={1}
         cellColor="#ffffff"
         sectionColor="#ffff00"
-        gridSize={64 + 20}
+        gridSize={GRID_SIZE}
       />
     {/if}
     <Scene />

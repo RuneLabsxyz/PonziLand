@@ -55,13 +55,56 @@
   import { devsettings } from './utils/devsettings.store.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { BufferAttribute, Clock } from 'three';
+  import { GRID_SIZE } from '$lib/const';
+  import { configValues } from '$lib/stores/config.store.svelte';
 
+  const CENTER = Math.floor(GRID_SIZE / 2);
+
+  /**
+   * Generate land positions in concentric circles around center
+   * Circle 0: Just center (1 land)
+   * Circle 1: 8 neighbors around center (8 lands)
+   * Circle 2: 16 lands in next ring (16 lands)
+   * etc.
+   */
+  function generateCircleLandPositions(
+    centerX: number,
+    centerY: number,
+    maxCircles: number,
+  ): Array<{ x: number; y: number; circle: number }> {
+    const positions = [];
+    console.log('🔍 Generating circles with max_circles:', maxCircles);
+    // Circle 0: Center position
+    positions.push({ x: centerX, y: centerY, circle: 0 });
+
+    // Generate positions for each circle
+    for (let circle = 1; circle <= maxCircles; circle++) {
+      // For each circle, generate positions at distance 'circle' from center
+      for (let dx = -circle; dx <= circle; dx++) {
+        for (let dy = -circle; dy <= circle; dy++) {
+          // Only include positions that are exactly at circle distance (Manhattan or Chebyshev)
+          const isOnCircleEdge =
+            Math.max(Math.abs(dx), Math.abs(dy)) === circle;
+
+          if (isOnCircleEdge) {
+            const x = centerX + dx;
+            const y = centerY + dy;
+
+            // Only add if within grid bounds
+            if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+              positions.push({ x, y, circle });
+            }
+          }
+        }
+      }
+    }
+
+    return positions;
+  }
   let coinShaderMaterial: CoinHoverShaderMaterial | undefined = $state();
   let clock = new Clock();
 
   let billboarding = $derived(devsettings.billboarding);
-
-  const gridSize = 64;
 
   const buildingAtlas =
     buildSpritesheet.from<typeof buildingAtlasMeta>(buildingAtlasMeta);
@@ -139,26 +182,46 @@
   });
 
   let interactionPlanes: TInstancedMesh | undefined = $state();
-  onMount(() => {
-    // Only run once
+
+  function createInteractionPlanes() {
+    console.log(
+      '🏗️ Creating interaction planes with MAX_CIRCLES:',
+      configValues.maxCircles,
+    );
+    const totalLands = generateCircleLandPositions(
+      CENTER,
+      CENTER,
+      configValues.maxCircles,
+    ).length;
+    console.log(
+      `Creating ${totalLands} interaction planes for ${configValues.maxCircles} circles`,
+    );
+
     interactionPlanes = new TInstancedMesh(
       planeGeometry,
       planeMaterial,
-      gridSize * gridSize,
+      totalLands,
     );
 
     const tempObject = new Object3D();
+    const landPositions = generateCircleLandPositions(
+      CENTER,
+      CENTER,
+      configValues.maxCircles,
+    );
 
-    for (let x = 0; x < gridSize; x++) {
-      for (let y = 0; y < gridSize; y++) {
-        const index = x + y * gridSize;
-        tempObject.position.set(y, 1 - 0.03, x); // adjust y as needed
-        tempObject.rotation.x = -Math.PI / 2;
-        tempObject.updateMatrix();
-        interactionPlanes.setMatrixAt(index, tempObject.matrix);
-      }
-    }
+    landPositions.forEach((pos, i) => {
+      tempObject.position.set(pos.y, 1 - 0.03, pos.x);
+      tempObject.rotation.x = -Math.PI / 2;
+      tempObject.updateMatrix();
+      interactionPlanes?.setMatrixAt(i, tempObject.matrix);
+    });
     interactionPlanes.instanceMatrix.needsUpdate = true;
+  }
+
+  onMount(() => {
+    console.log('🔍 max_circles value in onMount:', configValues.maxCircles);
+    createInteractionPlanes();
   });
 
   onMount(() => {
@@ -246,7 +309,7 @@
   // Function to be called by the global click listener
   function handleClickToSelectHovered() {
     if (cursorStore.hoveredTileIndex !== undefined) {
-      const tile = landTiles[cursorStore.hoveredTileIndex];
+      const tile = visibleLandTiles[cursorStore.hoveredTileIndex];
 
       if (gameStore.cameraControls) {
         gameStore.cameraControls.setLookAt(
@@ -275,9 +338,9 @@
   // Handle plane interactions (only for hover now)
   function handlePlaneHover(event: any) {
     const instanceId = event.instanceId;
-    if (instanceId !== undefined && landTiles[instanceId]) {
+    if (instanceId !== undefined && visibleLandTiles[instanceId]) {
       cursorStore.hoveredTileIndex = instanceId;
-      const tile = landTiles[instanceId];
+      const tile = visibleLandTiles[instanceId];
 
       document.body.classList.add('cursor-pointer');
       // gameSounds.play('hover');
@@ -295,9 +358,10 @@
   $effect(() => {
     if (
       cursorStore.selectedTileIndex !== undefined &&
-      landTiles[cursorStore.selectedTileIndex]
+      visibleLandTiles[cursorStore.selectedTileIndex]
     ) {
-      const basePosition = landTiles[cursorStore.selectedTileIndex].position;
+      const basePosition =
+        visibleLandTiles[cursorStore.selectedTileIndex].position;
       selectedLandTilePosition = [
         basePosition[0],
         basePosition[1] + 0.1,
@@ -310,7 +374,7 @@
 
   // Filter only nuking tiles for the nuke layer
   let nukingTiles = $derived.by(() => {
-    return landTiles.filter(
+    return visibleLandTiles.filter(
       (tile) => nukeStore.nuking[Number(tile.land.locationString)],
     );
   });
@@ -350,11 +414,36 @@
   let shieldInstancedMesh: TInstancedMesh | undefined = $state();
   let darkOverlayMesh: TInstancedMesh | undefined = $state();
 
+  // Filter to show tiles based on maxCircles configuration
+  let visibleLandTiles = $derived.by(() => {
+    const landPositions = generateCircleLandPositions(
+      CENTER,
+      CENTER,
+      configValues.maxCircles,
+    );
+    const tiles: LandTile[] = [];
+
+    // Find tiles for each calculated position in the same order as interaction planes
+    landPositions.forEach((pos) => {
+      const tile = landTiles.find(
+        (tile) => tile.position[0] === pos.y && tile.position[2] === pos.x,
+      );
+      if (tile) {
+        tiles.push(tile);
+      }
+    });
+
+    console.log(
+      `Rendering ${tiles.length} land tiles across ${configValues.maxCircles} circles`,
+    );
+    return tiles;
+  });
+
   // Calculate owned lands for unzoomed view
   let ownedLands = $derived.by(() => {
     if (!isUnzoomed || !accountState.address) return [];
 
-    return landTiles.filter((tile) => {
+    return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
       return (
         padAddress(tile.land.owner ?? '') ===
@@ -380,63 +469,61 @@
     <!-- Biome sprites (background layer) -->
     {#if devsettings.showBiomes}
       <InstancedSprite
-        count={gridSize * gridSize}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
       >
-        <BiomeSprite {landTiles} {biomeSpritesheet} />
+        <BiomeSprite landTiles={visibleLandTiles} {biomeSpritesheet} />
       </InstancedSprite>
     {/if}
 
     <!-- FOG OF WAR LAYER -->
     {#if devsettings.showFog}
       <InstancedSprite
-        count={gridSize * gridSize}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={fogSpritesheet}
         fps={1}
       >
-        <FogSprite {landTiles} />
+        <FogSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
     {/if}
 
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
-        count={gridSize * gridSize}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite {landTiles} {buildingSpritesheet} />
+        <BuildingSprite landTiles={visibleLandTiles} {buildingSpritesheet} />
       </InstancedSprite>
     {/if}
 
     {#if devsettings.showNukes}
       <InstancedSprite
-        count={gridSize * gridSize}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
         fps={10}
       >
-        <NukeSprite {landTiles} />
+        <NukeSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
     {/if}
-
-    // In your main component, update the coin section:
 
     {#if devsettings.showCoins && coinShaderMaterial}
       <InstancedMesh
         bind:ref={coinInstancedMesh}
-        limit={gridSize * gridSize}
-        count={gridSize * gridSize}
+        limit={visibleLandTiles.length}
+        count={visibleLandTiles.length}
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[0.3, 0.3]} />
         <T is={coinShaderMaterial} />
-        {#each landTiles as tile, i}
+        {#each visibleLandTiles as tile, i}
           <Coin
             {tile}
             {i}
@@ -449,18 +536,21 @@
     {/if}
 
     {#if devsettings.showOwnerIndicator && !isUnzoomed}
-      <OwnerIndicator {landTiles} instancedMesh={ownerInstancedMesh} />
+      <OwnerIndicator
+        landTiles={visibleLandTiles}
+        instancedMesh={ownerInstancedMesh}
+      />
     {/if}
 
     {#if devsettings.showNukeTimes}
-      <NukeTimeDisplay {landTiles} isShieldMode={isUnzoomed} />
+      <NukeTimeDisplay landTiles={visibleLandTiles} isShieldMode={isUnzoomed} />
     {/if}
 
     <!-- Dark overlay for non-owned lands when unzoomed -->
     {#if isUnzoomed && ownedLands.length > 0}
       <InstancedMesh
         bind:ref={darkOverlayMesh}
-        limit={gridSize * gridSize}
+        limit={visibleLandTiles.length}
         count={ownedLands.length}
         frustumCulled={false}
       >
