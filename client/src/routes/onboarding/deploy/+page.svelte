@@ -5,7 +5,7 @@
   import { Input } from '$lib/components/ui/input';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { ClipboardCopy, ClipboardPaste, Send } from 'lucide-svelte';
-  import { constants } from 'starknet';
+  import { constants, RpcProvider } from 'starknet';
   import { state as accountState } from '$lib/account.svelte';
   import { onMount } from 'svelte';
   import manifest from '$manifest';
@@ -15,10 +15,19 @@
   let account = useAccount();
 
   async function sendDummyTransaction() {
+
+    let mainnet_rpc = new RpcProvider({
+      nodeUrl: 'https://api.cartridge.gg/x/starknet/mainnet',
+    });
+
+    let class_hash = mainnet_rpc.getClassByHash("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf")
+
+    console.log('Class hash:', class_hash);
+
     const { transaction_hash } = await useAccount()
       ?.getProvider()
       ?.getWalletAccount()
-      ?.deploySelf();
+      ?.deploySelf(class_hash);
 
     console.log('Sent dummy transaction!', transaction_hash);
 
