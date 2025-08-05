@@ -81,7 +81,7 @@ export const createLandWithActions = (
     },
     async getPendingTaxes() {
       console.log(sdk.client.actions);
-      const result = (await sdk.client.actions.getUnclaimedTaxesPerNeighborTotal(
+      const result = (await sdk.client.actions.getUnclaimedTaxesPerNeighborsTotal(
         land.locationString,
       )) as any[] | undefined;
       console.log(result);
