@@ -118,7 +118,7 @@
         return 'Auction price is not available';
       }
       console.log(baseToken);
-      console.log(tokenStore.balances);
+      console.log(tokenStore);
       const baseTokenBalance = tokenStore.balances.find(
         (balance) => balance.token.address === baseToken?.address,
       );
@@ -182,7 +182,7 @@
 
   // Check if form is valid
   let isFormValid = $derived(
-    !tokenError && !stakeAmountError && !sellPriceError && !balanceError,
+    !tokenError && !stakeAmountError && !sellPriceError && //!balanceError, //TODO: Fix reading balances
   );
 
   async function handleBuyClick() {
