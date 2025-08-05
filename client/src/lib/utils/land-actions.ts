@@ -80,10 +80,10 @@ export const createLandWithActions = (
       return res;
     },
     async getPendingTaxes() {
-      const result = (await sdk.client.actions.getPendingTaxesForLand(
+      const result = (await sdk.client.actions.getUnclaimedTaxesPerNeighborTotal(
         land.locationString,
-        account()!.getWalletAccount()!.address,
       )) as any[] | undefined;
+      console.log(result);
 
       return result?.map((tax) => ({
         amount: CurrencyAmount.fromUnscaled(tax.amount),
