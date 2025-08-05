@@ -79,21 +79,27 @@ trait IPayable<TContractState> {
 
 #[starknet::component]
 mod PayableComponent {
-    use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+    // Starknet imports
     use starknet::ContractAddress;
+
+    // External dependencies
+    use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
     use super::ValidationResult;
+
+    // Constants
     use ponzi_land::consts::{OUR_CONTRACT_SEPOLIA_ADDRESS, SCALE_FACTOR_FOR_FEE};
+
+    // Store
     use ponzi_land::store::{Store, StoreTrait};
+
+    // Helpers
     use ponzi_land::helpers::taxes::{calculate_and_return_taxes_with_fee};
 
-    //TODO:move this to a file for errors
-    mod errors {
-        const ERC20_PAY_FAILED: felt252 = 'ERC20: pay failed';
-        const DIFFERENT_ERC20_TOKEN_DISPATCHER: felt252 = 'Different token_dispatcher';
-        const ERC20_VALIDATE_AMOUNT_BID: felt252 = 'validate amount for bid failed';
-        const ERC20_PAY_FOR_BID_FAILED: felt252 = 'pay for bid failed';
-    }
-
+    // Errors
+    use ponzi_land::errors::{
+        ERC20_PAY_FAILED, DIFFERENT_ERC20_TOKEN_DISPATCHER, ERC20_VALIDATE_AMOUNT_BID,
+        ERC20_PAY_FOR_BID_FAILED, ERC20_PAY_FOR_BUY_FAILED,
+    };
     #[storage]
     struct Storage {
         token_dispatcher: IERC20CamelDispatcher,
@@ -128,7 +134,7 @@ mod PayableComponent {
             let token_dispatcher = self.token_dispatcher.read();
             assert(
                 token_dispatcher.contract_address == validation_result.token_address,
-                errors::DIFFERENT_ERC20_TOKEN_DISPATCHER,
+                DIFFERENT_ERC20_TOKEN_DISPATCHER,
             );
             token_dispatcher.transferFrom(from, to, validation_result.amount)
         }
@@ -141,7 +147,7 @@ mod PayableComponent {
             let token_dispatcher = self.token_dispatcher.read();
             assert(
                 token_dispatcher.contract_address == validation_result.token_address,
-                errors::DIFFERENT_ERC20_TOKEN_DISPATCHER,
+                DIFFERENT_ERC20_TOKEN_DISPATCHER,
             );
             token_dispatcher.transfer(recipient, validation_result.amount)
         }
@@ -154,7 +160,7 @@ mod PayableComponent {
             let token_dispatcher = self.token_dispatcher.read();
             assert(
                 token_dispatcher.contract_address == validation_result.token_address,
-                errors::DIFFERENT_ERC20_TOKEN_DISPATCHER,
+                DIFFERENT_ERC20_TOKEN_DISPATCHER,
             );
             token_dispatcher
                 .transferFrom(
@@ -175,7 +181,7 @@ mod PayableComponent {
             let token_dispatcher = self.token_dispatcher.read();
             assert(
                 token_dispatcher.contract_address == validation_result.token_address,
-                errors::DIFFERENT_ERC20_TOKEN_DISPATCHER,
+                DIFFERENT_ERC20_TOKEN_DISPATCHER,
             );
 
             let (amount_for_seller, fee_amount) = calculate_and_return_taxes_with_fee(
@@ -189,7 +195,9 @@ mod PayableComponent {
                 return false; // Exit early if the fee transfer fails
             }
 
-            token_dispatcher.transferFrom(buyer, seller, amount_for_seller)
+            let status = token_dispatcher.transferFrom(buyer, seller, amount_for_seller);
+            assert(status, ERC20_PAY_FOR_BUY_FAILED);
+            true
         }
 
         fn validate_and_execute_bid_payment(
@@ -199,10 +207,10 @@ mod PayableComponent {
             amount: u256,
         ) -> bool {
             let validation_result = self.validate(token_address, payer, amount);
-            assert(validation_result.status, errors::ERC20_VALIDATE_AMOUNT_BID);
+            assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BID);
 
             let payment_status = self.pay_to_us(payer, validation_result);
-            assert(payment_status, errors::ERC20_PAY_FOR_BID_FAILED);
+            assert(payment_status, ERC20_PAY_FOR_BID_FAILED);
 
             true
         }

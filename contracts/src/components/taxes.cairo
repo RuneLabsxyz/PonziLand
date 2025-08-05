@@ -14,62 +14,61 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 
 #[starknet::component]
 mod TaxesComponent {
+    // Core Cairo imports
     use core::num::traits::Bounded;
     use core::array::ArrayTrait;
 
-
-    //use dojo imports
-    use dojo::model::{ModelStorage, ModelValueStorage};
-    use dojo::event::EventStorage;
-    use dojo::world::WorldStorage;
-
     // Starknet imports
-    use starknet::{ContractAddress};
+    use starknet::ContractAddress;
     use starknet::info::{get_block_timestamp};
-
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
         MutableVecTrait,
     };
     use starknet::contract_address::ContractAddressZeroable;
-    // Internal imports
-    use ponzi_land::helpers::coord::max_neighbors;
+
+    // Dojo imports
+    use dojo::model::{ModelStorage, ModelValueStorage};
+    use dojo::event::EventStorage;
+    use dojo::world::WorldStorage;
+
+    // External dependencies
+    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+
+    // Models
     use ponzi_land::models::land::{Land, LandStake};
-    use ponzi_land::store::{Store, StoreTrait};
+
+    // Components
     use ponzi_land::components::payable::{PayableComponent, IPayable, ValidationResult};
+
+    // Store
+    use ponzi_land::store::{Store, StoreTrait};
+
+    // Utils
     use ponzi_land::utils::common_strucs::{TokenInfo};
     use ponzi_land::utils::math::{u64_saturating_sub, u64_saturating_add};
     use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
+    use ponzi_land::utils::get_neighbors::get_land_neighbors;
+
+    // Helpers
+    use ponzi_land::helpers::coord::max_neighbors;
     use ponzi_land::helpers::land::{add_neighbor, remove_neighbor};
     use ponzi_land::helpers::taxes::{
         get_taxes_per_neighbor, get_tax_rate_per_neighbor, calculate_share_for_nuke,
         calculate_and_return_taxes_with_fee,
     };
-    use ponzi_land::utils::get_neighbors::get_land_neighbors;
 
-    // Local imports
-    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+    // Events
+    use ponzi_land::events::LandTransferEvent;
 
-    mod errors {
-        const ERC20_TRANSFER_CLAIM_FAILED: felt252 = 'Transfer for claim failed';
-    }
+    // Errors
+    use ponzi_land::errors::{ERC20_TRANSFER_CLAIM_FAILED};
 
     #[storage]
     struct Storage {
         last_claim_time: Map<(u16, u16), u64>,
     }
 
-    // Events
-
-    #[derive(Drop, Serde)]
-    #[dojo::event]
-    pub struct LandTransferEvent {
-        #[key]
-        from_location: u16,
-        to_location: u16,
-        token_address: ContractAddress,
-        amount: u256,
-    }
 
     #[generate_trait]
     impl InternalImpl<
@@ -516,7 +515,7 @@ mod TaxesComponent {
             }
 
             let status = payable.transfer(tax_receiver, validation_result_for_claim);
-            assert(status && status_for_transfer_fee, errors::ERC20_TRANSFER_CLAIM_FAILED);
+            assert(status && status_for_transfer_fee, ERC20_TRANSFER_CLAIM_FAILED);
         }
 
         /// @notice Executes the actual claim of taxes

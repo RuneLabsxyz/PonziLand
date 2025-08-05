@@ -1,47 +1,60 @@
+// Core Cairo imports
+use core::ec::{EcPointTrait, EcStateTrait};
+use core::ec::stark_curve::{GEN_X, GEN_Y};
+use core::poseidon::poseidon_hash_span;
+
 // Starknet imports
+use starknet::{contract_address_const, ContractAddress, get_block_timestamp};
 use starknet::contract_address::ContractAddressZeroable;
 use starknet::testing::{
     set_contract_address, set_block_timestamp, set_caller_address, set_block_number,
 };
-use starknet::{contract_address_const, ContractAddress, get_block_timestamp};
-use starknet::storage::{Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry};
-use core::ec::{EcPointTrait, EcStateTrait};
-use core::ec::stark_curve::{GEN_X, GEN_Y};
-use core::poseidon::poseidon_hash_span;
 use starknet::{testing, get_tx_info};
-// Dojo imports
+use starknet::storage::{Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry};
 
+// Dojo imports
 use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorageTrait, WorldStorage};
 use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
 use dojo::world::world::Event;
 use dojo::utils::hash::{selector_from_namespace_and_name, selector_from_names};
-//Internal imports
-
-use ponzi_land::tests::setup::{
-    setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core},
-};
-
-use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-use ponzi_land::systems::actions::actions::{InternalImpl};
-use ponzi_land::components::auction::AuctionComponent::{NewAuctionEvent};
-use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
-use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait};
-use ponzi_land::systems::config::{IConfigSystemDispatcher, IConfigSystemDispatcherTrait};
-use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
-use ponzi_land::models::auction::{Auction};
-use ponzi_land::consts::{
-    BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE, CENTER_LOCATION,
-    MAX_CIRCLES, OUR_CONTRACT_FOR_FEE,
-};
-use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
-use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
-use ponzi_land::helpers::circle_expansion::{generate_circle, get_random_index};
-use ponzi_land::store::{Store, StoreTrait};
-use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
 
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
+
+// Internal systems
+use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
+use ponzi_land::systems::actions::actions::{InternalImpl};
+use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait};
+use ponzi_land::systems::config::{IConfigSystemDispatcher, IConfigSystemDispatcherTrait};
+
+// Models
+use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
+use ponzi_land::models::auction::{Auction};
+
+// Constants
+use ponzi_land::consts::{
+    BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE, CENTER_LOCATION,
+    MAX_CIRCLES, OUR_CONTRACT_FOR_FEE,
+};
+
+// Store
+use ponzi_land::store::{Store, StoreTrait};
+
+// Helpers
+use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
+use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
+use ponzi_land::helpers::circle_expansion::{generate_circle, get_random_index};
+
+// Events
+use ponzi_land::events::{NewAuctionEvent};
+
+// Test setup and mocks
+use ponzi_land::tests::setup::{
+    setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core},
+};
+use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
 
 const BROTHER_ADDRESS: felt252 = 0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe;
 const STARK_ADDRESS: felt252 = 0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0;
