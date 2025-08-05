@@ -19,7 +19,7 @@
     const { transaction_hash } = await useAccount()
       ?.getProvider()
       ?.getWalletAccount()
-      ?.deploySelf("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf", [], 0,0, {version: constants.TRANSACTION_VERSION.V3});
+      ?.deploySelf("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf", [], 0,account?.getProvider()?.getWalletAccount().account.address, {version: constants.TRANSACTION_VERSION.V3});
 
     console.log('Sent dummy transaction!', transaction_hash);
 
