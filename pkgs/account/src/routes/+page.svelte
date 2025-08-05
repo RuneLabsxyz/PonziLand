@@ -28,7 +28,7 @@
 <!-- Include the components -->
 {#if initialized}
   <SelectWalletModal />
-  <OnboardingWalletInfo onconnect={() => console.log('Connected!')} />
+  <OnboardingWalletInfo/>
 {:else}
   <p>Initializing account manager...</p>
 {/if}

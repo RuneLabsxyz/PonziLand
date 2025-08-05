@@ -27,10 +27,10 @@
   }
 </script>
 
-<div class="fixed top-0 right-0 m-5">
+<div class="wallet-info-container">
   {#if accountDataProvider.isConnected}
     <Card>
-      <div class="flex flex-row items-center gap-4">
+      <div class="account-details">
         <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
 
 
@@ -41,12 +41,37 @@
             }}
             aria-label="Logout"
           >
-            <img src="/ui/icons/logout.svg" alt="logout" class="h-5 w-5" />
+            <img src="/ui/icons/logout.svg" alt="logout" class="logout-icon" />
           </button>
         </div>
       </div>
     </Card>
   {:else}
-    <Button class="m-2" onclick={handleConnectWallet}>CONNECT WALLET</Button>
+    <Button class="connect-button" onclick={handleConnectWallet}>CONNECT WALLET</Button>
   {/if}
 </div>
+
+<style>
+  .wallet-info-container {
+    position: fixed;
+    top: 0;
+    right: 0;
+    margin: 1.25rem;
+  }
+
+  .account-details {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .logout-icon {
+    height: 1.25rem;
+    width: 1.25rem;
+  }
+
+  .connect-button {
+    margin: 0.5rem;
+  }
+</style>

@@ -58,23 +58,20 @@
   </script>
   
   {#if visible}
-    <div
-      class="bg-black opacity-60 absolute w-screen h-screen top-0 left-0 z-[99]"
-    >
+    <div class="modal-backdrop">
       &nbsp;
     </div>
-    <Card
-      class="absolute top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] p-10 text-2xl min-w-80"
-    >
+    <div class="modal-card">
+    <Card > 
       {#if loading}
         Loading...
       {:else}
-        <div class="m-3 mt-0">
-          <div class="mb-5 flex gap-2">
+        <div class="modal-content">
+          <div class="modal-header">
             <div>WALLETS</div>
           </div>
-  
-          <div class="flex flex-col justify-stretch gap-2">
+
+          <div class="wallet-list">
             {#if validWallets.length >= 2}
               {#if !showAllWallets}
                 {@const controllerWallet = validWallets.find(
@@ -85,20 +82,17 @@
                     typeof controllerWallet.icon == 'string'
                       ? controllerWallet.icon
                       : controllerWallet.icon.light}
-                  <Button
-                    class="flex flex-row justify-start w-full min-h-[60px]"
-                    onclick={() => login(controllerWallet.id)}
-                  >
+                  <Button class="wallet-button" onclick={() => login(controllerWallet.id)}>
                     <img
                       src={image}
                       alt={controllerWallet.name + ' logo'}
-                      class="h-10 p-2 pr-4"
+                      class="wallet-icon-large"
                     />
-                    <div class="flex gap-4 items-center text-left text-sm">
-                      <div class="text-lg">
+                    <div class="wallet-info">
+                      <div class="wallet-name">
                         {controllerWallet.name}
                       </div>
-                      <div class="opacity-70 text-green-500">FREE GAS!</div>
+                      <div class="free-gas-badge">FREE GAS!</div>
                     </div>
                   </Button>
                   <Button
@@ -106,7 +100,7 @@
                     variant="red"
                     onclick={() => (showAllWallets = true)}
                   >
-                    <ChevronDown class="h-4 w-4 mr-1" />
+                    <ChevronDown class="chevron-icon" />
                     <span>Want to use a different wallet?</span>
                   </Button>
                 {/if}
@@ -116,25 +110,22 @@
                     typeof wallet.icon == 'string'
                       ? wallet.icon
                       : wallet.icon.light}
-                  <Button
-                    class="flex flex-row justify-start w-full min-h-[60px]"
-                    onclick={() => login(wallet.id)}
-                  >
+                  <Button class="wallet-button" onclick={() => login(wallet.id)}>
                     <img
                       src={image}
                       alt={wallet.name + ' logo'}
-                      class="h-10 p-2 pr-4"
+                      class="icons"
                     />
-                    <div class="flex gap-4 items-center text-left">
-                      <div class="text-lg">
+                    <div class="wallet-info">
+                      <div class="wallet-name">
                         {wallet.name}
                       </div>
                       {#if wallet.id == 'controller'}
-                        <div class=" opacity-70 text-green-500 text-sm">
+                        <div class="free-gas-badge">
                           FREE GAS!
                         </div>
                       {:else}
-                        <div class=" opacity-70 text-red-600 text-sm">
+                        <div class="standard-badge">
                           Standard
                         </div>
                       {/if}
@@ -142,7 +133,7 @@
                   </Button>
                 {/each}
                 <Button size="md" onclick={() => (showAllWallets = false)}>
-                  <ChevronUp class="h-4 w-4 mr-1" />
+                  <ChevronUp class="chevron-icon" />
                   Show fewer options
                 </Button>
               {/if}
@@ -152,17 +143,14 @@
                   typeof wallet.icon == 'string'
                     ? wallet.icon
                     : wallet.icon.light}
-                <Button
-                  class="flex flex-row justify-start w-full min-h-[60px] p-3"
-                  onclick={() => login(wallet.id)}
-                >
+                <Button class="wallet-button-single" onclick={() => login(wallet.id)}>
                   <img
                     src={image}
                     alt={wallet.name + ' logo'}
-                    class="h-10 p-2 pr-4"
+                    class="icons"
                   />
-                  <div class="flex flex-col items-start text-left">
-                    <div class="text-lg">Login</div>
+                  <div class="login-info">
+                    <div class="wallet-name">Login</div>
                   </div>
                 </Button>
               {/each}
@@ -171,5 +159,114 @@
         </div>
       {/if}
     </Card>
+    </div>
   {/if}
   
+
+  <style>
+  .icons {
+    height: 2rem;    
+    padding: 0.5rem;  
+  }
+
+  .modal-backdrop {
+    background-color: black;
+    opacity: 0.6;
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    z-index: 1;
+  }
+
+  .modal-card {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    padding: 2.5rem;
+    font-size: 1.5rem;
+    min-width: 20rem;
+  }
+
+  .modal-content {
+    margin: 0.75rem;
+    margin-top: 0;
+  }
+
+  .modal-header {
+    margin-bottom: 1.25rem;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .wallet-list {
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    gap: 0.5rem;
+  }
+
+  .wallet-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 60px;
+  }
+
+  .wallet-button-single {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: 100%;
+    min-height: 60px;
+    padding: 0.75rem;
+  }
+
+  .wallet-icon-large {
+    height: 2.5rem;
+    padding: 0.5rem;
+    padding-right: 1rem;
+    margin: 1rem;
+  }
+
+  .wallet-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    text-align: left;
+    font-size: 0.875rem;
+  }
+
+  .login-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .wallet-name {
+    font-size: 1.125rem;
+  }
+
+  .free-gas-badge {
+    opacity: 0.7;
+    color: #10b981;
+    font-size: 0.875rem;
+  }
+
+  .standard-badge {
+    opacity: 0.7;
+    color: #dc2626;
+    font-size: 0.875rem;
+  }
+
+  .chevron-icon {
+    height: 1rem;
+    width: 1rem;
+    margin-right: 0.25rem;
+  }
+</style>
