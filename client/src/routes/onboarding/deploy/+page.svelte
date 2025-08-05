@@ -19,12 +19,7 @@
     const { transaction_hash } = await useAccount()
       ?.getProvider()
       ?.getWalletAccount()
-      ?.deploySelf({
-        classHash: "0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf",
-        constructorCalldata: [],
-        addressSalt: 0,
-        contractAddress: account?.getProvider()?.getWalletAccount().address,
-      }, {version: constants.TRANSACTION_VERSION.V3});
+      ?.keychain.deploy();
 
     console.log('Sent dummy transaction!', transaction_hash);
 
