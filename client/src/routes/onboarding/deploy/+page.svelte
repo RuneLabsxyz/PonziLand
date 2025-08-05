@@ -16,6 +16,8 @@
 
   async function sendDummyTransaction() {
 
+    console.log(account?.getProvider()?.getWalletAccount().keychain);
+
     const { transaction_hash } = await useAccount()
       ?.getProvider()
       ?.getWalletAccount()
