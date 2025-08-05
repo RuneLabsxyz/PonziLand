@@ -233,10 +233,14 @@ pub mod actions {
         self.current_section.write(1, 0);
         let mut world = self.world_default();
         let store = StoreTrait::new(world);
-        self
-            .(
-                store, store.get_center_location(), start_price, floor_price, decay_rate, false,
-            );
+        self.auction(
+            store,
+            store.get_center_location(),
+            start_price,
+            floor_price,
+            decay_rate,
+            false,
+        );
     }
 
 
