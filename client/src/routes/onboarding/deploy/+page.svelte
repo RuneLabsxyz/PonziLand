@@ -20,7 +20,7 @@
       nodeUrl: 'https://api.cartridge.gg/x/starknet/mainnet',
     });
 
-    let class_hash = mainnet_rpc.getClassByHash("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf")
+    let class_hash = await mainnet_rpc.getClassByHash("0x743c83c41ce99ad470aa308823f417b2141e02e04571f5c0004e743556e7faf")
 
     console.log('Class hash:', class_hash);
 
