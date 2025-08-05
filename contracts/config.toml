@@ -14,7 +14,7 @@ api_url = "https://starknet-mainnet-api.ekubo.org"
 core_contract_address = "0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b"
 
 [starknet]
-rpc_url = "http://katana-test:5050"
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
 
 [torii]
 world_address = "0x16a224c5361127863629cbf70b024de90876901af6ac26180ddad1d1a32ccfb"

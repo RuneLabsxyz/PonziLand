@@ -56,6 +56,8 @@
   // Error handling for inputs
   let tokenError = $derived.by(() => {
     if (!tokenValue || !selectedToken) {
+      console.log(data.availableTokens);
+      console.log(tokenValue);
       return 'Please select a token';
     }
     return null;
