@@ -47,6 +47,9 @@
       return false;
     }
 
+    console.log(selectedToken);
+    console.log(tokenStore)
+
     // get selected token balance from tokenStore balance
     const selectedTokenBalance = tokenStore.balances.find(
       (balance) => balance.token.address == selectedToken?.address,
