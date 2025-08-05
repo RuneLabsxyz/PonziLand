@@ -26,7 +26,7 @@ mod TaxesComponent {
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::components::payable::{PayableComponent, IPayable, ValidationResult};
     use ponzi_land::utils::common_strucs::{TokenInfo};
-    use ponzi_land::utils::math::{u64_saturating_sub};
+    use ponzi_land::utils::math::{u64_saturating_sub, u64_saturating_add};
     use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
     use ponzi_land::helpers::land::{add_neighbor, remove_neighbor};
     use ponzi_land::helpers::taxes::{
@@ -329,20 +329,17 @@ mod TaxesComponent {
             neighbors: Span<Land>,
         ) -> u64 {
             let num_neighbors = neighbors.len();
-
             let current_time = get_block_timestamp();
-
             let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land, store);
             let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
 
             if total_tax_rate == 0 || store.get_time_speed() == 0 {
-                let max_u64 = Bounded::<u64>::MAX;
-                return current_time + max_u64;
+                return 0;
             }
 
             let remaining_time_units = (*land_stake.amount * store.get_base_time().into())
                 / total_tax_rate;
-            let mut min_remaining_time = Bounded::<u64>::MAX;
+            let mut min_remaining_time = remaining_time_units.try_into().unwrap();
 
             for neighbor in neighbors {
                 let elapsed_time = self
@@ -357,9 +354,12 @@ mod TaxesComponent {
                     min_remaining_time = current_remaining_time;
                 }
             };
-            let nuke_time = current_time + min_remaining_time;
 
-            nuke_time
+            if min_remaining_time == 0 {
+                return current_time;
+            }
+
+            u64_saturating_add(current_time, min_remaining_time)
         }
 
 
