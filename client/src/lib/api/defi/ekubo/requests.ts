@@ -113,9 +113,9 @@ export async function getTokenPrices(): Promise<TokenPrice[]> {
 
   try {
   //  const res = await fetch(url);
-    if (!res.ok) {
-      throw new Error('Network response was not ok');
-    }
+  //  if (!res.ok) {
+  //    throw new Error('Network response was not ok');
+  //  }
 //    const data = await res.json();
     return [];
   } catch (error) {
