@@ -135,7 +135,6 @@ pub mod actions {
     };
     use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
     use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
-    use ponzi_land::utils::spiral::{get_next_position, SpiralState};
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::utils::stake::{calculate_refund_amount};
 
