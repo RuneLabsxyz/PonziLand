@@ -54,7 +54,7 @@ trait IActions<T> {
     fn get_elapsed_time_since_last_claim(
         self: @T, claimer_location: u16, payer_location: u16,
     ) -> u64;
-    fn (self: @T, land_location: u16) -> u256;
+    fn get_unclaimed_taxes_per_neighbors_total(self: @T, land_location: u16) -> u256;
     fn get_elapsed_time_since_last_claim_for_neighbors(
         self: @T, payer_location: u16,
     ) -> Array<(u16, u64)>;
