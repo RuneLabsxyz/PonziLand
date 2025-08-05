@@ -56,79 +56,30 @@ Add more stake to your land to prevent it from being nuked. Stake serves as secu
 - Stake is locked until land is sold
 - Excess stake provides longer protection against nuking
 
-
-
-
-
 ## View Functions Overview
 
-This section describes all the read-only functions (views) available in the PonziLand smart contract that allow you to query the current state of the game without modifying it.
+These read-only functions allow you to query the current state of the game from your client application.
 
-### Get Land Information
-Retrieves detailed information about any land plot in the game. This is one of the most fundamental view functions as it provides all essential data about a specific land plot.
+### Land Information Functions
+- **`get_land(land_location)`** - Get complete land details (owner, price, token, stake amount)
+- **`get_neighbors(land_location)`** - Get all 8 neighboring positions (lands, auctions, or empty)
+- **`get_neighbors_yield(land_location)`** - Calculate potential earnings from neighboring lands
 
-**What it returns:**
-- The exact location coordinates
-- Current owner's address
-- Current selling price
-- Which token is used for transactions
-- Associated liquidity pool
-- Timestamps for last tax payment and purchase date
+### Tax & Claiming Functions  
+- **`get_next_claim_info(land_location)`** - Show all pending tax claims for a land owner
+- **`get_unclaimed_taxes_per_neighbors_total(land_location)`** - Quick total of claimable taxes
+- **`get_unclaimed_taxes_per_neighbor(claimer_location, payer_location)`** - Specific neighbor tax amount
+- **`get_elapsed_time_since_last_claim(claimer_location, payer_location)`** - Time since last claim
 
-**When to use it:**
-- Before making a purchase to verify land details
-- To check if a land is owned or available
-- For displaying land information in your interface
-- To verify ownership before transactions
-- When calculating potential tax obligations
+### Risk Management Functions
+- **`get_time_to_nuke(land_location)`** - When a land will become vulnerable to nuking
+- **`get_elapsed_time_since_last_claim_for_neighbors(payer_location)`** - Claim times for all neighbors
 
-### Get Stake Balance
-Shows how much stake a specific address has locked in the game. This is crucial for understanding a player's position and risk level.
+### Auction Functions
+- **`get_current_auction_price(land_location)`** - Current decreasing auction price
+- **`get_auction(land_location)`** - Complete auction details and status
+- **`get_active_auctions()`** - Number of active auctions system-wide
 
-**Key aspects:**
-- Displays total amount staked across all lands
-- Helps players monitor their risk of being nuked
-- Essential for calculating how much additional stake might be needed
-- Used by the system to validate if lands can be nuked
-
-**Important for:**
-- Risk management
-- Planning stake increases
-- Monitoring account health
-- Frontend displays of user status
-
-### Get Pending Taxes
-Provides a comprehensive view of all pending taxes for a land owner. This function returns an array of different tokens and their amounts that are waiting to be claimed.
-
-**What you learn from it:**
-- Total pending taxes across all tokens
-- Which tokens are available to claim
-- How much can be claimed for each token
-- Overall tax earnings status
-
-**Best used for:**
-- Planning when to claim taxes
-- Financial planning
-- UI displays of earnings
-- Risk assessment of neighboring lands
-
-### Get Pending Taxes for Land
-Similar to the general pending taxes function, but focused on a specific land plot. This is useful when you need to know the tax situation of a particular location.
-
-**Use cases:**
-- Before buying a specific land
-- Monitoring individual land performance
-- Planning tax claims for specific locations
-- Evaluating neighbor profitability
-
-### Get Current Auction Price
-Shows the current price of an active auction for any land plot. This price decreases over time until someone makes a bid or it reaches the floor price.
-
-**Important details:**
-- Returns zero if there's no active auction
-- Price decreases linearly over time
-- Essential for timing auction bids
-- Helps in planning purchase strategies
 
 ## Practical Applications
 

@@ -1,16 +1,17 @@
-use starknet::ContractAddress;
-use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+/// @title Stake Component
+/// @notice This module implements the staking functionality, allowing players to stake tokens on
+/// land.
+/// It handles staking, refunding, and reimbursement of staked tokens.
 
+use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
 #[starknet::component]
 mod StakeComponent {
     //use dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
-
     // Starknet imports
     use starknet::{ContractAddress};
     use starknet::info::{get_contract_address, get_caller_address};
-
     use starknet::storage::{
         Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
     };
@@ -24,12 +25,10 @@ mod StakeComponent {
         common_strucs::{TokenInfo, LandWithTaxes},
         stake::{calculate_refund_ratio, calculate_refund_amount},
     };
-
-
     // Local imports
     use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
-
+    //TODO:create a file for errors
     mod errors {
         const ERC20_STAKE_FAILED: felt252 = 'ERC20: stake failed';
         const ERC20_VALIDATE_FOR_STAKE_FAILED: felt252 = 'Not enough amount for stake';
@@ -50,6 +49,7 @@ mod StakeComponent {
         +Drop<TContractState>,
         impl Payable: PayableComponent::HasComponent<TContractState>,
     > of InternalTrait<TContractState> {
+        /// @notice Add stake to a land when a buy or bid is completed
         fn _add(
             ref self: ComponentState<TContractState>,
             amount: u256,
@@ -64,7 +64,6 @@ mod StakeComponent {
             assert(validation_result.status, errors::ERC20_VALIDATE_FOR_STAKE_FAILED);
 
             //transfer stake amount to game contract
-
             let status = payable.transfer_from(land.owner, our_contract_address, validation_result);
             assert(status, errors::ERC20_STAKE_FAILED);
 
@@ -74,12 +73,11 @@ mod StakeComponent {
             self.token_stakes.write(land.token_used, current_total + amount);
 
             //update land stake amount
-
             land_stake.amount = land_stake.amount + amount;
             store.set_land_stake(land_stake);
         }
 
-
+        /// @notice Refund the stake amount to the owner when the land is sold
         fn _refund(
             ref self: ComponentState<TContractState>,
             mut store: Store,
@@ -110,6 +108,7 @@ mod StakeComponent {
             store.set_land_stake(land_stake);
         }
 
+        /// @notice Reimburse all stakes when game is over (admin function)
         fn _reimburse(
             ref self: ComponentState<TContractState>, mut store: Store, active_lands: Span<Land>,
         ) {
