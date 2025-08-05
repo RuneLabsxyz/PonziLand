@@ -234,7 +234,7 @@ pub mod actions {
         let mut world = self.world_default();
         let store = StoreTrait::new(world);
         self
-            .auction(
+            .(
                 store, store.get_center_location(), start_price, floor_price, decay_rate, false,
             );
     }
@@ -811,6 +811,7 @@ pub mod actions {
             assert(floor_price > 0, 'floor_price > 0');
             //we don't want generate an error if the auction is full
             if (!is_from_nuke && self.active_auctions.read() >= store.get_max_auctions()) {
+                panic!('active_auctions >= max_auctions');
                 return;
             }
             let mut land = store.land(land_location);
