@@ -1,6 +1,6 @@
 import type { SchemaType as ISchemaType } from "@dojoengine/sdk";
 
-import { CairoCustomEnum, CairoOption, CairoOptionVariant, BigNumberish } from 'starknet';
+import { CairoCustomEnum, CairoOption, CairoOptionVariant, type BigNumberish } from 'starknet';
 
 // Type definition for `ponzi_land::models::auction::Auction` struct
 export interface Auction {
