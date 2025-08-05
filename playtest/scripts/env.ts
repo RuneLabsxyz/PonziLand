@@ -3,7 +3,7 @@ import { parseArgs } from "util";
 import dotenv from "dotenv";
 import { Call, RpcProvider } from "starknet";
 import { env } from "process";
-import { getLedgerAccount, getStarkliAccount, getKatanaAccount } from "./account";
+import { getLedgerAccount, getStarkliAccount, getKatanaAccount, getSepoliaAccount } from "./account";
 import { exit } from "process";
 
 export type Configuration = {
@@ -27,6 +27,9 @@ export async function getAccount(config: Configuration) {
 
   if (config.environment === "katana" && !config.forceLedger) {
     return await getKatanaAccount(provider);
+  }
+  else if (config.environment === "sepolia" && !config.forceLedger) {
+    return await getSepoliaAccount(provider);
   }
   if (env.STARKNET_KEYSTORE !== undefined && !config.forceLedger) {
     return await getStarkliAccount(provider);
