@@ -152,6 +152,7 @@ pub mod actions {
     use ponzi_land::utils::spiral::{get_next_position, SpiralState};
     use ponzi_land::utils::level_up::{calculate_new_level};
     use ponzi_land::utils::stake::{calculate_refund_amount};
+    use ponzi_land::utils::validations::{validate_params, validate_owner_land_for_buy};
 
     // Helpers
     use ponzi_land::helpers::auction::{get_suggested_sell_price};
@@ -161,7 +162,7 @@ pub mod actions {
         get_circle_land_position, get_random_index, lands_per_section, is_section_completed,
         get_random_available_index,
     };
-    use ponzi_land::helpers::land::{add_neighbor};
+    use ponzi_land::helpers::land::{update_neighbors_info, add_neighbor};
 
     // Errors
     use ponzi_land::errors::{ERC20_VALIDATE_AMOUNT_BUY};
@@ -245,75 +246,42 @@ pub mod actions {
             amount_to_stake: u256,
         ) {
             self.reentrancy_guard.start();
-            assert(sell_price > 0, 'sell_price > 0');
-            assert(amount_to_stake > 0, 'amount_to_stake > 0');
 
+            validate_params(sell_price, amount_to_stake);
             let mut world = self.world_default();
+
             let caller = get_caller_address();
             let current_time = get_block_timestamp();
             let our_contract_address = get_contract_address();
 
-            assert(
-                world.auth_dispatcher().can_take_action(get_caller_address()),
-                'action not permitted',
-            );
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+            world.token_registry_dispatcher().ensure_token_authorized(token_for_sale);
 
             let mut store = StoreTrait::new(world);
             let land = store.land(land_location);
 
-            assert(caller != land.owner, 'you already own this land');
-            assert(land.owner != ContractAddressZeroable::zero(), 'must have a owner');
+            validate_owner_land_for_buy(@land, caller);
 
-            world.token_registry_dispatcher().ensure_token_authorized(token_for_sale);
-
-            let seller = land.owner;
-            let sold_price = land.sell_price;
-            let token_used = land.token_used;
-
+            let (seller, sold_price, token_used) = (land.owner, land.sell_price, land.token_used);
+            let (claim_fee, claim_fee_threshold, our_contract_for_fee) = (
+                store.get_claim_fee(),
+                store.get_claim_fee_threshold(),
+                store.get_our_contract_for_fee(),
+            );
             let neighbors = get_land_neighbors(store, land.location);
-            let our_contract_for_fee = store.get_our_contract_for_fee();
-            let claim_fee = store.get_claim_fee();
-            let claim_fee_threshold = store.get_claim_fee_threshold();
+
             self
-                .internal_claim(
+                .execute_buy_claims(
                     store,
                     @land,
                     neighbors,
                     current_time,
                     our_contract_address,
-                    false,
                     claim_fee,
                     claim_fee_threshold,
                     our_contract_for_fee,
                 );
-
-            //claim for the neighbors of the land sold
-            let land_payer_span: Span<Land> = array![land].span();
-            for neighbor in neighbors {
-                self
-                    .internal_claim(
-                        store,
-                        neighbor,
-                        land_payer_span,
-                        current_time,
-                        our_contract_address,
-                        true,
-                        claim_fee,
-                        claim_fee_threshold,
-                        our_contract_for_fee,
-                    );
-            };
-
-            let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
-            assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BUY);
-
-            let buy_fee = store.get_buy_fee();
-            self
-                .payable
-                .proccess_payment_with_fee_for_buy(
-                    caller, land.owner, buy_fee, our_contract_for_fee, validation_result,
-                );
-
+            self.validate_and_excute_buy_payment(land, caller, store, our_contract_for_fee);
             self.stake._refund(store, land, our_contract_address);
 
             self
@@ -343,20 +311,26 @@ pub mod actions {
 
         fn claim(ref self: ContractState, land_location: u16) {
             self.reentrancy_guard.start();
-            let caller = get_caller_address();
+
             let mut world = self.world_default();
-            let current_time = get_block_timestamp();
-            let our_contract_address = get_contract_address();
-            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
 
-            let land = store.land(land_location);
-            assert(land.owner == caller, 'not the owner');
-            let neighbors = get_land_neighbors(store, land.location);
+            let caller = get_caller_address();
+            let current_time = get_block_timestamp();
 
-            let claim_fee = store.get_claim_fee();
-            let claim_fee_threshold = store.get_claim_fee_threshold();
-            let our_contract_for_fee = store.get_our_contract_for_fee();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
+            let land = store.land(land_location);
+            assert(land.is_owner(caller), 'not the owner');
+
+            let neighbors = get_land_neighbors(store, land.location);
+            let (claim_fee, claim_fee_threshold, our_contract_for_fee, our_contract_address) = (
+                store.get_claim_fee(),
+                store.get_claim_fee_threshold(),
+                store.get_our_contract_for_fee(),
+                get_contract_address(),
+            );
+
             self
                 .internal_claim(
                     store,
@@ -369,25 +343,31 @@ pub mod actions {
                     claim_fee_threshold,
                     our_contract_for_fee,
                 );
+
             self.reentrancy_guard.end();
         }
 
         fn claim_all(ref self: ContractState, land_locations: Array<u16>) {
             self.reentrancy_guard.start();
-            let caller = get_caller_address();
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
             let mut store = StoreTrait::new(world);
+
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
             let current_time = get_block_timestamp();
-            let our_contract_address = get_contract_address();
-            let claim_fee = store.get_claim_fee();
-            let claim_fee_threshold = store.get_claim_fee_threshold();
-            let our_contract_for_fee = store.get_our_contract_for_fee();
+
+            let (claim_fee, claim_fee_threshold, our_contract_for_fee, our_contract_address) = (
+                store.get_claim_fee(),
+                store.get_claim_fee_threshold(),
+                store.get_our_contract_for_fee(),
+                get_contract_address(),
+            );
 
             for land_location in land_locations {
                 if !self.auction.is_auction_active(land_location) {
                     let land = store.land(land_location);
-                    if land.owner != caller {
+                    if !land.is_owner(caller) {
                         continue;
                     }
                     let neighbors = get_land_neighbors(store, land_location);
@@ -417,22 +397,22 @@ pub mod actions {
         ) {
             self.reentrancy_guard.start();
             let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
+
             let caller = get_caller_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
+
             let current_time = get_block_timestamp();
             let our_contract_address = get_contract_address();
-            let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
 
-            assert(land.owner == ContractAddressZeroable::zero(), 'must be without owner');
-            assert(sell_price > 0, 'sell_price > 0');
-            assert(amount_to_stake > 0, 'amount_to_stake > 0');
+            assert(!land.has_owner(), 'must be without owner');
+            validate_params(sell_price, amount_to_stake);
 
             // Validate that the token is authorized to be used
             world.token_registry_dispatcher().ensure_token_authorized(token_for_sale);
 
             //auction part
-
             //Validate if the land can be buyed because is an auction happening for that land
             let mut auction = store.auction(land_location);
             assert(self.auction.is_auction_active(land_location), 'auction not started');
@@ -454,6 +434,7 @@ pub mod actions {
                     current_price,
                     our_contract_address,
                 );
+
             self.reentrancy_guard.end();
         }
 
@@ -475,15 +456,14 @@ pub mod actions {
 
         fn increase_price(ref self: ContractState, land_location: u16, new_price: u256) {
             let mut world = self.world_default();
-            let caller = get_caller_address();
-
-            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
-
             let mut store = StoreTrait::new(world);
+
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
             let mut land = store.land(land_location);
 
-            assert(land.owner == caller, 'not the owner');
+            assert(land.is_owner(caller), 'not the owner');
             assert(new_price > land.sell_price, 'new_price != land.sell_price');
 
             land.sell_price = new_price;
@@ -492,36 +472,46 @@ pub mod actions {
 
         fn increase_stake(ref self: ContractState, land_location: u16, amount_to_stake: u256) {
             self.reentrancy_guard.start();
+
             let mut world = self.world_default();
-            let caller = get_caller_address();
-
-            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
-
             let mut store = StoreTrait::new(world);
 
-            let land = store.land(land_location);
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
-            assert(land.owner == caller, 'not the owner');
+            let land = store.land(land_location);
+            assert(land.is_owner(caller), 'not the owner');
             assert(amount_to_stake > 0, 'amount has to be > 0');
+
             let mut land_stake = store.land_stake(land.location);
-            self.stake._add(amount_to_stake, land, land_stake, store, get_contract_address());
+            self
+                .stake
+                ._add(
+                    amount_to_stake,
+                    caller,
+                    land.token_used,
+                    land_stake,
+                    store,
+                    get_contract_address(),
+                );
+
             let new_stake_amount = land_stake.amount + amount_to_stake;
             store
                 .world
                 .emit_event(@AddStakeEvent { land_location, new_stake_amount, owner: caller });
+
             self.reentrancy_guard.end();
         }
 
         fn level_up(ref self: ContractState, land_location: u16) -> bool {
             let mut world = self.world_default();
+            let mut store = StoreTrait::new(world);
 
             let caller = get_caller_address();
             assert(world.auth_dispatcher().can_take_action(caller), 'action not permitted');
 
-            let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
-
-            assert(land.owner == caller, 'not the owner');
+            assert(land.is_owner(caller), 'not the owner');
 
             let current_time = get_block_timestamp();
             let elapsed_time_since_buy = (current_time - land.block_date_bought)
@@ -587,7 +577,6 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land.location);
             let mut claim_info: Array<ClaimInfo> = ArrayTrait::new();
 
-            //TODO:see if we pass this to utils
             if neighbors.len() > 0 {
                 for neighbor in neighbors {
                     let neighbor_location = *neighbor.location;
@@ -663,7 +652,6 @@ pub mod actions {
                     let land_stake = store.land_stake(neighbor_location);
                     if land_stake.amount > 0 {
                         let token = *neighbor.token_used;
-                        //TODO: WHY THIS???? remove or fix after playtest
                         let rate = store.get_tax_rate().into() * store.get_time_speed().into() / 8;
                         let rate_per_hour = get_tax_rate_per_neighbor(neighbor, store);
                         yield_info
@@ -773,7 +761,7 @@ pub mod actions {
         ) {
             let mut world = self.world_default();
             let mut store = StoreTrait::new(world);
-            if !has_liquidity_requirements && land_stake.amount > 0 {
+            if !has_liquidity_requirements && land_stake.amount >= 0 {
                 self.stake._refund(store, land, get_contract_address());
                 land_stake = store.land_stake(land.location);
             }
@@ -849,8 +837,6 @@ pub mod actions {
         ) {
             self.payable.validate_and_execute_bid_payment(land.token_used, caller, sold_at_price);
 
-            // Red: If we create a new trait here,
-            // I don't think we need to create the land before.
             self
                 .finalize_land_purchase(
                     store,
@@ -865,22 +851,13 @@ pub mod actions {
                     true,
                 );
 
-            //update neighbors for the new land
-            for neighbor in neighbors {
-                if let Option::Some(updated) =
-                    add_neighbor(
-                        store.land_stake(*neighbor.location), land.location, current_time,
-                    ) {
-                    store.set_land_stake(updated);
-                }
-            };
+            //update neighbors_info_packed with the new land for the existing neighbors
+            update_neighbors_info(store, neighbors, land.location, current_time);
             self.staked_lands.write(land.location, true);
 
-            // Finish the auction using AuctionComponent
             self.auction.finish_auction(store, auction, caller, current_price);
 
             // Generate new auctions if space available
-
             let active_auctions = self.auction.get_active_auctions_count();
             if active_auctions < store.get_max_auctions() {
                 self.auction.generate_new_auctions(sold_at_price, store);
@@ -906,13 +883,22 @@ pub mod actions {
 
             let mut land_stake = store.land_stake(land.location);
 
-            //initialize neighbors_info_packed
+            //initialize neighbors_info_packed for the future claims
             let neighbors_info = pack_neighbors_info(
                 current_time, neighbors.len().try_into().unwrap(), land.location,
             );
             land_stake.neighbors_info_packed = neighbors_info;
 
-            self.stake._add(amount_to_stake, land, land_stake, store, our_contract_address);
+            self
+                .stake
+                ._add(
+                    amount_to_stake,
+                    caller,
+                    token_for_sale,
+                    land_stake,
+                    store,
+                    our_contract_address,
+                );
 
             for neighbor in neighbors {
                 let neighbor_location = *neighbor.location;
@@ -922,6 +908,68 @@ pub mod actions {
                         land_location, neighbor_location, current_time,
                     );
             }
+        }
+
+
+        fn execute_buy_claims(
+            ref self: ContractState,
+            mut store: Store,
+            land: @Land,
+            neighbors: Span<Land>,
+            current_time: u64,
+            our_contract_address: ContractAddress,
+            claim_fee: u128,
+            claim_fee_threshold: u128,
+            our_contract_for_fee: ContractAddress,
+        ) {
+            //last claim for the seller
+            self
+                .internal_claim(
+                    store,
+                    land,
+                    neighbors,
+                    current_time,
+                    our_contract_address,
+                    false,
+                    claim_fee,
+                    claim_fee_threshold,
+                    our_contract_for_fee,
+                );
+
+            //last claim pay from the seller to the neighbors
+            let land_seller: Span<Land> = array![*land].span();
+            for claimer_neighbor in neighbors {
+                self
+                    .internal_claim(
+                        store,
+                        claimer_neighbor,
+                        land_seller,
+                        current_time,
+                        our_contract_address,
+                        true,
+                        claim_fee,
+                        claim_fee_threshold,
+                        our_contract_for_fee,
+                    );
+            }
+        }
+
+        fn validate_and_excute_buy_payment(
+            ref self: ContractState,
+            land: Land,
+            caller: ContractAddress,
+            store: Store,
+            our_contract_for_fee: ContractAddress,
+        ) {
+            let validation_result = self.payable.validate(land.token_used, caller, land.sell_price);
+            assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BUY);
+
+            let buy_fee = store.get_buy_fee();
+            self
+                .payable
+                .proccess_payment_with_fee_for_buy(
+                    caller, land.owner, buy_fee, our_contract_for_fee, validation_result,
+                );
         }
 
         fn update_level(
