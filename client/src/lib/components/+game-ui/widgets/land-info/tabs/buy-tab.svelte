@@ -117,6 +117,8 @@
       if (!landPrice) {
         return 'Auction price is not available';
       }
+      console.log(baseToken);
+      console.log(tokenStore.balances);
       const baseTokenBalance = tokenStore.balances.find(
         (balance) => balance.token.address === baseToken?.address,
       );

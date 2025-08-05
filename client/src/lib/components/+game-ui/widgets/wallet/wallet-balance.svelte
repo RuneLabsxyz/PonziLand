@@ -138,6 +138,7 @@
         tokenIds: request.tokenIds ?? [],
         callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
           if (data) {
+            console.log(data);
             updateTokenBalance(data);
             calculateTotalBalance();
           }
@@ -152,6 +153,7 @@
       subscriptionRef = subscription;
 
     //  tokenStore.prices = await getTokenPrices();
+      console.log(tokenBalances);
       setTokenBalances(tokenBalances.items);
       calculateTotalBalance();
       loadingBalance = false;
