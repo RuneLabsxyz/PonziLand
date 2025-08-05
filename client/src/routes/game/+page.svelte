@@ -19,7 +19,7 @@
   import { dojoConfig } from '$lib/dojoConfig';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { landStore } from '$lib/stores/store.svelte';
+  import { landStore, configStore } from '$lib/stores/store.svelte';
   import { onMount } from 'svelte';
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -29,9 +29,12 @@
       return setupAccountState();
     }),
     setupClient().then((client) => {
+      // Initialize both stores with Dojo client
       landStore.setup(client!);
       landStore.stopRandomUpdates();
-      // landStore.startRandomUpdates();
+
+      // Setup config subscription - this loads dynamic config from blockchain
+      configStore.setup(client!);
     }),
     setupAccount(),
   ]);
