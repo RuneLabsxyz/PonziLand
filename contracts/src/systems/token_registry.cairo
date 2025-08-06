@@ -85,8 +85,6 @@ pub mod token_registry {
             self.token_status.entry(token_address).write(status);
         }
         fn is_owner(self: @ContractState, caller: ContractAddress) -> bool {
-            // TODO(red): Maybe we could migrate this to
-            //            a different ressource once we know what to put.
             self.world_default().dispatcher.is_owner(0x0, caller)
         }
         fn world_default(self: @ContractState) -> WorldStorage {
