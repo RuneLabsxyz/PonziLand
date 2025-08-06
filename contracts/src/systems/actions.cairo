@@ -609,8 +609,6 @@ pub mod actions {
             elapsed_time
         }
 
-        //TODO:do the function to get 8 elapsed time for each neighbor of the claimer
-
         fn get_elapsed_time_since_last_claim_for_neighbors(
             self: @ContractState, payer_location: u16,
         ) -> Array<(u16, u64)> {

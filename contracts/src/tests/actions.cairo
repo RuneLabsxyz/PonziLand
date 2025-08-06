@@ -941,7 +941,6 @@ fn check_invalid_liquidity_pool() {
 }
 
 
-//TODO:when we have the new expansion for auction we can test with more lands
 fn test_reimburse_stakes() {
     let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
 
@@ -1053,7 +1052,6 @@ fn test_time_to_nuke() {
     let next_auction_location = capture_location_of_new_auction(
         store.world.dispatcher.contract_address,
     );
-    //TODO:DO A FUNCTION TO REFACTOR THIS
     assert(next_auction_location.is_some(), 'No new auction location found');
     initialize_land(
         actions_system,
