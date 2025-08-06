@@ -25,8 +25,9 @@ import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.s
 import { CairoOption } from 'starknet';
 import data from '$profileData';
 
-
-const TOKEN_ADDRESSES = data.availableTokens.map((token) => token.address) as string[];
+const TOKEN_ADDRESSES = data.availableTokens.map(
+  (token) => token.address,
+) as string[];
 
 // Default values
 const DEFAULT_SELL_PRICE = 1000000000000000000;

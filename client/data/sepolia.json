@@ -77,7 +77,7 @@
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "skin":"paper",
+        "skin": "paper",
         "icon": "/tokens/ePAPER/icon.svg",
         "biome": {
           "x": 3,

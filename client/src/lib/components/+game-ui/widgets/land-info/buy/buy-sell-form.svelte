@@ -115,7 +115,9 @@
 
   $effect(() => {
     if (selectedToken == undefined) {
-      selectedToken = data.availableTokens.find((t) => t.symbol == baseToken?.symbol);
+      selectedToken = data.availableTokens.find(
+        (t) => t.symbol == baseToken?.symbol,
+      );
     }
   });
 

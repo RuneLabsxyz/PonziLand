@@ -44,7 +44,7 @@
       //   return;
       // }
       let animationName = tile.buildingAnimationName;
-      
+
       if (
         cursorStore.hoveredTileIndex === index ||
         cursorStore.selectedTileIndex === index

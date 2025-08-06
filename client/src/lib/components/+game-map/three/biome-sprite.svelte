@@ -15,7 +15,7 @@
   $effect(() => {
     landTiles.forEach((tile: LandTile, index: number) => {
       let animationName = tile.biomeAnimationName;
-      
+
       if (
         cursorStore.hoveredTileIndex === index ||
         cursorStore.selectedTileIndex === index

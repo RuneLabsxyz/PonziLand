@@ -8,7 +8,7 @@
   import {
     NearestFilter,
     TextureLoader,
-    type InstancedMesh as TInstancedMesh
+    type InstancedMesh as TInstancedMesh,
   } from 'three';
   import type { LandTile } from './landTile';
 
@@ -43,13 +43,14 @@
   // Group tiles by owner type for efficient rendering
   let tilesByOwnerType = $derived.by(() => {
     const groups: Record<string, { tile: LandTile; tileIndex: number }[]> = {};
-    
+
     landTiles.forEach((tile, tileIndex) => {
       const land = tile.land;
       let ownerType: string | undefined;
 
       if (BuildingLand.is(land)) {
-        const isOwner = padAddress(land?.owner ?? '') === padAddress(address ?? '');
+        const isOwner =
+          padAddress(land?.owner ?? '') === padAddress(address ?? '');
 
         if (isOwner) {
           ownerType = 'crown';
@@ -77,7 +78,6 @@
   function getAIAgentType(aiAgent: any): string {
     return aiAgent.name.toLowerCase();
   }
-
 </script>
 
 <!-- Crown instances for player-owned land -->
@@ -113,7 +113,11 @@
       frustumCulled={false}
     >
       <T.PlaneGeometry args={[0.3, 0.3]} />
-      <T.MeshBasicMaterial map={agentTextures[ownerType]} alphaTest={0.5} transparent />
+      <T.MeshBasicMaterial
+        map={agentTextures[ownerType]}
+        alphaTest={0.5}
+        transparent
+      />
       {#each tiles as { tile }}
         <Instance
           position={[

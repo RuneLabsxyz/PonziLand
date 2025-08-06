@@ -12,7 +12,7 @@ export interface TextTextureOptions {
 
 export function createTextTexture(
   text: string,
-  options: TextTextureOptions = {}
+  options: TextTextureOptions = {},
 ): CanvasTexture {
   const {
     fontSize = 32,
@@ -27,7 +27,7 @@ export function createTextTexture(
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
-  
+
   const context = canvas.getContext('2d');
   if (!context) {
     throw new Error('Could not get canvas context');
@@ -68,7 +68,7 @@ export class TextTextureCache {
 
   get(text: string, options: TextTextureOptions = {}): CanvasTexture {
     const key = JSON.stringify({ text, ...options });
-    
+
     if (!this.cache.has(key)) {
       this.cache.set(key, createTextTexture(text, options));
     }
@@ -77,7 +77,7 @@ export class TextTextureCache {
   }
 
   clear(): void {
-    this.cache.forEach(texture => texture.dispose());
+    this.cache.forEach((texture) => texture.dispose());
     this.cache.clear();
   }
 
