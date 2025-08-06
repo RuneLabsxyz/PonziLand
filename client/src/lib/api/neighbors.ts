@@ -104,23 +104,23 @@ export class Neighbors {
 
     return {
       array: [
-        location - COORD_MULTIPLIER - 1n,
-        location - COORD_MULTIPLIER,
-        location - COORD_MULTIPLIER + 1n,
+        location - COORD_MULTIPLIER_BIGINT - 1n,
+        location - COORD_MULTIPLIER_BIGINT,
+        location - COORD_MULTIPLIER_BIGINT + 1n,
         location - 1n,
         location + 1n,
-        location + COORD_MULTIPLIER - 1n,
-        location + COORD_MULTIPLIER,
-        location + COORD_MULTIPLIER + 1n,
+        location + COORD_MULTIPLIER_BIGINT - 1n,
+        location + COORD_MULTIPLIER_BIGINT,
+        location + COORD_MULTIPLIER_BIGINT + 1n,
       ],
-      up: location - COORD_MULTIPLIER,
-      down: location + COORD_MULTIPLIER,
+      up: location - COORD_MULTIPLIER_BIGINT,
+      down: location + COORD_MULTIPLIER_BIGINT,
       left: location - 1n,
       right: location + 1n,
-      upLeft: location - COORD_MULTIPLIER - 1n,
-      upRight: location - COORD_MULTIPLIER + 1n,
-      downLeft: location + COORD_MULTIPLIER - 1n,
-      downRight: location + COORD_MULTIPLIER + 1n,
+      upLeft: location - COORD_MULTIPLIER_BIGINT - 1n,
+      upRight: location - COORD_MULTIPLIER_BIGINT + 1n,
+      downLeft: location + COORD_MULTIPLIER_BIGINT - 1n,
+      downRight: location + COORD_MULTIPLIER_BIGINT + 1n,
     };
   }
 

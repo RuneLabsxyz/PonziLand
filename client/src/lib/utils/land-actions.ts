@@ -13,7 +13,6 @@ import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Level } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
 import type { Readable } from 'svelte/store';
-import { get } from 'svelte/store';
 
 export const createLandWithActions = (
   land: BuildingLand | AuctionLand,
@@ -157,7 +156,7 @@ export const createLandWithActions = (
         canLevelUp: expectedLevel > land.level,
         expectedLevel,
         timeSinceLastLevelUp,
-        levelUpTimeLeft,
+        levelUpTime: levelUpTime,
       };
     },
   };

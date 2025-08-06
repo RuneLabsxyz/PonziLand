@@ -19,10 +19,9 @@ const config = configStore.getConfig();
 
 // Create derived stores for each config value
 // These are reactive - components re-render when values change
-export const GRID_SIZE = derived(
-  config,
-  ($config): number => ($config ? Number($config.grid_width) : 255), // fallback matches contract MAX_GRID_SIZE
-);
+
+//TODO: to regulate the size of the map we have to use the MAX_CIRCLE CONST
+export const GRID_SIZE = 255;
 
 export const GAME_SPEED = derived(
   config,

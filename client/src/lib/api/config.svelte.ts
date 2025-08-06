@@ -18,11 +18,8 @@
 
 import type { Client } from '$lib/contexts/client.svelte';
 import { ModelsMapping, type Config, type SchemaType } from '$lib/models.gen';
-import {
-  ToriiQueryBuilder,
-  type ParsedEntity,
-  type Subscription,
-} from '@dojoengine/sdk';
+import { ToriiQueryBuilder, type ParsedEntity } from '@dojoengine/sdk';
+import type { Subscription } from '@dojoengine/torii-client';
 import { writable, type Readable } from 'svelte/store';
 
 export class ConfigStore {

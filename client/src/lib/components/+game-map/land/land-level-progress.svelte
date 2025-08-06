@@ -11,7 +11,8 @@
 
   let remainingTime = $derived.by(() => {
     const time =
-      (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) / GAME_SPEED;
+      (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) /
+      $GAME_SPEED;
 
     if (time <= 0) {
       return 'ready';
