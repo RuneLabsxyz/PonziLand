@@ -1,9 +1,6 @@
 import { useDojo } from '$lib/contexts/dojo';
 import { ModelsMapping } from '$lib/models.gen';
-import {
-  MemberClause,
-  ToriiQueryBuilder
-} from '@dojoengine/sdk';
+import { MemberClause, ToriiQueryBuilder } from '@dojoengine/sdk';
 
 export const getAuctionDataFromLocation = async (location: string) => {
   const { client: sdk } = useDojo();

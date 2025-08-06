@@ -66,7 +66,6 @@ export function traceWallet(
       const value = target[prop as keyof WalletAccount];
 
       if (prop === 'execute' && typeof value === 'function') {
-        
       }
 
       if (prop === '__isTraced') {
