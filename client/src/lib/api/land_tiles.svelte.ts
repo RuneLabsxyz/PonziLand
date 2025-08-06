@@ -311,7 +311,8 @@ export class LandTileStore {
             const fakeStake: LandStake = {
               location: x + y * GRID_SIZE,
               amount: DEFAULT_STAKE_AMOUNT + buildingCount * 50, // Vary stake amounts
-              last_pay_time: Date.now() / 1000,
+              accumulated_taxes_fee: 0,
+              neighbors_info_packed: 0,
             };
 
             const buildingLand = new BuildingLand(fakeLand);

@@ -6,8 +6,8 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import { ClipboardCopy, ClipboardPaste, Send } from 'lucide-svelte';
   import { constants } from 'starknet';
-  import { state as accountState } from '$lib/account.svelte';
-  import { accountStateunt } from 'svelte';
+  import { accountState } from '$lib/account.svelte';
+  import { onMount } from 'svelte';
   import manifest from '$manifest';
 
   let copied = $state(false);

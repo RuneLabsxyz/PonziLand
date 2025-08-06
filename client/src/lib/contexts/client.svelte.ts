@@ -1,10 +1,8 @@
-import { DojoProvider } from '@dojoengine/core';
-import { init } from '@dojoengine/sdk';
-import { schema, type SchemaType as Schema } from '$lib/models.gen';
 import { wrappedActions } from '$lib/api/contracts/approve';
 import { loadDojoConfig, type DojoConfig } from '$lib/dojoConfig';
-import { getContext, setContext } from 'svelte';
-import { poseidonHash } from '@dojoengine/torii-client';
+import { type SchemaType as Schema } from '$lib/models.gen';
+import { DojoProvider } from '@dojoengine/core';
+import { init } from '@dojoengine/sdk';
 
 let dojoKey = Symbol('dojo');
 
@@ -19,7 +17,6 @@ async function _setupDojo(config: DojoConfig) {
   const initialized = await init<Schema>({
     client: {
       toriiUrl: config.toriiUrl,
-      relayUrl: config.relayUrl,
       worldAddress: config.manifest.world.address,
     },
     domain: {

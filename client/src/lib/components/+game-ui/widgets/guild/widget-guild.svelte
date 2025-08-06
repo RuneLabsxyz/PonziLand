@@ -1,9 +1,9 @@
 <script lang="ts">
   import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
-  import accountDataProvider, { setup } from '$lib/account.svelte';
-  import { onMount } from 'svelte';
-  import { Button } from '$lib/components/ui/button';
+  import accountDataProvider from '$lib/account.svelte';
   import { getSocialink } from '$lib/accounts/social/index.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { onMount } from 'svelte';
   import GuildRankings from './guild-rankings.svelte';
 
   const socialink = getSocialink();

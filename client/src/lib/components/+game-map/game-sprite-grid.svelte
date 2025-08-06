@@ -1,5 +1,5 @@
 <!-- SpriteGrid.svelte -->
-<script>
+<script lang="ts">
   import { T } from '@threlte/core';
   import { onMount } from 'svelte';
   import * as THREE from 'three';
@@ -15,7 +15,7 @@
 
   // Animation state using performance.now() for smooth timing
   let time = $state(0);
-  let animationId = $state();
+  let animationId = $state<number>();
 
   onMount(() => {
     // Create simple colored textures as placeholders
@@ -43,7 +43,7 @@
     animate();
   }
 
-  function createColorTexture(color) {
+  function createColorTexture(color: any) {
     const canvas = document.createElement('canvas');
     canvas.width = 64;
     canvas.height = 64;

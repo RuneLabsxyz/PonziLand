@@ -1,11 +1,8 @@
 import { useDojo } from '$lib/contexts/dojo';
-import { ModelsMapping, type SchemaType } from '$lib/models.gen';
-import { toHexWithPadding } from '$lib/utils';
+import { ModelsMapping } from '$lib/models.gen';
 import {
-  KeysClause,
   MemberClause,
-  QueryBuilder,
-  ToriiQueryBuilder,
+  ToriiQueryBuilder
 } from '@dojoengine/sdk';
 
 export const getAuctionDataFromLocation = async (location: string) => {
