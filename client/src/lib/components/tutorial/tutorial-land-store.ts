@@ -66,7 +66,6 @@ export class TutorialLandStore extends LandTileStore {
       start_price: DEFAULT_SELL_PRICE * 2,
       start_time: Date.now(),
       floor_price: DEFAULT_SELL_PRICE,
-      decay_rate: 0,
       sold_at_price: new CairoOption(CairoOptionVariant.None),
     };
 
@@ -244,7 +243,9 @@ export class TutorialLandStore extends LandTileStore {
           (token) =>
             padAddress(token.address) === padAddress(neighbor.token_used),
         );
-        const rate = (TAX_RATE * GAME_SPEED) / 8; // Adjust this based on your logic
+        const taxRate = get(TAX_RATE);
+        const gameSpeed = get(GAME_SPEED);
+        const rate = (taxRate * gameSpeed) / 8; // Adjust this based on your logic
         const ratePerHour = this.getTaxRatePerNeighbor(neighbor); // Implement this method to calculate tax rate per neighbor
 
         yieldInfo.push({
