@@ -89,6 +89,7 @@
     "three": "^0.177.0",
     "tsparticles": "^3.8.1",
     "vite-plugin-mkcert": "^1.17.8",
-    "vite-plugin-wasm": "^3.3.0"
+    "vite-plugin-wasm": "^3.3.0",
+    "moment": "=2.30.1"
   }
 }

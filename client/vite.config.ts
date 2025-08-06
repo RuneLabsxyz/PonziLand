@@ -10,6 +10,10 @@ export default defineConfig({
     minify: false,
     target: 'es2022',
   },
+  optimizeDeps: {
+    include: ['moment', '@avnu/avnu-sdk', 'starknet'],
+    exclude: [],
+  },
   server: {
     host: 'localhost',
     port: 3000,
@@ -29,6 +33,6 @@ export default defineConfig({
   },
 
   ssr: {
-    noExternal: ['@dojoengine/torii-wasm'],
+    noExternal: ['@dojoengine/torii-wasm', 'moment', '@avnu/avnu-sdk'],
   },
 });
