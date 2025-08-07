@@ -40,7 +40,7 @@
     "wrangler": "^4.26.0"
   },
   "dependencies": {
-    "@argent/x-sessions": "^7.0.0",
+    "@argent/x-sessions": "=8.0.1",
     "@avnu/avnu-sdk": "3.1.0",
     "@cartridge/controller": "0.9.2",
     "@cartridge/presets": "^0.5.2",
