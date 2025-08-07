@@ -154,6 +154,7 @@
       calculateTotalBalance();
       loadingBalance = false;
     } catch (err) {
+      loadingBalance = false;
       errorMessage =
         'Failed to refresh balances. Please check your connection and try again.';
       console.error(err);
@@ -161,16 +162,8 @@
   };
 </script>
 
-{#if errorMessage}
-  <div
-    class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center"
-  >
-    {errorMessage}
-  </div>
-{/if}
-
-{#if totalBalanceInBaseToken && baseToken}
-  <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
+<div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
+  {#if totalBalanceInBaseToken && baseToken}
     <TokenAvatar token={baseToken} class="h-6 w-6" />
     <div class="flex flex-1 items-center justify-between select-text">
       <div class="font-ponzi-number">
@@ -180,29 +173,37 @@
         {baseToken.symbol}
       </div>
     </div>
-    {#if loadingBalance}
-      <div class="w-6 h-6 flex items-center justify-center">
-        <RotatingCoin />
-      </div>
-    {:else}
-      <button
-        onclick={handleRefreshBalances}
-        aria-label="Refresh Balances"
-        class="w-6 h-6 flex items-center justify-center"
+  {/if}
+  {#if loadingBalance}
+    <div class="w-6 h-6 flex items-center justify-center">
+      <RotatingCoin />
+    </div>
+  {:else}
+    <button
+      onclick={handleRefreshBalances}
+      aria-label="Refresh Balances"
+      class="w-6 h-6 flex items-center justify-center"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 32 32"
+        width="32px"
+        height="32px"
+        fill="currentColor"
+        class="h-5 w-5"
+        ><path
+          d="M 6 4 L 6 6 L 4 6 L 4 8 L 2 8 L 2 10 L 6 10 L 6 26 L 17 26 L 17 24 L 8 24 L 8 10 L 12 10 L 12 8 L 10 8 L 10 6 L 8 6 L 8 4 L 6 4 z M 15 6 L 15 8 L 24 8 L 24 22 L 20 22 L 20 24 L 22 24 L 22 26 L 24 26 L 24 28 L 26 28 L 26 26 L 28 26 L 28 24 L 30 24 L 30 22 L 26 22 L 26 6 L 15 6 z"
+        /></svg
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 32 32"
-          width="32px"
-          height="32px"
-          fill="currentColor"
-          class="h-5 w-5"
-          ><path
-            d="M 6 4 L 6 6 L 4 6 L 4 8 L 2 8 L 2 10 L 6 10 L 6 26 L 17 26 L 17 24 L 8 24 L 8 10 L 12 10 L 12 8 L 10 8 L 10 6 L 8 6 L 8 4 L 6 4 z M 15 6 L 15 8 L 24 8 L 24 22 L 20 22 L 20 24 L 22 24 L 22 26 L 24 26 L 24 28 L 26 28 L 26 26 L 28 26 L 28 24 L 30 24 L 30 22 L 26 22 L 26 6 L 15 6 z"
-          /></svg
-        >
-      </button>
-    {/if}
+    </button>
+  {/if}
+</div>
+
+{#if errorMessage}
+  <div
+    class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center"
+  >
+    {errorMessage}
   </div>
 {/if}
 

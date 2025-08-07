@@ -128,53 +128,20 @@
         ? 'selected'
         : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
     />
-    {#if token.images.building[level].frames}
-      {@const animationMeta = token.images.building[level]}
-      {#if animationMeta.frames}
-        {@const src =
-          token.symbol === 'eSTRK'
-            ? `/tokens/${token.symbol}/${level}-animated.png`
-            : `/tokens/${token.symbol}/${level}-animated.png`}
-        <SpriteSheet
-          {src}
-          xSize={animationMeta.xSize}
-          ySize={animationMeta.ySize}
-          xMax={animationMeta.xMax}
-          yMax={animationMeta.yMax}
-          {width}
-          {height}
-          animate={true}
-          frameDelay={100}
-          startFrame={0}
-          endFrame={animationMeta.frames - 1}
-          loop={true}
-          boomerang={animationMeta.boomerang}
-          horizontal={true}
-          autoplay={true}
-          delay={animationMeta.delay}
-          class="absolute h-full w-full -translate-y-[15%] scale-75 {selected
-            ? 'selected'
-            : ''} {hovering ? 'hovering' : ''} {highlighted
-            ? 'highlighted'
-            : ''}"
-        />
-      {/if}
-    {:else}
-      <SpriteSheet
-        src="/tokens/+global/buildings.png"
-        x={token.images.building[level].x}
-        y={token.images.building[level].y}
-        xSize={256}
-        xMax={3072}
-        ySize={256}
-        yMax={5376}
-        {width}
-        {height}
-        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
-          ? 'selected'
-          : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
-      />
-    {/if}
+    <SpriteSheet
+      src="/tokens/+global/buildings.png"
+      x={token.images.building[level].x}
+      y={token.images.building[level].y}
+      xSize={256}
+      xMax={3072}
+      ySize={256}
+      yMax={5376}
+      {width}
+      {height}
+      class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
+        ? 'selected'
+        : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
+    />
   {:else if basic}
     <div
       style="background-image: url('/tokens/basic/1.png'); background-size: contain; background-position: center;"

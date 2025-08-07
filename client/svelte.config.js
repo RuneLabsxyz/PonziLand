@@ -45,7 +45,8 @@ const profiles = {
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
-    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-sepolia/torii',
+    PUBLIC_DOJO_TORII_URL:
+      'https://api.cartridge.gg/x/ponziland-sepolia-new/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
@@ -54,7 +55,7 @@ const profiles = {
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-sepolia/api',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,

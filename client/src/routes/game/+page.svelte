@@ -2,7 +2,7 @@
   import { goto } from '$app/navigation';
   import { refresh, setup as setupAccountState } from '$lib/account.svelte';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
-  import GameGrid from '$lib/components/+game-map/game-grid.svelte';
+  import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
   import {
@@ -16,11 +16,12 @@
   } from '$lib/components/tutorial/stores.svelte';
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupClient } from '$lib/contexts/client.svelte';
-
-  import { gameSounds } from '$lib/stores/sfx.svelte';
+  import { dojoConfig } from '$lib/dojoConfig';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import { onMount } from 'svelte';
+  import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 
   const promise = Promise.all([
     setupSocialink().then(() => {
@@ -29,6 +30,7 @@
     setupClient().then((client) => {
       landStore.setup(client!);
       landStore.stopRandomUpdates();
+      // landStore.startRandomUpdates();
     }),
     setupAccount(),
   ]);
@@ -39,6 +41,7 @@
 
   $effect(() => {
     tutorialLandStore.stopRandomUpdates();
+    // tutorialLandStore.startRandomUpdates();
     let increment = 10;
 
     const interval = setInterval(() => {
@@ -140,7 +143,9 @@
   {#if loading}
     <LoadingScreen {value} />
   {:else}
-    <GameGrid />
-    <GameUi />
+    <GameCanva />
+    {#if devsettings.showUI}
+      <GameUi />
+    {/if}
   {/if}
 </div>

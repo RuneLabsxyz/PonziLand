@@ -12,6 +12,7 @@ const TestTokens: Record<string, Token> = {
     liquidityPoolType: 'standard',
     decimals: 18,
     images: {
+      skin: 'strk',
       icon: '/tokens/eSTRK/icon.png',
       biome: {
         x: 2,
@@ -40,6 +41,7 @@ const TestTokens: Record<string, Token> = {
     liquidityPoolType: 'standard',
     decimals: 0,
     images: {
+      skin: 'strk',
       icon: '/tokens/eSTRK/icon.png',
       biome: {
         x: 2,

@@ -300,11 +300,7 @@
       style={currentScale < MIN_SCALE_FOR_DETAIL && isOwner ? 'scale: 1.8' : ''}
       onclick={handleClick}
     >
-      {#if estimatedNukeTime == -1}
-        inf.
-      {:else}
-        <LandNukeShield {estimatedNukeTime} />
-      {/if}
+      <LandNukeShield {estimatedNukeTime} />
     </div>
   {/if}
 

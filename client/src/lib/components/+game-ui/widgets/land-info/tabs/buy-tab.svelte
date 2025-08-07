@@ -2,7 +2,7 @@
   import account from '$lib/account.svelte';
   import type { LandSetup, LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
-  import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import {
     nextStep,
     tutorialState,
@@ -11,7 +11,7 @@
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
-  import type { TabType } from '$lib/interfaces';
+  import type { TabType, Token } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
   import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
@@ -37,10 +37,16 @@
     padAddress(account.address ?? '') == padAddress(land.owner),
   );
 
-  let tokenValue: string = $state('');
-  let selectedToken = $derived(
-    data.availableTokens.find((token) => token.address === tokenValue),
-  );
+  let tokenValue: Token | string | undefined = $state('');
+  let selectedToken: Token | undefined = $derived.by(() => {
+    if (typeof tokenValue === 'string') {
+      return data.availableTokens.find(
+        (token: Token) => token.address === tokenValue,
+      );
+    }
+    return tokenValue;
+  });
+
   let stake: string = $state('');
   let stakeAmount: CurrencyAmount = $derived(
     CurrencyAmount.fromScaled(stake ?? 0, selectedToken),
@@ -322,6 +328,7 @@
     </p>
     <TokenSelect
       bind:value={tokenValue}
+      variant="swap"
       class={tutorialState.tutorialProgress == 6
         ? 'border border-yellow-500 animate-pulse'
         : ''}

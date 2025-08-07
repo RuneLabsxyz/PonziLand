@@ -72,7 +72,6 @@
     const nbNeighbors = yieldInfo?.yield_info.filter(
       (info) => info.percent_rate,
     ).length;
-    console.log('neighbours', nbNeighbors);
     return nbNeighbors;
   }
 

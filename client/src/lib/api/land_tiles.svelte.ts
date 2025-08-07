@@ -7,7 +7,13 @@ import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
 import type { ParsedEntity } from '@dojoengine/sdk';
 import type { Subscription } from '@dojoengine/torii-client';
-import { derived, writable, type Readable, type Writable } from 'svelte/store';
+import {
+  derived,
+  readable,
+  writable,
+  type Readable,
+  type Writable,
+} from 'svelte/store';
 import { EmptyLand, type BaseLand } from './land';
 import { AuctionLand } from './land/auction_land';
 import { BuildingLand } from './land/building_land';
@@ -15,27 +21,17 @@ import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress } from '$lib/utils';
+import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
+import { CairoOption } from 'starknet';
+import data from '$profileData';
 
-// Constants for random updates
-const MIN_RANDOM_UPDATES = 20;
-const MAX_RANDOM_UPDATES = 50;
-const RANDOM_UPDATE_RANGE = MAX_RANDOM_UPDATES - MIN_RANDOM_UPDATES;
-
-const UPDATE_INTERVAL = 100;
-const NUKE_RATE = 0.1;
-
-// Token addresses
-const TOKEN_ADDRESSES = [
-  '0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0',
-  '0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825',
-  '0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b',
-  '0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe',
-  '0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706',
-];
+const TOKEN_ADDRESSES = data.availableTokens.map(
+  (token) => token.address,
+) as string[];
 
 // Default values
-const DEFAULT_SELL_PRICE = 1000;
-const DEFAULT_STAKE_AMOUNT = 1000;
+const DEFAULT_SELL_PRICE = 1000000000000000000;
+const DEFAULT_STAKE_AMOUNT = 1000000000000000000;
 const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
 
@@ -65,7 +61,7 @@ function getLocationFromEntity(
 export class LandTileStore {
   private store: WrappedLand[][];
   private currentLands: Writable<BaseLand[][]>;
-  private allLands: Readable<BaseLand[]>;
+  private allLands: Readable<BaseLand[]> = readable([]);
   private pendingStake: Map<string, LandStake> = new Map(); // Use string key for better lookup
   private sub: Subscription | undefined;
   private updateTracker: Writable<number> = writable(0);
@@ -98,6 +94,27 @@ export class LandTileStore {
   }
 
   public async setup(client: Client) {
+    // Reset all values to their initial state
+    this.store = Array(GRID_SIZE)
+      .fill(null)
+      .map((_, x) =>
+        Array(GRID_SIZE)
+          .fill(null)
+          .map((_, y) => wrapLand(new EmptyLand({ x, y }))),
+      );
+
+    this.currentLands.set(
+      Array(GRID_SIZE)
+        .fill(null)
+        .map((_, x) =>
+          Array(GRID_SIZE)
+            .fill(null)
+            .map((_, y) => new EmptyLand({ x, y })),
+        ),
+    );
+
+    // allLands is a derived store, so no need to reset
+    this.pendingStake.clear();
     if (this.sub) {
       this.sub.cancel();
       this.sub = undefined;
@@ -118,9 +135,13 @@ export class LandTileStore {
   }
 
   private randomLandUpdate() {
-    // Update between 20 to 100 random lands
+    // Use devsettings for update range and nuke rate
+    const minUpdates = devsettings.minRandomUpdates;
+    const maxUpdates = devsettings.maxRandomUpdates;
+    const nukeRate = devsettings.nukeRate;
+    const randomUpdateRange = maxUpdates - minUpdates;
     const numUpdates =
-      Math.floor(Math.random() * RANDOM_UPDATE_RANGE) + MIN_RANDOM_UPDATES;
+      Math.floor(Math.random() * randomUpdateRange) + minUpdates;
 
     this.currentLands.update((lands) => {
       for (let i = 0; i < numUpdates; i++) {
@@ -133,17 +154,20 @@ export class LandTileStore {
         const randomToken =
           TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
 
+        const levels = ['Zero', 'First', 'Second'];
+        const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+
         // Create a random update
         const fakeLand: Land = {
           owner: DEFAULT_OWNER,
           location: x + y * GRID_SIZE,
-          block_date_bought: Date.now(),
+          block_date_bought: Date.now() / 1000,
           sell_price:
             Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
             DEFAULT_SELL_PRICE / 2,
           token_used: randomToken,
           // @ts-ignore
-          level: 'Second',
+          level: randomLevel,
         };
 
         const fakeStake: LandStake = {
@@ -158,11 +182,23 @@ export class LandTileStore {
         const buildingLand = new BuildingLand(fakeLand);
         buildingLand.updateStake(fakeStake);
 
+        if (BuildingLand.is(buildingLand)) {
+          console.log(
+            `Updating land at (${x}, ${y}) with BuildingLand:`,
+            buildingLand,
+          );
+          claimStore.value[buildingLand.locationString] = {
+            animating: false,
+            land: createLandWithActions(buildingLand, () => this.getAllLands()),
+            claimable: true,
+          };
+        }
+
         this.store[x][y].set({ value: buildingLand });
         lands[x][y] = buildingLand;
 
-        // Randomly trigger nuke animation (50% chance)
-        if (Math.random() < NUKE_RATE) {
+        // Randomly trigger nuke animation
+        if (Math.random() < nukeRate) {
           this.triggerNukeAnimation(x, y);
         }
       }
@@ -193,7 +229,7 @@ export class LandTileStore {
           const fakeLand: Land = {
             owner: DEFAULT_OWNER,
             location: x + y * GRID_SIZE,
-            block_date_bought: Date.now(),
+            block_date_bought: Date.now() / 1000,
             sell_price:
               Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
               DEFAULT_SELL_PRICE / 2,
@@ -222,10 +258,120 @@ export class LandTileStore {
     });
   }
 
+  public palette() {
+    this.currentLands.update((lands) => {
+      const levels = ['Zero', 'First', 'Second'];
+      const totalTokens = TOKEN_ADDRESSES.length;
+      const totalLevels = levels.length;
+
+      // Calculate dimensions needed for the palette
+      const paletteWidth = totalTokens;
+      const paletteHeight = totalLevels;
+
+      // Calculate starting position to center the palette
+      const startX = Math.floor((GRID_SIZE - paletteWidth) / 2);
+      const startY = Math.floor((GRID_SIZE - paletteHeight) / 2);
+
+      // First, fill entire grid with empty lands
+      for (let y = 0; y < GRID_SIZE; y++) {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          const location = { x, y };
+          const emptyLand = new EmptyLand(location);
+          this.store[x][y].set({ value: emptyLand });
+          lands[x][y] = emptyLand;
+        }
+      }
+
+      // Create the palette in the center
+      let buildingCount = 0;
+
+      // Levels from top to bottom (y-axis)
+      for (let levelIndex = 0; levelIndex < totalLevels; levelIndex++) {
+        // Tokens from left to right (x-axis)
+        for (let tokenIndex = 0; tokenIndex < totalTokens; tokenIndex++) {
+          const x = startX + tokenIndex;
+          const y = startY + levelIndex;
+
+          // Make sure we're within grid bounds
+          if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE) {
+            const token = TOKEN_ADDRESSES[tokenIndex];
+            const level = levels[levelIndex];
+
+            // Create building land with specific token and level
+            const fakeLand: Land = {
+              owner: DEFAULT_OWNER,
+              location: x + y * GRID_SIZE,
+              block_date_bought: Date.now() / 1000,
+              sell_price: DEFAULT_SELL_PRICE + buildingCount * 100, // Vary prices slightly
+              token_used: token,
+              // @ts-ignore
+              level: level,
+            };
+
+            const fakeStake: LandStake = {
+              location: x + y * GRID_SIZE,
+              amount: DEFAULT_STAKE_AMOUNT + buildingCount * 50, // Vary stake amounts
+              accumulated_taxes_fee: 0,
+              neighbors_info_packed: 0,
+            };
+
+            const buildingLand = new BuildingLand(fakeLand);
+            buildingLand.updateStake(fakeStake);
+
+            this.store[x][y].set({ value: buildingLand });
+            lands[x][y] = buildingLand;
+
+            buildingCount++;
+          }
+        }
+      }
+
+      // Add one auction land right after the palette
+      const auctionX = startX + totalTokens;
+      const auctionY = startY;
+
+      if (auctionX < GRID_SIZE && auctionY < GRID_SIZE) {
+        const auctionToken = TOKEN_ADDRESSES[0];
+        const auctionLevel = levels[0];
+
+        const auctionLandData: Land = {
+          owner: DEFAULT_OWNER,
+          location: auctionX + auctionY * GRID_SIZE,
+          block_date_bought: Date.now() / 1000,
+          sell_price: DEFAULT_SELL_PRICE,
+          token_used: auctionToken,
+          // @ts-ignore
+          level: auctionLevel,
+        };
+
+        const auctionData: Auction = {
+          land_location: auctionX + auctionY * GRID_SIZE,
+          start_time: Date.now() / 1000,
+          start_price: '',
+          floor_price: '',
+          is_finished: false,
+          decay_rate: '',
+          sold_at_price: 0 as any,
+        };
+
+        const auctionLand = new AuctionLand(auctionLandData, auctionData);
+
+        this.store[auctionX][auctionY].set({ value: auctionLand });
+        lands[auctionX][auctionY] = auctionLand;
+      }
+
+      console.log(
+        `Palette created with ${buildingCount} building combinations (${totalTokens} tokens × ${totalLevels} levels), 1 auction land, centered at (${startX}, ${startY})`,
+      );
+
+      return lands;
+    });
+  }
+
   public startRandomUpdates() {
     this.fakeUpdateInterval = setInterval(() => {
       this.randomLandUpdate();
-    }, UPDATE_INTERVAL);
+    }, devsettings.updateInterval);
   }
 
   public stopRandomUpdates() {
@@ -276,11 +422,6 @@ export class LandTileStore {
     const pendingStake = this.pendingStake.get(pendingStakeKey);
 
     if (pendingStake) {
-      console.log(
-        'Applying pending stake for location',
-        location,
-        pendingStake,
-      );
       land.updateStake(pendingStake);
       this.pendingStake.delete(pendingStakeKey);
     }
@@ -291,8 +432,6 @@ export class LandTileStore {
   public updateLand(entity: ParsedEntity<SchemaType>): void {
     const location = getLocationFromEntity(entity);
     if (location === undefined) return;
-
-    console.log('Updating land', entity);
 
     const landStore = this.store[location.x][location.y];
     const pendingStakeKey = this.getPendingStakeKey(location);
@@ -319,11 +458,6 @@ export class LandTileStore {
       if (EmptyLand.is(previousLand) && landModel == undefined) {
         // If we only have a stake update for an empty land, store it as pending
         if (landStakeModel !== undefined) {
-          console.log(
-            'Storing stake for empty land at location',
-            location,
-            landStakeModel,
-          );
           this.pendingStake.set(pendingStakeKey, landStakeModel as LandStake);
         }
 
@@ -379,7 +513,6 @@ export class LandTileStore {
 
           // Then, if we have a current stake update, apply it (this will override pending stake)
           if (landStakeModel !== undefined) {
-            console.log('Applying current stake update', landStakeModel);
             (newLand as BuildingLand).updateStake(landStakeModel as LandStake);
           } else if (
             BuildingLand.is(previousLand) &&
@@ -391,26 +524,14 @@ export class LandTileStore {
               amount: previousLand.stakeAmount.toBigint(),
             } as LandStake);
           }
-
-          console.log('New land created', newLand);
         }
       } else if (landStakeModel !== undefined) {
         // We only have a stake update
         if (BuildingLand.is(newLand)) {
           // Apply stake to existing BuildingLand
-          console.log(
-            'Updating stake on existing BuildingLand',
-            landStakeModel,
-          );
           newLand.updateStake(landStakeModel as LandStake);
           newLand = BuildingLand.fromBuildingLand(newLand);
         } else {
-          // Store stake as pending since we don't have a BuildingLand yet
-          console.log(
-            'Storing pending stake for non-BuildingLand',
-            location,
-            landStakeModel,
-          );
           this.pendingStake.set(pendingStakeKey, landStakeModel as LandStake);
           // Return early, no land change needed
           return { value: previousLand };

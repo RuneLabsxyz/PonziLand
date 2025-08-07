@@ -1,8 +1,8 @@
 <script lang="ts">
   import { getSocialink } from '$lib/accounts/social/index.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { refresh, state as accountState } from '$lib/account.svelte';
-
+  import { refresh, accountState } from '$lib/account.svelte';
+  accountState;
   const socialink = getSocialink();
 
   let showAcceptPopup = $state(false);
