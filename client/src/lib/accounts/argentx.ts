@@ -1,6 +1,4 @@
-import type {
-  StoredSession
-} from '$lib/contexts/account.svelte';
+import type { StoredSession } from '$lib/contexts/account.svelte';
 import { getDojoConfig } from '$lib/dojoConfig';
 import {
   buildSessionAccount,
@@ -8,16 +6,10 @@ import {
   createSession,
   createSessionRequest,
   type CreateSessionParams,
-  type SessionKey
+  type SessionKey,
 } from '@argent/x-sessions';
 import { WALLET_API } from '@starknet-io/types-js';
-import {
-  Account,
-  constants,
-  ec,
-  RpcProvider,
-  WalletAccount
-} from 'starknet';
+import { Account, constants, ec, RpcProvider, WalletAccount } from 'starknet';
 import { CommonStarknetWallet } from './getStarknet';
 
 const FUSE_DISABLE_ARGENT = true;
