@@ -1,0 +1,25 @@
+diff --git a/node_modules/@avnu/avnu-sdk/.bun-tag-d972a64c17b4e267 b/.bun-tag-d972a64c17b4e267
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 940e6feace3fa4684c2bdd8bd93fb2ea947be012..f36dc337cb9ca23401a8b4de81712dc303a14d6c 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -196,7 +196,7 @@ var executeCancelOrder = async (account, orderAddress, { gasless = false, gasfre
+ 
+ // src/fixtures.ts
+ import { parseUnits, toBeHex as toBeHex2 } from "ethers";
+-import { duration } from "moment";
++import moment from "moment";
+ import { constants } from "starknet";
+ var aPriceRequest = () => ({
+   sellTokenAddress: "0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+@@ -466,7 +466,7 @@ var aDCACreateOrder = () => ({
+   sellAmount: toBeHex2(parseUnits("1", 18)),
+   buyTokenAddress: "0x72df4dc5b6c4df72e4288857317caf2ce9da166ab8719ab8306516a2fddfff7",
+   sellAmountPerCycle: toBeHex2(parseUnits("1", 18)),
+-  frequency: duration("1"),
++  frequency: moment.duration("1"),
+   pricingStrategy: {
+     tokenToMinAmount: toBeHex2(parseUnits("1", 18)),
+     tokenToMaxAmount: toBeHex2(parseUnits("1", 18))
