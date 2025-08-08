@@ -121,6 +121,11 @@ npm run build
 npm run preview
 ```
 
+## Todos
+
+- [ ] Bravoos wallet support
+- [ ] Custom policies for signing tx
+
 ## License
 
 MIT

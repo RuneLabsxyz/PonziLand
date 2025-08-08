@@ -4,7 +4,7 @@
     "": {
       "name": "account",
       "dependencies": {
-        "@argent/x-sessions": "^7.0.0",
+        "@argent/x-sessions": "^8.0.1",
         "@cartridge/controller": "^0.9.2",
         "@ponziland/ui": "^0.0.12",
         "@starknet-io/get-starknet-core": "^4.0.7",
@@ -35,7 +35,7 @@
 
     "@argent/x-multicall": ["@argent/x-multicall@7.1.0", "", { "dependencies": { "dataloader": "^2.2.2" }, "peerDependencies": { "typescript": "^5.0.0" } }, "sha512-65y2pXtsjACIYqyjJ75FMbQcnv/5MnONyS3yN+0JgLLNqCEiGrLbGwEZ/E+Esy0qPF1WBqzdx8l3izj5l2zAwQ=="],
 
-    "@argent/x-sessions": ["@argent/x-sessions@7.0.0", "", { "dependencies": { "minimalistic-assert": "^1.0.1" }, "peerDependencies": { "starknet": "6.11.0" } }, "sha512-HVbwOALYUZaJ+alLfBdhiqOcEDQsq0/xFk0/H23aho2LG++RWsQnmSLxhMzcjQYx9GRbt7H8oK2HL2YKfrFPCw=="],
+    "@argent/x-sessions": ["@argent/x-sessions@8.0.1", "", { "dependencies": { "minimalistic-assert": "^1.0.1" }, "peerDependencies": { "starknet": "7.5.1" } }, "sha512-lWySyk3lhmGOwMAi184aWgr3Lry56NiiY6quWKjbtcaMp/zWzINIfHxmUMpvtqZlAo7pFbthv91A7Yu6XGcI5Q=="],
 
     "@argent/x-shared": ["@argent/x-shared@1.53.2", "", { "dependencies": { "@argent/x-multicall": "^7.1.0", "@noble/hashes": "^1.3.1", "@starknet-io/types-js": "^0.7.7", "big-decimal-number": "npm:bignumber.js@^9.1.2", "micro-starknet": "^0.2.3", "starknet": "6.11.0", "starknet4-deprecated": "npm:starknet@4.4.0", "starknet5": "npm:starknet@5.25.0" }, "peerDependencies": { "@scure/base": "^1.1.1", "@scure/bip39": "^1.2.1", "async-retry": "^1.3.3", "lodash-es": "^4.17.21", "ua-parser-js": "^1.0.38 || ^2.0.0", "url-join": "^5.0.0", "zod": "^3.23.8" } }, "sha512-+UotwZhe13t4YH9IthXyA6s3ZRScgkhmR5iDMkOwhz8CKI0phxYJQrnFs9tcUkws1M4THDSHXRPBvdu6exp9rw=="],
 

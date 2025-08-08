@@ -2,7 +2,7 @@ import { type AccountInterface } from 'starknet';
 import { useAccount, type AccountProvider, type Event } from './context/account.svelte.js';
 
 
-export const state: {
+export const accountState: {
   isConnected: boolean;
   address?: string;
   sessionAccount?: AccountInterface;
@@ -17,18 +17,18 @@ let isSetup = $state(false);
 const updateState = async (provider: AccountProvider) => {
   const walletAccount = provider.getWalletAccount();
 
-  state.isConnected = walletAccount != null;
-  state.address = walletAccount?.address;
-  state.walletAccount = walletAccount;
+  accountState.isConnected = walletAccount != null;
+  accountState.address = walletAccount?.address;
+  accountState.walletAccount = walletAccount;
 
-  state.providerName = useAccount()?.getProviderName();
+  accountState.providerName = useAccount()?.getProviderName();
 };
 
 const resetState = () => {
-  state.address = undefined;
-  state.isConnected = false;
-  state.walletAccount = undefined;
-  state.providerName = undefined;
+  accountState.address = undefined;
+  accountState.isConnected = false;
+  accountState.walletAccount = undefined;
+  accountState.providerName = undefined;
 };
 
 export async function refresh() {
@@ -43,13 +43,13 @@ export async function refresh() {
   }
 }
 
-export async function setup() {
-  if (isSetup) return;
+export async function setup(): Promise<typeof accountState> {
+  if (isSetup) return accountState;
 
   const accountManager = useAccount();
   if (!accountManager) {
     console.warn('Account manager not initialized. Call setupAccount() first.');
-    return;
+    return accountState;
   }
 
   isSetup = true;
@@ -72,7 +72,7 @@ export async function setup() {
     }
   });
 
-  return state;
+  return accountState;
 }
 
-export default state;
+export default accountState;
