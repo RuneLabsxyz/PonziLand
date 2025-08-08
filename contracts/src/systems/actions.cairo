@@ -280,7 +280,7 @@ pub mod actions {
                     claim_fee_threshold,
                     our_contract_for_fee,
                 );
-            self.validate_and_excute_buy_payment(land, caller, store, our_contract_for_fee);
+            self.validate_and_execute_buy_payment(land, caller, store, our_contract_for_fee);
             self.stake._refund(store, land, our_contract_address);
 
             self
@@ -331,7 +331,7 @@ pub mod actions {
             );
 
             self
-                .internal_claim(
+                .execute_claim(
                     store,
                     @land,
                     neighbors,
@@ -371,7 +371,7 @@ pub mod actions {
                     }
                     let neighbors = get_land_neighbors(store, land_location);
                     self
-                        .internal_claim(
+                        .execute_claim(
                             store,
                             @land,
                             neighbors,
@@ -419,7 +419,7 @@ pub mod actions {
             let neighbors = get_land_neighbors(store, land_location);
 
             self
-                .buy_from_bid(
+                .execute_bid_purchase(
                     store,
                     land,
                     token_for_sale,
@@ -775,7 +775,7 @@ pub mod actions {
         }
 
 
-        fn internal_claim(
+        fn execute_claim(
             ref self: ContractState,
             mut store: Store,
             claimer_land: @Land,
@@ -817,7 +817,7 @@ pub mod actions {
             }
         }
 
-        fn buy_from_bid(
+        fn execute_bid_purchase(
             ref self: ContractState,
             mut store: Store,
             mut land: Land,
@@ -921,7 +921,7 @@ pub mod actions {
         ) {
             //last claim for the seller
             self
-                .internal_claim(
+                .execute_claim(
                     store,
                     land,
                     neighbors,
@@ -937,7 +937,7 @@ pub mod actions {
             let land_seller: Span<Land> = array![*land].span();
             for claimer_neighbor in neighbors {
                 self
-                    .internal_claim(
+                    .execute_claim(
                         store,
                         claimer_neighbor,
                         land_seller,
@@ -951,7 +951,7 @@ pub mod actions {
             }
         }
 
-        fn validate_and_excute_buy_payment(
+        fn validate_and_execute_buy_payment(
             ref self: ContractState,
             land: Land,
             caller: ContractAddress,
