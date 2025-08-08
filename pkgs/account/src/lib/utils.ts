@@ -44,3 +44,10 @@ export function toHexWithPadding(value: number | bigint, paddingLength = 64) {
     const end = hex.slice(-length);
     return `${start}...${end}`;
   }
+
+  export function shortenAddress(address: string, length = 4) {
+    const start = address.slice(0, 2 + length);
+    const end = address.slice(-length);
+
+    return `${start}...${end}`;
+  }

@@ -28,7 +28,7 @@
 <!-- Include the components -->
 {#if initialized}
   <SelectWalletModal />
-  <OnboardingWalletInfo/>
+  <OnboardingWalletInfo enablePhantom={true} />
 {:else}
   <p>Initializing account manager...</p>
 {/if}
