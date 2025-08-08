@@ -1,7 +1,7 @@
 // Get the wanted system from the environment
 
 const browser = typeof window !== 'undefined';
-import { accountConfig } from '../consts.js';
+import { accountConfig, configureAccount, type AccountConfig } from '../consts.js';
 import { ArgentXAccount } from '../wallets/argentx.js';
 import { setupController, SvelteController } from '../wallets/controller.js';
 import { Provider as StarknetProvider } from 'starknet';
@@ -107,7 +107,7 @@ export async function Provider(
     case 'controller':
       return controller ?? null;
     case 'argentX':
-      return new ArgentXAccount(wallet);
+      return new ArgentXAccount(wallet, accountConfig);
     // NOTE: To add new providers, this is here.
     default:
       return null;
@@ -441,7 +441,11 @@ export class AccountManager {
 
 let state = $state<AccountManager | null>(null);
 
-export function setupAccount(): Promise<AccountManager> {
+export function setupAccount(config?: Partial<AccountConfig>): Promise<AccountManager> {
+  if (config) {
+    configureAccount(config);
+  }
+  
   if (state != null) {
     return state.wait();
   }
