@@ -45,6 +45,13 @@
   import OwnerIndicator from './owner-indicator.svelte';
   import NukeTimeDisplay from './nuke-time-display.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
+  // Add these imports to your existing main component
+  import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
+  import { BufferAttribute, Clock } from 'three';
+
+  // Add these state variables to your existing ones
+  let coinShaderMaterial: CoinHoverShaderMaterial | undefined = $state();
+  let clock = new Clock();
 
   let billboarding = $derived(devsettings.billboarding);
 
@@ -215,12 +222,6 @@
 
       // Log zoom changes (throttled to avoid spam)
       if (Math.abs(currentZoom - lastLoggedZoom) > 1) {
-        console.log(
-          'Camera zoom:',
-          currentZoom,
-          'isUnzoomed:',
-          currentZoom <= ZOOM_THRESHOLD,
-        );
         lastLoggedZoom = currentZoom;
       }
 
@@ -309,12 +310,25 @@
     );
   });
 
-  let texture = new TextureLoader().load('/ui/icons/Icon_Coin2.png');
-  texture.magFilter = NearestFilter;
-  texture.minFilter = NearestFilter;
-  texture.colorSpace = 'srgb';
+  // Update your texture loading section
+  let texture = new TextureLoader().load(
+    '/ui/icons/Icon_Coin2.png',
+    (loadedTexture) => {
+      loadedTexture.magFilter = NearestFilter;
+      loadedTexture.minFilter = NearestFilter;
 
-  // Add this texture loading section after your existing texture definitions
+      // Create the shader material after texture loads
+      coinShaderMaterial = new CoinHoverShaderMaterial(loadedTexture);
+    },
+  );
+
+  // Add animation loop for shader time uniform
+  useTask(() => {
+    if (coinShaderMaterial) {
+      coinShaderMaterial.updateTime(clock.getElapsedTime());
+    }
+  });
+
   let crownTexture = new TextureLoader().load('/ui/icons/Icon_Crown.png');
   crownTexture.magFilter = NearestFilter;
   crownTexture.minFilter = NearestFilter;
@@ -347,7 +361,7 @@
 </script>
 
 <T is={Group}>
-  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, resolvedBiomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
+  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
     <!-- Transparent interaction planes layer (now also renders roads) -->
     {#if interactionPlanes && devsettings.showRoads}
       <T
@@ -364,10 +378,10 @@
       <InstancedSprite
         count={gridSize * gridSize}
         {billboarding}
-        spritesheet={resolvedBiomeSpritesheet}
+        spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
       >
-        <BiomeSprite {landTiles} />
+        <BiomeSprite {landTiles} {biomeSpritesheet} />
       </InstancedSprite>
     {/if}
 
@@ -391,7 +405,7 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite {landTiles} />
+        <BuildingSprite {landTiles} {buildingSpritesheet} />
       </InstancedSprite>
     {/if}
 
@@ -407,7 +421,9 @@
       </InstancedSprite>
     {/if}
 
-    {#if devsettings.showCoins}
+    // In your main component, update the coin section:
+
+    {#if devsettings.showCoins && coinShaderMaterial}
       <InstancedMesh
         bind:ref={coinInstancedMesh}
         limit={gridSize * gridSize}
@@ -415,11 +431,15 @@
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[0.3, 0.3]} />
-        <T.MeshBasicMaterial map={texture} transparent alphaTest={0.1} />
+        <T is={coinShaderMaterial} />
         {#each landTiles as tile, i}
-          {#if tile.land.type === 'building'}
-            <Coin {tile} {i} instancedMesh={coinInstancedMesh} {isUnzoomed} />
-          {/if}
+          <Coin
+            {tile}
+            {i}
+            instancedMesh={coinInstancedMesh}
+            {isUnzoomed}
+            shaderMaterial={coinShaderMaterial}
+          />
         {/each}
       </InstancedMesh>
     {/if}
@@ -464,7 +484,7 @@
 </T>
 
 <!-- Button overlay using Threlte HTML component -->
-{#if devsettings.showLandOverlay && selectedLandTilePosition}
+{#if devsettings.showLandOverlay && selectedLandTilePosition && !isUnzoomed}
   {@const land = selectedLandWithActions()?.value}
   <HTML
     portal={document.getElementById('game-canvas') ?? document.body}
