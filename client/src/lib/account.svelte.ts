@@ -46,8 +46,8 @@ export async function refresh() {
   }
 }
 
-export async function setup() {
-  if (isSetup) return;
+export async function setup(): Promise<typeof accountState> {
+  if (isSetup) return accountState;
 
   isSetup = true;
   const accountManager = useAccount()!;

@@ -2,7 +2,7 @@
 
 const browser = typeof window !== 'undefined';
 import { accountConfig } from '../consts.js';
-// import { ArgentXAccount } from '../wallets/argentx.js';
+import { ArgentXAccount } from '../wallets/argentx.js';
 import { setupController, SvelteController } from '../wallets/controller.js';
 import { Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
@@ -106,8 +106,8 @@ export async function Provider(
   switch (wallet.id) {
     case 'controller':
       return controller ?? null;
-    // case 'argentX':
-    //   return new ArgentXAccount(wallet);
+    case 'argentX':
+      return new ArgentXAccount(wallet);
     // NOTE: To add new providers, this is here.
     default:
       return null;
