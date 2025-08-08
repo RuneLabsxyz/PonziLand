@@ -1,5 +1,5 @@
 import { getContext, onMount, setContext } from 'svelte';
-import Controller from '@cartridge/controller';
+import Controller, { type ControllerOptions } from '@cartridge/controller';
 import { type AccountConfig } from '../consts.js';
 import type { AccountInterface, WalletAccount } from 'starknet';
 import type {
@@ -84,7 +84,7 @@ function a2hex(str: string): string {
 }
 
 export async function setupController(
-  config: AccountConfig,
+  config: AccountConfig & { policies?: any},
 ): Promise<SvelteController | undefined> {
 
   if (typeof window === 'undefined') {
@@ -92,10 +92,25 @@ export async function setupController(
     return undefined;
   }
 
-  const controller = new SvelteController();
+  const controllerOptions: ControllerOptions = {
+    defaultChainId: config.chainId === 'mainnet' ? a2hex('SN_MAIN') : a2hex('SN_SEPOLIA'),
+    chains: [{ rpcUrl: config.rpcUrl }],
+  };
+
+  // Only add policies if provided
+  if (config.policies) {
+    controllerOptions.policies = config.policies;
+  } else {
+    controllerOptions.policies = {}
+  }
+  const controller = new SvelteController(controllerOptions);
 
   console.info('Starting controller!');
 
+  // Check if the controller is already connected
+  if (await controller.probe()) {
+    await controller.connect();
+  }
 
   return controller;
 }
