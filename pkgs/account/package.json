@@ -1,6 +1,6 @@
 {
 	"name": "@ponziland/account",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "Account management library for Starknet with wallet modal and connection state",
 	"keywords": [
 		"starknet",
@@ -9,14 +9,14 @@
 		"svelte",
 		"sveltekit"
 	],
-	"homepage": "https://ponziland.xyz",
+	"homepage": "https://ponzi.land",
 	"license": "MIT",
 	"author": {
 		"name": "PonziLand Team"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/ponziland/account.git"
+		"url": "git+https://github.com/RuneLabsxyz/PonziLand/tree/main/pkgs/account"
 	},
 	"scripts": {
 		"dev": "vite dev",
