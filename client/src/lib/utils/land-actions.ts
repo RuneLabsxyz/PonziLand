@@ -2,7 +2,7 @@ import type { BaseLand } from '$lib/api/land';
 import { AuctionLand } from '$lib/api/land/auction_land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { Neighbors } from '$lib/api/neighbors';
-import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
+import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/dynamic_const';
 import { get } from 'svelte/store';
 import { useDojo } from '$lib/contexts/dojo';
 import type { ElapsedTimeSinceLastClaim, LandYieldInfo } from '$lib/interfaces';

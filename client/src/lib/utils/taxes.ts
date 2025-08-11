@@ -1,6 +1,6 @@
 import type { LandWithActions } from '$lib/api/land';
 import { Neighbors } from '$lib/api/neighbors';
-import { GAME_SPEED, TAX_RATE, BASE_TIME } from '$lib/const';
+import { GAME_SPEED, TAX_RATE, BASE_TIME } from '$lib/dynamic_const';
 import type { Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import data from '$profileData';
