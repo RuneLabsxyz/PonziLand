@@ -1,0 +1,35 @@
+name: Tests and linter
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  SCARB_VERSION: 2.5.4
+  SNFORGE_VERSION: 0.19.0
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Scarb
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://docs.swmansion.com/scarb/install.sh | bash -s -- -v ${{ env.SCARB_VERSION }}
+
+      - name: Setup Foundry
+        run: |
+          curl -L https://raw.githubusercontent.com/foundry-rs/starknet-foundry/master/scripts/install.sh | sh -s -- -v ${{ env.SNFORGE_VERSION }}
+          snfoundryup -v ${{ env.SNFORGE_VERSION }}
+
+      - name: Add Foundry to PATH
+        run: echo "PATH=/home/runner/.local/bin:$PATH" >> $GITHUB_ENV
+
+      - name: Build and test
+        working-directory: .
+        run: |
+          snforge test --max-n-steps 4294967295
+          scarb build
