@@ -19,7 +19,7 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
-import { padAddress,coordinatesToLocation } from '$lib/utils';
+import { padAddress, coordinatesToLocation } from '$lib/utils';
 import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 import data from '$profileData';
 
@@ -352,7 +352,6 @@ export class LandTileStore {
           start_price: '',
           floor_price: '',
           is_finished: false,
-          decay_rate: '',
           sold_at_price: 0 as any,
         };
 
