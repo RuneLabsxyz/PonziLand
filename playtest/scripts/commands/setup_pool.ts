@@ -27,11 +27,6 @@ export async function setupPool(config: Configuration, args: string[]) {
 
   const { account } = await connect(config);
 
-
-  for (const token of tokens) {
-    await registerTokens(config, account, [token]);
-  }
-
   for (const token of tokens) {
     for (const token2 of tokens) {
       if (token.address === token2.address) {
