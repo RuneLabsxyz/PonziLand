@@ -88,6 +88,7 @@ async function createPool(
       contractAddress: token_1.address,
       entrypoint: "mint",
       calldata: CallData.compile({
+        recipient: account.address,
         amount: cairo.uint256(BigNumber(1000).shiftedBy(18).toFixed(0)),
       }),
     },
@@ -95,6 +96,7 @@ async function createPool(
       contractAddress: token_2.address,
       entrypoint: "mint",
       calldata: CallData.compile({
+        recipient: account.address,
         amount: cairo.uint256(BigNumber(1000).shiftedBy(18).toFixed(0)),
       }),
     },
