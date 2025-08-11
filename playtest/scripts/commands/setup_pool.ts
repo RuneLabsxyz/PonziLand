@@ -84,6 +84,20 @@ async function createPool(
   // Register tokens here
   const discoveryContract = env.EKUBO_DISCOVERY_CONTRACT!;
   const calls = [
+    {
+      contractAddress: token_1.address,
+      entrypoint: "mint",
+      calldata: CallData.compile({
+        amount: cairo.uint256(BigNumber(1000).shiftedBy(18).toFixed(0)),
+      }),
+    },
+    {
+      contractAddress: token_2.address,
+      entrypoint: "mint",
+      calldata: CallData.compile({
+        amount: cairo.uint256(BigNumber(1000).shiftedBy(18).toFixed(0)),
+      }),
+    },
       {
         contractAddress: "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
         entrypoint: "maybe_initialize_pool",
