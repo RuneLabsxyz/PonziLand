@@ -59,6 +59,8 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    MANIFEST_PATH: '/etc/config/manifest_sepolia.json',
+    DATA_PATH: '/etc/config/sepolia.json',
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -113,7 +115,7 @@ console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath =
   process.env['MANIFEST_PATH'] || `../contracts/manifest_${profile}.json`;
-const dataPath = `data/${profile}.json`;
+const dataPath = process.env['DATA_PATH'] || `data/${profile}.json`;
 
 console.log('Manifest: ', manifestPath);
 
