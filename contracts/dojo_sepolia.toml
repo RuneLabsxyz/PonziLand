@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "ponzi_land-wip-3"
+seed = "ponzi_land-wip-4"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -26,16 +26,14 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 
 [writers]
 # We need to be a writer to add events...
-"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth"]
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
 
 [init_call_args]
 "ponzi_land-actions" = [
-    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
     "128000000000000000000",                                              # Start price (low)
     "0",                                                                  # Start price (high)
     "1000000000000000000",                                                # Floor price (low)
     "0",                                                                  # Floor price (high)
-    "100",                                                                # Decay rate
     "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
 ]
 
@@ -52,4 +50,34 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "0x05aa6c0482d24e017d3e177a7df96528e75c158476559f1012b2e944d28e8903", # pltBROTHER
     "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d", # pltPAL
     "0x01544000184b0d667f63005fee5ef39bc0514565b5580291256456db5d9e08f3", # pltETH
+]
+
+"ponzi_land-config" = [
+    "255",                                                                # Grid width
+    "2",                                                                  # Tax rate
+    "3600",                                                               # Base time
+    "2",                                                                  # Price decrease rate
+    "5",                                                                  # Time speed
+    "16",                                                                 # Max auctions
+    "3",                                                                  # Max auctions from bid
+    "200",                                                                # Decay rate
+    "100000000000000000",
+    "0",                                                                  # Floor price
+    "3",                                                                  # Liquidity safety multiplier
+    "500000000000000000000",
+    "0",                                                                  # Min auction price
+    "10",                                                                 # Min auction price multiplier
+    "32639",                                                              # Center location
+    "436800",                                                             # Auction duration
+    "50",                                                                 # Scaling factor
+    "12000",                                                              # Linear time decay
+    "90",                                                                 # Drop rate
+    "100",                                                                # Rate denominator
+    "127",                                                                # Max circles
+    "90000",                                                              # Claim fee (0.9%)
+    "90000",                                                              # Buy fee (0.9%)
+    "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e", # Our contract for fee
+    "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e", # Our contract for auction
+    "1000",                                                               # Claim fee threshold
+    "0x067b19ff5c8e2ec1d80f0c2a9a1ee6d6424edde86c57dca04e82e1fe06a7e977", # Main token
 ]
