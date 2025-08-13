@@ -91,6 +91,7 @@ A modal that displays available Starknet wallets for connection. It automaticall
 A component that shows the current connection status and provides a connect button when disconnected.
 
 Props:
+
 - `onconnect?: () => void` - Callback function called after successful connection
 - `enablePhantom?: boolean` - Enable Phantom (Solana) wallet connection button (default: false)
 
@@ -101,9 +102,10 @@ Props:
 Initializes the account manager. Must be called once before using any other features.
 
 Parameters:
+
 - `config?: { chainId?: 'mainnet' | 'sepolia', rpcUrl?: string }` - Optional configuration
   - `chainId`: The Starknet chain to connect to (default: 'mainnet')
-  - `rpcUrl`: Custom RPC URL (default: 'https://api.cartridge.gg/x/starknet/mainnet')
+  - `rpcUrl`: Custom RPC URL (default: '<https://api.cartridge.gg/x/starknet/mainnet>')
 
 ### useAccount()
 
@@ -178,8 +180,8 @@ The library includes optional support for Phantom wallet connections:
   import { phantomWalletStore } from '@ponziland/account';
   
   // Access Phantom wallet state
-  $: phantomConnected = phantomWalletStore.isConnected;
-  $: phantomAddress = phantomWalletStore.walletAddress;
+  let phantomConnected = $derived(phantomWalletStore.isConnected);
+  let phantomAddress = $derived(phantomWalletStore.walletAddress);
   
   // Connect/disconnect Phantom
   async function connectPhantom() {
@@ -200,3 +202,4 @@ The library includes optional support for Phantom wallet connections:
 ## License
 
 MIT
+
