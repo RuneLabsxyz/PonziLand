@@ -8,11 +8,11 @@
         "oxalica": "oxalica"
       },
       "locked": {
-        "lastModified": 1752435703,
-        "narHash": "sha256-DfTjV55lqqwixDPWv9nKBNeWM4FIdju9QIy7hzo9HA8=",
+        "lastModified": 1755084877,
+        "narHash": "sha256-TWWlRvZvGraJ0eX+ZL7dbk2f1W5qiNZTmzKF6ckV0rQ=",
         "owner": "knownasred",
         "repo": "cairo-nix",
-        "rev": "f1ebd28d542df2e0af999b28a1cde755ef903b30",
+        "rev": "8642252e38cddfe8538b8ceb3c77b37a20076225",
         "type": "github"
       },
       "original": {

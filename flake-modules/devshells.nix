@@ -23,6 +23,8 @@
         cairo-nix.scarb
         cairo-nix.starkli
         cairo-nix.slot
+        cairo-nix.torii
+        cairo-nix.katana
 
         # svelte node dependencies
         bun

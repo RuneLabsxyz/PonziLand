@@ -3,27 +3,27 @@ name: Account Package Checks
 on:
   pull_request:
     paths:
-      - 'pkgs/account/**'
-      - '.github/workflows/account-package-checks.yml'
+      - "pkgs/account/**"
+      - ".github/workflows/account-package-checks.yml"
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          
+          node-version: "20"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
-          
+          bun-version-file: "client/.bun-version"
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -31,15 +31,15 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('pkgs/account/bun.lockb') }}
           restore-keys: |
             ${{ runner.os }}-bun-
-            
+
       - name: Install dependencies
         working-directory: pkgs/account
         run: bun install
-        
+
       - name: Build package
         working-directory: pkgs/account
         run: bun run build
-        
+
       - name: Verify build output
         working-directory: pkgs/account
         run: |
