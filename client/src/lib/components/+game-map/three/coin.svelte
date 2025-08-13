@@ -13,21 +13,28 @@
   import { padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
+  import { useThrelte } from '@threlte/core';
   import { Float, Instance } from '@threlte/extras';
+  import type { InstancedMesh as TInstancedMesh } from 'three';
   import type { LandTile } from './landTile';
+  import type { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
 
   const dojo = useDojo();
+
+  const { camera } = useThrelte();
 
   let {
     tile,
     i,
     instancedMesh,
     isUnzoomed = false,
+    shaderMaterial,
   }: {
     tile: LandTile;
     i: number;
-    instancedMesh: any;
+    instancedMesh: TInstancedMesh | undefined;
     isUnzoomed: boolean;
+    shaderMaterial: CoinHoverShaderMaterial | undefined;
   } = $props();
 
   let derivedTile = $derived(tile);
@@ -77,6 +84,35 @@
       });
   }
 
+  const handleCoinClick = async (tile: LandTile, i: number) => {
+    if (animating || !timing) return;
+
+    if (accountState.walletAccount === undefined) {
+      console.error('No wallet account found');
+      return;
+    }
+
+    fetchTaxes();
+
+    const land = createLandWithActions(
+      tile.land as BuildingLand,
+      landStore.getAllLands,
+    );
+
+    if (!land) {
+      console.error("Land doesn't have a token");
+      return;
+    }
+
+    claimSingleLand(land, dojo, accountState.walletAccount)
+      .then(() => {
+        gameSounds.play('claim');
+      })
+      .catch((e) => {
+        console.error('error claiming from coin', e);
+      });
+  };
+
   async function fetchTaxes() {
     if (!land || !land.location) {
       console.error('Land or location is not defined');
@@ -98,24 +134,33 @@
   }
 
   let aggregatedTaxes: TaxData[] = $state([]);
+  let coinHovered = $state(false);
+  let lastHoveredIndex = $state(-1);
 
-  // Add these handler functions to your component
-  function handleCoinClick(tile: LandTile, index: number) {
-    console.log('Coin clicked:', tile, index);
-    handleSingleClaim();
+  function onPointerEnter(event: any) {
+    // Get the instance ID directly from the intersection
+    const instanceId = event.intersections[0]?.instanceId;
+
+    if (instanceId !== undefined) {
+      lastHoveredIndex = instanceId;
+      handleCoinHover(instanceId, true);
+      coinHovered = true;
+    }
   }
 
-  let coinHovered = $state(false);
-
-  function handleCoinHover(tile: LandTile, index: number, isHovering: boolean) {
-    // Add hover effects here
-    // For example: scale animation, color change, etc.
-    coinHovered = isHovering;
-    if (isHovering) {
-      document.body.classList.add('cursor-pointer');
-    } else {
-      document.body.classList.remove('cursor-pointer');
+  function onPointerLeave() {
+    if (lastHoveredIndex !== -1) {
+      handleCoinHover(lastHoveredIndex, false);
+      lastHoveredIndex = -1;
+      coinHovered = false;
     }
+  }
+
+  function handleCoinHover(index: number, isHovering: boolean) {
+    if (shaderMaterial) {
+      shaderMaterial.setInstanceHover(index, isHovering);
+    }
+    document.body.classList.toggle('cursor-pointer', isHovering);
   }
 
   let isOwner = $derived(
@@ -143,8 +188,8 @@
       position={coinPosition}
       rotation={[-Math.PI / 2, 0, 0]}
       onclick={() => handleCoinClick(tile, i)}
-      onpointerenter={() => handleCoinHover(tile, i, true)}
-      onpointerleave={() => handleCoinHover(tile, i, false)}
+      onpointerenter={(e: any) => onPointerEnter(e)}
+      onpointerleave={() => onPointerLeave()}
       scale={isUnzoomed ? 1.5 : 1}
     />
   </Float>

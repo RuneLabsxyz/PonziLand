@@ -1,64 +1,70 @@
 <script lang="ts">
+  import { useInstancedSprite } from '@threlte/extras';
   import { useTask } from '@threlte/core';
-  import { HTML, useInstancedSprite } from '@threlte/extras';
   import { buildingAtlasMeta } from './buildings';
   import type { LandTile } from './landTile';
   import { cursorStore } from './cursor.store.svelte';
-  import { Vector3 } from 'three';
-  import { isInFrustum } from './utils/frustumCulling';
-  import { useThrelte } from '@threlte/core';
-  import { devsettings } from './utils/devsettings.store.svelte';
+  import * as THREE from 'three';
+  import {
+    setupOutlineShader,
+    handleCursorState,
+    type OutlineControls,
+  } from './utils/sprite-hover-shader';
 
-  let { landTiles } = $props();
-
-  // Get available animation names
-  const buildingAnimations = buildingAtlasMeta.flatMap((item) =>
-    item.animations.map((anim) => anim.name),
-  );
-
-  // Function to get scale based on hover state
-  function getTileScale(tileIndex: number): [number, number] {
-    return cursorStore.hoveredTileIndex === tileIndex ||
-      cursorStore.selectedTileIndex === tileIndex
-      ? [1.2, 1.2]
-      : [1.0, 1.0];
-  }
+  let { landTiles, buildingSpritesheet } = $props();
 
   const { updatePosition, sprite } = useInstancedSprite();
 
+  let shaderSetup = false;
+  let outlineControls: OutlineControls | null = null;
+
+  const clock = new THREE.Clock();
+
+  // Update time uniform for shader animations
+  useTask(() => {
+    if (outlineControls) {
+      outlineControls.updateTime(clock.getElapsedTime());
+    }
+  });
+
   $effect(() => {
+    if (sprite.material && !shaderSetup) {
+      outlineControls = setupOutlineShader(sprite.material, {
+        resolution: new THREE.Vector2(
+          buildingSpritesheet.texture.width,
+          buildingSpritesheet.texture.height,
+        ),
+      });
+      shaderSetup = true;
+    }
+
+    // Set billboard rotation once for the entire sprite
+    sprite.lookAt(0, 0.1, 0);
+
     landTiles.forEach((tile: LandTile, index: number) => {
-      // if (
-      //   !isInFrustum(
-      //     [tile.position[0], tile.position[1], tile.position[2]],
-      //     $camera,
-      //     devsettings.frustumPadding,
-      //   )
-      // ) {
-      //   // Hide instance by scaling to zero
-      //   updatePosition(
-      //     index,
-      //     [tile.position[0], -tile.position[2], tile.position[1]],
-      //     [0, 0],
-      //   );
-      //   return;
-      // }
       let animationName = tile.buildingAnimationName;
 
-      if (
-        cursorStore.hoveredTileIndex === index ||
-        cursorStore.selectedTileIndex === index
-      ) {
-        animationName = animationName + '-outline';
-      }
-      const scale = getTileScale(index);
+      // Set position
       updatePosition(index, [
         tile.position[0],
         -tile.position[2],
         tile.position[1],
       ]);
-      sprite.lookAt(0, 0.1, 0);
+
+      // Set animation
       sprite.animation.setAt(index, animationName as any);
     });
   });
+
+  // Reactive statement to handle cursor changes
+  $effect(() => {
+    const hoveredIndex = cursorStore.hoveredTileIndex ?? -1;
+    const selectedIndex = cursorStore.selectedTileIndex ?? -1;
+    handleCursorState(outlineControls, hoveredIndex, selectedIndex);
+  });
+
+  // The system now supports outlining multiple instances simultaneously
+  // Both hovered and selected tiles will be outlined with different colors
+  // - Selected: Green outline with cyan pulse
+  // - Hovered: Red outline with yellow pulse
 </script>
