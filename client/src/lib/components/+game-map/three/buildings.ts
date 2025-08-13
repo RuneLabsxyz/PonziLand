@@ -8,10 +8,14 @@ export const buildingAtlasMeta = [
     width: 12,
     height: 21,
     animations: [
-      { name: 'empty', frameRange: [1, 1] },
-      { name: 'empty_1', frameRange: [1, 1] },
-      { name: 'empty_2', frameRange: [1, 1] },
-      { name: 'empty_3', frameRange: [1, 1] },
+      { name: 'empty', frameRange: [250, 250] },
+      { name: 'empty_1', frameRange: [250, 250] },
+      { name: 'empty_2', frameRange: [250, 250] },
+      { name: 'empty_3', frameRange: [250, 250] },
+      { name: 'auction', frameRange: [250, 250] },
+      { name: 'auction_1', frameRange: [250, 250] },
+      { name: 'auction_2', frameRange: [250, 250] },
+      { name: 'auction_3', frameRange: [250, 250] },
 
       { name: 'lords_1', frameRange: [0, 0] },
       { name: 'lords_2', frameRange: [12, 12] },
