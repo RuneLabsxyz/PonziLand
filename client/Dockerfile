@@ -17,7 +17,7 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
 
 # Install node modules
-COPY bun.lockb package.json ./
+COPY bun.lock package.json ./
 COPY patches ./patches
 RUN bun install --frozen-lockfile
 

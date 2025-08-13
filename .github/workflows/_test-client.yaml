@@ -16,9 +16,10 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "v1.1.45"
+          bun-version-file: "client/.bun-version"
 
       - name: Install dependencies
         working-directory: ./client
@@ -35,9 +36,10 @@ jobs:
       - name: Setup repo
         uses: actions/checkout@v4
 
-      - uses: oven-sh/setup-bun@v2
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
         with:
-          bun-version: "v1.1.45"
+          bun-version-file: "client/.bun-version"
 
       - name: Install dependencies
         working-directory: ./client
