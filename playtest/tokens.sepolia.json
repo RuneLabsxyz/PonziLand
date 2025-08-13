@@ -1,9 +1,9 @@
 {
   "tokens": [
     {
-      "symbol": "pltPAL",
-      "name": "Ponziland Test PAL",
-      "address": "0xbe3f5540644da98460fd6f8680102be738e674f30f61eea006ac7923050da3"
+      "symbol": "pltETH",
+      "name": "Ponziland Test ETH",
+      "address": "0x2ab967e02621a8a16a49819755275d91f09ed9f776a51fade79f7e51982a75"
     }
   ]
 }
