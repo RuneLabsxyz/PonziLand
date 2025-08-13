@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x48e1acd876d2ccebfeb000d313d6b90f1a57245d652033a65fc6a907f7e04f3",
-    "seed": "ponzi_land-wip-3",
+    "address": "0x343ef1edd0ed33d4c7b48eb9846e732d73022d7cad87a3d46eac7bf321a53f6",
+    "seed": "ponzi_land-wip-4",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x732944cdbc6d999a84251b380381d5f91923a76be535cff12e0badc4925d780",
-      "class_hash": "0x4a71ae7d6a966ceead25b8469982fbc83466fb5aa0ae06462e2b065c0ebcb8c",
+      "address": "0x48f2e4d32b57a8477259abb1a47109f5e8d212c24d5a3c06fa36d68c9b0180a",
+      "class_hash": "0x519fcd30fb45e01188bfcab4be511ee9088b69b2ba2b348d0ff2099cb7246d2",
       "abi": [
         {
           "type": "impl",
@@ -1400,20 +1400,12 @@
           "name": "dojo_init",
           "inputs": [
             {
-              "name": "token_address",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
               "name": "start_price",
               "type": "core::integer::u256"
             },
             {
               "name": "floor_price",
               "type": "core::integer::u256"
-            },
-            {
-              "name": "decay_rate",
-              "type": "core::integer::u16"
             },
             {
               "name": "ekubo_core_address",
@@ -1504,6 +1496,10 @@
             },
             {
               "name": "neighbors_info_packed",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "accumulated_taxes_fee",
               "type": "core::integer::u128"
             }
           ]
@@ -1607,10 +1603,6 @@
             {
               "name": "is_finished",
               "type": "core::bool"
-            },
-            {
-              "name": "decay_rate",
-              "type": "core::integer::u16"
             },
             {
               "name": "sold_at_price",
@@ -1776,18 +1768,6 @@
               "type": "function",
               "name": "reimburse_stakes",
               "inputs": [],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "set_main_token",
-              "inputs": [
-                {
-                  "name": "token_address",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
               "outputs": [],
               "state_mutability": "external"
             },
@@ -2109,6 +2089,18 @@
         },
         {
           "type": "event",
+          "name": "ponzi_land::components::auction::AuctionComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
           "name": "ponzi_land::systems::actions::actions::Event",
           "kind": "enum",
           "variants": [
@@ -2136,17 +2128,25 @@
               "name": "TaxesEvent",
               "type": "ponzi_land::components::taxes::TaxesComponent::Event",
               "kind": "flat"
+            },
+            {
+              "name": "AuctionEvent",
+              "type": "ponzi_land::components::auction::AuctionComponent::Event",
+              "kind": "flat"
+            },
+            {
+              "name": "ReentrancyGuardEvent",
+              "type": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+              "kind": "flat"
             }
           ]
         }
       ],
       "init_calldata": [
-        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
         "128000000000000000000",
         "0",
         "1000000000000000000",
         "0",
-        "100",
         "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
       ],
       "tag": "ponzi_land-actions",
@@ -2162,12 +2162,11 @@
         "increase_stake",
         "level_up",
         "reimburse_stakes",
-        "set_main_token",
         "upgrade"
       ]
     },
     {
-      "address": "0x3aff12030b60ab3567d97d5a6ca6fd763a230a19c2a1f641f3f188e8dbfde05",
+      "address": "0x5b4bb38956f21c31f8f998db3587b634013e846ff3c80be05dc12db025e8291",
       "class_hash": "0x70851f8055f8951803c0f5724e020e556ad83319c97ace1ff92565f6cd21ec7",
       "abi": [
         {
@@ -2510,7 +2509,1025 @@
       ]
     },
     {
-      "address": "0x7e1f69cca85280785d5d5d93e73fbf4f2e459c9932ea990693e4047fd90ab97",
+      "address": "0x23eec2870a79b536033788438287ac47f414ddb4ac6e9305fa977276b36b36e",
+      "class_hash": "0x34c188c6f47d9ed688017e3d7887c06f4e129499f4d8c540b65557596e7c5f",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "config__ContractImpl",
+          "interface_name": "dojo::contract::interface::IContract"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::interface::IContract",
+          "items": []
+        },
+        {
+          "type": "impl",
+          "name": "config__DeployedContractImpl",
+          "interface_name": "dojo::meta::interface::IDeployedResource"
+        },
+        {
+          "type": "struct",
+          "name": "core::byte_array::ByteArray",
+          "members": [
+            {
+              "name": "data",
+              "type": "core::array::Array::<core::bytes_31::bytes31>"
+            },
+            {
+              "name": "pending_word",
+              "type": "core::felt252"
+            },
+            {
+              "name": "pending_word_len",
+              "type": "core::integer::u32"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::meta::interface::IDeployedResource",
+          "items": [
+            {
+              "type": "function",
+              "name": "dojo_name",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::byte_array::ByteArray"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::integer::u256",
+          "members": [
+            {
+              "name": "low",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "high",
+              "type": "core::integer::u128"
+            }
+          ]
+        },
+        {
+          "type": "function",
+          "name": "dojo_init",
+          "inputs": [
+            {
+              "name": "grid_width",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "tax_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "base_time",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "price_decrease_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "time_speed",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_auctions",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_auctions_from_bid",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "decay_rate",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "floor_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "liquidity_safety_multiplier",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "min_auction_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "min_auction_price_multiplier",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "center_location",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "auction_duration",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "scaling_factor",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "linear_decay_time",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "drop_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "rate_denominator",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_circles",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "claim_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "buy_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "our_contract_for_fee",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "our_contract_for_auction",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "claim_fee_threshold",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "main_currency",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ],
+          "outputs": [],
+          "state_mutability": "external"
+        },
+        {
+          "type": "impl",
+          "name": "ConfigSystemImpl",
+          "interface_name": "ponzi_land::systems::config::IConfigSystem"
+        },
+        {
+          "type": "interface",
+          "name": "ponzi_land::systems::config::IConfigSystem",
+          "items": [
+            {
+              "type": "function",
+              "name": "set_full_config",
+              "inputs": [
+                {
+                  "name": "grid_width",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "tax_rate",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "base_time",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "price_decrease_rate",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "time_speed",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "max_auctions",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "max_auctions_from_bid",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "decay_rate",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "floor_price",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "liquidity_safety_multiplier",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "min_auction_price",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "min_auction_price_multiplier",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "center_location",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "auction_duration",
+                  "type": "core::integer::u32"
+                },
+                {
+                  "name": "scaling_factor",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "linear_decay_time",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "drop_rate",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "rate_denominator",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "max_circles",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "claim_fee",
+                  "type": "core::integer::u128"
+                },
+                {
+                  "name": "buy_fee",
+                  "type": "core::integer::u128"
+                },
+                {
+                  "name": "our_contract_for_fee",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "our_contract_for_auction",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "claim_fee_threshold",
+                  "type": "core::integer::u128"
+                },
+                {
+                  "name": "main_currency",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_grid_width",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_tax_rate",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_base_time",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_price_decrease_rate",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_time_speed",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_max_auctions",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_max_auctions_from_bid",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_decay_rate",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_floor_price",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_liquidity_safety_multiplier",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_min_auction_price",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_min_auction_price_multiplier",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_center_location",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_auction_duration",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u32"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_scaling_factor",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_linear_decay_time",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_drop_rate",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_rate_denominator",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_max_circles",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_claim_fee",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_buy_fee",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_our_contract_for_fee",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_our_contract_for_auction",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_claim_fee_threshold",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u128"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_main_currency",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "get_grid_width",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_tax_rate",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_base_time",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_price_decrease_rate",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_time_speed",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_max_auctions",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_max_auctions_from_bid",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_decay_rate",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_floor_price",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_liquidity_safety_multiplier",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_min_auction_price",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_min_auction_price_multiplier",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_center_location",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_auction_duration",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u32"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_scaling_factor",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_linear_decay_time",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_drop_rate",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_rate_denominator",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_max_circles",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u16"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_claim_fee",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_buy_fee",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_claim_fee_threshold",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u128"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_main_currency",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "WorldProviderImpl",
+          "interface_name": "dojo::contract::components::world_provider::IWorldProvider"
+        },
+        {
+          "type": "struct",
+          "name": "dojo::world::iworld::IWorldDispatcher",
+          "members": [
+            {
+              "name": "contract_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::world_provider::IWorldProvider",
+          "items": [
+            {
+              "type": "function",
+              "name": "world_dispatcher",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "dojo::world::iworld::IWorldDispatcher"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "impl",
+          "name": "UpgradeableImpl",
+          "interface_name": "dojo::contract::components::upgradeable::IUpgradeable"
+        },
+        {
+          "type": "interface",
+          "name": "dojo::contract::components::upgradeable::IUpgradeable",
+          "items": [
+            {
+              "type": "function",
+              "name": "upgrade",
+              "inputs": [
+                {
+                  "name": "new_class_hash",
+                  "type": "core::starknet::class_hash::ClassHash"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": []
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "class_hash",
+              "type": "core::starknet::class_hash::ClassHash",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "Upgraded",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Upgraded",
+              "kind": "nested"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::systems::config::config::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "UpgradeableEvent",
+              "type": "dojo::contract::components::upgradeable::upgradeable_cpt::Event",
+              "kind": "nested"
+            },
+            {
+              "name": "WorldProviderEvent",
+              "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
+              "kind": "nested"
+            }
+          ]
+        }
+      ],
+      "init_calldata": [
+        "255",
+        "2",
+        "3600",
+        "2",
+        "5",
+        "16",
+        "3",
+        "200",
+        "100000000000000000",
+        "0",
+        "3",
+        "500000000000000000000",
+        "0",
+        "10",
+        "32639",
+        "436800",
+        "50",
+        "12000",
+        "90",
+        "100",
+        "127",
+        "90000",
+        "90000",
+        "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e",
+        "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e",
+        "1000",
+        "0x067b19ff5c8e2ec1d80f0c2a9a1ee6d6424edde86c57dca04e82e1fe06a7e977"
+      ],
+      "tag": "ponzi_land-config",
+      "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
+      "systems": [
+        "dojo_init",
+        "set_full_config",
+        "set_grid_width",
+        "set_tax_rate",
+        "set_base_time",
+        "set_price_decrease_rate",
+        "set_time_speed",
+        "set_max_auctions",
+        "set_max_auctions_from_bid",
+        "set_decay_rate",
+        "set_floor_price",
+        "set_liquidity_safety_multiplier",
+        "set_min_auction_price",
+        "set_min_auction_price_multiplier",
+        "set_center_location",
+        "set_auction_duration",
+        "set_scaling_factor",
+        "set_linear_decay_time",
+        "set_drop_rate",
+        "set_rate_denominator",
+        "set_max_circles",
+        "set_claim_fee",
+        "set_buy_fee",
+        "set_our_contract_for_fee",
+        "set_our_contract_for_auction",
+        "set_claim_fee_threshold",
+        "set_main_currency",
+        "upgrade"
+      ]
+    },
+    {
+      "address": "0x276025464c1ee330abdfbc3a9515a738bedb6f9799154a7196662235b1b409c",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
@@ -2783,9 +3800,15 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x6b565ad4b939ac5a507c24e8d0c9376b5bdcd80a3438bdea3ec674265336310",
+      "class_hash": "0x5154b8a4c8e6c55d41fc525e1a18e1ae2b0c738278b3d35346a373acc08a38d",
       "tag": "ponzi_land-Auction",
       "selector": "0x7e0590370db3aa23e7aa340e9dfbdb6127f3fe6d5173b6051be0225a6acddec"
+    },
+    {
+      "members": [],
+      "class_hash": "0x16283cb8b373dc8a1e8b8afbb36d7a2f1728a77f2c2c1196ba9e4ffa4778083",
+      "tag": "ponzi_land-Config",
+      "selector": "0x57f837833559dae8bcd922ede064d0c5227c3f139fc4c410c93bcd58aff30ee"
     },
     {
       "members": [],
@@ -2795,7 +3818,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x1e3f0810019b04689f2fb87afb37e38e0d182ad5935a1137db45a6092293d1f",
+      "class_hash": "0x2916b5c9fc3f46ff35d98bed1a8b08a83912fb52b098a951bf2a5ef730384b8",
       "tag": "ponzi_land-LandStake",
       "selector": "0x6fc377970b02dbb15634ab8c2855ba673d6ff3be113eb93bb56628d9018cadc"
     }
@@ -2803,7 +3826,7 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0xc2417a7d14ec5d25a591be8a537756fde490bd4ca3f1311688034edcf1411c",
+      "class_hash": "0x61a8ab4a5810f555e72bb82cf71c284379d7362ff4e5c13a8ae3026a6b4f259",
       "tag": "ponzi_land-AddStakeEvent",
       "selector": "0x78072b4b5cfe0dee3f20bd58bde0cb381b01ce9bbf48d0193ecfaea4e813683"
     },
@@ -2821,31 +3844,37 @@
     },
     {
       "members": [],
-      "class_hash": "0xc23b0b0916e69d30fe08c634b66714cfd90774edbbf7b1499862fe62a46424",
+      "class_hash": "0x53331140ec40181b9619fb889f943b2983e151ddcfefed8fdfd94dc87a3d40b",
       "tag": "ponzi_land-AuctionFinishedEvent",
       "selector": "0x4a851acb463e71e7b60828525b2af21e21fc500b159358a7b0f0036418d3d9a"
     },
     {
       "members": [],
-      "class_hash": "0x5e8d4d3b000b9ca0728d677c9ca3cc9d5271e79069e2f4a9a1e57e13f910fdd",
+      "class_hash": "0x29461de3df1394ca492c86caebd0c2fcf29117272329d4bd35bf8cd13e44c07",
+      "tag": "ponzi_land-ConfigUpdated",
+      "selector": "0x2d5f551adb2ed4a5fbf86e90b65d84eb990a17e487e34f7259da38f9af09625"
+    },
+    {
+      "members": [],
+      "class_hash": "0x7f2c58008bb290105b48fbb7930d58220c1698653aa54a89804d14f61035ed2",
       "tag": "ponzi_land-LandBoughtEvent",
       "selector": "0x769ef6ea223dc95effda992aef6ea6bc4434280ade20a03d3273323cd23b883"
     },
     {
       "members": [],
-      "class_hash": "0x24a7dd2d6eed7925750f90e69f7a61d86502ff245fd7b7b95ff138c74eb1f87",
+      "class_hash": "0x6c12fe7094965e23a69d4ce5bb93e0e95b0fd045e4d34fea737286a0b6a104e",
       "tag": "ponzi_land-LandNukedEvent",
       "selector": "0x5ab63e32ba617fc00cdaf4469b0dfffd18eacb82fa7b5036437ca7f4ce3964b"
     },
     {
       "members": [],
-      "class_hash": "0x42f9045ad800f3dfe38d0ebe49149e2fabb99da3deeed8d36931216a05bd061",
+      "class_hash": "0x4213e0d5419fa4a582b086a952f1c748198c21652fd82ed4711578f511e5eb5",
       "tag": "ponzi_land-LandTransferEvent",
       "selector": "0x5edc84355fabd09e6aa60c2d11c76920f69662ab39f6a499a2ffa9dfd3b70f2"
     },
     {
       "members": [],
-      "class_hash": "0xdcbae1ef44e0b1161907323a1ef344ed13ed85c1afe4a4a76b2e9ddaf5ee57",
+      "class_hash": "0x755dd6220a98bb5135b16cd5c562432d70b9696e83316c5591351af033771c7",
       "tag": "ponzi_land-NewAuctionEvent",
       "selector": "0x617c6bf5e078af2c93083a50e445f36b55cad4a6bd07a21a5a42540cb0d8f9f"
     },
