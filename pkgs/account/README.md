@@ -63,8 +63,8 @@ You can access the wallet state anywhere in your application:
   import { accountDataProvider, useAccount } from '@ponziland/account';
 
   // Access reactive state
-  $: isConnected = accountDataProvider.isConnected;
-  $: address = accountDataProvider.address;
+  let isConnected = $derived(accountDataProvider.isConnected);
+  let address = $derived(accountDataProvider.address);
 
   // Access account manager methods
   const accountManager = useAccount();
