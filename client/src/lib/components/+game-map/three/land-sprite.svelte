@@ -45,11 +45,9 @@
   import OwnerIndicator from './owner-indicator.svelte';
   import NukeTimeDisplay from './nuke-time-display.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
-  // Add these imports to your existing main component
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { BufferAttribute, Clock } from 'three';
 
-  // Add these state variables to your existing ones
   let coinShaderMaterial: CoinHoverShaderMaterial | undefined = $state();
   let clock = new Clock();
 
@@ -74,7 +72,6 @@
   ] as const satisfies SpritesheetMetadata;
   const roadAtlas = buildSpritesheet.from<typeof roadAtlasMeta>(roadAtlasMeta);
 
-  // Add this after your existing atlas definitions:
   const nukeAtlasMeta = [
     {
       url: '/land-display/nuke-animation.png',
@@ -340,7 +337,6 @@
   shieldTexture.minFilter = NearestFilter;
   shieldTexture.colorSpace = 'srgb';
 
-  // Add this to your state variables at the top of the main component
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
   let shieldInstancedMesh: TInstancedMesh | undefined = $state();
