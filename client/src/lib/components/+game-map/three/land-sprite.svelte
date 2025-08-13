@@ -79,8 +79,8 @@
       width: 5,
       height: 7,
       animations: [
-        { name: 'default', frameRange: [0, 35] },
-        { name: 'empty', frameRange: [35, 35] },
+        { name: 'default', frameRange: [0, 34] },
+        { name: 'empty', frameRange: [34, 34] },
       ],
     },
   ] as const satisfies SpritesheetMetadata;

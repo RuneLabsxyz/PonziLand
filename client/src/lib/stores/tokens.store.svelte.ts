@@ -1,7 +1,11 @@
 import type { Token } from '$lib/interfaces';
 import { padAddress } from '$lib/utils';
-import type { TokenBalance } from '@dojoengine/torii-client';
 import data from '$profileData';
+import type { SDK } from '@dojoengine/sdk';
+// TODO(Red): Once they fix the types, we can import them from the sdk again...
+type TokenBalance = Awaited<
+  ReturnType<SDK<any>['subscribeTokenBalance']>
+>[0]['items'][0];
 
 export let tokenStore = $state<{
   balances: { token: Token; balance: bigint; icon: string }[];

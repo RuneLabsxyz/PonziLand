@@ -8,7 +8,7 @@
   } from '@threlte/extras';
   import Scene from './game-scene.svelte';
   import { gameStore } from './three/game.store.svelte';
-  import Settings from './three/Settings.svelte';
+  import Debug from './three/debug/Debug.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
 
   // Show dev tools if URL ends with #dev
@@ -71,7 +71,7 @@
     <Scene />
   </Canvas>
   {#if showDevTools}
-    <Settings />
+    <Debug />
   {/if}
 </div>
 
