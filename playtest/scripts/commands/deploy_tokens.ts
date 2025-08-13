@@ -14,7 +14,7 @@ export async function  deployToken(config: Configuration, args: string[]) {
   const [symbol, name] = args;
 
   // Check if token already exists
-  const tokensPath = `${config.basePath}/depolyments/${config.deploymentName}/tokens.json`;
+  const tokensPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
   let existingTokens;
   try {
     existingTokens = await file(tokensPath).json();
@@ -177,7 +177,7 @@ async function addTokenToFile(config: Configuration, token: Token) {
 }
 
 async function removeTokenFromFile(config: Configuration, symbol: string) {
-  const tokensPath = `${config.basePath}/depolyments/${config.deploymentName}/tokens.json`;
+  const tokensPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
   
   try {
     const tokens = await file(tokensPath).json();

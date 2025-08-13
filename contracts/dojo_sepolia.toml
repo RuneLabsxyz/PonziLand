@@ -35,7 +35,7 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
 
 "ponzi_land-token_registry" = [
     "1",                                                                  # 1 tokens,
-    "0xbe3f5540644da98460fd6f8680102be738e674f30f61eea006ac7923050da3", # pltSTRK
+    "0x2ab967e02621a8a16a49819755275d91f09ed9f776a51fade79f7e51982a75", # pltSTRK
 ]
 
 "ponzi_land-config" = [
@@ -63,7 +63,7 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
     "0",                                                      # Our contract for fee
     "0",                                                  # Our contract for auction
     "10",                                                       # Claim fee threshold
-    "0xbe3f5540644da98460fd6f8680102be738e674f30f61eea006ac7923050da3", # Main token
+    "0x2ab967e02621a8a16a49819755275d91f09ed9f776a51fade79f7e51982a75", # Main token
 ]
 
 "ponzi_land-actions" = [
