@@ -6,7 +6,6 @@ import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
 import type { ParsedEntity } from '@dojoengine/sdk';
-import type { Subscription } from '@dojoengine/torii-client';
 import {
   derived,
   readable,
@@ -24,6 +23,10 @@ import { padAddress } from '$lib/utils';
 import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 import { CairoOption } from 'starknet';
 import data from '$profileData';
+
+type Subscription = Awaited<
+  ReturnType<typeof setupLandsSubscription>
+>['subscription'];
 
 const TOKEN_ADDRESSES = data.availableTokens.map(
   (token) => token.address,

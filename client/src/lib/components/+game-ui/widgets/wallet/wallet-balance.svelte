@@ -12,12 +12,15 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
-  import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
   import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
   import WalletSwap from './wallet-swap.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import { fetchTokenBalance } from '$lib/accounts/balances';
+
+  type ReturnValueType = Awaited<ReturnType<typeof sdk.subscribeTokenBalance>>;
+  type Subscription = ReturnValueType[1];
+  type TokenBalance = ReturnValueType[0]['items'][0];
 
   const BASE_TOKEN = data.mainCurrencyAddress;
   const baseToken = data.availableTokens.find(

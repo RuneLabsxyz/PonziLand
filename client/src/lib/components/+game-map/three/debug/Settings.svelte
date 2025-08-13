@@ -8,7 +8,7 @@
     Button,
     Separator,
   } from 'svelte-tweakpane-ui';
-  import { devsettings } from './utils/devsettings.store.svelte';
+  import { devsettings } from '../utils/devsettings.store.svelte';
   import type { ListOptions } from 'svelte-tweakpane-ui';
   import { landStore } from '$lib/stores/store.svelte';
   import { useClient } from '$lib/contexts/client.svelte';
