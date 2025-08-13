@@ -12,6 +12,14 @@
     selectedLand,
     selectedLandWithActions,
   } from '$lib/stores/store.svelte';
+  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+
+  // Allow passing a custom land store (for tutorials)
+  interface Props {
+    store?: LandTileStore;
+  }
+
+  let { store = landStore }: Props = $props();
   import { T, useTask } from '@threlte/core';
   import {
     HTML,
@@ -154,7 +162,7 @@
   });
 
   onMount(() => {
-    landStore.getAllLands().subscribe((tiles) => {
+    store.getAllLands().subscribe((tiles) => {
       landTiles = tiles.map((tile, index) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
