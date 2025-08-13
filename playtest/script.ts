@@ -46,6 +46,10 @@ const { values, positionals } = parseArgs({
       default: false,
       description: "Force the use of ledger",
     },
+    name: {
+      type: "string",
+      description: "The name of the deployment",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -65,6 +69,7 @@ const config: Configuration = {
   basePath,
   owner: values.owner || env!.OWNER,
   forceLedger: values.ledger,
+  deploymentName: values.name!,
 };
 
 let command = positionals[2];

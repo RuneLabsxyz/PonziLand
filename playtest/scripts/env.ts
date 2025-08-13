@@ -12,6 +12,7 @@ export type Configuration = {
   basePath: string;
   owner: string | undefined;
   forceLedger: boolean;
+  deploymentName: string;
 };
 
 async function getProvider(config: Configuration) {
