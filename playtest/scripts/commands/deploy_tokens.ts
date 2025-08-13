@@ -154,7 +154,7 @@ export async function  deployToken(config: Configuration, args: string[]) {
 
 async function addTokenToFile(config: Configuration, token: Token) {
   // Read the tokens file
-  const tokensPath = `${config.basePath}/depolyments/${config.deploymentName}/tokens.${config.environment}.json`;
+  const tokensPath = `${config.basePath}/depolyments/${config.deploymentName}/tokens.json`;
 
   // Check if file exists, create it if it doesn't
   try {
