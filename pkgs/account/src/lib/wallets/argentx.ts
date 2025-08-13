@@ -30,6 +30,7 @@ const STRKFees = [
 async function setupSession(
   wallet: WalletAccount,
   walletObject: WALLET_API.StarknetWindowObject,
+  policies?: any,
 ): Promise<[Account, StoredSession]> {
   const privateKey = ec.starkCurve.utils.randomPrivateKey();
   const chainId = accountConfig.chainId == 'mainnet'
@@ -47,7 +48,15 @@ async function setupSession(
 
   const sessionParams: CreateSessionParams = {
     sessionKey,
-    allowedMethods: [],
+    allowedMethods: policies?.contracts 
+      ? Object.entries(policies.contracts).flatMap(
+          ([contractAddress, policy]: any[]) =>
+            policy.methods.map((method: any) => ({
+              selector: method.entrypoint,
+              'Contract Address': contractAddress,
+            }))
+        )
+      : [],
     expiry,
     metaData: {
       projectID: 'ponzi-land',
@@ -99,6 +108,18 @@ async function setupSession(
 }
 
 export class ArgentXAccount extends CommonStarknetWallet {
+  private _policies?: any;
+
+  constructor(walletObject: WALLET_API.StarknetWindowObject, configOrPolicies?: any) {
+    super(walletObject);
+    // Handle both direct policies or config object with policies
+    if (configOrPolicies?.policies !== undefined) {
+      this._policies = configOrPolicies.policies;
+    } else {
+      this._policies = configOrPolicies;
+    }
+  }
+
   supportsSession(): boolean {
     return !FUSE_DISABLE_ARGENT;
   }
@@ -119,6 +140,7 @@ export class ArgentXAccount extends CommonStarknetWallet {
     const [account, storedSession] = await setupSession(
       this._wallet!,
       this._walletObject,
+      this._policies,
     );
 
     this._session = account;

@@ -1,5 +1,6 @@
 import { type AccountInterface } from 'starknet';
 import { useAccount, type AccountProvider, type Event } from './context/account.svelte.js';
+import { configureAccount, type AccountConfig } from './consts.js';
 
 
 export const accountState: {
@@ -43,7 +44,11 @@ export async function refresh() {
   }
 }
 
-export async function setup(): Promise<typeof accountState> {
+export async function setup(config?: Partial<AccountConfig>): Promise<typeof accountState> {
+  if (config) {
+    configureAccount(config);
+  }
+  
   if (isSetup) return accountState;
 
   const accountManager = useAccount();
