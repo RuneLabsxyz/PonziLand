@@ -22,9 +22,12 @@
     nukeStore,
   } from '$lib/stores/nuke.store.svelte';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-  import { coordinatesToLocation, toHexWithPadding, padAddress } from '$lib/utils';
+  import {
+    coordinatesToLocation,
+    toHexWithPadding,
+    padAddress,
+  } from '$lib/utils';
   import type { ParsedEntity } from '@dojoengine/sdk';
-  import { CairoCustomEnum } from 'starknet';
   import data from '$profileData';
   import type { Token } from '$lib/interfaces';
 
@@ -79,11 +82,85 @@
       landTokenUsed = data.availableTokens[0];
       return;
     }
-    
-    const currentIndex = data.availableTokens.findIndex(token => token.address === landTokenUsed.address);
+
+    const currentIndex = data.availableTokens.findIndex(
+      (token) => token.address === landTokenUsed?.address,
+    );
     const nextIndex = (currentIndex + 1) % data.availableTokens.length;
     landTokenUsed = data.availableTokens[nextIndex];
   }
+
+  // Update form values when selected land changes
+  $effect(() => {
+    if (land && land.type === 'building') {
+      // Update land form values from selected land
+      landOwner = land.owner ?? '0x123';
+      // Convert hex sell_price back to decimal for display
+      landSellPrice = land.sell_price 
+        ? parseInt(land.sell_price.toString(), 16).toString()
+        : '1000000';
+      // Convert hex block_date_bought back to decimal for display  
+      landBlockDateBought = land.block_date_bought
+        ? parseInt(land.block_date_bought.toString(), 16).toString()
+        : Date.now().toString();
+
+      // Find and set the token
+      const foundToken = data.availableTokens.find(
+        (token) => token.address === land.token?.address,
+      );
+      if (foundToken) {
+        landTokenUsed = foundToken;
+      }
+
+      // Set level - convert Level number to string representation
+      switch (land.level) {
+        case 1:
+          landLevel = 'Zero';
+          break;
+        case 2:
+          landLevel = 'First';
+          break;
+        case 3:
+          landLevel = 'Second';
+          break;
+        default:
+          landLevel = 'Zero';
+      }
+    } else if (land && land.type === 'auction') {
+      // Update auction form values from selected auction land
+      const auctionLand = land as AuctionLand;
+      // Use raw values for consistency with contract data
+      auctionStartPrice =
+        auctionLand.startPrice?.toBignumberish().toString() ?? '1000';
+      auctionFloorPrice =
+        auctionLand.floorPrice?.toBignumberish().toString() ?? '500';
+      auctionDecayRate = '100'; // Default decay rate as there's no direct accessor
+
+      // Reset land values to defaults for auction
+      landOwner = '0x123';
+      landSellPrice = '1000000';
+      landBlockDateBought = Date.now().toString();
+      landTokenUsed = data.availableTokens[0];
+      landLevel = 'Zero';
+    } else {
+      // Reset all to defaults for empty lands
+      landOwner = '0x123';
+      landSellPrice = '1000000';
+      landBlockDateBought = Date.now().toString();
+      landTokenUsed = data.availableTokens[0];
+      landLevel = 'Zero';
+
+      // Reset stake values
+      stakeAmount = '100';
+      stakeNeighborsInfo = '0';
+      stakeAccumulatedTaxes = '0';
+
+      // Reset auction values
+      auctionStartPrice = '1000';
+      auctionFloorPrice = '500';
+      auctionDecayRate = '100';
+    }
+  });
 
   function createParsedEntity(
     type: EntityType,
@@ -124,11 +201,15 @@
 
       const land: Partial<Land> = {};
       if (landOwner) land.owner = padAddress(landOwner);
-      if (landSellPrice) land.sell_price = toHexWithPadding(parseInt(landSellPrice));
+      if (landSellPrice && !isNaN(parseInt(landSellPrice)))
+        land.sell_price = toHexWithPadding(parseInt(landSellPrice));
       if (landTokenUsed) land.token_used = landTokenUsed.address;
-      if (landBlockDateBought)
-        land.block_date_bought = toHexWithPadding(parseInt(landBlockDateBought));
-      land.level = new CairoCustomEnum({ [landLevel]: '' });
+      if (landBlockDateBought && !isNaN(parseInt(landBlockDateBought)))
+        land.block_date_bought = toHexWithPadding(
+          parseInt(landBlockDateBought),
+        );
+      // @ts-ignore
+      land.level = landLevel;
 
       const locationValue = toHexWithPadding(coordinatesToLocation(location));
       const parsedEntity = createParsedEntity('Land', land, locationValue);
@@ -152,9 +233,16 @@
       console.log('Updating land stake');
 
       const stake: Partial<LandStake> = {};
-      if (stakeAmount) stake.amount = toHexWithPadding(parseInt(stakeAmount));
-      if (stakeNeighborsInfo) stake.neighbors_info_packed = toHexWithPadding(parseInt(stakeNeighborsInfo));
-      if (stakeAccumulatedTaxes) stake.accumulated_taxes_fee = toHexWithPadding(parseInt(stakeAccumulatedTaxes));
+      if (stakeAmount && !isNaN(parseInt(stakeAmount))) 
+        stake.amount = toHexWithPadding(parseInt(stakeAmount));
+      if (stakeNeighborsInfo && !isNaN(parseInt(stakeNeighborsInfo)))
+        stake.neighbors_info_packed = toHexWithPadding(
+          parseInt(stakeNeighborsInfo),
+        );
+      if (stakeAccumulatedTaxes && !isNaN(parseInt(stakeAccumulatedTaxes)))
+        stake.accumulated_taxes_fee = toHexWithPadding(
+          parseInt(stakeAccumulatedTaxes),
+        );
 
       const locationValue = toHexWithPadding(coordinatesToLocation(location));
       const parsedEntity = createParsedEntity(
@@ -182,9 +270,12 @@
       console.log('Updating auction');
 
       const auction: Partial<Auction> = {};
-      if (auctionStartPrice) auction.start_price = toHexWithPadding(parseInt(auctionStartPrice));
-      if (auctionFloorPrice) auction.floor_price = toHexWithPadding(parseInt(auctionFloorPrice));
-      if (auctionDecayRate) auction.decay_rate = toHexWithPadding(parseInt(auctionDecayRate));
+      if (auctionStartPrice && !isNaN(parseInt(auctionStartPrice)))
+        auction.start_price = toHexWithPadding(parseInt(auctionStartPrice));
+      if (auctionFloorPrice && !isNaN(parseInt(auctionFloorPrice)))
+        auction.floor_price = toHexWithPadding(parseInt(auctionFloorPrice));
+      if (auctionDecayRate && !isNaN(parseInt(auctionDecayRate)))
+        auction.decay_rate = toHexWithPadding(parseInt(auctionDecayRate));
 
       const locationValue = toHexWithPadding(coordinatesToLocation(location));
       const parsedEntity = createParsedEntity(
@@ -237,7 +328,7 @@
     </Folder>
   {/if}
 
-  <Folder title="Nuking status">
+  <Folder title="Nuking status" expanded={false}>
     <Button
       on:click={() => simulateNuke()}
       label="Simulate Nuke"
@@ -253,27 +344,34 @@
     </Folder>
   {/if}
 
-  <Folder title="Land Actions">
+  <Folder title="Land Actions" expanded={false}>
     <Text bind:value={landOwner} label="Owner Address" disabled={loading} />
     <List
       bind:value={landLevel}
       options={{
         Zero: 'Zero',
-        First: 'First', 
-        Second: 'Second'
+        First: 'First',
+        Second: 'Second',
       }}
       label="Level"
       disabled={loading}
     />
     <Text bind:value={landSellPrice} label="Sell Price" disabled={loading} />
-    <Monitor value={landTokenUsed?.symbol ?? 'No token'} label="Selected Token" />
+    <Monitor
+      value={landTokenUsed?.symbol ?? 'No token'}
+      label="Selected Token"
+    />
     <Button
       on:click={selectNextToken}
       label="Change Token"
       title="Cycle through available tokens"
       disabled={loading}
     />
-    <Text bind:value={landBlockDateBought} label="Block Date Bought" disabled={loading} />
+    <Text
+      bind:value={landBlockDateBought}
+      label="Block Date Bought"
+      disabled={loading}
+    />
     <Button
       on:click={handleLandUpdate}
       label="Update Land"
@@ -282,10 +380,18 @@
     />
   </Folder>
 
-  <Folder title="Stake Actions">
+  <Folder title="Stake Actions" expanded={false}>
     <Text bind:value={stakeAmount} label="Stake Amount" disabled={loading} />
-    <Text bind:value={stakeNeighborsInfo} label="Neighbors Info" disabled={loading} />
-    <Text bind:value={stakeAccumulatedTaxes} label="Accumulated Taxes" disabled={loading} />
+    <Text
+      bind:value={stakeNeighborsInfo}
+      label="Neighbors Info"
+      disabled={loading}
+    />
+    <Text
+      bind:value={stakeAccumulatedTaxes}
+      label="Accumulated Taxes"
+      disabled={loading}
+    />
     <Button
       on:click={handleLandStakeUpdate}
       label="Update Stake"
@@ -294,9 +400,17 @@
     />
   </Folder>
 
-  <Folder title="Auction Actions">
-    <Text bind:value={auctionStartPrice} label="Start Price" disabled={loading} />
-    <Text bind:value={auctionFloorPrice} label="Floor Price" disabled={loading} />
+  <Folder title="Auction Actions" expanded={false}>
+    <Text
+      bind:value={auctionStartPrice}
+      label="Start Price"
+      disabled={loading}
+    />
+    <Text
+      bind:value={auctionFloorPrice}
+      label="Floor Price"
+      disabled={loading}
+    />
     <Text bind:value={auctionDecayRate} label="Decay Rate" disabled={loading} />
     <Button
       on:click={handleAuctionUpdate}
