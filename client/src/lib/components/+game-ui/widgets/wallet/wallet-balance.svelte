@@ -103,6 +103,8 @@
       };
     });
     const resolvedTokenBalances = await Promise.all(tokenBalances);
+    console.log('resolvedTokenBalances', resolvedTokenBalances);
+    
     setTokenBalances(
       resolvedTokenBalances.map((balance) => ({
         ...balance,
