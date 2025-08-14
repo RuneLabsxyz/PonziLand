@@ -22,6 +22,7 @@
   import { landStore } from '$lib/stores/store.svelte';
   import { onMount } from 'svelte';
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   const promise = Promise.all([
     setupSocialink().then(() => {
@@ -98,6 +99,7 @@
         console.log('Everything is ready!', dojo != undefined);
 
         tutorialState.tutorialEnabled = false;
+        widgetsStore.removeWidget('tutorial');
         clearLoading();
         gameSounds.play('launchGame');
       })
