@@ -16,14 +16,10 @@ export const baseToken = data.availableTokens.find(
 export const setTokenBalances = (items: TokenBalance[]) => {
   console.log('setTokenBalances', items);
   const itemBalances = items.map((item) => {
-    console.log('data.availableTokens', data.availableTokens);
-    console.log('padAddress(item.contract_address)', padAddress(item.contract_address));
     const token = data.availableTokens.find(
       (token) => token.address === padAddress(item.contract_address) || token.address === item.contract_address,
     );
     if (!token) {
-      console.log('token not found', token);
-      console.log('item', item);
       return null;
     }
     // Convert the balance to a BigInt
@@ -36,11 +32,7 @@ export const setTokenBalances = (items: TokenBalance[]) => {
     };
   });
 
-  console.log('itemBalances', itemBalances);
-
   const cleanedTokenBalances = itemBalances.filter((item) => item !== null);
-
-  console.log('cleanedTokenBalances', cleanedTokenBalances);
 
   tokenStore.balances = cleanedTokenBalances;
 };
