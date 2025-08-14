@@ -108,8 +108,8 @@
       } else {
         landSellPrice = '1000000';
       }
-      
-      // Convert block_date_bought to decimal for display  
+
+      // Convert block_date_bought to decimal for display
       if (land.block_date_bought) {
         const blockDateStr = land.block_date_bought.toString();
         if (blockDateStr.startsWith('0x')) {
@@ -152,16 +152,18 @@
       } else {
         stakeAmount = '100';
       }
-      
+
       // Get neighbors info packed value (convert from hex if needed)
       if (land.neighborsInfoPacked) {
-        stakeNeighborsInfo = typeof land.neighborsInfoPacked === 'string' && land.neighborsInfoPacked.startsWith('0x')
-          ? parseInt(land.neighborsInfoPacked, 16).toString()
-          : land.neighborsInfoPacked.toString();
+        stakeNeighborsInfo =
+          typeof land.neighborsInfoPacked === 'string' &&
+          land.neighborsInfoPacked.startsWith('0x')
+            ? parseInt(land.neighborsInfoPacked, 16).toString()
+            : land.neighborsInfoPacked.toString();
       } else {
         stakeNeighborsInfo = '0';
       }
-      
+
       // Set accumulated taxes - this may not be directly available on BaseLand
       stakeAccumulatedTaxes = '0'; // Default value
     } else if (land && land.type === 'auction') {
@@ -271,7 +273,7 @@
       console.log('Updating land stake');
 
       const stake: Partial<LandStake> = {};
-      if (stakeAmount && !isNaN(parseInt(stakeAmount))) 
+      if (stakeAmount && !isNaN(parseInt(stakeAmount)))
         stake.amount = toHexWithPadding(parseInt(stakeAmount));
       if (stakeNeighborsInfo && !isNaN(parseInt(stakeNeighborsInfo)))
         stake.neighbors_info_packed = toHexWithPadding(
@@ -308,14 +310,14 @@
       console.log('Creating auction at selected location');
 
       const locationValue = toHexWithPadding(coordinatesToLocation(location));
-      
+
       // Create auction entity
       const auction: Partial<Auction> = {
         land_location: locationValue,
         start_time: toHexWithPadding(Math.floor(Date.now() / 1000)), // Current time in seconds
         is_finished: false,
       };
-      
+
       if (auctionStartPrice && !isNaN(parseInt(auctionStartPrice)))
         auction.start_price = toHexWithPadding(parseInt(auctionStartPrice));
       if (auctionFloorPrice && !isNaN(parseInt(auctionFloorPrice)))
@@ -333,8 +335,13 @@
               location: locationValue,
               owner: padAddress('0x0'), // Empty/placeholder owner
               sell_price: toHexWithPadding(0),
-              token_used: landTokenUsed?.address ?? data.availableTokens[0]?.address ?? '',
-              block_date_bought: toHexWithPadding(Math.floor(Date.now() / 1000)),
+              token_used:
+                landTokenUsed?.address ??
+                data.availableTokens[0]?.address ??
+                '',
+              block_date_bought: toHexWithPadding(
+                Math.floor(Date.now() / 1000),
+              ),
               level: landLevel,
             },
             // Add the auction
