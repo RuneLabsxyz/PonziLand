@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x343ef1edd0ed33d4c7b48eb9846e732d73022d7cad87a3d46eac7bf321a53f6",
-    "seed": "ponzi_land-wip-4",
+    "address": "0x6e88f914a7a6df2b85d233df45303fe19cd9f9acec40ebca7f200929bd9c5a8",
+    "seed": "ponzi_land-wip-6",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x48f2e4d32b57a8477259abb1a47109f5e8d212c24d5a3c06fa36d68c9b0180a",
-      "class_hash": "0x519fcd30fb45e01188bfcab4be511ee9088b69b2ba2b348d0ff2099cb7246d2",
+      "address": "0x730a68fbdbc107449c8e22aea855d92fbafd22c72bf8cc3e7cb54b06f1a6f23",
+      "class_hash": "0x459ce2f7a96c1c6464daecf4938689594b3510f72423ab97cd2dbb61c2588e9",
       "abi": [
         {
           "type": "impl",
@@ -1409,6 +1409,10 @@
             },
             {
               "name": "ekubo_core_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "main_currency",
               "type": "core::starknet::contract_address::ContractAddress"
             }
           ],
@@ -2147,7 +2151,8 @@
         "0",
         "1000000000000000000",
         "0",
-        "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384"
+        "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
+        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -2166,7 +2171,7 @@
       ]
     },
     {
-      "address": "0x5b4bb38956f21c31f8f998db3587b634013e846ff3c80be05dc12db025e8291",
+      "address": "0x72e2a5d83ff6728a63bcb95bfb86c5953079323f911d08a902b102beed7627c",
       "class_hash": "0x70851f8055f8951803c0f5724e020e556ad83319c97ace1ff92565f6cd21ec7",
       "abi": [
         {
@@ -2509,8 +2514,8 @@
       ]
     },
     {
-      "address": "0x23eec2870a79b536033788438287ac47f414ddb4ac6e9305fa977276b36b36e",
-      "class_hash": "0x34c188c6f47d9ed688017e3d7887c06f4e129499f4d8c540b65557596e7c5f",
+      "address": "0x647cd1854e26809e82f2ca1f19a2c3d0d510fe1015339d382e47cda2426906d",
+      "class_hash": "0x353fce8033bb211bef1dca9794e524c304b3a39914e368e173455c5564b402c",
       "abi": [
         {
           "type": "impl",
@@ -2581,10 +2586,6 @@
           "name": "dojo_init",
           "inputs": [
             {
-              "name": "grid_width",
-              "type": "core::integer::u8"
-            },
-            {
               "name": "tax_rate",
               "type": "core::integer::u8"
             },
@@ -2627,10 +2628,6 @@
             {
               "name": "min_auction_price_multiplier",
               "type": "core::integer::u8"
-            },
-            {
-              "name": "center_location",
-              "type": "core::integer::u16"
             },
             {
               "name": "auction_duration",
@@ -2698,10 +2695,6 @@
               "name": "set_full_config",
               "inputs": [
                 {
-                  "name": "grid_width",
-                  "type": "core::integer::u8"
-                },
-                {
                   "name": "tax_rate",
                   "type": "core::integer::u8"
                 },
@@ -2744,10 +2737,6 @@
                 {
                   "name": "min_auction_price_multiplier",
                   "type": "core::integer::u8"
-                },
-                {
-                  "name": "center_location",
-                  "type": "core::integer::u16"
                 },
                 {
                   "name": "auction_duration",
@@ -2796,18 +2785,6 @@
                 {
                   "name": "main_currency",
                   "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "set_grid_width",
-              "inputs": [
-                {
-                  "name": "value",
-                  "type": "core::integer::u16"
                 }
               ],
               "outputs": [],
@@ -2940,18 +2917,6 @@
                 {
                   "name": "value",
                   "type": "core::integer::u8"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "set_center_location",
-              "inputs": [
-                {
-                  "name": "value",
-                  "type": "core::integer::u16"
                 }
               ],
               "outputs": [],
@@ -3103,17 +3068,6 @@
             },
             {
               "type": "function",
-              "name": "get_grid_width",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "core::integer::u16"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
               "name": "get_tax_rate",
               "inputs": [],
               "outputs": [
@@ -3229,17 +3183,6 @@
               "outputs": [
                 {
                   "type": "core::integer::u8"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "get_center_location",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "core::integer::u16"
                 }
               ],
               "state_mutability": "view"
@@ -3465,7 +3408,6 @@
         }
       ],
       "init_calldata": [
-        "255",
         "2",
         "3600",
         "2",
@@ -3479,7 +3421,6 @@
         "500000000000000000000",
         "0",
         "10",
-        "32639",
         "436800",
         "50",
         "12000",
@@ -3498,7 +3439,6 @@
       "systems": [
         "dojo_init",
         "set_full_config",
-        "set_grid_width",
         "set_tax_rate",
         "set_base_time",
         "set_price_decrease_rate",
@@ -3510,7 +3450,6 @@
         "set_liquidity_safety_multiplier",
         "set_min_auction_price",
         "set_min_auction_price_multiplier",
-        "set_center_location",
         "set_auction_duration",
         "set_scaling_factor",
         "set_linear_decay_time",
@@ -3527,7 +3466,7 @@
       ]
     },
     {
-      "address": "0x276025464c1ee330abdfbc3a9515a738bedb6f9799154a7196662235b1b409c",
+      "address": "0x7668e3e40c5f7395e116ca434de0013d668dd19831108c308d116f884a9d13c",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
@@ -3806,7 +3745,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x16283cb8b373dc8a1e8b8afbb36d7a2f1728a77f2c2c1196ba9e4ffa4778083",
+      "class_hash": "0x2680b96c58770ffc7e118f57ba36fe03c42f1645794ae20a4450ba96b6dbb3f",
       "tag": "ponzi_land-Config",
       "selector": "0x57f837833559dae8bcd922ede064d0c5227c3f139fc4c410c93bcd58aff30ee"
     },
