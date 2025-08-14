@@ -40,7 +40,7 @@ pub mod AuctionComponent {
 
     // Events
     use ponzi_land::events::{NewAuctionEvent, AuctionFinishedEvent};
-    
+
 
     #[storage]
     struct Storage {
