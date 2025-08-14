@@ -20,6 +20,8 @@ export const setTokenBalances = (items: TokenBalance[]) => {
       (token) => token.address === padAddress(item.contract_address),
     );
     if (!token) {
+      console.log('token not found', token);
+      console.log('item', item);
       return null;
     }
     // Convert the balance to a BigInt
@@ -37,7 +39,7 @@ export const setTokenBalances = (items: TokenBalance[]) => {
   const cleanedTokenBalances = itemBalances.filter((item) => item !== null);
 
   console.log('cleanedTokenBalances', cleanedTokenBalances);
-  
+
   tokenStore.balances = cleanedTokenBalances;
 };
 
