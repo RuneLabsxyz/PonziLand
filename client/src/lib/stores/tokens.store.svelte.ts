@@ -19,7 +19,7 @@ export const setTokenBalances = (items: TokenBalance[]) => {
     console.log('data.availableTokens', data.availableTokens);
     console.log('padAddress(item.contract_address)', padAddress(item.contract_address));
     const token = data.availableTokens.find(
-      (token) => token.address === padAddress(item.contract_address),
+      (token) => token.address === padAddress(item.contract_address) || token.address === item.contract_address,
     );
     if (!token) {
       console.log('token not found', token);
