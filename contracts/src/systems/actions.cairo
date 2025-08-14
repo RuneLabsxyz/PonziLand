@@ -139,7 +139,7 @@ pub mod actions {
     use ponzi_land::components::auction::AuctionComponent;
 
     // Constants and store
-    use ponzi_land::consts::MAX_GRID_SIZE;
+    use ponzi_land::consts::{MAX_GRID_SIZE, CENTER_LOCATION};
     use ponzi_land::store::{Store, StoreTrait};
     use ponzi_land::interfaces::systems::{SystemsTrait};
 
@@ -225,13 +225,22 @@ pub mod actions {
         start_price: u256,
         floor_price: u256,
         ekubo_core_address: ContractAddress,
+        main_currency: ContractAddress,
     ) {
         self.ekubo_dispatcher.write(ICoreDispatcher { contract_address: ekubo_core_address });
         let mut world = self.world_default();
         let store = StoreTrait::new(world);
         self.auction.initialize_circle_expansion();
-        let center_location = store.get_center_location();
-        self.auction.create(store, center_location, start_price, floor_price, false);
+        self
+            .auction
+            .create(
+                store,
+                CENTER_LOCATION,
+                start_price,
+                floor_price,
+                false,
+                Option::Some(main_currency),
+            );
     }
 
 
@@ -449,7 +458,11 @@ pub mod actions {
             assert(land.owner == ContractAddressZeroable::zero(), 'land must be without owner');
             store.delete_land(land, land_stake);
             let sell_price = get_suggested_sell_price(store, land_location);
-            self.auction.create(store, land_location, sell_price, store.get_floor_price(), true);
+            self
+                .auction
+                .create(
+                    store, land_location, sell_price, store.get_floor_price(), true, Option::None,
+                );
         }
 
 
@@ -771,7 +784,11 @@ pub mod actions {
 
             let sell_price = get_suggested_sell_price(store, land.location);
 
-            self.auction.create(store, land.location, sell_price, store.get_floor_price(), true);
+            self
+                .auction
+                .create(
+                    store, land.location, sell_price, store.get_floor_price(), true, Option::None,
+                );
         }
 
 

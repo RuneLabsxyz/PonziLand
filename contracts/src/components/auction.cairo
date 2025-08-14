@@ -40,7 +40,7 @@ pub mod AuctionComponent {
 
     // Events
     use ponzi_land::events::{NewAuctionEvent, AuctionFinishedEvent};
-
+    
 
     #[storage]
     struct Storage {
@@ -61,6 +61,7 @@ pub mod AuctionComponent {
             self.current_circle.write(1);
             self.current_section.write(1, 0);
         }
+
         /// @notice Creates new auction for unowned land with price validation
         /// @dev Bypasses max auction limit if from nuke to ensure immediate land availability
         /// @param is_from_nuke True if auction created from nuked land, skips auction limit check
@@ -71,6 +72,7 @@ pub mod AuctionComponent {
             start_price: u256,
             floor_price: u256,
             is_from_nuke: bool,
+            main_currency_override: Option<ContractAddress>,
         ) {
             assert(start_price > 0, 'start_price > 0');
             assert(floor_price > 0, 'floor_price > 0');
@@ -84,7 +86,13 @@ pub mod AuctionComponent {
             let auction = AuctionTrait::new(land_location, start_price, floor_price, false);
 
             land.sell_price = start_price;
-            land.token_used = store.get_main_currency();
+            land
+                .token_used =
+                    if main_currency_override.is_some() {
+                        main_currency_override.unwrap()
+                    } else {
+                        store.get_main_currency()
+                    };
 
             store.set_land(land);
             store.set_auction(auction);
@@ -137,7 +145,12 @@ pub mod AuctionComponent {
                 let new_auction_location = self.select_next_auction_location(store, current_circle);
                 self
                     .create(
-                        store, new_auction_location, start_price, store.get_floor_price(), false,
+                        store,
+                        new_auction_location,
+                        start_price,
+                        store.get_floor_price(),
+                        false,
+                        Option::None,
                     );
                 i += 1;
                 remaining_auctions -= 1;
