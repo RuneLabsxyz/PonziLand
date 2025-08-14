@@ -7,10 +7,10 @@
     PerfMonitor,
   } from '@threlte/extras';
   import { gameStore } from '../+game-map/three/game.store.svelte';
-  import Settings from '../+game-map/three/Settings.svelte';
   import { devsettings } from '../+game-map/three/utils/devsettings.store.svelte';
   import { tutorialLandStore } from './stores.svelte';
   import TutorialScene from './tutorial-scene.svelte';
+  import Debug from '../+game-map/three/debug/Debug.svelte';
 
   // Show dev tools if URL ends with #dev
   let showDevTools = $state(false);
@@ -72,7 +72,7 @@
     <TutorialScene {tutorialLandStore} />
   </Canvas>
   {#if showDevTools}
-    <Settings />
+    <Debug />
   {/if}
 </div>
 
