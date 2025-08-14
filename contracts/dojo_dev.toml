@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "test"
+seed = "testing"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -44,7 +44,6 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
 ]
 
 "ponzi_land-config" = [
-    "64",                                                                  # Grid width
     "2",                                                                   # Tax rate
     "3600",                                                                  # Base time
     "2",                                                        # Price decrease rate
@@ -56,7 +55,6 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
     "3",                                               # Liquidity safety multiplier
     "500000000000000000000","0",                                                          # Min auction price
     "10",                                              # Min auction price multiplier
-    "2080",                                                            # Center location
     "436800",                                                           # Auction duration
     "50",                                                             # Scaling factor
     "12000",                                                          # Linear time decay

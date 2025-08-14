@@ -13,7 +13,6 @@ trait IConfigSystem<T> {
     /// Only the owner can call it.
     fn set_full_config(
         ref self: T,
-        grid_width: u8,
         tax_rate: u8,
         base_time: u16,
         price_decrease_rate: u8,
@@ -25,7 +24,6 @@ trait IConfigSystem<T> {
         liquidity_safety_multiplier: u8,
         min_auction_price: u256,
         min_auction_price_multiplier: u8,
-        center_location: u16,
         auction_duration: u32,
         scaling_factor: u8,
         linear_decay_time: u16,
@@ -40,11 +38,6 @@ trait IConfigSystem<T> {
         main_currency: ContractAddress,
     );
 
-    /// @notice Sets the grid width, which determines the size of the land map.
-    /// @param value The new grid width (number of tiles per row/column).
-    /// Used throughout the game to validate land positions and compute neighbor relationships (see
-    /// actions.cairo).
-    fn set_grid_width(ref self: T, value: u16);
 
     /// @notice Sets the tax rate applied to land and transaction operations.
     /// @param value The new tax rate (percent).
@@ -109,10 +102,6 @@ trait IConfigSystem<T> {
     /// This helps prevent underpriced auctions and stabilizes the in-game economy.
     fn set_min_auction_price_multiplier(ref self: T, value: u8);
 
-    /// @notice Sets the center location of the grid, used for special events or calculations.
-    /// @param value The new center location (tile index).
-    /// Used in expansion logic and initial placement.
-    fn set_center_location(ref self: T, value: u16);
 
     /// @notice Sets the auction duration.
     /// @param value The new auction duration (in seconds or ticks).
@@ -177,7 +166,6 @@ trait IConfigSystem<T> {
     fn set_main_currency(ref self: T, value: ContractAddress);
 
     // Getters
-    fn get_grid_width(self: @T) -> u16;
     fn get_tax_rate(self: @T) -> u16;
     fn get_base_time(self: @T) -> u16;
     fn get_price_decrease_rate(self: @T) -> u16;
@@ -189,7 +177,6 @@ trait IConfigSystem<T> {
     fn get_liquidity_safety_multiplier(self: @T) -> u8;
     fn get_min_auction_price(self: @T) -> u256;
     fn get_min_auction_price_multiplier(self: @T) -> u8;
-    fn get_center_location(self: @T) -> u16;
     fn get_auction_duration(self: @T) -> u32;
     fn get_scaling_factor(self: @T) -> u8;
     fn get_linear_decay_time(self: @T) -> u16;
@@ -236,7 +223,6 @@ mod config {
 
     fn dojo_init(
         ref self: ContractState,
-        grid_width: u8,
         tax_rate: u8,
         base_time: u16,
         price_decrease_rate: u8,
@@ -248,7 +234,6 @@ mod config {
         liquidity_safety_multiplier: u8,
         min_auction_price: u256,
         min_auction_price_multiplier: u8,
-        center_location: u16,
         auction_duration: u32,
         scaling_factor: u8,
         linear_decay_time: u16,
@@ -264,7 +249,6 @@ mod config {
     ) {
         let mut world = self.world_default();
         let init_config: Config = ConfigTrait::new(
-            grid_width,
             tax_rate,
             base_time,
             price_decrease_rate,
@@ -276,7 +260,6 @@ mod config {
             liquidity_safety_multiplier,
             min_auction_price,
             min_auction_price_multiplier,
-            center_location,
             auction_duration,
             scaling_factor,
             linear_decay_time,
@@ -298,7 +281,6 @@ mod config {
     impl ConfigSystemImpl of IConfigSystem<ContractState> {
         fn set_full_config(
             ref self: ContractState,
-            grid_width: u8,
             tax_rate: u8,
             base_time: u16,
             price_decrease_rate: u8,
@@ -310,7 +292,6 @@ mod config {
             liquidity_safety_multiplier: u8,
             min_auction_price: u256,
             min_auction_price_multiplier: u8,
-            center_location: u16,
             auction_duration: u32,
             scaling_factor: u8,
             linear_decay_time: u16,
@@ -327,7 +308,6 @@ mod config {
             let mut world = self.world_default();
             assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
             let new_config: Config = ConfigTrait::new(
-                grid_width,
                 tax_rate,
                 base_time,
                 price_decrease_rate,
@@ -339,7 +319,6 @@ mod config {
                 liquidity_safety_multiplier,
                 min_auction_price,
                 min_auction_price_multiplier,
-                center_location,
                 auction_duration,
                 scaling_factor,
                 linear_decay_time,
@@ -354,13 +333,6 @@ mod config {
                 main_currency,
             );
             world.write_model(@new_config);
-        }
-
-        fn set_grid_width(ref self: ContractState, value: u16) {
-            let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
-            world.write_member(Model::<Config>::ptr_from_keys(1), selector!("grid_width"), value);
-            world.emit_event(@ConfigUpdated { field: 'grid_width', new_value: value.into() });
         }
 
         fn set_tax_rate(ref self: ContractState, value: u16) {
@@ -483,15 +455,6 @@ mod config {
                 );
         }
 
-        fn set_center_location(ref self: ContractState, value: u16) {
-            let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
-            world
-                .write_member(
-                    Model::<Config>::ptr_from_keys(1), selector!("center_location"), value,
-                );
-            world.emit_event(@ConfigUpdated { field: 'center_location', new_value: value.into() });
-        }
 
         fn set_auction_duration(ref self: ContractState, value: u32) {
             let mut world = self.world_default();
@@ -610,11 +573,6 @@ mod config {
         }
 
         // Getters implementation
-        fn get_grid_width(self: @ContractState) -> u16 {
-            let world = self.world_default();
-            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("grid_width"))
-        }
-
         fn get_tax_rate(self: @ContractState) -> u16 {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("tax_rate"))
@@ -674,11 +632,6 @@ mod config {
                 .read_member(
                     Model::<Config>::ptr_from_keys(1), selector!("min_auction_price_multiplier"),
                 )
-        }
-
-        fn get_center_location(self: @ContractState) -> u16 {
-            let world = self.world_default();
-            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("center_location"))
         }
 
         fn get_auction_duration(self: @ContractState) -> u32 {
