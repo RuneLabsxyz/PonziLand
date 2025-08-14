@@ -75,4 +75,5 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
     "1000000000000000000",                                                # Floor price (low)
     "0",                                                                  # Floor price (high)
     "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
+    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # Main token
 ]
