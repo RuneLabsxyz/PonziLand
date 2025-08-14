@@ -104,7 +104,7 @@
     });
     const resolvedTokenBalances = await Promise.all(tokenBalances);
     console.log('resolvedTokenBalances', resolvedTokenBalances);
-    
+
     setTokenBalances(
       resolvedTokenBalances.map((balance) => ({
         ...balance,
@@ -150,6 +150,8 @@
       });
       // Add the subscription ref
       subscriptionRef = subscription;
+
+      console.log('tokenBalances', tokenBalances);
 
       tokenStore.prices = await getTokenPrices();
       setTokenBalances(tokenBalances.items);
