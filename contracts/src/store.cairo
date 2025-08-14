@@ -60,10 +60,6 @@ impl StoreImpl of StoreTrait {
     }
 
     // Config getters
-    #[inline(always)]
-    fn get_grid_width(self: Store) -> u8 {
-        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("grid_width"))
-    }
 
     #[inline(always)]
     fn get_tax_rate(self: Store) -> u8 {
@@ -130,10 +126,6 @@ impl StoreImpl of StoreTrait {
             )
     }
 
-    #[inline(always)]
-    fn get_center_location(self: Store) -> u16 {
-        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("center_location"))
-    }
 
     #[inline(always)]
     fn get_auction_duration(self: Store) -> u32 {

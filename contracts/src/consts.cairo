@@ -9,7 +9,6 @@
 //!
 //! To modify these values in production, use the configuration system's update methods.
 
-pub const GRID_WIDTH: u8 = 64;
 pub const MAX_GRID_SIZE: u8 = 255;
 
 //this % is for tests now

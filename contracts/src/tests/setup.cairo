@@ -38,11 +38,11 @@ mod setup {
 
     // Constants
     use ponzi_land::consts::{
-        GRID_WIDTH, TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS,
-        MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER,
-        MIN_AUCTION_PRICE, MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION,
-        SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE,
-        BUY_FEE, OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
+        TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID,
+        DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
+        MIN_AUCTION_PRICE_MULTIPLIER, AUCTION_DURATION, SCALING_FACTOR, LINEAR_DECAY_TIME,
+        DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE, OUR_CONTRACT_FOR_FEE,
+        OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
     };
 
     // Events
@@ -158,12 +158,11 @@ mod setup {
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
                     .with_init_calldata(
                         [
-                            GRID_WIDTH.into(), TAX_RATE.into(), BASE_TIME.into(),
-                            PRICE_DECREASE_RATE.into(), TIME_SPEED.into(), MAX_AUCTIONS.into(),
-                            MAX_AUCTIONS_FROM_BID.into(), DECAY_RATE.into(), floor_price_low.into(),
-                            floor_price_high.into(), LIQUIDITY_SAFETY_MULTIPLIER.into(),
-                            min_auction_price_low.into(), min_auction_price_high.into(),
-                            MIN_AUCTION_PRICE_MULTIPLIER.into(), CENTER_LOCATION.into(),
+                            TAX_RATE.into(), BASE_TIME.into(), PRICE_DECREASE_RATE.into(),
+                            TIME_SPEED.into(), MAX_AUCTIONS.into(), MAX_AUCTIONS_FROM_BID.into(),
+                            DECAY_RATE.into(), floor_price_low.into(), floor_price_high.into(),
+                            LIQUIDITY_SAFETY_MULTIPLIER.into(), min_auction_price_low.into(),
+                            min_auction_price_high.into(), MIN_AUCTION_PRICE_MULTIPLIER.into(),
                             AUCTION_DURATION.into(), SCALING_FACTOR.into(),
                             LINEAR_DECAY_TIME.into(), DROP_RATE.into(), RATE_DENOMINATOR.into(),
                             MAX_CIRCLES.into(), CLAIM_FEE.into(), BUY_FEE.into(),
@@ -200,6 +199,7 @@ mod setup {
                             1.into(), // floor_price (low)
                             0.into(), // floor_price (high)
                             ekubo_core_address,
+                            erc20_address.into(),
                         ]
                             .span(),
                     ),
