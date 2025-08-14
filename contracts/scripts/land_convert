@@ -1,33 +1,47 @@
 #!/usr/bin/env bash
 
+# Simple conversion between (row,col) and index as used in coord.cairo
+# position_to_index(row, col) = row * 256 + col
+# index_to_position(index) = (index / 256, index % 256)
+
 hex_to_tuple() {
     # Remove 0x prefix if present
     hex=${1#0x}
     # Convert hex to decimal
     dec=$((16#$hex))
-    # Get coordinates using mod 64 and div 64
-    x=$(( dec / 64 ))
-    y=$(( dec % 64 ))
-    echo "($x, $y)"
+    # Calculate row and column
+    row=$(( dec / 256 ))
+    col=$(( dec % 256 ))
+    echo "($row, $col)"
 }
 
 tuple_to_hex() {
-    x=$1
-    y=$2
-    # Combine numbers: x * 64 + y
-    dec=$(( x * 64 + y ))
-    # Convert to hex and pad to exactly 64 characters
-    printf "0x%064x\n" "$dec"
-    printf "=> %d\n" "$dec"
+    row=$1
+    col=$2
+    # Calculate the index: row * 256 + col
+    dec=$(( row * 256 + col ))
+    # Format as full hex with 0x prefix
+    printf "0x%x" $dec
 }
 
+# Main execution
 if [ $# -eq 1 ]; then
-    hex_to_tuple "$1"
+    # If input is a number, convert to hex first
+    if [[ $1 =~ ^[0-9]+$ ]]; then
+        hex=$(printf "0x%04x" $1)
+        hex_to_tuple $hex
+    else
+        hex_to_tuple "$1"
+    fi
 elif [ $# -eq 2 ]; then
     tuple_to_hex "$1" "$2"
+    # Also show the decimal value for reference
+    dec=$(( ($1 * 256) + $2 ))
+    echo "=> $dec"
 else
     echo "Usage:"
-    echo "  To convert hex to tuple: $0 0x00...01c2"
-    echo "  To convert tuple to hex: $0 7 2"
+    echo "  To convert hex to (row,col): $0 <hex_value>"
+    echo "  To convert number to (row,col): $0 <number>"
+    echo "  To convert (row,col) to hex: $0 <row> <col>"
     exit 1
 fi

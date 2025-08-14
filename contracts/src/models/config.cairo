@@ -4,16 +4,15 @@ use starknet::ContractAddress;
 use dojo::world::{WorldStorage};
 use dojo::model::{ModelStorage, ModelValueStorage};
 use ponzi_land::consts::{
-    GRID_WIDTH, TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS,
-    MAX_AUCTIONS_FROM_BID, DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
-    MIN_AUCTION_PRICE_MULTIPLIER, CENTER_LOCATION, AUCTION_DURATION, SCALING_FACTOR,
-    LINEAR_DECAY_TIME, DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE,
-    OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
+    TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID,
+    DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
+    MIN_AUCTION_PRICE_MULTIPLIER, AUCTION_DURATION, SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE,
+    RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
+    CLAIM_FEE_THRESHOLD,
 };
 
 /// Global configuration for the PonziLand game.
 /// * `id` - Unique identifier for the config (always 1 for singleton pattern).
-/// * `grid_width` - Width of the land grid. Used for land location calculations.
 /// * `tax_rate` - Base tax rate applied to land yields.
 /// * `base_time` - Base time unit for time-based calculations.
 /// * `price_decrease_rate` - Rate at which auction prices decrease over time.
@@ -26,7 +25,6 @@ use ponzi_land::consts::{
 /// * `min_auction_price` - Minimum starting price for auctions.
 /// * `min_auction_price_multiplier` - Multiplier for calculating minimum auction price based on
 /// neighbors.
-/// * `center_location` - Location of the central land plot. Used for initial auction and reference.
 /// * `auction_duration` - Duration of each auction in seconds.
 /// * `scaling_factor` - Scaling factor for price decay calculations.
 /// * `linear_decay_time` - Time period for linear price decay before switching to exponential.
@@ -44,7 +42,6 @@ use ponzi_land::consts::{
 pub struct Config {
     #[key]
     pub id: u8,
-    pub grid_width: u8,
     pub tax_rate: u8,
     pub base_time: u16,
     pub price_decrease_rate: u8,
@@ -56,7 +53,6 @@ pub struct Config {
     pub liquidity_safety_multiplier: u8,
     pub min_auction_price: u256,
     pub min_auction_price_multiplier: u8,
-    pub center_location: u16,
     pub auction_duration: u32,
     pub scaling_factor: u8,
     pub linear_decay_time: u16,
@@ -75,7 +71,6 @@ pub struct Config {
 impl ConfigImpl of ConfigTrait {
     #[inline(always)]
     fn new(
-        grid_width: u8,
         tax_rate: u8,
         base_time: u16,
         price_decrease_rate: u8,
@@ -87,7 +82,6 @@ impl ConfigImpl of ConfigTrait {
         liquidity_safety_multiplier: u8,
         min_auction_price: u256,
         min_auction_price_multiplier: u8,
-        center_location: u16,
         auction_duration: u32,
         scaling_factor: u8,
         linear_decay_time: u16,
@@ -103,7 +97,6 @@ impl ConfigImpl of ConfigTrait {
     ) -> Config {
         Config {
             id: 1,
-            grid_width,
             tax_rate,
             base_time,
             price_decrease_rate,
@@ -115,7 +108,6 @@ impl ConfigImpl of ConfigTrait {
             liquidity_safety_multiplier,
             min_auction_price,
             min_auction_price_multiplier,
-            center_location,
             auction_duration,
             scaling_factor,
             linear_decay_time,
@@ -136,7 +128,6 @@ impl ConfigImpl of ConfigTrait {
     fn initialize_default() -> Config {
         let default_config = Config {
             id: 1,
-            grid_width: GRID_WIDTH,
             tax_rate: TAX_RATE,
             base_time: BASE_TIME,
             price_decrease_rate: PRICE_DECREASE_RATE,
@@ -148,7 +139,6 @@ impl ConfigImpl of ConfigTrait {
             liquidity_safety_multiplier: LIQUIDITY_SAFETY_MULTIPLIER,
             min_auction_price: MIN_AUCTION_PRICE,
             min_auction_price_multiplier: MIN_AUCTION_PRICE_MULTIPLIER,
-            center_location: CENTER_LOCATION,
             auction_duration: AUCTION_DURATION,
             scaling_factor: SCALING_FACTOR,
             linear_decay_time: LINEAR_DECAY_TIME,
