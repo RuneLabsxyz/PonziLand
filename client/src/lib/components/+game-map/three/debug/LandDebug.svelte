@@ -95,14 +95,33 @@
     if (land && land.type === 'building') {
       // Update land form values from selected land
       landOwner = land.owner ?? '0x123';
-      // Convert hex sell_price back to decimal for display
-      landSellPrice = land.sell_price 
-        ? parseInt(land.sell_price.toString(), 16).toString()
-        : '1000000';
-      // Convert hex block_date_bought back to decimal for display  
-      landBlockDateBought = land.block_date_bought
-        ? parseInt(land.block_date_bought.toString(), 16).toString()
-        : Date.now().toString();
+      // Convert sell_price to decimal for display
+      if (land.sell_price) {
+        const sellPriceStr = land.sell_price.toString();
+        if (sellPriceStr.startsWith('0x')) {
+          // If it's a hex string, parse it as hex
+          landSellPrice = parseInt(sellPriceStr, 16).toString();
+        } else {
+          // If it's already decimal, use as is
+          landSellPrice = sellPriceStr;
+        }
+      } else {
+        landSellPrice = '1000000';
+      }
+      
+      // Convert block_date_bought to decimal for display  
+      if (land.block_date_bought) {
+        const blockDateStr = land.block_date_bought.toString();
+        if (blockDateStr.startsWith('0x')) {
+          // If it's a hex string, parse it as hex
+          landBlockDateBought = parseInt(blockDateStr, 16).toString();
+        } else {
+          // If it's already decimal, use as is
+          landBlockDateBought = blockDateStr;
+        }
+      } else {
+        landBlockDateBought = Date.now().toString();
+      }
 
       // Find and set the token
       const foundToken = data.availableTokens.find(
@@ -126,6 +145,25 @@
         default:
           landLevel = 'Zero';
       }
+
+      // Update stake values if the land has stake data
+      if (land.stakeAmount) {
+        stakeAmount = land.stakeAmount.toBignumberish().toString();
+      } else {
+        stakeAmount = '100';
+      }
+      
+      // Get neighbors info packed value (convert from hex if needed)
+      if (land.neighborsInfoPacked) {
+        stakeNeighborsInfo = typeof land.neighborsInfoPacked === 'string' && land.neighborsInfoPacked.startsWith('0x')
+          ? parseInt(land.neighborsInfoPacked, 16).toString()
+          : land.neighborsInfoPacked.toString();
+      } else {
+        stakeNeighborsInfo = '0';
+      }
+      
+      // Set accumulated taxes - this may not be directly available on BaseLand
+      stakeAccumulatedTaxes = '0'; // Default value
     } else if (land && land.type === 'auction') {
       // Update auction form values from selected auction land
       const auctionLand = land as AuctionLand;
@@ -267,9 +305,17 @@
     try {
       loading = true;
       error = null;
-      console.log('Updating auction');
+      console.log('Creating auction at selected location');
 
-      const auction: Partial<Auction> = {};
+      const locationValue = toHexWithPadding(coordinatesToLocation(location));
+      
+      // Create auction entity
+      const auction: Partial<Auction> = {
+        land_location: locationValue,
+        start_time: toHexWithPadding(Math.floor(Date.now() / 1000)), // Current time in seconds
+        is_finished: false,
+      };
+      
       if (auctionStartPrice && !isNaN(parseInt(auctionStartPrice)))
         auction.start_price = toHexWithPadding(parseInt(auctionStartPrice));
       if (auctionFloorPrice && !isNaN(parseInt(auctionFloorPrice)))
@@ -277,14 +323,29 @@
       if (auctionDecayRate && !isNaN(parseInt(auctionDecayRate)))
         auction.decay_rate = toHexWithPadding(parseInt(auctionDecayRate));
 
-      const locationValue = toHexWithPadding(coordinatesToLocation(location));
-      const parsedEntity = createParsedEntity(
-        'Auction',
-        auction,
-        locationValue,
-      );
+      // For empty lands, we might need to create both Land and Auction entities
+      const parsedEntity = {
+        entityId: locationValue,
+        models: {
+          ponzi_land: {
+            // Create a basic land entity if it doesn't exist
+            Land: {
+              location: locationValue,
+              owner: padAddress('0x0'), // Empty/placeholder owner
+              sell_price: toHexWithPadding(0),
+              token_used: landTokenUsed?.address ?? data.availableTokens[0]?.address ?? '',
+              block_date_bought: toHexWithPadding(Math.floor(Date.now() / 1000)),
+              level: landLevel,
+            },
+            // Add the auction
+            Auction: auction,
+          },
+        },
+      };
+
+      // @ts-ignore
       landStore.updateLand(parsedEntity);
-      console.log('Auction update successful');
+      console.log('Auction created successfully');
     } catch (e) {
       console.error('Error updating auction:', e);
       error =
@@ -414,8 +475,8 @@
     <Text bind:value={auctionDecayRate} label="Decay Rate" disabled={loading} />
     <Button
       on:click={handleAuctionUpdate}
-      label="Update Auction"
-      title="Update Auction"
+      label="Create Auction"
+      title="Create auction at selected location with current parameters"
       disabled={loading}
     />
   </Folder>
