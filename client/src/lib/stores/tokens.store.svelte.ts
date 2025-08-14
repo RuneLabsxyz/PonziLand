@@ -32,8 +32,12 @@ export const setTokenBalances = (items: TokenBalance[]) => {
     };
   });
 
+  console.log('itemBalances', itemBalances);
+
   const cleanedTokenBalances = itemBalances.filter((item) => item !== null);
 
+  console.log('cleanedTokenBalances', cleanedTokenBalances);
+  
   tokenStore.balances = cleanedTokenBalances;
 };
 
