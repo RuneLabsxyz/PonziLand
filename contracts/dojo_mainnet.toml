@@ -39,7 +39,6 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 ]
 
 "ponzi_land-auth" = [
-    "0x021fBAE9F9343873ab25eC14d287A1170b676C73c97906790ef91F5428dBdbad", # Owner address
     "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
 ]
 

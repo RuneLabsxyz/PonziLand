@@ -180,6 +180,12 @@ fn authorize_token(dispatcher: ITokenRegistryDispatcher, token_address: Contract
 }
 
 fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
+    // We need to temporarily mock ourselves as the world owner to call set_verifier
+    // Similar pattern to authorize_token function
+    let prev_address = starknet::get_contract_address();
+
+    set_contract_address(0x0.try_into().unwrap());
+
     //PRIVATE KEY => 0x1234567890987654321
     let public_key: felt252 =
         0x020c29f1c98f3320d56f01c13372c923123c35828bce54f2153aa1cfe61c44f2; // From script
@@ -237,6 +243,9 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
         assert(auth_dispatcher.can_take_action(address), 'Authorization failed');
         i += 1;
     };
+
+    // Restore the original contract address
+    set_contract_address(prev_address);
 }
 
 fn validate_staking_state(
@@ -1317,7 +1326,7 @@ fn test_dynamic_grid() {
     initialize_land(
         actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 10, 50, main_currency,
     );
-
+    set_contract_address(0x0.try_into().unwrap());
     let initial_max_circles = store.get_max_circles();
     assert(initial_max_circles == MAX_CIRCLES, 'max circles should be default');
 

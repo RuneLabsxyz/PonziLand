@@ -306,7 +306,8 @@ mod config {
             main_currency: ContractAddress,
         ) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             let new_config: Config = ConfigTrait::new(
                 tax_rate,
                 base_time,
@@ -337,21 +338,24 @@ mod config {
 
         fn set_tax_rate(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("tax_rate"), value);
             world.emit_event(@ConfigUpdated { field: 'tax_rate', new_value: value.into() });
         }
 
         fn set_base_time(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("base_time"), value);
             world.emit_event(@ConfigUpdated { field: 'base_time', new_value: value.into() });
         }
 
         fn set_price_decrease_rate(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("price_decrease_rate"), value,
@@ -364,21 +368,24 @@ mod config {
 
         fn set_time_speed(ref self: ContractState, value: u32) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("time_speed"), value);
             world.emit_event(@ConfigUpdated { field: 'time_speed', new_value: value.into() });
         }
 
         fn set_max_auctions(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("max_auctions"), value);
             world.emit_event(@ConfigUpdated { field: 'max_auctions', new_value: value.into() });
         }
 
         fn set_max_auctions_from_bid(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("max_auctions_from_bid"), value,
@@ -391,14 +398,16 @@ mod config {
 
         fn set_decay_rate(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("decay_rate"), value);
             world.emit_event(@ConfigUpdated { field: 'decay_rate', new_value: value.into() });
         }
 
         fn set_floor_price(ref self: ContractState, value: u256) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("floor_price"), value);
             world
                 .emit_event(
@@ -408,7 +417,8 @@ mod config {
 
         fn set_liquidity_safety_multiplier(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1),
@@ -425,7 +435,8 @@ mod config {
 
         fn set_min_auction_price(ref self: ContractState, value: u256) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("min_auction_price"), value,
@@ -440,7 +451,8 @@ mod config {
 
         fn set_min_auction_price_multiplier(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1),
@@ -458,7 +470,8 @@ mod config {
 
         fn set_auction_duration(ref self: ContractState, value: u32) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("auction_duration"), value,
@@ -468,7 +481,8 @@ mod config {
 
         fn set_scaling_factor(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("scaling_factor"), value,
@@ -478,7 +492,8 @@ mod config {
 
         fn set_linear_decay_time(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("linear_decay_time"), value,
@@ -489,14 +504,16 @@ mod config {
 
         fn set_drop_rate(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("drop_rate"), value);
             world.emit_event(@ConfigUpdated { field: 'drop_rate', new_value: value.into() });
         }
 
         fn set_rate_denominator(ref self: ContractState, value: u8) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("rate_denominator"), value,
@@ -506,28 +523,32 @@ mod config {
 
         fn set_max_circles(ref self: ContractState, value: u16) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("max_circles"), value);
             world.emit_event(@ConfigUpdated { field: 'max_circles', new_value: value.into() });
         }
 
         fn set_claim_fee(ref self: ContractState, value: u128) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("claim_fee"), value);
             world.emit_event(@ConfigUpdated { field: 'claim_fee', new_value: value.into() });
         }
 
         fn set_buy_fee(ref self: ContractState, value: u128) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world.write_member(Model::<Config>::ptr_from_keys(1), selector!("buy_fee"), value);
             world.emit_event(@ConfigUpdated { field: 'buy_fee', new_value: value.into() });
         }
 
         fn set_our_contract_for_fee(ref self: ContractState, value: ContractAddress) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_fee"), value,
@@ -540,7 +561,8 @@ mod config {
 
         fn set_our_contract_for_auction(ref self: ContractState, value: ContractAddress) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("our_contract_for_auction"), value,
@@ -553,7 +575,8 @@ mod config {
 
         fn set_claim_fee_threshold(ref self: ContractState, value: u128) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(
                     Model::<Config>::ptr_from_keys(1), selector!("claim_fee_threshold"), value,
@@ -566,7 +589,8 @@ mod config {
 
         fn set_main_currency(ref self: ContractState, value: ContractAddress) {
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
             world
                 .write_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"), value);
             world.emit_event(@ConfigUpdated { field: 'main_currency', new_value: value.into() });
