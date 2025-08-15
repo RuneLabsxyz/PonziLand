@@ -57,10 +57,11 @@ trait IAuth<T> {
     /// @return True if the address can take actions.
     fn can_take_action(self: @T, address: ContractAddress) -> bool;
 
-    /// @notice Returns the contract owner address.
+    /// @notice Checks if an address is owner using World RBAC.
     /// @param self The contract state reference.
-    /// @return The owner address.
-    fn get_owner(self: @T) -> ContractAddress;
+    /// @param address The address to check.
+    /// @return True if the address is owner.
+    fn is_owner_auth(self: @T, address: ContractAddress) -> bool;
 }
 #[dojo::contract]
 pub mod auth {
@@ -76,7 +77,7 @@ pub mod auth {
     };
 
     // Dojo imports
-    use dojo::world::WorldStorage;
+    use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher, IWorldDispatcherTrait};
     use dojo::event::EventStorage;
 
     // Local imports
@@ -114,15 +115,12 @@ pub mod auth {
         authorized_addresses: Map::<ContractAddress, bool>,
         verifier_accounts: Map::<ContractAddress, bool>,
         verifier: felt252,
-        owner: ContractAddress,
         actions_locked: bool,
     }
 
-    /// @notice Initializes the contract with the owner and verifier.
-    fn dojo_init(ref self: ContractState, owner: ContractAddress, verifier: felt252) {
-        self.owner.write(owner);
+    /// @notice Initializes the contract with the verifier.
+    fn dojo_init(ref self: ContractState, verifier: felt252) {
         self.verifier.write(verifier);
-
         self.actions_locked.write(false);
     }
 
@@ -148,7 +146,7 @@ pub mod auth {
             let mut world = self.world_default();
 
             let caller = get_caller_address();
-            let is_owner = caller == self.owner.read();
+            let is_owner = self.is_owner_auth(caller);
             let is_authorizer = self.verifier_accounts.read(caller);
             assert(is_owner || is_authorizer, 'Only owner or verifier can add');
 
@@ -164,7 +162,7 @@ pub mod auth {
         fn remove_authorized(ref self: ContractState, address: ContractAddress) {
             let mut world = self.world_default();
             let caller = get_caller_address();
-            assert(caller == self.owner.read(), 'Only owner can remove');
+            assert(self.is_owner_auth(caller), 'Only owner can remove');
 
             self.authorized_addresses.write(address, false);
             world.emit_event(@AddressRemovedEvent { address, removed_at: get_block_timestamp() });
@@ -174,18 +172,17 @@ pub mod auth {
         fn set_verifier(ref self: ContractState, new_verifier: felt252) {
             let mut world = self.world_default();
             let caller = get_caller_address();
-            assert(caller == self.owner.read(), 'Only owner can change verifier');
+            assert(self.is_owner_auth(caller), 'Only owner can change verifier');
 
             let old_verifier = self.verifier.read();
             self.verifier.write(new_verifier);
-
             world.emit_event(@VerifierUpdatedEvent { new_verifier, old_verifier });
         }
 
         /// @notice Adds a new verifier account. Owner only.
         fn add_verifier(ref self: ContractState, new_verifier: ContractAddress) {
             let caller = get_caller_address();
-            assert(caller == self.owner.read(), 'Only owner can add verifier');
+            assert(self.is_owner_auth(caller), 'Only owner can add verifier');
 
             self.verifier_accounts.write(new_verifier, true);
         }
@@ -193,20 +190,22 @@ pub mod auth {
         /// @notice Removes a verifier account. Owner only.
         fn remove_verifier(ref self: ContractState, verifier: ContractAddress) {
             let caller = get_caller_address();
-            assert(caller == self.owner.read(), 'Only owner can remove verifier');
+            assert(self.is_owner_auth(caller), 'Only owner can remove verifier');
 
             self.verifier_accounts.write(verifier, false);
         }
 
         /// @notice Locks all actions in the action system contract. Owner only.
         fn lock_actions(ref self: ContractState) {
-            assert(self.owner.read() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(self.is_owner_auth(caller), 'not the owner');
             self.actions_locked.write(true);
         }
 
         /// @notice Unlocks all actions in the action system contract. Owner only.
         fn unlock_actions(ref self: ContractState) {
-            assert(self.owner.read() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(self.is_owner_auth(caller), 'not the owner');
             self.actions_locked.write(false);
         }
 
@@ -216,9 +215,10 @@ pub mod auth {
             assert(caller != ContractAddressZeroable::zero(), 'zero address');
         }
 
-        /// @notice Returns the contract owner/admin address.
-        fn get_owner(self: @ContractState) -> ContractAddress {
-            return self.owner.read();
+        /// @notice Checks if an address is owner using World RBAC.
+        fn is_owner_auth(self: @ContractState, address: ContractAddress) -> bool {
+            let world = self.world_default();
+            world.dispatcher.is_owner(0x0, address)
         }
 
         /// @notice Checks if an address can take actions (not locked).

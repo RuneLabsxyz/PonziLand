@@ -449,8 +449,7 @@ pub mod actions {
         fn recreate_auction(ref self: ContractState, land_location: u16) {
             let caller = get_caller_address();
             let mut world = self.world_default();
-            let contract_owner = world.auth_dispatcher().get_owner();
-            assert(contract_owner == caller, 'action not permitted');
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'action not permitted');
 
             let mut store = StoreTrait::new(world);
             let mut land = store.land(land_location);
@@ -535,7 +534,8 @@ pub mod actions {
         fn reimburse_stakes(ref self: ContractState) {
             self.reentrancy_guard.start();
             let mut world = self.world_default();
-            assert(world.auth_dispatcher().get_owner() == get_caller_address(), 'not the owner');
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
 
             let mut store = StoreTrait::new(world);
             let mut active_lands: Array<Land> = ArrayTrait::new();

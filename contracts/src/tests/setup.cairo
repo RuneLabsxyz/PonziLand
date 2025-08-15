@@ -176,8 +176,7 @@ mod setup {
             .append(
                 ContractDefTrait::new(@"ponzi_land", @"auth")
                     .with_writer_of([dojo::utils::bytearray_hash(@"ponzi_land")].span())
-                    .with_init_calldata([RECIPIENT().into(), // owner
-                    0.into() // verifier
+                    .with_init_calldata([0.into() // verifier
                     ].span()),
             );
 
