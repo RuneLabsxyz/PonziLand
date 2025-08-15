@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { LevelInfo } from '$lib/api/land';
   import { Progress } from '$lib/components/ui/progress';
-  import { GAME_SPEED } from '$lib/const';
+  import { GAME_SPEED } from '$lib/dynamic_const';
   import { cn } from '$lib/utils';
 
   let { levelUpInfo, class: className } = $props<{
@@ -11,7 +11,8 @@
 
   let remainingTime = $derived.by(() => {
     const time =
-      (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) / GAME_SPEED;
+      (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) /
+      $GAME_SPEED;
 
     if (time <= 0) {
       return 'ready';

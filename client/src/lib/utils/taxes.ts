@@ -1,8 +1,10 @@
 import type { LandWithActions } from '$lib/api/land';
-import { GAME_SPEED, GRID_SIZE, TAX_RATE } from '$lib/const';
+import { Neighbors } from '$lib/api/neighbors';
+import { GAME_SPEED, TAX_RATE, BASE_TIME } from '$lib/dynamic_const';
 import type { Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import data from '$profileData';
+import { get } from 'svelte/store';
 import { CurrencyAmount } from './CurrencyAmount';
 export type TaxData = {
   tokenAddress: string;
@@ -72,17 +74,9 @@ export const getNeighbourYieldArray = async (land: LandWithActions) => {
   const rawYieldInfos = await land.getYieldInfo();
 
   const location = Number(land.location);
-  const neighbors = [
-    location - GRID_SIZE - 1,
-    location - GRID_SIZE,
-    location - GRID_SIZE + 1,
-    location - 1,
-    location,
-    location + 1,
-    location + GRID_SIZE - 1,
-    location + GRID_SIZE,
-    location + GRID_SIZE + 1,
-  ];
+  // Use existing neighbors function instead of duplicating coordinate logic
+  const neighborsData = Neighbors.getLocations(BigInt(location));
+  const neighbors = neighborsData.array.map((loc) => Number(loc));
 
   // assign yield info to neighbour if location matches
   const neighborYieldInfo = neighbors.map((loc) => {
@@ -121,7 +115,7 @@ export const estimateNukeTime = async (
   land: LandWithActions,
   neighbourNumber: number | undefined = undefined,
 ) => {
-  const baseTime = 3600;
+  const baseTime = get(BASE_TIME) as number;
   let sellPrice = land.sellPrice.rawValue().toNumber();
   let remainingStake = land.stakeAmount.rawValue().toNumber();
 
@@ -198,9 +192,9 @@ export const estimateTax = (sellPrice: number) => {
     };
   }
 
-  const gameSpeed = GAME_SPEED;
-  const taxRate = 0.02;
-  const baseTime = 3600;
+  const gameSpeed = get(GAME_SPEED) as number;
+  const taxRate = get(TAX_RATE) as number;
+  const baseTime = get(BASE_TIME) as number;
   const maxNeighbours = 8;
 
   const maxRate = sellPrice * taxRate * gameSpeed;
@@ -218,8 +212,8 @@ export function burnForOneNeighbor(land: LandWithActions) {
   const maxN = 8;
   return land.sellPrice
     .rawValue()
-    .multipliedBy(TAX_RATE)
-    .multipliedBy(GAME_SPEED)
+    .multipliedBy(get(TAX_RATE))
+    .multipliedBy(get(GAME_SPEED))
     .dividedBy(maxN * 100);
 }
 
@@ -240,8 +234,8 @@ export function calculateBurnRate(
 }
 
 export function calculateTaxes(sellAmount: number) {
-  const taxRate = TAX_RATE;
-  const gameSpeed = GAME_SPEED;
+  const taxRate = get(TAX_RATE) as number;
+  const gameSpeed = get(GAME_SPEED) as number;
   const maxN = 8;
 
   if (sellAmount <= 0 || isNaN(sellAmount)) {

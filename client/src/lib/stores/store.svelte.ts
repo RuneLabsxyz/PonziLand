@@ -1,6 +1,7 @@
 import type { BaseLand, LandSetup, LandWithActions } from '$lib/api/land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { LandTileStore } from '$lib/api/land_tiles.svelte';
+import { ConfigStore } from '$lib/api/config.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
 
 import { AuctionLand } from '$lib/api/land/auction_land';
@@ -8,7 +9,9 @@ import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 
+// Main stores following Dojo subscription pattern
 export let landStore = $state(new LandTileStore());
+export let configStore = $state(new ConfigStore());
 
 export let selectedLand = $state<{ value: BaseLand | null }>({ value: null });
 
