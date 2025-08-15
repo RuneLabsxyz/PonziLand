@@ -77,5 +77,5 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e", # Our contract for fee
     "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e", # Our contract for auction
     "1000",                                                               # Claim fee threshold
-    "0x067b19ff5c8e2ec1d80f0c2a9a1ee6d6424edde86c57dca04e82e1fe06a7e977", # Main token
+    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
 ]
