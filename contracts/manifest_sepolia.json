@@ -1329,7 +1329,7 @@
   "contracts": [
     {
       "address": "0x730a68fbdbc107449c8e22aea855d92fbafd22c72bf8cc3e7cb54b06f1a6f23",
-      "class_hash": "0x459ce2f7a96c1c6464daecf4938689594b3510f72423ab97cd2dbb61c2588e9",
+      "class_hash": "0x4352575ea696b19718d0cc13f312d9b3a39f51f572bec388aeb171d7b007d55",
       "abi": [
         {
           "type": "impl",
@@ -2172,7 +2172,7 @@
     },
     {
       "address": "0x72e2a5d83ff6728a63bcb95bfb86c5953079323f911d08a902b102beed7627c",
-      "class_hash": "0x70851f8055f8951803c0f5724e020e556ad83319c97ace1ff92565f6cd21ec7",
+      "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
           "type": "impl",
@@ -2228,10 +2228,6 @@
           "type": "function",
           "name": "dojo_init",
           "inputs": [
-            {
-              "name": "owner",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
             {
               "name": "verifier",
               "type": "core::felt252"
@@ -2374,11 +2370,16 @@
             },
             {
               "type": "function",
-              "name": "get_owner",
-              "inputs": [],
+              "name": "is_owner_auth",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
               "outputs": [
                 {
-                  "type": "core::starknet::contract_address::ContractAddress"
+                  "type": "core::bool"
                 }
               ],
               "state_mutability": "view"
@@ -2514,7 +2515,7 @@
     },
     {
       "address": "0x647cd1854e26809e82f2ca1f19a2c3d0d510fe1015339d382e47cda2426906d",
-      "class_hash": "0x353fce8033bb211bef1dca9794e524c304b3a39914e368e173455c5564b402c",
+      "class_hash": "0x5f8ae92842a9c5b34e01f014f6e544297bc3222199da9d7f38ac52bfe72884c",
       "abi": [
         {
           "type": "impl",
@@ -3431,7 +3432,7 @@
         "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e",
         "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e",
         "1000",
-        "0x067b19ff5c8e2ec1d80f0c2a9a1ee6d6424edde86c57dca04e82e1fe06a7e977"
+        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",

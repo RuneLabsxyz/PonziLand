@@ -28,7 +28,7 @@ trap cleanup_env EXIT
 
 # Build the project
 echo "Building the project..."
-# sozo -P sepolia build
+sozo -P sepolia build
 
 # Deploy the project
 echo "Deploying to Sepolia..."
