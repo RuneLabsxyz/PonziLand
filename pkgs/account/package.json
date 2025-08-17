@@ -1,6 +1,6 @@
 {
   "name": "@ponziland/account",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Account management library for Starknet with wallet modal and connection state",
   "keywords": [
     "starknet",

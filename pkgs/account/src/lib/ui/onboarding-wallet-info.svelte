@@ -49,7 +49,7 @@
           <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
           <button
             onclick={() => {
-              useAccount()?.disconnect();
+              accountManager?.disconnect();
             }}
             aria-label="Logout Starknet"
           >
