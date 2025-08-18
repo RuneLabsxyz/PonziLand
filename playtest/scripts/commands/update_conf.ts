@@ -123,44 +123,39 @@ async function readContractConfig(config: Configuration, provider: any): Promise
 function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): ConfigDifference[] {
   const differences: ConfigDifference[] = [];
 
-  // Define the fields to compare (excluding arrays for now)
-  const fieldsToCompare = [
-    'tax_rate', 'base_time', 'price_decrease_rate', 'time_speed',
-    'max_auctions', 'max_auctions_from_bid', 'decay_rate', 'floor price',
-    'liquidity_safety_multiplier', 'min_auction_price', 'min_auction_price_multiplier',
-    'auction_duration', 'scaling_factor', 'linear_time_decay', 'drop_rate',
-    'rate_denominator', 'max_circles', 'claim_fee', 'buy_fee',
-    'our_contract_for_fee', 'our_contract_for_auction', 'claim_fee_threshold'
-  ];
+  // Loop through all fields in the fileConfig
+  for (const field of Object.keys(fileConfig) as (keyof ConfigData)[]) {
+    const fileValue = fileConfig[field];
+    const contractValue = contractConfig[field];
 
-  for (const field of fieldsToCompare) {
-    const fileValue = fileConfig[field as keyof ConfigData] as string;
-    const contractValue = contractConfig[field as keyof ConfigData] as string;
-
-    if (fileValue.toString() !== contractValue.toString()) {
+    // Handle array fields
+    if (Array.isArray(fileValue) && Array.isArray(contractValue)) {
+      if (JSON.stringify(fileValue) !== JSON.stringify(contractValue)) {
+        differences.push({
+          field,
+          fileValue: JSON.stringify(fileValue),
+          contractValue: JSON.stringify(contractValue)
+        });
+      }
+    }
+    // Handle string fields
+    else if (typeof fileValue === 'string' && typeof contractValue === 'string') {
+      if (fileValue.toString() !== contractValue.toString()) {
+        differences.push({
+          field,
+          fileValue: fileValue || 'undefined',
+          contractValue: contractValue || 'undefined'
+        });
+      }
+    }
+    // Handle undefined/missing fields
+    else if (fileValue !== contractValue) {
       differences.push({
         field,
-        fileValue: fileValue || 'undefined',
-        contractValue: contractValue || 'undefined'
+        fileValue: fileValue ? (Array.isArray(fileValue) ? JSON.stringify(fileValue) : fileValue.toString()) : 'undefined',
+        contractValue: contractValue ? (Array.isArray(contractValue) ? JSON.stringify(contractValue) : contractValue.toString()) : 'undefined'
       });
     }
-  }
-
-  // Compare arrays separately
-  if (JSON.stringify(fileConfig.Symbols) !== JSON.stringify(contractConfig.Symbols)) {
-    differences.push({
-      field: 'Symbols',
-      fileValue: JSON.stringify(fileConfig.Symbols),
-      contractValue: JSON.stringify(contractConfig.Symbols)
-    });
-  }
-
-  if (JSON.stringify(fileConfig.Names) !== JSON.stringify(contractConfig.Names)) {
-    differences.push({
-      field: 'Names',
-      fileValue: JSON.stringify(fileConfig.Names),
-      contractValue: JSON.stringify(contractConfig.Names)
-    });
   }
 
   return differences;
