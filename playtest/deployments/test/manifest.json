@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x72ca71163bea2fbdc12e179c88d4a589c5be85c806f1245684c4335cd11cc7",
-    "seed": "testing",
+    "address": "0x777742fecbc17f3873fb72cea6f33f7fb80bd42cd9ee8c539fe1f07b33cb18f",
+    "seed": "test_test",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x67d84808b066a08800b297f6d42985fa3f64ea439328e32b97ce9464acf8e6f",
-      "class_hash": "0x4352575ea696b19718d0cc13f312d9b3a39f51f572bec388aeb171d7b007d55",
+      "address": "0x557062f46fc4a59dbf3e4f52e0c2d55d6c7d36c7b77bc26bdebe05578e66b8e",
+      "class_hash": "0x31bdc13fbceba00fa1ff4280c18d5302359da2ccf1c1e2414d9704fbe83cef2",
       "abi": [
         {
           "type": "impl",
@@ -2171,7 +2171,7 @@
       ]
     },
     {
-      "address": "0x14debbb38bee8927666d2ec0e600e076b288cecb5191f6aa30ab01d3f371552",
+      "address": "0x42df959a7f4048d669fbb7b89c5431cb978e11fbb8471fac49ccc37abe0c964",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
@@ -2495,7 +2495,6 @@
         }
       ],
       "init_calldata": [
-        "0x01c9dF838eaa6790C1B7AE998c18126D236ec2B4bD86c00636FcA3ce137bD1c9",
         "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b"
       ],
       "tag": "ponzi_land-auth",
@@ -2515,8 +2514,8 @@
       ]
     },
     {
-      "address": "0x446fbe894b0fceb1207b749471e4bcdcb48212133712f3a029f0e101b3b06a1",
-      "class_hash": "0x5f8ae92842a9c5b34e01f014f6e544297bc3222199da9d7f38ac52bfe72884c",
+      "address": "0x4121095354cccc6a22ab38ea860f6a4c0cf08693fb75afd2f247c693a4ff6a0",
+      "class_hash": "0x5cfdc74a3ce1125d2c4bc44e66376ee1ca0422356d7bb0ee47e07f20f38a5ce",
       "abi": [
         {
           "type": "impl",
@@ -2686,6 +2685,108 @@
           "type": "impl",
           "name": "ConfigSystemImpl",
           "interface_name": "ponzi_land::systems::config::IConfigSystem"
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::models::config::Config",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "tax_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "base_time",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "price_decrease_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "time_speed",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_auctions",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_auctions_from_bid",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "decay_rate",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "floor_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "liquidity_safety_multiplier",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "min_auction_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "min_auction_price_multiplier",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "auction_duration",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "scaling_factor",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "linear_decay_time",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "drop_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "rate_denominator",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_circles",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "claim_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "buy_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "our_contract_for_fee",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "our_contract_for_auction",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "claim_fee_threshold",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "main_currency",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
         },
         {
           "type": "interface",
@@ -3066,6 +3167,17 @@
               ],
               "outputs": [],
               "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "get_config",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "ponzi_land::models::config::Config"
+                }
+              ],
+              "state_mutability": "view"
             },
             {
               "type": "function",
@@ -3467,7 +3579,7 @@
       ]
     },
     {
-      "address": "0x79c87d43b9287fa70bed5de613b35f8f92889fb0315288264aae23636785873",
+      "address": "0x789a2dae1862273af10a76d29a2ff42c83ae6607c81d99aad9cc279a5c962c0",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
