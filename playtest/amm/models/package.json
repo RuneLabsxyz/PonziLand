@@ -1,0 +1,14 @@
+{
+  "name": "models",
+  "module": "index.ts",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "type": "module",
+  "dependencies": {
+    "decimal.js": "^10.4.3"
+  }
+}
