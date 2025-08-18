@@ -19,6 +19,7 @@ import { pauseGame } from "./scripts/commands/pause";
 import { registerTokens } from "./scripts/commands/whitelist_tokens";
 import { reset } from "./scripts/commands/reset";
 import { deployAmm } from "./scripts/commands/deploy_amm";
+import { updateConfig } from "./scripts/commands/update_conf";
 
 const SOCIALINK_SIGNER_ADDRESS =
   "0x008ea9029cec9c339e0513a17336e9af43278ebd81858aee0af110c3e810fce6";
@@ -110,6 +111,9 @@ switch (command) {
     break;
   case "deploy-amm":
     await deployAmm(config, commandPositionals);
+    break;
+  case "update-conf":
+    await updateConfig(config, commandPositionals);
     break;
   case "reset":
     await reset(config, commandPositionals);
