@@ -20,4 +20,6 @@ export let devsettings = $state({
   showFog: false,
   showOwnerIndicator: true,
   showNukeTimes: true,
+  showArtLayer: false,
+  artLayerOpacity: 0.7,
 });

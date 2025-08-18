@@ -412,7 +412,6 @@
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
   let shieldInstancedMesh: TInstancedMesh | undefined = $state();
-  let darkOverlayMesh: TInstancedMesh | undefined = $state();
 
   // Filter to show tiles based on maxCircles configuration
   let visibleLandTiles = $derived.by(() => {
@@ -451,6 +450,44 @@
       );
     });
   });
+
+  // Art layer color mapping
+  function getArtLayerColor(tile: LandTile): number {
+    if (AuctionLand.is(tile.land)) {
+      return 0xff6600; // Orange for auction
+    }
+
+    if (BuildingLand.is(tile.land)) {
+      const tokenSymbol = tile.land.token?.symbol ?? 'empty';
+
+      // Define colors for different tokens
+      switch (tokenSymbol) {
+        case 'pltSTRK':
+        case 'STRK':
+          return 0x1e40af; // Blue
+        case 'pltLORDS':
+        case 'LORDS':
+          return 0x7c2d12; // Brown
+        case 'pltETH':
+        case 'ETH':
+          return 0x374151; // Gray
+        case 'pltPAPER':
+        case 'PAPER':
+          return 0xfbbf24; // Yellow
+        case 'pltBROTHER':
+        case 'BROTHER':
+          return 0xdc2626; // Red
+        case 'pltPAL':
+        case 'PAL':
+          return 0x059669; // Green
+        default:
+          return 0xfefefe; // White for empty/unknown
+      }
+    }
+
+    // White for empty land
+    return 0xfefefe;
+  }
 </script>
 
 <T is={Group}>
@@ -516,9 +553,8 @@
 
     {#if devsettings.showCoins && coinShaderMaterial}
       <InstancedMesh
-        bind:ref={coinInstancedMesh}
-        limit={visibleLandTiles.length}
-        count={visibleLandTiles.length}
+        limit={GRID_SIZE * GRID_SIZE}
+        range={GRID_SIZE * GRID_SIZE}
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[0.3, 0.3]} />
@@ -546,12 +582,39 @@
       <NukeTimeDisplay landTiles={visibleLandTiles} isShieldMode={isUnzoomed} />
     {/if}
 
+    <!-- Art Layer -->
+    {#if devsettings.showArtLayer}
+      <InstancedMesh
+        limit={GRID_SIZE * GRID_SIZE}
+        range={GRID_SIZE * GRID_SIZE}
+        frustumCulled={false}
+      >
+        <T.PlaneGeometry args={[1, 1]} />
+        <T.MeshBasicMaterial
+          transparent={true}
+          opacity={devsettings.artLayerOpacity}
+          alphaTest={0.01}
+        />
+        {#each landTiles as tile}
+          <Instance
+            position={[
+              tile.position[0],
+              tile.position[1] + 0.02, // Slightly above the tile
+              tile.position[2],
+            ]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            color={getArtLayerColor(tile)}
+            frustumCulled={false}
+          />
+        {/each}
+      </InstancedMesh>
+    {/if}
+
     <!-- Dark overlay for non-owned lands when unzoomed -->
     {#if isUnzoomed && ownedLands.length > 0}
       <InstancedMesh
-        bind:ref={darkOverlayMesh}
-        limit={visibleLandTiles.length}
-        count={ownedLands.length}
+        limit={GRID_SIZE * GRID_SIZE}
+        range={ownedLands.length}
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[1, 1]} />
