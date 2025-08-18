@@ -38,6 +38,7 @@
     PlaneGeometry,
     InstancedMesh as TInstancedMesh,
     TextureLoader,
+    Color,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
   import BiomeSprite from './biome-sprite.svelte';
@@ -182,51 +183,41 @@
   });
 
   let interactionPlanes: TInstancedMesh | undefined = $state();
-
-  function createInteractionPlanes() {
-    console.log(
-      '🏗️ Creating interaction planes with MAX_CIRCLES:',
-      configValues.maxCircles,
-    );
-    const totalLands = generateCircleLandPositions(
-      CENTER,
-      CENTER,
-      configValues.maxCircles,
-    ).length;
-    console.log(
-      `Creating ${totalLands} interaction planes for ${configValues.maxCircles} circles`,
-    );
-
-    interactionPlanes = new TInstancedMesh(
-      planeGeometry,
-      planeMaterial,
-      totalLands,
-    );
-
-    const tempObject = new Object3D();
-    const landPositions = generateCircleLandPositions(
-      CENTER,
-      CENTER,
-      configValues.maxCircles,
-    );
-
-    landPositions.forEach((pos, i) => {
-      tempObject.position.set(pos.y, 1 - 0.03, pos.x);
-      tempObject.rotation.x = -Math.PI / 2;
-      tempObject.updateMatrix();
-      interactionPlanes?.setMatrixAt(i, tempObject.matrix);
-    });
-    interactionPlanes.instanceMatrix.needsUpdate = true;
-  }
+  let artLayerMesh: TInstancedMesh | undefined = $state();
 
   onMount(() => {
-    console.log('🔍 max_circles value in onMount:', configValues.maxCircles);
-    createInteractionPlanes();
+    // Create only 9 interaction planes (center + 8 neighbors)
+    interactionPlanes = new TInstancedMesh(planeGeometry, planeMaterial, 9);
+
+    const tempObject = new Object3D();
+
+    // Create interaction planes for center (127,127) and its 8 neighbors
+    for (let x = 0; x <= GRID_SIZE; x++) {
+      for (let y = 0; y <= GRID_SIZE; y++) {
+        const index = y * GRID_SIZE + x;
+        tempObject.position.set(y, 1 - 0.03, x);
+        tempObject.rotation.x = -Math.PI / 2;
+        tempObject.updateMatrix();
+        interactionPlanes.setMatrixAt(index, tempObject.matrix);
+      }
+    }
+    interactionPlanes.instanceMatrix.needsUpdate = true;
+
+    // Create art layer mesh with same pattern as interaction planes
+    artLayerMesh = new TInstancedMesh(
+      planeGeometry,
+      new MeshBasicMaterial({
+        transparent: true,
+        opacity: 0.5,
+        alphaTest: 0.01
+      }),
+      GRID_SIZE * GRID_SIZE,
+    );
   });
 
   onMount(() => {
     store.getAllLands().subscribe((tiles) => {
-      landTiles = tiles.map((tile, index) => {
+      landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
 
@@ -269,6 +260,35 @@
     }
     if (ownerSprite) {
       ownerSprite.update();
+    }
+  });
+
+  // Update art layer matrices when visible land tiles change
+  $effect(() => {
+    if (artLayerMesh && visibleLandTiles.length > 0) {
+      const tempObject = new Object3D();
+
+      visibleLandTiles.forEach((tile, index) => {
+        tempObject.position.set(
+          tile.position[0],
+          tile.position[1] + 0.02, // Slightly above the tile
+          tile.position[2],
+        );
+        tempObject.rotation.x = -Math.PI / 2;
+        tempObject.updateMatrix();
+        artLayerMesh.setMatrixAt(index, tempObject.matrix);
+        // Set color based on tile type
+        const color = getArtLayerColor(tile);
+        const threeColor = new Color(color);
+        artLayerMesh.setColorAt(index, threeColor);
+      });
+
+      artLayerMesh.instanceMatrix.needsUpdate = true;
+      if (artLayerMesh.instanceColor) {
+        artLayerMesh.instanceColor.needsUpdate = true;
+        console.log('Art layer color updated', artLayerMesh.instanceColor);
+      }
+      artLayerMesh.count = visibleLandTiles.length;
     }
   });
 
@@ -372,13 +392,6 @@
     }
   });
 
-  // Filter only nuking tiles for the nuke layer
-  let nukingTiles = $derived.by(() => {
-    return visibleLandTiles.filter(
-      (tile) => nukeStore.nuking[Number(tile.land.locationString)],
-    );
-  });
-
   // Update your texture loading section
   let texture = new TextureLoader().load(
     '/ui/icons/Icon_Coin2.png',
@@ -411,7 +424,6 @@
 
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
-  let shieldInstancedMesh: TInstancedMesh | undefined = $state();
 
   // Filter to show tiles based on maxCircles configuration
   let visibleLandTiles = $derived.by(() => {
@@ -441,6 +453,7 @@
   // Calculate owned lands for unzoomed view
   let ownedLands = $derived.by(() => {
     if (!isUnzoomed || !accountState.address) return [];
+    console.log('Visible Land Tiles:', visibleLandTiles);
 
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
@@ -506,7 +519,7 @@
     <!-- Biome sprites (background layer) -->
     {#if devsettings.showBiomes}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
@@ -516,7 +529,7 @@
     {/if}
 
     <!-- FOG OF WAR LAYER -->
-    {#if devsettings.showFog}
+    <!-- {#if devsettings.showFog}
       <InstancedSprite
         count={visibleLandTiles.length}
         {billboarding}
@@ -525,12 +538,12 @@
       >
         <FogSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
-    {/if}
+    {/if} -->
 
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
@@ -541,7 +554,7 @@
 
     {#if devsettings.showNukes}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
@@ -583,38 +596,15 @@
     {/if}
 
     <!-- Art Layer -->
-    {#if devsettings.showArtLayer}
-      <InstancedMesh
-        limit={GRID_SIZE * GRID_SIZE}
-        range={GRID_SIZE * GRID_SIZE}
-        frustumCulled={false}
-      >
-        <T.PlaneGeometry args={[1, 1]} />
-        <T.MeshBasicMaterial
-          transparent={true}
-          opacity={devsettings.artLayerOpacity}
-          alphaTest={0.01}
-        />
-        {#each landTiles as tile}
-          <Instance
-            position={[
-              tile.position[0],
-              tile.position[1] + 0.02, // Slightly above the tile
-              tile.position[2],
-            ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            color={getArtLayerColor(tile)}
-            frustumCulled={false}
-          />
-        {/each}
-      </InstancedMesh>
+    {#if devsettings.showArtLayer && artLayerMesh}
+      <T is={artLayerMesh} />
     {/if}
 
     <!-- Dark overlay for non-owned lands when unzoomed -->
     {#if isUnzoomed && ownedLands.length > 0}
       <InstancedMesh
         limit={GRID_SIZE * GRID_SIZE}
-        range={ownedLands.length}
+        range={GRID_SIZE * GRID_SIZE}
         frustumCulled={false}
       >
         <T.PlaneGeometry args={[1, 1]} />
