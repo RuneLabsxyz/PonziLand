@@ -1329,7 +1329,7 @@
   "contracts": [
     {
       "address": "0x67d84808b066a08800b297f6d42985fa3f64ea439328e32b97ce9464acf8e6f",
-      "class_hash": "0x459ce2f7a96c1c6464daecf4938689594b3510f72423ab97cd2dbb61c2588e9",
+      "class_hash": "0x4352575ea696b19718d0cc13f312d9b3a39f51f572bec388aeb171d7b007d55",
       "abi": [
         {
           "type": "impl",
@@ -2172,7 +2172,7 @@
     },
     {
       "address": "0x14debbb38bee8927666d2ec0e600e076b288cecb5191f6aa30ab01d3f371552",
-      "class_hash": "0x70851f8055f8951803c0f5724e020e556ad83319c97ace1ff92565f6cd21ec7",
+      "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
           "type": "impl",
@@ -2228,10 +2228,6 @@
           "type": "function",
           "name": "dojo_init",
           "inputs": [
-            {
-              "name": "owner",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
             {
               "name": "verifier",
               "type": "core::felt252"
@@ -2374,11 +2370,16 @@
             },
             {
               "type": "function",
-              "name": "get_owner",
-              "inputs": [],
+              "name": "is_owner_auth",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
               "outputs": [
                 {
-                  "type": "core::starknet::contract_address::ContractAddress"
+                  "type": "core::bool"
                 }
               ],
               "state_mutability": "view"
@@ -2515,7 +2516,7 @@
     },
     {
       "address": "0x446fbe894b0fceb1207b749471e4bcdcb48212133712f3a029f0e101b3b06a1",
-      "class_hash": "0x353fce8033bb211bef1dca9794e524c304b3a39914e368e173455c5564b402c",
+      "class_hash": "0x5f8ae92842a9c5b34e01f014f6e544297bc3222199da9d7f38ac52bfe72884c",
       "abi": [
         {
           "type": "impl",
