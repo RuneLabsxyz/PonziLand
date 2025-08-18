@@ -137,6 +137,7 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     
     // Convert BigInt values to strings to avoid JSON.stringify issues
     const normalizeValue = (value: any) => {
+      console.log('value', value);
       if (typeof value === 'bigint') {
         return value.toString();
       }
@@ -149,9 +150,6 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     const normalizedFileValue = normalizeValue(fileValue);
     const normalizedContractValue = normalizeValue(contractValue);
     
-    console.log(normalizedFileValue);
-    console.log(normalizedContractValue);
-    // Convert to arrays for comparison
     const fileArray = Array.isArray(normalizedFileValue) ? normalizedFileValue : [normalizedFileValue];
     const contractArray = Array.isArray(normalizedContractValue) ? normalizedContractValue : [normalizedContractValue];
     
