@@ -123,8 +123,15 @@ async function readContractConfig(config: Configuration, provider: any): Promise
 function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): ConfigDifference[] {
   const differences: ConfigDifference[] = [];
 
-  // Loop through all fields and treat them as arrays
+  // Fields to ignore during comparison
+  const ignoredFields: Set<keyof ConfigData> = new Set(['Symbols', 'Names']);
+
+  // Loop through all fields and treat them as arrays, but skip ignored fields
   for (const field of Object.keys(fileConfig) as (keyof ConfigData)[]) {
+    // Skip ignored fields
+    if (ignoredFields.has(field)) {
+      continue;
+    }
     const fileValue = fileConfig[field];
     const contractValue = contractConfig[field];
     
