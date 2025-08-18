@@ -123,37 +123,20 @@ async function readContractConfig(config: Configuration, provider: any): Promise
 function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): ConfigDifference[] {
   const differences: ConfigDifference[] = [];
 
-  // Loop through all fields in the fileConfig
+  // Loop through all fields and treat them as arrays
   for (const field of Object.keys(fileConfig) as (keyof ConfigData)[]) {
     const fileValue = fileConfig[field];
     const contractValue = contractConfig[field];
-
-    // Handle array fields
-    if (Array.isArray(fileValue) && Array.isArray(contractValue)) {
-      if (JSON.stringify(fileValue) !== JSON.stringify(contractValue)) {
-        differences.push({
-          field,
-          fileValue: JSON.stringify(fileValue),
-          contractValue: JSON.stringify(contractValue)
-        });
-      }
-    }
-    // Handle string fields
-    else if (typeof fileValue === 'string' && typeof contractValue === 'string') {
-      if (fileValue.toString() !== contractValue.toString()) {
-        differences.push({
-          field,
-          fileValue: fileValue || 'undefined',
-          contractValue: contractValue || 'undefined'
-        });
-      }
-    }
-    // Handle undefined/missing fields
-    else if (fileValue.toString() !== contractValue ? contractValue.toString() : '') {
+    
+    // Convert to arrays for comparison
+    const fileArray = Array.isArray(fileValue) ? fileValue : [fileValue];
+    const contractArray = Array.isArray(contractValue) ? contractValue : [contractValue];
+    
+    if (JSON.stringify(fileArray) !== JSON.stringify(contractArray)) {
       differences.push({
         field,
-        fileValue: fileValue ? (Array.isArray(fileValue) ? JSON.stringify(fileValue) : fileValue.toString()) : 'undefined',
-        contractValue: contractValue ? (Array.isArray(contractValue) ? JSON.stringify(contractValue) : contractValue.toString()) : 'undefined'
+        fileValue: Array.isArray(fileValue) ? JSON.stringify(fileValue) : fileValue?.toString() || 'undefined',
+        contractValue: Array.isArray(contractValue) ? JSON.stringify(contractValue) : contractValue?.toString() || 'undefined'
       });
     }
   }
