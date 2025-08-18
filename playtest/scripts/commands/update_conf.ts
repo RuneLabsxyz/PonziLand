@@ -128,15 +128,29 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     const fileValue = fileConfig[field];
     const contractValue = contractConfig[field];
     
+    // Convert BigInt values to strings to avoid JSON.stringify issues
+    const normalizeValue = (value: any) => {
+      if (typeof value === 'bigint') {
+        return value.toString();
+      }
+      if (Array.isArray(value)) {
+        return value.map(v => typeof v === 'bigint' ? v.toString() : v);
+      }
+      return value;
+    };
+    
+    const normalizedFileValue = normalizeValue(fileValue);
+    const normalizedContractValue = normalizeValue(contractValue);
+    
     // Convert to arrays for comparison
-    const fileArray = Array.isArray(fileValue) ? fileValue : [fileValue];
-    const contractArray = Array.isArray(contractValue) ? contractValue : [contractValue];
+    const fileArray = Array.isArray(normalizedFileValue) ? normalizedFileValue : [normalizedFileValue];
+    const contractArray = Array.isArray(normalizedContractValue) ? normalizedContractValue : [normalizedContractValue];
     
     if (JSON.stringify(fileArray) !== JSON.stringify(contractArray)) {
       differences.push({
         field,
-        fileValue: Array.isArray(fileValue) ? JSON.stringify(fileValue) : fileValue?.toString() || 'undefined',
-        contractValue: Array.isArray(contractValue) ? JSON.stringify(contractValue) : contractValue?.toString() || 'undefined'
+        fileValue: Array.isArray(fileValue) ? JSON.stringify(normalizedFileValue) : normalizedFileValue?.toString() || 'undefined',
+        contractValue: Array.isArray(contractValue) ? JSON.stringify(normalizedContractValue) : normalizedContractValue?.toString() || 'undefined'
       });
     }
   }
