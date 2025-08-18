@@ -156,8 +156,9 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     const contractArray = Array.isArray(normalizedContractValue) ? normalizedContractValue : [normalizedContractValue];
     
     if (JSON.stringify(fileArray) !== JSON.stringify(contractArray)) {
-      console.log(fileArray);
-      console.log(contractArray);
+      console.log("difference found")
+      console.log('fileArray', fileArray);
+      console.log('contractArray', contractArray);
 
       differences.push({
         field,
