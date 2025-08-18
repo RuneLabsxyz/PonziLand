@@ -137,7 +137,7 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     const fileValue = fileConfig[field as keyof ConfigData] as string;
     const contractValue = contractConfig[field as keyof ConfigData] as string;
 
-    if (fileValue !== contractValue) {
+    if (fileValue.toString() !== contractValue.toString()) {
       differences.push({
         field,
         fileValue: fileValue || 'undefined',
