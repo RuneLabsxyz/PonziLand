@@ -5,6 +5,7 @@
 
 // Starknet imports
 use starknet::ContractAddress;
+use ponzi_land::models::config::Config;
 
 #[starknet::interface]
 trait IConfigSystem<T> {
@@ -166,6 +167,7 @@ trait IConfigSystem<T> {
     fn set_main_currency(ref self: T, value: ContractAddress);
 
     // Getters
+    fn get_config(self: @T) -> Config;
     fn get_tax_rate(self: @T) -> u16;
     fn get_base_time(self: @T) -> u16;
     fn get_price_decrease_rate(self: @T) -> u16;
@@ -597,6 +599,11 @@ mod config {
         }
 
         // Getters implementation
+        fn get_config(self: @ContractState) -> Config {
+            let world = self.world_default();
+            world.read_model(Model::<Config>::ptr_from_keys(1))
+        }
+
         fn get_tax_rate(self: @ContractState) -> u16 {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("tax_rate"))
