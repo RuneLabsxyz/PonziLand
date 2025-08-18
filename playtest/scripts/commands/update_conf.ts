@@ -106,7 +106,7 @@ async function readContractConfig(config: Configuration, provider: any): Promise
     const manifest = await file(manifestPath).json();
     console.log(manifest);
     // Find the config contract
-    const configContract = manifest.contracts.find(c => c.name.includes('config'));
+    const configContract = manifest.contracts.find(c => c.tag.includes('config'));
     
     // Create contract instance
     const contract = new Contract(configContract.abi, configContract.address, provider).typedV2(configContract.abi);
