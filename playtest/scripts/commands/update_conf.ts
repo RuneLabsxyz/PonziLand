@@ -99,7 +99,6 @@ async function readContractConfig(config: Configuration, provider: any): Promise
   
   // TODO: Implement actual contract reading logic
   // Example of what this would look like:
-  /*
   try {
     // Get contract ABI and address from manifest or deployment files
     const manifestPath = `${config.basePath}/deployments/${config.deploymentName}/manifest.json`;
@@ -109,51 +108,17 @@ async function readContractConfig(config: Configuration, provider: any): Promise
     const configContract = manifest.contracts.find(c => c.name.includes('config'));
     
     // Create contract instance
-    const contract = new Contract(configContract.abi, configContract.address, provider);
+    const contract = new Contract(configContract.abi, configContract.address, provider).typedV2(configContract.abi);
     
-    // Read config values
-    const tax_rate = await contract.get_tax_rate();
-    const base_time = await contract.get_base_time();
-    // ... etc for all config values
+    const onchainConfig = await contract.get_config();
     
-    return {
-      tax_rate: tax_rate.toString(),
-      base_time: base_time.toString(),
-      // ... etc
-    };
+    console.log(onchainConfig);
+    return onchainConfig;
   } catch (error) {
     console.log(`${COLORS.red}❌ Error reading from contract: ${error}${COLORS.reset}`);
     throw error;
   }
-  */
 
-  // Mock data for demonstration
-  return {
-    tax_rate: "100",
-    base_time: "3600",
-    price_decrease_rate: "50",
-    time_speed: "1",
-    max_auctions: "10",
-    max_auctions_from_bid: "5",
-    decay_rate: "25",
-    "floor price": "1000000000000000000",
-    liquidity_safety_multiplier: "2",
-    min_auction_price: "500000000000000000",
-    min_auction_price_multiplier: "150",
-    auction_duration: "86400",
-    scaling_factor: "1000",
-    linear_time_decay: "10",
-    drop_rate: "5",
-    rate_denominator: "10000",
-    max_circles: "100",
-    claim_fee: "1000000000000000",
-    buy_fee: "2000000000000000",
-    our_contract_for_fee: "0x1234567890abcdef",
-    our_contract_for_auction: "0xfedcba0987654321",
-    claim_fee_threshold: "10000000000000000000",
-    Symbols: ["ETH", "USDC", "DAI"],
-    Names: ["Ethereum", "USD Coin", "Dai Stablecoin"]
-  };
 }
 
 function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): ConfigDifference[] {
