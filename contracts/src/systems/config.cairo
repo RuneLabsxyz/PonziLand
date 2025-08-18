@@ -601,7 +601,8 @@ mod config {
         // Getters implementation
         fn get_config(self: @ContractState) -> Config {
             let world = self.world_default();
-            world.read_model(Model::<Config>::ptr_from_keys(1))
+            let config: Config = world.read_model(1);
+            config
         }
 
         fn get_tax_rate(self: @ContractState) -> u16 {
