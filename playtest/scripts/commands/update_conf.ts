@@ -102,8 +102,9 @@ async function readContractConfig(config: Configuration, provider: any): Promise
   try {
     // Get contract ABI and address from manifest or deployment files
     const manifestPath = `${config.basePath}/deployments/${config.deploymentName}/manifest.json`;
+    console.log(manifestPath);
     const manifest = await file(manifestPath).json();
-    
+    console.log(manifest);
     // Find the config contract
     const configContract = manifest.contracts.find(c => c.name.includes('config'));
     
