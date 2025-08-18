@@ -149,11 +149,16 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     const normalizedFileValue = normalizeValue(fileValue);
     const normalizedContractValue = normalizeValue(contractValue);
     
+    console.log(normalizedFileValue);
+    console.log(normalizedContractValue);
     // Convert to arrays for comparison
     const fileArray = Array.isArray(normalizedFileValue) ? normalizedFileValue : [normalizedFileValue];
     const contractArray = Array.isArray(normalizedContractValue) ? normalizedContractValue : [normalizedContractValue];
     
     if (JSON.stringify(fileArray) !== JSON.stringify(contractArray)) {
+      console.log(fileArray);
+      console.log(contractArray);
+
       differences.push({
         field,
         fileValue: Array.isArray(fileValue) ? JSON.stringify(normalizedFileValue) : normalizedFileValue?.toString() || 'undefined',
