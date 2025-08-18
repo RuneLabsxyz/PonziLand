@@ -149,7 +149,7 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
       }
     }
     // Handle undefined/missing fields
-    else if (fileValue.toString() !== contractValue.toString()) {
+    else if (fileValue.toString() !== contractValue ? contractValue.toString() : '') {
       differences.push({
         field,
         fileValue: fileValue ? (Array.isArray(fileValue) ? JSON.stringify(fileValue) : fileValue.toString()) : 'undefined',
