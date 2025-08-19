@@ -329,8 +329,6 @@
     }
   });
 
-
-
   let selectedLandTilePosition: [number, number, number] | undefined =
     $state(undefined);
 
@@ -409,18 +407,35 @@
     return tiles;
   });
 
-  // Calculate owned lands for unzoomed view
-  let ownedLands = $derived.by(() => {
-    if (!isUnzoomed || !accountState.address) return [];
-    console.log('Visible Land Tiles:', visibleLandTiles);
+  // Calculate owned lands for shader-based darkening (filtered to visible only, max 32)
+  let ownedLandIndices = $derived.by(() => {
+    if (!accountState.address) return [];
 
-    return visibleLandTiles.filter((tile) => {
-      if (!BuildingLand.is(tile.land)) return false;
-      return (
-        padAddress(tile.land.owner ?? '') ===
-        padAddress(accountState.address ?? '')
-      );
-    });
+    const indices: number[] = [];
+    const maxOwnedLands = 32; // Match shader uniform array limit
+
+    // Only check visible tiles for ownership - much more efficient than checking 70k lands
+    for (
+      let index = 0;
+      index < visibleLandTiles.length && indices.length < maxOwnedLands;
+      index++
+    ) {
+      const tile = visibleLandTiles[index];
+      if (BuildingLand.is(tile.land)) {
+        const isOwned =
+          padAddress(tile.land.owner ?? '') ===
+          padAddress(accountState.address ?? '');
+        if (isOwned) {
+          indices.push(index);
+        }
+      }
+    }
+
+    console.log(
+      `Found ${indices.length} owned lands in visible tiles (max ${maxOwnedLands})`,
+      indices,
+    );
+    return indices;
   });
 
   // Art layer color mapping
@@ -462,8 +477,8 @@
   }
 </script>
 
-<T is={Group}>
-  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
+{#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
+  <T is={Group}>
     <!-- Transparent interaction planes layer (now also renders roads) -->
     <!-- {#if interactionPlanes && devsettings.showRoads}
       <T
@@ -519,7 +534,11 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite landTiles={visibleLandTiles} {buildingSpritesheet} />
+        <BuildingSprite
+          landTiles={visibleLandTiles}
+          {buildingSpritesheet}
+          {ownedLandIndices}
+        />
       </InstancedSprite>
     {/if}
 
@@ -571,35 +590,9 @@
       <T is={artLayerMesh} />
     {/if}
 
-    <!-- Dark overlay for non-owned lands when unzoomed -->
-    {#if devsettings.showOwnedLandOverlay && isUnzoomed && ownedLands.length > 0}
-      <InstancedMesh
-        limit={GRID_SIZE * GRID_SIZE}
-        range={GRID_SIZE * GRID_SIZE}
-        frustumCulled={false}
-      >
-        <T.PlaneGeometry args={[1, 1]} />
-        <T.MeshBasicMaterial
-          color={0x000000}
-          transparent={true}
-          opacity={0.4}
-          alphaTest={0.01}
-        />
-        {#each ownedLands as tile}
-          <Instance
-            position={[
-              tile.position[0],
-              tile.position[1] + 0.05, // Slightly above the tile to overlay
-              tile.position[2],
-            ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            frustumCulled={false}
-          />
-        {/each}
-      </InstancedMesh>
-    {/if}
-  {/await}
-</T>
+    <!-- Owned land darkening is now handled by the shader system -->
+  </T>
+{/await}
 
 <!-- Button overlay using Threlte HTML component -->
 {#if devsettings.showLandOverlay && selectedLandTilePosition && !isUnzoomed}

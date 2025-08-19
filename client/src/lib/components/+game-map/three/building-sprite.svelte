@@ -11,7 +11,7 @@
     type OutlineControls,
   } from './utils/sprite-hover-shader';
 
-  let { landTiles, buildingSpritesheet } = $props();
+  let { landTiles, buildingSpritesheet, ownedLandIndices = [] } = $props();
 
   const { updatePosition, sprite } = useInstancedSprite();
 
@@ -61,6 +61,13 @@
     const hoveredIndex = cursorStore.hoveredTileIndex ?? -1;
     const selectedIndex = cursorStore.selectedTileIndex ?? -1;
     handleCursorState(outlineControls, hoveredIndex, selectedIndex);
+  });
+
+  // Update owned land indices when they change
+  $effect(() => {
+    if (outlineControls && ownedLandIndices.length > 0) {
+      outlineControls.setOwnedLands(ownedLandIndices, 0.4);
+    }
   });
 
   // The system now supports outlining multiple instances simultaneously

@@ -24,6 +24,7 @@ export interface OutlineControls {
   setOutlineWidth: (width: number) => void;
   setResolution: (width: number, height: number) => void;
   updateTime: (time: number) => void;
+  setOwnedLands: (instanceIndices: number[], darkenFactor?: number) => void;
 }
 
 /**
@@ -50,6 +51,9 @@ export function setupOutlineShader(
   const instanceIndices = new Float32Array(maxInstances).fill(-1);
   const outlineColorsArray = [];
   const pulseColorsArray = [];
+  
+  // Initialize arrays for owned land support (using visible tiles only)
+  const ownedLandIndices = new Float32Array(maxInstances).fill(-1);
 
   for (let i = 0; i < maxInstances; i++) {
     outlineColorsArray.push(outlineColor.r, outlineColor.g, outlineColor.b);
@@ -68,6 +72,11 @@ export function setupOutlineShader(
   mat.uniforms.outlineWidth = { value: outlineWidth };
   mat.uniforms.resolution = { value: resolution };
   mat.uniforms.time = { value: 0.0 };
+  
+  // Add owned land uniforms (array-based for visible tiles)
+  mat.uniforms.ownedLandIndices = { value: ownedLandIndices };
+  mat.uniforms.numOwnedLands = { value: 0 };
+  mat.uniforms.darkenFactor = { value: 0.4 };
 
   mat.onBeforeCompile = (shader: any) => {
     console.log('Setting up outline shader for sprites');
@@ -172,6 +181,22 @@ export function setupOutlineShader(
       if (mat.uniforms && mat.uniforms.time) {
         mat.uniforms.time.value = time;
       }
+    },
+
+    setOwnedLands: (instanceIndices: number[], darkenFactor = 0.4) => {
+      if (!mat.uniforms) return;
+
+      const indices = new Float32Array(maxInstances).fill(-1);
+      const numLands = Math.min(instanceIndices.length, maxInstances);
+
+      for (let i = 0; i < numLands; i++) {
+        indices[i] = instanceIndices[i];
+      }
+
+      mat.uniforms.ownedLandIndices.value = indices;
+      mat.uniforms.numOwnedLands.value = numLands;
+      mat.uniforms.darkenFactor.value = darkenFactor;
+      console.log(`Set ${numLands} owned lands with darken factor ${darkenFactor}`, indices);
     },
   };
 }

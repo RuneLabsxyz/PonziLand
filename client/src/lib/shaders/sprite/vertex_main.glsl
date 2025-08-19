@@ -19,6 +19,17 @@ if (hoverState > 0.5) {
     }
 }
 
+// Check if this instance is owned
+float isOwned = 0.0;
+for (int i = 0; i < 32; i++) {
+    if (i >= numOwnedLands) break;
+    if (vInstanceIndex == ownedLandIndices[i]) {
+        isOwned = 1.0;
+        break;
+    }
+}
+
 vHover = isOutlined;
 vOutlineColor = currentOutlineColor;
 vPulseColor = currentPulseColor;
+vIsOwned = isOwned;
