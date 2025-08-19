@@ -1,4 +1,4 @@
-import { PublicKey, Connection } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 
 interface PhantomWalletState {
   isConnected: boolean;
@@ -15,6 +15,13 @@ interface PhantomProvider {
     onlyIfTrusted?: boolean;
   }) => Promise<{ publicKey: PublicKey }>;
   disconnect: () => Promise<void>;
+  on: (
+    event: 'connect' | 'disconnect' | 'accountChanged',
+    handler: (...args: any[]) => void,
+  ) => void;
+  removeListener?: (event: string, handler: (...args: any[]) => void) => void;
+  // Optional sign-in flow (Phantom) that prompts the user and can be used to force a UI prompt
+  signIn?: (opts?: { domain?: string; statement?: string; nonce?: string }) => Promise<{ publicKey: PublicKey }>;
 }
 
 declare global {
@@ -30,6 +37,10 @@ class PhantomWalletStore {
     loading: false,
     error: null,
   });
+
+  private listenersRegistered = false;
+  private skipAutoReconnect = false;
+  private forcePromptNextConnect = false;
 
   get isConnected() {
     return this.state.isConnected;
@@ -57,6 +68,33 @@ class PhantomWalletStore {
     return undefined;
   }
 
+  private registerEventListeners(provider: PhantomProvider) {
+    if (this.listenersRegistered) return;
+
+    provider.on('connect', () => {
+      this.state.isConnected = true;
+      this.state.walletAddress = provider.publicKey?.toString() ?? '';
+    });
+
+    provider.on('disconnect', () => {
+      this.state.isConnected = false;
+      this.state.walletAddress = '';
+    });
+
+    provider.on('accountChanged', (publicKey: PublicKey | null) => {
+      if (publicKey) {
+        this.state.walletAddress = publicKey.toString();
+        this.state.isConnected = true;
+      } else {
+        // No account connected in Phantom
+        this.state.walletAddress = '';
+        this.state.isConnected = false;
+      }
+    });
+
+    this.listenersRegistered = true;
+  }
+
   async initialize() {
     const provider = this.getProvider();
     if (!provider) {
@@ -65,7 +103,12 @@ class PhantomWalletStore {
       return;
     }
 
-    // Check if already connected (on page refresh)
+    this.registerEventListeners(provider);
+
+    // Avoid silently reconnecting immediately after an explicit user disconnect
+    if (this.skipAutoReconnect) return;
+
+    // Check if already connected (on page refresh) without prompting
     try {
       const resp = await provider.connect({ onlyIfTrusted: true });
       if (resp.publicKey) {
@@ -77,7 +120,7 @@ class PhantomWalletStore {
     }
   }
 
-  async connect() {
+  async connect(options?: { forcePrompt?: boolean }) {
     this.state.loading = true;
     this.state.error = null;
 
@@ -89,9 +132,42 @@ class PhantomWalletStore {
         );
       }
 
-      const resp = await provider.connect();
+      this.registerEventListeners(provider);
+
+      const shouldForcePrompt = Boolean(options?.forcePrompt || this.forcePromptNextConnect);
+
+      // If the site is trusted, Phantom may auto-approve connect(). Use signIn when available to show a prompt.
+      if (shouldForcePrompt && typeof provider.signIn === 'function') {
+        try {
+          const resp = await provider.signIn({
+            domain: typeof window !== 'undefined' ? window.location.hostname : undefined,
+            statement: 'Select an account to connect to this app.',
+          });
+          if (resp?.publicKey) {
+            this.state.walletAddress = resp.publicKey.toString();
+            this.state.isConnected = true;
+            this.skipAutoReconnect = false;
+            this.forcePromptNextConnect = false;
+
+            // Ensure a session is established; connect may auto-approve here which is fine.
+            try {
+              await provider.connect({ onlyIfTrusted: false });
+            } catch {/* ignore */}
+
+            return true;
+          }
+        } catch (promptErr) {
+          // If signIn fails (or user cancels), fall through to normal connect flow to keep behavior consistent
+          console.error('Phantom signIn failed:', promptErr);
+        }
+      }
+
+      // Ensure a fresh connect flow
+      const resp = await provider.connect({ onlyIfTrusted: false });
       this.state.walletAddress = resp.publicKey.toString();
       this.state.isConnected = true;
+      this.skipAutoReconnect = false;
+      this.forcePromptNextConnect = false;
 
       return true;
     } catch (err) {
@@ -113,6 +189,10 @@ class PhantomWalletStore {
 
       this.state.isConnected = false;
       this.state.walletAddress = '';
+      // Prevent initialize() from auto-reconnecting in this session
+      this.skipAutoReconnect = true;
+      // Force a prompt on the next explicit connect attempt when possible (via signIn)
+      this.forcePromptNextConnect = true;
     } catch (err) {
       console.error('Error disconnecting Phantom:', err);
     }
