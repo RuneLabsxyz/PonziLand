@@ -6,6 +6,7 @@
   import { padAddress, shortenHex, shortenAddress } from '../utils.js';
   import { onMount } from 'svelte';
   import { phantomWalletStore } from '../wallets/phantom.svelte.js';
+  import { Icons } from '../assets/symbols.js';
 
   const {
     onconnect,
@@ -53,7 +54,7 @@
             }}
             aria-label="Logout Starknet"
           >
-            <img src="/ui/icons/logout.svg" alt="logout" class="logout-icon" />
+            <img src={Icons.logout.default} alt="logout" class="logout-icon" />
           </button>
         </div>
       </Card>
@@ -71,7 +72,7 @@
               onclick={() => phantomWalletStore.disconnect()}
               aria-label="Logout Phantom"
             >
-              <img src="/ui/icons/logout.svg" alt="logout" class="logout-icon" />
+              <img src={Icons.logout.default} alt="logout" class="logout-icon" />
             </button>
           </div>
         </Card>
