@@ -20,6 +20,8 @@ interface PhantomProvider {
     handler: (...args: any[]) => void,
   ) => void;
   removeListener?: (event: string, handler: (...args: any[]) => void) => void;
+  // Optional sign-in flow (Phantom) that prompts the user and can be used to force a UI prompt
+  signIn?: (opts?: { domain?: string; statement?: string; nonce?: string }) => Promise<{ publicKey: PublicKey }>;
 }
 
 declare global {
@@ -38,6 +40,7 @@ class PhantomWalletStore {
 
   private listenersRegistered = false;
   private skipAutoReconnect = false;
+  private forcePromptNextConnect = false;
 
   get isConnected() {
     return this.state.isConnected;
@@ -117,7 +120,7 @@ class PhantomWalletStore {
     }
   }
 
-  async connect() {
+  async connect(options?: { forcePrompt?: boolean }) {
     this.state.loading = true;
     this.state.error = null;
 
@@ -131,11 +134,40 @@ class PhantomWalletStore {
 
       this.registerEventListeners(provider);
 
-      // Ensure a fresh connect flow that prompts the user
+      const shouldForcePrompt = Boolean(options?.forcePrompt || this.forcePromptNextConnect);
+
+      // If the site is trusted, Phantom may auto-approve connect(). Use signIn when available to show a prompt.
+      if (shouldForcePrompt && typeof provider.signIn === 'function') {
+        try {
+          const resp = await provider.signIn({
+            domain: typeof window !== 'undefined' ? window.location.hostname : undefined,
+            statement: 'Select an account to connect to this app.',
+          });
+          if (resp?.publicKey) {
+            this.state.walletAddress = resp.publicKey.toString();
+            this.state.isConnected = true;
+            this.skipAutoReconnect = false;
+            this.forcePromptNextConnect = false;
+
+            // Ensure a session is established; connect may auto-approve here which is fine.
+            try {
+              await provider.connect({ onlyIfTrusted: false });
+            } catch {/* ignore */}
+
+            return true;
+          }
+        } catch (promptErr) {
+          // If signIn fails (or user cancels), fall through to normal connect flow to keep behavior consistent
+          console.error('Phantom signIn failed:', promptErr);
+        }
+      }
+
+      // Ensure a fresh connect flow
       const resp = await provider.connect({ onlyIfTrusted: false });
       this.state.walletAddress = resp.publicKey.toString();
       this.state.isConnected = true;
       this.skipAutoReconnect = false;
+      this.forcePromptNextConnect = false;
 
       return true;
     } catch (err) {
@@ -159,6 +191,9 @@ class PhantomWalletStore {
       this.state.walletAddress = '';
       // Prevent initialize() from auto-reconnecting in this session
       this.skipAutoReconnect = true;
+      // Force a prompt on the next explicit connect attempt when possible (via signIn)
+      this.forcePromptNextConnect = true;
+
     } catch (err) {
       console.error('Error disconnecting Phantom:', err);
     }
