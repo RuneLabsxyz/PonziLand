@@ -3,6 +3,9 @@
   import { interactivity } from '@threlte/extras';
   import { GRID_SIZE } from '$lib/const';
   import { cursorStore } from './three/cursor.store.svelte';
+  import { gameStore } from './three/game.store.svelte';
+  import { selectedLand, landStore } from '$lib/stores/store.svelte';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
   import LandSprite from './three/land-sprite.svelte';
   import { onMount } from 'svelte';
   import { Raycaster, Vector2, Vector3 } from 'three';
@@ -50,32 +53,90 @@
       if (t >= 0) {
         intersectionPoint.copy(ray.origin).add(ray.direction.multiplyScalar(t));
 
-        // Convert world position to grid coordinates
+        // Convert world position to grid coordinates with -0.5 offset
         // The grid starts at (0,0) and goes to (GRID_SIZE-1, GRID_SIZE-1)
-        const gridX = Math.floor(intersectionPoint.x);
-        const gridZ = Math.floor(intersectionPoint.z);
+        const gridX = Math.floor(intersectionPoint.x + 0.5);
+        const gridZ = Math.floor(intersectionPoint.z + 0.5);
 
         // Check if the position is within the grid bounds
         if (gridX >= 0 && gridX < GRID_SIZE && gridZ >= 0 && gridZ < GRID_SIZE) {
-          const gridId = gridZ * GRID_SIZE + gridX;
+          const gridId = gridX * GRID_SIZE + gridZ;
           cursorStore.gridPosition = { x: gridX, y: gridZ, id: gridId };
+          
+          // Set hoveredTileIndex to the gridId for direct mapping
+          cursorStore.hoveredTileIndex = gridId;
+          
+          // Add cursor pointer styling when hovering over valid grid
+          document.body.classList.add('cursor-pointer');
         } else {
           cursorStore.gridPosition = undefined;
+          cursorStore.hoveredTileIndex = undefined;
+          
+          // Remove cursor pointer styling when outside grid
+          document.body.classList.remove('cursor-pointer');
         }
       } else {
         cursorStore.gridPosition = undefined;
+        cursorStore.hoveredTileIndex = undefined;
+        document.body.classList.remove('cursor-pointer');
       }
     } else {
       cursorStore.gridPosition = undefined;
+      cursorStore.hoveredTileIndex = undefined;
+      document.body.classList.remove('cursor-pointer');
+    }
+  }
+
+  function handleCanvasClick() {
+    // Set selectedTileIndex to the currently hovered tile
+    if (cursorStore.hoveredTileIndex !== undefined) {
+      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
+      
+      // Get all land tiles to find the selected one
+      landStore.getAllLands().subscribe((landTiles) => {
+        // Find the land tile that corresponds to our grid position
+        if (cursorStore.gridPosition) {
+          const tile = landTiles.find(tile => 
+            tile.location.x === cursorStore.gridPosition!.x && 
+            tile.location.y === cursorStore.gridPosition!.y
+          );
+          
+          if (tile) {
+            selectedLand.value = tile;
+            gameSounds.play('biomeSelect');
+            
+            // Handle camera movement if gameStore.cameraControls exists
+            if (gameStore.cameraControls) {
+              gameStore.cameraControls.setLookAt(
+                cursorStore.gridPosition.x,
+                50, // Slightly above the tile
+                cursorStore.gridPosition.y,
+                cursorStore.gridPosition.x,
+                1, // Ground level
+                cursorStore.gridPosition.y,
+                true,
+              );
+
+              if (cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex) {
+                gameStore.cameraControls.zoomTo(250, true);
+              }
+            }
+          }
+        }
+      });
+    } else {
+      cursorStore.selectedTileIndex = undefined;
     }
   }
 
   onMount(() => {
     const canvas = renderer.domElement;
     canvas.addEventListener('mousemove', updateMousePosition);
+    canvas.addEventListener('click', handleCanvasClick);
 
     return () => {
       canvas.removeEventListener('mousemove', updateMousePosition);
+      canvas.removeEventListener('click', handleCanvasClick);
     };
   });
 </script>

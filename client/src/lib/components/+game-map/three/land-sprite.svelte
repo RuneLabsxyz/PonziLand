@@ -329,51 +329,7 @@
     }
   });
 
-  // Function to be called by the global click listener
-  function handleClickToSelectHovered() {
-    if (cursorStore.hoveredTileIndex !== undefined) {
-      const tile = visibleLandTiles[cursorStore.hoveredTileIndex];
 
-      if (gameStore.cameraControls) {
-        gameStore.cameraControls.setLookAt(
-          tile.position[0],
-          50, // Slightly above the tile
-          tile.position[2],
-          tile.position[0],
-          tile.position[1],
-          tile.position[2],
-          true,
-        );
-
-        if (cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex) {
-          gameStore.cameraControls.zoomTo(250, true);
-        }
-      }
-      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
-      selectedLand.value = tile.land;
-      gameSounds.play('biomeSelect');
-    } else {
-      // If there's no hovered tile when clicked, deselect any currently selected tile
-      cursorStore.selectedTileIndex = undefined;
-    }
-  }
-
-  // Handle plane interactions (only for hover now)
-  function handlePlaneHover(event: any) {
-    const instanceId = event.instanceId;
-    if (instanceId !== undefined && visibleLandTiles[instanceId]) {
-      cursorStore.hoveredTileIndex = instanceId;
-      const tile = visibleLandTiles[instanceId];
-
-      document.body.classList.add('cursor-pointer');
-      // gameSounds.play('hover');
-    }
-  }
-
-  function handlePlaneLeave() {
-    cursorStore.hoveredTileIndex = undefined;
-    document.body.classList.remove('cursor-pointer');
-  }
 
   let selectedLandTilePosition: [number, number, number] | undefined =
     $state(undefined);
