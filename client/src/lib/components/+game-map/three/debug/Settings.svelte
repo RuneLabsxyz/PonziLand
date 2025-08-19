@@ -7,8 +7,10 @@
     Checkbox,
     Button,
     Separator,
+    Monitor,
   } from 'svelte-tweakpane-ui';
   import { devsettings } from '../utils/devsettings.store.svelte';
+  import { cursorStore } from '../cursor.store.svelte';
   import type { ListOptions } from 'svelte-tweakpane-ui';
   import { landStore } from '$lib/stores/store.svelte';
   import { useClient } from '$lib/contexts/client.svelte';
@@ -149,6 +151,8 @@
     />
   </Folder>
   <Folder title="Debug">
-    <Checkbox bind:value={devsettings.showMouseTracker} label="Mouse Tracker" />
+    <Monitor label="Grid X" value={cursorStore.gridPosition?.x ?? -1} />
+    <Monitor label="Grid Y" value={cursorStore.gridPosition?.y ?? -1} />
+    <Monitor label="Grid ID" value={cursorStore.gridPosition?.id ?? -1} />
   </Folder>
 </Pane>
