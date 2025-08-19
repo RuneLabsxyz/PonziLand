@@ -46,6 +46,7 @@
   import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
   import Coin from './coin.svelte';
+  import RoadSprite from './road-sprite.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import FogSprite from './fog-sprite.svelte';
   import { gameStore } from './game.store.svelte';
@@ -216,7 +217,7 @@
   });
 
   onMount(() => {
-    store.getAllLands().subscribe((tiles) => {
+    landStore.getAllLands().subscribe((tiles) => {
       landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
@@ -508,7 +509,7 @@
 <T is={Group}>
   {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
     <!-- Transparent interaction planes layer (now also renders roads) -->
-    {#if interactionPlanes && devsettings.showRoads}
+    <!-- {#if interactionPlanes && devsettings.showRoads}
       <T
         is={interactionPlanes}
         interactive={true}
@@ -516,6 +517,18 @@
         onpointerleave={handlePlaneLeave}
         onclick={handleClickToSelectHovered}
       />
+    {/if} -->
+
+    <!-- Road sprites (middle layer) -->
+    {#if devsettings.showRoads}
+      <InstancedSprite
+        count={GRID_SIZE * GRID_SIZE}
+        {billboarding}
+        spritesheet={roadSpritesheet}
+        bind:ref={roadSprite}
+      >
+        <RoadSprite landTiles={visibleLandTiles} />
+      </InstancedSprite>
     {/if}
 
     <!-- Biome sprites (background layer) -->
@@ -603,7 +616,7 @@
     {/if}
 
     <!-- Dark overlay for non-owned lands when unzoomed -->
-    {#if isUnzoomed && ownedLands.length > 0}
+    {#if devsettings.showOwnedLandOverlay && isUnzoomed && ownedLands.length > 0}
       <InstancedMesh
         limit={GRID_SIZE * GRID_SIZE}
         range={GRID_SIZE * GRID_SIZE}
