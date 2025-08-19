@@ -193,6 +193,7 @@ class PhantomWalletStore {
       this.skipAutoReconnect = true;
       // Force a prompt on the next explicit connect attempt when possible (via signIn)
       this.forcePromptNextConnect = true;
+
     } catch (err) {
       console.error('Error disconnecting Phantom:', err);
     }
