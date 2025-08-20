@@ -22,9 +22,9 @@ export async function loadManifest(): Promise<any> {
   manifestPromise = (async () => {
     try {
       // Client-side: fetch from HTTP endpoint
-      const response = await fetch(
-        (process.env['PUBLIC_BASE_PATH'] ?? '') + '/manifest.json',
-      );
+      let path = (process.env['PUBLIC_BASE_PATH'] ?? '') + '/manifest.json';
+      console.log('path', path);
+      const response = await fetch(path);
       if (!response.ok) {
         throw new Error(
           `Failed to fetch manifest: ${response.status} ${response.statusText}`,
