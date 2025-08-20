@@ -167,6 +167,9 @@ const config = {
     // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter:
       process.env['DOCKER'] == 'true' ? adapterNode() : adapterCloudflare(),
+    paths: {
+      base: process.env['PUBLIC_BASE_PATH'] || '',
+    },
     alias: {
       $manifest: manifestPath,
       $profileData: dataPath,
