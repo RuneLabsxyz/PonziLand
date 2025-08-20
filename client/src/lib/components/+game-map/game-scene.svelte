@@ -95,8 +95,6 @@
   function handleCanvasClick() {
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
-      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
-
       // Get all land tiles to find the selected one
       landStore.getAllLands().subscribe((landTiles) => {
         // Find the land tile that corresponds to our grid position
@@ -132,6 +130,7 @@
           }
         }
       });
+      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
     } else {
       cursorStore.selectedTileIndex = undefined;
     }
