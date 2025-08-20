@@ -50,13 +50,13 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
     "16",                                                               # Max auctions
     "3",                                                      # Max auctions from bid
     "200",                                                                 # Decay rate
-    "100000000000000000","0",                                                                # Floor price
+    "null","0",                                                                # Floor price
     "3",                                               # Liquidity safety multiplier
     "500000000000000000000","0",                                                          # Min auction price
     "10",                                              # Min auction price multiplier
     "436800",                                                           # Auction duration
     "50",                                                             # Scaling factor
-    "12000",                                                          # Linear time decay
+    "null",                                                          # Linear time decay
     "90",                                                                  # Drop rate
     "100",                                                           # Rate denominator
     "127",                                                               # Max circles
