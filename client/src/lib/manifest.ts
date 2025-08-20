@@ -31,6 +31,7 @@ export async function loadManifest(): Promise<any> {
         );
       }
       manifestCache = await response.json();
+      console.log('manifest', manifestCache);
       return manifestCache;
     } catch (error) {
       // Clear the promise on error so retry is possible
