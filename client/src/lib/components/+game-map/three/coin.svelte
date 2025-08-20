@@ -27,13 +27,15 @@
     tile,
     i,
     instancedMesh,
-    isUnzoomed = false,
+    positionOffset,
+    scale,
     shaderMaterial,
   }: {
     tile: LandTile;
     i: number;
     instancedMesh: TInstancedMesh | undefined;
-    isUnzoomed: boolean;
+    positionOffset: [number, number, number];
+    scale: number;
     shaderMaterial: CoinHoverShaderMaterial | undefined;
   } = $props();
 
@@ -163,34 +165,23 @@
     document.body.classList.toggle('cursor-pointer', isHovering);
   }
 
-  let isOwner = $derived(
-    padAddress(tile.land.owner) === padAddress(accountState.address ?? ''),
-  );
+  // Ownership check is now handled by parent component filtering
+  let isOwner = $derived(true);
 
-  let coinPosition: [number, number, number] = $derived.by(() => {
-    return [
-      derivedTile.position[0] + (isUnzoomed ? 0.2 : 0),
-      derivedTile.position[1] + 0.1,
-      derivedTile.position[2] + (isUnzoomed ? 0 : -0.5),
-    ];
-  });
+  let coinPosition: [number, number, number] = $derived([
+    derivedTile.position[0] + positionOffset[0],
+    derivedTile.position[1] + 0.1,
+    derivedTile.position[2] + positionOffset[2],
+  ]);
 </script>
 
 {#if isOwner && !animating && timing}
-  <Float
-    floatingRange={[
-      [0, 0],
-      [0, 0],
-      [-0.05, 0.05],
-    ]}
-  >
-    <Instance
-      position={coinPosition}
-      rotation={[-Math.PI / 2, 0, 0]}
-      onclick={() => handleCoinClick(tile, i)}
-      onpointerenter={(e: any) => onPointerEnter(e)}
-      onpointerleave={() => onPointerLeave()}
-      scale={isUnzoomed ? 1.5 : 1}
-    />
-  </Float>
+  <Instance
+    position={coinPosition}
+    rotation={[-Math.PI / 2, 0, 0]}
+    onclick={() => handleCoinClick(tile, i)}
+    onpointerenter={(e: any) => onPointerEnter(e)}
+    onpointerleave={() => onPointerLeave()}
+    {scale}
+  />
 {/if}

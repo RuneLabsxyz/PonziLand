@@ -68,6 +68,11 @@ export class LandTileStore {
   private sub: Subscription | undefined;
   private updateTracker: Writable<number> = writable(0);
   private fakeUpdateInterval: NodeJS.Timeout | undefined;
+  private ownershipIndex: Map<string, Set<number>> = new Map(); // Owner address -> land indices
+  private ownershipIndexStore: Writable<Map<string, number[]>> = writable(
+    new Map(),
+  );
+  private ownershipUpdatePending = false;
 
   constructor() {
     // Put empty lands everywhere.
@@ -117,6 +122,8 @@ export class LandTileStore {
 
     // allLands is a derived store, so no need to reset
     this.pendingStake.clear();
+    this.ownershipIndex.clear();
+    this.ownershipIndexStore.set(new Map());
     if (this.sub) {
       this.sub.cancel();
       this.sub = undefined;
@@ -185,16 +192,15 @@ export class LandTileStore {
         buildingLand.updateStake(fakeStake);
 
         if (BuildingLand.is(buildingLand)) {
-          console.log(
-            `Updating land at (${x}, ${y}) with BuildingLand:`,
-            buildingLand,
-          );
           claimStore.value[buildingLand.locationString] = {
             animating: false,
             land: createLandWithActions(buildingLand, () => this.getAllLands()),
             claimable: true,
           };
         }
+
+        // Update ownership index for random updates (use regular method for individual updates)
+        this.updateOwnershipIndex({ x, y }, lands[x][y], buildingLand);
 
         this.store[x][y].set({ value: buildingLand });
         lands[x][y] = buildingLand;
@@ -252,10 +258,15 @@ export class LandTileStore {
           const buildingLand = new BuildingLand(fakeLand);
           buildingLand.updateStake(fakeStake);
 
+          // Update ownership index for the new building land (bulk mode)
+          this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+
           this.store[x][y].set({ value: buildingLand });
           lands[x][y] = buildingLand;
         }
       }
+      // Force update at end of bulk operation
+      this.forceOwnershipUpdate();
       return lands;
     });
   }
@@ -320,6 +331,9 @@ export class LandTileStore {
             const buildingLand = new BuildingLand(fakeLand);
             buildingLand.updateStake(fakeStake);
 
+            // Update ownership index for the new building land (bulk mode)
+            this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+
             this.store[x][y].set({ value: buildingLand });
             lands[x][y] = buildingLand;
 
@@ -361,9 +375,8 @@ export class LandTileStore {
         lands[auctionX][auctionY] = auctionLand;
       }
 
-      console.log(
-        `Palette created with ${buildingCount} building combinations (${totalTokens} tokens × ${totalLevels} levels), 1 auction land, centered at (${startX}, ${startY})`,
-      );
+      // Force update at end of bulk operation
+      this.forceOwnershipUpdate();
 
       return lands;
     });
@@ -391,6 +404,8 @@ export class LandTileStore {
       this.sub.cancel();
       this.sub = undefined;
     }
+    this.ownershipIndex.clear();
+    this.ownershipIndexStore.set(new Map());
   }
 
   public getLand(x: number, y: number): Readable<BaseLand> | undefined {
@@ -400,6 +415,37 @@ export class LandTileStore {
 
   public getAllLands(): Readable<BaseLand[]> {
     return this.allLands;
+  }
+
+  public getOwnedLandIndices(
+    ownerAddress: string | undefined,
+    limit?: number,
+  ): number[] {
+    if (!ownerAddress) return [];
+
+    const normalizedAddress = padAddress(ownerAddress);
+    const indicesSet = this.ownershipIndex.get(normalizedAddress ?? '');
+    if (!indicesSet) return [];
+
+    const indices = Array.from(indicesSet);
+    return limit ? indices.slice(0, limit) : indices;
+  }
+
+  public getOwnedLandIndicesStore(
+    ownerAddress: string | undefined,
+    limit?: number,
+  ): Readable<number[]> {
+    return derived(this.ownershipIndexStore, (ownershipMap) => {
+      if (!ownerAddress) return [];
+
+      const normalizedAddress = padAddress(ownerAddress);
+      const indices = ownershipMap.get(normalizedAddress ?? '') || [];
+      return limit ? indices.slice(0, limit) : indices;
+    });
+  }
+
+  public getOwnershipIndexStore(): Readable<Map<string, number[]>> {
+    return this.ownershipIndexStore;
   }
 
   private setEntities(entities: ParsedEntity<SchemaType>[]) {
@@ -428,6 +474,133 @@ export class LandTileStore {
     }
 
     return land;
+  }
+
+  // Helper method to schedule ownership index store update
+  private scheduleOwnershipUpdate(): void {
+    if (!this.ownershipUpdatePending) {
+      this.ownershipUpdatePending = true;
+      // Use microtask to batch multiple updates in the same synchronous execution
+      Promise.resolve().then(() => {
+        this.ownershipUpdatePending = false;
+        // Convert Sets to Arrays for the reactive store
+        this.ownershipIndexStore.update((currentMap) => {
+          currentMap.clear();
+          for (const [owner, landSet] of this.ownershipIndex) {
+            currentMap.set(owner, Array.from(landSet));
+          }
+          return currentMap;
+        });
+      });
+    }
+  }
+
+  // Helper method to force immediate ownership update (for end of bulk operations)
+  private forceOwnershipUpdate(): void {
+    if (this.ownershipUpdatePending) {
+      this.ownershipUpdatePending = false;
+    }
+    // Convert Sets to Arrays for the reactive store
+    this.ownershipIndexStore.update((currentMap) => {
+      currentMap.clear();
+      for (const [owner, landSet] of this.ownershipIndex) {
+        currentMap.set(owner, Array.from(landSet));
+      }
+      return currentMap;
+    });
+  }
+
+  // Helper method for bulk ownership updates - doesn't trigger reactive updates until end
+  private updateOwnershipIndexBulk(
+    location: Location,
+    oldLand: BaseLand,
+    newLand: BaseLand,
+  ): void {
+    // Fix coordinate transposition: use x * GRID_SIZE + y instead of y * GRID_SIZE + x
+    const landIndex = location.x * GRID_SIZE + location.y;
+
+    // Get old and new owners
+    const oldOwner =
+      BuildingLand.is(oldLand) && oldLand.owner && oldLand.owner.length > 0
+        ? padAddress(oldLand.owner)
+        : null;
+    const newOwner =
+      BuildingLand.is(newLand) && newLand.owner && newLand.owner.length > 0
+        ? padAddress(newLand.owner)
+        : null;
+
+    // Always remove from old owner's index if there was one
+    // This handles: owner change, land becoming empty, land being deleted
+    if (oldOwner) {
+      const oldIndices = this.ownershipIndex.get(oldOwner);
+      if (oldIndices) {
+        oldIndices.delete(landIndex);
+        // Clean up empty owner entries
+        if (oldIndices.size === 0) {
+          this.ownershipIndex.delete(oldOwner);
+        }
+      }
+    }
+
+    // Add to new owner's index if there is a new owner
+    // This handles: new ownership, ownership change
+    if (newOwner) {
+      let currentIndices = this.ownershipIndex.get(newOwner);
+      if (!currentIndices) {
+        currentIndices = new Set<number>();
+        this.ownershipIndex.set(newOwner, currentIndices);
+      }
+      currentIndices.add(landIndex);
+    }
+
+    // Don't schedule update - caller will handle it
+  }
+
+  // Helper method to update ownership index
+  private updateOwnershipIndex(
+    location: Location,
+    oldLand: BaseLand,
+    newLand: BaseLand,
+  ): void {
+    // Fix coordinate transposition: use x * GRID_SIZE + y instead of y * GRID_SIZE + x
+    const landIndex = location.x * GRID_SIZE + location.y;
+
+    // Get old and new owners
+    const oldOwner =
+      BuildingLand.is(oldLand) && oldLand.owner && oldLand.owner.length > 0
+        ? padAddress(oldLand.owner)
+        : null;
+    const newOwner =
+      BuildingLand.is(newLand) && newLand.owner && newLand.owner.length > 0
+        ? padAddress(newLand.owner)
+        : null;
+
+    // Always remove from old owner's index if there was one
+    // This handles: owner change, land becoming empty, land being deleted
+    if (oldOwner) {
+      const oldIndices = this.ownershipIndex.get(oldOwner);
+      if (oldIndices) {
+        oldIndices.delete(landIndex);
+        // Clean up empty owner entries
+        if (oldIndices.size === 0) {
+          this.ownershipIndex.delete(oldOwner);
+        }
+      }
+    }
+
+    // Add to new owner's index if there is a new owner
+    // This handles: new ownership, ownership change
+    if (newOwner) {
+      let currentIndices = this.ownershipIndex.get(newOwner);
+      if (!currentIndices) {
+        currentIndices = new Set<number>();
+        this.ownershipIndex.set(newOwner, currentIndices);
+      }
+      currentIndices.add(landIndex);
+    }
+
+    // Schedule a batched update instead of updating immediately
+    this.scheduleOwnershipUpdate();
   }
 
   public updateLand(entity: ParsedEntity<SchemaType>): void {
@@ -548,6 +721,9 @@ export class LandTileStore {
         };
       }
 
+      // Update ownership index
+      this.updateOwnershipIndex(location, previousLand, newLand);
+
       // Update the currentLands store
       this.currentLands.update((lands) => {
         lands[location.x][location.y] = newLand;
@@ -560,6 +736,17 @@ export class LandTileStore {
 
   public updateLandDirectly(x: number, y: number, land: BaseLand): void {
     if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    // Get the old land for ownership index update
+    const oldLandWrapped = this.store[x][y];
+    let oldLand: BaseLand;
+    const unsubscribe = oldLandWrapped.subscribe(
+      ({ value }) => (oldLand = value),
+    );
+    unsubscribe();
+
+    // Update ownership index
+    this.updateOwnershipIndex({ x, y }, oldLand!, land);
 
     this.store[x][y].set({ value: land });
     this.currentLands.update((lands) => {
