@@ -7,7 +7,15 @@
     Monitor,
     Button,
     Separator,
+    Color,
+    List,
   } from 'svelte-tweakpane-ui';
+  import * as THREE from 'three';
+  import {
+    applyOutlinesToAllLayers,
+    clearOutlinesFromAllLayers,
+    getOutlineControls,
+  } from '../utils/outline-controls.store.svelte';
 
   interface Props {
     store?: LandTileStore;
@@ -69,6 +77,107 @@
   function triggerTestUpdate() {
     // Use the palette method to create test data and verify ownership updates
     store.palette();
+  }
+
+  // Outline debug functionality
+  let outlineColor = $state({ r: 255, g: 0, b: 255 }); // Default purple
+  let selectedOwner = $state('');
+  let availableOwners = $derived(
+    ownershipData.map(({ owner, count }) => ({
+      text: `${owner.slice(0, 10)}... (${count} lands)`,
+      value: owner,
+    })),
+  );
+
+  function setOwnerOutlines() {
+    if (!selectedOwner) {
+      console.log('No owner selected');
+      return;
+    }
+
+    // Get owned land indices for the selected owner
+    const ownedIndices = store.getOwnedLandIndices(selectedOwner);
+    console.log(
+      `Setting outlines for ${ownedIndices.length} lands owned by ${selectedOwner}`,
+    );
+
+    // Convert color to Three.js format
+    const threeColor = new THREE.Color(
+      outlineColor.r / 255,
+      outlineColor.g / 255,
+      outlineColor.b / 255,
+    );
+
+    // Apply outlines to all sprite layers
+    applyOutlinesToAllLayers(ownedIndices, threeColor);
+    console.log(
+      `Applied ${threeColor.getHexString()} outlines to ${ownedIndices.length} lands owned by ${selectedOwner.slice(0, 10)}...`,
+    );
+  }
+
+  function clearAllOutlines() {
+    clearOutlinesFromAllLayers();
+    console.log('Cleared all custom outlines from map');
+  }
+
+  function clearOwnerOutlines() {
+    if (!selectedOwner) {
+      console.log('No owner selected');
+      return;
+    }
+
+    // Get owned land indices for the selected owner
+    const ownedIndices = store.getOwnedLandIndices(selectedOwner);
+    console.log(
+      `Clearing outlines for ${ownedIndices.length} lands owned by ${selectedOwner}`,
+    );
+
+    // Clear outlines for this specific owner's lands only
+    clearOutlinesForIndices(ownedIndices);
+    console.log(
+      `Cleared outlines for ${ownedIndices.length} lands owned by ${selectedOwner.slice(0, 10)}...`,
+    );
+  }
+
+  function clearOutlinesForIndices(indicesToClear: number[]) {
+    const store = getOutlineControls();
+
+    // Clear from building layer
+    if (store.buildingControls && store.buildingSprite) {
+      clearSpecificIndices(store.buildingSprite, indicesToClear);
+    }
+
+    // Clear from biome layer
+    if (store.biomeControls && store.biomeSprite) {
+      clearSpecificIndices(store.biomeSprite, indicesToClear);
+    }
+  }
+
+  function clearSpecificIndices(
+    instancedMesh: THREE.InstancedMesh,
+    indicesToClear: number[],
+  ) {
+    if (!instancedMesh.geometry.attributes.outlineState) return;
+
+    const outlineStateAttribute = instancedMesh.geometry.attributes
+      .outlineState as any;
+    const outlineColorAttribute = instancedMesh.geometry.attributes
+      .outlineColor as any;
+    const outlineStateArray = outlineStateAttribute.array as Float32Array;
+    const outlineColorArray = outlineColorAttribute.array as Float32Array;
+
+    // Clear only the specified indices
+    indicesToClear.forEach((index) => {
+      if (index >= 0 && index < outlineStateArray.length) {
+        outlineStateArray[index] = 0.0;
+        outlineColorArray[index * 3] = 0.0;
+        outlineColorArray[index * 3 + 1] = 0.0;
+        outlineColorArray[index * 3 + 2] = 0.0;
+      }
+    });
+
+    outlineStateAttribute.needsUpdate = true;
+    outlineColorAttribute.needsUpdate = true;
   }
 </script>
 
@@ -136,5 +245,38 @@
       label="Test Palette"
       title="Create palette test data to verify ownership reactivity"
     />
+  </Folder>
+
+  <Folder title="Outline Debug" expanded={false}>
+    <Color bind:value={outlineColor} label="Outline Color" />
+
+    <List
+      bind:value={selectedOwner}
+      options={availableOwners}
+      label="Select Owner"
+    />
+
+    <Monitor
+      value={selectedOwner
+        ? `${store.getOwnedLandIndices(selectedOwner).length} lands`
+        : 'No owner selected'}
+      label="Owner Lands"
+    />
+
+    <Separator />
+
+    <Button
+      on:click={setOwnerOutlines}
+      label="Set Outlines"
+      disabled={!selectedOwner}
+    />
+
+    <Button
+      on:click={clearOwnerOutlines}
+      label="Clear Owner"
+      disabled={!selectedOwner}
+    />
+
+    <Button on:click={clearAllOutlines} label="Clear All" />
   </Folder>
 </Pane>
