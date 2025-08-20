@@ -23,7 +23,7 @@ export async function loadManifest(): Promise<any> {
     try {
       // Client-side: fetch from HTTP endpoint
       const response = await fetch(
-        process.env['PUBLIC_BASE_PATH'] + '/manifest.json',
+        (process.env['PUBLIC_BASE_PATH'] ?? '') + '/manifest.json',
       );
       if (!response.ok) {
         throw new Error(
