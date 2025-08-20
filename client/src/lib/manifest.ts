@@ -1,3 +1,5 @@
+import process from 'node:process';
+
 let manifestCache: any = null;
 let manifestPromise: Promise<any> | null = null;
 /**
@@ -20,7 +22,9 @@ export async function loadManifest(): Promise<any> {
   manifestPromise = (async () => {
     try {
       // Client-side: fetch from HTTP endpoint
-      const response = await fetch('/manifest.json');
+      const response = await fetch(
+        process.env['PUBLIC_BASE_PATH'] + '/manifest.json',
+      );
       if (!response.ok) {
         throw new Error(
           `Failed to fetch manifest: ${response.status} ${response.statusText}`,
