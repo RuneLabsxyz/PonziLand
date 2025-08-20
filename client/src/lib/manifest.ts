@@ -1,5 +1,4 @@
-import process from 'node:process';
-
+import { PUBLIC_BASE_PATH } from '$env/static/public';
 let manifestCache: any = null;
 let manifestPromise: Promise<any> | null = null;
 /**
@@ -17,6 +16,9 @@ export async function loadManifest(): Promise<any> {
   // Return existing promise if one is already in progress
   if (manifestPromise !== null) {
     console.log('manifestPromise', manifestPromise);
+    if (!(await manifestPromise)) {
+      manifestPromise = null;
+    }
     return await manifestPromise;
   }
 
@@ -24,7 +26,7 @@ export async function loadManifest(): Promise<any> {
   manifestPromise = (async () => {
     try {
       // Client-side: fetch from HTTP endpoint
-      let path = (process.env['PUBLIC_BASE_PATH'] ?? '') + '/manifest.json';
+      let path = PUBLIC_BASE_PATH + '/manifest.json';
       console.log('path', path);
       const response = await fetch(path);
       if (!response.ok) {
