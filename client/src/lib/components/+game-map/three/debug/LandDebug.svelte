@@ -264,8 +264,6 @@
         auction.start_price = toHexWithPadding(parseInt(auctionStartPrice));
       if (auctionFloorPrice && !isNaN(parseInt(auctionFloorPrice)))
         auction.floor_price = toHexWithPadding(parseInt(auctionFloorPrice));
-      if (auctionDecayRate && !isNaN(parseInt(auctionDecayRate)))
-        auction.decay_rate = toHexWithPadding(parseInt(auctionDecayRate));
 
       // For empty lands, we might need to create both Land and Auction entities
       const parsedEntity = {
