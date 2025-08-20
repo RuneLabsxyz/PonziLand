@@ -2,9 +2,12 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
 import glsl from 'vite-plugin-glsl';
+import process from 'node:process';
 
 export default defineConfig({
   plugins: [glsl(), sveltekit(), wasm()],
+  base: process.env['PUBLIC_BASE_PATH'] || '/',
+
   build: {
     sourcemap: false,
     minify: false,
