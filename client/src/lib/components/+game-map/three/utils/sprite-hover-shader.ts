@@ -24,7 +24,11 @@ export interface OutlineControls {
   setOutlineWidth: (width: number) => void;
   setResolution: (width: number, height: number) => void;
   updateTime: (time: number) => void;
-  setOwnedLands: (instanceIndices: number[], darkenFactor?: number, darkenOnlyWhenUnzoomed?: boolean) => void;
+  setOwnedLands: (
+    instanceIndices: number[],
+    darkenFactor?: number,
+    darkenOnlyWhenUnzoomed?: boolean,
+  ) => void;
   setZoomState: (isUnzoomed: boolean) => void;
 }
 
@@ -52,7 +56,7 @@ export function setupOutlineShader(
   const instanceIndices = new Float32Array(maxInstances).fill(-1);
   const outlineColorsArray = [];
   const pulseColorsArray = [];
-  
+
   // Initialize arrays for owned land support (up to 32 lands)
   const ownedLandIndices = new Float32Array(maxInstances).fill(-1);
 
@@ -73,7 +77,7 @@ export function setupOutlineShader(
   mat.uniforms.outlineWidth = { value: outlineWidth };
   mat.uniforms.resolution = { value: resolution };
   mat.uniforms.time = { value: 0.0 };
-  
+
   // Add owned land uniforms (array-based for visible tiles)
   mat.uniforms.ownedLandIndices = { value: ownedLandIndices };
   mat.uniforms.numOwnedLands = { value: 0 };
@@ -186,7 +190,11 @@ export function setupOutlineShader(
       }
     },
 
-    setOwnedLands: (instanceIndices: number[], darkenFactor = 0.4, darkenOnlyWhenUnzoomed = false) => {
+    setOwnedLands: (
+      instanceIndices: number[],
+      darkenFactor = 0.4,
+      darkenOnlyWhenUnzoomed = false,
+    ) => {
       if (!mat.uniforms) return;
 
       const indices = new Float32Array(maxInstances).fill(-1);
@@ -200,7 +208,10 @@ export function setupOutlineShader(
       mat.uniforms.numOwnedLands.value = numLands;
       mat.uniforms.darkenFactor.value = darkenFactor;
       mat.uniforms.darkenOnlyWhenUnzoomed.value = darkenOnlyWhenUnzoomed;
-      console.log(`Set ${numLands} owned lands with darken factor ${darkenFactor}, darkenOnlyWhenUnzoomed: ${darkenOnlyWhenUnzoomed}`, indices);
+      console.log(
+        `Set ${numLands} owned lands with darken factor ${darkenFactor}, darkenOnlyWhenUnzoomed: ${darkenOnlyWhenUnzoomed}`,
+        indices,
+      );
     },
 
     setZoomState: (isUnzoomed: boolean) => {

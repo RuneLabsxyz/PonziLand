@@ -128,7 +128,10 @@
     <Checkbox bind:value={devsettings.showNukes} label="Nukes" />
     <Separator />
     <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
-    <Checkbox bind:value={devsettings.showOwnedLandOverlay} label="Owned Land Darken" />
+    <Checkbox
+      bind:value={devsettings.showOwnedLandOverlay}
+      label="Owned Land Darken"
+    />
     <Separator />
     <Checkbox
       bind:value={devsettings.showOwnerIndicator}

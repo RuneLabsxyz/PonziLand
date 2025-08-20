@@ -59,19 +59,24 @@
         const gridZ = Math.floor(intersectionPoint.z + 0.5);
 
         // Check if the position is within the grid bounds
-        if (gridX >= 0 && gridX < GRID_SIZE && gridZ >= 0 && gridZ < GRID_SIZE) {
+        if (
+          gridX >= 0 &&
+          gridX < GRID_SIZE &&
+          gridZ >= 0 &&
+          gridZ < GRID_SIZE
+        ) {
           const gridId = gridX * GRID_SIZE + gridZ;
           cursorStore.gridPosition = { x: gridX, y: gridZ, id: gridId };
-          
+
           // Set hoveredTileIndex to the gridId for direct mapping
           cursorStore.hoveredTileIndex = gridId;
-          
+
           // Add cursor pointer styling when hovering over valid grid
           document.body.classList.add('cursor-pointer');
         } else {
           cursorStore.gridPosition = undefined;
           cursorStore.hoveredTileIndex = undefined;
-          
+
           // Remove cursor pointer styling when outside grid
           document.body.classList.remove('cursor-pointer');
         }
@@ -91,20 +96,21 @@
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
       cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
-      
+
       // Get all land tiles to find the selected one
       landStore.getAllLands().subscribe((landTiles) => {
         // Find the land tile that corresponds to our grid position
         if (cursorStore.gridPosition) {
-          const tile = landTiles.find(tile => 
-            tile.location.x === cursorStore.gridPosition!.x && 
-            tile.location.y === cursorStore.gridPosition!.y
+          const tile = landTiles.find(
+            (tile) =>
+              tile.location.x === cursorStore.gridPosition!.x &&
+              tile.location.y === cursorStore.gridPosition!.y,
           );
-          
+
           if (tile) {
             selectedLand.value = tile;
             gameSounds.play('biomeSelect');
-            
+
             // Handle camera movement if gameStore.cameraControls exists
             if (gameStore.cameraControls) {
               gameStore.cameraControls.setLookAt(
@@ -117,7 +123,9 @@
                 true,
               );
 
-              if (cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex) {
+              if (
+                cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex
+              ) {
                 gameStore.cameraControls.zoomTo(250, true);
               }
             }
