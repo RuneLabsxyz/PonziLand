@@ -6,6 +6,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress, shortenHex } from '$lib/utils';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import { PUBLIC_BASE_PATH } from '$env/static/public';``
 
   setup();
 
@@ -70,7 +71,7 @@
       }}
       aria-label="Logout"
     >
-      <img src="/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
+      <img src={PUBLIC_BASE_PATH + '/ui/icons/logout.png'} alt="logout" class="h-5 w-5" />
     </button>
   </div>
   <div class="flex">

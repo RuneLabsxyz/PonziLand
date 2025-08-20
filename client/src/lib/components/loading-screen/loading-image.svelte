@@ -1,13 +1,14 @@
 <script>
+  import { PUBLIC_BASE_PATH } from '$env/static/public';
   let { imageUrl = '/placeholder-image.png', maskProgress = 0 } = $props();
 </script>
 
 <div class="image-loader">
   <div class="image-container">
     {#key imageUrl}
-      <img src={imageUrl} alt="Loader background" class="background-image" />
+      <img src={PUBLIC_BASE_PATH + imageUrl} alt="Loader background" class="background-image" />
       <img
-        src={imageUrl}
+        src={PUBLIC_BASE_PATH + imageUrl}
         alt="Loader foreground"
         class="foreground-image"
         style="clip-path: inset(0 {100 - maskProgress}% 0 0)"
