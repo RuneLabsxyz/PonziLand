@@ -6,9 +6,11 @@ uniform vec3 outlineColors[32]; // Support up to 32 different outline colors
 uniform vec3 pulseColors[32];   // Support up to 32 different pulse colors
 
 // Owned land uniforms
-uniform float ownedLandIndices[32]; // Support up to 32 owned lands (visible only)
+uniform float ownedLandIndices[32]; // Support up to 32 owned lands
 uniform int numOwnedLands;
 uniform float darkenFactor;
+uniform bool darkenOnlyWhenUnzoomed;
+uniform bool isUnzoomed;
 
 varying float vHover;
 varying float vInstanceIndex;

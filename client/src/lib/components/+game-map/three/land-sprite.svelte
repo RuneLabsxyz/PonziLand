@@ -41,9 +41,8 @@
     Color,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
-  import BiomeSprite from './biome-sprite.svelte';
+  import LandTileSprite from './land-tile-sprite.svelte';
   import { biomeAtlasMeta } from './biomes';
-  import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
   import Coin from './coin.svelte';
   import RoadSprite from './road-sprite.svelte';
@@ -407,20 +406,20 @@
     return tiles;
   });
 
-  // Calculate owned lands for shader-based darkening (filtered to visible only, max 32)
+  // Calculate owned lands for shader-based darkening (up to 2000 lands)
   let ownedLandIndices = $derived.by(() => {
     if (!accountState.address) return [];
 
     const indices: number[] = [];
     const maxOwnedLands = 32; // Match shader uniform array limit
 
-    // Only check visible tiles for ownership - much more efficient than checking 70k lands
+    // Check all land tiles for ownership
     for (
       let index = 0;
-      index < visibleLandTiles.length && indices.length < maxOwnedLands;
+      index < landTiles.length && indices.length < maxOwnedLands;
       index++
     ) {
-      const tile = visibleLandTiles[index];
+      const tile = landTiles[index];
       if (BuildingLand.is(tile.land)) {
         const isOwned =
           padAddress(tile.land.owner ?? '') ===
@@ -510,7 +509,13 @@
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
       >
-        <BiomeSprite landTiles={visibleLandTiles} {biomeSpritesheet} />
+        <LandTileSprite
+          landTiles={visibleLandTiles}
+          spritesheet={biomeSpritesheet}
+          animationProperty="biomeAnimationName"
+          {ownedLandIndices}
+          {isUnzoomed}
+        />
       </InstancedSprite>
     {/if}
 
@@ -534,10 +539,12 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite
+        <LandTileSprite
           landTiles={visibleLandTiles}
-          {buildingSpritesheet}
+          spritesheet={buildingSpritesheet}
+          animationProperty="buildingAnimationName"
           {ownedLandIndices}
+          {isUnzoomed}
         />
       </InstancedSprite>
     {/if}

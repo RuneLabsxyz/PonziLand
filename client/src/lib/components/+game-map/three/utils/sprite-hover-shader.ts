@@ -24,7 +24,8 @@ export interface OutlineControls {
   setOutlineWidth: (width: number) => void;
   setResolution: (width: number, height: number) => void;
   updateTime: (time: number) => void;
-  setOwnedLands: (instanceIndices: number[], darkenFactor?: number) => void;
+  setOwnedLands: (instanceIndices: number[], darkenFactor?: number, darkenOnlyWhenUnzoomed?: boolean) => void;
+  setZoomState: (isUnzoomed: boolean) => void;
 }
 
 /**
@@ -52,7 +53,7 @@ export function setupOutlineShader(
   const outlineColorsArray = [];
   const pulseColorsArray = [];
   
-  // Initialize arrays for owned land support (using visible tiles only)
+  // Initialize arrays for owned land support (up to 32 lands)
   const ownedLandIndices = new Float32Array(maxInstances).fill(-1);
 
   for (let i = 0; i < maxInstances; i++) {
@@ -77,6 +78,8 @@ export function setupOutlineShader(
   mat.uniforms.ownedLandIndices = { value: ownedLandIndices };
   mat.uniforms.numOwnedLands = { value: 0 };
   mat.uniforms.darkenFactor = { value: 0.4 };
+  mat.uniforms.darkenOnlyWhenUnzoomed = { value: false };
+  mat.uniforms.isUnzoomed = { value: false };
 
   mat.onBeforeCompile = (shader: any) => {
     console.log('Setting up outline shader for sprites');
@@ -183,7 +186,7 @@ export function setupOutlineShader(
       }
     },
 
-    setOwnedLands: (instanceIndices: number[], darkenFactor = 0.4) => {
+    setOwnedLands: (instanceIndices: number[], darkenFactor = 0.4, darkenOnlyWhenUnzoomed = false) => {
       if (!mat.uniforms) return;
 
       const indices = new Float32Array(maxInstances).fill(-1);
@@ -196,7 +199,14 @@ export function setupOutlineShader(
       mat.uniforms.ownedLandIndices.value = indices;
       mat.uniforms.numOwnedLands.value = numLands;
       mat.uniforms.darkenFactor.value = darkenFactor;
-      console.log(`Set ${numLands} owned lands with darken factor ${darkenFactor}`, indices);
+      mat.uniforms.darkenOnlyWhenUnzoomed.value = darkenOnlyWhenUnzoomed;
+      console.log(`Set ${numLands} owned lands with darken factor ${darkenFactor}, darkenOnlyWhenUnzoomed: ${darkenOnlyWhenUnzoomed}`, indices);
+    },
+
+    setZoomState: (isUnzoomed: boolean) => {
+      if (mat.uniforms && mat.uniforms.isUnzoomed) {
+        mat.uniforms.isUnzoomed.value = isUnzoomed;
+      }
     },
   };
 }

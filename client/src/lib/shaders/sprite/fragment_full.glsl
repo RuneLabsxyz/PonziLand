@@ -19,6 +19,8 @@ uniform vec2 resolution;
 uniform float ownedLandIndices[32];
 uniform int numOwnedLands;
 uniform float darkenFactor;
+uniform bool darkenOnlyWhenUnzoomed;
+uniform bool isUnzoomed;
 
 varying float vHover;
 varying vec3 vOutlineColor;
@@ -344,12 +346,15 @@ void main() {
         vec3 finalColor = sampledDiffuseColor.rgb;
         float finalAlpha = sampledDiffuseColor.a;
 
-        if(sampledDiffuseColor.a < 0.1) {
-            discard;
-        }
-
         if(vIsOwned > 0.5) {
-            finalColor *= darkenFactor;
+            // Apply stripe pattern darkening based on darkenOnlyWhenUnzoomed setting
+            if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
+                // Create diagonal stripe pattern
+                float interval = 20.0;
+                float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
+                stripe = 0.4 + stripe * 0.4; // Maps 0->0.4 and 1->0.8
+                finalColor = finalColor * stripe;
+            }
         }
 
         if(vHover > 0.5) {
