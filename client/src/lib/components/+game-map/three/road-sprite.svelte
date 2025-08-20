@@ -11,7 +11,17 @@
 
   const { updatePosition, sprite } = useInstancedSprite();
 
+  let materialCloned = false;
+
   $effect(() => {
+    // Ensure road sprites have their own clean material without outline shaders
+    if (sprite.material && !materialCloned) {
+      sprite.material = sprite.material.clone();
+      // Clear any existing onBeforeCompile hooks that might add outline shaders
+      sprite.material.onBeforeCompile = () => {};
+      materialCloned = true;
+    }
+
     // Iterate over landtiles
     landTiles.forEach((tile: LandTile, index: number) => {
       updatePosition(index, [
