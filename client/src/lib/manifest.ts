@@ -10,11 +10,13 @@ let manifestPromise: Promise<any> | null = null;
 export async function loadManifest(): Promise<any> {
   // Return cached manifest if available
   if (manifestCache !== null) {
+    console.log('manifestCache', manifestCache);
     return manifestCache;
   }
 
   // Return existing promise if one is already in progress
   if (manifestPromise !== null) {
+    console.log('manifestPromise', manifestPromise);
     return await manifestPromise;
   }
 

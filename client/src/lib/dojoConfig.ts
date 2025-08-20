@@ -63,6 +63,8 @@ export async function loadDojoConfig(): Promise<DojoConfig> {
   // Load the manifest
   const manifest = await loadManifest();
 
+  console.log('manifest', manifest);
+
   // Create policies from manifest
   const policies = createPolicies(manifest);
 
