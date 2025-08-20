@@ -209,7 +209,7 @@
       new MeshBasicMaterial({
         transparent: true,
         opacity: 0.5,
-        alphaTest: 0.01
+        alphaTest: 0.01,
       }),
       GRID_SIZE * GRID_SIZE,
     );
@@ -276,11 +276,13 @@
         );
         tempObject.rotation.x = -Math.PI / 2;
         tempObject.updateMatrix();
-        artLayerMesh.setMatrixAt(index, tempObject.matrix);
-        // Set color based on tile type
-        const color = getArtLayerColor(tile);
-        const threeColor = new Color(color);
-        artLayerMesh.setColorAt(index, threeColor);
+        if (artLayerMesh) {
+          artLayerMesh.setMatrixAt(index, tempObject.matrix);
+          // Set color based on tile type
+          const color = getArtLayerColor(tile);
+          const threeColor = new Color(color);
+          artLayerMesh.setColorAt(index, threeColor);
+        }
       });
 
       artLayerMesh.instanceMatrix.needsUpdate = true;
