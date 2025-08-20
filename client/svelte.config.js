@@ -168,8 +168,7 @@ const config = {
     adapter:
       process.env['DOCKER'] == 'true' ? adapterNode() : adapterCloudflare(),
     paths: {
-      base: process.env['PUBLIC_BASE_PATH'] || '/',
-      assets: '',
+      base: process.env['PUBLIC_BASE_PATH'] || '/test',
     },
     alias: {
       $manifest: manifestPath,

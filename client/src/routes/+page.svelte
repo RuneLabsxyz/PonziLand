@@ -8,6 +8,8 @@
   import { onMount } from 'svelte';
   import { fly } from 'svelte/transition';
 
+  import process from 'node:process';
+  let basePath = process.env['PUBLIC_BASE_PATH'] || '';
   let particlesConfig = {
     particles: {
       color: {
@@ -114,7 +116,7 @@
   <!-- Image background -->
   <div class="absolute inset-0 overflow-hidden">
     <img
-      src="/home/hero.png"
+      src={basePath + '/home/hero.png'}
       alt="Hero"
       class="absolute w-full h-full object-cover"
       style="transform: scale(1.2);"
@@ -131,7 +133,7 @@
 
   {#if showLogo}
     <img
-      src="/logo.png"
+      src={basePath + '/logo.png'}
       alt="Ponzi Land Logo"
       class="z-[3] pt-20 w-[min(500px,80vw)] animate-float"
       transition:fly={{ y: -400, duration: 1500 }}
@@ -139,7 +141,7 @@
   {/if}
   {#if showWave}
     <img
-      src="/home/wave.gif"
+      src={basePath + '/home/wave.gif'}
       alt="Waving Character"
       class="fixed bottom-[-100px] left-0 z-[3] h-[400px] w-auto"
       style="transform: rotate(10deg);"
