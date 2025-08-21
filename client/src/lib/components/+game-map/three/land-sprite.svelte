@@ -58,6 +58,7 @@
   import { BufferAttribute, Clock } from 'three';
   import { GRID_SIZE } from '$lib/const';
   import { configValues } from '$lib/stores/config.store.svelte';
+  import Clouds from './clouds.svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -167,6 +168,14 @@
 
   let landTiles: LandTile[] = $state([]);
 
+  // Calculate bounds of non-empty lands for clouds
+  let landBounds = $state<{
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  } | null>(null);
+
   // At the top, outside of any reactive context:
   const planeGeometry = new PlaneGeometry(1, 1);
   const roadTexture = new TextureLoader().load(
@@ -220,6 +229,12 @@
 
   onMount(() => {
     landStore.getAllLands().subscribe((tiles) => {
+      // Calculate bounds while processing tiles
+      let minX = GRID_SIZE,
+        maxX = -1;
+      let minY = GRID_SIZE,
+        maxY = -1;
+
       landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
@@ -234,6 +249,17 @@
           skin = 'auction';
         }
 
+        // Update bounds when testing if auction or if building
+        if (BuildingLand.is(tile) || AuctionLand.is(tile)) {
+          const x = tile.location.x;
+          const y = tile.location.y;
+
+          minX = Math.min(minX, x);
+          maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
+
         const gridX = tile.location.x;
         const gridY = tile.location.y;
 
@@ -245,6 +271,13 @@
           tile,
         );
       });
+
+      // Update land bounds after processing all tiles
+      if (minX > maxX || minY > maxY) {
+        landBounds = null;
+      } else {
+        landBounds = { minX, maxX, minY, maxY };
+      }
     });
   });
 
@@ -615,6 +648,9 @@
     {/if}
 
     <!-- Owned land darkening is now handled by the shader system -->
+
+    <!-- Clouds positioned at land bounds -->
+    <Clouds bounds={landBounds} />
   </T>
 {/await}
 
