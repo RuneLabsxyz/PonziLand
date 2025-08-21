@@ -1,0 +1,70 @@
+/* ColorCard Component Styles */
+
+.color-card {
+	position: relative;
+	color: white;
+	box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+
+	/* Card-like shape with fixed pixel border rendering */
+	background-clip: padding-box;
+	border: solid transparent 0.4em;
+	border-image-slice: 40;
+	border-image-outset: 0;
+	border-image-width: 2;
+	image-rendering: pixelated;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: crisp-edges;
+
+	/* Padding to ensure content doesn't overlap with border */
+	padding: 0.5em;
+
+	/* Ensure pixel-perfect rendering */
+	-webkit-backface-visibility: hidden;
+	-moz-backface-visibility: hidden;
+	backface-visibility: hidden;
+	transform: translateZ(0);
+	will-change: transform;
+}
+
+/* Inherit pixel rendering for children */
+.color-card * {
+	image-rendering: pixelated;
+	image-rendering: -moz-crisp-edges;
+	image-rendering: crisp-edges;
+}
+
+	/* Variant styles reuse button visuals */
+.color-card--blue {
+	border-image-source: var(--button-default-image);
+	background-color: #136a88;
+	-webkit-text-stroke-width: 0.25em;
+	-webkit-text-stroke-color: #072f3d;
+	paint-order: stroke fill;
+	text-shadow:
+		0.1em 0.25em 0px #072f3d,
+		-0.1em 0.25em 0px #072f3d,
+		0.1em 0.3em 0px #072f3d,
+		-0.1em 0.3em 0px #072f3d;
+}
+.color-card--blue:not(.color-card--no-hover):hover {
+	border-image-source: var(--button-hover-image);
+	background-color: #71d2f8;
+}
+
+.color-card--red {
+	border-image-source: var(--button-default-image);
+	border-image-width: 1.5;
+	background-color: #832849;
+	-webkit-text-stroke-width: 0.25em;
+	-webkit-text-stroke-color: #5a1c33;
+	paint-order: stroke fill;
+	text-shadow:
+		0.1em 0.25em 0px #5a1c33,
+		-0.1em 0.25em 0px #5a1c33,
+		0.1em 0.3em 0px #5a1c33,
+		-0.1em 0.3em 0px #5a1c33;
+}
+.color-card--red:not(.color-card--no-hover):hover {
+	border-image-source: var(--button-hover-image);
+	background-color: #b6a2ad;
+}

@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { HTMLAttributes, Snippet } from 'svelte';
+  import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
   import { clsx, type ClassValue } from 'clsx';
   import './Card.css';
   import { cardImages } from './assets/card-images-embedded.js';
