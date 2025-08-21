@@ -7,6 +7,7 @@
   import { selectedLand, landStore } from '$lib/stores/store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import LandSprite from './three/land-sprite.svelte';
+  import Clouds from './three/clouds.svelte';
   import { onMount } from 'svelte';
   import { Raycaster, Vector2, Vector3 } from 'three';
   import { get } from 'svelte/store';
