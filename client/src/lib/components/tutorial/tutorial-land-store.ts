@@ -66,7 +66,6 @@ export class TutorialLandStore extends LandTileStore {
       start_price: DEFAULT_SELL_PRICE * 2,
       start_time: Date.now(),
       floor_price: DEFAULT_SELL_PRICE,
-      decay_rate: 0,
       sold_at_price: new CairoOption(CairoOptionVariant.None),
     };
 
