@@ -3,7 +3,6 @@
   import LoadingImage from './loading-image.svelte';
   import messages from './loading-messages.json';
   import RotatingCoin from './rotating-coin.svelte';
-  import { PUBLIC_BASE_PATH } from '$env/static/public';
 
   let { value } = $props();
 
@@ -12,7 +11,7 @@
     const s = overshoot;
     return 0.5 * (2 * t) * (2 * t) * ((s * 1.525 + 1) * (2 * t) - s * 1.525);
   };
-  const textureUrl = PUBLIC_BASE_PATH + '/ui/card/texture.png';
+  const textureUrl = '/ui/card/texture.png';
 </script>
 
 <div
@@ -24,7 +23,7 @@
   }}
   class="Container absolute top-0 left-0 right-0 bottom-0 flex items-center justify-center flex-col z-[1000] overflow-visible scale-[1.3]"
 >
-  <LoadingImage imageUrl={PUBLIC_BASE_PATH + '/logo.png'} maskProgress={value} />
+  <LoadingImage imageUrl={'/logo.png'} maskProgress={value} />
   <div class="flex gap-2 items-center justify-center z-50">
     <p class="text-white text-lg leading-none">{randomPhrase}</p>
     <RotatingCoin />
@@ -42,7 +41,7 @@
     transform: translate(-50%, -50%);
     background:
       radial-gradient(rgba(24, 18, 68, 0.5), rgba(14, 4, 21, 0.5)),
-      url(textureUrl);
+      url({textureUrl});
     scale: 1.1;
   }
 </style>

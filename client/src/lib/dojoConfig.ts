@@ -7,7 +7,6 @@ import {
   PUBLIC_DOJO_BURNER_ADDRESS,
   PUBLIC_DOJO_BURNER_PRIVATE,
   PUBLIC_DOJO_CHAIN_ID,
-  PUBLIC_BASE_PATH,
 } from '$env/static/public';
 
 import type {

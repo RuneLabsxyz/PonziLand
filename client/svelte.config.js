@@ -131,7 +131,6 @@ const profiles = {
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     MANIFEST_PATH: '../playtest/deployments/test/manifest.json',
     DATA_PATH: '../playtest/deployments/test/data.json',
-    PUBLIC_BASE_PATH: process.env['PUBLIC_BASE_PATH'] || '',
   },
 };
 
@@ -168,9 +167,6 @@ const config = {
     // See https://svelte.dev/docs/kit/adapters for more information about adapters.
     adapter:
       process.env['DOCKER'] == 'true' ? adapterNode() : adapterCloudflare(),
-    paths: {
-      base: process.env['PUBLIC_BASE_PATH'] || '',
-    },
     alias: {
       $manifest: manifestPath,
       $profileData: dataPath,

@@ -6,8 +6,6 @@ import process from 'node:process';
 
 export default defineConfig({
   plugins: [glsl(), sveltekit(), wasm()],
-  base: process.env['PUBLIC_BASE_PATH'] || '/',
-
   build: {
     sourcemap: false,
     minify: false,

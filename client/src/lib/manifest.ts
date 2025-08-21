@@ -1,4 +1,3 @@
-import { PUBLIC_BASE_PATH } from '$env/static/public';
 let manifestCache: any = null;
 let manifestPromise: Promise<any> | null = null;
 /**
@@ -26,7 +25,7 @@ export async function loadManifest(): Promise<any> {
   manifestPromise = (async () => {
     try {
       // Client-side: fetch from HTTP endpoint
-      let path = PUBLIC_BASE_PATH + '/manifest.json';
+      let path = '/manifest.json';
       console.log('path', path);
       const response = await fetch(path);
       if (!response.ok) {
