@@ -16,7 +16,6 @@ export class AuctionLand extends BaseLand {
   private _startPrice!: CurrencyAmount;
   private _floorPrice!: CurrencyAmount;
   private _isFinished!: boolean;
-  private _decayRate!: BigNumberish;
   private _soldAtPrice?: CurrencyAmount;
 
   private static isLand(obj: Land | BaseLand): obj is Land {
@@ -70,7 +69,6 @@ export class AuctionLand extends BaseLand {
         this._token,
       );
       this._isFinished = auction.is_finished;
-      this._decayRate = auction.decay_rate;
 
       if (auction.sold_at_price && 'value' in auction.sold_at_price) {
         this._soldAtPrice = CurrencyAmount.fromUnscaled(
@@ -112,7 +110,6 @@ export class AuctionLand extends BaseLand {
       this._token,
     );
     this._isFinished = auction.is_finished;
-    this._decayRate = auction.decay_rate;
 
     if (auction.sold_at_price && 'value' in auction.sold_at_price) {
       this._soldAtPrice = CurrencyAmount.fromUnscaled(
@@ -199,10 +196,6 @@ export class AuctionLand extends BaseLand {
 
   public get isFinished(): boolean {
     return this._isFinished;
-  }
-
-  public get decayRate(): BigNumberish {
-    return this._decayRate;
   }
 
   public get soldAtPrice(): CurrencyAmount | undefined {

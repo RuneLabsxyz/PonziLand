@@ -14,7 +14,6 @@ export interface Auction {
   start_price: BigNumberish;
   floor_price: BigNumberish;
   is_finished: boolean;
-  decay_rate: BigNumberish;
   sold_at_price: CairoOption<BigNumberish>;
 }
 
@@ -45,6 +44,7 @@ export interface Config {
   our_contract_for_fee: string;
   our_contract_for_auction: string;
   claim_fee_threshold: BigNumberish;
+  main_currency: string;
 }
 
 // Type definition for `ponzi_land::models::land::Land` struct
@@ -65,29 +65,21 @@ export interface LandStake {
   accumulated_taxes_fee: BigNumberish;
 }
 
-// Type definition for `ponzi_land::components::taxes::TaxesComponent::LandTransferEvent` struct
-export interface LandTransferEvent {
-  from_location: BigNumberish;
-  to_location: BigNumberish;
-  token_address: string;
-  amount: BigNumberish;
-}
-
-// Type definition for `ponzi_land::systems::actions::actions::AddStakeEvent` struct
+// Type definition for `ponzi_land::events::AddStakeEvent` struct
 export interface AddStakeEvent {
   land_location: BigNumberish;
   new_stake_amount: BigNumberish;
   owner: string;
 }
 
-// Type definition for `ponzi_land::systems::actions::actions::AuctionFinishedEvent` struct
+// Type definition for `ponzi_land::events::AuctionFinishedEvent` struct
 export interface AuctionFinishedEvent {
   land_location: BigNumberish;
   buyer: string;
   final_price: BigNumberish;
 }
 
-// Type definition for `ponzi_land::systems::actions::actions::LandBoughtEvent` struct
+// Type definition for `ponzi_land::events::LandBoughtEvent` struct
 export interface LandBoughtEvent {
   buyer: string;
   land_location: BigNumberish;
@@ -96,13 +88,21 @@ export interface LandBoughtEvent {
   token_used: string;
 }
 
-// Type definition for `ponzi_land::systems::actions::actions::LandNukedEvent` struct
+// Type definition for `ponzi_land::events::LandNukedEvent` struct
 export interface LandNukedEvent {
   owner_nuked: string;
   land_location: BigNumberish;
 }
 
-// Type definition for `ponzi_land::systems::actions::actions::NewAuctionEvent` struct
+// Type definition for `ponzi_land::events::LandTransferEvent` struct
+export interface LandTransferEvent {
+  from_location: BigNumberish;
+  to_location: BigNumberish;
+  token_address: string;
+  amount: BigNumberish;
+}
+
+// Type definition for `ponzi_land::events::NewAuctionEvent` struct
 export interface NewAuctionEvent {
   land_location: BigNumberish;
   start_price: BigNumberish;
@@ -144,11 +144,11 @@ export interface SchemaType extends ISchemaType {
     Config: Config;
     Land: Land;
     LandStake: LandStake;
-    LandTransferEvent: LandTransferEvent;
     AddStakeEvent: AddStakeEvent;
     AuctionFinishedEvent: AuctionFinishedEvent;
     LandBoughtEvent: LandBoughtEvent;
     LandNukedEvent: LandNukedEvent;
+    LandTransferEvent: LandTransferEvent;
     NewAuctionEvent: NewAuctionEvent;
     AddressAuthorizedEvent: AddressAuthorizedEvent;
     AddressRemovedEvent: AddressRemovedEvent;
@@ -164,7 +164,6 @@ export const schema: SchemaType = {
       start_price: 0,
       floor_price: 0,
       is_finished: false,
-      decay_rate: 0,
       sold_at_price: new CairoOption(CairoOptionVariant.None),
     },
     Config: {
@@ -193,6 +192,7 @@ export const schema: SchemaType = {
       our_contract_for_fee: '',
       our_contract_for_auction: '',
       claim_fee_threshold: 0,
+      main_currency: '',
     },
     Land: {
       location: 0,
@@ -211,12 +211,6 @@ export const schema: SchemaType = {
       amount: 0,
       neighbors_info_packed: 0,
       accumulated_taxes_fee: 0,
-    },
-    LandTransferEvent: {
-      from_location: 0,
-      to_location: 0,
-      token_address: '',
-      amount: 0,
     },
     AddStakeEvent: {
       land_location: 0,
@@ -238,6 +232,12 @@ export const schema: SchemaType = {
     LandNukedEvent: {
       owner_nuked: '',
       land_location: 0,
+    },
+    LandTransferEvent: {
+      from_location: 0,
+      to_location: 0,
+      token_address: '',
+      amount: 0,
     },
     NewAuctionEvent: {
       land_location: 0,
@@ -268,11 +268,11 @@ export enum ModelsMapping {
   Land = 'ponzi_land-Land',
   LandStake = 'ponzi_land-LandStake',
   Level = 'ponzi_land-Level',
-  LandTransferEvent = 'ponzi_land-LandTransferEvent',
   AddStakeEvent = 'ponzi_land-AddStakeEvent',
   AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
   LandBoughtEvent = 'ponzi_land-LandBoughtEvent',
   LandNukedEvent = 'ponzi_land-LandNukedEvent',
+  LandTransferEvent = 'ponzi_land-LandTransferEvent',
   NewAuctionEvent = 'ponzi_land-NewAuctionEvent',
   AddressAuthorizedEvent = 'ponzi_land-AddressAuthorizedEvent',
   AddressRemovedEvent = 'ponzi_land-AddressRemovedEvent',

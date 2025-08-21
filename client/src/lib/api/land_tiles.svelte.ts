@@ -353,7 +353,6 @@ export class LandTileStore {
           start_price: '',
           floor_price: '',
           is_finished: false,
-          decay_rate: '',
           sold_at_price: 0 as any,
         };
 
