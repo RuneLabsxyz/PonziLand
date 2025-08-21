@@ -8,16 +8,11 @@ let manifestPromise: Promise<any> | null = null;
 export async function loadManifest(): Promise<any> {
   // Return cached manifest if available
   if (manifestCache !== null) {
-    console.log('manifestCache', manifestCache);
     return manifestCache;
   }
 
   // Return existing promise if one is already in progress
   if (manifestPromise !== null) {
-    console.log('manifestPromise', manifestPromise);
-    if (!(await manifestPromise)) {
-      manifestPromise = null;
-    }
     return await manifestPromise;
   }
 
@@ -25,16 +20,13 @@ export async function loadManifest(): Promise<any> {
   manifestPromise = (async () => {
     try {
       // Client-side: fetch from HTTP endpoint
-      let path = '/manifest.json';
-      console.log('path', path);
-      const response = await fetch(path);
+      const response = await fetch('/manifest.json');
       if (!response.ok) {
         throw new Error(
           `Failed to fetch manifest: ${response.status} ${response.statusText}`,
         );
       }
       manifestCache = await response.json();
-      console.log('manifest', manifestCache);
       return manifestCache;
     } catch (error) {
       // Clear the promise on error so retry is possible

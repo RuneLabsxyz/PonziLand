@@ -11,7 +11,6 @@
     const s = overshoot;
     return 0.5 * (2 * t) * (2 * t) * ((s * 1.525 + 1) * (2 * t) - s * 1.525);
   };
-  const textureUrl = '/ui/card/texture.png';
 </script>
 
 <div
@@ -41,7 +40,7 @@
     transform: translate(-50%, -50%);
     background:
       radial-gradient(rgba(24, 18, 68, 0.5), rgba(14, 4, 21, 0.5)),
-      url({textureUrl});
+      url('/ui/card/texture.png');
     scale: 1.1;
   }
 </style>
