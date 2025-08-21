@@ -3,11 +3,7 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { GRID_SIZE } from '$lib/const';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-  import {
-    clearNuking,
-    markAsNuking,
-    nukeStore,
-  } from '$lib/stores/nuke.store.svelte';
+  import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import {
     coordinatesToLocation,
@@ -125,12 +121,10 @@
     land ? land.location.x + land.location.y * GRID_SIZE : -1,
   );
 
-  function simulateNuke() {
-    markAsNuking(coordinate.toString());
+  let locationString = $derived(coordinatesToLocation(location).toString());
 
-    setTimeout(() => {
-      clearNuking(coordinate.toString());
-    }, 3500);
+  function simulateNuke() {
+    nukeStore.animationManager.triggerAnimation(locationString);
   }
 
   // Create token options for List component
@@ -342,8 +336,14 @@
       label="Simulate Nuke"
       title="Nuke"
     />
-    <Monitor value={nukeStore.pending[coordinate] ?? false} label="isPending" />
-    <Monitor value={nukeStore.nuking[coordinate] ?? false} label="isNuking" />
+    <Monitor
+      value={nukeStore.pending[locationString] ?? false}
+      label="isPending"
+    />
+    <Monitor
+      value={nukeStore.nuking[locationString] ?? false}
+      label="isNuking"
+    />
   </Folder>
 
   {#if error}

@@ -601,6 +601,7 @@
       <OwnerIndicator
         landTiles={visibleLandTiles}
         instancedMesh={ownerInstancedMesh}
+        {store}
       />
     {/if}
 

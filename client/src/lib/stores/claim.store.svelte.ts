@@ -6,7 +6,7 @@ import { getAggregatedTaxes } from '$lib/utils/taxes';
 import type { BigNumberish } from 'ethers';
 import type { Account, AccountInterface } from 'starknet';
 import { claimQueue } from './event.store.svelte';
-import { markAsNuking } from './nuke.store.svelte';
+import { nukeStore } from './nuke.store.svelte';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 
 export let claimStore: {
@@ -120,7 +120,7 @@ async function handlePostClaim(
   // Handle nukables
   result.nukables.forEach((land) => {
     if (land.nukable) {
-      markAsNuking(land.location);
+      nukeStore.animationManager.triggerAnimation(land.location);
       claimStore.value[land.location].land.type = 'auction';
     }
   });
