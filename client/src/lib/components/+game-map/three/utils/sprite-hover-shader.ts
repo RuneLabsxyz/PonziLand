@@ -61,7 +61,7 @@ export function setupOutlineShader(
 
   // Add owned land uniforms
   mat.uniforms.darkenFactor = { value: 0.4 };
-  mat.uniforms.darkenOnlyWhenUnzoomed = { value: false };
+  mat.uniforms.darkenOnlyWhenUnzoomed = { value: true };
   mat.uniforms.isUnzoomed = { value: false };
 
   // Helper function to create buffer attributes
