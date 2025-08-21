@@ -125,11 +125,13 @@
     land ? land.location.x + land.location.y * GRID_SIZE : -1,
   );
 
+  let locationString = $derived(coordinatesToLocation(location).toString());
+
   function simulateNuke() {
-    markAsNuking(coordinate.toString());
+    markAsNuking(locationString);
 
     setTimeout(() => {
-      clearNuking(coordinate.toString());
+      clearNuking(locationString);
     }, 3500);
   }
 
@@ -342,8 +344,8 @@
       label="Simulate Nuke"
       title="Nuke"
     />
-    <Monitor value={nukeStore.pending[coordinate] ?? false} label="isPending" />
-    <Monitor value={nukeStore.nuking[coordinate] ?? false} label="isNuking" />
+    <Monitor value={nukeStore.pending[locationString] ?? false} label="isPending" />
+    <Monitor value={nukeStore.nuking[locationString] ?? false} label="isNuking" />
   </Folder>
 
   {#if error}
