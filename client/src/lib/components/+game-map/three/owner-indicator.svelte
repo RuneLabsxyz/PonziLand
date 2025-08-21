@@ -52,10 +52,11 @@
     if (accountState.address) {
       const ownedIndices = store.getOwnedLandIndices(accountState.address);
       const ownedIndicesSet = new Set(ownedIndices);
-      
+
       landTiles.forEach((tile) => {
         if (!BuildingLand.is(tile.land)) return;
-        const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex =
+          tile.land.location.x * GRID_SIZE + tile.land.location.y;
         if (ownedIndicesSet.has(landIndex)) {
           allOwnershipData.set(landIndex, 'crown');
         }
@@ -66,10 +67,11 @@
     data.aiAgents.forEach((agent) => {
       const agentIndices = store.getOwnedLandIndices(agent.address);
       const agentIndicesSet = new Set(agentIndices);
-      
+
       landTiles.forEach((tile) => {
         if (!BuildingLand.is(tile.land)) return;
-        const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex =
+          tile.land.location.x * GRID_SIZE + tile.land.location.y;
         if (agentIndicesSet.has(landIndex)) {
           allOwnershipData.set(landIndex, getAIAgentType(agent));
         }
@@ -77,15 +79,20 @@
     });
 
     // Filter tiles using the ownership data
-    return landTiles.filter((tile) => {
-      if (!BuildingLand.is(tile.land)) return false;
-      const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
-      return allOwnershipData.has(landIndex);
-    }).map((tile, tileIndex) => ({
-      tile,
-      tileIndex,
-      ownerType: allOwnershipData.get(tile.land.location.x * GRID_SIZE + tile.land.location.y)!
-    }));
+    return landTiles
+      .filter((tile) => {
+        if (!BuildingLand.is(tile.land)) return false;
+        const landIndex =
+          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        return allOwnershipData.has(landIndex);
+      })
+      .map((tile, tileIndex) => ({
+        tile,
+        tileIndex,
+        ownerType: allOwnershipData.get(
+          tile.land.location.x * GRID_SIZE + tile.land.location.y,
+        )!,
+      }));
   });
 
   // Group tiles by owner type for efficient rendering

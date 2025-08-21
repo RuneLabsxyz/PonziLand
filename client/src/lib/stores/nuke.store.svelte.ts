@@ -1,8 +1,15 @@
 // Optimized nuke animation management with batching
 class NukeAnimationManager {
-  private activeAnimations = new Map<string, { startTime: number; timeoutId?: number }>();
+  private activeAnimations = new Map<
+    string,
+    { startTime: number; timeoutId?: number }
+  >();
   private animationDuration = 3000;
-  private batchQueue: Array<{ location: string; delay: number; queueTime: number }> = [];
+  private batchQueue: Array<{
+    location: string;
+    delay: number;
+    queueTime: number;
+  }> = [];
   private batchTimer?: number;
   private batchThreshold = 50; // ms to wait before processing batch
   private maxBatchSize = 20; // max nukes per batch to prevent overwhelming
@@ -24,7 +31,7 @@ class NukeAnimationManager {
     this.batchQueue.push({
       location,
       delay,
-      queueTime: performance.now()
+      queueTime: performance.now(),
     });
 
     // Start batch timer if not running
@@ -49,29 +56,37 @@ class NukeAnimationManager {
     this.batchTimer = undefined;
 
     // Group animations by their delay time to batch timeout creation
-    const delayGroups = new Map<number, Array<{ location: string; delay: number }>>();
-    
+    const delayGroups = new Map<
+      number,
+      Array<{ location: string; delay: number }>
+    >();
+
     for (const item of batch) {
-      const effectiveDelay = Math.max(0, item.delay - (currentTime - item.queueTime));
+      const effectiveDelay = Math.max(
+        0,
+        item.delay - (currentTime - item.queueTime),
+      );
       const delayKey = Math.round(effectiveDelay / 100) * 100; // Round to nearest 100ms for grouping
-      
+
       if (!delayGroups.has(delayKey)) {
         delayGroups.set(delayKey, []);
       }
-      delayGroups.get(delayKey)!.push({ location: item.location, delay: effectiveDelay });
+      delayGroups
+        .get(delayKey)!
+        .push({ location: item.location, delay: effectiveDelay });
     }
 
     // Process each delay group with a single timeout
     for (const [groupDelay, items] of delayGroups) {
       if (groupDelay <= 0) {
         // Immediate trigger
-        this.startAnimationsGroup(items.map(i => i.location));
+        this.startAnimationsGroup(items.map((i) => i.location));
       } else {
         // Delayed trigger
         const timeoutId = setTimeout(() => {
-          this.startAnimationsGroup(items.map(i => i.location));
+          this.startAnimationsGroup(items.map((i) => i.location));
         }, groupDelay) as unknown as number;
-        
+
         // Track this timeout for cleanup
         for (const item of items) {
           this.activeAnimations.set(item.location, { startTime: 0, timeoutId });
@@ -107,7 +122,10 @@ class NukeAnimationManager {
     // Start all animations in this group
     for (const location of locations) {
       nukeStore.nuking[location] = true;
-      this.activeAnimations.set(location, { startTime, timeoutId: groupTimeoutId });
+      this.activeAnimations.set(location, {
+        startTime,
+        timeoutId: groupTimeoutId,
+      });
       group.add(location);
     }
   }
@@ -136,9 +154,11 @@ class NukeAnimationManager {
     }
     this.activeAnimations.delete(location);
     nukeStore.nuking[location] = false;
-    
+
     // Remove from batch queue if present
-    this.batchQueue = this.batchQueue.filter(item => item.location !== location);
+    this.batchQueue = this.batchQueue.filter(
+      (item) => item.location !== location,
+    );
   }
 
   clearAllAnimations(): void {

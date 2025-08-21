@@ -98,7 +98,7 @@
     if (cursorStore.hoveredTileIndex !== undefined) {
       // Get current land tiles synchronously to avoid subscription leak
       const landTiles = get(landStore.getAllLands());
-      
+
       // Find the land tile that corresponds to our grid position
       if (cursorStore.gridPosition) {
         const tile = landTiles.find(
