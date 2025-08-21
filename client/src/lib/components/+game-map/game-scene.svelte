@@ -9,6 +9,7 @@
   import LandSprite from './three/land-sprite.svelte';
   import { onMount } from 'svelte';
   import { Raycaster, Vector2, Vector3 } from 'three';
+  import { get } from 'svelte/store';
 
   const { renderer, camera } = useThrelte();
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -95,41 +96,41 @@
   function handleCanvasClick() {
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
-      // Get all land tiles to find the selected one
-      landStore.getAllLands().subscribe((landTiles) => {
-        // Find the land tile that corresponds to our grid position
-        if (cursorStore.gridPosition) {
-          const tile = landTiles.find(
-            (tile) =>
-              tile.location.x === cursorStore.gridPosition!.x &&
-              tile.location.y === cursorStore.gridPosition!.y,
-          );
+      // Get current land tiles synchronously to avoid subscription leak
+      const landTiles = get(landStore.getAllLands());
+      
+      // Find the land tile that corresponds to our grid position
+      if (cursorStore.gridPosition) {
+        const tile = landTiles.find(
+          (tile) =>
+            tile.location.x === cursorStore.gridPosition!.x &&
+            tile.location.y === cursorStore.gridPosition!.y,
+        );
 
-          if (tile) {
-            selectedLand.value = tile;
-            gameSounds.play('biomeSelect');
+        if (tile) {
+          selectedLand.value = tile;
+          gameSounds.play('biomeSelect');
 
-            // Handle camera movement if gameStore.cameraControls exists
-            if (gameStore.cameraControls) {
-              gameStore.cameraControls.setLookAt(
-                cursorStore.gridPosition.x,
-                50, // Slightly above the tile
-                cursorStore.gridPosition.y,
-                cursorStore.gridPosition.x,
-                1, // Ground level
-                cursorStore.gridPosition.y,
-                true,
-              );
+          // Handle camera movement if gameStore.cameraControls exists
+          if (gameStore.cameraControls) {
+            gameStore.cameraControls.setLookAt(
+              cursorStore.gridPosition.x,
+              50, // Slightly above the tile
+              cursorStore.gridPosition.y,
+              cursorStore.gridPosition.x,
+              1, // Ground level
+              cursorStore.gridPosition.y,
+              true,
+            );
 
-              if (
-                cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex
-              ) {
-                gameStore.cameraControls.zoomTo(250, true);
-              }
+            if (
+              cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex
+            ) {
+              gameStore.cameraControls.zoomTo(250, true);
             }
           }
         }
-      });
+      }
       cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
     } else {
       cursorStore.selectedTileIndex = undefined;
