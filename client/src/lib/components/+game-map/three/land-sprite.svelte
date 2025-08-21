@@ -430,7 +430,7 @@
   });
 
   // Reactive owned lands for shader-based darkening (up to 32 lands)
-  const maxOwnedLands = 32; // Match shader uniform array limit
+  const maxOwnedLands = GRID_SIZE ** 2; // Match shader uniform array limit
   let ownedLandIndices = $state<number[]>([]);
 
   $effect(() => {

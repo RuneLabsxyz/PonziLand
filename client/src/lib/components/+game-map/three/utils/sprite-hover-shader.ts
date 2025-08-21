@@ -17,17 +17,24 @@ export interface OutlineInstanceConfig {
 }
 
 export interface OutlineControls {
-  setHover: (instanceIndex: number) => void;
-  setMultipleOutlines: (instances: OutlineInstanceConfig[]) => void;
-  setOutlineColor: (color: THREE.Color) => void;
-  setPulseColor: (color: THREE.Color) => void;
+  setHover: (instancedMesh: THREE.InstancedMesh, instanceIndex: number) => void;
+  setSelected: (
+    instancedMesh: THREE.InstancedMesh,
+    instanceIndex: number,
+  ) => void;
+  setCustomOutlines: (
+    instancedMesh: THREE.InstancedMesh,
+    instanceIndices: number[],
+    color: THREE.Color,
+  ) => void;
+  clearOutlines: (instancedMesh: THREE.InstancedMesh) => void;
   setOutlineWidth: (width: number) => void;
   setResolution: (width: number, height: number) => void;
   updateTime: (time: number) => void;
   setOwnedLands: (
+    instancedMesh: THREE.InstancedMesh,
     instanceIndices: number[],
     darkenFactor?: number,
-    darkenOnlyWhenUnzoomed?: boolean,
   ) => void;
   setZoomState: (isUnzoomed: boolean) => void;
 }
@@ -42,48 +49,46 @@ export function setupOutlineShader(
   material: THREE.Material,
   options: OutlineShaderOptions = {},
 ): OutlineControls {
-  const {
-    outlineColor = new THREE.Color(1.0, 0.0, 0.0), // Red outline
-    pulseColor = new THREE.Color(1.0, 1.0, 0.0), // Yellow pulse
-    outlineWidth = 2.0,
-    resolution = new THREE.Vector2(2048, 2048),
-  } = options;
+  const { outlineWidth = 2.0, resolution = new THREE.Vector2(2048, 2048) } =
+    options;
 
   const mat = material as any;
 
-  // Initialize arrays for multiple instance support
-  const maxInstances = 32;
-  const instanceIndices = new Float32Array(maxInstances).fill(-1);
-  const outlineColorsArray = [];
-  const pulseColorsArray = [];
-
-  // Initialize arrays for owned land support (up to 32 lands)
-  const ownedLandIndices = new Float32Array(maxInstances).fill(-1);
-
-  for (let i = 0; i < maxInstances; i++) {
-    outlineColorsArray.push(outlineColor.r, outlineColor.g, outlineColor.b);
-    pulseColorsArray.push(pulseColor.r, pulseColor.g, pulseColor.b);
-  }
-
   // Add uniforms to the shader
-  mat.uniforms.hoverState = { value: 0.0 };
-  mat.uniforms.hoveredInstanceIndex = { value: -1.0 }; // Keep for backward compatibility
-  mat.uniforms.hoveredInstanceIndices = { value: instanceIndices };
-  mat.uniforms.numOutlinedInstances = { value: 0 };
-  mat.uniforms.outlineColor = { value: outlineColor }; // Keep for backward compatibility
-  mat.uniforms.pulseColor = { value: pulseColor }; // Keep for backward compatibility
-  mat.uniforms.outlineColors = { value: new Float32Array(outlineColorsArray) };
-  mat.uniforms.pulseColors = { value: new Float32Array(pulseColorsArray) };
   mat.uniforms.outlineWidth = { value: outlineWidth };
   mat.uniforms.resolution = { value: resolution };
   mat.uniforms.time = { value: 0.0 };
 
-  // Add owned land uniforms (array-based for visible tiles)
-  mat.uniforms.ownedLandIndices = { value: ownedLandIndices };
-  mat.uniforms.numOwnedLands = { value: 0 };
+  // Add owned land uniforms
   mat.uniforms.darkenFactor = { value: 0.4 };
   mat.uniforms.darkenOnlyWhenUnzoomed = { value: false };
   mat.uniforms.isUnzoomed = { value: false };
+
+  // Helper function to create buffer attributes
+  const createBufferAttributes = (instancedMesh: THREE.InstancedMesh) => {
+    const count = instancedMesh.count;
+
+    if (!instancedMesh.geometry.attributes.ownedState) {
+      instancedMesh.geometry.setAttribute(
+        'ownedState',
+        new THREE.InstancedBufferAttribute(new Float32Array(count), 1),
+      );
+    }
+
+    if (!instancedMesh.geometry.attributes.outlineState) {
+      instancedMesh.geometry.setAttribute(
+        'outlineState',
+        new THREE.InstancedBufferAttribute(new Float32Array(count), 1),
+      );
+    }
+
+    if (!instancedMesh.geometry.attributes.outlineColor) {
+      instancedMesh.geometry.setAttribute(
+        'outlineColor',
+        new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3),
+      );
+    }
+  };
 
   mat.onBeforeCompile = (shader: any) => {
     console.log('Setting up outline shader for sprites');
@@ -104,72 +109,164 @@ export function setupOutlineShader(
     console.log('Shader injection complete');
   };
 
+  // Track hover/selected states to avoid clearing custom outlines
+  let currentHoverIndex = -1;
+  let currentSelectedIndex = -1;
+
   // Return control functions
   return {
-    setHover: (instanceIndex: number) => {
+    setHover: (instancedMesh: THREE.InstancedMesh, instanceIndex: number) => {
+      createBufferAttributes(instancedMesh);
+
+      const outlineStateAttribute = instancedMesh.geometry.attributes
+        .outlineState as THREE.InstancedBufferAttribute;
+      const outlineColorAttribute = instancedMesh.geometry.attributes
+        .outlineColor as THREE.InstancedBufferAttribute;
+      const outlineStateArray = outlineStateAttribute.array as Float32Array;
+      const outlineColorArray = outlineColorAttribute.array as Float32Array;
+
+      // Clear only the previous hover instance if it was different from current selected
       if (
-        mat.uniforms &&
-        mat.uniforms?.hoverState != undefined &&
-        mat.uniforms?.hoveredInstanceIndex != undefined
+        currentHoverIndex >= 0 &&
+        currentHoverIndex !== currentSelectedIndex &&
+        currentHoverIndex < outlineStateArray.length
       ) {
-        mat.uniforms.hoverState.value = instanceIndex >= 0 ? 1.0 : 0.0;
-        mat.uniforms.hoveredInstanceIndex.value = instanceIndex;
+        outlineStateArray[currentHoverIndex] = 0.0;
+        outlineColorArray[currentHoverIndex * 3] = 0.0;
+        outlineColorArray[currentHoverIndex * 3 + 1] = 0.0;
+        outlineColorArray[currentHoverIndex * 3 + 2] = 0.0;
+      }
 
-        // Also update the new array-based system for backward compatibility
-        if (instanceIndex >= 0) {
-          const indices = new Float32Array(maxInstances).fill(-1);
-          indices[0] = instanceIndex;
-          mat.uniforms.hoveredInstanceIndices.value = indices;
-          mat.uniforms.numOutlinedInstances.value = 1;
-        } else {
-          mat.uniforms.numOutlinedInstances.value = 0;
+      // Set new hover state and cyan color for the specific instance
+      if (instanceIndex >= 0 && instanceIndex < outlineStateArray.length) {
+        outlineStateArray[instanceIndex] = 1.0;
+        // Cyan color (0, 1, 1)
+        outlineColorArray[instanceIndex * 3] = 0.0; // R
+        outlineColorArray[instanceIndex * 3 + 1] = 1.0; // G
+        outlineColorArray[instanceIndex * 3 + 2] = 1.0; // B
+      }
+
+      currentHoverIndex = instanceIndex;
+      outlineStateAttribute.needsUpdate = true;
+      outlineColorAttribute.needsUpdate = true;
+      console.log(
+        `Set hover (cyan) for instance ${instanceIndex}, cleared previous hover ${currentHoverIndex >= 0 ? 'at ' + currentHoverIndex : 'none'}`,
+      );
+    },
+
+    setSelected: (
+      instancedMesh: THREE.InstancedMesh,
+      instanceIndex: number,
+    ) => {
+      createBufferAttributes(instancedMesh);
+
+      const outlineStateAttribute = instancedMesh.geometry.attributes
+        .outlineState as THREE.InstancedBufferAttribute;
+      const outlineColorAttribute = instancedMesh.geometry.attributes
+        .outlineColor as THREE.InstancedBufferAttribute;
+      const outlineStateArray = outlineStateAttribute.array as Float32Array;
+      const outlineColorArray = outlineColorAttribute.array as Float32Array;
+
+      // Clear only the previous selected instance
+      if (
+        currentSelectedIndex >= 0 &&
+        currentSelectedIndex < outlineStateArray.length
+      ) {
+        outlineStateArray[currentSelectedIndex] = 0.0;
+        outlineColorArray[currentSelectedIndex * 3] = 0.0;
+        outlineColorArray[currentSelectedIndex * 3 + 1] = 0.0;
+        outlineColorArray[currentSelectedIndex * 3 + 2] = 0.0;
+      }
+
+      // Set new selected state and yellow color for the specific instance
+      if (instanceIndex >= 0 && instanceIndex < outlineStateArray.length) {
+        outlineStateArray[instanceIndex] = 1.0;
+        // Yellow color (1, 1, 0)
+        outlineColorArray[instanceIndex * 3] = 1.0; // R
+        outlineColorArray[instanceIndex * 3 + 1] = 1.0; // G
+        outlineColorArray[instanceIndex * 3 + 2] = 0.0; // B
+      }
+
+      currentSelectedIndex = instanceIndex;
+      outlineStateAttribute.needsUpdate = true;
+      outlineColorAttribute.needsUpdate = true;
+      console.log(
+        `Set selected (yellow) for instance ${instanceIndex}, cleared previous selected ${currentSelectedIndex >= 0 ? 'at ' + currentSelectedIndex : 'none'}`,
+      );
+    },
+
+    setCustomOutlines: (
+      instancedMesh: THREE.InstancedMesh,
+      instanceIndices: number[],
+      color: THREE.Color,
+    ) => {
+      createBufferAttributes(instancedMesh);
+
+      const outlineStateAttribute = instancedMesh.geometry.attributes
+        .outlineState as THREE.InstancedBufferAttribute;
+      const outlineColorAttribute = instancedMesh.geometry.attributes
+        .outlineColor as THREE.InstancedBufferAttribute;
+      const outlineStateArray = outlineStateAttribute.array as Float32Array;
+      const outlineColorArray = outlineColorAttribute.array as Float32Array;
+
+      // Set custom outline state and color for specified instances
+      instanceIndices.forEach((instanceIndex) => {
+        if (instanceIndex >= 0 && instanceIndex < outlineStateArray.length) {
+          outlineStateArray[instanceIndex] = 1.0;
+          outlineColorArray[instanceIndex * 3] = color.r;
+          outlineColorArray[instanceIndex * 3 + 1] = color.g;
+          outlineColorArray[instanceIndex * 3 + 2] = color.b;
         }
+      });
+
+      // Reapply hover state if it exists and wasn't overwritten
+      if (
+        currentHoverIndex >= 0 &&
+        currentHoverIndex < outlineStateArray.length
+      ) {
+        outlineStateArray[currentHoverIndex] = 1.0;
+        // Cyan color (0, 1, 1)
+        outlineColorArray[currentHoverIndex * 3] = 0.0;
+        outlineColorArray[currentHoverIndex * 3 + 1] = 1.0;
+        outlineColorArray[currentHoverIndex * 3 + 2] = 1.0;
       }
+
+      // Reapply selected state if it exists and wasn't overwritten
+      if (
+        currentSelectedIndex >= 0 &&
+        currentSelectedIndex < outlineStateArray.length
+      ) {
+        outlineStateArray[currentSelectedIndex] = 1.0;
+        // Yellow color (1, 1, 0)
+        outlineColorArray[currentSelectedIndex * 3] = 1.0;
+        outlineColorArray[currentSelectedIndex * 3 + 1] = 1.0;
+        outlineColorArray[currentSelectedIndex * 3 + 2] = 0.0;
+      }
+
+      outlineStateAttribute.needsUpdate = true;
+      outlineColorAttribute.needsUpdate = true;
+      console.log(
+        `Set custom outlines for ${instanceIndices.length} instances with color RGB(${color.r.toFixed(2)}, ${color.g.toFixed(2)}, ${color.b.toFixed(2)}), preserving hover/selected states`,
+      );
     },
 
-    setMultipleOutlines: (instances: OutlineInstanceConfig[]) => {
-      if (!mat.uniforms) return;
+    clearOutlines: (instancedMesh: THREE.InstancedMesh) => {
+      createBufferAttributes(instancedMesh);
 
-      const indices = new Float32Array(maxInstances).fill(-1);
-      const colors = new Float32Array(maxInstances * 3);
-      const pulseColors = new Float32Array(maxInstances * 3);
+      const outlineStateAttribute = instancedMesh.geometry.attributes
+        .outlineState as THREE.InstancedBufferAttribute;
+      const outlineColorAttribute = instancedMesh.geometry.attributes
+        .outlineColor as THREE.InstancedBufferAttribute;
+      const outlineStateArray = outlineStateAttribute.array as Float32Array;
+      const outlineColorArray = outlineColorAttribute.array as Float32Array;
 
-      const numInstances = Math.min(instances.length, maxInstances);
+      // Clear all outline states and colors
+      outlineStateArray.fill(0.0);
+      outlineColorArray.fill(0.0);
 
-      for (let i = 0; i < numInstances; i++) {
-        const config = instances[i];
-        indices[i] = config.instanceIndex;
-
-        const outlineColor =
-          config.outlineColor || new THREE.Color(1.0, 0.0, 0.0);
-        const pulseColor = config.pulseColor || new THREE.Color(1.0, 1.0, 0.0);
-
-        colors[i * 3] = outlineColor.r;
-        colors[i * 3 + 1] = outlineColor.g;
-        colors[i * 3 + 2] = outlineColor.b;
-
-        pulseColors[i * 3] = pulseColor.r;
-        pulseColors[i * 3 + 1] = pulseColor.g;
-        pulseColors[i * 3 + 2] = pulseColor.b;
-      }
-
-      mat.uniforms.hoveredInstanceIndices.value = indices;
-      mat.uniforms.outlineColors.value = colors;
-      mat.uniforms.pulseColors.value = pulseColors;
-      mat.uniforms.numOutlinedInstances.value = numInstances;
-      mat.uniforms.hoverState.value = numInstances > 0 ? 1.0 : 0.0;
-    },
-
-    setOutlineColor: (color: THREE.Color) => {
-      if (mat.uniforms && mat.uniforms.outlineColor) {
-        mat.uniforms.outlineColor.value.copy(color);
-      }
-    },
-
-    setPulseColor: (color: THREE.Color) => {
-      if (mat.uniforms && mat.uniforms.pulseColor) {
-        mat.uniforms.pulseColor.value.copy(color);
-      }
+      outlineStateAttribute.needsUpdate = true;
+      outlineColorAttribute.needsUpdate = true;
+      console.log(`Cleared all outlines`);
     },
 
     setOutlineWidth: (width: number) => {
@@ -191,26 +288,36 @@ export function setupOutlineShader(
     },
 
     setOwnedLands: (
+      instancedMesh: THREE.InstancedMesh,
       instanceIndices: number[],
       darkenFactor = 0.4,
-      darkenOnlyWhenUnzoomed = false,
     ) => {
       if (!mat.uniforms) return;
 
-      const indices = new Float32Array(maxInstances).fill(-1);
-      const numLands = Math.min(instanceIndices.length, maxInstances);
+      createBufferAttributes(instancedMesh);
 
-      for (let i = 0; i < numLands; i++) {
-        indices[i] = instanceIndices[i];
+      const ownedAttribute = instancedMesh.geometry.attributes
+        .ownedState as THREE.InstancedBufferAttribute;
+      const ownedArray = ownedAttribute.array as Float32Array;
+
+      // Always reset all to not owned first (crucial for handling shrinking arrays)
+      ownedArray.fill(0.0);
+
+      // Set owned lands to 1.0 (only if we have indices)
+      if (instanceIndices.length > 0) {
+        instanceIndices.forEach((index) => {
+          if (index >= 0 && index < ownedArray.length) {
+            ownedArray[index] = 1.0;
+          }
+        });
       }
 
-      mat.uniforms.ownedLandIndices.value = indices;
-      mat.uniforms.numOwnedLands.value = numLands;
+      // Always mark as needing update, even for empty arrays
+      ownedAttribute.needsUpdate = true;
       mat.uniforms.darkenFactor.value = darkenFactor;
-      mat.uniforms.darkenOnlyWhenUnzoomed.value = darkenOnlyWhenUnzoomed;
+
       console.log(
-        `Set ${numLands} owned lands with darken factor ${darkenFactor}, darkenOnlyWhenUnzoomed: ${darkenOnlyWhenUnzoomed}`,
-        indices,
+        `Updated ${instanceIndices.length} owned lands via instanced buffer attributes (cleared all first)`,
       );
     },
 
@@ -225,36 +332,22 @@ export function setupOutlineShader(
 /**
  * Helper function to handle cursor state changes with outline controls
  * @param outlineControls The outline controls instance
+ * @param instancedMesh The instanced mesh to apply states to
  * @param hoveredIndex Currently hovered tile index (-1 if none)
  * @param selectedIndex Currently selected tile index (-1 if none)
  */
 export function handleCursorState(
   outlineControls: OutlineControls | null,
+  instancedMesh: THREE.InstancedMesh | null,
   hoveredIndex: number,
   selectedIndex: number,
 ): void {
-  if (!outlineControls) return;
+  if (!outlineControls || !instancedMesh) return;
 
-  const instances: OutlineInstanceConfig[] = [];
+  // Apply selected state (this will clear previous selected if different)
+  outlineControls.setSelected(instancedMesh, selectedIndex);
 
-  // Add selected instance if it exists
-  if (selectedIndex >= 0) {
-    instances.push({
-      instanceIndex: selectedIndex,
-      outlineColor: new THREE.Color(0xffff00), // Green for selected
-      pulseColor: new THREE.Color(0x00ffff), // Cyan pulse for selected
-    });
-  }
-
-  // Add hovered instance if it exists and is different from selected
-  if (hoveredIndex >= 0 && hoveredIndex !== selectedIndex) {
-    instances.push({
-      instanceIndex: hoveredIndex,
-      outlineColor: new THREE.Color(0x00ffff), // Red for hovered
-      pulseColor: new THREE.Color(0xffff00), // Yellow pulse for hovered
-    });
-  }
-
-  // Apply the outlines using the new multi-instance system
-  outlineControls.setMultipleOutlines(instances);
+  // Apply hover state (this will clear previous hover if different and not selected)
+  // Hover state shows even when something is selected (hover overrides selected visually)
+  outlineControls.setHover(instancedMesh, hoveredIndex);
 }

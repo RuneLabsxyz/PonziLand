@@ -9,6 +9,7 @@
     setupOutlineShader,
     type OutlineControls,
   } from './utils/sprite-hover-shader';
+  import { setOutlineControls } from './utils/outline-controls.store.svelte';
 
   let {
     landTiles,
@@ -45,6 +46,13 @@
           spritesheet.texture.height,
         ),
       });
+
+      // Register outline controls in the global store
+      // Determine layer type from animation property
+      const layer =
+        animationProperty === 'buildingAnimationName' ? 'building' : 'biome';
+      setOutlineControls(layer, outlineControls, sprite);
+
       shaderSetup = true;
     }
 
@@ -72,12 +80,13 @@
   $effect(() => {
     const hoveredIndex = cursorStore.hoveredTileIndex ?? -1;
     const selectedIndex = cursorStore.selectedTileIndex ?? -1;
-    handleCursorState(outlineControls, hoveredIndex, selectedIndex);
+    handleCursorState(outlineControls, sprite, hoveredIndex, selectedIndex);
   });
 
   $effect(() => {
-    if (outlineControls && ownedLandIndices.length > 0) {
-      outlineControls.setOwnedLands(ownedLandIndices, 0.4, true);
+    if (outlineControls && sprite) {
+      // Always call setOwnedLands to ensure proper clearing when list gets smaller
+      outlineControls.setOwnedLands(sprite, ownedLandIndices, 0.4);
     }
   });
 
