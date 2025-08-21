@@ -4,8 +4,6 @@
   import { GRID_SIZE } from '$lib/const';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
   import {
-    clearNuking,
-    markAsNuking,
     nukeStore,
   } from '$lib/stores/nuke.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
@@ -128,11 +126,7 @@
   let locationString = $derived(coordinatesToLocation(location).toString());
 
   function simulateNuke() {
-    markAsNuking(locationString);
-
-    setTimeout(() => {
-      clearNuking(locationString);
-    }, 3500);
+    nukeStore.animationManager.triggerAnimation(locationString);
   }
 
   // Create token options for List component

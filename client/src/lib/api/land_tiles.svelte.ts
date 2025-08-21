@@ -216,13 +216,7 @@ export class LandTileStore {
 
   private triggerNukeAnimation(x: number, y: number) {
     const location = coordinatesToLocation({ x, y });
-    // Mark the land as nuking
-    nukeStore.nuking[location] = true;
-
-    // Clear the nuking state after animation duration (3.5 seconds)
-    setTimeout(() => {
-      nukeStore.nuking[location] = false;
-    }, 3500);
+    nukeStore.animationManager.triggerAnimation(location.toString());
   }
 
   public fakeSetup() {
@@ -230,7 +224,6 @@ export class LandTileStore {
       // Create level 3 building lands for the entire grid
       for (let x = 0; x < GRID_SIZE; x++) {
         for (let y = 0; y < GRID_SIZE; y++) {
-          const location = { x, y };
           // Randomly select a token
           const randomToken =
             TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
@@ -404,6 +397,8 @@ export class LandTileStore {
       this.sub.cancel();
       this.sub = undefined;
     }
+    // Clean up all nuke animations
+    nukeStore.animationManager.clearAllAnimations();
     this.ownershipIndex.clear();
     this.ownershipIndexStore.set(new Map());
   }
@@ -655,10 +650,8 @@ export class LandTileStore {
           newLand = new AuctionLand(previousLand, auctionModel as Auction);
           // Nuke the land
           gameSounds.play('nuke');
-          setTimeout(
-            () => this.triggerNukeAnimation(location.x, location.y),
-            1000,
-          );
+          const locationStr = coordinatesToLocation(location).toString();
+          nukeStore.animationManager.triggerAnimation(locationStr, 1000);
         }
 
         this.currentLands.update((lands) => {
