@@ -182,6 +182,9 @@
     alphaTest: 0.1,
   });
 
+  // Cache coin geometry for better initialization performance
+  const coinGeometry = new PlaneGeometry(0.3, 0.3);
+
   let interactionPlanes: TInstancedMesh | undefined = $state();
   let artLayerMesh: TInstancedMesh | undefined = $state();
 
@@ -288,7 +291,6 @@
       artLayerMesh.instanceMatrix.needsUpdate = true;
       if (artLayerMesh.instanceColor) {
         artLayerMesh.instanceColor.needsUpdate = true;
-        console.log('Art layer color updated', artLayerMesh.instanceColor);
       }
       artLayerMesh.count = visibleLandTiles.length;
     }
@@ -304,6 +306,12 @@
   const ZOOM_THRESHOLD = 100; // Adjust this value as needed
   let isUnzoomed = $state(false);
 
+  // Pre-calculated coin values based on zoom
+  let coinPositionOffset = $derived<[number, number, number]>(
+    isUnzoomed ? [0.2, 0, 0] : [0, 0, -0.5],
+  );
+  let coinScale = $derived(isUnzoomed ? 1.5 : 1);
+
   // Use useTask to continuously monitor camera zoom changes
   let lastLoggedZoom = 0;
   useTask(() => {
@@ -318,12 +326,6 @@
       const newIsUnzoomed = currentZoom <= ZOOM_THRESHOLD;
       if (newIsUnzoomed !== isUnzoomed) {
         isUnzoomed = newIsUnzoomed;
-        console.log(
-          'Zoom state changed - isUnzoomed:',
-          isUnzoomed,
-          'zoom:',
-          currentZoom,
-        );
       }
     }
   });
@@ -406,35 +408,49 @@
     return tiles;
   });
 
-  // Calculate owned lands for shader-based darkening (up to 2000 lands)
-  let ownedLandIndices = $derived.by(() => {
-    if (!accountState.address) return [];
+  // Optimized coin tiles using ownership index for faster lookups
+  let ownedCoinTiles = $derived.by(() => {
+    if (!accountState.address || !visibleLandTiles) return [];
 
-    const indices: number[] = [];
-    const maxOwnedLands = 32; // Match shader uniform array limit
+    // Get the ownership index for fast lookup
+    const ownedIndices = store.getOwnedLandIndices(accountState.address);
+    if (ownedIndices.length === 0) return [];
 
-    // Check all land tiles for ownership
-    for (
-      let index = 0;
-      index < landTiles.length && indices.length < maxOwnedLands;
-      index++
-    ) {
-      const tile = landTiles[index];
-      if (BuildingLand.is(tile.land)) {
-        const isOwned =
-          padAddress(tile.land.owner ?? '') ===
-          padAddress(accountState.address ?? '');
-        if (isOwned) {
-          indices.push(index);
-        }
-      }
+    // Create a Set for O(1) lookup performance
+    const ownedIndicesSet = new Set(ownedIndices);
+
+    // Filter tiles using the ownership index for better performance
+    return visibleLandTiles.filter((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+
+      // Calculate land index to check ownership
+      const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+      return ownedIndicesSet.has(landIndex);
+    });
+  });
+
+  // Reactive owned lands for shader-based darkening (up to 32 lands)
+  const maxOwnedLands = 32; // Match shader uniform array limit
+  let ownedLandIndices = $state<number[]>([]);
+
+  $effect(() => {
+    if (!accountState.address) {
+      ownedLandIndices = [];
+      return;
     }
 
-    console.log(
-      `Found ${indices.length} owned lands in visible tiles (max ${maxOwnedLands})`,
-      indices,
+    // Get reactive store for current account
+    const ownedLandIndicesStore = store.getOwnedLandIndicesStore(
+      accountState.address,
+      maxOwnedLands,
     );
-    return indices;
+
+    // Subscribe to changes in the ownership index
+    const unsubscribe = ownedLandIndicesStore.subscribe((indices) => {
+      ownedLandIndices = indices;
+    });
+
+    return () => unsubscribe();
   });
 
   // Art layer color mapping
@@ -561,20 +577,20 @@
       </InstancedSprite>
     {/if}
 
-    {#if devsettings.showCoins && coinShaderMaterial}
+    {#if devsettings.showCoins && coinShaderMaterial && ownedCoinTiles.length > 0}
       <InstancedMesh
         limit={GRID_SIZE * GRID_SIZE}
         range={GRID_SIZE * GRID_SIZE}
-        frustumCulled={false}
       >
-        <T.PlaneGeometry args={[0.3, 0.3]} />
+        <T is={coinGeometry} />
         <T is={coinShaderMaterial} />
-        {#each visibleLandTiles as tile, i}
+        {#each ownedCoinTiles as tile, i}
           <Coin
             {tile}
             {i}
             instancedMesh={coinInstancedMesh}
-            {isUnzoomed}
+            positionOffset={coinPositionOffset}
+            scale={coinScale}
             shaderMaterial={coinShaderMaterial}
           />
         {/each}
