@@ -1,7 +1,6 @@
 <script lang="ts">
   import accountState from '$lib/account.svelte';
   import { BuildingLand } from '$lib/api/land/building_land';
-  import { padAddress } from '$lib/utils';
   import data from '$profileData';
   import { T } from '@threlte/core';
   import { Instance, InstancedMesh } from '@threlte/extras';
@@ -12,16 +11,17 @@
   } from 'three';
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
+  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
 
   let {
     landTiles,
     instancedMesh,
+    store,
   }: {
     landTiles: LandTile[];
     instancedMesh: TInstancedMesh | undefined;
+    store: LandTileStore;
   } = $props();
-
-  let address = $derived(accountState.address);
 
   // Load crown texture
   let crownTexture = new TextureLoader().load('/ui/icons/Icon_Crown.png');
@@ -41,36 +41,62 @@
     agentTextures[agent.name.toLowerCase()] = texture;
   });
 
+  // Optimized owner tiles using ownership index for faster lookups
+  let ownerTiles = $derived.by(() => {
+    if (!landTiles.length) return [];
+
+    // Get all ownership data we need
+    const allOwnershipData = new Map<number, string>();
+
+    // Add owned tiles by current user
+    if (accountState.address) {
+      const ownedIndices = store.getOwnedLandIndices(accountState.address);
+      const ownedIndicesSet = new Set(ownedIndices);
+      
+      landTiles.forEach((tile) => {
+        if (!BuildingLand.is(tile.land)) return;
+        const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        if (ownedIndicesSet.has(landIndex)) {
+          allOwnershipData.set(landIndex, 'crown');
+        }
+      });
+    }
+
+    // Add AI agent owned tiles
+    data.aiAgents.forEach((agent) => {
+      const agentIndices = store.getOwnedLandIndices(agent.address);
+      const agentIndicesSet = new Set(agentIndices);
+      
+      landTiles.forEach((tile) => {
+        if (!BuildingLand.is(tile.land)) return;
+        const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        if (agentIndicesSet.has(landIndex)) {
+          allOwnershipData.set(landIndex, getAIAgentType(agent));
+        }
+      });
+    });
+
+    // Filter tiles using the ownership data
+    return landTiles.filter((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+      const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+      return allOwnershipData.has(landIndex);
+    }).map((tile, tileIndex) => ({
+      tile,
+      tileIndex,
+      ownerType: allOwnershipData.get(tile.land.location.x * GRID_SIZE + tile.land.location.y)!
+    }));
+  });
+
   // Group tiles by owner type for efficient rendering
   let tilesByOwnerType = $derived.by(() => {
     const groups: Record<string, { tile: LandTile; tileIndex: number }[]> = {};
 
-    landTiles.forEach((tile, tileIndex) => {
-      const land = tile.land;
-      let ownerType: string | undefined;
-
-      if (BuildingLand.is(land)) {
-        const isOwner =
-          padAddress(land?.owner ?? '') === padAddress(address ?? '');
-
-        if (isOwner) {
-          ownerType = 'crown';
-        } else {
-          const aiAgent = data.aiAgents.find(
-            (agent) => padAddress(agent.address) === padAddress(land.owner),
-          );
-          if (aiAgent) {
-            ownerType = getAIAgentType(aiAgent);
-          }
-        }
-
-        if (ownerType) {
-          if (!groups[ownerType]) {
-            groups[ownerType] = [];
-          }
-          groups[ownerType].push({ tile, tileIndex });
-        }
+    ownerTiles.forEach(({ tile, tileIndex, ownerType }) => {
+      if (!groups[ownerType]) {
+        groups[ownerType] = [];
       }
+      groups[ownerType].push({ tile, tileIndex });
     });
 
     return groups;
