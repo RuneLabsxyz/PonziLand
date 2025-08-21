@@ -41,11 +41,11 @@
     Color,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
-  import BiomeSprite from './biome-sprite.svelte';
+  import LandTileSprite from './land-tile-sprite.svelte';
   import { biomeAtlasMeta } from './biomes';
-  import BuildingSprite from './building-sprite.svelte';
   import { buildingAtlasMeta } from './buildings';
   import Coin from './coin.svelte';
+  import RoadSprite from './road-sprite.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import FogSprite from './fog-sprite.svelte';
   import { gameStore } from './game.store.svelte';
@@ -216,7 +216,7 @@
   });
 
   onMount(() => {
-    store.getAllLands().subscribe((tiles) => {
+    landStore.getAllLands().subscribe((tiles) => {
       landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
@@ -328,52 +328,6 @@
     }
   });
 
-  // Function to be called by the global click listener
-  function handleClickToSelectHovered() {
-    if (cursorStore.hoveredTileIndex !== undefined) {
-      const tile = visibleLandTiles[cursorStore.hoveredTileIndex];
-
-      if (gameStore.cameraControls) {
-        gameStore.cameraControls.setLookAt(
-          tile.position[0],
-          50, // Slightly above the tile
-          tile.position[2],
-          tile.position[0],
-          tile.position[1],
-          tile.position[2],
-          true,
-        );
-
-        if (cursorStore.selectedTileIndex === cursorStore.hoveredTileIndex) {
-          gameStore.cameraControls.zoomTo(250, true);
-        }
-      }
-      cursorStore.selectedTileIndex = cursorStore.hoveredTileIndex;
-      selectedLand.value = tile.land;
-      gameSounds.play('biomeSelect');
-    } else {
-      // If there's no hovered tile when clicked, deselect any currently selected tile
-      cursorStore.selectedTileIndex = undefined;
-    }
-  }
-
-  // Handle plane interactions (only for hover now)
-  function handlePlaneHover(event: any) {
-    const instanceId = event.instanceId;
-    if (instanceId !== undefined && visibleLandTiles[instanceId]) {
-      cursorStore.hoveredTileIndex = instanceId;
-      const tile = visibleLandTiles[instanceId];
-
-      document.body.classList.add('cursor-pointer');
-      // gameSounds.play('hover');
-    }
-  }
-
-  function handlePlaneLeave() {
-    cursorStore.hoveredTileIndex = undefined;
-    document.body.classList.remove('cursor-pointer');
-  }
-
   let selectedLandTilePosition: [number, number, number] | undefined =
     $state(undefined);
 
@@ -452,18 +406,35 @@
     return tiles;
   });
 
-  // Calculate owned lands for unzoomed view
-  let ownedLands = $derived.by(() => {
-    if (!isUnzoomed || !accountState.address) return [];
-    console.log('Visible Land Tiles:', visibleLandTiles);
+  // Calculate owned lands for shader-based darkening (up to 2000 lands)
+  let ownedLandIndices = $derived.by(() => {
+    if (!accountState.address) return [];
 
-    return visibleLandTiles.filter((tile) => {
-      if (!BuildingLand.is(tile.land)) return false;
-      return (
-        padAddress(tile.land.owner ?? '') ===
-        padAddress(accountState.address ?? '')
-      );
-    });
+    const indices: number[] = [];
+    const maxOwnedLands = 32; // Match shader uniform array limit
+
+    // Check all land tiles for ownership
+    for (
+      let index = 0;
+      index < landTiles.length && indices.length < maxOwnedLands;
+      index++
+    ) {
+      const tile = landTiles[index];
+      if (BuildingLand.is(tile.land)) {
+        const isOwned =
+          padAddress(tile.land.owner ?? '') ===
+          padAddress(accountState.address ?? '');
+        if (isOwned) {
+          indices.push(index);
+        }
+      }
+    }
+
+    console.log(
+      `Found ${indices.length} owned lands in visible tiles (max ${maxOwnedLands})`,
+      indices,
+    );
+    return indices;
   });
 
   // Art layer color mapping
@@ -505,10 +476,10 @@
   }
 </script>
 
-<T is={Group}>
-  {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
+{#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
+  <T is={Group}>
     <!-- Transparent interaction planes layer (now also renders roads) -->
-    {#if interactionPlanes && devsettings.showRoads}
+    <!-- {#if interactionPlanes && devsettings.showRoads}
       <T
         is={interactionPlanes}
         interactive={true}
@@ -516,6 +487,18 @@
         onpointerleave={handlePlaneLeave}
         onclick={handleClickToSelectHovered}
       />
+    {/if} -->
+
+    <!-- Road sprites (middle layer) -->
+    {#if devsettings.showRoads}
+      <InstancedSprite
+        count={GRID_SIZE * GRID_SIZE}
+        {billboarding}
+        spritesheet={roadSpritesheet}
+        bind:ref={roadSprite}
+      >
+        <RoadSprite landTiles={visibleLandTiles} />
+      </InstancedSprite>
     {/if}
 
     <!-- Biome sprites (background layer) -->
@@ -526,7 +509,13 @@
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
       >
-        <BiomeSprite landTiles={visibleLandTiles} {biomeSpritesheet} />
+        <LandTileSprite
+          landTiles={visibleLandTiles}
+          spritesheet={biomeSpritesheet}
+          animationProperty="biomeAnimationName"
+          {ownedLandIndices}
+          {isUnzoomed}
+        />
       </InstancedSprite>
     {/if}
 
@@ -550,7 +539,13 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
       >
-        <BuildingSprite landTiles={visibleLandTiles} {buildingSpritesheet} />
+        <LandTileSprite
+          landTiles={visibleLandTiles}
+          spritesheet={buildingSpritesheet}
+          animationProperty="buildingAnimationName"
+          {ownedLandIndices}
+          {isUnzoomed}
+        />
       </InstancedSprite>
     {/if}
 
@@ -602,35 +597,9 @@
       <T is={artLayerMesh} />
     {/if}
 
-    <!-- Dark overlay for non-owned lands when unzoomed -->
-    {#if isUnzoomed && ownedLands.length > 0}
-      <InstancedMesh
-        limit={GRID_SIZE * GRID_SIZE}
-        range={GRID_SIZE * GRID_SIZE}
-        frustumCulled={false}
-      >
-        <T.PlaneGeometry args={[1, 1]} />
-        <T.MeshBasicMaterial
-          color={0x000000}
-          transparent={true}
-          opacity={0.4}
-          alphaTest={0.01}
-        />
-        {#each ownedLands as tile}
-          <Instance
-            position={[
-              tile.position[0],
-              tile.position[1] + 0.05, // Slightly above the tile to overlay
-              tile.position[2],
-            ]}
-            rotation={[-Math.PI / 2, 0, 0]}
-            frustumCulled={false}
-          />
-        {/each}
-      </InstancedMesh>
-    {/if}
-  {/await}
-</T>
+    <!-- Owned land darkening is now handled by the shader system -->
+  </T>
+{/await}
 
 <!-- Button overlay using Threlte HTML component -->
 {#if devsettings.showLandOverlay && selectedLandTilePosition && !isUnzoomed}

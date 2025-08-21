@@ -14,9 +14,18 @@ uniform vec3 pulseColors[32];   // Support up to 32 different pulse colors
 uniform int numOutlinedInstances;
 uniform float outlineWidth;
 uniform vec2 resolution;
+
+// Owned land uniforms
+uniform float ownedLandIndices[32];
+uniform int numOwnedLands;
+uniform float darkenFactor;
+uniform bool darkenOnlyWhenUnzoomed;
+uniform bool isUnzoomed;
+
 varying float vHover;
 varying vec3 vOutlineColor;
 varying vec3 vPulseColor;
+varying float vIsOwned;
 vec3 baseColor; // To store outline/glow color
 float baseAlpha; // To store outline/glow alpha
 
@@ -337,6 +346,17 @@ void main() {
         vec3 finalColor = sampledDiffuseColor.rgb;
         float finalAlpha = sampledDiffuseColor.a;
 
+        if(vIsOwned > 0.5) {
+            // Apply stripe pattern darkening based on darkenOnlyWhenUnzoomed setting
+            if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
+                // Create diagonal stripe pattern
+                float interval = 20.0;
+                float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
+                stripe = 0.4 + stripe * 0.4; // Maps 0->0.4 and 1->0.8
+                finalColor = finalColor * stripe;
+            }
+        }
+
         if(vHover > 0.5) {
             // If current pixel is transparent, check if we should draw outline
             if(sampledDiffuseColor.a < 0.1) {
@@ -369,18 +389,7 @@ void main() {
                     // Completely transparent
                     discard;
                 }
-            } else {
-                // Original sprite pixel - keep original appearance
-                finalColor = sampledDiffuseColor.rgb;
-                finalAlpha = sampledDiffuseColor.a;
             }
-        } else {
-            // Not hovering - only show original sprite
-            if(sampledDiffuseColor.a < 0.1) {
-                discard;
-            }
-            finalColor = sampledDiffuseColor.rgb;
-            finalAlpha = sampledDiffuseColor.a;
         }
 
         // Generate RGB color based on instance ID using modulo 3
