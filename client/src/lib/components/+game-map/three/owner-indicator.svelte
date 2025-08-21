@@ -11,6 +11,7 @@
     type InstancedMesh as TInstancedMesh,
   } from 'three';
   import type { LandTile } from './landTile';
+  import { GRID_SIZE } from '$lib/const';
 
   let {
     landTiles,
@@ -84,8 +85,8 @@
 {#if tilesByOwnerType.crown && tilesByOwnerType.crown.length > 0}
   <InstancedMesh
     bind:ref={instancedMesh}
-    limit={landTiles.length}
-    count={tilesByOwnerType.crown.length}
+    limit={GRID_SIZE * GRID_SIZE}
+    range={GRID_SIZE * GRID_SIZE}
     frustumCulled={false}
   >
     <T.PlaneGeometry args={[0.3, 0.3]} />
@@ -108,8 +109,8 @@
 {#each Object.entries(tilesByOwnerType) as [ownerType, tiles]}
   {#if ownerType !== 'crown' && tiles.length > 0 && agentTextures[ownerType]}
     <InstancedMesh
-      limit={landTiles.length}
-      count={tiles.length}
+      limit={GRID_SIZE * GRID_SIZE}
+      range={GRID_SIZE * GRID_SIZE}
       frustumCulled={false}
     >
       <T.PlaneGeometry args={[0.3, 0.3]} />

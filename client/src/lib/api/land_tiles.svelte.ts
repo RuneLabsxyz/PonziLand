@@ -302,7 +302,7 @@ export class LandTileStore {
             // Create building land with specific token and level
             const fakeLand: Land = {
               owner: DEFAULT_OWNER,
-              location: x + y * GRID_SIZE,
+              location: coordinatesToLocation({ x, y }),
               block_date_bought: Date.now() / 1000,
               sell_price: DEFAULT_SELL_PRICE + buildingCount * 100, // Vary prices slightly
               token_used: token,
@@ -311,7 +311,7 @@ export class LandTileStore {
             };
 
             const fakeStake: LandStake = {
-              location: x + y * GRID_SIZE,
+              location: coordinatesToLocation({ x, y }),
               amount: DEFAULT_STAKE_AMOUNT + buildingCount * 50, // Vary stake amounts
               accumulated_taxes_fee: 0,
               neighbors_info_packed: 0,
@@ -338,7 +338,7 @@ export class LandTileStore {
 
         const auctionLandData: Land = {
           owner: DEFAULT_OWNER,
-          location: auctionX + auctionY * GRID_SIZE,
+          location: coordinatesToLocation({ x: auctionX, y: auctionY }),
           block_date_bought: Date.now() / 1000,
           sell_price: DEFAULT_SELL_PRICE,
           token_used: auctionToken,
@@ -347,7 +347,7 @@ export class LandTileStore {
         };
 
         const auctionData: Auction = {
-          land_location: auctionX + auctionY * GRID_SIZE,
+          land_location: coordinatesToLocation({ x: auctionX, y: auctionY }),
           start_time: Date.now() / 1000,
           start_price: '',
           floor_price: '',

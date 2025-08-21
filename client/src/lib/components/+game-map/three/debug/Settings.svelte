@@ -132,5 +132,14 @@
       label="OwnerIndicator"
     />
     <Checkbox bind:value={devsettings.showNukeTimes} label="Nuke Times" />
+    <Separator />
+    <Checkbox bind:value={devsettings.showArtLayer} label="Art Layer" />
+    <Slider
+      bind:value={devsettings.artLayerOpacity}
+      label="Art Layer Opacity"
+      min={0}
+      max={1}
+      step={0.1}
+    />
   </Folder>
 </Pane>
