@@ -1,6 +1,7 @@
 <script>
   import Button from '$lib/Button.svelte';
   import Card from '$lib/Card.svelte';
+  import ColorCard from '$lib/ColorCard.svelte';
 </script>
 
 <div class="container">
@@ -32,7 +33,18 @@
     </div>
   </section>
 
+  <section>
+    <h2>Color Cards</h2>
+    <div class="demo-grid">
+      <ColorCard variant="blue" class="card-sm">Blue Card (sm)</ColorCard>
+      <ColorCard variant="blue" class="card-md">Blue Card (md)</ColorCard>
+      <ColorCard variant="blue" class="card-lg">Blue Card (lg)</ColorCard>
 
+      <ColorCard variant="red" disableHover class="card-sm">Red Card (sm)</ColorCard>
+      <ColorCard variant="red" class="card-md">Red Card (md)</ColorCard>
+      <ColorCard variant="red" class="card-lg">Red Card (lg)</ColorCard>
+    </div>
+  </section>
 </div>
 
 <style>
@@ -66,5 +78,20 @@
   .ponzi-card {
     padding: 1.5rem;
     max-width: 400px;
+  }
+  
+  :global(.card-sm) {
+    width: 160px;
+    height: 100px;
+  }
+
+  :global(.card-md) {
+    width: 240px;
+    height: 140px;
+  }
+
+  :global(.card-lg) {
+    width: 360px;
+    height: 200px;
   }
 </style>
