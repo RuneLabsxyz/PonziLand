@@ -2,7 +2,7 @@ import type { BaseLand } from '$lib/api/land';
 import { AuctionLand } from '$lib/api/land/auction_land';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { Neighbors } from '$lib/api/neighbors';
-import { GAME_SPEED, LEVEL_UP_TIME } from '$lib/const';
+import { configValues } from '$lib/stores/config.store.svelte';
 import { useDojo } from '$lib/contexts/dojo';
 import type { ElapsedTimeSinceLastClaim, LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
@@ -12,7 +12,6 @@ import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Level } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
 import type { Readable } from 'svelte/store';
-import { get } from 'svelte/store';
 
 export const createLandWithActions = (
   land: BuildingLand | AuctionLand,
@@ -140,21 +139,23 @@ export const createLandWithActions = (
       return land.getNeighbors(landStore);
     },
     getLevelInfo() {
+      const gameSpeed = configValues.gameSpeed;
+      const levelUpTime = configValues.levelUpTime;
       const now = Math.floor(Date.now() / 1000);
-      const boughtSince = (now - Number(land.boughtAt)) * GAME_SPEED;
+      const boughtSince = (now - Number(land.boughtAt)) * gameSpeed;
 
       const expectedLevel = Math.min(
-        Math.floor(boughtSince / LEVEL_UP_TIME) + 1,
+        Math.floor(boughtSince / levelUpTime) + 1,
         3,
       ) as Level;
-      const timeSinceLastLevelUp = boughtSince % LEVEL_UP_TIME;
-      const levelUpTime = expectedLevel < 3 ? LEVEL_UP_TIME : 0;
+      const timeSinceLastLevelUp = boughtSince % levelUpTime;
+      const levelUpTimeLeft = expectedLevel < 3 ? levelUpTime : 0;
 
       return {
         canLevelUp: expectedLevel > land.level,
         expectedLevel,
         timeSinceLastLevelUp,
-        levelUpTime,
+        levelUpTime: levelUpTime,
       };
     },
   };

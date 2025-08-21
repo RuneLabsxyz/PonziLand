@@ -1,4 +1,4 @@
-import { GRID_SIZE } from '$lib/const';
+import { GRID_SIZE, COORD_MULTIPLIER } from '$lib/const';
 import { locationToCoordinates, toBigInt, toHexWithPadding } from '$lib/utils';
 import type { BaseLand } from './land';
 import type { LandTileStore } from './land_tiles.svelte';
@@ -97,28 +97,30 @@ export class Neighbors {
     );
   }
 
-  static getLocations(location: bigint, gridSize = GRID_SIZE) {
-    const MAP_SIZE = toBigInt(gridSize) ?? -1n;
+  static getLocations(location: bigint) {
+    // Use bit-based coordinate system matching contracts/src/helpers/coord.cairo
+    // location = row * COORD_MULTIPLIER + col, so vertical movement is ±COORD_MULTIPLIER
+    const COORD_MULTIPLIER_BIGINT = BigInt(COORD_MULTIPLIER);
 
     return {
       array: [
-        location - MAP_SIZE - 1n,
-        location - MAP_SIZE,
-        location - MAP_SIZE + 1n,
+        location - COORD_MULTIPLIER_BIGINT - 1n,
+        location - COORD_MULTIPLIER_BIGINT,
+        location - COORD_MULTIPLIER_BIGINT + 1n,
         location - 1n,
         location + 1n,
-        location + MAP_SIZE - 1n,
-        location + MAP_SIZE,
-        location + MAP_SIZE + 1n,
+        location + COORD_MULTIPLIER_BIGINT - 1n,
+        location + COORD_MULTIPLIER_BIGINT,
+        location + COORD_MULTIPLIER_BIGINT + 1n,
       ],
-      up: location - MAP_SIZE,
-      down: location + MAP_SIZE,
+      up: location - COORD_MULTIPLIER_BIGINT,
+      down: location + COORD_MULTIPLIER_BIGINT,
       left: location - 1n,
       right: location + 1n,
-      upLeft: location - MAP_SIZE - 1n,
-      upRight: location - MAP_SIZE + 1n,
-      downLeft: location + MAP_SIZE - 1n,
-      downRight: location + MAP_SIZE + 1n,
+      upLeft: location - COORD_MULTIPLIER_BIGINT - 1n,
+      upRight: location - COORD_MULTIPLIER_BIGINT + 1n,
+      downLeft: location + COORD_MULTIPLIER_BIGINT - 1n,
+      downRight: location + COORD_MULTIPLIER_BIGINT + 1n,
     };
   }
 

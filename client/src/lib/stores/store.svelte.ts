@@ -8,8 +8,8 @@ import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 
+// Main stores following Dojo subscription pattern
 export let landStore = $state(new LandTileStore());
-
 export let selectedLand = $state<{ value: BaseLand | null }>({ value: null });
 
 export let highlightedLands = $state<{ value: string[] }>({ value: [] });
