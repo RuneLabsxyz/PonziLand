@@ -36,12 +36,17 @@
     if (land) {
       console.log('land', land);
       if (tutorialState.tutorialEnabled) {
-        yieldInfo = tutorialLandStore.getNeighborsYield(land.location);
+        const tutorialYield = tutorialLandStore.getNeighborsYield(
+          land.location,
+        );
+        tutorialYield.splice(4, 0, null);
+        yieldInfo = tutorialYield;
         console.log('tutorial');
       } else {
         yieldInfo = [];
         getNeighbourYieldArray(land).then((res) => {
           yieldInfo = res;
+          yieldInfo.splice(4, 0, null);
         });
       }
     }
