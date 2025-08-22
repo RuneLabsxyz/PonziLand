@@ -56,8 +56,10 @@ class NotificationQueue {
       sendError(
         new Error(`Transaction failed for ${notification.functionName}`),
         {
-          txhash: notification.txhash,
-          address: accountManager?.getProvider()?.getWalletAccount()?.address,
+          txhash: notification.txhash ?? 'unknown',
+          address:
+            accountManager?.getProvider()?.getWalletAccount()?.address ??
+            'unknown',
         },
       );
     }

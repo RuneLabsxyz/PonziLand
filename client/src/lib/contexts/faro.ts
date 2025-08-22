@@ -1,6 +1,7 @@
 import {
   getWebInstrumentations,
   initializeFaro,
+  type ExceptionEvent,
   type Faro,
 } from '@grafana/faro-web-sdk';
 import { TracingInstrumentation } from '@grafana/faro-web-tracing';
@@ -31,7 +32,7 @@ export function setupFaro() {
   });
 }
 
-export const sendError = (error: Error, tags?: Record<string, any>) => {
+export const sendError = (error: Error, tags?: ExceptionEvent['context']) => {
   if (faro) {
     faro.api.pushError(error, { context: tags });
   } else {

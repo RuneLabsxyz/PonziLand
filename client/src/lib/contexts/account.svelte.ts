@@ -423,10 +423,12 @@ export class AccountManager {
       }
       parsed = JSON.parse(json);
     } catch (e) {
-      console.log('Could not fetch session data');
+      console.log('Could not fetch session data', e);
       return;
     }
 
+    // WTF eslint
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     if (parsed.expiry < new Date()) {
       console.warn('The session has expired.');
       localStorage.removeItem(previousWalletSession.toString());
@@ -452,7 +454,7 @@ export class AccountManager {
     });
   }
 
-  private onNetworkChanged(chainId?: string, accounts?: string[]) {
+  private onNetworkChanged(chainId?: string, _accounts?: string[]) {
     // Notify that the network has changed
     this._listeners.forEach((listener) => {
       listener({
