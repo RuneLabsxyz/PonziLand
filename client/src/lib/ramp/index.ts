@@ -1,12 +1,8 @@
 // main.ts
 
 import { createAppKit } from '@reown/appkit';
-import {
-  EthersAdapter,
-  type UniversalProviderType,
-} from '@reown/appkit-adapter-ethers';
+import { EthersAdapter } from '@reown/appkit-adapter-ethers';
 import { sepolia } from '@reown/appkit/networks';
-import { onMount } from 'svelte';
 
 // 1. Get projectId from https://cloud.reown.com
 const projectId = 'e99a3b083d592b390d9bf86de8f2e667';

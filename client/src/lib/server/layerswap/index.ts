@@ -1,7 +1,6 @@
 import { LAYERSWAP_TOKEN } from '$env/static/private';
 import { PUBLIC_DOJO_CHAIN_ID } from '$env/static/public';
 import Layerswap from '@layerswap/sdk';
-import { Fan } from 'lucide-svelte';
 
 export const SWAP_ENV = {
   SN_SEPOLIA: {
