@@ -1,15 +1,8 @@
-import { writable } from 'svelte/store';
-import { tweened } from 'svelte/motion';
+import { Tween } from 'svelte/motion';
 import { TILE_SIZE } from '$lib/const';
 import { parseLocation } from '$lib/utils';
 
-export const cameraPosition = writable({
-  scale: 1,
-  offsetX: 0,
-  offsetY: 0,
-});
-
-export const cameraTransition = tweened(
+export const cameraTransition = new Tween(
   {
     scale: 1,
     offsetX: 0,
@@ -21,9 +14,7 @@ export const cameraTransition = tweened(
   },
 );
 
-cameraTransition.subscribe(($camera) => {
-  cameraPosition.set($camera);
-});
+export const cameraPosition = $derived(cameraTransition.current);
 
 export function moveCameraTo(
   tileX: number,

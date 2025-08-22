@@ -6,7 +6,7 @@ import { GRID_SIZE } from '$lib/const';
 import { configValues } from '$lib/stores/config.svelte';
 import type { Token } from '$lib/interfaces';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-import { cameraTransition } from '$lib/stores/camera.store';
+import { cameraTransition } from '$lib/stores/camera';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import {
   coordinatesToLocation,

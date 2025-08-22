@@ -1,7 +1,7 @@
 <script lang="ts">
   import { cn } from '$lib/utils';
   import { onMount, onDestroy } from 'svelte';
-  import { cameraPosition } from '$lib/stores/camera.store';
+  import { cameraPosition } from '$lib/stores/camera';
   import { MIN_SCALE_FOR_ANIMATION } from '$lib/const';
 
   const {
@@ -9,7 +9,6 @@
     src,
     x: initialX = 0,
     y: initialY = 0,
-    landCoordinates = { x: 0, y: 0 },
     xSize,
     ySize,
     xMax,
@@ -51,17 +50,8 @@
   let isWaiting = $state(false);
 
   // Sprite position
-  let x = $state(initialX);
-  let y = $state(initialY);
-
-  // Update position when initial changes
-  $effect(() => {
-    x = initialX;
-  });
-
-  $effect(() => {
-    y = initialY;
-  });
+  let x = $derived(initialX);
+  let y = $derived(initialY);
 
   // Calculate ratios for background sizing
   let xRatio = $derived(width / xSize);
@@ -83,7 +73,7 @@
 
   // Effect to handle camera scale changes and viewport visibility
   $effect(() => {
-    const scale = $cameraPosition.scale;
+    const scale = cameraPosition.scale;
     if (scale < MIN_SCALE_FOR_ANIMATION && isPlaying) {
       stopAnimation();
     } else if (
@@ -147,7 +137,7 @@
     if (
       !animate ||
       animationFrameId ||
-      $cameraPosition.scale < MIN_SCALE_FOR_ANIMATION
+      cameraPosition.scale < MIN_SCALE_FOR_ANIMATION
     )
       return;
 
@@ -172,20 +162,12 @@
     isWaiting = false;
   }
 
-  function resetAnimation() {
-    currentFrame = startFrame;
-    if (isPlaying) {
-      stopAnimation();
-      startAnimation();
-    }
-  }
-
   // Lifecycle hooks
   onMount(() => {
     if (
       animate &&
       autoplay &&
-      $cameraPosition.scale >= MIN_SCALE_FOR_ANIMATION
+      cameraPosition.scale >= MIN_SCALE_FOR_ANIMATION
     ) {
       startAnimation();
     }

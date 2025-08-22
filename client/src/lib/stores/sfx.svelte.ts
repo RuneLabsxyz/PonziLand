@@ -1,4 +1,4 @@
-import { createAudioStore } from '$lib/stores/AudioStore';
+import { createAudioStore } from '$lib/stores/audioStore.store';
 const sounds = {
   click: '/sfx/PL_ButtonClick2.wav',
   buy: '/sfx/PL_BuildingBuy.wav',
@@ -10,4 +10,4 @@ const sounds = {
   coin1: '/sfx/PL_Coin.wav',
 };
 
-export let gameSounds = $state(createAudioStore(sounds));
+export const gameSounds = $state(createAudioStore(sounds));

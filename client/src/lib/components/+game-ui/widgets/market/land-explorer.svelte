@@ -11,7 +11,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
-  import { moveCameraTo } from '$lib/stores/camera.store';
+  import { moveCameraTo } from '$lib/stores/camera';
   import {
     highlightedLands,
     landStore,
