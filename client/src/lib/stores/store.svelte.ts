@@ -4,21 +4,20 @@ import { LandTileStore } from '$lib/api/landTiles.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
 
 import { AuctionLand } from '$lib/api/land/auctionLand';
-import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
-import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { notificationQueue } from '$lib/stores/event.svelte';
 
 // Main stores following Dojo subscription pattern
-export let landStore = $state(new LandTileStore());
-export let selectedLand = $state<{ value: BaseLand | null }>({ value: null });
+export const landStore = $state(new LandTileStore());
+export const selectedLand = $state<{ value: BaseLand | null }>({ value: null });
 
-export let highlightedLands = $state<{ value: string[] }>({ value: [] });
+export const highlightedLands = $state<{ value: string[] }>({ value: [] });
 
 export const selectedLandWithActions = () => {
   return selectedLandWithActionsState;
 };
 
-let selectedLandWithActionsState = $derived.by(() => {
+const selectedLandWithActionsState = $derived.by(() => {
   if (!selectedLand.value) {
     return { value: null };
   }
@@ -36,14 +35,16 @@ let selectedLandWithActionsState = $derived.by(() => {
   return { value: landWithActions };
 });
 
+// TODO(Red): bidLand function should be inside of the BuildingLand type, instead of being a standalone function.
+// Having functions everywhere makes it harder to understand the codebase, and makes it harder to maintain.
 export async function buyLand(location: string, setup: LandSetup) {
   const { client: sdk, accountManager } = useDojo();
   const account = () => {
     return accountManager!.getProvider();
   };
 
-  let res = await sdk.client.actions.buy(
-    account()?.getWalletAccount()!,
+  const res = await sdk.client.actions.buy(
+    account()!.getWalletAccount()!,
     location,
     setup.tokenForSaleAddress,
     setup.salePrice.toBignumberish(),
@@ -55,6 +56,8 @@ export async function buyLand(location: string, setup: LandSetup) {
   return res;
 }
 
+// TODO(Red): bidLand function should be inside of the AuctionLand type, instead of being a standalone function.
+// Having functions everywhere makes it harder to understand the codebase, and makes it harder to maintain.
 export async function bidLand(location: string, setup: LandSetup) {
   const { client: sdk, accountManager } = useDojo();
   const account = () => {
@@ -64,8 +67,8 @@ export async function bidLand(location: string, setup: LandSetup) {
   console.log('bidLand', location, setup);
   console.log('account', account()?.getWalletAccount()?.address);
 
-  let res = await sdk.client.actions.bid(
-    account()?.getWalletAccount()!,
+  const res = await sdk.client.actions.bid(
+    account()!.getWalletAccount()!,
     location,
     setup.tokenForSaleAddress,
     setup.salePrice.toBignumberish(),
@@ -75,14 +78,4 @@ export async function bidLand(location: string, setup: LandSetup) {
   );
   notificationQueue.addNotification(res?.transaction_hash ?? null, 'buy land');
   return res;
-}
-
-export function getNeighboringLands(location: string): BaseLand[] {
-  const allLands = landStore.getAllLands();
-  const landsArray = Array.isArray(allLands) ? allLands : [];
-  const neighbors = new Neighbors({
-    location,
-    source: landsArray,
-  });
-  return neighbors.getNeighbors();
 }
