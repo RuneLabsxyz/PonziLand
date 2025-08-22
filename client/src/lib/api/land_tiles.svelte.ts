@@ -132,6 +132,7 @@ export class LandTileStore {
     const { initialEntities, subscription } = await setupLandsSubscription(
       client,
       (lands) => {
+        console.log('lands', lands);
         this.setEntities(lands);
       },
     );
