@@ -4,7 +4,7 @@ import { ToriiQueryBuilder, type ParsedEntity } from '@dojoengine/sdk';
 
 // Fetch the data from torii
 function getQuery(pagination?: { cursor?: string; size: number }) {
-  let base = new ToriiQueryBuilder();
+  const base = new ToriiQueryBuilder();
   if (pagination?.cursor) {
     base.withCursor(pagination.cursor);
   }
@@ -46,7 +46,7 @@ export async function setupLandsSubscription(
   // Continue while we get data
   while (data.cursor != undefined) {
     // Make a new request with the next page
-    let query = data.getNextQuery(getQuery());
+    const query = data.getNextQuery(getQuery());
     data = await client.getEntities({
       query: query,
     });

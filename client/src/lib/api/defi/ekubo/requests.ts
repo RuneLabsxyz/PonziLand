@@ -28,10 +28,10 @@ export interface EkuboApiResponse {
   timestamp: number;
   tvlByToken: TokenTVL[];
   volumeByToken: TokenVolume[];
-  revenueByToken: any[];
+  revenueByToken: unknown[];
   tvlDeltaByTokenByDate: TVLDeltaEntry[];
-  volumeByTokenByDate: any[];
-  revenueByTokenByDate: any[];
+  volumeByTokenByDate: unknown[];
+  revenueByTokenByDate: unknown[];
   topPools: PoolInfo[];
 }
 

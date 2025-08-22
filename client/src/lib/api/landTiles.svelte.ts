@@ -1,3 +1,4 @@
+/* eslint-disable svelte/prefer-svelte-reactivity */
 import { DEFAULT_TIMEOUT, GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
@@ -14,14 +15,15 @@ import {
   type Writable,
 } from 'svelte/store';
 import { EmptyLand, type BaseLand } from './land';
-import { AuctionLand } from './land/auction_land';
-import { BuildingLand } from './land/building_land';
+import { AuctionLand } from './land/auctionLand';
+import { BuildingLand } from './land/buildingLand';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress, coordinatesToLocation } from '$lib/utils';
 import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 import data from '$profileData';
+import { CairoCustomEnum, CairoOption, CairoOptionVariant } from 'starknet';
 
 type Subscription = Awaited<
   ReturnType<typeof setupLandsSubscription>
@@ -66,7 +68,6 @@ export class LandTileStore {
   private allLands: Readable<BaseLand[]> = readable([]);
   private pendingStake: Map<string, LandStake> = new Map(); // Use string key for better lookup
   private sub: Subscription | undefined;
-  private updateTracker: Writable<number> = writable(0);
   private fakeUpdateInterval: NodeJS.Timeout | undefined;
   private ownershipIndex: Map<string, Set<number>> = new Map(); // Owner address -> land indices
   private ownershipIndexStore: Writable<Map<string, number[]>> = writable(
@@ -157,7 +158,6 @@ export class LandTileStore {
         // Pick a random land
         const x = Math.floor(Math.random() * GRID_SIZE);
         const y = Math.floor(Math.random() * GRID_SIZE);
-        const location = { x, y };
 
         // Randomly select a token
         const randomToken =
@@ -175,8 +175,7 @@ export class LandTileStore {
             Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
             DEFAULT_SELL_PRICE / 2,
           token_used: randomToken,
-          // @ts-ignore
-          level: randomLevel,
+          level: new CairoCustomEnum({ [randomLevel]: 1 }),
         };
 
         const fakeStake: LandStake = {
@@ -235,8 +234,7 @@ export class LandTileStore {
               Math.floor(Math.random() * DEFAULT_SELL_PRICE) +
               DEFAULT_SELL_PRICE / 2,
             token_used: randomToken,
-            // @ts-ignore
-            level: 'Second',
+            level: new CairoCustomEnum({ ['Second']: 1 }),
           };
 
           const fakeStake: LandStake = {
@@ -310,8 +308,7 @@ export class LandTileStore {
               block_date_bought: Date.now() / 1000,
               sell_price: DEFAULT_SELL_PRICE + buildingCount * 100, // Vary prices slightly
               token_used: token,
-              // @ts-ignore
-              level: level,
+              level: new CairoCustomEnum({ [level]: 1 }),
             };
 
             const fakeStake: LandStake = {
@@ -349,8 +346,7 @@ export class LandTileStore {
           block_date_bought: Date.now() / 1000,
           sell_price: DEFAULT_SELL_PRICE,
           token_used: auctionToken,
-          // @ts-ignore
-          level: auctionLevel,
+          level: new CairoCustomEnum({ [auctionLevel]: 1 }),
         };
 
         const auctionData: Auction = {
@@ -359,7 +355,7 @@ export class LandTileStore {
           start_price: '',
           floor_price: '',
           is_finished: false,
-          sold_at_price: 0 as any,
+          sold_at_price: new CairoOption(CairoOptionVariant.None),
         };
 
         const auctionLand = new AuctionLand(auctionLandData, auctionData);
@@ -862,10 +858,11 @@ export class LandTileStore {
     const allLandsStore = this.getAllLands();
 
     return new Promise((resolve, reject) => {
-      let timeoutId: NodeJS.Timeout;
+      // We have to use let because we need to reassign it later
+      // eslint-disable-next-line prefer-const
       let unsubscribe: (() => void) | undefined;
 
-      timeoutId = setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (unsubscribe) {
           unsubscribe();
         }

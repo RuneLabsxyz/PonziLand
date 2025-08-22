@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { AuctionLand } from '$lib/api/land/auction_land';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { AuctionLand } from '$lib/api/land/auctionLand';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import { landStore } from '$lib/stores/store.svelte';
   import { parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';

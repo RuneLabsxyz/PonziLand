@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
   import { Button } from '$lib/components/ui/button';
   import { ScrollArea } from '$lib/components/ui/scroll-area';

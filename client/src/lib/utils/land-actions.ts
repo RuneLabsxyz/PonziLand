@@ -1,6 +1,6 @@
 import type { BaseLand } from '$lib/api/land';
-import { AuctionLand } from '$lib/api/land/auction_land';
-import { BuildingLand } from '$lib/api/land/building_land';
+import { AuctionLand } from '$lib/api/land/auctionLand';
+import { BuildingLand } from '$lib/api/land/buildingLand';
 import { Neighbors } from '$lib/api/neighbors';
 import { configValues } from '$lib/stores/config.store.svelte';
 import { useDojo } from '$lib/contexts/dojo';

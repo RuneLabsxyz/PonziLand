@@ -1,6 +1,6 @@
 import { EmptyLand, type LandWithActions } from '$lib/api/land';
-import { BuildingLand } from '$lib/api/land/building_land';
-import { LandTileStore } from '$lib/api/land_tiles.svelte';
+import { BuildingLand } from '$lib/api/land/buildingLand';
+import { LandTileStore } from '$lib/api/landTiles.svelte';
 import { Neighbors } from '$lib/api/neighbors';
 import { GRID_SIZE } from '$lib/const';
 import { configValues } from '$lib/stores/config.store.svelte';

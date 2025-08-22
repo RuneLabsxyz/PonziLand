@@ -16,7 +16,7 @@ import type { CairoCustomEnum } from 'starknet';
 
 import { Neighbors } from '../neighbors';
 import { type Location } from './location';
-import type { LandTileStore } from '../land_tiles.svelte';
+import type { LandTileStore } from '../landTiles.svelte';
 export type LandType = 'empty' | 'building' | 'auction';
 
 export type TransactionResult = Promise<

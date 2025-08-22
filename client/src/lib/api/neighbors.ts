@@ -1,7 +1,7 @@
 import { GRID_SIZE, COORD_MULTIPLIER } from '$lib/const';
 import { locationToCoordinates, toBigInt, toHexWithPadding } from '$lib/utils';
 import type { BaseLand } from './land';
-import type { LandTileStore } from './land_tiles.svelte';
+import type { LandTileStore } from './landTiles.svelte';
 import { get } from 'svelte/store';
 
 export class Neighbors {

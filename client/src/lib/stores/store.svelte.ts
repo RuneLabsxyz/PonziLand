@@ -1,9 +1,9 @@
 import type { BaseLand, LandSetup, LandWithActions } from '$lib/api/land';
-import { BuildingLand } from '$lib/api/land/building_land';
-import { LandTileStore } from '$lib/api/land_tiles.svelte';
+import { BuildingLand } from '$lib/api/land/buildingLand';
+import { LandTileStore } from '$lib/api/landTiles.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
 
-import { AuctionLand } from '$lib/api/land/auction_land';
+import { AuctionLand } from '$lib/api/land/auctionLand';
 import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
 import { notificationQueue } from '$lib/stores/event.store.svelte';

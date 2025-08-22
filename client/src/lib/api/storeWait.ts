@@ -9,11 +9,11 @@ export function waitForStoreChange<T>(
   timeout: number = DEFAULT_TIMEOUT,
 ): Promise<T> {
   return new Promise((resolve, reject) => {
-    let timeoutId: NodeJS.Timeout;
+    // eslint-disable-next-line prefer-const
     let unsubscribe: (() => void) | undefined;
 
     // Set up timeout
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       if (unsubscribe) {
         unsubscribe();
       }

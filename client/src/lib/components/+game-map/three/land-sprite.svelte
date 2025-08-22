@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { AuctionLand } from '$lib/api/land/auction_land';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { AuctionLand } from '$lib/api/land/auctionLand';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import accountState from '$lib/account.svelte';
   import { padAddress } from '$lib/utils';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
@@ -12,7 +12,7 @@
     selectedLand,
     selectedLandWithActions,
   } from '$lib/stores/store.svelte';
-  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+  import type { LandTileStore } from '$lib/api/landTiles.svelte';
 
   // Allow passing a custom land store (for tutorials)
   interface Props {

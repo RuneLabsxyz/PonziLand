@@ -1,6 +1,6 @@
 <script lang="ts">
   import { landStore } from '$lib/stores/store.svelte';
-  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+  import type { LandTileStore } from '$lib/api/landTiles.svelte';
   import {
     Pane,
     Folder,
