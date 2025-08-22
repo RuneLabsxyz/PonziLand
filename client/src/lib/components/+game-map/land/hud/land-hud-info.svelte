@@ -2,7 +2,7 @@
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import type { LandWithActions } from '$lib/api/land';
   import type { LandYieldInfo } from '$lib/interfaces';
-  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { settingsStore } from '$lib/stores/settings.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate } from '$lib/utils/taxes';

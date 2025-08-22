@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { settingsStore } from '$lib/stores/settings.svelte';
   import { Slider } from '$lib/components/ui/slider';
   import { Label } from '$lib/components/ui/label';
   import { Volume2, VolumeX } from 'lucide-svelte';

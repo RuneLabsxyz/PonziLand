@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import { settingsStore } from './settings.store.svelte';
+import { settingsStore } from './settings.svelte';
 
 export type SoundInstance<T> = {
   audio: InstanceType<typeof Audio>;
