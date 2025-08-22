@@ -5,7 +5,7 @@ import { getTokenInfo, padAddress } from '$lib/utils';
 import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
 import type { BigNumberish } from 'ethers';
 import type { Account, AccountInterface } from 'starknet';
-import { nukeStore } from './nuke.store.svelte';
+import { nukeStore } from './nuke.svelte';
 import { notificationQueue } from '$lib/stores/event.svelte';
 import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { SvelteMap } from 'svelte/reactivity';

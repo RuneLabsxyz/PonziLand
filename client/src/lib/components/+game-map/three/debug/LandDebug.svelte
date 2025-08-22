@@ -3,7 +3,7 @@
   import { AuctionLand } from '$lib/api/land/auctionLand';
   import { GRID_SIZE } from '$lib/const';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-  import { nukeStore } from '$lib/stores/nuke.store.svelte';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import {
     coordinatesToLocation,

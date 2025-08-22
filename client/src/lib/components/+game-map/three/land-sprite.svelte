@@ -5,7 +5,7 @@
   import { padAddress } from '$lib/utils';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { nukeStore } from '$lib/stores/nuke.store.svelte';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import {
     landStore,

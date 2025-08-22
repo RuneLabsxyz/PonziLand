@@ -3,11 +3,7 @@
   import { BuildingLand } from '$lib/api/land/buildingLand';
   import { useDojo } from '$lib/contexts/dojo';
   import { claimSingleLand, claimStore } from '$lib/stores/claim.svelte';
-  import {
-    clearPending,
-    nukeStore,
-    setPending,
-  } from '$lib/stores/nuke.store.svelte';
+  import { clearPending, nukeStore, setPending } from '$lib/stores/nuke.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
