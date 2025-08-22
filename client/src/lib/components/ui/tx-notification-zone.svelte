@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { notificationQueue } from '$lib/stores/event.store.svelte';
+  import { notificationQueue } from '$lib/stores/event.svelte';
   import Card from './card/card.svelte';
 
   let notifications = $derived(notificationQueue.getQueue());

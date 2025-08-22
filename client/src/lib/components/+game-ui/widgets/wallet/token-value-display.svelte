@@ -1,40 +1,22 @@
 <script lang="ts">
   import type { Token } from '$lib/interfaces';
-  import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
-  import { padAddress } from '$lib/utils';
-  import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
-  import data from '$profileData';
-  import { coinbit } from '@reown/appkit/networks';
   import { gameSounds } from '$lib/stores/sfx.svelte';
+  import { claimQueue as globalClaimQueue } from '$lib/stores/claim.svelte';
+  import { execute, simultaneously, wait } from '$lib/utils/animation';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
     token: Token;
   }>();
 
-  let tokenPrice = $derived(
-    tokenStore.prices.find((p) => {
-      return padAddress(p.address) === padAddress(token.address);
-    }),
-  );
-  let baseTokenValue = $derived.by(() => {
-    const rawValue = tokenPrice?.ratio
-      ? CurrencyAmount.fromUnscaled(amount, token)
-          .rawValue()
-          .dividedBy(tokenPrice.ratio)
-      : CurrencyAmount.fromUnscaled(amount, token).rawValue();
-
-    const cleanedValue = displayCurrency(rawValue);
-    return cleanedValue;
-  });
-
-  let animating = $state(false);
+  let isAnimating = $state(false);
   let increment = $state(0);
   let startingAmount = $state(0n); // Track the starting amount when processing begins
   let accumulatedIncrements = $state(0n); // Track total increments during processing
+
+  let claimQueue = $derived(globalClaimQueue.get(token.address));
 
   let tweenAmount = Tween.of(() => Number(amount), {
     delay: 500,
@@ -42,76 +24,71 @@
     easing: (t) => 1 - Math.pow(1 - t, 3),
   });
 
-  const localQueue: CurrencyAmount[] = [];
-  let processing = $state(false);
+  let isProcessingAnimation = $state(false);
 
-  // Method 1: Using setInterval with counter
-  function soundAtInterval(nbLands: number) {
-    let count = 0;
+  const processQueue = async () => {
+    // We go under the principle that there is an amount here.
+    // We pop the event
+    const event = claimQueue?.next();
 
-    const intervalId = setInterval(() => {
-      count++;
-      gameSounds.play('coin1');
+    if (!event) return;
 
-      if (count >= nbLands) {
-        clearInterval(intervalId);
-      }
-    }, 60);
-  }
+    const increment = event.toBigint();
+    accumulatedIncrements += increment;
 
-  const processQueue = () => {
-    const nextEvent = localQueue[0];
-    const nextIncrement = nextEvent.toBigint();
+    isAnimating = true;
 
-    increment = Number(nextIncrement);
-    accumulatedIncrements += nextIncrement;
-    animating = true;
+    await simultaneously(
+      tweenAmount.set(Number(startingAmount + accumulatedIncrements)),
 
-    tweenAmount.set(Number(startingAmount + accumulatedIncrements)).then(() => {
-      setTimeout(() => {
-        animating = false;
-        // remove from local queue
-        localQueue.shift();
-      }, 250);
-      setTimeout(() => {
-        // Test if should restart
-        if (localQueue.length > 0) {
-          processQueue();
-        } else {
-          processing = false;
-          // Reset tracking when done processing
-          startingAmount = amount;
-          accumulatedIncrements = 0n;
-        }
-      }, 750);
-    });
-    soundAtInterval(10);
+      execute(() => gameSounds.play('coin1'), {
+        repetitions: 10,
+        delay: 60,
+      }),
+    );
+
+    await wait(250);
+
+    // Stop animation
+    isAnimating = false;
+
+    await wait(750);
+
+    // Restart animation for next event
+    if (claimQueue?.current == undefined) {
+      isProcessingAnimation = false;
+      startingAmount = amount;
+      accumulatedIncrements = 0n;
+    } else {
+      // Continue processing the queue
+      processQueue();
+    }
   };
 
   $effect(() => {
-    const unsub = claimQueue.subscribe((queue) => {
-      const nextEvent = queue[0];
+    const nextEvent = claimQueue?.next;
 
-      if (nextEvent?.getToken()?.address == token.address) {
-        // add to local queue
-        localQueue.push(nextEvent);
-        // trigger updates
-        if (processing == false) {
-          processing = true;
-          // Set starting amount when we begin processing
-          startingAmount = amount;
-          accumulatedIncrements = 0n;
-          setTimeout(processQueue, 500);
-        }
+    if (nextEvent) {
+      // We have a claim event here!
+      isProcessingAnimation = true;
+      // Set starting amount when we begin processing
+      startingAmount = amount;
+      accumulatedIncrements = 0n;
 
-        // remove from global queue
-        claimQueue.update((queue) => queue.slice(1));
+      setTimeout(processQueue, 500);
+    }
+  });
+
+  $effect(() => {
+    const hasEvents = claimQueue?.current !== undefined;
+
+    if (hasEvents && !isProcessingAnimation) {
+      if (startingAmount === 0n) {
+        startingAmount = amount;
+        accumulatedIncrements = 0n;
       }
-    });
-
-    return () => {
-      unsub();
-    };
+      processQueue();
+    }
   });
 
   // Derived value for display
@@ -122,13 +99,13 @@
 
 <div class="flex flex-1 items-center justify-between text-xl tracking-wide">
   <div
-    class="gap-1 flex font-ds opacity-75 text-[#6BD5DD]{animating
+    class="gap-1 flex font-ds opacity-75 text-[#6BD5DD]{isAnimating
       ? 'animating scale-110 text-yellow-500 font-bold'
       : ''}"
   >
     <div>{displayAmount}</div>
     <div class="relative">
-      {#if animating}
+      {#if isAnimating}
         <span class="absolute left-0 animate-in-out-left">
           +{CurrencyAmount.fromUnscaled(increment, token)}
         </span>

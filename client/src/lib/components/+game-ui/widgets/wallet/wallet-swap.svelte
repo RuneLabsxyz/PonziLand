@@ -8,7 +8,7 @@
   import { type Quote } from '@avnu/avnu-sdk';
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
-  import { notificationQueue } from '$lib/stores/event.store.svelte';
+  import { notificationQueue } from '$lib/stores/event.svelte';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();

@@ -2,14 +2,68 @@ import { type LandWithActions } from '$lib/api/land';
 import { useDojo } from '$lib/contexts/dojo';
 import type { Token } from '$lib/interfaces';
 import { getTokenInfo, padAddress } from '$lib/utils';
-import { getAggregatedTaxes } from '$lib/utils/taxes';
+import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
 import type { BigNumberish } from 'ethers';
 import type { Account, AccountInterface } from 'starknet';
-import { claimQueue } from './event.store.svelte';
 import { nukeStore } from './nuke.store.svelte';
-import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { notificationQueue } from '$lib/stores/event.svelte';
+import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { SvelteMap } from 'svelte/reactivity';
 
-export let claimStore: {
+export type ClaimEvent = CurrencyAmount;
+
+export class ClaimForToken {
+  private events: CurrencyAmount[] = $state([]);
+
+  constructor(events: CurrencyAmount[]) {
+    this.events = events;
+  }
+
+  public add(event: CurrencyAmount) {
+    this.events.push(event);
+  }
+
+  public get current(): CurrencyAmount | undefined {
+    return $derived(this.events[0]);
+  }
+
+  public next(): CurrencyAmount | undefined {
+    return this.events.shift();
+  }
+}
+
+export class ClaimQueue {
+  private perTokenQueue = new SvelteMap<string, ClaimForToken>();
+
+  public addAll(claimEvent: ClaimEvent[]) {
+    claimEvent.forEach((claimEvent) => {
+      const tokenAddress = claimEvent.getToken()?.address;
+
+      if (!tokenAddress) return;
+
+      const tokenQueue =
+        this.perTokenQueue.get(tokenAddress) || new ClaimForToken([]);
+      tokenQueue.add(claimEvent);
+      this.perTokenQueue.set(tokenAddress, tokenQueue);
+    });
+  }
+
+  public get(tokenAddress: string): ClaimForToken | undefined {
+    return this.perTokenQueue.get(tokenAddress);
+  }
+}
+
+export const claimQueue = new ClaimQueue();
+
+export type ClaimResult = {
+  nukables: {
+    location: string;
+    nukable: boolean;
+  }[];
+  taxes: TaxData[];
+};
+
+export const claimStore: {
   value: {
     [key: string]: {
       claimable: boolean;
@@ -90,7 +144,7 @@ export async function claimAllOfToken(
 
 export async function claimSingleLand(
   land: LandWithActions,
-  { client: sdk, accountManager }: ReturnType<typeof useDojo>,
+  { client: sdk }: ReturnType<typeof useDojo>,
   account: Account | AccountInterface,
 ) {
   const result = await getAggregatedTaxes(land);
@@ -104,7 +158,7 @@ export async function claimSingleLand(
 
 async function handlePostClaim(
   lands: LandWithActions[],
-  result: { nukables: any[]; taxes: any[] },
+  result: ClaimResult,
   transactionHash: string,
 ) {
   if (transactionHash) {
@@ -142,14 +196,11 @@ async function handlePostClaim(
   }, 30 * 1000);
 
   // Update claim queue
-  claimQueue.update((queue) => {
-    return [
-      ...queue,
-      ...result.taxes.map((tax) => {
-        const token = getTokenInfo(tax.tokenAddress);
-        tax.totalTax.setToken(token);
-        return tax.totalTax;
-      }),
-    ];
-  });
+  claimQueue.addAll(
+    result.taxes.map((tax) => {
+      const token = getTokenInfo(tax.tokenAddress);
+      tax.totalTax.setToken(token);
+      return tax.totalTax;
+    }),
+  );
 }
