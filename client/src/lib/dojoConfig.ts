@@ -68,6 +68,8 @@ export async function loadDojoConfig(): Promise<DojoConfig> {
   // Create policies from manifest
   const policies = createPolicies(manifest);
 
+  console.log('toriiUrl', PUBLIC_DOJO_TORII_URL);
+
   // Create internal dojo config
   const internalDojoConfig = createDojoConfig({
     manifest,
