@@ -69,6 +69,20 @@ export default ts.config(
     },
   },
   {
+    // Except for UI which are in kebab-case
+    files: ['src/lib/components/ui/*.svelte'],
+    // Do not impact special + files
+    ignores: ['**/+*.svelte'],
+    rules: {
+      'unicorn/filename-case': [
+        'error',
+        {
+          case: 'kebabCase',
+        },
+      ],
+    },
+  },
+  {
     // Typescript files are only in camelCase
     files: ['**/*.ts'],
     // Do not impact special + files

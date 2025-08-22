@@ -3,10 +3,10 @@ import type {
   StoredSession,
 } from '$lib/contexts/account.svelte';
 import { type DojoConfig } from '$lib/dojoConfig';
-import Controller from '@cartridge/controller';
+import Controller, { type SessionPolicies } from '@cartridge/controller';
 import type { AccountInterface, WalletAccount } from 'starknet';
 import preset from './utils/preset.json';
-import { traceWallet } from './utils/walnut-trace';
+import { traceWallet } from './utils/walnutTrace';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
@@ -19,8 +19,8 @@ export class SvelteController extends Controller implements AccountProvider {
     }
 
     try {
-      // This is a temporary fix for the type mismatch due to different versions of starknet.js
-      const res: WalletAccount | undefined = (await super.connect()) as any;
+      const res: WalletAccount | undefined = await super.connect();
+
       if (res) {
         this._account = res;
         this._username = await super.username();
@@ -40,11 +40,11 @@ export class SvelteController extends Controller implements AccountProvider {
     }
   }
 
-  async setupSession(): Promise<any> {
+  async setupSession(): Promise<void> {
     // no-op
   }
 
-  async loadSession(storage: StoredSession): Promise<any> {
+  async loadSession(_storage: StoredSession): Promise<void> {
     // no-op
   }
 
@@ -71,14 +71,10 @@ export class SvelteController extends Controller implements AccountProvider {
   }
 }
 
-const accountKey = Symbol('controller');
-
-export async function connect(controller: SvelteController) {}
-
 function a2hex(str: string): string {
-  var arr = [];
-  for (var i = 0, l = str.length; i < l; i++) {
-    var hex = Number(str.charCodeAt(i)).toString(16);
+  const arr = [];
+  for (let i = 0, l = str.length; i < l; i++) {
+    const hex = Number(str.charCodeAt(i)).toString(16);
     arr.push(hex);
   }
   return '0x' + arr.join('');
@@ -87,10 +83,6 @@ function a2hex(str: string): string {
 export async function setupController(
   config: DojoConfig,
 ): Promise<SvelteController | undefined> {
-  let state: { value: SvelteController | undefined } = {
-    value: undefined,
-  };
-
   if (typeof window === 'undefined') {
     // We are on the server. Return nothing.
     return undefined;
@@ -100,7 +92,10 @@ export async function setupController(
     defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
     chains: [{ rpcUrl: config.rpcUrl }],
     preset: 'ponziland',
-    policies: preset.chains.SN_MAIN.policies as any,
+    // TODO(Red): Do proper conversions of policies
+    policies: preset.chains.SN_MAIN.policies as unknown as
+      | SessionPolicies
+      | undefined,
   });
 
   console.info('Starting controller!');

@@ -1,5 +1,3 @@
-//TODO: Add cartridge controller at some point
-
 import type { DojoConfig } from '@dojoengine/core';
 import { BurnerManager, setupBurnerManager } from '@dojoengine/create-burner';
 import { getContext, setContext } from 'svelte';
