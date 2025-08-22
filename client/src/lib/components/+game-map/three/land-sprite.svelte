@@ -57,7 +57,7 @@
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { BufferAttribute, Clock } from 'three';
   import { GRID_SIZE } from '$lib/const';
-  import { configValues } from '$lib/stores/config.store.svelte';
+  import { configValues } from '$lib/stores/config.svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 

@@ -3,7 +3,7 @@ import { BuildingLand } from '$lib/api/land/buildingLand';
 import { LandTileStore } from '$lib/api/landTiles.svelte';
 import { Neighbors } from '$lib/api/neighbors';
 import { GRID_SIZE } from '$lib/const';
-import { configValues } from '$lib/stores/config.store.svelte';
+import { configValues } from '$lib/stores/config.svelte';
 import type { Token } from '$lib/interfaces';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { cameraTransition } from '$lib/stores/camera.store';

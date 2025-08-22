@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { LevelInfo } from '$lib/api/land';
   import { Progress } from '$lib/components/ui/progress';
-  import { configValues } from '$lib/stores/config.store.svelte';
+  import { configValues } from '$lib/stores/config.svelte';
   import { cn } from '$lib/utils';
 
   let { levelUpInfo, class: className } = $props<{

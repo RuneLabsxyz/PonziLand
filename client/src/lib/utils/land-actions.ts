@@ -2,7 +2,7 @@ import type { BaseLand } from '$lib/api/land';
 import { AuctionLand } from '$lib/api/land/auctionLand';
 import { BuildingLand } from '$lib/api/land/buildingLand';
 import { Neighbors } from '$lib/api/neighbors';
-import { configValues } from '$lib/stores/config.store.svelte';
+import { configValues } from '$lib/stores/config.svelte';
 import { useDojo } from '$lib/contexts/dojo';
 import type { ElapsedTimeSinceLastClaim, LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';

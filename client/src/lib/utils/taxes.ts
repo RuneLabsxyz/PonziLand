@@ -1,6 +1,6 @@
 import type { LandWithActions } from '$lib/api/land';
 import { Neighbors } from '$lib/api/neighbors';
-import { configValues } from '$lib/stores/config.store.svelte';
+import { configValues } from '$lib/stores/config.svelte';
 import type { Token } from '$lib/interfaces';
 import { toHexWithPadding } from '$lib/utils';
 import data from '$profileData';
