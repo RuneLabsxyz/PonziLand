@@ -55,7 +55,7 @@ function toAccount(burner?: BurnerManager): AccountProvider | undefined {
       // NO-OP, we don't need a session system
     },
 
-    loadSession: async function (storage: StoredSession): Promise<void> {
+    loadSession: async function (_storedSession: StoredSession): Promise<void> {
       // NO-OP, we don't need a session system
     },
 
@@ -77,7 +77,7 @@ export function setupBurnerAccount(
 export function setupBurner(
   config: DojoConfig,
 ): Promise<BurnerManager | undefined> {
-  let state: { value: BurnerManager | undefined } = { value: undefined };
+  const state: { value: BurnerManager | undefined } = { value: undefined };
 
   const promise = (async () => {
     if (typeof window === 'undefined') {

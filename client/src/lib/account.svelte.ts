@@ -53,7 +53,7 @@ export async function setup(): Promise<typeof accountState> {
   const accountManager = useAccount()!;
 
   // Initial state
-  let currentProvider = accountManager.getProvider();
+  const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
     await updateState(currentProvider);
   }

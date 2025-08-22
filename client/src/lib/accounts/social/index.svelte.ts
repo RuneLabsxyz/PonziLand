@@ -4,12 +4,11 @@ import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
 import account from '$lib/account.svelte';
 import { useAccount } from '$lib/contexts/account.svelte';
 import { Socialink } from '@runelabsxyz/socialink-sdk';
-import type { Signature } from 'starknet';
-import { get } from 'svelte/store';
+import type { Signature, TypedData } from 'starknet';
 
 let socialink: Socialink | undefined = $state();
 
-let addressUsernameCache: Record<string, string> = $state({});
+const addressUsernameCache: Record<string, string> = $state({});
 
 export async function getUsername(address: string) {
   if (address in addressUsernameCache) {
@@ -18,11 +17,12 @@ export async function getUsername(address: string) {
 }
 
 export async function setupSocialink() {
-  const account = useAccount();
+  const account = useAccount()!;
+  const provider = account.getProvider()!;
 
   socialink = new Socialink(PUBLIC_SOCIALINK_URL, async () => ({
-    wallet: account?.getProvider()?.getWalletAccount()!,
-    provider: account?.getProviderName() as any,
+    wallet: provider.getWalletAccount()!,
+    provider: account.getProviderName() ?? 'unknown',
   }));
 
   return socialink;
@@ -36,7 +36,7 @@ export function getSocialink() {
   return socialink;
 }
 
-async function fetchRegisterSignature(username: string) {
+async function fetchRegisterSignature(username: string): Promise<TypedData> {
   const response = await fetch(
     `${PUBLIC_SOCIALINK_URL}/api/user/register?username=${username}`,
     {
@@ -59,7 +59,7 @@ async function fetchRegisterSignature(username: string) {
 }
 
 async function sendRegister(
-  typedData: any,
+  typedData: TypedData,
   signature: Signature,
   controller: boolean = false,
 ) {
