@@ -9,6 +9,9 @@
     "build": "vite build",
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
     "build:mainnet": "DOJO_PROFILE=mainnet vite build",
+
+    "dev:deployment": "DOJO_PROFILE=deployment_local vite dev",
+    "deployment": "DOJO_PROFILE=deployment vite dev",
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
