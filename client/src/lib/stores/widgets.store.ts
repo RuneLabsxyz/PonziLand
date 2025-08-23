@@ -8,6 +8,14 @@ import { writable } from 'svelte/store';
 
 const STORAGE_KEY = WIDGETS_STORAGE_KEY;
 
+// TODO(Red): Migrate this to a class with a proper handling of widget data
+//
+// A function for opening (that opens or creates the widget if it doesn't exist)
+// And see usage for the rest.
+//
+// Using a writable is not really useful in that situation, especially when we have runes,
+// and this is not performance sensitive.
+
 // Validate widget data structure
 function isValidWidget(widget: unknown): widget is WidgetState {
   return (
