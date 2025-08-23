@@ -1,7 +1,10 @@
-import { type AccountInterface } from 'starknet';
-import { useAccount, type AccountProvider, type Event } from './context/account.svelte.js';
-import { configureAccount, type AccountConfig } from './consts.js';
-
+import { type AccountInterface } from "starknet";
+import {
+  useAccount,
+  type AccountProvider,
+  type Event,
+} from "./context/account.svelte.js";
+import { configureAccount, type AccountConfig } from "./consts.js";
 
 export const accountState: {
   isConnected: boolean;
@@ -35,7 +38,7 @@ const resetState = () => {
 export async function refresh() {
   const accountManager = useAccount();
   if (!accountManager) return;
-  
+
   const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
     await updateState(currentProvider);
@@ -44,16 +47,18 @@ export async function refresh() {
   }
 }
 
-export async function setup(config?: Partial<AccountConfig>): Promise<typeof accountState> {
+export async function setup(
+  config?: Partial<AccountConfig>,
+): Promise<typeof accountState> {
   if (config) {
     configureAccount(config);
   }
-  
+
   if (isSetup) return accountState;
 
   const accountManager = useAccount();
   if (!accountManager) {
-    console.warn('Account manager not initialized. Call setupAccount() first.');
+    console.warn("Account manager not initialized. Call setupAccount() first.");
     return accountState;
   }
 
@@ -68,10 +73,10 @@ export async function setup(config?: Partial<AccountConfig>): Promise<typeof acc
   // Listen on updates
   accountManager.listen((event: Event) => {
     switch (event.type) {
-      case 'connected':
+      case "connected":
         updateState(event.provider);
         break;
-      case 'disconnected':
+      case "disconnected":
         resetState();
         break;
     }

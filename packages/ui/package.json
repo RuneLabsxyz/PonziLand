@@ -3,27 +3,29 @@
   "version": "0.1.0",
   "description": "Shared UI components for PonziLand",
   "keywords": [
-		"starknet",
-		"ui",
-		"components",
-		"svelte",
-		"sveltekit"
-	],
+    "starknet",
+    "ui",
+    "components",
+    "svelte",
+    "sveltekit"
+  ],
   "homepage": "https://ponzi.land",
-	"license": "MIT",
+  "license": "MIT",
   "repository": {
-		"type": "git",
-		"url": "git+https://github.com/RuneLabsxyz/PonziLand/tree/main/pkgs/ui"
-	},
+    "type": "git",
+    "url": "git+https://github.com/RuneLabsxyz/PonziLand/tree/main/packages/ui"
+  },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^6.0.0",
     "@sveltejs/kit": "^2.22.0",
     "@sveltejs/package": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^6.0.0",
+    "@unocss/svelte-scoped": "^66.4.2",
     "publint": "^0.3.2",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "typescript": "^5.0.0",
+    "unocss": "^66.4.2",
     "vite": "^7.0.4"
   },
   "peerDependencies": {
