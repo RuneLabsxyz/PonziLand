@@ -23,4 +23,5 @@ export let devsettings = $state({
   showArtLayer: false,
   artLayerOpacity: 0.7,
   showOwnedLandOverlay: false,
+  showClouds: true,
 });
