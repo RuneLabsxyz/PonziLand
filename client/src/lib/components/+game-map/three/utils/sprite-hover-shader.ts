@@ -149,9 +149,6 @@ export function setupOutlineShader(
       currentHoverIndex = instanceIndex;
       outlineStateAttribute.needsUpdate = true;
       outlineColorAttribute.needsUpdate = true;
-      console.log(
-        `Set hover (cyan) for instance ${instanceIndex}, cleared previous hover ${currentHoverIndex >= 0 ? 'at ' + currentHoverIndex : 'none'}`,
-      );
     },
 
     setSelected: (
@@ -190,9 +187,6 @@ export function setupOutlineShader(
       currentSelectedIndex = instanceIndex;
       outlineStateAttribute.needsUpdate = true;
       outlineColorAttribute.needsUpdate = true;
-      console.log(
-        `Set selected (yellow) for instance ${instanceIndex}, cleared previous selected ${currentSelectedIndex >= 0 ? 'at ' + currentSelectedIndex : 'none'}`,
-      );
     },
 
     setCustomOutlines: (
