@@ -158,13 +158,35 @@
 
   let landTiles: LandTile[] = $state([]);
 
-  // Calculate bounds of non-empty lands for clouds
-  let landBounds = $state<{
-    minX: number;
-    maxX: number;
-    minY: number;
-    maxY: number;
-  } | null>(null);
+  // Calculate bounds of visible lands for clouds - now reactive to visible tiles
+  let landBounds = $derived.by(() => {
+    if (!visibleLandTiles || visibleLandTiles.length === 0) return null;
+
+    // Calculate bounds from visible lands only
+    let minX = GRID_SIZE,
+      maxX = -1;
+    let minY = GRID_SIZE,
+      maxY = -1;
+
+    visibleLandTiles.forEach((tile) => {
+      if (BuildingLand.is(tile.land) || AuctionLand.is(tile.land)) {
+        const x = tile.land.location.x;
+        const y = tile.land.location.y;
+
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+      }
+    });
+
+    // Return null if no valid bounds found
+    if (minX > maxX || minY > maxY) {
+      return null;
+    }
+
+    return { minX, maxX, minY, maxY };
+  });
 
   // At the top, outside of any reactive context:
   const planeGeometry = new PlaneGeometry(1, 1);
@@ -200,12 +222,6 @@
 
   onMount(() => {
     landStore.getAllLands().subscribe((tiles) => {
-      // Calculate bounds while processing tiles
-      let minX = GRID_SIZE,
-        maxX = -1;
-      let minY = GRID_SIZE,
-        maxY = -1;
-
       landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
@@ -220,17 +236,6 @@
           skin = 'auction';
         }
 
-        // Update bounds when testing if auction or if building
-        if (BuildingLand.is(tile) || AuctionLand.is(tile)) {
-          const x = tile.location.x;
-          const y = tile.location.y;
-
-          minX = Math.min(minX, x);
-          maxX = Math.max(maxX, x);
-          minY = Math.min(minY, y);
-          maxY = Math.max(maxY, y);
-        }
-
         const gridX = tile.location.x;
         const gridY = tile.location.y;
 
@@ -242,13 +247,6 @@
           tile,
         );
       });
-
-      // Update land bounds after processing all tiles
-      if (minX > maxX || minY > maxY) {
-        landBounds = null;
-      } else {
-        landBounds = { minX, maxX, minY, maxY };
-      }
     });
   });
 
@@ -402,71 +400,112 @@
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
 
-  // Filter to show tiles based on maxCircles configuration
+  // Memoized circle positions cache
+  let circlePositionsCache = new Map<
+    string,
+    Array<{ x: number; y: number; circle: number }>
+  >();
+
+  // Land tiles lookup map for O(1) access
+  let landTilesMap = $state(new Map<string, LandTile>());
+
+  // Update lookup map when landTiles change
+  $effect(() => {
+    const newMap = new Map<string, LandTile>();
+    landTiles.forEach((tile) => {
+      const key = `${tile.position[0]},${tile.position[2]}`;
+      newMap.set(key, tile);
+    });
+    landTilesMap = newMap;
+  });
+
+  // Optimized visible land calculation with memoization
   let visibleLandTiles = $derived.by(() => {
-    const landPositions = generateCircleLandPositions(
-      CENTER,
-      CENTER,
-      configValues.maxCircles,
-    );
+    // const maxCirc = configValues.maxCircles;
+    const maxCirc = 256;
+
+    // Check cache for circle positions
+    const cacheKey = `${CENTER},${CENTER},${maxCirc}`;
+    let landPositions = circlePositionsCache.get(cacheKey);
+
+    if (!landPositions) {
+      landPositions = generateCircleLandPositions(CENTER, CENTER, maxCirc);
+      circlePositionsCache.set(cacheKey, landPositions);
+    }
+
     const tiles: LandTile[] = [];
 
-    // Find tiles for each calculated position in the same order as interaction planes
+    // Use O(1) map lookup instead of O(n) array.find()
     landPositions.forEach((pos) => {
-      const tile = landTiles.find(
-        (tile) => tile.position[0] === pos.y && tile.position[2] === pos.x,
-      );
+      const key = `${pos.y},${pos.x}`;
+      const tile = landTilesMap.get(key);
       if (tile) {
         tiles.push(tile);
       }
     });
 
     console.log(
-      `Rendering ${tiles.length} land tiles across ${configValues.maxCircles} circles`,
+      `Rendering ${tiles.length} land tiles across ${maxCirc} circles`,
     );
     return tiles;
   });
 
-  // Optimized coin tiles using ownership index for faster lookups
+  // Cache ownership data to avoid repeated store calls
+  let ownershipCache = $state<{
+    address: string | null;
+    ownedIndicesSet: Set<number>;
+    lastUpdate: number;
+  }>({
+    address: null,
+    ownedIndicesSet: new Set(),
+    lastUpdate: 0,
+  });
+
+  // Update ownership cache when address changes
+  $effect(() => {
+    if (accountState.address !== ownershipCache.address) {
+      const ownedIndices = accountState.address
+        ? store.getOwnedLandIndices(accountState.address)
+        : [];
+      ownershipCache = {
+        address: accountState.address ?? null,
+        ownedIndicesSet: new Set(ownedIndices),
+        lastUpdate: Date.now(),
+      };
+    }
+  });
+
+  // Optimized coin tiles using cached ownership data
   let ownedCoinTiles = $derived.by(() => {
-    if (!accountState.address || !visibleLandTiles) return [];
+    if (
+      !ownershipCache.address ||
+      !visibleLandTiles ||
+      ownershipCache.ownedIndicesSet.size === 0
+    )
+      return [];
 
-    // Get the ownership index for fast lookup
-    const ownedIndices = store.getOwnedLandIndices(accountState.address);
-    if (ownedIndices.length === 0) return [];
-
-    // Create a Set for O(1) lookup performance
-    const ownedIndicesSet = new Set(ownedIndices);
-
-    // Filter visible tiles using the ownership index for better performance
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
-
-      // Calculate land index to check ownership
       const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
-      return ownedIndicesSet.has(landIndex);
+      return ownershipCache.ownedIndicesSet.has(landIndex);
     });
   });
 
-  // Reactive owned lands for shader-based darkening adapted for visible tiles
+  // Optimized owned land indices calculation
   let ownedLandIndices = $derived.by(() => {
-    if (!accountState.address || !visibleLandTiles) return [];
+    if (
+      !ownershipCache.address ||
+      !visibleLandTiles ||
+      ownershipCache.ownedIndicesSet.size === 0
+    )
+      return [];
 
-    // Get the ownership index for fast lookup
-    const ownedGridIndices = store.getOwnedLandIndices(accountState.address);
-    if (ownedGridIndices.length === 0) return [];
-
-    // Create a Set for O(1) lookup performance
-    const ownedGridIndicesSet = new Set(ownedGridIndices);
-
-    // Map visible tiles to their indices if they are owned
     const ownedVisibleIndices: number[] = [];
     visibleLandTiles.forEach((tile, index) => {
       if (BuildingLand.is(tile.land)) {
-        // Calculate land index to check ownership
         const landIndex =
           tile.land.location.x * GRID_SIZE + tile.land.location.y;
-        if (ownedGridIndicesSet.has(landIndex)) {
+        if (ownershipCache.ownedIndicesSet.has(landIndex)) {
           ownedVisibleIndices.push(index);
         }
       }
