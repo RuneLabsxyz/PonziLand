@@ -3,6 +3,8 @@
   import { useGltf } from '@threlte/extras';
   import { Object3D, InstancedMesh as TInstancedMesh, Vector3 } from 'three';
   import type * as THREE from 'three';
+  import { gameStore } from './game.store.svelte';
+  import { onMount } from 'svelte';
 
   interface Props {
     bounds: {
@@ -29,40 +31,81 @@
 
   let cloudsInstancedMesh: TInstancedMesh | undefined = $state();
   let cloudMeshSize: Vector3 | undefined = $state();
+  let cameraPosition = $state({ x: 0, z: 0 }); // Reactive camera position
 
-  // Calculate cloud positions at the bounds with offset
+  // Set up camera controls update event listener
+  onMount(() => {
+    console.log('🌥️ Clouds: Setting up camera controls update listener');
+    
+    const updateCameraPosition = () => {
+      if (gameStore.cameraControls?.camera) {
+        const cam = gameStore.cameraControls.camera;
+        const newX = cam.position.x;
+        const newZ = cam.position.z;
+        
+        // Only update if position actually changed to avoid unnecessary recalculations
+        if (Math.abs(newX - cameraPosition.x) > 0.1 || Math.abs(newZ - cameraPosition.z) > 0.1) {
+          console.log('🌥️ Clouds: Camera updated to:', newX.toFixed(1), newZ.toFixed(1));
+          cameraPosition = { x: newX, z: newZ };
+        }
+      }
+    };
+    
+    // Wait for camera controls to be available, then add event listener
+    const checkForControls = () => {
+      if (gameStore.cameraControls) {
+        console.log('🌥️ Clouds: Camera controls found, adding update listener');
+        gameStore.cameraControls.addEventListener('update', updateCameraPosition);
+        
+        // Initialize position immediately
+        updateCameraPosition();
+      } else {
+        // Check again in a bit if controls aren't ready yet
+        setTimeout(checkForControls, 100);
+      }
+    };
+    
+    checkForControls();
+    
+    return () => {
+      if (gameStore.cameraControls) {
+        console.log('🌥️ Clouds: Removing camera controls update listener');
+        gameStore.cameraControls.removeEventListener('update', updateCameraPosition);
+      }
+    };
+  });
+
+  // Calculate cloud positions relative to camera position
   let cloudPositions = $derived.by(() => {
-    if (!bounds || !cloudMeshSize) return [];
+    if (!cloudMeshSize) {
+      console.log('🌥️ Clouds: Missing cloudMeshSize');
+      return [];
+    }
     
-    // Calculate offsets based on mesh size
-    const offsetX = cloudMeshSize.x / 2;
-    const offsetZ = cloudMeshSize.z / 2;
+    console.log('🌥️ Clouds: Calculating positions for camera at:', cameraPosition.x.toFixed(1), cameraPosition.z.toFixed(1));
     
-    // Calculate center points for edges
-    const centerX = (bounds.minX + bounds.maxX) / 2;
-    const centerY = (bounds.minY + bounds.maxY) / 2;
+    // Get camera position from reactive state
+    const cameraX = cameraPosition.x;
+    const cameraZ = cameraPosition.z;
+    
+    // Simple offset pattern around camera (8 clouds in a square around camera)
+    const offset = 20; // Distance from camera
     
     const positions = [
-      // Corner clouds
-      // Top-left corner (offset outward)
-      { x: bounds.minX - offsetX, y: bounds.minY - offsetZ },
-      // Top-right corner (offset outward)
-      { x: bounds.maxX + offsetX, y: bounds.minY - offsetZ },
-      // Bottom-left corner (offset outward)
-      { x: bounds.minX - offsetX, y: bounds.maxY + offsetZ },
-      // Bottom-right corner (offset outward)
-      { x: bounds.maxX + offsetX, y: bounds.maxY + offsetZ },
+      // Corner clouds around camera
+      { x: cameraX - offset, y: cameraZ - offset }, // Top-left
+      { x: cameraX + offset, y: cameraZ - offset }, // Top-right  
+      { x: cameraX - offset, y: cameraZ + offset }, // Bottom-left
+      { x: cameraX + offset, y: cameraZ + offset }, // Bottom-right
       
       // Edge middle clouds
-      // Top edge middle
-      { x: centerX, y: bounds.minY - offsetZ },
-      // Right edge middle
-      { x: bounds.maxX + offsetX, y: centerY },
-      // Bottom edge middle
-      { x: centerX, y: bounds.maxY + offsetZ },
-      // Left edge middle
-      { x: bounds.minX - offsetX, y: centerY },
+      { x: cameraX, y: cameraZ - offset }, // Top middle
+      { x: cameraX + offset, y: cameraZ }, // Right middle
+      { x: cameraX, y: cameraZ + offset }, // Bottom middle
+      { x: cameraX - offset, y: cameraZ }, // Left middle
     ];
+    
+    console.log('🌥️ Clouds: Generated', positions.length, 'positions around camera');
     return positions;
   });
 
@@ -86,7 +129,7 @@
         cloudsInstancedMesh = new TInstancedMesh(
           cloudMesh.geometry,
           cloudMaterial,
-          8,
+          100,
         );
       }
     }
