@@ -18,6 +18,10 @@
   let { bounds }: Props = $props();
 
   const CLOUDS_HEIGHT = 8; // Position clouds above the grid
+  const CLOUD_SPACING = 8; // Distance between clouds in grid
+  const CAMERA_RENDER_DISTANCE = 14; // How far from camera to render clouds
+  const LAND_EXCLUSION_PADDING = 8; // Extra padding around land bounds
+  const CLOUD_POSITION_OFFSET = -1; // Offset for cloud positioning
 
   // Load clouds GLB using useGltf hook with proper typing
   const gltf = useGltf<{
@@ -36,6 +40,7 @@
   // Set up camera controls update event listener
   onMount(() => {
     console.log('🌥️ Clouds: Setting up camera controls update listener');
+    console.log('🌥️ Clouds: Initial bounds:', bounds);
     
     const updateCameraPosition = () => {
       if (gameStore.cameraControls?.camera) {
@@ -60,6 +65,7 @@
         // Initialize position immediately
         updateCameraPosition();
       } else {
+        console.log('🌥️ Clouds: Camera controls not ready, retrying...');
         // Check again in a bit if controls aren't ready yet
         setTimeout(checkForControls, 100);
       }
@@ -75,89 +81,150 @@
     };
   });
 
-  // Calculate cloud positions relative to camera position
+  // Generate dense cloud grid around camera, excluding land bounds
   let cloudPositions = $derived.by(() => {
+    console.log('🌥️ Clouds: Starting cloud position calculation');
+    console.log('🌥️ Clouds: cloudMeshSize:', cloudMeshSize);
+    console.log('🌥️ Clouds: cameraPosition:', cameraPosition);
+    console.log('🌥️ Clouds: bounds:', bounds);
+    
     if (!cloudMeshSize) {
-      console.log('🌥️ Clouds: Missing cloudMeshSize');
+      console.log('🌥️ Clouds: Missing cloudMeshSize, returning empty array');
       return [];
     }
     
-    console.log('🌥️ Clouds: Calculating positions for camera at:', cameraPosition.x.toFixed(1), cameraPosition.z.toFixed(1));
+    console.log('🌥️ Clouds: Calculating dense grid for camera at:', cameraPosition.x.toFixed(1), cameraPosition.z.toFixed(1));
     
-    // Get camera position from reactive state
     const cameraX = cameraPosition.x;
     const cameraZ = cameraPosition.z;
+    const positions = [];
     
-    // Simple offset pattern around camera (8 clouds in a square around camera)
-    const offset = 20; // Distance from camera
+    // Calculate grid bounds around camera
+    const startX = Math.floor((cameraX - CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
+    const endX = Math.floor((cameraX + CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
+    const startZ = Math.floor((cameraZ - CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
+    const endZ = Math.floor((cameraZ + CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
     
-    const positions = [
-      // Corner clouds around camera
-      { x: cameraX - offset, y: cameraZ - offset }, // Top-left
-      { x: cameraX + offset, y: cameraZ - offset }, // Top-right  
-      { x: cameraX - offset, y: cameraZ + offset }, // Bottom-left
-      { x: cameraX + offset, y: cameraZ + offset }, // Bottom-right
-      
-      // Edge middle clouds
-      { x: cameraX, y: cameraZ - offset }, // Top middle
-      { x: cameraX + offset, y: cameraZ }, // Right middle
-      { x: cameraX, y: cameraZ + offset }, // Bottom middle
-      { x: cameraX - offset, y: cameraZ }, // Left middle
-    ];
+    console.log('🌥️ Clouds: Grid bounds - X:', startX, 'to', endX, 'Z:', startZ, 'to', endZ);
     
-    console.log('🌥️ Clouds: Generated', positions.length, 'positions around camera');
+    // Define land exclusion area
+    let landMinX, landMaxX, landMinZ, landMaxZ;
+    if (bounds) {
+      landMinX = bounds.minX - LAND_EXCLUSION_PADDING;
+      landMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
+      landMinZ = bounds.minY - LAND_EXCLUSION_PADDING;
+      landMaxZ = bounds.maxY + LAND_EXCLUSION_PADDING;
+      console.log('🌥️ Clouds: Land exclusion area:', { landMinX, landMaxX, landMinZ, landMaxZ });
+    } else {
+      console.log('🌥️ Clouds: No bounds provided, generating clouds everywhere');
+    }
+    
+    let skippedCount = 0;
+    let generatedCount = 0;
+    
+    // Generate grid of clouds
+    for (let x = startX; x <= endX; x += CLOUD_SPACING) {
+      for (let z = startZ; z <= endZ; z += CLOUD_SPACING) {
+        // Skip if within land bounds
+        if (bounds && 
+            x >= landMinX && x <= landMaxX && 
+            z >= landMinZ && z <= landMaxZ) {
+          skippedCount++;
+          continue; // Skip this position - it's in the land area
+        }
+        
+        // Add some randomness to positions for natural look
+        // const offsetX = (Math.random() - 0.5) * CLOUD_SPACING * 0.6;
+        // const offsetZ = (Math.random() - 0.5) * CLOUD_SPACING * 0.6;
+
+        const randomOffsetX = 0;
+        const randomOffsetZ = 0;
+
+        const positionOffsetX = CLOUD_POSITION_OFFSET;
+        const positionOffsetZ = CLOUD_POSITION_OFFSET;
+
+        positions.push({
+          x: x + randomOffsetX + positionOffsetX,
+          y: z + randomOffsetZ + positionOffsetZ,
+          scale: 0.7 + Math.random() * 0.6, // Random scale 0.7 - 1.3
+          rotation: Math.random() * Math.PI * 2
+        });
+        generatedCount++;
+      }
+    }
+    
+    console.log('🌥️ Clouds: Generated', generatedCount, 'clouds, skipped', skippedCount, 'in land area');
+    console.log('🌥️ Clouds: First few positions:', positions.slice(0, 3));
     return positions;
   });
 
   // Extract geometry and material, create instanced mesh when GLTF loads
   $effect(() => {
+    console.log('🌥️ Clouds: GLTF effect running - gltf:', !!$gltf, 'cloudsInstancedMesh:', !!cloudsInstancedMesh);
     if ($gltf && !cloudsInstancedMesh) {
-      console.log('Creating clouds instanced mesh', $gltf.nodes);
+      console.log('🌥️ Clouds: Creating instanced mesh, GLTF nodes:', $gltf.nodes);
       const cloudMesh = $gltf.nodes['Cube001']; // -> THREE.Mesh
       const cloudMaterial = $gltf.materials['Material']; // -> THREE.Material
 
-      console.log('Cloud mesh and material loaded:', cloudMesh, cloudMaterial);
+      console.log('🌥️ Clouds: Cloud mesh and material loaded:', cloudMesh, cloudMaterial);
       if (cloudMesh && cloudMesh.geometry && cloudMaterial) {
         // Calculate mesh bounding box to get size
         cloudMesh.geometry.computeBoundingBox();
         if (cloudMesh.geometry.boundingBox) {
           cloudMeshSize = cloudMesh.geometry.boundingBox.getSize(new Vector3());
         }
-        console.log('Cloud mesh size:', cloudMeshSize);
+        console.log('🌥️ Clouds: Cloud mesh size:', cloudMeshSize);
         
-        // Create instanced mesh with up to 8 instances (for bounds corners + edge middles)
+        // Create instanced mesh for dense cloud coverage
+        const maxInstances = Math.ceil(((CAMERA_RENDER_DISTANCE) * 3 / CLOUD_SPACING) ** 2);
+        console.log('🌥️ Clouds: Creating mesh with max instances:', maxInstances);
         cloudsInstancedMesh = new TInstancedMesh(
           cloudMesh.geometry,
           cloudMaterial,
-          100,
+          maxInstances,
         );
+        cloudsInstancedMesh.frustumCulled = false;
+        console.log('🌥️ Clouds: Instanced mesh created successfully:', !!cloudsInstancedMesh);
+      } else {
+        console.error('🌥️ Clouds: Failed to load cloud mesh or material');
       }
     }
   });
 
   // Update clouds instances when positions change
   $effect(() => {
+    console.log('🌥️ Clouds: Update effect running - mesh:', !!cloudsInstancedMesh, 'positions:', cloudPositions.length);
     if (cloudsInstancedMesh && cloudPositions.length > 0) {
-      console.log('Updating clouds instanced mesh');
+      console.log('🌥️ Clouds: Updating mesh with', cloudPositions.length, 'cloud instances');
+      console.log('🌥️ Clouds: Sample positions:', cloudPositions.slice(0, 2));
       const tempObject = new Object3D();
 
       cloudPositions.forEach((position, index) => {
         tempObject.position.set(position.x, CLOUDS_HEIGHT, position.y);
-        tempObject.rotation.set(0, 0, 0);
-        tempObject.scale.set(1, 1, 1);
+        // tempObject.rotation.set(0, position.rotation, 0);
+        // tempObject.scale.set(position.scale, position.scale, position.scale);
         tempObject.updateMatrix();
         cloudsInstancedMesh!.setMatrixAt(index, tempObject.matrix);
-        console.log(
-          `Set cloud instance ${index} at position (${position.x}, ${CLOUDS_HEIGHT}, ${position.y})`,
-        );
+        
+        if (index < 3) {
+          console.log(`🌥️ Clouds: Set instance ${index} at (${position.x.toFixed(1)}, ${CLOUDS_HEIGHT}, ${position.y.toFixed(1)}) scale: ${position.scale.toFixed(2)}`);
+        }
       });
 
       cloudsInstancedMesh.instanceMatrix.needsUpdate = true;
       cloudsInstancedMesh.count = cloudPositions.length;
+      console.log('🌥️ Clouds: Mesh updated successfully, count:', cloudsInstancedMesh.count);
+    } else if (cloudsInstancedMesh && cloudPositions.length === 0) {
+      console.log('🌥️ Clouds: No cloud positions to render');
+    } else if (!cloudsInstancedMesh) {
+      console.log('🌥️ Clouds: No instanced mesh available yet');
     }
   });
 </script>
 
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />
+  {console.log('🌥️ Clouds: Rendering component with', cloudPositions.length, 'clouds')}
+{:else}
+  {console.log('🌥️ Clouds: Not rendering - mesh:', !!cloudsInstancedMesh, 'positions:', cloudPositions.length)}
 {/if}
