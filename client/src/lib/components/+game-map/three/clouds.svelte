@@ -17,11 +17,10 @@
 
   let { bounds }: Props = $props();
 
-  const CLOUDS_HEIGHT = 8; // Position clouds above the grid
-  const CLOUD_SPACING = 8; // Distance between clouds in grid
-  const CAMERA_RENDER_DISTANCE = 14; // How far from camera to render clouds
-  const LAND_EXCLUSION_PADDING = 8; // Extra padding around land bounds
-  const CLOUD_POSITION_OFFSET = -1; // Offset for cloud positioning
+  const CLOUDS_HEIGHT = 4; // Position clouds above the grid
+  const CLOUD_SPACING = 10; // Distance between clouds in grid
+  const LAND_EXCLUSION_PADDING = 10; // Extra padding around land bounds
+  const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
 
   // Load clouds GLB using useGltf hook with proper typing
   const gltf = useGltf<{
@@ -36,17 +35,53 @@
   let cloudsInstancedMesh: TInstancedMesh | undefined = $state();
   let cloudMeshSize: Vector3 | undefined = $state();
   let cameraPosition = $state({ x: 0, z: 0 }); // Reactive camera position
+  let currentRenderDistance = $state({ x: 50, z: 50 }); // Default render distances
+  let screenSize = $state({ width: 1920, height: 1080 }); // Default screen size
 
   // Set up camera controls update event listener
   onMount(() => {
     console.log('🌥️ Clouds: Setting up camera controls update listener');
     console.log('🌥️ Clouds: Initial bounds:', bounds);
     
+    // Initialize screen size
+    const updateScreenSize = () => {
+      screenSize = {
+        width: window.innerWidth,
+        height: window.innerHeight
+      };
+      console.log('🌥️ Clouds: Screen size updated to:', screenSize);
+    };
+    
+    updateScreenSize();
+    window.addEventListener('resize', updateScreenSize);
+    
     const updateCameraPosition = () => {
       if (gameStore.cameraControls?.camera) {
         const cam = gameStore.cameraControls.camera;
         const newX = cam.position.x;
         const newZ = cam.position.z;
+        
+        // Calculate render distance based on screen size and zoom only
+        const zoom = cam.zoom || 100;
+        
+        // Calculate render distances directly from screen dimensions and zoom
+        // X axis corresponds to screen height, Z axis to screen width
+        // Higher zoom = smaller render distance (more zoomed in = see less area)
+        const newRenderDistanceZ = Math.max(10, (screenSize.height / zoom)); // Height-based
+        const newRenderDistanceX = Math.max(10, (screenSize.width / zoom)); // Width-based
+        
+        console.log('🌥️ Clouds: Camera zoom:', zoom, 'screen:', `${screenSize.width}x${screenSize.height}`);
+        console.log('🌥️ Clouds: Render distances - X (height):', newRenderDistanceX.toFixed(1), 'Z (width):', newRenderDistanceZ.toFixed(1));
+        
+        // Update render distance if either axis changed significantly
+        if (Math.abs(newRenderDistanceX - currentRenderDistance.x) > 5 || 
+            Math.abs(newRenderDistanceZ - currentRenderDistance.z) > 5) {
+          console.log('🌥️ Clouds: Render distances updated from', 
+                     `X:${currentRenderDistance.x.toFixed(1)} Z:${currentRenderDistance.z.toFixed(1)}`, 
+                     'to', 
+                     `X:${newRenderDistanceX.toFixed(1)} Z:${newRenderDistanceZ.toFixed(1)}`);
+          currentRenderDistance = { x: newRenderDistanceX, z: newRenderDistanceZ };
+        }
         
         // Only update if position actually changed to avoid unnecessary recalculations
         if (Math.abs(newX - cameraPosition.x) > 0.1 || Math.abs(newZ - cameraPosition.z) > 0.1) {
@@ -78,6 +113,7 @@
         console.log('🌥️ Clouds: Removing camera controls update listener');
         gameStore.cameraControls.removeEventListener('update', updateCameraPosition);
       }
+      window.removeEventListener('resize', updateScreenSize);
     };
   });
 
@@ -99,16 +135,17 @@
     const cameraZ = cameraPosition.z;
     const positions = [];
     
-    // Calculate grid bounds around camera
-    const startX = Math.floor((cameraX - CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
-    const endX = Math.floor((cameraX + CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
-    const startZ = Math.floor((cameraZ - CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
-    const endZ = Math.floor((cameraZ + CAMERA_RENDER_DISTANCE) / CLOUD_SPACING) * CLOUD_SPACING;
+    // Calculate grid bounds around camera using asymmetric render distances
+    // X axis uses height-based distance, Z axis uses width-based distance
+    const startX = Math.floor((cameraX - currentRenderDistance.x) / CLOUD_SPACING) * CLOUD_SPACING;
+    const endX = Math.floor((cameraX + currentRenderDistance.x) / CLOUD_SPACING) * CLOUD_SPACING;
+    const startZ = Math.floor((cameraZ - currentRenderDistance.z) / CLOUD_SPACING) * CLOUD_SPACING;
+    const endZ = Math.floor((cameraZ + currentRenderDistance.z) / CLOUD_SPACING) * CLOUD_SPACING;
     
     console.log('🌥️ Clouds: Grid bounds - X:', startX, 'to', endX, 'Z:', startZ, 'to', endZ);
     
     // Define land exclusion area
-    let landMinX, landMaxX, landMinZ, landMaxZ;
+    let landMinX: number | undefined, landMaxX: number | undefined, landMinZ: number | undefined, landMaxZ: number | undefined;
     if (bounds) {
       landMinX = bounds.minX - LAND_EXCLUSION_PADDING;
       landMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
@@ -126,7 +163,8 @@
     for (let x = startX; x <= endX; x += CLOUD_SPACING) {
       for (let z = startZ; z <= endZ; z += CLOUD_SPACING) {
         // Skip if within land bounds
-        if (bounds && 
+        if (bounds && landMinX !== undefined && landMaxX !== undefined && 
+            landMinZ !== undefined && landMaxZ !== undefined &&
             x >= landMinX && x <= landMaxX && 
             z >= landMinZ && z <= landMaxZ) {
           skippedCount++;
@@ -175,13 +213,14 @@
         }
         console.log('🌥️ Clouds: Cloud mesh size:', cloudMeshSize);
         
-        // Create instanced mesh for dense cloud coverage
-        const maxInstances = Math.ceil(((CAMERA_RENDER_DISTANCE) * 3 / CLOUD_SPACING) ** 2);
+        // Create instanced mesh for dense cloud coverage - use a generous maximum
+        // Calculate based on typical screen size and zoom range
+        const maxInstances = 20000; // Fixed high limit for all scenarios
         console.log('🌥️ Clouds: Creating mesh with max instances:', maxInstances);
         cloudsInstancedMesh = new TInstancedMesh(
           cloudMesh.geometry,
           cloudMaterial,
-          maxInstances,
+          20000,
         );
         cloudsInstancedMesh.frustumCulled = false;
         console.log('🌥️ Clouds: Instanced mesh created successfully:', !!cloudsInstancedMesh);
@@ -221,6 +260,27 @@
     }
   });
 </script>
+
+<!-- Sun lighting -->
+<T.DirectionalLight 
+  position={[100, 150, 50]}
+  intensity={1.2}
+  color="#ffffff"
+  castShadow={true}
+/>
+
+<!-- Ambient light for overall scene illumination -->
+<T.AmbientLight 
+  intensity={0.3}
+  color="#87CEEB"
+/>
+
+<!-- Additional fill light from opposite direction -->
+<T.DirectionalLight 
+  position={[-50, 80, -30]}
+  intensity={0.4}
+  color="#FFE4B5"
+/>
 
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />
