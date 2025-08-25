@@ -19,9 +19,10 @@
   let { bounds }: Props = $props();
 
   const CLOUDS_HEIGHT = 4; // Position clouds above the grid
-  const CLOUD_SPACING = 7; // Distance between clouds in grid
-  const LAND_EXCLUSION_PADDING = 10; // Extra padding around land bounds
+  const CLOUD_SPACING = 6; // Distance between clouds in grid
+  const LAND_EXCLUSION_PADDING = 9; // Extra padding around land bounds
   const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
+  const MAX_INSTANCES = 256 ** 2; // Max instances for instanced mesh
 
   // Load clouds GLB using useGltf hook with proper typing
   const gltf = useGltf<{
@@ -64,8 +65,14 @@
         // Calculate render distances directly from screen dimensions and zoom
         // X axis corresponds to screen height, Z axis to screen width
         // Higher zoom = smaller render distance (more zoomed in = see less area)
-        const newRenderDistanceZ = Math.max(10, screenSize.height / zoom); // Height-based
-        const newRenderDistanceX = Math.max(10, screenSize.width / zoom); // Width-based
+        const newRenderDistanceZ = Math.max(
+          CLOUD_SPACING * 2,
+          screenSize.height / zoom,
+        ); // Height-based
+        const newRenderDistanceX = Math.max(
+          CLOUD_SPACING * 2,
+          screenSize.width / zoom,
+        ); // Width-based
 
         // Update render distance if either axis changed significantly
         if (
@@ -176,10 +183,9 @@
           continue; // Skip this position - it's in the land area
         }
 
-
         // Create deterministic random generator based on position
         const rng = seedrandom(`${x},${z}`);
-        
+
         const offsetX = (rng() - 0.5) * CLOUD_SPACING * 0.8;
         const offsetZ = (rng() - 0.5) * CLOUD_SPACING * 0.8;
 
@@ -194,11 +200,73 @@
           y: z + randomOffsetZ + positionOffsetZ,
           z: CLOUDS_HEIGHT + (rng() - 0.5) * 3, // Height variation ±1.5 units
           scale: 0.8 + rng() * 0.4, // Scale variation 0.8 - 1.2
-          rotation: 0,
+          rotation: Math.floor(rng() * 4) * (Math.PI / 2), // 0°, 90°, 180°, or 270°
           opacity: 0.7 + rng() * 0.3, // Opacity variation 0.7 - 1.0
         });
         generatedCount++;
       }
+    }
+
+    // Add edge clouds right at the land bounds perimeter with padding
+    if (bounds) {
+      const paddedMinX = bounds.minX - LAND_EXCLUSION_PADDING;
+      const paddedMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
+      const paddedMinZ = bounds.minY - LAND_EXCLUSION_PADDING;
+      const paddedMaxZ = bounds.maxY + LAND_EXCLUSION_PADDING;
+
+      const edgePositions = [
+        // Top edge
+        ...Array.from(
+          { length: Math.ceil((paddedMaxX - paddedMinX) / CLOUD_SPACING) + 1 },
+          (_, i) => ({
+            x: paddedMinX + i * CLOUD_SPACING,
+            z: paddedMinZ,
+          }),
+        ),
+        // Bottom edge
+        ...Array.from(
+          { length: Math.ceil((paddedMaxX - paddedMinX) / CLOUD_SPACING) + 1 },
+          (_, i) => ({
+            x: paddedMinX + i * CLOUD_SPACING,
+            z: paddedMaxZ,
+          }),
+        ),
+        // Left edge (excluding corners already covered)
+        ...Array.from(
+          { length: Math.ceil((paddedMaxZ - paddedMinZ) / CLOUD_SPACING) - 1 },
+          (_, i) => ({
+            x: paddedMinX,
+            z: paddedMinZ + (i + 1) * CLOUD_SPACING,
+          }),
+        ),
+        // Right edge (excluding corners already covered)
+        ...Array.from(
+          { length: Math.ceil((paddedMaxZ - paddedMinZ) / CLOUD_SPACING) - 1 },
+          (_, i) => ({
+            x: paddedMaxX,
+            z: paddedMinZ + (i + 1) * CLOUD_SPACING,
+          }),
+        ),
+      ];
+
+      edgePositions.forEach(({ x, z }) => {
+        // Only add if within render distance
+        if (
+          Math.abs(x - cameraPosition.x) <= currentRenderDistance.x &&
+          Math.abs(z - cameraPosition.z) <= currentRenderDistance.z
+        ) {
+          const rng = seedrandom(`edge-${x},${z}`);
+
+          positions.push({
+            x: x,
+            y: z,
+            z: CLOUDS_HEIGHT + (rng() - 0.5) * 3,
+            scale: 0.8 + rng() * 0.4,
+            rotation: Math.floor(rng() * 4) * (Math.PI / 2),
+            opacity: 0.7 + rng() * 0.3,
+          });
+        }
+      });
     }
 
     return positions;
@@ -217,14 +285,10 @@
           cloudMeshSize = cloudMesh.geometry.boundingBox.getSize(new Vector3());
         }
 
-        // Create instanced mesh for dense cloud coverage - use a generous maximum
-        // Calculate based on typical screen size and zoom range
-        const maxInstances = 20000; // Fixed high limit for all scenarios
-
         cloudsInstancedMesh = new TInstancedMesh(
           cloudMesh.geometry,
           cloudMaterial,
-          maxInstances,
+          MAX_INSTANCES,
         );
         cloudsInstancedMesh.frustumCulled = false;
       }
@@ -238,7 +302,7 @@
 
       cloudPositions.forEach((position, index) => {
         tempObject.position.set(position.x, position.z, position.y);
-        tempObject.rotation.set(0, 0, 0);
+        tempObject.rotation.set(0, position.rotation, 0);
         tempObject.scale.set(position.scale, position.scale, position.scale);
         tempObject.updateMatrix();
         cloudsInstancedMesh!.setMatrixAt(index, tempObject.matrix);
@@ -253,16 +317,10 @@
 <!-- Sun lighting -->
 <T.DirectionalLight
   position={[100, 150, 50]}
-  intensity={1.2}
+  intensity={2}
   color="#ffffff"
   castShadow={true}
 />
-
-<!-- Ambient light for overall scene illumination -->
-<T.AmbientLight intensity={0.3} color="#87CEEB" />
-
-<!-- Additional fill light from opposite direction -->
-<T.DirectionalLight position={[-50, 80, -30]} intensity={0.4} color="#FFE4B5" />
 
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />

@@ -4,10 +4,7 @@
   import accountState from '$lib/account.svelte';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
-  import {
-    landStore,
-    selectedLandWithActions,
-  } from '$lib/stores/store.svelte';
+  import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
 
   // Allow passing a custom land store (for tutorials)
   interface Props {
@@ -186,28 +183,9 @@
 
   // Cache coin geometry for better initialization performance
   const coinGeometry = new PlaneGeometry(0.3, 0.3);
-
-  let interactionPlanes: TInstancedMesh | undefined = $state();
   let artLayerMesh: TInstancedMesh | undefined = $state();
 
   onMount(() => {
-    // Create only 9 interaction planes (center + 8 neighbors)
-    interactionPlanes = new TInstancedMesh(planeGeometry, planeMaterial, 9);
-
-    const tempObject = new Object3D();
-
-    // Create interaction planes for center (127,127) and its 8 neighbors
-    for (let x = 0; x <= GRID_SIZE; x++) {
-      for (let y = 0; y <= GRID_SIZE; y++) {
-        const index = y * GRID_SIZE + x;
-        tempObject.position.set(y, 1 - 0.03, x);
-        tempObject.rotation.x = -Math.PI / 2;
-        tempObject.updateMatrix();
-        interactionPlanes.setMatrixAt(index, tempObject.matrix);
-      }
-    }
-    interactionPlanes.instanceMatrix.needsUpdate = true;
-
     // Create art layer mesh with same pattern as interaction planes
     artLayerMesh = new TInstancedMesh(
       planeGeometry,
@@ -362,18 +340,19 @@
   // Reactive values for hover and selected tile indices based on grid position
   let hoveredTileIndex = $derived.by(() => {
     if (!cursorStore.gridPosition) return undefined;
-    
+
     // Find the tile index in visibleLandTiles that matches the grid position
     return visibleLandTiles.findIndex(
       (tile) =>
         tile.position[0] === cursorStore.gridPosition!.x && // position[0] is gridX
-        tile.position[2] === cursorStore.gridPosition!.y    // position[2] is gridY
+        tile.position[2] === cursorStore.gridPosition!.y, // position[2] is gridY
     );
   });
 
   // Update cursor store with the correct hover index for other components
   $effect(() => {
-    cursorStore.hoveredTileIndex = hoveredTileIndex !== -1 ? hoveredTileIndex : undefined;
+    cursorStore.hoveredTileIndex =
+      hoveredTileIndex !== -1 ? hoveredTileIndex : undefined;
   });
 
   // Derive selected tile index from cursor store
@@ -396,14 +375,11 @@
   });
 
   // Load coin texture and setup shader material
-  new TextureLoader().load(
-    '/ui/icons/Icon_Coin2.png',
-    (loadedTexture) => {
-      loadedTexture.magFilter = NearestFilter;
-      loadedTexture.minFilter = NearestFilter;
-      coinShaderMaterial = new CoinHoverShaderMaterial(loadedTexture);
-    },
-  );
+  new TextureLoader().load('/ui/icons/Icon_Coin2.png', (loadedTexture) => {
+    loadedTexture.magFilter = NearestFilter;
+    loadedTexture.minFilter = NearestFilter;
+    coinShaderMaterial = new CoinHoverShaderMaterial(loadedTexture);
+  });
 
   // Add animation loop for shader time uniform
   useTask(() => {
@@ -488,7 +464,8 @@
     visibleLandTiles.forEach((tile, index) => {
       if (BuildingLand.is(tile.land)) {
         // Calculate land index to check ownership
-        const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex =
+          tile.land.location.x * GRID_SIZE + tile.land.location.y;
         if (ownedGridIndicesSet.has(landIndex)) {
           ownedVisibleIndices.push(index);
         }
@@ -539,21 +516,10 @@
 
 {#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
   <T is={Group}>
-    <!-- Transparent interaction planes layer (now also renders roads) -->
-    <!-- {#if interactionPlanes && devsettings.showRoads}
-      <T
-        is={interactionPlanes}
-        interactive={true}
-        onpointerenter={handlePlaneHover}
-        onpointerleave={handlePlaneLeave}
-        onclick={handleClickToSelectHovered}
-      />
-    {/if} -->
-
     <!-- Road sprites (middle layer) -->
     {#if devsettings.showRoads}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
@@ -565,7 +531,7 @@
     <!-- Biome sprites (background layer) -->
     {#if devsettings.showBiomes}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
@@ -580,22 +546,10 @@
       </InstancedSprite>
     {/if}
 
-    <!-- FOG OF WAR LAYER -->
-    <!-- {#if devsettings.showFog}
-      <InstancedSprite
-        count={visibleLandTiles.length}
-        {billboarding}
-        spritesheet={fogSpritesheet}
-        fps={1}
-      >
-        <FogSprite landTiles={visibleLandTiles} />
-      </InstancedSprite>
-    {/if} -->
-
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
@@ -612,7 +566,7 @@
 
     {#if devsettings.showNukes}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
@@ -658,8 +612,6 @@
     {#if devsettings.showArtLayer && artLayerMesh}
       <T is={artLayerMesh} />
     {/if}
-
-    <!-- Owned land darkening is now handled by the shader system -->
 
     <!-- Clouds positioned at land bounds -->
     {#if devsettings.showClouds}
