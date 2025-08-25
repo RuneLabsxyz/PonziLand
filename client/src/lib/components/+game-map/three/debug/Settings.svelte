@@ -152,6 +152,7 @@
       max={1}
       step={0.1}
     />
+    <Checkbox bind:value={devsettings.showClouds} label="Clouds" />
   </Folder>
   <Folder title="Debug">
     <Monitor label="Grid X" value={cursorStore.gridPosition?.x ?? -1} />

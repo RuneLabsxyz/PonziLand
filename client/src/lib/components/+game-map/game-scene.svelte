@@ -70,8 +70,7 @@
           const gridId = gridX * GRID_SIZE + gridZ;
           cursorStore.gridPosition = { x: gridX, y: gridZ, id: gridId };
 
-          // Set hoveredTileIndex to the gridId for direct mapping
-          cursorStore.hoveredTileIndex = gridId;
+          // hoveredTileIndex will be calculated in land-sprite.svelte based on visibleLandTiles
 
           // Add cursor pointer styling when hovering over valid grid
           document.body.classList.add('cursor-pointer');
