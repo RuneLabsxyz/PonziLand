@@ -14,6 +14,33 @@
   import { GRID_SIZE } from '$lib/const';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
+  
+  let canvasError = $state(false);
+  let errorMessage = $state('');
+  let canvasReady = $state(false);
+  
+  // Check WebGL support before trying to render
+  function checkWebGLSupport(): boolean {
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      return !!(gl && (gl as WebGLRenderingContext).getParameter);
+    } catch (e) {
+      return false;
+    }
+  }
+  
+  // Initialize canvas after component mounts
+  if (typeof window !== 'undefined') {
+    setTimeout(() => {
+      if (!checkWebGLSupport()) {
+        canvasError = true;
+        errorMessage = 'WebGL is not supported on this device or browser.';
+      } else {
+        canvasReady = true;
+      }
+    }, 100);
+  }
 
   // Show dev tools if URL ends with #dev
   let showDevTools = $state(false);
@@ -37,7 +64,24 @@
 </script>
 
 <div id="game-canvas" style="height: 100%; width: 100%;">
-  <Canvas shadows={PCFSoftShadowMap}>
+  {#if canvasError}
+    <div class="h-full w-full bg-black flex items-center justify-center">
+      <div class="text-center p-8 bg-gray-900 rounded-lg border border-gray-700 max-w-sm">
+        <svg class="w-12 h-12 mx-auto text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 15.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+        <h3 class="text-lg font-bold text-white mb-2">Rendering Error</h3>
+        <p class="text-gray-300 text-sm mb-4">{errorMessage}</p>
+        <button 
+          class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 px-4 rounded transition-colors"
+          onclick={() => window.location.reload()}
+        >
+          Reload
+        </button>
+      </div>
+    </div>
+  {:else if canvasReady}
+    <Canvas shadows={PCFSoftShadowMap}>
     {#if showDevTools}
       <PerfMonitor />
     {/if}
@@ -77,9 +121,10 @@
       />
     {/if}
     <Scene />
-  </Canvas>
-  {#if showDevTools}
-    <Debug />
+    </Canvas>
+    {#if showDevTools}
+      <Debug />
+    {/if}
   {/if}
 </div>
 
