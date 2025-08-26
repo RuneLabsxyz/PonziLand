@@ -10,6 +10,7 @@
   } from 'three';
   import type * as THREE from 'three';
   import { gameStore } from './game.store.svelte';
+  import { cursorStore } from './cursor.store.svelte';
   import { onMount } from 'svelte';
   import seedrandom from 'seedrandom';
 
@@ -29,6 +30,7 @@
   const LAND_EXCLUSION_PADDING = 10; // Extra padding around land bounds
   const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
   const MAX_INSTANCES = 256 ** 2; // Max instances for instanced mesh
+  const MAX_INFLUENCE_DISTANCE = 10; // Maximum distance for mouse influence
 
   // Load clouds GLB using useGltf hook with proper typing
   const gltf = useGltf<{
@@ -279,9 +281,32 @@
           const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
           const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
 
+          // Add mouse-based movement for border clouds
+          let mouseInfluenceX = 0;
+          let mouseInfluenceZ = 0;
+          if (cursorStore.absolutePosition) {
+            const mouseX = cursorStore.absolutePosition.x;
+            const mouseZ = cursorStore.absolutePosition.y;
+            const distanceFromMouse = Math.sqrt(
+              (x - mouseX) ** 2 + (z - mouseZ) ** 2,
+            );
+
+            if (distanceFromMouse < MAX_INFLUENCE_DISTANCE) {
+              const influence = Math.max(
+                0,
+                1 - distanceFromMouse / MAX_INFLUENCE_DISTANCE,
+              );
+              const directionX = (x - mouseX) / distanceFromMouse || 0;
+              const directionZ = (z - mouseZ) / distanceFromMouse || 0;
+
+              mouseInfluenceX = directionX * influence; // Clouds move away from mouse
+              mouseInfluenceZ = directionZ * influence;
+            }
+          }
+
           positions.push({
-            x: x + movementX,
-            y: z + movementZ,
+            x: x + movementX + mouseInfluenceX,
+            y: z + movementZ + mouseInfluenceZ,
             z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob,
             scale: 0.8 + rng() * 0.4,
             rotation: Math.floor(rng() * 4) * (Math.PI / 2),
@@ -345,8 +370,8 @@
   intensity={4.5}
   color="#ffffff"
   castShadow={true}
-  shadow.mapSize.width={4096*2}
-  shadow.mapSize.height={4096*2}
+  shadow.mapSize.width={4096 * 2}
+  shadow.mapSize.height={4096 * 2}
   shadow.camera.near={0.1}
   shadow.camera.far={500}
   shadow.camera.left={-200}
