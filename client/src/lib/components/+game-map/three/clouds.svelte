@@ -292,12 +292,16 @@
             );
 
             if (distanceFromMouse < MAX_INFLUENCE_DISTANCE) {
+              // Prevent division by zero and add minimum distance
+              const minDistance = 0.5;
+              const adjustedDistance = Math.max(distanceFromMouse, minDistance);
+              
               const influence = Math.max(
                 0,
-                1 - distanceFromMouse / MAX_INFLUENCE_DISTANCE,
+                1 - adjustedDistance / MAX_INFLUENCE_DISTANCE,
               );
-              const directionX = (x - mouseX) / distanceFromMouse || 0;
-              const directionZ = (z - mouseZ) / distanceFromMouse || 0;
+              const directionX = (x - mouseX) / adjustedDistance;
+              const directionZ = (z - mouseZ) / adjustedDistance;
 
               mouseInfluenceX = directionX * influence; // Clouds move away from mouse
               mouseInfluenceZ = directionZ * influence;
