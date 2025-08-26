@@ -295,7 +295,7 @@
               // Prevent division by zero and add minimum distance
               const minDistance = 0.5;
               const adjustedDistance = Math.max(distanceFromMouse, minDistance);
-              
+
               const influence = Math.max(
                 0,
                 1 - adjustedDistance / MAX_INFLUENCE_DISTANCE,
@@ -392,9 +392,7 @@
   receiveShadow={true}
 >
   <T.PlaneGeometry args={[100, 100]} />
-  <T.ShadowMaterial
-    opacity={0.1}
-  />
+  <T.ShadowMaterial opacity={0.1} />
 </T.Mesh>
 
 <!-- Test cube to verify shadows -->
