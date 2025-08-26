@@ -46,7 +46,7 @@ mod TaxesComponent {
 
     // Utils
     use ponzi_land::utils::common_strucs::{TokenInfo};
-    use ponzi_land::utils::math::{u64_saturating_sub, u64_saturating_add};
+    use ponzi_land::utils::math::{u64_saturating_sub, u64_saturating_add, u256_saturating_mul};
     use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
     use ponzi_land::utils::get_neighbors::get_land_neighbors;
 
@@ -117,7 +117,12 @@ mod TaxesComponent {
 
 
         /// @notice Main tax claiming function - handles both regular claims and nuke scenarios
-        /// @dev Core function that processes tax claims between neighboring lands.
+        /// @dev This function can be called in three contexts:
+        /// 1. Regular claim: claimer claims from tax_payer
+        /// 2. Last claim: nuked land (tax_payer) claims from neighbor (claimer) before deletion
+        /// 3. Buy/Sale claim: when a sale happens we execute the last claim for the seller and also
+        /// the last claim for the neighbors of the seller @dev Core function that processes tax
+        /// claims between neighboring lands.
         /// Implements sophisticated algorithm:
         /// 1) Check if land has sufficient stake for max taxes,
         /// 2) If sufficient, process normal claim,
@@ -152,12 +157,14 @@ mod TaxesComponent {
 
             // Calculate theoretical maximum taxes if all neighbors claimed from the earliest time
             // This is used as a quick check to determine if the land is at risk of being nuked
-            let theoretical_max_payable = get_taxes_per_neighbor(
+            let tax_per_neighbor = get_taxes_per_neighbor(
                 tax_payer, elapsed_earliest_claim_time, store,
-            )
-                * num_active_neighbors.into();
+            );
+            let theoretical_max_payable = u256_saturating_mul(
+                tax_per_neighbor, num_active_neighbors.into(),
+            );
             // Safe path: land has sufficient stake to handle maximum possible taxes
-            if payer_stake.amount > theoretical_max_payable.into() {
+            if payer_stake.amount > theoretical_max_payable {
                 // Calculate actual taxes owed to this specific claimer
                 let elapsed_time = self
                     .get_elapsed_time_since_last_claim(
@@ -253,6 +260,7 @@ mod TaxesComponent {
                     store,
                 );
             if total_taxes >= payer_stake.amount {
+                // Process nuke distribution first
                 self
                     ._handle_nuke(
                         store,
@@ -265,27 +273,6 @@ mod TaxesComponent {
                         claim_fee_threshold,
                         our_contract_for_fee,
                     );
-
-                //last claim for nuked land
-                for neighbor in neighbors_of_tax_payer {
-                    let mut neghbor_stake = store.land_stake(*neighbor.location);
-
-                    self
-                        .claim(
-                            store,
-                            tax_payer,
-                            neighbor,
-                            ref neghbor_stake,
-                            current_time,
-                            our_contract_address,
-                            claim_fee,
-                            claim_fee_threshold,
-                            our_contract_for_fee,
-                        );
-                    store.set_land_stake(neghbor_stake);
-                };
-                payer_stake.amount = 0;
-                store.set_land_stake(payer_stake);
 
                 true
             } else {
@@ -334,25 +321,37 @@ mod TaxesComponent {
             store: Store,
             tax_payer: @Land,
             ref tax_payer_stake: LandStake,
-            cache_elapased_time: Array<(u16, ContractAddress, u64)>,
+            cache_elapased_time: Array<(ContractAddress, u64)>,
             total_elapsed_time: u64,
             our_contract_address: ContractAddress,
             claim_fee: u128,
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
         ) {
-            let mut tax_amount_for_neighbor: Array<(u16, ContractAddress, u256)> =
-                ArrayTrait::new();
-            for (location, neighbor_address, elapsed_time) in cache_elapased_time {
+            let mut tax_amount_for_neighbor: Array<(ContractAddress, u256)> = ArrayTrait::new();
+            let mut total_shares_calculated: u256 = 0;
+            let mut total_fee_amount: u256 = 0;
+            for (neighbor_address, elapsed_time) in cache_elapased_time {
                 let share_for_neighbor = calculate_share_for_nuke(
                     elapsed_time, total_elapsed_time, tax_payer_stake.amount,
                 );
+
                 let (share_for_neighbor, fee_amount) = calculate_and_return_taxes_with_fee(
                     share_for_neighbor, claim_fee,
                 );
+
                 tax_payer_stake.accumulated_taxes_fee += fee_amount;
-                tax_amount_for_neighbor.append((location, neighbor_address, share_for_neighbor));
+                total_fee_amount += fee_amount.into();
+                tax_amount_for_neighbor.append((neighbor_address, share_for_neighbor));
+                total_shares_calculated += share_for_neighbor;
             };
+
+            // Add remainder from precision loss to fees
+            let distributed_total = total_shares_calculated + total_fee_amount;
+            let remainder = tax_payer_stake.amount - distributed_total;
+            if remainder > 0 {
+                tax_payer_stake.accumulated_taxes_fee += remainder.try_into().unwrap();
+            }
 
             self
                 ._distribute_nuke(
@@ -364,6 +363,9 @@ mod TaxesComponent {
                     claim_fee_threshold,
                     our_contract_for_fee,
                 );
+
+            tax_payer_stake.amount = 0;
+            store.set_land_stake(tax_payer_stake);
         }
 
         /// @notice Calculates when a land will be nuked if no additional stake is added
@@ -420,10 +422,10 @@ mod TaxesComponent {
             land_stake_amount: u256,
             current_time: u64,
             store: Store,
-        ) -> (u256, u256, Array<(u16, ContractAddress, u64)>, u64) {
+        ) -> (u256, u256, Array<(ContractAddress, u64)>, u64) {
             let mut total_taxes: u256 = 0;
             let mut tax_for_claimer: u256 = 0;
-            let mut cache_elapsed_time: Array<(u16, ContractAddress, u64)> = ArrayTrait::new();
+            let mut cache_elapsed_time: Array<(ContractAddress, u64)> = ArrayTrait::new();
             let mut total_elapsed_time: u64 = 0;
             for neighbor in neighbors_of_tax_payer {
                 let neighbor_location = *neighbor.location;
@@ -432,7 +434,7 @@ mod TaxesComponent {
                         neighbor_location, *tax_payer.location, current_time,
                     );
                 total_elapsed_time += elapsed_time;
-                cache_elapsed_time.append((neighbor_location, *neighbor.owner, elapsed_time));
+                cache_elapsed_time.append((*neighbor.owner, elapsed_time));
                 let tax_per_neighbor = get_taxes_per_neighbor(tax_payer, elapsed_time, store);
                 total_taxes += tax_per_neighbor;
 
@@ -450,12 +452,19 @@ mod TaxesComponent {
             store: Store,
             nuked_land: @Land,
             ref nuked_land_stake: LandStake,
-            neighbors_of_nuked_land: Span<(u16, ContractAddress, u256)>,
+            neighbors_of_nuked_land: Span<(ContractAddress, u256)>,
             our_contract_address: ContractAddress,
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
         ) {
-            for (neighbor_location, neighbor_address, tax_amount) in neighbors_of_nuked_land {
+            let mut total_to_distribute: u256 = 0;
+            for (_, tax_amount) in neighbors_of_nuked_land {
+                total_to_distribute += *tax_amount;
+            };
+
+            assert(total_to_distribute <= nuked_land_stake.amount, 'Distribution of nuke > stake');
+
+            for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
                 self
                     ._transfer_tokens(
                         *neighbor_address,
@@ -467,10 +476,6 @@ mod TaxesComponent {
                         our_contract_for_fee,
                         true,
                     );
-                if let Option::Some(updated_stake) =
-                    remove_neighbor(store.land_stake(*neighbor_location)) {
-                    store.set_land_stake(updated_stake);
-                }
             }
         }
 

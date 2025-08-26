@@ -105,7 +105,6 @@ pub mod actions {
     // Core Cairo imports
     use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
     use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
-
     // Starknet imports
     use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
     use starknet::contract_address::ContractAddressZeroable;
@@ -161,7 +160,9 @@ pub mod actions {
         get_circle_land_position, get_random_index, lands_per_section, is_section_completed,
         get_random_available_index,
     };
-    use ponzi_land::helpers::land::{update_neighbors_info, add_neighbor};
+    use ponzi_land::helpers::land::{
+        update_neighbors_info, add_neighbor, update_neighbors_after_delete,
+    };
 
     // Errors
     use ponzi_land::errors::{ERC20_VALIDATE_AMOUNT_BUY};
@@ -765,32 +766,82 @@ pub mod actions {
 
         fn nuke(
             ref self: ContractState,
+            mut store: Store,
             mut land: Land,
             ref land_stake: LandStake,
             has_liquidity_requirements: bool,
+            current_time: u64,
+            our_contract_address: ContractAddress,
+            claim_fee: u128,
+            claim_fee_threshold: u128,
+            our_contract_for_fee: ContractAddress,
         ) {
-            let mut world = self.world_default();
-            let mut store = StoreTrait::new(world);
+            let owner_nuked = land.owner;
+            let neighbors = get_land_neighbors(store, land.location);
+
             if !has_liquidity_requirements && land_stake.amount >= 0 {
-                self.stake._refund(store, land, get_contract_address());
+                self.stake._refund(store, land, our_contract_address);
                 land_stake = store.land_stake(land.location);
             }
+
             assert(land_stake.amount == 0, 'land not valid to nuke');
 
-            let owner_nuked = land.owner;
-            store.delete_land(land, land_stake);
+            //Last claim for nuked land
+            for neighbor in neighbors {
+                let mut neighbor_stake = store.land_stake(*neighbor.location);
 
-            world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
+                if *neighbor.owner != ContractAddressZeroable::zero()
+                    && neighbor_stake.amount > 0
+                    && *neighbor.location != land.location {
+                    let is_neighbor_nuked = self
+                        .taxes
+                        .claim(
+                            store,
+                            @land,
+                            neighbor,
+                            ref neighbor_stake,
+                            current_time,
+                            our_contract_address,
+                            claim_fee,
+                            claim_fee_threshold,
+                            our_contract_for_fee,
+                        );
+
+                    let has_neighbor_liquidity = store
+                        .world
+                        .token_registry_dispatcher()
+                        .is_token_authorized(*neighbor.token_used);
+
+                    if (is_neighbor_nuked || !has_neighbor_liquidity) {
+                        //we nuked and we execute in recursive way the last claim
+                        self
+                            .nuke(
+                                store,
+                                *neighbor,
+                                ref neighbor_stake,
+                                has_neighbor_liquidity,
+                                current_time,
+                                our_contract_address,
+                                claim_fee,
+                                claim_fee_threshold,
+                                our_contract_for_fee,
+                            );
+                    }
+                }
+            };
+
+            //Delete land and update neighbor_info_packed for the neighbors
+            store.delete_land(land, land_stake);
+            update_neighbors_after_delete(store, neighbors);
+            store.world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
 
             let sell_price = get_suggested_sell_price(store, land.location);
-
             self
                 .auction
                 .create(
                     store, land.location, sell_price, store.get_floor_price(), true, Option::None,
                 );
         }
-
 
         fn execute_claim(
             ref self: ContractState,
@@ -828,7 +879,18 @@ pub mod actions {
                         .is_token_authorized(*tax_payer.token_used);
 
                     if (is_nuke || !has_liquidity_requirements) && !from_buy {
-                        self.nuke(*tax_payer, ref tax_payer_stake, has_liquidity_requirements);
+                        self
+                            .nuke(
+                                store,
+                                *tax_payer,
+                                ref tax_payer_stake,
+                                has_liquidity_requirements,
+                                current_time,
+                                our_contract_address,
+                                claim_fee,
+                                claim_fee_threshold,
+                                our_contract_for_fee,
+                            );
                     }
                 };
             }
