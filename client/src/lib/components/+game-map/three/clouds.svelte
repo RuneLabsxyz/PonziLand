@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { T } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import { useGltf } from '@threlte/extras';
   import {
     Object3D,
@@ -45,6 +45,7 @@
   let cameraPosition = $state({ x: 0, z: 0 }); // Reactive camera position
   let currentRenderDistance = $state({ x: 50, z: 50 }); // Default render distances
   let screenSize = $state({ width: 1920, height: 1080 }); // Default screen size
+  let time = $state(0); // Time for cloud animation
 
   // Set up camera controls update event listener
   onMount(() => {
@@ -130,6 +131,11 @@
     };
   });
 
+  // Animate clouds with subtle movement
+  useTask((delta) => {
+    time += delta * 0.1; // Very slow time progression (0.1x speed)
+  });
+
   // Generate dense cloud grid around camera, excluding land bounds
   let cloudPositions = $derived.by(() => {
     if (!cloudMeshSize) {
@@ -195,8 +201,13 @@
         const offsetX = (rng() - 0.5) * CLOUD_SPACING * 0.8;
         const offsetZ = (rng() - 0.5) * CLOUD_SPACING * 0.8;
 
-        const randomOffsetX = offsetX;
-        const randomOffsetZ = offsetZ;
+        // Add subtle movement based on time
+        const movementX = Math.sin(time + rng() * Math.PI * 2) * 0.3;
+        const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
+        const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
+
+        const randomOffsetX = offsetX + movementX;
+        const randomOffsetZ = offsetZ + movementZ;
 
         const positionOffsetX = CLOUD_POSITION_OFFSET;
         const positionOffsetZ = CLOUD_POSITION_OFFSET;
@@ -204,7 +215,7 @@
         positions.push({
           x: x + randomOffsetX + positionOffsetX,
           y: z + randomOffsetZ + positionOffsetZ,
-          z: CLOUDS_HEIGHT + (rng() - 0.5) * 3, // Height variation ±1.5 units
+          z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob, // Height variation + bobbing
           scale: 0.8 + rng() * 0.4, // Scale variation 0.8 - 1.2
           rotation: Math.floor(rng() * 4) * (Math.PI / 2), // 0°, 90°, 180°, or 270°
           opacity: 0.7 + rng() * 0.3, // Opacity variation 0.7 - 1.0
@@ -263,10 +274,15 @@
         ) {
           const rng = seedrandom(`edge-${x},${z}`);
 
+          // Add subtle movement based on time for edge clouds
+          const movementX = Math.sin(time + rng() * Math.PI * 2) * 0.3;
+          const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
+          const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
+
           positions.push({
-            x: x,
-            y: z,
-            z: CLOUDS_HEIGHT + (rng() - 0.5) * 3,
+            x: x + movementX,
+            y: z + movementZ,
+            z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob,
             scale: 0.8 + rng() * 0.4,
             rotation: Math.floor(rng() * 4) * (Math.PI / 2),
             opacity: 0.7 + rng() * 0.3,
