@@ -29,7 +29,8 @@
   function isWebGLSupported(): boolean {
     try {
       const canvas = document.createElement('canvas');
-      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      const gl =
+        canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       return !!(gl && (gl as WebGLRenderingContext).getParameter);
     } catch (e) {
       return false;
@@ -45,7 +46,8 @@
   function handleCanvasError(error: Error) {
     console.error('Canvas/WebGL Error:', error);
     canvasError = true;
-    canvasErrorMessage = error.message || 'An error occurred while initializing the 3D graphics.';
+    canvasErrorMessage =
+      error.message || 'An error occurred while initializing the 3D graphics.';
     loading = false;
   }
 
@@ -70,7 +72,8 @@
   if (typeof window !== 'undefined') {
     if (!isWebGLSupported()) {
       webGLSupported = false;
-      webGLError = 'WebGL is not supported on this device or browser. Please try updating your browser or enabling hardware acceleration.';
+      webGLError =
+        'WebGL is not supported on this device or browser. Please try updating your browser or enabling hardware acceleration.';
       loading = false;
     }
   }
@@ -142,14 +145,18 @@
       })
       .catch((err) => {
         console.error('An error occurred:', err);
-        
+
         // Check if the error might be WebGL related
-        if (err.message && (err.message.includes('WebGL') || err.message.includes('canvas'))) {
+        if (
+          err.message &&
+          (err.message.includes('WebGL') || err.message.includes('canvas'))
+        ) {
           webGLSupported = false;
           webGLError = err.message;
         } else {
           canvasError = true;
-          canvasErrorMessage = 'Failed to initialize the game. Please try refreshing the page.';
+          canvasErrorMessage =
+            'Failed to initialize the game. Please try refreshing the page.';
         }
         loading = false;
       });
@@ -191,16 +198,30 @@
   {#if !webGLSupported}
     <!-- WebGL Error Fallback -->
     <div class="h-screen w-screen bg-black flex items-center justify-center">
-      <div class="max-w-md mx-auto text-center p-8 bg-gray-900 rounded-lg border border-gray-700">
+      <div
+        class="max-w-md mx-auto text-center p-8 bg-gray-900 rounded-lg border border-gray-700"
+      >
         <div class="mb-6">
-          <svg class="w-16 h-16 mx-auto text-red-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 15.5c-.77.833.192 2.5 1.732 2.5z" />
+          <svg
+            class="w-16 h-16 mx-auto text-red-500 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.314 15.5c-.77.833.192 2.5 1.732 2.5z"
+            />
           </svg>
-          <h2 class="text-2xl font-bold text-white mb-2">WebGL Not Supported</h2>
+          <h2 class="text-2xl font-bold text-white mb-2">
+            WebGL Not Supported
+          </h2>
         </div>
         <p class="text-gray-300 mb-6">{webGLError}</p>
         <div class="space-y-4">
-          <button 
+          <button
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
             onclick={() => window.location.reload()}
           >
@@ -223,16 +244,28 @@
   {:else if canvasError}
     <!-- Canvas Runtime Error Fallback -->
     <div class="h-screen w-screen bg-black flex items-center justify-center">
-      <div class="max-w-md mx-auto text-center p-8 bg-gray-900 rounded-lg border border-gray-700">
+      <div
+        class="max-w-md mx-auto text-center p-8 bg-gray-900 rounded-lg border border-gray-700"
+      >
         <div class="mb-6">
-          <svg class="w-16 h-16 mx-auto text-orange-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <svg
+            class="w-16 h-16 mx-auto text-orange-500 mb-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
           </svg>
           <h2 class="text-2xl font-bold text-white mb-2">Graphics Error</h2>
         </div>
         <p class="text-gray-300 mb-6">{canvasErrorMessage}</p>
         <div class="space-y-4">
-          <button 
+          <button
             class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors"
             onclick={() => window.location.reload()}
           >
