@@ -19,8 +19,8 @@
   let { bounds }: Props = $props();
 
   const CLOUDS_HEIGHT = 4; // Position clouds above the grid
-  const CLOUD_SPACING = 6; // Distance between clouds in grid
-  const LAND_EXCLUSION_PADDING = 9; // Extra padding around land bounds
+  const CLOUD_SPACING = 4; // Distance between clouds in grid
+  const LAND_EXCLUSION_PADDING = 10; // Extra padding around land bounds
   const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
   const MAX_INSTANCES = 256 ** 2; // Max instances for instanced mesh
 
@@ -66,11 +66,11 @@
         // X axis corresponds to screen height, Z axis to screen width
         // Higher zoom = smaller render distance (more zoomed in = see less area)
         const newRenderDistanceZ = Math.max(
-          CLOUD_SPACING * 2,
+          LAND_EXCLUSION_PADDING * 2,
           screenSize.height / zoom,
         ); // Height-based
         const newRenderDistanceX = Math.max(
-          CLOUD_SPACING * 2,
+          LAND_EXCLUSION_PADDING * 2,
           screenSize.width / zoom,
         ); // Width-based
 
@@ -290,7 +290,7 @@
           cloudMaterial,
           MAX_INSTANCES,
         );
-        cloudsInstancedMesh.frustumCulled = false;
+        cloudsInstancedMesh.frustumCulled = true;
       }
     }
   });
@@ -317,7 +317,7 @@
 <!-- Sun lighting -->
 <T.DirectionalLight
   position={[100, 150, 50]}
-  intensity={2}
+  intensity={4.5}
   color="#ffffff"
   castShadow={true}
 />
