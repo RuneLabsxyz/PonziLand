@@ -392,11 +392,8 @@
   receiveShadow={true}
 >
   <T.PlaneGeometry args={[100, 100]} />
-  <T.MeshStandardMaterial
-    color="#ffffff"
-    transparent={true}
+  <T.ShadowMaterial
     opacity={0.1}
-    alphaTest={0.099}
   />
 </T.Mesh>
 
