@@ -1,7 +1,13 @@
 <script lang="ts">
   import { T } from '@threlte/core';
   import { useGltf } from '@threlte/extras';
-  import { Object3D, InstancedMesh as TInstancedMesh, Vector3 } from 'three';
+  import {
+    Object3D,
+    InstancedMesh as TInstancedMesh,
+    Vector3,
+    PlaneGeometry,
+    MeshLambertMaterial,
+  } from 'three';
   import type * as THREE from 'three';
   import { gameStore } from './game.store.svelte';
   import { onMount } from 'svelte';
@@ -290,7 +296,7 @@
           cloudMaterial,
           MAX_INSTANCES,
         );
-        cloudsInstancedMesh.frustumCulled = true;
+        cloudsInstancedMesh.frustumCulled = false;
       }
     }
   });
@@ -304,23 +310,56 @@
         tempObject.position.set(position.x, position.z, position.y);
         tempObject.rotation.set(0, position.rotation, 0);
         tempObject.scale.set(position.scale, position.scale, position.scale);
+        tempObject.castShadow = true;
         tempObject.updateMatrix();
         cloudsInstancedMesh!.setMatrixAt(index, tempObject.matrix);
       });
 
+      cloudsInstancedMesh.castShadow = true;
       cloudsInstancedMesh.instanceMatrix.needsUpdate = true;
       cloudsInstancedMesh.count = cloudPositions.length;
+      // Enable shadow casting for clouds
     }
   });
 </script>
 
-<!-- Sun lighting -->
+<!-- Sun lighting with shadow configuration -->
 <T.DirectionalLight
-  position={[100, 150, 50]}
+  position={[-25, 200, 25]}
   intensity={4.5}
   color="#ffffff"
   castShadow={true}
+  shadow.mapSize.width={4096*2}
+  shadow.mapSize.height={4096*2}
+  shadow.camera.near={0.1}
+  shadow.camera.far={500}
+  shadow.camera.left={-200}
+  shadow.camera.right={200}
+  shadow.camera.top={200}
+  shadow.camera.bottom={-200}
+  shadow.bias={-0.0005}
 />
+
+<!-- Ground plane to receive shadows -->
+<T.Mesh
+  position={[127, 0.99, 127]}
+  rotation={[-Math.PI / 2, 0, 0]}
+  receiveShadow={true}
+>
+  <T.PlaneGeometry args={[100, 100]} />
+  <T.MeshStandardMaterial
+    color="#ffffff"
+    transparent={true}
+    opacity={0.1}
+    alphaTest={0.099}
+  />
+</T.Mesh>
+
+<!-- Test cube to verify shadows -->
+<!-- <T.Mesh position={[127, 5, 127]} castShadow={true}>
+  <T.BoxGeometry args={[3, 3, 3]} />
+  <T.MeshStandardMaterial color="#ff0000" />
+</T.Mesh> -->
 
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />
