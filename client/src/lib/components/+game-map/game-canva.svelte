@@ -6,6 +6,7 @@
     Grid,
     PerfMonitor,
   } from '@threlte/extras';
+  import { PCFSoftShadowMap } from 'three';
   import Scene from './game-scene.svelte';
   import { gameStore } from './three/game.store.svelte';
   import Debug from './three/debug/Debug.svelte';
@@ -36,7 +37,7 @@
 </script>
 
 <div id="game-canvas" style="height: 100%; width: 100%;">
-  <Canvas>
+  <Canvas shadows={PCFSoftShadowMap}>
     {#if showDevTools}
       <PerfMonitor />
     {/if}
