@@ -599,6 +599,7 @@ export class LandTileStore {
   }
 
   public updateLand(entity: ParsedEntity<SchemaType>): void {
+    console.log('Updating land for entity:', entity);
     const location = getLocationFromEntity(entity);
     if (location === undefined) return;
 
@@ -620,6 +621,7 @@ export class LandTileStore {
           lands[location.x][location.y] = newLand;
           return lands;
         });
+        console.log('Land deleted:', location);
         return { value: newLand };
       }
 
