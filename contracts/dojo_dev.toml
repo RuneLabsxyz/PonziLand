@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "ponzi_land"
+seed = "new_test"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -14,16 +14,65 @@ telegram = "https://t.me/dojoengine"
 
 [namespace]
 default = "ponzi_land"
-auth = "ponzi_land_auth"
-token_registry = "ponzi_land_token_registry"
 
 [env]
-rpc_url = "http://localhost:5050/"
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
 # Default account for katana with seed = 0
-account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+account_address = "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780"
+private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
+
 [writers]
-"ponzi_land" = ["ponzi_land-actions"]
-"ponzi_land_auth" = ["ponzi_land-auth"]
+# We need to be a writer to add events...
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
+
+[init_call_args]
+"ponzi_land-auth" = [
+    "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
+]
+
+"ponzi_land-token_registry" = [
+    "6",                                                                  # 6 tokens,
+    "0x1a58e61fbdfa3f6ce26e5c2236e02d6a9f2b37de65abeab1eac03dda653c652", # pltSTRK
+    "0xa4a077821c0035cae4b4dbb87f1321fc4846a6cd7361668ca521ce7ccf037c", # pltLORDS
+    "0xc477a0e4fbce9abfe4d613924bbc3e84f608de8083a498ca6e3d7ec9f4ceb3", # pltETH
+    "0x65262b33df048fe046be57e258d620604501b6607fe87d27d6580ae91d122c2", # pltPAPER
+    "0x44331438c25739cad5ca021bd958f115ac477bb1e212cdb3576cdd6201f7991", # pltBROTHER
+    "0x432940acb181a5456988398e88e96804b0b95de381f060c91b58c325e0c0fd7", # pltPAL
+]
+
+"ponzi_land-config" = [
+    "2",                                                                   # Tax rate
+    "3600",                                                                  # Base time
+    "2",                                                        # Price decrease rate
+    "5",                                                                 # Time speed
+    "16",                                                               # Max auctions
+    "3",                                                      # Max auctions from bid
+    "200",                                                                 # Decay rate
+    "100000000000000000","0",                                                                # Floor price
+    "3",                                               # Liquidity safety multiplier
+    "500000000000000000000","0",                                                          # Min auction price
+    "10",                                              # Min auction price multiplier
+    "436800",                                                           # Auction duration
+    "50",                                                             # Scaling factor
+    "12000",                                                          # Linear time decay
+    "90",                                                                  # Drop rate
+    "100",                                                           # Rate denominator
+    "127",                                                               # Max circles
+    "0",                                                                 # Claim fee
+    "0",                                                                   # Buy fee
+    "0",                                                      # Our contract for fee
+    "0",                                                  # Our contract for auction
+    "10",                                                       # Claim fee threshold
+    "0x1a58e61fbdfa3f6ce26e5c2236e02d6a9f2b37de65abeab1eac03dda653c652", # Main token
+]
+
+"ponzi_land-actions" = [
+    "128000000000000000000",                                              # Start price (low)
+    "0",                                                                  # Start price (high)
+    "1000000000000000000",                                                # Floor price (low)
+    "0",                                                                  # Floor price (high)
+    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
+    "0x1a58e61fbdfa3f6ce26e5c2236e02d6a9f2b37de65abeab1eac03dda653c652", # Main token
+]

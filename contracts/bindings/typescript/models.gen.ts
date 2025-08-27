@@ -15,7 +15,6 @@ export interface Auction {
 // Type definition for `ponzi_land::models::config::Config` struct
 export interface Config {
 	id: BigNumberish;
-	grid_width: BigNumberish;
 	tax_rate: BigNumberish;
 	base_time: BigNumberish;
 	price_decrease_rate: BigNumberish;
@@ -27,7 +26,6 @@ export interface Config {
 	liquidity_safety_multiplier: BigNumberish;
 	min_auction_price: BigNumberish;
 	min_auction_price_multiplier: BigNumberish;
-	center_location: BigNumberish;
 	auction_duration: BigNumberish;
 	scaling_factor: BigNumberish;
 	linear_decay_time: BigNumberish;
@@ -167,7 +165,6 @@ export const schema: SchemaType = {
 		},
 		Config: {
 			id: 0,
-			grid_width: 0,
 			tax_rate: 0,
 			base_time: 0,
 			price_decrease_rate: 0,
@@ -179,7 +176,6 @@ export const schema: SchemaType = {
 			liquidity_safety_multiplier: 0,
 		min_auction_price: 0,
 			min_auction_price_multiplier: 0,
-			center_location: 0,
 			auction_duration: 0,
 			scaling_factor: 0,
 			linear_decay_time: 0,

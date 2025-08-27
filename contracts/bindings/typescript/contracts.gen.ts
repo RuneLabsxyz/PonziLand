@@ -515,17 +515,17 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_auth_getOwner_calldata = (): DojoCall => {
+	const build_auth_isOwnerAuth_calldata = (address: string): DojoCall => {
 		return {
 			contractName: "auth",
-			entrypoint: "get_owner",
-			calldata: [],
+			entrypoint: "is_owner_auth",
+			calldata: [address],
 		};
 	};
 
-	const auth_getOwner = async () => {
+	const auth_isOwnerAuth = async (address: string) => {
 		try {
-			return await provider.call("ponzi_land", build_auth_getOwner_calldata());
+			return await provider.call("ponzi_land", build_auth_isOwnerAuth_calldata(address));
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -688,23 +688,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_config_getCenterLocation_calldata = (): DojoCall => {
-		return {
-			contractName: "config",
-			entrypoint: "get_center_location",
-			calldata: [],
-		};
-	};
-
-	const config_getCenterLocation = async () => {
-		try {
-			return await provider.call("ponzi_land", build_config_getCenterLocation_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_config_getClaimFee_calldata = (): DojoCall => {
 		return {
 			contractName: "config",
@@ -784,23 +767,6 @@ export function setupWorld(provider: DojoProvider) {
 	const config_getFloorPrice = async () => {
 		try {
 			return await provider.call("ponzi_land", build_config_getFloorPrice_calldata());
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_config_getGridWidth_calldata = (): DojoCall => {
-		return {
-			contractName: "config",
-			entrypoint: "get_grid_width",
-			calldata: [],
-		};
-	};
-
-	const config_getGridWidth = async () => {
-		try {
-			return await provider.call("ponzi_land", build_config_getGridWidth_calldata());
 		} catch (error) {
 			console.error(error);
 			throw error;
@@ -1091,27 +1057,6 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_config_setCenterLocation_calldata = (value: BigNumberish): DojoCall => {
-		return {
-			contractName: "config",
-			entrypoint: "set_center_location",
-			calldata: [value],
-		};
-	};
-
-	const config_setCenterLocation = async (snAccount: Account | AccountInterface, value: BigNumberish) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_config_setCenterLocation_calldata(value),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
 	const build_config_setClaimFee_calldata = (value: BigNumberish): DojoCall => {
 		return {
 			contractName: "config",
@@ -1217,40 +1162,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_config_setFullConfig_calldata = (gridWidth: BigNumberish, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, centerLocation: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish, mainCurrency: string): DojoCall => {
+	const build_config_setFullConfig_calldata = (taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish, mainCurrency: string): DojoCall => {
 		return {
 			contractName: "config",
 			entrypoint: "set_full_config",
-			calldata: [gridWidth, taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, centerLocation, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold, mainCurrency],
+			calldata: [taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold, mainCurrency],
 		};
 	};
 
-	const config_setFullConfig = async (snAccount: Account | AccountInterface, gridWidth: BigNumberish, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, centerLocation: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish, mainCurrency: string) => {
+	const config_setFullConfig = async (snAccount: Account | AccountInterface, taxRate: BigNumberish, baseTime: BigNumberish, priceDecreaseRate: BigNumberish, timeSpeed: BigNumberish, maxAuctions: BigNumberish, maxAuctionsFromBid: BigNumberish, decayRate: BigNumberish, floorPrice: BigNumberish, liquiditySafetyMultiplier: BigNumberish, minAuctionPrice: BigNumberish, minAuctionPriceMultiplier: BigNumberish, auctionDuration: BigNumberish, scalingFactor: BigNumberish, linearDecayTime: BigNumberish, dropRate: BigNumberish, rateDenominator: BigNumberish, maxCircles: BigNumberish, claimFee: BigNumberish, buyFee: BigNumberish, ourContractForFee: string, ourContractForAuction: string, claimFeeThreshold: BigNumberish, mainCurrency: string) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_config_setFullConfig_calldata(gridWidth, taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, centerLocation, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold, mainCurrency),
-				"ponzi_land",
-			);
-		} catch (error) {
-			console.error(error);
-			throw error;
-		}
-	};
-
-	const build_config_setGridWidth_calldata = (value: BigNumberish): DojoCall => {
-		return {
-			contractName: "config",
-			entrypoint: "set_grid_width",
-			calldata: [value],
-		};
-	};
-
-	const config_setGridWidth = async (snAccount: Account | AccountInterface, value: BigNumberish) => {
-		try {
-			return await provider.execute(
-				snAccount,
-				build_config_setGridWidth_calldata(value),
+				build_config_setFullConfig_calldata(taxRate, baseTime, priceDecreaseRate, timeSpeed, maxAuctions, maxAuctionsFromBid, decayRate, floorPrice, liquiditySafetyMultiplier, minAuctionPrice, minAuctionPriceMultiplier, auctionDuration, scalingFactor, linearDecayTime, dropRate, rateDenominator, maxCircles, claimFee, buyFee, ourContractForFee, ourContractForAuction, claimFeeThreshold, mainCurrency),
 				"ponzi_land",
 			);
 		} catch (error) {
@@ -1710,8 +1634,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildCanTakeActionCalldata: build_auth_canTakeAction_calldata,
 			ensureDeploy: auth_ensureDeploy,
 			buildEnsureDeployCalldata: build_auth_ensureDeploy_calldata,
-			getOwner: auth_getOwner,
-			buildGetOwnerCalldata: build_auth_getOwner_calldata,
+			isOwnerAuth: auth_isOwnerAuth,
+			buildIsOwnerAuthCalldata: build_auth_isOwnerAuth_calldata,
 			lockActions: auth_lockActions,
 			buildLockActionsCalldata: build_auth_lockActions_calldata,
 			removeAuthorized: auth_removeAuthorized,
@@ -1730,8 +1654,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetBaseTimeCalldata: build_config_getBaseTime_calldata,
 			getBuyFee: config_getBuyFee,
 			buildGetBuyFeeCalldata: build_config_getBuyFee_calldata,
-			getCenterLocation: config_getCenterLocation,
-			buildGetCenterLocationCalldata: build_config_getCenterLocation_calldata,
 			getClaimFee: config_getClaimFee,
 			buildGetClaimFeeCalldata: build_config_getClaimFee_calldata,
 			getClaimFeeThreshold: config_getClaimFeeThreshold,
@@ -1742,8 +1664,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildGetDropRateCalldata: build_config_getDropRate_calldata,
 			getFloorPrice: config_getFloorPrice,
 			buildGetFloorPriceCalldata: build_config_getFloorPrice_calldata,
-			getGridWidth: config_getGridWidth,
-			buildGetGridWidthCalldata: build_config_getGridWidth_calldata,
 			getLinearDecayTime: config_getLinearDecayTime,
 			buildGetLinearDecayTimeCalldata: build_config_getLinearDecayTime_calldata,
 			getLiquiditySafetyMultiplier: config_getLiquiditySafetyMultiplier,
@@ -1776,8 +1696,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetBaseTimeCalldata: build_config_setBaseTime_calldata,
 			setBuyFee: config_setBuyFee,
 			buildSetBuyFeeCalldata: build_config_setBuyFee_calldata,
-			setCenterLocation: config_setCenterLocation,
-			buildSetCenterLocationCalldata: build_config_setCenterLocation_calldata,
 			setClaimFee: config_setClaimFee,
 			buildSetClaimFeeCalldata: build_config_setClaimFee_calldata,
 			setClaimFeeThreshold: config_setClaimFeeThreshold,
@@ -1790,8 +1708,6 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetFloorPriceCalldata: build_config_setFloorPrice_calldata,
 			setFullConfig: config_setFullConfig,
 			buildSetFullConfigCalldata: build_config_setFullConfig_calldata,
-			setGridWidth: config_setGridWidth,
-			buildSetGridWidthCalldata: build_config_setGridWidth_calldata,
 			setLinearDecayTime: config_setLinearDecayTime,
 			buildSetLinearDecayTimeCalldata: build_config_setLinearDecayTime_calldata,
 			setLiquiditySafetyMultiplier: config_setLiquiditySafetyMultiplier,
