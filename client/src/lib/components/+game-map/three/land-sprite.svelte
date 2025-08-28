@@ -384,6 +384,7 @@
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
 
   // Filter to show tiles based on maxCircles configuration
+  // TODO: Performance on this is horrendous. Will need to optimize
   let visibleLandTiles = $derived.by(() => {
     const landPositions = generateCircleLandPositions(
       CENTER,
