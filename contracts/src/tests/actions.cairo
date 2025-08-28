@@ -98,7 +98,6 @@ fn neighbor_pool_key(base_address: ContractAddress, erc20_address: ContractAddre
 
     pool_key
 }
-
 fn deploy_erc20_with_pool(
     ekubo_testing_dispatcher: IEkuboCoreTestingDispatcher,
     main_currency: ContractAddress,
@@ -322,6 +321,7 @@ fn setup_liquidity_pool(
 }
 
 // Helper to deploy and authorize a neighbor token
+//TODO: DO THIS FOR THE 3 TOKENS, ERC20_N_1 2 AND 3
 fn deploy_and_authorize_neighbor_token(
     ekubo_testing: IEkuboCoreTestingDispatcher,
     main_currency: IERC20CamelDispatcher,
@@ -1334,3 +1334,317 @@ fn test_dynamic_grid() {
     let actual_max_circles = store.get_max_circles();
     assert(actual_max_circles == 2, 'max circles should be 2');
 }
+
+#[test]
+fn test_precision_in_nuke_distribution() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+        setup_test();
+    let our_contract_for_fee = store.get_our_contract_for_fee();
+
+    // Setup liquidity pool and neighbor tokens
+    setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
+    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
+
+    setup_test_block_env(1, 1000);
+
+    // Create center land
+    let next_location_1 = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        CENTER_LOCATION,
+        10000,
+        5000,
+        main_currency,
+    );
+
+    // Create first neighbor with very small stake (will be nuked)
+    let next_location_2 = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_location_1,
+        1000000,
+        3, // Very small stake
+        erc20_neighbor_1,
+    );
+
+    // Create second neighbor
+    initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_2(),
+        next_location_2,
+        1000000,
+        10000,
+        erc20_neighbor_2,
+    );
+
+    // Record initial balances
+    let initial_balance_center = erc20_neighbor_1.balanceOf(RECIPIENT());
+    let initial_balance_n2 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
+    let initial_balance_our_contract_for_fee = erc20_neighbor_1.balanceOf(our_contract_for_fee);
+    // Jump forward to accumulate taxes and trigger nuke
+    set_block_timestamp(50000);
+    set_contract_address(RECIPIENT());
+
+    actions_system.claim(CENTER_LOCATION);
+
+    // Check if neighbor 1 was nuked
+    let nuked_land = store.land(next_location_1);
+    assert(nuked_land.owner.is_zero(), 'land should be nuked');
+    // Land was nuked - check distribution
+    let final_balance_center = erc20_neighbor_1.balanceOf(RECIPIENT());
+    let final_balance_n2 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
+    let final_balance_our_contract_for_fee = erc20_neighbor_1.balanceOf(our_contract_for_fee);
+    let received_center = final_balance_center - initial_balance_center;
+    let received_n2 = final_balance_n2 - initial_balance_n2;
+    let received_our_contract_for_fee = final_balance_our_contract_for_fee
+        - initial_balance_our_contract_for_fee;
+
+    // The sum should equal the original stake (3)
+    assert(
+        received_center + received_n2 + received_our_contract_for_fee == 3,
+        'Distribution overflow detected',
+    );
+
+    // Check that at least some distribution occurred
+    assert(received_our_contract_for_fee > 0, 'Complete precision loss');
+}
+
+#[test]
+fn test_nuke_cascade() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+        setup_test();
+
+    // Setup liquidity pool and neighbor tokens
+    setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
+    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
+
+    setup_test_block_env(1, 1000);
+
+    // Create 4 lands using actions.cairo pattern
+    // intialize CENTER land with small stake (will be nuked)
+    let neighbor_1_location = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        FIRST_OWNER(),
+        CENTER_LOCATION,
+        10000,
+        5,
+        main_currency // Small stake for nuke
+    );
+
+    // initialize Neighbor 1 and capture location for neighbor 2
+    let neighbor_2_location = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        neighbor_1_location,
+        10000,
+        100,
+        erc20_neighbor_1,
+    );
+
+    // initialize Neighbor 2 and capture location for neighbor 3
+    let neighbor_3_location = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_2(),
+        neighbor_2_location,
+        10000,
+        100,
+        erc20_neighbor_2,
+    );
+
+    // initialize Neighbor 3 and capture location for neighbor 4
+    let neighbor_4_location = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_3(),
+        neighbor_3_location,
+        10000,
+        100,
+        erc20_neighbor_3,
+    );
+
+    // Record initial balances for ALL tokens involved in cascade
+    let game_contract = actions_system.contract_address;
+    let fee_contract = OUR_CONTRACT_FOR_FEE.try_into().unwrap();
+
+    // Track balances for each token type
+    let initial_main_balance_first = main_currency.balanceOf(FIRST_OWNER());
+    let initial_main_balance_n1 = main_currency.balanceOf(NEIGHBOR_1());
+    let initial_main_balance_n2 = main_currency.balanceOf(NEIGHBOR_2());
+    let initial_main_balance_n3 = main_currency.balanceOf(NEIGHBOR_3());
+    let initial_main_contract_balance = main_currency.balanceOf(game_contract);
+    let initial_main_fee_balance = main_currency.balanceOf(fee_contract);
+
+    let initial_erc1_balance_first = erc20_neighbor_1.balanceOf(FIRST_OWNER());
+    let initial_erc1_balance_n1 = erc20_neighbor_1.balanceOf(NEIGHBOR_1());
+    let initial_erc1_balance_n2 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
+    let initial_erc1_balance_n3 = erc20_neighbor_1.balanceOf(NEIGHBOR_3());
+    let initial_erc1_contract_balance = erc20_neighbor_1.balanceOf(game_contract);
+    let initial_erc1_fee_balance = erc20_neighbor_1.balanceOf(fee_contract);
+
+    let initial_erc2_balance_first = erc20_neighbor_2.balanceOf(FIRST_OWNER());
+    let initial_erc2_balance_n1 = erc20_neighbor_2.balanceOf(NEIGHBOR_1());
+    let initial_erc2_balance_n2 = erc20_neighbor_2.balanceOf(NEIGHBOR_2());
+    let initial_erc2_balance_n3 = erc20_neighbor_2.balanceOf(NEIGHBOR_3());
+    let initial_erc2_contract_balance = erc20_neighbor_2.balanceOf(game_contract);
+    let initial_erc2_fee_balance = erc20_neighbor_2.balanceOf(fee_contract);
+
+    let initial_erc3_balance_first = erc20_neighbor_3.balanceOf(FIRST_OWNER());
+    let initial_erc3_balance_n1 = erc20_neighbor_3.balanceOf(NEIGHBOR_1());
+    let initial_erc3_balance_n2 = erc20_neighbor_3.balanceOf(NEIGHBOR_2());
+    let initial_erc3_balance_n3 = erc20_neighbor_3.balanceOf(NEIGHBOR_3());
+    let initial_erc3_contract_balance = erc20_neighbor_3.balanceOf(game_contract);
+    let initial_erc3_fee_balance = erc20_neighbor_3.balanceOf(fee_contract);
+
+    // Trigger nuke cascade by claiming from a neighbor
+    set_block_timestamp(50000); // Large time jump to accumulate taxes
+    set_contract_address(NEIGHBOR_1());
+    actions_system.claim(neighbor_1_location);
+
+    // Validate nuke occurred
+    let center_land = store.land(CENTER_LOCATION);
+    assert(center_land.owner.is_zero(), 'Center should be nuked');
+    let final_center_stake = store.land_stake(CENTER_LOCATION).amount;
+    assert(final_center_stake == 0, 'Center stake should be 0');
+
+    // Record final balances for ALL tokens
+    let final_main_balance_first = main_currency.balanceOf(FIRST_OWNER());
+    let final_main_balance_n1 = main_currency.balanceOf(NEIGHBOR_1());
+    let final_main_balance_n2 = main_currency.balanceOf(NEIGHBOR_2());
+    let final_main_balance_n3 = main_currency.balanceOf(NEIGHBOR_3());
+    let final_main_contract_balance = main_currency.balanceOf(game_contract);
+    let final_main_fee_balance = main_currency.balanceOf(fee_contract);
+
+    let final_erc1_balance_first = erc20_neighbor_1.balanceOf(FIRST_OWNER());
+    let final_erc1_balance_n1 = erc20_neighbor_1.balanceOf(NEIGHBOR_1());
+    let final_erc1_balance_n2 = erc20_neighbor_1.balanceOf(NEIGHBOR_2());
+    let final_erc1_balance_n3 = erc20_neighbor_1.balanceOf(NEIGHBOR_3());
+    let final_erc1_contract_balance = erc20_neighbor_1.balanceOf(game_contract);
+    let final_erc1_fee_balance = erc20_neighbor_1.balanceOf(fee_contract);
+
+    let final_erc2_balance_first = erc20_neighbor_2.balanceOf(FIRST_OWNER());
+    let final_erc2_balance_n1 = erc20_neighbor_2.balanceOf(NEIGHBOR_1());
+    let final_erc2_balance_n2 = erc20_neighbor_2.balanceOf(NEIGHBOR_2());
+    let final_erc2_balance_n3 = erc20_neighbor_2.balanceOf(NEIGHBOR_3());
+    let final_erc2_contract_balance = erc20_neighbor_2.balanceOf(game_contract);
+    let final_erc2_fee_balance = erc20_neighbor_2.balanceOf(fee_contract);
+
+    let final_erc3_balance_first = erc20_neighbor_3.balanceOf(FIRST_OWNER());
+    let final_erc3_balance_n1 = erc20_neighbor_3.balanceOf(NEIGHBOR_1());
+    let final_erc3_balance_n2 = erc20_neighbor_3.balanceOf(NEIGHBOR_2());
+    let final_erc3_balance_n3 = erc20_neighbor_3.balanceOf(NEIGHBOR_3());
+    let final_erc3_contract_balance = erc20_neighbor_3.balanceOf(game_contract);
+    let final_erc3_fee_balance = erc20_neighbor_3.balanceOf(fee_contract);
+
+    // Record final land states (should be nuked/zero)
+    let final_land1_stake = store.land_stake(neighbor_1_location).amount;
+    let final_land2_stake = store.land_stake(neighbor_2_location).amount;
+    let final_land3_stake = store.land_stake(neighbor_3_location).amount;
+    let final_land4_stake = store.land_stake(neighbor_4_location).amount;
+
+    // Calculate total initial stakes (tokens in game contract)
+    let total_initial_contract_tokens = initial_main_contract_balance
+        + initial_erc1_contract_balance
+        + initial_erc2_contract_balance
+        + initial_erc3_contract_balance;
+
+    // Calculate total final stakes (should be 0 after cascade)
+    let total_final_contract_tokens = final_main_contract_balance
+        + final_erc1_contract_balance
+        + final_erc2_contract_balance
+        + final_erc3_contract_balance;
+
+    // Calculate tokens distributed to players (all token types)
+    let total_received_first = (final_main_balance_first - initial_main_balance_first)
+        + (final_erc1_balance_first - initial_erc1_balance_first)
+        + (final_erc2_balance_first - initial_erc2_balance_first)
+        + (final_erc3_balance_first - initial_erc3_balance_first);
+    let total_received_n1 = (final_main_balance_n1 - initial_main_balance_n1)
+        + (final_erc1_balance_n1 - initial_erc1_balance_n1)
+        + (final_erc2_balance_n1 - initial_erc2_balance_n1)
+        + (final_erc3_balance_n1 - initial_erc3_balance_n1);
+    let total_received_n2 = (final_main_balance_n2 - initial_main_balance_n2)
+        + (final_erc1_balance_n2 - initial_erc1_balance_n2)
+        + (final_erc2_balance_n2 - initial_erc2_balance_n2)
+        + (final_erc3_balance_n2 - initial_erc3_balance_n2);
+    let total_received_n3 = (final_main_balance_n3 - initial_main_balance_n3)
+        + (final_erc1_balance_n3 - initial_erc1_balance_n3)
+        + (final_erc2_balance_n3 - initial_erc2_balance_n3)
+        + (final_erc3_balance_n3 - initial_erc3_balance_n3);
+    let total_distributed_to_players = total_received_first
+        + total_received_n1
+        + total_received_n2
+        + total_received_n3;
+
+    // Calculate fees collected (all token types)
+    let total_fees_collected = (final_main_fee_balance - initial_main_fee_balance)
+        + (final_erc1_fee_balance - initial_erc1_fee_balance)
+        + (final_erc2_fee_balance - initial_erc2_fee_balance)
+        + (final_erc3_fee_balance - initial_erc3_fee_balance);
+
+    // Calculate total land stakes (should all be 0)
+    let total_final_land_stakes = final_center_stake
+        + final_land1_stake
+        + final_land2_stake
+        + final_land3_stake
+        + final_land4_stake;
+
+    // Total accounting: initial tokens = distributed + fees + remaining in contract + remaining in
+    // lands
+    let total_accounted = total_distributed_to_players
+        + total_fees_collected
+        + total_final_contract_tokens
+        + total_final_land_stakes;
+
+    // CRITICAL: All tokens from contract must be accounted for
+    assert(total_accounted == total_initial_contract_tokens, 'Token accounting failed');
+
+    // Verify contract released all staked tokens
+    assert(
+        total_final_contract_tokens < total_initial_contract_tokens,
+        'Contract should release tokens',
+    );
+
+    // Verify all lands were nuked
+    assert(final_center_stake == 0, 'Center should be nuked');
+    assert(final_land1_stake == 0, 'Land1 should be nuked');
+    assert(final_land2_stake == 0, 'Land2 should be nuked');
+    assert(final_land3_stake == 0, 'Land3 should be nuked');
+    assert(final_land4_stake == 0, 'Land4 should be nuked');
+
+    // Verify distribution occurred to players
+    assert(total_distributed_to_players > 0, 'No tokens distributed');
+    assert(
+        total_received_n1 > 0 || total_received_n2 > 0 || total_received_n3 > 0,
+        'one player should receive',
+    );
+
+    // Verify fees were collected
+    assert(total_fees_collected > 0, 'No fees collected');
+
+    // Verify total conservation of tokens
+    assert(total_accounted <= total_initial_contract_tokens, 'Cannot create tokens');
+}
+

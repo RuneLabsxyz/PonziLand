@@ -80,3 +80,16 @@ pub fn remove_neighbor(mut stake: LandStake) -> Option<LandStake> {
         Option::None
     }
 }
+
+/// Updates all neighbors of a deleted land to reflect that the land no longer exists
+/// This should be called AFTER the land is deleted from storage to maintain consistency
+#[inline(always)]
+pub fn update_neighbors_after_delete(store: Store, deleted_land_neighbors: Span<Land>) {
+    for neighbor in deleted_land_neighbors {
+        let neighbor_stake = store.land_stake(*neighbor.location);
+
+        if let Option::Some(updated_stake) = remove_neighbor(neighbor_stake) {
+            store.set_land_stake(updated_stake);
+        }
+    }
+}
