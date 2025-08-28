@@ -2,21 +2,13 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import accountState from '$lib/account.svelte';
-  import { padAddress } from '$lib/utils';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { nukeStore } from '$lib/stores/nuke.store.svelte';
-  import { gameSounds } from '$lib/stores/sfx.svelte';
-  import {
-    landStore,
-    selectedLand,
-    selectedLandWithActions,
-  } from '$lib/stores/store.svelte';
-  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+  import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
 
   // Allow passing a custom land store (for tutorials)
   interface Props {
-    store?: LandTileStore;
+    store?: typeof landStore;
   }
 
   let { store = landStore }: Props = $props();
@@ -25,7 +17,6 @@
     HTML,
     InstancedMesh,
     InstancedSprite,
-    Instance,
     buildSpritesheet,
     type SpritesheetMetadata,
   } from '@threlte/extras';
@@ -47,7 +38,6 @@
   import Coin from './coin.svelte';
   import RoadSprite from './road-sprite.svelte';
   import { cursorStore } from './cursor.store.svelte';
-  import FogSprite from './fog-sprite.svelte';
   import { gameStore } from './game.store.svelte';
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
@@ -55,9 +45,10 @@
   import NukeTimeDisplay from './nuke-time-display.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
-  import { BufferAttribute, Clock } from 'three';
+  import { Clock } from 'three';
   import { GRID_SIZE } from '$lib/const';
   import { configValues } from '$lib/stores/config.store.svelte';
+  import Clouds from './clouds.svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -167,6 +158,14 @@
 
   let landTiles: LandTile[] = $state([]);
 
+  // Calculate bounds of non-empty lands for clouds
+  let landBounds = $state<{
+    minX: number;
+    maxX: number;
+    minY: number;
+    maxY: number;
+  } | null>(null);
+
   // At the top, outside of any reactive context:
   const planeGeometry = new PlaneGeometry(1, 1);
   const roadTexture = new TextureLoader().load(
@@ -184,28 +183,9 @@
 
   // Cache coin geometry for better initialization performance
   const coinGeometry = new PlaneGeometry(0.3, 0.3);
-
-  let interactionPlanes: TInstancedMesh | undefined = $state();
   let artLayerMesh: TInstancedMesh | undefined = $state();
 
   onMount(() => {
-    // Create only 9 interaction planes (center + 8 neighbors)
-    interactionPlanes = new TInstancedMesh(planeGeometry, planeMaterial, 9);
-
-    const tempObject = new Object3D();
-
-    // Create interaction planes for center (127,127) and its 8 neighbors
-    for (let x = 0; x <= GRID_SIZE; x++) {
-      for (let y = 0; y <= GRID_SIZE; y++) {
-        const index = y * GRID_SIZE + x;
-        tempObject.position.set(y, 1 - 0.03, x);
-        tempObject.rotation.x = -Math.PI / 2;
-        tempObject.updateMatrix();
-        interactionPlanes.setMatrixAt(index, tempObject.matrix);
-      }
-    }
-    interactionPlanes.instanceMatrix.needsUpdate = true;
-
     // Create art layer mesh with same pattern as interaction planes
     artLayerMesh = new TInstancedMesh(
       planeGeometry,
@@ -220,6 +200,12 @@
 
   onMount(() => {
     landStore.getAllLands().subscribe((tiles) => {
+      // Calculate bounds while processing tiles
+      let minX = GRID_SIZE,
+        maxX = -1;
+      let minY = GRID_SIZE,
+        maxY = -1;
+
       landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
@@ -234,6 +220,17 @@
           skin = 'auction';
         }
 
+        // Update bounds when testing if auction or if building
+        if (BuildingLand.is(tile) || AuctionLand.is(tile)) {
+          const x = tile.location.x;
+          const y = tile.location.y;
+
+          minX = Math.min(minX, x);
+          maxX = Math.max(maxX, x);
+          minY = Math.min(minY, y);
+          maxY = Math.max(maxY, y);
+        }
+
         const gridX = tile.location.x;
         const gridY = tile.location.y;
 
@@ -245,6 +242,13 @@
           tile,
         );
       });
+
+      // Update land bounds after processing all tiles
+      if (minX > maxX || minY > maxY) {
+        landBounds = null;
+      } else {
+        landBounds = { minX, maxX, minY, maxY };
+      }
     });
   });
 
@@ -333,13 +337,33 @@
   let selectedLandTilePosition: [number, number, number] | undefined =
     $state(undefined);
 
+  // Reactive values for hover and selected tile indices based on grid position
+  let hoveredTileIndex = $derived.by(() => {
+    if (!cursorStore.gridPosition) return undefined;
+
+    // Find the tile index in visibleLandTiles that matches the grid position
+    return visibleLandTiles.findIndex(
+      (tile) =>
+        tile.position[0] === cursorStore.gridPosition!.x && // position[0] is gridX
+        tile.position[2] === cursorStore.gridPosition!.y, // position[2] is gridY
+    );
+  });
+
+  // Update cursor store with the correct hover index for other components
+  $effect(() => {
+    cursorStore.hoveredTileIndex =
+      hoveredTileIndex !== -1 ? hoveredTileIndex : undefined;
+  });
+
+  // Derive selected tile index from cursor store
+  let selectedTileIndex = $derived(cursorStore.selectedTileIndex);
+
   $effect(() => {
     if (
-      cursorStore.selectedTileIndex !== undefined &&
-      visibleLandTiles[cursorStore.selectedTileIndex]
+      selectedTileIndex !== undefined &&
+      visibleLandTiles[selectedTileIndex]
     ) {
-      const basePosition =
-        visibleLandTiles[cursorStore.selectedTileIndex].position;
+      const basePosition = visibleLandTiles[selectedTileIndex].position;
       selectedLandTilePosition = [
         basePosition[0],
         basePosition[1] + 0.1,
@@ -350,17 +374,12 @@
     }
   });
 
-  // Update your texture loading section
-  let texture = new TextureLoader().load(
-    '/ui/icons/Icon_Coin2.png',
-    (loadedTexture) => {
-      loadedTexture.magFilter = NearestFilter;
-      loadedTexture.minFilter = NearestFilter;
-
-      // Create the shader material after texture loads
-      coinShaderMaterial = new CoinHoverShaderMaterial(loadedTexture);
-    },
-  );
+  // Load coin texture and setup shader material
+  new TextureLoader().load('/ui/icons/Icon_Coin2.png', (loadedTexture) => {
+    loadedTexture.magFilter = NearestFilter;
+    loadedTexture.minFilter = NearestFilter;
+    coinShaderMaterial = new CoinHoverShaderMaterial(loadedTexture);
+  });
 
   // Add animation loop for shader time uniform
   useTask(() => {
@@ -419,7 +438,7 @@
     // Create a Set for O(1) lookup performance
     const ownedIndicesSet = new Set(ownedIndices);
 
-    // Filter tiles using the ownership index for better performance
+    // Filter visible tiles using the ownership index for better performance
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
 
@@ -429,28 +448,31 @@
     });
   });
 
-  // Reactive owned lands for shader-based darkening (up to 32 lands)
-  const maxOwnedLands = GRID_SIZE ** 2; // Match shader uniform array limit
-  let ownedLandIndices = $state<number[]>([]);
+  // Reactive owned lands for shader-based darkening adapted for visible tiles
+  let ownedLandIndices = $derived.by(() => {
+    if (!accountState.address || !visibleLandTiles) return [];
 
-  $effect(() => {
-    if (!accountState.address) {
-      ownedLandIndices = [];
-      return;
-    }
+    // Get the ownership index for fast lookup
+    const ownedGridIndices = store.getOwnedLandIndices(accountState.address);
+    if (ownedGridIndices.length === 0) return [];
 
-    // Get reactive store for current account
-    const ownedLandIndicesStore = store.getOwnedLandIndicesStore(
-      accountState.address,
-      maxOwnedLands,
-    );
+    // Create a Set for O(1) lookup performance
+    const ownedGridIndicesSet = new Set(ownedGridIndices);
 
-    // Subscribe to changes in the ownership index
-    const unsubscribe = ownedLandIndicesStore.subscribe((indices) => {
-      ownedLandIndices = indices;
+    // Map visible tiles to their indices if they are owned
+    const ownedVisibleIndices: number[] = [];
+    visibleLandTiles.forEach((tile, index) => {
+      if (BuildingLand.is(tile.land)) {
+        // Calculate land index to check ownership
+        const landIndex =
+          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        if (ownedGridIndicesSet.has(landIndex)) {
+          ownedVisibleIndices.push(index);
+        }
+      }
     });
 
-    return () => unsubscribe();
+    return ownedVisibleIndices;
   });
 
   // Art layer color mapping
@@ -492,23 +514,12 @@
   }
 </script>
 
-{#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
+{#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
   <T is={Group}>
-    <!-- Transparent interaction planes layer (now also renders roads) -->
-    <!-- {#if interactionPlanes && devsettings.showRoads}
-      <T
-        is={interactionPlanes}
-        interactive={true}
-        onpointerenter={handlePlaneHover}
-        onpointerleave={handlePlaneLeave}
-        onclick={handleClickToSelectHovered}
-      />
-    {/if} -->
-
     <!-- Road sprites (middle layer) -->
     {#if devsettings.showRoads}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
@@ -520,7 +531,7 @@
     <!-- Biome sprites (background layer) -->
     {#if devsettings.showBiomes}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
@@ -535,22 +546,10 @@
       </InstancedSprite>
     {/if}
 
-    <!-- FOG OF WAR LAYER -->
-    <!-- {#if devsettings.showFog}
-      <InstancedSprite
-        count={visibleLandTiles.length}
-        {billboarding}
-        spritesheet={fogSpritesheet}
-        fps={1}
-      >
-        <FogSprite landTiles={visibleLandTiles} />
-      </InstancedSprite>
-    {/if} -->
-
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
@@ -567,7 +566,7 @@
 
     {#if devsettings.showNukes}
       <InstancedSprite
-        count={GRID_SIZE * GRID_SIZE}
+        count={visibleLandTiles.length}
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
@@ -614,7 +613,10 @@
       <T is={artLayerMesh} />
     {/if}
 
-    <!-- Owned land darkening is now handled by the shader system -->
+    <!-- Clouds positioned at land bounds -->
+    {#if devsettings.showClouds}
+      <Clouds bounds={landBounds} />
+    {/if}
   </T>
 {/await}
 
