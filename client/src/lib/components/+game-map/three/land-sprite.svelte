@@ -497,7 +497,7 @@
 </script>
 
 {#await loadingStore.getAllSpritesheets() then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
-  <T is={Group}>
+  <T is={Group} receiveShadow={true}>
     <!-- Road sprites (middle layer) -->
     {#if devsettings.showRoads}
       <InstancedSprite
@@ -505,6 +505,7 @@
         {billboarding}
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
+        receiveShadow={true}
       >
         <RoadSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
@@ -517,6 +518,7 @@
         {billboarding}
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
+        receiveShadow={true}
       >
         <LandTileSprite
           landTiles={visibleLandTiles}
@@ -535,6 +537,7 @@
         {billboarding}
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
+        receiveShadow={true}
       >
         <LandTileSprite
           landTiles={visibleLandTiles}

@@ -1,9 +1,16 @@
 <script lang="ts">
-  import { T } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import { useGltf } from '@threlte/extras';
-  import { Object3D, InstancedMesh as TInstancedMesh, Vector3 } from 'three';
+  import {
+    Object3D,
+    InstancedMesh as TInstancedMesh,
+    Vector3,
+    PlaneGeometry,
+    MeshLambertMaterial,
+  } from 'three';
   import type * as THREE from 'three';
   import { gameStore } from './game.store.svelte';
+  import { cursorStore } from './cursor.store.svelte';
   import { onMount } from 'svelte';
   import seedrandom from 'seedrandom';
 
@@ -19,10 +26,11 @@
   let { bounds }: Props = $props();
 
   const CLOUDS_HEIGHT = 4; // Position clouds above the grid
-  const CLOUD_SPACING = 6; // Distance between clouds in grid
-  const LAND_EXCLUSION_PADDING = 9; // Extra padding around land bounds
+  const CLOUD_SPACING = 4; // Distance between clouds in grid
+  const LAND_EXCLUSION_PADDING = 10; // Extra padding around land bounds
   const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
   const MAX_INSTANCES = 256 ** 2; // Max instances for instanced mesh
+  const MAX_INFLUENCE_DISTANCE = 10; // Maximum distance for mouse influence
 
   // Load clouds GLB using useGltf hook with proper typing
   const gltf = useGltf<{
@@ -39,6 +47,7 @@
   let cameraPosition = $state({ x: 0, z: 0 }); // Reactive camera position
   let currentRenderDistance = $state({ x: 50, z: 50 }); // Default render distances
   let screenSize = $state({ width: 1920, height: 1080 }); // Default screen size
+  let time = $state(0); // Time for cloud animation
 
   // Set up camera controls update event listener
   onMount(() => {
@@ -66,11 +75,11 @@
         // X axis corresponds to screen height, Z axis to screen width
         // Higher zoom = smaller render distance (more zoomed in = see less area)
         const newRenderDistanceZ = Math.max(
-          CLOUD_SPACING * 2,
+          LAND_EXCLUSION_PADDING * 2,
           screenSize.height / zoom,
         ); // Height-based
         const newRenderDistanceX = Math.max(
-          CLOUD_SPACING * 2,
+          LAND_EXCLUSION_PADDING * 2,
           screenSize.width / zoom,
         ); // Width-based
 
@@ -122,6 +131,11 @@
       }
       window.removeEventListener('resize', updateScreenSize);
     };
+  });
+
+  // Animate clouds with subtle movement
+  useTask((delta) => {
+    time += delta * 0.1; // Very slow time progression (0.1x speed)
   });
 
   // Generate dense cloud grid around camera, excluding land bounds
@@ -189,8 +203,13 @@
         const offsetX = (rng() - 0.5) * CLOUD_SPACING * 0.8;
         const offsetZ = (rng() - 0.5) * CLOUD_SPACING * 0.8;
 
-        const randomOffsetX = offsetX;
-        const randomOffsetZ = offsetZ;
+        // Add subtle movement based on time
+        const movementX = Math.sin(time + rng() * Math.PI * 2) * 0.3;
+        const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
+        const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
+
+        const randomOffsetX = offsetX + movementX;
+        const randomOffsetZ = offsetZ + movementZ;
 
         const positionOffsetX = CLOUD_POSITION_OFFSET;
         const positionOffsetZ = CLOUD_POSITION_OFFSET;
@@ -198,7 +217,7 @@
         positions.push({
           x: x + randomOffsetX + positionOffsetX,
           y: z + randomOffsetZ + positionOffsetZ,
-          z: CLOUDS_HEIGHT + (rng() - 0.5) * 3, // Height variation ±1.5 units
+          z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob, // Height variation + bobbing
           scale: 0.8 + rng() * 0.4, // Scale variation 0.8 - 1.2
           rotation: Math.floor(rng() * 4) * (Math.PI / 2), // 0°, 90°, 180°, or 270°
           opacity: 0.7 + rng() * 0.3, // Opacity variation 0.7 - 1.0
@@ -257,10 +276,42 @@
         ) {
           const rng = seedrandom(`edge-${x},${z}`);
 
+          // Add subtle movement based on time for edge clouds
+          const movementX = Math.sin(time + rng() * Math.PI * 2) * 0.3;
+          const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
+          const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
+
+          // Add mouse-based movement for border clouds
+          let mouseInfluenceX = 0;
+          let mouseInfluenceZ = 0;
+          if (cursorStore.absolutePosition) {
+            const mouseX = cursorStore.absolutePosition.x;
+            const mouseZ = cursorStore.absolutePosition.y;
+            const distanceFromMouse = Math.sqrt(
+              (x - mouseX) ** 2 + (z - mouseZ) ** 2,
+            );
+
+            if (distanceFromMouse < MAX_INFLUENCE_DISTANCE) {
+              // Prevent division by zero and add minimum distance
+              const minDistance = 0.5;
+              const adjustedDistance = Math.max(distanceFromMouse, minDistance);
+
+              const influence = Math.max(
+                0,
+                1 - adjustedDistance / MAX_INFLUENCE_DISTANCE,
+              );
+              const directionX = (x - mouseX) / adjustedDistance;
+              const directionZ = (z - mouseZ) / adjustedDistance;
+
+              mouseInfluenceX = directionX * influence; // Clouds move away from mouse
+              mouseInfluenceZ = directionZ * influence;
+            }
+          }
+
           positions.push({
-            x: x,
-            y: z,
-            z: CLOUDS_HEIGHT + (rng() - 0.5) * 3,
+            x: x + movementX + mouseInfluenceX,
+            y: z + movementZ + mouseInfluenceZ,
+            z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob,
             scale: 0.8 + rng() * 0.4,
             rotation: Math.floor(rng() * 4) * (Math.PI / 2),
             opacity: 0.7 + rng() * 0.3,
@@ -304,23 +355,45 @@
         tempObject.position.set(position.x, position.z, position.y);
         tempObject.rotation.set(0, position.rotation, 0);
         tempObject.scale.set(position.scale, position.scale, position.scale);
+        tempObject.castShadow = true;
         tempObject.updateMatrix();
         cloudsInstancedMesh!.setMatrixAt(index, tempObject.matrix);
       });
 
+      cloudsInstancedMesh.castShadow = true;
       cloudsInstancedMesh.instanceMatrix.needsUpdate = true;
       cloudsInstancedMesh.count = cloudPositions.length;
+      // Enable shadow casting for clouds
     }
   });
 </script>
 
-<!-- Sun lighting -->
+<!-- Sun lighting with shadow configuration -->
 <T.DirectionalLight
-  position={[100, 150, 50]}
-  intensity={2}
+  position={[-25, 200, 25]}
+  intensity={4.5}
   color="#ffffff"
   castShadow={true}
+  shadow.mapSize.width={4096 * 2}
+  shadow.mapSize.height={4096 * 2}
+  shadow.camera.near={0.1}
+  shadow.camera.far={500}
+  shadow.camera.left={-200}
+  shadow.camera.right={200}
+  shadow.camera.top={200}
+  shadow.camera.bottom={-200}
+  shadow.bias={-0.0005}
 />
+
+<!-- Ground plane to receive shadows -->
+<T.Mesh
+  position={[127, 0.99, 127]}
+  rotation={[-Math.PI / 2, 0, 0]}
+  receiveShadow={true}
+>
+  <T.PlaneGeometry args={[100, 100]} />
+  <T.ShadowMaterial opacity={0.1} />
+</T.Mesh>
 
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />
