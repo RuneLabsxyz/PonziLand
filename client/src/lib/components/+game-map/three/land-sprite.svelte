@@ -49,6 +49,7 @@
   import { GRID_SIZE } from '$lib/const';
   import { configValues } from '$lib/stores/config.store.svelte';
   import Clouds from './clouds.svelte';
+  import { loadingStore } from '$lib/stores/loading.store.svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -97,64 +98,6 @@
   let clock = new Clock();
 
   let billboarding = $derived(devsettings.billboarding);
-
-  const buildingAtlas =
-    buildSpritesheet.from<typeof buildingAtlasMeta>(buildingAtlasMeta);
-
-  const biomeAtlas =
-    buildSpritesheet.from<typeof biomeAtlasMeta>(biomeAtlasMeta);
-
-  const roadAtlasMeta = [
-    {
-      url: '/land-display/road.png',
-      type: 'rowColumn',
-      width: 1,
-      height: 1,
-      animations: [{ name: 'default', frameRange: [0, 0] }],
-    },
-  ] as const satisfies SpritesheetMetadata;
-  const roadAtlas = buildSpritesheet.from<typeof roadAtlasMeta>(roadAtlasMeta);
-
-  const nukeAtlasMeta = [
-    {
-      url: '/land-display/nuke-animation.png',
-      type: 'rowColumn',
-      width: 5,
-      height: 7,
-      animations: [
-        { name: 'default', frameRange: [0, 34] },
-        { name: 'empty', frameRange: [34, 34] },
-      ],
-    },
-  ] as const satisfies SpritesheetMetadata;
-  const nukeAtlas = buildSpritesheet.from<typeof nukeAtlasMeta>(nukeAtlasMeta);
-
-  // FOG OF WAR ATLAS
-  const fogAtlasMeta = [
-    {
-      url: '/land-display/fog.png',
-      type: 'rowColumn',
-      width: 3,
-      height: 3,
-      animations: [{ name: 'default', frameRange: [0, 8] }],
-    },
-  ] as const satisfies SpritesheetMetadata;
-  const fogAtlas = buildSpritesheet.from<typeof fogAtlasMeta>(fogAtlasMeta);
-
-  const ownerAtlasMeta = [
-    {
-      url: '/ui/icons/Icon_Crown.png', // You'll need to create this spritesheet
-      type: 'rowColumn',
-      width: 1, // Adjust based on your spritesheet
-      height: 1, // Adjust based on your spritesheet
-      animations: [
-        { name: 'crown', frameRange: [0, 0] },
-        // Add more AI agent frames as needed
-      ],
-    },
-  ] as const satisfies SpritesheetMetadata;
-  const ownerAtlas =
-    buildSpritesheet.from<typeof ownerAtlasMeta>(ownerAtlasMeta);
 
   let landTiles: LandTile[] = $state([]);
 
@@ -553,7 +496,7 @@
   }
 </script>
 
-{#await Promise.all( [buildingAtlas.spritesheet, biomeAtlas.spritesheet, roadAtlas.spritesheet, nukeAtlas.spritesheet, fogAtlas.spritesheet, ownerAtlas.spritesheet], ) then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet]}
+{#await loadingStore.getAllSpritesheets() then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
   <T is={Group}>
     <!-- Road sprites (middle layer) -->
     {#if devsettings.showRoads}
