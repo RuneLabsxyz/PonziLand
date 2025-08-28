@@ -49,6 +49,45 @@
   let screenSize = $state({ width: 1920, height: 1080 }); // Default screen size
   let time = $state(0); // Time for cloud animation
 
+  // Cache for pre-computed random values to avoid expensive RNG calls
+  const randomCache = new Map<
+    string,
+    {
+      offsetX: number;
+      offsetZ: number;
+      heightVariation: number;
+      scale: number;
+      rotation: number;
+      opacity: number;
+      timeOffset: number;
+      timeOffset2: number;
+      timeOffset3: number;
+    }
+  >();
+
+  // Function to get cached random values for a position
+  function getCachedRandomValues(x: number, z: number, isEdge = false) {
+    const key = isEdge ? `edge-${x},${z}` : `${x},${z}`;
+
+    if (!randomCache.has(key)) {
+      // Only create RNG instance once per position and cache all values
+      const rng = seedrandom(key);
+      randomCache.set(key, {
+        offsetX: (rng() - 0.5) * CLOUD_SPACING * 0.8,
+        offsetZ: (rng() - 0.5) * CLOUD_SPACING * 0.8,
+        heightVariation: (rng() - 0.5) * 3,
+        scale: 0.8 + rng() * 0.4,
+        rotation: Math.floor(rng() * 4) * (Math.PI / 2),
+        opacity: 0.7 + rng() * 0.3,
+        timeOffset: rng() * Math.PI * 2,
+        timeOffset2: rng() * Math.PI * 2,
+        timeOffset3: rng() * Math.PI * 2,
+      });
+    }
+
+    return randomCache.get(key)!;
+  }
+
   // Set up camera controls update event listener
   onMount(() => {
     // Initialize screen size
@@ -197,19 +236,16 @@
           continue; // Skip this position - it's in the land area
         }
 
-        // Create deterministic random generator based on position
-        const rng = seedrandom(`${x},${z}`);
+        // Get cached random values for this position
+        const cached = getCachedRandomValues(x, z);
 
-        const offsetX = (rng() - 0.5) * CLOUD_SPACING * 0.8;
-        const offsetZ = (rng() - 0.5) * CLOUD_SPACING * 0.8;
+        // Add subtle movement based on time using cached time offsets
+        const movementX = Math.sin(time + cached.timeOffset) * 0.3;
+        const movementZ = Math.cos(time * 0.7 + cached.timeOffset2) * 0.2;
+        const verticalBob = Math.sin(time * 0.5 + cached.timeOffset3) * 0.1;
 
-        // Add subtle movement based on time
-        const movementX = Math.sin(time + rng() * Math.PI * 2) * 0.3;
-        const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
-        const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
-
-        const randomOffsetX = offsetX + movementX;
-        const randomOffsetZ = offsetZ + movementZ;
+        const randomOffsetX = cached.offsetX + movementX;
+        const randomOffsetZ = cached.offsetZ + movementZ;
 
         const positionOffsetX = CLOUD_POSITION_OFFSET;
         const positionOffsetZ = CLOUD_POSITION_OFFSET;
@@ -217,10 +253,10 @@
         positions.push({
           x: x + randomOffsetX + positionOffsetX,
           y: z + randomOffsetZ + positionOffsetZ,
-          z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob, // Height variation + bobbing
-          scale: 0.8 + rng() * 0.4, // Scale variation 0.8 - 1.2
-          rotation: Math.floor(rng() * 4) * (Math.PI / 2), // 0°, 90°, 180°, or 270°
-          opacity: 0.7 + rng() * 0.3, // Opacity variation 0.7 - 1.0
+          z: CLOUDS_HEIGHT + cached.heightVariation + verticalBob,
+          scale: cached.scale,
+          rotation: cached.rotation,
+          opacity: cached.opacity,
         });
         generatedCount++;
       }
@@ -274,12 +310,12 @@
           Math.abs(x - cameraPosition.x) <= currentRenderDistance.x &&
           Math.abs(z - cameraPosition.z) <= currentRenderDistance.z
         ) {
-          const rng = seedrandom(`edge-${x},${z}`);
+          const cached = getCachedRandomValues(x, z, true);
 
-          // Add subtle movement based on time for edge clouds
-          const movementX = Math.sin(time + rng() * Math.PI * 2) * 0.3;
-          const movementZ = Math.cos(time * 0.7 + rng() * Math.PI * 2) * 0.2;
-          const verticalBob = Math.sin(time * 0.5 + rng() * Math.PI * 2) * 0.1;
+          // Add subtle movement based on time for edge clouds using cached values
+          const movementX = Math.sin(time + cached.timeOffset) * 0.3;
+          const movementZ = Math.cos(time * 0.7 + cached.timeOffset2) * 0.2;
+          const verticalBob = Math.sin(time * 0.5 + cached.timeOffset3) * 0.1;
 
           // Add mouse-based movement for border clouds
           let mouseInfluenceX = 0;
@@ -311,13 +347,50 @@
           positions.push({
             x: x + movementX + mouseInfluenceX,
             y: z + movementZ + mouseInfluenceZ,
-            z: CLOUDS_HEIGHT + (rng() - 0.5) * 3 + verticalBob,
-            scale: 0.8 + rng() * 0.4,
-            rotation: Math.floor(rng() * 4) * (Math.PI / 2),
-            opacity: 0.7 + rng() * 0.3,
+            z: CLOUDS_HEIGHT + cached.heightVariation + verticalBob,
+            scale: cached.scale,
+            rotation: cached.rotation,
+            opacity: cached.opacity,
           });
         }
       });
+    }
+
+    // Periodically clean up cache for positions far from camera to prevent memory leaks
+    // Only clean every 100th frame to avoid performance impact
+    if (Math.random() < 0.01) {
+      // ~1% chance per frame
+      const maxCacheDistance =
+        Math.max(currentRenderDistance.x, currentRenderDistance.z) * 2;
+      const keysToDelete: string[] = [];
+
+      for (const [key] of randomCache) {
+        if (key.startsWith('edge-')) {
+          const coords = key.substring(5).split(',');
+          const keyX = parseFloat(coords[0]);
+          const keyZ = parseFloat(coords[1]);
+          const distance = Math.max(
+            Math.abs(keyX - cameraPosition.x),
+            Math.abs(keyZ - cameraPosition.z),
+          );
+          if (distance > maxCacheDistance) {
+            keysToDelete.push(key);
+          }
+        } else {
+          const coords = key.split(',');
+          const keyX = parseFloat(coords[0]);
+          const keyZ = parseFloat(coords[1]);
+          const distance = Math.max(
+            Math.abs(keyX - cameraPosition.x),
+            Math.abs(keyZ - cameraPosition.z),
+          );
+          if (distance > maxCacheDistance) {
+            keysToDelete.push(key);
+          }
+        }
+      }
+
+      keysToDelete.forEach((key) => randomCache.delete(key));
     }
 
     return positions;
@@ -372,7 +445,7 @@
 <T.DirectionalLight
   position={[-25, 200, 25]}
   intensity={4.5}
-  color="#ffffff"
+  color="#110D31"
   castShadow={true}
   shadow.mapSize.width={4096 * 2}
   shadow.mapSize.height={4096 * 2}
