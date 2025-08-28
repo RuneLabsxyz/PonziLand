@@ -71,7 +71,7 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "12000",                                                              # Linear time decay
     "90",                                                                 # Drop rate
     "100",                                                                # Rate denominator
-    "127",                                                                # Max circles
+    "5",                                                                  # Max circles
     "90000",                                                              # Claim fee (0.9%)
     "90000",                                                              # Buy fee (0.9%)
     "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e", # Our contract for fee

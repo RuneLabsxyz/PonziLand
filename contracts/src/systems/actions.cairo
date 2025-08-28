@@ -239,7 +239,7 @@ pub mod actions {
                 CENTER_LOCATION,
                 start_price,
                 floor_price,
-                false,
+                true, // We're technically not in a nuke context, but we're initializing the auction (and that seems to make it work)
                 Option::Some(main_currency),
             );
     }
