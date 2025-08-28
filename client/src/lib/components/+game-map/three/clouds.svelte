@@ -395,12 +395,6 @@
   <T.ShadowMaterial opacity={0.1} />
 </T.Mesh>
 
-<!-- Test cube to verify shadows -->
-<!-- <T.Mesh position={[127, 5, 127]} castShadow={true}>
-  <T.BoxGeometry args={[3, 3, 3]} />
-  <T.MeshStandardMaterial color="#ff0000" />
-</T.Mesh> -->
-
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />
 {/if}
