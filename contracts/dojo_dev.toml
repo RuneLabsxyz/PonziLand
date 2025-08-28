@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "new_test"
+seed = "new_t"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -28,6 +28,14 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
 "ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
 
 [init_call_args]
+"ponzi_land-actions" = [
+    "128000000000000000000",                                              # Start price (low)
+    "0",                                                                  # Start price (high)
+    "1000000000000000000",                                                # Floor price (low)
+    "0",                                                                  # Floor price (high)
+    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
+    "0x1a58e61fbdfa3f6ce26e5c2236e02d6a9f2b37de65abeab1eac03dda653c652", # Main token
+]
 "ponzi_land-auth" = [
     "0x001c012e0e8408af283483480f18c0f7a313e76012a06b158913d71cc304ba3b", # Verifier
 ]
@@ -68,11 +76,3 @@ private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531
     "0x1a58e61fbdfa3f6ce26e5c2236e02d6a9f2b37de65abeab1eac03dda653c652", # Main token
 ]
 
-"ponzi_land-actions" = [
-    "128000000000000000000",                                              # Start price (low)
-    "0",                                                                  # Start price (high)
-    "1000000000000000000",                                                # Floor price (low)
-    "0",                                                                  # Floor price (high)
-    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
-    "0x1a58e61fbdfa3f6ce26e5c2236e02d6a9f2b37de65abeab1eac03dda653c652", # Main token
-]
