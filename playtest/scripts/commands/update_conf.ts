@@ -77,12 +77,21 @@ export async function updateConfig(config: Configuration, args: string[]) {
     // Optionally write differences to a file
     if (differences.length > 0) {
       const differencesPath = `${config.basePath}/deployments/${config.deploymentName}/config_differences.json`;
+      
+      // Create a BigInt-safe replacer function
+      const bigIntReplacer = (key: string, value: any) => {
+        if (typeof value === 'bigint') {
+          return value.toString();
+        }
+        return value;
+      };
+      
       await write(differencesPath, JSON.stringify({
         timestamp: new Date().toISOString(),
         differences: differences,
-        fileConfig: fileConfig,
-        contractConfig: contractConfig
-      }, null, 2));
+        fileConfig: normalizeObjectForJson(fileConfig),
+        contractConfig: normalizeObjectForJson(contractConfig)
+      }, bigIntReplacer, 2));
       console.log(`${COLORS.gray}📝 Differences saved to ${differencesPath}${COLORS.reset}`);
     }
 
@@ -111,13 +120,51 @@ async function readContractConfig(config: Configuration, provider: any): Promise
     
     const onchainConfig = await contract.get_config();
     
-    console.log(onchainConfig);
+    // Use safe logging for objects that might contain BigInt
+    console.log("Onchain config:", safeJsonStringify(onchainConfig));
     return onchainConfig;
   } catch (error) {
     console.log(`${COLORS.red}❌ Error reading from contract: ${error}${COLORS.reset}`);
     throw error;
   }
 
+}
+
+// Helper function to recursively normalize objects for JSON serialization
+function normalizeObjectForJson(obj: any): any {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+  
+  if (typeof obj === 'bigint') {
+    return obj.toString();
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(item => normalizeObjectForJson(item));
+  }
+  
+  if (typeof obj === 'object') {
+    const normalized: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      normalized[key] = normalizeObjectForJson(value);
+    }
+    return normalized;
+  }
+  
+  return obj;
+}
+
+// Helper function for BigInt-safe JSON.stringify
+function safeJsonStringify(obj: any): string {
+  const bigIntReplacer = (key: string, value: any) => {
+    if (typeof value === 'bigint') {
+      return value.toString();
+    }
+    return value;
+  };
+  
+  return JSON.stringify(obj, bigIntReplacer);
 }
 
 function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): ConfigDifference[] {
@@ -152,11 +199,11 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     const fileArray = Array.isArray(normalizedFileValue) ? normalizedFileValue : [normalizedFileValue];
     const contractArray = Array.isArray(normalizedContractValue) ? normalizedContractValue : [normalizedContractValue];
     
-    if (JSON.stringify(fileArray) !== JSON.stringify(contractArray)) {
+    if (safeJsonStringify(fileArray) !== safeJsonStringify(contractArray)) {
       differences.push({
         field,
-        fileValue: Array.isArray(fileValue) ? JSON.stringify(normalizedFileValue) : normalizedFileValue?.toString() || 'undefined',
-        contractValue: Array.isArray(contractValue) ? JSON.stringify(normalizedContractValue) : normalizedContractValue?.toString() || 'undefined'
+        fileValue: Array.isArray(fileValue) ? safeJsonStringify(normalizedFileValue) : normalizedFileValue?.toString() || 'undefined',
+        contractValue: Array.isArray(contractValue) ? safeJsonStringify(normalizedContractValue) : normalizedContractValue?.toString() || 'undefined'
       });
     }
   }
