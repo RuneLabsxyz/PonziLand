@@ -94,6 +94,7 @@ export async function updateConfig(config: Configuration, args: string[]) {
       
       let tokenPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
       let tokens = await file(tokenPath).json();
+      console.log(tokens);
 
       let call: Call = {
         contractAddress: configContract.address,
