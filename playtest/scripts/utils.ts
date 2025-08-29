@@ -64,12 +64,17 @@ export async function doTransaction(call: Call | Call[]) {
 
     console.log(`${COLORS.gray}TX: ${tx.transaction_hash}${COLORS.reset}`);
 
-    await context!.provider.waitForTransaction(tx.transaction_hash);
+    let result = await context!.provider.waitForTransaction(tx.transaction_hash);
 
     console.log(`${COLORS.green}✅ Transaction accepted! ${COLORS.reset}`);
+    return result;
   } catch (error) {
     console.error(`${COLORS.red}❌ Transaction failed! ${COLORS.reset}`);
     console.error(error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : String(error),
+    };
   }
 }
 
