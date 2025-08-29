@@ -18,6 +18,8 @@ import { upgradeTokens } from "./scripts/commands/upgrade_tokens";
 import { pauseGame } from "./scripts/commands/pause";
 import { registerTokens } from "./scripts/commands/whitelist_tokens";
 import { reset } from "./scripts/commands/reset";
+import { deployAmm } from "./scripts/commands/deploy_amm";
+import { updateConfig } from "./scripts/commands/update_conf";
 
 const SOCIALINK_SIGNER_ADDRESS =
   "0x008ea9029cec9c339e0513a17336e9af43278ebd81858aee0af110c3e810fce6";
@@ -45,6 +47,10 @@ const { values, positionals } = parseArgs({
       default: false,
       description: "Force the use of ledger",
     },
+    name: {
+      type: "string",
+      description: "The name of the deployment",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -64,6 +70,7 @@ const config: Configuration = {
   basePath,
   owner: values.owner || env!.OWNER,
   forceLedger: values.ledger,
+  deploymentName: values.name!,
 };
 
 let command = positionals[2];
@@ -102,6 +109,12 @@ switch (command) {
   case "register-tokens":
     await registerTokens(config, commandPositionals);
     break;
+  case "deploy-amm":
+    await deployAmm(config, commandPositionals);
+    break;
+  case "update-conf":
+    await updateConfig(config, commandPositionals);
+    break;
   case "reset":
     await reset(config, commandPositionals);
     break;
@@ -129,3 +142,52 @@ await doTransaction({
   }),
 });
  */
+
+// After the build process, generate torii-katana.toml
+console.log("📝 Generating torii-katana.toml...");
+
+// Read world address from manifest_dev.json
+const worldAddress = Bun.file("PonziLand/contracts/manifest_dev.json").json().world.address;
+
+// Generate the torii-katana.toml file
+const toriiKatanaToml = Bun.file("PonziLand/contracts/torii-katana.toml");
+toriiKatanaToml.write(`world_address = "${worldAddress}"
+rpc = "https://api.cartridge.gg/x/starknet/sepolia"
+explorer = false
+
+[events]
+raw = true
+
+[sql]
+historical = [
+    "ponzi_land-AddressAuthorizedEvent",
+    "ponzi_land-AddressRemovedEvent",
+
+    "ponzi_land-AuctionFinishedEvent",
+    "ponzi_land-LandBoughtEvent",
+    "ponzi_land-LandNukedEvent",
+
+    "ponzi_land-NewAuctionEvent",
+    "ponzi_land-RemainingStakeEvent",
+
+    "ponzi_land-VerifierUpdatedEvent",
+
+    "ponzi_land-Land",
+    "ponzi_land-LandStake",
+]
+
+
+[indexing]
+contracts = [
+`);
+
+// Add token contracts from tokens.katana.json
+Bun.file("PonziLand/playtest/tokens.katana.json").json().tokens.forEach(token => {
+  toriiKatanaToml.write(`    "erc20:${token.address}", # ${token.symbol}\n`);
+});
+
+// Close the contracts array
+toriiKatanaToml.write(`]
+`);
+
+console.log(`✅ Generated torii-katana.toml with world address: ${worldAddress}`);
