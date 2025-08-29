@@ -122,7 +122,7 @@ export async function updateConfig(config: Configuration, args: string[]) {
           fileConfig.our_contract_for_fee,
           fileConfig.our_contract_for_auction,
           fileConfig.claim_fee_threshold,
-          tokens[0].address,
+          tokens.tokens[0].address,
         ]
       }
       doTransaction(call);
