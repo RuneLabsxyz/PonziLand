@@ -71,10 +71,6 @@ export async function doTransaction(call: Call | Call[]) {
   } catch (error) {
     console.error(`${COLORS.red}❌ Transaction failed! ${COLORS.reset}`);
     console.error(error);
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
   }
 }
 

@@ -14,126 +14,55 @@ const defaultPool = {
   fee: "3402823669209384634633746074317682114",
 };
 
-interface PoolPair {
-  token1: Token;
-  token2: Token;
-  key: string;
-}
-
-interface PoolDeploymentResult {
-  pair: PoolPair;
-  success: boolean;
-  error?: string;
-}
-
 export async function setupPool(config: Configuration, args: string[]) {
   // First of all, register all tokens
-  const tokensPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
-  const { tokens } = (await file(tokensPath).json()) as {
+  const { tokens } = (await file(
+    `${config.basePath}/tokens.json`,
+  ).json()) as {
     tokens: Token[];
   };
 
-  console.log(`\n🚀 Starting pool setup for ${tokens.length} tokens...`);
-  console.log(`Tokens: ${tokens.map(t => t.symbol).join(', ')}\n`);
+
+
+  const pairs: { token1: Token; token2: Token }[] = [];
 
   const { account } = await connect(config);
 
-  // Generate unique pairs (avoiding A,B and B,A duplicates)
-  const uniquePairs = generateUniquePairs(tokens);
-  console.log(`📊 Generated ${uniquePairs.length} unique token pairs to deploy\n`);
-
-  // Track deployment results
-  const deploymentResults: PoolDeploymentResult[] = [];
-  let successCount = 0;
-  let failureCount = 0;
-
-  // Deploy pools for each unique pair
-  for (let i = 0; i < uniquePairs.length; i++) {
-    const pair = uniquePairs[i];
-    console.log(`[${i + 1}/${uniquePairs.length}] Creating pool for ${pair.token1.symbol}/${pair.token2.symbol}...`);
-
-    const result = await createPool(config, account, pair.token1, pair.token2);
-    
-    if (result.success) {
-      deploymentResults.push({
-        pair,
-        success: true
-      });
-      successCount++;
-      console.log(`✅ Successfully created ${pair.token1.symbol}/${pair.token2.symbol} pool`);
-    } else {
-      deploymentResults.push({
-        pair,
-        success: false,
-        error: result.error
-      });
-      failureCount++;
-      console.log(`❌ Failed to create ${pair.token1.symbol}/${pair.token2.symbol} pool: ${result.error}`);
-    }
-  }
-
-  // Print final summary
-  printDeploymentSummary(deploymentResults, successCount, failureCount);
-}
-
-function generateUniquePairs(tokens: Token[]): PoolPair[] {
-  const pairs: PoolPair[] = [];
-  const seenPairs = new Set<string>();
-
-  for (let i = 0; i < tokens.length; i++) {
-    for (let j = i + 1; j < tokens.length; j++) {
-      const token1 = tokens[i];
-      const token2 = tokens[j];
-      
-      // Create a deterministic key for the pair (order by address to avoid duplicates)
-      const sortedAddresses = [token1.address, token2.address].sort();
-      const pairKey = `${sortedAddresses[0]}-${sortedAddresses[1]}`;
-      
-      if (!seenPairs.has(pairKey)) {
-        seenPairs.add(pairKey);
+  for (const token of tokens) {
+    for (const token2 of tokens) {
+      if (token.address === token2.address) {
+        continue;
+      }
+      for (const pair of pairs) {
+        if (pair.token1.address === token.address && pair.token2.address === token2.address || 
+            pair.token1.address === token2.address && pair.token2.address === token.address) {
+          console.log(`Skipping ${token.symbol}/${token2.symbol} pool because it is already deployed`);
+          continue;
+        }
+      }
+      let result = await createPool(config, account, token, token2);
+      if (result?.isSuccess) {
+        console.log(`✅ Successfully created ${token.symbol}/${token2.symbol} pool`);
         pairs.push({
-          token1,
-          token2,
-          key: pairKey
+          token1: token,
+          token2: token2,
         });
+      } else if (result?.isError) {
+        // If the first attempt failed, try swapping the token order
+        let swapped_result = await createPool(config, account, token2, token);
+        if (swapped_result?.isSuccess) {
+          console.log(`✅ Successfully created ${token2.symbol}/${token.symbol} pool`);
+          pairs.push({
+            token1: token2,
+            token2: token,
+          });
+        } else {
+          console.log(`❌ Failed to create ${token2.symbol}/${token.symbol} pool: ${swapped_result?.statusReceipt}`);
+        }
       }
     }
   }
 
-  return pairs;
-}
-
-function printDeploymentSummary(results: PoolDeploymentResult[], successCount: number, failureCount: number) {
-  console.log('\n' + '='.repeat(60));
-  console.log('📈 POOL DEPLOYMENT SUMMARY');
-  console.log('='.repeat(60));
-  console.log(`✅ Successful deployments: ${successCount}`);
-  console.log(`❌ Failed deployments: ${failureCount}`);
-  console.log(`📊 Total pairs attempted: ${results.length}\n`);
-
-  if (successCount > 0) {
-    console.log('🎉 Successfully deployed pools:');
-    results
-      .filter(r => r.success)
-      .forEach(result => {
-        console.log(`  • ${result.pair.token1.symbol}/${result.pair.token2.symbol}`);
-      });
-    console.log('');
-  }
-
-  if (failureCount > 0) {
-    console.log('⚠️  Failed pool deployments:');
-    results
-      .filter(r => !r.success)
-      .forEach(result => {
-        console.log(`  • ${result.pair.token1.symbol}/${result.pair.token2.symbol}: ${result.error}`);
-      });
-    console.log('');
-  }
-
-  const successRate = ((successCount / results.length) * 100).toFixed(1);
-  console.log(`🎯 Overall success rate: ${successRate}%`);
-  console.log('='.repeat(60) + '\n');
 }
 
 async function registerTokens(
@@ -259,5 +188,13 @@ async function createPool(
       }
     ] satisfies Call[];
 
-  return await doTransaction(calls);
+  let result = await doTransaction(calls);
+
+  if (result?.isSuccess) {
+    console.log(`Pool created for ${token_1.symbol} and ${token_2.symbol}`);
+    return result;
+  } else {
+    console.log(`❌ Failed to create ${token_1.symbol}/${token_2.symbol} pool: ${result?.statusReceipt}`);
+    return result;
+  }
 }
