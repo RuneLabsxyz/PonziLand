@@ -52,23 +52,23 @@ export async function setupPool(config: Configuration, args: string[]) {
     const pair = uniquePairs[i];
     console.log(`[${i + 1}/${uniquePairs.length}] Creating pool for ${pair.token1.symbol}/${pair.token2.symbol}...`);
 
-    try {
-      await createPool(config, account, pair.token1, pair.token2);
+    const result = await createPool(config, account, pair.token1, pair.token2);
+    
+    if (result.success) {
       deploymentResults.push({
         pair,
         success: true
       });
       successCount++;
       console.log(`✅ Successfully created ${pair.token1.symbol}/${pair.token2.symbol} pool`);
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+    } else {
       deploymentResults.push({
         pair,
         success: false,
-        error: errorMessage
+        error: result.error
       });
       failureCount++;
-      console.log(`❌ Failed to create ${pair.token1.symbol}/${pair.token2.symbol} pool: ${errorMessage}`);
+      console.log(`❌ Failed to create ${pair.token1.symbol}/${pair.token2.symbol} pool: ${result.error}`);
     }
   }
 
@@ -259,7 +259,5 @@ async function createPool(
       }
     ] satisfies Call[];
 
-  await doTransaction(calls);
-
-  console.log(`Pool created for ${token_1.symbol} and ${token_2.symbol}`);
+  return await doTransaction(calls);
 }
