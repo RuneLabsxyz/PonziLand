@@ -239,7 +239,7 @@ pub mod actions {
                 CENTER_LOCATION,
                 start_price,
                 floor_price,
-                false,
+                true,
                 Option::Some(main_currency),
             );
     }

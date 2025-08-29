@@ -16,7 +16,7 @@ telegram = "https://t.me/dojoengine"
 default = "ponzi_land"
 
 [env]
-rpc_url = "https://api.cartridge.gg/x/starknet/sepolia"
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8"
 # Default account for katana with seed = 0
 account_address = "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780"
 private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a"
