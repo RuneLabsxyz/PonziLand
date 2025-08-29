@@ -1329,7 +1329,7 @@
   "contracts": [
     {
       "address": "0x557062f46fc4a59dbf3e4f52e0c2d55d6c7d36c7b77bc26bdebe05578e66b8e",
-      "class_hash": "0x31bdc13fbceba00fa1ff4280c18d5302359da2ccf1c1e2414d9704fbe83cef2",
+      "class_hash": "0x68dc651678328c497cd8924e5975b957b4425cc378d37cfd084c39e0c50537a",
       "abi": [
         {
           "type": "impl",
@@ -2515,7 +2515,7 @@
     },
     {
       "address": "0x4121095354cccc6a22ab38ea860f6a4c0cf08693fb75afd2f247c693a4ff6a0",
-      "class_hash": "0x2b05cd82224591209e7c7b1bb733e0794cf636f6c402dab2241f18aa72c7f76",
+      "class_hash": "0x5f8ae92842a9c5b34e01f014f6e544297bc3222199da9d7f38ac52bfe72884c",
       "abi": [
         {
           "type": "impl",
@@ -2685,108 +2685,6 @@
           "type": "impl",
           "name": "ConfigSystemImpl",
           "interface_name": "ponzi_land::systems::config::IConfigSystem"
-        },
-        {
-          "type": "struct",
-          "name": "ponzi_land::models::config::Config",
-          "members": [
-            {
-              "name": "id",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "tax_rate",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "base_time",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "price_decrease_rate",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "time_speed",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "max_auctions",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "max_auctions_from_bid",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "decay_rate",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "floor_price",
-              "type": "core::integer::u256"
-            },
-            {
-              "name": "liquidity_safety_multiplier",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "min_auction_price",
-              "type": "core::integer::u256"
-            },
-            {
-              "name": "min_auction_price_multiplier",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "auction_duration",
-              "type": "core::integer::u32"
-            },
-            {
-              "name": "scaling_factor",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "linear_decay_time",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "drop_rate",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "rate_denominator",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "max_circles",
-              "type": "core::integer::u16"
-            },
-            {
-              "name": "claim_fee",
-              "type": "core::integer::u128"
-            },
-            {
-              "name": "buy_fee",
-              "type": "core::integer::u128"
-            },
-            {
-              "name": "our_contract_for_fee",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "our_contract_for_auction",
-              "type": "core::starknet::contract_address::ContractAddress"
-            },
-            {
-              "name": "claim_fee_threshold",
-              "type": "core::integer::u128"
-            },
-            {
-              "name": "main_currency",
-              "type": "core::starknet::contract_address::ContractAddress"
-            }
-          ]
         },
         {
           "type": "interface",
@@ -3170,17 +3068,6 @@
             },
             {
               "type": "function",
-              "name": "get_config",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "ponzi_land::models::config::Config"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
               "name": "get_tax_rate",
               "inputs": [],
               "outputs": [
@@ -3528,7 +3415,7 @@
         "16",
         "3",
         "200",
-        "null",
+        "100000000000000000",
         "0",
         "3",
         "500000000000000000000",
@@ -3536,10 +3423,10 @@
         "10",
         "436800",
         "50",
-        "null",
+        "12000",
         "90",
         "100",
-        "127",
+        "5",
         "0",
         "0",
         "0",
