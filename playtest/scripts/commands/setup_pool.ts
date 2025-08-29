@@ -32,8 +32,8 @@ export async function setupPool(config: Configuration, args: string[]) {
         continue;
       }
       for (const pair of pairs) {
-        if (pair.token1.address === token.address && pair.token2.address === token2.address || 
-            pair.token1.address === token2.address && pair.token2.address === token.address) {
+        if (pair.token1.symbol === token.symbol && pair.token2.symbol === token2.symbol || 
+            pair.token1.symbol === token2.symbol && pair.token2.symbol === token.symbol) {
           console.log(`Skipping ${token.symbol}/${token2.symbol} pool because it is already deployed`);
           continue;
         }
@@ -63,7 +63,10 @@ export async function setupPool(config: Configuration, args: string[]) {
 
   console.log(`✅ Successfully created ${pairs.length} pools:`);
   for (const pair of pairs) {
-    console.log(`  • ${pair.token1.symbol}/${pair.token2.symbol}`);
+    let order = pair.token1.symbol < pair.token2.symbol;
+
+    console.log(`  • ${pair.token1.symbol}/${pair.token2.symbol}, ${order ? "ascending" : "descending"}`);
+  
   }
 
 }
