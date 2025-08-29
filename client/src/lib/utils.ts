@@ -101,7 +101,7 @@ export function shortenHex(hex: string | null | undefined, length = 4) {
 export function getTokenInfo(tokenAddress: string) {
   // from data.available tokens
   const token = data.availableTokens.find(
-    (token) => token.address === tokenAddress,
+    (token) => padAddress(token.address) === padAddress(tokenAddress),
   );
 
   return token;
