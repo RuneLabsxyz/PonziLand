@@ -1,0 +1,76 @@
+{
+  "timestamp": "2025-08-29T18:30:09.373Z",
+  "differences": [
+    {
+      "field": "max_circles",
+      "fileValue": "5",
+      "contractValue": "127"
+    }
+  ],
+  "fileConfig": {
+    "Symbols": [
+      "pltSTRK",
+      "pltLORDS",
+      "pltETH",
+      "pltPAPER",
+      "pltBROTHER",
+      "pltPAL"
+    ],
+    "Names": [
+      "Ponziland Test STRK",
+      "Ponziland Test LORDS",
+      "Ponziland Test ETH",
+      "Ponziland Test PAPER",
+      "Ponziland Test BROTHER",
+      "Ponziland Test PAL"
+    ],
+    "tax_rate": "2",
+    "base_time": "3600",
+    "price_decrease_rate": "2",
+    "time_speed": "5",
+    "max_auctions": "16",
+    "max_auctions_from_bid": "3",
+    "decay_rate": "200",
+    "floor_price": "100000000000000000",
+    "liquidity_safety_multiplier": "3",
+    "min_auction_price": "500000000000000000000",
+    "min_auction_price_multiplier": "10",
+    "auction_duration": "436800",
+    "scaling_factor": "50",
+    "linear_decay_time": "12000",
+    "drop_rate": "90",
+    "rate_denominator": "100",
+    "max_circles": "5",
+    "claim_fee": "0",
+    "buy_fee": "0",
+    "our_contract_for_fee": "0",
+    "our_contract_for_auction": "0",
+    "claim_fee_threshold": "10"
+  },
+  "contractConfig": {
+    "id": "1",
+    "tax_rate": "2",
+    "base_time": "3600",
+    "price_decrease_rate": "2",
+    "time_speed": "5",
+    "max_auctions": "16",
+    "max_auctions_from_bid": "3",
+    "decay_rate": "200",
+    "floor_price": "100000000000000000",
+    "liquidity_safety_multiplier": "3",
+    "min_auction_price": "500000000000000000000",
+    "min_auction_price_multiplier": "10",
+    "auction_duration": "436800",
+    "scaling_factor": "50",
+    "linear_decay_time": "12000",
+    "drop_rate": "90",
+    "rate_denominator": "100",
+    "max_circles": "127",
+    "claim_fee": "0",
+    "buy_fee": "0",
+    "our_contract_for_fee": "0",
+    "our_contract_for_auction": "0",
+    "claim_fee_threshold": "10",
+    "main_currency": "720650387100706389936384620386707576590476785088435518013566776503391258441"
+  }
+}

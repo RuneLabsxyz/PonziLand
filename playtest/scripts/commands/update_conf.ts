@@ -1,7 +1,8 @@
 import { $, file, write } from "bun";
 import { Configuration } from "../env";
 import { COLORS, connect } from "../utils";
-import { Contract } from "starknet";
+import { Contract, type Call } from "starknet";
+import { doTransaction } from "../utils";
 import fs from "fs/promises";
 
 interface ConfigData {
@@ -12,13 +13,13 @@ interface ConfigData {
   max_auctions: string;
   max_auctions_from_bid: string;
   decay_rate: string;
-  "floor price": string;
+  floor_price: string;
   liquidity_safety_multiplier: string;
   min_auction_price: string;
   min_auction_price_multiplier: string;
   auction_duration: string;
   scaling_factor: string;
-  linear_time_decay: string;
+  linear_decay_time: string;
   drop_rate: string;
   rate_denominator: string;
   max_circles: string;
@@ -85,14 +86,45 @@ export async function updateConfig(config: Configuration, args: string[]) {
         }
         return value;
       };
+
+      const manifestPath = `${config.basePath}/deployments/${config.deploymentName}/manifest.json`;
+      const manifest = await file(manifestPath).json();
+      // Find the config contract
+      const configContract = manifest.contracts.find(c => c.tag.includes('config'));
       
-      await write(differencesPath, JSON.stringify({
-        timestamp: new Date().toISOString(),
-        differences: differences,
-        fileConfig: normalizeObjectForJson(fileConfig),
-        contractConfig: normalizeObjectForJson(contractConfig)
-      }, bigIntReplacer, 2));
-      console.log(`${COLORS.gray}📝 Differences saved to ${differencesPath}${COLORS.reset}`);
+      let tokenPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
+      let tokens = await file(tokenPath).json();
+
+      let call: Call = {
+        contractAddress: configContract.address,
+        entrypoint: 'set_full_config',
+        calldata: [
+          fileConfig.tax_rate,
+          fileConfig.base_time,
+          fileConfig.price_decrease_rate,
+          fileConfig.time_speed,
+          fileConfig.max_auctions,
+          fileConfig.max_auctions_from_bid,
+          fileConfig.decay_rate,
+          fileConfig.floor_price, 0,
+          fileConfig.liquidity_safety_multiplier,
+          fileConfig.min_auction_price, 0,
+          fileConfig.min_auction_price_multiplier,
+          fileConfig.auction_duration,
+          fileConfig.scaling_factor,
+          fileConfig.linear_decay_time,
+          fileConfig.drop_rate,
+          fileConfig.rate_denominator,
+          fileConfig.max_circles,
+          fileConfig.claim_fee,
+          fileConfig.buy_fee,
+          fileConfig.our_contract_for_fee,
+          fileConfig.our_contract_for_auction,
+          fileConfig.claim_fee_threshold,
+          tokens[0].address,
+        ]
+      }
+      doTransaction(call);
     }
 
   } catch (error) {
@@ -229,5 +261,4 @@ function displayComparisonResults(differences: ConfigDifference[]) {
     console.log("");
   }
 
-  console.log(`${COLORS.blue}💡 Tip: Use the differences file to understand what needs to be updated.${COLORS.reset}`);
 }
