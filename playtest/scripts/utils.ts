@@ -59,8 +59,7 @@ export async function doTransaction(call: Call | Call[]) {
   console.log(`${COLORS.gray}⏱️ Sending transaction...${COLORS.reset}`);
 
   try {
-    // Compute the tx hash for review.
-    console.log(context)
+    console.log(call);
     const tx = await context!.account.execute(call, { version: 3 });
 
     console.log(`${COLORS.gray}TX: ${tx.transaction_hash}${COLORS.reset}`);
