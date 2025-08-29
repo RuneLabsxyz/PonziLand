@@ -1,7 +1,7 @@
 import { $, file, write } from "bun";
 import { Configuration } from "../env";
-import { COLORS, connect } from "../utils";
-import { Contract } from "starknet";
+import { COLORS, connect, doTransaction } from "../utils";
+import { Call, Contract } from "starknet";
 import fs from "fs/promises";
 
 interface ConfigData {
@@ -12,13 +12,13 @@ interface ConfigData {
   max_auctions: string;
   max_auctions_from_bid: string;
   decay_rate: string;
-  "floor price": string;
+  floor_price: string;
   liquidity_safety_multiplier: string;
   min_auction_price: string;
   min_auction_price_multiplier: string;
   auction_duration: string;
   scaling_factor: string;
-  linear_time_decay: string;
+  linear_decay_time: string;
   drop_rate: string;
   rate_denominator: string;
   max_circles: string;
@@ -76,14 +76,43 @@ export async function updateConfig(config: Configuration, args: string[]) {
 
     // Optionally write differences to a file
     if (differences.length > 0) {
-      const differencesPath = `${config.basePath}/deployments/${config.deploymentName}/config_differences.json`;
-      await write(differencesPath, JSON.stringify({
-        timestamp: new Date().toISOString(),
-        differences: differences,
-        fileConfig: fileConfig,
-        contractConfig: contractConfig
-      }, null, 2));
-      console.log(`${COLORS.gray}📝 Differences saved to ${differencesPath}${COLORS.reset}`);
+      
+      const manifestPath = `${config.basePath}/deployments/${config.deploymentName}/manifest.json`;
+      const manifest = await file(manifestPath).json();
+      // Find the config contract
+      const configContract = manifest.contracts.find(c => c.tag.includes('config'));
+      
+      // Create contract instance
+      const contract = new Contract(configContract.abi, configContract.address, provider);
+
+      // Convert BigInt values to strings for serialization
+      const normalizeConfigForCalldata = (config: ConfigData) => {
+        const normalized = { ...config };
+        for (const key of Object.keys(normalized) as (keyof ConfigData)[]) {
+          const value = normalized[key];
+          if (typeof value === 'bigint') {
+            (normalized as any)[key] = value.toString();
+          } else if (Array.isArray(value)) {
+            (normalized as any)[key] = value.map(v => typeof v === 'bigint' ? v.toString() : v);
+          }
+        }
+        return normalized;
+      };
+
+      const normalizedFileConfig = normalizeConfigForCalldata(fileConfig);
+
+      let call: Call = {
+        contractAddress: configContract.address,
+        entrypoint: 'set_full_config',
+        calldata: [
+          normalizedFileConfig
+        ]
+      }
+      doTransaction(call);
+      
+    }
+    else {
+      console.log(`${COLORS.green}✅ No differences found.${COLORS.reset}`);
     }
 
   } catch (error) {
@@ -155,8 +184,8 @@ function compareConfigs(fileConfig: ConfigData, contractConfig: ConfigData): Con
     if (JSON.stringify(fileArray) !== JSON.stringify(contractArray)) {
       differences.push({
         field,
-        fileValue: Array.isArray(fileValue) ? JSON.stringify(normalizedFileValue) : normalizedFileValue?.toString() || 'undefined',
-        contractValue: Array.isArray(contractValue) ? JSON.stringify(normalizedContractValue) : normalizedContractValue?.toString() || 'undefined'
+        fileValue: Array.isArray(fileValue) ? JSON.stringify(fileArray) : fileArray[0]?.toString() || 'undefined',
+        contractValue: Array.isArray(contractValue) ? JSON.stringify(contractArray) : contractArray[0]?.toString() || 'undefined'
       });
     }
   }
