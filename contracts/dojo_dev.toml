@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "test_tsfdg"
+seed = "test_test"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"

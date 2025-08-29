@@ -5,71 +5,85 @@ import { byteArray, cairo, Calldata, CallData, Contract, type shortString } from
 import fs from "fs/promises";
 
 export async function  deployToken(config: Configuration, args: string[]) {
-  if (args.length != 2) {
-    console.log("Required arguments: deploy [symbol] [name]");
+  // Parse arguments to check for -fresh flag
+  let freshDeploy = false;
+  let symbol: string;
+  let name: string;
+
+  if (args.length === 3 && args[0] === '--fresh') {
+    freshDeploy = true;
+    [, symbol, name] = args;
+  } else if (args.length === 2) {
+    [symbol, name] = args;
+  } else {
+    console.log("Required arguments: deploy [--fresh] [symbol] [name]");
+    console.log("  -fresh: Deploy a new token even if one already exists with the same symbol");
     return;
   }
 
-
-  const [symbol, name] = args;
-
-  // Check if token already exists
-  const tokensPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
-  let existingTokens;
-  try {
-    existingTokens = await file(tokensPath).json();
-  } catch (error) {
-    // File doesn't exist, will be created later
-    existingTokens = { tokens: [] };
-  }
-
-  // Check if token with this symbol already exists
-  const existingToken = existingTokens.tokens.find((token: Token) => token.symbol === symbol);
-  
-  if (existingToken) {
-    console.log(`${COLORS.yellow}⚠️  Token with symbol ${symbol} already exists at ${existingToken.address}${COLORS.reset}`);
-    console.log(`${COLORS.blue}🔍 Verifying token symbol...${COLORS.reset}`);
-    
-    // Setup connection to verify the token
-    const { account, provider } = await connect(config);
-    
+  // Skip existing token check if fresh deployment is requested
+  if (!freshDeploy) {
+    // Check if token already exists
+    const tokensPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
+    let existingTokens;
     try {
-        // Compile the project (if no target directory)
-      if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
-        console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
-        const result = await $`cd old-tokens && scarb build && cd ..`;
-        console.log(
-          `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
-        );
-      } else {
-        console.log(
-          `${COLORS.gray} Skipping build because target directory already exists...`,
-        );
-      }
+      existingTokens = await file(tokensPath).json();
+    } catch (error) {
+      // File doesn't exist, will be created later
+      existingTokens = { tokens: [] };
+    }
 
-      // Get the contract class to access ABI
-      let contractClass = await file(
-        `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
-      ).json();
-
-      // Create contract instance
-      const contract = new Contract(contractClass.abi, existingToken.address, provider).typedv2(contractClass.abi);
+    // Check if token with this symbol already exists
+    const existingToken = existingTokens.tokens.find((token: Token) => token.symbol === symbol);
+    
+    if (existingToken) {
+      console.log(`${COLORS.yellow}⚠️  Token with symbol ${symbol} already exists at ${existingToken.address}${COLORS.reset}`);
+      console.log(`${COLORS.blue}🔍 Verifying token symbol...${COLORS.reset}`);
       
-      // Call the symbol function to verify
-      const contractSymbol: String = await contract.symbol();
-      if (contractSymbol == symbol) {
-        console.log(`${COLORS.green}✅ Token ${symbol} already deployed and verified at ${existingToken.address}${COLORS.reset}`);
-        return;
-      } else {
-        console.log(`${COLORS.red}❌ Symbol mismatch! Expected: ${symbol}, Got: ${contractSymbol}${COLORS.reset}`);
+      // Setup connection to verify the token
+      const { account, provider } = await connect(config);
+      
+      try {
+          // Compile the project (if no target directory)
+        if ((await fs.exists(`${config.basePath}/old-tokens/target/dev`)) == false) {
+          console.log(`${COLORS.blue}🔨 Building project...${COLORS.reset}`);
+          const result = await $`cd old-tokens && scarb build && cd ..`;
+          console.log(
+            `${COLORS.green}✅ Project built successfully! ${COLORS.reset}`,
+          );
+        } else {
+          console.log(
+            `${COLORS.gray} Skipping build because target directory already exists...`,
+          );
+        }
+
+        // Get the contract class to access ABI
+        let contractClass = await file(
+          `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
+        ).json();
+
+        // Create contract instance
+        const contract = new Contract(contractClass.abi, existingToken.address, provider).typedv2(contractClass.abi);
+        
+        // Call the symbol function to verify
+        const contractSymbol: String = await contract.symbol();
+        if (contractSymbol == symbol) {
+          console.log(`${COLORS.green}✅ Token ${symbol} already deployed and verified at ${existingToken.address}${COLORS.reset}`);
+          return;
+        } else {
+          console.log(`${COLORS.red}❌ Symbol mismatch! Expected: ${symbol}, Got: ${contractSymbol}${COLORS.reset}`);
+          console.log(`${COLORS.blue}🔄 Removing invalid token and proceeding with new deployment...${COLORS.reset}`);
+          await removeTokenFromFile(config, symbol);
+        }
+      } catch (error) {
+        console.log(`${COLORS.red}❌ Error verifying existing token: ${error}${COLORS.reset}`);
         console.log(`${COLORS.blue}🔄 Removing invalid token and proceeding with new deployment...${COLORS.reset}`);
         await removeTokenFromFile(config, symbol);
       }
-    } catch (error) {
-      console.log(`${COLORS.red}❌ Error verifying existing token: ${error}${COLORS.reset}`);
-      console.log(`${COLORS.blue}🔄 Removing invalid token and proceeding with new deployment...${COLORS.reset}`);
-      await removeTokenFromFile(config, symbol);
     }
+  } else {
+    await removeTokenFromFile(config, symbol);
+    console.log(`${COLORS.blue}🚀 Fresh deployment requested - skipping existing token check${COLORS.reset}`);
   }
 
   // Compile the project (if no target directory)
