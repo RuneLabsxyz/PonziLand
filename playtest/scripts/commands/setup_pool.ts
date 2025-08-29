@@ -17,7 +17,7 @@ const defaultPool = {
 export async function setupPool(config: Configuration, args: string[]) {
   // First of all, register all tokens
   const { tokens } = (await file(
-    `${config.basePath}/tokens.${config.environment}.json`,
+    `${config.basePath}/tokens.json`,
   ).json()) as {
     tokens: Token[];
   };
