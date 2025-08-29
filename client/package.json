@@ -6,6 +6,8 @@
     "dev": "vite dev",
     "dev:sepolia": "DOJO_PROFILE=sepolia vite dev",
     "dev:mainnet": "DOJO_PROFILE=mainnet vite dev",
+    "dev:deployment": "DOJO_PROFILE=deployment_local vite dev",
+    "deployment": "DOJO_PROFILE=deployment vite dev",
     "build": "vite build",
     "build:sepolia": "DOJO_PROFILE=sepolia vite build",
     "build:mainnet": "DOJO_PROFILE=mainnet vite build",

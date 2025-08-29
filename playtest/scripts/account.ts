@@ -48,6 +48,29 @@ export async function getLedgerAccount(provider: Provider): Promise<Account> {
   );
 }
 
+export async function getKatanaAccount(provider: Provider): Promise<Account> {
+  return new Account(
+    provider,
+    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec",
+    "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912",
+    undefined,
+    constants.TRANSACTION_VERSION.V3,
+  );
+}
+
+
+//Temp, should use keystore 
+export async function getSepoliaAccount(provider: Provider): Promise<Account> {
+  return new Account(
+    provider,
+    "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780",
+    "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a",
+    undefined,
+    constants.TRANSACTION_VERSION.V3,
+  );
+}
+
+
 export async function getStarkliAccount(provider: Provider): Promise<Account> {
   // Set environment
   // Ask for $STARKNET_KEYSTORE_PASSWORD
