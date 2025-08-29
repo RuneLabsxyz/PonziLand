@@ -20,9 +20,12 @@ export async function setupPool(config: Configuration, args: string[]) {
     tokens: Token[];
   };
 
-
+  // Calculate expected number of unique pairs (n*(n-1)/2)
+  const expectedPairs = (tokens.length * (tokens.length - 1)) / 2;
+  console.log(`\n📊 Planning to create ${expectedPairs} unique pairs from ${tokens.length} tokens`);
 
   const pairs: { token1: Token; token2: Token }[] = [];
+  const failedPairs: { token1: Token; token2: Token; error: string }[] = [];
 
   const { account } = await connect(config);
 
@@ -31,12 +34,27 @@ export async function setupPool(config: Configuration, args: string[]) {
       if (token.address === token2.address) {
         continue;
       }
-      for (const pair of pairs) {
-        if (pair.token1.symbol === token.symbol && pair.token2.symbol === token2.symbol || 
-            pair.token1.symbol === token2.symbol && pair.token2.symbol === token.symbol) {
-          console.log(`Skipping ${token.symbol}/${token2.symbol} pool because it is already deployed`);
-          continue;
-        }
+      
+      // Check if this pair already exists (in either direction)
+      const pairExists = pairs.some(pair => 
+        (pair.token1.symbol === token.symbol && pair.token2.symbol === token2.symbol) || 
+        (pair.token1.symbol === token2.symbol && pair.token2.symbol === token.symbol)
+      );
+      
+      // Also check if this pair has already failed (in either direction)
+      const pairAlreadyFailed = failedPairs.some(failed => 
+        (failed.token1.symbol === token.symbol && failed.token2.symbol === token2.symbol) || 
+        (failed.token1.symbol === token2.symbol && failed.token2.symbol === token.symbol)
+      );
+      
+      if (pairExists) {
+        console.log(`Skipping ${token.symbol}/${token2.symbol} pool because it is already deployed`);
+        continue;
+      }
+      
+      if (pairAlreadyFailed) {
+        console.log(`Skipping ${token.symbol}/${token2.symbol} pool because deployment already failed`);
+        continue;
       }
       let result = await createPool(config, account, token, token2);
       if (result?.isSuccess) {
@@ -55,18 +73,53 @@ export async function setupPool(config: Configuration, args: string[]) {
             token2: token,
           });
         } else {
-          console.log(`❌ Failed to create ${token2.symbol}/${token.symbol} pool: ${swapped_result?.statusReceipt}`);
+          const errorMessage = swapped_result?.statusReceipt || 'Unknown error';
+          console.log(`❌ Failed to create ${token2.symbol}/${token.symbol} pool: ${errorMessage}`);
+          failedPairs.push({
+            token1: token2,
+            token2: token,
+            error: errorMessage
+          });
         }
       }
     }
   }
 
-  console.log(`✅ Successfully created ${pairs.length} pools:`);
-  for (const pair of pairs) {
-    let order = pair.token1.symbol < pair.token2.symbol;
-
-    console.log(`  • ${pair.token1.symbol}/${pair.token2.symbol}, ${order ? "ascending" : "descending"}`);
+  // Comprehensive deployment verification and reporting
+  const successfulPairs = pairs.length;
+  const failedCount = failedPairs.length;
+  const totalAttempted = successfulPairs + failedCount;
+  const successRate = totalAttempted > 0 ? ((successfulPairs / totalAttempted) * 100).toFixed(1) : '0';
   
+  console.log(`\n📊 DEPLOYMENT SUMMARY:`);
+  console.log(`Expected pairs: ${expectedPairs}`);
+  console.log(`Attempted: ${totalAttempted}`);
+  console.log(`✅ Successful: ${successfulPairs}`);
+  console.log(`❌ Failed: ${failedCount}`);
+  console.log(`Success rate: ${successRate}%`);
+  
+  if (successfulPairs > 0) {
+    console.log(`\n✅ Successfully created pools:`);
+    for (const pair of pairs) {
+      console.log(`  • ${pair.token1.symbol}/${pair.token2.symbol}`);
+    }
+  }
+  
+  if (failedCount > 0) {
+    console.log(`\n❌ Failed pairs:`);
+    for (const failed of failedPairs) {
+      console.log(`  • ${failed.token1.symbol}/${failed.token2.symbol} - ${failed.error}`);
+    }
+  }
+  
+  // Overall status check
+  if (successfulPairs === expectedPairs) {
+    console.log(`\n🎉 ALL PAIRS DEPLOYED SUCCESSFULLY! (${successfulPairs}/${expectedPairs})`);
+  } else {
+    console.log(`\n⚠️  INCOMPLETE DEPLOYMENT: Only ${successfulPairs}/${expectedPairs} pairs were successfully deployed.`);
+    if (failedCount > 0) {
+      console.log(`Please review the ${failedCount} failed pairs above and consider retrying.`);
+    }
   }
 
 }
