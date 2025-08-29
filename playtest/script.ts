@@ -18,7 +18,6 @@ import { upgradeTokens } from "./scripts/commands/upgrade_tokens";
 import { pauseGame } from "./scripts/commands/pause";
 import { registerTokens } from "./scripts/commands/whitelist_tokens";
 import { reset } from "./scripts/commands/reset";
-import { deployAmm } from "./scripts/commands/deploy_amm";
 import { updateConfig } from "./scripts/commands/update_conf";
 
 const SOCIALINK_SIGNER_ADDRESS =
@@ -108,9 +107,6 @@ switch (command) {
     break;
   case "register-tokens":
     await registerTokens(config, commandPositionals);
-    break;
-  case "deploy-amm":
-    await deployAmm(config, commandPositionals);
     break;
   case "update-conf":
     await updateConfig(config, commandPositionals);
