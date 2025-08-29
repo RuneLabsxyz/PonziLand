@@ -61,6 +61,11 @@ export async function setupPool(config: Configuration, args: string[]) {
     }
   }
 
+  console.log(`✅ Successfully created ${pairs.length} pools:`);
+  for (const pair of pairs) {
+    console.log(`  • ${pair.token1.symbol}/${pair.token2.symbol}`);
+  }
+
 }
 
 async function registerTokens(
