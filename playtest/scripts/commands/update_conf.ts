@@ -125,7 +125,7 @@ export async function updateConfig(config: Configuration, args: string[]) {
           tokens.tokens[0].address,
         ]
       }
-      doTransaction(call);
+      await doTransaction(call);
     }
 
   } catch (error) {
