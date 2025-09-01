@@ -22,6 +22,8 @@
     },
   });
 
+  let startPosition: { x: number; y: number } | undefined = $state(undefined);
+
   // Raycaster for mouse position detection
   const raycaster = new Raycaster();
   const mouse = new Vector2();
@@ -97,7 +99,20 @@
     }
   }
 
-  function handleCanvasClick() {
+  function handleCanvasClick(e: PointerEvent) {
+    if (startPosition != undefined) {
+      const distance =
+        Math.abs(e.clientX - startPosition.x) +
+        Math.abs(e.clientY - startPosition.y);
+
+      startPosition = undefined;
+
+      if (distance > Math.pow(5, 2)) {
+        console.log('Skipped due to big drag');
+        return;
+      }
+    }
+
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
       // Get current land tiles synchronously to avoid subscription leak
@@ -141,13 +156,19 @@
     }
   }
 
+  function handleMouseDown(e: MouseEvent) {
+    startPosition = { x: e.clientX, y: e.clientY };
+  }
+
   onMount(() => {
     const canvas = renderer.domElement;
     canvas.addEventListener('mousemove', updateMousePosition);
+    canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('click', handleCanvasClick);
 
     return () => {
       canvas.removeEventListener('mousemove', updateMousePosition);
+      canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('click', handleCanvasClick);
     };
   });
