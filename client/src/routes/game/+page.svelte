@@ -147,16 +147,13 @@
         console.error('An error occurred:', err);
 
         // Check if the error might be WebGL related
-        if (
-          err.message &&
-          (err.message.includes('WebGL') || err.message.includes('canvas'))
-        ) {
-          webGLSupported = false;
-          webGLError = err.message;
-        } else {
-          canvasError = true;
-          canvasErrorMessage =
-            'Failed to initialize the game. Please try refreshing the page.';
+        if (err.message) {
+          if (err.message.includes('WebGL')) {
+            webGLSupported = false;
+            webGLError = err.message;
+          } else if (err.message.includes('canvas')) {
+            handleCanvasError(err);
+          }
         }
         loading = false;
       });
