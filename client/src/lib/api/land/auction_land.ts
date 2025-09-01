@@ -83,7 +83,7 @@ export class AuctionLand extends BaseLand {
 
   public update(land: Land, auction: Auction) {
     // Assert that the location is the same
-    if (!locationEquals(toLocation(land.location)!, this.location)) {
+    if (!locationEquals(toLocation(land?.location)!, this.location)) {
       console.error(
         'Wrong location!',
         land,
@@ -130,6 +130,29 @@ export class AuctionLand extends BaseLand {
       landStake.amount,
       this._token,
     );
+  }
+
+  public updateAuction(auction: Auction) {
+    // Update only auction-specific properties without requiring land data
+    this._startTime = new Date(Number(auction.start_time));
+    this._startPrice = CurrencyAmount.fromUnscaled(
+      auction.start_price,
+      this._token,
+    );
+    this._floorPrice = CurrencyAmount.fromUnscaled(
+      auction.floor_price,
+      this._token,
+    );
+    this._isFinished = auction.is_finished;
+
+    if (auction.sold_at_price && 'value' in auction.sold_at_price) {
+      this._soldAtPrice = CurrencyAmount.fromUnscaled(
+        auction.sold_at_price.value as BigNumberish,
+        this._token,
+      );
+    } else {
+      this._soldAtPrice = undefined;
+    }
   }
 
   static is(land: BaseLand): land is AuctionLand {
