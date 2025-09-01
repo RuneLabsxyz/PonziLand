@@ -42,6 +42,7 @@
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
   import OwnerIndicator from './owner-indicator.svelte';
+  import AuctionIndicator from './auction-indicator.svelte';
   import NukeTimeDisplay from './nuke-time-display.svelte';
   import { devsettings } from './utils/devsettings.store.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
@@ -341,6 +342,7 @@
   shieldTexture.colorSpace = 'srgb';
 
   let ownerInstancedMesh: TInstancedMesh | undefined = $state();
+  let auctionInstancedMesh: TInstancedMesh | undefined = $state();
   let coinInstancedMesh: TInstancedMesh | undefined = $state();
 
   // Memoized circle positions cache
@@ -457,6 +459,20 @@
     return ownedVisibleIndices;
   });
 
+  // Optimized auction land indices calculation
+  let auctionLandIndices = $derived.by(() => {
+    if (!visibleLandTiles) return [];
+
+    const auctionVisibleIndices: number[] = [];
+    visibleLandTiles.forEach((tile, index) => {
+      if (AuctionLand.is(tile.land)) {
+        auctionVisibleIndices.push(index);
+      }
+    });
+
+    return auctionVisibleIndices;
+  });
+
   // Art layer color mapping
   function getArtLayerColor(tile: LandTile): number {
     if (AuctionLand.is(tile.land)) {
@@ -525,6 +541,7 @@
           spritesheet={biomeSpritesheet}
           animationProperty="biomeAnimationName"
           {ownedLandIndices}
+          {auctionLandIndices}
           {isUnzoomed}
         />
       </InstancedSprite>
@@ -544,6 +561,7 @@
           spritesheet={buildingSpritesheet}
           animationProperty="buildingAnimationName"
           {ownedLandIndices}
+          {auctionLandIndices}
           {isUnzoomed}
         />
       </InstancedSprite>
@@ -586,6 +604,13 @@
         landTiles={visibleLandTiles}
         instancedMesh={ownerInstancedMesh}
         {store}
+      />
+    {/if}
+
+    {#if isUnzoomed}
+      <AuctionIndicator
+        landTiles={visibleLandTiles}
+        instancedMesh={auctionInstancedMesh}
       />
     {/if}
 

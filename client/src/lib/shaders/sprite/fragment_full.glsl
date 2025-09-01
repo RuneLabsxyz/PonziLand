@@ -26,6 +26,7 @@ varying float vHover;
 varying vec3 vOutlineColor;
 varying vec3 vPulseColor;
 varying float vIsOwned;
+varying float vIsAuction;
 vec3 baseColor; // To store outline/glow color
 float baseAlpha; // To store outline/glow alpha
 
@@ -352,7 +353,18 @@ void main() {
                 // Create diagonal stripe pattern
                 float interval = 20.0;
                 float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
-                stripe = 0.4 + stripe * 0.4; // Maps 0->0.4 and 1->0.8
+                stripe = 0.4 + stripe * 0.4; // Maps 0->0.4 and 1->0.8 (darkening)
+                finalColor = finalColor * stripe;
+            }
+        }
+
+        if(vIsAuction > 0.5) {
+            // Apply stripe pattern whitening for auction lands
+            if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
+                // Create diagonal stripe pattern
+                float interval = 20.0;
+                float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
+                stripe = 1.2 + stripe * 0.2; // Maps 0->1.2 and 1->1.4 (whitening)
                 finalColor = finalColor * stripe;
             }
         }
