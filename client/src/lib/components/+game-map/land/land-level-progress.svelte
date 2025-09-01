@@ -13,7 +13,6 @@
     const time =
       (levelUpInfo.levelUpTime - levelUpInfo.timeSinceLastLevelUp) /
       configValues.gameSpeed;
-    console.log('Game speed:', configValues.gameSpeed);
     if (time <= 0) {
       return 'ready';
     }
