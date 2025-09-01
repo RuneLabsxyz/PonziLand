@@ -13,7 +13,8 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts",
-    "test:watch": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --watch"
+    "test:watch": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --watch",
+    "test:ui": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --ui"
   },
   "devDependencies": {
     "@lucide/svelte": "^0.482.0",
@@ -21,6 +22,7 @@
     "@sveltejs/kit": "=2.26.0",
     "@sveltejs/vite-plugin-svelte": "=5.1.0",
     "@types/stats.js": "^0.17.3",
+    "@vitest/ui": "3.2.4",
     "autoprefixer": "^10.4.20",
     "bits-ui": "^1.4.7",
     "bits-ui-old": "npm:bits-ui@0.22.0",
