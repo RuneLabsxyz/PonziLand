@@ -21,6 +21,7 @@ import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress, coordinatesToLocation } from '$lib/utils';
 import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
+import { logEntityUpdate } from '$lib/utils/entity-logger';
 import data from '$profileData';
 
 type Subscription = Awaited<
@@ -600,6 +601,9 @@ export class LandTileStore {
 
   public updateLand(entity: ParsedEntity<SchemaType>): void {
     const location = getLocationFromEntity(entity);
+
+    // Enhanced logging with location and model details
+    logEntityUpdate(entity, location, 'Land Update');
     if (location === undefined) return;
 
     const landStore = this.store[location.x][location.y];
