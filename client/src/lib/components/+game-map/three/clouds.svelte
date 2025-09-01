@@ -6,7 +6,11 @@
     InstancedMesh as TInstancedMesh,
     Vector3,
     PlaneGeometry,
-    MeshLambertMaterial,
+    MeshStandardMaterial,
+    Mesh,
+    Shape,
+    ShapeGeometry,
+    DoubleSide,
   } from 'three';
   import type * as THREE from 'three';
   import { gameStore } from './game.store.svelte';
@@ -31,6 +35,8 @@
   const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
   const MAX_INSTANCES = 256 ** 2; // Max instances for instanced mesh
   const MAX_INFLUENCE_DISTANCE = 10; // Maximum distance for mouse influence
+  const PLANE_SIZE = 500; // Size of the colored planes
+  const CLOUD_COLOR = '#110D31'; // Light blue-gray color for cloud planes
 
   // Load clouds GLB using useGltf hook with proper typing
   const gltf = useGltf<{
@@ -48,6 +54,7 @@
   let currentRenderDistance = $state({ x: 50, z: 50 }); // Default render distances
   let screenSize = $state({ width: 1920, height: 1080 }); // Default screen size
   let time = $state(0); // Time for cloud animation
+  let cloudPlanes: Mesh[] = $state([]); // Array of cloud planes
 
   // Cache for pre-computed random values to avoid expensive RNG calls
   const randomCache = new Map<
@@ -177,184 +184,133 @@
     time += delta * 0.1; // Very slow time progression (0.1x speed)
   });
 
-  // Generate dense cloud grid around camera, excluding land bounds
+  // Generate cloud positions only at land bounds perimeter
   let cloudPositions = $derived.by(() => {
-    if (!cloudMeshSize) {
+    if (!cloudMeshSize || !bounds) {
       return [];
     }
 
+    const positions: any[] = [];
+
+    // Define padded land bounds
+    const paddedMinX = bounds.minX - LAND_EXCLUSION_PADDING;
+    const paddedMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
+    const paddedMinZ = bounds.minY - LAND_EXCLUSION_PADDING;
+    const paddedMaxZ = bounds.maxY + LAND_EXCLUSION_PADDING;
+
+    // Only render clouds if they're within camera view
     const cameraX = cameraPosition.x;
     const cameraZ = cameraPosition.z;
-    const positions = [];
 
-    // Calculate grid bounds around camera using asymmetric render distances
-    // X axis uses height-based distance, Z axis uses width-based distance
-    const startX =
-      Math.floor((cameraX - currentRenderDistance.x) / CLOUD_SPACING) *
-      CLOUD_SPACING;
-    const endX =
-      Math.floor((cameraX + currentRenderDistance.x) / CLOUD_SPACING) *
-      CLOUD_SPACING;
-    const startZ =
-      Math.floor((cameraZ - currentRenderDistance.z) / CLOUD_SPACING) *
-      CLOUD_SPACING;
-    const endZ =
-      Math.floor((cameraZ + currentRenderDistance.z) / CLOUD_SPACING) *
-      CLOUD_SPACING;
+    // Generate multiple rings of clouds around the land bounds perimeter
+    const edgePositions = [];
+    const numRings = 3; // Number of cloud rings around the perimeter
+    const ringSpacing = CLOUD_SPACING * 0.7; // Closer spacing between rings
+    const densitySpacing = CLOUD_SPACING * 0.8; // Denser cloud placement
 
-    // Define land exclusion area
-    let landMinX: number | undefined,
-      landMaxX: number | undefined,
-      landMinZ: number | undefined,
-      landMaxZ: number | undefined;
-    if (bounds) {
-      landMinX = bounds.minX - LAND_EXCLUSION_PADDING;
-      landMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
-      landMinZ = bounds.minY - LAND_EXCLUSION_PADDING;
-      landMaxZ = bounds.maxY + LAND_EXCLUSION_PADDING;
+    for (let ring = 0; ring < numRings; ring++) {
+      const ringOffset = ring * ringSpacing;
+      const currentMinX = paddedMinX - ringOffset;
+      const currentMaxX = paddedMaxX + ringOffset;
+      const currentMinZ = paddedMinZ - ringOffset;
+      const currentMaxZ = paddedMaxZ + ringOffset;
+
+      // Top edge
+      const topCount =
+        Math.ceil((currentMaxX - currentMinX) / densitySpacing) + 1;
+      for (let i = 0; i < topCount; i++) {
+        edgePositions.push({
+          x: currentMinX + (i * (currentMaxX - currentMinX)) / (topCount - 1),
+          z: currentMinZ,
+        });
+      }
+
+      // Bottom edge
+      const bottomCount =
+        Math.ceil((currentMaxX - currentMinX) / densitySpacing) + 1;
+      for (let i = 0; i < bottomCount; i++) {
+        edgePositions.push({
+          x:
+            currentMinX + (i * (currentMaxX - currentMinX)) / (bottomCount - 1),
+          z: currentMaxZ,
+        });
+      }
+
+      // Left edge (excluding corners)
+      const leftCount =
+        Math.ceil((currentMaxZ - currentMinZ) / densitySpacing) - 1;
+      for (let i = 1; i <= leftCount; i++) {
+        edgePositions.push({
+          x: currentMinX,
+          z: currentMinZ + (i * (currentMaxZ - currentMinZ)) / (leftCount + 1),
+        });
+      }
+
+      // Right edge (excluding corners)
+      const rightCount =
+        Math.ceil((currentMaxZ - currentMinZ) / densitySpacing) - 1;
+      for (let i = 1; i <= rightCount; i++) {
+        edgePositions.push({
+          x: currentMaxX,
+          z: currentMinZ + (i * (currentMaxZ - currentMinZ)) / (rightCount + 1),
+        });
+      }
     }
 
-    let skippedCount = 0;
-    let generatedCount = 0;
+    edgePositions.forEach(({ x, z }) => {
+      // Use generous render distance for clouds - they should be visible from far away
+      const cloudRenderDistanceX = Math.max(currentRenderDistance.x * 2, 100);
+      const cloudRenderDistanceZ = Math.max(currentRenderDistance.z * 2, 100);
 
-    // Generate grid of clouds with density variations
-    for (let x = startX; x <= endX; x += CLOUD_SPACING) {
-      for (let z = startZ; z <= endZ; z += CLOUD_SPACING) {
-        // Skip if within land bounds
-        if (
-          bounds &&
-          landMinX !== undefined &&
-          landMaxX !== undefined &&
-          landMinZ !== undefined &&
-          landMaxZ !== undefined &&
-          x >= landMinX &&
-          x <= landMaxX &&
-          z >= landMinZ &&
-          z <= landMaxZ
-        ) {
-          skippedCount++;
-          continue; // Skip this position - it's in the land area
-        }
+      // Only add if within generous render distance
+      if (
+        Math.abs(x - cameraX) <= cloudRenderDistanceX &&
+        Math.abs(z - cameraZ) <= cloudRenderDistanceZ
+      ) {
+        const cached = getCachedRandomValues(x, z, true);
 
-        // Get cached random values for this position
-        const cached = getCachedRandomValues(x, z);
-
-        // Add subtle movement based on time using cached time offsets
+        // Add subtle movement based on time for edge clouds using cached values
         const movementX = Math.sin(time + cached.timeOffset) * 0.3;
         const movementZ = Math.cos(time * 0.7 + cached.timeOffset2) * 0.2;
         const verticalBob = Math.sin(time * 0.5 + cached.timeOffset3) * 0.1;
 
-        const randomOffsetX = cached.offsetX + movementX;
-        const randomOffsetZ = cached.offsetZ + movementZ;
+        // Add mouse-based movement for border clouds
+        let mouseInfluenceX = 0;
+        let mouseInfluenceZ = 0;
+        if (cursorStore.absolutePosition) {
+          const mouseX = cursorStore.absolutePosition.x;
+          const mouseZ = cursorStore.absolutePosition.y;
+          const distanceFromMouse = Math.sqrt(
+            (x - mouseX) ** 2 + (z - mouseZ) ** 2,
+          );
 
-        const positionOffsetX = CLOUD_POSITION_OFFSET;
-        const positionOffsetZ = CLOUD_POSITION_OFFSET;
+          if (distanceFromMouse < MAX_INFLUENCE_DISTANCE) {
+            // Prevent division by zero and add minimum distance
+            const minDistance = 0.5;
+            const adjustedDistance = Math.max(distanceFromMouse, minDistance);
+
+            const influence = Math.max(
+              0,
+              1 - adjustedDistance / MAX_INFLUENCE_DISTANCE,
+            );
+            const directionX = (x - mouseX) / adjustedDistance;
+            const directionZ = (z - mouseZ) / adjustedDistance;
+
+            mouseInfluenceX = directionX * influence; // Clouds move away from mouse
+            mouseInfluenceZ = directionZ * influence;
+          }
+        }
 
         positions.push({
-          x: x + randomOffsetX + positionOffsetX,
-          y: z + randomOffsetZ + positionOffsetZ,
+          x: x + movementX + mouseInfluenceX,
+          y: z + movementZ + mouseInfluenceZ,
           z: CLOUDS_HEIGHT + cached.heightVariation + verticalBob,
           scale: cached.scale,
           rotation: cached.rotation,
           opacity: cached.opacity,
         });
-        generatedCount++;
       }
-    }
-
-    // Add edge clouds right at the land bounds perimeter with padding
-    if (bounds) {
-      const paddedMinX = bounds.minX - LAND_EXCLUSION_PADDING;
-      const paddedMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
-      const paddedMinZ = bounds.minY - LAND_EXCLUSION_PADDING;
-      const paddedMaxZ = bounds.maxY + LAND_EXCLUSION_PADDING;
-
-      const edgePositions = [
-        // Top edge
-        ...Array.from(
-          { length: Math.ceil((paddedMaxX - paddedMinX) / CLOUD_SPACING) + 1 },
-          (_, i) => ({
-            x: paddedMinX + i * CLOUD_SPACING,
-            z: paddedMinZ,
-          }),
-        ),
-        // Bottom edge
-        ...Array.from(
-          { length: Math.ceil((paddedMaxX - paddedMinX) / CLOUD_SPACING) + 1 },
-          (_, i) => ({
-            x: paddedMinX + i * CLOUD_SPACING,
-            z: paddedMaxZ,
-          }),
-        ),
-        // Left edge (excluding corners already covered)
-        ...Array.from(
-          { length: Math.ceil((paddedMaxZ - paddedMinZ) / CLOUD_SPACING) - 1 },
-          (_, i) => ({
-            x: paddedMinX,
-            z: paddedMinZ + (i + 1) * CLOUD_SPACING,
-          }),
-        ),
-        // Right edge (excluding corners already covered)
-        ...Array.from(
-          { length: Math.ceil((paddedMaxZ - paddedMinZ) / CLOUD_SPACING) - 1 },
-          (_, i) => ({
-            x: paddedMaxX,
-            z: paddedMinZ + (i + 1) * CLOUD_SPACING,
-          }),
-        ),
-      ];
-
-      edgePositions.forEach(({ x, z }) => {
-        // Only add if within render distance
-        if (
-          Math.abs(x - cameraPosition.x) <= currentRenderDistance.x &&
-          Math.abs(z - cameraPosition.z) <= currentRenderDistance.z
-        ) {
-          const cached = getCachedRandomValues(x, z, true);
-
-          // Add subtle movement based on time for edge clouds using cached values
-          const movementX = Math.sin(time + cached.timeOffset) * 0.3;
-          const movementZ = Math.cos(time * 0.7 + cached.timeOffset2) * 0.2;
-          const verticalBob = Math.sin(time * 0.5 + cached.timeOffset3) * 0.1;
-
-          // Add mouse-based movement for border clouds
-          let mouseInfluenceX = 0;
-          let mouseInfluenceZ = 0;
-          if (cursorStore.absolutePosition) {
-            const mouseX = cursorStore.absolutePosition.x;
-            const mouseZ = cursorStore.absolutePosition.y;
-            const distanceFromMouse = Math.sqrt(
-              (x - mouseX) ** 2 + (z - mouseZ) ** 2,
-            );
-
-            if (distanceFromMouse < MAX_INFLUENCE_DISTANCE) {
-              // Prevent division by zero and add minimum distance
-              const minDistance = 0.5;
-              const adjustedDistance = Math.max(distanceFromMouse, minDistance);
-
-              const influence = Math.max(
-                0,
-                1 - adjustedDistance / MAX_INFLUENCE_DISTANCE,
-              );
-              const directionX = (x - mouseX) / adjustedDistance;
-              const directionZ = (z - mouseZ) / adjustedDistance;
-
-              mouseInfluenceX = directionX * influence; // Clouds move away from mouse
-              mouseInfluenceZ = directionZ * influence;
-            }
-          }
-
-          positions.push({
-            x: x + movementX + mouseInfluenceX,
-            y: z + movementZ + mouseInfluenceZ,
-            z: CLOUDS_HEIGHT + cached.heightVariation + verticalBob,
-            scale: cached.scale,
-            rotation: cached.rotation,
-            opacity: cached.opacity,
-          });
-        }
-      });
-    }
+    });
 
     // Periodically clean up cache for positions far from camera to prevent memory leaks
     // Only clean every 100th frame to avoid performance impact
@@ -370,8 +326,8 @@
           const keyX = parseFloat(coords[0]);
           const keyZ = parseFloat(coords[1]);
           const distance = Math.max(
-            Math.abs(keyX - cameraPosition.x),
-            Math.abs(keyZ - cameraPosition.z),
+            Math.abs(keyX - cameraX),
+            Math.abs(keyZ - cameraZ),
           );
           if (distance > maxCacheDistance) {
             keysToDelete.push(key);
@@ -381,8 +337,8 @@
           const keyX = parseFloat(coords[0]);
           const keyZ = parseFloat(coords[1]);
           const distance = Math.max(
-            Math.abs(keyX - cameraPosition.x),
-            Math.abs(keyZ - cameraPosition.z),
+            Math.abs(keyX - cameraX),
+            Math.abs(keyZ - cameraZ),
           );
           if (distance > maxCacheDistance) {
             keysToDelete.push(key);
@@ -394,6 +350,66 @@
     }
 
     return positions;
+  });
+
+  // Create cloud planes that span camera view with holes for land bounds
+  let cloudPlaneGeometries = $derived.by(() => {
+    if (!bounds) return [];
+
+    const cameraX = cameraPosition.x;
+    const cameraZ = cameraPosition.z;
+    const renderDistanceX = currentRenderDistance.x;
+    const renderDistanceZ = currentRenderDistance.z;
+
+    // Calculate land bounds with padding
+    const landMinX = bounds.minX - LAND_EXCLUSION_PADDING;
+    const landMaxX = bounds.maxX + LAND_EXCLUSION_PADDING;
+    const landMinZ = bounds.minY - LAND_EXCLUSION_PADDING;
+    const landMaxZ = bounds.maxY + LAND_EXCLUSION_PADDING;
+
+    // Create non-overlapping planes around the land bounds
+    const planes: any[] = [];
+    const planePositions = [
+      // North plane (above land bounds) - spans only the width between east/west planes
+      {
+        x: (landMinX + landMaxX) / 2,
+        z: landMaxZ + PLANE_SIZE / 2,
+        width: landMaxX - landMinX,
+        height: PLANE_SIZE,
+      },
+      // South plane (below land bounds) - spans only the width between east/west planes
+      {
+        x: (landMinX + landMaxX) / 2,
+        z: landMinZ - PLANE_SIZE / 2,
+        width: landMaxX - landMinX,
+        height: PLANE_SIZE,
+      },
+      // East plane (right of land bounds) - full height including north/south areas
+      {
+        x: landMaxX + PLANE_SIZE / 2,
+        z: cameraZ,
+        width: PLANE_SIZE,
+        height: Math.max(renderDistanceZ * 4, PLANE_SIZE * 3),
+      },
+      // West plane (left of land bounds) - full height including north/south areas
+      {
+        x: landMinX - PLANE_SIZE / 2,
+        z: cameraZ,
+        width: PLANE_SIZE,
+        height: Math.max(renderDistanceZ * 4, PLANE_SIZE * 3),
+      },
+    ];
+
+    planePositions.forEach((plane) => {
+      const geometry = new PlaneGeometry(plane.width, plane.height);
+      planes.push({
+        geometry,
+        position: { x: plane.x, y: CLOUDS_HEIGHT, z: plane.z },
+        rotation: { x: 0, y: 0, z: 0 },
+      });
+    });
+
+    return planes;
   });
 
   // Extract geometry and material, create instanced mesh when GLTF loads
@@ -439,6 +455,28 @@
       // Enable shadow casting for clouds
     }
   });
+
+  // Create cloud plane meshes
+  $effect(() => {
+    if (cloudPlaneGeometries.length > 0) {
+      const material = new MeshStandardMaterial({});
+
+      cloudPlanes = cloudPlaneGeometries.map((plane) => {
+        const mesh = new Mesh(plane.geometry, material);
+        mesh.position.set(plane.position.x, plane.position.y, plane.position.z);
+        mesh.rotation.set(
+          plane.rotation.x - Math.PI / 2, // Rotate to be horizontal
+          plane.rotation.y,
+          plane.rotation.z,
+        );
+        mesh.castShadow = true; // Planes don't cast shadows
+        mesh.receiveShadow = false; // Planes don't receive shadows
+        return mesh;
+      });
+    } else {
+      cloudPlanes = [];
+    }
+  });
 </script>
 
 <!-- Sun lighting with shadow configuration -->
@@ -471,3 +509,8 @@
 {#if cloudsInstancedMesh && cloudPositions.length > 0}
   <T is={cloudsInstancedMesh} />
 {/if}
+
+<!-- Render cloud planes -->
+{#each cloudPlanes as plane}
+  <T is={plane} />
+{/each}
