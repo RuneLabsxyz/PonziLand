@@ -123,7 +123,7 @@
         if (address != null && !accountState.profile?.exists) {
           console.info('The user needs to signup with socialink.');
       //    goto('/onboarding/register');
-          return;
+      //    return;
         }
 
         if (
@@ -133,7 +133,7 @@
         ) {
           console.info('The user needs to get whitelisted.');
        //   goto('/onboarding/whitelist');
-          return;
+       //   return;
         }
 
         console.log('Everything is ready!', dojo != undefined);
