@@ -122,7 +122,7 @@
         // Check if the user needs to signup with socialink
         if (address != null && !accountState.profile?.exists) {
           console.info('The user needs to signup with socialink.');
-          goto('/onboarding/register');
+      //    goto('/onboarding/register');
           return;
         }
 
