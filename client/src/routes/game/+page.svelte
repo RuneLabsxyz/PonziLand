@@ -20,7 +20,7 @@
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
-  import { setupConfigStore } from '$lib/stores/config.store.svelte';
+  import { setupConfigStore } from '$lib/stores/config.svelte';
   import { onMount } from 'svelte';
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
