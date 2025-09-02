@@ -1,6 +1,6 @@
 <script lang="ts">
   import accountState from '$lib/account.svelte';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import { useDojo } from '$lib/contexts/dojo';
   import { claimSingleLand, claimStore } from '$lib/stores/claim.store.svelte';
   import {

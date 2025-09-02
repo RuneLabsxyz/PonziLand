@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { AuctionLand } from '$lib/api/land/auction_land';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { AuctionLand } from '$lib/api/land/auctionLand';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';

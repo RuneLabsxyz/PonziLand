@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { BaseLand } from '$lib/api/land';
-  import { AuctionLand } from '$lib/api/land/auction_land';
+  import { AuctionLand } from '$lib/api/land/auctionLand';
   import { GRID_SIZE } from '$lib/const';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';

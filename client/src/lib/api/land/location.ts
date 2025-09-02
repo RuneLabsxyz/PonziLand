@@ -12,7 +12,7 @@ export function toLocation(value: BigNumberish): Location {
     return value;
   }
 
-  let parsedLocation = parseLocation(ensureNumber(value));
+  const parsedLocation = parseLocation(ensureNumber(value));
   return { x: parsedLocation[0], y: parsedLocation[1] };
 }
 

@@ -1,28 +1,9 @@
-/**
- * ConfigStore - Manages dynamic configuration from smart contracts
- *
- * SUBSCRIPTION PATTERN EXPLAINED:
- * ===============================
- * 1. Smart Contract: When config changes in Cairo contract, emits ConfigUpdated event
- * 2. Torii Indexer: Listens to contract events and updates its database
- * 3. Client Subscription: This store subscribes to Config model changes via Torii
- * 4. Svelte Store: Updates reactive store, triggering UI updates automatically
- *
- * PATTERN FOLLOWED:
- * ================
- * - Similar to LandTileStore architecture
- * - Setup method initializes subscription + loads initial data
- * - Internal $state rune for reactive updates
- * - Cleanup on destroy to prevent memory leaks
- */
-
 import type { Client } from '$lib/contexts/client.svelte';
 import { ModelsMapping, type Config, type SchemaType } from '$lib/models.gen';
 import { ToriiQueryBuilder, type ParsedEntity } from '@dojoengine/sdk';
 import type { Subscription } from '@dojoengine/torii-client';
 
 export class ConfigStore {
-  // Internal Svelte 5 rune state - starts undefined until config loads from blockchain
   private configState = $state<Config | undefined>(undefined);
 
   // Subscription handle for cleanup

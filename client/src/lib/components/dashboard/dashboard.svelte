@@ -9,17 +9,12 @@
     calculatePriceFromPool,
     fetchEkuboPairData,
     getTokenPrices,
-    type TokenPrice,
   } from '../../api/defi/ekubo/requests';
   import Leaderboard from '../+game-ui/widgets/leaderboard/Leaderboard.svelte';
   import BuyInfo from './buyInfo.svelte';
   import PlayerInfo from './PlayerInfo.svelte';
   import PriceChart from './PriceChart.svelte';
   import type { TokenVolume } from './requests';
-  import { mainnet } from '@reown/appkit/networks';
-  import { baseToken } from '$lib/stores/tokens.store.svelte';
-  import { BASE_URL } from '@avnu/avnu-sdk';
-
   const BASE_TOKEN = data.mainCurrencyAddress;
   const BASE_TOKEN_NUMERIC = BigInt(BASE_TOKEN).toString(10);
 
@@ -46,14 +41,13 @@
     historicalRate: number;
     historicalDate: string;
     volumeByToken: TokenVolume[];
-    topPools: any[];
+    topPools: unknown[];
     historicalPrices: HistoricalPrice[];
   }
 
   let pairCards: PairCardData[] = $state([]);
   let loading = $state(true);
   let error = $state('');
-  let tokenPrices: TokenPrice[] = $state([]);
 
   /**
    * @notice Retrieves historical token balances for a specific date
@@ -111,6 +105,8 @@
    * @returns An array of objects containing dates and corresponding prices
    */
   function getAllHistoricalPrices(data: EkuboApiResponse): HistoricalPrice[] {
+    // Red: This value is only modified in bulks, no reactivity needed
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const datesSet = new Set<string>();
     for (const entry of data.tvlDeltaByTokenByDate) {
       datesSet.add(entry.date);
@@ -172,7 +168,6 @@
 
   async function getPrices() {
     return getTokenPrices().then((prices) => {
-      tokenPrices = prices;
       tokenRates = prices.map((price) => ({
         token: price.address,
         rate: 1 / price.ratio,
@@ -210,7 +205,7 @@
   <div class="container mx-auto p-4">
     <h1 class="text-2xl mb-4 text-white">Token Pairs</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {#each pairCards as card}
+      {#each pairCards as card (card.tokenDetails.address)}
         <Card
           class="shadow-ponzi overflow-hidden"
           id={card.tokenDetails.symbol}
@@ -272,7 +267,7 @@
             <div class="mb-3">
               <h4 class="text-white font-semibold mb-2">Volume</h4>
               <div class="bg-black/20 rounded-lg p-3 space-y-2">
-                {#each card.volumeByToken as vol}
+                {#each card.volumeByToken as vol, i (i)}
                   <div class="flex justify-between">
                     <span class="text-BASE_TOKEN-300">
                       {vol.token === BASE_TOKEN

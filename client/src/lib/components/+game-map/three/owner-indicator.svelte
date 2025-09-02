@@ -1,6 +1,6 @@
 <script lang="ts">
   import accountState from '$lib/account.svelte';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import data from '$profileData';
   import { T } from '@threlte/core';
   import { Instance, InstancedMesh } from '@threlte/extras';
@@ -11,7 +11,7 @@
   } from 'three';
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
-  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+  import type { LandTileStore } from '$lib/api/landTiles.svelte';
 
   let {
     landTiles,

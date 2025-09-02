@@ -10,7 +10,7 @@
   import type { LandTile } from './landTile';
   import { TextTextureCache } from './utils/text-texture';
   import { estimateNukeTime, parseNukeTime } from '$lib/utils/taxes';
-  import { BuildingLand } from '$lib/api/land/building_land';
+  import { BuildingLand } from '$lib/api/land/buildingLand';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { landStore } from '$lib/stores/store.svelte';
 
