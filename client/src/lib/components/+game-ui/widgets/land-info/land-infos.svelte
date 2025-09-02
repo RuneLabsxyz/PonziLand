@@ -9,7 +9,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { padAddress } from '$lib/utils';
   import InfoTabs from './info-tabs.svelte';
-  import { baseToken } from '$lib/stores/tokens.store.svelte';
+  import { baseToken } from '$lib/stores/tokens.svelte';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();

@@ -1,6 +1,6 @@
 <script lang="ts">
   import TokenSelect from '$lib/components/ui/token/token-select.svelte';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { tokenStore } from '$lib/stores/tokens.svelte';
   import { Label } from '$lib/components/ui/label';
   import type { Token } from '$lib/interfaces';
 

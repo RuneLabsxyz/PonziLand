@@ -11,7 +11,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
-  import { baseToken } from '$lib/stores/tokens.store.svelte';
+  import { baseToken } from '$lib/stores/tokens.svelte';
   import { padAddress, parseLocation } from '$lib/utils';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';

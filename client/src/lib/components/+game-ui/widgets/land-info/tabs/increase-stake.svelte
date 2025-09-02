@@ -6,7 +6,7 @@
   import { writable } from 'svelte/store';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { tokenStore } from '$lib/stores/tokens.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
 
