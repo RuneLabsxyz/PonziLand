@@ -21,6 +21,7 @@ import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
 import { padAddress, coordinatesToLocation } from '$lib/utils';
 import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
+import { logEntityUpdate } from '$lib/utils/entity-logger';
 import data from '$profileData';
 
 type Subscription = Awaited<
@@ -600,6 +601,9 @@ export class LandTileStore {
 
   public updateLand(entity: ParsedEntity<SchemaType>): void {
     const location = getLocationFromEntity(entity);
+
+    // Enhanced logging with location and model details
+    logEntityUpdate(entity, location, 'Land Update');
     if (location === undefined) return;
 
     const landStore = this.store[location.x][location.y];
@@ -620,11 +624,16 @@ export class LandTileStore {
           lands[location.x][location.y] = newLand;
           return lands;
         });
+        console.log('Land deleted:', location);
         return { value: newLand };
       }
 
       // Handle empty land case
-      if (EmptyLand.is(previousLand) && landModel == undefined) {
+      if (
+        EmptyLand.is(previousLand) &&
+        landModel == undefined &&
+        auctionModel == undefined
+      ) {
         // If we only have a stake update for an empty land, store it as pending
         if (landStakeModel !== undefined) {
           this.pendingStake.set(pendingStakeKey, landStakeModel as LandStake);
@@ -638,27 +647,53 @@ export class LandTileStore {
       }
 
       // Handle auction case
-      if (auctionModel !== undefined && auctionModel.is_finished == false) {
-        let newLand: AuctionLand;
+      if (auctionModel !== undefined) {
+        if (!auctionModel.is_finished) {
+          let newLand: AuctionLand;
 
-        if (AuctionLand.is(previousLand)) {
-          previousLand.update(landModel as Land, auctionModel as Auction);
-          newLand = previousLand;
-        } else if (landModel !== undefined) {
-          newLand = new AuctionLand(landModel as Land, auctionModel as Auction);
+          if (AuctionLand.is(previousLand)) {
+            previousLand.update(landModel as Land, auctionModel as Auction);
+            newLand = previousLand;
+          } else if (landModel !== undefined) {
+            newLand = new AuctionLand(
+              landModel as Land,
+              auctionModel as Auction,
+            );
+          } else {
+            newLand = new AuctionLand(previousLand, auctionModel as Auction);
+            // Nuke the land
+            gameSounds.play('nuke');
+            const locationStr = coordinatesToLocation(location).toString();
+            nukeStore.animationManager.triggerAnimation(locationStr, 1000);
+          }
+
+          this.currentLands.update((lands) => {
+            lands[location.x][location.y] = newLand;
+            return lands;
+          });
+          return { value: newLand };
         } else {
-          newLand = new AuctionLand(previousLand, auctionModel as Auction);
-          // Nuke the land
-          gameSounds.play('nuke');
-          const locationStr = coordinatesToLocation(location).toString();
-          nukeStore.animationManager.triggerAnimation(locationStr, 1000);
+          // Handle case where auction is finished either the land is already building or still auction
+          if (AuctionLand.is(previousLand)) {
+            // Update existing auction land with finished auction data
+            if (landModel !== undefined) {
+              previousLand.update(landModel as Land, auctionModel as Auction);
+            } else {
+              // Only update auction properties when we don't have land data
+              previousLand.updateAuction(auctionModel as Auction);
+            }
+            this.currentLands.update((lands) => {
+              lands[location.x][location.y] = previousLand;
+              return lands;
+            });
+            return { value: previousLand };
+          } else if (BuildingLand.is(previousLand)) {
+            // Land is already a building, don't create auction but update what we can
+            // For finished auctions on building land, we typically don't need to do anything
+            // as the land has already transitioned past the auction state
+            return { value: previousLand };
+          }
         }
-
-        this.currentLands.update((lands) => {
-          lands[location.x][location.y] = newLand;
-          return lands;
-        });
-        return { value: newLand };
       }
 
       let newLand = previousLand;

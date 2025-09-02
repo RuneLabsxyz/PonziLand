@@ -128,10 +128,6 @@
     <Checkbox bind:value={devsettings.showNukes} label="Nukes" />
     <Separator />
     <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
-    <Checkbox
-      bind:value={devsettings.showOwnedLandOverlay}
-      label="Owned Land Darken"
-    />
     <Separator />
     <Checkbox
       bind:value={devsettings.showOwnerIndicator}
@@ -143,15 +139,8 @@
     <Checkbox bind:value={devsettings.showGrid} label="Grid" />
     <Checkbox bind:value={devsettings.showUI} label="UI" />
     <Separator />
-    <Checkbox bind:value={devsettings.showFog} label="Fog Layer" />
     <Checkbox bind:value={devsettings.showArtLayer} label="Art Layer" />
-    <Slider
-      bind:value={devsettings.artLayerOpacity}
-      label="Art Layer Opacity"
-      min={0}
-      max={1}
-      step={0.1}
-    />
+    <Checkbox bind:value={devsettings.showClouds} label="Clouds" />
   </Folder>
   <Folder title="Debug">
     <Monitor label="Grid X" value={cursorStore.gridPosition?.x ?? -1} />

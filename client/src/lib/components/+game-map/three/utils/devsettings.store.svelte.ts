@@ -17,10 +17,9 @@ export let devsettings = $state({
   showGrid: true,
   showUI: true,
   showNukes: true,
-  showFog: false,
   showOwnerIndicator: true,
   showNukeTimes: false,
   showArtLayer: false,
-  artLayerOpacity: 0.7,
-  showOwnedLandOverlay: false,
+  artLayerOpacity: 1,
+  showClouds: true,
 });

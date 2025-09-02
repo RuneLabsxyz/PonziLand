@@ -1,15 +1,15 @@
 <script lang="ts">
+  import { GRID_SIZE } from '$lib/const';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
+  import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { useThrelte } from '@threlte/core';
   import { interactivity } from '@threlte/extras';
-  import { GRID_SIZE } from '$lib/const';
+  import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
+  import { Raycaster, Vector2, Vector3 } from 'three';
   import { cursorStore } from './three/cursor.store.svelte';
   import { gameStore } from './three/game.store.svelte';
-  import { selectedLand, landStore } from '$lib/stores/store.svelte';
-  import { gameSounds } from '$lib/stores/sfx.svelte';
   import LandSprite from './three/land-sprite.svelte';
-  import { onMount } from 'svelte';
-  import { Raycaster, Vector2, Vector3 } from 'three';
-  import { get } from 'svelte/store';
 
   const { renderer, camera } = useThrelte();
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -21,6 +21,8 @@
       return hits.slice(0, 1);
     },
   });
+
+  let startPosition: { x: number; y: number } | undefined = $state(undefined);
 
   // Raycaster for mouse position detection
   const raycaster = new Raycaster();
@@ -53,7 +55,10 @@
       const t = planePoint.clone().sub(ray.origin).dot(gridPlane) / denominator;
       if (t >= 0) {
         intersectionPoint.copy(ray.origin).add(ray.direction.multiplyScalar(t));
-
+        cursorStore.absolutePosition = {
+          x: intersectionPoint.x,
+          y: intersectionPoint.z,
+        };
         // Convert world position to grid coordinates with -0.5 offset
         // The grid starts at (0,0) and goes to (GRID_SIZE-1, GRID_SIZE-1)
         const gridX = Math.floor(intersectionPoint.x + 0.5);
@@ -69,8 +74,7 @@
           const gridId = gridX * GRID_SIZE + gridZ;
           cursorStore.gridPosition = { x: gridX, y: gridZ, id: gridId };
 
-          // Set hoveredTileIndex to the gridId for direct mapping
-          cursorStore.hoveredTileIndex = gridId;
+          // hoveredTileIndex will be calculated in land-sprite.svelte based on visibleLandTiles
 
           // Add cursor pointer styling when hovering over valid grid
           document.body.classList.add('cursor-pointer');
@@ -83,17 +87,32 @@
         }
       } else {
         cursorStore.gridPosition = undefined;
+        cursorStore.absolutePosition = undefined;
         cursorStore.hoveredTileIndex = undefined;
         document.body.classList.remove('cursor-pointer');
       }
     } else {
       cursorStore.gridPosition = undefined;
+      cursorStore.absolutePosition = undefined;
       cursorStore.hoveredTileIndex = undefined;
       document.body.classList.remove('cursor-pointer');
     }
   }
 
-  function handleCanvasClick() {
+  function handleCanvasClick(e: PointerEvent) {
+    if (startPosition != undefined) {
+      const distance =
+        Math.abs(e.clientX - startPosition.x) +
+        Math.abs(e.clientY - startPosition.y);
+
+      startPosition = undefined;
+
+      if (distance > Math.pow(5, 2)) {
+        console.log('Skipped due to big drag');
+        return;
+      }
+    }
+
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
       // Get current land tiles synchronously to avoid subscription leak
@@ -137,13 +156,19 @@
     }
   }
 
+  function handleMouseDown(e: MouseEvent) {
+    startPosition = { x: e.clientX, y: e.clientY };
+  }
+
   onMount(() => {
     const canvas = renderer.domElement;
     canvas.addEventListener('mousemove', updateMousePosition);
+    canvas.addEventListener('mousedown', handleMouseDown);
     canvas.addEventListener('click', handleCanvasClick);
 
     return () => {
       canvas.removeEventListener('mousemove', updateMousePosition);
+      canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('click', handleCanvasClick);
     };
   });
