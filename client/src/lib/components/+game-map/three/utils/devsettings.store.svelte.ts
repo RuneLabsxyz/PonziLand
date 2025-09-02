@@ -21,5 +21,6 @@ export let devsettings = $state({
   showNukeTimes: false,
   showArtLayer: false,
   artLayerOpacity: 1,
+  showHeatmap: false,
   showClouds: true,
 });

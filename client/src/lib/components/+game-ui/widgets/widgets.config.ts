@@ -105,6 +105,14 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  heatmap: {
+    id: 'data-maps',
+    type: 'heatmap',
+    position: { x: 60, y: 40 },
+    dimensions: { width: 340, height: 500 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export const availableWidgets: Widget[] = [
@@ -137,6 +145,12 @@ export const availableWidgets: Widget[] = [
     type: 'leaderboard',
     label: 'Leaderboard',
     icon: '/ui/icons/Icon_Cup.png',
+  },
+  {
+    id: 'data-maps',
+    type: 'heatmap',
+    label: 'Data Maps',
+    icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
   },
   // {
   //   id: 'notifications',
