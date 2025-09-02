@@ -793,7 +793,7 @@ pub mod actions {
                 if *neighbor.owner != ContractAddressZeroable::zero()
                     && neighbor_stake.amount > 0
                     && *neighbor.location != land.location {
-                    let is_neighbor_nuked = self
+                    self
                         .taxes
                         .claim(
                             store,
@@ -805,28 +805,8 @@ pub mod actions {
                             claim_fee,
                             claim_fee_threshold,
                             our_contract_for_fee,
+                            true,
                         );
-
-                    let has_neighbor_liquidity = store
-                        .world
-                        .token_registry_dispatcher()
-                        .is_token_authorized(*neighbor.token_used);
-
-                    if (is_neighbor_nuked || !has_neighbor_liquidity) {
-                        //we nuked and we execute in recursive way the last claim
-                        self
-                            .nuke(
-                                store,
-                                *neighbor,
-                                ref neighbor_stake,
-                                has_neighbor_liquidity,
-                                current_time,
-                                our_contract_address,
-                                claim_fee,
-                                claim_fee_threshold,
-                                our_contract_for_fee,
-                            );
-                    }
                 }
             };
 
@@ -871,6 +851,7 @@ pub mod actions {
                             claim_fee,
                             claim_fee_threshold,
                             our_contract_for_fee,
+                            false,
                         );
 
                     let has_liquidity_requirements = self
