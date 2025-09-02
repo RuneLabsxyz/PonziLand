@@ -53,6 +53,10 @@ export default ts.config(
         svelteConfig,
       },
     },
+    rules: {
+      // This has too many false positives to be kept as error
+      'svelte/prefer-svelte-reactivity': ['warn'],
+    },
   },
   {
     // Components are only in PascalCase
