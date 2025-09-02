@@ -2152,7 +2152,7 @@
         "1000000000000000000",
         "0",
         "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
-        "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749"
+        "0x6836a5ca352c53661b16bdf96816f229b7205e96dd6ad16d4416073502544b8"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -2515,7 +2515,7 @@
     },
     {
       "address": "0x29ac026f5997f44168bdb62934d35bba0bfc227ea37a7c7b6e0f74b5f71a14e",
-      "class_hash": "0x5f8ae92842a9c5b34e01f014f6e544297bc3222199da9d7f38ac52bfe72884c",
+      "class_hash": "0x32cf643d13c9a9ad5f1c226e849b9691cfd0eb922c4192e726c5ef14b51a265",
       "abi": [
         {
           "type": "impl",
@@ -2685,6 +2685,108 @@
           "type": "impl",
           "name": "ConfigSystemImpl",
           "interface_name": "ponzi_land::systems::config::IConfigSystem"
+        },
+        {
+          "type": "struct",
+          "name": "ponzi_land::models::config::Config",
+          "members": [
+            {
+              "name": "id",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "tax_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "base_time",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "price_decrease_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "time_speed",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_auctions",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_auctions_from_bid",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "decay_rate",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "floor_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "liquidity_safety_multiplier",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "min_auction_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "min_auction_price_multiplier",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "auction_duration",
+              "type": "core::integer::u32"
+            },
+            {
+              "name": "scaling_factor",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "linear_decay_time",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "drop_rate",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "rate_denominator",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "max_circles",
+              "type": "core::integer::u16"
+            },
+            {
+              "name": "claim_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "buy_fee",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "our_contract_for_fee",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "our_contract_for_auction",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
+              "name": "claim_fee_threshold",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "main_currency",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
         },
         {
           "type": "interface",
@@ -3296,6 +3398,17 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_config",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "ponzi_land::models::config::Config"
+                }
+              ],
+              "state_mutability": "view"
             }
           ]
         },
@@ -3429,10 +3542,10 @@
         "5",
         "0",
         "0",
-        "0",
-        "0",
+        "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
+        "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "10",
-        "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749"
+        "0x6836a5ca352c53661b16bdf96816f229b7205e96dd6ad16d4416073502544b8"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
@@ -3718,9 +3831,9 @@
       ],
       "init_calldata": [
         "6",
-        "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749",
-        "0x7d08c149ba47a718f4633292931c8ada04c71bd3e901f081adea0c92078b5f",
-        "0x13a8f0c28d9d769e64242ff27e369004267bca4c91c3a1eb1ea98dd0d6b72bc",
+        "0x6836a5ca352c53661b16bdf96816f229b7205e96dd6ad16d4416073502544b8",
+        "0x345be7ed4e0446376292a78e97d31665253f6681fe46c8010ecb69a8149f103",
+        "0x2bf7684cdf7f7a310a0f0825e158889debf7c5da9cc1708ce38da2c62056032",
         "0x5d1e76ca74dfa90352e3f1f92c3a8854a8efdc4eaad22b79b78c7cea8c338c",
         "0x77eee06fb345c21e343af44ab866f80ad2aad7d25ef24cbbfd936a172f7afb2",
         "0x16b751da6619441bb869b891611a4fcf7221d3a98b2500d9fe052c8f87c71f3"

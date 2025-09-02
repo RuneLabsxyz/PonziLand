@@ -12,97 +12,10 @@
     }
   },
   "mainCurrency": "pltSTRK",
-  "mainCurrencyAddress": "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749",
+  "mainCurrencyAddress": "0x6836a5ca352c53661b16bdf96816f229b7205e96dd6ad16d4416073502544b8",
   "aiAgents": [
   ],
   "availableTokens": [
-    {
-      "name": "Ponziland Test STRK",
-      "symbol": "pltSTRK",
-      "address": "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749",
-      "liquidityPoolType": "005-01",
-      "decimals": null,
-      "images": {
-        "skin": "strk",
-        "icon": "/tokens/pltSTRK/icon.png",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
-    },
-    {
-      "name": "Ponziland Test LORDS",
-      "symbol": "pltLORDS",
-      "address": "0x7d08c149ba47a718f4633292931c8ada04c71bd3e901f081adea0c92078b5f",
-      "liquidityPoolType": "005-01",
-      "decimals": null,
-      "images": {
-        "skin": "lords",
-        "icon": "/tokens/pltLORDS/icon.svg",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
-    },
-    {
-      "name": "Ponziland Test ETH",
-      "symbol": "pltETH",
-      "address": "0x13a8f0c28d9d769e64242ff27e369004267bca4c91c3a1eb1ea98dd0d6b72bc",
-      "liquidityPoolType": "005-01",
-      "decimals": null,
-      "images": {
-        "skin": "eth",
-        "icon": "/tokens/pltETH/icon.svg",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
-    },
     {
       "name": "Ponziland Test PAPER",
       "symbol": "pltPAPER",
@@ -170,6 +83,93 @@
       "images": {
         "skin": "pal",
         "icon": "/tokens/pltPAL/icon.svg",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test STRK",
+      "symbol": "pltSTRK",
+      "address": "0x6836a5ca352c53661b16bdf96816f229b7205e96dd6ad16d4416073502544b8",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "strk",
+        "icon": "/tokens/pltSTRK/icon.png",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test LORDS",
+      "symbol": "pltLORDS",
+      "address": "0x345be7ed4e0446376292a78e97d31665253f6681fe46c8010ecb69a8149f103",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "lords",
+        "icon": "/tokens/pltLORDS/icon.svg",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test ETH",
+      "symbol": "pltETH",
+      "address": "0x2bf7684cdf7f7a310a0f0825e158889debf7c5da9cc1708ce38da2c62056032",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "eth",
+        "icon": "/tokens/pltETH/icon.svg",
         "biome": {
           "x": 2,
           "y": 3
