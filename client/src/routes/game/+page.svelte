@@ -132,7 +132,7 @@
           !accountState.profile?.whitelisted
         ) {
           console.info('The user needs to get whitelisted.');
-          goto('/onboarding/whitelist');
+       //   goto('/onboarding/whitelist');
           return;
         }
 
