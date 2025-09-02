@@ -3,7 +3,7 @@
   import { useInstancedSprite } from '@threlte/extras';
   import { untrack } from 'svelte';
   import type { LandTile } from './landTile';
-  import { nukeStore } from '$lib/stores/nuke.store.svelte';
+  import { nukeStore } from '$lib/stores/nuke.svelte';
 
   let { landTiles } = $props();
 

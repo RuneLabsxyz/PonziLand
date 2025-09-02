@@ -1,3 +1,10 @@
+// TODO(Red): This might be worth refactoring.
+// We have both the NukeAnimationManager which has functions to do some actions, with batching
+// and we have the nukeStore, that is manipulated everywhere, with no real concern into consistency.
+//
+// Also, we have a good class that can be reactive, so it could be worth looking into making it own
+// the rest of the nukestore.
+
 // Optimized nuke animation management with batching
 class NukeAnimationManager {
   private activeAnimations = new Map<
@@ -56,6 +63,8 @@ class NukeAnimationManager {
     this.batchTimer = undefined;
 
     // Group animations by their delay time to batch timeout creation
+    // Red: This shouldn't need to be reactive, because it's only used within this function
+    // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const delayGroups = new Map<
       number,
       Array<{ location: string; delay: number }>
@@ -194,7 +203,7 @@ class NukeAnimationManager {
   }
 }
 
-export let nukeStore = $state<{
+export const nukeStore = $state<{
   pending: { [location: string]: boolean };
   nuking: { [location: string]: boolean };
   animationManager: NukeAnimationManager;
