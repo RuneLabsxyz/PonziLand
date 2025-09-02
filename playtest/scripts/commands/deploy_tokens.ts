@@ -1,7 +1,7 @@
 import { $, file, write } from "bun";
 import { Configuration } from "../env";
 import { COLORS, connect, Token, TokenCreation } from "../utils";
-import { byteArray, cairo, Calldata, CallData, Contract, type shortString } from "starknet";
+import { byteArray, cairo, Calldata, CallData, Contract, type shortString, type Abi } from "starknet";
 import fs from "fs/promises";
 
 export async function  deployToken(config: Configuration, args: string[]) {
@@ -63,7 +63,7 @@ export async function  deployToken(config: Configuration, args: string[]) {
         ).json();
 
         // Create contract instance
-        const contract = new Contract(contractClass.abi, existingToken.address, provider).typedv2(contractClass.abi);
+        const contract = new Contract({abi: contractClass.abi, address: existingToken.address, providerOrAccount: provider}).typedv2(contractClass.abi as Abi);
         
         // Call the symbol function to verify
         const contractSymbol: String = await contract.symbol();
