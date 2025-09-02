@@ -1,8 +1,8 @@
 import type { UniversalProviderType } from '@reown/appkit-adapter-ethers';
 import { appKit } from '.';
 
-export let address: { current?: string | undefined } = $state({});
-export let provider: { current?: UniversalProviderType | undefined } = $state(
+export const address: { current?: string | undefined } = $state({});
+export const provider: { current?: UniversalProviderType | undefined } = $state(
   {},
 );
 
@@ -23,7 +23,7 @@ appKit.subscribeProviders((state) => {
   }
 })();
 
-export let currentStep: { current: number } = $state({ current: 1 });
+export const currentStep: { current: number } = $state({ current: 1 });
 
 export function setCurrentStep(step: number) {
   console.log('Setting current step to:', step);
