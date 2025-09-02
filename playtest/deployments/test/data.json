@@ -24,7 +24,7 @@
       "decimals": null,
       "images": {
         "skin": "strk",
-        "icon": "/tokens/strk/icon.png",
+        "icon": "/tokens/pltSTRK/icon.png",
         "biome": {
           "x": 2,
           "y": 3
@@ -53,7 +53,7 @@
       "decimals": null,
       "images": {
         "skin": "lords",
-        "icon": "/tokens/lords/icon.svg",
+        "icon": "/tokens/pltLORDS/icon.svg",
         "biome": {
           "x": 2,
           "y": 3
@@ -82,7 +82,7 @@
       "decimals": null,
       "images": {
         "skin": "eth",
-        "icon": "/tokens/eth/icon.svg",
+        "icon": "/tokens/pltETH/icon.svg",
         "biome": {
           "x": 2,
           "y": 3
@@ -111,7 +111,7 @@
       "decimals": null,
       "images": {
         "skin": "paper",
-        "icon": "/tokens/paper/icon.svg",
+        "icon": "/tokens/pltPAPER/icon.svg",
         "biome": {
           "x": 2,
           "y": 3
@@ -140,7 +140,7 @@
       "decimals": null,
       "images": {
         "skin": "brother",
-        "icon": "/tokens/brother/icon.png",
+        "icon": "/tokens/pltBROTHER/icon.png",
         "biome": {
           "x": 2,
           "y": 3
@@ -169,7 +169,7 @@
       "decimals": null,
       "images": {
         "skin": "pal",
-        "icon": "/tokens/pal/icon.svg",
+        "icon": "/tokens/pltPAL/icon.svg",
         "biome": {
           "x": 2,
           "y": 3
