@@ -111,7 +111,7 @@
 </script>
 
 <Select onSelectedChange={selectToken} {disabled}>
-  <SelectTrigger class={triggerClasses} {id}>
+  <SelectTrigger {id} {variant}>
     {#if selectedToken}
       <div class="flex gap-2 items-center">
         <TokenAvatar token={selectedToken} class={avatarClasses} />
@@ -121,14 +121,15 @@
       {placeholder}
     {/if}
   </SelectTrigger>
-  <SelectContent class={contentClasses}>
+  <SelectContent {variant}>
     {#each tokens as token}
       <SelectItem
         value={token.address}
         disabled={disabled ||
           (isTutorialActive && token.symbol !== tutorialAllowedSymbol)}
+        {variant}
       >
-        <div class={cn('flex gap-2 items-center', itemTextClasses)}>
+        <div class={cn('flex gap-2 items-center')}>
           <TokenAvatar {token} class={avatarClasses} />
           {token.symbol}
         </div>
