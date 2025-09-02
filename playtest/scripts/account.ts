@@ -39,35 +39,30 @@ export async function getLedgerAccount(provider: Provider): Promise<Account> {
     },
   });
 
-  return new Account(
+  return new Account({
     provider,
-    await getAddressFromAccountFile(true),
-    myLedgerSignerProxy,
-    undefined,
-    constants.TRANSACTION_VERSION.V3,
-  );
+    address: await getAddressFromAccountFile(true),
+    signer: myLedgerSignerProxy,
+  });
 }
 
 export async function getKatanaAccount(provider: Provider): Promise<Account> {
   return new Account(
-    provider,
-    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec",
-    "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912",
-    undefined,
-    constants.TRANSACTION_VERSION.V3,
-  );
+    {provider,
+    address: "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec",
+    signer: "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912",
+  });
+  ;
 }
 
 
 //Temp, should use keystore 
 export async function getSepoliaAccount(provider: Provider): Promise<Account> {
-  return new Account(
+  return new Account({
     provider,
-    "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780",
-    "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a",
-    undefined,
-    constants.TRANSACTION_VERSION.V3,
-  );
+    address: "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780",
+    signer: "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a",
+  });
 }
 
 
@@ -93,11 +88,10 @@ export async function getStarkliAccount(provider: Provider): Promise<Account> {
   const privateKey = stdout.toString().replace("\n", "");
 
   // Return the resulting account
-  return new Account(
+  return new Account({
     provider,
-    await getAddressFromAccountFile(),
-    privateKey,
-    undefined,
-    constants.TRANSACTION_VERSION.V3,
+    address: await getAddressFromAccountFile(),
+    signer: privateKey,
+  }
   );
 }
