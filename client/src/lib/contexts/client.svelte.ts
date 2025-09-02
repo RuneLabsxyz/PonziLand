@@ -4,8 +4,6 @@ import { type SchemaType as Schema } from '$lib/models.gen';
 import { DojoProvider } from '@dojoengine/core';
 import { init } from '@dojoengine/sdk';
 
-let dojoKey = Symbol('dojo');
-
 export type Client = NonNullable<Awaited<ReturnType<typeof _setupDojo>>>;
 
 async function _setupDojo(config: DojoConfig) {
