@@ -90,6 +90,7 @@ export async function updateConfig(config: Configuration, args: string[]) {
       const manifestPath = `${config.basePath}/deployments/${config.deploymentName}/manifest.json`;
       const manifest = await file(manifestPath).json();
       // Find the config contract
+      console.log(manifest);
       const configContract = manifest.contracts.find(c => c.tag.includes('config'));
       
       let tokenPath = `${config.basePath}/deployments/${config.deploymentName}/tokens.json`;
