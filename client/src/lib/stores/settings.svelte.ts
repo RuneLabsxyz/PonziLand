@@ -1,5 +1,10 @@
 import { gameSounds } from '$lib/stores/sfx.svelte';
 
+// TODO(Red): Maybe add the dev settings inside of the settings store?
+//
+// It would allow us to persist the configuration across reloads.
+// (just leave the defaults if the tag is not set)
+
 class SettingsStore {
   private static STORAGE_KEY = 'ponziland_settings';
 
