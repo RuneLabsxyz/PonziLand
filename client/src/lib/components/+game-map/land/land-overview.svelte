@@ -5,7 +5,7 @@
   import { onMount } from 'svelte';
   import LandDisplay from './land-display.svelte';
   import LandLevelProgress from './land-level-progress.svelte';
-  import { moveCameraTo } from '$lib/stores/camera.store';
+  import { moveCameraTo } from '$lib/stores/camera';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { get } from 'svelte/store';
   const {

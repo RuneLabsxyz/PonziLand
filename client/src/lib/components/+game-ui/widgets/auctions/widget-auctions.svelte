@@ -9,7 +9,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { moveCameraTo } from '$lib/stores/camera.store';
+  import { moveCameraTo } from '$lib/stores/camera';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { baseToken } from '$lib/stores/tokens.store.svelte';
   import { padAddress, parseLocation } from '$lib/utils';

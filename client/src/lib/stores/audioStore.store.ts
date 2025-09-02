@@ -20,7 +20,7 @@ interface PlayOptions {
 export function createAudioStore<T extends string | number | symbol>(
   sounds: Record<T, string>,
 ) {
-  const { subscribe, set, update } = writable<SoundInstance<T>[]>([]);
+  const { subscribe, update } = writable<SoundInstance<T>[]>([]);
 
   /**
    * A utility function to fade an audio element in or out.
@@ -100,9 +100,9 @@ export function createAudioStore<T extends string | number | symbol>(
       // Adjust the preservesPitch property based on the option provided
       if (typeof audio.preservesPitch !== 'undefined') {
         audio.preservesPitch = options.preservesPitch || false;
-      } else if (typeof (audio as any).mozPreservesPitch !== 'undefined') {
+      } else if ('mozPreservesPitch' in audio) {
         // For Firefox
-        (audio as any).mozPreservesPitch = options.preservesPitch || false;
+        audio.mozPreservesPitch = options.preservesPitch || false;
       }
 
       if (options.trim) {

@@ -6,7 +6,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { moveCameraTo } from '$lib/stores/camera.store';
+  import { moveCameraTo } from '$lib/stores/camera';
   import { claimAll, claimAllOfToken } from '$lib/stores/claim.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
