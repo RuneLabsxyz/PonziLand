@@ -7,7 +7,6 @@ import {
 } from '$env/static/public';
 import { getDojoConfig } from '$lib/dojoConfig';
 import { ArgentXAccount } from '$lib/accounts/argentx';
-import { setupBurnerAccount } from '$lib/accounts/burner';
 import { setupController, SvelteController } from '$lib/accounts/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { loadDojoConfig } from '$lib/dojoConfig';
@@ -116,12 +115,6 @@ export async function Provider(
   wallet: WALLET_API.StarknetWindowObject,
 ): Promise<AccountProvider | null> {
   switch (wallet.id) {
-    case 'burner':
-      if (USE_BURNER) {
-        const config = await loadDojoConfig();
-        return (await setupBurnerAccount(config)) ?? null;
-      }
-      return null;
     case 'controller':
       return controller ?? null;
     case 'argentX':
@@ -217,10 +210,6 @@ export class AccountManager {
     // Load the dojo config first
     const config = await loadDojoConfig();
 
-    // If it is dev, just use the burner provider
-    if (USE_BURNER) {
-      this._provider = await setupBurnerAccount(config)!;
-    }
 
     const previousWallet: string | null = localStorage.getItem(
       previousWalletSymbol.toString(),
