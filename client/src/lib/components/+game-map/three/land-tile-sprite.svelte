@@ -16,12 +16,14 @@
     spritesheet,
     animationProperty,
     ownedLandIndices = [],
+    auctionLandIndices = [],
     isUnzoomed = false,
   }: {
     landTiles: LandTile[];
     spritesheet: any;
     animationProperty: string;
     ownedLandIndices: number[];
+    auctionLandIndices: number[];
     isUnzoomed: boolean;
   } = $props();
 
@@ -87,6 +89,8 @@
     if (outlineControls && sprite) {
       // Always call setOwnedLands to ensure proper clearing when list gets smaller
       outlineControls.setOwnedLands(sprite, ownedLandIndices, 0.4);
+      // Set auction lands with different attributes (if supported by shader)
+      outlineControls.setAuctionLands(sprite, auctionLandIndices);
     }
   });
 

@@ -36,6 +36,10 @@ export interface OutlineControls {
     instanceIndices: number[],
     darkenFactor?: number,
   ) => void;
+  setAuctionLands: (
+    instancedMesh: THREE.InstancedMesh,
+    instanceIndices: number[],
+  ) => void;
   setZoomState: (isUnzoomed: boolean) => void;
 }
 
@@ -71,6 +75,13 @@ export function setupOutlineShader(
     if (!instancedMesh.geometry.attributes.ownedState) {
       instancedMesh.geometry.setAttribute(
         'ownedState',
+        new THREE.InstancedBufferAttribute(new Float32Array(count), 1),
+      );
+    }
+
+    if (!instancedMesh.geometry.attributes.auctionState) {
+      instancedMesh.geometry.setAttribute(
+        'auctionState',
         new THREE.InstancedBufferAttribute(new Float32Array(count), 1),
       );
     }
@@ -312,6 +323,38 @@ export function setupOutlineShader(
 
       console.log(
         `Updated ${instanceIndices.length} owned lands via instanced buffer attributes (cleared all first)`,
+      );
+    },
+
+    setAuctionLands: (
+      instancedMesh: THREE.InstancedMesh,
+      instanceIndices: number[],
+    ) => {
+      if (!mat.uniforms) return;
+
+      createBufferAttributes(instancedMesh);
+
+      const auctionAttribute = instancedMesh.geometry.attributes
+        .auctionState as THREE.InstancedBufferAttribute;
+      const auctionArray = auctionAttribute.array as Float32Array;
+
+      // Always reset all to not auction first
+      auctionArray.fill(0.0);
+
+      // Set auction lands to 1.0 (only if we have indices)
+      if (instanceIndices.length > 0) {
+        instanceIndices.forEach((index) => {
+          if (index >= 0 && index < auctionArray.length) {
+            auctionArray[index] = 1.0;
+          }
+        });
+      }
+
+      // Always mark as needing update, even for empty arrays
+      auctionAttribute.needsUpdate = true;
+
+      console.log(
+        `Updated ${instanceIndices.length} auction lands via instanced buffer attributes (cleared all first)`,
       );
     },
 
