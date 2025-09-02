@@ -2,7 +2,7 @@
   import accountState from '$lib/account.svelte';
   import { BuildingLand } from '$lib/api/land/buildingLand';
   import { useDojo } from '$lib/contexts/dojo';
-  import { claimSingleLand, claimStore } from '$lib/stores/claim.store.svelte';
+  import { claimSingleLand, claimStore } from '$lib/stores/claim.svelte';
   import {
     clearPending,
     nukeStore,

@@ -7,7 +7,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { moveCameraTo } from '$lib/stores/camera.store';
-  import { claimAll, claimAllOfToken } from '$lib/stores/claim.store.svelte';
+  import { claimAll, claimAllOfToken } from '$lib/stores/claim.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress, parseLocation } from '$lib/utils';
