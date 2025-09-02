@@ -1,10 +1,7 @@
 // Get the wanted system from the environment
 
 import { browser } from '$app/environment';
-import {
-  PUBLIC_DOJO_BURNER_ADDRESS,
-  PUBLIC_DOJO_CHAIN_ID,
-} from '$env/static/public';
+import { PUBLIC_DOJO_BURNER_ADDRESS } from '$env/static/public';
 import { getDojoConfig } from '$lib/dojoConfig';
 import { ArgentXAccount } from '$lib/accounts/argentx';
 import { setupBurnerAccount } from '$lib/accounts/burner';
@@ -15,15 +12,12 @@ import { Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
 import { WALLET_API } from '@starknet-io/types-js';
 import {
-  Account,
-  cairo,
   WalletAccount,
   constants as SNconstants,
   type AccountInterface,
   shortString,
   constants,
 } from 'starknet';
-import { getContext, setContext } from 'svelte';
 
 /// Common functions required to be implemented by all account providers;
 
@@ -49,7 +43,7 @@ export const WalletWeights: Record<string, number> = {
 // TODO: In AccountProvider, offer a way to store the session loaded from local storage, if it exists (can be a no-op on cartridge + burner)
 
 export type AccountProvider = {
-  connect(): Promise<any>;
+  connect(): Promise<unknown>;
 
   setupSession(): Promise<StoredSession | void>;
   loadSession(storage: StoredSession): Promise<void>;
@@ -72,11 +66,11 @@ export type AccountProvider = {
 };
 
 const stubLocalStorage = {
-  getItem(id: string) {
+  getItem(_id: string) {
     return null;
   },
-  setItem(id: string, value: string) {},
-  removeItem(id: string) {},
+  setItem(_id: string, _value: string) {},
+  removeItem(_id: string) {},
 };
 
 const localStorage = browser ? window.localStorage : stubLocalStorage;
@@ -88,7 +82,6 @@ const localStorage = browser ? window.localStorage : stubLocalStorage;
 // Add a function to request login for a specific wallet, that calls the .login() for the selected account (by id)
 // Then, delegate the rest to the current account.
 
-const accountManager = Symbol('accountManager');
 const previousWalletSymbol = Symbol('previousWallet');
 const previousWalletSession = Symbol('walletSession');
 
@@ -160,7 +153,13 @@ async function scanObjectForWalletsCustom(): Promise<void> {
       // If not valid still check maybe its a virtual wallet ?
       if (!isValid) {
         try {
-          wallet = await (wallet as any).loadWallet(window);
+          wallet = await (
+            wallet as unknown as {
+              loadWallet: (
+                window: Window,
+              ) => Promise<WALLET_API.StarknetWindowObject>;
+            }
+          ).loadWallet(window);
         } catch (e) {
           console.log('Not a virtual wallet', e);
         }
@@ -176,14 +175,13 @@ const checkCompatibility = async (
 ) => {
   let isCompatible: boolean = false;
   try {
-    const permissions = (await myWalletSWO.request({
+    // Check if wallet is compatibly by calling permissions, and discarding the results.
+    (await myWalletSWO.request({
       type: 'wallet_getPermissions',
     })) as string[];
     isCompatible = true;
-  } catch {
-    (err: any) => {
-      console.log('Wallet compatibility failed.\n', err);
-    };
+  } catch (err: unknown) {
+    console.log('Wallet compatibility failed.\n', err);
   }
   return isCompatible;
 };
@@ -259,7 +257,7 @@ export class AccountManager {
   getStarknetProvider() {
     // This method requires the config to be loaded first
     // We'll throw an error with a helpful message if not loaded
-    let config = getDojoConfig();
+    const config = getDojoConfig();
 
     return new StarknetProvider({
       nodeUrl: config.rpcUrl,
