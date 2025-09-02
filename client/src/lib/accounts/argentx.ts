@@ -12,6 +12,9 @@ import { WALLET_API } from '@starknet-io/types-js';
 import { Account, constants, ec, RpcProvider, WalletAccount } from 'starknet';
 import { CommonStarknetWallet } from './getStarknet';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ArgentPolicy = any;
+
 const FUSE_DISABLE_ARGENT = true;
 
 const STRKFees = [
@@ -45,13 +48,13 @@ async function setupSession(
     publicKey: ec.starkCurve.getStarkKey(privateKey),
   };
 
-  const expiry = Math.floor((Date.now() + 1000 * 60 * 60 * 24) / 1000) as any; // ie: 1 day
+  const expiry = BigInt(Math.floor((Date.now() + 1000 * 60 * 60 * 24) / 1000)); // ie: 1 day
 
   const sessionParams: CreateSessionParams = {
     sessionKey,
     allowedMethods: Object.entries(config.policies.contracts ?? {}).flatMap(
-      (policy: any[]) =>
-        policy[1].methods.map((method: any) => ({
+      (policy: ArgentPolicy[]) =>
+        policy[1].methods.map((method: ArgentPolicy) => ({
           selector: method.entrypoint,
           'Contract Address': policy[0],
         })),
@@ -99,7 +102,7 @@ async function setupSession(
   return [
     sessionAccount,
     {
-      expiry,
+      expiry: new Date(Number(expiry)),
       address,
       privateKey: sessionKey.privateKey,
     },
