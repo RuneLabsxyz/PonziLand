@@ -9,16 +9,24 @@ import { writable } from 'svelte/store';
 const STORAGE_KEY = WIDGETS_STORAGE_KEY;
 
 // Validate widget data structure
-function isValidWidget(widget: any): widget is WidgetState {
+function isValidWidget(widget: unknown): widget is WidgetState {
   return (
-    widget &&
+    widget != undefined &&
+    widget != null &&
     typeof widget === 'object' &&
+    'id' in widget &&
     typeof widget.id === 'string' &&
+    'type' in widget &&
     typeof widget.type === 'string' &&
+    'position' in widget &&
     typeof widget.position === 'object' &&
+    'x' in widget.position! &&
     typeof widget.position.x === 'number' &&
+    'y' in widget.position &&
     typeof widget.position.y === 'number' &&
+    'isMinimized' in widget &&
     typeof widget.isMinimized === 'boolean' &&
+    'isOpen' in widget &&
     typeof widget.isOpen === 'boolean'
   );
 }
@@ -38,7 +46,7 @@ function processWidgetDataForStorage(widget: WidgetState): WidgetState {
 }
 
 // Process widget data after loading
-function processWidgetDataAfterLoad(widget: any): WidgetState | null {
+function processWidgetDataAfterLoad(widget: unknown): WidgetState | null {
   // Validate widget structure
   if (!isValidWidget(widget)) {
     console.warn('Invalid widget data found, skipping:', widget);
