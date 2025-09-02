@@ -12,7 +12,7 @@
  * ================
  * - Similar to LandTileStore architecture
  * - Setup method initializes subscription + loads initial data
- * - Internal writable store for reactive updates
+ * - Internal $state rune for reactive updates
  * - Cleanup on destroy to prevent memory leaks
  */
 
@@ -20,17 +20,16 @@ import type { Client } from '$lib/contexts/client.svelte';
 import { ModelsMapping, type Config, type SchemaType } from '$lib/models.gen';
 import { ToriiQueryBuilder, type ParsedEntity } from '@dojoengine/sdk';
 import type { Subscription } from '@dojoengine/torii-client';
-import { writable, type Readable } from 'svelte/store';
 
 export class ConfigStore {
-  // Internal Svelte store - starts undefined until config loads from blockchain
-  private configStore = writable<Config | undefined>(undefined);
+  // Internal Svelte 5 rune state - starts undefined until config loads from blockchain
+  private configState = $state<Config | undefined>(undefined);
 
   // Subscription handle for cleanup
   private subscription: Subscription | undefined;
 
   constructor() {
-    // Store starts empty - will be populated when setup() is called
+    // State starts empty - will be populated when setup() is called
   }
 
   /**
@@ -85,26 +84,24 @@ export class ConfigStore {
       if (configModel && Object.keys(configModel).length > 0) {
         console.log('🔧 Config updated from contracts:', configModel);
 
-        // Use store.update to merge with current config
-        this.configStore.update((currentConfig) => {
-          if (!currentConfig) {
-            // No existing config, use the new data as-is
-            return configModel as Config;
-          }
-
+        // Update the rune state
+        if (!this.configState) {
+          // No existing config, use the new data as-is
+          this.configState = configModel as Config;
+        } else {
           // Merge new config with existing config to preserve unchanged fields
-          return { ...currentConfig, ...configModel } as Config;
-        });
+          this.configState = { ...this.configState, ...configModel } as Config;
+        }
       }
     });
   }
 
   /**
-   * Get reactive config store - components subscribe to this
+   * Get reactive config - components can access this directly
    * Returns undefined until config loads
    */
-  public getConfig(): Readable<Config | undefined> {
-    return this.configStore;
+  public get config(): Config | undefined {
+    return this.configState;
   }
 
   /**
