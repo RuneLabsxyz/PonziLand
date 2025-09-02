@@ -150,7 +150,7 @@ async function readContractConfig(config: Configuration, provider: any): Promise
     const configContract = manifest.contracts.find(c => c.tag.includes('config'));
     
     // Create contract instance
-    const contract = new Contract(configContract.abi, configContract.address, provider);
+    const contract = new Contract({abi: configContract.abi, address: configContract.address, providerOrAccount: provider});
     
     const onchainConfig = await contract.get_config();
     
