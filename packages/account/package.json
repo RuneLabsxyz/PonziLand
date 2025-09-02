@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RuneLabsxyz/PonziLand/tree/main/pkgs/account"
+    "url": "git+https://github.com/RuneLabsxyz/PonziLand/tree/main/packages/account"
   },
   "scripts": {
     "dev": "vite dev",

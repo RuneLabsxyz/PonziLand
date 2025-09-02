@@ -75,7 +75,7 @@ export const fontStyles = `
 ### Directory Structure
 
 ```
-pkgs/ui/
+packages/ui/
 ├── src/
 │   └── lib/               # ✅ Packaged for npm
 │       ├── assets/        # Embedded asset files (generated)
