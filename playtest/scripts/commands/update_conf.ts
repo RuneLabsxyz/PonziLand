@@ -152,6 +152,7 @@ async function readContractConfig(config: Configuration, provider: any): Promise
     // Create contract instance
     const contract = new Contract({abi: configContract.abi, address: configContract.address, providerOrAccount: provider}).typedv2(configContract.abi as Abi);
     
+    console.log(contract);
     const onchainConfig = await contract.get_config();
     
     // Use safe logging for objects that might contain BigInt
