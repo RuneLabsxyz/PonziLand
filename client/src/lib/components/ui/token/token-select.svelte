@@ -87,31 +87,13 @@
     tutorialEnabled && tutorialState?.tutorialEnabled,
   );
 
-  // Styling variants
-  let triggerClasses = $derived(
-    variant === 'swap'
-      ? cn(
-          'w-full bg-[#282835] text-[#D9D9D9] rounded font-ponzi-number stroke-3d-black',
-          className,
-        )
-      : cn('w-full', className),
-  );
-
-  let contentClasses = $derived(
-    variant === 'swap' ? 'bg-[#282835] text-white' : '',
-  );
-
-  let itemTextClasses = $derived(
-    variant === 'swap' ? 'font-ponzi-number text-white' : '',
-  );
-
   let avatarClasses = $derived(
     variant === 'swap' ? 'h-6 w-6 border-2 border-black' : 'h-4 w-4',
   );
 </script>
 
 <Select onSelectedChange={selectToken} {disabled}>
-  <SelectTrigger class={triggerClasses} {id}>
+  <SelectTrigger {id} {variant}>
     {#if selectedToken}
       <div class="flex gap-2 items-center">
         <TokenAvatar token={selectedToken} class={avatarClasses} />
@@ -121,14 +103,15 @@
       {placeholder}
     {/if}
   </SelectTrigger>
-  <SelectContent class={contentClasses}>
+  <SelectContent {variant}>
     {#each tokens as token}
       <SelectItem
         value={token.address}
         disabled={disabled ||
           (isTutorialActive && token.symbol !== tutorialAllowedSymbol)}
+        {variant}
       >
-        <div class={cn('flex gap-2 items-center', itemTextClasses)}>
+        <div class={cn('flex gap-2 items-center')}>
           <TokenAvatar {token} class={avatarClasses} />
           {token.symbol}
         </div>
