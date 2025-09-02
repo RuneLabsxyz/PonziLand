@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x777742fecbc17f3873fb72cea6f33f7fb80bd42cd9ee8c539fe1f07b33cb18f",
-    "seed": "test_test",
+    "address": "0x35d0271d5a0a4cd327114e34ed09ba40a6404750069d071b643745661573d6b",
+    "seed": "test_313277088",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0x557062f46fc4a59dbf3e4f52e0c2d55d6c7d36c7b77bc26bdebe05578e66b8e",
-      "class_hash": "0x68dc651678328c497cd8924e5975b957b4425cc378d37cfd084c39e0c50537a",
+      "address": "0x3e78fba381f99ecae9554b7d149b7b6f9e6df7519554e1f363b79ee2383f237",
+      "class_hash": "0x8ea33f5bd537e663a8b94688d4ed99a08b7fe587b2cbd2ec1310c31c3502f4",
       "abi": [
         {
           "type": "impl",
@@ -2171,7 +2171,7 @@
       ]
     },
     {
-      "address": "0x42df959a7f4048d669fbb7b89c5431cb978e11fbb8471fac49ccc37abe0c964",
+      "address": "0x6f15d5703461b7ff4821a6ed63e78f049fb2003ea6554b66c70b06c67440331",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
@@ -2514,7 +2514,7 @@
       ]
     },
     {
-      "address": "0x4121095354cccc6a22ab38ea860f6a4c0cf08693fb75afd2f247c693a4ff6a0",
+      "address": "0x29ac026f5997f44168bdb62934d35bba0bfc227ea37a7c7b6e0f74b5f71a14e",
       "class_hash": "0x5f8ae92842a9c5b34e01f014f6e544297bc3222199da9d7f38ac52bfe72884c",
       "abi": [
         {
@@ -3466,7 +3466,7 @@
       ]
     },
     {
-      "address": "0x789a2dae1862273af10a76d29a2ff42c83ae6607c81d99aad9cc279a5c962c0",
+      "address": "0x1ac2275e73689b74a629b0109cda7dd75db016ddaee1f97b3afac1f00e1c131",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
