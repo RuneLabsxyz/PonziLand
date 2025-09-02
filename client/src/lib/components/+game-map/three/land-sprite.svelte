@@ -1,27 +1,18 @@
 <script lang="ts">
+  import accountState from '$lib/account.svelte';
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
-  import accountState from '$lib/account.svelte';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
+  import { GRID_SIZE } from '$lib/const';
+  import { loadingStore } from '$lib/stores/loading.store.svelte';
   import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
-
-  // Allow passing a custom land store (for tutorials)
-  interface Props {
-    store?: typeof landStore;
-  }
-
-  let { store = landStore }: Props = $props();
   import { T, useTask } from '@threlte/core';
-  import {
-    HTML,
-    InstancedMesh,
-    InstancedSprite,
-    buildSpritesheet,
-    type SpritesheetMetadata,
-  } from '@threlte/extras';
+  import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
+    Clock,
+    Color,
     Group,
     MeshBasicMaterial,
     NearestFilter,
@@ -29,28 +20,33 @@
     PlaneGeometry,
     InstancedMesh as TInstancedMesh,
     TextureLoader,
-    Color,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
-  import LandTileSprite from './land-tile-sprite.svelte';
-  import { biomeAtlasMeta } from './biomes';
-  import { buildingAtlasMeta } from './buildings';
+  import AuctionIndicator from './auction-indicator.svelte';
+  import Clouds from './clouds.svelte';
   import Coin from './coin.svelte';
-  import RoadSprite from './road-sprite.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
+  import { HeatmapCalculator } from '$lib/components/+game-ui/widgets/heatmap/heatmap-calculator';
+  import {
+    heatmapStore,
+    updateHeatmapStats,
+  } from '$lib/components/+game-ui/widgets/heatmap/heatmap.store.svelte';
+  import LandTileSprite from './land-tile-sprite.svelte';
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
-  import OwnerIndicator from './owner-indicator.svelte';
-  import AuctionIndicator from './auction-indicator.svelte';
   import NukeTimeDisplay from './nuke-time-display.svelte';
-  import { devsettings } from './utils/devsettings.store.svelte';
+  import OwnerIndicator from './owner-indicator.svelte';
+  import RoadSprite from './road-sprite.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
-  import { Clock } from 'three';
-  import { GRID_SIZE } from '$lib/const';
-  import { configValues } from '$lib/stores/config.store.svelte';
-  import Clouds from './clouds.svelte';
-  import { loadingStore } from '$lib/stores/loading.store.svelte';
+  import { devsettings } from './utils/devsettings.store.svelte';
+
+  // Allow passing a custom land store (for tutorials)
+  interface Props {
+    store?: typeof landStore;
+  }
+
+  let { store = landStore }: Props = $props();
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -162,6 +158,18 @@
       }),
       GRID_SIZE * GRID_SIZE,
     );
+  });
+
+  // Update art layer material opacity based on heatmap store
+  $effect(() => {
+    if (artLayerMesh && artLayerMesh.material) {
+      const material = artLayerMesh.material as MeshBasicMaterial;
+      if (heatmapStore.enabled) {
+        material.opacity = heatmapStore.opacity;
+      } else {
+        material.opacity = devsettings.artLayerOpacity;
+      }
+    }
   });
 
   onMount(() => {
@@ -473,8 +481,56 @@
     return auctionVisibleIndices;
   });
 
-  // Art layer color mapping
+  // Heatmap calculation - reactive to store changes and visible tiles
+  let heatmapResult = $derived.by(() => {
+    if (
+      !heatmapStore.enabled ||
+      !visibleLandTiles ||
+      visibleLandTiles.length === 0
+    ) {
+      return null;
+    }
+
+    return HeatmapCalculator.calculate(
+      visibleLandTiles,
+      heatmapStore.parameter,
+      heatmapStore.colorScheme,
+    );
+  });
+
+  let heatmapColors = $derived(
+    heatmapResult?.colors ?? new Map<LandTile, number>(),
+  );
+
+  // Update store stats when heatmap result changes
+  $effect(() => {
+    if (heatmapResult) {
+      updateHeatmapStats(
+        heatmapResult.minValue,
+        heatmapResult.maxValue,
+        heatmapResult.validTileCount,
+      );
+    }
+  });
+
+  // Art layer color mapping - now supports both heatmap and legacy token colors
   function getArtLayerColor(tile: LandTile): number {
+    // Check if heatmap is enabled
+    if (heatmapStore.enabled) {
+      // If this tile has a heatmap color, use it
+      if (heatmapColors.has(tile)) {
+        return heatmapColors.get(tile)!;
+      }
+      // For tiles without data (empty lands), use a neutral gray color in heatmap mode
+      return 0x404040; // Dark gray for empty/no-data lands in heatmap mode
+    }
+
+    // Fall back to legacy token-based coloring when heatmap is disabled
+    return getLegacyArtLayerColor(tile);
+  }
+
+  // Legacy art layer color mapping (original implementation)
+  function getLegacyArtLayerColor(tile: LandTile): number {
     if (AuctionLand.is(tile.land)) {
       return 0xff6600; // Orange for auction
     }
@@ -618,8 +674,8 @@
       <NukeTimeDisplay landTiles={visibleLandTiles} isShieldMode={isUnzoomed} />
     {/if}
 
-    <!-- Art Layer -->
-    {#if devsettings.showArtLayer && artLayerMesh}
+    <!-- Art Layer / Heatmap Layer -->
+    {#if (devsettings.showArtLayer || heatmapStore.enabled) && artLayerMesh}
       <T is={artLayerMesh} />
     {/if}
 
