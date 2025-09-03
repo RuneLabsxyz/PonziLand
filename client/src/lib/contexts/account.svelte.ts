@@ -210,7 +210,6 @@ export class AccountManager {
     // Load the dojo config first
     const config = await loadDojoConfig();
 
-
     const previousWallet: string | null = localStorage.getItem(
       previousWalletSymbol.toString(),
     );
