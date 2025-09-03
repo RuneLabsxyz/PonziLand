@@ -50,6 +50,11 @@ const { values, positionals } = parseArgs({
       type: "string",
       description: "The name of the deployment",
     },
+    fresh: {
+      type: "boolean",
+      default: false,
+      description: "Deploy a new token even if one already exists with the same symbol",
+    },
   },
   strict: true,
   allowPositionals: true,
@@ -70,6 +75,7 @@ const config: Configuration = {
   owner: values.owner || env!.OWNER,
   forceLedger: values.ledger,
   deploymentName: values.name!,
+  fresh: values.fresh,
 };
 
 let command = positionals[2];

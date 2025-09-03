@@ -13,6 +13,7 @@ export type Configuration = {
   owner: string | undefined;
   forceLedger: boolean;
   deploymentName: string;
+  fresh: boolean;
 };
 
 async function getProvider(config: Configuration) {

@@ -5,19 +5,16 @@ import { byteArray, cairo, Calldata, CallData, Contract, type shortString, type 
 import fs from "fs/promises";
 
 export async function  deployToken(config: Configuration, args: string[]) {
-  // Parse arguments to check for -fresh flag
-  let freshDeploy = false;
+  // Get fresh flag from config
+  const freshDeploy = config.fresh;
   let symbol: string;
   let name: string;
 
-  if (args.length === 3 && args[0] === '--fresh') {
-    freshDeploy = true;
-    [, symbol, name] = args;
-  } else if (args.length === 2) {
+  if (args.length === 2) {
     [symbol, name] = args;
   } else {
-    console.log("Required arguments: deploy [--fresh] [symbol] [name]");
-    console.log("  -fresh: Deploy a new token even if one already exists with the same symbol");
+    console.log("Required arguments: deploy [symbol] [name]");
+    console.log("  Use --fresh flag to deploy a new token even if one already exists with the same symbol");
     return;
   }
 
