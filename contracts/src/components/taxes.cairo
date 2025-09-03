@@ -224,6 +224,7 @@ mod TaxesComponent {
                         claim_fee_threshold,
                         our_contract_for_fee,
                         from_nuke,
+                        num_active_neighbors,
                     );
                 is_nuke
             }
@@ -246,6 +247,7 @@ mod TaxesComponent {
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
             from_nuke: bool,
+            num_active_neighbors: u8,
         ) -> bool {
             let (
                 total_taxes,
@@ -280,36 +282,58 @@ mod TaxesComponent {
 
                 true
             } else if total_taxes >= payer_stake.amount && from_nuke {
-                // Send share for the claimer but not nuked the land because we are in a cascade lan
-                let total_share_for_neighbor = calculate_share_for_nuke(
-                    elapsed_time_claimer, total_elapsed_time, payer_stake.amount,
-                );
-                let (share_for_neighbor, fee_amount) = calculate_and_return_taxes_with_fee(
-                    total_share_for_neighbor, claim_fee,
-                );
-                payer_stake.accumulated_taxes_fee += fee_amount;
-                self
-                    ._execute_claim(
-                        store,
-                        *claimer.location,
-                        *claimer.owner,
-                        tax_payer,
-                        share_for_neighbor,
-                        ref payer_stake,
-                        current_time,
-                        claim_fee_threshold,
-                        our_contract_address,
-                        our_contract_for_fee,
-                    );
-                if *claimer.location == earliest_claimer_location {
+                // Check if this will become a dead land (no stake, only one neighbor)
+                // Dead lands can safely use full nuke process without cascade recursion
+                if num_active_neighbors == 1 {
+                    // Dead land case: use full nuke process to handle fees properly
+                    // Safe to use _handle_nuke here because dead lands can't cause cascade
+                    // recursion
                     self
-                        ._update_earliest_claim_info(
-                            store, ref payer_stake, neighbors_of_tax_payer, current_time,
+                        ._handle_nuke(
+                            store,
+                            tax_payer,
+                            ref payer_stake,
+                            cache_elapased_time,
+                            total_elapsed_time,
+                            our_contract_address,
+                            claim_fee,
+                            claim_fee_threshold,
+                            our_contract_for_fee,
                         );
+                    return true;
+                } else {
+                    // Normal cascade protection: partial payment without full nuke
+                    // Send share for the claimer but not nuked the land because we are in a cascade
+                    let total_share_for_neighbor = calculate_share_for_nuke(
+                        elapsed_time_claimer, total_elapsed_time, payer_stake.amount,
+                    );
+                    let (share_for_neighbor, fee_amount) = calculate_and_return_taxes_with_fee(
+                        total_share_for_neighbor, claim_fee,
+                    );
+                    payer_stake.accumulated_taxes_fee += fee_amount;
+                    self
+                        ._execute_claim(
+                            store,
+                            *claimer.location,
+                            *claimer.owner,
+                            tax_payer,
+                            share_for_neighbor,
+                            ref payer_stake,
+                            current_time,
+                            claim_fee_threshold,
+                            our_contract_address,
+                            our_contract_for_fee,
+                        );
+                    if *claimer.location == earliest_claimer_location {
+                        self
+                            ._update_earliest_claim_info(
+                                store, ref payer_stake, neighbors_of_tax_payer, current_time,
+                            );
+                    }
+                    payer_stake.amount -= total_share_for_neighbor;
+                    store.set_land_stake(payer_stake);
+                    false
                 }
-                payer_stake.amount -= total_share_for_neighbor;
-                store.set_land_stake(payer_stake);
-                false
             } else {
                 let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
                     total_tax_for_claimer, claim_fee,
