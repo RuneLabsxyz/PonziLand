@@ -26,9 +26,6 @@
           entrypoint: 'ensure_deploy',
           calldata: [],
         },
-        {
-          version: constants.TRANSACTION_VERSION.V3,
-        },
       )!;
 
     console.log('Sent dummy transaction!', transaction_hash);

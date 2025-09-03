@@ -47,13 +47,19 @@
     try {
       isLoading = true;
       hasError = false;
-      const result = await socialink.joinTeamFlow(
+      /*
+      const result = await socialink?.joinTeamFlow(
         accountDataProvider.address,
         selectedTeam,
         accountDataProvider.walletAccount,
       );
-
-      if (result.ok) {
+      */
+      const result = {
+        ok: false,
+        data: {team:null, teamStats:null},
+        error:'socialink not initialized'
+      }
+      if (result?.ok) {
         console.log(`Successfully joined ${selectedTeam}!`);
         console.log('New team stats:', result.data?.teamStats);
         teamInfo = result.data?.team;

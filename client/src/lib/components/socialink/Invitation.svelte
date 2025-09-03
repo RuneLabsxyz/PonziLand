@@ -14,8 +14,7 @@
   } = $props();
 
   function startInvitation() {
-    socialink
-      .startInvitation()
+    socialink?.startInvitation()
       .then(async (tx: string) => {
         // We can force the reload of the account data
         console.log('Invitation finished, tx:', tx);

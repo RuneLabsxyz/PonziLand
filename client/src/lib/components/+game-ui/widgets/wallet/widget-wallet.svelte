@@ -39,7 +39,7 @@
   let socialink = getSocialink();
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
-  let username = $derived(socialink.getUser(address ?? ''));
+  let username = $derived(socialink?.getUser(address ?? ''));
   let connected = $derived(accountDataProvider.isConnected);
 </script>
 
@@ -47,9 +47,9 @@
   <div class="flex justify-between items-center mt-2">
     <button type="button" class="flex gap-2 items-center" onclick={copy}>
       {#await username then info}
-        {#if info.exists}
+        {#if info?.exists}
           <p class="font-ponzi-number">
-            {info.username}
+            {info.username ?? ''}
             <span class="opacity-50"
               >{shortenHex(padAddress(address ?? ''), 4)}</span
             >
