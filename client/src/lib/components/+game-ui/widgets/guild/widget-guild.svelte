@@ -56,9 +56,9 @@
       */
       const result = {
         ok: false,
-        data: {team:null, teamStats:null},
-        error:'socialink not initialized'
-      }
+        data: { team: null, teamStats: null },
+        error: 'socialink not initialized',
+      };
       if (result?.ok) {
         console.log(`Successfully joined ${selectedTeam}!`);
         console.log('New team stats:', result.data?.teamStats);

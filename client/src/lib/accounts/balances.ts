@@ -1,5 +1,5 @@
 import { DojoProvider } from '@dojoengine/core';
-import { Account, AccountInterface} from 'starknet';
+import { Account, AccountInterface } from 'starknet';
 
 export const fetchTokenBalance = async (
   address: string,
