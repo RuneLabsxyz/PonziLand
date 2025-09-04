@@ -414,7 +414,6 @@ pub mod actions {
             let current_time = get_block_timestamp();
             let our_contract_address = get_contract_address();
             let mut land = store.land(land_location);
-
             assert(!land.has_owner(), 'must be without owner');
             validate_params(sell_price, amount_to_stake);
 
@@ -776,7 +775,6 @@ pub mod actions {
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
         ) {
-            let owner_nuked = land.owner;
             let neighbors = get_land_neighbors(store, land.location);
 
             if !has_liquidity_requirements && land_stake.amount >= 0 {
@@ -785,7 +783,6 @@ pub mod actions {
             }
 
             assert(land_stake.amount == 0, 'land not valid to nuke');
-
             //Last claim for nuked land
             for neighbor in neighbors {
                 let mut neighbor_stake = store.land_stake(*neighbor.location);
@@ -793,7 +790,7 @@ pub mod actions {
                 if *neighbor.owner != ContractAddressZeroable::zero()
                     && neighbor_stake.amount > 0
                     && *neighbor.location != land.location {
-                    let is_neighbor_nuked = self
+                    let is_dead = self
                         .taxes
                         .claim(
                             store,
@@ -805,34 +802,28 @@ pub mod actions {
                             claim_fee,
                             claim_fee_threshold,
                             our_contract_for_fee,
+                            true,
                         );
 
-                    let has_neighbor_liquidity = store
-                        .world
-                        .token_registry_dispatcher()
-                        .is_token_authorized(*neighbor.token_used);
-
-                    if (is_neighbor_nuked || !has_neighbor_liquidity) {
-                        //we nuked and we execute in recursive way the last claim
-                        self
-                            .nuke(
-                                store,
-                                *neighbor,
-                                ref neighbor_stake,
-                                has_neighbor_liquidity,
-                                current_time,
-                                our_contract_address,
-                                claim_fee,
-                                claim_fee_threshold,
-                                our_contract_for_fee,
-                            );
+                    // Handle dead land detection - when a land becomes isolated with zero stake
+                    if is_dead {
+                        self._delete_land_and_create_auction(store, *neighbor, neighbor_stake);
                     }
                 }
             };
 
-            //Delete land and update neighbor_info_packed for the neighbors
-            store.delete_land(land, land_stake);
+            // Reuse common deletion and auction creation logic
+            self._delete_land_and_create_auction(store, land, land_stake);
+            // Update neighbor info after deleting the land
             update_neighbors_after_delete(store, neighbors);
+        }
+
+        fn _delete_land_and_create_auction(
+            ref self: ContractState, mut store: Store, land: Land, land_stake: LandStake,
+        ) {
+            let owner_nuked = land.owner;
+            store.delete_land(land, land_stake);
+
             store.world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
 
             let sell_price = get_suggested_sell_price(store, land.location);
@@ -871,6 +862,7 @@ pub mod actions {
                             claim_fee,
                             claim_fee_threshold,
                             our_contract_for_fee,
+                            false,
                         );
 
                     let has_liquidity_requirements = self

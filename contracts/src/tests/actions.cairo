@@ -364,6 +364,51 @@ fn initialize_land_and_capture_next_auction(
     next_auction_location.unwrap()
 }
 
+fn helper_to_initalize_first_n_lands_to_test_edge_case(
+    n_lands: u8,
+    store: Store,
+    actions_system: IActionsDispatcher,
+    main_currency: IERC20CamelDispatcher,
+    owner: ContractAddress,
+    sell_price: u256,
+    stake_amount: u256,
+    tokens_for_sale: Array<IERC20CamelDispatcher>,
+) -> Array<u16> {
+    let mut locations = array![CENTER_LOCATION];
+    let mut i: u8 = 0;
+    while i <= n_lands {
+        let mut next_location: u16 = 0;
+        if i == n_lands {
+            next_location =
+                initialize_land_and_capture_next_auction(
+                    store,
+                    actions_system,
+                    main_currency,
+                    NEIGHBOR_1(),
+                    *locations.at(i.into()),
+                    1000000,
+                    50,
+                    *tokens_for_sale.at(0),
+                );
+        } else {
+            next_location =
+                initialize_land_and_capture_next_auction(
+                    store,
+                    actions_system,
+                    main_currency,
+                    owner,
+                    *locations.at(i.into()),
+                    sell_price,
+                    stake_amount,
+                    main_currency,
+                );
+        };
+        locations.append(next_location);
+        i += 1;
+    };
+    locations
+}
+
 // Helper to create multiple sequential lands (reduces the repetitive pattern in test_claim_all,
 // test_time_to_nuke)
 fn create_multiple_lands(
@@ -1418,6 +1463,119 @@ fn test_precision_in_nuke_distribution() {
 
     // Check that at least some distribution occurred
     assert(received_our_contract_for_fee > 0, 'Complete precision loss');
+}
+
+
+#[test]
+fn test_first_grade_of_nuke_and_dead_land() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+        setup_test();
+
+    // Setup liquidity pool and neighbor tokens
+    setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
+    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
+
+    setup_test_block_env(1, 1000);
+    set_block_timestamp(1000);
+    let tokens_for_sale = array![erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3];
+    let land_locations = helper_to_initalize_first_n_lands_to_test_edge_case(
+        10, store, actions_system, main_currency, RECIPIENT(), 10000, 5, tokens_for_sale,
+    );
+
+    // SETUP: Create chain of 11 lands with vulnerable stakes (5 each)
+    // Land 8 and 9 are second-degree neighbors of CENTER - they will be crucial for testing
+    let land_8 = *land_locations.at(8); // Will be protected initially, then nukeable
+    let land_9 = *land_locations.at(9); // Will be protected initially, then nukeable
+
+    let initial_land_8_stake = store.land_stake(land_8).amount;
+    let initial_land_9_stake = store.land_stake(land_9).amount;
+    let initial_land_8_owner = store.land(land_8).owner;
+    let initial_land_9_owner = store.land(land_9).owner;
+
+    // Record initial token balances for validation
+    let initial_balance_recipient_main = main_currency.balanceOf(RECIPIENT());
+    let initial_balance_recipient_erc1 = erc20_neighbor_1.balanceOf(RECIPIENT());
+
+    // PHASE 1: Trigger massive nuke cascade from CENTER
+    // Advance time significantly to accumulate high taxes that will exceed stakes
+    set_block_timestamp(80000);
+    set_contract_address(RECIPIENT());
+
+    // CENTER claims from all its direct neighbors -> triggers cascade nuke process
+    actions_system.claim(CENTER_LOCATION);
+
+    let final_land_8 = store.land(land_8);
+    let final_land_8_stake = store.land_stake(land_8);
+    let final_land_9 = store.land(land_9);
+    let final_land_9_stake = store.land_stake(land_9);
+
+    // PHASE 1 VALIDATIONS: Check first-grade nuke protection worked correctly
+    //
+    // Expected cascade flow:
+    // 1. CENTER claims -> Direct neighbors (1-7) exceed their stakes -> Get nuked
+    // 2. Each nuked land does "last claim" with from_nuke=true before deletion
+    // 3. Lands 8 & 9 SHOULD be nukeable but are protected by from_nuke=true flag
+    // 4. CENTER becomes dead land (no stake, no neighbors) -> Also gets nuked
+    //
+    // This prevents infinite recursion during cascade nukes
+
+    // Validate that CENTER_LOCATION was nuked (became dead land)
+    let final_center_land = store.land(CENTER_LOCATION);
+    assert(final_center_land.owner.is_zero(), 'CENTER should be nuked as dead');
+    let final_center_stake = store.land_stake(CENTER_LOCATION);
+    assert(final_center_stake.amount == 0, 'CENTER stake should be 0');
+
+    // Land 8: Should be nukeable but protected by from_nuke=true during last claim recursion
+    assert(!final_land_8.owner.is_zero(), 'Land 8 should NOT be nuked');
+    assert(final_land_8.owner == initial_land_8_owner, 'Land 8 owner unchanged');
+    assert(final_land_8_stake.amount < initial_land_8_stake, 'Land 8 should have paid taxes');
+    assert(final_land_8_stake.amount > 0, 'Land 8 should still have stake');
+
+    // Land 9: Should be nukeable but protected by from_nuke=true during last claim recursion
+    assert(!final_land_9.owner.is_zero(), 'Land 9 should NOT be nuked');
+    assert(final_land_9.owner == initial_land_9_owner, 'Land 9 owner unchanged');
+    assert(final_land_9_stake.amount < initial_land_9_stake, 'Land 9 should have paid taxes');
+    assert(final_land_9_stake.amount > 0, 'Land 9 should still have stake');
+
+    // === TOKEN TRANSFER VALIDATIONS ===
+    // Record final token balances after the claim and nuke process
+    let final_balance_recipient_main = main_currency.balanceOf(RECIPIENT());
+    let final_balance_recipient_erc1 = erc20_neighbor_1.balanceOf(RECIPIENT());
+
+    // CENTER (RECIPIENT) should receive tokens from its direct neighbors during claim
+    assert(
+        final_balance_recipient_main > initial_balance_recipient_main, 'CENTER should receive main',
+    );
+    assert(
+        final_balance_recipient_erc1 > initial_balance_recipient_erc1, 'CENTER should receive erc1',
+    );
+
+    // Land 8 and Land 9 owners should receive tokens during the "last claim" process
+    // when nuked lands claim from them before being deleted
+
+    // PHASE 2: Test mutual nuke between protected lands
+    //
+    // Now lands 8 & 9 have reduced stakes and are vulnerable in normal claims
+    // Expected flow: Land 8 claims -> Land 9 nuked -> Land 9 last claim -> Land 8 nuked as dead
+    set_block_timestamp(80200);
+    set_contract_address(initial_land_8_owner);
+    actions_system.claim(land_8);
+
+    // Both lands should now be nuked in cascade
+    let land_9_after_second_claim = store.land(land_9);
+    let stake_9_after_second = store.land_stake(land_9);
+    assert(land_9_after_second_claim.owner.is_zero(), 'Land 9 should be nuked');
+    assert(stake_9_after_second.amount == 0, 'Land 9 stake should be 0');
+
+    let land_8_after_second_claim = store.land(land_8);
+    let stake_8_after_second = store.land_stake(land_8);
+    assert(land_8_after_second_claim.owner.is_zero(), 'Land 8 should be nuked');
+    assert(stake_8_after_second.amount == 0, 'Land 8 stake should be 0');
 }
 
 #[test]
