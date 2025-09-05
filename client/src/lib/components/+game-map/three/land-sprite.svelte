@@ -408,12 +408,13 @@
 
   // Update ownership cache when address changes
   $effect(() => {
-    if (accountState.address !== ownershipCache.address) {
+    const currentAddress = accountState.address ?? null;
+    if (currentAddress !== ownershipCache.address) {
       const ownedIndices = accountState.address
         ? store.getOwnedLandIndices(accountState.address)
         : [];
       ownershipCache = {
-        address: accountState.address ?? null,
+        address: currentAddress,
         ownedIndicesSet: new Set(ownedIndices),
         lastUpdate: Date.now(),
       };
