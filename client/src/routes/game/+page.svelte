@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import { refresh, setup as setupAccountState } from '$lib/account.svelte';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
+  import { FUSE_DISABLE_SOCIALINK } from '$lib/flags';
   import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
@@ -52,9 +53,11 @@
   }
 
   const promise = Promise.all([
-    setupSocialink().then(() => {
-      return setupAccountState();
-    }),
+    FUSE_DISABLE_SOCIALINK
+      ? setupAccountState()
+      : setupSocialink().then(() => {
+          return setupAccountState();
+        }),
     setupClient().then(async (client) => {
       // Initialize both stores with Dojo client
       landStore.setup(client!);
@@ -117,23 +120,25 @@
           ?.getWalletAccount()?.address;
 
         // Make sure that we finished updating the user signup state.
-        await refresh();
+        if (!FUSE_DISABLE_SOCIALINK) {
+          await refresh();
 
-        // Check if the user needs to signup with socialink
-        if (address != null && !accountState.profile?.exists) {
-          console.info('The user needs to signup with socialink.');
-          //    goto('/onboarding/register');
-          //    return;
-        }
+          // Check if the user needs to signup with socialink
+          if (address != null && !accountState.profile?.exists) {
+            console.info('The user needs to signup with socialink.');
+            goto('/onboarding/register');
+            return;
+          }
 
-        if (
-          address != null &&
-          accountState.profile?.exists &&
-          !accountState.profile?.whitelisted
-        ) {
-          console.info('The user needs to get whitelisted.');
-          //   goto('/onboarding/whitelist');
-          //   return;
+          if (
+            address != null &&
+            accountState.profile?.exists &&
+            !accountState.profile?.whitelisted
+          ) {
+            console.info('The user needs to get whitelisted.');
+            goto('/onboarding/whitelist');
+            return;
+          }
         }
 
         console.log('Everything is ready!', dojo != undefined);
