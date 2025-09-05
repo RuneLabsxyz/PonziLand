@@ -1,3 +1,6 @@
+// Feature flag to disable guild UI
+export const FUSE_DISABLE_GUILD_UI = true;
+
 export interface Widget {
   id: string;
   type: string;
@@ -126,12 +129,16 @@ export const availableWidgets: Widget[] = [
     label: 'Help',
     icon: '/ui/icons/Icon_Book.png',
   },
-  {
-    id: 'guild',
-    type: 'guild',
-    label: 'Guild',
-    icon: '/ui/icons/Icon_Guilds.png',
-  },
+  ...(!FUSE_DISABLE_GUILD_UI
+    ? [
+        {
+          id: 'guild',
+          type: 'guild',
+          label: 'Guild',
+          icon: '/ui/icons/Icon_Guilds.png',
+        },
+      ]
+    : []),
   {
     id: 'leaderboard',
     type: 'leaderboard',
