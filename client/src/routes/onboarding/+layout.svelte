@@ -4,6 +4,7 @@
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import OnboardingWalletInfo from '$lib/components/+game-ui/widgets/wallet/onboarding-wallet-info.svelte';
   import { Card } from '$lib/components/ui/card';
+  import { FUSE_DISABLE_SOCIALINK } from '$lib/flags';
 
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
 
@@ -11,17 +12,24 @@
 
   // Setup socialink
   const setupPromise = (async () => {
-    await setupSocialink();
+    if (!FUSE_DISABLE_SOCIALINK) {
+      await setupSocialink();
+    }
     setup();
 
     // Once all is ready, check for a redirect
     if (!accountDataProvider.isConnected) {
       goto('/onboarding/connect');
+    } else if (FUSE_DISABLE_SOCIALINK) {
+      // Skip onboarding entirely when socialink is disabled
+      goto('/game');
     }
   })();
 
   const onConnect = async () => {
-    if (!accountDataProvider.profile?.exists) {
+    if (FUSE_DISABLE_SOCIALINK) {
+      goto('/game');
+    } else if (!accountDataProvider.profile?.exists) {
       // redirect to the register
       goto('/onboarding/register');
     } else if (!accountDataProvider.profile?.whitelisted) {

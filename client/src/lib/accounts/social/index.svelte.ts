@@ -6,6 +6,7 @@ import { useAccount } from '$lib/contexts/account.svelte';
 import { Socialink } from '@runelabsxyz/socialink-sdk';
 import type { Signature } from 'starknet';
 import { get } from 'svelte/store';
+import { FUSE_DISABLE_SOCIALINK } from '$lib/flags';
 
 let socialink: Socialink | undefined = $state();
 
@@ -18,6 +19,10 @@ export async function getUsername(address: string) {
 }
 
 export async function setupSocialink() {
+  if (FUSE_DISABLE_SOCIALINK) {
+    return null;
+  }
+
   const account = useAccount();
 
   socialink = new Socialink(PUBLIC_SOCIALINK_URL, async () => ({
@@ -29,6 +34,12 @@ export async function setupSocialink() {
 }
 
 export function getSocialink() {
+  if (FUSE_DISABLE_SOCIALINK) {
+    return {
+      getUser: async () => ({ exists: false, whitelisted: false }),
+    } as any;
+  }
+
   if (!socialink) {
     throw new Error('Socialink not initialized');
   }
@@ -98,6 +109,11 @@ async function sendRegister(
 }
 
 export async function register(username: string) {
+  if (FUSE_DISABLE_SOCIALINK) {
+    console.log('Socialink registration disabled by fuse');
+    return;
+  }
+
   username = username.toLowerCase();
   // Fetch the signature from socialink
   const signatureResponse = await fetchRegisterSignature(username);
@@ -129,6 +145,10 @@ export async function register(username: string) {
 }
 
 export async function checkUsername(username: string): Promise<true | string> {
+  if (FUSE_DISABLE_SOCIALINK) {
+    return true; // Always available when socialink is disabled
+  }
+
   const response = await fetch(
     `${PUBLIC_SOCIALINK_URL}/api/user/availability/${username.toLowerCase()}`,
   );
