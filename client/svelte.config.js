@@ -44,7 +44,7 @@ const profiles = {
     PUBLIC_GIT_COMMIT_HASH: null,
   },
   sepolia: {
-    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9',
     PUBLIC_DOJO_TORII_URL:
       'https://api.cartridge.gg/x/ponziland-sepolia-new/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
