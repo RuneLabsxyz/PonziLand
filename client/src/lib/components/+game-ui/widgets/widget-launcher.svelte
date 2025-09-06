@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
   import { widgetsStore } from '$lib/stores/widgets.store';
-  import { availableWidgets } from './widgets.config';
+  import { availableWidgets, FUSE_DISABLE_GUILD_UI } from './widgets.config';
   import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import { onMount } from 'svelte';
@@ -35,14 +35,18 @@
   }
 
   onMount(async () => {
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-      if (data.team === null) {
-        addWidget('guild');
+    if (!FUSE_DISABLE_GUILD_UI) {
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data.team === null) {
+          addWidget('guild');
+        }
+      } catch (error) {
+        console.error('Failed to fetch team info:', error);
       }
-    } catch (error) {
-      console.error('Failed to fetch team info:', error);
+    } else {
+      widgetsStore.removeWidget('guild');
     }
   });
 </script>
