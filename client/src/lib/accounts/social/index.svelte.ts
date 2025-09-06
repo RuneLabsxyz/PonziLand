@@ -4,7 +4,7 @@ import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
 import account from '$lib/account.svelte';
 import { useAccount } from '$lib/contexts/account.svelte';
 import { Socialink } from '@runelabsxyz/socialink-sdk';
-import type { Signature } from 'starknet';
+import type { Account, AccountInterface, Signature } from 'starknet';
 import { get } from 'svelte/store';
 
 let socialink: Socialink | undefined = $state();
@@ -20,17 +20,18 @@ export async function getUsername(address: string) {
 export async function setupSocialink() {
   const account = useAccount();
 
+  /*
   socialink = new Socialink(PUBLIC_SOCIALINK_URL, async () => ({
-    wallet: account?.getProvider()?.getWalletAccount()!,
     provider: account?.getProviderName() as any,
+    wallet: account?.getProvider()?.getWalletAccount()! as Account,
   }));
-
+  */
   return socialink;
 }
 
 export function getSocialink() {
   if (!socialink) {
-    throw new Error('Socialink not initialized');
+    //throw new Error('Socialink not initialized');
   }
 
   return socialink;

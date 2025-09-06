@@ -15,7 +15,7 @@
 
   function startInvitation() {
     socialink
-      .startInvitation()
+      ?.startInvitation()
       .then(async (tx: string) => {
         // We can force the reload of the account data
         console.log('Invitation finished, tx:', tx);

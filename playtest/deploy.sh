@@ -1,13 +1,13 @@
+#!/bin/bash
 
-
-usage() { echo "Usage: $0 [-e <mainnet|sepolia>]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-e <mainnet|sepolia|katana>]" 1>&2; exit 1; }
 
 ENVIRONMENT="sepolia"
 while getopts ":e:" o; do
     case "${o}" in
         e)
             ENVIRONMENT=${OPTARG}
-            ((ENVIRONMENT == "mainnet" || ENVIRONMENT == "sepolia")) || usage
+            ((ENVIRONMENT == "mainnet" || ENVIRONMENT == "sepolia" || ENVIRONMENT == "katana")) || usage
             ;;
         *)
             usage
@@ -22,12 +22,18 @@ ENV_FILE=".env.${ENVIRONMENT}"
 if [ -f "$ENV_FILE" ]; then
   echo "Loading environment variables from $ENV_FILE..."
   export $(grep -v '^#' "$ENV_FILE" | xargs)
-else
-  echo "Environment file $ENV_FILE not found!"
-  exit 1
+elif [[ "$ENVIRONMENT" == "katana" ]]; then
+  echo "No .env.katana file found, using default katana configuration."
+  STARKNET_RPC="http://localhost:5050/"
+  DOJO_ACCOUNT_ADDRESS="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+  DOJO_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+  STARKNET_ACCOUNT="0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
+  STARKNET_PRIVATE_KEY="0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 fi
 
-if [[ -z "$STARKNET_KEYSTORE_PASSWORD" ]]; then
+if [[ "$ENVIRONMENT" == "katana" ]]; then
+  SIGN_ARGS="--private-key $STARKNET_PRIVATE_KEY"
+elif [[ -z "$STARKNET_KEYSTORE_PASSWORD" ]]; then
   echo "No password detected, using ledger!"
   STORE_PATH="m/2645'/1195502025'/1148870696'/0'/0'/0"
   SIGN_ARGS="--ledger-path ${STORE_PATH}"
@@ -55,6 +61,7 @@ function build_declare() {
     echo "⏳ Building contract..."
     scarb build
     echo "⏳ Declaring contract..."
+    echo "RPC: $STARKNET_RPC"
     CONTRACT_CLASS=$(starkli declare ./target/dev/testerc20_PlayTestToken.contract_class.json --account $STARKNET_ACCOUNT $SIGN_ARGS --rpc $STARKNET_RPC)
     echo "🚀 Declared contract at address: $CONTRACT_CLASS"
 }

@@ -5,6 +5,7 @@
 
 // Starknet imports
 use starknet::ContractAddress;
+use ponzi_land::models::config::{Config};
 
 #[starknet::interface]
 trait IConfigSystem<T> {
@@ -187,6 +188,7 @@ trait IConfigSystem<T> {
     fn get_buy_fee(self: @T) -> u128;
     fn get_claim_fee_threshold(self: @T) -> u128;
     fn get_main_currency(self: @T) -> ContractAddress;
+    fn get_config(self: @T) -> Config;
 }
 
 #[dojo::contract]
@@ -706,6 +708,12 @@ mod config {
         fn get_main_currency(self: @ContractState) -> ContractAddress {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"))
+        }
+
+        fn get_config(self: @ContractState) -> Config {
+            let world = self.world_default();
+            let config: Config = world.read_model(0);
+            config
         }
     }
     #[generate_trait]

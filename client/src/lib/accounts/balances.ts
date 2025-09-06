@@ -1,5 +1,5 @@
 import { DojoProvider } from '@dojoengine/core';
-import { Account, AccountInterface, type Result } from 'starknet';
+import { Account, AccountInterface } from 'starknet';
 
 export const fetchTokenBalance = async (
   address: string,
@@ -12,7 +12,7 @@ export const fetchTokenBalance = async (
       entrypoint: 'balanceOf',
       calldata: [snAccount.address],
     })
-    .then((res: Result) => {
+    .then((res: any) => {
       // Ensure the result array is not empty and contains valid hex values
       if (Array.isArray(res) && res.length > 0) {
         const hexBalance = res[0];

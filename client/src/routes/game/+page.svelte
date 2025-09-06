@@ -122,8 +122,8 @@
         // Check if the user needs to signup with socialink
         if (address != null && !accountState.profile?.exists) {
           console.info('The user needs to signup with socialink.');
-          goto('/onboarding/register');
-          return;
+          //    goto('/onboarding/register');
+          //    return;
         }
 
         if (
@@ -132,8 +132,8 @@
           !accountState.profile?.whitelisted
         ) {
           console.info('The user needs to get whitelisted.');
-          goto('/onboarding/whitelist');
-          return;
+          //   goto('/onboarding/whitelist');
+          //   return;
         }
 
         console.log('Everything is ready!', dojo != undefined);
