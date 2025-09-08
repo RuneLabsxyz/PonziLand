@@ -23,7 +23,7 @@
       "decimals": 18,
       "images": {
         "skin": "STRK",
-        "icon": "/tokens/STRK/icon.png",
+        "icon": "/tokens/strk/icon.png",
         "biome": {
           "x": 2,
           "y": 3
@@ -57,7 +57,7 @@
       "decimals": 18,
       "images": {
         "skin": "LORDS",
-        "icon": "/tokens/LORDS/icon.svg",
+        "icon": "/tokens/lords/icon.svg",
         "biome": {
           "x": 3,
           "y": 1
@@ -93,7 +93,7 @@
       "decimals": 18,
       "images": {
         "skin": "eBROTHER",
-        "icon": "/tokens/eBROTHER/icon.png",
+        "icon": "/tokens/brother/icon.png",
         "biome": {
           "x": 1,
           "y": 3
@@ -127,7 +127,7 @@
       "decimals": 18,
       "images": {
         "skin": "PAL",
-        "icon": "/tokens/PAL/icon.svg",
+        "icon": "/tokens/pal/icon.svg",
         "biome": {
           "x": 1,
           "y": 2
