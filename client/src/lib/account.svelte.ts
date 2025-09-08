@@ -2,6 +2,7 @@ import type { UserInfo } from '@runelabsxyz/socialink-sdk';
 import { type AccountInterface } from 'starknet';
 import { getSocialink } from './accounts/social/index.svelte';
 import { useAccount, type AccountProvider } from './contexts/account.svelte';
+import { FUSE_DISABLE_SOCIALINK } from './flags';
 
 export const accountState: {
   isConnected: boolean;
@@ -23,8 +24,12 @@ const updateState = async (provider: AccountProvider) => {
   accountState.address = walletAccount?.address;
   accountState.walletAccount = walletAccount;
 
-  const profile = await getSocialink()?.getUser(accountState.address!);
-  accountState.profile = profile;
+  if (FUSE_DISABLE_SOCIALINK) {
+    accountState.profile = { exists: true, whitelisted: true } as UserInfo;
+  } else {
+    const profile = await getSocialink().getUser(accountState.address!);
+    accountState.profile = profile;
+  }
   accountState.providerName = useAccount()?.getProviderName();
 };
 
