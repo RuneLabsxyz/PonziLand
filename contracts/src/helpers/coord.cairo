@@ -3,7 +3,7 @@
 //@notice The functions allow for conversion between position-based coordinates and linear indices,
 //@notice as well as directional movement logic (left, right, up, down) within the grid bounds.
 
-use ponzi_land::consts::{MAX_GRID_SIZE};
+use ponzi_land::consts::MAX_GRID_SIZE;
 const TWO_POW_8: u16 = 256; // 2^8
 const MASK_8: u16 = 0xFF; // 8 bits
 
@@ -157,7 +157,7 @@ fn max_neighbors(index: u16) -> u8 {
 
 #[cfg(test)]
 mod coord_test {
-    use super::{position_to_index, index_to_position, left, right, up, down, max_neighbors};
+    use super::{down, index_to_position, left, max_neighbors, position_to_index, right, up};
     #[test]
     fn test_position_to_index() {
         assert_eq!(position_to_index(0, 0), 0);

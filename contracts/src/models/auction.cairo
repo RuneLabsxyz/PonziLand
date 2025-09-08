@@ -1,8 +1,8 @@
+use ponzi_land::consts::DECIMALS_FACTOR;
+use ponzi_land::store::{Store, StoreTrait};
 /// @title Auction Model for PonziLand
 /// @notice Model for representing land auctions in PonziLand.
 use starknet::get_block_timestamp;
-use ponzi_land::consts::{DECIMALS_FACTOR};
-use ponzi_land::store::{Store, StoreTrait};
 
 /// @notice Represents an auction for a land.
 /// @dev Used to manage the auction lifecycle, price decay, and record the final sale price for each
@@ -114,10 +114,11 @@ impl AuctionImpl of AuctionTrait {
 
 #[cfg(test)]
 mod tests {
-    use super::{Auction, AuctionTrait};
-    use starknet::testing::{set_contract_address, set_block_timestamp, set_caller_address};
-    use ponzi_land::tests::setup::{setup, setup::{create_setup}};
     use ponzi_land::store::{Store, StoreTrait};
+    use ponzi_land::tests::setup::setup;
+    use ponzi_land::tests::setup::setup::create_setup;
+    use starknet::testing::{set_block_timestamp, set_caller_address, set_contract_address};
+    use super::{Auction, AuctionTrait};
 
 
     // Simulate the price points of an auction over time with a decay rate of 2
@@ -131,8 +132,7 @@ mod tests {
 
         // Time points to check the price
         let time_points = array![
-            0,
-            2 * 60, //2min
+            0, 2 * 60, //2min
             5 * 60, //5min
             8 * 60, //8min
             10 * 60, //10min
@@ -158,7 +158,7 @@ mod tests {
 
             price_points.append((time * store.get_time_speed().into(), price));
             i += 1;
-        };
+        }
         price_points
     }
 

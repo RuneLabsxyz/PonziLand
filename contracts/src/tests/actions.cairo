@@ -1,60 +1,60 @@
 // Core Cairo imports
-use core::ec::{EcPointTrait, EcStateTrait};
 use core::ec::stark_curve::{GEN_X, GEN_Y};
+use core::ec::{EcPointTrait, EcStateTrait};
 use core::poseidon::poseidon_hash_span;
-
-// Starknet imports
-use starknet::{contract_address_const, ContractAddress, get_block_timestamp};
-use starknet::contract_address::ContractAddressZeroable;
-use starknet::testing::{
-    set_contract_address, set_block_timestamp, set_caller_address, set_block_number,
-};
-use starknet::{testing, get_tx_info};
-use starknet::storage::{Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry};
+use dojo::model::{ModelStorage, ModelStorageTest, ModelValueStorage};
+use dojo::utils::hash::{selector_from_names, selector_from_namespace_and_name};
+use dojo::world::world::Event;
 
 // Dojo imports
-use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorageTrait, WorldStorage};
-use dojo::model::{ModelStorage, ModelValueStorage, ModelStorageTest};
-use dojo::world::world::Event;
-use dojo::utils::hash::{selector_from_namespace_and_name, selector_from_names};
+use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
+use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
 // External dependencies
 use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
-use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
-
-// Internal systems
-use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-use ponzi_land::systems::actions::actions::{InternalImpl};
-use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
-use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait};
-use ponzi_land::systems::config::{IConfigSystemDispatcher, IConfigSystemDispatcherTrait};
-
-// Models
-use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
-use ponzi_land::models::auction::{Auction};
 
 // Constants
 use ponzi_land::consts::{
-    BASE_TIME, TIME_SPEED, MAX_AUCTIONS, TWO_DAYS_IN_SECONDS, MIN_AUCTION_PRICE, CENTER_LOCATION,
-    MAX_CIRCLES, OUR_CONTRACT_FOR_FEE,
+    BASE_TIME, CENTER_LOCATION, MAX_AUCTIONS, MAX_CIRCLES, MIN_AUCTION_PRICE, OUR_CONTRACT_FOR_FEE,
+    TIME_SPEED, TWO_DAYS_IN_SECONDS,
 };
-
-// Store
-use ponzi_land::store::{Store, StoreTrait};
-
-// Helpers
-use ponzi_land::helpers::coord::{left, right, up, down, up_left, up_right, down_left, down_right};
-use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
-use ponzi_land::helpers::circle_expansion::{generate_circle, get_random_index};
 
 // Events
 use ponzi_land::events::{NewAuctionEvent};
+use ponzi_land::helpers::circle_expansion::{generate_circle, get_random_index};
+
+// Helpers
+use ponzi_land::helpers::coord::{down, down_left, down_right, left, right, up, up_left, up_right};
+use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
+use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
+use ponzi_land::models::auction::Auction;
+
+// Models
+use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKey, PoolKeyConversion};
+
+// Store
+use ponzi_land::store::{Store, StoreTrait};
+use ponzi_land::systems::actions::actions::InternalImpl;
+
+// Internal systems
+use ponzi_land::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
+use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+use ponzi_land::systems::config::{IConfigSystemDispatcher, IConfigSystemDispatcherTrait};
+use ponzi_land::systems::token_registry::{ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait};
 
 // Test setup and mocks
 use ponzi_land::tests::setup::{
-    setup, setup::{create_setup, deploy_erc20, RECIPIENT, deploy_mock_ekubo_core},
+    setup, setup::{RECIPIENT, create_setup, deploy_erc20, deploy_mock_ekubo_core},
 };
-use ponzi_land::mocks::ekubo_core::{IEkuboCoreTestingDispatcher, IEkuboCoreTestingDispatcherTrait};
+use starknet::contract_address::ContractAddressZeroable;
+use starknet::storage::{Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess};
+use starknet::testing::{
+    set_block_number, set_block_timestamp, set_caller_address, set_contract_address,
+};
+
+// Starknet imports
+use starknet::{ContractAddress, contract_address_const, get_block_timestamp};
+use starknet::{get_tx_info, testing};
 
 const BROTHER_ADDRESS: felt252 = 0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe;
 const STARK_ADDRESS: felt252 = 0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0;
@@ -241,7 +241,7 @@ fn authorize_all_addresses(auth_dispatcher: IAuthDispatcher) {
         auth_dispatcher.add_authorized(address);
         assert(auth_dispatcher.can_take_action(address), 'Authorization failed');
         i += 1;
-    };
+    }
 
     // Restore the original contract address
     set_contract_address(prev_address);
@@ -302,7 +302,7 @@ fn capture_location_of_new_auction(address: ContractAddress) -> Option<u16> {
             },
             Option::None => { break; },
         }
-    };
+    }
 
     location
 }
@@ -402,10 +402,10 @@ fn helper_to_initalize_first_n_lands_to_test_edge_case(
                     stake_amount,
                     main_currency,
                 );
-        };
+        }
         locations.append(next_location);
         i += 1;
-    };
+    }
     locations
 }
 
@@ -434,7 +434,7 @@ fn create_multiple_lands(
         );
         locations.append(location);
         i += 1;
-    };
+    }
     locations
 }
 fn setup_test() -> (
@@ -557,7 +557,7 @@ fn bid_and_verify_next_auctions(
         let location = *locations.at(i);
         actions_system.bid(location, main_currency.contract_address, 2, 10);
         i += 1;
-    };
+    }
 
     // Verify next auctions were created in the specified direction
     i = 0;
@@ -1085,7 +1085,7 @@ fn test_claim_all() {
     while i < additional_locations.len() {
         land_locations.append(*additional_locations.at(i));
         i += 1;
-    };
+    }
 
     actions_system.claim_all(land_locations);
 

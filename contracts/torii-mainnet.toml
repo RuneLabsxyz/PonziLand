@@ -1,4 +1,4 @@
-world_address = "0x76b1269937debcb70fb5f59dea1c6f9ce24c9415b23876f623385933a6d2681"
+world_address = "0x059713eb00142d15a502824739e5f3b9a81a808c0e660875ff1ae199b533a620"
 rpc = "https://api.cartridge.gg/x/starknet/mainnet"
 explorer = false
 
@@ -21,6 +21,8 @@ historical = [
 
     "ponzi_land-Land",
     "ponzi_land-LandStake",
+
+    "ponzi_land-Auction"
 ]
 
 
@@ -29,13 +31,19 @@ pending = true
 transactions = true
 
 contracts = [
-    "erc20:0x056893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb",  # nftSTRK
-    "erc20:0x040025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e",  # eWNT
-    "erc20:0x078c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4",  # eQQ
-    "erc20:0x074ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5",  # eSG
-    "erc20:0x00dcdc180a8b4b9cef2d039462ad30de95c5609178a1c2bc55779309c07d45db",  # nftLORDS
-    "erc721:0x0413485dbeccec6320d35dcba14375e7ca973f021486496a61286edb958fd861", # Wolf Nation NFT
-    "erc721:0x04fa864a706e3403fd17ac8df307f22eafa21b778b73353abf69a622e47a2003", # DucksEverywhere1
-    "erc721:0x02acee8c430f62333cf0e0e7a94b2347b5513b4c25f699461dd8d7b23c072478", # Everai Duo
-    "erc721:0x00539f522b29ae9251dbf7443c7a950cf260372e69efab3710a11bf17a9599f1", # Blobert
+    "erc20:0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7", # ETH
+    "erc20:0x2ab526354a39e7f5d272f327fa94e757df3688188d4a92c6dc3623ab79894e2", # SLAY
+    "erc20:0x040E81cfeB176BFDbc5047BBC55eb471CFAb20a6B221f38d8fDa134E1bFFFca4", # DOG
+    "erc20:0x1e70aedffd376afe33cebdf51ed5365131dccb2a5b2cb36d02b785442912b9b", # SOL
+    "erc20:0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee", # BROTHER
+    "erc20:0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49", # LORDS
+    "erc20:0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d", # STRK
+    "erc20:0x075afe6402ad5a5c20dd25e10ec3b3986acaa647b77e4ae24b0cbc9a54a27a87", # EKUBO
+    "erc20:0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559", # PAL
+    "erc20:0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac", # BTC
+    "erc20:0x781bddf077f25a53411d567093f63f9a839ec9e6bc4d99d9240cf742b98b0e8", # BONK
+    "erc20:0x102d5e124c51b936ee87302e0f938165aec96fb6c2027ae7f3a5ed46c77573b", # SISTER
+    "erc20:0x4fcaf2a7b4a072fe57c59beee807322d34ed65000d78611c909a46fead07fb1", # DREAMS
+    "erc20:0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8", # USDC
+    "erc20:0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2", # SCHIZO
 ]

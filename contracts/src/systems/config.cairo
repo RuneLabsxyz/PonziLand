@@ -4,8 +4,8 @@
 // in systems such as actions, taxes, and staking.
 
 // Starknet imports
+use ponzi_land::models::config::Config;
 use starknet::ContractAddress;
-use ponzi_land::models::config::{Config};
 
 #[starknet::interface]
 trait IConfigSystem<T> {
@@ -194,22 +194,21 @@ trait IConfigSystem<T> {
 #[dojo::contract]
 mod config {
     // Starknet imports
-    use starknet::ContractAddress;
-    use starknet::get_caller_address;
+    use dojo::event::EventStorage;
+    use dojo::model::{Model, ModelStorage, ModelValueStorage};
 
     // Dojo imports
     use dojo::world::{WorldStorage};
-    use dojo::model::{ModelStorage, ModelValueStorage, Model};
-    use dojo::event::EventStorage;
 
-    // Internal systems
-    use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+    // Interfaces
+    use ponzi_land::interfaces::systems::{SystemsTrait};
 
     // Models
     use ponzi_land::models::config::{Config, ConfigTrait};
 
-    // Interfaces
-    use ponzi_land::interfaces::systems::{SystemsTrait};
+    // Internal systems
+    use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
+    use starknet::{ContractAddress, get_caller_address};
 
     // Local imports
     use super::IConfigSystem;

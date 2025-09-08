@@ -1,5 +1,5 @@
 use ponzi_land::store::{Store, StoreTrait};
-use ponzi_land::utils::get_neighbors::{get_average_price};
+use ponzi_land::utils::get_neighbors::get_average_price;
 
 #[inline(always)]
 pub fn get_suggested_sell_price(store: Store, land_location: u16) -> u256 {

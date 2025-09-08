@@ -1,12 +1,12 @@
+use dojo::world::WorldStorage;
+use ponzi_land::models::auction::Auction;
+use ponzi_land::models::land::{Land, LandStake};
+use ponzi_land::utils::common_strucs::{ClaimInfo, LandOrAuction, LandYieldInfo, TokenInfo};
 /// @title PonziLand Game Actions
 /// @notice Main entry point for all game interactions
 /// This contract handles all player actions and game mechanics
 
 use starknet::ContractAddress;
-use dojo::world::WorldStorage;
-use ponzi_land::models::land::{Land, LandStake};
-use ponzi_land::models::auction::Auction;
-use ponzi_land::utils::common_strucs::{TokenInfo, ClaimInfo, LandYieldInfo, LandOrAuction};
 
 #[starknet::interface]
 trait IActions<T> {
@@ -100,26 +100,51 @@ trait IActions<T> {
 
 #[dojo::contract]
 pub mod actions {
-    use super::{IActions, WorldStorage};
+    use core::dict::{Felt252Dict, Felt252DictEntryTrait, Felt252DictTrait};
 
     // Core Cairo imports
-    use core::nullable::{Nullable, NullableTrait, match_nullable, FromNullableResult};
-    use core::dict::{Felt252Dict, Felt252DictTrait, Felt252DictEntryTrait};
-    // Starknet imports
-    use starknet::{ContractAddress, get_caller_address, get_block_timestamp, get_contract_address};
-    use starknet::contract_address::ContractAddressZeroable;
-    use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
-        MutableVecTrait,
-    };
+    use core::nullable::{FromNullableResult, Nullable, NullableTrait, match_nullable};
+    use dojo::event::EventStorage;
 
     // Dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use dojo::event::EventStorage;
+    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // External dependencies
     use openzeppelin_security::ReentrancyGuardComponent;
-    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
+    use ponzi_land::components::auction::AuctionComponent;
+    use ponzi_land::components::payable::PayableComponent;
+
+    // Components
+    use ponzi_land::components::stake::StakeComponent;
+    use ponzi_land::components::taxes::TaxesComponent;
+
+    // Constants and store
+    use ponzi_land::consts::{CENTER_LOCATION, MAX_GRID_SIZE};
+
+    // Errors
+    use ponzi_land::errors::{ERC20_VALIDATE_AMOUNT_BUY};
+
+    // Events
+    use ponzi_land::events::{AddStakeEvent, LandBoughtEvent, LandNukedEvent};
+
+    // Helpers
+    use ponzi_land::helpers::auction::{get_suggested_sell_price};
+    use ponzi_land::helpers::circle_expansion::{
+        get_circle_land_position, get_random_available_index, get_random_index,
+        is_section_completed, lands_per_section,
+    };
+    use ponzi_land::helpers::coord::get_all_neighbors;
+    use ponzi_land::helpers::land::{
+        add_neighbor, update_neighbors_after_delete, update_neighbors_info,
+    };
+    use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
+    use ponzi_land::interfaces::systems::SystemsTrait;
+    use ponzi_land::models::auction::{Auction, AuctionTrait};
+
+    // Models
+    use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKey, PoolKeyConversion};
+    use ponzi_land::store::{Store, StoreTrait};
 
     // Internal systems
     use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait};
@@ -127,48 +152,23 @@ pub mod actions {
         ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
     };
 
-    // Models
-    use ponzi_land::models::land::{Land, LandStake, LandTrait, Level, PoolKeyConversion, PoolKey};
-    use ponzi_land::models::auction::{Auction, AuctionTrait};
-
-    // Components
-    use ponzi_land::components::stake::StakeComponent;
-    use ponzi_land::components::taxes::TaxesComponent;
-    use ponzi_land::components::payable::PayableComponent;
-    use ponzi_land::components::auction::AuctionComponent;
-
-    // Constants and store
-    use ponzi_land::consts::{MAX_GRID_SIZE, CENTER_LOCATION};
-    use ponzi_land::store::{Store, StoreTrait};
-    use ponzi_land::interfaces::systems::{SystemsTrait};
-
     // Utils
     use ponzi_land::utils::common_strucs::{
-        TokenInfo, ClaimInfo, YieldInfo, LandYieldInfo, LandWithTaxes, LandOrAuction,
+        ClaimInfo, LandOrAuction, LandWithTaxes, LandYieldInfo, TokenInfo, YieldInfo,
     };
+    use ponzi_land::utils::get_neighbors::{get_average_price, get_land_neighbors};
+    use ponzi_land::utils::level_up::calculate_new_level;
     use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
-    use ponzi_land::utils::get_neighbors::{get_land_neighbors, get_average_price};
-    use ponzi_land::utils::level_up::{calculate_new_level};
-    use ponzi_land::utils::stake::{calculate_refund_amount};
-    use ponzi_land::utils::validations::{validate_params, validate_owner_land_for_buy};
-
-    // Helpers
-    use ponzi_land::helpers::auction::{get_suggested_sell_price};
-    use ponzi_land::helpers::coord::{get_all_neighbors};
-    use ponzi_land::helpers::taxes::{get_taxes_per_neighbor, get_tax_rate_per_neighbor};
-    use ponzi_land::helpers::circle_expansion::{
-        get_circle_land_position, get_random_index, lands_per_section, is_section_completed,
-        get_random_available_index,
+    use ponzi_land::utils::stake::calculate_refund_amount;
+    use ponzi_land::utils::validations::{validate_owner_land_for_buy, validate_params};
+    use starknet::contract_address::ContractAddressZeroable;
+    use starknet::storage::{
+        Map, MutableVecTrait, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
+        Vec, VecTrait,
     };
-    use ponzi_land::helpers::land::{
-        update_neighbors_info, add_neighbor, update_neighbors_after_delete,
-    };
-
-    // Errors
-    use ponzi_land::errors::{ERC20_VALIDATE_AMOUNT_BUY};
-
-    // Events
-    use ponzi_land::events::{LandNukedEvent, LandBoughtEvent, AddStakeEvent};
+    // Starknet imports
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address, get_contract_address};
+    use super::{IActions, WorldStorage};
 
 
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
@@ -393,7 +393,7 @@ pub mod actions {
                             our_contract_for_fee,
                         );
                 }
-            };
+            }
             self.reentrancy_guard.end();
         }
 
@@ -553,7 +553,7 @@ pub mod actions {
                     }
                 }
                 i += 1;
-            };
+            }
             self.stake._reimburse(store, active_lands.span());
             self.reentrancy_guard.end();
         }
@@ -642,7 +642,7 @@ pub mod actions {
                                 ),
                         ),
                     );
-            };
+            }
             elapsed_time
         }
 
@@ -722,7 +722,7 @@ pub mod actions {
             let mut total = 0;
             for neighbor in neighbors {
                 total += self.get_unclaimed_taxes_per_neighbor(*neighbor.location, land_location);
-            };
+            }
             total
         }
 
@@ -750,7 +750,7 @@ pub mod actions {
                 } else {
                     neighbors_array.append(LandOrAuction::None);
                 }
-            };
+            }
 
             neighbors_array
         }
@@ -814,7 +814,7 @@ pub mod actions {
                             );
                     }
                 }
-            };
+            }
 
             // Reuse common deletion and auction creation logic
             self._delete_land_and_create_auction(store, land, land_stake, land_stake_before_claim);

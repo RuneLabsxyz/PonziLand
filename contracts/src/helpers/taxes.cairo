@@ -1,3 +1,7 @@
+use ponzi_land::consts::{DECIMALS_FACTOR, SCALE_FACTOR_FOR_FEE};
+use ponzi_land::helpers::coord::max_neighbors;
+use ponzi_land::models::land::{Land, LandStake};
+use ponzi_land::store::{Store, StoreTrait};
 /// @title Tax Calculation Helpers for PonziLand
 /// @notice This module contains core tax calculation logic for the PonziLand game.
 /// Tax calculations are based on land price, neighbor count, time elapsed, and land level
@@ -6,11 +10,7 @@
 /// owners.
 
 use ponzi_land::utils::level_up::calculate_discount_for_level;
-use ponzi_land::helpers::coord::max_neighbors;
-use ponzi_land::models::land::{Land, LandStake};
-use ponzi_land::store::{Store, StoreTrait};
-use ponzi_land::consts::{DECIMALS_FACTOR, SCALE_FACTOR_FOR_FEE};
-use starknet::{get_block_timestamp};
+use starknet::get_block_timestamp;
 
 /// @notice Calculates the total tax amount owed by a land to a specific neighbor
 /// @dev This is the core tax calculation function that determines yield payments

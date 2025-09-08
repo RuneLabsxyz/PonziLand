@@ -2,57 +2,57 @@ mod setup {
     // Core Cairo imports
     use core::serde::Serde;
 
-    // Starknet imports
-    use starknet::{ContractAddress, contract_address_const};
-    use starknet::testing::{set_contract_address, set_account_contract_address};
-    use starknet::info::{get_contract_address, get_caller_address, get_block_timestamp};
-
     // Dojo imports
-    use dojo::world::{WorldStorageTrait, WorldStorage, IWorldDispatcherTrait, IWorldDispatcher};
+    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
     use dojo_cairo_test::{
-        spawn_test_world, NamespaceDef, TestResource, ContractDefTrait, ContractDef,
-        WorldStorageTestTrait,
+        ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
+        spawn_test_world,
     };
+    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // External dependencies
     use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
-    use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
-
-    // Internal systems
-    use ponzi_land::systems::actions::{actions, IActionsDispatcher, IActionsDispatcherTrait};
-    use ponzi_land::systems::auth::{auth, IAuthDispatcher, IAuthDispatcherTrait};
-    use ponzi_land::systems::config::{
-        config, IConfigSystemDispatcher, IConfigSystemDispatcherTrait,
-    };
-    use ponzi_land::systems::token_registry::{
-        token_registry, ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait,
-    };
-
-    // Models
-    use ponzi_land::models::land::{Land, m_Land, LandStake, m_LandStake};
-    use ponzi_land::models::auction::{Auction, m_Auction};
-    use ponzi_land::models::config::{Config, m_Config};
 
     // Components
     use ponzi_land::components::taxes::{TaxesComponent};
 
     // Constants
     use ponzi_land::consts::{
-        TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID,
-        DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
-        MIN_AUCTION_PRICE_MULTIPLIER, AUCTION_DURATION, SCALING_FACTOR, LINEAR_DECAY_TIME,
-        DROP_RATE, RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE, OUR_CONTRACT_FOR_FEE,
-        OUR_CONTRACT_SEPOLIA_ADDRESS, CLAIM_FEE_THRESHOLD,
+        AUCTION_DURATION, BASE_TIME, BUY_FEE, CLAIM_FEE, CLAIM_FEE_THRESHOLD, DECAY_RATE, DROP_RATE,
+        FLOOR_PRICE, LINEAR_DECAY_TIME, LIQUIDITY_SAFETY_MULTIPLIER, MAX_AUCTIONS,
+        MAX_AUCTIONS_FROM_BID, MAX_CIRCLES, MIN_AUCTION_PRICE, MIN_AUCTION_PRICE_MULTIPLIER,
+        OUR_CONTRACT_FOR_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS, PRICE_DECREASE_RATE, RATE_DENOMINATOR,
+        SCALING_FACTOR, TAX_RATE, TIME_SPEED,
     };
 
     // Events
     use ponzi_land::events;
+    use ponzi_land::mocks::ekubo_core::{
+        IEkuboCoreTesting, IEkuboCoreTestingDispatcher, MockEkuboCore,
+    };
 
     // Test mocks
     use ponzi_land::mocks::erc20::MyToken;
-    use ponzi_land::mocks::ekubo_core::{
-        MockEkuboCore, IEkuboCoreTesting, IEkuboCoreTestingDispatcher,
+    use ponzi_land::models::auction::{Auction, m_Auction};
+    use ponzi_land::models::config::{Config, m_Config};
+
+    // Models
+    use ponzi_land::models::land::{Land, LandStake, m_Land, m_LandStake};
+
+    // Internal systems
+    use ponzi_land::systems::actions::{IActionsDispatcher, IActionsDispatcherTrait, actions};
+    use ponzi_land::systems::auth::{IAuthDispatcher, IAuthDispatcherTrait, auth};
+    use ponzi_land::systems::config::{
+        IConfigSystemDispatcher, IConfigSystemDispatcherTrait, config,
     };
+    use ponzi_land::systems::token_registry::{
+        ITokenRegistryDispatcher, ITokenRegistryDispatcherTrait, token_registry,
+    };
+    use starknet::info::{get_block_timestamp, get_caller_address, get_contract_address};
+    use starknet::testing::{set_account_contract_address, set_contract_address};
+
+    // Starknet imports
+    use starknet::{ContractAddress, contract_address_const};
 
     fn RECIPIENT() -> ContractAddress {
         contract_address_const::<'RECIPIENT'>()
@@ -111,14 +111,14 @@ mod setup {
         let ndef = NamespaceDef {
             namespace: "ponzi_land",
             resources: [
-                TestResource::Model(m_Land::TEST_CLASS_HASH),
-                TestResource::Model(m_LandStake::TEST_CLASS_HASH),
-                TestResource::Model(m_Auction::TEST_CLASS_HASH),
-                TestResource::Model(m_Config::TEST_CLASS_HASH),
-                TestResource::Contract(config::TEST_CLASS_HASH),
-                TestResource::Contract(token_registry::TEST_CLASS_HASH),
-                TestResource::Contract(auth::TEST_CLASS_HASH),
-                TestResource::Contract(actions::TEST_CLASS_HASH),
+                TestResource::Model(m_Land::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Model(m_LandStake::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Model(m_Auction::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Model(m_Config::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Contract(config::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Contract(token_registry::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Contract(auth::TEST_CLASS_HASH.try_into().unwrap()),
+                TestResource::Contract(actions::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(config::e_ConfigUpdated::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(events::e_LandNukedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(events::e_LandBoughtEvent::TEST_CLASS_HASH.try_into().unwrap()),

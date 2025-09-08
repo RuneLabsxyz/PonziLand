@@ -1,6 +1,6 @@
-use starknet::ContractAddress;
-use ponzi_land::models::land::Land;
 use ponzi_land::models::auction::Auction;
+use ponzi_land::models::land::Land;
+use starknet::ContractAddress;
 #[derive(Drop, Serde, starknet::Store, Debug, Introspect, Copy)]
 pub struct TokenInfo {
     token_address: ContractAddress,
@@ -36,8 +36,9 @@ pub struct LandWithTaxes {
     taxes: Option<Array<TokenInfo>>,
 }
 
-#[derive(Copy, Drop, Serde, Debug)]
+#[derive(Copy, Drop, Serde, Debug, Default)]
 pub enum LandOrAuction {
+    #[default]
     None,
     Land: Land,
     Auction: Auction,

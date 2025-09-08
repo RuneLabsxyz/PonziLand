@@ -1,8 +1,8 @@
 mod systems {
     mod actions;
     mod auth;
-    mod token_registry;
     mod config;
+    mod token_registry;
 }
 
 mod interfaces {
@@ -10,30 +10,30 @@ mod interfaces {
 }
 
 mod models {
-    mod land;
     mod auction;
     mod config;
+    mod land;
 }
 
 mod helpers {
-    mod coord;
-    mod taxes;
-    mod circle_expansion;
-    mod land;
     mod auction;
+    mod circle_expansion;
+    mod coord;
+    mod land;
+    mod taxes;
 }
 
 mod components {
-    mod payable;
-    mod taxes;
-    mod stake;
     mod auction;
+    mod payable;
+    mod stake;
+    mod taxes;
 }
 
 mod consts;
-mod store;
 mod errors;
 mod events;
+mod store;
 
 mod tokens {
     mod erc20;
@@ -41,22 +41,22 @@ mod tokens {
 }
 
 mod mocks {
-    mod erc20;
     mod ekubo_core;
+    mod erc20;
 }
 
 mod utils {
     mod common_strucs;
     mod get_neighbors;
     mod level_up;
-    mod stake;
-    mod packing;
     mod math;
+    mod packing;
+    mod stake;
     mod validations;
 }
 
 #[cfg(test)]
 mod tests {
-    mod setup;
     mod actions;
+    mod setup;
 }

@@ -53,7 +53,8 @@ const { values, positionals } = parseArgs({
     fresh: {
       type: "boolean",
       default: false,
-      description: "Deploy a new token even if one already exists with the same symbol",
+      description:
+        "Deploy a new token even if one already exists with the same symbol",
     },
   },
   strict: true,
@@ -126,70 +127,3 @@ switch (command) {
   default:
     console.log("Unknown command!");
 }
-
-exit(0);
-/*
-await doTransaction({
-  contractAddress:
-    "0x02d9ec36cd62c36e2b3cb2256cd07af0e5518e9e462a8091d73b0ba045fc1446",
-  entrypoint: "set_mint_status",
-  calldata: CallData.compile({
-    address: "0x1",
-    status: new CairoOption<CairoCustomEnum>(
-      CairoOptionVariant.Some,
-      new CairoCustomEnum({
-        ePAL: {},
-      }),
-    ),
-  }),
-});
- */
-
-// After the build process, generate torii-katana.toml
-console.log("📝 Generating torii-katana.toml...");
-
-// Read world address from manifest_dev.json
-const worldAddress = Bun.file("PonziLand/contracts/manifest_dev.json").json().world.address;
-
-// Generate the torii-katana.toml file
-const toriiKatanaToml = Bun.file("PonziLand/contracts/torii-katana.toml");
-toriiKatanaToml.write(`world_address = "${worldAddress}"
-rpc = "https://api.cartridge.gg/x/starknet/sepolia"
-explorer = false
-
-[events]
-raw = true
-
-[sql]
-historical = [
-    "ponzi_land-AddressAuthorizedEvent",
-    "ponzi_land-AddressRemovedEvent",
-
-    "ponzi_land-AuctionFinishedEvent",
-    "ponzi_land-LandBoughtEvent",
-    "ponzi_land-LandNukedEvent",
-
-    "ponzi_land-NewAuctionEvent",
-    "ponzi_land-RemainingStakeEvent",
-
-    "ponzi_land-VerifierUpdatedEvent",
-
-    "ponzi_land-Land",
-    "ponzi_land-LandStake",
-]
-
-
-[indexing]
-contracts = [
-`);
-
-// Add token contracts from tokens.katana.json
-Bun.file("PonziLand/playtest/tokens.katana.json").json().tokens.forEach(token => {
-  toriiKatanaToml.write(`    "erc20:${token.address}", # ${token.symbol}\n`);
-});
-
-// Close the contracts array
-toriiKatanaToml.write(`]
-`);
-
-console.log(`✅ Generated torii-katana.toml with world address: ${worldAddress}`);
