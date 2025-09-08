@@ -46,9 +46,10 @@
   "dependencies": {
     "@argent/x-sessions": "=8.0.1",
     "@avnu/avnu-sdk": "3.1.0",
-    "@cartridge/controller": "0.10.0-alpha.1",
-    "@cartridge/presets": "=0.5.2",
+    "@cartridge/controller": "0.10.0",
+    "@cartridge/presets": "0.5.2",
     "@dojoengine/core": "1.7.0-preview.3",
+    "@dojoengine/create-burner": "1.7.0-preview.3",
     "@dojoengine/sdk": "1.7.0-preview.3",
     "@dojoengine/torii-client": "1.7.0-preview.3",
     "@grafana/faro-rollup-plugin": "^0.5.1",
@@ -65,7 +66,8 @@
     "@reown/appkit": "^1.6.8",
     "@reown/appkit-adapter-ethers": "^1.6.8",
     "@runelabsxyz/socialink-sdk": "0.2.0",
-    "@starknet-io/get-starknet-core": "=4.0.0",
+    "@starknet-io/get-starknet-core": "4.0.7",
+    "@starknet-io/types-js": "0.9.1",
     "@sv-use/core": "^1.15.1",
     "@sveltejs/adapter-node": "^5.2.13",
     "@threlte/core": "^8.0.5",
@@ -85,7 +87,7 @@
     "lucide-svelte": "^0.471.0",
     "moment": "=2.30.1",
     "seedrandom": "^3.0.5",
-    "starknet": "^8.0.0",
+    "starknet": "8.5.3",
     "stats.js": "^0.17.0",
     "svelte-confetti": "^2.3.1",
     "svelte-tweakpane-ui": "^1.5.8",
@@ -95,6 +97,9 @@
     "vite-plugin-glsl": "^1.5.1",
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-wasm": "^3.3.0"
+  },
+  "overrides": {
+    "@starknet-io/types-js": "0.9.1"
   },
   "patchedDependencies": {
     "@avnu/avnu-sdk@3.1.0": "patches/@avnu%2Favnu-sdk@3.1.0.patch"

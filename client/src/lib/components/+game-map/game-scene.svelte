@@ -11,6 +11,8 @@
   import { gameStore } from './three/game.store.svelte';
   import LandSprite from './three/land-sprite.svelte';
 
+  let { children = undefined } = $props();
+
   const { renderer, camera } = useThrelte();
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.toneMapping = 1; // No tone mapping
@@ -174,5 +176,5 @@
   });
 </script>
 
-<slot />
+{@render children?.()}
 <LandSprite />
