@@ -1,5 +1,5 @@
 import { building } from '$app/environment';
-import { BYPASS_TOKEN } from '$env/static/private';
+import { BYPASS_TOKEN } from '$env/dynamic/private';
 import { CLOSING_DATE, DATE_GATE } from '$lib/const';
 import { redirect, type Handle } from '@sveltejs/kit';
 
