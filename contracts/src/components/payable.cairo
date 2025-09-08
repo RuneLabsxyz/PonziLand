@@ -80,26 +80,26 @@ trait IPayable<TContractState> {
 #[starknet::component]
 mod PayableComponent {
     // Starknet imports
-    use starknet::ContractAddress;
 
     // External dependencies
     use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
-    use super::ValidationResult;
 
     // Constants
     use ponzi_land::consts::{OUR_CONTRACT_SEPOLIA_ADDRESS, SCALE_FACTOR_FOR_FEE};
 
-    // Store
-    use ponzi_land::store::{Store, StoreTrait};
+    // Errors
+    use ponzi_land::errors::{
+        DIFFERENT_ERC20_TOKEN_DISPATCHER, ERC20_PAY_FAILED, ERC20_PAY_FOR_BID_FAILED,
+        ERC20_PAY_FOR_BUY_FAILED, ERC20_VALIDATE_AMOUNT_BID,
+    };
 
     // Helpers
     use ponzi_land::helpers::taxes::{calculate_and_return_taxes_with_fee};
 
-    // Errors
-    use ponzi_land::errors::{
-        ERC20_PAY_FAILED, DIFFERENT_ERC20_TOKEN_DISPATCHER, ERC20_VALIDATE_AMOUNT_BID,
-        ERC20_PAY_FOR_BID_FAILED, ERC20_PAY_FOR_BUY_FAILED,
-    };
+    // Store
+    use ponzi_land::store::{Store, StoreTrait};
+    use starknet::ContractAddress;
+    use super::ValidationResult;
     #[storage]
     struct Storage {
         token_dispatcher: IERC20CamelDispatcher,

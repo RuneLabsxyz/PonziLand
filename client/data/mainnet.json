@@ -11,19 +11,19 @@
       "fee": "3402823669209384634633746074317682114"
     }
   },
-  "mainCurrency": "pltSTRK",
-  "mainCurrencyAddress": "0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51",
+  "mainCurrency": "STRK",
+  "mainCurrencyAddress": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
   "aiAgents": [],
   "availableTokens": [
     {
-      "name": "Ponziland test STRK",
-      "symbol": "pltSTRK",
-      "address": "0x053fcfcc9aff3c9cb217d687019a803e54ca554578ee094f632d9396c52e8f51",
+      "name": "Starknet",
+      "symbol": "STRK",
+      "address": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "skin": "eSTRK",
-        "icon": "/tokens/eSTRK/icon.png",
+        "skin": "STRK",
+        "icon": "/tokens/STRK/icon.png",
         "biome": {
           "x": 2,
           "y": 3
@@ -50,58 +50,14 @@
       }
     },
     {
-      "name": "Ponziland test PAPER",
-      "symbol": "pltPAPER",
-      "address": "0x011f85339903777e3ed5b07fc366956bdd0795c37c20dfc01e61cd6aa850df15",
+      "name": "Lords",
+      "symbol": "LORDS",
+      "address": "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "skin": "ePAPER",
-        "icon": "/tokens/ePAPER/icon.svg",
-        "biome": {
-          "x": 3,
-          "y": 0
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 0,
-            "frames": 4,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 192
-          },
-          "2": {
-            "x": 3,
-            "y": 1,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          },
-          "3": {
-            "x": 3,
-            "y": 2,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          }
-        }
-      }
-    },
-    {
-      "name": "Ponziland test LORDS",
-      "symbol": "pltLORDS",
-      "address": "0x05cf32bf9b60c4763ef53672cfd720f57ecb4c4109aae6a7a2c551eddfd9b880",
-      "liquidityPoolType": "1-2",
-      "decimals": 18,
-      "images": {
-        "skin": "eLORDS",
-        "icon": "/tokens/eLORDS/icon.svg",
+        "skin": "LORDS",
+        "icon": "/tokens/LORDS/icon.svg",
         "biome": {
           "x": 3,
           "y": 1
@@ -130,9 +86,9 @@
       }
     },
     {
-      "name": "Ponziland test BROTHER",
-      "symbol": "pltBROTHER",
-      "address": "0x06a998c40654fd0e29bcb359e998db25d9df1169b925d5558b07030ebcba38c8",
+      "name": "Starknet Brother",
+      "symbol": "BROTHER",
+      "address": "0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
@@ -164,14 +120,14 @@
       }
     },
     {
-      "name": "Emulated PAL",
-      "symbol": "ePAL",
-      "address": "0x04367674252522f20f60fe54b65f68f97a510be8db71691f3c93ef6bc7095b75",
+      "name": "PAL",
+      "symbol": "PAL",
+      "address": "0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
-        "skin": "ePAL",
-        "icon": "/tokens/ePAL/icon.svg",
+        "skin": "PAL",
+        "icon": "/tokens/PAL/icon.svg",
         "biome": {
           "x": 1,
           "y": 2

@@ -1,9 +1,9 @@
+use ekubo::types::keys::PoolKey as EkuboPoolKey;
+use ponzi_land::utils::common_strucs::TokenInfo;
+use starknet::contract_address::ContractAddressZeroable;
 /// @title Land Models for PonziLand
 /// @notice Main models for representing land, staking, and pools in the PonziLand game.
 use starknet::{ContractAddress, contract_address_const};
-use starknet::contract_address::ContractAddressZeroable;
-use ponzi_land::utils::common_strucs::{TokenInfo};
-use ekubo::types::keys::PoolKey as EkuboPoolKey;
 
 /// @notice Represents a unique piece of land in PonziLand.
 /// @dev Used to track ownership, price, staking token, and progression level for each land plot.
@@ -55,8 +55,9 @@ pub struct LandStake {
 /// * `Zero` - Initial level. Default for new land.
 /// * `First` - First upgrade.
 /// * `Second` - Second upgrade.
-#[derive(Serde, Drop, Copy, PartialEq, Introspect, Debug)]
+#[derive(Serde, Drop, Copy, PartialEq, Introspect, Debug, Default, DojoStore)]
 pub enum Level {
+    #[default]
     Zero,
     First,
     Second,
@@ -148,4 +149,3 @@ impl LandImpl of LandTrait {
         *self.owner == address
     }
 }
-

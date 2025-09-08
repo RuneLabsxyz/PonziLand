@@ -1,5 +1,5 @@
-use ponzi_land::models::land::Level;
 use ponzi_land::consts::{FOUR_DAYS_IN_SECONDS, TWO_DAYS_IN_SECONDS};
+use ponzi_land::models::land::Level;
 
 fn calculate_discount_for_level(level: Level) -> u16 {
     let discount_for_level: u16 = match level {

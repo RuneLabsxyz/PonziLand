@@ -8,42 +8,42 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 #[starknet::component]
 mod StakeComponent {
     // Starknet imports
-    use starknet::ContractAddress;
-    use starknet::info::{get_contract_address, get_caller_address};
-    use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
-    };
-    use starknet::contract_address::ContractAddressZeroable;
 
     // Dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
 
-    // External dependencies
-    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+    // Components
+    use ponzi_land::components::payable::{IPayable, PayableComponent};
+
+    // Errors
+    use ponzi_land::errors::{
+        ERC20_REFUND_FAILED, ERC20_STAKE_FAILED, ERC20_VALIDATE_FOR_REFUND_FAILED,
+        ERC20_VALIDATE_FOR_STAKE_FAILED,
+    };
+
+    // Helpers
+    use ponzi_land::helpers::coord::{max_neighbors};
 
     // Models
     use ponzi_land::models::land::{Land, LandStake};
-
-    // Components
-    use ponzi_land::components::payable::{PayableComponent, IPayable};
 
     // Store
     use ponzi_land::store::{Store, StoreTrait};
 
     // Utils
     use ponzi_land::utils::{
-        common_strucs::{TokenInfo, LandWithTaxes},
-        stake::{calculate_refund_ratio, calculate_refund_amount},
+        common_strucs::{LandWithTaxes, TokenInfo},
+        stake::{calculate_refund_amount, calculate_refund_ratio},
+    };
+    use starknet::ContractAddress;
+    use starknet::contract_address::ContractAddressZeroable;
+    use starknet::info::{get_caller_address, get_contract_address};
+    use starknet::storage::{
+        Map, MutableVecTrait, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait,
     };
 
-    // Helpers
-    use ponzi_land::helpers::coord::{max_neighbors};
-
-    // Errors
-    use ponzi_land::errors::{
-        ERC20_VALIDATE_FOR_STAKE_FAILED, ERC20_STAKE_FAILED, ERC20_VALIDATE_FOR_REFUND_FAILED,
-        ERC20_REFUND_FAILED,
-    };
+    // External dependencies
+    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
     #[storage]
     struct Storage {
@@ -184,7 +184,7 @@ mod StakeComponent {
                 self.token_stakes.write(land.token_used, new_total);
             } else {
                 panic!("Attempting to refund more than what's staked");
-            };
+            }
 
             land_stake.amount = 0;
             store.set_land_stake(land_stake);

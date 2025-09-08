@@ -4,8 +4,8 @@
 
 // Starknet imports
 use starknet::ContractAddress;
-use starknet::{get_caller_address, get_contract_address};
 use starknet::contract_address::ContractAddressZeroable;
+use starknet::{get_caller_address, get_contract_address};
 
 #[starknet::interface]
 trait IAuth<T> {
@@ -68,17 +68,17 @@ pub mod auth {
     // Core Cairo imports
     use core::ecdsa::check_ecdsa_signature;
     use core::poseidon::poseidon_hash_span;
-
-    // Starknet imports
-    use starknet::{ContractAddress, get_caller_address, get_block_timestamp};
-    use starknet::contract_address::ContractAddressZeroable;
-    use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait, MutableVecTrait,
-    };
+    use dojo::event::EventStorage;
 
     // Dojo imports
-    use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher, IWorldDispatcherTrait};
-    use dojo::event::EventStorage;
+    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
+    use starknet::contract_address::ContractAddressZeroable;
+    use starknet::storage::{
+        Map, MutableVecTrait, StoragePointerReadAccess, StoragePointerWriteAccess, Vec, VecTrait,
+    };
+
+    // Starknet imports
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
 
     // Local imports
     use super::IAuth;
@@ -112,8 +112,8 @@ pub mod auth {
 
     #[storage]
     struct Storage {
-        authorized_addresses: Map::<ContractAddress, bool>,
-        verifier_accounts: Map::<ContractAddress, bool>,
+        authorized_addresses: Map<ContractAddress, bool>,
+        verifier_accounts: Map<ContractAddress, bool>,
         verifier: felt252,
         actions_locked: bool,
     }
