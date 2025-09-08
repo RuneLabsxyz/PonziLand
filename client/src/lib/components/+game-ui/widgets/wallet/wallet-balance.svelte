@@ -60,7 +60,7 @@
 
       const amount = CurrencyAmount.fromUnscaled(balance.toString(), token);
 
-      if (padAddress(token.address) === BASE_TOKEN) {
+      if (padAddress(token.address) === padAddress(BASE_TOKEN)) {
         totalValue += Number(amount.rawValue());
       } else {
         const priceInfo = tokenPrices.find((p) => {

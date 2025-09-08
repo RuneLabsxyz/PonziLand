@@ -31,6 +31,7 @@ export const COLORS = {
   gray: color("gray", "ansi"),
   red: color("#FA5053", "ansi"),
   blue: color("#90D5FF", "ansi"),
+  yellow: color("#FFD700", "ansi"),
   reset: "\u001b[0m",
 };
 
@@ -58,14 +59,15 @@ export async function doTransaction(call: Call | Call[]) {
   console.log(`${COLORS.gray}⏱️ Sending transaction...${COLORS.reset}`);
 
   try {
-    // Compute the tx hash for review.
+    console.log(call);
     const tx = await context!.account.execute(call, { version: 3 });
 
     console.log(`${COLORS.gray}TX: ${tx.transaction_hash}${COLORS.reset}`);
 
-    await context!.provider.waitForTransaction(tx.transaction_hash);
+    let result = await context!.provider.waitForTransaction(tx.transaction_hash);
 
     console.log(`${COLORS.green}✅ Transaction accepted! ${COLORS.reset}`);
+    return result;
   } catch (error) {
     console.error(`${COLORS.red}❌ Transaction failed! ${COLORS.reset}`);
     console.error(error);

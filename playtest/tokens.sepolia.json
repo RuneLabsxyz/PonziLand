@@ -1,34 +1,9 @@
 {
   "tokens": [
     {
-      "symbol": "pltSTRK",
-      "name": "Ponziland test STRK",
-      "address": "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901"
-    },
-    {
-      "symbol": "pltLORDS",
-      "name": "Ponziland test LORDS",
-      "address": "0x009070eac7b5791d1c3a37fa5735e3c9be55004400543f43cbb8912d835157d5"
-    },
-    {
       "symbol": "pltETH",
-      "name": "Ponziland test ETH",
-      "address": "0x01544000184b0d667f63005fee5ef39bc0514565b5580291256456db5d9e08f3"
-    },
-    {
-      "symbol": "pltPAPER",
-      "name": "Ponziland test PAPER",
-      "address": "0x02758ab836d286e13c89a434613a8d47f6e8cc20f0d2a74ae111a16553905801"
-    },
-    {
-      "symbol": "pltBROTHER",
-      "name": "Ponziland test BROTHER",
-      "address": "0x05aa6c0482d24e017d3e177a7df96528e75c158476559f1012b2e944d28e8903"
-    },
-    {
-      "symbol": "pltPAL",
-      "name": "Ponziland test PAL",
-      "address": "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d"
+      "name": "Ponziland Test ETH",
+      "address": "0x2ab967e02621a8a16a49819755275d91f09ed9f776a51fade79f7e51982a75"
     }
   ]
 }

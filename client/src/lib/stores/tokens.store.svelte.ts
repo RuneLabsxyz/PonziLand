@@ -21,7 +21,8 @@ export const setTokenBalances = (items: TokenBalance[]) => {
   console.log('setTokenBalances', items);
   const itemBalances = items.map((item) => {
     const token = data.availableTokens.find(
-      (token) => token.address === padAddress(item.contract_address),
+      (token) =>
+        padAddress(token.address) === padAddress(item.contract_address),
     );
     if (!token) {
       return null;

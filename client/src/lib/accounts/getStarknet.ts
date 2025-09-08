@@ -69,11 +69,17 @@ export abstract class CommonStarknetWallet implements AccountProvider {
   }
 
   async loadSession(storage: StoredSession): Promise<any> {
-    this._session = new Account(
-      this._wallet!,
-      storage.address,
-      storage.privateKey,
-    );
+    this._session = new Account({
+      provider: new Provider({
+        nodeUrl: getDojoConfig().rpcUrl,
+        chainId:
+          getDojoConfig().profile == 'mainnet'
+            ? SNconstants.StarknetChainId.SN_MAIN
+            : SNconstants.StarknetChainId.SN_SEPOLIA,
+      }),
+      address: storage.address,
+      signer: storage.privateKey,
+    });
   }
 
   getWalletAccount() {

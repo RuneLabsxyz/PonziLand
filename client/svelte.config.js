@@ -55,7 +55,7 @@ const profiles = {
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-sepolia/api',
+    PUBLIC_PONZI_API_URL: 'api.runelabs.xyz/ponziland-sepolia',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
@@ -94,6 +94,44 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
+  deployment: {
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
+    PUBLIC_DOJO_TORII_URL:
+      'https://' + process.env['DEPLOY_NAME'] + '.ponzis.fun/torii',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
+    PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
+    PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
+    PUBLIC_DOJO_BURNER_ADDRESS: null,
+    PUBLIC_DOJO_BURNER_PRIVATE: null,
+    BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
+    PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
+    PUBLIC_PONZI_API_URL:
+      'https://' + process.env['DEPLOY_NAME'] + '.ponzis.fun/api',
+    PUBLIC_FARO_COLLECTOR_URL:
+      'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    MANIFEST_PATH: '/etc/config/manifest.json',
+    DATA_PATH: '/etc/config/data.json',
+  },
+  deployment_local: {
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
+    PUBLIC_DOJO_TORII_URL: 'https://play.ponzis.fun/torii',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_SEPOLIA',
+    PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
+    PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
+    PUBLIC_DOJO_BURNER_ADDRESS: null,
+    PUBLIC_DOJO_BURNER_PRIVATE: null,
+    BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
+    PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'https://play.ponzis.fun/api',
+    PUBLIC_FARO_COLLECTOR_URL:
+      'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    MANIFEST_PATH: '../playtest/deployments/test/manifest.json',
+    DATA_PATH: '../playtest/deployments/test/data.json',
+  },
 };
 
 const envProfile = profiles[profile];
@@ -113,7 +151,7 @@ console.log(process.env['BYPASS_TOKEN']);
 
 const manifestPath =
   process.env['MANIFEST_PATH'] || `../contracts/manifest_${profile}.json`;
-const dataPath = `data/${profile}.json`;
+const dataPath = process.env['DATA_PATH'] || `data/${profile}.json`;
 
 console.log('Manifest: ', manifestPath);
 

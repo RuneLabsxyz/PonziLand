@@ -3,7 +3,7 @@ import { parseArgs } from "util";
 import dotenv from "dotenv";
 import { Call, RpcProvider } from "starknet";
 import { env } from "process";
-import { getLedgerAccount, getStarkliAccount } from "./account";
+import { getLedgerAccount, getStarkliAccount, getKatanaAccount, getSepoliaAccount } from "./account";
 import { exit } from "process";
 
 export type Configuration = {
@@ -12,12 +12,14 @@ export type Configuration = {
   basePath: string;
   owner: string | undefined;
   forceLedger: boolean;
+  deploymentName: string;
+  fresh: boolean;
 };
 
 async function getProvider(config: Configuration) {
   return new RpcProvider({
     nodeUrl: config.rpc ?? env.STARKNET_RPC_URL,
-    specVersion: "0.7.1",
+    specVersion: "0.8.1",
   });
 }
 
@@ -25,6 +27,12 @@ export async function getAccount(config: Configuration) {
   let provider = await getProvider(config);
   console.log(config);
 
+  if (config.environment === "katana" && !config.forceLedger) {
+    return await getKatanaAccount(provider);
+  }
+  else if (config.environment === "sepolia" && !config.forceLedger) {
+    return await getSepoliaAccount(provider);
+  }
   if (env.STARKNET_KEYSTORE !== undefined && !config.forceLedger) {
     return await getStarkliAccount(provider);
   } else {
