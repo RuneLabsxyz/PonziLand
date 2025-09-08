@@ -1,0 +1,204 @@
+{
+  "ekuboPositionType": {
+    "005-01": {
+      "name": "0.05% / 0.1%",
+      "tickSpacing": 1000,
+      "fee": "170141183460469235273462165868118016"
+    },
+    "1-2": {
+      "name": "1% / 2%",
+      "tickSpacing": 19802,
+      "fee": "3402823669209384634633746074317682114"
+    }
+  },
+  "mainCurrency": "pltSTRK",
+  "mainCurrencyAddress": "0x590471b1210ed4d6d7f52fb5985c7cdca285705edaec4c75e90dc518df88847",
+  "aiAgents": [
+  ],
+  "availableTokens": [
+    {
+      "name": "Ponziland Test STRK",
+      "symbol": "pltSTRK",
+      "address": "0x590471b1210ed4d6d7f52fb5985c7cdca285705edaec4c75e90dc518df88847",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "strk",
+        "icon": "/tokens/pltSTRK/icon.png",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test LORDS",
+      "symbol": "pltLORDS",
+      "address": "0x4a35158b911ea05cc6bbd5880620164ff36a4da261760ad0b8d5bd408bc86",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "lords",
+        "icon": "/tokens/pltLORDS/icon.svg",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test ETH",
+      "symbol": "pltETH",
+      "address": "0x19725b174acd3287723e403c53b7b19166b3bffd898e8c99c2d0b4e6d9777bc",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "eth",
+        "icon": "/tokens/pltETH/icon.svg",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test PAPER",
+      "symbol": "pltPAPER",
+      "address": "0x3385bd7ba262721607c34c26ce79aeb39e85240d1abe2ea7245d5dc8f03e1e6",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "paper",
+        "icon": "/tokens/pltPAPER/icon.svg",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test BROTHER",
+      "symbol": "pltBROTHER",
+      "address": "0x3992409e7f765d09aa473e4950348c3af9b39ea8187dbda53249313d5f3fda1",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "brother",
+        "icon": "/tokens/pltBROTHER/icon.png",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    },
+    {
+      "name": "Ponziland Test PAL",
+      "symbol": "pltPAL",
+      "address": "0x6fdc7a52b46204249eb307d1b3648ee1e598acefc90eddf2c5729da052263a6",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "images": {
+        "skin": "pal",
+        "icon": "/tokens/pltPAL/icon.svg",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5
+          }
+        }
+      }
+    }
+  ],
+  "commonImages": {
+    "logo": "/images/logo.png",
+    "background": "/images/background.jpg",
+    "icons": {
+      "wallet": "/images/icons/wallet.svg",
+      "settings": "/images/icons/settings.svg"
+    }
+  },
+  "address_blacklist": [
+  ]
+}
