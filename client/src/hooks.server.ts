@@ -17,6 +17,18 @@ export function isMaintenanceModeEnabled(
   const isBeforeClosingDate = endDate === undefined || now < endDate;
   const noStartAndEnd = startDate === undefined && endDate === undefined;
 
+  console.warn('Maintenance Debug', {
+    bypassToken,
+    now,
+    startDate,
+    endDate,
+    noBypass,
+    currentlyBuilding,
+    isAfterDateGate,
+    isBeforeClosingDate,
+    noStartAndEnd,
+  });
+
   if (
     noBypass ||
     currentlyBuilding ||
