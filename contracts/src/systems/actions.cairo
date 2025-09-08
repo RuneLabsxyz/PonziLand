@@ -554,7 +554,6 @@ pub mod actions {
                 }
                 i += 1;
             };
-
             self.stake._reimburse(store, active_lands.span());
             self.reentrancy_guard.end();
         }
@@ -768,6 +767,7 @@ pub mod actions {
             mut store: Store,
             mut land: Land,
             ref land_stake: LandStake,
+            mut land_stake_before_claim: u256,
             has_liquidity_requirements: bool,
             current_time: u64,
             our_contract_address: ContractAddress,
@@ -780,13 +780,14 @@ pub mod actions {
             if !has_liquidity_requirements && land_stake.amount >= 0 {
                 self.stake._refund(store, land, our_contract_address);
                 land_stake = store.land_stake(land.location);
+                land_stake_before_claim = land_stake.amount;
             }
 
             assert(land_stake.amount == 0, 'land not valid to nuke');
             //Last claim for nuked land
             for neighbor in neighbors {
                 let mut neighbor_stake = store.land_stake(*neighbor.location);
-
+                let neighbor_stake_before_claim = neighbor_stake.amount;
                 if *neighbor.owner != ContractAddressZeroable::zero()
                     && neighbor_stake.amount > 0
                     && *neighbor.location != land.location {
@@ -807,22 +808,38 @@ pub mod actions {
 
                     // Handle dead land detection - when a land becomes isolated with zero stake
                     if is_dead {
-                        self._delete_land_and_create_auction(store, *neighbor, neighbor_stake);
+                        self
+                            ._delete_land_and_create_auction(
+                                store, *neighbor, neighbor_stake, neighbor_stake_before_claim,
+                            );
                     }
                 }
             };
 
             // Reuse common deletion and auction creation logic
-            self._delete_land_and_create_auction(store, land, land_stake);
+            self._delete_land_and_create_auction(store, land, land_stake, land_stake_before_claim);
             // Update neighbor info after deleting the land
             update_neighbors_after_delete(store, neighbors);
         }
 
         fn _delete_land_and_create_auction(
-            ref self: ContractState, mut store: Store, land: Land, land_stake: LandStake,
+            ref self: ContractState,
+            mut store: Store,
+            land: Land,
+            land_stake: LandStake,
+            land_stake_before_claim: u256,
         ) {
             let owner_nuked = land.owner;
             store.delete_land(land, land_stake);
+
+            if land_stake_before_claim > 0 {
+                let token_info = TokenInfo {
+                    token_address: land.token_used, amount: land_stake_before_claim,
+                };
+                self.stake._discount_stake_for_nuke(token_info);
+            }
+
+            self.staked_lands.write(land.location, false);
 
             store.world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
 
@@ -849,7 +866,7 @@ pub mod actions {
             if neighbors.len() != 0 {
                 for mut tax_payer in neighbors {
                     let mut tax_payer_stake = store.land_stake(*tax_payer.location);
-
+                    let tax_payer_stake_before_claim = tax_payer_stake.amount;
                     let is_nuke = self
                         .taxes
                         .claim(
@@ -876,6 +893,7 @@ pub mod actions {
                                 store,
                                 *tax_payer,
                                 ref tax_payer_stake,
+                                tax_payer_stake_before_claim,
                                 has_liquidity_requirements,
                                 current_time,
                                 our_contract_address,
