@@ -13,7 +13,7 @@ permissions:
 jobs:
   test-contracts:
     name: Run contract tests
-    runs-on: ubicloud-standard-16
+    runs-on: ubicloud-standard-16-ubuntu-2404
 
     steps:
       - name: Setup repo
