@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "test_313277088"
+seed = "quests_149869680"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -34,12 +34,12 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 "ponzi_land-token_registry" = [
     "6",                                                                  # 6 tokens,
-    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # pltSTRK
-    "0x7d08c149ba47a718f4633292931c8ada04c71bd3e901f081adea0c92078b5f", # pltLORDS
-    "0x13a8f0c28d9d769e64242ff27e369004267bca4c91c3a1eb1ea98dd0d6b72bc", # pltETH
-    "0x5d1e76ca74dfa90352e3f1f92c3a8854a8efdc4eaad22b79b78c7cea8c338c", # pltPAPER
-    "0x77eee06fb345c21e343af44ab866f80ad2aad7d25ef24cbbfd936a172f7afb2", # pltBROTHER
-    "0x16b751da6619441bb869b891611a4fcf7221d3a98b2500d9fe052c8f87c71f3", # pltPAL
+    "0x721346af6638d27bd92e1bbfbf738bfd4b3f857243341cd0a88ab8d877f940b", # pltSTRK
+    "0x1c3ca54a05ccb11bf4dacf1da2bbe7330717094964cd348a98368fe5dc2a693", # pltLORDS
+    "0x66ae744e2d1f543fb7bfbdd26ef7bc8cd404cbc2e5271939858bc31e5afd632", # pltETH
+    "0x60e9f02b7ba27a5a2751a4720146ca48a948fa461c03ef1dffeb70956921c1f", # pltPAPER
+    "0xa9e89bb5381275576c01066f40dbb55cdf6abace1019b4050d8edce3b1577d", # pltBROTHER
+    "0x5d2da411e34ad02c50a00997faa8b696064f81493dffa15d98845a2c5b0b0ab", # pltPAL
 ]
 
 "ponzi_land-config" = [
@@ -65,7 +65,7 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",                                                      # Our contract for fee
     "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",                                                  # Our contract for auction
     "10",                                                       # Claim fee threshold
-    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # Main token
+    "0x721346af6638d27bd92e1bbfbf738bfd4b3f857243341cd0a88ab8d877f940b", # Main token
 ]
 "ponzi_land-actions" = [
     "128000000000000000000",                                              # Start price (low)
@@ -73,7 +73,7 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "1000000000000000000",                                                # Floor price (low)
     "0",                                                                  # Floor price (high)
     "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
-    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # Main token
+    "0x721346af6638d27bd92e1bbfbf738bfd4b3f857243341cd0a88ab8d877f940b", # Main token
 ]
 
 # External contract deployment - Liquidity Reinjector (non-Dojo contract)
