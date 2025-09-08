@@ -87,14 +87,6 @@
 </div>
 
 <style>
-  @font-face {
-    font-family: 'PonziNumber';
-    src: url('@/fonts/PonziNumber_Regular_G7.ttf') format('truetype');
-    font-weight: 400;
-    font-style: normal;
-    font-display: swap;
-  }
-
   .wallet-info-container {
     position: fixed;
     top: 0;
