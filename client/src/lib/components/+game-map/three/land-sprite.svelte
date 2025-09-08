@@ -395,54 +395,66 @@
     return tiles;
   });
 
-  // Cache ownership data to avoid repeated store calls
-  let ownershipCache = $state<{
-    address: string | null;
-    ownedIndicesSet: Set<number>;
-    lastUpdate: number;
-  }>({
-    address: null,
-    ownedIndicesSet: new Set(),
-    lastUpdate: 0,
-  });
+  // Reactive ownership data based on store ownership index
+  let ownedIndicesSet = $state(new Set<number>());
+  let currentSubscription: (() => void) | null = null;
+  let lastAddress: string | undefined = undefined;
 
-  // Update ownership cache when address changes
   $effect(() => {
-    const currentAddress = accountState.address ?? null;
-    if (currentAddress !== ownershipCache.address) {
-      const ownedIndices = accountState.address
-        ? store.getOwnedLandIndices(accountState.address)
-        : [];
-      ownershipCache = {
-        address: currentAddress,
-        ownedIndicesSet: new Set(ownedIndices),
-        lastUpdate: Date.now(),
-      };
+    const currentAddress = accountState.address;
+
+    // Only update subscription if address changed
+    if (currentAddress !== lastAddress) {
+      // Clean up previous subscription
+      if (currentSubscription) {
+        currentSubscription();
+        currentSubscription = null;
+      }
+
+      lastAddress = currentAddress;
+
+      if (currentAddress) {
+        // Create new subscription for this address
+        const ownedIndicesStore =
+          store.getOwnedLandIndicesStore(currentAddress);
+        currentSubscription = ownedIndicesStore.subscribe((indices) => {
+          ownedIndicesSet = new Set(indices);
+        });
+      } else {
+        ownedIndicesSet = new Set<number>();
+      }
     }
+
+    // Cleanup on unmount
+    return () => {
+      if (currentSubscription) {
+        currentSubscription();
+      }
+    };
   });
 
-  // Optimized coin tiles using cached ownership data
+  // Optimized coin tiles using reactive ownership data
   let ownedCoinTiles = $derived.by(() => {
     if (
-      !ownershipCache.address ||
+      !accountState.address ||
       !visibleLandTiles ||
-      ownershipCache.ownedIndicesSet.size === 0
+      ownedIndicesSet.size === 0
     )
       return [];
 
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
       const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
-      return ownershipCache.ownedIndicesSet.has(landIndex);
+      return ownedIndicesSet.has(landIndex);
     });
   });
 
   // Optimized owned land indices calculation
   let ownedLandIndices = $derived.by(() => {
     if (
-      !ownershipCache.address ||
+      !accountState.address ||
       !visibleLandTiles ||
-      ownershipCache.ownedIndicesSet.size === 0
+      ownedIndicesSet.size === 0
     )
       return [];
 
@@ -451,7 +463,7 @@
       if (BuildingLand.is(tile.land)) {
         const landIndex =
           tile.land.location.x * GRID_SIZE + tile.land.location.y;
-        if (ownershipCache.ownedIndicesSet.has(landIndex)) {
+        if (ownedIndicesSet.has(landIndex)) {
           ownedVisibleIndices.push(index);
         }
       }
