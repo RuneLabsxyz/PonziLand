@@ -42,6 +42,7 @@
 </script>
 
 <div class="wallet-info-container">
+  <span class="connected">Connected</span>
   <div class="wallets-stack">
     {#if accountDataProvider.isConnected}
       <Card>
@@ -86,11 +87,23 @@
 </div>
 
 <style>
+  @font-face {
+    font-family: 'PonziNumber';
+    src: url('@/fonts/PonziNumber_Regular_G7.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+
   .wallet-info-container {
     position: fixed;
     top: 0;
     right: 0;
     margin: 1.25rem;
+  }
+
+  .connected {
+    font-family: 'PonziNumber', sans-serif;
   }
 
   .account-details {
