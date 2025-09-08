@@ -1,27 +1,18 @@
 <script lang="ts">
+  import accountState from '$lib/account.svelte';
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
-  import accountState from '$lib/account.svelte';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   import { Button } from '$lib/components/ui/button';
+  import { GRID_SIZE } from '$lib/const';
+  import { loadingStore } from '$lib/stores/loading.store.svelte';
   import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
-
-  // Allow passing a custom land store (for tutorials)
-  interface Props {
-    store?: typeof landStore;
-  }
-
-  let { store = landStore }: Props = $props();
   import { T, useTask } from '@threlte/core';
-  import {
-    HTML,
-    InstancedMesh,
-    InstancedSprite,
-    buildSpritesheet,
-    type SpritesheetMetadata,
-  } from '@threlte/extras';
+  import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
   import { onMount } from 'svelte';
   import {
+    Clock,
+    Color,
     Group,
     MeshBasicMaterial,
     NearestFilter,
@@ -29,30 +20,27 @@
     PlaneGeometry,
     InstancedMesh as TInstancedMesh,
     TextureLoader,
-    Color,
   } from 'three';
   import LandRatesOverlay from '../land/land-rates-overlay.svelte';
-  import LandTileSprite from './land-tile-sprite.svelte';
-  import { biomeAtlasMeta } from './biomes';
-  import { buildingAtlasMeta } from './buildings';
+  import AuctionIndicator from './auction-indicator.svelte';
+  import Clouds from './clouds.svelte';
   import Coin from './coin.svelte';
-  import RoadSprite from './road-sprite.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
+  import LandTileSprite from './land-tile-sprite.svelte';
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
-  import OwnerIndicator from './owner-indicator.svelte';
-  import AuctionIndicator from './auction-indicator.svelte';
   import NukeTimeDisplay from './nuke-time-display.svelte';
-  import { devsettings } from './utils/devsettings.store.svelte';
+  import OwnerIndicator from './owner-indicator.svelte';
+  import RoadSprite from './road-sprite.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
-  import { Clock } from 'three';
-  import { GRID_SIZE } from '$lib/const';
-  import { configValues } from '$lib/stores/config.store.svelte';
-  import Clouds from './clouds.svelte';
-  import { loadingStore } from '$lib/stores/loading.store.svelte';
+  import { devsettings } from './utils/devsettings.store.svelte';
+  import { SvelteSet } from 'svelte/reactivity';
+  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
+
+  let { store = landStore }: { store?: LandTileStore } = $props();
 
   /**
    * Generate land positions in concentric circles around center
@@ -165,7 +153,7 @@
   });
 
   onMount(() => {
-    landStore.getAllLands().subscribe((tiles) => {
+    store.getAllLands().subscribe((tiles) => {
       landTiles = tiles.map((tile) => {
         let tokenSymbol = 'empty';
         let skin = 'default';
@@ -396,7 +384,7 @@
   });
 
   // Reactive ownership data based on store ownership index
-  let ownedIndicesSet = $state(new Set<number>());
+  let ownedIndicesSet = $state(new SvelteSet<number>());
   let currentSubscription: (() => void) | null = null;
   let lastAddress: string | undefined = undefined;
 
@@ -418,10 +406,10 @@
         const ownedIndicesStore =
           store.getOwnedLandIndicesStore(currentAddress);
         currentSubscription = ownedIndicesStore.subscribe((indices) => {
-          ownedIndicesSet = new Set(indices);
+          ownedIndicesSet = new SvelteSet(indices);
         });
       } else {
-        ownedIndicesSet = new Set<number>();
+        ownedIndicesSet = new SvelteSet<number>();
       }
     }
 
