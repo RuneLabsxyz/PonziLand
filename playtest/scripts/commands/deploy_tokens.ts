@@ -56,7 +56,7 @@ export async function  deployToken(config: Configuration, args: string[]) {
 
         // Get the contract class to access ABI
         let contractClass = await file(
-          `${config.basePath}/old-tokens/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
+          `${config.basePath}/token-contracts/target/dev/testerc20_testerc20_PlayTestToken.contract_class.json`,
         ).json();
 
         // Create contract instance
