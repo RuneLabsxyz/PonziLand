@@ -1,19 +1,24 @@
 <script lang="ts">
   import { cn } from '$lib/utils.js';
   import { Select as SelectPrimitive } from 'bits-ui-old';
+  import { selectVariants, type SelectProps } from './select-variants.js';
+  import { getContext } from 'svelte';
 
-  type $$Props = SelectPrimitive.TriggerProps;
+  type $$Props = SelectPrimitive.TriggerProps & SelectProps;
   type $$Events = SelectPrimitive.TriggerEvents;
 
   let className: $$Props['class'] = undefined;
+  export let variant: $$Props['variant'] = undefined;
   export { className as class };
+
+  // Get variant from context or use explicit prop or default
+  const contextVariant = getContext<$$Props['variant']>('select-variant');
+  $: finalVariant = variant ?? contextVariant ?? 'default';
+  $: styles = selectVariants({ variant: finalVariant });
 </script>
 
 <SelectPrimitive.Trigger
-  class={cn(
-    'text-xl ring-offset-background focus-visible:ring-ring aria-[invalid]:border-destructive data-[placeholder]:[&>span]:text-muted-foreground flex h-10 w-full items-center justify-between rounded-md px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
-    className,
-  )}
+  class={cn(styles.trigger(), className)}
   {...$$restProps}
   let:builder
   on:click
