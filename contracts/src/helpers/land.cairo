@@ -1,7 +1,7 @@
-use starknet::ContractAddress;
 use ponzi_land::models::land::{Land, LandStake};
-use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
 use ponzi_land::store::{Store, StoreTrait};
+use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
+use starknet::ContractAddress;
 
 
 #[inline(always)]

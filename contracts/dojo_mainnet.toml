@@ -4,13 +4,13 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://ponzi.land"
-seed = "ponzi_land-testing-3"
+seed = "ponzi_land-final"
 
 [world.socials]
 x = "https://x.com/ponzidotland"
 discord = "https://discord.gg/ponziland"
 github = "https://github.com/Runelabsxyz/PonziLand"
-telegram = "https://t.me/dojoengine"
+telegram = "https://t.me/+omS4uFHTBEY4OWI0"
 
 [namespace]
 default = "ponzi_land"
@@ -32,17 +32,16 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 
 [writers]
 # We need to be a writer to add events...
-"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth"]
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
 
 [init_call_args]
 "ponzi_land-actions" = [
-    "0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # Token address (eSTRK)
-    "128000000000000000000",                                              # start price (low)
-    "0",                                                                  # start price (high)
-    "1000000000000000000",                                                # floor price (low)
-    "0",                                                                  # floor price (high)
-    "100",                                                                # Decay rate (100)
-    "0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b", # Ekubo core contract address
+    "128000000000000000000",                                              # Start price (low)
+    "0",                                                                  # Start price (high)
+    "1000000000000000000",                                                # Floor price (low)
+    "0",                                                                  # Floor price (high)
+    "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
+    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main currency
 ]
 
 "ponzi_land-auth" = [
@@ -50,9 +49,48 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 ]
 
 "ponzi_land-token_registry" = [
-    "7",                                                                  # 4 tokens,
-    "0x05735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58", # nftSTRK
-    "0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e",  # ePAPER
-    "0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4",  # eLORDS
-    "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5",  # eBROTHER
+    "15",                                                                  # 15 tokens,
+    "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7",  # ETH
+    "0x2ab526354a39e7f5d272f327fa94e757df3688188d4a92c6dc3623ab79894e2",   # SLAY
+    "0x040E81cfeB176BFDbc5047BBC55eb471CFAb20a6B221f38d8fDa134E1bFFFca4",  # DOG
+    "0x1e70aedffd376afe33cebdf51ed5365131dccb2a5b2cb36d02b785442912b9b",   # SOL
+    "0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",   # BROTHER
+    "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",  # LORDS
+    "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",  # STRK
+    "0x075afe6402ad5a5c20dd25e10ec3b3986acaa647b77e4ae24b0cbc9a54a27a87",  # EKUBO
+    "0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",   # PAL
+    "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac",  # BTC
+    "0x781bddf077f25a53411d567093f63f9a839ec9e6bc4d99d9240cf742b98b0e8",   # BONK
+    "0x102d5e124c51b936ee87302e0f938165aec96fb6c2027ae7f3a5ed46c77573b",   # SISTER
+    "0x4fcaf2a7b4a072fe57c59beee807322d34ed65000d78611c909a46fead07fb1",   # DREAMS
+    "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",  # USDC
+    "0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2",  # SCHIZO
+]
+
+"ponzi_land-config" = [
+    "2",                                                                  # Tax rate
+    "3600",                                                               # Base time
+    "2",                                                                  # Price decrease rate
+    "5",                                                                  # Time speed
+    "16",                                                                 # Max auctions
+    "3",                                                                  # Max auctions from bid
+    "200",                                                                # Decay rate
+    "100000000000000000",
+    "0",                                                                  # Floor price
+    "3",                                                                  # Liquidity safety multiplier
+    "500000000000000000000",
+    "0",                                                                  # Min auction price
+    "10",                                                                 # Min auction price multiplier
+    "436800",                                                             # Auction duration
+    "50",                                                                 # Scaling factor
+    "12000",                                                              # Linear time decay
+    "90",                                                                 # Drop rate
+    "100",                                                                # Rate denominator
+    "5",                                                                  # Max circles
+    "250000",                                                             # Claim fee (2.5%)
+    "500000",                                                             # Buy fee (5%)
+    "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d", # Our contract for fee
+    "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d", # Our contract for auction
+    "1000",                                                               # Claim fee threshold
+    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
 ]

@@ -13,10 +13,9 @@ pub trait IEkuboCoreTesting<TContractState> {
 
 #[starknet::contract]
 mod MockEkuboCore {
-    use starknet::{ContractAddress, get_caller_address};
     use ekubo::types::keys::PoolKey;
-
     use starknet::storage::{Map, StoragePointerReadAccess, StoragePointerWriteAccess};
+    use starknet::{ContractAddress, get_caller_address};
 
     #[storage]
     struct Storage {

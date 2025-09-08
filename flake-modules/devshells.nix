@@ -20,7 +20,7 @@
 
         # Cairo/Starknet tools
         cairo-nix.dojo
-        cairo-nix.scarb
+        cairo-nix.scarb-nightly
         cairo-nix.starkli
         cairo-nix.slot
 
@@ -57,6 +57,7 @@
           pkgs.stdenv.cc.cc.lib
           pkgs.glibc
           pkgs.libgccjit
+          pkgs.udev
         ];
       };
 

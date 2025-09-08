@@ -22,7 +22,7 @@ jobs:
       - id: setup-dojo
         uses: runelabsxyz/setup-dojo@main
         with:
-          version: "v1.6.0-alpha.2"
+          version: "1.7.0-alpha.2"
 
       - name: Build contract
         working-directory: ./contracts

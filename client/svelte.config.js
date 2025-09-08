@@ -79,8 +79,7 @@ const profiles = {
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
-    PUBLIC_DOJO_TORII_URL:
-      'https://api.cartridge.gg/x/ponziland-tourney-2/torii',
+    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-mainnet/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
@@ -89,7 +88,7 @@ const profiles = {
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'https://api.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-mainnet/api',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,

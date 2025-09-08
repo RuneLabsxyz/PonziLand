@@ -15,54 +15,54 @@ use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDis
 #[starknet::component]
 mod TaxesComponent {
     // Core Cairo imports
-    use core::num::traits::Bounded;
     use core::array::ArrayTrait;
-
-    // Starknet imports
-    use starknet::ContractAddress;
-    use starknet::info::{get_block_timestamp};
-    use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry, Vec, VecTrait,
-        MutableVecTrait,
-    };
-    use starknet::contract_address::ContractAddressZeroable;
+    use core::num::traits::Bounded;
+    use dojo::event::EventStorage;
 
     // Dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
-    use dojo::event::EventStorage;
     use dojo::world::WorldStorage;
 
-    // External dependencies
-    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
+    // Components
+    use ponzi_land::components::payable::{IPayable, PayableComponent, ValidationResult};
+
+    // Errors
+    use ponzi_land::errors::{ERC20_TRANSFER_CLAIM_FAILED};
+
+    // Events
+    use ponzi_land::events::LandTransferEvent;
+
+    // Helpers
+    use ponzi_land::helpers::coord::max_neighbors;
+    use ponzi_land::helpers::land::remove_neighbor;
+    use ponzi_land::helpers::taxes::{
+        calculate_and_return_taxes_with_fee, calculate_share_for_nuke, get_tax_rate_per_neighbor,
+        get_taxes_per_neighbor,
+    };
 
     // Models
     use ponzi_land::models::land::{Land, LandStake};
-
-    // Components
-    use ponzi_land::components::payable::{PayableComponent, IPayable, ValidationResult};
 
     // Store
     use ponzi_land::store::{Store, StoreTrait};
 
     // Utils
     use ponzi_land::utils::common_strucs::{TokenInfo};
-    use ponzi_land::utils::math::{u64_saturating_sub, u64_saturating_add, u256_saturating_mul};
-    use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
     use ponzi_land::utils::get_neighbors::get_land_neighbors;
+    use ponzi_land::utils::math::{u256_saturating_mul, u64_saturating_add, u64_saturating_sub};
+    use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
 
-    // Helpers
-    use ponzi_land::helpers::coord::max_neighbors;
-    use ponzi_land::helpers::land::{remove_neighbor};
-    use ponzi_land::helpers::taxes::{
-        get_taxes_per_neighbor, get_tax_rate_per_neighbor, calculate_share_for_nuke,
-        calculate_and_return_taxes_with_fee,
+    // Starknet imports
+    use starknet::ContractAddress;
+    use starknet::contract_address::ContractAddressZeroable;
+    use starknet::info::get_block_timestamp;
+    use starknet::storage::{
+        Map, MutableVecTrait, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
+        Vec, VecTrait,
     };
 
-    // Events
-    use ponzi_land::events::LandTransferEvent;
-
-    // Errors
-    use ponzi_land::errors::{ERC20_TRANSFER_CLAIM_FAILED};
+    // External dependencies
+    use super::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
     #[storage]
     struct Storage {
@@ -396,7 +396,7 @@ mod TaxesComponent {
                 total_fee_amount += fee_amount.into();
                 tax_amount_for_neighbor.append((neighbor_address, share_for_neighbor));
                 total_shares_calculated += share_for_neighbor;
-            };
+            }
 
             // Add remainder from precision loss to fees
             let distributed_total = total_shares_calculated + total_fee_amount;
@@ -455,7 +455,7 @@ mod TaxesComponent {
                 if current_remaining_time < min_remaining_time {
                     min_remaining_time = current_remaining_time;
                 }
-            };
+            }
 
             if min_remaining_time == 0 {
                 return current_time;
@@ -494,7 +494,7 @@ mod TaxesComponent {
                     tax_for_claimer += tax_per_neighbor;
                     elapsed_time_claimer = elapsed_time;
                 }
-            };
+            }
 
             (
                 total_taxes,
@@ -519,7 +519,7 @@ mod TaxesComponent {
             let mut total_to_distribute: u256 = 0;
             for (_, tax_amount) in neighbors_of_nuked_land {
                 total_to_distribute += *tax_amount;
-            };
+            }
             assert(total_to_distribute <= nuked_land_stake.amount, 'Distribution of nuke > stake');
 
             for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
@@ -664,7 +664,7 @@ mod TaxesComponent {
                     earliest_claim_time = elapsed_time;
                     earliest_claim_location = *neighbor.location;
                 };
-            };
+            }
             (earliest_claim_time, earliest_claim_location)
         }
 

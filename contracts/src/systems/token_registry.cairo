@@ -29,13 +29,13 @@ pub trait ITokenRegistry<T> {
 #[dojo::contract]
 pub mod token_registry {
     // Starknet imports
-    use starknet::{ContractAddress, get_caller_address};
-    use starknet::storage::{
-        Map, StoragePointerReadAccess, StoragePointerWriteAccess, StoragePathEntry,
-    };
 
     // Dojo imports
-    use dojo::world::{WorldStorage, IWorldDispatcher, IWorldDispatcherTrait};
+    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorage};
+    use starknet::storage::{
+        Map, StoragePathEntry, StoragePointerReadAccess, StoragePointerWriteAccess,
+    };
+    use starknet::{ContractAddress, get_caller_address};
 
     // Local imports
     use super::{ITokenRegistry};
