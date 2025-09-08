@@ -79,7 +79,8 @@ const profiles = {
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
-    PUBLIC_DOJO_TORII_URL: 'https://api.cartridge.gg/x/ponziland-mainnet/torii',
+    PUBLIC_DOJO_TORII_URL:
+      'https://api.cartridge.gg/x/ponziland-mainnet-world/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
