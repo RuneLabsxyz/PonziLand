@@ -994,29 +994,52 @@ fn check_invalid_liquidity_pool() {
     verify_land(store, CENTER_LOCATION, NEW_BUYER(), 100, 120, 100, main_currency.contract_address);
 }
 
-
+#[test]
 fn test_reimburse_stakes() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+        setup_test();
 
     set_block_timestamp(10);
-    ekubo_testing_dispatcher
-        .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100000,
-        );
+    set_block_number(10);
+    setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
+    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
 
-    set_block_timestamp(200);
-
-    initialize_land(
-        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 500, main_currency,
+    let next_location_1 = initialize_land_and_capture_next_auction(
+        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 500, main_currency,
+    );
+    let next_location_2 = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        next_location_1,
+        100,
+        500,
+        erc20_neighbor_1,
+    );
+    initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_2(),
+        next_location_2,
+        100,
+        500,
+        erc20_neighbor_2,
     );
 
-    let land_locations = array![CENTER_LOCATION];
-    let tokens = array![main_currency];
+    let land_locations = array![CENTER_LOCATION, next_location_1, next_location_2];
+    let tokens = array![main_currency, erc20_neighbor_1, erc20_neighbor_2];
 
     validate_staking_state(
         store, actions_system.contract_address, land_locations.span(), tokens.span(), true,
     );
-
+    set_contract_address(0x0.try_into().unwrap());
     actions_system.reimburse_stakes();
 
     validate_staking_state(

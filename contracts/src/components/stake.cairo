@@ -135,18 +135,17 @@ mod StakeComponent {
             self.token_ratios.read(token_address)
         }
 
-        fn _discount_total_stake(ref self: ComponentState<TContractState>, taxes: Span<TokenInfo>) {
-            for token_info in taxes {
-                let token_info = *token_info;
-                let current_total = self.token_stakes.read(token_info.token_address);
-                if current_total >= token_info.amount {
-                    self
-                        .token_stakes
-                        .write(token_info.token_address, current_total - token_info.amount);
-                } else {
-                    panic!("Attempting to discount more than what's staked");
-                }
-            };
+        fn _discount_stake_for_nuke(
+            ref self: ComponentState<TContractState>, token_info: TokenInfo,
+        ) {
+            let current_total = self.token_stakes.read(token_info.token_address);
+            if current_total >= token_info.amount {
+                self
+                    .token_stakes
+                    .write(token_info.token_address, current_total - token_info.amount);
+            } else {
+                panic!("Attempting to discount more than what's staked");
+            }
         }
 
         fn __generate_token_ratio(
