@@ -2,23 +2,19 @@
   import SwapModal from '$lib/components/swap/swap-modal.svelte';
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
   import data from '$profileData';
   import { padAddress } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
+  import { walletStore } from '$lib/stores/wallet.svelte';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
     token: Token;
   }>();
 
-  let tokenPrice = $derived(
-    tokenStore.prices.find((p) => {
-      return padAddress(p.address) === padAddress(token.address);
-    }),
-  );
+  let tokenPrice = $derived(walletStore.getPrice(token.address));
   let baseTokenValue = $derived.by(() => {
     const rawValue = tokenPrice?.ratio
       ? CurrencyAmount.fromUnscaled(amount, token)

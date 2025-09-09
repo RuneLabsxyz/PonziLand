@@ -2,7 +2,7 @@
   import type { LandWithActions } from '$lib/api/land';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import { baseToken } from '$lib/stores/tokens.store.svelte';
+  import { baseToken } from '$lib/stores/wallet.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import LandOverview from '../land-overview.svelte';
 

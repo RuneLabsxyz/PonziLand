@@ -17,7 +17,9 @@ export const WIDGETS_STORAGE_KEY = 'ponziland-widgets-state';
 
 // Environment constants
 export const NAME_SPACE = 'ponzi_land';
-export const AI_AGENT_ADDRESSES = data.aiAgents.map((agent) => agent.address);
+export const AI_AGENT_ADDRESSES = data.aiAgents.map(
+  (agent) => (agent as any).address,
+);
 
 //TODO: to regulate the size of the map we have to use the MAX_CIRCLE CONST
 export const GRID_SIZE = 255;

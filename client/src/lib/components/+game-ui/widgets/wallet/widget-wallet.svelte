@@ -6,6 +6,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress, shortenHex } from '$lib/utils';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import { ENABLE_TOKEN_DROP } from '$lib/flags';
 
   setup();
 
@@ -73,12 +74,13 @@
       <img src="/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
     </button>
   </div>
-  <div class="flex">
-    <Button size="md" class="w-full mt-2" onclick={openNftLink}
-      >Claim token drop</Button
-    >
-  </div>
-
+  {#if ENABLE_TOKEN_DROP}
+    <div class="flex">
+      <Button size="md" class="w-full mt-2" onclick={openNftLink}
+        >Claim token drop</Button
+      >
+    </div>
+  {/if}
   <WalletBalance />
 {:else}
   <Button

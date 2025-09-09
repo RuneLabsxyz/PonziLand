@@ -8,4 +8,7 @@ export default defineConfig({
         conditions: ['browser'],
       }
     : undefined,
+  test: {
+    globals: true,
+  },
 });

@@ -1,35 +1,15 @@
 <script lang="ts">
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
-  import { padAddress } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
-  import data from '$profileData';
-  import { coinbit } from '@reown/appkit/networks';
   import { gameSounds } from '$lib/stores/sfx.svelte';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
     token: Token;
   }>();
-
-  let tokenPrice = $derived(
-    tokenStore.prices.find((p) => {
-      return padAddress(p.address) === padAddress(token.address);
-    }),
-  );
-  let baseTokenValue = $derived.by(() => {
-    const rawValue = tokenPrice?.ratio
-      ? CurrencyAmount.fromUnscaled(amount, token)
-          .rawValue()
-          .dividedBy(tokenPrice.ratio)
-      : CurrencyAmount.fromUnscaled(amount, token).rawValue();
-
-    const cleanedValue = displayCurrency(rawValue);
-    return cleanedValue;
-  });
 
   let animating = $state(false);
   let increment = $state(0);

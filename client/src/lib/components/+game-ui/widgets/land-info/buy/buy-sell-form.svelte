@@ -6,7 +6,7 @@
   import SelectItem from '$lib/components/ui/select/select-item.svelte';
   import SelectTrigger from '$lib/components/ui/select/select-trigger.svelte';
   import type { Token } from '$lib/interfaces';
-  import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { baseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
 
@@ -48,19 +48,12 @@
     }
 
     // get selected token balance from tokenStore balance
-    const selectedTokenBalance = tokenStore.balances.find(
-      (balance) => balance.token.address == selectedToken?.address,
-    );
+    const selectedTokenBalance = walletStore.getBalance(selectedToken?.address);
 
     if (!selectedTokenBalance) {
       error = "You don't have any of this token";
       return false;
     }
-
-    const selectedTokenAmount = CurrencyAmount.fromUnscaled(
-      selectedTokenBalance?.balance,
-      selectedToken,
-    );
 
     // Check if the land's current price is affordable
     if (land.type === 'auction') {
@@ -71,19 +64,19 @@
         return false;
       }
       if (
-        selectedTokenAmount
+        selectedTokenBalance
           .rawValue()
           .isLessThan(currentAuctionPrice.rawValue())
       ) {
-        error = `This land is too expensive. Current auction price: ${currentAuctionPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
+        error = `This land is too expensive. Current auction price: ${currentAuctionPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenBalance.toString()} ${selectedToken.symbol}`;
         return false;
       }
     } else if (
       land.sellPrice &&
       land.token &&
-      selectedTokenAmount.rawValue().isLessThan(land.sellPrice.rawValue())
+      selectedTokenBalance.rawValue().isLessThan(land.sellPrice.rawValue())
     ) {
-      error = `This land is too expensive. Current price: ${land.sellPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
+      error = `This land is too expensive. Current price: ${land.sellPrice.toString()} ${land.token.symbol}. Your balance: ${selectedTokenBalance.toString()} ${selectedToken.symbol}`;
       return false;
     }
 
@@ -100,8 +93,8 @@
       totalRequired = parsedStake + parsedSell;
     }
 
-    if (selectedTokenAmount.rawValue().isLessThan(totalRequired)) {
-      error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, ${land.type === 'auction' ? 'current auction price' : 'price'}: ${land.type === 'auction' ? (await land.getCurrentAuctionPrice())?.toString() : parsedSell}). Your balance: ${selectedTokenAmount.toString()} ${selectedToken.symbol}`;
+    if (selectedTokenBalance.rawValue().isLessThan(totalRequired)) {
+      error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, ${land.type === 'auction' ? 'current auction price' : 'price'}: ${land.type === 'auction' ? (await land.getCurrentAuctionPrice())?.toString() : parsedSell}). Your balance: ${selectedTokenBalance.toString()} ${selectedToken.symbol}`;
       return false;
     }
 
