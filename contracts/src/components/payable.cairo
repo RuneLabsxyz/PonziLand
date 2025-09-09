@@ -41,14 +41,6 @@ trait IPayable<TContractState> {
         self: @TContractState, recipient: ContractAddress, validation_result: ValidationResult,
     ) -> bool;
 
-    /// @notice Transfer tokens to the contract when auctioning a land
-    /// @param sender The account sending tokens
-    /// @param validation_result Pre-validated transfer details
-    /// @return bool True if transfer was successful
-    fn pay_to_us(
-        self: @TContractState, sender: ContractAddress, validation_result: ValidationResult,
-    ) -> bool;
-
     /// @notice Process a payment with fee deduction
     /// @param buyer The account making the payment
     /// @param seller The account receiving the payment (after fees)
@@ -69,6 +61,7 @@ trait IPayable<TContractState> {
         ref self: TContractState,
         token_address: ContractAddress,
         payer: ContractAddress,
+        recipient: ContractAddress,
         amount: u256,
     ) -> bool;
 
@@ -85,7 +78,7 @@ mod PayableComponent {
     use openzeppelin_token::erc20::interface::{IERC20CamelDispatcher, IERC20CamelDispatcherTrait};
 
     // Constants
-    use ponzi_land::consts::{OUR_CONTRACT_SEPOLIA_ADDRESS, SCALE_FACTOR_FOR_FEE};
+    use ponzi_land::consts::{SCALE_FACTOR_FOR_FEE};
 
     // Errors
     use ponzi_land::errors::{
@@ -152,24 +145,6 @@ mod PayableComponent {
             token_dispatcher.transfer(recipient, validation_result.amount)
         }
 
-        fn pay_to_us(
-            self: @ComponentState<TContractState>,
-            sender: ContractAddress,
-            validation_result: ValidationResult,
-        ) -> bool {
-            let token_dispatcher = self.token_dispatcher.read();
-            assert(
-                token_dispatcher.contract_address == validation_result.token_address,
-                DIFFERENT_ERC20_TOKEN_DISPATCHER,
-            );
-            token_dispatcher
-                .transferFrom(
-                    sender,
-                    OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
-                    validation_result.amount,
-                )
-        }
-
         fn proccess_payment_with_fee_for_buy(
             self: @ComponentState<TContractState>,
             buyer: ContractAddress,
@@ -204,12 +179,13 @@ mod PayableComponent {
             ref self: ComponentState<TContractState>,
             token_address: ContractAddress,
             payer: ContractAddress,
+            recipient: ContractAddress,
             amount: u256,
         ) -> bool {
             let validation_result = self.validate(token_address, payer, amount);
             assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BID);
 
-            let payment_status = self.pay_to_us(payer, validation_result);
+            let payment_status = self.transfer_from(payer, recipient, validation_result);
             assert(payment_status, ERC20_PAY_FOR_BID_FAILED);
 
             true
