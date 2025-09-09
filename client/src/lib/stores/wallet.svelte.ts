@@ -8,6 +8,7 @@ import { fetchTokenBalance } from '$lib/accounts/balances';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { Token } from '$lib/interfaces';
 import accountState from '$lib/account.svelte';
+import { untrack } from 'svelte';
 
 const BASE_TOKEN = data.mainCurrencyAddress;
 export const baseToken = data.availableTokens.find(
@@ -15,7 +16,7 @@ export const baseToken = data.availableTokens.find(
 )!;
 
 export class WalletStore {
-  private cleanup: () => void;
+  private cleanup: (() => void) | null = null;
   private subscription: Subscription | null = $state(null);
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
@@ -37,18 +38,23 @@ export class WalletStore {
     (token) => token.address === this.BASE_TOKEN,
   );
 
-  constructor() {
-    this.cleanup = $effect.root(() => {
-      $effect(() => {
-        // Trigger update when address changes
-        if (accountState.address) {
-          this.update(accountState.address);
-        }
-      });
+  constructor() {}
+
+  public async init() {
+    if (this.cleanup != null) {
+      return;
+    }
+
+    $effect(() => {
+      // Trigger update when address changes
+      if (accountState.address) {
+        untrack(() => this.update(accountState.address!));
+      }
     });
   }
 
   public async update(address: string) {
+    console.log('Updating wallet balance', new Error().stack);
     this.errorMessage = null;
 
     // Cancel existing subscription
@@ -229,7 +235,7 @@ export class WalletStore {
       this.subscription.cancel();
       this.subscription = null;
     }
-    this.cleanup();
+    this.cleanup?.();
   }
 }
 
