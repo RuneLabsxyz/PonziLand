@@ -52,7 +52,7 @@
       </div>
     </div>
     <div class="flex flex-col items-center text-ponzi-number">
-      <div class="opacity-50 text-sm">Burning / hour :</div>
+      <div class="opacity-50 text-sm">Cost / hour :</div>
       <div class="text-red-500 flex items-center gap-2">
         <span class="text-xl stroke-3d-black">
           -&nbsp;{displayCurrency(burnRate.rawValue())}
