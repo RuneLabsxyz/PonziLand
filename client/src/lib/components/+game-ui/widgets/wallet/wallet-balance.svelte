@@ -22,8 +22,7 @@
   let loadingBalance = $state(false);
   let errorMessage = $state<string | null>(null);
 
-  onMount(async () => {
-    await handleRefreshBalances();
+  onMount(() => {
     // Set up custom controls for the parent draggable component
     setCustomControls(refreshControls);
   });

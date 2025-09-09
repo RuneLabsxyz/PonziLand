@@ -19,7 +19,7 @@
     const interval = setInterval(() => {
       console.log('Fetching current price');
       fetchCurrentPrice();
-    }, 2000);
+    }, 10_000);
 
     return () => clearInterval(interval);
   });
