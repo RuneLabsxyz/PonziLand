@@ -1,5 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
+  import { Button } from '$lib/components/ui/button';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { baseToken } from '$lib/stores/wallet.svelte';
@@ -43,16 +45,21 @@
     <span class="text-yellow-500 text-2xl text-ponzi-number">UNDER AUCTION</span
     >
     {#if currentPrice}
-      <PriceDisplay price={currentPrice} />
+      <div class="flex gap-2">
+        <PriceDisplay price={currentPrice} />
+        {#if !currentPrice.isZero()}
+          <div
+            class="text-ponzi-number text-xl flex items-center gap-2 stroke-3d-black"
+          >
+            {baseToken?.symbol}
+            <TokenAvatar token={baseToken} class="w-5 h-5" />
+          </div>
+        {/if}
+      </div>
     {:else}
       <div class="text-ponzi-number text-center">Loading...</div>
     {/if}
-    <div
-      class="text-ponzi-number text-xl flex items-center gap-2 stroke-3d-black"
-    >
-      {baseToken?.symbol}
-      <TokenAvatar token={baseToken} class="w-5 h-5" />
-    </div>
+    <Button onclick={() => openLandInfoWidget(land)}>BUY LAND</Button>
   </div>
 </div>
 
