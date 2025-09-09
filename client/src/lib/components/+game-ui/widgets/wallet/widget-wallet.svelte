@@ -73,11 +73,11 @@
       <img src="/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
     </button>
   </div>
-  <div class="flex">
+  <!-- <div class="flex">
     <Button size="md" class="w-full mt-2" onclick={openNftLink}
       >Claim token drop</Button
     >
-  </div>
+  </div> -->
 
   <WalletBalance />
 {:else}
