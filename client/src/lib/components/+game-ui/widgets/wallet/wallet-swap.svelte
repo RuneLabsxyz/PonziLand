@@ -1,5 +1,6 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
+  import { Slider } from '$lib/components/ui/slider';
   import data from '$profileData';
   import { useDojo } from '$lib/contexts/dojo';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
@@ -23,6 +24,7 @@
   let quotes: Quote[] = $state([]);
   let slippage = $state(0.5);
   let leadingSide = $state('sell');
+  let percentage = $state(0);
 
   let sellTokenBalance: CurrencyAmount | undefined = $state();
   let buyTokenBalance: CurrencyAmount | undefined = $state();
@@ -66,10 +68,10 @@
     leadingSide = leadingSide === 'sell' ? 'buy' : 'sell';
   }
 
-  function setPercentage(percentage: number) {
+  function setPercentage(percentageValue: number) {
     if (!sellTokenBalance) return;
 
-    const amount = sellTokenBalance.rawValue().times(percentage / 100);
+    const amount = sellTokenBalance.rawValue().times(percentageValue / 100);
     sellAmount = amount.toString();
     leadingSide = 'sell';
   }
@@ -99,6 +101,13 @@
       } as QuoteParams & { leadingSide: 'sell' | 'buy' };
     },
     { delay: 500 },
+  );
+
+  let debouncedPercentage = debounce(
+    () => {
+      setPercentage(percentage);
+    },
+    { delay: 300 },
   );
 
   $effect(() => {
@@ -147,19 +156,30 @@
 </script>
 
 <div class="flex flex-col">
-  <div class="flex w-full gap-1 mt-1 items-center">
-    <Button size="md" class="w-full" onclick={() => setPercentage(25)}>
-      25%
-    </Button>
-    <Button size="md" class="w-full" onclick={() => setPercentage(50)}>
-      50%
-    </Button>
-    <Button size="md" class="w-full" onclick={() => setPercentage(75)}>
-      75%
-    </Button>
-    <Button size="md" class="w-full" onclick={() => setPercentage(100)}>
-      Max
-    </Button>
+  <div class="flex w-full mt-1 items-center gap-2 my-2">
+    <span class="text-xs text-gray-400 min-w-fit">Amount:</span>
+    <div class="flex-1">
+      <Slider
+        type="single"
+        value={percentage}
+        onValueChange={(value) => (percentage = value)}
+        min={0}
+        max={100}
+        step={1}
+        class="w-full"
+      />
+    </div>
+    <div class="flex items-center gap-1">
+      <input
+        type="number"
+        class="w-12 bg-[#282835] text-white rounded p-1 text-xs font-ponzi-number text-center"
+        bind:value={percentage}
+        min="0"
+        max="100"
+        step="1"
+      />
+      <span class="text-xs text-gray-400">%</span>
+    </div>
   </div>
   <div class="flex flex-col relative">
     <div class="flex gap-2 rounded border border-[#ffffff55] p-2">
