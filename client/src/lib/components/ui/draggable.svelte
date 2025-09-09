@@ -34,7 +34,12 @@
     initialDimensions?: Dimensions;
     restrictToParent?: boolean;
     children: Snippet<
-      [{ setCustomControls: (controls: Snippet<[]> | null) => void, setCustomTitle: (title: Snippet<[]> | null) => void }]
+      [
+        {
+          setCustomControls: (controls: Snippet<[]> | null) => void;
+          setCustomTitle: (title: Snippet<[]> | null) => void;
+        },
+      ]
     >;
     isMinimized?: boolean;
     disableResize?: boolean;
