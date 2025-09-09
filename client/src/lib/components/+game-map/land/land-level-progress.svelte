@@ -25,16 +25,19 @@
   });
 </script>
 
-<div class="relative w-full h-6">
-  <Progress
-    value={levelUpInfo.timeSinceLastLevelUp}
-    max={levelUpInfo.levelUpTime}
-    class={cn(className, 'absolute top-0 left-0 h-5  bg-[#fff2]')}
-    color={levelUpInfo.canLevelUp ? 'green' : '#F2B445'}
-  ></Progress>
-  <div
-    class="text-xs font-ponzi-number absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center stroke-3d-black -mt-[2px]"
-  >
-    {remainingTime}
+<div class="w-full flex flex-col items-center">
+  <div class="opacity-70">Upgrade time</div>
+  <div class="relative w-full h-6">
+    <Progress
+      value={levelUpInfo.timeSinceLastLevelUp}
+      max={levelUpInfo.levelUpTime}
+      class={cn(className, 'absolute top-0 left-0 h-5  bg-[#fff2]')}
+      color={levelUpInfo.canLevelUp ? 'green' : '#F2B445'}
+    ></Progress>
+    <div
+      class="text-xs font-ponzi-number absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center stroke-3d-black -mt-[2px]"
+    >
+      {remainingTime}
+    </div>
   </div>
 </div>
