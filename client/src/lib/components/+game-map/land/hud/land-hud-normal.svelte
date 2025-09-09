@@ -66,7 +66,7 @@
     >
   </div>
   <div class="flex justify-between items-center text-red-400">
-    <span class="low-opacity">Burning / hour</span>
+    <span class="low-opacity">Cost / hour</span>
     <span class="flex items-center gap-2">
       {burnRate.toString()}
     </span>
