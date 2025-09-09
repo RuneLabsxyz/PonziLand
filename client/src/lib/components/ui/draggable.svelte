@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import { Card } from '$lib/components/ui/card';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Slider } from '$lib/components/ui/slider';
@@ -25,6 +26,20 @@
     height: number;
   }
 
+  type Props = {
+    id: string;
+    type: string;
+    gridSize?: number;
+    initialPosition?: Position;
+    initialDimensions?: Dimensions;
+    restrictToParent?: boolean;
+    children: Snippet<
+      [{ setCustomControls: (controls: Snippet<[]> | null) => void }]
+    >;
+    isMinimized?: boolean;
+    disableResize?: boolean;
+  };
+
   let {
     id,
     type,
@@ -35,7 +50,7 @@
     children,
     isMinimized = $bindable(false),
     disableResize = false,
-  } = $props();
+  }: Props = $props();
 
   let el = $state<HTMLElement | null>(null);
   let currentPosition = $state<Position>(initialPosition);
@@ -46,8 +61,7 @@
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
   // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
   let sliderValue = $state(transparency * 100);
-
-  let showDropdown = $state(false);
+  let customControls = $state<Snippet<[]> | null>(null);
   // Compute the style string based on whether the widget is fixed or not
   let styleString = $derived(
     isFixed
@@ -71,8 +85,8 @@
     widgetsStore.updateWidget(id, { transparency: newValue });
   }
 
-  function toggleDropdown() {
-    showDropdown = !showDropdown;
+  function setCustomControls(controls: Snippet<[]> | null) {
+    customControls = controls;
   }
 
   onMount(() => {
@@ -197,6 +211,9 @@
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title font-ponzi-number">{id}</div>
       <div class="window-controls text-white">
+        {#if customControls}
+          {@render customControls()}
+        {/if}
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
             <button class="window-control">
@@ -233,7 +250,7 @@
       </div>
     </div>
     <div class="w-full h-full {isMinimized ? 'hidden' : ''}">
-      {@render children()}
+      {@render children({ setCustomControls })}
     </div>
   </Card>
   {#if !isMinimized && !isFixed && !disableResize}
@@ -286,20 +303,22 @@
     gap: 4px;
   }
 
-  .window-control {
-    background: none;
-    border: none;
-    color: white;
-    padding: 4px;
-    cursor: pointer;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+  :global {
+    .window-control {
+      background: none;
+      border: none;
+      color: white;
+      padding: 4px;
+      cursor: pointer;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-  .window-control:hover {
-    background: rgba(255, 255, 255, 0.1);
+    .window-control:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
   }
 
   .window-resize-handle {
