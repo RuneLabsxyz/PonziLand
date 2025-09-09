@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x7bc7b264612d3ac261df0a6d72a6b73c84b9386ef0095dd340d42afc01bb53c",
-    "address": "0x59713eb00142d15a502824739e5f3b9a81a808c0e660875ff1ae199b533a620",
-    "seed": "ponzi_land-final",
+    "address": "0x4479801e8674c839115bc6270b9bde0d3288cc974cc8c3c03e615c44038c0ce",
+    "seed": "ponzi_land-final-for-real",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1479,7 +1479,7 @@
   },
   "contracts": [
     {
-      "address": "0x50a07567974c0026a3873808e00442ad6272ca0b7d775f913539a9c6b158ac5",
+      "address": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
       "class_hash": "0x5b4c0753b3290d4839978d3a2e66bd61f453e6c5f2df4392f976288df833208",
       "abi": [
         {
@@ -2303,7 +2303,7 @@
         "1000000000000000000",
         "0",
         "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
-        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901"
+        "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -2322,7 +2322,7 @@
       ]
     },
     {
-      "address": "0x87d4f7b70513ce97dae4551b96f5dde59156efe9d9923be60f9dde3d5b229c",
+      "address": "0x4708f47cafbd0f07b42f7831dff8624950e5e847ea761aac22979507bbd1ab5",
       "class_hash": "0x6d59419dbd4c9157c495c8bd899849b60d01519357947d8f47d3ab5f96e3cce",
       "abi": [
         {
@@ -2665,7 +2665,7 @@
       ]
     },
     {
-      "address": "0x711e2509bee9597a644432f3a73b08dff751bda188b8e8a6028626c1711b5fb",
+      "address": "0xe33a30d66a3de70da37142eb549f8d6eeff66b329fecfc3527092f2226d748",
       "class_hash": "0xec99b87d3890bc078ff1e4d7f2b4cd35c85330e27d16adb1654dde1400cc30",
       "abi": [
         {
@@ -3696,7 +3696,7 @@
         "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d",
         "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d",
         "1000",
-        "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901"
+        "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
@@ -3730,7 +3730,7 @@
       ]
     },
     {
-      "address": "0x56b6c80ea35ab36be32891401d67ee025f0e19462e669570c578ed095cd047e",
+      "address": "0x12bfd17cf83c6e263b91778069aef02a52f9eb9bfa28d1fd5303d3afe387c8c",
       "class_hash": "0xa4be978f4f5ab770e896939d1ff8e4f34e6917282201e3d01b9b2fdc6e8cf6",
       "abi": [
         {

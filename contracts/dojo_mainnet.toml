@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://ponzi.land"
-seed = "ponzi_land-final"
+seed = "ponzi_land-final-for-real"
 
 [world.socials]
 x = "https://x.com/ponzidotland"
@@ -92,5 +92,5 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d", # Our contract for fee
     "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d", # Our contract for auction
     "1000",                                                               # Claim fee threshold
-    "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
+    "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d", # Main token
 ]
