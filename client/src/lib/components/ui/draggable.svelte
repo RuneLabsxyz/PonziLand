@@ -59,6 +59,7 @@
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
+  let hideTitle = $state($widgetsStore[id]?.hideTitle || false);
   // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
   let sliderValue = $state(transparency * 100);
   let customControls = $state<Snippet<[]> | null>(null);
@@ -108,6 +109,7 @@
     } else {
       isFixed = currentWidget.fixed || false;
       fixedStyles = currentWidget.fixedStyles || '';
+      hideTitle = currentWidget.hideTitle || false;
     }
 
     // Only set up interact if the widget is not fixed
@@ -209,7 +211,11 @@
 >
   <Card class="w-full h-full bg-ponzi flex flex-col">
     <div class="window-header" class:no-drag={isFixed}>
-      <div class="window-title font-ponzi-number">{id}</div>
+      <div class="window-title font-ponzi-number">
+        {#if !hideTitle}
+          {id}
+        {/if}
+      </div>
       <div class="window-controls text-white">
         {#if customControls}
           {@render customControls()}
