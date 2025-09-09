@@ -78,7 +78,7 @@ const profiles = {
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
   },
   mainnet: {
-    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_8',
     PUBLIC_DOJO_TORII_URL:
       'https://api.cartridge.gg/x/ponziland-mainnet-world/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',

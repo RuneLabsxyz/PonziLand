@@ -6,7 +6,7 @@
   import { writable } from 'svelte/store';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { baseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
 
@@ -21,14 +21,9 @@
     if (!land || !stakeIncrease) return null;
     try {
       const amount = CurrencyAmount.fromScaled(stakeIncrease, land.token);
-      const tokenBalance = tokenStore.balances.find(
-        (b) => b.token.address === land.token?.address,
-      );
-      if (!tokenBalance) return 'Token balance not found';
-      const balanceAmount = CurrencyAmount.fromUnscaled(
-        tokenBalance.balance,
-        land.token,
-      );
+      const balanceAmount = walletStore.getBalance(land.token?.address!);
+      if (!balanceAmount) return 'Token balance not found';
+
       if (amount.rawValue().isGreaterThan(balanceAmount.rawValue())) {
         return `Not enough balance to increase stake. Requested: ${amount.toString()}, Available: ${balanceAmount.toString()}`;
       }

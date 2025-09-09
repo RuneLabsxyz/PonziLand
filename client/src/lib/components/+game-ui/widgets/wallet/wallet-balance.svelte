@@ -1,176 +1,42 @@
 <script lang="ts">
-  import accountData from '$lib/account.svelte';
-  import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import { useDojo } from '$lib/contexts/dojo';
-  import {
-    setTokenBalances,
-    tokenStore,
-    updateTokenBalance,
-  } from '$lib/stores/tokens.store.svelte';
-  import { padAddress } from '$lib/utils';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import type { SubscriptionCallbackArgs } from '@dojoengine/sdk';
-  import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
   import WalletSwap from './wallet-swap.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
-  import { fetchTokenBalance } from '$lib/accounts/balances';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import accountData from '$lib/account.svelte';
 
-  type ReturnValueType = Awaited<ReturnType<typeof sdk.subscribeTokenBalance>>;
-  type Subscription = ReturnValueType[1];
-  type TokenBalance = ReturnValueType[0]['items'][0];
-
-  const BASE_TOKEN = data.mainCurrencyAddress;
   const baseToken = data.availableTokens.find(
-    (token) => token.address === BASE_TOKEN,
+    (token) => token.address === data.mainCurrencyAddress,
   );
 
-  const { client: sdk, accountManager } = useDojo();
   const address = $derived(accountData.address);
 
-  let totalBalanceInBaseToken = $state<CurrencyAmount | null>(null);
-
-  let subscriptionRef = $state<Subscription>();
-
-  let errorMessage = $state<string | null>(null);
-
-  let loadingBalance = $state<boolean>(false);
-
-  async function calculateTotalBalance() {
-    const tokenBalances = tokenStore.balances;
-    const tokenPrices = tokenStore.prices;
-
-    if (!tokenBalances.length || !tokenPrices.length) return;
-
-    let totalValue = 0;
-
-    const resolvedBalances = await Promise.all(
-      tokenBalances.map(async (tb) => {
-        return {
-          token: tb.token,
-          balance: tb.balance,
-        };
-      }),
-    );
-
-    for (const { token, balance } of resolvedBalances) {
-      if (balance === null) continue;
-
-      const amount = CurrencyAmount.fromUnscaled(balance.toString(), token);
-
-      if (padAddress(token.address) === padAddress(BASE_TOKEN)) {
-        totalValue += Number(amount.rawValue());
-      } else {
-        const priceInfo = tokenPrices.find((p) => {
-          return padAddress(p.address) == padAddress(token.address);
-        });
-
-        if (priceInfo?.ratio !== null && priceInfo) {
-          totalValue += Number(
-            amount.rawValue().dividedBy(priceInfo.ratio || 0),
-          );
-        }
-      }
-    }
-
-    if (baseToken) {
-      totalBalanceInBaseToken = CurrencyAmount.fromScaled(
-        totalValue.toString(),
-        baseToken,
-      );
-    }
-  }
-
-  onMount(async () => {
-    await handleRefreshBalances();
-  });
-
-  const handleManualRefreshBalances = async () => {
-    const account = accountManager?.getProvider()?.getWalletAccount();
-
-    if (!account || !address) {
-      return;
-    }
-
-    const provider = sdk.provider;
-
-    const tokenBalances = data.availableTokens.map(async (token) => {
-      const balance = await fetchTokenBalance(token.address, account, provider);
-
-      return {
-        token,
-        balance,
-        icon: token.images.icon,
-      };
-    });
-    const resolvedTokenBalances = await Promise.all(tokenBalances);
-    setTokenBalances(
-      resolvedTokenBalances.map((balance) => ({
-        ...balance,
-        account_address: account.address,
-        contract_address: balance.token.address,
-        token_id: balance.token.symbol,
-        balance: balance.balance?.toString() ?? '',
-      })),
-    );
-
-    tokenStore.prices = await getTokenPrices();
-    calculateTotalBalance();
-  };
+  let loadingBalance = $state(false);
 
   const handleRefreshBalances = async () => {
-    errorMessage = null;
+    if (!address) return;
+
     loadingBalance = true;
     try {
-      if (subscriptionRef) {
-        subscriptionRef.cancel();
-      }
-      const request = {
-        contractAddresses: data.availableTokens.map((token) => token.address),
-        accountAddresses: address ? [address] : [],
-        tokenIds: [],
-      };
-
-      const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
-        contractAddresses: request.contractAddresses ?? [],
-        accountAddresses: request.accountAddresses ?? [],
-        tokenIds: request.tokenIds ?? [],
-        callback: ({ data, error }: SubscriptionCallbackArgs<TokenBalance>) => {
-          if (data) {
-            updateTokenBalance(data);
-            calculateTotalBalance();
-          }
-          if (error) {
-            console.error(error);
-            errorMessage = 'Failed to refresh balances. Please try again.';
-            return;
-          }
-        },
-      });
-      // Add the subscription ref
-      subscriptionRef = subscription;
-
-      tokenStore.prices = await getTokenPrices();
-      setTokenBalances(tokenBalances.items);
-      calculateTotalBalance();
+      await walletStore.update(address);
+    } finally {
       loadingBalance = false;
-    } catch (err) {
-      loadingBalance = false;
-      errorMessage =
-        'Failed to refresh balances. Please check your connection and try again.';
-      console.error(err);
     }
   };
+
+  // Get reactive values from the store
+  const errorMessage = $derived(walletStore.errorMessage);
+  const totalBalance = $derived(walletStore.totalBalance);
 </script>
 
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
-  {#if totalBalanceInBaseToken && baseToken}
+  {#if totalBalance && baseToken}
     <TokenAvatar token={baseToken} class="h-6 w-6" />
     <div class="flex flex-1 items-center justify-between select-text">
       <div class="font-ponzi-number">
-        {totalBalanceInBaseToken.toString()}
+        {totalBalance.toString()}
       </div>
       <div class="font-ponzi-number">
         {baseToken.symbol}
@@ -212,17 +78,14 @@
 
 <div class="flex flex-col gap-4">
   <div>
-    {#each tokenStore.balances as tokenBalance}
+    {#each walletStore.tokenBalances as [token, balance]}
       <div
         class="flex justify-between items-center relative gap-2 px-4 select-text"
       >
-        <TokenAvatar token={tokenBalance.token} />
-        <TokenValueDisplay
-          amount={tokenBalance.balance}
-          token={tokenBalance.token}
-        />
+        <TokenAvatar {token} />
+        <TokenValueDisplay amount={balance.toBigint()} {token} />
         <a
-          href="/dashboard#{tokenBalance.token.symbol}"
+          href="/dashboard#{token.symbol}"
           target="_blank"
           aria-label="View on dashboard"
         >

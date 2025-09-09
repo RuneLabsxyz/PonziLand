@@ -1,8 +1,8 @@
 <script lang="ts">
-  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
-  import { tokenStore } from '$lib/stores/tokens.store.svelte';
   import { Label } from '$lib/components/ui/label';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import type { Token } from '$lib/interfaces';
+  import { walletStore } from '$lib/stores/wallet.svelte';
 
   let {
     value = $bindable<string>(),
@@ -15,7 +15,7 @@
   }>();
 
   // Extract tokens from tokenStore.balances
-  let availableTokens = $derived(tokenStore.balances.map((tb) => tb.token));
+  let availableTokens = $derived(walletStore.allowedTokens);
 
   // Handle the unified component's value which returns Token but we need string
   let internalValue = $state<Token | string | undefined>(value);

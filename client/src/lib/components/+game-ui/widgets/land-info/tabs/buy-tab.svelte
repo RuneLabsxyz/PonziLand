@@ -14,7 +14,7 @@
   import type { TabType, Token } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
-  import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { baseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { locationToCoordinates, padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
@@ -82,18 +82,11 @@
     }
 
     // Get selected token balance from tokenStore balance
-    const selectedTokenBalance = tokenStore.balances.find(
-      (balance) => balance.token.address === selectedToken?.address,
-    );
+    const selectedTokenAmount = walletStore.getBalance(selectedToken.address);
 
-    if (selectedTokenBalance === undefined) {
+    if (selectedTokenAmount == undefined) {
       return "You don't have any of this token";
     }
-
-    const selectedTokenAmount = CurrencyAmount.fromUnscaled(
-      selectedTokenBalance?.balance,
-      selectedToken,
-    );
 
     if (selectedTokenAmount.rawValue().isLessThanOrEqualTo(parsedStake)) {
       return `You don't have enough ${selectedToken.symbol} to stake (max: ${selectedTokenAmount.toString()})`;
@@ -121,24 +114,18 @@
       if (!landPrice) {
         return 'Auction price is not available';
       }
-      const baseTokenBalance = tokenStore.balances.find(
-        (balance) => balance.token.address === baseToken?.address,
-      );
-      if (!baseTokenBalance) {
-        return `You don't have any ${baseToken?.symbol}`;
+      const baseTokenAmount = walletStore.getBalance(baseToken.address);
+      if (baseTokenAmount == undefined) {
+        return `You don't have any ${baseToken.symbol}`;
       }
-      const baseTokenAmount = CurrencyAmount.fromUnscaled(
-        baseTokenBalance.balance,
-        baseToken,
-      );
       if (baseTokenAmount.rawValue().isLessThan(landPrice.rawValue())) {
-        return `You don't have enough ${baseToken?.symbol} to buy this land (max: ${baseTokenAmount.toString()})`;
+        return `You don't have enough ${baseToken.symbol} to buy this land (max: ${baseTokenAmount.toString()})`;
       }
       // If has enough for price then check if the selected token is baseToken and add the stake amount
-      if (selectedToken?.address === baseToken?.address) {
+      if (selectedToken?.address === baseToken.address) {
         const totalCost = landPrice.add(stakeAmount);
         if (baseTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
-          return `You don't have enough ${baseToken?.symbol} to buy this land and stake (max: ${baseTokenAmount.toString()})`;
+          return `You don't have enough ${baseToken.symbol} to buy this land and stake (max: ${baseTokenAmount.toString()})`;
         }
       }
     }
@@ -146,16 +133,10 @@
     // If not auction, Do the same checks but with land.token for baseToken and selectedToken
     if (land.type !== 'auction') {
       console.log('Checking land token balance for buy');
-      const landTokenBalance = tokenStore.balances.find(
-        (balance) => balance.token.address === land.token?.address,
-      );
-      if (!landTokenBalance) {
+      const landTokenAmount = walletStore.getBalance(land.token?.address!);
+      if (!landTokenAmount) {
         return `You don't have any ${land.token?.symbol}`;
       }
-      const landTokenAmount = CurrencyAmount.fromUnscaled(
-        landTokenBalance.balance,
-        land.token,
-      );
       if (landTokenAmount.rawValue().isLessThan(land.sellPrice.rawValue())) {
         return `You don't have enough ${land.token?.symbol} to buy this land (max: ${landTokenAmount.toString()})`;
       }

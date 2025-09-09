@@ -1,0 +1,236 @@
+import { useDojo } from '$lib/contexts/dojo';
+import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
+import data from '$profileData';
+import { getTokenPrices, type TokenPrice } from '$lib/api/defi/ekubo/requests';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { padAddress } from '$lib/utils';
+import { fetchTokenBalance } from '$lib/accounts/balances';
+import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import type { Token } from '$lib/interfaces';
+import accountState from '$lib/account.svelte';
+
+const BASE_TOKEN = data.mainCurrencyAddress;
+export const baseToken = data.availableTokens.find(
+  (token) => token.address === BASE_TOKEN,
+)!;
+
+export class WalletStore {
+  private cleanup: () => void;
+  private subscription: Subscription | null = $state(null);
+  public errorMessage = $state<string | null>(null);
+  private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
+  private tokenPrices: TokenPrice[] = $state([]);
+
+  public tokenBalances = $derived(
+    this.balances
+      .entries()
+      .map(
+        ([token, balance]) =>
+          [this.getToken(token)!, balance] as [Token, CurrencyAmount],
+      )
+      .toArray(),
+  );
+  public totalBalance = $state<CurrencyAmount | null>(null);
+
+  private readonly BASE_TOKEN = data.mainCurrencyAddress;
+  private readonly baseToken = data.availableTokens.find(
+    (token) => token.address === this.BASE_TOKEN,
+  );
+
+  constructor() {
+    this.cleanup = $effect.root(() => {
+      $effect(() => {
+        // Trigger update when address changes
+        if (accountState.address) {
+          this.update(accountState.address);
+        }
+      });
+    });
+  }
+
+  public async update(address: string) {
+    this.errorMessage = null;
+
+    // Cancel existing subscription
+    if (this.subscription) {
+      this.subscription.cancel();
+      this.subscription = null;
+    }
+
+    try {
+      const { client: sdk } = useDojo();
+
+      const request = {
+        contractAddresses: data.availableTokens.map((token) => token.address),
+        accountAddresses: address ? [address] : [],
+        tokenIds: [],
+      };
+
+      const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
+        contractAddresses: request.contractAddresses ?? [],
+        accountAddresses: request.accountAddresses ?? [],
+        tokenIds: request.tokenIds ?? [],
+        callback: ({ data, error }) => {
+          if (data) {
+            this.updateTokenBalance(data);
+            this.calculateTotalBalance();
+          }
+          if (error) {
+            console.error('Error while getting balances amount:', error);
+            this.errorMessage = 'Failed to update balances. Please try again.';
+          }
+        },
+      });
+
+      this.subscription = subscription;
+
+      this.tokenPrices = await getTokenPrices();
+
+      for (const item of tokenBalances.items) {
+        this.updateTokenBalance(item);
+      }
+
+      // If there is no balances from torii, then we need to fetch them from RPC
+      if (this.balances.size == 0) {
+        await this.getRPCBalances();
+      }
+
+      await this.calculateTotalBalance();
+    } catch (err) {
+      console.error(
+        'Error while fetching balances:',
+        err,
+        '. Falling back to RPC',
+      );
+
+      await this.getRPCBalances();
+    }
+  }
+
+  private async getRPCBalances() {
+    const { client: sdk, accountManager } = useDojo();
+    const account = accountManager?.getProvider()?.getWalletAccount();
+
+    if (!account) {
+      return;
+    }
+
+    const provider = sdk.provider;
+
+    const tokenBalances = data.availableTokens.map(async (token) => {
+      const balance = await fetchTokenBalance(token.address, account, provider);
+
+      console.log(`Balance for ${token.symbol}: ${balance?.toString()}`);
+
+      return {
+        token,
+        balance,
+        icon: token.images.icon,
+      };
+    });
+
+    const resolvedTokenBalances = await Promise.all(tokenBalances);
+
+    for (const balance of resolvedTokenBalances) {
+      if (!balance.token) continue;
+      const token = balance.token!;
+      const amount = CurrencyAmount.fromUnscaled(
+        balance.balance?.toString() ?? '0',
+        token,
+      );
+      this.balances.set(token.address, amount);
+    }
+
+    this.tokenPrices = await getTokenPrices();
+    await this.calculateTotalBalance();
+  }
+
+  public getBalance(tokenAddress: string): CurrencyAmount | null {
+    const token = data.availableTokens.find((t) => t.address === tokenAddress);
+    if (!token) return null;
+
+    return (
+      this.balances.get(tokenAddress) ?? CurrencyAmount.fromUnscaled('0', token)
+    );
+  }
+
+  public getPrice(tokenAddress: string): TokenPrice | null {
+    const token = data.availableTokens.find((t) => t.address === tokenAddress);
+    if (!token) return null;
+
+    return (
+      this.tokenPrices.find((p) => {
+        return padAddress(p.address) === padAddress(token.address);
+      }) ?? null
+    );
+  }
+
+  public get allowedTokens(): Token[] {
+    return data.availableTokens.filter((token) => {
+      return this.balances.get(token.address) !== null;
+    });
+  }
+
+  private async calculateTotalBalance() {
+    const tokenPrices = this.tokenPrices;
+
+    if (!this.balances.size || !tokenPrices.length) return;
+
+    let totalValue = 0;
+
+    for (const [tokenAddress, balance] of this.balances) {
+      if (balance === null) continue;
+
+      const token = this.getToken(tokenAddress)!;
+
+      if (padAddress(token.address) === padAddress(this.BASE_TOKEN)) {
+        totalValue += Number(balance.rawValue());
+      } else {
+        const priceInfo = tokenPrices.find((p) => {
+          return padAddress(p.address) == padAddress(token.address);
+        });
+
+        if (priceInfo?.ratio !== null && priceInfo) {
+          totalValue += Number(
+            balance.rawValue().dividedBy(priceInfo.ratio || 0),
+          );
+        }
+      }
+    }
+
+    if (this.baseToken) {
+      this.totalBalance = CurrencyAmount.fromScaled(
+        totalValue.toString(),
+        this.baseToken,
+      );
+    }
+  }
+
+  private getToken(tokenAddress: string): Token | null {
+    return data.availableTokens.find((t) => t.address === tokenAddress) ?? null;
+  }
+
+  private updateTokenBalance(item: TokenBalance) {
+    const token = this.getToken(item.contract_address);
+    if (!token) {
+      return null;
+    }
+    // Convert the balance to a BigInt
+    const balance = BigInt(item.balance);
+
+    this.balances.set(
+      token.address,
+      CurrencyAmount.fromUnscaled(balance, token),
+    );
+  }
+
+  public destroy() {
+    if (this.subscription) {
+      this.subscription.cancel();
+      this.subscription = null;
+    }
+    this.cleanup();
+  }
+}
+
+export const walletStore = new WalletStore();
