@@ -5,6 +5,7 @@
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
   import { Arrow } from '$lib/components/ui/arrows';
+  import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import type { Token } from '$lib/interfaces';
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -26,6 +27,8 @@
     } | null)[]
   >([]);
 
+  let isLoading = $state(false);
+
   let numberOfNeighbours = $derived(
     yieldInfo.filter((info) => (info?.percent_rate ?? 0n) !== 0n).length,
   );
@@ -43,21 +46,29 @@
         yieldInfo = tutorialYield;
         console.log('tutorial');
       } else {
+        isLoading = true;
         yieldInfo = [];
         getNeighbourYieldArray(land).then((res) => {
           yieldInfo = res;
           yieldInfo.splice(4, 0, null);
+          isLoading = false;
         });
       }
     }
   });
 </script>
 
+{#if land.type !== 'auction'}
 <div
   class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20"
   style="transform: translate(-150px, -150px); width: 300px; height: 300px;"
 >
-  {#each yieldInfo as info, i}
+  {#if isLoading}
+    <div class="col-span-3 row-span-3 flex items-center justify-center">
+      <RotatingCoin />
+    </div>
+  {:else}
+    {#each yieldInfo as info, i}
     {#if info?.token}
       <div
         class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
@@ -133,5 +144,7 @@
         class="text-ponzi text-[32px] flex items-center justify-center leading-none"
       ></div>
     {/if}
-  {/each}
+    {/each}
+  {/if}
 </div>
+{/if}
