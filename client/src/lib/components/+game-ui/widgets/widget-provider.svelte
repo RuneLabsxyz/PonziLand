@@ -25,12 +25,12 @@
       bind:isMinimized={widget.isMinimized}
       disableResize={widget.disableResize}
     >
-      {#snippet children({ setCustomControls })}
+      {#snippet children({ setCustomControls, setCustomTitle })}
         {@const type = widget.type}
         {#if type === 'wallet'}
           <WidgetWallet {setCustomControls} />
         {:else if type === 'land-hud'}
-          <WidgetLandHud />
+          <WidgetLandHud {setCustomTitle} />
         {:else if type === 'land-info' && widget.data}
           <WidgetLandInfo data={widget.data} />
         {:else if type === 'settings'}

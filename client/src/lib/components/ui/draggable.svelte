@@ -34,7 +34,12 @@
     initialDimensions?: Dimensions;
     restrictToParent?: boolean;
     children: Snippet<
-      [{ setCustomControls: (controls: Snippet<[]> | null) => void }]
+      [
+        {
+          setCustomControls: (controls: Snippet<[]> | null) => void;
+          setCustomTitle: (title: Snippet<[]> | null) => void;
+        },
+      ]
     >;
     isMinimized?: boolean;
     disableResize?: boolean;
@@ -62,6 +67,7 @@
   // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
   let sliderValue = $state(transparency * 100);
   let customControls = $state<Snippet<[]> | null>(null);
+  let customTitle = $state<Snippet<[]> | null>(null);
   // Compute the style string based on whether the widget is fixed or not
   let styleString = $derived(
     isFixed
@@ -87,6 +93,10 @@
 
   function setCustomControls(controls: Snippet<[]> | null) {
     customControls = controls;
+  }
+
+  function setCustomTitle(title: Snippet<[]> | null) {
+    customTitle = title;
   }
 
   onMount(() => {
@@ -209,7 +219,13 @@
 >
   <Card class="w-full h-full bg-ponzi flex flex-col">
     <div class="window-header" class:no-drag={isFixed}>
-      <div class="window-title font-ponzi-number">{id}</div>
+      <div class="window-title font-ponzi-number">
+        {#if customTitle}
+          {@render customTitle()}
+        {:else}
+          {id}
+        {/if}
+      </div>
       <div class="window-controls text-white">
         {#if customControls}
           {@render customControls()}
@@ -250,7 +266,7 @@
       </div>
     </div>
     <div class="w-full h-full {isMinimized ? 'hidden' : ''}">
-      {@render children({ setCustomControls })}
+      {@render children({ setCustomControls, setCustomTitle })}
     </div>
   </Card>
   {#if !isMinimized && !isFixed && !disableResize}

@@ -7,6 +7,14 @@
   import { Card } from '$lib/components/ui/card';
   import { selectedLandWithActions } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
+  import type { Snippet } from 'svelte';
+  import { onMount } from 'svelte';
+
+  type Props = {
+    setCustomTitle?: (title: Snippet<[]> | null) => void;
+  };
+
+  let { setCustomTitle }: Props = $props();
 
   const address = $derived(account.address);
   let landWithActions = $derived(selectedLandWithActions());
@@ -15,7 +23,17 @@
     landWithActions?.value?.owner === padAddress(address ?? ''),
   );
   let land = $derived(landWithActions?.value);
+
+  $effect(() => {
+    if (setCustomTitle) {
+      setCustomTitle(customTitleSnippet);
+    }
+  });
 </script>
+
+{#snippet customTitleSnippet()}
+  {land ? '' : 'Click on a land to see more info...'}
+{/snippet}
 
 {#if land}
   {#if land.type !== 'auction'}

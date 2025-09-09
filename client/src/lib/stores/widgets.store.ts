@@ -98,7 +98,7 @@ function loadState(): WidgetsState {
     for (const [id, widget] of Object.entries(parsed)) {
       const processedWidget = processWidgetDataAfterLoad(widget);
       if (processedWidget) {
-        finalState[id] = processedWidget;
+        finalState[id] = { ...finalState[id], ...processedWidget };
       }
     }
 
