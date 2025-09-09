@@ -11,6 +11,7 @@
   import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
   import type { Token } from '$lib/interfaces';
+  import { onMount } from 'svelte';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
@@ -103,12 +104,14 @@
     { delay: 500 },
   );
 
-  let debouncedPercentage = debounce(
-    () => {
-      setPercentage(percentage);
-    },
-    { delay: 300 },
-  );
+  onMount(() => {
+    debounce(
+      () => {
+        setPercentage(percentage);
+      },
+      { delay: 300 },
+    );
+  });
 
   $effect(() => {
     const data = debouncedInput.current;
