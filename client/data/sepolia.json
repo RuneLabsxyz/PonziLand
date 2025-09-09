@@ -22,17 +22,17 @@
     {
       "address": "0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff",
       "name": "WolfNation",
-      "badgeImage": "/tokens/eWNT/ai.png"
+      "badgeImage": "/tokens/wnt/ai.png"
     },
     {
       "address": "0x041fbe2d9a755d0f6f2117a423ec7a66c034787d19771323015444bdcfb98499",
       "name": "DucksAgent",
-      "badgeImage": "/tokens/eQQ/ai.png"
+      "badgeImage": "/tokens/qq/ai.png"
     },
     {
       "address": "0x002c732ae443abfa5115589acf2d099fe3029284fd8db5431dd306489ec2b941",
       "name": "EveraiAgent",
-      "badgeImage": "/tokens/eSG/ai.png"
+      "badgeImage": "/tokens/everai/ai.png"
     }
   ],
   "availableTokens": [
