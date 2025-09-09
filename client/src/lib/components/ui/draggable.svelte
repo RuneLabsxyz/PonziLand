@@ -34,7 +34,7 @@
     initialDimensions?: Dimensions;
     restrictToParent?: boolean;
     children: Snippet<
-      [{ setCustomControls: (controls: Snippet<[]> | null) => void }]
+      [{ setCustomControls: (controls: Snippet<[]> | null) => void, setCustomTitle: (title: Snippet<[]> | null) => void }]
     >;
     isMinimized?: boolean;
     disableResize?: boolean;
@@ -59,10 +59,10 @@
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
-  let hideTitle = $state($widgetsStore[id]?.hideTitle || false);
   // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
   let sliderValue = $state(transparency * 100);
   let customControls = $state<Snippet<[]> | null>(null);
+  let customTitle = $state<Snippet<[]> | null>(null);
   // Compute the style string based on whether the widget is fixed or not
   let styleString = $derived(
     isFixed
@@ -90,6 +90,10 @@
     customControls = controls;
   }
 
+  function setCustomTitle(title: Snippet<[]> | null) {
+    customTitle = title;
+  }
+
   onMount(() => {
     if (!el) return;
 
@@ -109,7 +113,6 @@
     } else {
       isFixed = currentWidget.fixed || false;
       fixedStyles = currentWidget.fixedStyles || '';
-      hideTitle = currentWidget.hideTitle || false;
     }
 
     // Only set up interact if the widget is not fixed
@@ -212,7 +215,9 @@
   <Card class="w-full h-full bg-ponzi flex flex-col">
     <div class="window-header" class:no-drag={isFixed}>
       <div class="window-title font-ponzi-number">
-        {#if !hideTitle}
+        {#if customTitle}
+          {@render customTitle()}
+        {:else}
           {id}
         {/if}
       </div>
@@ -256,7 +261,7 @@
       </div>
     </div>
     <div class="w-full h-full {isMinimized ? 'hidden' : ''}">
-      {@render children({ setCustomControls })}
+      {@render children({ setCustomControls, setCustomTitle })}
     </div>
   </Card>
   {#if !isMinimized && !isFixed && !disableResize}

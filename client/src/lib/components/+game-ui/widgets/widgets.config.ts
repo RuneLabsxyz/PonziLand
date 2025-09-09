@@ -19,7 +19,6 @@ export interface WidgetState {
   disableControls?: boolean; // Whether to disable minimize and close buttons
   transparency?: number; // Widget transparency (0-1, where 0 is fully transparent and 1 is fully opaque)
   disableResize?: boolean;
-  hideTitle?: boolean; // Whether to hide the widget title
 }
 
 export interface WidgetsState {
@@ -49,7 +48,6 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     fixedStyles: 'width: 500px; bottom: 0px; right: 0px; transform: none;',
     disableControls: true, // Land HUD should not be closable
     transparency: 0.9, // Slightly transparent by default
-    hideTitle: true, // Hide title for land-hud widget
   },
   settings: {
     id: 'settings',
