@@ -921,7 +921,11 @@ pub mod actions {
             current_price: u256,
             our_contract_address: ContractAddress,
         ) {
-            self.payable.validate_and_execute_bid_payment(land.token_used, caller, sold_at_price);
+            self
+                .payable
+                .validate_and_execute_bid_payment(
+                    land.token_used, caller, store.get_our_contract_for_auction(), sold_at_price,
+                );
 
             self
                 .finalize_land_purchase(
