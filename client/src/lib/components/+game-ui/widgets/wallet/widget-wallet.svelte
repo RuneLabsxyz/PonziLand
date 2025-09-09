@@ -7,6 +7,11 @@
   import { padAddress, shortenHex } from '$lib/utils';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { ENABLE_TOKEN_DROP } from '$lib/flags';
+  import type { Snippet } from 'svelte';
+
+  let {
+    setCustomControls,
+  }: { setCustomControls: (controls: Snippet<[]> | null) => void } = $props();
 
   setup();
 
@@ -81,7 +86,8 @@
       >
     </div>
   {/if}
-  <WalletBalance />
+
+  <WalletBalance {setCustomControls} />
 {:else}
   <Button
     class="m-2"

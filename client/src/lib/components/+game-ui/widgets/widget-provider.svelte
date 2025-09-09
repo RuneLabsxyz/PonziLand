@@ -25,32 +25,34 @@
       bind:isMinimized={widget.isMinimized}
       disableResize={widget.disableResize}
     >
-      {@const type = widget.type}
-      {#if type === 'wallet'}
-        <WidgetWallet />
-      {:else if type === 'land-hud'}
-        <WidgetLandHud />
-      {:else if type === 'land-info' && widget.data}
-        <WidgetLandInfo data={widget.data} />
-      {:else if type === 'settings'}
-        <WidgetSettings />
-      {:else if type === 'my-lands'}
-        <WidgetMyLands />
-      {:else if type === 'entity-update'}
-        <WidgetEntityUpdate />
-      {:else if type === 'market'}
-        <WidgetMarket />
-      {:else if type === 'help'}
-        <WidgetHelp />
-      {:else if type === 'tutorial'}
-        <WidgetTutorial />
-      {:else if type === 'nft-link'}
-        <WidgetNftLink />
-      {:else if type === 'guild'}
-        <WidgetGuild />
-      {:else if type === 'leaderboard'}
-        <WidgetLeaderboard />
-      {/if}
+      {#snippet children({ setCustomControls })}
+        {@const type = widget.type}
+        {#if type === 'wallet'}
+          <WidgetWallet {setCustomControls} />
+        {:else if type === 'land-hud'}
+          <WidgetLandHud />
+        {:else if type === 'land-info' && widget.data}
+          <WidgetLandInfo data={widget.data} />
+        {:else if type === 'settings'}
+          <WidgetSettings />
+        {:else if type === 'my-lands'}
+          <WidgetMyLands />
+        {:else if type === 'entity-update'}
+          <WidgetEntityUpdate />
+        {:else if type === 'market'}
+          <WidgetMarket />
+        {:else if type === 'help'}
+          <WidgetHelp />
+        {:else if type === 'tutorial'}
+          <WidgetTutorial />
+        {:else if type === 'nft-link'}
+          <WidgetNftLink />
+        {:else if type === 'guild'}
+          <WidgetGuild />
+        {:else if type === 'leaderboard'}
+          <WidgetLeaderboard />
+        {/if}
+      {/snippet}
     </Draggable>
   {/if}
 {/each}
