@@ -318,7 +318,7 @@
     <div class="flex flex-col">
       {#if lands.length > 0}
         <Button
-          size="md"
+          size="lg"
           class="sticky top-0 z-10"
           disabled={claimingAll || 'all' in claimCooldowns}
           onclick={() => {
@@ -330,7 +330,7 @@
           {:else if 'all' in claimCooldowns}
             CLAIM ALL ({claimCooldowns['all']}s)
           {:else}
-            CLAIM AAAAALLLLL
+            CLAIM ALL
           {/if}
         </Button>
       {/if}
