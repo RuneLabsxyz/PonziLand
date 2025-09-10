@@ -4,10 +4,15 @@ import {
   fetchQuotes,
   type ExecuteSwapOptions,
   type Quote,
+  type QuoteRequest,
 } from '@avnu/avnu-sdk';
 import type { CurrencyAmount } from './CurrencyAmount';
 import type { Token } from '$lib/interfaces';
 import { useAccount } from '$lib/contexts/account.svelte';
+import {
+  configValues,
+  setupConfigStore,
+} from '$lib/stores/config.store.svelte';
 
 export type BaseQuoteParams = {
   sellToken: Token;
@@ -43,11 +48,20 @@ export function useAvnu() {
   const account = useAccount();
   return {
     fetchQuotes(params: QuoteParams) {
+      let baseParams: QuoteRequest = {
+        sellTokenAddress: params.sellToken.address,
+        buyTokenAddress: params.buyToken.address,
+      };
+
+      if (configValues.feeContract) {
+        baseParams.integratorFeeRecipient = configValues.feeContract;
+        baseParams.integratorFees = 50n; // 0.5%
+      }
+
       if (params.sellAmount) {
         return fetchQuotes(
           {
-            sellTokenAddress: params.sellToken.address,
-            buyTokenAddress: params.buyToken.address,
+            ...baseParams,
             sellAmount: params.sellAmount.toBigint(),
           },
           options,
@@ -55,8 +69,7 @@ export function useAvnu() {
       } else {
         return fetchQuotes(
           {
-            sellTokenAddress: params.sellToken.address,
-            buyTokenAddress: params.buyToken.address,
+            ...baseParams,
             buyAmount: params.buyAmount.toBigint(),
           },
           options,
