@@ -113,6 +113,16 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  swap: {
+    id: 'swap',
+    type: 'swap',
+    position: { x: 80, y: 60 },
+    dimensions: { width: 400, height: 0 },
+    isMinimized: false,
+    isOpen: false,
+    disableResize: true,
+    fixedStyles: 'width: 400px; height: auto;',
+  },
 };
 
 export const availableWidgets: Widget[] = [
