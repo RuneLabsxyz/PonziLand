@@ -29,7 +29,7 @@
       {#snippet children({ setCustomControls, setCustomTitle })}
         {@const type = widget.type}
         {#if type === 'wallet'}
-          <WidgetWallet {setCustomControls} />
+          <WidgetWallet {setCustomControls} widgetId={id} />
         {:else if type === 'land-hud'}
           <WidgetLandHud {setCustomTitle} />
         {:else if type === 'land-info' && widget.data}
