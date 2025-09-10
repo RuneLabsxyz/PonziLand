@@ -20,6 +20,7 @@
   import data from '$profileData';
   import type { CairoCustomEnum } from 'starknet';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
+  import { untrack } from 'svelte';
 
   let {
     land,
@@ -37,7 +38,7 @@
     padAddress(account.address ?? '') == padAddress(land.owner),
   );
 
-  let tokenValue: Token | string | undefined = $state('');
+  let tokenValue: Token | string | undefined = $state(data.mainCurrencyAddress);
   let selectedToken: Token | undefined = $derived.by(() => {
     if (typeof tokenValue === 'string') {
       return data.availableTokens.find(
@@ -47,11 +48,75 @@
     return tokenValue;
   });
 
-  let stake: string = $state('');
+  let stake: string = $derived.by(() => {
+    if (selectedToken) {
+      return untrack(() => {
+        return sellPriceAmount.rawValue().dividedBy(10).toString();
+      });
+    }
+    return '';
+  });
   let stakeAmount: CurrencyAmount = $derived(
     CurrencyAmount.fromScaled(stake ?? 0, selectedToken),
   );
-  let sellPrice: string = $state('');
+
+  // Helper function to convert price from one token to another using token prices
+  function convertTokenAmount(
+    fromAmount: CurrencyAmount,
+    fromToken: Token,
+    toToken: Token,
+  ): CurrencyAmount | null {
+    if (!fromToken || !toToken) return null;
+
+    // If same token, no conversion needed
+    if (padAddress(fromToken.address) === padAddress(toToken.address)) {
+      return fromAmount;
+    }
+
+    const fromPrice = walletStore.getPrice(fromToken.address);
+    const toPrice = walletStore.getPrice(toToken.address);
+
+    if (!fromPrice || !toPrice) {
+      return null; // Cannot convert without price data
+    }
+
+    // Convert fromAmount to base currency, then to target token
+    // fromAmount * (1/fromPrice.ratio) * toPrice.ratio
+    const baseValue = fromAmount.rawValue().dividedBy(fromPrice.ratio || 1);
+    const convertedValue = baseValue.multipliedBy(toPrice.ratio || 1);
+
+    return CurrencyAmount.fromScaled(convertedValue.toString(), toToken);
+  }
+
+  let sellPrice: string = $derived.by(() => {
+    if (!selectedToken) return '';
+    return untrack(() => {
+      let originalPrice: CurrencyAmount;
+      let originalToken: Token;
+
+      if (land.type == 'auction') {
+        if (!auctionPrice) return '';
+        originalPrice = auctionPrice;
+        originalToken = baseToken;
+      } else {
+        originalPrice = land.sellPrice;
+        originalToken = land.token!;
+      }
+
+      // Try to convert the price to the selected token
+      const convertedPrice = convertTokenAmount(
+        originalPrice,
+        originalToken,
+        selectedToken,
+      );
+      console.log('Converted price:', convertedPrice);
+      // If conversion is successful, return the converted amount, otherwise return original
+      return convertedPrice
+        ? convertedPrice.toString()
+        : originalPrice.toString();
+    });
+  });
+
   let sellPriceAmount: CurrencyAmount = $derived(
     CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken),
   );
