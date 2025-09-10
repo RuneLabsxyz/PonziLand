@@ -217,22 +217,6 @@
     gap: 0.5rem;
   }
 
-  .wallet-button {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    width: 100%;
-    min-height: 60px;
-  }
-
-  .wallet-button-single {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
-    width: 100%;
-    min-height: 60px;
-    padding: 0.75rem;
-  }
 
   .wallet-icon-large {
     height: 2.5rem;
@@ -270,11 +254,5 @@
     opacity: 0.7;
     color: #dc2626;
     font-size: 0.875rem;
-  }
-
-  .chevron-icon {
-    height: 1rem;
-    width: 1rem;
-    margin-right: 0.25rem;
   }
 </style>
