@@ -53,7 +53,7 @@
           <WidgetGuild />
         {:else if type === 'leaderboard'}
           <WidgetLeaderboard />
-        {:else if type === 'heatmap'}
+        {:else if type === 'data-maps'}
           <WidgetHeatmap />
         {:else if type === 'swap'}
           <WidgetSwap />
