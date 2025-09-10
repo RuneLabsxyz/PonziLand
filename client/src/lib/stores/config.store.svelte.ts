@@ -26,7 +26,6 @@ function updateConfigValues(newConfig: Config) {
   configValues.maxAuctions = Number(newConfig.max_auctions);
   configValues.auctionDuration = Number(newConfig.auction_duration);
   configValues.levelUpTime = configValues.baseTime * 48;
-  configValues.levelUpTime = configValues.baseTime * 48;
   configValues.feeContract = addAddressPadding(newConfig.our_contract_for_fee);
 }
 
