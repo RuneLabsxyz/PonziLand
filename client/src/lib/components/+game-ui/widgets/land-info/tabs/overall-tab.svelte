@@ -2,6 +2,7 @@
   import account from '$lib/account.svelte';
   import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import type { LandWithActions } from '$lib/api/land';
+  import { AuctionLand } from '$lib/api/land/auction_land';
   import { Button } from '$lib/components/ui/button';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, TabType } from '$lib/interfaces';
@@ -145,22 +146,38 @@
     <div class="flex w-full justify-center select-text">
       <div class="text-center pb-2 text-ponzi-number">
         <span class="opacity-50">Total Tokens Earned</span>
-        <div
-          class="{totalYieldValue - Number(burnRateInBaseToken.toString()) >= 0
-            ? 'text-green-500'
-            : 'text-red-500'} text-2xl flex items-center justify-center gap-2"
-        >
-          <span class="stroke-3d-black">
-            {totalYieldValue - Number(burnRateInBaseToken.toString()) >= 0
-              ? '+ '
-              : '- '}{displayCurrency(
-              Math.abs(
-                totalYieldValue - Number(burnRateInBaseToken.toString()),
-              ),
-            )}
-          </span>
-          <TokenAvatar token={baseToken} class="border border-white w-6 h-6" />
-        </div>
+        {#if land.type !== 'auction'}
+          <div
+            class="{totalYieldValue - Number(burnRateInBaseToken.toString()) >=
+            0
+              ? 'text-green-500'
+              : 'text-red-500'} text-2xl flex items-center justify-center gap-2"
+          >
+            <span class="stroke-3d-black">
+              {totalYieldValue - Number(burnRateInBaseToken.toString()) >= 0
+                ? '+ '
+                : '- '}{displayCurrency(
+                Math.abs(
+                  totalYieldValue - Number(burnRateInBaseToken.toString()),
+                ),
+              )}
+            </span>
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-6 h-6"
+            />
+          </div>
+        {:else}
+          <div
+            class="text-red-500 text-2xl flex items-center justify-center gap-2"
+          >
+            <span class="text-xl stroke-3d-black">???</span>
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-5 h-5"
+            />
+          </div>
+        {/if}
       </div>
     </div>
     <div class="flex w-full justify-between select-text">
@@ -175,12 +192,25 @@
       </div>
       <div class="flex flex-col items-center text-ponzi-number">
         <div class="opacity-50 text-sm">Cost / hour :</div>
-        <div class="text-red-500 flex items-center gap-2">
-          <span class="text-xl stroke-3d-black"
-            >- {displayCurrency(burnRateInBaseToken.toString())}</span
-          >
-          <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
-        </div>
+        {#if land.type !== 'auction'}
+          <div class="text-red-500 flex items-center gap-2">
+            <span class="text-xl stroke-3d-black"
+              >- {displayCurrency(burnRateInBaseToken.toString())}</span
+            >
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-5 h-5"
+            />
+          </div>
+        {:else}
+          <div class="text-red-500 flex items-center gap-2">
+            <span class="text-xl stroke-3d-black">???</span>
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-5 h-5"
+            />
+          </div>
+        {/if}
       </div>
     </div>
 
