@@ -27,6 +27,8 @@
   import Coin from './coin.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
+  import { HeatmapCalculator } from '$lib/components/+game-ui/widgets/heatmap/heatmap-calculator';
+  import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import LandTileSprite from './land-tile-sprite.svelte';
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
@@ -38,9 +40,14 @@
   import { SvelteSet } from 'svelte/reactivity';
   import type { LandTileStore } from '$lib/api/land_tiles.svelte';
 
-  const CENTER = Math.floor(GRID_SIZE / 2);
+  // Allow passing a custom land store (for tutorials)
+  interface Props {
+    store?: typeof landStore;
+  }
 
-  let { store = landStore }: { store?: LandTileStore } = $props();
+  let { store = landStore }: Props = $props();
+
+  const CENTER = Math.floor(GRID_SIZE / 2);
 
   /**
    * Generate land positions in concentric circles around center
@@ -150,6 +157,18 @@
       }),
       GRID_SIZE * GRID_SIZE,
     );
+  });
+
+  // Update art layer material opacity based on heatmap store
+  $effect(() => {
+    if (artLayerMesh && artLayerMesh.material) {
+      const material = artLayerMesh.material as MeshBasicMaterial;
+      if (heatmapStore.enabled) {
+        material.opacity = heatmapStore.opacity;
+      } else {
+        material.opacity = devsettings.artLayerOpacity;
+      }
+    }
   });
 
   onMount(() => {
@@ -474,8 +493,56 @@
     return auctionVisibleIndices;
   });
 
-  // Art layer color mapping
+  // Heatmap calculation - reactive to store changes and visible tiles
+  let heatmapResult = $derived.by(() => {
+    if (
+      !heatmapStore.enabled ||
+      !visibleLandTiles ||
+      visibleLandTiles.length === 0
+    ) {
+      return null;
+    }
+
+    return HeatmapCalculator.calculate(
+      visibleLandTiles,
+      heatmapStore.parameter,
+      heatmapStore.colorScheme,
+    );
+  });
+
+  let heatmapColors = $derived(
+    heatmapResult?.colors ?? new Map<LandTile, number>(),
+  );
+
+  // Update store stats when heatmap result changes
+  $effect(() => {
+    if (heatmapResult) {
+      heatmapStore.updateStats(
+        heatmapResult.minValue,
+        heatmapResult.maxValue,
+        heatmapResult.validTileCount,
+      );
+    }
+  });
+
+  // Art layer color mapping - now supports both heatmap and legacy token colors
   function getArtLayerColor(tile: LandTile): number {
+    // Check if heatmap is enabled
+    if (heatmapStore.enabled) {
+      // If this tile has a heatmap color, use it
+      if (heatmapColors.has(tile)) {
+        return heatmapColors.get(tile)!;
+      }
+      // For tiles without data (empty lands), use a neutral gray color in heatmap mode
+      return 0x404040; // Dark gray for empty/no-data lands in heatmap mode
+    }
+
+    // Fall back to legacy token-based coloring when heatmap is disabled
+    return getLegacyArtLayerColor(tile);
+  }
+
+  // Legacy art layer color mapping (original implementation)
+  function getLegacyArtLayerColor(tile: LandTile): number {
     if (AuctionLand.is(tile.land)) {
       return 0xff6600; // Orange for auction
     }
@@ -619,8 +686,8 @@
       <NukeTimeDisplay landTiles={visibleLandTiles} isShieldMode={isUnzoomed} />
     {/if}
 
-    <!-- Art Layer -->
-    {#if devsettings.showArtLayer && artLayerMesh}
+    <!-- Art Layer / Heatmap Layer -->
+    {#if (devsettings.showArtLayer || heatmapStore.enabled) && artLayerMesh}
       <T is={artLayerMesh} />
     {/if}
 
