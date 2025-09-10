@@ -13,6 +13,7 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import TokenSelect from './token-select.svelte';
   import { Card } from '$lib/components/ui/card';
+  import { cn } from '$lib/utils';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
@@ -46,6 +47,11 @@
   async function getTokenBalance(address?: string) {
     // Only do it on the browser
     if (!address || !accountManager?.getProvider()?.getWalletAccount()) {
+      return 0;
+    }
+
+    if (typeof address !== 'string') {
+      console.error('Invalid address type', address);
       return 0;
     }
 
@@ -169,7 +175,14 @@
     id="sellAmount"
     oninput={() => setLeadingSide('sell')}
   />
-  <TokenSelect class="max-w-32" bind:value={sellToken} />
+
+  <TokenSelect
+    class={cn({
+      'max-w-32': true,
+      'bg-yellow-800': leadingSide === 'buy',
+    })}
+    bind:value={sellToken}
+  />
 </div>
 <div class="mt-2">
   {#if sellTokenBalance != undefined}
@@ -201,7 +214,12 @@
     bind:value={buyAmountVal}
     oninput={() => setLeadingSide('buy')}
   />
-  <TokenSelect class="max-w-32" bind:value={buyToken} />
+  <TokenSelect
+    class={cn({
+      'max-w-32': true,
+    })}
+    bind:value={buyToken}
+  />
 </div>
 <div class="mt-2">
   {#if buyTokenBalance != undefined}

@@ -9,15 +9,16 @@
   import { fetchTokenBalance } from '$lib/accounts/balances';
   import TokenSelect from '$lib/components/swap/token-select.svelte';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
+  import type { Token } from '$lib/interfaces';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
 
   // Svelte 5 reactive states using runes
-  let input1 = $state('');
-  let select1 = $state(data.availableTokens[0]?.address || '');
-  let input2 = $state('');
-  let select2 = $state(data.availableTokens[1]?.address || '');
+  let sellAmount = $state('');
+  let sellToken: Token | undefined = $state(data.availableTokens[0]);
+  let buyAmount = $state('');
+  let buyToken: Token | undefined = $state(data.availableTokens[1]);
   let noRouteAvailable = $state(false);
   let quotes: Quote[] = $state([]);
   let slippage = $state(0.5);
@@ -40,33 +41,27 @@
 
   $effect(() => {
     sellTokenBalance = undefined;
-    if (select1) {
-      getTokenBalance(select1).then((balance) => {
-        sellTokenBalance = CurrencyAmount.fromUnscaled(
-          balance ?? 0,
-          data.availableTokens.find((t) => t.address === select1),
-        );
+    if (sellToken) {
+      getTokenBalance(sellToken.address).then((balance) => {
+        sellTokenBalance = CurrencyAmount.fromUnscaled(balance ?? 0, sellToken);
       });
     }
   });
 
   $effect(() => {
     buyTokenBalance = undefined;
-    if (select2) {
-      getTokenBalance(select2).then((balance) => {
-        buyTokenBalance = CurrencyAmount.fromUnscaled(
-          balance ?? 0,
-          data.availableTokens.find((t) => t.address === select2),
-        );
+    if (buyToken) {
+      getTokenBalance(buyToken.address).then((balance) => {
+        buyTokenBalance = CurrencyAmount.fromUnscaled(balance ?? 0, buyToken);
       });
     }
   });
 
   function handleSwap() {
     // Swap input values
-    [input1, input2] = [input2, input1];
+    [sellAmount, buyAmount] = [buyAmount, sellAmount];
     // Swap selected tokens
-    [select1, select2] = [select2, select1];
+    [sellToken, buyToken] = [buyToken, sellToken];
     // Update leading side
     leadingSide = leadingSide === 'sell' ? 'buy' : 'sell';
   }
@@ -75,28 +70,31 @@
     if (!sellTokenBalance) return;
 
     const amount = sellTokenBalance.rawValue().times(percentage / 100);
-    input1 = amount.toString();
+    sellAmount = amount.toString();
     leadingSide = 'sell';
   }
 
   let debouncedInput = debounce(
     () => {
-      if (!select1 || !select2 || (!Number(input1) && !Number(input2))) {
+      if (
+        !sellToken ||
+        !buyToken ||
+        (!Number(sellAmount) && !Number(buyAmount))
+      ) {
         return;
       }
-
-      const sellToken = data.availableTokens.find((t) => t.address === select1);
-      const buyToken = data.availableTokens.find((t) => t.address === select2);
 
       return {
         leadingSide,
         buyToken,
         sellToken,
         buyAmount:
-          leadingSide === 'buy' ? CurrencyAmount.fromScaled(input2) : undefined,
+          leadingSide === 'buy'
+            ? CurrencyAmount.fromScaled(buyAmount)
+            : undefined,
         sellAmount:
           leadingSide === 'sell'
-            ? CurrencyAmount.fromScaled(input1)
+            ? CurrencyAmount.fromScaled(sellAmount)
             : undefined,
       } as QuoteParams & { leadingSide: 'sell' | 'buy' };
     },
@@ -119,11 +117,11 @@
       }
 
       if (data.leadingSide == 'buy') {
-        input1 = CurrencyAmount.fromUnscaled(q[0].sellAmount)
+        sellAmount = CurrencyAmount.fromUnscaled(q[0].sellAmount)
           .rawValue()
           .toString();
       } else {
-        input2 = CurrencyAmount.fromUnscaled(q[0].buyAmount)
+        buyAmount = CurrencyAmount.fromUnscaled(q[0].buyAmount)
           .rawValue()
           .toString();
       }
@@ -168,19 +166,19 @@
       <input
         type="number"
         class="w-full bg-[#282835] text-white rounded p-1"
-        bind:value={input1}
+        bind:value={sellAmount}
         oninput={() => (leadingSide = 'sell')}
       />
-      <TokenSelect bind:value={select1} />
+      <TokenSelect bind:value={sellToken} />
     </div>
     <div class="flex gap-2 rounded border border-[#ffffff55] p-2 mt-1">
       <input
         type="number"
         class="w-full bg-[#282835] text-white rounded p-1"
-        bind:value={input2}
+        bind:value={buyAmount}
         oninput={() => (leadingSide = 'buy')}
       />
-      <TokenSelect bind:value={select2} />
+      <TokenSelect bind:value={buyToken} />
     </div>
     <!-- svelte-ignore a11y_consider_explicit_label -->
     <button
