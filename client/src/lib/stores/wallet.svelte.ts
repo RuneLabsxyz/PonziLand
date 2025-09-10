@@ -97,7 +97,7 @@ export class WalletStore {
       }
 
       // If there is no balances from torii, then we need to fetch them from RPC
-      if (this.balances.size == 0) {
+      if (this.balances.size == 0 || tokenBalances.items.length == 0) {
         await this.getRPCBalances();
       }
 
