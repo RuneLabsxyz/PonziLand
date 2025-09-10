@@ -105,6 +105,14 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  'price-chart': {
+    id: 'price-chart',
+    type: 'price-chart',
+    position: { x: 60, y: 50 },
+    dimensions: { width: 800, height: 600 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 export const availableWidgets: Widget[] = [
@@ -137,6 +145,12 @@ export const availableWidgets: Widget[] = [
     type: 'leaderboard',
     label: 'Leaderboard',
     icon: '/ui/icons/Icon_Cup.png',
+  },
+  {
+    id: 'price-chart',
+    type: 'price-chart',
+    label: 'Price Chart',
+    icon: '/ui/icons/Icon_Chart.png',
   },
   // {
   //   id: 'notifications',
