@@ -8,7 +8,6 @@ mod systems {
 
 mod interfaces {
     mod systems;
-    mod quests;
 }
 
 mod models {

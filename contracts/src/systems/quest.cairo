@@ -29,9 +29,12 @@ pub trait IQuestSystems<T> {
 pub mod quests {
     use dojo::model::ModelStorage;
     use starknet::ContractAddress;
-    use ponzi_land::interfaces::quests::{
-        IGameDetailsDispatcher, IGameDetailsDispatcherTrait, IGameTokenDispatcher,
-        IGameTokenDispatcherTrait, ISettingsDispatcher, ISettingsDispatcherTrait,
+    use game_components_minigame::interface::{
+        IMinigameDispatcher, IMinigameDispatcherTrait, IMinigameTokenDataDispatcher,
+        IMinigameTokenDataDispatcherTrait,
+    };
+    use game_components_minigame::extensions::settings::interface::{
+        IMinigameSettingsDispatcher, IMinigameSettingsDispatcherTrait,
     };
     use ponzi_land::models::quest::{
         QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest, Reward,
@@ -57,8 +60,8 @@ pub mod quests {
         ) -> u64 {
             let mut world = self.world(DEFAULT_NS());
 
-            let settings_dispatcher = ISettingsDispatcher { contract_address: game_address };
-            let settings_exist = settings_dispatcher.setting_exists(settings_id);
+            let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: game_address };
+            let settings_exist = settings_dispatcher.settings_exist(settings_id);
             let game_address_felt: felt252 = game_address.into();
             assert!(
                 settings_exist,
@@ -66,8 +69,6 @@ pub mod quests {
                 game_address_felt,
                 settings_id,
             );
-
-            // TODO: Add additional validation such as resource type exist, etc
 
             let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
             quest_details_counter.count += 1;
@@ -99,13 +100,13 @@ pub mod quests {
             assert!(land.quest_id == 0, "Land already has a quest");
 
             let id = self.create_quest(
-                starknet::contract_address_const::<0x0>(), //TODO: actually use real game
+                starknet::contract_address_const::<0x21e53a100475fc9f7274c005c7878ca318d8e27894123bce47ebc4b6ea79d7>(), //this is the address of the mock for now
                 land.location,
                 1,
                 1,
                 settings_id,
                 100,
-                1000,
+                1,
                 10000000000000000,
             );
 
@@ -153,16 +154,21 @@ pub mod quests {
             quest_counter.count += 1;
             world.write_model(@quest_counter);
 
-            let game_dispatcher = IGameTokenDispatcher {
+            let game_dispatcher = IMinigameDispatcher {
                 contract_address: quest_details.game_address,
             };
             let game_token_id: u64 = game_dispatcher
-                .mint(
-                    player_name,
-                    quest_details.settings_id,
-                    Option::None,
-                    Option::Some(quest_details.expires_at),
-                    player_address,
+                .mint_game(
+                    Option::Some(player_name), //player name
+                    Option::Some(quest_details.settings_id), //settings id
+                    Option::None, //start
+                    Option::Some(quest_details.expires_at), //end
+                    Option::None, //objective ids
+                    Option::None, //context
+                    Option::None, //client url
+                    Option::None, //renderer address
+                    player_address, //to
+                    true, //soulbound
                 );
 
             let quest = Quest {
@@ -194,10 +200,12 @@ pub mod quests {
             let mut land: Land = world.read_model(quest_details.location);
 
             // get score for the token id
-            let game_dispatcher = IGameDetailsDispatcher {
+            let game_dispatcher = IMinigameTokenDataDispatcher {
                 contract_address: quest_details.game_address,
             };
             let score: u32 = game_dispatcher.score(quest.game_token_id);
+
+            //TODO: handle quest failed 
 
             // check if the score is greater than or equal to the target score
             assert!(
@@ -208,6 +216,7 @@ pub mod quests {
                 score,
             );
 
+            
             land.quest_id = 0;
             land.owner = quest.player_address;
             world.write_model(@land);

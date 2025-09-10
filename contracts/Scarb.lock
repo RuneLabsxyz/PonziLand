@@ -2,6 +2,53 @@
 version = 1
 
 [[package]]
+name = "alexandria_bytes"
+version = "0.3.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+dependencies = [
+ "alexandria_data_structures",
+ "alexandria_math",
+]
+
+[[package]]
+name = "alexandria_data_structures"
+version = "0.3.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+
+[[package]]
+name = "alexandria_encoding"
+version = "0.3.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+dependencies = [
+ "alexandria_bytes",
+ "alexandria_data_structures",
+ "alexandria_math",
+ "alexandria_numeric",
+]
+
+[[package]]
+name = "alexandria_math"
+version = "0.3.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+
+[[package]]
+name = "alexandria_numeric"
+version = "0.3.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+dependencies = [
+ "alexandria_math",
+ "alexandria_searching",
+]
+
+[[package]]
+name = "alexandria_searching"
+version = "0.3.0"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+dependencies = [
+ "alexandria_data_structures",
+]
+
+[[package]]
 name = "dojo"
 version = "1.7.0-alpha.2"
 source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
@@ -28,9 +75,77 @@ version = "0.1.0"
 source = "git+https://github.com/EkuboProtocol/abis?rev=edb6de8c9baf515f1053bbab3d86825d54a63bc3#edb6de8c9baf515f1053bbab3d86825d54a63bc3"
 
 [[package]]
+name = "game_components_metagame"
+version = "1.5.1"
+source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+dependencies = [
+ "game_components_minigame",
+ "game_components_token",
+ "game_components_utils",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+]
+
+[[package]]
+name = "game_components_minigame"
+version = "1.5.1"
+source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+dependencies = [
+ "game_components_metagame",
+ "game_components_token",
+ "game_components_utils",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+]
+
+[[package]]
+name = "game_components_test_starknet"
+version = "1.5.1"
+source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+dependencies = [
+ "game_components_metagame",
+ "game_components_minigame",
+ "game_components_token",
+ "game_components_utils",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+]
+
+[[package]]
+name = "game_components_token"
+version = "1.5.1"
+source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+dependencies = [
+ "game_components_metagame",
+ "game_components_minigame",
+ "game_components_test_starknet",
+ "game_components_utils",
+ "openzeppelin_introspection",
+ "openzeppelin_token",
+]
+
+[[package]]
+name = "game_components_utils"
+version = "1.5.1"
+source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+dependencies = [
+ "alexandria_encoding",
+ "game_components_metagame",
+ "game_components_minigame",
+ "game_components_token",
+ "graffiti",
+]
+
+[[package]]
+name = "graffiti"
+version = "0.1.0"
+source = "git+https://github.com/ponderingdemocritus/graffiti?rev=bc569531791dbc71c6cd8d9bc154c34eedad31fe#bc569531791dbc71c6cd8d9bc154c34eedad31fe"
+
+[[package]]
 name = "openzeppelin_access"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:a39a4ea1582916c637bf7e3aee0832c3fe1ea3a3e39191955e8dc39d08327f9b"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
@@ -39,7 +154,8 @@ dependencies = [
 [[package]]
 name = "openzeppelin_account"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:7e943a2de32ddca4d48e467e52790e380ab1f49c4daddbbbc4634dd930d0243f"
 dependencies = [
  "openzeppelin_introspection",
  "openzeppelin_utils",
@@ -48,17 +164,20 @@ dependencies = [
 [[package]]
 name = "openzeppelin_introspection"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:34e088ecf19e0b3012481a29f1fbb20e600540cb9a5db1c3002a97ebb7f5a32a"
 
 [[package]]
 name = "openzeppelin_security"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:1deb811a239c4f9cc28fc302039e2ffcb19911698a8c612487207448d70d2e6e"
 
 [[package]]
 name = "openzeppelin_token"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:33fcb84a1a76d2d3fff9302094ff564f78d45b743548fd7568c130b272473f66"
 dependencies = [
  "openzeppelin_access",
  "openzeppelin_account",
@@ -69,7 +188,8 @@ dependencies = [
 [[package]]
 name = "openzeppelin_utils"
 version = "1.0.0"
-source = "git+https://github.com/OpenZeppelin/cairo-contracts?tag=v1.0.0#755ce1adbf8d89ed23fbb8daa328fcbeab7c6424"
+source = "registry+https://scarbs.xyz/"
+checksum = "sha256:fd348b31c4a4407add33adc3c2b8f26dca71dbd7431faaf726168f37a91db0c1"
 
 [[package]]
 name = "ponzi_land"
@@ -79,6 +199,7 @@ dependencies = [
  "dojo_cairo_test",
  "dojo_macros",
  "ekubo",
+ "game_components_minigame",
  "openzeppelin_security",
  "openzeppelin_token",
 ]
