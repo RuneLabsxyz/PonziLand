@@ -14,6 +14,7 @@
   import WidgetGuild from './guild/widget-guild.svelte';
   import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
   import WidgetHeatmap from './heatmap/widget-heatmap.svelte';
+  import WidgetSwap from './swap/widget-swap.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -29,7 +30,7 @@
       {#snippet children({ setCustomControls, setCustomTitle })}
         {@const type = widget.type}
         {#if type === 'wallet'}
-          <WidgetWallet {setCustomControls} widgetId={id} />
+          <WidgetWallet {setCustomControls} />
         {:else if type === 'land-hud'}
           <WidgetLandHud {setCustomTitle} />
         {:else if type === 'land-info' && widget.data}
@@ -54,6 +55,8 @@
           <WidgetLeaderboard />
         {:else if type === 'heatmap'}
           <WidgetHeatmap />
+        {:else if type === 'swap'}
+          <WidgetSwap />
         {/if}
       {/snippet}
     </Draggable>

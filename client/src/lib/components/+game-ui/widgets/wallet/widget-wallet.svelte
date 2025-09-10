@@ -8,36 +8,16 @@
   import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
   import WalletBalance from './wallet-balance.svelte';
-  import WalletSwap from './wallet-swap.svelte';
 
   let {
     setCustomControls,
-    widgetId,
   }: {
     setCustomControls: (controls: Snippet<[]> | null) => void;
-    widgetId: string;
   } = $props();
 
   setup();
 
   let copied = $state(false);
-
-  // Get the current widget state to access data
-  let currentWidget = $derived(
-    widgetsStore && Object.values($widgetsStore).find((w) => w.id === widgetId),
-  );
-
-  // Initialize showSwap from widget data, default to true
-  let showSwap = $state(currentWidget?.data?.showSwap ?? true);
-
-  // Update widget data when showSwap changes
-  $effect(() => {
-    if (widgetId && showSwap !== currentWidget?.data?.showSwap) {
-      widgetsStore.updateWidget(widgetId, {
-        data: { ...currentWidget?.data, showSwap },
-      });
-    }
-  });
 
   function copy() {
     try {
@@ -62,6 +42,10 @@
       isOpen: true,
       data: {},
     });
+  }
+
+  function openSwapWidget() {
+    widgetsStore.updateWidget('swap', { isOpen: true });
   }
 
   let socialink = getSocialink();
@@ -111,30 +95,7 @@
 
   <div class="flex flex-col gap-4">
     <WalletBalance {setCustomControls} />
-    <div class="flex flex-col">
-      <button
-        class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
-        onclick={() => (showSwap = !showSwap)}
-      >
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          class="transition-transform {showSwap ? 'rotate-90' : ''}"
-        >
-          <path
-            d="M4 2L8 6L4 10"
-            stroke="currentColor"
-            stroke-width="2"
-            fill="none"
-          />
-        </svg>
-        Swap
-      </button>
-      {#if showSwap}
-        <WalletSwap />
-      {/if}
-    </div>
+    <Button size="md" class="w-full" onclick={openSwapWidget}>Open Swap</Button>
   </div>
 {:else}
   <Button
