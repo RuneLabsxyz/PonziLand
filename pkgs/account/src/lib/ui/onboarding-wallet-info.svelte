@@ -6,7 +6,6 @@
   import { padAddress, shortenHex, shortenAddress } from '../utils.js';
   import { onMount } from 'svelte';
   import { phantomWalletStore } from '../wallets/phantom.svelte.js';
-  import { Icons } from '../assets/symbols.js';
 
   const {
     onconnect,
@@ -42,41 +41,39 @@
 </script>
 
 <div class="wallet-info-container">
-  <span class="connected">Connected</span>
+  <Card>
+  <div class="wallet-header">
+    <span class="connected">Connected</span>
+    <span class="status-dot" aria-hidden="true"></span>
+  </div>
   <div class="wallets-stack">
     {#if accountDataProvider.isConnected}
-      <Card>
-        <div class="account-details">
-          <div class="wallet-label">Starknet</div>
-          <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
-          <button
-            onclick={() => {
-              accountManager?.disconnect();
-            }}
-            aria-label="Logout Starknet"
-          >
-            <img src={Icons.logout.default} alt="logout" class="logout-icon" />
-          </button>
-        </div>
-      </Card>
+      <div class="account-details">
+        <div class="wallet-label">Starknet</div>
+        <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
+        <Button
+          onclick={() => accountManager?.disconnect()}
+          aria-label="Logout Starknet"
+        >
+          x
+        </Button>
+      </div>
     {:else}
-      <Button class="connect-button" onclick={handleConnectWallet}>CONNECT</Button>
+      <Button class="connect-button phantom-button" onclick={handleConnectWallet}>CONNECT</Button>
     {/if}
     
     {#if enablePhantom}
       {#if phantomWalletStore.isConnected}
-        <Card>
           <div class="account-details">
             <div class="wallet-label phantom-label">Phantom</div>
             <p>{shortenAddress(phantomWalletStore.walletAddress, 4)}</p>
-            <button
+            <Button
               onclick={() => phantomWalletStore.disconnect()}
               aria-label="Logout Phantom"
             >
-              <img src={Icons.logout.default} alt="logout" class="logout-icon" />
-            </button>
+            x
+            </Button>
           </div>
-        </Card>
       {:else}
         <Button class="connect-button phantom-button" onclick={handleConnectPhantom}>
           CONNECT WITH PHANTOM
@@ -84,6 +81,7 @@
       {/if}
     {/if}
   </div>
+</Card>
 </div>
 
 <style>
@@ -94,20 +92,44 @@
     margin: 1.25rem;
   }
 
+  .wallet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-bottom: 2px solid #fff;
+  }
+
   .connected {
     font-family: 'PonziNumber', sans-serif;
   }
 
+  .status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background: #10b981;
+    border-radius: 9999px;
+    flex: 0 0 auto;
+  }
+
   .account-details {
+    font-family: 'PonziDS', sans-serif;
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 1rem;
+    border-radius: 0.25rem;
+    border: 1px solid #888;
+
+    padding: 0.25rem 0.75rem;
+    margin-top: 0.5rem;
+
   }
 
-  .logout-icon {
-    height: 1.25rem;
-    width: 1.25rem;
+  .account-details p {
+    margin: 0;
   }
 
   .wallets-stack {

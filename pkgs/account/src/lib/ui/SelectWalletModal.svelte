@@ -28,6 +28,11 @@
         console.log('validWallets', validWallets);
       }
     })();
+
+    function closeModal() {
+      loading = false;
+      visible = false;
+    }
   
     onMount(() => {
       on(window, 'wallet_prompt', async () => {
@@ -69,6 +74,7 @@
         <div class="modal-content">
           <div class="modal-header">
             <div>WALLETS</div>
+            <Button onclick={closeModal}>x</Button>
           </div>
 
           <div class="wallet-list">
@@ -197,9 +203,11 @@
   }
 
   .modal-header {
-    margin-bottom: 1.25rem;
+    font-family: 'PonziNumber', sans-serif;
+    margin-bottom: 1.25 rem;
     display: flex;
     gap: 0.5rem;
+    justify-content: space-between;
   }
 
   .wallet-list {
