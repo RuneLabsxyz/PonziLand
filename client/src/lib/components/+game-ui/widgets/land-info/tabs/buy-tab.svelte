@@ -60,34 +60,6 @@
     CurrencyAmount.fromScaled(stake ?? 0, selectedToken),
   );
 
-  // Helper function to convert price from one token to another using token prices
-  function convertTokenAmount(
-    fromAmount: CurrencyAmount,
-    fromToken: Token,
-    toToken: Token,
-  ): CurrencyAmount | null {
-    if (!fromToken || !toToken) return null;
-
-    // If same token, no conversion needed
-    if (padAddress(fromToken.address) === padAddress(toToken.address)) {
-      return fromAmount;
-    }
-
-    const fromPrice = walletStore.getPrice(fromToken.address);
-    const toPrice = walletStore.getPrice(toToken.address);
-
-    if (!fromPrice || !toPrice) {
-      return null; // Cannot convert without price data
-    }
-
-    // Convert fromAmount to base currency, then to target token
-    // fromAmount * (1/fromPrice.ratio) * toPrice.ratio
-    const baseValue = fromAmount.rawValue().dividedBy(fromPrice.ratio || 1);
-    const convertedValue = baseValue.multipliedBy(toPrice.ratio || 1);
-
-    return CurrencyAmount.fromScaled(convertedValue.toString(), toToken);
-  }
-
   let sellPrice: string = $derived.by(() => {
     if (!selectedToken) return '';
     return untrack(() => {
@@ -104,7 +76,7 @@
       }
 
       // Try to convert the price to the selected token
-      const convertedPrice = convertTokenAmount(
+      const convertedPrice = walletStore.convertTokenAmount(
         originalPrice,
         originalToken,
         selectedToken,

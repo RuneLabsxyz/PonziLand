@@ -170,6 +170,36 @@ export class WalletStore {
     );
   }
 
+  /**
+   * Convert token amount from one token to another using price data
+   */
+  public convertTokenAmount(
+    fromAmount: CurrencyAmount,
+    fromToken: Token,
+    toToken: Token,
+  ): CurrencyAmount | null {
+    if (!fromToken || !toToken) return null;
+
+    // If same token, no conversion needed
+    if (padAddress(fromToken.address) === padAddress(toToken.address)) {
+      return fromAmount;
+    }
+
+    const fromPrice = this.getPrice(fromToken.address);
+    const toPrice = this.getPrice(toToken.address);
+
+    if (!fromPrice || !toPrice) {
+      return null; // Cannot convert without price data
+    }
+
+    // Convert fromAmount to base currency, then to target token
+    // fromAmount * (1/fromPrice.ratio) * toPrice.ratio
+    const baseValue = fromAmount.rawValue().dividedBy(fromPrice.ratio || 1);
+    const convertedValue = baseValue.multipliedBy(toPrice.ratio || 1);
+
+    return CurrencyAmount.fromScaled(convertedValue.toString(), toToken);
+  }
+
   public get allowedTokens(): Token[] {
     return data.availableTokens.filter((token) => {
       return this.balances.get(token.address) !== null;
