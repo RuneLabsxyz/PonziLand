@@ -22,6 +22,7 @@ dojo_macros = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.
 openzeppelin_token = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 openzeppelin_security = { git = "https://github.com/OpenZeppelin/cairo-contracts", tag = "v1.0.0" }
 ekubo = { git = "https://github.com/EkuboProtocol/abis", rev = "edb6de8c9baf515f1053bbab3d86825d54a63bc3" }
+game_components_minigame = { git = "https://github.com/Provable-Games/game-components", tag = "0.0.9" }
 
 
 
