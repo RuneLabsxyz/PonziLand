@@ -21,7 +21,6 @@ export class WalletStore {
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
   private tokenPrices: TokenPrice[] = $state([]);
-
   public tokenBalances = $derived(
     this.balances
       .entries()
