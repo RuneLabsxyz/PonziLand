@@ -1,6 +1,7 @@
 import type { LandTile } from '$lib/components/+game-map/three/landTile';
 import { BuildingLand } from '$lib/api/land/building_land';
 import { AuctionLand } from '$lib/api/land/auction_land';
+import { walletStore, baseToken } from '$lib/stores/wallet.svelte';
 
 // Available parameters for heatmap visualization
 export enum HeatmapParameter {
@@ -52,13 +53,28 @@ export const HEATMAP_PARAMETERS: Record<
     id: HeatmapParameter.SELL_PRICE,
     label: 'Sell Price',
     description: 'Current selling price of the land',
-    unit: 'tokens',
+    unit: `${baseToken?.symbol} equivalent`,
     applicableToBuilding: true,
     applicableToAuction: false,
     defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (BuildingLand.is(tile.land)) {
-        return tile.land.sellPrice.rawValue().toNumber();
+        const sellPrice = tile.land.sellPrice;
+        const landToken = tile.land.token;
+
+        if (!baseToken || !landToken) {
+          return sellPrice.rawValue().toNumber();
+        }
+
+        const convertedPrice = walletStore.convertTokenAmount(
+          sellPrice,
+          landToken,
+          baseToken,
+        );
+
+        return convertedPrice
+          ? convertedPrice.rawValue().toNumber()
+          : sellPrice.rawValue().toNumber();
       }
       return null;
     },
@@ -83,13 +99,28 @@ export const HEATMAP_PARAMETERS: Record<
     id: HeatmapParameter.STAKE_AMOUNT,
     label: 'Stake Amount',
     description: 'Amount of tokens staked on this land',
-    unit: 'tokens',
+    unit: `${baseToken?.symbol} equivalent`,
     applicableToBuilding: true,
     applicableToAuction: true,
     defaultColorScheme: HeatmapColorScheme.COOL,
     extractor: (tile: LandTile) => {
       if (BuildingLand.is(tile.land) || AuctionLand.is(tile.land)) {
-        return tile.land.stakeAmount.rawValue().toNumber();
+        const stakeAmount = tile.land.stakeAmount;
+        const landToken = tile.land.token;
+
+        if (!baseToken || !landToken) {
+          return stakeAmount.rawValue().toNumber();
+        }
+
+        const convertedStake = walletStore.convertTokenAmount(
+          stakeAmount,
+          landToken,
+          baseToken,
+        );
+
+        return convertedStake
+          ? convertedStake.rawValue().toNumber()
+          : stakeAmount.rawValue().toNumber();
       }
       return null;
     },
@@ -150,13 +181,28 @@ export const HEATMAP_PARAMETERS: Record<
     id: HeatmapParameter.AUCTION_START_PRICE,
     label: 'Auction Start Price',
     description: 'Starting price of the auction',
-    unit: 'tokens',
+    unit: `${baseToken?.symbol} equivalent`,
     applicableToBuilding: false,
     applicableToAuction: true,
     defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (AuctionLand.is(tile.land)) {
-        return tile.land.startPrice.rawValue().toNumber();
+        const startPrice = tile.land.startPrice;
+
+        if (!baseToken) {
+          return startPrice.rawValue().toNumber();
+        }
+
+        // Auction prices are already in base token, but convert for consistency
+        const convertedPrice = walletStore.convertTokenAmount(
+          startPrice,
+          baseToken,
+          baseToken,
+        );
+
+        return convertedPrice
+          ? convertedPrice.rawValue().toNumber()
+          : startPrice.rawValue().toNumber();
       }
       return null;
     },
@@ -166,13 +212,28 @@ export const HEATMAP_PARAMETERS: Record<
     id: HeatmapParameter.AUCTION_FLOOR_PRICE,
     label: 'Auction Floor Price',
     description: 'Floor price of the auction',
-    unit: 'tokens',
+    unit: `${baseToken?.symbol} equivalent`,
     applicableToBuilding: false,
     applicableToAuction: true,
     defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (AuctionLand.is(tile.land)) {
-        return tile.land.floorPrice.rawValue().toNumber();
+        const floorPrice = tile.land.floorPrice;
+
+        if (!baseToken) {
+          return floorPrice.rawValue().toNumber();
+        }
+
+        // Auction prices are already in base token, but convert for consistency
+        const convertedPrice = walletStore.convertTokenAmount(
+          floorPrice,
+          baseToken,
+          baseToken,
+        );
+
+        return convertedPrice
+          ? convertedPrice.rawValue().toNumber()
+          : floorPrice.rawValue().toNumber();
       }
       return null;
     },
