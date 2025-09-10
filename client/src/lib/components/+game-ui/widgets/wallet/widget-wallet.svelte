@@ -2,20 +2,42 @@
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import { getSocialink } from '$lib/accounts/social/index.svelte';
   import { Button } from '$lib/components/ui/button';
-  import WalletBalance from './wallet-balance.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { padAddress, shortenHex } from '$lib/utils';
-  import { widgetsStore } from '$lib/stores/widgets.store';
   import { ENABLE_TOKEN_DROP } from '$lib/flags';
+  import { widgetsStore } from '$lib/stores/widgets.store';
+  import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
+  import WalletBalance from './wallet-balance.svelte';
+  import WalletSwap from './wallet-swap.svelte';
 
   let {
     setCustomControls,
-  }: { setCustomControls: (controls: Snippet<[]> | null) => void } = $props();
+    widgetId,
+  }: {
+    setCustomControls: (controls: Snippet<[]> | null) => void;
+    widgetId: string;
+  } = $props();
 
   setup();
 
   let copied = $state(false);
+
+  // Get the current widget state to access data
+  let currentWidget = $derived(
+    widgetsStore && Object.values($widgetsStore).find((w) => w.id === widgetId),
+  );
+
+  // Initialize showSwap from widget data, default to true
+  let showSwap = $state(currentWidget?.data?.showSwap ?? true);
+
+  // Update widget data when showSwap changes
+  $effect(() => {
+    if (widgetId && showSwap !== currentWidget?.data?.showSwap) {
+      widgetsStore.updateWidget(widgetId, {
+        data: { ...currentWidget?.data, showSwap },
+      });
+    }
+  });
 
   function copy() {
     try {
@@ -87,7 +109,33 @@
     </div>
   {/if}
 
-  <WalletBalance {setCustomControls} />
+  <div class="flex flex-col gap-4">
+    <WalletBalance {setCustomControls} />
+    <div class="flex flex-col">
+      <button
+        class="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-2"
+        onclick={() => (showSwap = !showSwap)}
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          class="transition-transform {showSwap ? 'rotate-90' : ''}"
+        >
+          <path
+            d="M4 2L8 6L4 10"
+            stroke="currentColor"
+            stroke-width="2"
+            fill="none"
+          />
+        </svg>
+        Swap
+      </button>
+      {#if showSwap}
+        <WalletSwap />
+      {/if}
+    </div>
+  </div>
 {:else}
   <Button
     class="m-2"
