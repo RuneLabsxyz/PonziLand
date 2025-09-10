@@ -8,7 +8,6 @@
   import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
-  import WalletSwap from './wallet-swap.svelte';
 
   let {
     setCustomControls,
@@ -68,20 +67,15 @@
     {errorMessage}
   </div>
 {/if}
-
-<div class="flex flex-col gap-4">
-  <div>
-    {#each walletStore.tokenBalances as [token, balance]}
-      <div
-        class="flex justify-between items-center relative gap-2 px-4 select-text"
-      >
-        <TokenAvatar {token} />
-        <TokenValueDisplay amount={balance.toBigint()} {token} />
-      </div>
-    {/each}
-  </div>
-
-  <WalletSwap />
+<div>
+  {#each walletStore.tokenBalances as [token, balance]}
+    <div
+      class="flex justify-between items-center relative gap-2 px-4 select-text"
+    >
+      <TokenAvatar {token} />
+      <TokenValueDisplay amount={balance.toBigint()} {token} />
+    </div>
+  {/each}
 </div>
 
 {#snippet refreshControls()}
