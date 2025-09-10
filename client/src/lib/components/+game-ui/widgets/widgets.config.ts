@@ -105,13 +105,15 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
-  heatmap: {
+  'data-maps': {
     id: 'data-maps',
-    type: 'heatmap',
+    type: 'data-maps',
     position: { x: 60, y: 40 },
-    dimensions: { width: 340, height: 500 },
+    dimensions: { width: 340, height: 0 },
     isMinimized: false,
     isOpen: false,
+    disableResize: true,
+    fixedStyles: 'width: 340px; height: auto;',
   },
   swap: {
     id: 'swap',
@@ -158,7 +160,7 @@ export const availableWidgets: Widget[] = [
   },
   {
     id: 'data-maps',
-    type: 'heatmap',
+    type: 'data-maps',
     label: 'Data Maps',
     icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
   },

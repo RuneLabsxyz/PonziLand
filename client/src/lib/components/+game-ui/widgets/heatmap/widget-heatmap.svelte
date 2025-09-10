@@ -121,7 +121,7 @@
   }
 </script>
 
-<div class="flex flex-col gap-4 p-4 min-w-[320px] min-h-0 h-full">
+<div class="flex flex-col gap-4">
   <!-- Enable/Disable Toggle -->
   <div class="flex items-center justify-between">
     <Label class="font-ponzi-number stroke-3d-black">Enable DataMaps</Label>
