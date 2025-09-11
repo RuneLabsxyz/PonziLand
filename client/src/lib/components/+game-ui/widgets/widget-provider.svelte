@@ -15,6 +15,7 @@
   import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
   import WidgetHeatmap from './heatmap/widget-heatmap.svelte';
   import WidgetSwap from './swap/widget-swap.svelte';
+  import WidgetDisclaimer from './disclaimer/widget-disclaimer.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -57,6 +58,8 @@
           <WidgetHeatmap />
         {:else if type === 'swap'}
           <WidgetSwap />
+        {:else if type === 'disclaimer'}
+          <WidgetDisclaimer />
         {/if}
       {/snippet}
     </Draggable>
