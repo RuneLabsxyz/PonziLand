@@ -63,7 +63,7 @@ pub mod quests {
 
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: game_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
-            let (settings_address, _) = minigame_world.dns(@"settings").unwrap();
+            let (settings_address, _) = minigame_world.dns(@"settings_systems").unwrap();
             let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
             let settings_exist = settings_dispatcher.settings_exist(settings_id);
             let game_address_felt: felt252 = game_address.into();
