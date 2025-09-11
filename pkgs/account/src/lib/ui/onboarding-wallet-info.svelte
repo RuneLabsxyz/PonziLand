@@ -86,10 +86,9 @@
 
 <style>
   .wallet-info-container {
-    position: fixed;
-    top: 0;
-    right: 0;
-    margin: 1.25rem;
+    margin: 1.25rem auto;
+    max-width: 28rem;
+    width: 100%;
   }
 
   .wallet-header {
