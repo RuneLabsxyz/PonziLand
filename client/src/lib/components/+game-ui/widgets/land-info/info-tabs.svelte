@@ -47,6 +47,22 @@
         BUY
       </Button>
     {/if}
+    <Button
+      disabled
+      class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
+      variant={activeTab === 'history' ? 'blue' : undefined}
+      onclick={() => setActiveTab('history')}
+    >
+      HISTORY (todo)
+    </Button>
+    <Button
+      disabled
+      class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
+      variant={activeTab === 'quests' ? 'blue' : undefined}
+      onclick={() => setActiveTab('quests')}
+    >
+      Quests
+    </Button>
   </div>
 
   <div class="w-full h-full mt-4">
@@ -62,5 +78,7 @@
       isActive={activeTab === 'buy'}
       {auctionPrice}
     />
+    <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
+    <QuestsTab {land} bind:activeTab isActive={activeTab === 'quests'} />
   </div>
 </div>
