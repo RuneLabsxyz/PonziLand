@@ -65,6 +65,7 @@ pub mod quests {
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
             let (settings_address, _) = minigame_world.dns(@"settings_systems").unwrap();
             let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
+            panic!("settings address: {}", settings_address);
             let settings_exist = settings_dispatcher.settings_exist(settings_id);
             let game_address_felt: felt252 = game_address.into();
             assert!(
@@ -75,9 +76,6 @@ pub mod quests {
             );
 
             let address_felt: felt252 = game_address.into();
-
-            panic!("settings address: {}", address_felt);
-
             let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
             quest_details_counter.count += 1;
 
