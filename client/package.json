@@ -47,7 +47,7 @@
   "dependencies": {
     "@argent/x-sessions": "=8.0.1",
     "@avnu/avnu-sdk": "3.1.0",
-    "@cartridge/controller": "0.10.0",
+    "@cartridge/controller": "0.10.1",
     "@cartridge/presets": "0.5.2",
     "@dojoengine/core": "1.7.0-preview.3",
     "@dojoengine/create-burner": "1.7.0-preview.3",

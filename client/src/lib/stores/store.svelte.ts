@@ -7,6 +7,8 @@ import { AuctionLand } from '$lib/api/land/auction_land';
 import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { parseDojoCall } from '@dojoengine/core';
+import { getManifest } from '$lib/manifest';
 
 // Main stores following Dojo subscription pattern
 export let landStore = $state(new LandTileStore());
