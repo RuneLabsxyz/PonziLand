@@ -17,6 +17,7 @@ export class BuildingLand extends BaseLand {
       sell_price: land._sell_price,
       token_used: land._token_used,
       level: land._level,
+      quest_id: land._quest_id,
     } as unknown as Land;
 
     // Create new instance
