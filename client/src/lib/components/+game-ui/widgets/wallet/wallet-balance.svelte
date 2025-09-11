@@ -53,11 +53,6 @@
       <TokenAvatar token={baseToken} class="h-6 w-6" />
     </div>
   {/if}
-  {#if loadingBalance}
-    <div class="w-6 h-6 flex items-center justify-center">
-      <RotatingCoin />
-    </div>
-  {/if}
 </div>
 
 {#if errorMessage}
