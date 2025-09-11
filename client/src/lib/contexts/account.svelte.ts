@@ -29,12 +29,12 @@ import { getContext, setContext } from 'svelte';
 export const USE_BURNER = PUBLIC_DOJO_BURNER_ADDRESS != 'null';
 
 export const WalletWeights: Record<string, number> = {
-  // Controller is preferred.
-  controller: 99,
-
   // Session-supported wallets (ordering alphabetically)
-  argentX: 21,
-  braavos: 20,
+  argentX: 31,
+  braavos: 30,
+
+  // Controller after, as people are less likely to have tokens on it
+  controller: 20,
 
   // Other wallets (sorted alphabetically)
   fordefi: 12,
