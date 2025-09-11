@@ -66,8 +66,8 @@ pub mod quests {
             let (settings_address, _) = minigame_world.dns(@"settings_systems").unwrap();
             let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
             let settings_address_felt: felt252 = settings_address.into();
-            panic!("settings address: {}", settings_address_felt);
             let settings_exist = settings_dispatcher.settings_exist(settings_id);
+            panic!("settings exist: {}", settings_exist);
             let game_address_felt: felt252 = game_address.into();
             assert!(
                 settings_exist,
