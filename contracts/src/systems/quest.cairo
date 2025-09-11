@@ -67,7 +67,6 @@ pub mod quests {
             let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
             let settings_address_felt: felt252 = settings_address.into();
             let settings_exist = settings_dispatcher.settings_exist(settings_id);
-            panic!("settings exist: {}", settings_exist);
             let game_address_felt: felt252 = game_address.into();
             assert!(
                 settings_exist,
@@ -77,7 +76,7 @@ pub mod quests {
             );
 
             let address_felt: felt252 = game_address.into();
-            panic!("game address: {}", address_felt);
+            panic!("settings address: {}", settings_address_felt);
             let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
             quest_details_counter.count += 1;
 
@@ -108,7 +107,7 @@ pub mod quests {
             assert!(land.quest_id == 0, "Land already has a quest");
 
             let id = self.create_quest(
-                starknet::contract_address_const::<0x21e53a100475fc9f7274c005c7878ca318d8e27894123bce47ebc4b6ea79d7>(), //this is the address of the mock for now
+                starknet::contract_address_const::<0x06573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26>(), //this is the address of the mock for now
                 land.location,
                 1,
                 1,
