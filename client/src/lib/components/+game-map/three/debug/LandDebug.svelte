@@ -299,7 +299,7 @@
   }
 </script>
 
-<Pane title="Land Info" position="draggable" x={360} y={120}>
+<Pane title="Land Info" position="draggable" x={380} y={20}>
   <Folder title="Basic">
     <Point
       bind:value={location}
