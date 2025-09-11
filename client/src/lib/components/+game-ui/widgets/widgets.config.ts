@@ -125,6 +125,18 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     disableResize: true,
     fixedStyles: 'width: 400px; height: auto;',
   },
+  disclaimer: {
+    id: 'disclaimer',
+    type: 'disclaimer',
+    position: { x: window.innerWidth / 2 - 200, y: window.innerHeight / 2 - 150 },
+    dimensions: { width: 400, height: 0 },
+    fixedStyles: 'width: 400px; height: auto;',
+    isMinimized: false,
+    isOpen: true,
+    disableResize: true,
+    disableControls: true,
+    zIndex: 9999,
+  },
 };
 
 export const availableWidgets: Widget[] = [
