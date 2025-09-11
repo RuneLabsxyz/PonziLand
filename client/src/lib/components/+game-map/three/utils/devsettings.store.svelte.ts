@@ -18,7 +18,7 @@ export let devsettings = $state({
   showUI: true,
   showNukes: true,
   showOwnerIndicator: true,
-  showNukeTimes: false,
+  showNukeTimes: true,
   showArtLayer: false,
   artLayerOpacity: 1,
   showHeatmap: false,
