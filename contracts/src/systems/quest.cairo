@@ -76,6 +76,7 @@ pub mod quests {
             );
 
             let address_felt: felt252 = game_address.into();
+            panic!("settings address: {}", settings_address_felt);
             let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
             quest_details_counter.count += 1;
 
