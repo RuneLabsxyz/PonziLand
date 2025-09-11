@@ -108,6 +108,7 @@ export async function SetLandQuest(location: string) {
   let res = await sdk.client.quests.setLandQuest(
     account()?.getWalletAccount()!,
     location,
+    0,
   );
   notificationQueue.addNotification(res?.transaction_hash ?? null, 'set quest tile');
   return res;
@@ -135,8 +136,21 @@ export async function StartQuest(location: string) {
   let res = await sdk.client.quests.startQuest(
     account()?.getWalletAccount()!,
     location,
+    0,
   );
   notificationQueue.addNotification(res?.transaction_hash ?? null, 'start quest');
+  return res;
+}
+
+export async function GetQuest(questId: number) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+  let res = await sdk.client.quests.getQuest(
+    account()?.getWalletAccount()!,
+    questId,
+  );
   return res;
 }
 
