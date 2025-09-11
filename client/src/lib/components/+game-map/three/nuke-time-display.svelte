@@ -13,13 +13,21 @@
   import { BuildingLand } from '$lib/api/land/building_land';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { landStore } from '$lib/stores/store.svelte';
+  import { padAddress } from '$lib/utils';
 
   interface Props {
     landTiles: LandTile[];
     isShieldMode?: boolean;
+    isUnzoomed?: boolean;
+    currentUserAddress?: string;
   }
 
-  let { landTiles, isShieldMode = false }: Props = $props();
+  let {
+    landTiles,
+    isShieldMode = false,
+    isUnzoomed = false,
+    currentUserAddress,
+  }: Props = $props();
 
   const textureCache = new TextTextureCache();
   const textureLoader = new TextureLoader();
@@ -41,17 +49,6 @@
     texture.colorSpace = 'srgb';
   });
 
-  let nukeTimeData = $state<
-    Map<
-      string,
-      {
-        text: string;
-        position: [number, number, number];
-        shieldType: keyof typeof shieldTextures;
-      }
-    >
-  >(new Map());
-
   // Determine shield type based on days remaining (same logic as land-nuke-shield.svelte)
   function getShieldType(days: number): keyof typeof shieldTextures {
     if (days >= 7) return 'blue';
@@ -61,88 +58,166 @@
     return 'red';
   }
 
-  // Calculate nuke times for all lands
-  $effect(() => {
-    const calculateNukeTimes = async () => {
-      if (!landTiles || landTiles.length === 0) return;
+  // Check if the current user owns the land tile
+  function isOwnedByCurrentUser(tile: LandTile): boolean {
+    if (!currentUserAddress || !BuildingLand.is(tile.land)) return false;
+    return padAddress(tile.land.owner) === padAddress(currentUserAddress);
+  }
 
-      const newNukeTimeData = new Map<
-        string,
-        {
-          text: string;
-          position: [number, number, number];
-          shieldType: keyof typeof shieldTextures;
-        }
-      >();
+  // Determine if nuke time should be displayed for this tile
+  function shouldShowNukeTime(tile: LandTile): boolean {
+    // Always show when zoomed in
+    if (!isUnzoomed) return true;
 
-      for (const tile of landTiles) {
-        // Only process building lands with neighbors
-        if (!BuildingLand.is(tile.land)) {
-          continue;
-        }
+    // When unzoomed, only show for lands owned by current user
+    return isOwnedByCurrentUser(tile);
+  }
 
-        try {
-          // Convert BaseLand to LandWithActions
-          const landWithActions = createLandWithActions(
-            tile.land,
-            landStore.getAllLands,
+  // Format nuke time for display
+  function formatNukeTime(timeInSeconds: number): {
+    text: string;
+    shieldType: keyof typeof shieldTextures;
+  } {
+    const parsedTime = parseNukeTime(timeInSeconds);
+
+    let displayText = '';
+    if (parsedTime.days > 0) {
+      displayText = `${parsedTime.days}d`;
+    } else if (parsedTime.hours > 0) {
+      displayText = `${parsedTime.hours}h`;
+    } else if (parsedTime.minutes > 0) {
+      displayText = `${parsedTime.minutes}m`;
+    } else {
+      displayText = 'NUKE!';
+    }
+
+    const shieldType = getShieldType(parsedTime.days);
+    return { text: displayText, shieldType };
+  }
+
+  // Cache for nuke time calculations
+  let nukeTimeCache = $state(
+    new Map<string, { timeInSeconds: number; lastCalculated: number }>(),
+  );
+
+  // Filtered land tiles that should show nuke times
+  let visibleNukeTiles = $derived(
+    landTiles.filter((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+      if (!shouldShowNukeTime(tile)) return false;
+
+      // Check if it has neighbors
+      try {
+        const landWithActions = createLandWithActions(
+          tile.land,
+          landStore.getAllLands,
+        );
+        return landWithActions.getNeighbors()?.getNeighbors()?.length > 0;
+      } catch {
+        return false;
+      }
+    }),
+  );
+
+  // Reactive nuke time data calculation with cached async calculations
+  let nukeTimeData = $derived.by(() => {
+    const dataMap = new Map<
+      string,
+      {
+        text: string;
+        position: [number, number, number];
+        shieldType: keyof typeof shieldTextures;
+        timeInSeconds?: number;
+      }
+    >();
+
+    for (const tile of visibleNukeTiles) {
+      try {
+        const locationKey = tile.land.locationString;
+        const cachedResult = nukeTimeCache.get(locationKey);
+
+        // Use cached result if available and recent (within 30 seconds)
+        const now = Date.now();
+        const useCache =
+          cachedResult && now - cachedResult.lastCalculated < 30000;
+
+        if (useCache) {
+          const { text, shieldType } = formatNukeTime(
+            cachedResult.timeInSeconds,
           );
-
-          // Check if it has neighbors
-          if (landWithActions.getNeighbors()?.getNeighbors()?.length === 0) {
-            continue;
-          }
-
-          const timeInSeconds = await estimateNukeTime(landWithActions);
-          const parsedTime = parseNukeTime(timeInSeconds);
-
-          // Format the time for display
-          let displayText = '';
-          if (parsedTime.days > 0) {
-            displayText = `${parsedTime.days}d`;
-          } else if (parsedTime.hours > 0) {
-            displayText = `${parsedTime.hours}h`;
-          } else if (parsedTime.minutes > 0) {
-            displayText = `${parsedTime.minutes}m`;
-          } else {
-            displayText = 'NUKE!';
-          }
-
-          // Determine shield type based on days remaining
-          const shieldType = getShieldType(parsedTime.days);
-
-          newNukeTimeData.set(tile.land.locationString, {
-            text: displayText,
-            position: [
-              tile.position[0],
-              tile.position[1] + 0.1, // Elevated above the tile
-              tile.position[2], // Offset toward the top (negative Z is forward/top)
-            ],
-            shieldType,
-          });
-        } catch (error) {
-          console.warn(
-            'Failed to calculate nuke time for tile:',
-            tile.land.locationString,
-            error,
-          );
-          newNukeTimeData.set(tile.land.locationString, {
-            text: '?',
+          dataMap.set(locationKey, {
+            text,
             position: [
               tile.position[0],
               tile.position[1] + 0.1,
-              tile.position[2], // Offset toward the top (negative Z is forward/top)
+              tile.position[2],
             ],
-            shieldType: 'grey', // Default to grey shield for errors
+            shieldType,
+            timeInSeconds: cachedResult.timeInSeconds,
+          });
+        } else {
+          // Trigger async calculation and use placeholder for now
+          calculateNukeTimeAsync(tile);
+
+          // Use fallback display while calculating
+          dataMap.set(locationKey, {
+            text: '...',
+            position: [
+              tile.position[0],
+              tile.position[1] + 0.1,
+              tile.position[2],
+            ],
+            shieldType: 'grey',
           });
         }
+      } catch (error) {
+        console.warn(
+          'Failed to process nuke time for tile:',
+          tile.land.locationString,
+          error,
+        );
+        dataMap.set(tile.land.locationString, {
+          text: '?',
+          position: [
+            tile.position[0],
+            tile.position[1] + 0.1,
+            tile.position[2],
+          ],
+          shieldType: 'grey',
+        });
       }
+    }
 
-      nukeTimeData = newNukeTimeData;
-    };
-
-    calculateNukeTimes();
+    return dataMap;
   });
+
+  // Async function to calculate nuke times and update cache
+  async function calculateNukeTimeAsync(tile: LandTile) {
+    if (!BuildingLand.is(tile.land)) return;
+
+    try {
+      const landWithActions = createLandWithActions(
+        tile.land,
+        landStore.getAllLands,
+      );
+      const timeInSeconds = await estimateNukeTime(landWithActions);
+
+      // Update cache with new result
+      nukeTimeCache.set(tile.land.locationString, {
+        timeInSeconds,
+        lastCalculated: Date.now(),
+      });
+
+      // Trigger reactivity update
+      nukeTimeCache = new Map(nukeTimeCache);
+    } catch (error) {
+      console.warn(
+        'Failed to calculate nuke time for tile:',
+        tile.land.locationString,
+        error,
+      );
+    }
+  }
 
   const textGeometry = new PlaneGeometry(0.4, 0.2);
   const shieldGeometry = new PlaneGeometry(0.3, 0.3); // Slightly larger for shield background

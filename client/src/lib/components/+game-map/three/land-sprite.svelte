@@ -685,7 +685,12 @@
     {/if}
 
     {#if devsettings.showNukeTimes}
-      <NukeTimeDisplay landTiles={visibleLandTiles} isShieldMode={isUnzoomed} />
+      <NukeTimeDisplay
+        landTiles={visibleLandTiles}
+        isShieldMode={isUnzoomed}
+        {isUnzoomed}
+        currentUserAddress={accountState.address}
+      />
     {/if}
 
     <!-- Art Layer / Heatmap Layer -->
