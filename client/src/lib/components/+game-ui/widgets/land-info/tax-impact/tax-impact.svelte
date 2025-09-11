@@ -32,7 +32,7 @@
   let taxes = $state(0); // 1 neighbor as this is per neighbor
 
   const BASE_TOKEN = data.mainCurrencyAddress;
-  
+
   let baseToken = $derived(
     data.availableTokens.find((token) => token.address === BASE_TOKEN),
   );
@@ -42,6 +42,8 @@
     { symbol: string; address: string; ratio: number | null }[]
   >([]);
   let totalYieldValue: number = $state(0);
+  let yieldPerNeighbor: number = $state(0);
+  let currentNeighborCount: number = $state(0);
 
   $effect(() => {
     if (sellAmountVal) {
@@ -102,9 +104,20 @@
           );
         }
         totalYieldValue = totalValue;
+
+        // Calculate yield per neighbor based on current neighbors
+        if (currentNeighborCount > 0) {
+          yieldPerNeighbor = totalValue / currentNeighborCount;
+        } else {
+          yieldPerNeighbor = 0;
+        }
       });
     });
   });
+
+  // Scaled yield calculations based on selected number of neighbors
+  let scaledCurrentYield = $derived(yieldPerNeighbor * nbNeighbors);
+  let scaledMaxYield = $derived(yieldPerNeighbor * maxNumberOfNeighbors);
 
   let filteredNeighbors = $derived.by(() => {
     const filteredNeighbors = neighbors
@@ -179,6 +192,7 @@
   });
 
   let estimatedNukeTimeSeconds = $state(0);
+  let maxNukeTimeSeconds = $state(0);
 
   $effect(() => {
     if (stakeAmountVal) {
@@ -189,15 +203,54 @@
       const remainingNukeTimeFromNow = remainingSeconds;
 
       estimatedNukeTimeSeconds = remainingNukeTimeFromNow;
+
+      // Calculate max nuke time for 8 neighbors
+      let maxRemainingHours =
+        Number(stakeAmountVal) / (taxes * maxNumberOfNeighbors);
+      let maxRemainingSeconds = maxRemainingHours * 3600;
+      maxNukeTimeSeconds = maxRemainingSeconds;
     } else {
       estimateNukeTime(land).then((time) => {
         estimatedNukeTimeSeconds = time;
+
+        // Calculate max nuke time based on current balance and max neighbors
+        const currentBalance = land.balance || 0;
+        let maxRemainingHours =
+          Number(currentBalance) / (taxes * maxNumberOfNeighbors);
+        let maxRemainingSeconds = maxRemainingHours * 3600;
+        maxNukeTimeSeconds = maxRemainingSeconds;
       });
     }
   });
 
   let estimatedTimeString = $derived.by(() => {
     const time = estimatedNukeTimeSeconds;
+
+    if (time === 0) {
+      return '0s';
+    }
+
+    const days = Math.floor(time / (3600 * 24));
+    const hours = Math.floor((time % (3600 * 24)) / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60);
+
+    const parts = [
+      days ? `${days}d` : '',
+      hours ? `${hours}h` : '',
+      minutes ? `${minutes}m` : '',
+      seconds ? `${seconds}s` : '',
+    ];
+
+    const final = parts.filter(Boolean).join(' ');
+    if (!final) {
+      return 'Now !!!';
+    }
+    return final;
+  });
+
+  let maxNukeTimeString = $derived.by(() => {
+    const time = maxNukeTimeSeconds;
 
     if (time === 0) {
       return '0s';
@@ -242,18 +295,6 @@
     neighbors
   </p>
 
-  <!-- Potential Yield Display -->
-  <div class="flex w-full justify-center select-text bg-[#1E1E2D] rounded px-4 py-2">
-    <div class="flex flex-col items-center text-ponzi-number">
-      <div class="opacity-50 text-sm">Potential Yield / hour :</div>
-      <div class="text-green-500 flex items-center gap-2">
-        <span class="text-xl stroke-3d-black"
-          >+ {displayCurrency(totalYieldValue)}</span
-        >
-        <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
-      </div>
-    </div>
-  </div>
   <div class="flex gap-2">
     <div>
       {#if filteredNeighbors}
@@ -262,6 +303,8 @@
     </div>
     <PonziSlider bind:value={nbNeighbors} />
     <div class="flex flex-col flex-1 ml-4 justify-center tracking-wide">
+      <!-- <hr class="my-1 opacity-50" /> -->
+
       <div
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
@@ -270,75 +313,44 @@
           <span class="text-xl text-blue-300 leading-none">{nbNeighbors}</span>
           <span class="opacity-50"> neighbors </span>
         </div>
-        <div class="text-red-500">
+        <!-- <div class="text-red-500">
           -{displayCurrency(Number(taxes) * nbNeighbors)}
           {selectedToken?.symbol}
-        </div>
+        </div> -->
       </div>
+
       <hr class="my-1 opacity-50" />
-      
-      <!-- Net Yield for Selected Neighbors -->
+      <!-- 6. Estimated yield with X neighbors -->
       <div
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
         <div>
-          <span class="opacity-50">Net yield with</span>
-          <span class="text-blue-300 leading-none">{nbNeighbors}</span>
-          <span class="opacity-50"> neighbors</span>
+          <span class="opacity-50">Estimated yield</span>
+          <!-- <span class="text-blue-300 leading-none"> {nbNeighbors}</span>
+          <span class="opacity-50"> neighbors</span> -->
         </div>
-        <div class="{totalYieldValue - (Number(taxes) * nbNeighbors) >= 0 ? 'text-green-500' : 'text-red-500'} flex items-center gap-1">
+        <div
+          class="{scaledCurrentYield - Number(taxes) * nbNeighbors >= 0
+            ? 'text-green-500'
+            : 'text-red-500'} flex items-center gap-1"
+        >
           <span>
-            {totalYieldValue - (Number(taxes) * nbNeighbors) >= 0 ? '+' : '-'}
-            {displayCurrency(Math.abs(totalYieldValue - (Number(taxes) * nbNeighbors)))}
-          </span>
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
-      </div>
-      
-      <!-- Max Net Yield -->
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div>
-          <span class="opacity-50">Max net yield</span>
-          <span class="opacity-50"> (8 neighbors)</span>
-        </div>
-        <div class="{totalYieldValue - (Number(taxes) * maxNumberOfNeighbors) >= 0 ? 'text-green-500' : 'text-red-500'} flex items-center gap-1">
-          <span>
-            {totalYieldValue - (Number(taxes) * maxNumberOfNeighbors) >= 0 ? '+' : '-'}
-            {displayCurrency(Math.abs(totalYieldValue - (Number(taxes) * maxNumberOfNeighbors)))}
+            {scaledCurrentYield - Number(taxes) * nbNeighbors >= 0 ? '+' : '-'}
+            {displayCurrency(
+              Math.abs(scaledCurrentYield - Number(taxes) * nbNeighbors),
+            )}
           </span>
           <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
 
-      <hr class="my-1 opacity-50" />
-      
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div class="opacity-50">Per neighbors / h</div>
-        <div class="text-red-500">
-          -{displayCurrency(Number(taxes))}
-          {selectedToken?.symbol}
-        </div>
-      </div>
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div class="opacity-50">Max tax / h</div>
-        <div class="text-red-500">
-          -{displayCurrency(Number(taxes) * maxNumberOfNeighbors)}
-          {selectedToken?.symbol}
-        </div>
-      </div>
       <div
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
         <div>
           <span class="opacity-50">Nuke time with</span>
-          <span class="text-blue-300 leading-none">{nbNeighbors}</span>
-          <span class="opacity-50"> neighbors </span>
+          <!-- <span class="text-blue-300 leading-none">{nbNeighbors}</span>
+          <span class="opacity-50"> neighbors </span> -->
         </div>
         <div
           class=" {estimatedTimeString.includes('Now')
@@ -346,6 +358,30 @@
             : 'text-green-500'}"
         >
           {estimatedTimeString}
+        </div>
+      </div>
+
+      <hr class="my-1 opacity-50" />
+
+      <!-- Estimated earn per neighbor -->
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div class="opacity-50">Estd. earn / neighbor</div>
+        <div class="text-green-500 flex items-center gap-1">
+          <span>+{displayCurrency(yieldPerNeighbor)}</span>
+          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
+        </div>
+      </div>
+
+      <!-- 1. Cost per neighbor -->
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div class="opacity-50">Cost / neighbor / h</div>
+        <div class="text-red-500">
+          -{displayCurrency(Number(taxes))}
+          {selectedToken?.symbol}
         </div>
       </div>
     </div>
