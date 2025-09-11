@@ -46,6 +46,7 @@ export const createLandWithActions = (
     tokenAddress: land.token?.address ?? null,
     token: land.token,
     location: land.locationString,
+    quest_id: land.quest_id,
 
     async wait() {},
 
