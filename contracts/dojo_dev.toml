@@ -25,7 +25,7 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 [writers]
 # We need to be a writer to add events...
-"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config", "ponzi_land-quests"]
 
 [init_call_args]
 "ponzi_land-auth" = [
