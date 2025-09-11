@@ -1,22 +1,197 @@
 <script lang="ts">
-    import type { LandWithActions } from '$lib/api/land';
-    import type { TabType } from '$lib/interfaces';
-  
-    let {
-      land,
-      activeTab = $bindable(),
-      isActive = false,
-    }: {
-      land: LandWithActions;
-      activeTab: TabType;
-      isActive?: boolean;
-    } = $props();
-  </script>
-  
-  {#if isActive}
-    <div class="w-full h-full">
-      <!-- Quests tab content will go here -->
-      <p>Quests data and information</p>
+  import account from '$lib/account.svelte';
+  import type { LandWithActions } from '$lib/api/land';
+  import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { useAccount } from '$lib/contexts/account.svelte';
+  import type { TabType } from '$lib/interfaces';
+  import { gameSounds } from '$lib/stores/sfx.svelte';
+  import { SetLandQuest, RemoveLandQuest, StartQuest } from '$lib/stores/store.svelte';
+  import { padAddress } from '$lib/utils';
+
+  let {
+    land,
+    activeTab = $bindable(),
+    isActive = false,
+  }: {
+    land: LandWithActions;
+    activeTab: TabType;
+    isActive?: boolean;
+  } = $props();
+
+  let isOwner = $derived(
+    padAddress(account.address ?? '') == padAddress(land.owner),
+  );
+
+  let hasQuest = $derived(
+    land.quest_id && BigInt(land.quest_id.toString()) > 0n
+  );
+
+  let loading = $state(false);
+  let accountManager = useAccount();
+
+  async function handleSetQuestClick() {
+    loading = true;
+    console.log('Setting land as quest land');
+
+    try {
+      const result = await SetLandQuest(land.location);
+      
+      if (result?.transaction_hash) {
+        console.log('Setting quest land with TX: ', result.transaction_hash);
+        gameSounds.play('claim');
+
+        // Wait for transaction confirmation
+        await accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+          
+        console.log('Quest land set successfully');
+      }
+    } catch (error) {
+      console.error(
+        `Error setting quest land for location ${land.location}:`,
+        error,
+      );
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function handleRemoveQuestClick() {
+    loading = true;
+    console.log('Removing quest land');
+
+    try {
+      const result = await RemoveLandQuest(land.location);
+      
+      if (result?.transaction_hash) {
+        console.log('Removing quest land with TX: ', result.transaction_hash);
+        gameSounds.play('claim');
+
+        // Wait for transaction confirmation
+        await accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+          
+        console.log('Quest land removed successfully');
+      }
+    } catch (error) {
+      console.error(
+        `Error removing quest land for location ${land.location}:`,
+        error,
+      );
+    } finally {
+      loading = false;
+    }
+  }
+
+  async function handleChallengeQuestClick() {
+    loading = true;
+    console.log('Challenging quest land');
+
+    try {
+      // For now, we'll use a placeholder player name
+      // In a real implementation, this should come from user input or account data
+      const playerName = 1; // This might need to be dynamic based on your game logic
+      
+      const result = await StartQuest(land.location);
+      
+      if (result?.transaction_hash) {
+        console.log('Starting quest challenge with TX: ', result.transaction_hash);
+        gameSounds.play('claim');
+
+        // Wait for transaction confirmation
+        await accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+          
+        console.log('Quest challenge started successfully');
+      }
+    } catch (error) {
+      console.error(
+        `Error starting quest challenge for location ${land.location}:`,
+        error,
+      );
+    } finally {
+      loading = false;
+    }
+  }
+</script>
+
+{#if isActive}
+  <div class="w-full h-full">
+    <div class="mb-4">
+      <h3 class="font-ponzi-number text-lg mb-2">Quest Information</h3>
+      <div class="space-y-2 text-sm">
+        <p><span class="font-semibold">Quest ID:</span> {land.quest_id?.toString() || '0'}</p>
+        <p><span class="font-semibold">Has Quest:</span> {hasQuest ? 'Yes' : 'No'}</p>
+        <p><span class="font-semibold">Owned by you:</span> {isOwner ? 'Yes' : 'No'}</p>
+      </div>
     </div>
-  {/if}
+
+    <div class="space-y-3">
+      {#if isOwner}
+        {#if !hasQuest}
+          <!-- Land is owned by player and has no quest - show Set as Quest Land button -->
+          {#if loading}
+            <Button class="w-full" disabled>
+              Setting as Quest Land <ThreeDots />
+            </Button>
+          {:else}
+            <Button
+              onclick={handleSetQuestClick}
+              class="w-full"
+              disabled={loading}
+              variant="default"
+            >
+              Set as Quest Land
+            </Button>
+          {/if}
+        {:else}
+          <!-- Land is owned by player and has a quest - show Remove Quest Land button -->
+          {#if loading}
+            <Button class="w-full" disabled>
+              Removing Quest Land <ThreeDots />
+            </Button>
+          {:else}
+            <Button
+              onclick={handleRemoveQuestClick}
+              class="w-full"
+              disabled={loading}
+              variant="destructive"
+            >
+              Remove Quest Land
+            </Button>
+          {/if}
+        {/if}
+      {:else if hasQuest}
+        <!-- Land is not owned by player but has a quest - show Challenge Quest Land button -->
+        {#if loading}
+          <Button class="w-full" disabled>
+            Starting Challenge <ThreeDots />
+          </Button>
+        {:else}
+          <Button
+            onclick={handleChallengeQuestClick}
+            class="w-full"
+            disabled={loading}
+            variant="secondary"
+          >
+            Challenge Quest Land
+          </Button>
+        {/if}
+      {:else}
+        <!-- Land is not owned by player and has no quest - show informational message -->
+        <div class="text-center text-gray-500 p-4">
+          <p>This land has no quest and is not owned by you.</p>
+          <p class="text-sm mt-1">Only the owner can set up a quest on this land.</p>
+        </div>
+      {/if}
+    </div>
+  </div>
+{/if}
   
