@@ -181,5 +181,8 @@ export async function wrappedActions(provider: DojoProvider) {
       buy: actions_buy,
       increaseStake: actions_increaseStake,
     },
+    quests: {
+      ...world.quests,
+    },
   };
 }
