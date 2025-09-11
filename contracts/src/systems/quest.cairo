@@ -39,6 +39,7 @@ pub mod quests {
     use ponzi_land::models::quest::{
         QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest, Reward,
     };
+    use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
     use ponzi_land::models::land::Land;
     use super::DEFAULT_NS;
     use starknet::get_caller_address;
@@ -60,7 +61,10 @@ pub mod quests {
         ) -> u64 {
             let mut world = self.world(DEFAULT_NS());
 
-            let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: game_address };
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: game_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
+            let (settings_address, _) = minigame_world.dns(@"settings").unwrap();
+            let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
             let settings_exist = settings_dispatcher.settings_exist(settings_id);
             let game_address_felt: felt252 = game_address.into();
             assert!(
@@ -69,6 +73,10 @@ pub mod quests {
                 game_address_felt,
                 settings_id,
             );
+
+            let address_felt: felt252 = game_address.into();
+
+            panic!("settings address: {}", address_felt);
 
             let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
             quest_details_counter.count += 1;
