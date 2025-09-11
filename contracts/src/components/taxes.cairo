@@ -50,7 +50,7 @@ mod TaxesComponent {
     use ponzi_land::utils::common_strucs::{TokenInfo};
     use ponzi_land::utils::get_neighbors::get_land_neighbors;
     use ponzi_land::utils::math::{u256_saturating_mul, u64_saturating_add, u64_saturating_sub};
-    use ponzi_land::utils::packing::{pack_neighbors_info, unpack_neighbors_info};
+    use ponzi_land::utils::packing::{NeighborsInfo, pack_neighbors_info, unpack_neighbors_info};
 
     // Starknet imports
     use starknet::ContractAddress;
@@ -493,7 +493,7 @@ mod TaxesComponent {
             let mut total_to_distribute: u256 = 0;
             for (_, tax_amount) in neighbors_of_nuked_land {
                 total_to_distribute += *tax_amount;
-            };
+            }
             assert(total_to_distribute <= nuked_land_stake.amount, 'Distribution of nuke > stake');
 
             for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
@@ -577,7 +577,7 @@ mod TaxesComponent {
                     earliest_claim_time = elapsed_time;
                     earliest_claim_location = *neighbor.location;
                 };
-            };
+            }
             (earliest_claim_time, earliest_claim_location)
         }
 
@@ -616,7 +616,7 @@ mod TaxesComponent {
                     total_tax_for_claimer += tax_per_neighbor;
                     elapsed_time_claimer = elapsed_time;
                 }
-            };
+            }
             let cache_elapsed_time = cache_elapsed_time.span();
             TaxCalculationData {
                 total_taxes,
@@ -717,210 +717,6 @@ mod TaxesComponent {
             }
 
             u64_saturating_add(current_time, min_remaining_time)
-        }
-
-
-        fn _calculate_taxes_for_all_neighbors(
-            ref self: ComponentState<TContractState>,
-            claimer: @Land,
-            tax_payer: @Land,
-            neighbors_of_tax_payer: Span<Land>,
-            land_stake_amount: u256,
-            current_time: u64,
-            store: Store,
-        ) -> (u256, u256, u64, Array<(ContractAddress, u64)>, u64) {
-            let mut total_taxes: u256 = 0;
-            let mut tax_for_claimer: u256 = 0;
-            let mut cache_elapsed_time: Array<(ContractAddress, u64)> = ArrayTrait::new();
-            let mut total_elapsed_time: u64 = 0;
-            let mut elapsed_time_claimer: u64 = 0;
-            for neighbor in neighbors_of_tax_payer {
-                let neighbor_location = *neighbor.location;
-                let elapsed_time = self
-                    .get_elapsed_time_since_last_claim(
-                        neighbor_location, *tax_payer.location, current_time,
-                    );
-                total_elapsed_time += elapsed_time;
-                cache_elapsed_time.append((*neighbor.owner, elapsed_time));
-                let tax_per_neighbor = get_taxes_per_neighbor(tax_payer, elapsed_time, store);
-                total_taxes += tax_per_neighbor;
-
-                if neighbor_location == *claimer.location {
-                    tax_for_claimer += tax_per_neighbor;
-                    elapsed_time_claimer = elapsed_time;
-                }
-            }
-
-            (
-                total_taxes,
-                tax_for_claimer,
-                elapsed_time_claimer,
-                cache_elapsed_time,
-                total_elapsed_time,
-            )
-        }
-
-
-        fn _distribute_nuke(
-            ref self: ComponentState<TContractState>,
-            store: Store,
-            nuked_land: @Land,
-            ref nuked_land_stake: LandStake,
-            neighbors_of_nuked_land: Span<(ContractAddress, u256)>,
-            our_contract_address: ContractAddress,
-            claim_fee_threshold: u128,
-            our_contract_for_fee: ContractAddress,
-        ) {
-            let mut total_to_distribute: u256 = 0;
-            for (_, tax_amount) in neighbors_of_nuked_land {
-                total_to_distribute += *tax_amount;
-            }
-            assert(total_to_distribute <= nuked_land_stake.amount, 'Distribution of nuke > stake');
-
-            for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
-                self
-                    ._transfer_tokens(
-                        *neighbor_address,
-                        *nuked_land.owner,
-                        TokenInfo { token_address: *nuked_land.token_used, amount: *tax_amount },
-                        ref nuked_land_stake,
-                        claim_fee_threshold,
-                        our_contract_address,
-                        our_contract_for_fee,
-                        true,
-                    );
-            }
-        }
-
-
-        fn _transfer_tokens(
-            ref self: ComponentState<TContractState>,
-            tax_receiver: ContractAddress,
-            tax_payer: ContractAddress,
-            token_info: TokenInfo,
-            ref land_stake: LandStake,
-            claim_fee_threshold: u128,
-            our_contract_address: ContractAddress,
-            our_contract_for_fee: ContractAddress,
-            from_nuke: bool,
-        ) {
-            let mut payable = get_dep_component_mut!(ref self, Payable);
-            let total_amount_to_validate = token_info.amount
-                + land_stake.accumulated_taxes_fee.into();
-            let validation_result = payable
-                .validate(token_info.token_address, our_contract_address, total_amount_to_validate);
-
-            let validation_result_for_fees = ValidationResult {
-                status: validation_result.status,
-                token_address: validation_result.token_address,
-                amount: land_stake.accumulated_taxes_fee.into(),
-            };
-            let validation_result_for_claim = ValidationResult {
-                status: validation_result.status,
-                token_address: validation_result.token_address,
-                amount: token_info.amount,
-            };
-
-            let mut status_for_transfer_fee = true;
-            if from_nuke && land_stake.accumulated_taxes_fee > 0 {
-                status_for_transfer_fee = payable
-                    .transfer(our_contract_for_fee, validation_result_for_fees);
-                land_stake.accumulated_taxes_fee = 0;
-            } else if land_stake.accumulated_taxes_fee >= claim_fee_threshold {
-                status_for_transfer_fee = payable
-                    .transfer(our_contract_for_fee, validation_result_for_fees);
-                land_stake.accumulated_taxes_fee = 0;
-            }
-
-            let status = payable.transfer(tax_receiver, validation_result_for_claim);
-            assert(status && status_for_transfer_fee, ERC20_TRANSFER_CLAIM_FAILED);
-        }
-
-        /// @notice Executes the actual claim of taxes
-        /// @dev Handles token transfer and updates claim tracking
-        fn _execute_claim(
-            ref self: ComponentState<TContractState>,
-            mut store: Store,
-            claimer_location: u16,
-            claimer_address: ContractAddress,
-            tax_payer: @Land,
-            available_tax_for_claimer: u256,
-            ref land_stake: LandStake,
-            current_time: u64,
-            claim_fee_threshold: u128,
-            our_contract_address: ContractAddress,
-            our_contract_for_fee: ContractAddress,
-        ) {
-            if available_tax_for_claimer > 0 && available_tax_for_claimer < land_stake.amount {
-                self
-                    ._transfer_tokens(
-                        claimer_address,
-                        *tax_payer.owner,
-                        TokenInfo {
-                            token_address: *tax_payer.token_used, amount: available_tax_for_claimer,
-                        },
-                        ref land_stake,
-                        claim_fee_threshold,
-                        our_contract_address,
-                        our_contract_for_fee,
-                        false,
-                    );
-
-                store
-                    .world
-                    .emit_event(
-                        @LandTransferEvent {
-                            from_location: *tax_payer.location,
-                            to_location: claimer_location,
-                            token_address: *tax_payer.token_used,
-                            amount: available_tax_for_claimer,
-                        },
-                    );
-
-                self.last_claim_time.write((*tax_payer.location, claimer_location), current_time);
-            }
-        }
-
-        fn _update_earliest_claim_info(
-            ref self: ComponentState<TContractState>,
-            mut store: Store,
-            ref land_stake: LandStake,
-            neighbors_of_tax_payer: Span<Land>,
-            current_time: u64,
-        ) {
-            let (new_earliest_time, new_earliest_location) = self
-                ._find_new_earliest_claim_time(
-                    land_stake.location, neighbors_of_tax_payer.clone(), current_time,
-                );
-            let neighbors_info = pack_neighbors_info(
-                new_earliest_time,
-                neighbors_of_tax_payer.len().try_into().unwrap(),
-                new_earliest_location,
-            );
-            land_stake.neighbors_info_packed = neighbors_info;
-        }
-
-
-        fn _find_new_earliest_claim_time(
-            ref self: ComponentState<TContractState>,
-            payer_location: u16,
-            neighbors: Span<Land>,
-            current_time: u64,
-        ) -> (u64, u16) {
-            let mut earliest_claim_time: u64 = 0;
-            let mut earliest_claim_location: u16 = 0;
-            for neighbor in neighbors {
-                let elapsed_time: u64 = self
-                    .get_elapsed_time_since_last_claim(
-                        *neighbor.location, payer_location, current_time,
-                    );
-
-                if earliest_claim_time == 0 || elapsed_time < earliest_claim_time {
-                    earliest_claim_time = elapsed_time;
-                    earliest_claim_location = *neighbor.location;
-                };
-            }
-            (earliest_claim_time, earliest_claim_location)
         }
 
         fn initialize_claim_info(
