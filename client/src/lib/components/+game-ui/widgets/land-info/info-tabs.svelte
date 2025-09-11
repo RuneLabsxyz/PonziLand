@@ -3,6 +3,7 @@
   import OverallTab from './tabs/overall-tab.svelte';
   import BuyTab from './tabs/buy-tab.svelte';
   import HistoryTab from './tabs/history-tab.svelte';
+  import QuestsTab from './tabs/quest-tab.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
