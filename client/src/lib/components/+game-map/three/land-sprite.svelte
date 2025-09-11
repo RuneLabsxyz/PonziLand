@@ -3,13 +3,17 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
+  import { HeatmapCalculator } from '$lib/components/+game-ui/widgets/heatmap/heatmap-calculator';
   import { Button } from '$lib/components/ui/button';
   import { GRID_SIZE } from '$lib/const';
+  import { configValues } from '$lib/stores/config.store.svelte';
+  import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
   import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
   import { T, useTask } from '@threlte/core';
   import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
   import { onMount } from 'svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import {
     Clock,
     Color,
@@ -27,8 +31,6 @@
   import Coin from './coin.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
-  import { HeatmapCalculator } from '$lib/components/+game-ui/widgets/heatmap/heatmap-calculator';
-  import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import LandTileSprite from './land-tile-sprite.svelte';
   import { LandTile } from './landTile';
   import NukeSprite from './nuke-sprite.svelte';
@@ -37,8 +39,8 @@
   import RoadSprite from './road-sprite.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { devsettings } from './utils/devsettings.store.svelte';
-  import { SvelteSet } from 'svelte/reactivity';
-  import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+
+  const CIRCLE_PADDING = 6;
 
   // Allow passing a custom land store (for tutorials)
   interface Props {
@@ -373,8 +375,8 @@
 
   // Optimized visible land calculation with memoization
   let visibleLandTiles = $derived.by(() => {
-    // const maxCirc = configValues.maxCircles;
-    const maxCirc = 256;
+    const maxCirc = configValues.maxCircles + CIRCLE_PADDING;
+    // const maxCirc = 256;
 
     // Check cache for circle positions
     const cacheKey = `${CENTER},${CENTER},${maxCirc}`;
