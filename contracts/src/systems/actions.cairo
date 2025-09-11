@@ -795,8 +795,8 @@ pub mod actions {
                         .taxes
                         .claim(
                             store,
-                            @land,
-                            neighbor,
+                            land,
+                            *neighbor,
                             ref neighbor_stake,
                             current_time,
                             our_contract_address,
@@ -871,8 +871,8 @@ pub mod actions {
                         .taxes
                         .claim(
                             store,
-                            claimer_land,
-                            tax_payer,
+                            *claimer_land,
+                            *tax_payer,
                             ref tax_payer_stake,
                             current_time,
                             our_contract_address,
