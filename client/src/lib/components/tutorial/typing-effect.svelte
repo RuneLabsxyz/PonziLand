@@ -54,9 +54,9 @@
         const tagName = (node as Element).tagName.toLowerCase();
         let content = '';
 
-        for (let child of node.childNodes) {
+        for (let i = 0; i < node.childNodes.length; i++) {
           if (charCount >= targetCount) break;
-          content += traverseNodes(child, targetCount);
+          content += traverseNodes(node.childNodes[i], targetCount);
         }
 
         if (content.length > 0 || charCount >= targetCount) {
@@ -70,15 +70,16 @@
 
     function getAttributes(element: Element) {
       let attrs = '';
-      for (let attr of element.attributes) {
+      for (let i = 0; i < element.attributes.length; i++) {
+        const attr = element.attributes[i];
         attrs += ` ${attr.name}="${attr.value}"`;
       }
       return attrs;
     }
 
-    for (let child of div.childNodes) {
+    for (let i = 0; i < div.childNodes.length; i++) {
       if (charCount >= position) break;
-      result += traverseNodes(child, position);
+      result += traverseNodes(div.childNodes[i], position);
     }
 
     return result;

@@ -7,6 +7,7 @@ import Controller from '@cartridge/controller';
 import type { AccountInterface, WalletAccount } from 'starknet';
 import preset from './utils/preset.json';
 import { traceWallet } from './utils/walnut-trace';
+import type { AccountDeploymentData } from '@starknet-io/types-js';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;

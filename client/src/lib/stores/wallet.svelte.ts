@@ -22,13 +22,11 @@ export class WalletStore {
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
   private tokenPrices: TokenPrice[] = $state([]);
   public tokenBalances = $derived(
-    this.balances
-      .entries()
-      .map(
-        ([token, balance]) =>
-          [this.getToken(token)!, balance] as [Token, CurrencyAmount],
-      )
-      .toArray(),
+    Array.from(
+      this.balances.entries(),
+      ([token, balance]) =>
+        [this.getToken(token)!, balance] as [Token, CurrencyAmount],
+    ),
   );
   public totalBalance = $state<CurrencyAmount | null>(null);
 
