@@ -39,7 +39,7 @@
 <!-- Include the components -->
 {#if initialized}
   <SelectWalletModal />
-  <OnboardingWalletInfo enablePhantom={true} />
+  <OnboardingWalletInfo enablePhantom={true} variant="transparent-black" />
 {:else}
   <p>Initializing account manager...</p>
 {/if}

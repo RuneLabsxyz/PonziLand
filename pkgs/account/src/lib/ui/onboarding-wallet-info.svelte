@@ -10,9 +10,11 @@
   const {
     onconnect,
     enablePhantom = false,
+    variant = 'default',
   }: {
     onconnect?: () => void;
     enablePhantom?: boolean;
+    variant?: 'default' | 'transparent-white' | 'transparent-black';
   } = $props();
 
   let accountManager = $state<ReturnType<typeof useAccount>>();
@@ -40,48 +42,90 @@
   }
 </script>
 
-<div class="wallet-info-container">
-  <Card>
-  <div class="wallet-header">
-    <span class="connected">Connected</span>
-    <span class="status-dot" aria-hidden="true"></span>
-  </div>
-  <div class="wallets-stack">
-    {#if accountDataProvider.isConnected}
-      <div class="account-details">
-        <div class="wallet-label">Starknet</div>
-        <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
-        <Button
-          onclick={() => accountManager?.disconnect()}
-          aria-label="Logout Starknet"
-        >
-          x
-        </Button>
-      </div>
-    {:else}
-      <Button class="connect-button phantom-button" onclick={handleConnectWallet}>CONNECT</Button>
-    {/if}
-    
-    {#if enablePhantom}
-      {#if phantomWalletStore.isConnected}
-          <div class="account-details">
-            <div class="wallet-label phantom-label">Phantom</div>
-            <p>{shortenAddress(phantomWalletStore.walletAddress, 4)}</p>
-            <Button
-              onclick={() => phantomWalletStore.disconnect()}
-              aria-label="Logout Phantom"
-            >
+<div class="wallet-info-container {variant}">
+  {#if variant === 'transparent-black' || variant === 'transparent-white'}
+    <div class="wallet-header">
+      <span class="connected">Connected</span>
+      <span class="status-dot" aria-hidden="true"></span>
+    </div>
+    <div class="wallets-stack">
+      {#if accountDataProvider.isConnected}
+        <div class="account-details">
+          <div class="wallet-label">Starknet</div>
+          <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
+          <Button
+            onclick={() => accountManager?.disconnect()}
+            aria-label="Logout Starknet"
+          >
             x
+          </Button>
+        </div>
+      {:else}
+        <Button class="connect-button phantom-button" onclick={handleConnectWallet}>CONNECT</Button>
+      {/if}
+      
+      {#if enablePhantom}
+        {#if phantomWalletStore.isConnected}
+            <div class="account-details">
+              <div class="wallet-label phantom-label">Phantom</div>
+              <p>{shortenAddress(phantomWalletStore.walletAddress, 4)}</p>
+              <Button
+                onclick={() => phantomWalletStore.disconnect()}
+                aria-label="Logout Phantom"
+              >
+              x
+              </Button>
+            </div>
+        {:else}
+          <Button class="connect-button phantom-button" onclick={handleConnectPhantom}>
+            CONNECT WITH PHANTOM
+          </Button>
+        {/if}
+      {/if}
+    </div>
+  {:else}
+    <Card>
+      <div class="wallet-header">
+        <span class="connected">Connected</span>
+        <span class="status-dot" aria-hidden="true"></span>
+      </div>
+      <div class="wallets-stack">
+        {#if accountDataProvider.isConnected}
+          <div class="account-details">
+            <div class="wallet-label">Starknet</div>
+            <p>{shortenHex(padAddress(accountDataProvider?.address ?? ''), 4)}</p>
+            <Button
+              onclick={() => accountManager?.disconnect()}
+              aria-label="Logout Starknet"
+            >
+              x
             </Button>
           </div>
-      {:else}
-        <Button class="connect-button phantom-button" onclick={handleConnectPhantom}>
-          CONNECT WITH PHANTOM
-        </Button>
-      {/if}
-    {/if}
-  </div>
-</Card>
+        {:else}
+          <Button class="connect-button phantom-button" onclick={handleConnectWallet}>CONNECT</Button>
+        {/if}
+        
+        {#if enablePhantom}
+          {#if phantomWalletStore.isConnected}
+              <div class="account-details">
+                <div class="wallet-label phantom-label">Phantom</div>
+                <p>{shortenAddress(phantomWalletStore.walletAddress, 4)}</p>
+                <Button
+                  onclick={() => phantomWalletStore.disconnect()}
+                  aria-label="Logout Phantom"
+                >
+                x
+                </Button>
+              </div>
+          {:else}
+            <Button class="connect-button phantom-button" onclick={handleConnectPhantom}>
+              CONNECT WITH PHANTOM
+            </Button>
+          {/if}
+        {/if}
+      </div>
+    </Card>
+  {/if}
 </div>
 
 <style>
@@ -146,5 +190,17 @@
 
   .phantom-label {
     color: #ab9ff2;
+  }
+
+  .wallet-info-container.transparent-black {
+    color: #000;
+  }
+
+  .wallet-info-container.transparent-black .wallet-header {
+    border-bottom-color: #000;
+  }
+
+  .wallet-info-container.transparent-white {
+    color: #fff;
   }
 </style>
