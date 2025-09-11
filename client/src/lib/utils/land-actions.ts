@@ -132,7 +132,7 @@ export const createLandWithActions = (
     async getEstimatedNukeTime() {
       return await estimateNukeTime(
         this,
-        land.getNeighbors(landStore).getNeighbors().length,
+        land.getNeighbors(landStore).getBaseLandsArray().length,
       );
     },
     getNeighbors() {

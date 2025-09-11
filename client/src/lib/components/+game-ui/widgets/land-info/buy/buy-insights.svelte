@@ -42,11 +42,13 @@
   const maxNumberOfNeighbors = 8;
 
   $effect(() => {
-    nbNeighbors = neighbors.getNeighbors().length;
+    nbNeighbors = neighbors.getBaseLandsArray().length;
   });
 
   let filteredNeighbors = $derived.by(() => {
-    const filteredNeighbors = neighbors.getNeighbors().slice(0, nbNeighbors);
+    const filteredNeighbors = neighbors
+      .getBaseLandsArray()
+      .slice(0, nbNeighbors);
 
     let up: BaseLand | undefined | null = filteredNeighbors.find(
       (land) => land == neighbors.getUp(),
@@ -74,10 +76,10 @@
     );
 
     // Add empty lands in function of the number of neighbors
-    if (neighbors.getNeighbors().length < nbNeighbors) {
+    if (neighbors.getBaseLandsArray().length < nbNeighbors) {
       console.log('add empty lands');
       const emptyLands = Array(
-        nbNeighbors - neighbors.getNeighbors().length,
+        nbNeighbors - neighbors.getBaseLandsArray().length,
       ).fill(null);
 
       // find wich direction to add the empty land
@@ -201,7 +203,7 @@
       <div class="flex justify-between text-gray-400">
         {#each Array(8) as _, i}
           <span
-            class={i + 1 == neighbors.getNeighbors().length
+            class={i + 1 == neighbors.getBaseLandsArray().length
               ? 'text-white font-bold'
               : ''}
           >

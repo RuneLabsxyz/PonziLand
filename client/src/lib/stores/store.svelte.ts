@@ -86,5 +86,5 @@ export function getNeighboringLands(location: string): BaseLand[] {
     location,
     source: landsArray,
   });
-  return neighbors.getNeighbors();
+  return neighbors.getBaseLandsArray();
 }

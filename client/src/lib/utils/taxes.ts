@@ -119,7 +119,7 @@ export const estimateNukeTime = async (
   let remainingStake = land.stakeAmount.rawValue().toNumber();
 
   if (!neighbourNumber) {
-    neighbourNumber = land.getNeighbors().getNeighbors().length;
+    neighbourNumber = land.getNeighbors().getBaseLandsArray().length;
   }
   if (sellPrice <= 0 || isNaN(sellPrice)) {
     return 0;
