@@ -99,6 +99,47 @@ export async function bidLand(location: string, setup: LandSetup) {
   }
 }
 
+export async function SetLandQuest(location: string) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+
+  let res = await sdk.client.quests.setLandQuest(
+    account()?.getWalletAccount()!,
+    location,
+  );
+  notificationQueue.addNotification(res?.transaction_hash ?? null, 'set quest tile');
+  return res;
+}
+
+export async function RemoveLandQuest(location: string) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+
+  let res = await sdk.client.quests.removeLandQuest(
+    account()?.getWalletAccount()!,
+    location,
+  );
+  notificationQueue.addNotification(res?.transaction_hash ?? null, 'remove quest tile');
+  return res;
+}
+
+export async function StartQuest(location: string) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+  let res = await sdk.client.quests.startQuest(
+    account()?.getWalletAccount()!,
+    location,
+  );
+  notificationQueue.addNotification(res?.transaction_hash ?? null, 'start quest');
+  return res;
+}
+
 export function getNeighboringLands(location: string): BaseLand[] {
   const allLands = landStore.getAllLands();
   const landsArray = Array.isArray(allLands) ? allLands : [];
