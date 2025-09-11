@@ -128,7 +128,10 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
   disclaimer: {
     id: 'disclaimer',
     type: 'disclaimer',
-    position: { x: window.innerWidth / 2 - 200, y: window.innerHeight / 2 - 150 },
+    position: {
+      x: window.innerWidth / 2 - 200,
+      y: window.innerHeight / 2 - 150,
+    },
     dimensions: { width: 400, height: 0 },
     fixedStyles: 'width: 400px; height: auto;',
     isMinimized: false,
