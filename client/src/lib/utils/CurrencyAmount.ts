@@ -60,11 +60,13 @@ export class CurrencyAmount {
   }
 
   public add(other: CurrencyAmount) {
-    if (this.token && other.token && this.token !== other.token) {
+    if (this.token && other.token && this.token.address !== other.token.address) {
       throw 'Incompatible currencies!';
     }
 
-    return CurrencyAmount.fromRaw(this.rawValue().plus(other.rawValue()));
+    // Use the first token (this.token) as the result token, or fallback to other.token
+    const resultToken = this.token || other.token;
+    return CurrencyAmount.fromRaw(this.rawValue().plus(other.rawValue()), resultToken);
   }
 
   /**
