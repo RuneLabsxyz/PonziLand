@@ -60,6 +60,17 @@
     CurrencyAmount.fromScaled(stake ?? 0, selectedToken),
   );
 
+  let stakeAmountInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
+    if (!selectedToken || !stakeAmount) return null;
+    
+    // If already in base currency, return null (no conversion needed)
+    if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
+      return null;
+    }
+    
+    return walletStore.convertTokenAmount(stakeAmount, selectedToken, baseToken);
+  });
+
   let sellPrice: string = $derived.by(() => {
     if (!selectedToken) return '';
     return untrack(() => {
@@ -92,6 +103,17 @@
   let sellPriceAmount: CurrencyAmount = $derived(
     CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken),
   );
+
+  let sellPriceInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
+    if (!selectedToken || !sellPriceAmount) return null;
+    
+    // If already in base currency, return null (no conversion needed)
+    if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
+      return null;
+    }
+    
+    return walletStore.convertTokenAmount(sellPriceAmount, selectedToken, baseToken);
+  });
   let loading = $state(false);
 
   let accountManager = useAccount();
@@ -371,6 +393,9 @@
             ? 'border border-yellow-500 animate-pulse'
             : ''}"
         />
+        {#if stakeAmountInBaseCurrency}
+          <p class="text-xs text-gray-500 mt-1">≈ {stakeAmountInBaseCurrency.toString()} {baseToken.symbol}</p>
+        {/if}
         {#if stakeAmountError}
           <p class="text-red-500 text-sm mt-1">{stakeAmountError}</p>
         {/if}
@@ -390,6 +415,9 @@
             ? 'border border-yellow-500 animate-pulse'
             : ''}"
         />
+        {#if sellPriceInBaseCurrency}
+          <p class="text-xs text-gray-500 mt-1">≈ {sellPriceInBaseCurrency.toString()} {baseToken.symbol}</p>
+        {/if}
         {#if sellPriceError}
           <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
         {/if}
