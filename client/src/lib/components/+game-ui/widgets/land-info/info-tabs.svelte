@@ -58,7 +58,6 @@
       HISTORY (todo)
     </Button>
     <Button
-      disabled
       class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
       variant={activeTab === 'quests' ? 'blue' : undefined}
       onclick={() => setActiveTab('quests')}
