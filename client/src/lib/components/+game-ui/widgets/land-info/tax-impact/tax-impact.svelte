@@ -183,7 +183,13 @@
    * Returns the payback time in seconds based on net yield per hour.
    */
   let paybackTimeSeconds = $derived.by(() => {
-    if (!land?.sellPrice || !land?.token || !baseToken || !sliderNetYieldInBaseToken || nbNeighbors === 0) {
+    if (
+      !land?.sellPrice ||
+      !land?.token ||
+      !baseToken ||
+      !sliderNetYieldInBaseToken ||
+      nbNeighbors === 0
+    ) {
       return 0;
     }
 
@@ -197,17 +203,17 @@
     if (!buyPriceInBaseToken) return 0;
 
     const netYieldPerHour = sliderNetYieldInBaseToken.rawValue();
-    
+
     // If net yield is negative or zero, payback is impossible
     if (netYieldPerHour.isLessThanOrEqualTo(0)) {
       return Infinity;
     }
 
     const landCost = buyPriceInBaseToken.rawValue();
-    
+
     // Calculate hours needed: landCost / netYieldPerHour
     const hoursNeeded = landCost.dividedBy(netYieldPerHour);
-    
+
     // Convert to seconds
     return hoursNeeded.multipliedBy(3600).toNumber();
   });
@@ -221,7 +227,7 @@
     if (timeSeconds === 0) {
       return 'No yield';
     }
-    
+
     if (timeSeconds === Infinity) {
       return 'Never (losing money)';
     }
@@ -347,7 +353,7 @@
 
       <hr class="my-1 opacity-50" />
 
-      <div class="flex justify-between select-text leading-none items-end">
+      <!-- <div class="flex justify-between select-text leading-none items-end">
         <div>
           <span class="opacity-50">Gain /h</span>
         </div>
@@ -357,7 +363,7 @@
           >
           <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
-      </div>
+      </div> -->
 
       <!-- <div
         class="flex justify-between select-text leading-none items-end"
@@ -373,7 +379,7 @@
           />
         </div>
       </div> -->
-      <div class="flex justify-between select-text leading-none items-end">
+      <!-- <div class="flex justify-between select-text leading-none items-end">
         <div class="opacity-50">Cost /h</div>
         <div class="flex items-center gap-1">
           <span class="opacity-50">
@@ -382,23 +388,7 @@
           </span>
           <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
-      </div>
-
-      <div class="flex justify-between select-text leading-none items-end">
-        <div>
-          <span class="opacity-50">Nuke time</span>
-        </div>
-        <div
-          class={sliderNukeTimeString.includes('Now') ||
-          sliderNukeTimeSeconds < 3600
-            ? 'text-red-500'
-            : 'text-green-500'}
-        >
-          {sliderNukeTimeString}
-        </div>
-      </div>
-
-      <hr class="my-1 opacity-50" />
+      </div> -->
 
       {#if potentialSellBenefitInBaseToken}
         <div class="flex justify-between select-text leading-none items-end">
@@ -424,16 +414,32 @@
         </div>
       {/if}
 
+      <hr class="my-1 opacity-50" />
+
+      <div class="flex justify-between select-text leading-none items-end">
+        <div>
+          <span class="opacity-50">Nuke time</span>
+        </div>
+        <div
+          class={sliderNukeTimeString.includes('Now') ||
+          sliderNukeTimeSeconds < 3600
+            ? 'text-red-500'
+            : 'text-green-500'}
+        >
+          {sliderNukeTimeString}
+        </div>
+      </div>
+
       <div class="flex justify-between select-text leading-none items-end">
         <div>
           <span class="opacity-50">Payback time</span>
         </div>
         <div
-          class="{paybackTimeSeconds === Infinity
+          class={paybackTimeSeconds === Infinity
             ? 'text-red-500'
             : paybackTimeSeconds < 3600 * 24 * 7
-            ? 'text-green-500'
-            : 'text-yellow-500'}"
+              ? 'text-green-500'
+              : 'text-yellow-500'}
         >
           {paybackTimeString}
         </div>
