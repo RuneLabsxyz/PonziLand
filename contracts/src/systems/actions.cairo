@@ -291,7 +291,10 @@ pub mod actions {
                     our_contract_for_fee,
                 );
             self.validate_and_execute_buy_payment(land, caller, store, our_contract_for_fee);
-            self.stake._refund(store, land, our_contract_address);
+            let mut land_stake = store.land_stake(land.location);
+            if land_stake.amount > 0 {
+                self.stake._refund(store, land, ref land_stake, our_contract_address);
+            }
 
             self
                 .finalize_land_purchase(
@@ -777,8 +780,8 @@ pub mod actions {
         ) {
             let neighbors = get_land_neighbors(store, land.location);
 
-            if !has_liquidity_requirements && land_stake.amount >= 0 {
-                self.stake._refund(store, land, our_contract_address);
+            if !has_liquidity_requirements && land_stake.amount > 0 {
+                self.stake._refund(store, land, ref land_stake, our_contract_address);
                 land_stake = store.land_stake(land.location);
                 land_stake_before_claim = land_stake.amount;
             }
