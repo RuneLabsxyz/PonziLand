@@ -2,6 +2,8 @@ import { building } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { CLOSING_DATE, DATE_GATE } from '$lib/const';
 import { redirect, type Handle } from '@sveltejs/kit';
+import type { HandleServerError } from '@sveltejs/kit';
+import { PostHog } from 'posthog-node';
 
 const allowedUrls = ['/maintenance', '/dashboard'];
 
@@ -57,6 +59,17 @@ const handlePosthog: Handle = async ({ event, resolve }) => {
   });
 
   return response;
+};
+
+const client = new PostHog('phc_dOLLHkrkw8c0eJI1tg8ypAHKAvk5qIo9NJTfciRUg9B', {
+  host: 'https://eu.i.posthog.com',
+});
+
+export const handleError = async ({ error, status }: HandleServerError) => {
+  if (status !== 404) {
+    client.captureException(error);
+    await client.shutdown();
+  }
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
