@@ -44,7 +44,6 @@
   // estimate the taxes per neighbor using the formula based on the sell price of this land
   let taxPerNeighbor = $derived.by(() => {
     const tax = calculateTaxes(Number(sellAmountVal));
-    console.log('Calculated tax:', tax);
     return CurrencyAmount.fromScaled(tax, selectedToken);
   });
 
@@ -131,6 +130,46 @@
 
     const final = parts.filter(Boolean).join(' ');
     return final || 'Now!!!';
+  });
+
+  /**
+   * Calculates the potential sell benefit in base token.
+   * Shows the difference between what we could sell the land for (sellAmountVal)
+   * versus what we're buying it for (land.sellPrice).
+   */
+  let potentialSellBenefitInBaseToken = $derived.by(() => {
+    if (
+      !sellAmountVal ||
+      !land?.sellPrice ||
+      !land?.token ||
+      !selectedToken ||
+      !baseToken
+    ) {
+      return undefined;
+    }
+
+    // What we could sell it for
+    const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
+    const sellValueInBaseToken = walletStore.convertTokenAmount(
+      sellValue,
+      selectedToken,
+      baseToken,
+    );
+    // What we're buying it for (current sell price)
+    const buyPrice = land.sellPrice;
+    const buyPriceInBaseToken = walletStore.convertTokenAmount(
+      buyPrice,
+      land.token,
+      baseToken,
+    );
+
+    if (!sellValueInBaseToken || !buyPriceInBaseToken) return undefined;
+
+    // Calculate the difference (profit/loss)
+    const profit = sellValueInBaseToken
+      .rawValue()
+      .minus(buyPriceInBaseToken.rawValue());
+    return CurrencyAmount.fromScaled(profit.toString(), baseToken);
   });
 
   $effect(() => {
@@ -293,6 +332,32 @@
 
       <hr class="my-1 opacity-50" />
 
+      {#if potentialSellBenefitInBaseToken}
+        <div class="flex justify-between select-text leading-none items-end">
+          <div>
+            <span class="opacity-50">Sell benefit</span>
+          </div>
+          <div
+            class="{potentialSellBenefitInBaseToken.rawValue().isNegative()
+              ? 'text-red-500'
+              : 'text-green-500'} flex items-center gap-1"
+          >
+            <span>
+              {potentialSellBenefitInBaseToken.rawValue().isNegative()
+                ? ''
+                : '+'}
+              {potentialSellBenefitInBaseToken.toString()}
+            </span>
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-3 h-3"
+            />
+          </div>
+        </div>
+      {/if}
+
+      <!-- <hr class="my-1 opacity-50" />
+
       <div class="flex justify-between select-text leading-none items-end">
         <div class="opacity-50">Estd. earn / neighbor / h</div>
         <div class="opacity-50 flex items-center gap-1">
@@ -312,7 +377,7 @@
             class="border border-white w-3 h-3"
           />
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>
