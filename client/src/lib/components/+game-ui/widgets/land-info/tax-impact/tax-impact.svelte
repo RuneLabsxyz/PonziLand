@@ -65,6 +65,22 @@
     );
   });
 
+  let sliderNetYieldInBaseToken = $derived.by(() => {
+    if (
+      !sliderNeighborsYieldInBaseToken ||
+      !sliderNeighborsCostInBaseToken ||
+      !baseToken
+    ) {
+      return sliderNeighborsYieldInBaseToken;
+    }
+
+    const yieldValue = sliderNeighborsYieldInBaseToken.rawValue();
+    const costValue = sliderNeighborsCostInBaseToken.rawValue();
+    const netValue = yieldValue.minus(costValue);
+
+    return CurrencyAmount.fromScaled(netValue.toString(), baseToken);
+  });
+
   $effect(() => {
     if (land) {
       land.getYieldInfo().then(async (info) => {
@@ -143,36 +159,47 @@
     <PonziSlider bind:value={nbNeighbors} />
 
     <div class="flex flex-col flex-1 ml-4 justify-center tracking-wide">
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
+      <div class="flex justify-between select-text font-ponzi-number items-end text-xs">
         <div>
-          <span class="opacity-50">For</span>
+          <span class="opacity-50">Yield /h for</span>
           <span class="text-xl text-blue-300 leading-none">{nbNeighbors}</span>
           <span class="opacity-50"> neighbors </span>
+        </div>
+        <div
+          class="{sliderNetYieldInBaseToken &&
+          sliderNetYieldInBaseToken.rawValue().isNegative()
+            ? 'text-red-500'
+            : 'text-green-500'} flex items-center gap-1"
+        >
+          <span>
+            {#if sliderNetYieldInBaseToken}
+              {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
+              {sliderNetYieldInBaseToken}
+            {:else}
+              -
+            {/if}
+            {baseToken?.symbol}
+          </span>
+          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
 
       <hr class="my-1 opacity-50" />
 
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
+      <div class="flex justify-between select-text leading-none items-end">
         <div>
-          <span class="opacity-50">Estimated Gain</span>
+          <span class="opacity-50">Gain /h</span>
         </div>
-        <div
-          class="{false
-            ? 'text-red-500'
-            : 'text-green-500'} flex items-center gap-1"
-        >
-          <span>{sliderNeighborsYieldInBaseToken}</span>
+        <div class="flex items-center gap-1">
+          <span class="opacity-50"
+            >{sliderNeighborsYieldInBaseToken} {baseToken?.symbol}</span
+          >
           <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
 
       <!-- <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+        class="flex justify-between select-text leading-none items-end"
       >
         <div class="opacity-50">Cost / h</div>
         <div class="text-red-500 flex items-center gap-1">
@@ -185,46 +212,35 @@
           />
         </div>
       </div> -->
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div class="opacity-50">Cost / h</div>
-        <div class="text-red-500 flex items-center gap-1">
-          <span>
-            {sliderNeighborsCostInBaseToken} {baseToken?.symbol}
+      <div class="flex justify-between select-text leading-none items-end">
+        <div class="opacity-50">Cost /h</div>
+        <div class="flex items-center gap-1">
+          <span class="opacity-50">
+            ({sliderNeighborsCostInBaseToken}
+            {baseToken?.symbol})
           </span>
-          <TokenAvatar
-            token={baseToken}
-            class="border border-white w-3 h-3"
-          />
+          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
 
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
+      <div class="flex justify-between select-text leading-none items-end">
         <div>
           <span class="opacity-50">Nuke time</span>
         </div>
         <div class=" {true ? 'text-red-500' : 'text-green-500'}">ok</div>
       </div>
 
-
       <hr class="my-1 opacity-50" />
 
-      <div
-        class="flex justify-between select-text leading-none items-end"
-      >
-        <div class="opacity-50">Estd. earn / neighbor</div>
+      <div class="flex justify-between select-text leading-none items-end">
+        <div class="opacity-50">Estd. earn / neighbor / h</div>
         <div class="text-green-500 flex items-center gap-1">
           <span>{yieldPerNeighbor ?? '-'}</span>
           <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
 
-      <div
-        class="flex justify-between select-text leading-none items-end"
-      >
+      <div class="flex justify-between select-text leading-none items-end">
         <div class="opacity-50">Cost / neighbor / h</div>
         <div class="text-red-500 flex items-center gap-1">
           <span>
