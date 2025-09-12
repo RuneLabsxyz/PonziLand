@@ -55,18 +55,23 @@ const handlePosthog: Handle = async ({ event, resolve }) => {
     method: event.request.method,
     headers,
     body: event.request.body,
+    // @ts-expect-error - For some reason this parameter is required, but not known
     duplex: 'half',
   });
 
   return response;
 };
 
-const client = new PostHog('phc_dOLLHkrkw8c0eJI1tg8ypAHKAvk5qIo9NJTfciRUg9B', {
-  host: 'https://eu.i.posthog.com',
-});
+import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
 
-export const handleError = async ({ error, status }: HandleServerError) => {
-  if (status !== 404) {
+const client = PUBLIC_POSTHOG_KEY
+  ? new PostHog(PUBLIC_POSTHOG_KEY, {
+      host: 'https://eu.i.posthog.com',
+    })
+  : null;
+
+export const handleError: HandleServerError = async ({ error, status }) => {
+  if (status !== 404 && client) {
     client.captureException(error);
     await client.shutdown();
   }

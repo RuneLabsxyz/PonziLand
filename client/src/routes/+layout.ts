@@ -1,9 +1,10 @@
 import posthog from 'posthog-js';
 import { browser } from '$app/environment';
+import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
 
 export const load = async () => {
-  if (browser) {
-    posthog.init('phc_dOLLHkrkw8c0eJI1tg8ypAHKAvk5qIo9NJTfciRUg9B', {
+  if (browser && PUBLIC_POSTHOG_KEY) {
+    posthog.init(PUBLIC_POSTHOG_KEY, {
       api_host: '/forward',
       ui_host: 'https://eu.i.posthog.com',
       defaults: '2025-05-24',

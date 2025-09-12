@@ -5,6 +5,8 @@ on:
     secrets:
       CLOUDFLARE_API_TOKEN:
         required: true
+      POSTHOG_KEY:
+        required: false
 
 permissions:
   issues: write
@@ -48,6 +50,7 @@ jobs:
         env:
           DOJO_PROFILE: ${{ matrix.environment }}
           PUBLIC_GIT_COMMIT_HASH: ${{ env.PUBLIC_GIT_COMMIT_HASH }}
+          POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           # Force the auto bundler to prepare for cloudflare (otherwise it does weird things)
           CF_PAGES: "1"
 

@@ -25,6 +25,7 @@ const profiles = {
     PUBLIC_PONZI_API_URL: process.env.PONZI_API_URL,
     PUBLIC_FARO_COLLECTOR_URL: process.env.FARO_COLLECTOR_URL,
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: process.env.POSTHOG_KEY,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -42,6 +43,7 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PUBLIC_FARO_COLLECTOR_URL: null,
     PUBLIC_GIT_COMMIT_HASH: null,
+    PUBLIC_POSTHOG_KEY: null,
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8',
@@ -59,6 +61,7 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: null,
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -76,6 +79,7 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: null,
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
@@ -93,6 +97,7 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: null,
   },
   deployment: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -111,6 +116,7 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: null,
     MANIFEST_PATH: '/etc/config/manifest.json',
     DATA_PATH: '/etc/config/data.json',
   },
@@ -129,6 +135,7 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: null,
     MANIFEST_PATH: '../playtest/deployments/test/manifest.json',
     DATA_PATH: '../playtest/deployments/test/data.json',
   },
