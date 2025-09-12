@@ -8,10 +8,10 @@
     neighbors,
     nbNeighbors,
     selectedToken,
-  }: { 
-    neighbors: any; 
+  }: {
+    neighbors: any;
     nbNeighbors: number;
-    selectedToken: Token | undefined; 
+    selectedToken: Token | undefined;
   } = $props();
 
   let filteredNeighbors = $derived.by(() => {
