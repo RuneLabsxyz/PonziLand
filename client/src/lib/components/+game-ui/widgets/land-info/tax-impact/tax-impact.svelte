@@ -5,6 +5,7 @@
   import type { Token, LandYieldInfo } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { toHexWithPadding } from '$lib/utils';
+  import { calculateTaxes } from '$lib/utils/taxes';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
@@ -42,6 +43,30 @@
     if (!yieldPerNeighbor || !baseToken) return undefined;
     return CurrencyAmount.fromScaled(
       yieldPerNeighbor.rawValue().times(nbNeighbors).toString(),
+      baseToken,
+    );
+  });
+
+  // estimate the taxes per neighbor using the formula based on the sell price of this land
+  let taxPerNeighbor = $derived.by(() => {
+    const tax = calculateTaxes(Number(sellAmountVal));
+    console.log('Calculated tax:', tax);
+    return CurrencyAmount.fromScaled(tax, selectedToken);
+  });
+
+  let sliderNeighborsCost = $derived.by(() => {
+    if (!taxPerNeighbor) return undefined;
+    return CurrencyAmount.fromScaled(
+      taxPerNeighbor.rawValue().times(nbNeighbors).toString(),
+      selectedToken,
+    );
+  });
+
+  let sliderNeighborsCostInBaseToken = $derived.by(() => {
+    if (!sliderNeighborsCost || !baseToken || !selectedToken) return undefined;
+    return walletStore.convertTokenAmount(
+      sliderNeighborsCost,
+      selectedToken,
       baseToken,
     );
   });
@@ -140,11 +165,44 @@
         class="flex justify-between font-ponzi-number select-text text-xs items-end"
       >
         <div>
-          <span class="opacity-50">Estimated yield</span>
+          <span class="opacity-50">Estimated Gain</span>
         </div>
-        <div class="text-green-500 flex items-center gap-1">
-          <span>{sliderNeighborsYieldInBaseToken ?? '-'}</span>
+        <div
+          class="{false
+            ? 'text-red-500'
+            : 'text-green-500'} flex items-center gap-1"
+        >
+          <span>{sliderNeighborsYieldInBaseToken}</span>
           <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
+        </div>
+      </div>
+
+      <!-- <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div class="opacity-50">Cost / h</div>
+        <div class="text-red-500 flex items-center gap-1">
+          <span>
+            {sliderNeighborsCost} {selectedToken?.symbol}
+          </span>
+          <TokenAvatar
+            token={selectedToken}
+            class="border border-white w-3 h-3"
+          />
+        </div>
+      </div> -->
+      <div
+        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+      >
+        <div class="opacity-50">Cost / h</div>
+        <div class="text-red-500 flex items-center gap-1">
+          <span>
+            {sliderNeighborsCostInBaseToken} {baseToken?.symbol}
+          </span>
+          <TokenAvatar
+            token={baseToken}
+            class="border border-white w-3 h-3"
+          />
         </div>
       </div>
 
@@ -157,10 +215,11 @@
         <div class=" {true ? 'text-red-500' : 'text-green-500'}">ok</div>
       </div>
 
+
       <hr class="my-1 opacity-50" />
 
       <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+        class="flex justify-between select-text leading-none items-end"
       >
         <div class="opacity-50">Estd. earn / neighbor</div>
         <div class="text-green-500 flex items-center gap-1">
@@ -170,10 +229,18 @@
       </div>
 
       <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+        class="flex justify-between select-text leading-none items-end"
       >
         <div class="opacity-50">Cost / neighbor / h</div>
-        <div class="text-red-500">ok</div>
+        <div class="text-red-500 flex items-center gap-1">
+          <span>
+            {taxPerNeighbor}
+          </span>
+          <TokenAvatar
+            token={selectedToken}
+            class="border border-white w-3 h-3"
+          />
+        </div>
       </div>
     </div>
   </div>
