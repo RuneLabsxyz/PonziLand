@@ -187,6 +187,7 @@ jobs:
     uses: ./.github/workflows/_deploy-cloudflare.yaml
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
   deploy-indexer-docker:
     name: Deploy Indexer to Docker
     needs: [ci-status, detect-changes]
@@ -203,6 +204,7 @@ jobs:
     secrets:
       SCW_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       SCW_ACCESS_KEY_SECRET: ${{ secrets.SCW_ACCESS_KEY_SECRET }}
+      POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
   # Deployment summary job
   deployment-status:
     name: Deployment Status Check

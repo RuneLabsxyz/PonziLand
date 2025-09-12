@@ -61,12 +61,14 @@ const handlePosthog: Handle = async ({ event, resolve }) => {
   return response;
 };
 
-const client = new PostHog('phc_dOLLHkrkw8c0eJI1tg8ypAHKAvk5qIo9NJTfciRUg9B', {
+import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
+
+const client = PUBLIC_POSTHOG_KEY ? new PostHog(PUBLIC_POSTHOG_KEY, {
   host: 'https://eu.i.posthog.com',
-});
+}) : null;
 
 export const handleError = async ({ error, status }: HandleServerError) => {
-  if (status !== 404) {
+  if (status !== 404 && client) {
     client.captureException(error);
     await client.shutdown();
   }
