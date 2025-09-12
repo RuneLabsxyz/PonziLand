@@ -9,6 +9,7 @@
   import { calculateTaxes } from '$lib/utils/taxes';
   import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
+  import ProfitEvolutionChart from './profit-evolution-chart.svelte';
 
   let {
     sellAmountVal = undefined,
@@ -240,6 +241,25 @@
     return final || '< 1m';
   });
 
+  /**
+   * Land cost in base token for chart display
+   */
+  let landCostInBaseToken = $derived.by(() => {
+    if (!land?.sellPrice || !land?.token || !baseToken) return undefined;
+    
+    return walletStore.convertTokenAmount(land.sellPrice, land.token, baseToken);
+  });
+
+  /**
+   * Sell amount in base token for chart display
+   */
+  let sellAmountInBaseToken = $derived.by(() => {
+    if (!sellAmountVal || !selectedToken || !baseToken) return undefined;
+    
+    const sellAmount = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
+    return walletStore.convertTokenAmount(sellAmount, selectedToken, baseToken);
+  });
+
   $effect(() => {
     if (land) {
       land.getYieldInfo().then(async (info) => {
@@ -439,28 +459,19 @@
         </div>
       </div>
 
-      <!-- <hr class="my-1 opacity-50" />
-
-      <div class="flex justify-between select-text leading-none items-end">
-        <div class="opacity-50">Estd. earn / neighbor / h</div>
-        <div class="opacity-50 flex items-center gap-1">
-          <span>{yieldPerNeighbor ?? '-'}</span>
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
-      </div>
-
-      <div class="flex justify-between select-text leading-none items-end">
-        <div class="opacity-50">Cost / neighbor / h</div>
-        <div class="opacity-50 flex items-center gap-1">
-          <span>
-            ({taxPerNeighbor})
-          </span>
-          <TokenAvatar
-            token={selectedToken}
-            class="border border-white w-3 h-3"
-          />
-        </div>
-      </div> -->
+      
+      <hr class="my-1 opacity-50" />
+      
+      <!-- Profit Evolution Chart -->
+      <ProfitEvolutionChart
+        landCostInBaseToken={landCostInBaseToken ?? undefined}
+        netYieldPerHourInBaseToken={sliderNetYieldInBaseToken}
+        nukeTimeSeconds={sliderNukeTimeSeconds}
+        {paybackTimeSeconds}
+        {baseToken}
+        {nbNeighbors}
+        {sellAmountInBaseToken}
+      />
     </div>
   </div>
 </div>
