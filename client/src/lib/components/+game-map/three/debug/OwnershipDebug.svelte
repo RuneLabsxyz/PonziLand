@@ -181,7 +181,7 @@
   }
 </script>
 
-<Pane title="Land Ownership" position="draggable" x={720} y={120}>
+<Pane title="Land Ownership" position="draggable" x={380} y={50}>
   <Folder title="Overview">
     <Monitor value={totalOwners} label="Total Owners" />
     <Monitor value={totalLands} label="Total Owned Lands" />
