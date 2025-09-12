@@ -178,6 +178,68 @@
     return CurrencyAmount.fromScaled(profit.toString(), baseToken);
   });
 
+  /**
+   * Calculates how long it takes for the yield to recover the land purchase cost.
+   * Returns the payback time in seconds based on net yield per hour.
+   */
+  let paybackTimeSeconds = $derived.by(() => {
+    if (!land?.sellPrice || !land?.token || !baseToken || !sliderNetYieldInBaseToken || nbNeighbors === 0) {
+      return 0;
+    }
+
+    // Get the land purchase price in base token
+    const buyPriceInBaseToken = walletStore.convertTokenAmount(
+      land.sellPrice,
+      land.token,
+      baseToken,
+    );
+
+    if (!buyPriceInBaseToken) return 0;
+
+    const netYieldPerHour = sliderNetYieldInBaseToken.rawValue();
+    
+    // If net yield is negative or zero, payback is impossible
+    if (netYieldPerHour.isLessThanOrEqualTo(0)) {
+      return Infinity;
+    }
+
+    const landCost = buyPriceInBaseToken.rawValue();
+    
+    // Calculate hours needed: landCost / netYieldPerHour
+    const hoursNeeded = landCost.dividedBy(netYieldPerHour);
+    
+    // Convert to seconds
+    return hoursNeeded.multipliedBy(3600).toNumber();
+  });
+
+  /**
+   * Formats the payback time in a human-readable format.
+   */
+  let paybackTimeString = $derived.by(() => {
+    const timeSeconds = paybackTimeSeconds;
+
+    if (timeSeconds === 0) {
+      return 'No yield';
+    }
+    
+    if (timeSeconds === Infinity) {
+      return 'Never (losing money)';
+    }
+
+    const days = Math.floor(timeSeconds / (3600 * 24));
+    const hours = Math.floor((timeSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((timeSeconds % 3600) / 60);
+
+    const parts = [
+      days ? `${days}d` : '',
+      hours ? `${hours}h` : '',
+      minutes ? `${minutes}m` : '',
+    ];
+
+    const final = parts.filter(Boolean).join(' ');
+    return final || '< 1m';
+  });
+
   $effect(() => {
     if (land) {
       land.getYieldInfo().then(async (info) => {
@@ -361,6 +423,21 @@
           </div>
         </div>
       {/if}
+
+      <div class="flex justify-between select-text leading-none items-end">
+        <div>
+          <span class="opacity-50">Payback time</span>
+        </div>
+        <div
+          class="{paybackTimeSeconds === Infinity
+            ? 'text-red-500'
+            : paybackTimeSeconds < 3600 * 24 * 7
+            ? 'text-green-500'
+            : 'text-yellow-500'}"
+        >
+          {paybackTimeString}
+        </div>
+      </div>
 
       <!-- <hr class="my-1 opacity-50" />
 
