@@ -236,6 +236,16 @@ export function calculateBurnRate(
   }
 }
 
+/**
+ * Calculates the tax amount based on the provided sell amount.
+ *
+ * The tax is computed using the configured tax rate and game speed,
+ * divided by a constant factor. If the sell amount is less than or equal
+ * to zero, or not a valid number, the function returns 0.
+ *
+ * @param sellAmount - The amount to be sold, used as the basis for tax calculation.
+ * @returns The calculated tax amount, or 0 if the input is invalid.
+ */
 export function calculateTaxes(sellAmount: number) {
   const taxRate = configValues.taxRate;
   const gameSpeed = configValues.gameSpeed;
