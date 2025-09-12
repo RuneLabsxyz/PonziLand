@@ -9,6 +9,7 @@
   import { calculateTaxes } from '$lib/utils/taxes';
   import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
+  import ProfitEvolutionChart from './profit-evolution-chart.svelte';
 
   let {
     sellAmountVal = undefined,
@@ -279,6 +280,29 @@
 
     return false;
   });
+  
+  /**
+   * Land cost in base token for chart display
+   */
+  let landCostInBaseToken = $derived.by(() => {
+    if (!land?.sellPrice || !land?.token || !baseToken) return undefined;
+
+    return walletStore.convertTokenAmount(
+      land.sellPrice,
+      land.token,
+      baseToken,
+    );
+  });
+
+  /**
+   * Sell amount in base token for chart display
+   */
+  let sellAmountInBaseToken = $derived.by(() => {
+    if (!sellAmountVal || !selectedToken || !baseToken) return undefined;
+
+    const sellAmount = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
+    return walletStore.convertTokenAmount(sellAmount, selectedToken, baseToken);
+  });
 
   $effect(() => {
     if (land) {
@@ -454,6 +478,19 @@
           {paybackTimeString}
         </div>
       </div>
+
+      <hr class="my-1 opacity-50" />
+
+      <!-- Profit Evolution Chart -->
+      <ProfitEvolutionChart
+        landCostInBaseToken={landCostInBaseToken ?? undefined}
+        netYieldPerHourInBaseToken={sliderNetYieldInBaseToken}
+        nukeTimeSeconds={sliderNukeTimeSeconds}
+        {paybackTimeSeconds}
+        {baseToken}
+        {nbNeighbors}
+        {sellAmountInBaseToken}
+      />
     </div>
   </div>
 </div>
