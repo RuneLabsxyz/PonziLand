@@ -90,9 +90,9 @@ mod StakeComponent {
             ref self: ComponentState<TContractState>,
             mut store: Store,
             land: Land,
+            ref land_stake: LandStake,
             our_contract_address: ContractAddress,
         ) {
-            let mut land_stake = store.land_stake(land.location);
             let stake_amount = land_stake.amount;
             assert(stake_amount > 0, 'amount to refund is 0');
             let mut payable = get_dep_component_mut!(ref self, Payable);
@@ -106,11 +106,8 @@ mod StakeComponent {
             assert(status, ERC20_REFUND_FAILED);
 
             let current_total = self.token_stakes.read(land.token_used);
-            if current_total >= stake_amount {
-                self.token_stakes.write(land.token_used, current_total - stake_amount);
-            } else {
-                panic!("Attempting to refund more than what's staked");
-            }
+            assert(current_total >= stake_amount, 'not sufficient to refund');
+            self.token_stakes.write(land.token_used, current_total - stake_amount);
 
             land_stake.amount = 0;
             store.set_land_stake(land_stake);
