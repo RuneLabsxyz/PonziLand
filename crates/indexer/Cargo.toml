@@ -50,6 +50,8 @@ dotenv = "0.15.0"
 migrations = { path = "../migrations" }
 chaindata-repository = { path = "../chaindata/repository" }
 serde_json.workspace = true
+price-provider.workspace = true
+avnu-pricing = { path = "../avnu-pricing" }
 
 [lints]
 workspace = true
