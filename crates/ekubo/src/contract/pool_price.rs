@@ -61,7 +61,7 @@ pub async fn read_pool_price<T: starknet::providers::Provider + Send + Sync + st
                 entry_point_selector: selector!("get_pool_price"),
                 calldata: call_data,
             },
-            BlockId::Tag(BlockTag::Latest),
+            BlockId::Tag(BlockTag::PreConfirmed),
         )
         .await
         .map_err(|e| Error::RpcError(e.to_string()))?;

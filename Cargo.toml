@@ -7,6 +7,8 @@ members = [
     "crates/torii-ingester",
     "crates/migrations",
     "crates/ponziland-models",
+    "crates/price-provider",
+    "crates/avnu-pricing",
 ]
 resolver = "2"
 edition = "2024"
@@ -17,7 +19,7 @@ module_name_repetitions = "allow"
 
 [workspace.dependencies]
 ekubo_sdk = "0.1.20"
-starknet = "0.14.0"
+starknet = "0.17.0"
 thiserror = "2.0.12"
 tokio = "1"
 trait-variant = "0.1.2"
@@ -32,7 +34,7 @@ confique = "0.3.0"
 tracing-subscriber = "0.3.19"
 tower-http = "0.6.2"
 http = "1.1.1"
-serde_json = "1"
+serde_json = "^1.0.143"
 anyhow = "1.0.98"
 sea-orm = "1.1.0"
 sqlx = "0.8.5"
@@ -40,6 +42,11 @@ clap = "4.5.37"
 chrono = "0.4.40"
 uuid = "1"
 async-trait = "0.1.88"
+price-provider = {path = "./crates/price-provider"}
+torii-client = { git = "https://github.com/runelabsxyz/torii.git", branch = "main" }
+torii-grpc-client = { git = "https://github.com/runelabsxyz/torii.git", branch = "main" }
+dojo-world = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.3" }
+dojo-types = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.3" }
 
 # Improve performance of sqlx macros
 [profile.dev.package.sqlx-macros]

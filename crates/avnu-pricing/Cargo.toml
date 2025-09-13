@@ -1,0 +1,21 @@
+[package]
+name = "avnu-pricing"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+async-trait = "0.1"
+reqwest = { version = "0.12", features = ["json"] }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "1.0"
+tokio = { version = "1.0", features = ["rt", "macros"] }
+starknet.workspace = true
+price-provider = { path = "../price-provider" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockito = "1.7"
+serde_json = "1.0"
+
+[lints]
+workspace = true

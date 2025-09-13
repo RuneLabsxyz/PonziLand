@@ -75,7 +75,7 @@ impl ToriiClient {
     /// Returns an error if the torii connection cannot be started.
     pub async fn new(config: &ToriiConfiguration) -> Result<Self, Error> {
         let relay_url = String::new();
-        let grpc_client = GrpcClient::new(config.base_url.clone(), relay_url, config.world_address)
+        let grpc_client = GrpcClient::new(config.base_url.clone(), config.world_address)
             .await
             .map_err(Error::ToriiInitializationError)?;
 

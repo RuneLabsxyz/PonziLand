@@ -46,8 +46,7 @@ export interface PoolKey {
 export interface TokenPrice {
   symbol: string;
   address: string;
-  ratio: number;
-  best_pool: PoolKey;
+  ratio: CurrencyAmount;
 }
 
 /**
@@ -116,8 +115,13 @@ export async function getTokenPrices(): Promise<TokenPrice[]> {
     if (!res.ok) {
       throw new Error('Network response was not ok');
     }
-    const data = await res.json();
-    return data;
+    const data = (await res.json()) as any;
+
+    return data.map((item: any) => ({
+      symbol: item.symbol,
+      address: item.address,
+      ratio: CurrencyAmount.fromScaled(item.ratio_exact),
+    }));
   } catch (error) {
     console.error('Error fetching token prices:', error);
     throw error;
