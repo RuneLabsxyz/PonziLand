@@ -87,6 +87,8 @@
     "gsap": "^3.12.7",
     "lucide-svelte": "^0.471.0",
     "moment": "=2.30.1",
+    "posthog-js": "^1.264.1",
+    "posthog-node": "^5.8.4",
     "seedrandom": "^3.0.5",
     "starknet": "8.5.3",
     "stats.js": "^0.17.0",

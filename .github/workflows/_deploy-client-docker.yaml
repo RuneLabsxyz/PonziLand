@@ -7,6 +7,8 @@ on:
         required: true
       SCW_ACCESS_KEY_SECRET:
         required: true
+      POSTHOG_KEY:
+        required: false
 
 jobs:
   build:
@@ -49,3 +51,5 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            POSTHOG_KEY=${{ secrets.POSTHOG_KEY }}
