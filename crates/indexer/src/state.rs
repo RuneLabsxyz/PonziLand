@@ -3,11 +3,12 @@ use std::sync::Arc;
 use axum::extract::FromRef;
 use chaindata_repository::LandRepository;
 
-use crate::service::{ekubo::EkuboService, token::TokenService};
+use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 
 #[derive(Clone)]
 pub struct AppState {
     pub token_service: Arc<TokenService>,
+    pub avnu_service: Arc<AvnuService>,
     pub ekubo_service: Arc<EkuboService>,
     pub land_repository: Arc<LandRepository>,
 }
@@ -15,11 +16,13 @@ pub struct AppState {
 impl AppState {
     pub fn new(
         token_service: Arc<TokenService>,
+        avnu_service: Arc<AvnuService>,
         ekubo_service: Arc<EkuboService>,
         land_repository: Arc<LandRepository>,
     ) -> Self {
         Self {
             token_service,
+            avnu_service,
             ekubo_service,
             land_repository,
         }
@@ -29,6 +32,12 @@ impl AppState {
 impl FromRef<AppState> for Arc<TokenService> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.token_service.clone()
+    }
+}
+
+impl FromRef<AppState> for Arc<AvnuService> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.avnu_service.clone()
     }
 }
 

@@ -25,7 +25,7 @@
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
   let tokenPrices = $state<
-    { symbol: string; address: string; ratio: number | null }[]
+    { symbol: string; address: string; ratio: CurrencyAmount }[]
   >([]);
   let formattedYields = $state<
     { amount: string; baseValue: string | CurrencyAmount }[]
@@ -58,7 +58,7 @@
           burnRateInBaseToken = CurrencyAmount.fromScaled(
             burnRate
               .rawValue()
-              .dividedBy(tokenPrice.ratio || 0)
+              .dividedBy(tokenPrice.ratio.rawValue() ?? 0)
               .toString(),
             land?.token,
           );
@@ -110,12 +110,12 @@
               if (priceInfo?.ratio !== null && priceInfo) {
                 const baseAmount = amount
                   .rawValue()
-                  .dividedBy(priceInfo.ratio || 0);
+                  .dividedBy(priceInfo.ratio.rawValue() ?? 0);
                 baseValue = CurrencyAmount.fromScaled(
                   baseAmount.toString(),
                 ).toString();
                 totalValue += Number(
-                  amount.rawValue().dividedBy(priceInfo.ratio || 0),
+                  amount.rawValue().dividedBy(priceInfo.ratio.rawValue() ?? 0),
                 );
               } else {
                 baseValue = amount;

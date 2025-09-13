@@ -31,16 +31,17 @@ impl Model {
             location: land.location.into(),
             amount: land.amount.into(),
             earliest_claim_neighbor_time: naive_from_u64(earliest_claim_neighbor_time),
-            earliest_claim_neighbor_location: earliest_claim_neighbor_location.into(),
-            num_active_neighbors: num_active_neighbors.into(),
+            earliest_claim_neighbor_location,
+            num_active_neighbors,
         }
     }
 }
 
+#[allow(clippy::cast_possible_truncation)]
 fn unpack_neighbors_info(packed: u128) -> (u64, i16, Location) {
     let location = (packed & 0xFFFF) as u16;
     let neighbors = ((packed >> 16) & 0xFF) as i16;
     let time = (packed >> 24) as u64;
-    let location = Location::from(location as u64);
+    let location = Location::from(u64::from(location));
     (time, neighbors, location)
 }

@@ -17,10 +17,10 @@ thiserror.workspace = true
 
 serde = { workspace = true, features = ["derive"] }
 
-torii-client = { git = "https://github.com/dojoengine/torii.git", tag = "v1.5.5" }
-torii-grpc-client = { git = "https://github.com/dojoengine/torii.git", tag = "v1.5.5" }
-dojo-world = { git = "https://github.com/dojoengine/dojo", rev = "4145801" }
-dojo-types = { git = "https://github.com/dojoengine/dojo", rev = "4145801" }
+torii-client.workspace = true
+torii-grpc-client.workspace = true
+dojo-world.workspace = true
+dojo-types.workspace = true
 serde_json.workspace = true
 tracing-subscriber.workspace = true
 crypto-bigint = "0.5.5"
