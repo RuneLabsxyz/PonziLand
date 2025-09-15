@@ -244,14 +244,14 @@ pub mod quests {
         // TODO: Add reward logic here
         }
 
-        fn get_quest(ref self: ContractState, quest_id: u64) -> (Quest, QuestDetails) {
+        fn get_quest(self: @ContractState, quest_id: u64) -> (Quest, QuestDetails) {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest_id);
             (quest, quest_details)
         }
 
-        fn get_score(ref self: ContractState, quest_id: u64) -> u32 {
+        fn get_score(self: @ContractState, quest_id: u64) -> u32 {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest_id);
@@ -261,7 +261,7 @@ pub mod quests {
             game_dispatcher.score(quest.game_token_id)
         }
 
-        fn get_quest_game_token(ref self: ContractState, quest_id: u64) -> (ContractAddress, u64) {
+        fn get_quest_game_token(self: @ContractState, quest_id: u64) -> (ContractAddress, u64) {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.details_id);
