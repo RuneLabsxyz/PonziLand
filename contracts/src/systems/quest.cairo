@@ -21,6 +21,8 @@ pub trait IQuestSystems<T> {
     fn get_quest(ref self: T, quest_id: u64) -> (Quest, QuestDetails);
     fn set_land_quest(ref self: T, land_location: u16, settings_id: u32);
     fn remove_land_quest(ref self: T, land_location: u16);
+    fn get_score(ref self: T, quest_id: u64) -> u32;
+    fn get_quest_game_token(ref self: T, quest_id: u64) -> (ContractAddress, u64);
 }
 
 
