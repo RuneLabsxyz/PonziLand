@@ -108,7 +108,7 @@ pub mod quests {
             assert!(land.quest_id == 0, "Land already has a quest");
 
             let id = self.create_quest(
-                starknet::contract_address_const::<0x06573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26>(), //this is the address of the mock for now
+                starknet::contract_address_const::<0x7d0a722bfc6ccd3526745e304b4e636e75541987849889ebcf74ffce87dd679>(), //this is the address of the mock for now
                 land.location,
                 1,
                 1,
