@@ -3584,7 +3584,7 @@
     },
     {
       "address": "0x393aa0cdcf8c9664d6b7c75eb1e216b5bac42c7bba3292966dcaae7a606bb65",
-      "class_hash": "0x15582b0606f05e966204c7bdc3d1bf1501ecc46b7a71f4de1648f01bd1d6bf",
+      "class_hash": "0x789114e1599eb480753ee25c889a53ef327876b6b0e9d7375d2b2857fde2c43",
       "abi": [
         {
           "type": "impl",
@@ -3857,7 +3857,7 @@
                   "type": "(ponzi_land::models::quest::Quest, ponzi_land::models::quest::QuestDetails)"
                 }
               ],
-              "state_mutability": "external"
+              "state_mutability": "view"
             },
             {
               "type": "function",
@@ -3901,7 +3901,7 @@
                   "type": "core::integer::u32"
                 }
               ],
-              "state_mutability": "external"
+              "state_mutability": "view"
             },
             {
               "type": "function",
@@ -3917,7 +3917,7 @@
                   "type": "(core::starknet::contract_address::ContractAddress, core::integer::u64)"
                 }
               ],
-              "state_mutability": "external"
+              "state_mutability": "view"
             }
           ]
         },
@@ -4043,11 +4043,8 @@
         "create_quest",
         "start_quest",
         "claim_land",
-        "get_quest",
         "set_land_quest",
         "remove_land_quest",
-        "get_score",
-        "get_quest_game_token",
         "upgrade"
       ]
     },
