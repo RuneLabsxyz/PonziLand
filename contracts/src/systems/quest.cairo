@@ -255,8 +255,11 @@ pub mod quests {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest_id);
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_details.game_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
+            let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
             let game_dispatcher = IMinigameTokenDataDispatcher {
-                contract_address: quest_details.game_address,
+                contract_address: game_token_address,
             };
             game_dispatcher.score(quest.game_token_id)
         }
