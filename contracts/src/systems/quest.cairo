@@ -17,9 +17,8 @@ pub trait IQuestSystems<T> {
     fn start_quest(
         ref self: T, land_location: u16, player_name: felt252,
     ) -> u64;
-    fn claim_reward(ref self: T, quest_id: u64);
-    fn get_quest_details(ref self: T, details_id: u64) -> QuestDetails;
-    fn get_quest(ref self: T, quest_id: u64) -> Quest;
+    fn claim_land(ref self: T, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256);
+    fn get_quest(ref self: T, quest_id: u64) -> (Quest, QuestDetails);
     fn set_land_quest(ref self: T, land_location: u16, settings_id: u32);
     fn remove_land_quest(ref self: T, land_location: u16);
 }
@@ -68,6 +67,7 @@ pub mod quests {
             let settings_address_felt: felt252 = settings_address.into();
             let settings_exist = settings_dispatcher.settings_exist(settings_id);
             let game_address_felt: felt252 = game_address.into();
+
             assert!(
                 settings_exist,
                 "Quests: game address {} does not have settings id {}",
@@ -150,6 +150,7 @@ pub mod quests {
 
             assert!(land.owner != player_address, "Player is the owner of the quest land");
 
+            
             // Check if this realm already has a participant in this quest
             // This is now a simple model query instead of iteration
             let player_participation: PlayerRegistrations = world
@@ -199,7 +200,7 @@ pub mod quests {
             quest.id
         }
 
-        fn claim_reward(ref self: ContractState, quest_id: u64) {
+        fn claim_land(ref self: ContractState, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256) {
             let mut world = self.world(DEFAULT_NS());
             let mut quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.details_id);
@@ -236,15 +237,13 @@ pub mod quests {
         // TODO: Add reward logic here
         }
 
-        fn get_quest(ref self: ContractState, quest_id: u64) -> Quest {
+        fn get_quest(ref self: ContractState, quest_id: u64) -> (Quest, QuestDetails) {
             let mut world = self.world(DEFAULT_NS());
-            world.read_model(quest_id)
+            let quest = world.read_model(quest_id);
+            let quest_details = world.read_model(quest_id);
+            (quest, quest_details)
         }
 
-        fn get_quest_details(ref self: ContractState, details_id: u64) -> QuestDetails {
-            let mut world = self.world(DEFAULT_NS());
-            world.read_model(details_id)
-        }
     }
 }
 
