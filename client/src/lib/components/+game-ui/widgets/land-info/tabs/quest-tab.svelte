@@ -6,7 +6,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { SetLandQuest, RemoveLandQuest, StartQuest } from '$lib/stores/store.svelte';
+  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
@@ -38,7 +38,7 @@
   async function handleGameActionClick() {
     if (game_token_id == 0) {
       console.log('Game Token ID is 0, getting game token id');
-      getGameTokenId();
+      GetQuestToken(land.quest_id);
       return;
     }
     let call: Call = {
@@ -148,39 +148,15 @@
     }
   }
 
-  async function getScore() {
-    let provider = new RpcProvider({
-      nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia"
-    })
-    console.log(provider);
-    let score = provider.call([
-      {
-        contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
-        entrypoint: 'get_score',
-        calldata: [land.quest_id]
-      }
-    ])
-    score = parseInt(score.result[0].toString());
-  }
-
-  async function getGameTokenId() {
-    let provider = new RpcProvider({
-      nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia"
-    })
-    let gameTokenId = provider.call([
-      {
-        contractAddress: "0x393aa0cdcf8c9664d6b7c75eb1e216b5bac42c7bba3292966dcaae7a606bb65",
-        entrypoint: 'get_quest_game_token',
-        calldata: [land.quest_id]
-      }
-    ])
-    gameTokenId = parseInt(gameTokenId.result[1].toString());
-    console.log('Game Token ID: ', gameTokenId);
+  async function getQuestInfo() {
+    let score_res = await GetQuestScore(land.quest_id);
+    console.log(score_res);
+    let token_res = await GetQuestToken(land.quest_id);
+    console.log(token_res);
   }
 
   onMount(() => {
-    getScore();
-    getGameTokenId();
+    getQuestInfo();
   })
 
 </script>
@@ -246,7 +222,7 @@
           >
             Challenge Quest Land
           </Button>
-          <Button onclick={getScore}>Get Score</Button>
+          <Button onclick={getQuestInfo}>Refresh Quest Info</Button>
           <Button onclick={handleGameActionClick}>Explore Game</Button>
 
           <p>Score: {score}</p>
