@@ -214,8 +214,11 @@ pub mod quests {
             let mut land: Land = world.read_model(quest_details.location);
 
             // get score for the token id
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_details.game_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
+            let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
             let game_dispatcher = IMinigameTokenDataDispatcher {
-                contract_address: quest_details.game_address,
+                contract_address: game_token_address,
             };
             let score: u32 = game_dispatcher.score(quest.game_token_id);
 
@@ -247,14 +250,14 @@ pub mod quests {
         fn get_quest(self: @ContractState, quest_id: u64) -> (Quest, QuestDetails) {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
-            let quest_details: QuestDetails = world.read_model(quest_id);
+            let quest_details: QuestDetails = world.read_model(quest.details_id);
             (quest, quest_details)
         }
 
         fn get_score(self: @ContractState, quest_id: u64) -> u32 {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
-            let quest_details: QuestDetails = world.read_model(quest_id);
+            let quest_details: QuestDetails = world.read_model(quest.details_id);
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_details.game_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
             let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
