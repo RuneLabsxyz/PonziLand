@@ -32,13 +32,19 @@
   let loading = $state(false);
   let accountManager = useAccount();
   let score = $state(0);
+  let game_token_id = $state(0);
 
   // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
   async function handleGameActionClick() {
+    if (game_token_id == 0) {
+      console.log('Game Token ID is 0, getting game token id');
+      getGameTokenId();
+      return;
+    }
     let call: Call = {
       contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
       entrypoint: 'explore',
-      calldata: [land.quest_id]
+      calldata: [game_token_id]
     }
 
     let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
@@ -153,8 +159,21 @@
     score = parseInt(score.result[0].toString());
   }
 
+  async function getGameTokenId() {
+    let gameTokenId = accountManager!.getProvider()?.getWalletAccount()?.call([
+      {
+        contractAddress: "0x393aa0cdcf8c9664d6b7c75eb1e216b5bac42c7bba3292966dcaae7a606bb65",
+        entrypoint: 'get_quest_game_token',
+        calldata: [land.quest_id]
+      }
+    ])
+    gameTokenId = parseInt(gameTokenId.result[1].toString());
+    console.log('Game Token ID: ', gameTokenId);
+  }
+
   onMount(() => {
     getScore();
+    getGameTokenId();
   })
 
 </script>
