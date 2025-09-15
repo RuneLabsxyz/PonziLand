@@ -14,7 +14,12 @@ export let configValues = $state({
   maxAuctions: 16,
   auctionDuration: 7 * 24 * 60 * 60,
   levelUpTime: 3600 * 48, // baseTime * 48
-  feeContract: null as string | null,
+  // Auction price calculation parameters (from contract)
+  linearDecayTime: 10 * 60 * 20, // Will be updated from contract
+  dropRate: 90,
+  rateDenominator: 100,
+  decayRate: 100,
+  scalingFactor: 50,
 });
 
 // Function to update all config values - only mutate properties, don't reassign
@@ -26,7 +31,12 @@ function updateConfigValues(newConfig: Config) {
   configValues.maxAuctions = Number(newConfig.max_auctions);
   configValues.auctionDuration = Number(newConfig.auction_duration);
   configValues.levelUpTime = configValues.baseTime * 48;
-  configValues.feeContract = addAddressPadding(newConfig.our_contract_for_fee);
+  // Auction price calculation parameters
+  configValues.linearDecayTime = Number(newConfig.linear_decay_time);
+  configValues.dropRate = Number(newConfig.drop_rate);
+  configValues.rateDenominator = Number(newConfig.rate_denominator);
+  configValues.decayRate = Number(newConfig.decay_rate);
+  configValues.scalingFactor = Number(newConfig.scaling_factor);
 }
 
 // Setup function
