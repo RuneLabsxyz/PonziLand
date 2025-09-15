@@ -13,6 +13,7 @@ COPY ./.sqlx ./.sqlx
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     SQLX_OFFLINE=true cargo build --release --package indexer
 
-FROM gcr.io/distroless/cc-debian12
+FROM frolvlad/alpine-glibc:glibc-2.42
+RUN apk add --no-cache libgcc
 COPY --from=builder /app/target/release/indexer /
 CMD ["./indexer"]
