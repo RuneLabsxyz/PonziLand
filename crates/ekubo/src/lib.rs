@@ -2,8 +2,8 @@ use crate::api::pool::Pool;
 use crate::contract::pool_price::PoolKey;
 use api::pool::get_all_pools;
 use contract::pool_price::read_pool_price;
-use math::u256fd128::U256FD128;
-use price::PairRatio;
+use price_provider::PairRatio;
+use price_provider::U256FD128;
 use reqwest::Client as ReqwestClient;
 pub use starknet::core::types::Felt;
 use std::sync::Arc;
@@ -11,8 +11,6 @@ use thiserror::Error;
 
 pub mod api;
 pub mod contract;
-pub mod math;
-pub mod price;
 
 #[derive(Error, Debug)]
 pub enum Error {

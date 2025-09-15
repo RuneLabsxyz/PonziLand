@@ -7,14 +7,17 @@
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss
 )]
-
-use ekubo_sdk::math::uint::U256;
+use std::cmp::Ordering;
 use std::fmt::Binary;
 use std::ops::{Not, Sub};
 use std::{
     fmt::Display,
     ops::{Add, Div, Mul},
 };
+
+uint::construct_uint! {
+    pub struct U256(4);
+}
 
 /// Price is a u256 with a fixed point decimal representation of 128 bits for the decimal portion.
 /// This means the value is interpreted as: `whole_number` * 2^128
@@ -37,7 +40,7 @@ impl Binary for U512 {
 impl Binary for U256FD128 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for i in (0..4).rev() {
-            write!(f, "{:064b}", self.0 .0[i])?;
+            write!(f, "{:064b}", self.0.0[i])?;
         }
         Ok(())
     }
@@ -100,6 +103,51 @@ impl From<U256FD128> for f64 {
         };
 
         sign * (whole + frac)
+    }
+}
+
+impl From<f64> for U256FD128 {
+    fn from(value: f64) -> Self {
+        // Handle special cases
+        assert!(!value.is_nan(), "Cannot convert NaN to U256FD128");
+        assert!(
+            !value.is_infinite(),
+            "Cannot convert infinite value to U256FD128"
+        );
+
+        // Handle zero
+        if value == 0.0 {
+            return Self::ZERO;
+        }
+
+        let is_negative = value < 0.0;
+        let abs_value = value.abs();
+
+        // Check for overflow - U256FD128 can represent values up to ~2^127
+        // (since 128 bits are used for decimal portion)
+        assert!(
+            abs_value.partial_cmp(&2.0f64.powi(127)) == Some(Ordering::Less),
+            "Value too large to convert to U256FD128"
+        );
+
+        // Split into whole and fractional parts
+        let whole = abs_value.trunc();
+        let frac = abs_value - whole;
+
+        // Convert whole part to U256 and shift left by 128 bits
+        let whole_u128 = whole as u128;
+        let mut result = U256::from(whole_u128) << 128;
+
+        // Convert fractional part
+        // Multiply by 2^128 to get the fixed-point representation
+        let frac_scaled = frac * 2.0f64.powi(128);
+        let frac_u128 = frac_scaled as u128;
+        result |= U256::from(frac_u128);
+
+        let result = Self(result);
+
+        // Apply sign if negative
+        if is_negative { result.neg() } else { result }
     }
 }
 
@@ -650,5 +698,131 @@ mod tests {
             should_panic.is_err(),
             "Expected overflow panic when subtracting large positive from large negative"
         );
+    }
+
+    #[test]
+    fn test_from_f64() {
+        // Test 1: Zero conversion
+        let zero = U256FD128::from(0.0f64);
+        assert_eq!(zero, U256FD128::ZERO, "Expected 0.0 to convert to ZERO");
+
+        // Test 2: Positive whole number
+        let one = U256FD128::from(1.0f64);
+        assert_eq!(
+            one,
+            U256FD128::from_whole(1),
+            "Expected 1.0 to convert correctly"
+        );
+
+        // Test 3: Larger whole number
+        let thousand = U256FD128::from(1000.0f64);
+        assert_eq!(
+            thousand,
+            U256FD128::from_whole(1000),
+            "Expected 1000.0 to convert correctly"
+        );
+
+        // Test 4: Fractional number (0.5)
+        let half_f64 = U256FD128::from(0.5f64);
+        let half_expected = U256FD128::new(U256::from(1u128) << 127);
+        assert_eq!(half_f64, half_expected, "Expected 0.5 to convert correctly");
+
+        // Test 5: Fractional number (0.25)
+        let quarter_f64 = U256FD128::from(0.25f64);
+        let quarter_expected = U256FD128::new(U256::from(1u128) << 126);
+        assert_eq!(
+            quarter_f64, quarter_expected,
+            "Expected 0.25 to convert correctly"
+        );
+
+        // Test 6: Mixed number (1.5)
+        let one_and_half = U256FD128::from(1.5f64);
+        let expected = U256FD128::from_whole(1) + U256FD128::new(U256::from(1u128) << 127);
+        assert_eq!(one_and_half, expected, "Expected 1.5 to convert correctly");
+
+        // Test 7: Negative number (-1.0)
+        let neg_one = U256FD128::from(-1.0f64);
+        assert_eq!(
+            neg_one,
+            U256FD128::from_whole(1).neg(),
+            "Expected -1.0 to convert correctly"
+        );
+
+        // Test 8: Negative fractional (-0.5)
+        let neg_half = U256FD128::from(-0.5f64);
+        let half = U256FD128::new(U256::from(1u128) << 127);
+        assert_eq!(neg_half, half.neg(), "Expected -0.5 to convert correctly");
+
+        // Test 9: Complex fractional (0.123456789)
+        let complex = U256FD128::from(0.123456789f64);
+        // Convert back to f64 and check it's close
+        let back_to_f64: f64 = complex.into();
+        assert!(
+            (back_to_f64 - 0.123456789).abs() < 1e-9,
+            "Expected 0.123456789 round-trip to be close, got {}",
+            back_to_f64
+        );
+
+        // Test 10: Large number near limit
+        let large = U256FD128::from(1e30f64);
+        let back_to_f64: f64 = large.into();
+        assert!(
+            (back_to_f64 - 1e30).abs() / 1e30 < 1e-9,
+            "Expected large number round-trip to be close"
+        );
+
+        // Test 11: Very small positive number
+        let tiny = U256FD128::from(1e-10f64);
+        let back_to_f64: f64 = tiny.into();
+        assert!(
+            (back_to_f64 - 1e-10).abs() < 1e-15,
+            "Expected tiny number round-trip to be close"
+        );
+
+        // Test 12: NaN should panic
+        let should_panic = std::panic::catch_unwind(|| U256FD128::from(f64::NAN));
+        assert!(should_panic.is_err(), "Expected NaN to panic");
+
+        // Test 13: Infinity should panic
+        let should_panic = std::panic::catch_unwind(|| U256FD128::from(f64::INFINITY));
+        assert!(should_panic.is_err(), "Expected INFINITY to panic");
+
+        // Test 14: Negative infinity should panic
+        let should_panic = std::panic::catch_unwind(|| U256FD128::from(f64::NEG_INFINITY));
+        assert!(should_panic.is_err(), "Expected NEG_INFINITY to panic");
+
+        // Test 15: Too large value should panic (2^127 or larger)
+        let too_large = 2.0f64.powi(127);
+        let should_panic = std::panic::catch_unwind(|| U256FD128::from(too_large));
+        assert!(should_panic.is_err(), "Expected value >= 2^127 to panic");
+
+        // Test 16: Round-trip for various values
+        let test_values = vec![
+            42.0,
+            -42.0,
+            std::f64::consts::PI,
+            -std::f64::consts::PI,
+            0.0000001,
+            -0.0000001,
+            999999.999999,
+            -999999.999999,
+        ];
+
+        for val in test_values {
+            let converted = U256FD128::from(val);
+            let back: f64 = converted.into();
+            let relative_error = if val != 0.0 {
+                (back - val).abs() / val.abs()
+            } else {
+                back.abs()
+            };
+            assert!(
+                relative_error < 1e-9,
+                "Round-trip failed for {}: got {}, relative error: {}",
+                val,
+                back,
+                relative_error
+            );
+        }
     }
 }

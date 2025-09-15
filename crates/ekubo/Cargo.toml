@@ -7,6 +7,7 @@ edition = "2021"
 tracing = ["dep:tracing"]
 
 [dependencies]
+price-provider.workspace = true
 safe_decimal_macro = { git = "https://github.com/invariant-labs/decimal.git" }
 ekubo_sdk.workspace = true
 starknet.workspace = true

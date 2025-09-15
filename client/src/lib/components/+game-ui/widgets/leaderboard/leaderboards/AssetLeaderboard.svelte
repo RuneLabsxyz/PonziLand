@@ -36,7 +36,9 @@
       // Create a cache of token prices
 
       for (const tokenPrice of tokenPrices) {
-        tokenPriceCache[padAddress(tokenPrice.address)!] = tokenPrice.ratio;
+        tokenPriceCache[padAddress(tokenPrice.address)!] = Number(
+          tokenPrice.ratio.toBigint(),
+        );
       }
     } catch (error) {
       console.error('Failed to fetch token prices from API:', error);

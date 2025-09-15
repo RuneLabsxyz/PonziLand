@@ -17,7 +17,7 @@ use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{lands::LandsRoute, price::PriceRoute, tokens::TokenRoute};
 use serde::{Deserialize, Serialize};
-use service::{ekubo::EkuboService, token::TokenService};
+use service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 use sqlx::{postgres::PgConnectOptions, ConnectOptions, PgPool};
 use state::AppState;
 use tokio::{
@@ -77,6 +77,10 @@ async fn main() -> Result<()> {
         .await
         .with_context(|| "Error while setting up ekubo config")?;
 
+    let avnu = AvnuService::new(&config, token_service.clone(), &monitor)
+        .await
+        .with_context(|| "Error while setting up avnu config")?;
+
     let options = PgConnectOptions::from_url(&config.database.url)
         .with_context(|| "Error while setting up database connection")?
         .application_name("ponzidexer");
@@ -111,6 +115,7 @@ async fn main() -> Result<()> {
 
     let app_state = AppState {
         token_service: token_service.clone(),
+        avnu_service: avnu.clone(),
         ekubo_service: ekubo.clone(),
         land_repository,
     };

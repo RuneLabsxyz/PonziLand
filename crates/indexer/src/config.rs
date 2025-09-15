@@ -27,6 +27,9 @@ pub struct Conf {
     pub ekubo: EkuboConfig,
 
     #[config(nested)]
+    pub avnu: AvnuConfig,
+
+    #[config(nested)]
     pub starknet: RpcConfig,
 
     #[config(nested)]
@@ -67,6 +70,12 @@ pub struct EkuboConfig {
     pub api_url: Url,
     #[config(env = "EKUBO_CORE_CONTRACT_ADDRESS")]
     pub core_contract_address: Felt,
+}
+
+#[derive(Config, Debug, Clone)]
+pub struct AvnuConfig {
+    #[config(env = "AVNU_API_URL", default = "https://starknet.impulse.avnu.fi")]
+    pub api_url: String,
 }
 
 #[derive(Config, Debug, Clone)]

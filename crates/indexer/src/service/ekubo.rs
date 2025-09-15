@@ -5,7 +5,8 @@ use apalis::prelude::*;
 use apalis_cron::{CronContext, CronStream, Schedule};
 use arc_swap::ArcSwap;
 use chrono::Utc;
-use ekubo::{contract::pool_price::PoolKey, price::PairRatio, EkuboClient};
+use ekubo::{contract::pool_price::PoolKey, EkuboClient};
+use price_provider::PairRatio;
 use starknet::providers::{jsonrpc::HttpTransport, JsonRpcClient};
 use tracing::{error, info};
 
@@ -136,5 +137,10 @@ impl EkuboService {
 
         // Once everything is done, update the exchange rate
         self.exchange_rate.swap(Arc::new(price_info));
+    }
+
+    /// Check if the service has any price data (for health checks)
+    pub fn has_price_data(&self) -> bool {
+        !self.exchange_rate.load().inner.is_empty()
     }
 }

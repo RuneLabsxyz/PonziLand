@@ -175,7 +175,7 @@
       tokenPrices = prices;
       tokenRates = prices.map((price) => ({
         token: price.address,
-        rate: 1 / price.ratio,
+        rate: price.ratio.rawValue().idiv(1).toNumber(),
       }));
       return prices;
     });

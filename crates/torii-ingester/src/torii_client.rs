@@ -18,9 +18,9 @@ use torii_client::Client as GrpcClient;
 #[derive(Error, Debug)]
 pub enum Error {
     #[error("Error while starting torii: {0}")]
-    ToriiInitializationError(torii_client::error::Error),
+    ToriiInitializationError(Box<torii_client::error::Error>),
     #[error("Error while setting up subscription: {0}")]
-    GrpcSubscriptionError(torii_client::error::Error),
+    GrpcSubscriptionError(Box<torii_client::error::Error>),
     #[error("SQL Query error: {0}")]
     SqlError(#[from] super::torii_sql::Error),
 }
@@ -74,9 +74,9 @@ impl ToriiClient {
     /// # Errors
     /// Returns an error if the torii connection cannot be started.
     pub async fn new(config: &ToriiConfiguration) -> Result<Self, Error> {
-        let relay_url = String::new();
-        let grpc_client = GrpcClient::new(config.base_url.clone(), relay_url, config.world_address)
+        let grpc_client = GrpcClient::new(config.base_url.clone(), config.world_address)
             .await
+            .map_err(Box::new)
             .map_err(Error::ToriiInitializationError)?;
 
         let sql_client = SqlClient::new(config.base_url.clone())?;
@@ -134,6 +134,7 @@ impl ToriiClient {
             .grpc_client
             .on_event_message_updated(None)
             .await
+            .map_err(Box::new)
             .map_err(Error::GrpcSubscriptionError)?;
 
         // Red: Ok, this might look a bit difficult, but let's take some time to go into
@@ -163,6 +164,7 @@ impl ToriiClient {
             .grpc_client
             .on_entity_updated(None) // Get everything
             .await
+            .map_err(Box::new)
             .map_err(Error::GrpcSubscriptionError)?;
 
         // Red: Ok, this might look a bit difficult, but let's take some time to go into

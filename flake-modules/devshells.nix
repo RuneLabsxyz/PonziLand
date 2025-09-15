@@ -29,6 +29,14 @@
         nodejs_latest
 
         # Cargo dependencies
+        (fenix.stable.withComponents [
+          "cargo"
+          "clippy"
+          "rust-src"
+          "rustc"
+          "rustfmt"
+          "rust-analyzer"
+        ])
         pkg-config
         openssl
         gcc

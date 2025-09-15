@@ -192,8 +192,12 @@ export class WalletStore {
 
     // Convert fromAmount to base currency, then to target token
     // fromAmount * (1/fromPrice.ratio) * toPrice.ratio
-    const baseValue = fromAmount.rawValue().dividedBy(fromPrice.ratio || 1);
-    const convertedValue = baseValue.multipliedBy(toPrice.ratio || 1);
+    const baseValue = fromAmount
+      .rawValue()
+      .dividedBy(fromPrice.ratio.rawValue() ?? 0);
+    const convertedValue = baseValue.multipliedBy(
+      toPrice.ratio.rawValue() ?? 0,
+    );
 
     return CurrencyAmount.fromScaled(convertedValue.toString(), toToken);
   }
@@ -225,7 +229,7 @@ export class WalletStore {
 
         if (priceInfo?.ratio !== null && priceInfo) {
           totalValue += Number(
-            balance.rawValue().dividedBy(priceInfo.ratio || 0),
+            balance.rawValue().dividedBy(priceInfo.ratio.rawValue() ?? 0),
           );
         }
       }

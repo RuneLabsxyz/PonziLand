@@ -1,4 +1,4 @@
-default_token = "nftSTRK"
+default_token = "STRK"
 
 cors_origins = [
     "http://localhost:3000",
@@ -6,42 +6,67 @@ cors_origins = [
     "https://*.ponzi.land",
     "https://play.ponzi.land",
     "https://ponzi.land",
+    "https://api.runelabs.xyz",
 ]
 
+[gg_xyz]
+enabled = false
+api_url = "https://example.com"
+api_key = ""
+
+[torii]
+world_address = "0x59713eb00142d15a502824739e5f3b9a81a808c0e660875ff1ae199b533a620"
+torii_url = "https://api.cartridge.gg/x/ponziland-mainnet-world/torii"
 
 [ekubo]
 api_url = "https://starknet-mainnet-api.ekubo.org"
 core_contract_address = "0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b"
 
 [starknet]
-rpc_url = "https://api.cartridge.gg/x/starknet/mainnet"
-
-
-[torii]
-world_address = "0x76b1269937debcb70fb5f59dea1c6f9ce24c9415b23876f623385933a6d2681"
-torii_url = "https://api.cartridge.gg/x/ponziland-tourney-2/torii"
-
-[gg_xyz]
-enabled = false                                                              # Disabling while we wai>
-api_url = "https://api.gg.xyz"
-api_key = "bcce698e9960f43f0bfc9274c69c8b8150dd203cadb82e1bc05b554b0c5b6b6f"
+rpc_url = "https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9"
 
 [[token]]
-symbol = "nftSTRK"
-address = "0x056893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb"
-
+symbol = "ETH"
+address = "0x049D36570D4e46f48e99674bd3fcc84644DdD6b96F7C741B1562B82f9e004dC7"
 [[token]]
-symbol = "eWNT"
-address = "0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e"
-
+symbol = "SLAY"
+address = "0x2ab526354a39e7f5d272f327fa94e757df3688188d4a92c6dc3623ab79894e2"
 [[token]]
-symbol = "eQQ"
-address = "0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4"
-
+symbol = "DOG"
+address = "0x040E81cfeB176BFDbc5047BBC55eb471CFAb20a6B221f38d8fDa134E1bFFFca4"
 [[token]]
-symbol = "eSG"
-address = "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5"
-
+symbol = "SOL"
+address = "0x1e70aedffd376afe33cebdf51ed5365131dccb2a5b2cb36d02b785442912b9b"
 [[token]]
-symbol = "nftLORDS"
-address = "0xdcdc180a8b4b9cef2d039462ad30de95c5609178a1c2bc55779309c07d45db"
+symbol = "BROTHER"
+address = "0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee"
+[[token]]
+symbol = "LORDS"
+address = "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49"
+[[token]]
+symbol = "STRK"
+address = "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d"
+[[token]]
+symbol = "EKUBO"
+address = "0x075afe6402ad5a5c20dd25e10ec3b3986acaa647b77e4ae24b0cbc9a54a27a87"
+[[token]]
+symbol = "PAL"
+address = "0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559"
+[[token]]
+symbol = "BTC"
+address = "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac"
+[[token]]
+symbol = "BONK"
+address = "0x781bddf077f25a53411d567093f63f9a839ec9e6bc4d99d9240cf742b98b0e8"
+[[token]]
+symbol = "SISTER"
+address = "0x102d5e124c51b936ee87302e0f938165aec96fb6c2027ae7f3a5ed46c77573b"
+[[token]]
+symbol = "DREAMS"
+address = "0x4fcaf2a7b4a072fe57c59beee807322d34ed65000d78611c909a46fead07fb1"
+[[token]]
+symbol = "USDC"
+address = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"
+[[token]]
+symbol = "SCHIZO"
+address = "0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2"
