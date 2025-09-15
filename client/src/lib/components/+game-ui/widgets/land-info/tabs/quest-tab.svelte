@@ -8,7 +8,7 @@
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { SetLandQuest, RemoveLandQuest, StartQuest } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
-  import { Call } from 'starknet';
+  import { type Call } from 'starknet';
 
   let {
     land,
