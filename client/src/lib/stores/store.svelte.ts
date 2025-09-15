@@ -138,7 +138,6 @@ export async function GetQuestToken(questId: number) {
     return accountManager!.getProvider();
   };
   let res = await sdk.client.quests.getQuestGameToken(
-    account()?.getWalletAccount()!,
     questId,
   );
   return res;
@@ -150,7 +149,6 @@ export async function GetQuestScore(questId: number) {
     return accountManager!.getProvider();
   };
   let res = await sdk.client.quests.getScore(
-    account()?.getWalletAccount()!,
     questId,
   );
   return res;
