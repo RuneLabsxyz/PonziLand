@@ -9,6 +9,7 @@
   import { SetLandQuest, RemoveLandQuest, StartQuest } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
   import { type Call } from 'starknet';
+  import { onMount } from 'svelte';
 
   let {
     land,
