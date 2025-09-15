@@ -18,11 +18,11 @@ pub trait IQuestSystems<T> {
         ref self: T, land_location: u16, player_name: felt252,
     ) -> u64;
     fn claim_land(ref self: T, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256);
-    fn get_quest(ref self: T, quest_id: u64) -> (Quest, QuestDetails);
+    fn get_quest(self: @T, quest_id: u64) -> (Quest, QuestDetails);
     fn set_land_quest(ref self: T, land_location: u16, settings_id: u32);
     fn remove_land_quest(ref self: T, land_location: u16);
-    fn get_score(ref self: T, quest_id: u64) -> u32;
-    fn get_quest_game_token(ref self: T, quest_id: u64) -> (ContractAddress, u64);
+    fn get_score(self: @T, quest_id: u64) -> u32;
+    fn get_quest_game_token(self: @T, quest_id: u64) -> (ContractAddress, u64);
 }
 
 
