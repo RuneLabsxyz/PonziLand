@@ -2,6 +2,8 @@ import { building } from '$app/environment';
 import { env } from '$env/dynamic/private';
 import { CLOSING_DATE, DATE_GATE } from '$lib/const';
 import { redirect, type Handle } from '@sveltejs/kit';
+import type { HandleServerError } from '@sveltejs/kit';
+import { PostHog } from 'posthog-node';
 
 const allowedUrls = ['/maintenance', '/dashboard'];
 
@@ -28,11 +30,64 @@ export function isMaintenanceModeEnabled(
   return true;
 }
 
+const handlePosthog: Handle = async ({ event, resolve }) => {
+  const { pathname } = event.url;
+
+  // Determine target hostname based on static or dynamic ingestion
+  const hostname = pathname.startsWith('/forward/static/')
+    ? 'eu-assets.i.posthog.com' // change us to eu for EU Cloud
+    : 'eu.i.posthog.com'; // change us to eu for EU Cloud
+
+  // Build external URL
+  const url = new URL(event.request.url);
+  url.protocol = 'https:';
+  url.hostname = hostname;
+  url.port = '443';
+  url.pathname = pathname.replace('/forward/', '');
+
+  // Clone and adjust headers
+  const headers = new Headers(event.request.headers);
+  headers.set('Accept-Encoding', '');
+  headers.set('host', hostname);
+
+  // Proxy the request to the external host
+  const response = await fetch(url.toString(), {
+    method: event.request.method,
+    headers,
+    body: event.request.body,
+    // @ts-expect-error - For some reason this parameter is required, but not known
+    duplex: 'half',
+  });
+
+  return response;
+};
+
+import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
+
+const client = PUBLIC_POSTHOG_KEY
+  ? new PostHog(PUBLIC_POSTHOG_KEY, {
+      host: 'https://eu.i.posthog.com',
+    })
+  : null;
+
+export const handleError: HandleServerError = async ({ error, status }) => {
+  if (status !== 404 && client) {
+    client.captureException(error);
+    await client.shutdown();
+  }
+};
+
 export const handle: Handle = async ({ event, resolve }) => {
   // Bypass all this trickery if the bypass token is set to '' (default), or if we're building
   // Or if we are after the DATE_GATE
   if (building) {
     return await resolve(event);
+  }
+
+  const { pathname } = event.url;
+
+  if (pathname.startsWith('/forward/')) {
+    return handlePosthog({ event, resolve });
   }
 
   const BYPASS_TOKEN = env.BYPASS_TOKEN ?? '';

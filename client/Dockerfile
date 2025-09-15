@@ -12,6 +12,9 @@ ENV NODE_ENV="production"
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 
+# Accept build arguments
+ARG POSTHOG_KEY
+
 # Install packages needed to build node modules
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential pkg-config python-is-python3
@@ -34,6 +37,7 @@ RUN DYNAMIC_CONFIG="true" \
 RUN DYNAMIC_CONFIG="true" \
     MANIFEST_PATH="./manifest.json" \
     DOCKER="true" \
+    POSTHOG_KEY="$POSTHOG_KEY" \
     bun --bun run build
 
 # Remove development dependencies
