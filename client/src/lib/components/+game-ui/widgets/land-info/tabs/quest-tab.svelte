@@ -149,6 +149,7 @@
   }
 
   async function getQuestInfo() {
+    console.log(land.quest_id);
     let score_res = await GetQuestScore(land.quest_id);
     console.log(score_res);
     let token_res = await GetQuestToken(land.quest_id);
