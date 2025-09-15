@@ -8,7 +8,7 @@
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { SetLandQuest, RemoveLandQuest, StartQuest } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
-  import { type Call } from 'starknet';
+  import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
 
   let {
@@ -149,7 +149,11 @@
   }
 
   async function getScore() {
-    let score = accountManager!.getProvider()?.call([
+    let provider = new RpcProvider({
+      nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia"
+    })
+    console.log(provider);
+    let score = provider.call([
       {
         contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
         entrypoint: 'get_score',
@@ -160,7 +164,10 @@
   }
 
   async function getGameTokenId() {
-    let gameTokenId = accountManager!.getProvider()?.call([
+    let provider = new RpcProvider({
+      nodeUrl: "https://api.cartridge.gg/x/starknet/sepolia"
+    })
+    let gameTokenId = provider.call([
       {
         contractAddress: "0x393aa0cdcf8c9664d6b7c75eb1e216b5bac42c7bba3292966dcaae7a606bb65",
         entrypoint: 'get_quest_game_token',
