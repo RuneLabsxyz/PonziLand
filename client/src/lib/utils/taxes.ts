@@ -2,7 +2,7 @@ import type { LandWithActions } from '$lib/api/land';
 import { Neighbors } from '$lib/api/neighbors';
 import { configValues } from '$lib/stores/config.store.svelte';
 import type { Token } from '$lib/interfaces';
-import { toHexWithPadding } from '$lib/utils';
+import { toHexWithPadding, padAddress } from '$lib/utils';
 import data from '$profileData';
 import { CurrencyAmount } from './CurrencyAmount';
 export type TaxData = {
@@ -40,7 +40,7 @@ export const getAggregatedTaxes = async (
     }
 
     const token: Token | undefined = data.availableTokens.find(
-      (t) => t.address == tax.tokenAddress,
+      (t) => padAddress(t.address) === padAddress(tax.tokenAddress),
     );
 
     const tokenAddress = token?.address ?? tax.tokenAddress;
@@ -52,7 +52,7 @@ export const getAggregatedTaxes = async (
 
   const taxes = Object.entries(tokenTaxMap).map(([tokenAddress, totalTax]) => {
     const token: Token | undefined = data.availableTokens.find(
-      (t) => t.address == tokenAddress,
+      (t) => padAddress(t.address) === padAddress(tokenAddress),
     );
 
     return {
@@ -98,7 +98,9 @@ export const getNeighbourYieldArray = async (
     }
 
     const tokenAddress = toHexWithPadding(info?.token);
-    const token = data.availableTokens.find((t) => t.address == tokenAddress);
+    const token = data.availableTokens.find(
+      (t) => padAddress(t.address) === padAddress(tokenAddress),
+    );
 
     return {
       ...info,

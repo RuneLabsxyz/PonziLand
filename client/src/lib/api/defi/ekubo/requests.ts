@@ -117,11 +117,13 @@ export async function getTokenPrices(): Promise<TokenPrice[]> {
     }
     const data = (await res.json()) as any;
 
-    return data.map((item: any) => ({
+    const tokenPrices = data.map((item: any) => ({
       symbol: item.symbol,
       address: item.address,
       ratio: CurrencyAmount.fromScaled(item.ratio_exact),
     }));
+
+    return tokenPrices;
   } catch (error) {
     console.error('Error fetching token prices:', error);
     throw error;

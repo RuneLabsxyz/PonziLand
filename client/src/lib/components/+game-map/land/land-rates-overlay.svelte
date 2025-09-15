@@ -10,6 +10,8 @@
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate, getNeighbourYieldArray } from '$lib/utils/taxes';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import data from '$profileData';
 
   let {
     land,
@@ -36,6 +38,63 @@
   let tokenBurnRate = $derived(
     calculateBurnRate(land.sellPrice, land.level, numberOfNeighbours),
   );
+
+  const BASE_TOKEN = data.mainCurrencyAddress;
+  let baseToken = $derived(
+    data.availableTokens.find((token) => token.address === BASE_TOKEN),
+  );
+
+  function getYieldValueInBaseToken(info: any): number {
+    if (!info?.token || !baseToken) return 0;
+
+    const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
+    const baseValue = walletStore.convertTokenAmount(
+      amount,
+      info.token,
+      baseToken,
+    );
+
+    return baseValue ? Number(baseValue.rawValue()) : 0;
+  }
+
+  // Calculate yield scaling once per land
+  let yieldScaling = $derived(() => {
+    const validYields = yieldInfo
+      .filter((neighbor) => neighbor?.token && neighbor.per_hour > 0n)
+      .map((neighbor) => ({
+        neighbor,
+        baseValue: getYieldValueInBaseToken(neighbor),
+      }))
+      .filter((item) => item.baseValue > 0);
+
+    if (validYields.length <= 1) {
+      // Single yield or no yields, use normal scale for all
+      return new Map(validYields.map((item) => [item.neighbor, 1]));
+    }
+
+    const allValues = validYields.map((item) => item.baseValue);
+    const minYield = Math.min(...allValues);
+    const maxYield = Math.max(...allValues);
+
+    if (maxYield === minYield) {
+      // All yields are the same, use normal scale
+      return new Map(validYields.map((item) => [item.neighbor, 1]));
+    }
+
+    // Scale between 0.5x (smallest yield) and 1.5x (biggest yield)
+    return new Map(
+      validYields.map((item) => {
+        const normalizedValue =
+          (item.baseValue - minYield) / (maxYield - minYield);
+        const scale = 0.5 + normalizedValue * 1.0; // Scale from 0.5 to 1.5
+        return [item.neighbor, scale];
+      }),
+    );
+  });
+
+  function getArrowScale(info: any): number {
+    return yieldScaling().get(info) || 0;
+  }
 
   $effect(() => {
     if (land) {
@@ -80,58 +139,16 @@
               {info.token?.symbol}/h
             </span>
           </div>
-
-          <!-- Straight -->
-          {#if i === 1}
-            <Arrow
-              type="straight"
-              class="pr-2 w-8 h-8 top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 absolute rotate-90"
-            />
-          {/if}
-          {#if i === 3}
-            <Arrow
-              type="straight"
-              class="pr-2 w-8 h-8 top-1/2 left-1/3 -translate-x-1/2 -translate-y-1/2 absolute"
-            />
-          {/if}
-          {#if i === 5}
-            <Arrow
-              type="straight"
-              class="pr-2 w-8 h-8 top-1/2 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-180"
-            />
-          {/if}
-          {#if i === 7}
-            <Arrow
-              type="straight"
-              class="pr-2 w-8 h-8 bottom-1/3 left-1/2 -translate-x-1/2 translate-y-1/2 absolute -rotate-90"
-            />
-          {/if}
-
-          <!-- Diagonals -->
-          {#if i === 0}
-            <Arrow
-              type="bent"
-              class="pr-2 w-8 h-8 top-1/3 left-1/3 -translate-x-1/2 -translate-y-1/2 absolute rotate-45"
-            />
-          {/if}
-          {#if i === 2}
-            <Arrow
-              type="bent"
-              class="pr-2 w-8 h-8 top-1/3 right-1/3 translate-x-1/2 -translate-y-1/2 absolute rotate-[135deg]"
-            />
-          {/if}
-          {#if i === 6}
-            <Arrow
-              type="bent"
-              class="pr-2 w-8 h-8 bottom-1/3 left-1/3 -translate-x-1/2 translate-y-1/2 absolute -rotate-45"
-            />
-          {/if}
-          {#if i === 8}
-            <Arrow
-              type="bent"
-              class="pr-2 w-8 h-8 bottom-1/3 right-1/3 translate-x-1/2 translate-y-1/2 absolute -rotate-[135deg]"
-            />
-          {/if}
+        {:else if info && i !== 4}
+          <div
+            class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
+          >
+            {#if info.sell_price > 0n}
+              <span class="whitespace-nowrap text-yellow-400"> ?/h </span>
+            {:else}
+              <span class="whitespace-nowrap text-gray-500"> 0/h </span>
+            {/if}
+          </div>
         {:else if i === 4}
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none relative"
@@ -145,6 +162,78 @@
           <div
             class="text-ponzi text-[32px] flex items-center justify-center leading-none"
           ></div>
+        {/if}
+
+        <!-- Show arrows only for neighbors with actual yields (has token and yield > 0) -->
+        {#if info?.token && info.per_hour > 0n}
+          {@const scale = getArrowScale(info)}
+          <!-- Straight -->
+          {#if i === 1}
+            <div
+              class="absolute top-1/3 left-1/2"
+              style="transform: translate(-50%, -50%) rotate(90deg) scale({scale});"
+            >
+              <Arrow type="straight" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+          {#if i === 3}
+            <div
+              class="absolute top-1/2 left-1/3"
+              style="transform: translate(-50%, -50%) scale({scale});"
+            >
+              <Arrow type="straight" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+          {#if i === 5}
+            <div
+              class="absolute top-1/2 right-1/3"
+              style="transform: translate(50%, -50%) rotate(180deg) scale({scale});"
+            >
+              <Arrow type="straight" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+          {#if i === 7}
+            <div
+              class="absolute bottom-1/3 left-1/2"
+              style="transform: translate(-50%, 50%) rotate(-90deg) scale({scale});"
+            >
+              <Arrow type="straight" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+
+          <!-- Diagonals -->
+          {#if i === 0}
+            <div
+              class="absolute top-1/3 left-1/3"
+              style="transform: translate(-50%, -50%) rotate(45deg) scale({scale});"
+            >
+              <Arrow type="bent" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+          {#if i === 2}
+            <div
+              class="absolute top-1/3 right-1/3"
+              style="transform: translate(50%, -50%) rotate(135deg) scale({scale});"
+            >
+              <Arrow type="bent" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+          {#if i === 6}
+            <div
+              class="absolute bottom-1/3 left-1/3"
+              style="transform: translate(-50%, 50%) rotate(-45deg) scale({scale});"
+            >
+              <Arrow type="bent" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
+          {#if i === 8}
+            <div
+              class="absolute bottom-1/3 right-1/3"
+              style="transform: translate(50%, 50%) rotate(-135deg) scale({scale});"
+            >
+              <Arrow type="bent" class="pr-2 w-8 h-8" />
+            </div>
+          {/if}
         {/if}
       {/each}
     {/if}
