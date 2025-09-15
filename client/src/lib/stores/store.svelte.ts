@@ -154,6 +154,30 @@ export async function GetQuest(questId: number) {
   return res;
 }
 
+export async function GetQuestToken(questId: number) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+  let res = await sdk.client.quests.getQuestGameToken(
+    account()?.getWalletAccount()!,
+    questId,
+  );
+  return res;
+}
+
+export async function GetQuestScore(questId: number) {
+  const { client: sdk, accountManager } = useDojo();
+  const account = () => {
+    return accountManager!.getProvider();
+  };
+  let res = await sdk.client.quests.getScore(
+    account()?.getWalletAccount()!,
+    questId,
+  );
+  return res;
+}
+
 export function getNeighboringLands(location: string): BaseLand[] {
   const allLands = landStore.getAllLands();
   const landsArray = Array.isArray(allLands) ? allLands : [];
