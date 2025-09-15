@@ -241,15 +241,15 @@ pub mod quests {
 
         fn get_quest(ref self: ContractState, quest_id: u64) -> (Quest, QuestDetails) {
             let mut world = self.world(DEFAULT_NS());
-            let quest = world.read_model(quest_id);
-            let quest_details = world.read_model(quest_id);
+            let quest: Quest = world.read_model(quest_id);
+            let quest_details: QuestDetails = world.read_model(quest_id);
             (quest, quest_details)
         }
 
         fn get_score(ref self: ContractState, quest_id: u64) -> u32 {
             let mut world = self.world(DEFAULT_NS());
-            let quest = world.read_model(quest_id);
-            let quest_details = world.read_model(quest.details_id);
+            let quest: Quest = world.read_model(quest_id);
+            let quest_details: QuestDetails = world.read_model(quest_id);
             let game_dispatcher = IMinigameTokenDataDispatcher {
                 contract_address: quest_details.game_address,
             };
@@ -258,8 +258,8 @@ pub mod quests {
 
         fn get_quest_game_token(ref self: ContractState, quest_id: u64) -> (ContractAddress, u64) {
             let mut world = self.world(DEFAULT_NS());
-            let quest = world.read_model(quest_id);
-            let quest_details = world.read_model(quest.details_id);
+            let quest: Quest = world.read_model(quest_id);
+            let quest_details: QuestDetails = world.read_model(quest.details_id);
             (quest_details.game_address, quest.game_token_id)
         }
 
