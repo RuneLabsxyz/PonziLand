@@ -8,6 +8,7 @@
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { SetLandQuest, RemoveLandQuest, StartQuest } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
+  import { Call } from 'starknet';
 
   let {
     land,
@@ -29,6 +30,25 @@
 
   let loading = $state(false);
   let accountManager = useAccount();
+  let score = $state(0);
+
+  // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
+  async function handleGameActionClick() {
+    let call: Call = {
+      contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
+      entrypoint: 'explore',
+      calldata: [land.quest_id]
+    }
+
+    let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
+    console.log(res);
+
+    if (res?.transaction_hash) {
+      await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
+    }
+
+    loading = false;
+  }
 
   async function handleSetQuestClick() {
     loading = true;
@@ -120,6 +140,22 @@
       loading = false;
     }
   }
+
+  async function getScore() {
+    let score = accountManager!.getProvider()?.getWalletAccount()?.call([
+      {
+        contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
+        entrypoint: 'get_score',
+        calldata: [land.quest_id]
+      }
+    ])
+    score = parseInt(score.result[0].toString());
+  }
+
+  onMount(() => {
+    getScore();
+  })
+
 </script>
 
 {#if isActive}
@@ -183,6 +219,10 @@
           >
             Challenge Quest Land
           </Button>
+          <Button onclick={getScore}>Get Score</Button>
+          <Button onclick={handleGameActionClick}>Explore Game</Button>
+
+          <p>Score: {score}</p>
         {/if}
       {:else}
         <!-- Land is not owned by player and has no quest - show informational message -->
