@@ -128,7 +128,7 @@ impl AvnuPriceProvider {
             let chunk_prices: Vec<TokenPriceDto> =
                 serde_json::from_str(&response_text).map_err(|e| {
                     println!("Request {}: JSON parsing error: {}", chunk_idx + 1, e);
-                    Error::JsonParse(format!("{}", e))
+                    Error::JsonParse(format!("{e}"))
                 })?;
 
             println!(
@@ -217,6 +217,7 @@ impl PriceProvider for AvnuPriceProvider {
 }
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod tests {
     use super::*;
     use mockito::{Matcher, Server};
@@ -255,7 +256,7 @@ mod tests {
             },
             {
                 "address": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-                "priceInETH": 0.0004166,
+                "priceInETH": 0.000_416_6,
                 "priceInUSD": 1.0,
                 "decimals": 6
             },
@@ -308,9 +309,7 @@ mod tests {
         let actual_usdc_ratio: f64 = usdc_ratio.0.into();
         assert!(
             (actual_usdc_ratio - expected_usdc_ratio).abs() < 0.0000001,
-            "USDC ratio mismatch: expected ~{}, got {}",
-            expected_usdc_ratio,
-            actual_usdc_ratio
+            "USDC ratio mismatch: expected ~{expected_usdc_ratio}, got {actual_usdc_ratio}",
         );
 
         // Verify other token ratio (2.5 ETH / 1.0 ETH = 2.5)
@@ -324,9 +323,7 @@ mod tests {
         let actual_other_ratio: f64 = other_ratio.0.into();
         assert!(
             (actual_other_ratio - expected_other_ratio).abs() < 0.00001,
-            "Other token ratio mismatch: expected {}, got {}",
-            expected_other_ratio,
-            actual_other_ratio
+            "Other token ratio mismatch: expected {expected_other_ratio}, got {actual_other_ratio}"
         );
     }
 
@@ -337,7 +334,7 @@ mod tests {
         let mock_response = json!([
             {
                 "address": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
-                "priceInETH": 0.0004166,
+                "priceInETH": 0.000_416_6,
                 "priceInUSD": 1.0,
                 "decimals": 6
             }
@@ -364,8 +361,7 @@ mod tests {
         let error_msg = format!("{}", result.err().unwrap());
         assert!(
             error_msg.contains("Reference token not found"),
-            "Expected ReferenceTokenNotFound error, got: {}",
-            error_msg
+            "Expected ReferenceTokenNotFound error, got: {error_msg}",
         );
     }
 
@@ -404,8 +400,7 @@ mod tests {
         let error_msg = format!("{}", result.err().unwrap());
         assert!(
             error_msg.contains("Token not found"),
-            "Expected TokenNotFound error, got: {}",
-            error_msg
+            "Expected TokenNotFound error, got: {error_msg}"
         );
     }
 
@@ -449,12 +444,12 @@ mod tests {
         let error_msg = format!("{}", result.err().unwrap());
         assert!(
             error_msg.contains("division by zero"),
-            "Expected DivisionByZero error, got: {}",
-            error_msg
+            "Expected DivisionByZero error, got: {error_msg}",
         );
     }
 
     #[tokio::test]
+    #[allow(clippy::similar_names)]
     async fn test_paging_with_many_tokens() {
         let mut server = Server::new_async().await;
 
@@ -566,7 +561,7 @@ mod tests {
             .await
         {
             Ok(prices) => println!("Direct API call succeeded with {} prices", prices.len()),
-            Err(e) => println!("Direct API call failed: {}", e),
+            Err(e) => println!("Direct API call failed: {e}"),
         }
 
         let tokens = vec![
@@ -624,17 +619,14 @@ mod tests {
                 }
             }
             Err(e) => {
-                println!(
-                    "API call failed (this may be expected if tokens are not available): {}",
-                    e
-                );
+                println!("API call failed (this may be expected if tokens are not available): {e}");
                 // Don't fail the test if some tokens are not found, as this might be expected
                 // Only fail if it's a more serious error
-                let error_msg = format!("{}", e);
+                let error_msg = format!("{e}");
                 if !error_msg.contains("Token not found")
                     && !error_msg.contains("Reference token not found")
                 {
-                    panic!("Unexpected error: {}", e);
+                    panic!("Unexpected error: {e}");
                 }
             }
         }
