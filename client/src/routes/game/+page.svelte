@@ -24,6 +24,132 @@
       // Full mode: need loading complete AND Dojo setup
       return !loading && loadingStore.phases.dojo.items['dojo-init'];
     }
+  }
+
+  let webGLSupported = $state(true);
+  let webGLError = $state('');
+  let canvasError = $state(false);
+  let canvasErrorMessage = $state('');
+
+  // Handle Canvas/WebGL runtime errors
+  function handleCanvasError(error: Error) {
+    console.error('Canvas/WebGL Error:', error);
+    canvasError = true;
+    canvasErrorMessage =
+      error.message || 'An error occurred while initializing the 3D graphics.';
+    loading = false;
+  }
+
+  const promise = Promise.all([
+    FUSE_DISABLE_SOCIALINK
+      ? setupAccountState()
+      : setupSocialink().then(() => {
+          return setupAccountState();
+        }),
+    setupClient().then(async (client) => {
+      // Initialize both stores with Dojo client
+      landStore.setup(client!);
+      landStore.stopRandomUpdates();
+
+      // Setup config subscription - this loads dynamic config from blockchain
+      await setupConfigStore(client!);
+    }),
+    setupAccount(),
+  ]);
+
+  let loading = $state(true);
+
+  // Check WebGL support on mount
+  if (typeof window !== 'undefined') {
+    if (!isWebGLSupported()) {
+      webGLSupported = false;
+      webGLError =
+        'WebGL is not supported on this device or browser. Please try updating your browser or enabling hardware acceleration.';
+      loading = false;
+    }
+  }
+
+  let value = $state(10);
+
+  $effect(() => {
+    tutorialLandStore.stopRandomUpdates();
+    // tutorialLandStore.startRandomUpdates();
+    let increment = 10;
+
+    const interval = setInterval(() => {
+      value += increment;
+      if (increment > 1) {
+        increment = increment - 1;
+      }
+      if (value >= 80) {
+        clearInterval(interval);
+      }
+    }, 100);
+
+    function clearLoading() {
+      clearInterval(interval);
+      value = 100;
+      setTimeout(() => {
+        loading = false;
+      }, 200);
+    }
+
+    promise
+      .then(async ([accountState, dojo, accountManager]) => {
+        if (accountState == null) {
+          console.error('Account state is null!');
+
+          return;
+        }
+
+        // Check if the user needs to signup with socialink
+        const address = accountManager
+          ?.getProvider()
+          ?.getWalletAccount()?.address;
+
+        // Make sure that we finished updating the user signup state.
+        if (!FUSE_DISABLE_SOCIALINK) {
+          await refresh();
+
+          // Check if the user needs to signup with socialink
+          if (address != null && !accountState.profile?.exists) {
+            console.info('The user needs to signup with socialink.');
+         //   goto('/onboarding/register');
+         //   return;
+          }
+
+          if (
+            address != null &&
+            accountState.profile?.exists &&
+            !accountState.profile?.whitelisted
+          ) {
+          //  console.info('The user needs to get whitelisted.');
+          //  goto('/onboarding/whitelist');
+          //  return;
+          }
+        }
+
+        console.log('Everything is ready!', dojo != undefined);
+
+        tutorialState.tutorialEnabled = false;
+        widgetsStore.removeWidget('tutorial');
+        clearLoading();
+        gameSounds.play('launchGame');
+      })
+      .catch((err) => {
+        console.error('An error occurred:', err);
+
+        // Check if the error might be WebGL related
+        if (err.message) {
+          if (err.message.includes('WebGL')) {
+            webGLSupported = false;
+            webGLError = err.message;
+          } else if (err.message.includes('canvas')) {
+            handleCanvasError(err);
+          }
+        }
+        loading = false;
+      });
   });
 
   onMount(async () => {
