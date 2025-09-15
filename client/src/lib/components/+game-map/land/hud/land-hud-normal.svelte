@@ -1,8 +1,11 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
+  import { walletStore } from '$lib/stores/wallet.svelte';
   import { toHexWithPadding } from '$lib/utils';
+  import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
 
@@ -16,12 +19,19 @@
     land: LandWithActions;
   } = $props();
 
+  const BASE_TOKEN = data.mainCurrencyAddress;
+  let baseToken = $derived(
+    data.availableTokens.find((token) => token.address === BASE_TOKEN),
+  );
+
   interface Yield {
     amount: CurrencyAmount;
+    baseValue: CurrencyAmount;
     token: Token;
   }
 
   let yieldData = $state<Yield[] | undefined>(undefined);
+  let totalYieldValue: number = $state(0);
 
   $effect(() => {
     if (yieldInfo) {
@@ -35,17 +45,43 @@
         );
       }
 
+      let totalValue = 0;
       yieldData = Array.from(yieldsByToken.entries()).map(([token, amount]) => {
         const tokenHexAddress = toHexWithPadding(token);
         const tokenData = data.availableTokens.find(
           (tokenData) => tokenData.address === tokenHexAddress,
         )!;
         let formattedAmount = CurrencyAmount.fromUnscaled(amount, tokenData);
+
+        // Get price from wallet store and convert to base token
+        const priceInfo = walletStore.getPrice(tokenHexAddress);
+        let baseValue: CurrencyAmount;
+
+        if (tokenHexAddress === BASE_TOKEN) {
+          baseValue = formattedAmount;
+          totalValue += Number(formattedAmount.rawValue());
+        } else if (priceInfo?.ratio) {
+          const baseAmount = formattedAmount
+            .rawValue()
+            .dividedBy(priceInfo.ratio.rawValue() ?? 0);
+          baseValue = CurrencyAmount.fromScaled(
+            baseAmount.toString(),
+            baseToken,
+          );
+          totalValue += Number(baseAmount);
+        } else {
+          baseValue = formattedAmount;
+          totalValue += Number(formattedAmount.rawValue());
+        }
+
         return {
           amount: formattedAmount,
+          baseValue,
           token: tokenData,
         };
       });
+
+      totalYieldValue = totalValue;
     }
   });
 </script>
@@ -65,34 +101,39 @@
       >{land?.stakeAmount}</span
     >
   </div>
-  <div class="flex justify-between items-center text-red-400">
-    <span class="low-opacity">Cost / hour</span>
+  <!-- Total net value -->
+  <div class="flex justify-between items-center text-ponzi-number py-2">
+    <span class="opacity-50">Net / hour</span>
+    <div
+      class="{totalYieldValue - Number(burnRate.toString()) >= 0
+        ? 'text-green-500'
+        : 'text-red-500'} flex items-center gap-2"
+    >
+      <span>
+        {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
+        {displayCurrency(
+          Math.abs(totalYieldValue - Number(burnRate.toString())),
+        )}
+      </span>
+      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+    </div>
+  </div>
+
+  <div class="flex justify-between items-center text-green-400">
+    <span class="low-opacity">Earning / hour</span>
     <span class="flex items-center gap-2">
-      {burnRate.toString()}
+      + {displayCurrency(totalYieldValue)}
+      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
     </span>
   </div>
 
-  {#if yieldData}
-    <div class="flex flex-col pt-4">
-      <div class="text-ponzi-number">Yield per hour:</div>
-      {#each yieldData as _yield}
-        <div class="flex justify-between items-center text-green-400">
-          <span>
-            <Avatar.Root class="h-6 w-6">
-              <Avatar.Image
-                src={_yield.token.images.icon}
-                alt={_yield.token.symbol}
-              />
-            </Avatar.Root>
-          </span>
-          <span>
-            {_yield.amount.toString()}
-            <span class="text-white">{_yield.token.symbol}</span>
-          </span>
-        </div>
-      {/each}
-    </div>
-  {/if}
+  <div class="flex justify-between items-center text-red-400">
+    <span class="low-opacity">Cost / hour</span>
+    <span class="flex items-center gap-2">
+      - {displayCurrency(burnRate.toString())}
+      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+    </span>
+  </div>
 </div>
 
 <style>
