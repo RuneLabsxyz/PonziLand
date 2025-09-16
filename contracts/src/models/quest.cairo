@@ -11,7 +11,6 @@ pub struct QuestDetails {
     pub participant_count: u16,
     pub settings_id: u32,
     pub target_score: u32,
-    pub expires_at: u64,
     pub game_address: ContractAddress,
 }
 

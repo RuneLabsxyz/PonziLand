@@ -113,7 +113,7 @@ pub mod quests {
                 1,
                 1,
                 settings_id,
-                100,
+                40,
                 1,
                 10000000000000000,
             );
@@ -168,6 +168,8 @@ pub mod quests {
             let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
 
 
+            let time_to_start = get_block_timestamp();
+            let time_to_end = time_to_start + 600000;
             let game_dispatcher = IMinigameDispatcher {
                 contract_address: game_token_address,
             };
@@ -176,7 +178,7 @@ pub mod quests {
                     Option::Some(player_name), //player name
                     Option::Some(quest_details.settings_id), //settings id
                     Option::None, //start
-                    Option::Some(quest_details.expires_at), //end
+                    Option::Some(time_to_end), //end
                     Option::None, //objective ids
                     Option::None, //context
                     Option::None, //client url
@@ -222,7 +224,15 @@ pub mod quests {
             };
             let score: u32 = game_dispatcher.score(quest.game_token_id);
 
-            //TODO: handle quest failed 
+            if score < quest_details.target_score && (game_dispatcher.game_over(quest.game_token_id) || get_block_timestamp() > time_to_end) {
+                land.quest_id = 0;
+                world.write_model(@land);
+                quest_details.participant_count -= 1;
+                world.write_model(@quest_details);
+                quest.completed = true;
+                world.write_model(@quest);
+                return;
+            }
 
             // check if the score is greater than or equal to the target score
             assert!(
