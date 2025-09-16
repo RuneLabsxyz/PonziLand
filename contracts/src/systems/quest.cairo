@@ -12,7 +12,6 @@ pub trait IQuestSystems<T> {
         settings_id: u32,
         target_score: u32,
         capacity: u16,
-        expires_at: u64,
     ) -> u64;
     fn start_quest(
         ref self: T, land_location: u16, player_name: felt252,
@@ -29,7 +28,7 @@ pub trait IQuestSystems<T> {
 #[dojo::contract]
 pub mod quests {
     use dojo::model::ModelStorage;
-    use starknet::{ContractAddress, get_block_timestamp};
+    use starknet::{ContractAddress, get_block_timestamp, get_caller_address};
     use game_components_minigame::interface::{
         IMinigameDispatcher, IMinigameDispatcherTrait, IMinigameTokenDataDispatcher,
         IMinigameTokenDataDispatcherTrait,
@@ -43,7 +42,6 @@ pub mod quests {
     use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
     use ponzi_land::models::land::Land;
     use super::DEFAULT_NS;
-    use starknet::get_caller_address;
 
     const VERSION: felt252 = '0.0.1';
 
@@ -58,7 +56,6 @@ pub mod quests {
             settings_id: u32,
             target_score: u32,
             capacity: u16,
-            expires_at: u64,
         ) -> u64 {
             let mut world = self.world(DEFAULT_NS());
 
@@ -90,7 +87,6 @@ pub mod quests {
                 target_score,
                 capacity,
                 participant_count: 0,
-                expires_at,
             };
 
             world.write_model(@quest_details_counter);
@@ -115,7 +111,6 @@ pub mod quests {
                 settings_id,
                 40,
                 1,
-                10000000000000000,
             );
 
             assert!(id > 0, "Failed to create quest");
@@ -193,6 +188,7 @@ pub mod quests {
                 player_address,
                 game_token_id,
                 completed: false,
+                expires_at: time_to_end,
             };
             world.write_model(@quest);
 
@@ -212,7 +208,7 @@ pub mod quests {
         fn claim_land(ref self: ContractState, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256) {
             let mut world = self.world(DEFAULT_NS());
             let mut quest: Quest = world.read_model(quest_id);
-            let quest_details: QuestDetails = world.read_model(quest.details_id);
+            let mut quest_details: QuestDetails = world.read_model(quest.details_id);
             let mut land: Land = world.read_model(quest_details.location);
 
             // get score for the token id
@@ -224,7 +220,7 @@ pub mod quests {
             };
             let score: u32 = game_dispatcher.score(quest.game_token_id);
 
-            if score < quest_details.target_score && (game_dispatcher.game_over(quest.game_token_id) || get_block_timestamp() > time_to_end) {
+            if score < quest_details.target_score && (game_dispatcher.game_over(quest.game_token_id) || get_block_timestamp() > quest.expires_at) {
                 land.quest_id = 0;
                 world.write_model(@land);
                 quest_details.participant_count -= 1;
