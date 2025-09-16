@@ -29,6 +29,7 @@ pub struct Quest {
     pub player_address: ContractAddress,
     pub game_token_id: u64,
     pub completed: bool,
+    pub expires_at: u64,
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked)]
