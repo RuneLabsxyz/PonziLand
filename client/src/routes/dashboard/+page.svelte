@@ -4,6 +4,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import type { Token } from '$lib/interfaces';
   import Dashboard from '$lib/components/dashboard/dashboard.svelte';
+  import { getTokenMetadata } from '$lib/utils';
 
   const tokens: Token[] = data.availableTokens;
 </script>
@@ -21,11 +22,17 @@
             class="flex items-center justify-between p-3 bg-black/20 rounded text-white"
           >
             <div class="flex items-center gap-3">
-              <img
-                src={token.images.icon}
-                alt={token.symbol}
-                class="w-6 h-6 rounded-full"
-              />
+              {#await getTokenMetadata(token.skin)}
+                <div class="w-6 h-6 bg-gray-400 rounded-full animate-pulse"></div>
+              {:then metadata}
+                <img
+                  src={metadata?.icon || '/tokens/default/icon.png'}
+                  alt={token.symbol}
+                  class="w-6 h-6 rounded-full"
+                />
+              {:catch}
+                <div class="w-6 h-6 bg-gray-400 rounded-full"></div>
+              {/await}
               <span class="font-bold">{token.symbol}</span>
             </div>
             <span class="font-mono">{token.address}</span>

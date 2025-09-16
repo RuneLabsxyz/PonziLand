@@ -4,8 +4,8 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
   import { walletStore } from '$lib/stores/wallet.svelte';
-  import { toHexWithPadding } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
+  import { getTokenMetadata, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
 
@@ -134,6 +134,34 @@
       <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
     </span>
   </div>
+  {#if yieldData}
+    <div class="flex flex-col pt-4">
+      <div class="text-ponzi-number">Yield per hour:</div>
+      {#each yieldData as _yield}
+        <div class="flex justify-between items-center text-green-400">
+          <span>
+            <Avatar.Root class="h-6 w-6">
+              {#await getTokenMetadata(_yield.token.skin)}
+                <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
+              {:then metadata}
+                <Avatar.Image
+                  src={metadata?.icon || '/tokens/default/icon.png'}
+                  alt={_yield.token.symbol}
+                />
+                <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
+              {:catch}
+                <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
+              {/await}
+            </Avatar.Root>
+          </span>
+          <span>
+            {_yield.amount.toString()}
+            <span class="text-white">{_yield.token.symbol}</span>
+          </span>
+        </div>
+      {/each}
+    </div>
+  {/if}
 </div>
 
 <style>
