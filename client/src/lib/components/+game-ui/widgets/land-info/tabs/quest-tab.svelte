@@ -148,6 +148,22 @@
     }
   }
 
+  async function handleClaimQuestClick() {
+    loading = true;
+    console.log('Claiming quest');
+    let result = await ClaimQuest(land.quest_id);
+    console.log(result);
+    if (result?.transaction_hash) {
+      console.log('Claiming quest with TX: ', result.transaction_hash);
+      await accountManager!
+        .getProvider()
+        ?.getWalletAccount()
+        ?.waitForTransaction(result.transaction_hash);
+    }
+    gameSounds.play('claim');
+    loading = false;
+  }
+
   async function getQuestInfo() {
     console.log(land.quest_id);
     let score_res = await GetQuestScore(land.quest_id);
@@ -228,7 +244,7 @@
           </Button>
           <Button onclick={getQuestInfo}>Refresh Quest Info</Button>
           <Button onclick={handleGameActionClick}>Explore Game</Button>
-          <Button onclick={ClaimQuest}>Claim Quest</Button>
+          <Button onclick={handleClaimQuestClick}>Claim Quest</Button>
 
           <p>Score: {score}</p>
         {/if}
