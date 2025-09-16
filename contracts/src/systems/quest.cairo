@@ -29,7 +29,7 @@ pub trait IQuestSystems<T> {
 #[dojo::contract]
 pub mod quests {
     use dojo::model::ModelStorage;
-    use starknet::ContractAddress;
+    use starknet::{ContractAddress, get_block_timestamp};
     use game_components_minigame::interface::{
         IMinigameDispatcher, IMinigameDispatcherTrait, IMinigameTokenDataDispatcher,
         IMinigameTokenDataDispatcherTrait,
