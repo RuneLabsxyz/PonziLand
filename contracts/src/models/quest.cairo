@@ -6,18 +6,12 @@ pub struct QuestDetails {
     #[key]
     pub id: u64,
     pub location: u16,
-    pub reward: Reward,
     pub capacity: u16,
     pub participant_count: u16,
     pub settings_id: u32,
     pub target_score: u32,
+    pub entry_price: u256,
     pub game_address: ContractAddress,
-}
-
-#[derive(Copy, Drop, Serde, IntrospectPacked)]
-pub struct Reward {
-    pub resource_type: u8,
-    pub amount: u128,
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked)]
