@@ -6,7 +6,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore } from '$lib/stores/store.svelte';
+  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore, claimQuest } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
@@ -228,6 +228,7 @@
           </Button>
           <Button onclick={getQuestInfo}>Refresh Quest Info</Button>
           <Button onclick={handleGameActionClick}>Explore Game</Button>
+          <Button onclick={claimQuest}>Claim Quest</Button>
 
           <p>Score: {score}</p>
         {/if}
