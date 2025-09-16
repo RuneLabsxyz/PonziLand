@@ -154,7 +154,8 @@
     console.log(score_res);
     let token_res = await GetQuestToken(land.quest_id);
     console.log(token_res);
-    game_token_id = token_res[1];
+    game_token_id = parseInt(BigInt(token_res[1]).toString());
+    console.log(game_token_id);
   }
 
   onMount(() => {
