@@ -5,6 +5,7 @@ import {
   PUBLIC_SOCIALINK_URL,
 } from '$env/static/public';
 import data from '$profileData';
+import { padAddress } from '$lib/utils';
 const BASE_TOKEN = data.mainCurrencyAddress;
 
 const blackList = address_blacklist.map((e) => BigInt(e));
@@ -133,7 +134,10 @@ export async function fetchUsernamesBatch(
     // Map the response to an address -> username lookup object
     users.forEach((user: { address: string; username: string }) => {
       if (user.username) {
-        usernameMap[user.address] = user.username;
+        const paddedAddr = padAddress(user.address);
+        if (paddedAddr) {
+          usernameMap[paddedAddr] = user.username;
+        }
       }
     });
 
