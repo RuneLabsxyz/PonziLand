@@ -1,3 +1,5 @@
+import { padAddress } from '$lib/utils';
+
 class UsernamesStore {
   private usernames: Record<string, string | undefined> = {};
 
@@ -12,8 +14,11 @@ class UsernamesStore {
   }
 
   addAddresses(addresses: Array<{ address: string }>): void {
-    addresses.forEach((address) => {
-      this.usernames[address.address] = undefined;
+    addresses.forEach((addr) => {
+      const paddedAddr = padAddress(addr.address);
+      if (paddedAddr) {
+        this.usernames[paddedAddr] = undefined;
+      }
     });
   }
 
@@ -22,10 +27,13 @@ class UsernamesStore {
   }
 
   setUsername(address: string, username: string): void {
-    if (address in this.usernames) {
-      this.usernames[address] = username;
+    const paddedAddr = padAddress(address);
+    if (paddedAddr && paddedAddr in this.usernames) {
+      this.usernames[paddedAddr] = username;
     } else {
-      console.warn(`Address ${address} not found in usernames store.`);
+      console.warn(
+        `Address ${paddedAddr || address} not found in usernames store.`,
+      );
     }
   }
 }
