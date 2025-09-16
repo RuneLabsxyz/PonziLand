@@ -119,14 +119,23 @@
     }
 
     // Get selected token balance from tokenStore balance
-    const selectedTokenAmount = walletStore.getBalance(selectedToken.address);
+    const selectedTokenBalance = walletStore.getBalance(selectedToken.address);
 
-    if (selectedTokenAmount == undefined) {
+    if (selectedTokenBalance == undefined) {
       return "You don't have any of this token";
     }
 
-    if (selectedTokenAmount.rawValue().isLessThanOrEqualTo(parsedStake)) {
-      return `You don't have enough ${selectedToken.symbol} to stake (max: ${selectedTokenAmount.toString()})`;
+    if (selectedTokenBalance.rawValue().isLessThanOrEqualTo(parsedStake)) {
+      return `You don't have enough ${selectedToken.symbol} to stake (max: ${selectedTokenBalance.toString()})`;
+    }
+
+    const selectedTokenAmount = CurrencyAmount.fromScaled(
+      parsedStake,
+      selectedToken,
+    );
+    if (!walletStore.isWithinCap(selectedTokenAmount)) {
+      let cap = walletStore.getCapForToken(selectedToken);
+      return `Above the playtest cap! Max is ${cap.toString()} ${selectedToken.symbol}`;
     }
 
     return null;
