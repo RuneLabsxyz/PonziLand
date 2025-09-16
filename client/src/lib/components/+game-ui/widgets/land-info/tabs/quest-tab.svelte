@@ -38,7 +38,7 @@
   async function handleGameActionClick() {
     if (game_token_id == 0) {
       console.log('Game Token ID is 0, getting game token id');
-      GetQuestToken(land.quest_id);
+      getQuestInfo();
       return;
     }
     let call: Call = {
@@ -154,6 +154,7 @@
     console.log(score_res);
     let token_res = await GetQuestToken(land.quest_id);
     console.log(token_res);
+    game_token_id = token_res[1];
   }
 
   onMount(() => {
