@@ -228,7 +228,7 @@
           </Button>
           <Button onclick={getQuestInfo}>Refresh Quest Info</Button>
           <Button onclick={handleGameActionClick}>Explore Game</Button>
-          <Button onclick={claimQuest}>Claim Quest</Button>
+          <Button onclick={ClaimQuest}>Claim Quest</Button>
 
           <p>Score: {score}</p>
         {/if}
