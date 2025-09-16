@@ -42,33 +42,7 @@
       "address": "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0",
       "liquidityPoolType": "005-01",
       "decimals": 18,
-      "images": {
-        "skin": "eSTRK",
-        "icon": "/tokens/eSTRK/icon.png",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5,
-            "frames": 6,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 1152,
-            "yMax": 192
-          }
-        }
-      }
+      "skin": "STARKNET"
     },
     {
       "name": "Emulated Paper",
@@ -76,43 +50,7 @@
       "address": "0x0335e87d03baaea788b8735ea0eac49406684081bb669535bb7074f9d3f66825",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "ePAPER",
-        "icon": "/tokens/ePAPER/icon.svg",
-        "biome": {
-          "x": 3,
-          "y": 0
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 0,
-            "frames": 4,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 192
-          },
-          "2": {
-            "x": 3,
-            "y": 1,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          },
-          "3": {
-            "x": 3,
-            "y": 2,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          }
-        }
-      }
+      "skin": "paper"
     },
     {
       "name": "Emulated Lords",
@@ -120,35 +58,7 @@
       "address": "0x04230d6e1203e0d26080eb1cf24d1a3708b8fc085a7e0a4b403f8cc4ec5f7b7b",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "eLORDS",
-        "icon": "/tokens/eLORDS/icon.svg",
-        "biome": {
-          "x": 3,
-          "y": 1
-        },
-        "building": {
-          "1": {
-            "x": 0,
-            "y": 0
-          },
-          "2": {
-            "x": 0,
-            "y": 1
-          },
-          "3": {
-            "x": 0,
-            "y": 2,
-            "frames": 10,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 960,
-            "yMax": 384,
-            "boomerang": true,
-            "delay": 2000
-          }
-        }
-      }
+      "skin": "LORDS"
     },
     {
       "name": "Emulated Starknet Brother",
@@ -156,33 +66,7 @@
       "address": "0x07031b4db035ffe8872034a97c60abd4e212528416f97462b1742e1f6cf82afe",
       "liquidityPoolType": "005-01",
       "decimals": 18,
-      "images": {
-        "skin": "eBROTHER",
-        "icon": "/tokens/eBROTHER/icon.png",
-        "biome": {
-          "x": 1,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 6
-          },
-          "2": {
-            "x": 3,
-            "y": 7
-          },
-          "3": {
-            "x": 3,
-            "y": 8,
-            "frames": 7,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 1344,
-            "yMax": 192
-          }
-        }
-      }
+      "skin": "BROTHER"
     },
     {
       "name": "Emulated PAL",
@@ -190,33 +74,7 @@
       "address": "0x01d321fcdb8c0592760d566b32b707a822b5e516e87e54c85b135b0c030b1706",
       "liquidityPoolType": "005-01",
       "decimals": 18,
-      "images": {
-        "skin": "ePAL",
-        "icon": "/tokens/ePAL/icon.svg",
-        "biome": {
-          "x": 1,
-          "y": 2
-        },
-        "building": {
-          "1": {
-            "x": 0,
-            "y": 3
-          },
-          "2": {
-            "x": 0,
-            "y": 4
-          },
-          "3": {
-            "x": 0,
-            "y": 5,
-            "frames": 9,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 576,
-            "yMax": 576
-          }
-        }
-      }
+      "skin": "PAL"
     },
     {
       "name": "Emulated Wolf Nation Token",
@@ -224,33 +82,7 @@
       "address": "0x051963b44627ae242dcf2bf846b38cca391688c1634a190eaeaf29c63890515e",
       "liquidityPoolType": "005-01",
       "decimals": 18,
-      "images": {
-        "skin": "eWNT",
-        "icon": "/tokens/eWNT/icon.png",
-        "biome": {
-          "x": 3,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 6,
-            "y": 0
-          },
-          "2": {
-            "x": 6,
-            "y": 1
-          },
-          "3": {
-            "x": 6,
-            "y": 2,
-            "frames": 10,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 960,
-            "yMax": 384
-          }
-        }
-      }
+      "skin": "wnt"
     },
     {
       "name": "Emulated QQ Token",
@@ -258,33 +90,7 @@
       "address": "0x041c9a2f8a8439ce6a9e5e670ba7cd62b214f52547326dece6de981bc1fd0c11",
       "liquidityPoolType": "005-01",
       "decimals": 18,
-      "images": {
-        "skin": "eQQ",
-        "icon": "/tokens/eQQ/icon.png",
-        "biome": {
-          "x": 0,
-          "y": 4
-        },
-        "building": {
-          "1": {
-            "x": 6,
-            "y": 3
-          },
-          "2": {
-            "x": 6,
-            "y": 4
-          },
-          "3": {
-            "x": 6,
-            "y": 5,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          }
-        }
-      }
+      "skin": "qq"
     },
     {
       "name": "Emulated EVERAI Token",
@@ -292,33 +98,7 @@
       "address": "0x05bb176eadd857d0226042f3e317efcc9b2ea4de0836dcc0ae4224c3ee820cc1",
       "liquidityPoolType": "005-01",
       "decimals": 18,
-      "images": {
-        "skin": "eSG",
-        "icon": "/tokens/eSG/icon.png",
-        "biome": {
-          "x": 1,
-          "y": 4
-        },
-        "building": {
-          "1": {
-            "x": 9,
-            "y": 0
-          },
-          "2": {
-            "x": 9,
-            "y": 1
-          },
-          "3": {
-            "x": 9,
-            "y": 2,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          }
-        }
-      }
+      "skin": "everai"
     }
   ],
   "commonImages": {
