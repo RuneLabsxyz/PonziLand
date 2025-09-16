@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
   import type { LandWithActions } from '$lib/api/land';
   import type { LandYieldInfo } from '$lib/interfaces';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate } from '$lib/utils/taxes';
@@ -12,6 +12,9 @@
   import LandHudPro from './land-hud-pro.svelte';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
+  let baseToken = $derived(
+    data.availableTokens.find((token) => token.address === BASE_TOKEN),
+  );
 
   let {
     land,
@@ -24,12 +27,6 @@
   } = $props();
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
-  let tokenPrices = $state<
-    { symbol: string; address: string; ratio: CurrencyAmount }[]
-  >([]);
-  let formattedYields = $state<
-    { amount: string; baseValue: string | CurrencyAmount }[]
-  >([]);
   let totalYieldValue: number = $state(0);
 
   let burnRate = $derived(
@@ -47,20 +44,18 @@
   );
 
   $effect(() => {
-    if (tokenPrices) {
-      if (land?.token?.address === BASE_TOKEN) {
+    if (land?.token) {
+      if (land.token.address === BASE_TOKEN) {
         burnRateInBaseToken = burnRate;
       } else {
-        const tokenPrice = tokenPrices.find(
-          (p) => p.address === land?.token?.address,
-        );
+        const tokenPrice = walletStore.getPrice(land.token.address);
         if (tokenPrice) {
           burnRateInBaseToken = CurrencyAmount.fromScaled(
             burnRate
               .rawValue()
               .dividedBy(tokenPrice.ratio.rawValue() ?? 0)
               .toString(),
-            land?.token,
+            land.token,
           );
         }
       }
@@ -80,57 +75,40 @@
     land.getYieldInfo().then((info) => {
       yieldInfo = info;
 
-      // Fetch token prices
-      getTokenPrices().then((prices) => {
-        tokenPrices = prices;
-        let totalValue = 0;
-        // Process yield information with prices
-        if (yieldInfo?.yield_info) {
-          formattedYields = Object.entries(yieldInfo.yield_info).map(
-            ([tokenAddress, yieldData]) => {
-              // Find token data from data.json
-              const tokenHexAddress = toHexWithPadding(yieldData.token);
-              const tokenData = data.availableTokens.find(
-                (token) => token.address === tokenHexAddress,
-              );
-
-              // Format the amount using CurrencyAmount with proper token data
-              const amount = CurrencyAmount.fromUnscaled(
-                yieldData.per_hour,
-                tokenData,
-              );
-
-              // Find price ratio for this token
-              const priceInfo = tokenPrices.find(
-                (p) => p.address === tokenHexAddress,
-              );
-
-              // Calculate base token value if ratio exists
-              let baseValue = null;
-              if (priceInfo?.ratio !== null && priceInfo) {
-                const baseAmount = amount
-                  .rawValue()
-                  .dividedBy(priceInfo.ratio.rawValue() ?? 0);
-                baseValue = CurrencyAmount.fromScaled(
-                  baseAmount.toString(),
-                ).toString();
-                totalValue += Number(
-                  amount.rawValue().dividedBy(priceInfo.ratio.rawValue() ?? 0),
-                );
-              } else {
-                baseValue = amount;
-                totalValue += Number(amount.rawValue());
-              }
-
-              return {
-                amount: amount.toString(),
-                baseValue,
-              };
-            },
+      let totalValue = 0;
+      // Process yield information and convert to base token using wallet store
+      if (yieldInfo?.yield_info && baseToken) {
+        for (const yieldData of yieldInfo.yield_info) {
+          // Find token data from data.json
+          const tokenHexAddress = toHexWithPadding(yieldData.token);
+          const tokenData = data.availableTokens.find(
+            (token) => token.address === tokenHexAddress,
           );
+
+          if (tokenData) {
+            // Format the amount using CurrencyAmount with proper token data
+            const amount = CurrencyAmount.fromUnscaled(
+              yieldData.per_hour,
+              tokenData,
+            );
+
+            // Convert to base token using wallet store's convertTokenAmount
+            const baseValue = walletStore.convertTokenAmount(
+              amount,
+              tokenData,
+              baseToken,
+            );
+
+            if (baseValue) {
+              totalValue += Number(baseValue.rawValue());
+            } else {
+              // Fallback: if conversion fails, use original amount (assuming it's base token)
+              totalValue += Number(amount.rawValue());
+            }
+          }
         }
-        totalYieldValue = totalValue;
-      });
+      }
+      totalYieldValue = totalValue;
     });
   });
 </script>
