@@ -188,10 +188,35 @@ describe('CurrencyAmount', () => {
     });
 
     it('Formats correctly the smallest representable amount', () => {
-      // Minimal representable value with 18 decimals
+      // Minimal representable value with 18 decimals - now uses exponential notation for space efficiency
       expect(
         CurrencyAmount.fromUnscaled('1', TestTokens.standard).toString(),
-      ).toBe('0.000000000000000001');
+      ).toBe('1.00e-18');
+    });
+
+    it('Uses exponential notation for numbers with many leading zeros', () => {
+      // Numbers with >4 leading zeros use exponential notation
+      expect(
+        CurrencyAmount.fromScaled(
+          '0.000001234',
+          TestTokens.standard,
+        ).toString(),
+      ).toBe('1.23e-6');
+
+      expect(
+        CurrencyAmount.fromScaled('0.00000987', TestTokens.standard).toString(),
+      ).toBe('9.87e-6');
+    });
+
+    it('Uses regular decimal notation for numbers with ≤4 leading zeros', () => {
+      // Numbers with ≤4 leading zeros use regular notation
+      expect(
+        CurrencyAmount.fromScaled('0.0001234', TestTokens.standard).toString(),
+      ).toBe('0.000123');
+
+      expect(
+        CurrencyAmount.fromScaled('0.00012', TestTokens.standard).toString(),
+      ).toBe('0.000120');
     });
   });
 });
