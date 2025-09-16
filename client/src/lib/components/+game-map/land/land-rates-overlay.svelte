@@ -11,6 +11,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate, getNeighbourYieldArray } from '$lib/utils/taxes';
   import { walletStore } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import data from '$profileData';
 
   let {
@@ -56,6 +57,30 @@
 
     return baseValue ? Number(baseValue.rawValue()) : 0;
   }
+
+  let displayYields = $derived.by(() => {
+    return yieldInfo.map((info) => {
+      if (!info?.token) return { amount: '0', symbol: '' };
+
+      if (settingsStore.showRatesInBaseToken && baseToken) {
+        const baseValue = getYieldValueInBaseToken(info);
+        const amount = CurrencyAmount.fromUnscaled(
+          BigInt(baseValue),
+          baseToken,
+        );
+        return {
+          amount: displayCurrency(amount.rawValue()),
+          symbol: baseToken.symbol,
+        };
+      } else {
+        const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
+        return {
+          amount: displayCurrency(amount.rawValue()),
+          symbol: info.token.symbol,
+        };
+      }
+    });
+  });
 
   // Calculate yield scaling once per land
   let yieldScaling = $derived(() => {
@@ -135,8 +160,8 @@
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
             <span class="whitespace-nowrap text-green-300">
-              +{CurrencyAmount.fromUnscaled(info.per_hour, info.token)}
-              {info.token?.symbol}/h
+              +{displayYields[i].amount}
+              {displayYields[i].symbol}/h
             </span>
           </div>
         {:else if info && i !== 4}

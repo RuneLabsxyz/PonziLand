@@ -6,6 +6,7 @@ class SettingsStore {
   private settings = $state({
     noobMode: false,
     volume: 50,
+    showRatesInBaseToken: false,
     // Add more settings here as needed
   });
 
@@ -45,8 +46,17 @@ class SettingsStore {
     return this.settings.volume;
   }
 
+  get showRatesInBaseToken() {
+    return this.settings.showRatesInBaseToken;
+  }
+
   toggleNoobMode() {
     this.settings.noobMode = !this.settings.noobMode;
+    this.saveSettings();
+  }
+
+  toggleRatesInBaseToken() {
+    this.settings.showRatesInBaseToken = !this.settings.showRatesInBaseToken;
     this.saveSettings();
   }
 
