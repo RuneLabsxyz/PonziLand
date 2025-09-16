@@ -110,7 +110,9 @@ export function getTokenInfo(tokenAddress: string) {
 
 const metadataCache = new Map<string, TokenMetadata>();
 
-export async function getTokenMetadata(skin: string): Promise<TokenMetadata | null> {
+export async function getTokenMetadata(
+  skin: string,
+): Promise<TokenMetadata | null> {
   if (metadataCache.has(skin)) {
     return metadataCache.get(skin)!;
   }

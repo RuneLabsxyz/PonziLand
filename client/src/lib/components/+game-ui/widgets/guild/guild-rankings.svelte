@@ -34,7 +34,7 @@
 
   // Map token addresses to guild info with normalized addresses as keys
   const guildMap = new Map<string, GuildInfo>();
-  
+
   // Initialize guild map asynchronously
   onMount(async () => {
     for (const token of data.availableTokens) {

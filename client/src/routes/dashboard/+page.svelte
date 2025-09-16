@@ -23,7 +23,9 @@
           >
             <div class="flex items-center gap-3">
               {#await getTokenMetadata(token.skin)}
-                <div class="w-6 h-6 bg-gray-400 rounded-full animate-pulse"></div>
+                <div
+                  class="w-6 h-6 bg-gray-400 rounded-full animate-pulse"
+                ></div>
               {:then metadata}
                 <img
                   src={metadata?.icon || '/tokens/default/icon.png'}
