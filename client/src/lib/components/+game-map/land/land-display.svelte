@@ -102,7 +102,9 @@
   {#if token}
     {#await getTokenMetadata(token.skin)}
       <!-- Loading state - show basic placeholder -->
-      <div class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-400 animate-pulse rounded"></div>
+      <div
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-400 animate-pulse rounded"
+      ></div>
     {:then metadata}
       {#if metadata}
         <!-- Biome Shadow -->
@@ -131,7 +133,9 @@
           {height}
           class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
             ? 'selected'
-            : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
+            : ''} {hovering ? 'hovering' : ''} {highlighted
+            ? 'highlighted'
+            : ''}"
         />
         <SpriteSheet
           src="/tokens/+global/buildings.png"
@@ -145,12 +149,16 @@
           {height}
           class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
             ? 'selected'
-            : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
+            : ''} {hovering ? 'hovering' : ''} {highlighted
+            ? 'highlighted'
+            : ''}"
         />
       {/if}
     {:catch}
       <!-- Error state - show fallback -->
-      <div class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-600 rounded"></div>
+      <div
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-600 rounded"
+      ></div>
     {/await}
   {:else if basic}
     <div

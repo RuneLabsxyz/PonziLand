@@ -221,7 +221,9 @@
             <div class="flex items-center gap-3 mb-4">
               <div class="flex items-center -space-x-2">
                 {#await getTokenMetadata(card.tokenDetails.skin)}
-                  <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10 animate-pulse"></div>
+                  <div
+                    class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10 animate-pulse"
+                  ></div>
                 {:then metadata}
                   <img
                     src={metadata?.icon || '/tokens/default/icon.png'}
@@ -229,11 +231,15 @@
                     class="w-8 h-8 rounded-full border-2 border-gray-800 z-10"
                   />
                 {:catch}
-                  <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10"></div>
+                  <div
+                    class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10"
+                  ></div>
                 {/await}
                 {#if baseTokenDetails}
                   {#await getTokenMetadata(baseTokenDetails.skin)}
-                    <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 animate-pulse"></div>
+                    <div
+                      class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 animate-pulse"
+                    ></div>
                   {:then metadata}
                     <img
                       src={metadata?.icon || '/tokens/default/icon.png'}
@@ -241,7 +247,9 @@
                       class="w-8 h-8 rounded-full border-2 border-gray-800"
                     />
                   {:catch}
-                    <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800"></div>
+                    <div
+                      class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800"
+                    ></div>
                   {/await}
                 {/if}
               </div>

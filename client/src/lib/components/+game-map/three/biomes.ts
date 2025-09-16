@@ -43,7 +43,7 @@ export const biomeAtlasMeta = [
       { name: 'PAL', frameRange: [9, 9] },
       { name: 'circus', frameRange: [10, 10] },
       { name: 'sisters', frameRange: [11, 11] },
-      { name: 'BITCOIN', frameRange: [12, 12] },
+      { name: 'BITCOIN', frameRange: [2, 2] },
       { name: 'BROTHER', frameRange: [13, 13] },
       { name: 'STARKNET', frameRange: [14, 14] },
       { name: 'wnt', frameRange: [15, 15] },

@@ -162,7 +162,11 @@
             {#await getTokenMetadata(token.skin)}
               <div class="h-4 w-4 bg-gray-400 rounded animate-pulse"></div>
             {:then metadata}
-              <img class="h-4 w-4" src={metadata?.icon || '/tokens/default/icon.png'} alt={token.symbol} />
+              <img
+                class="h-4 w-4"
+                src={metadata?.icon || '/tokens/default/icon.png'}
+                alt={token.symbol}
+              />
             {:catch}
               <div class="h-4 w-4 bg-gray-400 rounded"></div>
             {/await}
