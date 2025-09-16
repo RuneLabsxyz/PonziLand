@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x40f91ad87ecad5645e765a5d992ec3d3139e74ddca7bd320f063f403118833e",
-    "seed": "quests_358853733",
+    "address": "0x2725a4f26a53d49aa7aeaf1de1a80c88945e64a0424e03bea1eed3d08d3674f",
+    "seed": "quests_93012480",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,7 +1328,7 @@
   },
   "contracts": [
     {
-      "address": "0x19fececc4df16cc72bf307659ecb918b7dcda1eb6611845c5003b2f27caca55",
+      "address": "0xf719c83d3d557f47ee878273e0907c02bba11bae830db8721b00ed2995afc6",
       "class_hash": "0x5fbbacddd0ac5f0487d74468c0298c6f21c4c997d532336e12d0fb9552e383d",
       "abi": [
         {
@@ -2156,7 +2156,7 @@
         "1000000000000000000",
         "0",
         "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
-        "0x40e72e73977fa5cf8b9861e0788dac72695d8fba58b9d53995363504205bfe5"
+        "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -2175,7 +2175,7 @@
       ]
     },
     {
-      "address": "0x167bc0fdcada96a190fb8dda7baf0c1aae3bc089dd1a0674bd01da13ff634b0",
+      "address": "0x674a06a7dedfdcc1a427c9f6fd0770b9d9064cfb4fa4a180b3d57ad36327cf6",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
@@ -2518,7 +2518,7 @@
       ]
     },
     {
-      "address": "0x1c2a892f5c5bacc202f1000797d0be65446b8e81558bd33d8ed93cac33926e7",
+      "address": "0x3c110001316c63af9d786eea3e5c33b6b26137f9af9fa3aa8eb2803136a2593",
       "class_hash": "0x32cf643d13c9a9ad5f1c226e849b9691cfd0eb922c4192e726c5ef14b51a265",
       "abi": [
         {
@@ -3549,7 +3549,7 @@
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "10",
-        "0x40e72e73977fa5cf8b9861e0788dac72695d8fba58b9d53995363504205bfe5"
+        "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
@@ -3583,8 +3583,8 @@
       ]
     },
     {
-      "address": "0x4b0bc1071d4b1c2d2a10a446351d838844a59d788d5a572671b5fcdda61cf17",
-      "class_hash": "0x65e908536ea1d3538c47d78c11ac3841538b13ae182ecdced0898f87a753ddd",
+      "address": "0x27e732ea36394fff38b19bd367b87bf47023ed615e6363d4cf15eaf27abfa7a",
+      "class_hash": "0x10cb66be9745fb1938ff874da42d474a0266fd5e6647cf5d7f3b352fcee5841",
       "abi": [
         {
           "type": "impl",
@@ -3692,6 +3692,10 @@
             {
               "name": "completed",
               "type": "core::bool"
+            },
+            {
+              "name": "expires_at",
+              "type": "core::integer::u64"
             }
           ]
         },
@@ -3742,10 +3746,6 @@
               "type": "core::integer::u32"
             },
             {
-              "name": "expires_at",
-              "type": "core::integer::u64"
-            },
-            {
               "name": "game_address",
               "type": "core::starknet::contract_address::ContractAddress"
             }
@@ -3786,10 +3786,6 @@
                 {
                   "name": "capacity",
                   "type": "core::integer::u16"
-                },
-                {
-                  "name": "expires_at",
-                  "type": "core::integer::u64"
                 }
               ],
               "outputs": [
@@ -4049,7 +4045,7 @@
       ]
     },
     {
-      "address": "0x61cc83f96b3d2059394628d22cdb1b8e6cb4a3c5b30dbd0b9ec263e24a687d1",
+      "address": "0x22f9adc1cc024f1fcec7d5206bc5dfa4f610013879009dfe307fa7dcfdc6dc0",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
@@ -4301,12 +4297,12 @@
       ],
       "init_calldata": [
         "6",
-        "0x40e72e73977fa5cf8b9861e0788dac72695d8fba58b9d53995363504205bfe5",
-        "0x40640444d2468925418f61b07eb0d9bb70b51c56540eac9b61b671138f647d",
-        "0x6a0dcdc67c1a201b09b2e10ecad0af2a2724107e2c205b39ba53867bdb477aa",
-        "0x7c88b7e4fe5d555239bb6d4b1ec718c611bf174b5ef3f3b452df316b0fe88ca",
-        "0x13b92e2d33917d7fec5ad9eeb230d8d720565234683240c56856cfb0733fc92",
-        "0x7f08aaf903d805d32f54df053c80120dd1a22be0b21c9f86ad012ec43b869a5"
+        "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c",
+        "0x5780e96140d9e24b4f675b512a63baf6876d3fb980600663021a6e15147eeb7",
+        "0x4b13d5ffef48e06a516e86fa01d771e8aeb8c093e995c1868832254c6a5f99b",
+        "0x250bbff41ffbafc141b424b8eb0b265d3db2da16dedd2b0deb8eeef5a874c14",
+        "0x30daa286f41af2e852fd9254d12ec37ea803bc04e86895801138328b95169ab",
+        "0x114623b85c063537e4e78624951a49275657f463d49d1516a1497b97738c1b"
       ],
       "tag": "ponzi_land-token_registry",
       "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
@@ -4364,7 +4360,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x271a273a89f0256ff520eb633a9c20b22568687a31eb6b7e1c66cac640f8586",
+      "class_hash": "0x52bf1591e861721cf18c12ee40c7bc46b7560a1cd0cf54910a3ee6d41e32410",
       "tag": "ponzi_land-Quest",
       "selector": "0x31d30cb645e3cf0d8972e327dabd6f2a9045a7e14868a60d777822c650f078e"
     },
@@ -4376,7 +4372,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x7a728ad47f0b5f39cf00a08384886ca828174240babaf0666db2478ea1ed2a4",
+      "class_hash": "0xb192d7a31f10ca0c8ddb5e94fce881af4b4c87896fdb8adee432e1f628119f",
       "tag": "ponzi_land-QuestDetails",
       "selector": "0x5dd5af65159f99fa0e80ffa47213fadeb96a2c1025708d6416678f13266bb3d"
     },
