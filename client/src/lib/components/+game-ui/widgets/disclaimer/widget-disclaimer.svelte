@@ -20,6 +20,7 @@
     <li>Smart contracts have not been audited</li>
     <li>There may be bugs or vulnerabilities</li>
     <li>You could lose all your funds</li>
+    <li>You cannot stake more than 50$ per land</li>
     <li>You play at your own risk</li>
     <li>You're definitely gonna get rugged</li>
     <li>Markets are the apex predator</li>
@@ -39,8 +40,8 @@
   </div>
 
   <Button onclick={handleAccept} variant="red" class="mt-2">
-    Enough with this, let me ape !
+    Enough with this, let me ape!
   </Button>
 
-  <div class="opacity-50">Audit is coming real soon™</div>
+  <div class="opacity-50">Audit is coming soon™</div>
 </div>

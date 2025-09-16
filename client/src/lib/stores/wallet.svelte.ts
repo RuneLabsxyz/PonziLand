@@ -9,6 +9,7 @@ import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { Token } from '$lib/interfaces';
 import accountState from '$lib/account.svelte';
 import { untrack } from 'svelte';
+import { MAX_STAKE } from '$lib/flags';
 
 const BASE_TOKEN = data.mainCurrencyAddress;
 export const baseToken = data.availableTokens.find(
@@ -243,7 +244,7 @@ export class WalletStore {
     }
   }
 
-  private getToken(tokenAddress: string): Token | null {
+  public getToken(tokenAddress: string): Token | null {
     return data.availableTokens.find((t) => t.address === tokenAddress) ?? null;
   }
 
@@ -258,6 +259,43 @@ export class WalletStore {
     this.balances.set(
       token.address,
       CurrencyAmount.fromUnscaled(balance, token),
+    );
+  }
+
+  public getCapForToken(token: Token): CurrencyAmount {
+    return (
+      this.convertTokenAmount(
+        CurrencyAmount.fromScaled(MAX_STAKE, baseToken),
+        baseToken,
+        token,
+      ) ?? CurrencyAmount.fromUnscaled(0n, baseToken)
+    );
+  }
+
+  public isWithinCap(amount: CurrencyAmount): boolean {
+    // @ts-expect-error  - This is a const, but I want the comportment to change if the value is changed.
+    if (MAX_STAKE === 0n) {
+      return true;
+    }
+
+    const amountInBaseCurrency = this.convertTokenAmount(
+      amount,
+      amount.getToken()!,
+      baseToken,
+    );
+
+    console.log(
+      'amountInBaseCurrency:',
+      amountInBaseCurrency?.toString(),
+      'cap:',
+      CurrencyAmount.fromScaled(MAX_STAKE, baseToken).toString(),
+    );
+
+    return (
+      amountInBaseCurrency == null ||
+      amountInBaseCurrency
+        .rawValue()
+        .isLessThan(CurrencyAmount.fromScaled(MAX_STAKE, baseToken).rawValue())
     );
   }
 

@@ -93,6 +93,12 @@
       totalRequired = parsedStake + parsedSell;
     }
 
+    const stakeAmount = CurrencyAmount.fromScaled(parsedStake, selectedToken);
+    if (!walletStore.isWithinCap(stakeAmount)) {
+      let cap = walletStore.getCapForToken(selectedToken);
+      return `Above the playtest cap! Max is ${cap.toString()} ${selectedToken.symbol}`;
+    }
+
     if (selectedTokenBalance.rawValue().isLessThan(totalRequired)) {
       error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, ${land.type === 'auction' ? 'current auction price' : 'price'}: ${land.type === 'auction' ? (await land.getCurrentAuctionPrice())?.toString() : parsedSell}). Your balance: ${selectedTokenBalance.toString()} ${selectedToken.symbol}`;
       return false;

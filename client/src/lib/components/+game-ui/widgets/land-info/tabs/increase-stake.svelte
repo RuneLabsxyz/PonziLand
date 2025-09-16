@@ -30,6 +30,13 @@
       if (amount.rawValue().isLessThanOrEqualTo(0)) {
         return 'Stake amount must be greater than 0';
       }
+
+      const totalStakeAmount = land.stakeAmount.add(amount);
+      if (!walletStore.isWithinCap(totalStakeAmount)) {
+        let cap = walletStore.getCapForToken(land.token!);
+        return `Above the playtest cap! Max is ${cap.toString()} ${land.token!.symbol}`;
+      }
+
       return null;
     } catch {
       return 'Invalid stake value';
