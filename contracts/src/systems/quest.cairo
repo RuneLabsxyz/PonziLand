@@ -7,8 +7,7 @@ pub trait IQuestSystems<T> {
         ref self: T,
         game_address: ContractAddress,
         location: u16,
-        reward_resource_type: u8,
-        reward_amount: u128,
+        entry_price: u256,
         settings_id: u32,
         target_score: u32,
         capacity: u16,
@@ -43,7 +42,28 @@ pub mod quests {
     use ponzi_land::models::land::Land;
     use super::DEFAULT_NS;
 
+    use ponzi_land::components::payable::PayableComponent;
+
+    component!(path: PayableComponent, storage: payable, event: PayableEvent);
+
+    impl PayableInternalImpl = PayableComponent::PayableImpl<ContractState>;
+
     const VERSION: felt252 = '0.0.1';
+
+
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        #[flat]
+        PayableEvent: PayableComponent::Event,
+    }
+
+
+    #[storage]
+    struct Storage {
+        #[substorage(v0)]
+        payable: PayableComponent::Storage,
+    }
 
     #[abi(embed_v0)]
     pub impl QuestSystemsImpl of super::IQuestSystems<ContractState> {
@@ -51,8 +71,7 @@ pub mod quests {
             ref self: ContractState,
             game_address: ContractAddress,
             location: u16,
-            reward_resource_type: u8,
-            reward_amount: u128,
+            entry_price: u256,
             settings_id: u32,
             target_score: u32,
             capacity: u16,
@@ -82,9 +101,9 @@ pub mod quests {
                 id: quest_details_counter.count,
                 location,
                 game_address,
-                reward: Reward { resource_type: reward_resource_type, amount: reward_amount },
                 settings_id,
                 target_score,
+                entry_price,
                 capacity,
                 participant_count: 0,
             };
@@ -106,8 +125,7 @@ pub mod quests {
             let id = self.create_quest(
                 starknet::contract_address_const::<0x06573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26>(), //this is the address of the mock for now
                 land.location,
-                1,
-                1,
+                1000000000000000000, // 10 strk
                 settings_id,
                 40,
                 1,
