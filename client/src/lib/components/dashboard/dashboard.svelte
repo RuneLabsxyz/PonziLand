@@ -2,6 +2,7 @@
   import Card from '$lib/components/ui/card/card.svelte';
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { getTokenMetadata } from '$lib/utils';
   import data from '$profileData';
   import { onMount } from 'svelte';
   import type { EkuboApiResponse } from '../../api/defi/ekubo/requests';
@@ -219,16 +220,30 @@
             <!-- Pair Header -->
             <div class="flex items-center gap-3 mb-4">
               <div class="flex items-center -space-x-2">
-                <img
-                  src={card.tokenDetails.images.icon}
-                  alt={card.tokenDetails.symbol}
-                  class="w-8 h-8 rounded-full border-2 border-gray-800 z-10"
-                />
-                <img
-                  src={baseTokenDetails?.images.icon}
-                  alt={baseTokenDetails?.symbol}
-                  class="w-8 h-8 rounded-full border-2 border-gray-800"
-                />
+                {#await getTokenMetadata(card.tokenDetails.skin)}
+                  <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10 animate-pulse"></div>
+                {:then metadata}
+                  <img
+                    src={metadata?.icon || '/tokens/default/icon.png'}
+                    alt={card.tokenDetails.symbol}
+                    class="w-8 h-8 rounded-full border-2 border-gray-800 z-10"
+                  />
+                {:catch}
+                  <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10"></div>
+                {/await}
+                {#if baseTokenDetails}
+                  {#await getTokenMetadata(baseTokenDetails.skin)}
+                    <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 animate-pulse"></div>
+                  {:then metadata}
+                    <img
+                      src={metadata?.icon || '/tokens/default/icon.png'}
+                      alt={baseTokenDetails.symbol}
+                      class="w-8 h-8 rounded-full border-2 border-gray-800"
+                    />
+                  {:catch}
+                    <div class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800"></div>
+                  {/await}
+                {/if}
               </div>
               <h3 class="text-lg font-bold text-white">
                 {card.tokenDetails.symbol} / {baseTokenDetails?.symbol ||
