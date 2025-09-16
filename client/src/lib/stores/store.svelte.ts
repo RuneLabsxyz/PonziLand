@@ -161,7 +161,12 @@ export async function ClaimQuest(questId: number) {
   };
   let res = await sdk.client.quests.claimLand(
     account()?.getWalletAccount()!,
-    questId,
+    questId, 
+    '0x0',
+    0,
+    0,
+    0,
+    0
   );
   return res;
 }
