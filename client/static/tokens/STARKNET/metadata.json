@@ -1,0 +1,27 @@
+{
+  "skin": "STARKNET",
+  "icon": "/tokens/STARKNET/icon.png",
+  "biome": {
+    "x": 2,
+    "y": 3
+  },
+  "building": {
+    "1": {
+      "x": 3,
+      "y": 3
+    },
+    "2": {
+      "x": 3,
+      "y": 4
+    },
+    "3": {
+      "x": 3,
+      "y": 5,
+      "frames": 6,
+      "ySize": 192,
+      "xSize": 192,
+      "xMax": 1152,
+      "yMax": 192
+    }
+  }
+}

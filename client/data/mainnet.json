@@ -21,33 +21,7 @@
       "address": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "STARKNET",
-        "icon": "/tokens/STARKNET/icon.png",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5,
-            "frames": 6,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 1152,
-            "yMax": 192
-          }
-        }
-      }
+      "skin": "STARKNET"
     },
     {
       "name": "Lords",
@@ -55,35 +29,7 @@
       "address": "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "LORDS",
-        "icon": "/tokens/LORDS/icon.svg",
-        "biome": {
-          "x": 3,
-          "y": 1
-        },
-        "building": {
-          "1": {
-            "x": 0,
-            "y": 0
-          },
-          "2": {
-            "x": 0,
-            "y": 1
-          },
-          "3": {
-            "x": 0,
-            "y": 2,
-            "frames": 10,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 960,
-            "yMax": 384,
-            "boomerang": true,
-            "delay": 2000
-          }
-        }
-      }
+      "skin": "LORDS"
     },
     {
       "name": "Starknet Brother",
@@ -91,33 +37,7 @@
       "address": "0x03b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "BROTHER",
-        "icon": "/tokens/BROTHER/icon.png",
-        "biome": {
-          "x": 1,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 6
-          },
-          "2": {
-            "x": 3,
-            "y": 7
-          },
-          "3": {
-            "x": 3,
-            "y": 8,
-            "frames": 7,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 1344,
-            "yMax": 192
-          }
-        }
-      }
+      "skin": "BROTHER"
     },
     {
       "name": "PAL",
@@ -125,33 +45,7 @@
       "address": "0x049201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "PAL",
-        "icon": "/tokens/PAL/icon.svg",
-        "biome": {
-          "x": 1,
-          "y": 2
-        },
-        "building": {
-          "1": {
-            "x": 0,
-            "y": 3
-          },
-          "2": {
-            "x": 0,
-            "y": 4
-          },
-          "3": {
-            "x": 0,
-            "y": 5,
-            "frames": 9,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 576,
-            "yMax": 576
-          }
-        }
-      }
+      "skin": "PAL"
     }
   ],
   "commonImages": {

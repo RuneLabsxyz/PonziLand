@@ -1,0 +1,37 @@
+{
+  "skin": "paper",
+  "icon": "/tokens/paper/icon.svg",
+  "biome": {
+    "x": 3,
+    "y": 0
+  },
+  "building": {
+    "1": {
+      "x": 3,
+      "y": 0,
+      "frames": 4,
+      "ySize": 192,
+      "xSize": 192,
+      "xMax": 768,
+      "yMax": 192
+    },
+    "2": {
+      "x": 3,
+      "y": 1,
+      "frames": 8,
+      "ySize": 192,
+      "xSize": 192,
+      "xMax": 768,
+      "yMax": 384
+    },
+    "3": {
+      "x": 3,
+      "y": 2,
+      "frames": 8,
+      "ySize": 192,
+      "xSize": 192,
+      "xMax": 768,
+      "yMax": 384
+    }
+  }
+}
