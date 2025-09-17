@@ -1,4 +1,5 @@
 import type { BaseLand } from '$lib/api/land';
+import { selectEmptyBiomeAnimation } from './utils/biome-animation-selector';
 
 export class LandTile {
   position: [number, number, number];
@@ -25,7 +26,15 @@ export class LandTile {
     this.land = land;
     // Memoize animation names
     this._buildingAnimationName = `${this.skin}_${this.level}`;
-    this._biomeAnimationName = this.skin;
+
+    // For empty biomes, select a random variation based on location
+    if (this.skin === 'empty' || this.skin === 'default') {
+      const landX = Math.floor(position[0]);
+      const landZ = Math.floor(position[2]);
+      this._biomeAnimationName = selectEmptyBiomeAnimation(landX, landZ);
+    } else {
+      this._biomeAnimationName = this.skin;
+    }
   }
 
   // Memoized getter for building animation name
