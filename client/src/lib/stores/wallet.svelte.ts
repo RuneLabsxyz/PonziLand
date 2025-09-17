@@ -10,6 +10,7 @@ import type { Token } from '$lib/interfaces';
 import accountState from '$lib/account.svelte';
 import { untrack } from 'svelte';
 import { MAX_STAKE } from '$lib/flags';
+import { settingsStore } from '$lib/stores/settings.store.svelte';
 
 const BASE_TOKEN = data.mainCurrencyAddress;
 export const baseToken = data.availableTokens.find(
@@ -36,6 +37,13 @@ export class WalletStore {
     (token) => token.address === this.BASE_TOKEN,
   );
 
+  // Get the currently selected base token for display calculations
+  private get selectedBaseToken(): Token {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find((token) => token.address === targetAddress) || this.baseToken!;
+  }
+
   constructor() {}
 
   public async init() {
@@ -47,6 +55,14 @@ export class WalletStore {
       // Trigger update when address changes
       if (accountState.address) {
         untrack(() => this.update(accountState.address!));
+      }
+    });
+
+    $effect(() => {
+      // Recalculate total balance when selected base token changes
+      settingsStore.selectedBaseTokenAddress;
+      if (this.balances.size > 0) {
+        untrack(() => this.calculateTotalBalance());
       }
     });
   }
@@ -221,7 +237,8 @@ export class WalletStore {
   private async calculateTotalBalance() {
     if (!this.balances.size) return;
 
-    let totalValue = CurrencyAmount.fromScaled(0, this.baseToken);
+    const displayBaseToken = this.selectedBaseToken;
+    let totalValue = CurrencyAmount.fromScaled(0, displayBaseToken);
 
     for (const [tokenAddress, balance] of this.balances) {
       if (balance === null) continue;

@@ -4,23 +4,27 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
-  import { ChartColumn, RefreshCw, ArrowUpDown } from 'lucide-svelte';
+  import { ChartColumn, RefreshCw, ArrowUpDown, Settings } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import BaseTokenSelector from './base-token-selector.svelte';
 
   let {
     setCustomControls,
   }: { setCustomControls: (controls: Snippet<[]> | null) => void } = $props();
-  const baseToken = data.availableTokens.find(
-    (token) => token.address === data.mainCurrencyAddress,
-  );
+  const baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find((token) => token.address === targetAddress);
+  });
 
   const address = $derived(accountData.address);
 
   let loadingBalance = $state(false);
   let errorMessage = $state<string | null>(null);
+  let showBaseTokenSelector = $state(false);
 
   onMount(() => {
     // Set up custom controls for the parent draggable component
@@ -51,15 +55,17 @@
 
     // Separate base token from others
     const baseTokenEntry = tokens.find(
-      ([token]) => token.address === data.mainCurrencyAddress,
+      ([token]) => token.address === baseToken.address,
     );
     const otherTokens = tokens.filter(
-      ([token]) => token.address !== data.mainCurrencyAddress,
+      ([token]) => token.address !== baseToken.address,
     );
 
     // Sort other tokens by their equivalent base token balance (descending)
     const sortedOthers = otherTokens.sort(
       ([tokenA, balanceA], [tokenB, balanceB]) => {
+        if (!baseToken) return 0;
+        
         // Convert each token's balance to base token equivalent
         const equivalentA = walletStore.convertTokenAmount(
           balanceA,
@@ -75,16 +81,15 @@
         // Handle cases where conversion fails (no price data)
         if (!equivalentA && !equivalentB) {
           // Fallback to raw balance comparison
-          return balanceB.rawValue().comparedTo(balanceA.rawValue());
+          return balanceB.rawValue().comparedTo(balanceA.rawValue()) as number;
         }
         if (!equivalentA) return 1; // A goes after B
         if (!equivalentB) return -1; // A goes before B
 
         // Compare equivalent base token values (descending order)
-        const comparison = equivalentB
+        return equivalentB
           .rawValue()
-          .comparedTo(equivalentA.rawValue());
-        return comparison;
+          .comparedTo(equivalentA.rawValue()) as number;
       },
     );
 
@@ -96,9 +101,14 @@
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
   {#if totalBalance && baseToken}
     <span class="font-ponzi-number">Value in</span>
-    <div class="font-ponzi-number">
+    <button 
+      class="font-ponzi-number hover:bg-gray-100/10 px-1 rounded flex items-center gap-1"
+      onclick={() => showBaseTokenSelector = !showBaseTokenSelector}
+      title="Click to change base token"
+    >
       {baseToken.symbol}
-    </div>
+      <Settings size={12} class="opacity-50" />
+    </button>
     <div class="flex flex-1 items-center gap-2 justify-end select-text">
       <div class="font-ponzi-number">
         {totalBalance.toString()}
@@ -107,6 +117,19 @@
     </div>
   {/if}
 </div>
+
+{#if showBaseTokenSelector}
+  <div class="border-t border-gray-700 p-2">
+    <BaseTokenSelector 
+      currentBaseToken={baseToken}
+      onSelect={(tokenAddress: string | null) => {
+        settingsStore.setSelectedBaseTokenAddress(tokenAddress);
+        showBaseTokenSelector = false;
+      }}
+      onCancel={() => showBaseTokenSelector = false}
+    />
+  </div>
+{/if}
 
 {#if errorMessage}
   <div
