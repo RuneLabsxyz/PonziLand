@@ -24,7 +24,7 @@
   });
 
   function formatNukeTime(nukeTime: string | undefined) {
-    if (land?.getNeighbors().getNeighbors().length == 0) return 'inf';
+    if (land?.getNeighbors().getBaseLandsArray().length == 0) return 'inf';
     return nukeTime === '' ? 'NUKABLE!' : nukeTime;
   }
 </script>

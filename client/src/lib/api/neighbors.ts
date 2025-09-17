@@ -36,12 +36,12 @@ export class Neighbors {
     if (source) {
       this.source = source;
       this.neighbors = Neighbors.getWithLocation(location, this.source)
-        .getNeighbors()
+        .getBaseLandsArray()
         .filter((l) => l !== undefined);
     }
   }
 
-  public getNeighbors() {
+  public getBaseLandsArray() {
     return this.neighbors;
   }
 

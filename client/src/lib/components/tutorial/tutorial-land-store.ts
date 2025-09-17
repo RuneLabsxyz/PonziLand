@@ -275,7 +275,7 @@ export class TutorialLandStore extends LandTileStore {
 
     const filledArray = neighbors.locations.array.map((loc) => {
       return neighbors
-        .getNeighbors()
+        .getBaseLandsArray()
         .find((l) => l.locationString === toHexWithPadding(loc));
     });
 
