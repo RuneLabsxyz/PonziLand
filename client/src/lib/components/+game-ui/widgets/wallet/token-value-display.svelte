@@ -5,6 +5,8 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { Tween } from 'svelte/motion';
   import { gameSounds } from '$lib/stores/sfx.svelte';
+  import { walletStore, baseToken } from '$lib/stores/wallet.svelte';
+  import data from '$profileData';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
@@ -98,22 +100,38 @@
   let displayAmount = $derived(
     CurrencyAmount.fromUnscaled(BigInt(tweenAmount.current), token),
   );
+
+  // Check if current token is the base token
+  const isBaseToken = $derived(token.address === data.mainCurrencyAddress);
+
+  // Derive the equivalent amount in base token
+  const baseEquivalent = $derived.by(() => {
+    if (isBaseToken) return null;
+    return walletStore.convertTokenAmount(displayAmount, token, baseToken);
+  });
 </script>
 
 <div class="flex flex-1 items-center justify-between text-xl tracking-wide">
-  <div
-    class="gap-1 flex font-ds opacity-75 text-[#6BD5DD]{animating
-      ? 'animating scale-110 text-yellow-500 font-bold'
-      : ''}"
-  >
-    <div>{displayAmount}</div>
-    <div class="relative">
-      {#if animating}
-        <span class="absolute left-0 animate-in-out-left">
-          +{CurrencyAmount.fromUnscaled(increment, token)}
-        </span>
-      {/if}
+  <div class="flex flex-col flex-1">
+    <div
+      class="gap-1 flex font-ds opacity-75 text-[#6BD5DD]{animating
+        ? 'animating scale-110 text-yellow-500 font-bold'
+        : ''}"
+    >
+      <div>{displayAmount}</div>
+      <div class="relative">
+        {#if animating}
+          <span class="absolute left-0 animate-in-out-left">
+            +{CurrencyAmount.fromUnscaled(increment, token)}
+          </span>
+        {/if}
+      </div>
     </div>
+    {#if !isBaseToken && baseEquivalent}
+      <div class="text-sm opacity-50 font-ds text-gray-400">
+        ≈ {baseEquivalent.toString()} {baseToken.symbol}
+      </div>
+    {/if}
   </div>
   <div class="font-ds opacity-75 text-[#D9D9D9]">
     {token.symbol}
