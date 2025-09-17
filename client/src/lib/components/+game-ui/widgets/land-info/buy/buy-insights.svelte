@@ -167,7 +167,11 @@
 <div class="flex w-full justify-between items-center gap-4">
   <div class="w-64 flex items-center justify-center">
     {#if filteredNeighbors}
-      <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
+      <BuyInsightsNeighborGrid
+        neighbors={filteredNeighbors}
+        {nbNeighbors}
+        {selectedToken}
+      />
     {/if}
   </div>
   <div class="w-full flex flex-col gap-4 mr-8">
