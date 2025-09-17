@@ -4,10 +4,11 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
-  import { ChartColumn, RefreshCw } from 'lucide-svelte';
+  import { ChartColumn, RefreshCw, ArrowUpDown } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
 
   let {
     setCustomControls,
@@ -23,7 +24,7 @@
 
   onMount(() => {
     // Set up custom controls for the parent draggable component
-    setCustomControls(refreshControls);
+    setCustomControls(moreControls);
   });
 
   const handleRefreshBalances = async () => {
@@ -35,6 +36,10 @@
     } finally {
       loadingBalance = false;
     }
+  };
+
+  const handleToggleDisplayMode = () => {
+    settingsStore.toggleWalletDisplayMode();
   };
 
   const totalBalance = $derived(walletStore.totalBalance);
@@ -62,18 +67,31 @@
     {errorMessage}
   </div>
 {/if}
-<div>
+<div class="flex flex-col gap-4">
   {#each walletStore.tokenBalances as [token, balance]}
     <div
       class="flex justify-between items-center relative gap-2 px-4 select-text"
     >
-      <TokenAvatar {token} />
+      <TokenAvatar {token} class="h-6 w-6" />
       <TokenValueDisplay amount={balance.toBigint()} {token} />
     </div>
   {/each}
 </div>
 
-{#snippet refreshControls()}
+{#snippet moreControls()}
+  <button
+    class="window-control"
+    onclick={handleToggleDisplayMode}
+    aria-label="Toggle wallet display mode ({settingsStore.walletDisplayMode ===
+    'base'
+      ? 'Show token amounts'
+      : 'Show base token values'})"
+    title={settingsStore.walletDisplayMode === 'base'
+      ? 'Show token amounts'
+      : 'Show base token values'}
+  >
+    <ArrowUpDown size={16} />
+  </button>
   <a
     href="/dashboard"
     target="_blank"
