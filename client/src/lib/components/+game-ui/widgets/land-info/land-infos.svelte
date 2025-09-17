@@ -9,10 +9,22 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { padAddress } from '$lib/utils';
   import InfoTabs from './info-tabs.svelte';
-  import { baseToken } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import data from '$profileData';
 
   let { land }: { land: LandWithActions } = $props();
+
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
 
   let address = $derived(account.address);
   let isOwner = $derived(land?.owner === padAddress(address ?? ''));

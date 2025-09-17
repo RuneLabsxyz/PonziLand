@@ -5,7 +5,7 @@ import { getTokenPrices, type TokenPrice } from '$lib/api/defi/ekubo/requests';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { padAddress, getTokenMetadata } from '$lib/utils';
 import { fetchTokenBalance } from '$lib/accounts/balances';
-import { SvelteMap, SvelteSet } from 'svelte/reactivity';
+import { SvelteMap } from 'svelte/reactivity';
 import type { Token } from '$lib/interfaces';
 import accountState from '$lib/account.svelte';
 import { untrack } from 'svelte';
@@ -13,9 +13,22 @@ import { MAX_STAKE } from '$lib/flags';
 import { settingsStore } from '$lib/stores/settings.store.svelte';
 
 const BASE_TOKEN = data.mainCurrencyAddress;
-export const baseToken = data.availableTokens.find(
+const originalBaseToken = data.availableTokens.find(
   (token) => token.address === BASE_TOKEN,
 )!;
+
+// Export function that returns the selected base token
+export function getBaseToken() {
+  const selectedAddress = settingsStore.selectedBaseTokenAddress;
+  const targetAddress = selectedAddress || data.mainCurrencyAddress;
+  return (
+    data.availableTokens.find((token) => token.address === targetAddress) ||
+    originalBaseToken
+  );
+}
+
+// For backward compatibility, export the original base token as well
+export const baseToken = originalBaseToken;
 
 export class WalletStore {
   private cleanup: (() => void) | null = null;
@@ -36,7 +49,7 @@ export class WalletStore {
   public totalBalance = $state<CurrencyAmount | null>(null);
 
   private readonly BASE_TOKEN = data.mainCurrencyAddress;
-  private readonly baseToken = data.availableTokens.find(
+  private readonly originalBaseToken = data.availableTokens.find(
     (token) => token.address === this.BASE_TOKEN,
   );
 
@@ -46,7 +59,7 @@ export class WalletStore {
     const targetAddress = selectedAddress || data.mainCurrencyAddress;
     return (
       data.availableTokens.find((token) => token.address === targetAddress) ||
-      this.baseToken ||
+      this.originalBaseToken ||
       null
     );
   }
@@ -300,7 +313,7 @@ export class WalletStore {
       const convertedAmount = this.convertTokenAmount(
         balance,
         token,
-        this.baseToken!,
+        this.selectedBaseToken!,
       );
       if (convertedAmount) {
         totalValue = totalValue.add(convertedAmount);
@@ -331,10 +344,10 @@ export class WalletStore {
   public getCapForToken(token: Token): CurrencyAmount {
     return (
       this.convertTokenAmount(
-        CurrencyAmount.fromScaled(MAX_STAKE, baseToken),
-        baseToken,
+        CurrencyAmount.fromScaled(MAX_STAKE, originalBaseToken),
+        originalBaseToken,
         token,
-      ) ?? CurrencyAmount.fromUnscaled(0n, baseToken)
+      ) ?? CurrencyAmount.fromUnscaled(0n, originalBaseToken)
     );
   }
 
@@ -347,21 +360,23 @@ export class WalletStore {
     const amountInBaseCurrency = this.convertTokenAmount(
       amount,
       amount.getToken()!,
-      baseToken,
+      originalBaseToken,
     );
 
     console.log(
       'amountInBaseCurrency:',
       amountInBaseCurrency?.toString(),
       'cap:',
-      CurrencyAmount.fromScaled(MAX_STAKE, baseToken).toString(),
+      CurrencyAmount.fromScaled(MAX_STAKE, originalBaseToken).toString(),
     );
 
     return (
       amountInBaseCurrency == null ||
       amountInBaseCurrency
         .rawValue()
-        .isLessThan(CurrencyAmount.fromScaled(MAX_STAKE, baseToken).rawValue())
+        .isLessThan(
+          CurrencyAmount.fromScaled(MAX_STAKE, originalBaseToken).rawValue(),
+        )
     );
   }
 

@@ -18,7 +18,6 @@
   import PriceChart from './PriceChart.svelte';
   import type { TokenVolume } from './requests';
   import { mainnet } from '@reown/appkit/networks';
-  import { baseToken } from '$lib/stores/wallet.svelte';
   import { BASE_URL } from '@avnu/avnu-sdk';
 
   const BASE_TOKEN = data.mainCurrencyAddress;

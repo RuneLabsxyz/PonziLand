@@ -6,6 +6,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, TabType } from '$lib/interfaces';
   import { walletStore } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { padAddress, toHexWithPadding } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -33,9 +34,13 @@
     !!land && !!address && padAddress(land.owner) === padAddress(address),
   );
 
-  let baseToken = $derived(
-    data.availableTokens.find((token) => token.address === BASE_TOKEN),
-  );
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
   let formattedYields = $state<

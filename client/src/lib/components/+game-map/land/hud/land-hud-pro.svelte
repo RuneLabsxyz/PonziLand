@@ -3,6 +3,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { displayCurrency } from '$lib/utils/currency';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import data from '$profileData';
 
   let {
@@ -15,10 +16,13 @@
     land: LandWithActions;
   } = $props();
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
-  let baseToken = $derived(
-    data.availableTokens.find((token) => token.address === BASE_TOKEN),
-  );
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 </script>
 
 <div class="w-full flex flex-col gap-2">

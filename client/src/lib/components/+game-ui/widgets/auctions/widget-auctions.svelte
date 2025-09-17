@@ -11,8 +11,9 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
-  import { baseToken } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { padAddress, parseLocation } from '$lib/utils';
+  import data from '$profileData';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy, onMount } from 'svelte';
@@ -22,6 +23,17 @@
   const account = () => {
     return dojo.accountManager?.getProvider();
   };
+
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
 
   interface LandWithPrice extends LandWithActions {
     price: CurrencyAmount | null;

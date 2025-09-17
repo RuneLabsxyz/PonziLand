@@ -4,6 +4,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
   import { walletStore } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { displayCurrency } from '$lib/utils/currency';
   import { getTokenMetadata, toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -19,10 +20,13 @@
     land: LandWithActions;
   } = $props();
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
-  let baseToken = $derived(
-    data.availableTokens.find((token) => token.address === BASE_TOKEN),
-  );
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 
   interface Yield {
     amount: CurrencyAmount;
@@ -57,7 +61,7 @@
         const priceInfo = walletStore.getPrice(tokenHexAddress);
         let baseValue: CurrencyAmount;
 
-        if (tokenHexAddress === BASE_TOKEN) {
+        if (tokenHexAddress === data.mainCurrencyAddress) {
           baseValue = formattedAmount;
           totalValue += Number(formattedAmount.rawValue());
         } else if (priceInfo?.ratio) {
