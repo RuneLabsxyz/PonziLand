@@ -91,7 +91,9 @@ export type LandWithActions = LandWithMeta & {
   getCurrentAuctionPrice(
     useRpcForExactPrice?: boolean,
   ): Promise<CurrencyAmount | undefined>;
-  getYieldInfo(): Promise<LandYieldInfo | undefined>;
+  getYieldInfo(
+    useRpcForExactCalculation?: boolean,
+  ): Promise<LandYieldInfo | undefined>;
   getEstimatedNukeTime(): Promise<number | undefined>;
   getNeighbors(): Neighbors;
   levelUp(): TransactionResult;

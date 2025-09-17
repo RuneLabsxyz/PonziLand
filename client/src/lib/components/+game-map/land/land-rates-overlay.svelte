@@ -33,7 +33,9 @@
     yieldInfo.filter((info) => (info?.percent_rate ?? 0n) !== 0n).length,
   );
 
-  let tokenBurnRate = $derived(calculateBurnRate(land, numberOfNeighbours));
+  let tokenBurnRate = $derived(
+    calculateBurnRate(land.sellPrice, land.level, numberOfNeighbours),
+  );
 
   $effect(() => {
     if (land) {
@@ -48,7 +50,7 @@
       } else {
         isLoading = true;
         yieldInfo = [];
-        getNeighbourYieldArray(land).then((res) => {
+        getNeighbourYieldArray(land, false).then((res) => {
           yieldInfo = res;
           yieldInfo.splice(4, 0, null);
           isLoading = false;

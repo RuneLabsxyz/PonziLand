@@ -12,7 +12,10 @@ import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Level } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
 import type { Readable } from 'svelte/store';
-import { calculateAuctionPrice } from './clientCalculations';
+import {
+  calculateAuctionPrice,
+  calculateYieldInfo,
+} from './clientCalculations';
 
 export const createLandWithActions = (
   land: BuildingLand | AuctionLand,
@@ -98,56 +101,66 @@ export const createLandWithActions = (
       return result;
     },
     async getCurrentAuctionPrice(useRpcForExactPrice: boolean = false) {
-      // If useRpcForExactPrice is true, always use RPC for exact bidding price
-      if (useRpcForExactPrice) {
-        console.log('🔗 Using RPC for exact auction price (for bidding)');
-        const rpcPrice = (await sdk.client.actions.getCurrentAuctionPrice(
-          land.locationString,
-        ))! as string;
-        return CurrencyAmount.fromUnscaled(rpcPrice, land.token);
-      }
-
       // Try client-side calculation first (fast, for display/UI)
-      try {
-        // Only use client calculation for auction lands
-        if (land.type === 'auction' && AuctionLand.is(land)) {
-          // If auction is finished, return 0
-          if (land.isFinished) {
-            return CurrencyAmount.fromUnscaled('0', land.token);
+      if (!useRpcForExactPrice) {
+        try {
+          // Only use client calculation for auction lands
+          if (land.type === 'auction' && AuctionLand.is(land)) {
+            // Calculate current price using client-side logic with individual parameters
+            const startTimeSeconds = land.startTime.getTime();
+            const calculatedPrice = calculateAuctionPrice(
+              startTimeSeconds,
+              land.startPrice.toBigint(),
+              land.floorPrice.toBigint(),
+            );
+
+            // Return as CurrencyAmount
+            return CurrencyAmount.fromUnscaled(
+              calculatedPrice.toString(),
+              land.token,
+            );
           }
-
-          // Calculate current price using client-side logic with individual parameters
-          const startTimeSeconds = land.startTime.getTime();
-          const calculatedPrice = calculateAuctionPrice(
-            startTimeSeconds,
-            land.startPrice.toBigint(),
-            land.floorPrice.toBigint(),
-          );
-
-          // Return as CurrencyAmount
-          return CurrencyAmount.fromUnscaled(
-            calculatedPrice.toString(),
-            land.token,
+        } catch (error) {
+          console.warn(
+            'Client-side auction price calculation failed, falling back to RPC:',
+            error,
           );
         }
-      } catch (error) {
-        console.warn(
-          'Client-side auction price calculation failed, falling back to RPC:',
-          error,
-        );
       }
-
-      // Fallback to RPC call (original behavior)
+      console.log('🔗 Using RPC for exact auction price (for bidding)');
       const rpcPrice = (await sdk.client.actions.getCurrentAuctionPrice(
         land.locationString,
       ))! as string;
       return CurrencyAmount.fromUnscaled(rpcPrice, land.token);
     },
-    async getYieldInfo() {
+
+    async getYieldInfo(useRpcForExactCalculation: boolean = false) {
+      // Try client-side calculation first (fast, for display/UI)
+      if (!useRpcForExactCalculation) {
+        try {
+          // Get neighbors using the existing land method
+          const neighbors = land.getNeighbors(landStore);
+          const neighborLands = neighbors.getNeighbors();
+
+          const calculatedYieldInfo = calculateYieldInfo(neighborLands);
+
+          if (calculatedYieldInfo) {
+            console.log('Using client-side yield calculation (fast)');
+            return calculatedYieldInfo;
+          }
+        } catch (error) {
+          console.warn(
+            'Client-side yield calculation failed, falling back to RPC:',
+            error,
+          );
+        }
+      }
+
+      // If useRpcForExactCalculation is true, always use RPC for exact data
+      console.log('Using RPC for exact yield info (for precise calculations)');
       const result = (await sdk.client.actions.getNeighborsYield(
         land.locationString,
       )) as LandYieldInfo | undefined;
-
       return result;
     },
     async levelUp() {
