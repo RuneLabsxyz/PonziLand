@@ -3,7 +3,7 @@ import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
 import data from '$profileData';
 import { getTokenPrices, type TokenPrice } from '$lib/api/defi/ekubo/requests';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import { padAddress } from '$lib/utils';
+import { padAddress, getTokenMetadata } from '$lib/utils';
 import { fetchTokenBalance } from '$lib/accounts/balances';
 import { SvelteMap, SvelteSet } from 'svelte/reactivity';
 import type { Token } from '$lib/interfaces';
@@ -123,13 +123,14 @@ export class WalletStore {
 
     const tokenBalances = data.availableTokens.map(async (token) => {
       const balance = await fetchTokenBalance(token.address, account, provider);
+      const metadata = await getTokenMetadata(token.skin);
 
       console.log(`Balance for ${token.symbol}: ${balance?.toString()}`);
 
       return {
         token,
         balance,
-        icon: token.images.icon,
+        icon: metadata?.icon || '/tokens/default/icon.png',
       };
     });
 

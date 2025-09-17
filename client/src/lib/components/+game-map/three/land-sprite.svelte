@@ -181,7 +181,7 @@
 
         if (BuildingLand.is(tile)) {
           tokenSymbol = tile?.token?.symbol ?? 'empty';
-          skin = tile?.token?.images?.skin ?? 'empty';
+          skin = tile?.token?.skin ?? 'empty';
         }
 
         if (AuctionLand.is(tile)) {

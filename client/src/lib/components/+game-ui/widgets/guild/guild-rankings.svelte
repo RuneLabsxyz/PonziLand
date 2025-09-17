@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import data from '$profileData';
+  import { getTokenMetadata } from '$lib/utils';
 
   interface Distribution {
     token_address: string;
@@ -32,15 +33,20 @@
   }
 
   // Map token addresses to guild info with normalized addresses as keys
-  const guildMap = new Map(
-    data.availableTokens.map((token) => [
-      normalizeAddress(token.address),
-      {
+  const guildMap = new Map<string, GuildInfo>();
+
+  // Initialize guild map asynchronously
+  onMount(async () => {
+    for (const token of data.availableTokens) {
+      const metadata = await getTokenMetadata(token.skin);
+      guildMap.set(normalizeAddress(token.address), {
         name: token.name,
-        image: token.images.icon,
-      },
-    ]),
-  );
+        image: metadata?.icon || '/tokens/default/icon.png',
+      });
+    }
+    // Re-trigger reactivity
+    rankings = rankings;
+  });
 
   async function fetchRankings() {
     try {

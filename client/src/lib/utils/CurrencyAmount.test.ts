@@ -11,28 +11,7 @@ const TestTokens: Record<string, Token> = {
     symbol: 'STD',
     liquidityPoolType: 'standard',
     decimals: 18,
-    images: {
-      skin: 'strk',
-      icon: '/tokens/eSTRK/icon.png',
-      biome: {
-        x: 2,
-        y: 3,
-      },
-      building: {
-        '1': {
-          x: 3,
-          y: 3,
-        },
-        '2': {
-          x: 3,
-          y: 4,
-        },
-        '3': {
-          x: 3,
-          y: 5,
-        },
-      },
-    },
+    skin: 'strk',
   },
   noDecimals: {
     name: 'No Decimals',
@@ -40,28 +19,7 @@ const TestTokens: Record<string, Token> = {
     symbol: 'ND',
     liquidityPoolType: 'standard',
     decimals: 0,
-    images: {
-      skin: 'strk',
-      icon: '/tokens/eSTRK/icon.png',
-      biome: {
-        x: 2,
-        y: 3,
-      },
-      building: {
-        '1': {
-          x: 3,
-          y: 3,
-        },
-        '2': {
-          x: 3,
-          y: 4,
-        },
-        '3': {
-          x: 3,
-          y: 5,
-        },
-      },
-    },
+    skin: 'strk',
   },
 };
 
