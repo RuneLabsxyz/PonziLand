@@ -43,6 +43,54 @@
   };
 
   const totalBalance = $derived(walletStore.totalBalance);
+
+  // Sort tokens with base token first, then by equivalent base token balance value
+  const sortedTokenBalances = $derived.by(() => {
+    const tokens = walletStore.tokenBalances;
+    if (!baseToken) return tokens;
+
+    // Separate base token from others
+    const baseTokenEntry = tokens.find(
+      ([token]) => token.address === data.mainCurrencyAddress,
+    );
+    const otherTokens = tokens.filter(
+      ([token]) => token.address !== data.mainCurrencyAddress,
+    );
+
+    // Sort other tokens by their equivalent base token balance (descending)
+    const sortedOthers = otherTokens.sort(
+      ([tokenA, balanceA], [tokenB, balanceB]) => {
+        // Convert each token's balance to base token equivalent
+        const equivalentA = walletStore.convertTokenAmount(
+          balanceA,
+          tokenA,
+          baseToken,
+        );
+        const equivalentB = walletStore.convertTokenAmount(
+          balanceB,
+          tokenB,
+          baseToken,
+        );
+
+        // Handle cases where conversion fails (no price data)
+        if (!equivalentA && !equivalentB) {
+          // Fallback to raw balance comparison
+          return balanceB.rawValue().comparedTo(balanceA.rawValue());
+        }
+        if (!equivalentA) return 1; // A goes after B
+        if (!equivalentB) return -1; // A goes before B
+
+        // Compare equivalent base token values (descending order)
+        const comparison = equivalentB
+          .rawValue()
+          .comparedTo(equivalentA.rawValue());
+        return comparison;
+      },
+    );
+
+    // Return base token first, then sorted others
+    return baseTokenEntry ? [baseTokenEntry, ...sortedOthers] : sortedOthers;
+  });
 </script>
 
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
@@ -68,7 +116,7 @@
   </div>
 {/if}
 <div class="flex flex-col gap-2 mb-4">
-  {#each walletStore.tokenBalances as [token, balance]}
+  {#each sortedTokenBalances as [token, balance]}
     <div
       class="flex justify-between items-center relative gap-2 px-4 select-text"
     >
