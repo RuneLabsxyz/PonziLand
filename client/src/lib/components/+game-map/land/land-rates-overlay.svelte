@@ -89,7 +89,9 @@
         baseAmount: getYieldValueInBaseToken(neighbor),
       }));
 
-    const validYields = yieldItems.filter((item) => item.baseAmount && !item.baseAmount.isZero());
+    const validYields = yieldItems.filter(
+      (item) => item.baseAmount && !item.baseAmount.isZero(),
+    );
     const hasUnconvertibleYields = yieldItems.some((item) => !item.baseAmount);
 
     // If we can't convert some yields to base token, use uniform scale for all
@@ -97,7 +99,9 @@
       return new Map(yieldItems.map((item) => [item.neighbor, 1]));
     }
 
-    const allValues = validYields.map((item) => Number(item.baseAmount!.rawValue()));
+    const allValues = validYields.map((item) =>
+      Number(item.baseAmount!.rawValue()),
+    );
     const minYield = Math.min(...allValues);
     const maxYield = Math.max(...allValues);
 
@@ -110,8 +114,7 @@
     return new Map(
       validYields.map((item) => {
         const baseValue = Number(item.baseAmount!.rawValue());
-        const normalizedValue =
-          (baseValue - minYield) / (maxYield - minYield);
+        const normalizedValue = (baseValue - minYield) / (maxYield - minYield);
         const scale = 0.5 + normalizedValue * 1.0; // Scale from 0.5 to 1.5
         return [item.neighbor, scale];
       }),
@@ -160,9 +163,17 @@
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
-            <span class="whitespace-nowrap {displayYields[i].amount === '?' ? 'text-yellow-400' : 'text-green-300'}">
-              {displayYields[i].amount === '?' ? '?' : `+${displayYields[i].amount}`}
-              {displayYields[i].amount === '?' ? '' : `${displayYields[i].symbol}/h`}
+            <span
+              class="whitespace-nowrap {displayYields[i].amount === '?'
+                ? 'text-yellow-400'
+                : 'text-green-300'}"
+            >
+              {displayYields[i].amount === '?'
+                ? '?'
+                : `+${displayYields[i].amount}`}
+              {displayYields[i].amount === '?'
+                ? ''
+                : `${displayYields[i].symbol}/h`}
             </span>
           </div>
         {:else if info && i !== 4}

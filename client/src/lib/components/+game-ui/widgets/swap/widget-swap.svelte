@@ -95,11 +95,11 @@
         sellToken,
         buyAmount:
           leadingSide === 'buy'
-            ? CurrencyAmount.fromScaled(buyAmount)
+            ? CurrencyAmount.fromScaled(buyAmount, buyToken)
             : undefined,
         sellAmount:
           leadingSide === 'sell'
-            ? CurrencyAmount.fromScaled(sellAmount)
+            ? CurrencyAmount.fromScaled(sellAmount, sellToken)
             : undefined,
       } as QuoteParams & { leadingSide: 'sell' | 'buy' };
     },
@@ -123,23 +123,28 @@
     noRouteAvailable = false;
 
     // Fetch some quotes
-    avnu.fetchQuotes(data).then((q) => {
-      quotes = q;
-      if (quotes.length == 0) {
-        noRouteAvailable = true;
-        return;
-      }
+    avnu
+      .fetchQuotes(data)
+      .then((q) => {
+        quotes = q;
+        if (quotes.length == 0) {
+          noRouteAvailable = true;
+          return;
+        }
 
-      if (data.leadingSide == 'buy') {
-        sellAmount = CurrencyAmount.fromUnscaled(q[0].sellAmount)
-          .rawValue()
-          .toString();
-      } else {
-        buyAmount = CurrencyAmount.fromUnscaled(q[0].buyAmount)
-          .rawValue()
-          .toString();
-      }
-    });
+        if (data.leadingSide == 'buy') {
+          sellAmount = CurrencyAmount.fromUnscaled(q[0].sellAmount, sellToken)
+            .rawValue()
+            .toString();
+        } else {
+          buyAmount = CurrencyAmount.fromUnscaled(q[0].buyAmount, buyToken)
+            .rawValue()
+            .toString();
+        }
+      })
+      .catch((error) => {
+        noRouteAvailable = true;
+      });
   });
 
   async function executeSwap() {

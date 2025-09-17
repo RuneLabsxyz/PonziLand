@@ -1,4 +1,7 @@
 import { PUBLIC_AVNU_URL } from '$env/static/public';
+import { useAccount } from '$lib/contexts/account.svelte';
+import type { Token } from '$lib/interfaces';
+import { configValues } from '$lib/stores/config.store.svelte';
 import {
   executeSwap,
   fetchQuotes,
@@ -7,12 +10,6 @@ import {
   type QuoteRequest,
 } from '@avnu/avnu-sdk';
 import type { CurrencyAmount } from './CurrencyAmount';
-import type { Token } from '$lib/interfaces';
-import { useAccount } from '$lib/contexts/account.svelte';
-import {
-  configValues,
-  setupConfigStore,
-} from '$lib/stores/config.store.svelte';
 
 export type BaseQuoteParams = {
   sellToken: Token;
