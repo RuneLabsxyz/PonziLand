@@ -66,7 +66,8 @@ class SettingsStore {
   }
 
   toggleWalletDisplayMode() {
-    this.settings.walletDisplayMode = this.settings.walletDisplayMode === 'base' ? 'token' : 'base';
+    this.settings.walletDisplayMode =
+      this.settings.walletDisplayMode === 'base' ? 'token' : 'base';
     this.saveSettings();
   }
 
