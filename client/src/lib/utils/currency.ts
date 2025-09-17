@@ -61,17 +61,21 @@ export function displayCurrency(value: string | number | BigNumber): string {
   } else if (abs.isGreaterThanOrEqualTo(1)) {
     formatted = bn.toFormat(2);
   } else {
-    // Very small number < 1 — show full precision
+    // Very small number < 1 — use subexponent formatting for very small numbers
     formatted = bn.toFixed(20);
 
     const decimalStr = formatted.split('.')[1] ?? '';
     const leadingZeros = decimalStr.match(/^0*/)?.[0].length ?? 0;
 
-    // Calculate the number of significant digits to show (at least 3, but at most 18)
-    const significantDigits = Math.min(Math.max(3, leadingZeros + 3), 18);
-
-    // Format the number to show only the minimum number of leading zeros and at least 3 significant digits
-    formatted = bn.toFixed(significantDigits);
+    // If there are more than 4 leading zeros, use exponential notation to save space
+    if (leadingZeros > 4) {
+      // Use exponential notation with 3 significant digits
+      formatted = bn.toExponential(2);
+    } else {
+      // Calculate the number of significant digits to show (at least 3, but at most 6 for readability)
+      const significantDigits = Math.min(Math.max(3, leadingZeros + 3), 6);
+      formatted = bn.toFixed(significantDigits);
+    }
   }
 
   return formatted + suffix;
