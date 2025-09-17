@@ -67,7 +67,7 @@
     {errorMessage}
   </div>
 {/if}
-<div class="flex flex-col gap-4">
+<div class="flex flex-col gap-4 mb-4">
   {#each walletStore.tokenBalances as [token, balance]}
     <div
       class="flex justify-between items-center relative gap-2 px-4 select-text"
