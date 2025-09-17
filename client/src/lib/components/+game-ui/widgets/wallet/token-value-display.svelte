@@ -113,13 +113,34 @@
   // Determine which display mode to use
   const displayMode = $derived(settingsStore.walletDisplayMode);
   const shouldShowBaseValue = $derived(!isBaseToken && displayMode === 'base');
+
+  // Get conversion rate for display
+  const conversionRate = $derived.by(() => {
+    if (isBaseToken) return null;
+    const price = walletStore.getPrice(token.address);
+    if (!price) return null;
+
+    if (shouldShowBaseValue) {
+      // When showing base values primarily, show: 1 BASE = X TOKEN
+      // If price.ratio is 0.5, then 1 base = 2 tokens
+      const oneBaseInRaw = CurrencyAmount.fromScaled(1, baseToken).rawValue();
+      const rateInToken = oneBaseInRaw.multipliedBy(price.ratio.rawValue());
+      return CurrencyAmount.fromRaw(rateInToken, token);
+    } else {
+      // When showing token values primarily, show: 1 TOKEN = X BASE
+      // If price.ratio is 0.5, then 1 token = 0.5 base
+      const oneTokenInRaw = CurrencyAmount.fromScaled(1, token).rawValue();
+      const rateInBase = oneTokenInRaw.dividedBy(price.ratio.rawValue());
+      return CurrencyAmount.fromRaw(rateInBase, baseToken);
+    }
+  });
 </script>
 
 <div class="flex flex-1 items-center justify-between text-xl tracking-wide">
   <div class="flex flex-col flex-1">
     {#if shouldShowBaseValue}
       <div
-        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none{animating
+        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
           ? 'animating scale-110 text-yellow-500 font-bold'
           : ''}"
       >
@@ -138,7 +159,7 @@
           {/if}
         </div>
       </div>
-      <div class="text-sm opacity-50 font-ds h-0 text-gray-400 leading-none">
+      <div class="text-sm opacity-50 font-ds text-gray-400 leading-none">
         {displayAmount.toString()}
         {token.symbol}
       </div>
@@ -158,15 +179,26 @@
         </div>
       </div>
       {#if !isBaseToken && baseEquivalent}
-        <div class="text-sm opacity-50 font-ds h-0 text-gray-400 leading-none">
+        <div class="text-sm opacity-50 font-ds text-gray-400 leading-none">
           ≈ {baseEquivalent.toString()}
           {baseToken.symbol}
         </div>
       {/if}
     {/if}
   </div>
-  <div class="font-ds opacity-75 text-[#D9D9D9]">
-    {shouldShowBaseValue ? baseToken.symbol : token.symbol}
+  <div class="flex flex-col items-end text-right">
+    <div class="font-ds opacity-75 text-[#D9D9D9] leading-none">
+      {shouldShowBaseValue ? baseToken.symbol : token.symbol}
+    </div>
+    {#if !isBaseToken && conversionRate}
+      <div class="text-xs opacity-50 font-ds text-gray-400 leading-none">
+        {#if shouldShowBaseValue}
+          1 {baseToken.symbol} = {conversionRate.toString()} {token.symbol}
+        {:else}
+          1 {token.symbol} = {conversionRate.toString()} {baseToken.symbol}
+        {/if}
+      </div>
+    {/if}
   </div>
 </div>
 
