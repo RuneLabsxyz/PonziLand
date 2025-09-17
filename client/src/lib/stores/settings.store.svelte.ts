@@ -7,6 +7,7 @@ class SettingsStore {
     noobMode: false,
     volume: 50,
     showRatesInBaseToken: false,
+    walletDisplayMode: 'base' as 'base' | 'token', // 'base' shows base token value primarily, 'token' shows original token value
     // Add more settings here as needed
   });
 
@@ -50,6 +51,10 @@ class SettingsStore {
     return this.settings.showRatesInBaseToken;
   }
 
+  get walletDisplayMode() {
+    return this.settings.walletDisplayMode;
+  }
+
   toggleNoobMode() {
     this.settings.noobMode = !this.settings.noobMode;
     this.saveSettings();
@@ -57,6 +62,11 @@ class SettingsStore {
 
   toggleRatesInBaseToken() {
     this.settings.showRatesInBaseToken = !this.settings.showRatesInBaseToken;
+    this.saveSettings();
+  }
+
+  toggleWalletDisplayMode() {
+    this.settings.walletDisplayMode = this.settings.walletDisplayMode === 'base' ? 'token' : 'base';
     this.saveSettings();
   }
 
