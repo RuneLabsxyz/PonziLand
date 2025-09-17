@@ -246,6 +246,33 @@
     return final || '< 1m';
   });
 
+  // Check if we have conversion rate issues
+  let hasConversionError = $derived.by(() => {
+    // Check if we can't convert the neighbor cost to base token
+    if (
+      sliderNeighborsCost &&
+      baseToken &&
+      selectedToken &&
+      !sliderNeighborsCostInBaseToken
+    ) {
+      return true;
+    }
+
+    // Check if we can't convert the land's sell price to base token
+    if (land?.sellPrice && land?.token && baseToken) {
+      const buyPriceInBaseToken = walletStore.convertTokenAmount(
+        land.sellPrice,
+        land.token,
+        baseToken,
+      );
+      if (!buyPriceInBaseToken) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
   $effect(() => {
     if (land) {
       land.getYieldInfo().then(async (info) => {
@@ -315,6 +342,14 @@
     neighbors
   </p>
 
+  {#if hasConversionError}
+    <div
+      class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs"
+    >
+      ⚠️ Cannot convert token prices - calculations may be inaccurate
+    </div>
+  {/if}
+
   <div class="flex gap-2">
     <div>
       {#if neighbors}
@@ -352,43 +387,6 @@
       </div>
 
       <hr class="my-1 opacity-50" />
-
-      <!-- <div class="flex justify-between select-text leading-none items-end">
-        <div>
-          <span class="opacity-50">Gain /h</span>
-        </div>
-        <div class="flex items-center gap-1">
-          <span class="opacity-50"
-            >{sliderNeighborsYieldInBaseToken} {baseToken?.symbol}</span
-          >
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
-      </div> -->
-
-      <!-- <div
-        class="flex justify-between select-text leading-none items-end"
-      >
-        <div class="opacity-50">Cost / h</div>
-        <div class="text-red-500 flex items-center gap-1">
-          <span>
-            {sliderNeighborsCost} {selectedToken?.symbol}
-          </span>
-          <TokenAvatar
-            token={selectedToken}
-            class="border border-white w-3 h-3"
-          />
-        </div>
-      </div> -->
-      <!-- <div class="flex justify-between select-text leading-none items-end">
-        <div class="opacity-50">Cost /h</div>
-        <div class="flex items-center gap-1">
-          <span class="opacity-50">
-            ({sliderNeighborsCostInBaseToken}
-            {baseToken?.symbol})
-          </span>
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
-      </div> -->
 
       {#if potentialSellBenefitInBaseToken}
         <div class="flex justify-between select-text leading-none items-end">
@@ -444,29 +442,6 @@
           {paybackTimeString}
         </div>
       </div>
-
-      <!-- <hr class="my-1 opacity-50" />
-
-      <div class="flex justify-between select-text leading-none items-end">
-        <div class="opacity-50">Estd. earn / neighbor / h</div>
-        <div class="opacity-50 flex items-center gap-1">
-          <span>{yieldPerNeighbor ?? '-'}</span>
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
-      </div>
-
-      <div class="flex justify-between select-text leading-none items-end">
-        <div class="opacity-50">Cost / neighbor / h</div>
-        <div class="opacity-50 flex items-center gap-1">
-          <span>
-            ({taxPerNeighbor})
-          </span>
-          <TokenAvatar
-            token={selectedToken}
-            class="border border-white w-3 h-3"
-          />
-        </div>
-      </div> -->
     </div>
   </div>
 </div>
