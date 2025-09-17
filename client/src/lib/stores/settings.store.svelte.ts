@@ -8,6 +8,7 @@ class SettingsStore {
     volume: 50,
     showRatesInBaseToken: false,
     walletDisplayMode: 'base' as 'base' | 'token', // 'base' shows base token value primarily, 'token' shows original token value
+    selectedBaseTokenAddress: null as string | null, // null means use default from mainnet.json
     // Add more settings here as needed
   });
 
@@ -55,6 +56,10 @@ class SettingsStore {
     return this.settings.walletDisplayMode;
   }
 
+  get selectedBaseTokenAddress() {
+    return this.settings.selectedBaseTokenAddress;
+  }
+
   toggleNoobMode() {
     this.settings.noobMode = !this.settings.noobMode;
     this.saveSettings();
@@ -82,6 +87,11 @@ class SettingsStore {
     // Optionally, play a sound to indicate volume change
     console.log(`Volume set to ${gameVolume}`);
     gameSounds.play('click', { volume: gameVolume });
+  }
+
+  setSelectedBaseTokenAddress(address: string | null) {
+    this.settings.selectedBaseTokenAddress = address;
+    this.saveSettings();
   }
 }
 
