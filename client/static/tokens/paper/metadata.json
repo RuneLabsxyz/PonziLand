@@ -1,6 +1,6 @@
 {
-  "skin": "paper",
-  "icon": "/tokens/paper/icon.svg",
+  "skin": "PAPER",
+  "icon": "/tokens/PAPER/icon.png",
   "biome": {
     "x": 3,
     "y": 0
