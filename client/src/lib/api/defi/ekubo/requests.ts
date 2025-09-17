@@ -117,12 +117,15 @@ export async function getTokenPrices(): Promise<TokenPrice[]> {
     }
     const data = (await res.json()) as any;
 
-    const tokenPrices = data.map((item: any) => ({
-      symbol: item.symbol,
-      address: item.address,
-      ratio: CurrencyAmount.fromScaled(item.ratio_exact),
-    }));
+    const tokenPrices = data
+      .filter((item: any) => item.ratio !== undefined && item.ratio !== null)
+      .map((item: any) => ({
+        symbol: item.symbol,
+        address: item.address,
+        ratio: CurrencyAmount.fromScaled(item.ratio),
+      }));
 
+    console.log('Fetched token prices:', tokenPrices);
     return tokenPrices;
   } catch (error) {
     console.error('Error fetching token prices:', error);
