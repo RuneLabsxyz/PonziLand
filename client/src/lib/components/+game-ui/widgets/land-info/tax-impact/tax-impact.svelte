@@ -246,6 +246,33 @@
     return final || '< 1m';
   });
 
+  // Check if we have conversion rate issues
+  let hasConversionError = $derived.by(() => {
+    // Check if we can't convert the neighbor cost to base token
+    if (
+      sliderNeighborsCost &&
+      baseToken &&
+      selectedToken &&
+      !sliderNeighborsCostInBaseToken
+    ) {
+      return true;
+    }
+
+    // Check if we can't convert the land's sell price to base token
+    if (land?.sellPrice && land?.token && baseToken) {
+      const buyPriceInBaseToken = walletStore.convertTokenAmount(
+        land.sellPrice,
+        land.token,
+        baseToken,
+      );
+      if (!buyPriceInBaseToken) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
   $effect(() => {
     if (land) {
       land.getYieldInfo().then(async (info) => {
@@ -314,6 +341,14 @@
     You can get an estimation of your land survival time in function of its
     neighbors
   </p>
+
+  {#if hasConversionError}
+    <div
+      class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs"
+    >
+      ⚠️ Cannot convert token prices - calculations may be inaccurate
+    </div>
+  {/if}
 
   <div class="flex gap-2">
     <div>
