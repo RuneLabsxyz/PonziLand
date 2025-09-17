@@ -1,8 +1,7 @@
+import type { Token } from '$lib/interfaces';
 import BigNumber from 'bignumber.js';
 import { type BigNumberish } from 'starknet';
-import { displayCurrency, fromCallData, toCalldata } from './currency';
-import type { Token } from '$lib/interfaces';
-import { toHexWithPadding } from '$lib/utils';
+import { displayCurrency, fromCallData } from './currency';
 
 export class CurrencyAmount {
   // We store the bignumber as scaled (the amount as would be shown to the user, not the opposite)
