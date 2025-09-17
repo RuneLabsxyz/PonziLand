@@ -15,7 +15,7 @@
   } = $props();
 
   let filteredNeighbors = $derived.by(() => {
-    const allNeighbors = neighbors.getNeighbors();
+    const allNeighbors = neighbors.getBaseLandsArray();
     const filteredArray = allNeighbors.slice(0, nbNeighbors);
 
     // Pre-compute neighbor positions for O(1) lookup
