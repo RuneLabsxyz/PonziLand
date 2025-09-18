@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x2725a4f26a53d49aa7aeaf1de1a80c88945e64a0424e03bea1eed3d08d3674f",
-    "seed": "quests_93012480",
+    "address": "0x12ac6c6a069a0b6a10c954353fcb53f752ea65d0f46696e5368ba93f65636d",
+    "seed": "quests_276111064",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,8 +1328,8 @@
   },
   "contracts": [
     {
-      "address": "0xf719c83d3d557f47ee878273e0907c02bba11bae830db8721b00ed2995afc6",
-      "class_hash": "0x5fbbacddd0ac5f0487d74468c0298c6f21c4c997d532336e12d0fb9552e383d",
+      "address": "0x72e7a22d6c1e2ad802972bfc1fd581e87db9677b0176ac15d4d648522475d8b",
+      "class_hash": "0x67097fe72d591b8150bf73c75a4cdc5be13aeee58b27aae8c2c755a836d86aa",
       "abi": [
         {
           "type": "impl",
@@ -2156,7 +2156,7 @@
         "1000000000000000000",
         "0",
         "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
-        "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c"
+        "0x7d0c0380fc3b999d5726da0c9c2f986b972ba597eafa903e7bcebcd69f28ffd"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -2175,7 +2175,7 @@
       ]
     },
     {
-      "address": "0x674a06a7dedfdcc1a427c9f6fd0770b9d9064cfb4fa4a180b3d57ad36327cf6",
+      "address": "0x4e7190b5a77ddcfa78c1018d47e2bfe2611a4546a08ebafcae08acbca3db397",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
@@ -2518,8 +2518,8 @@
       ]
     },
     {
-      "address": "0x3c110001316c63af9d786eea3e5c33b6b26137f9af9fa3aa8eb2803136a2593",
-      "class_hash": "0x32cf643d13c9a9ad5f1c226e849b9691cfd0eb922c4192e726c5ef14b51a265",
+      "address": "0x33afe96e843357f4ee36c7b6efff0598d0761ceb7508512770cf8709ab4b6d6",
+      "class_hash": "0x334584a933dc0560cfc7589480a88553ef82073bde951fb497d035f27bc17bb",
       "abi": [
         {
           "type": "impl",
@@ -2582,6 +2582,20 @@
             {
               "name": "high",
               "type": "core::integer::u128"
+            }
+          ]
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
             }
           ]
         },
@@ -2664,6 +2678,14 @@
             {
               "name": "buy_fee",
               "type": "core::integer::u128"
+            },
+            {
+              "name": "quest_auction_chance",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "quest_lands_enabled",
+              "type": "core::bool"
             },
             {
               "name": "our_contract_for_fee",
@@ -2775,6 +2797,14 @@
               "type": "core::integer::u128"
             },
             {
+              "name": "quest_auction_chance",
+              "type": "core::integer::u8"
+            },
+            {
+              "name": "quest_lands_enabled",
+              "type": "core::bool"
+            },
+            {
               "name": "our_contract_for_fee",
               "type": "core::starknet::contract_address::ContractAddress"
             },
@@ -2875,6 +2905,14 @@
                 {
                   "name": "buy_fee",
                   "type": "core::integer::u128"
+                },
+                {
+                  "name": "quest_auction_chance",
+                  "type": "core::integer::u8"
+                },
+                {
+                  "name": "quest_lands_enabled",
+                  "type": "core::bool"
                 },
                 {
                   "name": "our_contract_for_fee",
@@ -3174,6 +3212,30 @@
             },
             {
               "type": "function",
+              "name": "set_quest_auction_chance",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::integer::u8"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "set_quest_lands_enabled",
+              "inputs": [
+                {
+                  "name": "value",
+                  "type": "core::bool"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
               "name": "get_tax_rate",
               "inputs": [],
               "outputs": [
@@ -3405,6 +3467,28 @@
             },
             {
               "type": "function",
+              "name": "get_quest_auction_chance",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::integer::u8"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_quest_lands_enabled",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
               "name": "get_config",
               "inputs": [],
               "outputs": [
@@ -3546,10 +3630,12 @@
         "5",
         "0",
         "0",
+        "10",
+        "1",
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "10",
-        "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c"
+        "0x7d0c0380fc3b999d5726da0c9c2f986b972ba597eafa903e7bcebcd69f28ffd"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
@@ -3579,12 +3665,14 @@
         "set_our_contract_for_auction",
         "set_claim_fee_threshold",
         "set_main_currency",
+        "set_quest_auction_chance",
+        "set_quest_lands_enabled",
         "upgrade"
       ]
     },
     {
-      "address": "0x27e732ea36394fff38b19bd367b87bf47023ed615e6363d4cf15eaf27abfa7a",
-      "class_hash": "0x10cb66be9745fb1938ff874da42d474a0266fd5e6647cf5d7f3b352fcee5841",
+      "address": "0x23550c252651cb64a9eee19f1dabd57934df9ae8bc0cfe9163b5413f65b24a6",
+      "class_hash": "0x7753a52f6c66e3bc83f9e9c541e21456898a38a510cecc989957b8ea5d42b56",
       "abi": [
         {
           "type": "impl",
@@ -3701,20 +3789,6 @@
         },
         {
           "type": "struct",
-          "name": "ponzi_land::models::quest::Reward",
-          "members": [
-            {
-              "name": "resource_type",
-              "type": "core::integer::u8"
-            },
-            {
-              "name": "amount",
-              "type": "core::integer::u128"
-            }
-          ]
-        },
-        {
-          "type": "struct",
           "name": "ponzi_land::models::quest::QuestDetails",
           "members": [
             {
@@ -3724,10 +3798,6 @@
             {
               "name": "location",
               "type": "core::integer::u16"
-            },
-            {
-              "name": "reward",
-              "type": "ponzi_land::models::quest::Reward"
             },
             {
               "name": "capacity",
@@ -3746,6 +3816,14 @@
               "type": "core::integer::u32"
             },
             {
+              "name": "entry_price",
+              "type": "core::integer::u256"
+            },
+            {
+              "name": "creator_address",
+              "type": "core::starknet::contract_address::ContractAddress"
+            },
+            {
               "name": "game_address",
               "type": "core::starknet::contract_address::ContractAddress"
             }
@@ -3755,46 +3833,6 @@
           "type": "interface",
           "name": "ponzi_land::systems::quest::IQuestSystems",
           "items": [
-            {
-              "type": "function",
-              "name": "create_quest",
-              "inputs": [
-                {
-                  "name": "game_address",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "location",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "reward_resource_type",
-                  "type": "core::integer::u8"
-                },
-                {
-                  "name": "reward_amount",
-                  "type": "core::integer::u128"
-                },
-                {
-                  "name": "settings_id",
-                  "type": "core::integer::u32"
-                },
-                {
-                  "name": "target_score",
-                  "type": "core::integer::u32"
-                },
-                {
-                  "name": "capacity",
-                  "type": "core::integer::u16"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::integer::u64"
-                }
-              ],
-              "state_mutability": "external"
-            },
             {
               "type": "function",
               "name": "start_quest",
@@ -4016,6 +4054,12 @@
         },
         {
           "type": "event",
+          "name": "ponzi_land::components::payable::PayableComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
           "name": "ponzi_land::systems::quest::quests::Event",
           "kind": "enum",
           "variants": [
@@ -4028,6 +4072,11 @@
               "name": "WorldProviderEvent",
               "type": "dojo::contract::components::world_provider::world_provider_cpt::Event",
               "kind": "nested"
+            },
+            {
+              "name": "PayableEvent",
+              "type": "ponzi_land::components::payable::PayableComponent::Event",
+              "kind": "flat"
             }
           ]
         }
@@ -4036,7 +4085,6 @@
       "tag": "ponzi_land-quests",
       "selector": "0x5c7181752631840c2508a57b308a7e22d1ed2f7c0e02f5f8d44c8bbb227c188",
       "systems": [
-        "create_quest",
         "start_quest",
         "claim_land",
         "set_land_quest",
@@ -4045,7 +4093,7 @@
       ]
     },
     {
-      "address": "0x22f9adc1cc024f1fcec7d5206bc5dfa4f610013879009dfe307fa7dcfdc6dc0",
+      "address": "0x5fa5485edf84f990fe1dff274f31e2bad45c7264801bdb8bb2088514da90d14",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
@@ -4297,12 +4345,12 @@
       ],
       "init_calldata": [
         "6",
-        "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c",
-        "0x5780e96140d9e24b4f675b512a63baf6876d3fb980600663021a6e15147eeb7",
-        "0x4b13d5ffef48e06a516e86fa01d771e8aeb8c093e995c1868832254c6a5f99b",
-        "0x250bbff41ffbafc141b424b8eb0b265d3db2da16dedd2b0deb8eeef5a874c14",
-        "0x30daa286f41af2e852fd9254d12ec37ea803bc04e86895801138328b95169ab",
-        "0x114623b85c063537e4e78624951a49275657f463d49d1516a1497b97738c1b"
+        "0x7d0c0380fc3b999d5726da0c9c2f986b972ba597eafa903e7bcebcd69f28ffd",
+        "0x24b2bb3c4e87c86f85cc3a8bc010b306ba85e41b4182243fd83181d4967f3a0",
+        "0x6b4ebe671407b67e08d59ef2bbac4a2aafb582e73d2392c26b0c8b61476e021",
+        "0x1268e7ce03a8855a0c99d3fb027c1b0c0b3a272b2c95053aac1489b68d086a7",
+        "0x55b848a9a852ac0d458e77087379107555e43cca77f8774b0c280b8216384",
+        "0x4c592e94ac516fdb671991c0154deef802a8f5460ed2e8c754ac415e96aecf7"
       ],
       "tag": "ponzi_land-token_registry",
       "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
@@ -4324,7 +4372,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x2680b96c58770ffc7e118f57ba36fe03c42f1645794ae20a4450ba96b6dbb3f",
+      "class_hash": "0x4324ee7fd60a406e7a249a808bea4500566c28a14b43cbada810698e1a2f149",
       "tag": "ponzi_land-Config",
       "selector": "0x57f837833559dae8bcd922ede064d0c5227c3f139fc4c410c93bcd58aff30ee"
     },
@@ -4372,7 +4420,7 @@
     },
     {
       "members": [],
-      "class_hash": "0xb192d7a31f10ca0c8ddb5e94fce881af4b4c87896fdb8adee432e1f628119f",
+      "class_hash": "0x6768f444d32d834875a8fab60e8803214e1dbdf0f0314fb82f7c8e62ae1e3a6",
       "tag": "ponzi_land-QuestDetails",
       "selector": "0x5dd5af65159f99fa0e80ffa47213fadeb96a2c1025708d6416678f13266bb3d"
     },
