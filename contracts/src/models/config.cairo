@@ -10,6 +10,18 @@ use ponzi_land::consts::{
 /// @title Config Model for PonziLand
 /// @notice Model for global configuration parameters in PonziLand.
 use starknet::ContractAddress;
+<<<<<<< HEAD
+=======
+use dojo::world::{WorldStorage};
+use dojo::model::{ModelStorage, ModelValueStorage};
+use ponzi_land::consts::{
+    TAX_RATE, BASE_TIME, PRICE_DECREASE_RATE, TIME_SPEED, MAX_AUCTIONS, MAX_AUCTIONS_FROM_BID,
+    DECAY_RATE, FLOOR_PRICE, LIQUIDITY_SAFETY_MULTIPLIER, MIN_AUCTION_PRICE,
+    MIN_AUCTION_PRICE_MULTIPLIER, AUCTION_DURATION, SCALING_FACTOR, LINEAR_DECAY_TIME, DROP_RATE,
+    RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
+    CLAIM_FEE_THRESHOLD, QUEST_AUCTION_CHANCE, QUEST_LANDS_ENABLED,
+};
+>>>>>>> bfaef56a (add config flag)
 
 /// Global configuration for the PonziLand game.
 /// * `id` - Unique identifier for the config (always 1 for singleton pattern).
@@ -61,6 +73,8 @@ pub struct Config {
     pub max_circles: u16,
     pub claim_fee: u128,
     pub buy_fee: u128,
+    pub quest_auction_chance: u8,
+    pub quest_lands_enabled: bool,
     pub our_contract_for_fee: ContractAddress,
     pub our_contract_for_auction: ContractAddress,
     pub claim_fee_threshold: u128,
@@ -90,6 +104,8 @@ impl ConfigImpl of ConfigTrait {
         max_circles: u16,
         claim_fee: u128,
         buy_fee: u128,
+        quest_auction_chance: u8,
+        quest_lands_enabled: bool,
         our_contract_for_fee: ContractAddress,
         our_contract_for_auction: ContractAddress,
         claim_fee_threshold: u128,
@@ -116,6 +132,8 @@ impl ConfigImpl of ConfigTrait {
             max_circles,
             claim_fee,
             buy_fee,
+            quest_auction_chance,
+            quest_lands_enabled,
             our_contract_for_fee,
             our_contract_for_auction,
             claim_fee_threshold,
@@ -147,6 +165,8 @@ impl ConfigImpl of ConfigTrait {
             max_circles: MAX_CIRCLES,
             claim_fee: CLAIM_FEE,
             buy_fee: BUY_FEE,
+            quest_auction_chance: QUEST_AUCTION_CHANCE,
+            quest_lands_enabled: QUEST_LANDS_ENABLED,
             our_contract_for_fee: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
             our_contract_for_auction: OUR_CONTRACT_SEPOLIA_ADDRESS.try_into().unwrap(),
             claim_fee_threshold: CLAIM_FEE_THRESHOLD,
