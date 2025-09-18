@@ -12,14 +12,14 @@
     }
   },
   "mainCurrency": "pltSTRK",
-  "mainCurrencyAddress": "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c",
+  "mainCurrencyAddress": "0x7d0c0380fc3b999d5726da0c9c2f986b972ba597eafa903e7bcebcd69f28ffd",
   "aiAgents": [
   ],
   "availableTokens": [
     {
       "name": "Ponziland Test STRK",
       "symbol": "pltSTRK",
-      "address": "0x1e6d5410f8d2d9d1438f42d1ba215c0b691f0c9201259b4d57bfdffcfbe284c",
+      "address": "0x7d0c0380fc3b999d5726da0c9c2f986b972ba597eafa903e7bcebcd69f28ffd",
       "liquidityPoolType": "005-01",
       "decimals": null,
       "images": {
@@ -48,7 +48,7 @@
     {
       "name": "Ponziland Test LORDS",
       "symbol": "pltLORDS",
-      "address": "0x5780e96140d9e24b4f675b512a63baf6876d3fb980600663021a6e15147eeb7",
+      "address": "0x24b2bb3c4e87c86f85cc3a8bc010b306ba85e41b4182243fd83181d4967f3a0",
       "liquidityPoolType": "005-01",
       "decimals": null,
       "images": {
@@ -77,7 +77,7 @@
     {
       "name": "Ponziland Test ETH",
       "symbol": "pltETH",
-      "address": "0x4b13d5ffef48e06a516e86fa01d771e8aeb8c093e995c1868832254c6a5f99b",
+      "address": "0x6b4ebe671407b67e08d59ef2bbac4a2aafb582e73d2392c26b0c8b61476e021",
       "liquidityPoolType": "005-01",
       "decimals": null,
       "images": {
@@ -106,7 +106,7 @@
     {
       "name": "Ponziland Test PAPER",
       "symbol": "pltPAPER",
-      "address": "0x250bbff41ffbafc141b424b8eb0b265d3db2da16dedd2b0deb8eeef5a874c14",
+      "address": "0x1268e7ce03a8855a0c99d3fb027c1b0c0b3a272b2c95053aac1489b68d086a7",
       "liquidityPoolType": "005-01",
       "decimals": null,
       "images": {
@@ -135,7 +135,7 @@
     {
       "name": "Ponziland Test BROTHER",
       "symbol": "pltBROTHER",
-      "address": "0x30daa286f41af2e852fd9254d12ec37ea803bc04e86895801138328b95169ab",
+      "address": "0x55b848a9a852ac0d458e77087379107555e43cca77f8774b0c280b8216384",
       "liquidityPoolType": "005-01",
       "decimals": null,
       "images": {
@@ -164,7 +164,7 @@
     {
       "name": "Ponziland Test PAL",
       "symbol": "pltPAL",
-      "address": "0x114623b85c063537e4e78624951a49275657f463d49d1516a1497b97738c1b",
+      "address": "0x4c592e94ac516fdb671991c0154deef802a8f5460ed2e8c754ac415e96aecf7",
       "liquidityPoolType": "005-01",
       "decimals": null,
       "images": {
