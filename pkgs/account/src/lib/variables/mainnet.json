@@ -1,0 +1,166 @@
+{
+  "ekuboPositionType": {
+    "005-01": {
+      "name": "0.05% / 0.1%",
+      "tickSpacing": 1000,
+      "fee": "170141183460469235273462165868118016"
+    },
+    "1-2": {
+      "name": "1% / 2%",
+      "tickSpacing": 19802,
+      "fee": "3402823669209384634633746074317682114"
+    }
+  },
+  "mainCurrency": "STRK",
+  "mainCurrencyAddress": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+  "aiAgents": [],
+  "availableTokens": [
+    {
+      "name": "Starknet",
+      "symbol": "STRK",
+      "address": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "skin": "strk",
+        "icon": "/tokens/strk/icon.png",
+        "biome": {
+          "x": 2,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 3
+          },
+          "2": {
+            "x": 3,
+            "y": 4
+          },
+          "3": {
+            "x": 3,
+            "y": 5,
+            "frames": 6,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1152,
+            "yMax": 192
+          }
+        }
+      }
+    },
+    {
+      "name": "Lords",
+      "symbol": "LORDS",
+      "address": "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "skin": "lords",
+        "icon": "/tokens/lords/icon.svg",
+        "biome": {
+          "x": 3,
+          "y": 1
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 0
+          },
+          "2": {
+            "x": 0,
+            "y": 1
+          },
+          "3": {
+            "x": 0,
+            "y": 2,
+            "frames": 10,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 960,
+            "yMax": 384,
+            "boomerang": true,
+            "delay": 2000
+          }
+        }
+      }
+    },
+    {
+      "name": "Starknet Brother",
+      "symbol": "BROTHER",
+      "address": "0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "skin": "brother",
+        "icon": "/tokens/brother/icon.png",
+        "biome": {
+          "x": 1,
+          "y": 3
+        },
+        "building": {
+          "1": {
+            "x": 3,
+            "y": 6
+          },
+          "2": {
+            "x": 3,
+            "y": 7
+          },
+          "3": {
+            "x": 3,
+            "y": 8,
+            "frames": 7,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 1344,
+            "yMax": 192
+          }
+        }
+      }
+    },
+    {
+      "name": "PAL",
+      "symbol": "PAL",
+      "address": "0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "images": {
+        "skin": "pal",
+        "icon": "/tokens/pal/icon.svg",
+        "biome": {
+          "x": 1,
+          "y": 2
+        },
+        "building": {
+          "1": {
+            "x": 0,
+            "y": 3
+          },
+          "2": {
+            "x": 0,
+            "y": 4
+          },
+          "3": {
+            "x": 0,
+            "y": 5,
+            "frames": 9,
+            "ySize": 192,
+            "xSize": 192,
+            "xMax": 576,
+            "yMax": 576
+          }
+        }
+      }
+    }
+  ],
+  "commonImages": {
+    "logo": "/images/logo.png",
+    "background": "/images/background.jpg",
+    "icons": {
+      "wallet": "/images/icons/wallet.svg",
+      "settings": "/images/icons/settings.svg"
+    }
+  },
+  "address_blacklist": []
+}
