@@ -3,15 +3,6 @@ use starknet::ContractAddress;
 
 #[starknet::interface]
 pub trait IQuestSystems<T> {
-    fn create_quest(
-        ref self: T,
-        game_address: ContractAddress,
-        location: u16,
-        entry_price: u256,
-        settings_id: u32,
-        target_score: u32,
-        capacity: u16,
-    ) -> u64;
     fn start_quest(
         ref self: T, land_location: u16, player_name: felt252,
     ) -> u64;
@@ -36,13 +27,16 @@ pub mod quests {
         IMinigameSettingsDispatcher, IMinigameSettingsDispatcherTrait,
     };
     use ponzi_land::models::quest::{
-        QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest, Reward,
+        QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest,
     };
     use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
     use ponzi_land::models::land::Land;
+    use ponzi_land::store::{Store, StoreTrait};
     use super::DEFAULT_NS;
 
     use ponzi_land::components::payable::PayableComponent;
+
+    use ponzi_land::errors::{ERC20_VALIDATE_AMOUNT_BUY};
 
     component!(path: PayableComponent, storage: payable, event: PayableEvent);
 
@@ -67,54 +61,14 @@ pub mod quests {
 
     #[abi(embed_v0)]
     pub impl QuestSystemsImpl of super::IQuestSystems<ContractState> {
-        fn create_quest(
-            ref self: ContractState,
-            game_address: ContractAddress,
-            location: u16,
-            entry_price: u256,
-            settings_id: u32,
-            target_score: u32,
-            capacity: u16,
-        ) -> u64 {
-            let mut world = self.world(DEFAULT_NS());
-
-            let minigame_world_dispatcher = IWorldDispatcher { contract_address: game_address };
-            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
-            let (settings_address, _) = minigame_world.dns(@"settings_systems").unwrap();
-            let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
-            let settings_address_felt: felt252 = settings_address.into();
-            let settings_exist = settings_dispatcher.settings_exist(settings_id);
-            let game_address_felt: felt252 = game_address.into();
-
-            assert!(
-                settings_exist,
-                "Quests: game address {} does not have settings id {}",
-                game_address_felt,
-                settings_id,
-            );
-
-            let address_felt: felt252 = game_address.into();
-            let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
-            quest_details_counter.count += 1;
-
-            let quest_details = @QuestDetails {
-                id: quest_details_counter.count,
-                location,
-                game_address,
-                settings_id,
-                target_score,
-                entry_price,
-                capacity,
-                participant_count: 0,
-            };
-
-            world.write_model(@quest_details_counter);
-            world.write_model(quest_details);
-            *quest_details.id
-        }
+        
 
         fn set_land_quest(ref self: ContractState, land_location: u16, settings_id: u32) {
             let mut world = self.world(DEFAULT_NS());
+            let store = StoreTrait::new(world);
+            assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
+
+
             let mut land: Land = world.read_model(land_location);
 
             let caller = get_caller_address();
@@ -122,13 +76,15 @@ pub mod quests {
             assert!(land.owner == caller, "Player is not the owner of the land");
             assert!(land.quest_id == 0, "Land already has a quest");
 
-            let id = self.create_quest(
+            let id = create_quest(
+                ref self,
                 starknet::contract_address_const::<0x06573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26>(), //this is the address of the mock for now
                 land.location,
                 1000000000000000000, // 10 strk
                 settings_id,
                 40,
                 1,
+                caller
             );
 
             assert!(id > 0, "Failed to create quest");
@@ -139,6 +95,9 @@ pub mod quests {
 
         fn remove_land_quest(ref self: ContractState, land_location: u16) {
             let mut world = self.world(DEFAULT_NS());
+            let store = StoreTrait::new(world);
+            assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
+
             let mut land: Land = world.read_model(land_location);
             assert!(land.owner == get_caller_address(), "Player is not the owner of the land");
             assert!(land.quest_id > 0, "Land does not have a quest");
@@ -152,6 +111,9 @@ pub mod quests {
             player_name: felt252,
         ) -> u64 {
             let mut world = self.world(DEFAULT_NS());
+            let store = StoreTrait::new(world);
+            assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
+
             let land: Land = world.read_model(land_location);
 
             assert!(land.quest_id != 0, "Land does not have a quest");
@@ -225,6 +187,9 @@ pub mod quests {
 
         fn claim_land(ref self: ContractState, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256) {
             let mut world = self.world(DEFAULT_NS());
+            let store = StoreTrait::new(world);
+            assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
+
             let mut quest: Quest = world.read_model(quest_id);
             let mut quest_details: QuestDetails = world.read_model(quest.details_id);
             let mut land: Land = world.read_model(quest_details.location);
@@ -298,6 +263,78 @@ pub mod quests {
             (quest_details.game_address, quest.game_token_id)
         }
 
+    }
+
+    fn create_quest(
+        ref self: ContractState,
+        game_address: ContractAddress,
+        location: u16,
+        entry_price: u256,
+        settings_id: u32,
+        target_score: u32,
+        capacity: u16,
+        creator_address: ContractAddress,
+    ) -> u64 {
+        let mut world = self.world(DEFAULT_NS());
+
+        let store = StoreTrait::new(world);
+
+        assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
+
+        let minigame_world_dispatcher = IWorldDispatcher { contract_address: game_address };
+        let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
+        let (settings_address, _) = minigame_world.dns(@"settings_systems").unwrap();
+        let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
+        let settings_address_felt: felt252 = settings_address.into();
+        let settings_exist = settings_dispatcher.settings_exist(settings_id);
+        let game_address_felt: felt252 = game_address.into();
+
+        assert!(
+            settings_exist,
+            "Quests: game address {} does not have settings id {}",
+            game_address_felt,
+            settings_id,
+        );
+
+        let address_felt: felt252 = game_address.into();
+        let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
+        quest_details_counter.count += 1;
+
+        let quest_details = @QuestDetails {
+            id: quest_details_counter.count,
+            location,
+            creator_address,
+            game_address,
+            settings_id,
+            target_score,
+            entry_price,
+            capacity,
+            participant_count: 0,
+        };
+
+        world.write_model(@quest_details_counter);
+        world.write_model(quest_details);
+        *quest_details.id
+    }
+
+    fn validate_and_execute_quest_payment(
+        ref self: ContractState,
+        quest: QuestDetails,
+        caller: ContractAddress,
+        store: Store,
+        our_contract_for_fee: ContractAddress,
+    ) {
+        let validation_result = self.payable.validate(store.get_main_currency(), caller, quest.entry_price);
+        assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BUY);
+
+
+        // TODO: Fee should be split between us, PG, and the minigame dev
+        let buy_fee = store.get_buy_fee();
+        self
+            .payable
+            .proccess_payment_with_fee_for_buy(
+                caller, quest.creator_address, buy_fee, our_contract_for_fee, validation_result,
+            );
     }
 }
 

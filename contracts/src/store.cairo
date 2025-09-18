@@ -183,6 +183,16 @@ impl StoreImpl of StoreTrait {
     }
 
     #[inline(always)]
+    fn get_quest_auction_chance(self: Store) -> u8 {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("quest_auction_chance"))
+    }
+
+    #[inline(always)]
+    fn get_quest_lands_enabled(self: Store) -> bool {
+        self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("quest_lands_enabled"))
+    }
+
+    #[inline(always)]
     fn get_main_currency(self: Store) -> ContractAddress {
         self.world.read_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"))
     }
