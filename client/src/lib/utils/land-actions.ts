@@ -140,7 +140,7 @@ export const createLandWithActions = (
         try {
           // Get neighbors using the existing land method
           const neighbors = land.getNeighbors(landStore);
-          const neighborLands = neighbors.getNeighbors();
+          const neighborLands = neighbors.getBaseLandsArray();
 
           const calculatedYieldInfo = calculateYieldInfo(neighborLands);
 
