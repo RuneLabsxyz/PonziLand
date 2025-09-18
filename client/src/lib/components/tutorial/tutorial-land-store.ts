@@ -301,7 +301,7 @@ export class TutorialLandStore extends LandTileStore {
 
   // Implement the method to calculate tax rate per neighbor
   getTaxRatePerNeighbor(neighbor: LandWithActions) {
-    return burnForOneNeighbor(neighbor);
+    return burnForOneNeighbor(neighbor.sellPrice);
   }
 
   setStake(amount: number = 100, x: number = 32, y: number = 32): void {

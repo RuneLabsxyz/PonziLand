@@ -69,8 +69,11 @@ export const getAggregatedTaxes = async (
   };
 };
 
-export const getNeighbourYieldArray = async (land: LandWithActions) => {
-  const rawYieldInfos = await land.getYieldInfo();
+export const getNeighbourYieldArray = async (
+  land: LandWithActions,
+  useRpcForExactCalculation: boolean = false,
+) => {
+  const rawYieldInfos = await land.getYieldInfo(useRpcForExactCalculation);
 
   const location = Number(land.location);
   // Use existing neighbors function instead of duplicating coordinate logic
@@ -128,7 +131,7 @@ export const estimateNukeTime = async (
     return 0;
   }
   const rateOfActualNeighbours = Number(
-    calculateBurnRate(land, neighbourNumber),
+    calculateBurnRate(land.sellPrice, land.level, neighbourNumber),
   );
   if (rateOfActualNeighbours <= 0) {
     return 0;
@@ -207,9 +210,9 @@ export const estimateTax = (sellPrice: number) => {
   };
 };
 
-export function burnForOneNeighbor(land: LandWithActions) {
+export function burnForOneNeighbor(sellPrice: CurrencyAmount) {
   const maxN = 8;
-  return land.sellPrice
+  return sellPrice
     .rawValue()
     .multipliedBy(configValues.taxRate)
     .multipliedBy(configValues.gameSpeed)
@@ -218,12 +221,13 @@ export function burnForOneNeighbor(land: LandWithActions) {
 
 // TODO: edge case land in the corners or edges of the map
 export function calculateBurnRate(
-  land: LandWithActions,
+  sellPrice: CurrencyAmount,
+  level: number,
   neighborCount: number,
 ) {
-  const discount_for_level = calculateDiscount(land.level);
+  const discount_for_level = calculateDiscount(level);
 
-  let base = burnForOneNeighbor(land).multipliedBy(neighborCount);
+  let base = burnForOneNeighbor(sellPrice).multipliedBy(neighborCount);
 
   if (discount_for_level > 0) {
     return base.multipliedBy(100 - discount_for_level).dividedBy(100);

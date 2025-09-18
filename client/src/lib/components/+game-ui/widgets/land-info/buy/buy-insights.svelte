@@ -33,7 +33,7 @@
     if (sellAmountVal) {
       taxes = calculateTaxes(Number(sellAmountVal));
     } else {
-      taxes = Number(calculateBurnRate(land, 1));
+      taxes = Number(calculateBurnRate(land.sellPrice, land.level, 1));
     }
   });
 

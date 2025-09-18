@@ -7,6 +7,10 @@
  */
 
 import { configValues } from '$lib/stores/config.store.svelte';
+import type { LandYieldInfo, YieldInfo } from '$lib/interfaces';
+import type { BaseLand } from '$lib/api/land';
+import { calculateBurnRate } from './taxes';
+import { CurrencyAmount } from './CurrencyAmount';
 
 // Constants from contracts/src/consts.cairo
 const DECIMALS_FACTOR = BigInt('1000000000000000000'); // 1e18
@@ -78,4 +82,63 @@ export function calculateAuctionPrice(
   }
 
   return currentPrice > floorPriceBig ? currentPrice : floorPriceBig;
+}
+
+/**
+ * Calculate yield information for a land's neighbors client-side
+ * Replicates the Cairo contract's get_neighbors_yield function
+ *
+ * @param neighbors Array of neighbor lands (already filtered by the calling context)
+ * @returns LandYieldInfo object matching RPC response format
+ */
+export function calculateYieldInfo(
+  neighbors: BaseLand[],
+): LandYieldInfo | undefined {
+  if (!neighbors) {
+    return undefined;
+  }
+
+  try {
+    const taxRate = BigInt(configValues.taxRate);
+    const gameSpeed = BigInt(configValues.gameSpeed);
+
+    // Calculate rate as per Cairo contract: tax_rate * time_speed / 8
+    const rate = (taxRate * gameSpeed) / BigInt(8);
+    let neighborYields: YieldInfo[] = [];
+    // Create yield info for each neighbor land
+    neighbors.forEach((neighborLand) => {
+      const location = BigInt(neighborLand.locationString);
+      const tokenAddress = neighborLand.token.address;
+
+      // Use the existing tax calculation logic from taxes.ts
+      // This replicates get_tax_rate_per_neighbor from the contract
+      const perHourBigNumber = calculateBurnRate(
+        neighborLand.sellPrice,
+        neighborLand.level,
+        1,
+      );
+      // Convert BigNumber to BigInt
+      const perHour = CurrencyAmount.fromRaw(
+        perHourBigNumber,
+        neighborLand.token,
+      ).toBigint();
+
+      const sellPrice = neighborLand.sellPrice.toBigint();
+
+      neighborYields.push({
+        token: BigInt(tokenAddress),
+        sell_price: sellPrice,
+        per_hour: perHour,
+        percent_rate: rate,
+        location: location,
+      });
+    });
+
+    return {
+      yield_info: neighborYields,
+    };
+  } catch (error) {
+    console.warn('Failed to calculate yield info client-side:', error);
+    return undefined;
+  }
 }

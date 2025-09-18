@@ -44,7 +44,7 @@
   let totalYieldValue: number = $state(0);
 
   let burnRate = $derived(
-    calculateBurnRate(land as LandWithActions, getNumberOfNeighbours() || 0),
+    calculateBurnRate(land.sellPrice, land.level, getNumberOfNeighbours() || 0),
   );
 
   let burnRateInBaseToken: CurrencyAmount = $state(
@@ -77,7 +77,7 @@
 
   $effect(() => {
     if (land == undefined) return;
-    land.getYieldInfo().then((info) => {
+    land.getYieldInfo(false).then((info) => {
       yieldInfo = info;
 
       let totalValue = 0;

@@ -32,7 +32,8 @@
   let burnRate = $derived(
     CurrencyAmount.fromScaled(
       calculateBurnRate(
-        land as LandWithActions,
+        land.sellPrice,
+        land.level,
         getNumberOfNeighbours() || 0,
       ).toNumber(),
       land.token,
@@ -72,7 +73,7 @@
 
   $effect(() => {
     if (land == undefined) return;
-    land.getYieldInfo().then((info) => {
+    land.getYieldInfo(false).then((info) => {
       yieldInfo = info;
 
       let totalValue = 0;
