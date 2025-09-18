@@ -11,6 +11,7 @@ pub struct QuestDetails {
     pub settings_id: u32,
     pub target_score: u32,
     pub entry_price: u256,
+    pub creator_address: ContractAddress,
     pub game_address: ContractAddress,
 }
 
