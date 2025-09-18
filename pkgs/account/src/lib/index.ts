@@ -3,6 +3,7 @@
 // Components
 export { default as SelectWalletModal } from './ui/SelectWalletModal.svelte';
 export { default as OnboardingWalletInfo } from './ui/onboarding-wallet-info.svelte';
+export { default as WalletBalance } from './ui/wallet-balance.svelte';
 
 // Context and state management
 export { useAccount, setupAccount, type AccountProvider, type Event, type StoredSession } from './context/account.svelte.js';

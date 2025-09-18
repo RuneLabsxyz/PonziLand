@@ -1,13 +1,17 @@
-import { useDojo } from '../context/dojo';
-import type { Subscription, TokenBalance } from '@dojoengine/torii-client';
 import data from '../variables/mainnet.json';
 import { getTokenPrices, type TokenPrice } from '../utils/requests';
-import { CurrencyAmount } from '../utils/CurrencyAmount';
-import { padAddress } from '$lib/utils';
-import { fetchTokenBalance } from '../utils/balances';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { padAddress } from '../utils';
 import { SvelteMap } from 'svelte/reactivity';
-import accountState from '$lib/account.svelte';
+import accountState from '../account.svelte';
 import { untrack } from 'svelte';
+import { ERC20_abi } from '../stores/erc20_abi';
+import {
+  Contract,
+  uint256,
+  ProviderInterface,
+} from "starknet";
+import { getProvider } from './providerConfig';
 
 export interface Token {
   name: string;
@@ -21,6 +25,9 @@ export interface Token {
   };
 }
 
+export const PUBLIC_DOJO_RPC_URL = 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9';
+export const MAX_STAKE = 380n;
+
 const BASE_TOKEN = data.mainCurrencyAddress;
 export const baseToken = data.availableTokens.find(
   (token) => token.address === BASE_TOKEN,
@@ -28,7 +35,8 @@ export const baseToken = data.availableTokens.find(
 
 export class WalletStore {
   private cleanup: (() => void) | null = null;
-  private subscription: Subscription | null = $state(null);
+  private provider: ProviderInterface;
+  private updateInterval: NodeJS.Timeout | null = null;
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
   private tokenPrices: TokenPrice[] = $state([]);
@@ -46,7 +54,10 @@ export class WalletStore {
     (token) => token.address === this.BASE_TOKEN,
   );
 
-  constructor() {}
+  constructor() {
+    // Initialize RPC provider
+    this.provider = getProvider(PUBLIC_DOJO_RPC_URL);
+  }
 
   public async init() {
     if (this.cleanup != null) {
@@ -59,104 +70,93 @@ export class WalletStore {
         untrack(() => this.update(accountState.address!));
       }
     });
+
+    // Set up periodic updates (every 30 seconds)
+    this.updateInterval = setInterval(() => {
+      if (accountState.address) {
+        this.update(accountState.address);
+      }
+    }, 30000);
+
+    this.cleanup = () => {
+      if (this.updateInterval) {
+        clearInterval(this.updateInterval);
+        this.updateInterval = null;
+      }
+    };
   }
 
   public async update(address: string) {
-    console.log('Updating wallet balance', new Error().stack);
+    console.log('Updating wallet balance via RPC');
     this.errorMessage = null;
 
-    // Cancel existing subscription
-    if (this.subscription) {
-      this.subscription.cancel();
-      this.subscription = null;
-    }
-
     try {
-      const { client: sdk } = useDojo();
+      // Fetch token prices first
 
-      const request = {
-        contractAddresses: data.availableTokens.map((token) => token.address),
-        accountAddresses: address ? [address] : [],
-        tokenIds: [],
-      };
-
-      const [tokenBalances, subscription] = await sdk.subscribeTokenBalance({
-        contractAddresses: request.contractAddresses ?? [],
-        accountAddresses: request.accountAddresses ?? [],
-        tokenIds: request.tokenIds ?? [],
-        callback: ({ data, error }) => {
-          if (data) {
-            this.updateTokenBalance(data);
-            this.calculateTotalBalance();
-          }
-          if (error) {
-            console.error('Error while getting balances amount:', error);
-            this.errorMessage = 'Failed to update balances. Please try again.';
-          }
-        },
-      });
-
-      this.subscription = subscription;
+      // Fetch all token balances via RPC
+      await this.fetchAllBalances(address);
 
       this.tokenPrices = await getTokenPrices();
 
-      for (const item of tokenBalances.items) {
-        this.updateTokenBalance(item);
-      }
 
-      // If there is no balances from torii, then we need to fetch them from RPC
-      if (this.balances.size == 0 || tokenBalances.items.length == 0) {
-        await this.getRPCBalances();
-      }
-
+      // Calculate total balance in base currency
       await this.calculateTotalBalance();
     } catch (err) {
-      console.error(
-        'Error while fetching balances:',
-        err,
-        '. Falling back to RPC',
-      );
-
-      await this.getRPCBalances();
+      console.error('Error while fetching balances:', err);
+      this.errorMessage = 'Failed to update balances. Please try again.';
     }
   }
 
-  private async getRPCBalances() {
-    const { client: sdk, accountManager } = useDojo();
-    const account = accountManager?.getProvider()?.getWalletAccount();
+  private async fetchAllBalances(accountAddress: string) {
+    const balancePromises = data.availableTokens.map(async (token) => {
+      try {
+        // Create contract instance for each token
+        const tokenContract = new Contract(
+          ERC20_abi,
+          token.address,
+          this.provider
+        );
+        
+        // Call balanceOf function with explicit block identifier
+        const balanceResult = await tokenContract.call('balanceOf', [accountAddress], {
+          blockIdentifier: 'latest'
+        });        
+        // Convert the balance to BigInt
+        // The result is wrapped in an object: { balance: { low: bigint, high: bigint } }
+        let balanceValue: bigint;
+        if (balanceResult && typeof balanceResult === 'object' && 'balance' in balanceResult) {
+          // Extract the balance Uint256 and convert to BigInt
+          balanceValue = uint256.uint256ToBN(balanceResult.balance);
+        } else {
+          console.warn(`Unexpected balance format for ${token.symbol}:`, balanceResult);
+          balanceValue = BigInt(0);
+        }
 
-    if (!account) {
-      return;
-    }
+        console.log(`Balance for ${token.symbol}: ${balanceValue.toString()}`);
 
-    const provider = sdk.provider;
-
-    const tokenBalances = data.availableTokens.map(async (token) => {
-      const balance = await fetchTokenBalance(token.address, account, provider);
-
-      console.log(`Balance for ${token.symbol}: ${balance?.toString()}`);
-
-      return {
-        token,
-        balance,
-        icon: token.images.icon,
-      };
+        return {
+          token,
+          balance: balanceValue
+        };
+      } catch (error) {
+        console.error(`Error fetching balance for ${token.symbol}:`, error);
+        return {
+          token,
+          balance: BigInt(0)
+        };
+      }
     });
 
-    const resolvedTokenBalances = await Promise.all(tokenBalances);
+    const balanceResults = await Promise.all(balancePromises);
 
-    for (const balance of resolvedTokenBalances) {
-      if (!balance.token) continue;
-      const token = balance.token!;
+    // Update the balances map
+    for (const { token, balance } of balanceResults) {
       const amount = CurrencyAmount.fromUnscaled(
-        balance.balance?.toString() ?? '0',
-        token,
+        balance.toString(),
+        token
       );
       this.balances.set(token.address, amount);
     }
-
-    this.tokenPrices = await getTokenPrices();
-    await this.calculateTotalBalance();
   }
 
   public getBalance(tokenAddress: string): CurrencyAmount | null {
@@ -203,8 +203,12 @@ export class WalletStore {
 
     // Convert fromAmount to base currency, then to target token
     // fromAmount * (1/fromPrice.ratio) * toPrice.ratio
-    const baseValue = fromAmount.rawValue().dividedBy(fromPrice.ratio || 1);
-    const convertedValue = baseValue.multipliedBy(toPrice.ratio || 1);
+    const baseValue = fromAmount
+      .rawValue()
+      .dividedBy(fromPrice.ratio || 1);
+    const convertedValue = baseValue.multipliedBy(
+      toPrice.ratio || 0,
+    );
 
     return CurrencyAmount.fromScaled(convertedValue.toString(), toToken);
   }
@@ -250,29 +254,44 @@ export class WalletStore {
     }
   }
 
-  private getToken(tokenAddress: string): Token | null {
+  public getToken(tokenAddress: string): Token | null {
     return data.availableTokens.find((t) => t.address === tokenAddress) ?? null;
   }
 
-  private updateTokenBalance(item: TokenBalance) {
-    const token = this.getToken(item.contract_address);
-    if (!token) {
-      return null;
-    }
-    // Convert the balance to a BigInt
-    const balance = BigInt(item.balance);
+  public getCapForToken(token: Token): CurrencyAmount {
+    return (
+      this.convertTokenAmount(
+        CurrencyAmount.fromScaled(MAX_STAKE, baseToken),
+        baseToken,
+        token,
+      ) ?? CurrencyAmount.fromUnscaled(0n, baseToken)
+    );
+  }
 
-    this.balances.set(
-      token.address,
-      CurrencyAmount.fromUnscaled(balance, token),
+  public isWithinCap(amount: CurrencyAmount): boolean {
+
+    const amountInBaseCurrency = this.convertTokenAmount(
+      amount,
+      amount.getToken()!,
+      baseToken,
+    );
+
+    console.log(
+      'amountInBaseCurrency:',
+      amountInBaseCurrency?.toString(),
+      'cap:',
+      CurrencyAmount.fromScaled(MAX_STAKE, baseToken).toString(),
+    );
+
+    return (
+      amountInBaseCurrency == null ||
+      amountInBaseCurrency
+        .rawValue()
+        .isLessThan(CurrencyAmount.fromScaled(MAX_STAKE, baseToken).rawValue())
     );
   }
 
   public destroy() {
-    if (this.subscription) {
-      this.subscription.cancel();
-      this.subscription = null;
-    }
     this.cleanup?.();
   }
 }
