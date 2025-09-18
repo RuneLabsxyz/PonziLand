@@ -57,8 +57,8 @@
 
     // Check if the land's current price is affordable
     if (land.type === 'auction') {
-      // For auction lands, get the current auction price
-      const currentAuctionPrice = await land.getCurrentAuctionPrice();
+      // For auction lands, get the current auction price (use client calc for validation)
+      const currentAuctionPrice = await land.getCurrentAuctionPrice(false);
       if (!currentAuctionPrice || !land.token) {
         error = 'Unable to get current auction price';
         return false;
@@ -83,7 +83,7 @@
     // Check if the total amount (stake + sell) is affordable
     let totalRequired;
     if (land.type === 'auction') {
-      const currentAuctionPrice = await land.getCurrentAuctionPrice();
+      const currentAuctionPrice = await land.getCurrentAuctionPrice(false);
       if (!currentAuctionPrice || !land.token) {
         error = 'Unable to get current auction price';
         return false;
@@ -100,7 +100,7 @@
     }
 
     if (selectedTokenBalance.rawValue().isLessThan(totalRequired)) {
-      error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, ${land.type === 'auction' ? 'current auction price' : 'price'}: ${land.type === 'auction' ? (await land.getCurrentAuctionPrice())?.toString() : parsedSell}). Your balance: ${selectedTokenBalance.toString()} ${selectedToken.symbol}`;
+      error = `Insufficient balance. You need ${totalRequired} ${selectedToken.symbol} (stake: ${parsedStake}, ${land.type === 'auction' ? 'current auction price' : 'price'}: ${land.type === 'auction' ? (await land.getCurrentAuctionPrice(false))?.toString() : parsedSell}). Your balance: ${selectedTokenBalance.toString()} ${selectedToken.symbol}`;
       return false;
     }
 

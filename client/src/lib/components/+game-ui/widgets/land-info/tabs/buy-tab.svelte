@@ -262,7 +262,8 @@
     let currentPrice: CurrencyAmount | undefined = land.sellPrice;
 
     if (land.type == 'auction') {
-      currentPrice = await land.getCurrentAuctionPrice();
+      // Use RPC for exact price when bidding to avoid approval issues
+      currentPrice = await land.getCurrentAuctionPrice(true);
     }
 
     console.log('baseToken', baseToken?.address);
@@ -477,7 +478,7 @@
         BUY FOR <span class="text-yellow-500">
           &nbsp;
           {#if land.type == 'auction'}
-            {#await land?.getCurrentAuctionPrice()}
+            {#await land?.getCurrentAuctionPrice(false)}
               fetching...
             {:then price}
               {price}
