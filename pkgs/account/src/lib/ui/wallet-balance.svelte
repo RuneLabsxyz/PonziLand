@@ -1,14 +1,31 @@
 <script lang="ts">
     import { walletStore } from "../stores/wallet.svelte";
     import accountDataProvider, { setup } from '../account.svelte.js';
-    const totalBalance = $derived(walletStore.totalBalance);
+    import data from '../variables/mainnet.json';
 
-    import { onMount } from "svelte";
+    const baseToken = data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+    );
 
-    onMount(() => {
-        console.log("WalletBalance mounted");
-        console.log(totalBalance);
-    });
+
+    const address = $derived(accountDataProvider.address!);
+
+    let loadingBalance = $state(false);
+    let errorMessage = $state<string | null>(null);
+
+
+    const handleRefreshBalances = async () => {
+        if (!address) return;
+
+        loadingBalance = true;
+        try {
+        await walletStore.update(address);
+        } finally {
+        loadingBalance = false;
+        }
+    };
+
+  const totalBalance = $derived(walletStore.totalBalance);
 </script>
 
 <div>
@@ -18,3 +35,12 @@
     hello
     {totalBalance}
 </div>
+
+{#each walletStore.tokenBalances as [token, balance]}
+<div
+  class="flex justify-between items-center relative gap-2 px-4 select-text"
+>
+   {token.name}
+{balance}
+</div>
+{/each}
