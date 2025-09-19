@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { SelectWalletModal, OnboardingWalletInfo, setupAccount } from '$lib';
+  import { SelectWalletModal, OnboardingWalletInfo, setupAccount, WalletBalance } from '$lib';
   import { onMount } from 'svelte';
 
   let initialized = $state(false);
@@ -36,6 +36,7 @@
   <p>Click the "CONNECT WALLET" button in the top right to see the wallet selection modal.</p>
 </div>
 
+<WalletBalance />
 <!-- Include the components -->
 {#if initialized}
   <SelectWalletModal />

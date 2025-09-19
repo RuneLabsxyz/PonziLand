@@ -1,7 +1,6 @@
 import BigNumber from 'bignumber.js';
 import { type BigNumberish } from 'starknet';
 import { displayCurrency, fromCallData, toCalldata } from './currency';
-import { toHexWithPadding } from '$lib/utils';
 
 export interface Token {
   name: string;
