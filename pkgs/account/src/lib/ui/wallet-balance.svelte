@@ -4,6 +4,8 @@
     import data from '../variables/mainnet.json';
     import { shortenAddress } from '../utils';
 
+    const tokenEndpoint = "https://tokens.ponzi.land"
+
     const baseToken = data.availableTokens.find(
         (token) => token.address === data.mainCurrencyAddress,
     );
@@ -16,6 +18,7 @@
     let isOpen = $state(false);
 
 
+    
     const handleRefreshBalances = async () => {
         if (!address) return;
 
@@ -34,6 +37,7 @@
 <div class="card">
     <div class="header">
         <div class="left">
+            <img class="network-icon" src={tokenEndpoint + "/tokens/strk/icon.png"} alt={"starknet"} />
             <div class="title-group">
                 <div class="title">Starknet</div>
                 {#if address}
@@ -72,6 +76,7 @@
             {#each walletStore.tokenBalances as [token, balance]}
             <div class="row">
                <div class="token">
+                   <img class="token-icon" src={tokenEndpoint + token.images?.icon} alt={token.symbol} />
                    <span class="token-name">{token.name}</span>
                    <span class="token-symbol">{token.symbol}</span>
                </div>
@@ -89,21 +94,33 @@
         overflow: hidden;
         display: block;
         padding: 0;
-        border: none;
+        border: 2px solid #393a5c;
         font-family: 'PonziNumber', sans-serif;
         color: #e0e0e0;
     }
     .header {
         display: flex;
-        align-items: flex-start;
+        align-items: stretch;
         justify-content: space-between;
         background: #373A4E;
         padding: 12px 16px;
     }
     .left {
         display: flex;
-        align-items: flex-start;
+        align-items: stretch;
         gap: 8px;
+    }
+    .network-icon {
+        height: 24px;
+        width: 24px;
+        display: block;
+        object-fit: contain;
+        border-radius: 2px;
+    }
+    .title-group {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
     }
     .toggle {
         background: none;
@@ -156,8 +173,10 @@
         gap: 8px;
         padding: 8px 16px;
         user-select: text;
+        border-top: 2px solid #393a5c;
     }
     .token { display: flex; align-items: center; gap: 8px; }
+    .token-icon { width: 16px; height: 16px; object-fit: contain; border-radius: 2px; }
     .token-name { font-size: 14px; }
     .token-symbol { font-size: 12px; color: rgba(255, 255, 255, 0.6); }
     .token-balance { font-size: 14px; }
