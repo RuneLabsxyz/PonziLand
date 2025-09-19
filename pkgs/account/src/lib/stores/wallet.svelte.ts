@@ -39,7 +39,7 @@ export class WalletStore {
   private updateInterval: NodeJS.Timeout | null = null;
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
-  private tokenPrices: TokenPrice[] = $state([]);
+  public tokenPrices: TokenPrice[] = $state([]);
   public tokenBalances = $derived(
     Array.from(
       this.balances.entries(),
