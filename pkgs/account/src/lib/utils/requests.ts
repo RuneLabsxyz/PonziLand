@@ -76,7 +76,7 @@ export async function fetchEkuboPairData(
         `HTTP error! status: ${response.status}, content: ${errorContent}`,
       );
     }
-    const data: EkuboApiResponse = await response.json();
+    const data = (await response.json()) as EkuboApiResponse;
     return data;
   } catch (error) {
     console.error('Error fetching Ekubo pair data:', error);
@@ -120,7 +120,7 @@ export async function getTokenPrices(): Promise<TokenPrice[]> {
     if (!res.ok) {
       throw new Error('Network response was not ok');
     }
-    const data = await res.json();
+    const data = (await res.json()) as TokenPrice[];
     return data;
   } catch (error) {
     console.error('Error fetching token prices:', error);
