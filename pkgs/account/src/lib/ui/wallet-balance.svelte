@@ -3,7 +3,8 @@
     import accountDataProvider, { setup } from '../account.svelte.js';
     import data from '../variables/mainnet.json';
     import { shortenAddress } from '../utils';
-    const tokenIconModules: Record<string, string> = import.meta.glob('../tokens/**/icon.{png,svg}', { eager: true, as: 'url' }) as Record<string, string>;
+
+    const tokenEndpoint = "https://tokens.ponzi.land"
 
     const baseToken = data.availableTokens.find(
         (token) => token.address === data.mainCurrencyAddress,
@@ -16,13 +17,7 @@
     let errorMessage = $state<string | null>(null);
     let isOpen = $state(false);
 
-    function getTokenIconUrl(token: { images?: { skin?: string } } | null | undefined): string | null {
-        const skin = token?.images?.skin;
-        if (!skin) return null;
-        const pngPath = `../tokens/${skin}/icon.png`;
-        const svgPath = `../tokens/${skin}/icon.svg`;
-        return tokenIconModules[pngPath] || tokenIconModules[svgPath] || null;
-    }
+
     
     const handleRefreshBalances = async () => {
         if (!address) return;
@@ -42,7 +37,7 @@
 <div class="card">
     <div class="header">
         <div class="left">
-            <img class="network-icon" src={tokenIconModules["../tokens/strk/icon.png"] ?? ''} alt={"starknet"} />
+            <img class="network-icon" src={tokenEndpoint + "/tokens/strk/icon.png"} alt={"starknet"} />
             <div class="title-group">
                 <div class="title">Starknet</div>
                 {#if address}
@@ -81,7 +76,7 @@
             {#each walletStore.tokenBalances as [token, balance]}
             <div class="row">
                <div class="token">
-                   <img class="token-icon" src={getTokenIconUrl(token) ?? ''} alt={token.symbol} />
+                   <img class="token-icon" src={tokenEndpoint + token.images?.icon} alt={token.symbol} />
                    <span class="token-name">{token.name}</span>
                    <span class="token-symbol">{token.symbol}</span>
                </div>
