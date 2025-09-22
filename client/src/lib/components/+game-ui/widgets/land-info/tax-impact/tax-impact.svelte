@@ -1,13 +1,13 @@
 <script lang="ts">
-  import type { BaseLand, LandWithActions } from '$lib/api/land';
+  import type { LandWithActions } from '$lib/api/land';
   import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
-  import type { Token } from '$lib/interfaces';
-  import { displayCurrency } from '$lib/utils/currency';
-  import {
-    calculateBurnRate,
-    calculateTaxes,
-    estimateNukeTime,
-  } from '$lib/utils/taxes';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import type { LandYieldInfo, Token } from '$lib/interfaces';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import { toHexWithPadding } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { calculateTaxes } from '$lib/utils/taxes';
+  import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
 
   let {
@@ -22,19 +22,13 @@
     land: LandWithActions;
   } = $props();
 
-  let nbNeighbors = $state(0);
-
-  let taxes = $state(0); // 1 neighbor as this is per neighbor
-
-  $effect(() => {
-    if (sellAmountVal) {
-      taxes = calculateTaxes(Number(sellAmountVal));
-    } else {
-      taxes = Number(calculateBurnRate(land.sellPrice, land.level, 1));
-    }
-  });
+  const BASE_TOKEN = data.mainCurrencyAddress;
+  let baseToken = $derived(
+    data.availableTokens.find((token) => token.address === BASE_TOKEN),
+  );
 
   let neighbors = $derived(land?.getNeighbors());
+  let nbNeighbors = $derived(neighbors?.getBaseLandsArray().length ?? 0);
 
   const maxNumberOfNeighbors = 8;
 
@@ -42,107 +36,103 @@
     nbNeighbors = neighbors.getBaseLandsArray().length;
   });
 
-  let filteredNeighbors = $derived.by(() => {
-    const filteredNeighbors = neighbors
-      .getBaseLandsArray()
-      .slice(0, nbNeighbors);
-
-    let up: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getUp(),
+  let yieldInfo = $state<LandYieldInfo | undefined>(undefined);
+  let currentYieldInBaseToken = $state<CurrencyAmount | undefined>(undefined);
+  let yieldPerNeighbor = $state<CurrencyAmount | undefined>(undefined);
+  let sliderNeighborsYieldInBaseToken = $derived.by(() => {
+    if (!yieldPerNeighbor || !baseToken) return undefined;
+    return CurrencyAmount.fromScaled(
+      yieldPerNeighbor.rawValue().times(nbNeighbors).toString(),
+      baseToken,
     );
-    let upRight: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getUpRight(),
-    );
-    let right: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getRight(),
-    );
-    let downRight: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getDownRight(),
-    );
-    let down: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getDown(),
-    );
-    let downLeft: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getDownLeft(),
-    );
-    let left: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getLeft(),
-    );
-    let upLeft: BaseLand | undefined | null = filteredNeighbors.find(
-      (land) => land == neighbors.getUpLeft(),
-    );
-
-    // Add empty lands in function of the number of neighbors
-    if (neighbors.getBaseLandsArray().length < nbNeighbors) {
-      console.log('add empty lands');
-      const emptyLands = Array(
-        nbNeighbors - neighbors.getBaseLandsArray().length,
-      ).fill(null);
-
-      // find wich direction to add the empty land
-      emptyLands.forEach((_, i) => {
-        if (upLeft === undefined) {
-          upLeft = null;
-        } else if (up === undefined) {
-          up = null;
-        } else if (upRight === undefined) {
-          upRight = null;
-        } else if (right === undefined) {
-          right = null;
-        } else if (downRight === undefined) {
-          downRight = null;
-        } else if (down === undefined) {
-          down = null;
-        } else if (downLeft === undefined) {
-          downLeft = null;
-        } else if (left === undefined) {
-          left = null;
-        }
-      });
-    }
-
-    return {
-      array: filteredNeighbors,
-      up,
-      upRight,
-      right,
-      downRight,
-      down,
-      downLeft,
-      left,
-      upLeft,
-    };
   });
 
-  let estimatedNukeTimeSeconds = $state(0);
+  // estimate the taxes per neighbor using the formula based on the sell price of this land
 
-  $effect(() => {
-    if (stakeAmountVal) {
-      let remainingHours = Number(stakeAmountVal) / (taxes * nbNeighbors);
-      let remainingSeconds = remainingHours * 3600;
+  let taxPerNeighbor = $derived.by(() => {
+    const tax = calculateTaxes(Number(sellAmountVal));
 
-      const now = Date.now() / 1000;
-      const remainingNukeTimeFromNow = remainingSeconds;
-
-      estimatedNukeTimeSeconds = remainingNukeTimeFromNow;
-    } else {
-      estimateNukeTime(land).then((time) => {
-        estimatedNukeTimeSeconds = time;
-      });
+    if (!selectedToken) {
+      return baseToken
+        ? CurrencyAmount.fromScaled(0, baseToken)
+        : CurrencyAmount.fromScaled(0);
     }
+    return CurrencyAmount.fromScaled(tax, selectedToken);
   });
 
-  let estimatedTimeString = $derived.by(() => {
-    const time = estimatedNukeTimeSeconds;
+  let sliderNeighborsCost = $derived.by(() => {
+    if (!taxPerNeighbor) return undefined;
+    return CurrencyAmount.fromScaled(
+      taxPerNeighbor.rawValue().times(nbNeighbors).toString(),
+      selectedToken,
+    );
+  });
 
-    if (time === 0) {
-      return '0s';
+  let sliderNeighborsCostInBaseToken = $derived.by(() => {
+    if (!sliderNeighborsCost || !baseToken || !selectedToken) return undefined;
+    return walletStore.convertTokenAmount(
+      sliderNeighborsCost,
+      selectedToken,
+      baseToken,
+    );
+  });
+
+  let sliderNetYieldInBaseToken = $derived.by(() => {
+    if (
+      !sliderNeighborsYieldInBaseToken ||
+      !sliderNeighborsCostInBaseToken ||
+      !baseToken
+    ) {
+      return sliderNeighborsYieldInBaseToken;
     }
 
-    const days = Math.floor(time / (3600 * 24));
-    const hours = Math.floor((time % (3600 * 24)) / 3600);
-    const minutes = Math.floor((time % 3600) / 60);
-    const seconds = Math.floor(time % 60);
+    const yieldValue = sliderNeighborsYieldInBaseToken.rawValue();
+    const costValue = sliderNeighborsCostInBaseToken.rawValue();
+    const netValue = yieldValue.minus(costValue);
+
+    return CurrencyAmount.fromScaled(netValue.toString(), baseToken);
+  });
+
+  /**
+   * Calculates the estimated nuke time based on the selected number of neighbors.
+   * Uses the current stake amount and hourly cost for the selected neighbors.
+   */
+  let sliderNukeTimeSeconds = $derived.by(() => {
+    if (!land?.stakeAmount || !sliderNeighborsCost || nbNeighbors === 0) {
+      return 0;
+    }
+
+    // Get current stake amount in same token as the cost
+    const stakeValue = stakeAmountVal
+      ? Number(stakeAmountVal)
+      : Number(land.stakeAmount.rawValue());
+
+    // Calculate hourly cost for selected neighbors
+    const hourlyCost = sliderNeighborsCost.rawValue();
+
+    if (hourlyCost.isZero()) return 0;
+
+    // Calculate remaining hours: stakeAmount / hourlyCost
+    const remainingHours = stakeValue / Number(hourlyCost);
+
+    // Convert to seconds
+    return remainingHours * 3600;
+  });
+
+  /**
+   * Formats the nuke time in a human-readable format (days, hours, minutes, seconds).
+   */
+  let sliderNukeTimeString = $derived.by(() => {
+    const timeSeconds = sliderNukeTimeSeconds;
+
+    if (timeSeconds <= 0) {
+      return 'Now!!!';
+    }
+
+    const days = Math.floor(timeSeconds / (3600 * 24));
+    const hours = Math.floor((timeSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((timeSeconds % 3600) / 60);
+    const seconds = Math.floor(timeSeconds % 60);
 
     const parts = [
       days ? `${days}d` : '',
@@ -152,23 +142,209 @@
     ];
 
     const final = parts.filter(Boolean).join(' ');
-    if (!final) {
-      return 'Now !!!';
-    }
-    return final;
+    return final || 'Now!!!';
   });
 
-  let estimatedNukeDate = $derived.by(() => {
-    const time = estimatedNukeTimeSeconds;
-
-    if (time == 0) {
-      return '';
+  /**
+   * Calculates the potential sell benefit in base token.
+   * Shows the difference between what we could sell the land for (sellAmountVal)
+   * versus what we're buying it for (land.sellPrice).
+   */
+  let potentialSellBenefitInBaseToken = $derived.by(() => {
+    if (
+      !sellAmountVal ||
+      !land?.sellPrice ||
+      !land?.token ||
+      !selectedToken ||
+      !baseToken
+    ) {
+      return undefined;
     }
 
-    const date = new Date();
-    date.setSeconds(date.getSeconds() + time);
-    return date.toLocaleString();
+    // What we could sell it for
+    const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
+    const sellValueInBaseToken = walletStore.convertTokenAmount(
+      sellValue,
+      selectedToken,
+      baseToken,
+    );
+    // What we're buying it for (current sell price)
+    const buyPrice = land.sellPrice;
+    const buyPriceInBaseToken = walletStore.convertTokenAmount(
+      buyPrice,
+      land.token,
+      baseToken,
+    );
+
+    if (!sellValueInBaseToken || !buyPriceInBaseToken) return undefined;
+
+    // Calculate the difference (profit/loss)
+    const profit = sellValueInBaseToken
+      .rawValue()
+      .minus(buyPriceInBaseToken.rawValue());
+    return CurrencyAmount.fromScaled(profit.toString(), baseToken);
   });
+
+  /**
+   * Calculates how long it takes for the yield to recover the land purchase cost.
+   * Returns the payback time in seconds based on net yield per hour.
+   */
+  let paybackTimeSeconds = $derived.by(() => {
+    if (
+      !land?.sellPrice ||
+      !land?.token ||
+      !baseToken ||
+      !sliderNetYieldInBaseToken ||
+      nbNeighbors === 0
+    ) {
+      return 0;
+    }
+
+    // Get the land purchase price in base token
+    const buyPriceInBaseToken = walletStore.convertTokenAmount(
+      land.sellPrice,
+      land.token,
+      baseToken,
+    );
+
+    if (!buyPriceInBaseToken) return 0;
+
+    const netYieldPerHour = sliderNetYieldInBaseToken.rawValue();
+
+    // If net yield is negative or zero, payback is impossible
+    if (netYieldPerHour.isLessThanOrEqualTo(0)) {
+      return Infinity;
+    }
+
+    const landCost = buyPriceInBaseToken.rawValue();
+
+    // Calculate hours needed: landCost / netYieldPerHour
+    const hoursNeeded = landCost.dividedBy(netYieldPerHour);
+
+    // Convert to seconds
+    return hoursNeeded.multipliedBy(3600).toNumber();
+  });
+
+  /**
+   * Formats the payback time in a human-readable format.
+   */
+  let paybackTimeString = $derived.by(() => {
+    const timeSeconds = paybackTimeSeconds;
+
+    if (timeSeconds === 0) {
+      return 'No yield';
+    }
+
+    if (timeSeconds === Infinity) {
+      return 'Never (losing money)';
+    }
+
+    const days = Math.floor(timeSeconds / (3600 * 24));
+    const hours = Math.floor((timeSeconds % (3600 * 24)) / 3600);
+    const minutes = Math.floor((timeSeconds % 3600) / 60);
+
+    const parts = [
+      days ? `${days}d` : '',
+      hours ? `${hours}h` : '',
+      minutes ? `${minutes}m` : '',
+    ];
+
+    const final = parts.filter(Boolean).join(' ');
+    return final || '< 1m';
+  });
+
+  // Check if we have conversion rate issues
+  let hasConversionError = $derived.by(() => {
+    // Check if we can't convert the neighbor cost to base token
+    if (
+      sliderNeighborsCost &&
+      baseToken &&
+      selectedToken &&
+      !sliderNeighborsCostInBaseToken
+    ) {
+      return true;
+    }
+
+    // Check if we can't convert the land's sell price to base token
+    if (land?.sellPrice && land?.token && baseToken) {
+      const buyPriceInBaseToken = walletStore.convertTokenAmount(
+        land.sellPrice,
+        land.token,
+        baseToken,
+      );
+      if (!buyPriceInBaseToken) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+
+  $effect(() => {
+    if (land) {
+      land.getYieldInfo().then(async (info) => {
+        yieldInfo = info;
+        await calculateYieldInBaseToken();
+      });
+    }
+  });
+
+  /**
+   * Calculates the total yield from all tokens in base token equivalent.
+   *
+   * This function processes the land's yield information, which may contain
+   * yields in multiple different tokens, and converts them all to the base
+   * token equivalent using current market prices from the wallet store.
+   *
+   * It also calculates the yield per neighbor for display purposes.
+   *
+   * @returns Promise<void> - Updates totalYieldInBaseToken and yieldPerNeighbor state
+   */
+  async function calculateYieldInBaseToken() {
+    if (!yieldInfo?.yield_info || !baseToken) return;
+    let totalValue = CurrencyAmount.fromUnscaled('0', baseToken);
+
+    // Process each token's yield and convert to base token
+    let calculatedTotalValue = CurrencyAmount.fromUnscaled(0, baseToken);
+
+    for (const [, yieldData] of Object.entries(yieldInfo.yield_info)) {
+      const tokenHexAddress = toHexWithPadding(yieldData.token);
+      const tokenData = data.availableTokens.find(
+        (token) => token.address === tokenHexAddress,
+      );
+
+      if (!tokenData) continue;
+
+      // Create currency amount for this token's hourly yield
+      const amount = CurrencyAmount.fromUnscaled(yieldData.per_hour, tokenData);
+
+      // Convert to base token using wallet store's price conversion
+      const convertedAmount = walletStore.convertTokenAmount(
+        amount,
+        tokenData,
+        baseToken,
+      );
+
+      if (convertedAmount) {
+        calculatedTotalValue = calculatedTotalValue.add(convertedAmount);
+      }
+    }
+
+    // Update state only once after all calculations are complete
+    totalValue = calculatedTotalValue;
+
+    currentYieldInBaseToken = totalValue;
+
+    // Calculate yield per neighbor for UI display
+    if (nbNeighbors > 0) {
+      yieldPerNeighbor = CurrencyAmount.fromScaled(
+        totalValue.rawValue().dividedBy(nbNeighbors).toString(),
+        baseToken,
+      );
+    } else {
+      yieldPerNeighbor = CurrencyAmount.fromUnscaled('0', baseToken);
+    }
+  }
 </script>
 
 <div class="w-full flex flex-col gap-2">
@@ -177,60 +353,105 @@
     You can get an estimation of your land survival time in function of its
     neighbors
   </p>
+
+  {#if hasConversionError}
+    <div
+      class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs"
+    >
+      ⚠️ Cannot convert token prices - calculations may be inaccurate
+    </div>
+  {/if}
+
   <div class="flex gap-2">
     <div>
-      {#if filteredNeighbors}
-        <BuyInsightsNeighborGrid {filteredNeighbors} {selectedToken} />
+      {#if neighbors}
+        <BuyInsightsNeighborGrid {neighbors} {nbNeighbors} {selectedToken} />
       {/if}
     </div>
     <PonziSlider bind:value={nbNeighbors} />
+
     <div class="flex flex-col flex-1 ml-4 justify-center tracking-wide">
       <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
+        class="flex justify-between select-text font-ponzi-number items-end text-xs"
       >
         <div>
-          <span class="opacity-50">For</span>
+          <span class="opacity-50">Yield /h for</span>
           <span class="text-xl text-blue-300 leading-none">{nbNeighbors}</span>
           <span class="opacity-50"> neighbors </span>
         </div>
-        <div class="text-red-500">
-          -{displayCurrency(Number(taxes) * nbNeighbors)}
-          {selectedToken?.symbol}
+        <div
+          class="{sliderNetYieldInBaseToken &&
+          sliderNetYieldInBaseToken.rawValue().isNegative()
+            ? 'text-red-500'
+            : 'text-green-500'} flex items-center gap-1"
+        >
+          <span>
+            {#if sliderNetYieldInBaseToken}
+              {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
+              {sliderNetYieldInBaseToken}
+            {:else}
+              -
+            {/if}
+            {baseToken?.symbol}
+          </span>
+          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
+
       <hr class="my-1 opacity-50" />
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div class="opacity-50">Per neighbors / h</div>
-        <div class="text-red-500">
-          -{displayCurrency(Number(taxes))}
-          {selectedToken?.symbol}
+
+      {#if potentialSellBenefitInBaseToken}
+        <div class="flex justify-between select-text leading-none items-end">
+          <div>
+            <span class="opacity-50">Sell benefit</span>
+          </div>
+          <div
+            class="{potentialSellBenefitInBaseToken.rawValue().isNegative()
+              ? 'text-red-500'
+              : 'text-green-500'} flex items-center gap-1"
+          >
+            <span>
+              {potentialSellBenefitInBaseToken.rawValue().isNegative()
+                ? ''
+                : '+'}
+              {potentialSellBenefitInBaseToken.toString()}
+            </span>
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-3 h-3"
+            />
+          </div>
         </div>
-      </div>
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
-        <div class="opacity-50">Max / h</div>
-        <div class="text-red-500">
-          -{displayCurrency(Number(taxes) * maxNumberOfNeighbors)}
-          {selectedToken?.symbol}
-        </div>
-      </div>
-      <div
-        class="flex justify-between font-ponzi-number select-text text-xs items-end"
-      >
+      {/if}
+
+      <hr class="my-1 opacity-50" />
+
+      <div class="flex justify-between select-text leading-none items-end">
         <div>
-          <span class="opacity-50">Nuke time with</span>
-          <span class="text-blue-300 leading-none">{nbNeighbors}</span>
-          <span class="opacity-50"> neighbors </span>
+          <span class="opacity-50">Nuke time</span>
         </div>
         <div
-          class=" {estimatedTimeString.includes('Now')
+          class={sliderNukeTimeString.includes('Now') ||
+          sliderNukeTimeSeconds < 3600
             ? 'text-red-500'
-            : 'text-green-500'}"
+            : 'text-green-500'}
         >
-          {estimatedTimeString}
+          {sliderNukeTimeString}
+        </div>
+      </div>
+
+      <div class="flex justify-between select-text leading-none items-end">
+        <div>
+          <span class="opacity-50">Payback time</span>
+        </div>
+        <div
+          class={paybackTimeSeconds === Infinity
+            ? 'text-red-500'
+            : paybackTimeSeconds < 3600 * 24 * 7
+              ? 'text-green-500'
+              : 'text-yellow-500'}
+        >
+          {paybackTimeString}
         </div>
       </div>
     </div>

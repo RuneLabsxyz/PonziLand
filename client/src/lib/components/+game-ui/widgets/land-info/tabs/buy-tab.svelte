@@ -49,16 +49,22 @@
   });
 
   let stake: string = $derived.by(() => {
-    if (selectedToken) {
-      return untrack(() => {
-        return sellPriceAmount.rawValue().dividedBy(10).toString();
-      });
-    }
-    return '';
+    if (!selectedToken || !sellPrice) return '';
+
+    return untrack(() => {
+      try {
+        const sellPriceNum = parseFloat(sellPrice);
+        if (isNaN(sellPriceNum) || sellPriceNum <= 0) return '';
+        return (sellPriceNum / 10).toString();
+      } catch (error) {
+        return '';
+      }
+    });
   });
-  let stakeAmount: CurrencyAmount = $derived(
-    CurrencyAmount.fromScaled(stake ?? 0, selectedToken),
-  );
+  let stakeAmount: CurrencyAmount = $derived.by(() => {
+    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
+    return CurrencyAmount.fromScaled(stake ?? 0, selectedToken);
+  });
 
   let stakeAmountInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
     if (!selectedToken || !stakeAmount) return null;
@@ -90,13 +96,19 @@
         originalToken = land.token!;
       }
 
+      // If tokens are the same, no conversion needed
+      if (
+        padAddress(originalToken.address) === padAddress(selectedToken.address)
+      ) {
+        return originalPrice.toString();
+      }
+
       // Try to convert the price to the selected token
       const convertedPrice = walletStore.convertTokenAmount(
         originalPrice,
         originalToken,
         selectedToken,
       );
-      console.log('Converted price:', convertedPrice);
       // If conversion is successful, return the converted amount, otherwise return original
       return convertedPrice
         ? convertedPrice.toString()
@@ -104,9 +116,10 @@
     });
   });
 
-  let sellPriceAmount: CurrencyAmount = $derived(
-    CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken),
-  );
+  let sellPriceAmount: CurrencyAmount = $derived.by(() => {
+    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
+    return CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken);
+  });
 
   let sellPriceInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
     if (!selectedToken || !sellPriceAmount) return null;
@@ -199,7 +212,12 @@
       }
       // If has enough for price then check if the selected token is baseToken and add the stake amount
       if (selectedToken?.address === baseToken.address) {
-        const totalCost = landPrice.add(stakeAmount);
+        // Convert stakeAmount to the same token as landPrice to avoid currency mismatch
+        const stakeAmountInBaseToken = CurrencyAmount.fromScaled(
+          stake ?? 0,
+          baseToken,
+        );
+        const totalCost = landPrice.add(stakeAmountInBaseToken);
         if (baseTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
           return `You don't have enough ${baseToken.symbol} to buy this land and stake (max: ${baseTokenAmount.toString()})`;
         }
@@ -208,7 +226,6 @@
 
     // If not auction, Do the same checks but with land.token for baseToken and selectedToken
     if (land.type !== 'auction') {
-      console.log('Checking land token balance for buy');
       const landTokenAmount = walletStore.getBalance(land.token?.address!);
       if (!landTokenAmount) {
         return `You don't have any ${land.token?.symbol}`;
@@ -219,19 +236,22 @@
 
       const selectedAddress = padAddress(selectedToken?.address ?? '');
       const landTokenAddress = padAddress(land.token?.address ?? '');
-      console.log(
-        'selectedAddress',
-        selectedAddress,
-        'landTokenAddress',
-        landTokenAddress,
-      );
 
       // if selectedToken is land.token, check if has enough for stake
       if (selectedAddress === landTokenAddress) {
-        const totalCost = land.sellPrice.add(stakeAmount);
-        console.log('totalCost', totalCost);
-        if (landTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
-          return `You don't have enough ${land.token?.symbol} to stake (max: ${landTokenAmount.toString()})`;
+        try {
+          // Convert stakeAmount to the same token as land.sellPrice to avoid currency mismatch
+          const stakeAmountInLandToken = CurrencyAmount.fromScaled(
+            stake ?? 0,
+            land.token!,
+          );
+          const totalCost = land.sellPrice.add(stakeAmountInLandToken);
+
+          if (landTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
+            return `You don't have enough ${land.token?.symbol} to stake (max: ${landTokenAmount.toString()})`;
+          }
+        } catch (error) {
+          return 'Error calculating total cost for stake';
         }
       }
     }
@@ -246,7 +266,6 @@
 
   async function handleBuyClick() {
     loading = true;
-    console.log('Buy land');
 
     if (tutorialState.tutorialProgress == 7) {
       nextStep();
@@ -265,8 +284,6 @@
       // Use RPC for exact price when bidding to avoid approval issues
       currentPrice = await land.getCurrentAuctionPrice(true);
     }
-
-    console.log('baseToken', baseToken?.address);
 
     const landSetup: LandSetup = {
       tokenForSaleAddress: selectedToken?.address || '',
@@ -335,8 +352,6 @@
 
         // Update the land store
         landStore.updateLand(parsedEntity);
-        console.log('Land updated optimistically in store:', updatedLand);
-
         // Create a parsed entity for the stake
         const stakeEntity = {
           entityId: land.location,
@@ -352,7 +367,6 @@
 
         // Update the land store with the stake
         landStore.updateLand(stakeEntity);
-        console.log('Stake updated in store:', stakeEntity);
 
         const coordinates = locationToCoordinates(land.location);
         const updatedLandOnIndexer = await landStore.waitForOwnerChange(
