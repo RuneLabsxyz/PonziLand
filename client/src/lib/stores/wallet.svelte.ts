@@ -41,7 +41,7 @@ export class WalletStore {
   private get selectedBaseToken(): Token {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
     const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find((token) => token.address === targetAddress) || this.baseToken!;
+return data.availableTokens.find((token) => token.address === targetAddress) || this.baseToken || null;
   }
 
   constructor() {}

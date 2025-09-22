@@ -191,7 +191,7 @@
       </div>
     {:else}
       <div
-        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none{animating
+        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
           ? 'animating scale-110 text-yellow-500 font-bold'
           : ''}"
       >
