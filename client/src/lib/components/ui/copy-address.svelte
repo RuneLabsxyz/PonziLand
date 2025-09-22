@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { usernamesStore } from '$lib/stores/account.store.svelte';
-  import { padAddress } from '$lib/utils';
+  import { getSocialink } from '$lib/accounts/social/index.svelte';
+  import RotatingCoin from '../loading-screen/rotating-coin.svelte';
 
   let {
     address,
@@ -10,6 +10,11 @@
     showUsername: boolean;
   } = $props();
   let showCopied = $state(false);
+
+  let socialink = getSocialink();
+  let username = $derived(
+    showUsername && address ? socialink?.getUser(address) : null,
+  );
 
   function formatAddress(address: string): string {
     if (!address) return '';
@@ -39,8 +44,17 @@
   onkeydown={(e) => e.key === 'Enter' && copyToClipboard(address)}
 >
   {#if showUsername && address}
-    {usernamesStore.getUsernames()[padAddress(address)!] ||
-      formatAddress(address)}
+    {#await username}
+      <RotatingCoin />
+    {:then info}
+      {#if info?.exists}
+        {info.username ?? formatAddress(address)}
+      {:else}
+        {formatAddress(address)}
+      {/if}
+    {:catch}
+      {formatAddress(address)}
+    {/await}
   {:else}
     {formatAddress(address)}
   {/if}
