@@ -227,17 +227,13 @@ export class WalletStore {
 
       const token = this.getToken(tokenAddress)!;
 
-      if (padAddress(token.address) === padAddress(this.BASE_TOKEN)) {
-        totalValue = totalValue.add(balance);
-      } else {
-        const convertedAmount = this.convertTokenAmount(
-          balance,
-          token,
-          this.baseToken!,
-        );
-        if (convertedAmount) {
-          totalValue = totalValue.add(convertedAmount);
-        }
+      const convertedAmount = this.convertTokenAmount(
+        balance,
+        token,
+        this.baseToken!,
+      );
+      if (convertedAmount) {
+        totalValue = totalValue.add(convertedAmount);
       }
     }
 
