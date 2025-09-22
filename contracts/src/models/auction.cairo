@@ -26,6 +26,7 @@ pub struct Auction {
     pub start_price: u256,
     pub floor_price: u256,
     pub is_finished: bool,
+    pub quest_id: u64,
     pub sold_at_price: Option<u256>,
 }
 
@@ -39,6 +40,7 @@ impl AuctionImpl of AuctionTrait {
             start_price,
             floor_price,
             is_finished,
+            quest_id: 0,
             sold_at_price: Option::None,
         }
     }

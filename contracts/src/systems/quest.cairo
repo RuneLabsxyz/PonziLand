@@ -31,6 +31,7 @@ pub mod quests {
     };
     use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
     use ponzi_land::models::land::Land;
+    use ponzi_land::models::auction::Auction;
     use ponzi_land::store::{Store, StoreTrait};
     use super::DEFAULT_NS;
 
@@ -115,23 +116,40 @@ pub mod quests {
             assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
 
             let land: Land = world.read_model(land_location);
+            let auction: Auction = world.read_model(land_location);
 
-            assert!(land.quest_id != 0, "Land does not have a quest");
-            let details_id = land.quest_id;
+            assert!(land.quest_id != 0 || auction.quest_id != 0, "Land does not have a quest");
+
+            let mut quest_id = 0;
+            let mut to_us = false;
+            if land.quest_id != 0 {
+                quest_id = land.quest_id;
+            }
+            else {
+                quest_id = auction.quest_id;
+                to_us = true;
+            }
+
+            let quest: Quest = world.read_model(quest_id);
+            let details_id = quest.details_id;
+
             let mut quest_details: QuestDetails = world.read_model(details_id);
+
             assert(quest_details.id > 0, 'Quest details not found');
             assert(
                 quest_details.participant_count < quest_details.capacity, 'Quest is at capacity',
             );
+
             let player_address = get_caller_address();
 
             assert!(land.owner != player_address, "Player is the owner of the quest land");
 
+            validate_and_execute_quest_payment(ref self, quest_details, get_caller_address(), store, to_us);
             
             // Check if this realm already has a participant in this quest
             // This is now a simple model query instead of iteration
             let player_participation: PlayerRegistrations = world
-                .read_model((details_id, player_address));
+                .read_model((quest_details.id, player_address));
             assert!(player_participation.quest_id == 0, "Player has already attempted this quest");
 
             let mut quest_counter: QuestCounter = world.read_model(VERSION);
@@ -164,7 +182,7 @@ pub mod quests {
 
             let quest = Quest {
                 id: quest_counter.count,
-                details_id,
+                details_id: quest_details.id,
                 player_address,
                 game_token_id,
                 completed: false,
@@ -178,7 +196,7 @@ pub mod quests {
 
             // Record realm participation with this quest
             let player_participation = PlayerRegistrations {
-                details_id, player_address, quest_id: quest.id,
+                details_id: quest_details.id, player_address, quest_id: quest.id,
             };
             world.write_model(@player_participation);
 
@@ -322,7 +340,7 @@ pub mod quests {
         quest: QuestDetails,
         caller: ContractAddress,
         store: Store,
-        our_contract_for_fee: ContractAddress,
+        to_us: bool,
     ) {
         let validation_result = self.payable.validate(store.get_main_currency(), caller, quest.entry_price);
         assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BUY);
@@ -330,10 +348,11 @@ pub mod quests {
 
         // TODO: Fee should be split between us, PG, and the minigame dev
         let buy_fee = store.get_buy_fee();
+        let recipient = if to_us { store.get_our_contract_for_auction() } else { quest.creator_address };
         self
             .payable
             .proccess_payment_with_fee_for_buy(
-                caller, quest.creator_address, buy_fee, our_contract_for_fee, validation_result,
+                caller, recipient, buy_fee, store.get_our_contract_for_auction(), validation_result,
             );
     }
 }
