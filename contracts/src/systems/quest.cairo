@@ -65,6 +65,7 @@ pub mod quests {
     fn dojo_init(ref self: ContractState, ref valid_games: Array<QuestGame>) {
         let mut world = self.world(DEFAULT_NS());
         let mut quest_game_count: QuestGameCounter = world.read_model(VERSION);
+        let store = StoreTrait::new(world);
         let mut i = 0;
         while i < valid_games.len() {
             let mut game: QuestGame = valid_games[i].clone();
@@ -74,6 +75,7 @@ pub mod quests {
             i += 1;
         };
         world.write_model(@quest_game_count);
+        self.payable.initialize(store.get_main_currency());
     }
 
     #[abi(embed_v0)]
