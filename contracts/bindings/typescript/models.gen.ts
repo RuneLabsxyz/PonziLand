@@ -9,6 +9,7 @@ export interface Auction {
 	start_price: BigNumberish;
 	floor_price: BigNumberish;
 	is_finished: boolean;
+	quest_id: BigNumberish;
 	sold_at_price: CairoOption<BigNumberish>;
 }
 
@@ -34,6 +35,8 @@ export interface Config {
 	max_circles: BigNumberish;
 	claim_fee: BigNumberish;
 	buy_fee: BigNumberish;
+	quest_auction_chance: BigNumberish;
+	quest_lands_enabled: boolean;
 	our_contract_for_fee: string;
 	our_contract_for_auction: string;
 	claim_fee_threshold: BigNumberish;
@@ -98,6 +101,7 @@ export interface Quest {
 	player_address: string;
 	game_token_id: BigNumberish;
 	completed: boolean;
+	expires_at: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::quest::QuestCounter` struct
@@ -110,13 +114,13 @@ export interface QuestCounter {
 export interface QuestDetails {
 	id: BigNumberish;
 	location: BigNumberish;
-	reward: Reward;
 	capacity: BigNumberish;
 	participant_count: BigNumberish;
 	settings_id: BigNumberish;
 	target_score: BigNumberish;
-	expires_at: BigNumberish;
-	game_address: string;
+	entry_price: BigNumberish;
+	creator_address: string;
+	game_id: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::quest::QuestDetailsCounter` struct
@@ -125,10 +129,21 @@ export interface QuestDetailsCounter {
 	count: BigNumberish;
 }
 
-// Type definition for `ponzi_land::models::quest::Reward` struct
-export interface Reward {
-	resource_type: BigNumberish;
-	amount: BigNumberish;
+// Type definition for `ponzi_land::models::quest::QuestGame` struct
+export interface QuestGame {
+	id: BigNumberish;
+	world_address: string;
+	namespace: string;
+	game_contract_name: string;
+	settings_contract_name: string;
+	settings_id: BigNumberish;
+	target_score: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestGameCounter` struct
+export interface QuestGameCounter {
+	key: BigNumberish;
+	count: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::quest::Score` struct
@@ -258,7 +273,8 @@ export interface SchemaType extends ISchemaType {
 		QuestCounter: QuestCounter,
 		QuestDetails: QuestDetails,
 		QuestDetailsCounter: QuestDetailsCounter,
-		Reward: Reward,
+		QuestGame: QuestGame,
+		QuestGameCounter: QuestGameCounter,
 		Score: Score,
 		Settings: Settings,
 		SettingsCounter: SettingsCounter,
@@ -284,6 +300,7 @@ export const schema: SchemaType = {
 		start_price: 0,
 		floor_price: 0,
 			is_finished: false,
+			quest_id: 0,
 		sold_at_price: new CairoOption(CairoOptionVariant.None),
 		},
 		Config: {
@@ -307,6 +324,8 @@ export const schema: SchemaType = {
 			max_circles: 0,
 			claim_fee: 0,
 			buy_fee: 0,
+			quest_auction_chance: 0,
+			quest_lands_enabled: false,
 			our_contract_for_fee: "",
 			our_contract_for_auction: "",
 			claim_fee_threshold: 0,
@@ -360,6 +379,7 @@ export const schema: SchemaType = {
 			player_address: "",
 			game_token_id: 0,
 			completed: false,
+			expires_at: 0,
 		},
 		QuestCounter: {
 			key: 0,
@@ -368,21 +388,30 @@ export const schema: SchemaType = {
 		QuestDetails: {
 			id: 0,
 			location: 0,
-		reward: { resource_type: 0, amount: 0, },
 			capacity: 0,
 			participant_count: 0,
 			settings_id: 0,
 			target_score: 0,
-			expires_at: 0,
-			game_address: "",
+		entry_price: 0,
+			creator_address: "",
+			game_id: 0,
 		},
 		QuestDetailsCounter: {
 			key: 0,
 			count: 0,
 		},
-		Reward: {
-			resource_type: 0,
-			amount: 0,
+		QuestGame: {
+			id: 0,
+			world_address: "",
+		namespace: "",
+		game_contract_name: "",
+		settings_contract_name: "",
+			settings_id: 0,
+			target_score: 0,
+		},
+		QuestGameCounter: {
+			key: 0,
+			count: 0,
 		},
 		Score: {
 			game_id: 0,
@@ -474,7 +503,8 @@ export enum ModelsMapping {
 	QuestCounter = 'ponzi_land-QuestCounter',
 	QuestDetails = 'ponzi_land-QuestDetails',
 	QuestDetailsCounter = 'ponzi_land-QuestDetailsCounter',
-	Reward = 'ponzi_land-Reward',
+	QuestGame = 'ponzi_land-QuestGame',
+	QuestGameCounter = 'ponzi_land-QuestGameCounter',
 	Score = 'ponzi_land-Score',
 	Settings = 'ponzi_land-Settings',
 	SettingsCounter = 'ponzi_land-SettingsCounter',
