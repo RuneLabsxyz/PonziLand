@@ -374,9 +374,6 @@ pub mod quests {
         store: Store,
         to_us: bool,
     ) {
-        let main_currency_felt: felt252 = store.get_main_currency().into();
-        let caller_felt: felt252 = caller.into();
-        panic!("currency: {}, caller: {}, entry_price: {}", main_currency_felt, caller_felt, quest.entry_price);
         let validation_result = self.payable.validate(store.get_main_currency(), caller, quest.entry_price);
         assert(validation_result.status, ERC20_VALIDATE_AMOUNT_BUY);
 
