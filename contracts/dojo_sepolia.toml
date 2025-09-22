@@ -92,6 +92,5 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
 contract_name = "LiquidityReinjector"
 salt = "1"
 constructor_data = [
-    #TODO: WE NEED A REAL ADDRESS FOR SEPOLIA
-    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
+    "0x04D7F859b3C5395aEE922a54bFc8A62BeCEd9228A0A40aec61c903d3AF081A7e"  # Owner address (same as account_address from [env])
 ]
