@@ -213,7 +213,7 @@ export class WalletStore {
    */
   private updateConversionCache() {
     const displayBaseToken = this.selectedBaseToken;
-    if (!displayBaseToken) return;
+    if (!displayBaseToken || !this.tokenPrices.length) return;
 
     this.conversionCache.clear();
 
@@ -235,7 +235,6 @@ export class WalletStore {
       }
     }
   }
-
   /**
    * Get the cached converted amount for a token to the currently selected base token
    */
