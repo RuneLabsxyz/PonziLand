@@ -1,6 +1,6 @@
 export const ENABLE_RAMP = false;
 
-export const FUSE_DISABLE_SOCIALINK = false;
+export const FUSE_DISABLE_SOCIALINK = true;
 
 export const ENABLE_TOKEN_DROP = false;
 
