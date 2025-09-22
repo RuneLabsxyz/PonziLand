@@ -34,6 +34,7 @@
   let accountManager = useAccount();
   let score = $state(0);
   let game_token_id = $state(0);
+  let entry_price = $state(0);
 
   // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
   async function handleGameActionClick() {
@@ -125,7 +126,7 @@
       // In a real implementation, this should come from user input or account data
       const playerName = 1; // This might need to be dynamic based on your game logic
       
-      const result = await StartQuest(land.location);
+      const result = await StartQuest(land.location, entry_price);
       
       if (result?.transaction_hash) {
         console.log('Starting quest challenge with TX: ', result.transaction_hash);
@@ -167,6 +168,7 @@
 
   async function getQuestInfo() {
     let entry_price = await GetQuestEntryPrice(land.quest_id);
+    entry_price = parseInt(BigInt(entry_price).toString());
     console.log('entry_price', entry_price);
     console.log(land.quest_id);
     let score_res = await GetQuestScore(land.quest_id);
