@@ -3833,7 +3833,7 @@
     },
     {
       "address": "0x1fe2de9aacdc75f04fbd1549ce8913ed09f0c4ebcff21706a6be5d8919b22e4",
-      "class_hash": "0x50d98117ec5e928014b5e5183370a640d14ee4e86074071adca7cba81e9e9fd",
+      "class_hash": "0x3f63eaa71c14fff1a91f2c82ded7cd7953756cc5dcf6a72de991bdf65ae6227",
       "abi": [
         {
           "type": "impl",
@@ -4156,6 +4156,22 @@
               "outputs": [
                 {
                   "type": "(core::starknet::contract_address::ContractAddress, core::integer::u64)"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_quest_entry_price",
+              "inputs": [
+                {
+                  "name": "quest_id",
+                  "type": "core::integer::u64"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::integer::u256"
                 }
               ],
               "state_mutability": "view"
