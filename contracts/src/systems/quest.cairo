@@ -168,7 +168,6 @@ pub mod quests {
             quest_counter.count += 1;
             world.write_model(@quest_counter);
 
-            let mut quest_details: QuestDetails = world.read_model(quest.details_id);
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
 
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
