@@ -22,26 +22,41 @@
   <h3 class="text-sm font-semibold text-gray-200">Select Base Token</h3>
   <div class="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto">
     <button
-      class="flex items-center gap-2 p-2 rounded hover:bg-gray-100/10 text-left {currentBaseToken?.address === data.mainCurrencyAddress ? 'bg-gray-100/20' : ''}"
+      class="flex items-center gap-2 p-2 rounded hover:bg-gray-100/10 text-left {currentBaseToken?.address ===
+      data.mainCurrencyAddress
+        ? 'bg-gray-100/20'
+        : ''}"
       onclick={() => handleTokenSelect(null)}
     >
-      <TokenAvatar token={data.availableTokens.find(t => t.address === data.mainCurrencyAddress)} class="h-5 w-5" />
+      <TokenAvatar
+        token={data.availableTokens.find(
+          (t) => t.address === data.mainCurrencyAddress,
+        )}
+        class="h-5 w-5"
+      />
       <div class="flex-1">
         <div class="text-sm font-medium">
-          {data.availableTokens.find(t => t.address === data.mainCurrencyAddress)?.symbol} (Default)
+          {data.availableTokens.find(
+            (t) => t.address === data.mainCurrencyAddress,
+          )?.symbol} (Default)
         </div>
         <div class="text-xs text-gray-400">
-          {data.availableTokens.find(t => t.address === data.mainCurrencyAddress)?.name}
+          {data.availableTokens.find(
+            (t) => t.address === data.mainCurrencyAddress,
+          )?.name}
         </div>
       </div>
       {#if !currentBaseToken || currentBaseToken.address === data.mainCurrencyAddress}
         <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
       {/if}
     </button>
-    
-    {#each data.availableTokens.filter(token => token.address !== data.mainCurrencyAddress) as token}
+
+    {#each data.availableTokens.filter((token) => token.address !== data.mainCurrencyAddress) as token}
       <button
-        class="flex items-center gap-2 p-2 rounded hover:bg-gray-100/10 text-left {currentBaseToken?.address === token.address ? 'bg-gray-100/20' : ''}"
+        class="flex items-center gap-2 p-2 rounded hover:bg-gray-100/10 text-left {currentBaseToken?.address ===
+        token.address
+          ? 'bg-gray-100/20'
+          : ''}"
         onclick={() => handleTokenSelect(token.address)}
       >
         <TokenAvatar {token} class="h-5 w-5" />
@@ -55,7 +70,7 @@
       </button>
     {/each}
   </div>
-  
+
   <div class="flex justify-end pt-2">
     <button
       class="text-sm px-3 py-1 bg-gray-600 hover:bg-gray-700 rounded"

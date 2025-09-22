@@ -23,6 +23,9 @@ export class WalletStore {
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
   private tokenPrices: TokenPrice[] = $state([]);
+  private conversionCache: SvelteMap<string, CurrencyAmount | null> = $state(
+    new SvelteMap(),
+  );
   public tokenBalances = $derived(
     Array.from(
       this.balances.entries(),
@@ -41,7 +44,10 @@ export class WalletStore {
   private get selectedBaseToken(): Token {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
     const targetAddress = selectedAddress || data.mainCurrencyAddress;
-return data.availableTokens.find((token) => token.address === targetAddress) || this.baseToken || null;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ??
+      this.baseToken!
+    );
   }
 
   constructor() {}
@@ -62,7 +68,10 @@ return data.availableTokens.find((token) => token.address === targetAddress) || 
       // Recalculate total balance when selected base token changes
       settingsStore.selectedBaseTokenAddress;
       if (this.balances.size > 0) {
-        untrack(() => this.calculateTotalBalance());
+        untrack(() => {
+          this.updateConversionCache();
+          this.calculateTotalBalance();
+        });
       }
     });
   }
@@ -93,6 +102,7 @@ return data.availableTokens.find((token) => token.address === targetAddress) || 
         callback: ({ data, error }) => {
           if (data) {
             this.updateTokenBalance(data);
+            this.updateConversionCache();
             this.calculateTotalBalance();
           }
           if (error) {
@@ -115,6 +125,7 @@ return data.availableTokens.find((token) => token.address === targetAddress) || 
         await this.getRPCBalances();
       }
 
+      this.updateConversionCache();
       await this.calculateTotalBalance();
     } catch (err) {
       console.error(
@@ -163,6 +174,7 @@ return data.availableTokens.find((token) => token.address === targetAddress) || 
     }
 
     this.tokenPrices = await getTokenPrices();
+    this.updateConversionCache();
     await this.calculateTotalBalance();
   }
 
@@ -193,6 +205,43 @@ return data.availableTokens.find((token) => token.address === targetAddress) || 
         return padAddress(p.address) === padAddress(token.address);
       }) ?? null
     );
+  }
+
+  /**
+   * Update the conversion cache for all tokens to the currently selected base token
+   */
+  private updateConversionCache() {
+    const displayBaseToken = this.selectedBaseToken;
+    if (!displayBaseToken) return;
+
+    this.conversionCache.clear();
+
+    for (const [tokenAddress, balance] of this.balances) {
+      const token = this.getToken(tokenAddress);
+      if (!token) continue;
+
+      if (padAddress(token.address) === padAddress(displayBaseToken.address)) {
+        // Same token, no conversion needed
+        this.conversionCache.set(tokenAddress, balance);
+      } else {
+        // Convert to base token equivalent
+        const convertedAmount = this.convertTokenAmount(
+          balance,
+          token,
+          displayBaseToken,
+        );
+        this.conversionCache.set(tokenAddress, convertedAmount);
+      }
+    }
+  }
+
+  /**
+   * Get the cached converted amount for a token to the currently selected base token
+   */
+  public getCachedBaseTokenEquivalent(
+    tokenAddress: string,
+  ): CurrencyAmount | null {
+    return this.conversionCache.get(tokenAddress) ?? null;
   }
 
   /**

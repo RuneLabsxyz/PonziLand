@@ -109,7 +109,9 @@
   });
 
   // Check if current token is the selected base token
-  const isBaseToken = $derived(baseToken && token.address === baseToken.address);
+  const isBaseToken = $derived(
+    baseToken && token.address === baseToken.address,
+  );
 
   // Derive the equivalent amount in base token
   const baseEquivalent = $derived.by(() => {
@@ -124,10 +126,10 @@
   // Get conversion rate for display
   const conversionRate = $derived.by(() => {
     if (isBaseToken || !baseToken) return null;
-    
+
     // Get the original mainnet base token for price calculations
     const originalBaseToken = data.availableTokens.find(
-      (t) => t.address === data.mainCurrencyAddress
+      (t) => t.address === data.mainCurrencyAddress,
     );
     if (!originalBaseToken) return null;
 
@@ -138,7 +140,7 @@
       const oneSelectedBaseInOriginalBase = walletStore.convertTokenAmount(
         oneSelectedBase,
         baseToken,
-        originalBaseToken
+        originalBaseToken,
       );
       if (!oneSelectedBaseInOriginalBase) return null;
 
@@ -146,7 +148,7 @@
       const rateInToken = walletStore.convertTokenAmount(
         oneSelectedBaseInOriginalBase,
         originalBaseToken,
-        token
+        token,
       );
       return rateInToken;
     } else {
@@ -155,7 +157,7 @@
       const rateInSelectedBase = walletStore.convertTokenAmount(
         oneToken,
         token,
-        baseToken
+        baseToken,
       );
       return rateInSelectedBase;
     }

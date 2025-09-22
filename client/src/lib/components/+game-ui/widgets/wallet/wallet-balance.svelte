@@ -17,7 +17,9 @@
   const baseToken = $derived.by(() => {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
     const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find((token) => token.address === targetAddress);
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
   });
 
   const address = $derived(accountData.address);
@@ -62,36 +64,31 @@
     );
 
     // Sort other tokens by their equivalent base token balance (descending)
-    const sortedOthers = otherTokens.sort(
-      ([tokenA, balanceA], [tokenB, balanceB]) => {
-        if (!baseToken) return 0;
-        
-        // Convert each token's balance to base token equivalent
-        const equivalentA = walletStore.convertTokenAmount(
-          balanceA,
-          tokenA,
-          baseToken,
-        );
-        const equivalentB = walletStore.convertTokenAmount(
-          balanceB,
-          tokenB,
-          baseToken,
-        );
+    const sortedOthers = otherTokens.sort(([tokenA], [tokenB]) => {
+      // Use cached conversion values instead of converting on each comparison
+      const equivalentA = walletStore.getCachedBaseTokenEquivalent(
+        tokenA.address,
+      );
+      const equivalentB = walletStore.getCachedBaseTokenEquivalent(
+        tokenB.address,
+      );
 
-        // Handle cases where conversion fails (no price data)
-        if (!equivalentA && !equivalentB) {
-          // Fallback to raw balance comparison
-          return balanceB.rawValue().comparedTo(balanceA.rawValue()) as number;
-        }
-        if (!equivalentA) return 1; // A goes after B
-        if (!equivalentB) return -1; // A goes before B
+      // Handle cases where conversion fails (no price data)
+      if (!equivalentA && !equivalentB) {
+        // Fallback to raw balance comparison
+        const balanceA = walletStore.getBalance(tokenA.address);
+        const balanceB = walletStore.getBalance(tokenB.address);
+        if (!balanceA || !balanceB) return 0;
+        return balanceB.rawValue().comparedTo(balanceA.rawValue()) as number;
+      }
+      if (!equivalentA) return 1; // A goes after B
+      if (!equivalentB) return -1; // A goes before B
 
-        // Compare equivalent base token values (descending order)
-        return equivalentB
-          .rawValue()
-          .comparedTo(equivalentA.rawValue()) as number;
-      },
-    );
+      // Compare equivalent base token values (descending order)
+      return equivalentB
+        .rawValue()
+        .comparedTo(equivalentA.rawValue()) as number;
+    });
 
     // Return base token first, then sorted others
     return baseTokenEntry ? [baseTokenEntry, ...sortedOthers] : sortedOthers;
@@ -101,9 +98,9 @@
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
   {#if totalBalance && baseToken}
     <span class="font-ponzi-number">Value in</span>
-    <button 
+    <button
       class="font-ponzi-number hover:bg-gray-100/10 px-1 rounded flex items-center gap-1"
-      onclick={() => showBaseTokenSelector = !showBaseTokenSelector}
+      onclick={() => (showBaseTokenSelector = !showBaseTokenSelector)}
       title="Click to change base token"
     >
       {baseToken.symbol}
@@ -120,13 +117,13 @@
 
 {#if showBaseTokenSelector}
   <div class="border-t border-gray-700 p-2">
-    <BaseTokenSelector 
+    <BaseTokenSelector
       currentBaseToken={baseToken}
       onSelect={(tokenAddress: string | null) => {
         settingsStore.setSelectedBaseTokenAddress(tokenAddress);
         showBaseTokenSelector = false;
       }}
-      onCancel={() => showBaseTokenSelector = false}
+      onCancel={() => (showBaseTokenSelector = false)}
     />
   </div>
 {/if}
