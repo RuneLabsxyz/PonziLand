@@ -88,7 +88,7 @@
     {
       "name": "Starknet Brother",
       "symbol": "BROTHER",
-      "address": "0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",
+      "address": "0x03b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
@@ -122,7 +122,7 @@
     {
       "name": "PAL",
       "symbol": "PAL",
-      "address": "0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
+      "address": "0x049201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
       "liquidityPoolType": "1-2",
       "decimals": 18,
       "images": {
