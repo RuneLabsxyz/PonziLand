@@ -1,0 +1,27 @@
+{
+  "skin": "EVERAI",
+  "icon": "/tokens/EVERAI/icon.png",
+  "biome": {
+    "x": 1,
+    "y": 4
+  },
+  "building": {
+    "1": {
+      "x": 9,
+      "y": 0
+    },
+    "2": {
+      "x": 9,
+      "y": 1
+    },
+    "3": {
+      "x": 9,
+      "y": 2,
+      "frames": 8,
+      "ySize": 192,
+      "xSize": 192,
+      "xMax": 768,
+      "yMax": 384
+    }
+  }
+}
