@@ -12,7 +12,28 @@ pub struct QuestDetails {
     pub target_score: u32,
     pub entry_price: u256,
     pub creator_address: ContractAddress,
-    pub game_address: ContractAddress,
+    pub game_id: u64,
+}
+
+#[derive(Clone, Drop, Serde, Introspect)]
+#[dojo::model]
+pub struct QuestGame {
+    #[key]
+    pub id: u64,
+    pub world_address: ContractAddress,
+    pub namespace: ByteArray,
+    pub game_contract_name: ByteArray,
+    pub settings_contract_name: ByteArray,
+    pub settings_id: u32,
+    pub target_score: u32,
+}
+
+#[derive(Copy, Drop, Serde, IntrospectPacked)]
+#[dojo::model]
+pub struct QuestGameCounter {
+    #[key]
+    pub key: felt252,
+    pub count: u64,
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked)]
