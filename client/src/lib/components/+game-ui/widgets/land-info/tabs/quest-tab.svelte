@@ -125,7 +125,7 @@
       // For now, we'll use a placeholder player name
       // In a real implementation, this should come from user input or account data
       const playerName = 1; // This might need to be dynamic based on your game logic
-      
+      console.log('entry_price', entry_price);
       const result = await StartQuest(land.location, entry_price);
       
       if (result?.transaction_hash) {
