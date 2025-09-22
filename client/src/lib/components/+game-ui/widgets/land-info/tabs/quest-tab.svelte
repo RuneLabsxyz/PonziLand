@@ -122,9 +122,6 @@
     console.log('Challenging quest land');
 
     try {
-      // For now, we'll use a placeholder player name
-      // In a real implementation, this should come from user input or account data
-      const playerName = 1; // This might need to be dynamic based on your game logic
       console.log('entry_price', entry_price);
       const result = await StartQuest(land.location, entry_price);
       
@@ -167,8 +164,8 @@
   }
 
   async function getQuestInfo() {
-    let entry_price = await GetQuestEntryPrice(land.quest_id);
-    entry_price = parseInt(BigInt(entry_price).toString());
+    let entry_price_res = await GetQuestEntryPrice(land.quest_id);
+    entry_price = parseInt(BigInt(entry_price_res).toString());
     console.log('entry_price', entry_price);
     console.log(land.quest_id);
     let score_res = await GetQuestScore(land.quest_id);
