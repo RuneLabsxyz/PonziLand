@@ -145,10 +145,7 @@ pub mod quests {
                 to_us = true;
             }
 
-            let quest: Quest = world.read_model(quest_id);
-            let details_id = quest.details_id;
-
-            let mut quest_details: QuestDetails = world.read_model(details_id);
+            let mut quest_details: QuestDetails = world.read_model(quest_id);
 
             assert(quest_details.id > 0, 'Quest details not found');
             assert(
