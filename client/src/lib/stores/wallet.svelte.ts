@@ -41,12 +41,13 @@ export class WalletStore {
   );
 
   // Get the currently selected base token for display calculations
-  private get selectedBaseToken(): Token {
+  private get selectedBaseToken(): Token | null {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
     const targetAddress = selectedAddress || data.mainCurrencyAddress;
     return (
-      data.availableTokens.find((token) => token.address === targetAddress) ??
-      this.baseToken!
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      this.baseToken ||
+      null
     );
   }
 
@@ -287,7 +288,10 @@ export class WalletStore {
     if (!this.balances.size) return;
 
     const displayBaseToken = this.selectedBaseToken;
-    let totalValue = CurrencyAmount.fromScaled(0, displayBaseToken);
+    let totalValue = CurrencyAmount.fromScaled(
+      0,
+      displayBaseToken || undefined,
+    );
 
     for (const [tokenAddress, balance] of this.balances) {
       if (balance === null) continue;
