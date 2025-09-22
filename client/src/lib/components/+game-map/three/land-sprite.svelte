@@ -653,6 +653,7 @@
       <InstancedMesh
         limit={GRID_SIZE * GRID_SIZE}
         range={GRID_SIZE * GRID_SIZE}
+        frustumCulled={false}
       >
         <T is={coinGeometry} />
         <T is={coinShaderMaterial} />
