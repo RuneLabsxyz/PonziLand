@@ -1,27 +1,29 @@
 {
-  "skin": "WNT",
-  "icon": "/tokens/WNT/icon.png",
+  "skin": "LORDS",
+  "icon": "/tokens/LORDS/icon.svg",
   "biome": {
     "x": 3,
-    "y": 3
+    "y": 1
   },
   "building": {
     "1": {
-      "x": 6,
+      "x": 0,
       "y": 0
     },
     "2": {
-      "x": 6,
+      "x": 0,
       "y": 1
     },
     "3": {
-      "x": 6,
+      "x": 0,
       "y": 2,
       "frames": 10,
       "ySize": 192,
       "xSize": 192,
       "xMax": 960,
-      "yMax": 384
+      "yMax": 384,
+      "boomerang": true,
+      "delay": 2000
     }
   }
 }

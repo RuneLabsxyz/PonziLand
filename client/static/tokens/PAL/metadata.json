@@ -1,27 +1,27 @@
 {
-  "skin": "QQ",
-  "icon": "/tokens/QQ/icon.png",
+  "skin": "PAL",
+  "icon": "/tokens/PAL/icon.svg",
   "biome": {
-    "x": 0,
-    "y": 4
+    "x": 1,
+    "y": 2
   },
   "building": {
     "1": {
-      "x": 6,
+      "x": 0,
       "y": 3
     },
     "2": {
-      "x": 6,
+      "x": 0,
       "y": 4
     },
     "3": {
-      "x": 6,
+      "x": 0,
       "y": 5,
-      "frames": 8,
+      "frames": 9,
       "ySize": 192,
       "xSize": 192,
-      "xMax": 768,
-      "yMax": 384
+      "xMax": 576,
+      "yMax": 576
     }
   }
 }

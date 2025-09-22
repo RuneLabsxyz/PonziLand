@@ -40,7 +40,7 @@
       "skin": "BROTHER"
     },
     {
-      "name": "PAL",
+      "name": "Pain au lait",
       "symbol": "PAL",
       "address": "0x049201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
       "liquidityPoolType": "1-2",
@@ -56,7 +56,7 @@
       "skin": "USDC"
     },
     {
-      "name": "ETHEREUM",
+      "name": "Ethereum",
       "symbol": "ETH",
       "address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
       "liquidityPoolType": "1-2",
@@ -64,7 +64,7 @@
       "skin": "ETHEREUM"
     },
     {
-      "name": "BITCOIN",
+      "name": "Bitcoin",
       "symbol": "BTC",
       "address": "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac",
       "liquidityPoolType": "1-2",
