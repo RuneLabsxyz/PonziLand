@@ -53,13 +53,16 @@ trait ILiquidityReinjector<T> {
         amount_to_stake: u256,
     );
 
-    /// @notice Withdraw tokens from the contract (admin only)
+    /// @notice Withdraw tokens from the contract to owner (admin only)
     /// @param token The token address to withdraw
-    /// @param recipient The recipient of the tokens
     /// @param amount The amount to withdraw
-    fn withdraw_tokens(
-        ref self: T, token: ContractAddress, recipient: ContractAddress, amount: u256,
-    );
+    fn withdraw_tokens(ref self: T, token: ContractAddress, amount: u256);
+
+    /// @notice Claim tokens to owner address (authorized users can call)
+    /// @dev Always sends to the owner address for security
+    /// @param token The token address to claim
+    /// @param amount The amount to claim
+    fn claim(ref self: T, token: ContractAddress, amount: u256);
 
     /// @notice Transfer ownership of the contract
     /// @param new_owner The new owner address
@@ -299,21 +302,30 @@ mod LiquidityReinjector {
             self.reentrancy_guard.end();
         }
 
-        fn withdraw_tokens(
-            ref self: ContractState,
-            token: ContractAddress,
-            recipient: ContractAddress,
-            amount: u256,
-        ) {
+        fn withdraw_tokens(ref self: ContractState, token: ContractAddress, amount: u256) {
             self.reentrancy_guard.start();
             self.assert_only_owner();
-            assert(recipient.is_non_zero(), 'Recipient cannot be zero');
 
+            let owner = self.owner.read();
             let token_dispatcher = IERC20CamelDispatcher { contract_address: token };
-            let success = token_dispatcher.transfer(recipient, amount);
+            let success = token_dispatcher.transfer(owner, amount);
             assert(success, 'Token transfer failed');
 
-            self.emit(TokensWithdrawn { token, recipient, amount });
+            self.emit(TokensWithdrawn { token, recipient: owner, amount });
+
+            self.reentrancy_guard.end();
+        }
+
+        fn claim(ref self: ContractState, token: ContractAddress, amount: u256) {
+            self.reentrancy_guard.start();
+            self.assert_only_authorized();
+
+            let owner = self.owner.read();
+            let token_dispatcher = IERC20CamelDispatcher { contract_address: token };
+            let success = token_dispatcher.transfer(owner, amount);
+            assert(success, 'Token transfer failed');
+
+            self.emit(TokensWithdrawn { token, recipient: owner, amount });
 
             self.reentrancy_guard.end();
         }
