@@ -162,6 +162,15 @@ export class WalletStore {
     const token = data.availableTokens.find((t) => t.address === tokenAddress);
     if (!token) return null;
 
+    // Base token always has ratio 1
+    if (padAddress(tokenAddress) === padAddress(this.BASE_TOKEN)) {
+      return {
+        symbol: token.symbol,
+        address: token.address,
+        ratio: CurrencyAmount.fromScaled(1, token),
+      };
+    }
+
     return (
       this.tokenPrices.find((p) => {
         return padAddress(p.address) === padAddress(token.address);
@@ -187,20 +196,19 @@ export class WalletStore {
     const fromPrice = this.getPrice(fromToken.address);
     const toPrice = this.getPrice(toToken.address);
 
-    if (!fromPrice || !toPrice) {
-      return null; // Cannot convert without price data
-    }
+    if (!fromPrice || !toPrice) return null;
 
     // Convert fromAmount to base currency, then to target token
     // fromAmount * (1/fromPrice.ratio) * toPrice.ratio
     const baseValue = fromAmount
       .rawValue()
-      .dividedBy(fromPrice.ratio.rawValue() ?? 0);
-    const convertedValue = baseValue.multipliedBy(
-      toPrice.ratio.rawValue() ?? 0,
-    );
+      .dividedBy(fromPrice.ratio.rawValue());
 
-    return CurrencyAmount.fromScaled(convertedValue.toString(), toToken);
+    if (baseValue.isNaN() || !baseValue.isFinite()) return null;
+
+    const convertedValue = baseValue.multipliedBy(toPrice.ratio.rawValue());
+
+    return CurrencyAmount.fromRaw(convertedValue, toToken);
   }
 
   public get allowedTokens(): Token[] {
@@ -210,38 +218,26 @@ export class WalletStore {
   }
 
   private async calculateTotalBalance() {
-    const tokenPrices = this.tokenPrices;
+    if (!this.balances.size) return;
 
-    if (!this.balances.size || !tokenPrices.length) return;
-
-    let totalValue = 0;
+    let totalValue = CurrencyAmount.fromScaled(0, this.baseToken);
 
     for (const [tokenAddress, balance] of this.balances) {
       if (balance === null) continue;
 
       const token = this.getToken(tokenAddress)!;
 
-      if (padAddress(token.address) === padAddress(this.BASE_TOKEN)) {
-        totalValue += Number(balance.rawValue());
-      } else {
-        const priceInfo = tokenPrices.find((p) => {
-          return padAddress(p.address) == padAddress(token.address);
-        });
-
-        if (priceInfo?.ratio !== null && priceInfo) {
-          totalValue += Number(
-            balance.rawValue().dividedBy(priceInfo.ratio.rawValue() ?? 0),
-          );
-        }
+      const convertedAmount = this.convertTokenAmount(
+        balance,
+        token,
+        this.baseToken!,
+      );
+      if (convertedAmount) {
+        totalValue = totalValue.add(convertedAmount);
       }
     }
 
-    if (this.baseToken) {
-      this.totalBalance = CurrencyAmount.fromScaled(
-        totalValue.toString(),
-        this.baseToken,
-      );
-    }
+    this.totalBalance = totalValue;
   }
 
   public getToken(tokenAddress: string): Token | null {

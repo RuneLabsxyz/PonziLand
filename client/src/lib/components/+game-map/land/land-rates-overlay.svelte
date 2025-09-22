@@ -45,8 +45,8 @@
     data.availableTokens.find((token) => token.address === BASE_TOKEN),
   );
 
-  function getYieldValueInBaseToken(info: any): number {
-    if (!info?.token || !baseToken) return 0;
+  function getYieldValueInBaseToken(info: any): CurrencyAmount | null {
+    if (!info?.token || !baseToken) return null;
 
     const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
     const baseValue = walletStore.convertTokenAmount(
@@ -55,7 +55,7 @@
       baseToken,
     );
 
-    return baseValue ? Number(baseValue.rawValue()) : 0;
+    return baseValue || null;
   }
 
   let displayYields = $derived.by(() => {
@@ -63,15 +63,15 @@
       if (!info?.token) return { amount: '0', symbol: '' };
 
       if (settingsStore.showRatesInBaseToken && baseToken) {
-        const baseValue = getYieldValueInBaseToken(info);
-        const amount = CurrencyAmount.fromUnscaled(
-          BigInt(baseValue),
-          baseToken,
-        );
-        return {
-          amount: displayCurrency(amount.rawValue()),
-          symbol: baseToken.symbol,
-        };
+        const baseAmount = getYieldValueInBaseToken(info);
+        if (baseAmount) {
+          return {
+            amount: displayCurrency(baseAmount.rawValue()),
+            symbol: baseToken.symbol,
+          };
+        } else {
+          return { amount: '?', symbol: baseToken.symbol };
+        }
       } else {
         const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
         return {
@@ -84,20 +84,26 @@
 
   // Calculate yield scaling once per land
   let yieldScaling = $derived(() => {
-    const validYields = yieldInfo
+    const yieldItems = yieldInfo
       .filter((neighbor) => neighbor?.token && neighbor.per_hour > 0n)
       .map((neighbor) => ({
         neighbor,
-        baseValue: getYieldValueInBaseToken(neighbor),
-      }))
-      .filter((item) => item.baseValue > 0);
+        baseAmount: getYieldValueInBaseToken(neighbor),
+      }));
 
-    if (validYields.length <= 1) {
-      // Single yield or no yields, use normal scale for all
-      return new Map(validYields.map((item) => [item.neighbor, 1]));
+    const validYields = yieldItems.filter(
+      (item) => item.baseAmount && !item.baseAmount.isZero(),
+    );
+    const hasUnconvertibleYields = yieldItems.some((item) => !item.baseAmount);
+
+    // If we can't convert some yields to base token, use uniform scale for all
+    if (hasUnconvertibleYields || validYields.length <= 1) {
+      return new Map(yieldItems.map((item) => [item.neighbor, 1]));
     }
 
-    const allValues = validYields.map((item) => item.baseValue);
+    const allValues = validYields.map((item) =>
+      Number(item.baseAmount!.rawValue()),
+    );
     const minYield = Math.min(...allValues);
     const maxYield = Math.max(...allValues);
 
@@ -109,8 +115,8 @@
     // Scale between 0.5x (smallest yield) and 1.5x (biggest yield)
     return new Map(
       validYields.map((item) => {
-        const normalizedValue =
-          (item.baseValue - minYield) / (maxYield - minYield);
+        const baseValue = Number(item.baseAmount!.rawValue());
+        const normalizedValue = (baseValue - minYield) / (maxYield - minYield);
         const scale = 0.5 + normalizedValue * 1.0; // Scale from 0.5 to 1.5
         return [item.neighbor, scale];
       }),
@@ -159,9 +165,17 @@
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
-            <span class="whitespace-nowrap text-green-300">
-              +{displayYields[i].amount}
-              {displayYields[i].symbol}/h
+            <span
+              class="whitespace-nowrap {displayYields[i].amount === '?'
+                ? 'text-yellow-400'
+                : 'text-green-300'}"
+            >
+              {displayYields[i].amount === '?'
+                ? '?'
+                : `+${displayYields[i].amount}`}
+              {displayYields[i].amount === '?'
+                ? ''
+                : `${displayYields[i].symbol}/h`}
             </span>
           </div>
         {:else if info && i !== 4}
