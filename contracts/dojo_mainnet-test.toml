@@ -51,3 +51,12 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d", # pltPAL
     "0x064ae0eeee87bb4ce053c8c1e1377e21de3b3add549551ed53b5a64a1b700671", # pltETH
 ]
+
+# External contract deployment - Liquidity Reinjector (non-Dojo contract)
+[[external_contracts]]
+contract_name = "LiquidityReinjector"
+salt = "1"
+constructor_data = [
+    #TODO: WE NEED A REAL ADDRESS FOR MAINNET
+    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address
+]

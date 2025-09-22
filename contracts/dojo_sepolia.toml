@@ -86,3 +86,12 @@ ipfs_config.password = "12290b883db9138a8ae3363b6739d220"
     "1000",                                                               # Claim fee threshold
     "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901", # Main token
 ]
+
+# External contract deployment - Liquidity Reinjector (non-Dojo contract)
+[[external_contracts]]
+contract_name = "LiquidityReinjector"
+salt = "1"
+constructor_data = [
+    #TODO: WE NEED A REAL ADDRESS FOR SEPOLIA
+    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
+]

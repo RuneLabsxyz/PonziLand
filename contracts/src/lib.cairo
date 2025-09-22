@@ -55,8 +55,13 @@ mod utils {
     mod validations;
 }
 
+mod liquidity {
+    mod liquidity_reinjector;
+}
+
 #[cfg(test)]
 mod tests {
     mod actions;
+    mod liquidity_reinjector;
     mod setup;
 }
