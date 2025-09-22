@@ -119,6 +119,15 @@
     return walletStore.convertTokenAmount(displayAmount, token, baseToken);
   });
 
+  // Track previous base equivalent for animation
+  let previousBaseEquivalent = $state<CurrencyAmount | null>(null);
+
+  $effect(() => {
+    if (baseEquivalent) {
+      previousBaseEquivalent = baseEquivalent;
+    }
+  });
+
   // Determine which display mode to use
   const displayMode = $derived(settingsStore.walletDisplayMode);
   const shouldShowBaseValue = $derived(!isBaseToken && displayMode === 'base');
@@ -176,13 +185,14 @@
         <div class="relative">
           {#if animating && baseToken}
             <span class="absolute left-0 animate-in-out-left">
-              +{walletStore
-                .convertTokenAmount(
-                  CurrencyAmount.fromUnscaled(increment, token),
-                  token,
-                  baseToken,
-                )
-                ?.toString() || '0'}
+              +{baseEquivalent && previousBaseEquivalent
+                ? CurrencyAmount.fromRaw(
+                    baseEquivalent
+                      .rawValue()
+                      .minus(previousBaseEquivalent.rawValue()),
+                    baseToken,
+                  ).toString()
+                : '0'}
             </span>
           {/if}
         </div>
