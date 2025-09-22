@@ -162,6 +162,15 @@ export class WalletStore {
     const token = data.availableTokens.find((t) => t.address === tokenAddress);
     if (!token) return null;
 
+    // Base token always has ratio 1
+    if (padAddress(tokenAddress) === padAddress(this.BASE_TOKEN)) {
+      return {
+        symbol: token.symbol,
+        address: token.address,
+        ratio: CurrencyAmount.fromScaled(1, token),
+      };
+    }
+
     return (
       this.tokenPrices.find((p) => {
         return padAddress(p.address) === padAddress(token.address);
@@ -187,33 +196,6 @@ export class WalletStore {
     const fromPrice = this.getPrice(fromToken.address);
     const toPrice = this.getPrice(toToken.address);
 
-    // Special case: converting to base token
-    if (padAddress(toToken.address) === padAddress(this.BASE_TOKEN)) {
-      if (!fromPrice) return null;
-
-      // Convert to base token: fromAmount * (1/fromPrice.ratio)
-      const baseValue = fromAmount
-        .rawValue()
-        .dividedBy(fromPrice.ratio.rawValue());
-
-      if (baseValue.isNaN() || !baseValue.isFinite()) return null;
-
-      return CurrencyAmount.fromRaw(baseValue, toToken);
-    }
-
-    // Special case: converting from base token
-    if (padAddress(fromToken.address) === padAddress(this.BASE_TOKEN)) {
-      if (!toPrice) return null;
-
-      // Convert from base token: fromAmount * toPrice.ratio
-      const convertedValue = fromAmount
-        .rawValue()
-        .multipliedBy(toPrice.ratio.rawValue());
-
-      return CurrencyAmount.fromRaw(convertedValue, toToken);
-    }
-
-    // General case: both tokens need price data
     if (!fromPrice || !toPrice) return null;
 
     // Convert fromAmount to base currency, then to target token
