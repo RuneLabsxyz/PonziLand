@@ -51,7 +51,12 @@
 
   let taxPerNeighbor = $derived.by(() => {
     const tax = calculateTaxes(Number(sellAmountVal));
-    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
+
+    if (!selectedToken) {
+      return baseToken
+        ? CurrencyAmount.fromScaled(0, baseToken)
+        : CurrencyAmount.fromScaled(0);
+    }
     return CurrencyAmount.fromScaled(tax, selectedToken);
   });
 
