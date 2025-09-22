@@ -178,6 +178,7 @@ export async function wrappedActions(provider: DojoProvider) {
   ) => {
     try {
 
+      console.log('entry_price', entry_price);
       const calls = await getApprove(
         provider,
         [
