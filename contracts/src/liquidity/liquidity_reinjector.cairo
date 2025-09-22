@@ -324,7 +324,7 @@ mod LiquidityReinjector {
 
             let previous_owner = self.owner.read();
             self.owner.write(new_owner);
-
+            self.authorized_addresses.write(new_owner, true);  
             self.emit(OwnershipTransferred { previous_owner, new_owner });
         }
 
