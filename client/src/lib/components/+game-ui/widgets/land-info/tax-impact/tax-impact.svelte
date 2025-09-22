@@ -48,8 +48,10 @@
   });
 
   // estimate the taxes per neighbor using the formula based on the sell price of this land
+
   let taxPerNeighbor = $derived.by(() => {
     const tax = calculateTaxes(Number(sellAmountVal));
+    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
     return CurrencyAmount.fromScaled(tax, selectedToken);
   });
 
@@ -298,6 +300,8 @@
     let totalValue = CurrencyAmount.fromUnscaled('0', baseToken);
 
     // Process each token's yield and convert to base token
+    let calculatedTotalValue = CurrencyAmount.fromUnscaled(0, baseToken);
+
     for (const [, yieldData] of Object.entries(yieldInfo.yield_info)) {
       const tokenHexAddress = toHexWithPadding(yieldData.token);
       const tokenData = data.availableTokens.find(
@@ -317,9 +321,12 @@
       );
 
       if (convertedAmount) {
-        totalValue = totalValue.add(convertedAmount);
+        calculatedTotalValue = calculatedTotalValue.add(convertedAmount);
       }
     }
+
+    // Update state only once after all calculations are complete
+    totalValue = calculatedTotalValue;
 
     currentYieldInBaseToken = totalValue;
 
