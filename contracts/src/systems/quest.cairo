@@ -8,10 +8,11 @@ pub trait IQuestSystems<T> {
     ) -> u64;
     fn claim_land(ref self: T, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256);
     fn get_quest(self: @T, quest_id: u64) -> (Quest, QuestDetails);
-    fn set_land_quest(ref self: T, land_location: u16, settings_id: u32);
+    fn set_land_quest(ref self: T, land_location: u16, game_id: u64);
     fn remove_land_quest(ref self: T, land_location: u16);
     fn get_score(self: @T, quest_id: u64) -> u32;
     fn get_quest_game_token(self: @T, quest_id: u64) -> (ContractAddress, u64);
+    fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32);
 }
 
 
@@ -27,7 +28,7 @@ pub mod quests {
         IMinigameSettingsDispatcher, IMinigameSettingsDispatcherTrait,
     };
     use ponzi_land::models::quest::{
-        QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest,
+        QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest, QuestGame, QuestGameCounter,
     };
     use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
     use ponzi_land::models::land::Land;
@@ -60,11 +61,25 @@ pub mod quests {
         payable: PayableComponent::Storage,
     }
 
+    fn dojo_init(ref self: ContractState, ref valid_games: Array<QuestGame>) {
+        let mut world = self.world(DEFAULT_NS());
+        let mut quest_game_count: QuestGameCounter = world.read_model(VERSION);
+        let mut i = 0;
+        while i < valid_games.len() {
+            let mut game: QuestGame = valid_games[i].clone();
+            quest_game_count.count += 1;
+            game.id = quest_game_count.count;
+            world.write_model(@game);
+            i += 1;
+        };
+        world.write_model(@quest_game_count);
+    }
+
     #[abi(embed_v0)]
     pub impl QuestSystemsImpl of super::IQuestSystems<ContractState> {
         
 
-        fn set_land_quest(ref self: ContractState, land_location: u16, settings_id: u32) {
+        fn set_land_quest(ref self: ContractState, land_location: u16, game_id: u64) {
             let mut world = self.world(DEFAULT_NS());
             let store = StoreTrait::new(world);
             assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
@@ -77,13 +92,13 @@ pub mod quests {
             assert!(land.owner == caller, "Player is not the owner of the land");
             assert!(land.quest_id == 0, "Land already has a quest");
 
+            let quest_game: QuestGame = world.read_model(game_id);
+
             let id = create_quest(
                 ref self,
-                starknet::contract_address_const::<0x06573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26>(), //this is the address of the mock for now
+                quest_game,
                 land.location,
                 1000000000000000000, // 10 strk
-                settings_id,
-                40,
                 1,
                 caller
             );
@@ -156,9 +171,12 @@ pub mod quests {
             quest_counter.count += 1;
             world.write_model(@quest_counter);
 
-            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_details.game_address };
-            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
-            let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
+            let mut quest_details: QuestDetails = world.read_model(quest.details_id);
+            let quest_game: QuestGame = world.read_model(quest_details.game_id);
+
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
+            let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
 
 
             let time_to_start = get_block_timestamp();
@@ -169,7 +187,7 @@ pub mod quests {
             let game_token_id: u64 = game_dispatcher
                 .mint_game(
                     Option::Some(player_name), //player name
-                    Option::Some(quest_details.settings_id), //settings id
+                    Option::Some(quest_game.settings_id), //settings id
                     Option::None, //start
                     Option::Some(time_to_end), //end
                     Option::None, //objective ids
@@ -212,10 +230,11 @@ pub mod quests {
             let mut quest_details: QuestDetails = world.read_model(quest.details_id);
             let mut land: Land = world.read_model(quest_details.location);
 
+            let quest_game: QuestGame = world.read_model(quest_details.game_id);
             // get score for the token id
-            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_details.game_address };
-            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
-            let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
+            let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
             let game_dispatcher = IMinigameTokenDataDispatcher {
                 contract_address: game_token_address,
             };
@@ -265,9 +284,10 @@ pub mod quests {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.details_id);
-            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_details.game_address };
-            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
-            let (game_token_address, _) = minigame_world.dns(@"game_token_systems").unwrap();
+            let quest_game: QuestGame = world.read_model(quest_details.game_id);
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
+            let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
             let game_dispatcher = IMinigameTokenDataDispatcher {
                 contract_address: game_token_address,
             };
@@ -278,18 +298,28 @@ pub mod quests {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.details_id);
-            (quest_details.game_address, quest.game_token_id)
+            let quest_game: QuestGame = world.read_model(quest_details.game_id);
+            (quest_game.world_address, quest.game_token_id)
+        }
+
+        fn register_quest_game(ref self: ContractState, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32) {
+            //TODO add permission check
+            
+            let mut world = self.world(DEFAULT_NS());
+            let mut quest_game_count: QuestGameCounter = world.read_model(VERSION);
+            quest_game_count.count += 1;
+            world.write_model(@quest_game_count);
+            let quest_game = @QuestGame { id: quest_game_count.count, world_address, namespace, game_contract_name, settings_contract_name, settings_id, target_score };
+            world.write_model(quest_game);
         }
 
     }
 
     fn create_quest(
         ref self: ContractState,
-        game_address: ContractAddress,
+        quest_game: QuestGame,
         location: u16,
         entry_price: u256,
-        settings_id: u32,
-        target_score: u32,
         capacity: u16,
         creator_address: ContractAddress,
     ) -> u64 {
@@ -299,22 +329,21 @@ pub mod quests {
 
         assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
 
-        let minigame_world_dispatcher = IWorldDispatcher { contract_address: game_address };
-        let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @"mock");
-        let (settings_address, _) = minigame_world.dns(@"settings_systems").unwrap();
+        let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
+        let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
+        let (settings_address, _) = minigame_world.dns(@quest_game.settings_contract_name).unwrap();
         let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
         let settings_address_felt: felt252 = settings_address.into();
-        let settings_exist = settings_dispatcher.settings_exist(settings_id);
-        let game_address_felt: felt252 = game_address.into();
+        let settings_exist = settings_dispatcher.settings_exist(quest_game.settings_id);
+        let game_address_felt: felt252 = quest_game.world_address.into();
 
         assert!(
             settings_exist,
             "Quests: game address {} does not have settings id {}",
             game_address_felt,
-            settings_id,
+            quest_game.settings_id,
         );
 
-        let address_felt: felt252 = game_address.into();
         let mut quest_details_counter: QuestDetailsCounter = world.read_model(VERSION);
         quest_details_counter.count += 1;
 
@@ -322,9 +351,9 @@ pub mod quests {
             id: quest_details_counter.count,
             location,
             creator_address,
-            game_address,
-            settings_id,
-            target_score,
+            game_id: quest_game.id,
+            settings_id: quest_game.settings_id,
+            target_score: quest_game.target_score,
             entry_price,
             capacity,
             participant_count: 0,
