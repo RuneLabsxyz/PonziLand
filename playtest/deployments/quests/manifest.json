@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x2d9e3a9120a943e657aaa2b373652e1258e10007245eebe436a16d9e40741c3",
-    "seed": "quests_155916750",
+    "address": "0x74c0915e72c561b24bab020839d65fc82cbc5964f5329e897aef3782e29c568",
+    "seed": "quests_36676053",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1328,7 +1328,7 @@
   },
   "contracts": [
     {
-      "address": "0x1c7c0edd92662fcd418b60ea4ce75d89f2561492a7ca20020b445def34a3eea",
+      "address": "0x5ad3846f45ddf9ab7f270c276476d5115a2fcbaf988afaf239e5f6b622284c4",
       "class_hash": "0x79be3ea5fa760a350728992540e48e43a77083bcaad0cfaff1c907b3f5e49c0",
       "abi": [
         {
@@ -2160,7 +2160,7 @@
         "1000000000000000000",
         "0",
         "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384",
-        "0x3b31d7ba434e5dd67ede9336ca4ed14b44ee2aa6b332bbfe8bdffa1109fc218"
+        "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2"
       ],
       "tag": "ponzi_land-actions",
       "selector": "0x4c6e07326dfd951e1c971bbcec9fc9a3c00c744add51a51c4c3301e7857d1d8",
@@ -2179,7 +2179,7 @@
       ]
     },
     {
-      "address": "0x7025eeb7cf217683f7711fd37683775087499412a2d4ef7f472f70d9c771afd",
+      "address": "0x3b229086caa3d760330ed9e735ae14b3b5d660698e88a0ea86c4f9b07bc5425",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
       "abi": [
         {
@@ -2522,7 +2522,7 @@
       ]
     },
     {
-      "address": "0x44e547642921e56230c75c44adcd41d4b4dfd2dba5e50e83680c6c09cf2ed73",
+      "address": "0x17bb120e5c94ad73aae01139740284a9a0f2ab4d10878956df73ddb35db34dd",
       "class_hash": "0x334584a933dc0560cfc7589480a88553ef82073bde951fb497d035f27bc17bb",
       "abi": [
         {
@@ -3639,7 +3639,7 @@
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "10",
-        "0x3b31d7ba434e5dd67ede9336ca4ed14b44ee2aa6b332bbfe8bdffa1109fc218"
+        "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2"
       ],
       "tag": "ponzi_land-config",
       "selector": "0x5ce083ed80c0f63e99e5f4c00d17d87dd41330abad62e75889656b5813f5b55",
@@ -3675,8 +3675,8 @@
       ]
     },
     {
-      "address": "0x1fe2de9aacdc75f04fbd1549ce8913ed09f0c4ebcff21706a6be5d8919b22e4",
-      "class_hash": "0x3f63eaa71c14fff1a91f2c82ded7cd7953756cc5dcf6a72de991bdf65ae6227",
+      "address": "0x5b8aecfab9eb9ea22a367757e2f33d619d24c1de6083957386a1cd21b5ba14",
+      "class_hash": "0x470021e2a9acbd76316270a4d22752df65cb59b6c449e90ff58083fb7a262da",
       "abi": [
         {
           "type": "impl",
@@ -4195,7 +4195,7 @@
       ]
     },
     {
-      "address": "0xf46fb9a6a0dcb9370651a9fdcd64c61fd22d1fb4a0975a5ef8e8d5c4e44d1a",
+      "address": "0x1dab083ea6f525c995dce9ffba084e775ba7d9eb3314efc95eb0b81ef0f5a92",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
       "abi": [
         {
@@ -4447,12 +4447,12 @@
       ],
       "init_calldata": [
         "6",
-        "0x3b31d7ba434e5dd67ede9336ca4ed14b44ee2aa6b332bbfe8bdffa1109fc218",
-        "0x24029af1b71246ec32ad1db449a4c0e0d0b5eaf305876863e294e1f07ec63b1",
-        "0x47257f66d8e03c60fccea9d2ef7f2e1531ad3de84b4ab58dd12ca29cee2286f",
-        "0x24a6cb160bbecc9d59ef44239a78da232d25b34dd5ba8086ed02265e0cd3674",
-        "0x14950b4dc3c6356c4a8f87b735466417b7ff5ef4456b77e43b26c633ff874cd",
-        "0x453c1f42e0afc47c4d6cd5a5f10ae24ee597410d8542d2cf34ad76104baa66e"
+        "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2",
+        "0x3458d8a00b5731b743f2546f398fa5db4c78be880480b4b5e69efe702099a2a",
+        "0x59a155d61343e0b1c9016d2b0f89ee15ac9f96bcc780e94ff75178c6d74040a",
+        "0x5891372b03bac7b0a076902a2748912a53c09efea4c0b8b6c4cba0efd43bbd0",
+        "0x2326d8d563e296adb2e32bad0571ff3f61295b0ffcc97865e4111a4b9bf2d34",
+        "0x3cbff2ba953228299f7ab7d42dcc459354061efb6d889053439b56ef1e4bc32"
       ],
       "tag": "ponzi_land-token_registry",
       "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
