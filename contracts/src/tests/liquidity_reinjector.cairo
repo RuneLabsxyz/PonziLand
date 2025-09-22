@@ -160,10 +160,7 @@ fn test_full_liquidity_reinjection_flow() {
 
     set_contract_address(reinjector_owner);
     if reinjector_remaining > 0 {
-        reinjector
-            .withdraw_tokens(
-                main_currency.contract_address, reinjector_owner, reinjector_remaining,
-            );
+        reinjector.withdraw_tokens(main_currency.contract_address, reinjector_remaining);
 
         let owner_balance_after = main_currency.balanceOf(reinjector_owner);
         assert(
