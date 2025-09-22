@@ -6,7 +6,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore, ClaimQuest } from '$lib/stores/store.svelte';
+  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore, ClaimQuest, GetQuestEntryPrice } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
@@ -166,6 +166,8 @@
   }
 
   async function getQuestInfo() {
+    let entry_price = await GetQuestEntryPrice(land.quest_id);
+    console.log('entry_price', entry_price);
     console.log(land.quest_id);
     let score_res = await GetQuestScore(land.quest_id);
     console.log(score_res);
