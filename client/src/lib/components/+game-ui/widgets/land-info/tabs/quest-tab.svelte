@@ -10,6 +10,7 @@
   import { padAddress } from '$lib/utils';
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
+  import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
 
   let {
     land,

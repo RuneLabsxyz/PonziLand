@@ -7,6 +7,7 @@ import { AuctionLand } from '$lib/api/land/auction_land';
 import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
 
 // Main stores following Dojo subscription pattern
 export let landStore = $state(new LandTileStore());
@@ -106,7 +107,7 @@ export async function RemoveLandQuest(location: string) {
   return res;
 }
 
-export async function StartQuest(location: string) {
+export async function StartQuest(location: string, entry_price:number) {
   const { client: sdk, accountManager } = useDojo();
   const account = () => {
     return accountManager!.getProvider();
@@ -115,6 +116,8 @@ export async function StartQuest(location: string) {
     account()?.getWalletAccount()!,
     location,
     0,
+    entry_price,
+    baseToken?.address,
   );
   notificationQueue.addNotification(res?.transaction_hash ?? null, 'start quest');
   return res;

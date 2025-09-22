@@ -12,6 +12,7 @@ pub trait IQuestSystems<T> {
     fn remove_land_quest(ref self: T, land_location: u16);
     fn get_score(self: @T, quest_id: u64) -> u32;
     fn get_quest_game_token(self: @T, quest_id: u64) -> (ContractAddress, u64);
+    fn get_quest_entry_price(self: @T, quest_id: u64) -> u256;
     fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32);
 }
 
@@ -288,6 +289,12 @@ pub mod quests {
                 contract_address: game_token_address,
             };
             game_dispatcher.score(quest.game_token_id)
+        }
+
+        fn get_quest_entry_price(self: @ContractState, quest_id: u64) -> u256 {
+            let mut world = self.world(DEFAULT_NS());
+            let quest_details: QuestDetails = world.read_model(quest_id);
+            quest_details.entry_price
         }
 
         fn get_quest_game_token(self: @ContractState, quest_id: u64) -> (ContractAddress, u64) {
