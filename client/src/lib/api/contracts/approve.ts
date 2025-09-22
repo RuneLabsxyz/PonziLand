@@ -193,6 +193,8 @@ export async function wrappedActions(provider: DojoProvider) {
         world.quests.buildStartQuestCalldata(location, questId),
       );
 
+      console.log('calls', calls);
+
       return await provider.execute(snAccount, calls, 'ponzi_land');
     } catch (error) {
       console.error(error);
