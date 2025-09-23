@@ -464,44 +464,44 @@
     </div>
   {/if}
 
-  <div class="flex gap-2">
-    <div>
+  <!-- Horizontal Slider Above -->
+  <div class="mb-4 w-full">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="opacity-50 text-sm">Neighbors:</span>
+
+        <PonziSlider bind:value={nbNeighbors} />
+      </div>
+
+      <div
+        class="{sliderNetYieldInBaseToken &&
+        sliderNetYieldInBaseToken.rawValue().isNegative()
+          ? 'text-red-500'
+          : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-sm"
+      >
+        <span>
+          {#if sliderNetYieldInBaseToken}
+            {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
+            {sliderNetYieldInBaseToken}
+          {:else}
+            -
+          {/if}
+          {baseToken?.symbol}/h
+        </span>
+        <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid and Details Below -->
+  <div class="flex gap-4">
+    <div class="flex-shrink-0">
       {#if neighbors}
         <BuyInsightsNeighborGrid {neighbors} {nbNeighbors} {selectedToken} />
       {/if}
     </div>
-    <PonziSlider bind:value={nbNeighbors} />
 
-    <div class="flex flex-col flex-1 ml-4 justify-center tracking-wide">
-      <div
-        class="flex justify-between select-text font-ponzi-number items-end text-xs"
-      >
-        <div>
-          <span class="opacity-50">Yield /h for</span>
-          <span class="text-xl text-blue-300 leading-none">{nbNeighbors}</span>
-          <span class="opacity-50"> neighbors </span>
-        </div>
-        <div
-          class="{sliderNetYieldInBaseToken &&
-          sliderNetYieldInBaseToken.rawValue().isNegative()
-            ? 'text-red-500'
-            : 'text-green-500'} flex items-center gap-1"
-        >
-          <span>
-            {#if sliderNetYieldInBaseToken}
-              {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
-              {sliderNetYieldInBaseToken}
-            {:else}
-              -
-            {/if}
-            {baseToken?.symbol}
-          </span>
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
-      </div>
-
-      <hr class="my-1 opacity-50" />
-
+    <div class="flex flex-col flex-1 gap-2">
       <PaybackTimeBreakdown
         {paybackTimeString}
         {paybackTimeSeconds}
@@ -509,10 +509,10 @@
         landToken={land.token}
         {baseToken}
         {nbNeighbors}
-        netYieldPerHour={sliderNetYieldInBaseToken}
-        currentBuyPriceInBaseToken={originalCostInBaseToken}
-        grossYieldPerHour={sliderNeighborsYieldInBaseToken}
-        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken}
+        netYieldPerHour={sliderNetYieldInBaseToken || undefined}
+        currentBuyPriceInBaseToken={originalCostInBaseToken || undefined}
+        grossYieldPerHour={sliderNeighborsYieldInBaseToken || undefined}
+        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
       />
 
       <NukeTimeBreakdown
@@ -525,7 +525,7 @@
         {baseToken}
         {nbNeighbors}
         hourlyCost={sliderNeighborsCost}
-        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken}
+        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
         {taxPerNeighbor}
       />
       <hr class="my-1 opacity-50" />
@@ -539,7 +539,7 @@
           {sellerFeeAmount}
           netSellerProceeds={netSellerProceedsInSelectedToken}
           originalCost={originalCostInLandToken}
-          {originalCostInBaseToken}
+          originalCostInBaseToken={originalCostInBaseToken || undefined}
           {actualSellBenefit}
         />
       {/if}
