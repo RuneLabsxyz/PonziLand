@@ -81,7 +81,11 @@
   }
 </script>
 
-<div class="slider-container" class:horizontal={orientation === 'horizontal'} class:vertical={orientation === 'vertical'}>
+<div
+  class="slider-container"
+  class:horizontal={orientation === 'horizontal'}
+  class:vertical={orientation === 'vertical'}
+>
   <div
     class="slider-track"
     class:horizontal={orientation === 'horizontal'}
@@ -102,9 +106,9 @@
     {#each labels as label, index}
       <div
         class="stop-circle"
-        style="{orientation === 'horizontal' 
-          ? `left: ${(index / (labels.length - 1)) * 100}%` 
-          : `bottom: ${(index / (labels.length - 1)) * 100}%`}"
+        style={orientation === 'horizontal'
+          ? `left: ${(index / (labels.length - 1)) * 100}%`
+          : `bottom: ${(index / (labels.length - 1)) * 100}%`}
       ></div>
     {/each}
 
@@ -112,9 +116,9 @@
     {#each labels as label, index}
       <div
         class="label font-ponzi-number {value === index ? 'selected' : ''}"
-        style="{orientation === 'horizontal' 
-          ? `left: ${(index / (labels.length - 1)) * 100}%` 
-          : `bottom: ${(index / (labels.length - 1)) * 100}%`}"
+        style={orientation === 'horizontal'
+          ? `left: ${(index / (labels.length - 1)) * 100}%`
+          : `bottom: ${(index / (labels.length - 1)) * 100}%`}
       >
         {label}
       </div>
@@ -123,9 +127,9 @@
     <!-- Handle -->
     <div
       class="handle"
-      style="{orientation === 'horizontal' 
-        ? `left: ${handlePosition}%` 
-        : `bottom: ${handlePosition}%`}"
+      style={orientation === 'horizontal'
+        ? `left: ${handlePosition}%`
+        : `bottom: ${handlePosition}%`}
       class:dragging={isDragging}
       class:horizontal={orientation === 'horizontal'}
       class:vertical={orientation === 'vertical'}
