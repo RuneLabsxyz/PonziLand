@@ -3,6 +3,7 @@
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { ChevronDown } from 'lucide-svelte';
+  import InfoTooltip from '$lib/components/ui/info-tooltip.svelte';
 
   let {
     paybackTimeString,
@@ -73,7 +74,10 @@
         <div
           class="flex justify-between select-text leading-none items-end pt-1"
         >
-          <span class="opacity-75">Land cost:</span>
+          <div class="flex items-center gap-1">
+            <span class="opacity-75">Land cost:</span>
+            <InfoTooltip text="The price you paid (or will pay) to buy this land" />
+          </div>
           <div class="flex items-center gap-1 text-orange-400">
             <span>{currentBuyPrice.toString()} {landToken.symbol}</span>
             <TokenAvatar
@@ -110,7 +114,10 @@
             <div
               class="flex justify-between select-text leading-none items-end"
             >
-              <span class="opacity-75">+ Yield earnings:</span>
+              <div class="flex items-center gap-1">
+                <span class="opacity-75">+ Yield earnings:</span>
+                <InfoTooltip text="Total hourly income generated from neighboring lands based on selected neighbor count" />
+              </div>
               <div class="flex items-center gap-1 text-green-400">
                 <span>
                   +{grossYieldPerHour.toString()}
@@ -129,7 +136,10 @@
             <div
               class="flex justify-between select-text leading-none items-end"
             >
-              <span class="opacity-75">- Tax payments:</span>
+              <div class="flex items-center gap-1">
+                <span class="opacity-75">- Tax payments:</span>
+                <InfoTooltip text="Hourly taxes paid to neighboring land owners based on your sell price and neighbor count" />
+              </div>
               <div class="flex items-center gap-1 text-red-400">
                 <span>
                   -{hourlyCostInBaseToken.toString()}
@@ -148,7 +158,10 @@
             <div
               class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1"
             >
-              <span class="opacity-75 font-semibold">= Net yield:</span>
+              <div class="flex items-center gap-1">
+                <span class="opacity-75 font-semibold">= Net yield:</span>
+                <InfoTooltip text="Net hourly profit/loss after subtracting tax payments from yield earnings" />
+              </div>
               <div
                 class="flex items-center gap-1 {netYieldPerHour
                   .rawValue()

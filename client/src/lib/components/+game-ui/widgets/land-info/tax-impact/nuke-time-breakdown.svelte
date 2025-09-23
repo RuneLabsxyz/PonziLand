@@ -3,6 +3,7 @@
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { ChevronDown } from 'lucide-svelte';
+  import InfoTooltip from '$lib/components/ui/info-tooltip.svelte';
 
   let {
     nukeTimeString,
@@ -67,7 +68,10 @@
       <!-- Current Stake -->
       {#if stakeAmount && selectedToken}
         <div class="flex justify-between select-text leading-none items-end">
-          <span class="opacity-75">Current stake:</span>
+          <div class="flex items-center gap-1">
+            <span class="opacity-75">Current stake:</span>
+            <InfoTooltip text="The amount of tokens currently staked in this land" />
+          </div>
           <div class="flex items-center gap-1 text-blue-400">
             <span>{stakeAmount.toString()} {selectedToken.symbol}</span>
             <TokenAvatar
@@ -80,7 +84,10 @@
 
       {#if taxPerNeighbor && hourlyCost && selectedToken}
         <div class="flex justify-between select-text leading-none items-end">
-          <span class="opacity-75">Rate per neighbor:</span>
+          <div class="flex items-center gap-1">
+            <span class="opacity-75">Rate per neighbor:</span>
+            <InfoTooltip text="Tax amount paid per hour to each neighboring land owner" />
+          </div>
           <div class="flex items-center gap-1 text-purple-400">
             <span>{taxPerNeighbor.toString()} {selectedToken.symbol}/h</span>
             <TokenAvatar
@@ -91,9 +98,12 @@
         </div>
 
         <div class="flex justify-between select-text leading-none items-end">
-          <span class="opacity-75"
-            >× <span class="text-orange-400">{nbNeighbors}</span> neighbors:</span
-          >
+          <div class="flex items-center gap-1">
+            <span class="opacity-75"
+              >× <span class="text-orange-400">{nbNeighbors}</span> neighbors:</span
+            >
+            <InfoTooltip text="Total hourly tax cost for the selected number of neighbors" />
+          </div>
           <div class="flex items-center gap-1 text-red-400">
             <span>-{hourlyCost.toString()} {selectedToken.symbol}/h</span>
             <TokenAvatar
