@@ -101,7 +101,9 @@
           >
             <div class="flex items-center gap-1">
               <span class="opacity-75">- Seller fee (5%):</span>
-              <InfoTooltip text="5% fee deducted from the sale price by the platform" />
+              <InfoTooltip
+                text="5% fee deducted from the sale price by the platform"
+              />
             </div>
             <div class="flex items-center gap-1">
               <span>-{sellerFeeAmount.toString()} {selectedToken.symbol}</span>
@@ -120,7 +122,9 @@
           >
             <div class="flex items-center gap-1">
               <span class="opacity-75">= Net proceeds:</span>
-              <InfoTooltip text="Amount you'll actually receive after the seller fee is deducted" />
+              <InfoTooltip
+                text="Amount you'll actually receive after the seller fee is deducted"
+              />
             </div>
             <div class="flex items-center gap-1 text-blue-400">
               <span>{netSellerProceeds.toString()} {selectedToken.symbol}</span>
@@ -138,7 +142,9 @@
             >
               <div class="flex items-center gap-1">
                 <span class="opacity-75">- Original cost:</span>
-                <InfoTooltip text="The original purchase price you paid for this land" />
+                <InfoTooltip
+                  text="The original purchase price you paid for this land"
+                />
               </div>
               <div class="flex items-center gap-1">
                 <span>-{originalCost.toString()} {landToken.symbol}</span>
@@ -157,7 +163,9 @@
         >
           <div class="flex items-center gap-1">
             <span class="font-semibold">= Actual profit:</span>
-            <InfoTooltip text="Net profit/loss from selling: net proceeds minus original purchase cost" />
+            <InfoTooltip
+              text="Net profit/loss from selling: net proceeds minus original purchase cost"
+            />
           </div>
           <div
             class="{actualSellBenefit.rawValue().isNegative()
