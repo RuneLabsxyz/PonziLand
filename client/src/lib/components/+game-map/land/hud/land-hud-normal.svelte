@@ -12,10 +12,12 @@
 
   let {
     yieldInfo,
+    totalYieldValue,
     burnRate,
     land,
   }: {
     yieldInfo: LandYieldInfo | undefined;
+    totalYieldValue: number;
     burnRate: CurrencyAmount;
     land: LandWithActions;
   } = $props();
@@ -35,7 +37,6 @@
   }
 
   let yieldData = $state<Yield[] | undefined>(undefined);
-  let totalYieldValue: number = $state(0);
 
   $effect(() => {
     if (yieldInfo) {
@@ -49,7 +50,6 @@
         );
       }
 
-      let totalValue = 0;
       yieldData = Array.from(yieldsByToken.entries()).map(([token, amount]) => {
         const tokenHexAddress = toHexWithPadding(token);
         const tokenData = data.availableTokens.find(
@@ -63,7 +63,6 @@
 
         if (tokenHexAddress === data.mainCurrencyAddress) {
           baseValue = formattedAmount;
-          totalValue += Number(formattedAmount.rawValue());
         } else if (priceInfo?.ratio) {
           const baseAmount = formattedAmount
             .rawValue()
@@ -72,10 +71,8 @@
             baseAmount.toString(),
             baseToken,
           );
-          totalValue += Number(baseAmount);
         } else {
           baseValue = formattedAmount;
-          totalValue += Number(formattedAmount.rawValue());
         }
 
         return {
@@ -84,8 +81,6 @@
           token: tokenData,
         };
       });
-
-      totalYieldValue = totalValue;
     }
   });
 </script>
@@ -126,7 +121,7 @@
   <div class="flex justify-between items-center text-green-400">
     <span class="low-opacity">Earning / hour</span>
     <span class="flex items-center gap-2">
-      + {displayCurrency(totalYieldValue)}
+      +&nbsp;{displayCurrency(totalYieldValue)}
       <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
     </span>
   </div>
@@ -134,7 +129,7 @@
   <div class="flex justify-between items-center text-red-400">
     <span class="low-opacity">Cost / hour</span>
     <span class="flex items-center gap-2">
-      - {displayCurrency(burnRate.toString())}
+      -&nbsp;{displayCurrency(burnRate.rawValue())}
       <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
     </span>
   </div>
