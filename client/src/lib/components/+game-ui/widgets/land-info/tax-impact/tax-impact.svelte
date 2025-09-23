@@ -391,6 +391,13 @@
     }
   });
 
+  // Recalculate yields when base token changes
+  $effect(() => {
+    if (yieldInfo && baseToken) {
+      calculateYieldInBaseToken();
+    }
+  });
+
   /**
    * Calculates the total yield from all tokens in base token equivalent.
    *
