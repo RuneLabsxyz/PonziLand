@@ -511,6 +511,8 @@
         {nbNeighbors}
         netYieldPerHour={sliderNetYieldInBaseToken}
         currentBuyPriceInBaseToken={originalCostInBaseToken}
+        grossYieldPerHour={sliderNeighborsYieldInBaseToken}
+        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken}
       />
 
       <NukeTimeBreakdown

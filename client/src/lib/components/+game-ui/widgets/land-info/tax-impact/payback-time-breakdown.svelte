@@ -13,6 +13,8 @@
     nbNeighbors,
     netYieldPerHour,
     currentBuyPriceInBaseToken,
+    grossYieldPerHour,
+    hourlyCostInBaseToken,
   }: {
     paybackTimeString: string;
     paybackTimeSeconds: number;
@@ -22,6 +24,8 @@
     nbNeighbors: number;
     netYieldPerHour?: CurrencyAmount;
     currentBuyPriceInBaseToken?: CurrencyAmount;
+    grossYieldPerHour?: CurrencyAmount;
+    hourlyCostInBaseToken?: CurrencyAmount;
   } = $props();
 
   let isExpanded = $state(false);
@@ -87,38 +91,55 @@
         {/if}
       {/if}
 
-      {#if netYieldPerHour && baseToken && nbNeighbors > 0}
-        <!-- Yield Calculation -->
+      {#if baseToken && nbNeighbors > 0}
+        <!-- Detailed Yield Breakdown -->
         <div class="space-y-1">
-          <div class="flex justify-between select-text leading-none items-end">
-            <span class="opacity-75">Avg yield per neighbor:</span>
-            <div class="flex items-center gap-1 {netYieldPerHour.rawValue().isNegative() ? 'text-red-400' : 'text-green-400'}">
-              <span>
-                {netYieldPerHour.rawValue().isNegative() ? '' : '+'}
-                {CurrencyAmount.fromScaled(netYieldPerHour.rawValue().dividedBy(nbNeighbors).toString(), baseToken).toString()} {baseToken.symbol}/h
-              </span>
-              <TokenAvatar
-                token={baseToken}
-                class="border border-white w-3 h-3"
-              />
+          <div class="text-xs opacity-75 mb-1">Hourly earnings breakdown:</div>
+          
+          {#if grossYieldPerHour}
+            <!-- Gross Yield Earnings -->
+            <div class="flex justify-between select-text leading-none items-end">
+              <span class="opacity-75">+ Yield earnings:</span>
+              <div class="flex items-center gap-1 text-green-400">
+                <span>+{grossYieldPerHour.toString()} {baseToken.symbol}/h</span>
+                <TokenAvatar
+                  token={baseToken}
+                  class="border border-white w-3 h-3"
+                />
+              </div>
             </div>
-          </div>
+          {/if}
 
-          <div class="flex justify-between select-text leading-none items-end">
-            <span class="opacity-75"
-              >× <span class="text-orange-400">{nbNeighbors}</span> neighbors:</span
-            >
-            <div class="flex items-center gap-1 {netYieldPerHour.rawValue().isNegative() ? 'text-red-400' : 'text-green-400'}">
-              <span>
-                {netYieldPerHour.rawValue().isNegative() ? '' : '+'}
-                {netYieldPerHour.toString()} {baseToken.symbol}/h
-              </span>
-              <TokenAvatar
-                token={baseToken}
-                class="border border-white w-3 h-3"
-              />
+          {#if hourlyCostInBaseToken}
+            <!-- Hourly Costs (Tax Payments) -->
+            <div class="flex justify-between select-text leading-none items-end">
+              <span class="opacity-75">- Tax payments:</span>
+              <div class="flex items-center gap-1 text-red-400">
+                <span>-{hourlyCostInBaseToken.toString()} {baseToken.symbol}/h</span>
+                <TokenAvatar
+                  token={baseToken}
+                  class="border border-white w-3 h-3"
+                />
+              </div>
             </div>
-          </div>
+          {/if}
+
+          {#if netYieldPerHour}
+            <!-- Net Result -->
+            <div class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1">
+              <span class="opacity-75 font-semibold">= Net yield:</span>
+              <div class="flex items-center gap-1 {netYieldPerHour.rawValue().isNegative() ? 'text-red-400' : 'text-green-400'} font-semibold">
+                <span>
+                  {netYieldPerHour.rawValue().isNegative() ? '' : '+'}
+                  {netYieldPerHour.toString()} {baseToken.symbol}/h
+                </span>
+                <TokenAvatar
+                  token={baseToken}
+                  class="border border-white w-3 h-3"
+                />
+              </div>
+            </div>
+          {/if}
         </div>
       {/if}
     </div>
