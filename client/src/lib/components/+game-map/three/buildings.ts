@@ -92,6 +92,16 @@ export const buildingAtlasMeta = [
     animations: [{ name: 'USDC_3', frameRange: [0, 9] }],
   },
   {
+    url: '/tokens/basic/1.png',
+    type: 'rowColumn',
+    width: 1,
+    height: 1,
+    animations: [
+      { name: 'USDC_1', frameRange: [0, 0] },
+      { name: 'USDC_2', frameRange: [0, 0] },
+    ],
+  },
+  {
     url: '/tokens/BITCOIN/3-animated.png',
     type: 'rowColumn',
     width: 3,
