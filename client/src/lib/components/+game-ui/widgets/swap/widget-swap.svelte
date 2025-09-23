@@ -12,7 +12,7 @@
   import { notificationQueue } from '$lib/stores/event.store.svelte';
   import type { Token } from '$lib/interfaces';
   import { onMount } from 'svelte';
-  import * as Tooltip from '$lib/components/ui/tooltip';
+  import InfoTooltip from '$lib/components/ui/info-tooltip.svelte';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
@@ -268,43 +268,7 @@
         <div class="flex justify-between">
           <div class="flex items-center gap-1">
             <span class="text-gray-400">Route:</span>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild let:builder>
-                <button
-                  use:builder.action
-                  {...builder}
-                  class="text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="currentColor"
-                  >
-                    <circle
-                      cx="6"
-                      cy="6"
-                      r="5"
-                      stroke="currentColor"
-                      stroke-width="1"
-                      fill="none"
-                    />
-                    <text
-                      x="6"
-                      y="8.5"
-                      text-anchor="middle"
-                      font-size="7"
-                      fill="currentColor">?</text
-                    >
-                  </svg>
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Content
-                class="bg-black/90 text-white text-xs border-gray-600"
-              >
-                The DEX or liquidity source being used for this swap
-              </Tooltip.Content>
-            </Tooltip.Root>
+            <InfoTooltip text="The DEX or liquidity source being used for this swap" />
           </div>
           <span class="text-white">
             {quotes[0].routes?.[0]?.name || 'Direct'}
@@ -313,43 +277,7 @@
         <div class="flex justify-between">
           <div class="flex items-center gap-1">
             <span class="text-gray-400">Rate:</span>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild let:builder>
-                <button
-                  use:builder.action
-                  {...builder}
-                  class="text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="currentColor"
-                  >
-                    <circle
-                      cx="6"
-                      cy="6"
-                      r="5"
-                      stroke="currentColor"
-                      stroke-width="1"
-                      fill="none"
-                    />
-                    <text
-                      x="6"
-                      y="8.5"
-                      text-anchor="middle"
-                      font-size="7"
-                      fill="currentColor">?</text
-                    >
-                  </svg>
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Content
-                class="bg-black/90 text-white text-xs border-gray-600"
-              >
-                Current exchange rate between the selected tokens
-              </Tooltip.Content>
-            </Tooltip.Root>
+            <InfoTooltip text="Current exchange rate between the selected tokens" />
           </div>
           <span class="text-white">
             1 {sellToken?.symbol} = {(
@@ -362,43 +290,7 @@
           <div class="flex justify-between">
             <div class="flex items-center gap-1">
               <span class="text-gray-400">Gas Fee:</span>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild let:builder>
-                  <button
-                    use:builder.action
-                    {...builder}
-                    class="text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="currentColor"
-                    >
-                      <circle
-                        cx="6"
-                        cy="6"
-                        r="5"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        fill="none"
-                      />
-                      <text
-                        x="6"
-                        y="8.5"
-                        text-anchor="middle"
-                        font-size="7"
-                        fill="currentColor">?</text
-                      >
-                    </svg>
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Content
-                  class="bg-black/90 text-white text-xs border-gray-600"
-                >
-                  Estimated network transaction cost for executing the swap
-                </Tooltip.Content>
-              </Tooltip.Root>
+              <InfoTooltip text="Estimated network transaction cost for executing the swap" />
             </div>
             <span class="text-white">
               ~${quotes[0].gasFeesInUsd.toFixed(4)}
@@ -409,43 +301,7 @@
           <div class="flex justify-between">
             <div class="flex items-center gap-1">
               <span class="text-gray-400">AVNU Fee:</span>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild let:builder>
-                  <button
-                    use:builder.action
-                    {...builder}
-                    class="text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="currentColor"
-                    >
-                      <circle
-                        cx="6"
-                        cy="6"
-                        r="5"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        fill="none"
-                      />
-                      <text
-                        x="6"
-                        y="8.5"
-                        text-anchor="middle"
-                        font-size="7"
-                        fill="currentColor">?</text
-                      >
-                    </svg>
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Content
-                  class="bg-black/90 text-white text-xs border-gray-600"
-                >
-                  Protocol fee charged by AVNU for providing the swap service
-                </Tooltip.Content>
-              </Tooltip.Root>
+              <InfoTooltip text="Protocol fee charged by AVNU for providing the swap service" />
             </div>
             <span class="text-white">
               ~${quotes[0].avnuFeesInUsd.toFixed(4)}
@@ -461,43 +317,7 @@
           <div class="flex justify-between">
             <div class="flex items-center gap-1">
               <span class="text-gray-400">Integrator Fee:</span>
-              <Tooltip.Root>
-                <Tooltip.Trigger asChild let:builder>
-                  <button
-                    use:builder.action
-                    {...builder}
-                    class="text-gray-500 hover:text-gray-300 transition-colors"
-                  >
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="currentColor"
-                    >
-                      <circle
-                        cx="6"
-                        cy="6"
-                        r="5"
-                        stroke="currentColor"
-                        stroke-width="1"
-                        fill="none"
-                      />
-                      <text
-                        x="6"
-                        y="8.5"
-                        text-anchor="middle"
-                        font-size="7"
-                        fill="currentColor">?</text
-                      >
-                    </svg>
-                  </button>
-                </Tooltip.Trigger>
-                <Tooltip.Content
-                  class="bg-black/90 text-white text-xs border-gray-600"
-                >
-                  Fee paid to PonziLand for integrating the swap functionality
-                </Tooltip.Content>
-              </Tooltip.Root>
+              <InfoTooltip text="Fee paid to PonziLand for integrating the swap functionality" />
             </div>
             <span class="text-white">
               ~${quotes[0].integratorFeesInUsd.toFixed(4)}
@@ -514,43 +334,7 @@
         <div class="flex justify-between">
           <div class="flex items-center gap-1">
             <span class="text-gray-400">Slippage Tolerance:</span>
-            <Tooltip.Root>
-              <Tooltip.Trigger asChild let:builder>
-                <button
-                  use:builder.action
-                  {...builder}
-                  class="text-gray-500 hover:text-gray-300 transition-colors"
-                >
-                  <svg
-                    width="12"
-                    height="12"
-                    viewBox="0 0 12 12"
-                    fill="currentColor"
-                  >
-                    <circle
-                      cx="6"
-                      cy="6"
-                      r="5"
-                      stroke="currentColor"
-                      stroke-width="1"
-                      fill="none"
-                    />
-                    <text
-                      x="6"
-                      y="8.5"
-                      text-anchor="middle"
-                      font-size="7"
-                      fill="currentColor">?</text
-                    >
-                  </svg>
-                </button>
-              </Tooltip.Trigger>
-              <Tooltip.Content
-                class="bg-black/90 text-white text-xs border-gray-600"
-              >
-                Maximum price movement you're willing to accept during the swap
-              </Tooltip.Content>
-            </Tooltip.Root>
+            <InfoTooltip text="Maximum price movement you're willing to accept during the swap" />
           </div>
           <span class="text-white">{slippage}%</span>
         </div>
