@@ -502,6 +502,17 @@
 
       <hr class="my-1 opacity-50" />
 
+      <PaybackTimeBreakdown
+        {paybackTimeString}
+        {paybackTimeSeconds}
+        {currentBuyPrice}
+        landToken={land.token}
+        {baseToken}
+        {nbNeighbors}
+        netYieldPerHour={sliderNetYieldInBaseToken}
+        currentBuyPriceInBaseToken={originalCostInBaseToken}
+      />
+
       <NukeTimeBreakdown
         nukeTimeString={sliderNukeTimeString}
         nukeTimeSeconds={sliderNukeTimeSeconds}
@@ -515,19 +526,6 @@
         hourlyCostInBaseToken={sliderNeighborsCostInBaseToken}
         {taxPerNeighbor}
       />
-
-      <PaybackTimeBreakdown
-        {paybackTimeString}
-        {paybackTimeSeconds}
-        {currentBuyPrice}
-        landToken={land.token}
-        {baseToken}
-        {selectedToken}
-        {nbNeighbors}
-        netYieldPerHour={sliderNetYieldInBaseToken}
-        {yieldPerNeighbor}
-      />
-
       <hr class="my-1 opacity-50" />
 
       {#if sellAmountVal && selectedToken && baseToken}
