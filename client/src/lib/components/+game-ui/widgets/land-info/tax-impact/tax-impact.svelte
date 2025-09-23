@@ -11,6 +11,7 @@
   import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
   import SellProfitBreakdown from './sell-profit-breakdown.svelte';
+  import NukeTimeBreakdown from './nuke-time-breakdown.svelte';
 
   // Fee calculation constants (matching smart contract values)
   const SCALE_FACTOR_FOR_FEE = 10_000_000;
@@ -174,10 +175,11 @@
     const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
 
     // Calculate 5% fee in the selected token
-    const feeAmount = sellValue.rawValue()
+    const feeAmount = sellValue
+      .rawValue()
       .multipliedBy(BUY_FEE_RATE)
       .dividedBy(SCALE_FACTOR_FOR_FEE);
-    
+
     return CurrencyAmount.fromScaled(feeAmount.toString(), selectedToken);
   });
 
@@ -205,10 +207,15 @@
     }
 
     const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
-    
+
     // Net proceeds in selected token = sell price - fee (both in selected token)
-    const netAmountInSelectedToken = sellValue.rawValue().minus(sellerFeeAmount.rawValue());
-    return CurrencyAmount.fromScaled(netAmountInSelectedToken.toString(), selectedToken);
+    const netAmountInSelectedToken = sellValue
+      .rawValue()
+      .minus(sellerFeeAmount.rawValue());
+    return CurrencyAmount.fromScaled(
+      netAmountInSelectedToken.toString(),
+      selectedToken,
+    );
   });
 
   /**
@@ -218,7 +225,7 @@
     if (!netSellerProceedsInSelectedToken || !baseToken) {
       return undefined;
     }
-    
+
     // Convert net proceeds to base token for calculations
     return walletStore.convertTokenAmount(
       netSellerProceedsInSelectedToken,
@@ -258,15 +265,14 @@
    * Shows the true benefit: net_proceeds - original_buy_price (both converted to base token)
    */
   let actualSellBenefit = $derived.by(() => {
-    if (
-      !netSellerProceedsInBaseToken ||
-      !originalCostInBaseToken
-    ) {
+    if (!netSellerProceedsInBaseToken || !originalCostInBaseToken) {
       return undefined;
     }
 
     // Calculate actual profit: net_proceeds (in base token) - buy_price (in base token)
-    const actualProfit = netSellerProceedsInBaseToken.rawValue().minus(originalCostInBaseToken.rawValue());
+    const actualProfit = netSellerProceedsInBaseToken
+      .rawValue()
+      .minus(originalCostInBaseToken.rawValue());
     return CurrencyAmount.fromScaled(actualProfit.toString(), baseToken);
   });
 
@@ -495,35 +501,19 @@
 
       <hr class="my-1 opacity-50" />
 
-      {#if sellAmountVal && selectedToken && baseToken}
-        <SellProfitBreakdown
-          {sellAmountVal}
-          {selectedToken}
-          {baseToken}
-          landToken={land.token}
-          {sellerFeeAmount}
-          netSellerProceeds={netSellerProceedsInSelectedToken}
-          originalCost={originalCostInLandToken}
-          originalCostInBaseToken={originalCostInBaseToken}
-          {actualSellBenefit}
-        />
-      {/if}
-
-      <hr class="my-1 opacity-50" />
-
-      <div class="flex justify-between select-text leading-none items-end">
-        <div>
-          <span class="opacity-50">Nuke time</span>
-        </div>
-        <div
-          class={sliderNukeTimeString.includes('Now') ||
-          sliderNukeTimeSeconds < 3600
-            ? 'text-red-500'
-            : 'text-green-500'}
-        >
-          {sliderNukeTimeString}
-        </div>
-      </div>
+      <NukeTimeBreakdown
+        nukeTimeString={sliderNukeTimeString}
+        nukeTimeSeconds={sliderNukeTimeSeconds}
+        stakeAmount={stakeAmountVal
+          ? CurrencyAmount.fromScaled(stakeAmountVal, selectedToken)
+          : land?.stakeAmount}
+        {selectedToken}
+        {baseToken}
+        {nbNeighbors}
+        hourlyCost={sliderNeighborsCost}
+        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken}
+        {taxPerNeighbor}
+      />
 
       <div class="flex justify-between select-text leading-none items-end">
         <div>
@@ -539,6 +529,22 @@
           {paybackTimeString}
         </div>
       </div>
+
+      <hr class="my-1 opacity-50" />
+
+      {#if sellAmountVal && selectedToken && baseToken}
+        <SellProfitBreakdown
+          {sellAmountVal}
+          {selectedToken}
+          {baseToken}
+          landToken={land.token}
+          {sellerFeeAmount}
+          netSellerProceeds={netSellerProceedsInSelectedToken}
+          originalCost={originalCostInLandToken}
+          {originalCostInBaseToken}
+          {actualSellBenefit}
+        />
+      {/if}
     </div>
   </div>
 </div>
