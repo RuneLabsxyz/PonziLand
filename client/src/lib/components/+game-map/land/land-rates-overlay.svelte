@@ -58,15 +58,12 @@
           symbol: baseToken.symbol,
         };
       } else {
-        return {
-          amount: '?',
-          symbol: baseToken.symbol,
-        };
+        return null;
       }
     } else {
       return {
         amount: displayCurrency(tokenBurnRate),
-        symbol: land.token?.symbol || '?',
+        symbol: land.token?.symbol || 'UNKNOWN',
       };
     }
   });
@@ -104,7 +101,7 @@
             symbol: baseToken.symbol,
           };
         } else {
-          return { amount: '?', symbol: baseToken.symbol };
+          return null;
         }
       } else {
         const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
@@ -195,21 +192,12 @@
       </div>
     {:else}
       {#each yieldInfo as info, i}
-        {#if info?.token}
+        {#if info?.token && displayYields[i] && displayYields[i].amount !== '0'}
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
-            <span
-              class="whitespace-nowrap {displayYields[i].amount === '?'
-                ? 'text-yellow-400'
-                : 'text-green-300'}"
-            >
-              {displayYields[i].amount === '?'
-                ? '?'
-                : `+${displayYields[i].amount}`}
-              {displayYields[i].amount === '?'
-                ? ''
-                : `${displayYields[i].symbol}/h`}
+            <span class="whitespace-nowrap text-green-300">
+              +{displayYields[i].amount}{displayYields[i].symbol}/h
             </span>
           </div>
         {:else if info && i !== 4}
@@ -217,26 +205,17 @@
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
             {#if info.sell_price > 0n}
-              <span class="whitespace-nowrap text-yellow-400"> ?/h </span>
+              <!-- Don't display anything for unknown rates -->
             {:else}
-              <span class="whitespace-nowrap text-gray-500"> 0/h </span>
+              <!-- Don't display anything for zero rates -->
             {/if}
           </div>
-        {:else if i === 4}
+        {:else if i === 4 && displayBurnRate && displayBurnRate.amount !== '0'}
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none relative"
           >
-            <span
-              class="whitespace-nowrap {displayBurnRate.amount === '?'
-                ? 'text-yellow-400'
-                : 'text-red-500'}"
-            >
-              {displayBurnRate.amount === '?'
-                ? '?'
-                : `-${displayBurnRate.amount}`}
-              {displayBurnRate.amount === '?'
-                ? ''
-                : `${displayBurnRate.symbol}/h`}
+            <span class="whitespace-nowrap text-red-500">
+              -{displayBurnRate.amount}{displayBurnRate.symbol}/h
             </span>
           </div>
         {:else}
