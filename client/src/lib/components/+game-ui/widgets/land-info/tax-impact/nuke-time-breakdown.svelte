@@ -44,6 +44,7 @@
       <span class="font-semibold font-ponzi-number opacity-75 tracking-wider">
         Nuke Time
       </span>
+      <InfoTooltip text="Time until your staked tokens run out due to tax payments (you can always stake more later)" />
     </div>
 
     <div
