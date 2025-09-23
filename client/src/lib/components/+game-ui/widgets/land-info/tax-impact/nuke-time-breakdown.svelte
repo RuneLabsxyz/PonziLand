@@ -49,8 +49,11 @@
         {nukeTimeString}
       </div>
     </div>
-    
-    <div class="transition-transform duration-200" class:rotate-180={isExpanded}>
+
+    <div
+      class="transition-transform duration-200"
+      class:rotate-180={isExpanded}
+    >
       <ChevronDown size={16} class="text-slate-400" />
     </div>
   </button>
@@ -58,46 +61,61 @@
   <!-- Expanded Details -->
   {#if isExpanded}
     <div class="px-2 pb-2 space-y-1 border-t border-slate-600/30">
-      <div class="text-yellow-400 font-semibold mb-2 mt-2">Breakdown:</div>
-      
       <!-- Current Stake -->
       {#if stakeAmount && selectedToken}
         <div class="flex justify-between select-text leading-none items-end">
           <span class="opacity-75">Current stake:</span>
           <div class="flex items-center gap-1 text-blue-400">
             <span>{stakeAmount.toString()} {selectedToken.symbol}</span>
-            <TokenAvatar token={selectedToken} class="border border-white w-3 h-3" />
+            <TokenAvatar
+              token={selectedToken}
+              class="border border-white w-3 h-3"
+            />
           </div>
         </div>
       {/if}
 
-
       {#if taxPerNeighbor && hourlyCost && selectedToken}
         <!-- Merged Tax Calculation & Cost Analysis -->
         <div class="space-y-1">
-          
           <div class="flex justify-between select-text leading-none items-end">
             <span class="opacity-75">Rate per neighbor:</span>
             <div class="flex items-center gap-1 text-purple-400">
               <span>{taxPerNeighbor.toString()} {selectedToken.symbol}/h</span>
-              <TokenAvatar token={selectedToken} class="border border-white w-3 h-3" />
+              <TokenAvatar
+                token={selectedToken}
+                class="border border-white w-3 h-3"
+              />
             </div>
           </div>
 
           <div class="flex justify-between select-text leading-none items-end">
-            <span class="opacity-75">× <span class="text-orange-400">{nbNeighbors}</span> neighbors:</span>
+            <span class="opacity-75"
+              >× <span class="text-orange-400">{nbNeighbors}</span> neighbors:</span
+            >
             <div class="flex items-center gap-1 text-red-400">
               <span>-{hourlyCost.toString()} {selectedToken.symbol}/h</span>
-              <TokenAvatar token={selectedToken} class="border border-white w-3 h-3" />
+              <TokenAvatar
+                token={selectedToken}
+                class="border border-white w-3 h-3"
+              />
             </div>
           </div>
 
           {#if hourlyCostInBaseToken && baseToken}
-            <div class="flex justify-between select-text leading-none items-end text-red-400 opacity-75">
+            <div
+              class="flex justify-between select-text leading-none items-end text-red-400 opacity-75"
+            >
               <span class="opacity-75">≈ Total cost:</span>
               <div class="flex items-center gap-1">
-                <span>-{hourlyCostInBaseToken.toString()} {baseToken.symbol}/h</span>
-                <TokenAvatar token={baseToken} class="border border-white w-2 h-2" />
+                <span
+                  >-{hourlyCostInBaseToken.toString()}
+                  {baseToken.symbol}/h</span
+                >
+                <TokenAvatar
+                  token={baseToken}
+                  class="border border-white w-2 h-2"
+                />
               </div>
             </div>
           {/if}

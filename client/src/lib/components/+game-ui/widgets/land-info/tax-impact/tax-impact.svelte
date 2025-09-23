@@ -12,6 +12,7 @@
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
   import SellProfitBreakdown from './sell-profit-breakdown.svelte';
   import NukeTimeBreakdown from './nuke-time-breakdown.svelte';
+  import PaybackTimeBreakdown from './payback-time-breakdown.svelte';
 
   // Fee calculation constants (matching smart contract values)
   const SCALE_FACTOR_FOR_FEE = 10_000_000;
@@ -515,20 +516,17 @@
         {taxPerNeighbor}
       />
 
-      <div class="flex justify-between select-text leading-none items-end">
-        <div>
-          <span class="opacity-50">Payback time</span>
-        </div>
-        <div
-          class={paybackTimeSeconds === Infinity
-            ? 'text-red-500'
-            : paybackTimeSeconds < 3600 * 24 * 7
-              ? 'text-green-500'
-              : 'text-yellow-500'}
-        >
-          {paybackTimeString}
-        </div>
-      </div>
+      <PaybackTimeBreakdown
+        {paybackTimeString}
+        {paybackTimeSeconds}
+        {currentBuyPrice}
+        landToken={land.token}
+        {baseToken}
+        {selectedToken}
+        {nbNeighbors}
+        netYieldPerHour={sliderNetYieldInBaseToken}
+        {yieldPerNeighbor}
+      />
 
       <hr class="my-1 opacity-50" />
 
