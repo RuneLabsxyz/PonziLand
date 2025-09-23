@@ -10,6 +10,11 @@
   import { calculateTaxes } from '$lib/utils/taxes';
   import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
+  import SellProfitBreakdown from './sell-profit-breakdown.svelte';
+
+  // Fee calculation constants (matching smart contract values)
+  const SCALE_FACTOR_FOR_FEE = 10_000_000;
+  const BUY_FEE_RATE = 500_000; // 5% fee (500,000 / 10,000,000)
 
   let {
     sellAmountVal = undefined,
@@ -159,42 +164,120 @@
   });
 
   /**
+   * Calculates the seller fee amount (5%) from the sell price in selected token
+   */
+  let sellerFeeAmount = $derived.by(() => {
+    if (!sellAmountVal || !selectedToken) {
+      return undefined;
+    }
+
+    const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
+
+    // Calculate 5% fee in the selected token
+    const feeAmount = sellValue.rawValue()
+      .multipliedBy(BUY_FEE_RATE)
+      .dividedBy(SCALE_FACTOR_FOR_FEE);
+    
+    return CurrencyAmount.fromScaled(feeAmount.toString(), selectedToken);
+  });
+
+  /**
+   * Calculates the seller fee amount (5%) from the sell price in base token for other calculations
+   */
+  let sellerFeeAmountInBaseToken = $derived.by(() => {
+    if (!sellerFeeAmount || !baseToken) {
+      return undefined;
+    }
+
+    return walletStore.convertTokenAmount(
+      sellerFeeAmount,
+      selectedToken!,
+      baseToken,
+    );
+  });
+
+  /**
+   * Calculates what the seller actually receives after the 5% fee is deducted (in selected token)
+   */
+  let netSellerProceedsInSelectedToken = $derived.by(() => {
+    if (!sellAmountVal || !selectedToken || !sellerFeeAmount) {
+      return undefined;
+    }
+
+    const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
+    
+    // Net proceeds in selected token = sell price - fee (both in selected token)
+    const netAmountInSelectedToken = sellValue.rawValue().minus(sellerFeeAmount.rawValue());
+    return CurrencyAmount.fromScaled(netAmountInSelectedToken.toString(), selectedToken);
+  });
+
+  /**
+   * Calculates what the seller actually receives after the 5% fee is deducted (converted to base token for calculations)
+   */
+  let netSellerProceedsInBaseToken = $derived.by(() => {
+    if (!netSellerProceedsInSelectedToken || !baseToken) {
+      return undefined;
+    }
+    
+    // Convert net proceeds to base token for calculations
+    return walletStore.convertTokenAmount(
+      netSellerProceedsInSelectedToken,
+      selectedToken!,
+      baseToken,
+    );
+  });
+
+  /**
+   * Calculates the original cost in base token for display
+   */
+  let originalCostInBaseToken = $derived.by(() => {
+    if (!currentBuyPrice || !land?.token || !baseToken) {
+      return undefined;
+    }
+
+    return walletStore.convertTokenAmount(
+      currentBuyPrice,
+      land.token,
+      baseToken,
+    );
+  });
+
+  /**
+   * Gets the original cost in the land's original token
+   */
+  let originalCostInLandToken = $derived.by(() => {
+    if (!currentBuyPrice || !land?.token) {
+      return undefined;
+    }
+
+    return currentBuyPrice;
+  });
+
+  /**
+   * Calculates the actual profit/loss after accounting for seller fees.
+   * Shows the true benefit: net_proceeds - original_buy_price (both converted to base token)
+   */
+  let actualSellBenefit = $derived.by(() => {
+    if (
+      !netSellerProceedsInBaseToken ||
+      !originalCostInBaseToken
+    ) {
+      return undefined;
+    }
+
+    // Calculate actual profit: net_proceeds (in base token) - buy_price (in base token)
+    const actualProfit = netSellerProceedsInBaseToken.rawValue().minus(originalCostInBaseToken.rawValue());
+    return CurrencyAmount.fromScaled(actualProfit.toString(), baseToken);
+  });
+
+  /**
+   * @deprecated - kept for backwards compatibility, use actualSellBenefit instead
    * Calculates the potential sell benefit in base token.
    * Shows the difference between what we could sell the land for (sellAmountVal)
    * versus what we're buying it for (land.sellPrice).
    */
   let potentialSellBenefitInBaseToken = $derived.by(() => {
-    if (
-      !sellAmountVal ||
-      !currentBuyPrice ||
-      !land?.token ||
-      !selectedToken ||
-      !baseToken
-    ) {
-      return undefined;
-    }
-
-    // What we could sell it for
-    const sellValue = CurrencyAmount.fromScaled(sellAmountVal, selectedToken);
-    const sellValueInBaseToken = walletStore.convertTokenAmount(
-      sellValue,
-      selectedToken,
-      baseToken,
-    );
-    // What we're buying it for (current buy price - auction price or regular sell price)
-    const buyPriceInBaseToken = walletStore.convertTokenAmount(
-      currentBuyPrice,
-      land.token,
-      baseToken,
-    );
-
-    if (!sellValueInBaseToken || !buyPriceInBaseToken) return undefined;
-
-    // Calculate the difference (profit/loss)
-    const profit = sellValueInBaseToken
-      .rawValue()
-      .minus(buyPriceInBaseToken.rawValue());
-    return CurrencyAmount.fromScaled(profit.toString(), baseToken);
+    return actualSellBenefit;
   });
 
   /**
@@ -412,28 +495,18 @@
 
       <hr class="my-1 opacity-50" />
 
-      {#if potentialSellBenefitInBaseToken}
-        <div class="flex justify-between select-text leading-none items-end">
-          <div>
-            <span class="opacity-50">Sell benefit</span>
-          </div>
-          <div
-            class="{potentialSellBenefitInBaseToken.rawValue().isNegative()
-              ? 'text-red-500'
-              : 'text-green-500'} flex items-center gap-1"
-          >
-            <span>
-              {potentialSellBenefitInBaseToken.rawValue().isNegative()
-                ? ''
-                : '+'}
-              {potentialSellBenefitInBaseToken.toString()}
-            </span>
-            <TokenAvatar
-              token={baseToken}
-              class="border border-white w-3 h-3"
-            />
-          </div>
-        </div>
+      {#if sellAmountVal && selectedToken && baseToken}
+        <SellProfitBreakdown
+          {sellAmountVal}
+          {selectedToken}
+          {baseToken}
+          landToken={land.token}
+          {sellerFeeAmount}
+          netSellerProceeds={netSellerProceedsInSelectedToken}
+          originalCost={originalCostInLandToken}
+          originalCostInBaseToken={originalCostInBaseToken}
+          {actualSellBenefit}
+        />
       {/if}
 
       <hr class="my-1 opacity-50" />
