@@ -10,20 +10,18 @@
     currentBuyPrice,
     landToken,
     baseToken,
-    selectedToken,
     nbNeighbors,
     netYieldPerHour,
-    yieldPerNeighbor,
+    currentBuyPriceInBaseToken,
   }: {
     paybackTimeString: string;
     paybackTimeSeconds: number;
     currentBuyPrice?: CurrencyAmount;
     landToken?: Token;
     baseToken?: Token;
-    selectedToken?: Token;
     nbNeighbors: number;
     netYieldPerHour?: CurrencyAmount;
-    yieldPerNeighbor?: CurrencyAmount;
+    currentBuyPriceInBaseToken?: CurrencyAmount;
   } = $props();
 
   let isExpanded = $state(false);
@@ -77,15 +75,28 @@
             />
           </div>
         </div>
+        
+        {#if currentBuyPriceInBaseToken && baseToken}
+          <div class="flex justify-between select-text leading-none items-end text-orange-400 opacity-75">
+            <span class="opacity-75">≈ Land cost:</span>
+            <div class="flex items-center gap-1">
+              <span>{currentBuyPriceInBaseToken.toString()} {baseToken.symbol}</span>
+              <TokenAvatar token={baseToken} class="border border-white w-2 h-2" />
+            </div>
+          </div>
+        {/if}
       {/if}
 
-      {#if yieldPerNeighbor && netYieldPerHour && selectedToken && baseToken}
+      {#if netYieldPerHour && baseToken && nbNeighbors > 0}
         <!-- Yield Calculation -->
         <div class="space-y-1">
           <div class="flex justify-between select-text leading-none items-end">
-            <span class="opacity-75">Yield per neighbor:</span>
-            <div class="flex items-center gap-1 text-green-400">
-              <span>+{yieldPerNeighbor.toString()} {baseToken.symbol}/h</span>
+            <span class="opacity-75">Avg yield per neighbor:</span>
+            <div class="flex items-center gap-1 {netYieldPerHour.rawValue().isNegative() ? 'text-red-400' : 'text-green-400'}">
+              <span>
+                {netYieldPerHour.rawValue().isNegative() ? '' : '+'}
+                {CurrencyAmount.fromScaled(netYieldPerHour.rawValue().dividedBy(nbNeighbors).toString(), baseToken).toString()} {baseToken.symbol}/h
+              </span>
               <TokenAvatar
                 token={baseToken}
                 class="border border-white w-3 h-3"
@@ -97,47 +108,17 @@
             <span class="opacity-75"
               >× <span class="text-orange-400">{nbNeighbors}</span> neighbors:</span
             >
-            <div class="flex items-center gap-1 text-green-400">
-              <span>+{netYieldPerHour.toString()} {baseToken.symbol}/h</span>
+            <div class="flex items-center gap-1 {netYieldPerHour.rawValue().isNegative() ? 'text-red-400' : 'text-green-400'}">
+              <span>
+                {netYieldPerHour.rawValue().isNegative() ? '' : '+'}
+                {netYieldPerHour.toString()} {baseToken.symbol}/h
+              </span>
               <TokenAvatar
                 token={baseToken}
                 class="border border-white w-3 h-3"
               />
             </div>
           </div>
-        </div>
-      {/if}
-
-      <!-- Payback Explanation -->
-      {#if paybackTimeSeconds === Infinity}
-        <div
-          class="bg-red-900/20 border border-red-600/30 rounded p-2 text-red-300 text-xs mt-2"
-        >
-          ⚠️ No payback: Land is losing money (negative yield)
-        </div>
-      {:else if paybackTimeSeconds === 0}
-        <div
-          class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs mt-2"
-        >
-          ⚠️ No yield generated from neighbors
-        </div>
-      {:else if paybackTimeSeconds < 3600 * 24 * 7}
-        <div
-          class="bg-green-900/20 border border-green-600/30 rounded p-2 text-green-300 text-xs mt-2"
-        >
-          ✅ Excellent: Land will pay for itself within a week!
-        </div>
-      {:else if paybackTimeSeconds < 3600 * 24 * 30}
-        <div
-          class="bg-blue-900/20 border border-blue-600/30 rounded p-2 text-blue-300 text-xs mt-2"
-        >
-          💡 Good: Land will pay for itself within a month
-        </div>
-      {:else}
-        <div
-          class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs mt-2"
-        >
-          ⏰ Long payback: Consider the time investment carefully
         </div>
       {/if}
     </div>
