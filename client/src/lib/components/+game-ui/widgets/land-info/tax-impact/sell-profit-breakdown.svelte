@@ -45,6 +45,7 @@
         <span class="font-semibold font-ponzi-number opacity-75 tracking-wider"
           >Sale Profit</span
         >
+        <InfoTooltip text="Net profit/loss calculation if you sell this land at the specified price" />
       </div>
 
       <div
