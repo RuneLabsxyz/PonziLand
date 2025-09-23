@@ -17,6 +17,7 @@
   let increment = $state(0);
   let startingAmount = $state(0n); // Track the starting amount when processing begins
   let accumulatedIncrements = $state(0n); // Track total increments during processing
+  let previousBaseEquivalent = $state<CurrencyAmount | null>(null); // Track previous base equivalent for animation
 
   let tweenAmount = Tween.of(() => Number(amount), {
     delay: 500,
@@ -47,6 +48,9 @@
 
     increment = Number(nextIncrement);
     accumulatedIncrements += nextIncrement;
+
+    // Store current base equivalent before animation for comparison
+    previousBaseEquivalent = baseEquivalent;
     animating = true;
 
     tweenAmount.set(Number(startingAmount + accumulatedIncrements)).then(() => {
@@ -119,9 +123,6 @@
     return walletStore.convertTokenAmount(displayAmount, token, baseToken);
   });
 
-  // Track previous base equivalent for animation
-  let previousBaseEquivalent = $state<CurrencyAmount | null>(null);
-
   $effect(() => {
     if (baseEquivalent) {
       previousBaseEquivalent = baseEquivalent;
@@ -178,7 +179,7 @@
     {#if shouldShowBaseValue}
       <div
         class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
-          ? 'animating scale-110 text-yellow-500 font-bold'
+          ? 'animating text-yellow-500 font-bold'
           : ''}"
       >
         <div>{baseEquivalent?.toString() || '0'}</div>

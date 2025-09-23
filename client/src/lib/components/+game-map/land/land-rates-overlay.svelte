@@ -40,10 +40,44 @@
     calculateBurnRate(land.sellPrice, land.level, numberOfNeighbours),
   );
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
-  let baseToken = $derived(
-    data.availableTokens.find((token) => token.address === BASE_TOKEN),
-  );
+  let displayBurnRate = $derived.by(() => {
+    if (settingsStore.showRatesInBaseToken && baseToken && land.token) {
+      const burnAmount = CurrencyAmount.fromScaled(
+        Number(tokenBurnRate),
+        land.token,
+      );
+      const baseValue = walletStore.convertTokenAmount(
+        burnAmount,
+        land.token,
+        baseToken,
+      );
+
+      if (baseValue) {
+        return {
+          amount: displayCurrency(baseValue.rawValue()),
+          symbol: baseToken.symbol,
+        };
+      } else {
+        return {
+          amount: '?',
+          symbol: baseToken.symbol,
+        };
+      }
+    } else {
+      return {
+        amount: displayCurrency(tokenBurnRate),
+        symbol: land.token?.symbol || '?',
+      };
+    }
+  });
+
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 
   function getYieldValueInBaseToken(info: any): CurrencyAmount | null {
     if (!info?.token || !baseToken) return null;
@@ -192,9 +226,17 @@
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none relative"
           >
-            <span class="whitespace-nowrap text-red-500">
-              -{displayCurrency(tokenBurnRate)}
-              {land.token?.symbol}/h
+            <span
+              class="whitespace-nowrap {displayBurnRate.amount === '?'
+                ? 'text-yellow-400'
+                : 'text-red-500'}"
+            >
+              {displayBurnRate.amount === '?'
+                ? '?'
+                : `-${displayBurnRate.amount}`}
+              {displayBurnRate.amount === '?'
+                ? ''
+                : `${displayBurnRate.symbol}/h`}
             </span>
           </div>
         {:else}

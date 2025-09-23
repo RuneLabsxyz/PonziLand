@@ -11,10 +11,13 @@
   import LandHudNormal from './land-hud-normal.svelte';
   import LandHudPro from './land-hud-pro.svelte';
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
-  let baseToken = $derived(
-    data.availableTokens.find((token) => token.address === BASE_TOKEN),
-  );
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 
   let {
     land,
@@ -45,19 +48,22 @@
   );
 
   $effect(() => {
-    if (land?.token) {
-      if (land.token.address === BASE_TOKEN) {
+    if (land?.token && baseToken) {
+      if (land.token.address === baseToken.address) {
+        // If land token is already the selected base token, no conversion needed
         burnRateInBaseToken = burnRate;
       } else {
-        const tokenPrice = walletStore.getPrice(land.token.address);
-        if (tokenPrice) {
-          burnRateInBaseToken = CurrencyAmount.fromScaled(
-            burnRate
-              .rawValue()
-              .dividedBy(tokenPrice.ratio.rawValue() ?? 0)
-              .toString(),
-            land.token,
-          );
+        // Convert burn rate from land token to selected base token using wallet store
+        const convertedBurnRate = walletStore.convertTokenAmount(
+          burnRate,
+          land.token,
+          baseToken,
+        );
+        if (convertedBurnRate) {
+          burnRateInBaseToken = convertedBurnRate;
+        } else {
+          // Fallback to zero if conversion fails
+          burnRateInBaseToken = CurrencyAmount.fromScaled('0', baseToken);
         }
       }
     }
@@ -72,7 +78,7 @@
   }
 
   $effect(() => {
-    if (land == undefined) return;
+    if (land == undefined || baseToken == undefined) return;
     land.getYieldInfo(false).then((info) => {
       yieldInfo = info;
 

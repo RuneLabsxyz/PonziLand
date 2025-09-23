@@ -6,7 +6,8 @@
   import SelectItem from '$lib/components/ui/select/select-item.svelte';
   import SelectTrigger from '$lib/components/ui/select/select-trigger.svelte';
   import type { Token } from '$lib/interfaces';
-  import { baseToken, walletStore } from '$lib/stores/wallet.svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getTokenMetadata } from '$lib/utils';
   import data from '$profileData';
@@ -22,6 +23,17 @@
     sellAmount: CurrencyAmount;
     land: LandWithActions;
   } = $props();
+
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
 
   let stakeAmountVal = $state(stakeAmount.toString());
   let sellAmountVal = $state(sellAmount.toString());

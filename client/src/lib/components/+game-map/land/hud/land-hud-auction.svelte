@@ -4,11 +4,25 @@
   import { Button } from '$lib/components/ui/button';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import { baseToken } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import data from '$profileData';
   import LandOverview from '../land-overview.svelte';
 
   let { land }: { land: LandWithActions } = $props();
+
+  let displayToken = $derived.by(() => {
+    // For auction lands, use the original token the land was purchased with
+    if (land?.token) {
+      return land.token;
+    }
+    // Fallback to selected base token if land token is not available
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 
   let currentPrice = $state<CurrencyAmount>();
   let priceDisplay = $derived(currentPrice?.toString());
@@ -51,8 +65,8 @@
           <div
             class="text-ponzi-number text-xl flex items-center gap-2 stroke-3d-black"
           >
-            {baseToken?.symbol}
-            <TokenAvatar token={baseToken} class="w-5 h-5" />
+            {displayToken?.symbol}
+            <TokenAvatar token={displayToken} class="w-5 h-5" />
           </div>
         {/if}
       </div>

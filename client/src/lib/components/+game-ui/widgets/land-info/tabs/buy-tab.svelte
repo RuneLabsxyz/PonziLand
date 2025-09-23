@@ -14,7 +14,8 @@
   import type { TabType, Token } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
-  import { baseToken, walletStore } from '$lib/stores/wallet.svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { locationToCoordinates, padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
@@ -33,6 +34,17 @@
     isActive?: boolean;
     auctionPrice?: CurrencyAmount;
   } = $props();
+
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
 
   let isOwner = $derived(
     padAddress(account.address ?? '') == padAddress(land.owner),

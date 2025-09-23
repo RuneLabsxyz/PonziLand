@@ -4,6 +4,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
   import { walletStore } from '$lib/stores/wallet.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateTaxes } from '$lib/utils/taxes';
@@ -22,10 +23,13 @@
     land: LandWithActions;
   } = $props();
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
-  let baseToken = $derived(
-    data.availableTokens.find((token) => token.address === BASE_TOKEN),
-  );
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return data.availableTokens.find(
+      (token) => token.address === targetAddress,
+    );
+  });
 
   let neighbors = $derived(land?.getNeighbors());
   let nbNeighbors = $derived(neighbors?.getBaseLandsArray().length ?? 0);
