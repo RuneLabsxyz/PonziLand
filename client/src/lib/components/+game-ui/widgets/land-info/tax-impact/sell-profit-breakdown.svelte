@@ -34,26 +34,29 @@
 </script>
 
 {#if actualSellBenefit}
-  <div class="bg-slate-800/30 border border-slate-600/30 rounded text-xs">
+  <div class="bg-slate-800/30 border border-slate-600/30 rounded text-md">
     <!-- Collapsed Header - Always Visible -->
     <button
       onclick={toggleExpanded}
-      class="w-full flex justify-between items-center p-2 hover:bg-slate-700/20 transition-colors"
+      class="w-full flex items-center p-3 hover:bg-slate-700/20 transition-colors"
     >
-      <div class="flex items-center gap-2">
-        <span class="font-semibold text-yellow-400">Sale Profit:</span>
-        <div
-          class="{actualSellBenefit.rawValue().isNegative()
-            ? 'text-red-500'
-            : 'text-green-500'} flex items-center gap-1 font-semibold"
+      <div class="flex flex-1 items-center gap-3">
+        <span class="font-semibold font-ponzi-number opacity-75 tracking-wider"
+          >Sale Profit</span
         >
-          <span>
-            {actualSellBenefit.rawValue().isNegative() ? '' : '+'}
-            {actualSellBenefit.toString()}
-            {baseToken.symbol}
-          </span>
-          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-        </div>
+      </div>
+
+      <div
+        class="{actualSellBenefit.rawValue().isNegative()
+          ? 'text-red-500'
+          : 'text-green-500'} flex items-center gap-1 font-ponzi-number font-bold text-lg"
+      >
+        <span>
+          {actualSellBenefit.rawValue().isNegative() ? '' : '+'}
+          {actualSellBenefit.toString()}
+          {baseToken.symbol}
+        </span>
+        <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
       </div>
 
       <div
@@ -66,7 +69,7 @@
 
     <!-- Expanded Details -->
     {#if isExpanded}
-      <div class="px-2 pb-2 space-y-1 border-t border-slate-600/30">
+      <div class="px-3 pb-3 space-y-2 border-t border-slate-600/30">
         <!-- Sell Price -->
         <div
           class="flex justify-between select-text leading-none items-end pt-1"

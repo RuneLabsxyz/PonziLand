@@ -35,23 +35,26 @@
   }
 </script>
 
-<div class="bg-slate-800/30 border border-slate-600/30 rounded text-xs">
+<div class="bg-slate-800/30 border border-slate-600/30 rounded text-md">
   <!-- Collapsed Header - Always Visible -->
   <button
     onclick={toggleExpanded}
-    class="w-full flex justify-between items-center p-2 hover:bg-slate-700/20 transition-colors"
+    class="w-full flex items-center p-3 hover:bg-slate-700/20 transition-colors"
   >
-    <div class="flex items-center gap-2">
-      <span class="font-semibold text-yellow-400">Payback Time:</span>
-      <div
-        class="{paybackTimeSeconds === Infinity
-          ? 'text-red-500'
-          : paybackTimeSeconds < 3600 * 24 * 7
-            ? 'text-green-500'
-            : 'text-yellow-500'} font-semibold"
+    <div class="flex flex-1 items-center gap-3">
+      <span class="font-semibold font-ponzi-number opacity-75 tracking-wider"
+        >Payback Time</span
       >
-        {paybackTimeString}
-      </div>
+    </div>
+
+    <div
+      class="{paybackTimeSeconds === Infinity
+        ? 'text-red-500'
+        : paybackTimeSeconds < 3600 * 24 * 7
+          ? 'text-green-500'
+          : 'text-yellow-500'} font-ponzi-number font-bold text-lg"
+    >
+      {paybackTimeString}
     </div>
 
     <div
@@ -64,7 +67,7 @@
 
   <!-- Expanded Details -->
   {#if isExpanded}
-    <div class="px-2 pb-2 space-y-1 border-t border-slate-600/30">
+    <div class="px-3 pb-3 space-y-1 border-t border-slate-600/30">
       <!-- Land Purchase Cost -->
       {#if currentBuyPrice && landToken}
         <div
@@ -79,13 +82,21 @@
             />
           </div>
         </div>
-        
+
         {#if currentBuyPriceInBaseToken && baseToken}
-          <div class="flex justify-between select-text leading-none items-end text-orange-400 opacity-75">
+          <div
+            class="flex justify-between select-text leading-none items-end text-orange-400 opacity-75"
+          >
             <span class="opacity-75">≈ Land cost:</span>
             <div class="flex items-center gap-1">
-              <span>{currentBuyPriceInBaseToken.toString()} {baseToken.symbol}</span>
-              <TokenAvatar token={baseToken} class="border border-white w-2 h-2" />
+              <span
+                >{currentBuyPriceInBaseToken.toString()}
+                {baseToken.symbol}</span
+              >
+              <TokenAvatar
+                token={baseToken}
+                class="border border-white w-2 h-2"
+              />
             </div>
           </div>
         {/if}
@@ -94,14 +105,17 @@
       {#if baseToken && nbNeighbors > 0}
         <!-- Detailed Yield Breakdown -->
         <div class="space-y-1">
-          <div class="text-xs opacity-75 mb-1">Hourly earnings breakdown:</div>
-          
           {#if grossYieldPerHour}
             <!-- Gross Yield Earnings -->
-            <div class="flex justify-between select-text leading-none items-end">
+            <div
+              class="flex justify-between select-text leading-none items-end"
+            >
               <span class="opacity-75">+ Yield earnings:</span>
               <div class="flex items-center gap-1 text-green-400">
-                <span>+{grossYieldPerHour.toString()} {baseToken.symbol}/h</span>
+                <span>
+                  +{grossYieldPerHour.toString()}
+                  {baseToken.symbol}/h
+                </span>
                 <TokenAvatar
                   token={baseToken}
                   class="border border-white w-3 h-3"
@@ -112,10 +126,15 @@
 
           {#if hourlyCostInBaseToken}
             <!-- Hourly Costs (Tax Payments) -->
-            <div class="flex justify-between select-text leading-none items-end">
+            <div
+              class="flex justify-between select-text leading-none items-end"
+            >
               <span class="opacity-75">- Tax payments:</span>
               <div class="flex items-center gap-1 text-red-400">
-                <span>-{hourlyCostInBaseToken.toString()} {baseToken.symbol}/h</span>
+                <span>
+                  -{hourlyCostInBaseToken.toString()}
+                  {baseToken.symbol}/h
+                </span>
                 <TokenAvatar
                   token={baseToken}
                   class="border border-white w-3 h-3"
@@ -126,12 +145,21 @@
 
           {#if netYieldPerHour}
             <!-- Net Result -->
-            <div class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1">
+            <div
+              class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1"
+            >
               <span class="opacity-75 font-semibold">= Net yield:</span>
-              <div class="flex items-center gap-1 {netYieldPerHour.rawValue().isNegative() ? 'text-red-400' : 'text-green-400'} font-semibold">
+              <div
+                class="flex items-center gap-1 {netYieldPerHour
+                  .rawValue()
+                  .isNegative()
+                  ? 'text-red-400'
+                  : 'text-green-400'} font-semibold"
+              >
                 <span>
                   {netYieldPerHour.rawValue().isNegative() ? '' : '+'}
-                  {netYieldPerHour.toString()} {baseToken.symbol}/h
+                  {netYieldPerHour.toString()}
+                  {baseToken.symbol}/h
                 </span>
                 <TokenAvatar
                   token={baseToken}

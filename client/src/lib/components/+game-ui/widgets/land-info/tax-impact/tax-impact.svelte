@@ -338,7 +338,7 @@
     }
 
     if (timeSeconds === Infinity) {
-      return 'Never (losing money)';
+      return 'never';
     }
 
     const days = Math.floor(timeSeconds / (3600 * 24));
@@ -484,7 +484,7 @@
         class="{sliderNetYieldInBaseToken &&
         sliderNetYieldInBaseToken.rawValue().isNegative()
           ? 'text-red-500'
-          : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-sm"
+          : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-xl"
       >
         <span>
           {#if sliderNetYieldInBaseToken}
