@@ -93,7 +93,7 @@
     </div>
   {/if}
 
-  <div class="flex flex-col gap-4">
+  <div class="flex flex-col">
     <WalletBalance {setCustomControls} />
     <Button size="md" class="w-full" onclick={openSwapWidget}>Open Swap</Button>
   </div>

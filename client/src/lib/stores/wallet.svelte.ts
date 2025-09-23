@@ -10,6 +10,7 @@ import type { Token } from '$lib/interfaces';
 import accountState from '$lib/account.svelte';
 import { untrack } from 'svelte';
 import { MAX_STAKE } from '$lib/flags';
+import { settingsStore } from '$lib/stores/settings.store.svelte';
 
 const BASE_TOKEN = data.mainCurrencyAddress;
 export const baseToken = data.availableTokens.find(
@@ -22,6 +23,9 @@ export class WalletStore {
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
   private tokenPrices: TokenPrice[] = $state([]);
+  private conversionCache: SvelteMap<string, CurrencyAmount | null> = $state(
+    new SvelteMap(),
+  );
   public tokenBalances = $derived(
     Array.from(
       this.balances.entries(),
@@ -36,6 +40,17 @@ export class WalletStore {
     (token) => token.address === this.BASE_TOKEN,
   );
 
+  // Get the currently selected base token for display calculations
+  private get selectedBaseToken(): Token | null {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      this.baseToken ||
+      null
+    );
+  }
+
   constructor() {}
 
   public async init() {
@@ -47,6 +62,17 @@ export class WalletStore {
       // Trigger update when address changes
       if (accountState.address) {
         untrack(() => this.update(accountState.address!));
+      }
+    });
+
+    $effect(() => {
+      // Recalculate total balance when selected base token changes
+      settingsStore.selectedBaseTokenAddress;
+      if (this.balances.size > 0) {
+        untrack(() => {
+          this.updateConversionCache();
+          this.calculateTotalBalance();
+        });
       }
     });
   }
@@ -77,6 +103,7 @@ export class WalletStore {
         callback: ({ data, error }) => {
           if (data) {
             this.updateTokenBalance(data);
+            this.updateConversionCache();
             this.calculateTotalBalance();
           }
           if (error) {
@@ -99,6 +126,7 @@ export class WalletStore {
         await this.getRPCBalances();
       }
 
+      this.updateConversionCache();
       await this.calculateTotalBalance();
     } catch (err) {
       console.error(
@@ -147,6 +175,7 @@ export class WalletStore {
     }
 
     this.tokenPrices = await getTokenPrices();
+    this.updateConversionCache();
     await this.calculateTotalBalance();
   }
 
@@ -177,6 +206,42 @@ export class WalletStore {
         return padAddress(p.address) === padAddress(token.address);
       }) ?? null
     );
+  }
+
+  /**
+   * Update the conversion cache for all tokens to the currently selected base token
+   */
+  private updateConversionCache() {
+    const displayBaseToken = this.selectedBaseToken;
+    if (!displayBaseToken || !this.tokenPrices.length) return;
+
+    this.conversionCache.clear();
+
+    for (const [tokenAddress, balance] of this.balances) {
+      const token = this.getToken(tokenAddress);
+      if (!token) continue;
+
+      if (padAddress(token.address) === padAddress(displayBaseToken.address)) {
+        // Same token, no conversion needed
+        this.conversionCache.set(tokenAddress, balance);
+      } else {
+        // Convert to base token equivalent
+        const convertedAmount = this.convertTokenAmount(
+          balance,
+          token,
+          displayBaseToken,
+        );
+        this.conversionCache.set(tokenAddress, convertedAmount);
+      }
+    }
+  }
+  /**
+   * Get the cached converted amount for a token to the currently selected base token
+   */
+  public getCachedBaseTokenEquivalent(
+    tokenAddress: string,
+  ): CurrencyAmount | null {
+    return this.conversionCache.get(tokenAddress) ?? null;
   }
 
   /**
@@ -221,7 +286,11 @@ export class WalletStore {
   private async calculateTotalBalance() {
     if (!this.balances.size) return;
 
-    let totalValue = CurrencyAmount.fromScaled(0, this.baseToken);
+    const displayBaseToken = this.selectedBaseToken;
+    let totalValue = CurrencyAmount.fromScaled(
+      0,
+      displayBaseToken || undefined,
+    );
 
     for (const [tokenAddress, balance] of this.balances) {
       if (balance === null) continue;
