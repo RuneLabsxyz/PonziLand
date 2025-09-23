@@ -268,7 +268,9 @@
         <div class="flex justify-between">
           <div class="flex items-center gap-1">
             <span class="text-gray-400">Route:</span>
-            <InfoTooltip text="The DEX or liquidity source being used for this swap" />
+            <InfoTooltip
+              text="The DEX or liquidity source being used for this swap"
+            />
           </div>
           <span class="text-white">
             {quotes[0].routes?.[0]?.name || 'Direct'}
@@ -277,7 +279,9 @@
         <div class="flex justify-between">
           <div class="flex items-center gap-1">
             <span class="text-gray-400">Rate:</span>
-            <InfoTooltip text="Current exchange rate between the selected tokens" />
+            <InfoTooltip
+              text="Current exchange rate between the selected tokens"
+            />
           </div>
           <span class="text-white">
             1 {sellToken?.symbol} = {(
@@ -290,7 +294,9 @@
           <div class="flex justify-between">
             <div class="flex items-center gap-1">
               <span class="text-gray-400">Gas Fee:</span>
-              <InfoTooltip text="Estimated network transaction cost for executing the swap" />
+              <InfoTooltip
+                text="Estimated network transaction cost for executing the swap"
+              />
             </div>
             <span class="text-white">
               ~${quotes[0].gasFeesInUsd.toFixed(4)}
@@ -301,7 +307,9 @@
           <div class="flex justify-between">
             <div class="flex items-center gap-1">
               <span class="text-gray-400">AVNU Fee:</span>
-              <InfoTooltip text="Protocol fee charged by AVNU for providing the swap service" />
+              <InfoTooltip
+                text="Protocol fee charged by AVNU for providing the swap service"
+              />
             </div>
             <span class="text-white">
               ~${quotes[0].avnuFeesInUsd.toFixed(4)}
@@ -317,7 +325,9 @@
           <div class="flex justify-between">
             <div class="flex items-center gap-1">
               <span class="text-gray-400">Integrator Fee:</span>
-              <InfoTooltip text="Fee paid to PonziLand for integrating the swap functionality" />
+              <InfoTooltip
+                text="Fee paid to PonziLand for integrating the swap functionality"
+              />
             </div>
             <span class="text-white">
               ~${quotes[0].integratorFeesInUsd.toFixed(4)}
@@ -334,7 +344,9 @@
         <div class="flex justify-between">
           <div class="flex items-center gap-1">
             <span class="text-gray-400">Slippage Tolerance:</span>
-            <InfoTooltip text="Maximum price movement you're willing to accept during the swap" />
+            <InfoTooltip
+              text="Maximum price movement you're willing to accept during the swap"
+            />
           </div>
           <span class="text-white">{slippage}%</span>
         </div>
