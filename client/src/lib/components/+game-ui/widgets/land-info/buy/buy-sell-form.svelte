@@ -8,6 +8,7 @@
   import type { Token } from '$lib/interfaces';
   import { baseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { getTokenMetadata } from '$lib/utils';
   import data from '$profileData';
 
   let {
@@ -136,11 +137,17 @@
     <SelectTrigger>
       {#if selectedToken}
         <div class="flex gap-2 items-center">
-          <img
-            class="h-4 w-4"
-            src={selectedToken.images.icon}
-            alt={selectedToken.symbol}
-          />
+          {#await getTokenMetadata(selectedToken.skin)}
+            <div class="h-4 w-4 bg-gray-400 rounded animate-pulse"></div>
+          {:then metadata}
+            <img
+              class="h-4 w-4"
+              src={metadata?.icon || '/tokens/default/icon.png'}
+              alt={selectedToken.symbol}
+            />
+          {:catch}
+            <div class="h-4 w-4 bg-gray-400 rounded"></div>
+          {/await}
           {selectedToken.symbol} -
           {selectedToken.name}
         </div>
@@ -152,7 +159,17 @@
       {#each data.availableTokens as token}
         <SelectItem value={token}>
           <div class="flex gap-2 items-center">
-            <img class="h-4 w-4" src={token.images.icon} alt={token.symbol} />
+            {#await getTokenMetadata(token.skin)}
+              <div class="h-4 w-4 bg-gray-400 rounded animate-pulse"></div>
+            {:then metadata}
+              <img
+                class="h-4 w-4"
+                src={metadata?.icon || '/tokens/default/icon.png'}
+                alt={token.symbol}
+              />
+            {:catch}
+              <div class="h-4 w-4 bg-gray-400 rounded"></div>
+            {/await}
             {token.symbol} -
             {token.name}
           </div>

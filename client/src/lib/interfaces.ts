@@ -22,15 +22,17 @@ export interface Token {
   address: string;
   liquidityPoolType: string;
   decimals: number;
-  images: {
-    skin: string;
-    icon: string;
-    biome: Coordinates;
-    building: {
-      1: Coordinates & Partial<AnimationMeta>;
-      2: Coordinates & Partial<AnimationMeta>;
-      3: Coordinates & Partial<AnimationMeta>;
-    };
+  skin: string;
+}
+
+export interface TokenMetadata {
+  skin: string;
+  icon: string;
+  biome: Coordinates;
+  building: {
+    1: Coordinates & Partial<AnimationMeta>;
+    2: Coordinates & Partial<AnimationMeta>;
+    3: Coordinates & Partial<AnimationMeta>;
   };
 }
 

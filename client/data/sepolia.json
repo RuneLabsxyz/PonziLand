@@ -42,33 +42,7 @@
       "address": "0x07820a11cf65ed89a86ca396db5f6f7362253b990015c9ac5c5ad8f277716901",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "strk",
-        "icon": "/tokens/eSTRK/icon.png",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5,
-            "frames": 6,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 1152,
-            "yMax": 192
-          }
-        }
-      }
+      "skin": "STARKNET"
     },
     {
       "name": "Ponziland test PAPER",
@@ -76,43 +50,7 @@
       "address": "0x02758ab836d286e13c89a434613a8d47f6e8cc20f0d2a74ae111a16553905801",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "paper",
-        "icon": "/tokens/ePAPER/icon.svg",
-        "biome": {
-          "x": 3,
-          "y": 0
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 0,
-            "frames": 4,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 192
-          },
-          "2": {
-            "x": 3,
-            "y": 1,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          },
-          "3": {
-            "x": 3,
-            "y": 2,
-            "frames": 8,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 768,
-            "yMax": 384
-          }
-        }
-      }
+      "skin": "PAPER"
     },
     {
       "name": "Ponziland test LORDS",
@@ -120,35 +58,7 @@
       "address": "0x009070eac7b5791d1c3a37fa5735e3c9be55004400543f43cbb8912d835157d5",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "lords",
-        "icon": "/tokens/eLORDS/icon.svg",
-        "biome": {
-          "x": 3,
-          "y": 1
-        },
-        "building": {
-          "1": {
-            "x": 0,
-            "y": 0
-          },
-          "2": {
-            "x": 0,
-            "y": 1
-          },
-          "3": {
-            "x": 0,
-            "y": 2,
-            "frames": 10,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 960,
-            "yMax": 384,
-            "boomerang": true,
-            "delay": 2000
-          }
-        }
-      }
+      "skin": "LORDS"
     },
     {
       "name": "Ponziland test BROTHER",
@@ -156,33 +66,7 @@
       "address": "0x05aa6c0482d24e017d3e177a7df96528e75c158476559f1012b2e944d28e8903",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "brother",
-        "icon": "/tokens/eBROTHER/icon.png",
-        "biome": {
-          "x": 1,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 6
-          },
-          "2": {
-            "x": 3,
-            "y": 7
-          },
-          "3": {
-            "x": 3,
-            "y": 8,
-            "frames": 7,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 1344,
-            "yMax": 192
-          }
-        }
-      }
+      "skin": "BROTHER"
     },
     {
       "name": "Ponziland test PAL",
@@ -190,33 +74,7 @@
       "address": "0x029b0b4a0b3c08744ba46f38a2e4a455c48c6b8c44fff902e45188eb6b655a0d",
       "liquidityPoolType": "1-2",
       "decimals": 18,
-      "images": {
-        "skin": "pal",
-        "icon": "/tokens/ePAL/icon.svg",
-        "biome": {
-          "x": 1,
-          "y": 2
-        },
-        "building": {
-          "1": {
-            "x": 0,
-            "y": 3
-          },
-          "2": {
-            "x": 0,
-            "y": 4
-          },
-          "3": {
-            "x": 0,
-            "y": 5,
-            "frames": 9,
-            "ySize": 192,
-            "xSize": 192,
-            "xMax": 576,
-            "yMax": 576
-          }
-        }
-      }
+      "skin": "PAL"
     }
   ],
   "commonImages": {

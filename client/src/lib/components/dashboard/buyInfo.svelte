@@ -2,6 +2,7 @@
   import Card from '$lib/components/ui/card/card.svelte';
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { getTokenMetadata } from '$lib/utils';
   import { onMount } from 'svelte';
   import { fetchBuyEvents } from './requests';
 
@@ -72,11 +73,21 @@
           <!-- Token Header -->
           <div class="flex items-center gap-3 mb-4">
             <div class="flex items-center">
-              <img
-                src={tokenDetails.images.icon}
-                alt={tokenDetails.symbol}
-                class="w-8 h-8 rounded-full border-2 border-gray-800"
-              />
+              {#await getTokenMetadata(tokenDetails.skin)}
+                <div
+                  class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 animate-pulse"
+                ></div>
+              {:then metadata}
+                <img
+                  src={metadata?.icon || '/tokens/default/icon.png'}
+                  alt={tokenDetails.symbol}
+                  class="w-8 h-8 rounded-full border-2 border-gray-800"
+                />
+              {:catch}
+                <div
+                  class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800"
+                ></div>
+              {/await}
             </div>
             <h3 class="text-lg font-bold text-white">
               {tokenDetails.symbol} Volume
