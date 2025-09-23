@@ -205,7 +205,7 @@
     {:else}
       <div
         class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
-          ? 'animating scale-110 text-yellow-500 font-bold'
+          ? 'animating text-yellow-500 font-bold'
           : ''}"
       >
         <div>{displayAmount}</div>
@@ -249,11 +249,6 @@
     to {
       transform: scale(1);
     }
-  }
-
-  :global(.animating) {
-    transform: scale(1.2);
-    animation: scale-down 1s ease-in-out 1000ms forwards;
   }
 
   @keyframes slideInOutLeft {
