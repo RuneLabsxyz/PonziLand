@@ -102,7 +102,7 @@
       if (land.type == 'auction') {
         if (!auctionPrice) return '';
         originalPrice = auctionPrice;
-        originalToken = baseToken;
+        originalToken = land.token!;
       } else {
         originalPrice = land.sellPrice;
         originalToken = land.token!;
@@ -215,23 +215,23 @@
       if (!landPrice) {
         return 'Auction price is not available';
       }
-      const baseTokenAmount = walletStore.getBalance(baseToken.address);
-      if (baseTokenAmount == undefined) {
-        return `You don't have any ${baseToken.symbol}`;
+      const landTokenAmount = walletStore.getBalance(land.token?.address!);
+      if (landTokenAmount == undefined) {
+        return `You don't have any ${land.token?.symbol}`;
       }
-      if (baseTokenAmount.rawValue().isLessThan(landPrice.rawValue())) {
-        return `You don't have enough ${baseToken.symbol} to buy this land (max: ${baseTokenAmount.toString()})`;
+      if (landTokenAmount.rawValue().isLessThan(landPrice.rawValue())) {
+        return `You don't have enough ${land.token?.symbol} to buy this land (max: ${landTokenAmount.toString()})`;
       }
-      // If has enough for price then check if the selected token is baseToken and add the stake amount
-      if (selectedToken?.address === baseToken.address) {
+      // If has enough for price then check if the selected token is land token and add the stake amount
+      if (selectedToken?.address === land.token?.address) {
         // Convert stakeAmount to the same token as landPrice to avoid currency mismatch
-        const stakeAmountInBaseToken = CurrencyAmount.fromScaled(
+        const stakeAmountInLandToken = CurrencyAmount.fromScaled(
           stake ?? 0,
-          baseToken,
+          land.token!,
         );
-        const totalCost = landPrice.add(stakeAmountInBaseToken);
-        if (baseTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
-          return `You don't have enough ${baseToken.symbol} to buy this land and stake (max: ${baseTokenAmount.toString()})`;
+        const totalCost = landPrice.add(stakeAmountInLandToken);
+        if (landTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
+          return `You don't have enough ${land.token?.symbol} to buy this land and stake (max: ${landTokenAmount.toString()})`;
         }
       }
     }
@@ -301,10 +301,7 @@
       tokenForSaleAddress: selectedToken?.address || '',
       salePrice: sellPriceAmount,
       amountToStake: stakeAmount,
-      tokenAddress:
-        land.type == 'auction'
-          ? (baseToken?.address ?? '')
-          : (land.tokenAddress ?? ''),
+      tokenAddress: land.tokenAddress ?? '',
       currentPrice: currentPrice ?? null,
     };
 
@@ -484,6 +481,7 @@
         stakeAmountVal={stake}
         {selectedToken}
         {land}
+        {auctionPrice}
       />
     </div>
 
@@ -514,11 +512,7 @@
           {/if}
           &nbsp;
         </span>
-        {#if land.type == 'auction'}
-          {baseToken?.symbol}
-        {:else}
-          {land.token?.symbol}
-        {/if}
+        {land.token?.symbol}
       </Button>
     {/if}
   </div>

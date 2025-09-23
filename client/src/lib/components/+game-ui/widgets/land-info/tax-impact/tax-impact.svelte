@@ -16,11 +16,13 @@
     stakeAmountVal = undefined,
     selectedToken,
     land,
+    auctionPrice = undefined,
   }: {
     sellAmountVal?: string;
     stakeAmountVal?: string;
     selectedToken: Token | undefined;
     land: LandWithActions;
+    auctionPrice?: CurrencyAmount;
   } = $props();
 
   let baseToken = $derived.by(() => {
@@ -29,6 +31,13 @@
     return data.availableTokens.find(
       (token) => token.address === targetAddress,
     );
+  });
+
+  // Get the current buy price - either auction price or regular sell price
+  let currentBuyPrice = $derived.by(() => {
+    return land.type === 'auction' && auctionPrice
+      ? auctionPrice
+      : land.sellPrice;
   });
 
   let neighbors = $derived(land?.getNeighbors());
@@ -157,7 +166,7 @@
   let potentialSellBenefitInBaseToken = $derived.by(() => {
     if (
       !sellAmountVal ||
-      !land?.sellPrice ||
+      !currentBuyPrice ||
       !land?.token ||
       !selectedToken ||
       !baseToken
@@ -172,10 +181,9 @@
       selectedToken,
       baseToken,
     );
-    // What we're buying it for (current sell price)
-    const buyPrice = land.sellPrice;
+    // What we're buying it for (current buy price - auction price or regular sell price)
     const buyPriceInBaseToken = walletStore.convertTokenAmount(
-      buyPrice,
+      currentBuyPrice,
       land.token,
       baseToken,
     );
@@ -195,7 +203,7 @@
    */
   let paybackTimeSeconds = $derived.by(() => {
     if (
-      !land?.sellPrice ||
+      !currentBuyPrice ||
       !land?.token ||
       !baseToken ||
       !sliderNetYieldInBaseToken ||
@@ -206,7 +214,7 @@
 
     // Get the land purchase price in base token
     const buyPriceInBaseToken = walletStore.convertTokenAmount(
-      land.sellPrice,
+      currentBuyPrice,
       land.token,
       baseToken,
     );
@@ -269,10 +277,10 @@
       return true;
     }
 
-    // Check if we can't convert the land's sell price to base token
-    if (land?.sellPrice && land?.token && baseToken) {
+    // Check if we can't convert the land's buy price to base token
+    if (currentBuyPrice && land?.token && baseToken) {
       const buyPriceInBaseToken = walletStore.convertTokenAmount(
-        land.sellPrice,
+        currentBuyPrice,
         land.token,
         baseToken,
       );
