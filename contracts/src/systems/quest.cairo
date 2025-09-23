@@ -173,10 +173,12 @@ pub mod quests {
 
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
 
+            let address_felt:felt252 = quest_game.world_address.into();
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
 
+            let game_token_address_felt: felt252 = game_token_address.into();
 
             let time_to_start = get_block_timestamp();
             let time_to_end = time_to_start + 600000;
