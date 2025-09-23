@@ -49,16 +49,17 @@
         >
           <span>
             {actualSellBenefit.rawValue().isNegative() ? '' : '+'}
-            {actualSellBenefit.toString()} {baseToken.symbol}
+            {actualSellBenefit.toString()}
+            {baseToken.symbol}
           </span>
-          <TokenAvatar
-            token={baseToken}
-            class="border border-white w-3 h-3"
-          />
+          <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
         </div>
       </div>
-      
-      <div class="transition-transform duration-200" class:rotate-180={isExpanded}>
+
+      <div
+        class="transition-transform duration-200"
+        class:rotate-180={isExpanded}
+      >
         <ChevronDown size={16} class="text-slate-400" />
       </div>
     </button>
@@ -67,49 +68,77 @@
     {#if isExpanded}
       <div class="px-2 pb-2 space-y-1 border-t border-slate-600/30">
         <!-- Sell Price -->
-        <div class="flex justify-between select-text leading-none items-end pt-1">
+        <div
+          class="flex justify-between select-text leading-none items-end pt-1"
+        >
           <span class="opacity-75">Sell price:</span>
           <div class="flex items-center gap-1">
-            <span>{CurrencyAmount.fromScaled(sellAmountVal, selectedToken).toString()} {selectedToken.symbol}</span>
-            <TokenAvatar token={selectedToken} class="border border-white w-3 h-3" />
+            <span
+              >{CurrencyAmount.fromScaled(
+                sellAmountVal,
+                selectedToken,
+              ).toString()}
+              {selectedToken.symbol}</span
+            >
+            <TokenAvatar
+              token={selectedToken}
+              class="border border-white w-3 h-3"
+            />
           </div>
         </div>
 
         {#if sellerFeeAmount}
           <!-- Seller Fee -->
-          <div class="flex justify-between select-text leading-none items-end text-red-400">
+          <div
+            class="flex justify-between select-text leading-none items-end text-red-400"
+          >
             <span class="opacity-75">- Seller fee (5%):</span>
             <div class="flex items-center gap-1">
               <span>-{sellerFeeAmount.toString()} {selectedToken.symbol}</span>
-              <TokenAvatar token={selectedToken} class="border border-white w-3 h-3" />
+              <TokenAvatar
+                token={selectedToken}
+                class="border border-white w-3 h-3"
+              />
             </div>
           </div>
         {/if}
 
         {#if netSellerProceeds}
           <!-- Net Proceeds -->
-          <div class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1">
+          <div
+            class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1"
+          >
             <span class="opacity-75">= Net proceeds:</span>
             <div class="flex items-center gap-1 text-blue-400">
               <span>{netSellerProceeds.toString()} {selectedToken.symbol}</span>
-              <TokenAvatar token={selectedToken} class="border border-white w-3 h-3" />
+              <TokenAvatar
+                token={selectedToken}
+                class="border border-white w-3 h-3"
+              />
             </div>
           </div>
 
           {#if originalCost && landToken}
             <!-- Original Cost -->
-            <div class="flex justify-between select-text leading-none items-end text-orange-400">
+            <div
+              class="flex justify-between select-text leading-none items-end text-orange-400"
+            >
               <span class="opacity-75">- Original cost:</span>
               <div class="flex items-center gap-1">
                 <span>-{originalCost.toString()} {landToken.symbol}</span>
-                <TokenAvatar token={landToken} class="border border-white w-3 h-3" />
+                <TokenAvatar
+                  token={landToken}
+                  class="border border-white w-3 h-3"
+                />
               </div>
             </div>
           {/if}
         {/if}
 
         <!-- Final Profit (repeated for clarity in expanded view) -->
-        <div class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1">
+        <div
+          class="flex justify-between select-text leading-none items-end border-t border-slate-600/30 pt-1"
+        >
           <span class="font-semibold">= Actual profit:</span>
           <div
             class="{actualSellBenefit.rawValue().isNegative()
@@ -118,7 +147,8 @@
           >
             <span>
               {actualSellBenefit.rawValue().isNegative() ? '' : '+'}
-              {actualSellBenefit.toString()} {baseToken.symbol}
+              {actualSellBenefit.toString()}
+              {baseToken.symbol}
             </span>
             <TokenAvatar
               token={baseToken}
