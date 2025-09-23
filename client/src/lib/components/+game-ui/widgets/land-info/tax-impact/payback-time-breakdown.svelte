@@ -46,7 +46,9 @@
       <span class="font-semibold font-ponzi-number opacity-75 tracking-wider"
         >Payback Time</span
       >
-      <InfoTooltip text="Time needed for land yield to recover the initial purchase cost" />
+      <InfoTooltip
+        text="Time needed for land yield to recover the initial purchase cost"
+      />
     </div>
 
     <div
