@@ -5,6 +5,6 @@ export const ETHEREUM = {
   building: {
     1: { x: 3, y: 9, useAnimation: false },
     2: { x: 3, y: 10, useAnimation: false },
-    3: { x: 3, y: 11, useAnimation: false }
-  }
+    3: { x: 3, y: 11, useAnimation: false },
+  },
 } as const;

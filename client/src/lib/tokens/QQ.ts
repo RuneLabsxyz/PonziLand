@@ -5,6 +5,6 @@ export const QQ = {
   building: {
     1: { x: 6, y: 3, useAnimation: false },
     2: { x: 6, y: 4, useAnimation: false },
-    3: { x: 6, y: 5, useAnimation: false }
-  }
+    3: { x: 6, y: 5, useAnimation: false },
+  },
 } as const;

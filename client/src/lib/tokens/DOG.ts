@@ -5,6 +5,6 @@ export const DOG = {
   building: {
     1: { x: 6, y: 6, useAnimation: false },
     2: { x: 6, y: 7, useAnimation: false },
-    3: { x: 6, y: 8, useAnimation: false }
-  }
+    3: { x: 6, y: 8, useAnimation: false },
+  },
 } as const;

@@ -35,7 +35,7 @@ export const ALL_TOKENS: Record<string, TokenSkin> = Object.fromEntries(
     .map(([path, mod]) => {
       const tokenName = path.split('/').pop()?.replace('.ts', '') || '';
       return [tokenName, (mod as any)[tokenName]];
-    })
+    }),
 );
 
 // Synchronous function to get token metadata directly from ALL_TOKENS
