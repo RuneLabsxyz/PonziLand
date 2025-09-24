@@ -100,13 +100,8 @@
     />
   {/if}
   {#if token}
-    {#await getTokenMetadata(token.skin)}
-      <!-- Loading state - show basic placeholder -->
-      <div
-        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-400 animate-pulse rounded"
-      ></div>
-    {:then metadata}
-      {#if metadata}
+    {@const metadata = getTokenMetadata(token.skin)}
+    {#if metadata}
         <!-- Biome Shadow -->
         <SpriteSheet
           src="/tokens/+global/biomes-shadow.png"
@@ -153,13 +148,12 @@
             ? 'highlighted'
             : ''}"
         />
-      {/if}
-    {:catch}
-      <!-- Error state - show fallback -->
+    {:else}
+      <!-- Fallback state -->
       <div
         class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-600 rounded"
       ></div>
-    {/await}
+    {/if}
   {:else if basic}
     <div
       style="background-image: url('/tokens/basic/1.png'); background-size: contain; background-position: center;"

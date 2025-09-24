@@ -18,23 +18,16 @@
     <ScrollArea class="h-[400px] w-full">
       <div class="space-y-2">
         {#each tokens as token}
+          {@const metadata = getTokenMetadata(token.skin)}
           <div
             class="flex items-center justify-between p-3 bg-black/20 rounded text-white"
           >
             <div class="flex items-center gap-3">
-              {#await getTokenMetadata(token.skin)}
-                <div
-                  class="w-6 h-6 bg-gray-400 rounded-full animate-pulse"
-                ></div>
-              {:then metadata}
-                <img
-                  src={metadata?.icon || '/tokens/default/icon.png'}
-                  alt={token.symbol}
-                  class="w-6 h-6 rounded-full"
-                />
-              {:catch}
-                <div class="w-6 h-6 bg-gray-400 rounded-full"></div>
-              {/await}
+              <img
+                src={metadata?.icon || '/tokens/default/icon.png'}
+                alt={token.symbol}
+                class="w-6 h-6 rounded-full"
+              />
               <span class="font-bold">{token.symbol}</span>
             </div>
             <span class="font-mono">{token.address}</span>
