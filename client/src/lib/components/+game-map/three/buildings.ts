@@ -90,9 +90,9 @@ export const buildingAtlasMeta = [
       { name: 'DREAMS_2', frameRange: [126, 126] },
       { name: 'DREAMS_3', frameRange: [138, 138] },
 
-      { name: 'SOLANA_1', frameRange: [132, 132] },
-      { name: 'SOLANA_2', frameRange: [144, 144] },
-      { name: 'SOLANA_3', frameRange: [156, 156] },
+      { name: 'SOLANA_1', frameRange: [150, 150] },
+      { name: 'SOLANA_2', frameRange: [162, 162] },
+      { name: 'SOLANA_3', frameRange: [174, 174] },
 
       { name: 'USDC_1', frameRange: [186, 186] },
       { name: 'USDC_2', frameRange: [198, 198] },
@@ -222,5 +222,4 @@ export const buildingAtlasMeta = [
     height: 3,
     animations: [{ name: 'SCHIZODIO_3', frameRange: [0, 6] }],
   },
-
 ] as const satisfies SpritesheetMetadata;
