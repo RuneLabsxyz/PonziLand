@@ -1,4 +1,8 @@
 import type { SpritesheetMetadata } from '@threlte/extras';
+import { ALL_TOKENS } from '$lib/tokens';
+
+// Calculate biome frame from coordinates (4-column grid)
+const getBiomeFrame = (x: number, y: number) => y * 4 + x;
 
 export const biomeAtlasMeta = [
   {
@@ -31,33 +35,17 @@ export const biomeAtlasMeta = [
     width: 4,
     height: 7,
     animations: [
-      { name: 'SLINKY', frameRange: [0, 0] },
+      // Non-token entries (keep hardcoded)
       { name: 'auction', frameRange: [1, 1] },
-      { name: 'BITCOIN', frameRange: [2, 2] },
-      { name: 'PAPER', frameRange: [3, 3] },
-      { name: 'EKUBO', frameRange: [4, 4] },
-      { name: 'ETHEREUM', frameRange: [5, 5] },
-      { name: 'FLIP', frameRange: [6, 6] },
-      { name: 'LORDS', frameRange: [7, 7] },
-      { name: 'NUMS', frameRange: [8, 8] },
-      { name: 'PAL', frameRange: [9, 9] },
-      { name: 'SCHIZODIO', frameRange: [10, 10] },
-      { name: 'SISTER', frameRange: [11, 11] },
-      { name: 'SLAY', frameRange: [12, 12] },
-      { name: 'BROTHER', frameRange: [13, 13] },
-      { name: 'STARKNET', frameRange: [14, 14] },
-      { name: 'WNT', frameRange: [15, 15] },
-      { name: 'QQ', frameRange: [16, 16] },
-      { name: 'EVERAI', frameRange: [17, 17] },
-      { name: 'MOODENG', frameRange: [18, 18] },
-      { name: 'BURR', frameRange: [19, 19] },
-      { name: 'DREAMS', frameRange: [20, 20] },
-      { name: 'FART', frameRange: [21, 21] },
-      { name: 'USDC', frameRange: [22, 22] },
-      { name: 'SOLANA', frameRange: [23, 23] },
-      { name: 'SOLANA', frameRange: [23, 23] },
-      { name: 'ZKUBE', frameRange: [24, 24] },
-      { name: 'LOOTSURVIVOR', frameRange: [25, 25] },
+
+      // Token entries (calculated from token data)
+      ...Object.entries(ALL_TOKENS).map(([name, token]) => {
+        const frame = getBiomeFrame(token.biome.x, token.biome.y);
+        return {
+          name,
+          frameRange: [frame, frame] as [number, number],
+        };
+      }),
     ],
   },
 ] as const satisfies SpritesheetMetadata;
