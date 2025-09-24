@@ -539,28 +539,47 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
-  const build_actions_reimburseStakes_calldata = (): DojoCall => {
-    return {
-      contractName: 'actions',
-      entrypoint: 'reimburse_stakes',
-      calldata: [],
+  const build_actions_withdrawStake_calldata = (landLocation: BigNumberish): DojoCall => {
+      return {
+        contractName: "actions",
+        entrypoint: "withdraw_stake",
+        calldata: [landLocation],
+      };
     };
-  };
-
-  const actions_reimburseStakes = async (
-    snAccount: Account | AccountInterface,
-  ) => {
-    try {
-      return await provider.execute(
-        snAccount,
-        build_actions_reimburseStakes_calldata(),
-        'ponzi_land',
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
+  
+    const actions_withdrawStake = async (snAccount: Account | AccountInterface, landLocation: BigNumberish) => {
+      try {
+        return await provider.execute(
+          snAccount,
+          build_actions_withdrawStake_calldata(landLocation),
+          "ponzi_land",
+        );
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    };
+  
+    const build_actions_withdrawStakesBatch_calldata = (landLocations: Array<BigNumberish>): DojoCall => {
+      return {
+        contractName: "actions",
+        entrypoint: "withdraw_stakes_batch",
+        calldata: [landLocations],
+      };
+    };
+  
+    const actions_withdrawStakesBatch = async (snAccount: Account | AccountInterface, landLocations: Array<BigNumberish>) => {
+      try {
+        return await provider.execute(
+          snAccount,
+          build_actions_withdrawStakesBatch_calldata(landLocations),
+          "ponzi_land",
+        );
+      } catch (error) {
+        console.error(error);
+        throw error;
+      }
+    };
 
   const build_auth_addAuthorized_calldata = (address: string): DojoCall => {
     return {
