@@ -1,12 +1,27 @@
 // Define the token skin type
+export interface AnimationData {
+  url: string;
+  type: 'rowColumn';
+  width: number;
+  height: number;
+  animations: Array<{ name: string; frameRange: [number, number] }>;
+}
+
+export interface BuildingLevel {
+  x: number;
+  y: number;
+  useAnimation: boolean;
+  animations?: AnimationData[];
+}
+
 export interface TokenSkin {
   skin: string;
   icon: string;
   biome: { x: number; y: number };
   building: {
-    1: { x: number; y: number; useAnimation: boolean };
-    2: { x: number; y: number; useAnimation: boolean };
-    3: { x: number; y: number; useAnimation: boolean };
+    1: BuildingLevel;
+    2: BuildingLevel;
+    3: BuildingLevel;
   };
 }
 
