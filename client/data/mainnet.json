@@ -48,14 +48,6 @@
       "skin": "BITCOIN"
     },
     {
-      "name": "Daydreams",
-      "symbol": "DREAMS",
-      "address": "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac",
-      "liquidityPoolType": "1-2",
-      "decimals": 18,
-      "skin": "DREAMS"
-    },
-    {
       "name": "Lords",
       "symbol": "LORDS",
       "address": "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",

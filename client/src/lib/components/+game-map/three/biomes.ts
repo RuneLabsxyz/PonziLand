@@ -29,7 +29,7 @@ export const biomeAtlasMeta = [
     url: '/tokens/+global/biomes.png',
     type: 'rowColumn',
     width: 4,
-    height: 5,
+    height: 7,
     animations: [
       { name: 'SLINKY', frameRange: [0, 0] },
       { name: 'auction', frameRange: [1, 1] },
