@@ -1,6 +1,6 @@
 {
   "skin": "DOG",
-  "icon": "/tokens/DOG/icon.png",
+  "icon": "/tokens/DOG/dog.png",
   "biome": {
     "x": 3,
     "y": 1
