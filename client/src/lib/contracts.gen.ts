@@ -2211,9 +2211,10 @@ export function setupWorld(provider: DojoProvider) {
       recreateAuction: actions_recreateAuction,
       buildRecreateAuctionCalldata: build_actions_recreateAuction_calldata,
       withdrawStake: actions_withdrawStake,
-			buildWithdrawStakeCalldata: build_actions_withdrawStake_calldata,
-			withdrawStakesBatch: actions_withdrawStakesBatch,
-			buildWithdrawStakesBatchCalldata: build_actions_withdrawStakesBatch_calldata,
+      buildWithdrawStakeCalldata: build_actions_withdrawStake_calldata,
+      withdrawStakesBatch: actions_withdrawStakesBatch,
+      buildWithdrawStakesBatchCalldata:
+        build_actions_withdrawStakesBatch_calldata,
     },
     auth: {
       addAuthorized: auth_addAuthorized,
