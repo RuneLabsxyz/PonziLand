@@ -1,6 +1,6 @@
 {
-  "skin": "SISTERS",
-  "icon": "/tokens/SISTERS/icon.png",
+  "skin": "SISTER",
+  "icon": "/tokens/SISTER/sstr.png",
   "biome": {
     "x": 3,
     "y": 1
