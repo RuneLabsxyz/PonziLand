@@ -25,126 +25,50 @@ export const buildingAtlasMeta = [
 
       // Token entries (calculated from token data)
       ...Object.entries(ALL_TOKENS).flatMap(([tokenName, token]) =>
-        [1, 2, 3].map((level) => {
-          const building = token.building[level as keyof typeof token.building];
-          const frame = getBuildingFrame(building.x, building.y);
-          return {
-            name: `${tokenName}_${level}`,
-            frameRange: [frame, frame] as [number, number],
-          };
-        }),
+        [1, 2, 3]
+          .map((level) => {
+            const building =
+              token.building[level as keyof typeof token.building];
+
+            // Only include static buildings (animations are handled separately)
+            if (!building.useAnimation) {
+              const frame = getBuildingFrame(building.x, building.y);
+              return {
+                name: `${tokenName}_${level}`,
+                frameRange: [frame, frame] as [number, number],
+              };
+            }
+            return null;
+          })
+          .filter(
+            (item): item is { name: string; frameRange: [number, number] } =>
+              item !== null,
+          ),
       ),
     ],
   },
 
-  // --------------------------------------------------------------
-  // ANIMATIONS
-  // --------------------------------------------------------------
+  // DYNAMIC ANIMATIONS (Generated from token data)
 
-  // STRK
+  // Generate animation entries for tokens that have animations
+  ...Object.entries(ALL_TOKENS).flatMap(([tokenName, token]) =>
+    [1, 2, 3].flatMap((level) => {
+      const building = token.building[level as keyof typeof token.building];
 
-  // {
-  //   url: '/tokens/STARKNET/3-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 2,
-  //   animations: [{ name: 'STARKNET_3', frameRange: [0, 5] }],
-  // },
-
-  // BONK
-
-  {
-    url: '/tokens/BONK/1-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'BONK_1', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/BONK/2-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'BONK_2', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/BONK/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'BONK_3', frameRange: [0, 9] }],
-  },
-
-  // BROTHER
-
-  // BTC
-
-  // {
-  //   url: '/tokens/BITCOIN/1-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 4,
-  //   animations: [{ name: 'BITCOIN_1', frameRange: [0, 9] }],
-  // },
-  // {
-  //   url: '/tokens/BITCOIN/2-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 4,
-  //   animations: [{ name: 'BITCOIN_2', frameRange: [0, 9] }],
-  // },
-  // {
-  //   url: '/tokens/BITCOIN/3-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 4,
-  //   animations: [{ name: 'BITCOIN_3', frameRange: [0, 9] }],
-  // },
-
-  // DOG
-
-  // {
-  //   url: '/tokens/DOG/1-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 4,
-  //   animations: [{ name: 'DOG_1', frameRange: [0, 9] }],
-  // },
-  // {
-  //   url: '/tokens/DOG/2-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 4,
-  //   animations: [{ name: 'DOG_2', frameRange: [0, 9] }],
-  // },
-  // {
-  //   url: '/tokens/DOG/3-animated.png',
-  //   type: 'rowColumn',
-  //   width: 3,
-  //   height: 4,
-  //   animations: [{ name: 'DOG_3', frameRange: [0, 9] }],
-  // },
-
-  // SCHIZODIO
-  {
-    url: '/tokens/SCHIZODIO/1-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'SCHIZODIO_1', frameRange: [0, 6] }],
-  },
-  {
-    url: '/tokens/SCHIZODIO/2-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'SCHIZODIO_2', frameRange: [0, 6] }],
-  },
-  {
-    url: '/tokens/SCHIZODIO/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'SCHIZODIO_3', frameRange: [0, 6] }],
-  },
+      // Only include animated buildings
+      if (building.useAnimation && building.animations) {
+        return building.animations.map((animData) => ({
+          url: animData.url,
+          type: animData.type,
+          width: animData.width,
+          height: animData.height,
+          animations: animData.animations.map((anim) => ({
+            name: `${tokenName}_${level}`,
+            frameRange: anim.frameRange,
+          })),
+        }));
+      }
+      return [];
+    }),
+  ),
 ] as const satisfies SpritesheetMetadata;
