@@ -1,7 +1,7 @@
 export const DOG = {
   skin: 'DOG',
   icon: '/tokens/DOG/dog.png',
-  biome: { x: 3, y: 7 },
+  biome: { x: 2, y: 4 },
   building: {
     1: { x: 6, y: 6, useAnimation: false },
     2: { x: 6, y: 7, useAnimation: false },
