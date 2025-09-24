@@ -98,9 +98,9 @@ export const buildingAtlasMeta = [
       { name: 'USDC_2', frameRange: [180, 180] },
       { name: 'USDC_3', frameRange: [192, 192] },
 
-      { name: 'BONK_1', frameRange: [204, 204] },
-      { name: 'BONK_2', frameRange: [216, 216] },
-      { name: 'BONK_3', frameRange: [228, 228] },
+      { name: 'BONK_1', frameRange: [222, 222] },
+      { name: 'BONK_2', frameRange: [234, 234] },
+      { name: 'BONK_3', frameRange: [246, 246] },
 
       { name: 'EVERAI_1', frameRange: [9, 9] },
       { name: 'EVERAI_2', frameRange: [21, 21] },
@@ -167,7 +167,7 @@ export const buildingAtlasMeta = [
     type: 'rowColumn',
     width: 3,
     height: 3,
-    animations: [{ name: 'PAL_3', frameRange: [0, 8] }],
+    animations: [{ name: 'PAL_3', frameRange: [0, 6] }],
   },
   {
     url: '/tokens/EKUBO/3-animated.png',
