@@ -2,28 +2,21 @@
   "skin": "EKUBO",
   "icon": "/tokens/EKUBO/ekubo.png",
   "biome": {
-    "x": 3,
+    "x": 0,
     "y": 1
   },
   "building": {
     "1": {
       "x": 0,
-      "y": 0
+      "y": 9
     },
     "2": {
       "x": 0,
-      "y": 1
+      "y": 10
     },
     "3": {
       "x": 0,
-      "y": 2,
-      "frames": 10,
-      "ySize": 192,
-      "xSize": 192,
-      "xMax": 960,
-      "yMax": 384,
-      "boomerang": true,
-      "delay": 2000
+      "y": 11
     }
   }
 }
