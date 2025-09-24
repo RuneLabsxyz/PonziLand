@@ -164,7 +164,7 @@ export class WalletStore {
 
     const tokenBalances = data.availableTokens.map(async (token) => {
       const balance = await fetchTokenBalance(token.address, account, provider);
-      const metadata = await getTokenMetadata(token.skin);
+      const metadata = getTokenMetadata(token.skin);
 
       console.log(`Balance for ${token.symbol}: ${balance?.toString()}`);
 

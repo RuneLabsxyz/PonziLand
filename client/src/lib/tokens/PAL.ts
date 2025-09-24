@@ -1,6 +1,6 @@
 export const PAL = {
   skin: 'PAL',
-  icon: '/tokens/PAL/icon.svg',
+  icon: '/tokens/PAL/pal.png',
   biome: { x: 1, y: 2 },
   building: {
     1: { x: 0, y: 3, useAnimation: false },

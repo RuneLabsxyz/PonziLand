@@ -37,3 +37,8 @@ export const ALL_TOKENS: Record<string, TokenSkin> = Object.fromEntries(
       return [tokenName, (mod as any)[tokenName]];
     })
 );
+
+// Synchronous function to get token metadata directly from ALL_TOKENS
+export function getTokenMetadata(skin: string): TokenSkin | null {
+  return ALL_TOKENS[skin] || null;
+}

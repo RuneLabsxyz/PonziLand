@@ -16,6 +16,21 @@ interface AnimationMeta {
   delay?: number;
 }
 
+interface AnimationData {
+  url: string;
+  type: 'rowColumn';
+  width: number;
+  height: number;
+  animations: Array<{ name: string; frameRange: [number, number] }>;
+}
+
+interface BuildingLevel {
+  x: number;
+  y: number;
+  useAnimation: boolean;
+  animations?: AnimationData[];
+}
+
 export interface Token {
   name: string;
   symbol: string;
@@ -28,11 +43,11 @@ export interface Token {
 export interface TokenMetadata {
   skin: string;
   icon: string;
-  biome: Coordinates;
+  biome: { x: number; y: number };
   building: {
-    1: Coordinates & Partial<AnimationMeta>;
-    2: Coordinates & Partial<AnimationMeta>;
-    3: Coordinates & Partial<AnimationMeta>;
+    1: BuildingLevel;
+    2: BuildingLevel;
+    3: BuildingLevel;
   };
 }
 

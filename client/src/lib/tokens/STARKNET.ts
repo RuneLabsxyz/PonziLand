@@ -1,6 +1,6 @@
 export const STARKNET = {
   skin: 'STARKNET',
-  icon: '/tokens/STARKNET/strk.png',
+  icon: '/tokens/STARKNET/icon.png',
   biome: { x: 2, y: 3 },
   building: {
     1: { x: 3, y: 3, useAnimation: false },

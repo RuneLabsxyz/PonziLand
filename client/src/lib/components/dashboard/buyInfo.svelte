@@ -68,26 +68,17 @@
   {#each Object.entries(tokenTotals) as [tokenAddress, total]}
     {@const tokenDetails = tokens.find((t) => t.address === tokenAddress)}
     {#if tokenDetails}
+      {@const metadata = getTokenMetadata(tokenDetails.skin)}
       <Card class="shadow-ponzi overflow-hidden">
         <div class="p-4">
           <!-- Token Header -->
           <div class="flex items-center gap-3 mb-4">
             <div class="flex items-center">
-              {#await getTokenMetadata(tokenDetails.skin)}
-                <div
-                  class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 animate-pulse"
-                ></div>
-              {:then metadata}
-                <img
-                  src={metadata?.icon || '/tokens/default/icon.png'}
-                  alt={tokenDetails.symbol}
-                  class="w-8 h-8 rounded-full border-2 border-gray-800"
-                />
-              {:catch}
-                <div
-                  class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800"
-                ></div>
-              {/await}
+              <img
+                src={metadata?.icon || '/tokens/default/icon.png'}
+                alt={tokenDetails.symbol}
+                class="w-8 h-8 rounded-full border-2 border-gray-800"
+              />
             </div>
             <h3 class="text-lg font-bold text-white">
               {tokenDetails.symbol} Volume

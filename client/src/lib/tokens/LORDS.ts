@@ -1,6 +1,6 @@
 export const LORDS = {
   skin: 'LORDS',
-  icon: '/tokens/LORDS/icon.svg',
+  icon: '/tokens/LORDS/lords.png',
   biome: { x: 3, y: 1 },
   building: {
     1: { x: 0, y: 0, useAnimation: false },
