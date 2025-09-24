@@ -22,9 +22,9 @@ export const buildingAtlasMeta = [
       { name: 'LORDS_2', frameRange: [12, 12] },
       // { name: 'lords_3', frameRange: [24, 24] },
 
-      // { name: 'PAL_1', frameRange: [36, 36] },
-      // { name: 'PAL_2', frameRange: [48, 48] },
-      // { name: 'PAL_3', frameRange: [60, 60] },
+      { name: 'PAL_1', frameRange: [36, 36] },
+      { name: 'PAL_2', frameRange: [48, 48] },
+      { name: 'PAL_3', frameRange: [60, 60] },
 
       { name: 'SLAY_1', frameRange: [72, 72] },
       { name: 'SLAY_2', frameRange: [84, 84] },
@@ -44,7 +44,7 @@ export const buildingAtlasMeta = [
 
       { name: 'BITCOIN_1', frameRange: [216, 216] },
       { name: 'BITCOIN_2', frameRange: [228, 228] },
-      // { name: 'BITCOIN_3', frameRange: [240, 240] },
+      { name: 'BITCOIN_3', frameRange: [240, 240] },
 
       { name: 'PAPER_1', frameRange: [3, 3] },
       { name: 'PAPER_2', frameRange: [15, 15] },
@@ -82,9 +82,9 @@ export const buildingAtlasMeta = [
       { name: 'QQ_2', frameRange: [54, 54] },
       // { name: 'QQ_3', frameRange: [66, 66] },
 
-      // { name: 'DOG_1', frameRange: [72, 72] },
-      // { name: 'DOG_2', frameRange: [84, 84] },
-      // { name: 'DOG_3', frameRange: [96, 96] },
+      { name: 'DOG_1', frameRange: [78, 78] },
+      { name: 'DOG_2', frameRange: [90, 90] },
+      { name: 'DOG_3', frameRange: [102, 102] },
 
       { name: 'DREAMS_1', frameRange: [96, 96] },
       { name: 'DREAMS_2', frameRange: [108, 108] },
@@ -115,7 +115,7 @@ export const buildingAtlasMeta = [
   // ANIMATIONS
   // --------------------------------------------------------------
 
-  // STARKNET
+  // STRK
 
   {
     url: '/tokens/STARKNET/3-animated.png',
@@ -149,29 +149,55 @@ export const buildingAtlasMeta = [
     animations: [{ name: 'BONK_3', frameRange: [0, 9] }],
   },
 
+  // BROTHER
+
+  // BTC
+
+  // {
+  //   url: '/tokens/BITCOIN/1-animated.png',
+  //   type: 'rowColumn',
+  //   width: 3,
+  //   height: 4,
+  //   animations: [{ name: 'BITCOIN_1', frameRange: [0, 9] }],
+  // },
+  // {
+  //   url: '/tokens/BITCOIN/2-animated.png',
+  //   type: 'rowColumn',
+  //   width: 3,
+  //   height: 4,
+  //   animations: [{ name: 'BITCOIN_2', frameRange: [0, 9] }],
+  // },
+  // {
+  //   url: '/tokens/BITCOIN/3-animated.png',
+  //   type: 'rowColumn',
+  //   width: 3,
+  //   height: 4,
+  //   animations: [{ name: 'BITCOIN_3', frameRange: [0, 9] }],
+  // },
+
   // DOG
 
-  {
-    url: '/tokens/DOG/1-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'DOG_1', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/DOG/2-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'DOG_2', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/DOG/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'DOG_3', frameRange: [0, 9] }],
-  },
+  // {
+  //   url: '/tokens/DOG/1-animated.png',
+  //   type: 'rowColumn',
+  //   width: 3,
+  //   height: 4,
+  //   animations: [{ name: 'DOG_1', frameRange: [0, 9] }],
+  // },
+  // {
+  //   url: '/tokens/DOG/2-animated.png',
+  //   type: 'rowColumn',
+  //   width: 3,
+  //   height: 4,
+  //   animations: [{ name: 'DOG_2', frameRange: [0, 9] }],
+  // },
+  // {
+  //   url: '/tokens/DOG/3-animated.png',
+  //   type: 'rowColumn',
+  //   width: 3,
+  //   height: 4,
+  //   animations: [{ name: 'DOG_3', frameRange: [0, 9] }],
+  // },
 
   // LORDS
 
@@ -199,13 +225,6 @@ export const buildingAtlasMeta = [
       { name: 'USDC_1', frameRange: [0, 0] },
       { name: 'USDC_2', frameRange: [0, 0] },
     ],
-  },
-  {
-    url: '/tokens/BITCOIN/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'BITCOIN_3', frameRange: [0, 9] }],
   },
   {
     url: '/tokens/ETHEREUM/3-animated.png',
