@@ -62,9 +62,9 @@ export const buildingAtlasMeta = [
       { name: 'ETHEREUM_2', frameRange: [123, 123] },
       { name: 'ETHEREUM_3', frameRange: [135, 135] },
 
-      { name: 'SCHIZODIO_1', frameRange: [147, 147] },
-      { name: 'SCHIZODIO_2', frameRange: [159, 159] },
-      { name: 'SCHIZODIO_3', frameRange: [171, 171] },
+      // { name: 'SCHIZODIO_1', frameRange: [147, 147] },
+      // { name: 'SCHIZODIO_2', frameRange: [159, 159] },
+      // { name: 'SCHIZODIO_3', frameRange: [171, 171] },
 
       { name: 'NUMS_1', frameRange: [183, 183] },
       { name: 'NUMS_2', frameRange: [195, 195] },
@@ -199,4 +199,28 @@ export const buildingAtlasMeta = [
   //   height: 4,
   //   animations: [{ name: 'DOG_3', frameRange: [0, 9] }],
   // },
+
+  // SCHIZODIO
+  {
+    url: '/tokens/SCHIZODIO/1-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 3,
+    animations: [{ name: 'SCHIZODIO_1', frameRange: [0, 6] }],
+  },
+  {
+    url: '/tokens/SCHIZODIO/2-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 3,
+    animations: [{ name: 'SCHIZODIO_2', frameRange: [0, 6] }],
+  },
+  {
+    url: '/tokens/SCHIZODIO/3-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 3,
+    animations: [{ name: 'SCHIZODIO_3', frameRange: [0, 6] }],
+  },
+
 ] as const satisfies SpritesheetMetadata;

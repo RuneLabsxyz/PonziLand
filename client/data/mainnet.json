@@ -97,7 +97,14 @@
       "decimals": 18,
       "skin": "PAL"
     },
-    
+    {
+      "name": "SCHIZODIO",
+      "symbol": "SCHIZODIO",
+      "address": "0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "skin": "SCHIZODIO"
+    },
     {
       "name": "USDC",
       "symbol": "USDC",
