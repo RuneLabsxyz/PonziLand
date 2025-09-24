@@ -23,6 +23,7 @@
       "decimals": 18,
       "skin": "STARKNET"
     },
+
     {
       "name": "Bonk",
       "symbol": "BONK",
@@ -47,6 +48,15 @@
       "decimals": 8,
       "skin": "BITCOIN"
     },
+    {
+      "name": "DOG GO TO THE MOON DOG",
+      "symbol": "DOG",
+      "address": "0x040E81cfeB176BFDbc5047BBC55eb471CFAb20a6B221f38d8fDa134E1bFFFca4",
+      "liquidityPoolType": "1-2",
+      "decimals": 5,
+      "skin": "DOG"
+    },
+
     {
       "name": "Lords",
       "symbol": "LORDS",

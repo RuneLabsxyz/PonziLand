@@ -56,7 +56,7 @@ export const buildingAtlasMeta = [
 
       { name: 'BROTHER_1', frameRange: [75, 75] },
       { name: 'BROTHER_2', frameRange: [87, 87] },
-      // { name: 'BROTHER_3', frameRange: [99, 99] },
+      { name: 'BROTHER_3', frameRange: [99, 99] },
 
       { name: 'ETHEREUM_1', frameRange: [111, 111] },
       { name: 'ETHEREUM_2', frameRange: [123, 123] },
@@ -82,9 +82,9 @@ export const buildingAtlasMeta = [
       { name: 'QQ_2', frameRange: [54, 54] },
       // { name: 'QQ_3', frameRange: [66, 66] },
 
-      { name: 'RUNEDOG_1', frameRange: [72, 72] },
-      { name: 'RUNEDOG_2', frameRange: [84, 84] },
-      { name: 'RUNEDOG_3', frameRange: [96, 96] },
+      // { name: 'DOG_1', frameRange: [72, 72] },
+      // { name: 'DOG_2', frameRange: [84, 84] },
+      // { name: 'DOG_3', frameRange: [96, 96] },
 
       { name: 'DREAMS_1', frameRange: [96, 96] },
       { name: 'DREAMS_2', frameRange: [108, 108] },
@@ -149,6 +149,30 @@ export const buildingAtlasMeta = [
     animations: [{ name: 'BONK_3', frameRange: [0, 9] }],
   },
 
+  // DOG
+
+  {
+    url: '/tokens/DOG/1-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'DOG_1', frameRange: [0, 9] }],
+  },
+  {
+    url: '/tokens/DOG/2-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'DOG_2', frameRange: [0, 9] }],
+  },
+  {
+    url: '/tokens/DOG/3-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'DOG_3', frameRange: [0, 9] }],
+  },
+
   // LORDS
 
   {
@@ -182,13 +206,6 @@ export const buildingAtlasMeta = [
     width: 3,
     height: 4,
     animations: [{ name: 'BITCOIN_3', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/BROTHER/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'BROTHER_3', frameRange: [0, 6] }],
   },
   {
     url: '/tokens/ETHEREUM/3-animated.png',
