@@ -65,7 +65,22 @@
       "decimals": 6,
       "skin": "DREAMS"
     },
-
+    {
+      "name": "Ekubo",
+      "symbol": "EKUBO",
+      "address": "0x075afe6402ad5a5c20dd25e10ec3b3986acaa647b77e4ae24b0cbc9a54a27a87",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "skin": "EKUBO"
+    },
+    {
+      "name": "Ethereum",
+      "symbol": "ETH",
+      "address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "skin": "ETHEREUM"
+    },
     {
       "name": "Lords",
       "symbol": "LORDS",
@@ -82,6 +97,7 @@
       "decimals": 18,
       "skin": "PAL"
     },
+    
     {
       "name": "USDC",
       "symbol": "USDC",
@@ -89,22 +105,6 @@
       "liquidityPoolType": "1-2",
       "decimals": 6,
       "skin": "USDC"
-    },
-    {
-      "name": "Ethereum",
-      "symbol": "ETH",
-      "address": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
-      "liquidityPoolType": "1-2",
-      "decimals": 18,
-      "skin": "ETHEREUM"
-    },
-    {
-      "name": "Ekubo",
-      "symbol": "EKUBO",
-      "address": "0x075afe6402ad5a5c20dd25e10ec3b3986acaa647b77e4ae24b0cbc9a54a27a87",
-      "liquidityPoolType": "1-2",
-      "decimals": 18,
-      "skin": "EKUBO"
     }
   ],
   "commonImages": {
