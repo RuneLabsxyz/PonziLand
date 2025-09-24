@@ -5,6 +5,6 @@ export const STARKNET = {
   building: {
     1: { x: 3, y: 3, useAnimation: false },
     2: { x: 3, y: 4, useAnimation: false },
-    3: { x: 3, y: 5, useAnimation: false }
-  }
+    3: { x: 3, y: 5, useAnimation: false },
+  },
 } as const;

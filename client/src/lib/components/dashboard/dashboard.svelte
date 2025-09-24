@@ -212,7 +212,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each pairCards as card}
         {@const metadata = getTokenMetadata(card.tokenDetails.skin)}
-        {@const baseMetadata = baseTokenDetails ? getTokenMetadata(baseTokenDetails.skin) : null}
+        {@const baseMetadata = baseTokenDetails
+          ? getTokenMetadata(baseTokenDetails.skin)
+          : null}
         <Card
           class="shadow-ponzi overflow-hidden"
           id={card.tokenDetails.symbol}
