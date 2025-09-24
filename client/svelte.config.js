@@ -177,6 +177,7 @@ const config = {
     alias: {
       $manifest: manifestPath,
       $profileData: dataPath,
+      $tokens: '/src/tokens',
     },
   },
 };
