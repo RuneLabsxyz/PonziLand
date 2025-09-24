@@ -1,6 +1,6 @@
 {
-  "skin": "DOG_RUNE",
-  "icon": "/tokens/DOG_RUNE/icon.png",
+  "skin": "RUNEDOG",
+  "icon": "/tokens/RUNEDOG/icon.png",
   "biome": {
     "x": 3,
     "y": 1
