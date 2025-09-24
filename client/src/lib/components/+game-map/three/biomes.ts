@@ -43,11 +43,20 @@ export const biomeAtlasMeta = [
       { name: 'PAL', frameRange: [9, 9] },
       { name: 'SCHIZODIO', frameRange: [10, 10] },
       { name: 'SISTERS', frameRange: [11, 11] },
+
       { name: 'BROTHER', frameRange: [13, 13] },
       { name: 'STARKNET', frameRange: [14, 14] },
       { name: 'WNT', frameRange: [15, 15] },
       { name: 'QQ', frameRange: [16, 16] },
       { name: 'EVERAI', frameRange: [17, 17] },
+
+      { name: 'BURR', frameRange: [19, 19] },
+      { name: 'DREAMS', frameRange: [20, 20] },
+      { name: 'FART', frameRange: [21, 21] },
+      { name: 'USDC', frameRange: [22, 22] },
+      { name: 'SOLANA', frameRange: [23, 23] },
+      { name: 'SOLANA', frameRange: [23, 23] },
+      { name: 'SLAY', frameRange: [24, 24] },
     ],
   },
 ] as const satisfies SpritesheetMetadata;
