@@ -34,9 +34,9 @@ export const buildingAtlasMeta = [
       { name: 'EKUBO_2', frameRange: [120, 120] },
       { name: 'EKUBO_3', frameRange: [132, 132] },
 
-      { name: 'SISTERS_1', frameRange: [144, 144] },
-      { name: 'SISTERS_2', frameRange: [156, 156] },
-      { name: 'SISTERS_3', frameRange: [168, 168] },
+      { name: 'SISTER_1', frameRange: [144, 144] },
+      { name: 'SISTER_2', frameRange: [156, 156] },
+      { name: 'SISTER_3', frameRange: [168, 168] },
 
       { name: 'SLINKY_1', frameRange: [180, 180] },
       { name: 'SLINKY_2', frameRange: [192, 192] },
