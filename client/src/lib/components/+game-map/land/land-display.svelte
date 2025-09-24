@@ -128,7 +128,7 @@
           xSize={256}
           xMax={1024}
           ySize={256}
-          yMax={1280}
+          yMax={1792}
           {width}
           {height}
           class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
