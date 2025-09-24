@@ -12,7 +12,7 @@ export const buildingAtlasMeta = [
       { name: 'empty_1', frameRange: [250, 250] },
       { name: 'empty_2', frameRange: [250, 250] },
       { name: 'empty_3', frameRange: [250, 250] },
-      
+
       { name: 'auction', frameRange: [250, 250] },
       { name: 'auction_1', frameRange: [250, 250] },
       { name: 'auction_2', frameRange: [250, 250] },
@@ -22,8 +22,8 @@ export const buildingAtlasMeta = [
       { name: 'LORDS_2', frameRange: [12, 12] },
       // { name: 'lords_3', frameRange: [24, 24] },
 
-      { name: 'PAL_1', frameRange: [36, 36] },
-      { name: 'PAL_2', frameRange: [48, 48] },
+      // { name: 'PAL_1', frameRange: [36, 36] },
+      // { name: 'PAL_2', frameRange: [48, 48] },
       // { name: 'PAL_3', frameRange: [60, 60] },
 
       { name: 'SLAY_1', frameRange: [72, 72] },
@@ -81,7 +81,7 @@ export const buildingAtlasMeta = [
       { name: 'QQ_1', frameRange: [42, 42] },
       { name: 'QQ_2', frameRange: [54, 54] },
       // { name: 'QQ_3', frameRange: [66, 66] },
-      
+
       { name: 'RUNEDOG_1', frameRange: [72, 72] },
       { name: 'RUNEDOG_2', frameRange: [84, 84] },
       { name: 'RUNEDOG_3', frameRange: [96, 96] },
@@ -98,9 +98,9 @@ export const buildingAtlasMeta = [
       { name: 'USDC_2', frameRange: [180, 180] },
       { name: 'USDC_3', frameRange: [192, 192] },
 
-      { name: 'BONK_1', frameRange: [222, 222] },
-      { name: 'BONK_2', frameRange: [234, 234] },
-      { name: 'BONK_3', frameRange: [246, 246] },
+      // { name: 'BONK_1', frameRange: [222, 222] },
+      // { name: 'BONK_2', frameRange: [234, 234] },
+      // { name: 'BONK_3', frameRange: [246, 246] },
 
       { name: 'EVERAI_1', frameRange: [9, 9] },
       { name: 'EVERAI_2', frameRange: [21, 21] },
@@ -110,13 +110,13 @@ export const buildingAtlasMeta = [
       { name: 'BURR_3', frameRange: [69, 69] },
     ],
   },
-  {
-    url: '/tokens/LORDS/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'LORDS_3', frameRange: [0, 9] }],
-  },
+
+  // --------------------------------------------------------------
+  // ANIMATIONS
+  // --------------------------------------------------------------
+
+  // STARKNET
+
   {
     url: '/tokens/STARKNET/3-animated.png',
     type: 'rowColumn',
@@ -124,6 +124,41 @@ export const buildingAtlasMeta = [
     height: 2,
     animations: [{ name: 'STARKNET_3', frameRange: [0, 5] }],
   },
+
+  // BONK
+
+  {
+    url: '/tokens/BONK/1-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'BONK_1', frameRange: [0, 9] }],
+  },
+  {
+    url: '/tokens/BONK/2-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'BONK_2', frameRange: [0, 9] }],
+  },
+  {
+    url: '/tokens/BONK/3-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'BONK_3', frameRange: [0, 9] }],
+  },
+
+  // LORDS
+
+  {
+    url: '/tokens/LORDS/3-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 4,
+    animations: [{ name: 'LORDS_3', frameRange: [0, 9] }],
+  },
+
   {
     url: '/tokens/USDC/3-animated.png',
     type: 'rowColumn',
@@ -163,11 +198,25 @@ export const buildingAtlasMeta = [
     animations: [{ name: 'ETHEREUM_3', frameRange: [0, 9] }],
   },
   {
+    url: '/tokens/PAL/1-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 3,
+    animations: [{ name: 'PAL_1', frameRange: [0, 8] }],
+  },
+  {
+    url: '/tokens/PAL/2-animated.png',
+    type: 'rowColumn',
+    width: 3,
+    height: 3,
+    animations: [{ name: 'PAL_2', frameRange: [0, 8] }],
+  },
+  {
     url: '/tokens/PAL/3-animated.png',
     type: 'rowColumn',
     width: 3,
     height: 3,
-    animations: [{ name: 'PAL_3', frameRange: [0, 6] }],
+    animations: [{ name: 'PAL_3', frameRange: [0, 8] }],
   },
   {
     url: '/tokens/EKUBO/3-animated.png',
