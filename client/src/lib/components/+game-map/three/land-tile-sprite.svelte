@@ -49,6 +49,8 @@
         ),
       });
 
+      sprite.material.depthWrite = false; // Prevent z-fighting between layers
+
       // Register outline controls in the global store
       // Determine layer type from animation property
       const layer =
@@ -69,9 +71,14 @@
         animationName = tile.biomeAnimationName;
       }
 
+      // Apply bottom padding for building animations
+      const yOffset = animationProperty === 'buildingAnimationName' 
+        ? tile.buildingBottomPadding 
+        : 0;
+
       updatePosition(index, [
         tile.position[0],
-        -tile.position[2],
+        -tile.position[2] + yOffset,
         tile.position[1],
       ]);
 
