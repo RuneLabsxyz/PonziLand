@@ -72,15 +72,20 @@
       }
 
       // Apply bottom padding for building animations
-      const yOffset = animationProperty === 'buildingAnimationName' 
-        ? tile.buildingBottomPadding 
-        : 0;
+      const yOffset =
+        animationProperty === 'buildingAnimationName'
+          ? tile.buildingBottomPadding
+          : 0;
 
-      updatePosition(index, [
-        tile.position[0],
-        -tile.position[2] + yOffset,
-        tile.position[1],
-      ]);
+      // Apply scale factor for building animations
+      const scale =
+        animationProperty === 'buildingAnimationName' ? tile.buildingScale : 1;
+
+      updatePosition(
+        index,
+        [tile.position[0], -tile.position[2] + yOffset, tile.position[1]],
+        [scale, scale],
+      );
 
       sprite.animation.setAt(index, animationName as any);
     });
