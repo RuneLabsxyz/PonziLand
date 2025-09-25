@@ -6,7 +6,7 @@ export const BITCOIN = {
     1: {
       x: 0,
       y: 18,
-      useAnimation: false,
+      useAnimation: true,
       animations: [
         {
           url: '/tokens/BITCOIN/1-animated.png',
@@ -22,7 +22,7 @@ export const BITCOIN = {
     2: {
       x: 0,
       y: 19,
-      useAnimation: false,
+      useAnimation: true,
       animations: [
         {
           url: '/tokens/BITCOIN/2-animated.png',
@@ -38,7 +38,7 @@ export const BITCOIN = {
     3: {
       x: 0,
       y: 20,
-      useAnimation: false,
+      useAnimation: true,
       animations: [
         {
           url: '/tokens/BITCOIN/3-animated.png',

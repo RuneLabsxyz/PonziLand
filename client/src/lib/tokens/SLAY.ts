@@ -14,7 +14,7 @@ export const SLAY = {
           width: 3,
           height: 3,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
-          bottomPadding: 15,
+          bottomPadding: 8,
           scale: 0.8,
         },
       ],
