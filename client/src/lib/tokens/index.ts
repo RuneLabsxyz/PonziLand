@@ -6,6 +6,7 @@ export interface AnimationData {
   height: number;
   animations: Array<{ name: string; frameRange: [number, number] }>;
   bottomPadding?: number; // Optional bottom padding in pixels
+  scale?: number; // Optional scale factor
 }
 
 export interface BuildingLevel {

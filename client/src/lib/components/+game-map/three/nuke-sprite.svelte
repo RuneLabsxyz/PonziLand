@@ -22,7 +22,7 @@
       updatePosition(index, [
         tile.position[0],
         -tile.position[2],
-        tile.position[1] + .001,
+        tile.position[1] + 0.001,
       ]);
       sprite.lookAt(0, 0.1, 0);
       sprite.animation.setAt(index, animationName);

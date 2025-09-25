@@ -1,3 +1,5 @@
+import { scale } from 'svelte/transition';
+
 export const BROTHER = {
   skin: 'BROTHER',
   icon: '/tokens/BROTHER/brother.png',
@@ -14,7 +16,8 @@ export const BROTHER = {
           width: 3,
           height: 3,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
-          bottomPadding: 20,
+          bottomPadding: 15,
+          scale: 0.7,
         },
       ],
     },
@@ -29,7 +32,8 @@ export const BROTHER = {
           width: 3,
           height: 3,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
-          bottomPadding: 20,
+          bottomPadding: 10,
+          scale: 0.7,
         },
       ],
     },
@@ -45,6 +49,7 @@ export const BROTHER = {
           height: 3,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 10,
+          scale: 0.7,
         },
       ],
     },

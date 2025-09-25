@@ -24,7 +24,7 @@
     },
   });
 
-  $inspect(cursorStore)
+  $inspect(cursorStore);
 
   let startPosition: { x: number; y: number } | undefined = $state(undefined);
 

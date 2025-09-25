@@ -59,17 +59,39 @@ export class LandTile {
       return 0;
     }
 
-    const building = tokenMetadata.building[this.level as keyof typeof tokenMetadata.building];
+    const building =
+      tokenMetadata.building[this.level as keyof typeof tokenMetadata.building];
     if (!building?.useAnimation || !building.animations) {
       return 0;
     }
 
     // Get the first animation's bottom padding (assuming all animations for a level have the same padding)
     const bottomPaddingPixels = building.animations[0]?.bottomPadding ?? 0;
-    
+
     // Convert pixels to world units (adjust this conversion factor as needed)
     // Assuming 1 world unit = 64 pixels (common in sprite-based games)
     const pixelsPerWorldUnit = 64;
     return bottomPaddingPixels / pixelsPerWorldUnit;
+  }
+
+  // Get scale factor for building animation (defaults to 1)
+  get buildingScale(): number {
+    if (this.skin === 'empty' || this.skin === 'default') {
+      return 1;
+    }
+
+    const tokenMetadata = getTokenMetadata(this.skin);
+    if (!tokenMetadata) {
+      return 1;
+    }
+
+    const building =
+      tokenMetadata.building[this.level as keyof typeof tokenMetadata.building];
+    if (!building?.useAnimation || !building.animations) {
+      return 1;
+    }
+
+    // Get the first animation's scale (assuming all animations for a level have the same scale)
+    return building.animations[0]?.scale ?? 1;
   }
 }
