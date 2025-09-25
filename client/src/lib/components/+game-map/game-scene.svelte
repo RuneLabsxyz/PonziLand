@@ -17,14 +17,14 @@
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.toneMapping = 1; // No tone mapping
 
+  $inspect('rendrerer', renderer);
+
   interactivity({
     filter: (hits) => {
       // Only return the first hit
       return hits.slice(0, 1);
     },
   });
-
-  $inspect(cursorStore);
 
   let startPosition: { x: number; y: number } | undefined = $state(undefined);
 
