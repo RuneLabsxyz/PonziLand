@@ -24,6 +24,8 @@
     },
   });
 
+  $inspect(cursorStore)
+
   let startPosition: { x: number; y: number } | undefined = $state(undefined);
 
   // Raycaster for mouse position detection

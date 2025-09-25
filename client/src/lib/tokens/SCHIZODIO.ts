@@ -28,6 +28,7 @@ export const SCHIZODIO = {
           width: 3,
           height: 3,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
+          bottomPadding: 8,
         },
       ],
     },
