@@ -1,5 +1,3 @@
-import { scale } from "svelte/transition";
-
 export const EKUBO = {
   skin: 'EKUBO',
   icon: '/tokens/EKUBO/ekubo.png',
