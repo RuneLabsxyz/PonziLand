@@ -40,7 +40,7 @@
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { devsettings } from './utils/devsettings.store.svelte';
 
-  const CIRCLE_PADDING = 6;
+  const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
   interface Props {
