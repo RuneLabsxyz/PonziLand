@@ -9,10 +9,10 @@ export const LORDS = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/LORDS/1-animated.png',
+          url: '/tokens/LORDS/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [
             { name: 'idle', frameRange: [0, 9] }
           ],
@@ -27,10 +27,10 @@ export const LORDS = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/LORDS/2-animated.png',
+          url: '/tokens/LORDS/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [
             { name: 'idle', frameRange: [0, 9] }
           ],
@@ -45,10 +45,10 @@ export const LORDS = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/LORDS/3-animated.png',
+          url: '/tokens/LORDS/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [
             { name: 'idle', frameRange: [0, 9] }
           ],

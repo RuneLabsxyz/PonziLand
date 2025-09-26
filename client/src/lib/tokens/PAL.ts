@@ -9,10 +9,10 @@ export const PAL = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/PAL/1-animated.png',
+          url: '/tokens/PAL/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 9,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 8] }],
           bottomPadding: 15,
           scale: 0.8,
@@ -25,10 +25,10 @@ export const PAL = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/PAL/2-animated.png',
+          url: '/tokens/PAL/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 9,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 8] }],
           bottomPadding: 10,
           scale: 0.8,
@@ -41,10 +41,10 @@ export const PAL = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/PAL/3-animated.png',
+          url: '/tokens/PAL/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 9,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 8] }],
           bottomPadding: 10,
           scale: 0.8,

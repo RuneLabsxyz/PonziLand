@@ -9,10 +9,10 @@ export const SISTER = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SISTER/1-animated.png',
+          url: '/tokens/SISTER/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 12,
           scale: 0.8,
@@ -25,10 +25,10 @@ export const SISTER = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SISTER/2-animated.png',
+          url: '/tokens/SISTER/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 10,
           scale: 0.8,
@@ -41,10 +41,10 @@ export const SISTER = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SISTER/3-animated.png',
+          url: '/tokens/SISTER/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 4,
           scale: 1,
