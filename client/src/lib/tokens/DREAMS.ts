@@ -9,9 +9,9 @@ export const DREAMS = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/DREAMS/1-animated-line.png',
+          url: '/tokens/DREAMS/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
         },
@@ -23,11 +23,11 @@ export const DREAMS = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/DREAMS/2-animated-line.png',
+          url: '/tokens/DREAMS/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          animations: [{ name: 'idle', frameRange: [10, 19] }],
         },
       ],
     },
@@ -37,11 +37,11 @@ export const DREAMS = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/DREAMS/3-animated-line.png',
+          url: '/tokens/DREAMS/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          animations: [{ name: 'idle', frameRange: [20, 29] }],
         },
       ],
     },

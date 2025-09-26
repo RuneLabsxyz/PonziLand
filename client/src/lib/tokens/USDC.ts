@@ -9,9 +9,9 @@ export const USDC = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/USDC/3-animated-line.png',
+          url: '/tokens/USDC/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
         },
@@ -23,11 +23,11 @@ export const USDC = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/USDC/3-animated-line.png',
+          url: '/tokens/USDC/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          animations: [{ name: 'idle', frameRange: [10, 19] }],
         },
       ],
     },
@@ -37,11 +37,11 @@ export const USDC = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/USDC/3-animated-line.png',
+          url: '/tokens/USDC/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          animations: [{ name: 'idle', frameRange: [20, 29] }],
         },
       ],
     },
