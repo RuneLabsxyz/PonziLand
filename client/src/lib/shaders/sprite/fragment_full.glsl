@@ -371,7 +371,7 @@ void main() {
 
         if(vHover > 0.5) {
             // If current pixel is transparent, check if we should draw outline
-            if(sampledDiffuseColor.a < 0.1) {
+            if(sampledDiffuseColor.a < 0.5) {
                 vec2 texelSize = outlineWidth / resolution;
                 bool hasOpaqueNeighbor = false;
 
@@ -393,7 +393,7 @@ void main() {
                            sampleUv.y >= spriteMin.y && sampleUv.y <= spriteMax.y) {
                             vec4 neighbor = texture2D(map, sampleUv);
 
-                            if(neighbor.a >= 0.1) {
+                            if(neighbor.a >= 0.5) {
                                 hasOpaqueNeighbor = true;
                                 break;
                             }
