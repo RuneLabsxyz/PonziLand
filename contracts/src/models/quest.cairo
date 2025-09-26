@@ -8,11 +8,18 @@ pub struct QuestDetails {
     pub location: u16,
     pub capacity: u16,
     pub participant_count: u16,
-    pub settings_id: u32,
-    pub target_score: u32,
     pub entry_price: u256,
+    pub target_score: u32,
     pub creator_address: ContractAddress,
     pub game_id: u64,
+
+}
+
+#[derive(Copy, Drop, Serde, Introspect)]
+pub enum QuestType {
+    None,
+    Minigame,
+    OneOnOne,
 }
 
 #[derive(Clone, Drop, Serde, Introspect)]
@@ -26,6 +33,7 @@ pub struct QuestGame {
     pub settings_contract_name: ByteArray,
     pub settings_id: u32,
     pub target_score: u32,
+    pub quest_type: QuestType,
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked)]
