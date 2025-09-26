@@ -129,6 +129,7 @@ mod setup {
                 TestResource::Event(
                     auth::e_AddressAuthorizedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),
+                TestResource::Event(auth::e_GameEndedEvent::TEST_CLASS_HASH.try_into().unwrap()),
                 TestResource::Event(
                     events::e_AuctionFinishedEvent::TEST_CLASS_HASH.try_into().unwrap(),
                 ),

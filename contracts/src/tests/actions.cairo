@@ -444,6 +444,7 @@ fn setup_test() -> (
     IEkuboCoreTestingDispatcher,
     ITokenRegistryDispatcher,
     IConfigSystemDispatcher,
+    IAuthDispatcher,
 ) {
     let (
         world,
@@ -467,7 +468,7 @@ fn setup_test() -> (
 
     let store = StoreTrait::new(world);
 
-    (store, actions_system, erc20, testing_dispatcher, token_registry, config_system)
+    (store, actions_system, erc20, testing_dispatcher, token_registry, config_system, auth_system)
 }
 
 pub enum Direction {
@@ -582,7 +583,7 @@ fn bid_and_verify_next_auctions(
 
 #[test]
 fn test_buy_action() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
 
     // Setup liquidity pool and neighbor token
@@ -633,7 +634,7 @@ fn test_buy_action() {
 #[test]
 #[should_panic]
 fn test_invalid_land() {
-    let (_, actions_system, erc20, _, _, _) = setup_test();
+    let (_, actions_system, erc20, _, _, _, _) = setup_test();
 
     // Attempt to buy land at invalid position (11000)
     actions_system.buy(11000, erc20.contract_address, 10, 12);
@@ -642,7 +643,7 @@ fn test_invalid_land() {
 //test for now without auction
 #[test]
 fn test_bid_and_buy_action() {
-    let (store, actions_system, main_currency, _, _, _) = setup_test();
+    let (store, actions_system, main_currency, _, _, _, _) = setup_test();
 
     // Set initial timestamp
     set_block_timestamp(100);
@@ -668,7 +669,7 @@ fn test_bid_and_buy_action() {
 
 #[test]
 fn test_claim_and_add_taxes() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
 
     // Setup liquidity pool and neighbor token
@@ -748,7 +749,7 @@ fn test_claim_and_add_taxes() {
 #[test]
 fn test_nuke_action() {
     // Setup environment
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_registry, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_registry, _, _) =
         setup_test();
     //set a liquidity pool with amount for each token
     ekubo_testing_dispatcher
@@ -826,7 +827,7 @@ fn test_nuke_action() {
 
 #[test]
 fn test_increase_price_and_stake() {
-    let (store, actions_system, main_currency, _, _, _) = setup_test();
+    let (store, actions_system, main_currency, _, _, _, _) = setup_test();
 
     //create land
     set_block_timestamp(100);
@@ -860,7 +861,7 @@ fn test_increase_price_and_stake() {
 #[ignore]
 fn test_detailed_tax_calculation() {
     set_block_timestamp(1000);
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _, _) = setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
@@ -919,7 +920,7 @@ fn test_detailed_tax_calculation() {
 
 #[test]
 fn test_level_up() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
 
     // Setup liquidity pool and neighbor token
@@ -953,7 +954,7 @@ fn test_level_up() {
 
 #[test]
 fn check_success_liquidity_pool() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _, _) = setup_test();
 
     // Setup liquidity pool and test environment
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 100000);
@@ -975,7 +976,7 @@ fn check_success_liquidity_pool() {
 #[test]
 #[should_panic]
 fn check_invalid_liquidity_pool() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _, _) = setup_test();
 
     // Setup low liquidity pool (should cause panic)
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 100);
@@ -995,61 +996,135 @@ fn check_invalid_liquidity_pool() {
 }
 
 #[test]
-fn test_reimburse_stakes() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+fn test_withdrawal_functions() {
+    let (
+        store,
+        actions_system,
+        main_currency,
+        ekubo_testing_dispatcher,
+        token_dispatcher,
+        _,
+        auth_dispatcher,
+    ) =
         setup_test();
 
     set_block_timestamp(10);
     set_block_number(10);
     setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
-    let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
+    let (erc20_neighbor_1, erc20_neighbor_2, _) = deploy_erc20_with_pool(
         ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
     );
     authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
     authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
-    authorize_token(token_dispatcher, erc20_neighbor_3.contract_address);
 
+    // RECIPIENT (first owner) - 1 land
     let next_location_1 = initialize_land_and_capture_next_auction(
-        store, actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 100, 500, main_currency,
+        store,
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        CENTER_LOCATION,
+        1000,
+        500,
+        main_currency,
     );
+
+    // NEIGHBOR_1 (second owner) - 2 lands
     let next_location_2 = initialize_land_and_capture_next_auction(
         store,
         actions_system,
         main_currency,
         NEIGHBOR_1(),
         next_location_1,
-        100,
-        500,
+        1500,
+        600,
         erc20_neighbor_1,
     );
+    setup_buyer_with_tokens(erc20_neighbor_2, actions_system, NEIGHBOR_2(), NEIGHBOR_1(), 1000);
     initialize_land_and_capture_next_auction(
         store,
         actions_system,
         main_currency,
-        NEIGHBOR_2(),
+        NEIGHBOR_1(),
         next_location_2,
-        100,
-        500,
+        2000,
+        800,
         erc20_neighbor_2,
     );
 
-    let land_locations = array![CENTER_LOCATION, next_location_1, next_location_2];
-    let tokens = array![main_currency, erc20_neighbor_1, erc20_neighbor_2];
+    // Execute some claims to test dynamic behavior
+    set_block_timestamp(500);
+    set_contract_address(RECIPIENT());
+    actions_system.claim(CENTER_LOCATION);
 
-    validate_staking_state(
-        store, actions_system.contract_address, land_locations.span(), tokens.span(), true,
-    );
+    set_block_timestamp(700);
+    set_contract_address(NEIGHBOR_1());
+    actions_system.claim(next_location_1);
+
+    // Record initial balances before withdrawal
+    let initial_main_contract = main_currency.balanceOf(actions_system.contract_address);
+    let initial_erc1_contract = erc20_neighbor_1.balanceOf(actions_system.contract_address);
+    let initial_erc2_contract = erc20_neighbor_2.balanceOf(actions_system.contract_address);
+
+    let recipient_balance_before = main_currency.balanceOf(RECIPIENT());
+    let neighbor1_balance_before = erc20_neighbor_1.balanceOf(NEIGHBOR_1());
+    let neighbor1_erc2_balance_before = erc20_neighbor_2.balanceOf(NEIGHBOR_1());
+
+    // End the game
     set_contract_address(0x0.try_into().unwrap());
-    actions_system.reimburse_stakes();
+    auth_dispatcher.end_game_and_enable_withdrawals();
 
-    validate_staking_state(
-        store, actions_system.contract_address, land_locations.span(), tokens.span(), false,
+    // Test withdraw_stake for RECIPIENT (single land)
+    set_contract_address(RECIPIENT());
+    actions_system.withdraw_stake(CENTER_LOCATION);
+
+    // Verify single withdrawal worked
+    let center_stake_after = store.land_stake(CENTER_LOCATION);
+    let center_land_after = store.land(CENTER_LOCATION);
+    assert(center_stake_after.amount == 0, 'stake not cleared');
+    assert(center_land_after.sell_price == 0, 'land not deleted');
+
+    // Verify RECIPIENT received refund
+    let recipient_balance_after = main_currency.balanceOf(RECIPIENT());
+    assert(recipient_balance_after > recipient_balance_before, 'recipient no refund');
+
+    // Test withdraw_stakes_batch for NEIGHBOR_1 (multiple lands)
+    set_contract_address(NEIGHBOR_1());
+    let neighbor1_locations = array![next_location_1, next_location_2];
+    actions_system.withdraw_stakes_batch(neighbor1_locations);
+
+    // Verify batch withdrawal worked
+    let location1_stake_after = store.land_stake(next_location_1);
+    let location2_stake_after = store.land_stake(next_location_2);
+    let location1_land_after = store.land(next_location_1);
+    let location2_land_after = store.land(next_location_2);
+
+    assert(location1_stake_after.amount == 0, 'batch stake1 failed');
+    assert(location2_stake_after.amount == 0, 'batch stake2 failed');
+    assert(location1_land_after.sell_price == 0, 'batch land1 failed');
+    assert(location2_land_after.sell_price == 0, 'batch land2 failed');
+
+    // Verify NEIGHBOR_1 received refunds for both tokens
+    let neighbor1_balance_after = erc20_neighbor_1.balanceOf(NEIGHBOR_1());
+    let neighbor1_erc2_balance_after = erc20_neighbor_2.balanceOf(NEIGHBOR_1());
+    assert(neighbor1_balance_after > neighbor1_balance_before, 'neighbor1 no erc1 refund');
+    assert(
+        neighbor1_erc2_balance_after > neighbor1_erc2_balance_before, 'neighbor1 no erc2 refund',
     );
+
+    // Verify contract released tokens
+    let final_main_contract = main_currency.balanceOf(actions_system.contract_address);
+    let final_erc1_contract = erc20_neighbor_1.balanceOf(actions_system.contract_address);
+    let final_erc2_contract = erc20_neighbor_2.balanceOf(actions_system.contract_address);
+
+    assert(final_main_contract < initial_main_contract, 'main not released');
+    assert(final_erc1_contract < initial_erc1_contract, 'erc1 not released');
+    assert(final_erc2_contract < initial_erc2_contract, 'erc2 not released');
 }
 
 #[test]
 fn test_claim_all() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
 
     // Setup liquidity pool and neighbor token
@@ -1101,7 +1176,7 @@ fn test_claim_all() {
 
 #[test]
 fn test_time_to_nuke() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
@@ -1221,7 +1296,7 @@ fn test_time_to_nuke() {
 
 #[test]
 fn test_circle_expansion() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _) = setup_test();
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, _, _) = setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
@@ -1272,7 +1347,7 @@ fn test_circle_expansion() {
 
 #[test]
 fn test_new_claim() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
@@ -1379,7 +1454,7 @@ fn test_new_claim() {
 
 #[test]
 fn test_dynamic_grid() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, config_system) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, _, config_system, _) =
         setup_test();
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
@@ -1405,7 +1480,7 @@ fn test_dynamic_grid() {
 
 #[test]
 fn test_precision_in_nuke_distribution() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
     let our_contract_for_fee = store.get_our_contract_for_fee();
 
@@ -1491,7 +1566,7 @@ fn test_precision_in_nuke_distribution() {
 
 #[test]
 fn test_first_grade_of_nuke_and_dead_land() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
 
     // Setup liquidity pool and neighbor tokens
@@ -1603,7 +1678,7 @@ fn test_first_grade_of_nuke_and_dead_land() {
 
 #[test]
 fn test_nuke_cascade() {
-    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _) =
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
         setup_test();
 
     // Setup liquidity pool and neighbor tokens

@@ -62,7 +62,17 @@ trait IAuth<T> {
     /// @param address The address to check.
     /// @return True if the address is owner.
     fn is_owner_auth(self: @T, address: ContractAddress) -> bool;
+
+    /// @notice Permanently ends game and enables withdrawals. Owner only.
+    /// @param self The contract state reference.
+    fn end_game_and_enable_withdrawals(ref self: T);
+
+    /// @notice Check if game has ended (withdrawals enabled, actions locked).
+    /// @param self The contract state reference.
+    /// @return True if game has ended.
+    fn is_game_ended(self: @T) -> bool;
 }
+
 #[dojo::contract]
 pub mod auth {
     // Core Cairo imports
@@ -110,18 +120,28 @@ pub mod auth {
         old_verifier: felt252,
     }
 
+    #[derive(Drop, Serde)]
+    #[dojo::event]
+    struct GameEndedEvent {
+        #[key]
+        game_ended_at: u64,
+        finished_by: ContractAddress,
+    }
+
     #[storage]
     struct Storage {
         authorized_addresses: Map<ContractAddress, bool>,
         verifier_accounts: Map<ContractAddress, bool>,
         verifier: felt252,
         actions_locked: bool,
+        game_ended: bool,
     }
 
     /// @notice Initializes the contract with the verifier.
     fn dojo_init(ref self: ContractState, verifier: felt252) {
         self.verifier.write(verifier);
         self.actions_locked.write(false);
+        self.game_ended.write(false);
     }
 
 
@@ -225,9 +245,33 @@ pub mod auth {
         fn can_take_action(self: @ContractState, address: ContractAddress) -> bool {
             //let authorized = self.authorized_addresses.read(address);
 
+            if self.game_ended.read() {
+                return false; // No regular actions if game has ended
+            }
             let actions_locked = self.actions_locked.read();
             // Red: Inhibiting the verification step for the testing phase.
             return !actions_locked;
+        }
+
+        /// @notice Permanently ends game and enables withdrawals. Owner only.
+        fn end_game_and_enable_withdrawals(ref self: ContractState) {
+            let mut world = self.world_default();
+            let caller = get_caller_address();
+            assert(self.is_owner_auth(caller), 'Only owner can end game');
+            assert(!self.game_ended.read(), 'Game already ended');
+
+            self.game_ended.write(true);
+            self.actions_locked.write(true);
+
+            world
+                .emit_event(
+                    @GameEndedEvent { game_ended_at: get_block_timestamp(), finished_by: caller },
+                );
+        }
+
+        /// @notice Check if game has ended (withdrawals enabled, actions locked).
+        fn is_game_ended(self: @ContractState) -> bool {
+            self.game_ended.read()
         }
     }
 

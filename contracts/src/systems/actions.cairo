@@ -62,8 +62,13 @@ trait IActions<T> {
     /// @param land_location The location ID of the land
     fn level_up(ref self: T, land_location: u16) -> bool;
 
-    /// @notice Reimburse all stakes when the game is over (admin function)
-    fn reimburse_stakes(ref self: T);
+    /// @notice Withdraw stake from a single land when game has ended
+    /// @param land_location The location ID of the land
+    fn withdraw_stake(ref self: T, land_location: u16);
+
+    /// @notice Withdraw stakes from multiple lands when game has ended
+    /// @param land_locations Array of land location IDs
+    fn withdraw_stakes_batch(ref self: T, land_locations: Array<u16>);
 
     fn get_land(self: @T, land_location: u16) -> (Land, LandStake);
 
@@ -218,7 +223,6 @@ pub mod actions {
         #[substorage(v0)]
         reentrancy_guard: ReentrancyGuardComponent::Storage,
         ekubo_dispatcher: ICoreDispatcher,
-        staked_lands: Map<u16, bool> // New storage variable to track staked lands
     }
 
     fn dojo_init(
@@ -534,30 +538,50 @@ pub mod actions {
             self.update_level(ref store, ref land, elapsed_time_since_buy)
         }
 
-        fn reimburse_stakes(ref self: ContractState) {
+        fn withdraw_stake(ref self: ContractState, land_location: u16) {
             self.reentrancy_guard.start();
+
             let mut world = self.world_default();
-            let caller = get_caller_address();
-            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
+            assert(world.auth_dispatcher().is_game_ended(), 'Game not ended');
 
             let mut store = StoreTrait::new(world);
-            let mut active_lands: Array<Land> = ArrayTrait::new();
-            let grid_width: u16 = MAX_GRID_SIZE.into();
-            let mut i: u16 = 0;
-            loop {
-                if i >= grid_width * grid_width {
-                    break;
-                }
-                if self.staked_lands.read(i) {
-                    let land = store.land(i);
-                    let land_stake = store.land_stake(i);
-                    if !land.owner.is_zero() && land_stake.amount > 0 {
-                        active_lands.append(land);
+            let caller = get_caller_address();
+            let land = store.land(land_location);
+
+            assert(land.is_owner(caller), 'Not the owner');
+
+            let mut land_stake = store.land_stake(land_location);
+            if land_stake.amount > 0 {
+                // Use existing stake component logic
+                self.stake._reimburse(store, land);
+                store.delete_land(land, land_stake);
+            }
+
+            self.reentrancy_guard.end();
+        }
+
+        /// @notice Withdraw stakes from multiple lands when game has ended
+        fn withdraw_stakes_batch(ref self: ContractState, land_locations: Array<u16>) {
+            self.reentrancy_guard.start();
+
+            let mut world = self.world_default();
+            assert(world.auth_dispatcher().is_game_ended(), 'Game not ended');
+
+            let mut store = StoreTrait::new(world);
+            let caller = get_caller_address();
+
+            for location in land_locations.span() {
+                let land = store.land(*location);
+
+                if land.is_owner(caller) {
+                    let mut land_stake = store.land_stake(*location);
+                    if land_stake.amount > 0 {
+                        self.stake._reimburse(store, land);
+                        store.delete_land(land, land_stake);
                     }
                 }
-                i += 1;
             }
-            self.stake._reimburse(store, active_lands.span());
+
             self.reentrancy_guard.end();
         }
 
@@ -842,8 +866,6 @@ pub mod actions {
                 self.stake._discount_stake_for_nuke(token_info);
             }
 
-            self.staked_lands.write(land.location, false);
-
             store.world.emit_event(@LandNukedEvent { owner_nuked, land_location: land.location });
 
             let sell_price = get_suggested_sell_price(store, land.location);
@@ -946,7 +968,6 @@ pub mod actions {
 
             //update neighbors_info_packed with the new land for the existing neighbors
             update_neighbors_info(store, neighbors, land.location, current_time);
-            self.staked_lands.write(land.location, true);
 
             self.auction.finish_auction(store, auction, caller, current_price);
 

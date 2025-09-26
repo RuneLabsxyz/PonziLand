@@ -114,16 +114,11 @@ mod StakeComponent {
         }
 
         /// @notice Reimburse all stakes when game is over (admin function)
-        fn _reimburse(
-            ref self: ComponentState<TContractState>, mut store: Store, active_lands: Span<Land>,
-        ) {
-            for mut land in active_lands {
-                let land = *land;
-                let mut land_stake = store.land_stake(land.location);
-                let token_ratio = self.__generate_token_ratio(land.token_used);
-                let refund_amount = calculate_refund_amount(land_stake.amount, token_ratio);
-                self.__process_refund(land, store, refund_amount, land_stake);
-            };
+        fn _reimburse(ref self: ComponentState<TContractState>, mut store: Store, land: Land) {
+            let mut land_stake = store.land_stake(land.location);
+            let token_ratio = self.__generate_token_ratio(land.token_used);
+            let refund_amount = calculate_refund_amount(land_stake.amount, token_ratio);
+            self.__process_refund(land, store, refund_amount, land_stake);
         }
 
         fn _get_token_ratios(
@@ -136,13 +131,8 @@ mod StakeComponent {
             ref self: ComponentState<TContractState>, token_info: TokenInfo,
         ) {
             let current_total = self.token_stakes.read(token_info.token_address);
-            if current_total >= token_info.amount {
-                self
-                    .token_stakes
-                    .write(token_info.token_address, current_total - token_info.amount);
-            } else {
-                panic!("Attempting to discount more than what's staked");
-            }
+            assert(current_total >= token_info.amount, 'not sufficient to refund');
+            self.token_stakes.write(token_info.token_address, current_total - token_info.amount);
         }
 
         fn __generate_token_ratio(
@@ -176,12 +166,9 @@ mod StakeComponent {
             assert(status, ERC20_REFUND_FAILED);
 
             let current_total = self.token_stakes.read(land.token_used);
-            if current_total >= refund_amount {
-                let new_total = current_total - refund_amount;
-                self.token_stakes.write(land.token_used, new_total);
-            } else {
-                panic!("Attempting to refund more than what's staked");
-            }
+            assert(current_total >= refund_amount, 'not sufficient to refund');
+            let new_total = current_total - refund_amount;
+            self.token_stakes.write(land.token_used, new_total);
 
             land_stake.amount = 0;
             store.set_land_stake(land_stake);
