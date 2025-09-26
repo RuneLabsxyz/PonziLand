@@ -17,6 +17,8 @@
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.toneMapping = 1; // No tone mapping
 
+  $inspect('rendrerer', renderer);
+
   interactivity({
     filter: (hits) => {
       // Only return the first hit
