@@ -6,6 +6,7 @@ import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 import type { LandWithActions } from './api/land';
 import type { TokenMetadata } from './interfaces';
+import { getTokenMetadata as getTokenData } from './tokens';
 import { COORD_MULTIPLIER, COORD_MASK } from './const';
 
 export function cn(...inputs: ClassValue[]) {
@@ -108,28 +109,8 @@ export function getTokenInfo(tokenAddress: string) {
   return token;
 }
 
-const metadataCache = new Map<string, TokenMetadata>();
-
-export async function getTokenMetadata(
-  skin: string,
-): Promise<TokenMetadata | null> {
-  if (metadataCache.has(skin)) {
-    return metadataCache.get(skin)!;
-  }
-
-  try {
-    const response = await fetch(`/tokens/${skin}/metadata.json`);
-    if (!response.ok) {
-      console.warn(`Failed to load metadata for skin: ${skin}`);
-      return null;
-    }
-    const metadata: TokenMetadata = await response.json();
-    metadataCache.set(skin, metadata);
-    return metadata;
-  } catch (error) {
-    console.warn(`Error loading metadata for skin: ${skin}`, error);
-    return null;
-  }
+export function getTokenMetadata(skin: string): TokenMetadata | null {
+  return getTokenData(skin);
 }
 
 export function parseLocation(
