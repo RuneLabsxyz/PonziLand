@@ -21,7 +21,7 @@
   } = $props();
 
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
-  let levelUpInfo = $state(land.getLevelInfo());
+  let levelUpInfo = $derived(land.getLevelInfo());
 
   onMount(() => {
     const interval = setInterval(() => {
