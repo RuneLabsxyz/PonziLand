@@ -1,4 +1,4 @@
-use ponzi_land::models::quest::{Quest, QuestDetails};
+use ponzi_land::models::quest::{Quest, QuestDetails, QuestType};
 use starknet::ContractAddress;
 
 #[starknet::interface]
@@ -13,7 +13,7 @@ pub trait IQuestSystems<T> {
     fn get_score(self: @T, quest_id: u64) -> u32;
     fn get_quest_game_token(self: @T, quest_id: u64) -> (ContractAddress, u64);
     fn get_quest_entry_price(self: @T, quest_id: u64) -> u256;
-    fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32);
+    fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType);
 }
 
 
@@ -35,6 +35,8 @@ pub mod quests {
     use ponzi_land::models::land::Land;
     use ponzi_land::models::auction::Auction;
     use ponzi_land::store::{Store, StoreTrait};
+    use ponzi_land::models::quest::QuestType;
+    use ponzi_land::interfaces::quests::{IOneOnOne, IOneOnOneDispatcher, IOneOnOneDispatcherTrait, Status};
     use super::DEFAULT_NS;
 
     use ponzi_land::components::payable::PayableComponent;
@@ -182,28 +184,49 @@ pub mod quests {
 
             let time_to_start = get_block_timestamp();
             let time_to_end = time_to_start + 600000;
-            let game_dispatcher = IMinigameDispatcher {
-                contract_address: game_token_address,
-            };
-            let game_token_id: u64 = game_dispatcher
-                .mint_game(
-                    Option::Some(player_name), //player name
-                    Option::Some(quest_game.settings_id), //settings id
-                    Option::None, //start
-                    Option::Some(time_to_end), //end
-                    Option::None, //objective ids
-                    Option::None, //context
-                    Option::None, //client url
-                    Option::None, //renderer address
-                    player_address, //to
-                    true, //soulbound
-                );
 
+            let mut game_id: u64 = 0;
+            match quest_game.quest_type {
+                QuestType::Minigame => {
+                    let game_dispatcher = IMinigameDispatcher {
+                        contract_address: game_token_address,
+                    };
+                    game_id = game_dispatcher
+                        .mint_game(
+                            Option::Some(player_name), //player name
+                            Option::Some(quest_game.settings_id), //settings id
+                            Option::None, //start
+                            Option::Some(time_to_end), //end
+                            Option::None, //objective ids
+                            Option::None, //context
+                            Option::None, //client url
+                            Option::None, //renderer address
+                            player_address, //to
+                            true, //soulbound
+                        );
+                },
+                QuestType::OneOnOne => {
+                    let game_dispatcher = IOneOnOneDispatcher {
+                        contract_address: game_token_address,
+                    };
+                    game_id = game_dispatcher.create_match(
+                        land.owner,
+                        player_address,
+                        quest_game.settings_id.into(),
+                    );
+                },
+                _ => {
+                    game_id = 0;
+                }
+            }
+
+            assert!(game_id > 0, "Failed to create game");
+            
             let quest = Quest {
                 id: quest_counter.count,
                 details_id: quest_details.id,
                 player_address,
-                game_token_id,
+                game_token_id: game_id,
                 completed: false,
                 expires_at: time_to_end,
             };
@@ -236,12 +259,42 @@ pub mod quests {
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
-            let game_dispatcher = IMinigameTokenDataDispatcher {
-                contract_address: game_token_address,
-            };
-            let score: u32 = game_dispatcher.score(quest.game_token_id);
-
-            if score < quest_details.target_score && (game_dispatcher.game_over(quest.game_token_id) || get_block_timestamp() > quest.expires_at) {
+            let mut claimable = false;
+            let mut over = false;
+            match quest_game.quest_type {
+                QuestType::Minigame => {
+                    let game_dispatcher = IMinigameTokenDataDispatcher {
+                        contract_address: game_token_address,
+                    };
+                    let score: u32 = game_dispatcher.score(quest.game_token_id);
+                    over = game_dispatcher.game_over(quest.game_token_id);
+                    claimable = score >= quest_details.target_score;
+                },
+                QuestType::OneOnOne => {
+                    let game_dispatcher = IOneOnOneDispatcher {
+                        contract_address: game_token_address,
+                    };
+                    let status: Status = game_dispatcher.settle_match(quest.game_token_id.into());
+                    match status {
+                        Status::Winner(winner) => {
+                            claimable = winner == quest.player_address;
+                            over = true;
+                        },
+                        Status::Active => {
+                            claimable = false;
+                        },
+                        _ => {
+                            claimable = false;
+                            over = true;
+                        }
+                    }
+                },
+                _ => {
+                    claimable = false;
+                    over = true;
+                }
+            }
+            if !claimable && (over || get_block_timestamp() > quest.expires_at) {
                 land.quest_id = 0;
                 world.write_model(@land);
                 quest_details.participant_count -= 1;
@@ -253,11 +306,9 @@ pub mod quests {
 
             // check if the score is greater than or equal to the target score
             assert!(
-                score >= quest_details.target_score,
-                "Quest {} is not completed. Target score: {}, Current score: {}",
+                claimable,
+                "Quest {} is not completed",
                 quest_id,
-                quest_details.target_score,
-                score,
             );
 
             
@@ -309,14 +360,14 @@ pub mod quests {
             (quest_game.world_address, quest.game_token_id)
         }
 
-        fn register_quest_game(ref self: ContractState, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32) {
+        fn register_quest_game(ref self: ContractState, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType) {
             //TODO add permission check
             
             let mut world = self.world(DEFAULT_NS());
             let mut quest_game_count: QuestGameCounter = world.read_model(VERSION);
             quest_game_count.count += 1;
             world.write_model(@quest_game_count);
-            let quest_game = @QuestGame { id: quest_game_count.count, world_address, namespace, game_contract_name, settings_contract_name, settings_id, target_score };
+            let quest_game = @QuestGame { id: quest_game_count.count, world_address, namespace, game_contract_name, settings_contract_name, settings_id, target_score, quest_type };
             world.write_model(quest_game);
         }
 
@@ -359,7 +410,6 @@ pub mod quests {
             location,
             creator_address,
             game_id: quest_game.id,
-            settings_id: quest_game.settings_id,
             target_score: quest_game.target_score,
             entry_price,
             capacity,
