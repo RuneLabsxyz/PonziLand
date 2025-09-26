@@ -13,9 +13,7 @@ export const LORDS = {
           type: 'rowColumn',
           width: 30,
           height: 1,
-          animations: [
-            { name: 'idle', frameRange: [0, 9] }
-          ],
+          animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 15,
           scale: 0.8,
         },
@@ -31,9 +29,7 @@ export const LORDS = {
           type: 'rowColumn',
           width: 30,
           height: 1,
-          animations: [
-            { name: 'idle', frameRange: [10, 19] }
-          ],
+          animations: [{ name: 'idle', frameRange: [10, 19] }],
           bottomPadding: 10,
           scale: 0.8,
         },
@@ -49,9 +45,7 @@ export const LORDS = {
           type: 'rowColumn',
           width: 30,
           height: 1,
-          animations: [
-            { name: 'idle', frameRange: [20, 29] }
-          ],
+          animations: [{ name: 'idle', frameRange: [20, 29] }],
           bottomPadding: 10,
           scale: 0.8,
         },
