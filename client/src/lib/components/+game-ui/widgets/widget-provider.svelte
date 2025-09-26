@@ -33,7 +33,7 @@
         {#if type === 'wallet'}
           <WidgetWallet {setCustomControls} />
         {:else if type === 'land-hud'}
-          <WidgetLandHud {setCustomTitle} />
+          <WidgetLandHud {setCustomTitle} {setCustomControls} />
         {:else if type === 'land-info' && widget.data}
           <WidgetLandInfo data={widget.data} />
         {:else if type === 'settings'}
