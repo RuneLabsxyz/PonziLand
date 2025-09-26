@@ -9,10 +9,10 @@ export const EKUBO = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/EKUBO/1-animated.png',
+          url: '/tokens/EKUBO/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 9,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 8] }],
           scale: 0.8,
         },
@@ -24,10 +24,10 @@ export const EKUBO = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/EKUBO/2-animated.png',
+          url: '/tokens/EKUBO/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 8,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 7] }],
           bottomPadding: 10,
           scale: 0.8,
@@ -40,10 +40,10 @@ export const EKUBO = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/EKUBO/3-animated.png',
+          url: '/tokens/EKUBO/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 8,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 7] }],
           bottomPadding: 6,
         },

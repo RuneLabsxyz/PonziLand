@@ -9,10 +9,10 @@ export const DOG = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/DOG/1-animated.png',
+          url: '/tokens/DOG/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 5,
           scale: 0.7,
@@ -25,10 +25,10 @@ export const DOG = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/DOG/2-animated.png',
+          url: '/tokens/DOG/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 7,
           scale: 0.7,
@@ -41,10 +41,10 @@ export const DOG = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/DOG/3-animated.png',
+          url: '/tokens/DOG/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 10,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 6,
           scale: 0.7,

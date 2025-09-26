@@ -9,10 +9,10 @@ export const SCHIZODIO = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SCHIZODIO/1-animated.png',
+          url: '/tokens/SCHIZODIO/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 7,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 6,
         },
@@ -24,10 +24,10 @@ export const SCHIZODIO = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SCHIZODIO/2-animated.png',
+          url: '/tokens/SCHIZODIO/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 7,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 8,
         },
@@ -39,10 +39,10 @@ export const SCHIZODIO = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SCHIZODIO/3-animated.png',
+          url: '/tokens/SCHIZODIO/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 7,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
         },
       ],

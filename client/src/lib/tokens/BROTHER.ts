@@ -11,10 +11,10 @@ export const BROTHER = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BROTHER/1-animated.png',
+          url: '/tokens/BROTHER/1-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 7,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 15,
           scale: 0.7,
@@ -27,10 +27,10 @@ export const BROTHER = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BROTHER/2-animated.png',
+          url: '/tokens/BROTHER/2-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 7,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 10,
           scale: 0.7,
@@ -43,10 +43,10 @@ export const BROTHER = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BROTHER/3-animated.png',
+          url: '/tokens/BROTHER/3-animated-line.png',
           type: 'rowColumn',
-          width: 3,
-          height: 3,
+          width: 7,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 10,
           scale: 0.7,
