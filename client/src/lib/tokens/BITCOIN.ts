@@ -9,9 +9,9 @@ export const BITCOIN = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BITCOIN/1-animated-line.png',
+          url: '/tokens/BITCOIN/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
           bottomPadding: 15,
@@ -25,11 +25,11 @@ export const BITCOIN = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BITCOIN/2-animated-line.png',
+          url: '/tokens/BITCOIN/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          animations: [{ name: 'idle', frameRange: [10, 19] }],
           bottomPadding: 10,
           scale: 0.8,
         },
@@ -41,11 +41,11 @@ export const BITCOIN = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BITCOIN/3-animated-line.png',
+          url: '/tokens/BITCOIN/animated-combined.png',
           type: 'rowColumn',
-          width: 10,
+          width: 30,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          animations: [{ name: 'idle', frameRange: [20, 29] }],
           bottomPadding: 10,
           scale: 0.8,
         },

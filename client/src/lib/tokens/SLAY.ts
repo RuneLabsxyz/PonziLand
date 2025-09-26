@@ -9,9 +9,9 @@ export const SLAY = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SLAY/1-animated-line.png',
+          url: '/tokens/SLAY/animated-combined.png',
           type: 'rowColumn',
-          width: 7,
+          width: 21,
           height: 1,
           animations: [{ name: 'idle', frameRange: [0, 6] }],
           bottomPadding: 8,
@@ -25,11 +25,11 @@ export const SLAY = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SLAY/2-animated-line.png',
+          url: '/tokens/SLAY/animated-combined.png',
           type: 'rowColumn',
-          width: 7,
+          width: 21,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 6] }],
+          animations: [{ name: 'idle', frameRange: [7, 13] }],
           bottomPadding: 10,
           scale: 0.8,
         },
@@ -41,11 +41,11 @@ export const SLAY = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/SLAY/3-animated-line.png',
+          url: '/tokens/SLAY/animated-combined.png',
           type: 'rowColumn',
-          width: 7,
+          width: 21,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [0, 6] }],
+          animations: [{ name: 'idle', frameRange: [14, 20] }],
           bottomPadding: 10,
           scale: 0.8,
         },
