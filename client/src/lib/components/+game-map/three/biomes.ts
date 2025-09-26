@@ -42,7 +42,7 @@ export const biomeAtlasMeta = [
       { name: 'NUMS', frameRange: [8, 8] },
       { name: 'PAL', frameRange: [9, 9] },
       { name: 'SCHIZODIO', frameRange: [10, 10] },
-      { name: 'sisters', frameRange: [11, 11] },
+      { name: 'SISTERS', frameRange: [11, 11] },
       { name: 'BROTHER', frameRange: [13, 13] },
       { name: 'STARKNET', frameRange: [14, 14] },
       { name: 'WNT', frameRange: [15, 15] },
