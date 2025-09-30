@@ -39,44 +39,64 @@ let selectedLandWithActionsState = $derived.by(() => {
 });
 
 export async function buyLand(location: string, setup: LandSetup) {
-  const { client: sdk, accountManager } = useDojo();
-  const account = () => {
-    return accountManager!.getProvider();
-  };
+  try {
+    const { client: sdk, accountManager } = useDojo();
+    const account = () => {
+      return accountManager!.getProvider();
+    };
 
-  let res = await sdk.client.actions.buy(
-    account()?.getWalletAccount()!,
-    location,
-    setup.tokenForSaleAddress,
-    setup.salePrice.toBignumberish(),
-    setup.amountToStake.toBignumberish(),
-    setup.tokenAddress,
-    setup.currentPrice!.toBignumberish(),
-  );
-  notificationQueue.addNotification(res?.transaction_hash ?? null, 'buy land');
-  return res;
+    let res = await sdk.client.actions.buy(
+      account()?.getWalletAccount()!,
+      location,
+      setup.tokenForSaleAddress,
+      setup.salePrice.toBignumberish(),
+      setup.amountToStake.toBignumberish(),
+      setup.tokenAddress,
+      setup.currentPrice!.toBignumberish(),
+    );
+    notificationQueue.addNotification(
+      res?.transaction_hash ?? null,
+      'buy land',
+    );
+    return res;
+  } catch (error) {
+    console.error('Dojo not initialized yet:', error);
+    throw new Error(
+      'Game client not ready. Please wait for initialization to complete.',
+    );
+  }
 }
 
 export async function bidLand(location: string, setup: LandSetup) {
-  const { client: sdk, accountManager } = useDojo();
-  const account = () => {
-    return accountManager!.getProvider();
-  };
+  try {
+    const { client: sdk, accountManager } = useDojo();
+    const account = () => {
+      return accountManager!.getProvider();
+    };
 
-  console.log('bidLand', location, setup);
-  console.log('account', account()?.getWalletAccount()?.address);
+    console.log('bidLand', location, setup);
+    console.log('account', account()?.getWalletAccount()?.address);
 
-  let res = await sdk.client.actions.bid(
-    account()?.getWalletAccount()!,
-    location,
-    setup.tokenForSaleAddress,
-    setup.salePrice.toBignumberish(),
-    setup.amountToStake.toBignumberish(),
-    setup.tokenAddress,
-    setup.currentPrice!.toBignumberish(),
-  );
-  notificationQueue.addNotification(res?.transaction_hash ?? null, 'buy land');
-  return res;
+    let res = await sdk.client.actions.bid(
+      account()?.getWalletAccount()!,
+      location,
+      setup.tokenForSaleAddress,
+      setup.salePrice.toBignumberish(),
+      setup.amountToStake.toBignumberish(),
+      setup.tokenAddress,
+      setup.currentPrice!.toBignumberish(),
+    );
+    notificationQueue.addNotification(
+      res?.transaction_hash ?? null,
+      'buy land',
+    );
+    return res;
+  } catch (error) {
+    console.error('Dojo not initialized yet:', error);
+    throw new Error(
+      'Game client not ready. Please wait for initialization to complete.',
+    );
+  }
 }
 
 export function getNeighboringLands(location: string): BaseLand[] {

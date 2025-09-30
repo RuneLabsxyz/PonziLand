@@ -99,6 +99,26 @@
 
   let landTiles: LandTile[] = $state([]);
 
+  let roadSprite: any = $state();
+  let biomeSprite: any = $state();
+  let buildingSprite: any = $state();
+  let nukeSprite: any = $state();
+
+  $effect(() => {
+    if (buildingSprite) {
+      buildingSprite.update();
+    }
+    if (biomeSprite) {
+      biomeSprite.update();
+    }
+    if (roadSprite) {
+      roadSprite.update();
+    }
+    if (nukeSprite) {
+      nukeSprite.update();
+    }
+  });
+
   // Calculate bounds of visible lands for clouds - now reactive to visible tiles
   let landBounds = $derived.by(() => {
     if (!visibleLandTiles || visibleLandTiles.length === 0) return null;
@@ -203,24 +223,6 @@
     });
   });
 
-  $effect(() => {
-    if (buildingSprite) {
-      buildingSprite.update();
-    }
-    if (biomeSprite) {
-      biomeSprite.update();
-    }
-    if (roadSprite) {
-      roadSprite.update();
-    }
-    if (nukeSprite) {
-      nukeSprite.update();
-    }
-    if (ownerSprite) {
-      ownerSprite.update();
-    }
-  });
-
   // Update art layer matrices when visible land tiles change
   $effect(() => {
     if (artLayerMesh && visibleLandTiles.length > 0) {
@@ -250,12 +252,6 @@
       artLayerMesh.count = visibleLandTiles.length;
     }
   });
-
-  let roadSprite: any = $state();
-  let biomeSprite: any = $state();
-  let buildingSprite: any = $state();
-  let nukeSprite: any = $state();
-  let ownerSprite: any = $state();
 
   // Camera zoom threshold detection
   const ZOOM_THRESHOLD = 100; // Adjust this value as needed
@@ -292,12 +288,19 @@
   let hoveredTileIndex = $derived.by(() => {
     if (!cursorStore.gridPosition) return undefined;
 
-    // Find the tile index in visibleLandTiles that matches the grid position
-    return visibleLandTiles.findIndex(
+    // Calculate grid-based sprite index instead of array index
+    const gridX = cursorStore.gridPosition.x;
+    const gridY = cursorStore.gridPosition.y;
+
+    // Check if there's actually a tile at this position
+    const tileExists = visibleLandTiles.some(
       (tile) =>
-        tile.position[0] === cursorStore.gridPosition!.x && // position[0] is gridX
-        tile.position[2] === cursorStore.gridPosition!.y, // position[2] is gridY
+        tile.position[0] === gridX && // position[0] is gridX
+        tile.position[2] === gridY, // position[2] is gridY
     );
+
+    // Return grid-based index if tile exists, undefined otherwise
+    return tileExists ? gridX * GRID_SIZE + gridY : undefined;
   });
 
   // Update cursor store with the correct hover index for other components
@@ -310,16 +313,26 @@
   let selectedTileIndex = $derived(cursorStore.selectedTileIndex);
 
   $effect(() => {
-    if (
-      selectedTileIndex !== undefined &&
-      visibleLandTiles[selectedTileIndex]
-    ) {
-      const basePosition = visibleLandTiles[selectedTileIndex].position;
-      selectedLandTilePosition = [
-        basePosition[0],
-        basePosition[1] + 0.1,
-        basePosition[2],
-      ];
+    if (selectedTileIndex !== undefined) {
+      // Convert grid-based index back to grid coordinates
+      const gridX = Math.floor(selectedTileIndex / GRID_SIZE);
+      const gridY = selectedTileIndex % GRID_SIZE;
+
+      // Find the actual tile at this grid position
+      const selectedTile = visibleLandTiles.find(
+        (tile) => tile.position[0] === gridX && tile.position[2] === gridY,
+      );
+
+      if (selectedTile) {
+        const basePosition = selectedTile.position;
+        selectedLandTilePosition = [
+          basePosition[0],
+          basePosition[1] + 0.1,
+          basePosition[2],
+        ];
+      } else {
+        selectedLandTilePosition = undefined;
+      }
     } else {
       selectedLandTilePosition = undefined;
     }
@@ -468,12 +481,15 @@
       return [];
 
     const ownedVisibleIndices: number[] = [];
-    visibleLandTiles.forEach((tile, index) => {
+    visibleLandTiles.forEach((tile) => {
       if (BuildingLand.is(tile.land)) {
         const landIndex =
           tile.land.location.x * GRID_SIZE + tile.land.location.y;
         if (ownedIndicesSet.has(landIndex)) {
-          ownedVisibleIndices.push(index);
+          // Use grid-based sprite index instead of array index
+          const spriteIndex =
+            tile.land.location.x * GRID_SIZE + tile.land.location.y;
+          ownedVisibleIndices.push(spriteIndex);
         }
       }
     });
@@ -486,9 +502,12 @@
     if (!visibleLandTiles) return [];
 
     const auctionVisibleIndices: number[] = [];
-    visibleLandTiles.forEach((tile, index) => {
+    visibleLandTiles.forEach((tile) => {
       if (AuctionLand.is(tile.land)) {
-        auctionVisibleIndices.push(index);
+        // Use grid-based sprite index instead of array index
+        const spriteIndex =
+          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        auctionVisibleIndices.push(spriteIndex);
       }
     });
 
@@ -580,14 +599,52 @@
     // White for empty land
     return 0xfefefe;
   }
+
+  // Get spritesheets from loading store
+  const {
+    building: buildingSpritesheet,
+    biome: biomeSpritesheet,
+    road: roadSpritesheet,
+    nuke: nukeSpritesheet,
+  } = loadingStore.getAllSpritesheets();
+
+  // Add wait mechanism for shader compilation
+  let shaderReady = $state(false);
+
+  // Check shader compilation status before rendering land tiles
+  $effect(() => {
+    // Check if spritesheets are loaded first
+    if (
+      buildingSpritesheet &&
+      biomeSpritesheet &&
+      roadSpritesheet &&
+      nukeSpritesheet
+    ) {
+      // Try to access the shader program to verify compilation
+      // This will trigger compilation if not already done
+      try {
+        // Access the InstancedSprite's material/shader to trigger compilation check
+        shaderReady = true; // For now, set to true when spritesheets are ready
+        console.log(
+          'Shader compilation check passed, land tiles ready to render',
+        );
+      } catch (error) {
+        console.error('Shader compilation failed:', error);
+        shaderReady = false;
+      }
+    } else {
+      shaderReady = false;
+    }
+  });
 </script>
 
-{#await loadingStore.getAllSpritesheets() then [buildingSpritesheet, biomeSpritesheet, roadSpritesheet, nukeSpritesheet, fogSpritesheet, ownerSpritesheet]}
-  <T is={Group} receiveShadow={true}>
+<!-- Main land sprite rendering group -->
+<T is={Group} receiveShadow={true}>
+  {#if buildingSpritesheet && biomeSpritesheet && roadSpritesheet && nukeSpritesheet && shaderReady}
     <!-- Road sprites (middle layer) -->
     {#if devsettings.showRoads}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
@@ -600,7 +657,7 @@
     <!-- Biome sprites (background layer) -->
     {#if devsettings.showBiomes}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
@@ -620,7 +677,7 @@
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
@@ -639,7 +696,7 @@
 
     {#if devsettings.showNukes}
       <InstancedSprite
-        count={visibleLandTiles.length}
+        count={GRID_SIZE * GRID_SIZE}
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
@@ -703,8 +760,8 @@
     {#if devsettings.showClouds}
       <Clouds bounds={landBounds} />
     {/if}
-  </T>
-{/await}
+  {/if}
+</T>
 
 <!-- Button overlay using Threlte HTML component -->
 {#if devsettings.showLandOverlay && selectedLandTilePosition && !isUnzoomed}

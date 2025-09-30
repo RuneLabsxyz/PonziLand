@@ -16,8 +16,8 @@
   let value = $state(10);
 
   const promise = new Promise<void>((resolve) => {
-    setupClient();
-    setupSocialink();
+    // setupClient();
+    // setupSocialink();
     // Use setTimeout to ensure the setup is complete and any state updates are processed
     setTimeout(() => {
       // Set initial camera position to center of map

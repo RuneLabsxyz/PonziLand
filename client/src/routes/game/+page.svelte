@@ -25,7 +25,6 @@
   import { onMount } from 'svelte';
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
-  import { walletStore } from '$lib/stores/wallet.svelte';
 
   // WebGL support detection
   function isWebGLSupported(): boolean {
@@ -68,12 +67,13 @@
       await setupConfigStore(client!);
     }),
     setupAccount(),
-    walletStore.init(),
   ]);
 
   onMount(() => {
-    // Make sure that the walletStore is destroyed when the component is unmounted
-    return () => walletStore.destroy();
+    // Cleanup handler for component unmount
+    return () => {
+      // Any cleanup can go here if needed
+    };
   });
 
   let loading = $state(true);

@@ -4,6 +4,7 @@
   import * as THREE from 'three';
   import { cursorStore } from './cursor.store.svelte';
   import type { LandTile } from './landTile';
+  import { GRID_SIZE } from '$lib/const';
   import {
     handleCursorState,
     setupOutlineShader,
@@ -63,6 +64,11 @@
     sprite.lookAt(0, 0.1, 0);
 
     landTiles.forEach((tile: LandTile, index: number) => {
+      // Calculate grid-based sprite index instead of array index
+      const gridX = tile.position[0];
+      const gridY = tile.position[2];
+      const spriteIndex = gridX * GRID_SIZE + gridY;
+
       // choose between building animation name and biome animation name
       let animationName;
       if (animationProperty === 'buildingAnimationName') {
@@ -82,12 +88,12 @@
         animationProperty === 'buildingAnimationName' ? tile.buildingScale : 1;
 
       updatePosition(
-        index,
+        spriteIndex,
         [tile.position[0], -tile.position[2] + yOffset, tile.position[1]],
         [scale, scale],
       );
 
-      sprite.animation.setAt(index, animationName as any);
+      sprite.animation.setAt(spriteIndex, animationName as any);
     });
   });
 
