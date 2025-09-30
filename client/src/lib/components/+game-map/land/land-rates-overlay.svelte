@@ -200,16 +200,6 @@
               +{displayYields[i].amount}{displayYields[i].symbol}/h
             </span>
           </div>
-        {:else if info && i !== 4}
-          <div
-            class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
-          >
-            {#if info.sell_price > 0n}
-              <!-- Don't display anything for unknown rates -->
-            {:else}
-              <!-- Don't display anything for zero rates -->
-            {/if}
-          </div>
         {:else if i === 4 && displayBurnRate && displayBurnRate.amount !== '0'}
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none relative"
