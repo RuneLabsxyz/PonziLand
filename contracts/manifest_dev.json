@@ -6,8 +6,8 @@
     "seed": "test_313277088",
 =======
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x30d386788b9f7b43f09967bfca73c22c921b5f141f575ce23919ec67e9549d6",
-    "seed": "quests_79249025",
+    "address": "0x6b422ac0dc09e61658014f6f77ad3a5f037e10a6cb43e0e584a97de4bbfe6c0",
+    "seed": "quests_910587564",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1484,7 +1484,7 @@
   },
   "contracts": [
     {
-      "address": "0x312554e92ce92096b85e9f50cef46845e02ac2079b7dbe5909ff35392cfb0e",
+      "address": "0x76345bfb348f7a81fb8cf3296803bdee5f6e0bca18958f7420d6c2051884ec9",
       "class_hash": "0x6982a3c710de3070cae71665062b64844f77852578e39e81d12917a454ccf18",
       "abi": [
         {
@@ -2335,7 +2335,7 @@
       ]
     },
     {
-      "address": "0x7bd3b1f1e22d0c7c936ab86bd3b9b0c50f8e3f069735abcaa5e8c2cb88fa98b",
+      "address": "0x5a4728d0e4e18e5996e64bcf82bb4aa12f94c81922f71a2d6a66ac5647a8b99",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
 >>>>>>> 5f93bed4 (deploy world)
       "abi": [
@@ -2679,7 +2679,7 @@
       ]
     },
     {
-      "address": "0x721481aa379161cbee44a0d9877aeffcd5de5730605df8d75b1ec3c53e39992",
+      "address": "0xbbcbd3fbee14d7b57ced09d077ff7f4b66fb061707a1acf37b643a583fbf86",
       "class_hash": "0x334584a933dc0560cfc7589480a88553ef82073bde951fb497d035f27bc17bb",
       "abi": [
         {
@@ -3832,7 +3832,7 @@
       ]
     },
     {
-      "address": "0x7fc911f35a056f3ddb39bc9ffe8cd8009bca08a0ea7114d30f010a9ce0be97e",
+      "address": "0x8b2ac402821dc06a2512cc407828acae6338ab0fae9410d8d8fdf228abc14e",
       "class_hash": "0x5bdce53418ea3fb1907d927f01b136b966408f03827646598641f8656f06f2d",
       "abi": [
         {
@@ -4383,7 +4383,7 @@
       ]
     },
     {
-      "address": "0x19267e091fae5ca3a7a85030b7fbbd50a95fa239d94261cce6fed0e76e79c9",
+      "address": "0x164032b92516198f32c684417863fce62d00f3482a76d566f1d7c92203ff084",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
 >>>>>>> 5f93bed4 (deploy world)
       "abi": [
