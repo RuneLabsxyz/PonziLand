@@ -6,8 +6,8 @@
     "seed": "test_313277088",
 =======
     "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x6b422ac0dc09e61658014f6f77ad3a5f037e10a6cb43e0e584a97de4bbfe6c0",
-    "seed": "quests_910587564",
+    "address": "0x4dc9410da2f195718c43e33c094679de53601fb36860dd696d719dae114de81",
+    "seed": "quests_213887465",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1484,7 +1484,7 @@
   },
   "contracts": [
     {
-      "address": "0x76345bfb348f7a81fb8cf3296803bdee5f6e0bca18958f7420d6c2051884ec9",
+      "address": "0x7b1c94a6771d80d44738056e098b458f527d196df8006f64272ef4d2ae4f684",
       "class_hash": "0x6982a3c710de3070cae71665062b64844f77852578e39e81d12917a454ccf18",
       "abi": [
         {
@@ -2335,7 +2335,7 @@
       ]
     },
     {
-      "address": "0x5a4728d0e4e18e5996e64bcf82bb4aa12f94c81922f71a2d6a66ac5647a8b99",
+      "address": "0x7393f7c2817e901713245887766134b188f39fed598aa261534e7a1381bc150",
       "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
 >>>>>>> 5f93bed4 (deploy world)
       "abi": [
@@ -2679,7 +2679,7 @@
       ]
     },
     {
-      "address": "0xbbcbd3fbee14d7b57ced09d077ff7f4b66fb061707a1acf37b643a583fbf86",
+      "address": "0x75d1f15ec9d71bb6ed83b5f410869ed0fa9abc2f260470c6bc45c99e99d4d1f",
       "class_hash": "0x334584a933dc0560cfc7589480a88553ef82073bde951fb497d035f27bc17bb",
       "abi": [
         {
@@ -3832,8 +3832,8 @@
       ]
     },
     {
-      "address": "0x8b2ac402821dc06a2512cc407828acae6338ab0fae9410d8d8fdf228abc14e",
-      "class_hash": "0x5bdce53418ea3fb1907d927f01b136b966408f03827646598641f8656f06f2d",
+      "address": "0x7113812d7df3268aff754c441b1c4fd5764a722443acd282004ea8eb8a8b580",
+      "class_hash": "0x6faf574be27ddc10f7737700d502b3c90eb35a0aef31a4ec1e28c8c6c476b89",
       "abi": [
         {
           "type": "impl",
@@ -4362,7 +4362,7 @@
         "20",
         "1",
         "0",
-        "0x75189e5cdabdb132e3a82d756f3a0167b89bf6c3b1b2bd463f062ecd52445f3",
+        "0x3386f42474eaa3f6bf8410524b22fdd69beb12ce772e9e6d3cc964e2c3f46de",
         "str:planetelo",
         "str:planetelo",
         "str:settings_systems",
@@ -4383,7 +4383,7 @@
       ]
     },
     {
-      "address": "0x164032b92516198f32c684417863fce62d00f3482a76d566f1d7c92203ff084",
+      "address": "0x541a669a67fc479f87e6464e1050d25077c270fb4fb291f38b8009ee619e3d4",
       "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
 >>>>>>> 5f93bed4 (deploy world)
       "abi": [

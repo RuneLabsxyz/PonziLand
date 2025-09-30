@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "quests_910587564"
+seed = "quests_213887465"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -88,7 +88,7 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "20",
     "1",
     "0",
-    "0x75189e5cdabdb132e3a82d756f3a0167b89bf6c3b1b2bd463f062ecd52445f3", # caps address
+    "0x3386f42474eaa3f6bf8410524b22fdd69beb12ce772e9e6d3cc964e2c3f46de", # caps address
     "str:planetelo",
     "str:planetelo", # game contract name
     "str:settings_systems",
