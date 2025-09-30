@@ -43,6 +43,8 @@
       getQuestInfo();
       return;
     }
+
+    /*
     let call: Call = {
       contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
       entrypoint: 'explore',
@@ -56,6 +58,8 @@
       await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
     }
 
+    */
+   window.location.href = 'https://caps-jam.vercel.app/#/game/' + game_token_id;
     loading = false;
   }
 
