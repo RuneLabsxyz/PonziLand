@@ -35,10 +35,10 @@
   // Map token addresses to guild info with normalized addresses as keys
   const guildMap = new Map<string, GuildInfo>();
 
-  // Initialize guild map asynchronously
-  onMount(async () => {
+  // Initialize guild map synchronously
+  onMount(() => {
     for (const token of data.availableTokens) {
-      const metadata = await getTokenMetadata(token.skin);
+      const metadata = getTokenMetadata(token.skin);
       guildMap.set(normalizeAddress(token.address), {
         name: token.name,
         image: metadata?.icon || '/tokens/default/icon.png',

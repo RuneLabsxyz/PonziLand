@@ -100,66 +100,56 @@
     />
   {/if}
   {#if token}
-    {#await getTokenMetadata(token.skin)}
-      <!-- Loading state - show basic placeholder -->
-      <div
-        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-400 animate-pulse rounded"
-      ></div>
-    {:then metadata}
-      {#if metadata}
-        <!-- Biome Shadow -->
-        <SpriteSheet
-          src="/tokens/+global/biomes-shadow.png"
-          x={metadata.biome.x}
-          y={metadata.biome.y}
-          xSize={256}
-          xMax={2048}
-          ySize={256}
-          yMax={3328}
-          {width}
-          {height}
-          class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0"
-        />
-        <!-- Main Biome -->
-        <SpriteSheet
-          src="/tokens/+global/biomes.png"
-          x={metadata.biome.x}
-          y={metadata.biome.y}
-          xSize={256}
-          xMax={1024}
-          ySize={256}
-          yMax={1280}
-          {width}
-          {height}
-          class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
-            ? 'selected'
-            : ''} {hovering ? 'hovering' : ''} {highlighted
-            ? 'highlighted'
-            : ''}"
-        />
-        <SpriteSheet
-          src="/tokens/+global/buildings.png"
-          x={metadata.building[level].x}
-          y={metadata.building[level].y}
-          xSize={256}
-          xMax={3072}
-          ySize={256}
-          yMax={5376}
-          {width}
-          {height}
-          class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
-            ? 'selected'
-            : ''} {hovering ? 'hovering' : ''} {highlighted
-            ? 'highlighted'
-            : ''}"
-        />
-      {/if}
-    {:catch}
-      <!-- Error state - show fallback -->
+    {@const metadata = getTokenMetadata(token.skin)}
+    {#if metadata}
+      <!-- Biome Shadow -->
+      <SpriteSheet
+        src="/tokens/+global/biomes-shadow.png"
+        x={metadata.biome.x}
+        y={metadata.biome.y}
+        xSize={256}
+        xMax={2048}
+        ySize={256}
+        yMax={3328}
+        {width}
+        {height}
+        class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0"
+      />
+      <!-- Main Biome -->
+      <SpriteSheet
+        src="/tokens/+global/biomes.png"
+        x={metadata.biome.x}
+        y={metadata.biome.y}
+        xSize={256}
+        xMax={1024}
+        ySize={256}
+        yMax={1792}
+        {width}
+        {height}
+        class="Biome absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
+          ? 'selected'
+          : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
+      />
+      <SpriteSheet
+        src="/tokens/+global/buildings.png"
+        x={metadata.building[level].x}
+        y={metadata.building[level].y}
+        xSize={256}
+        xMax={3072}
+        ySize={256}
+        yMax={5376}
+        {width}
+        {height}
+        class="absolute h-full w-full top-0 bottom-0 left-0 right-0 {selected
+          ? 'selected'
+          : ''} {hovering ? 'hovering' : ''} {highlighted ? 'highlighted' : ''}"
+      />
+    {:else}
+      <!-- Fallback state -->
       <div
         class="absolute h-full w-full top-0 bottom-0 left-0 right-0 bg-gray-600 rounded"
       ></div>
-    {/await}
+    {/if}
   {:else if basic}
     <div
       style="background-image: url('/tokens/basic/1.png'); background-size: contain; background-position: center;"

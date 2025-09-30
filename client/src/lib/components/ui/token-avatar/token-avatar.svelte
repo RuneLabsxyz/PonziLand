@@ -7,16 +7,11 @@
 </script>
 
 <Avatar.Root class={className}>
-  {#await getTokenMetadata(token.skin)}
-    <Avatar.Fallback>{token.symbol}</Avatar.Fallback>
-  {:then metadata}
-    <Avatar.Image
-      src={metadata?.icon || '/tokens/default/icon.png'}
-      alt={token.symbol}
-      class="pointer-events-none select-none"
-    />
-    <Avatar.Fallback>{token.symbol}</Avatar.Fallback>
-  {:catch}
-    <Avatar.Fallback>{token.symbol}</Avatar.Fallback>
-  {/await}
+  {@const metadata = getTokenMetadata(token.skin)}
+  <Avatar.Image
+    src={metadata?.icon || '/tokens/default/icon.png'}
+    alt={token.symbol}
+    class="pointer-events-none select-none"
+  />
+  <Avatar.Fallback>{token.symbol}</Avatar.Fallback>
 </Avatar.Root>

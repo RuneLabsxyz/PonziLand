@@ -148,18 +148,13 @@
   <Select onSelectedChange={(v) => (selectedToken = v?.value as Token)}>
     <SelectTrigger>
       {#if selectedToken}
+        {@const metadata = getTokenMetadata(selectedToken.skin)}
         <div class="flex gap-2 items-center">
-          {#await getTokenMetadata(selectedToken.skin)}
-            <div class="h-4 w-4 bg-gray-400 rounded animate-pulse"></div>
-          {:then metadata}
-            <img
-              class="h-4 w-4"
-              src={metadata?.icon || '/tokens/default/icon.png'}
-              alt={selectedToken.symbol}
-            />
-          {:catch}
-            <div class="h-4 w-4 bg-gray-400 rounded"></div>
-          {/await}
+          <img
+            class="h-4 w-4"
+            src={metadata?.icon || '/tokens/default/icon.png'}
+            alt={selectedToken.symbol}
+          />
           {selectedToken.symbol} -
           {selectedToken.name}
         </div>
@@ -169,19 +164,14 @@
     </SelectTrigger>
     <SelectContent>
       {#each data.availableTokens as token}
+        {@const metadata = getTokenMetadata(token.skin)}
         <SelectItem value={token}>
           <div class="flex gap-2 items-center">
-            {#await getTokenMetadata(token.skin)}
-              <div class="h-4 w-4 bg-gray-400 rounded animate-pulse"></div>
-            {:then metadata}
-              <img
-                class="h-4 w-4"
-                src={metadata?.icon || '/tokens/default/icon.png'}
-                alt={token.symbol}
-              />
-            {:catch}
-              <div class="h-4 w-4 bg-gray-400 rounded"></div>
-            {/await}
+            <img
+              class="h-4 w-4"
+              src={metadata?.icon || '/tokens/default/icon.png'}
+              alt={token.symbol}
+            />
             {token.symbol} -
             {token.name}
           </div>

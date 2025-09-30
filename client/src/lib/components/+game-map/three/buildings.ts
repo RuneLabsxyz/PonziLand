@@ -1,4 +1,8 @@
 import type { SpritesheetMetadata } from '@threlte/extras';
+import { ALL_TOKENS } from '$lib/tokens';
+
+// Calculate building frame from coordinates (12-column grid)
+const getBuildingFrame = (x: number, y: number) => y * 12 + x;
 
 // BUILDING
 export const buildingAtlasMeta = [
@@ -8,132 +12,63 @@ export const buildingAtlasMeta = [
     width: 12,
     height: 21,
     animations: [
+      // Non-token entries (keep hardcoded)
       { name: 'empty', frameRange: [250, 250] },
       { name: 'empty_1', frameRange: [250, 250] },
       { name: 'empty_2', frameRange: [250, 250] },
       { name: 'empty_3', frameRange: [250, 250] },
+
       { name: 'auction', frameRange: [250, 250] },
       { name: 'auction_1', frameRange: [250, 250] },
       { name: 'auction_2', frameRange: [250, 250] },
       { name: 'auction_3', frameRange: [250, 250] },
 
-      { name: 'LORDS_1', frameRange: [0, 0] },
-      { name: 'LORDS_2', frameRange: [12, 12] },
-      // { name: 'lords_3', frameRange: [24, 24] },
-      { name: 'PAL_1', frameRange: [36, 36] },
-      { name: 'PAL_2', frameRange: [48, 48] },
-      // { name: 'PAL_3', frameRange: [60, 60] },
-      { name: 'PIMP_1', frameRange: [72, 72] },
-      { name: 'PIMP_2', frameRange: [84, 84] },
-      { name: 'PIMP_3', frameRange: [96, 96] },
-      { name: 'EKUBO_1', frameRange: [108, 108] },
-      { name: 'EKUBO_2', frameRange: [120, 120] },
-      // { name: 'EKUBO_3', frameRange: [132, 132] },
-      { name: 'SISTERS_1', frameRange: [144, 144] },
-      { name: 'SISTERS_2', frameRange: [156, 156] },
-      { name: 'SISTERS_3', frameRange: [168, 168] },
-      { name: 'SLINKY_1', frameRange: [180, 180] },
-      { name: 'SLINKY_2', frameRange: [192, 192] },
-      { name: 'SLINKY_3', frameRange: [204, 204] },
-      { name: 'BITCOIN_1', frameRange: [216, 216] },
-      { name: 'BITCOIN_2', frameRange: [228, 228] },
-      // { name: 'BITCOIN_3', frameRange: [240, 240] },
-      { name: 'PAPER_1', frameRange: [3, 3] },
-      { name: 'PAPER_2', frameRange: [15, 15] },
-      { name: 'PAPER_3', frameRange: [27, 27] },
-      { name: 'STARKNET_1', frameRange: [39, 39] },
-      { name: 'STARKNET_2', frameRange: [51, 51] },
-      // { name: 'STARKNET_3', frameRange: [63, 63] },
-      { name: 'BROTHER_1', frameRange: [75, 75] },
-      { name: 'BROTHER_2', frameRange: [87, 87] },
-      // { name: 'BROTHER_3', frameRange: [99, 99] },
-      { name: 'ETHEREUM_1', frameRange: [111, 111] },
-      { name: 'ETHEREUM_2', frameRange: [123, 123] },
-      // { name: 'ETHEREUM_3', frameRange: [135, 135] },
-      { name: 'CIRCUS_1', frameRange: [147, 147] },
-      // { name: 'CIRCUS_2', frameRange: [159, 159] },
-      // { name: 'CIRCUS_3', frameRange: [171, 171] },
-      { name: 'NUMS_1', frameRange: [183, 183] },
-      { name: 'NUMS_2', frameRange: [195, 195] },
-      { name: 'NUMS_3', frameRange: [207, 207] },
-      { name: 'FLIP_1', frameRange: [219, 219] },
-      { name: 'FLIP_2', frameRange: [231, 231] },
-      { name: 'FLIP_3', frameRange: [243, 243] },
-      { name: 'WNT_1', frameRange: [6, 6] },
-      { name: 'WNT_2', frameRange: [18, 18] },
-      // { name: 'WNT_3', frameRange: [30, 30] },
-      { name: 'QQ_1', frameRange: [42, 42] },
-      { name: 'QQ_2', frameRange: [54, 54] },
-      // { name: 'QQ_3', frameRange: [66, 66] },
-      { name: 'EVERAI_1', frameRange: [9, 9] },
-      { name: 'EVERAI_2', frameRange: [21, 21] },
-      // { name: 'EVERAI_3', frameRange: [33, 33] },
+      // Token entries (calculated from token data)
+      ...Object.entries(ALL_TOKENS).flatMap(([tokenName, token]) =>
+        [1, 2, 3]
+          .map((level) => {
+            const building =
+              token.building[level as keyof typeof token.building];
+
+            // Only include static buildings (animations are handled separately)
+            if (!building.useAnimation) {
+              const frame = getBuildingFrame(building.x, building.y);
+              return {
+                name: `${tokenName}_${level}`,
+                frameRange: [frame, frame] as [number, number],
+              };
+            }
+            return null;
+          })
+          .filter(
+            (item): item is { name: string; frameRange: [number, number] } =>
+              item !== null,
+          ),
+      ),
     ],
   },
-  {
-    url: '/tokens/LORDS/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'LORDS_3', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/STARKNET/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 2,
-    animations: [{ name: 'STARKNET_3', frameRange: [0, 5] }],
-  },
-  {
-    url: '/tokens/USDC/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'USDC_3', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/basic/1.png',
-    type: 'rowColumn',
-    width: 1,
-    height: 1,
-    animations: [
-      { name: 'USDC_1', frameRange: [0, 0] },
-      { name: 'USDC_2', frameRange: [0, 0] },
-    ],
-  },
-  {
-    url: '/tokens/BITCOIN/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'BITCOIN_3', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/BROTHER/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'BROTHER_3', frameRange: [0, 6] }],
-  },
-  {
-    url: '/tokens/ETHEREUM/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 4,
-    animations: [{ name: 'ETHEREUM_3', frameRange: [0, 9] }],
-  },
-  {
-    url: '/tokens/PAL/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'PAL_3', frameRange: [0, 8] }],
-  },
-  {
-    url: '/tokens/EKUBO/3-animated.png',
-    type: 'rowColumn',
-    width: 3,
-    height: 3,
-    animations: [{ name: 'EKUBO_3', frameRange: [0, 7] }],
-  },
+
+  // DYNAMIC ANIMATIONS (Generated from token data)
+
+  // Generate animation entries for tokens that have animations
+  ...Object.entries(ALL_TOKENS).flatMap(([tokenName, token]) =>
+    [1, 2, 3].flatMap((level) => {
+      const building = token.building[level as keyof typeof token.building];
+
+      // Only include animated buildings
+      if (building.useAnimation && building.animations) {
+        return building.animations.map((animData) => ({
+          url: animData.url,
+          type: animData.type,
+          width: animData.width,
+          height: animData.height,
+          animations: animData.animations.map((anim) => ({
+            name: `${tokenName}_${level}`,
+            frameRange: anim.frameRange,
+          })),
+        }));
+      }
+      return [];
+    }),
+  ),
 ] as const satisfies SpritesheetMetadata;

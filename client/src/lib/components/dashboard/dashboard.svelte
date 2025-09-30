@@ -211,6 +211,10 @@
     <h1 class="text-2xl mb-4 text-white">Token Pairs</h1>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {#each pairCards as card}
+        {@const metadata = getTokenMetadata(card.tokenDetails.skin)}
+        {@const baseMetadata = baseTokenDetails
+          ? getTokenMetadata(baseTokenDetails.skin)
+          : null}
         <Card
           class="shadow-ponzi overflow-hidden"
           id={card.tokenDetails.symbol}
@@ -219,37 +223,17 @@
             <!-- Pair Header -->
             <div class="flex items-center gap-3 mb-4">
               <div class="flex items-center -space-x-2">
-                {#await getTokenMetadata(card.tokenDetails.skin)}
-                  <div
-                    class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10 animate-pulse"
-                  ></div>
-                {:then metadata}
-                  <img
-                    src={metadata?.icon || '/tokens/default/icon.png'}
-                    alt={card.tokenDetails.symbol}
-                    class="w-8 h-8 rounded-full border-2 border-gray-800 z-10"
-                  />
-                {:catch}
-                  <div
-                    class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 z-10"
-                  ></div>
-                {/await}
+                <img
+                  src={metadata?.icon || '/tokens/default/icon.png'}
+                  alt={card.tokenDetails.symbol}
+                  class="w-8 h-8 rounded-full border-2 border-gray-800 z-10"
+                />
                 {#if baseTokenDetails}
-                  {#await getTokenMetadata(baseTokenDetails.skin)}
-                    <div
-                      class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800 animate-pulse"
-                    ></div>
-                  {:then metadata}
-                    <img
-                      src={metadata?.icon || '/tokens/default/icon.png'}
-                      alt={baseTokenDetails.symbol}
-                      class="w-8 h-8 rounded-full border-2 border-gray-800"
-                    />
-                  {:catch}
-                    <div
-                      class="w-8 h-8 bg-gray-400 rounded-full border-2 border-gray-800"
-                    ></div>
-                  {/await}
+                  <img
+                    src={baseMetadata?.icon || '/tokens/default/icon.png'}
+                    alt={baseTokenDetails.symbol}
+                    class="w-8 h-8 rounded-full border-2 border-gray-800"
+                  />
                 {/if}
               </div>
               <h3 class="text-lg font-bold text-white">

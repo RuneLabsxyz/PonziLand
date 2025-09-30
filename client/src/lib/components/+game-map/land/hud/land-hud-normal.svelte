@@ -140,17 +140,12 @@
         <div class="flex justify-between items-center text-green-400">
           <span>
             <Avatar.Root class="h-6 w-6">
-              {#await getTokenMetadata(_yield.token.skin)}
-                <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
-              {:then metadata}
-                <Avatar.Image
-                  src={metadata?.icon || '/tokens/default/icon.png'}
-                  alt={_yield.token.symbol}
-                />
-                <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
-              {:catch}
-                <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
-              {/await}
+              {@const metadata = getTokenMetadata(_yield.token.skin)}
+              <Avatar.Image
+                src={metadata?.icon || '/tokens/default/icon.png'}
+                alt={_yield.token.symbol}
+              />
+              <Avatar.Fallback>{_yield.token.symbol}</Avatar.Fallback>
             </Avatar.Root>
           </span>
           <span>
