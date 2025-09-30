@@ -220,7 +220,7 @@ pub mod quests {
                 }
             }
 
-            assert!(game_id > 0, "Failed to create game");
+            assert!(game_id != 0, "Failed to create game");
             
             let quest = Quest {
                 id: quest_counter.count,
@@ -340,10 +340,39 @@ pub mod quests {
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
-            let game_dispatcher = IMinigameTokenDataDispatcher {
-                contract_address: game_token_address,
-            };
-            game_dispatcher.score(quest.game_token_id)
+            
+            // Check the minigame type and handle accordingly 🐙 Different scoring systems for different game types!
+            match quest_game.quest_type {
+                QuestType::Minigame => {
+                    let game_dispatcher = IMinigameTokenDataDispatcher {
+                        contract_address: game_token_address,
+                    };
+                    game_dispatcher.score(quest.game_token_id)
+                },
+                QuestType::OneOnOne => {
+                    let game_dispatcher = IOneOnOneDispatcher {
+                        contract_address: game_token_address,
+                    };
+                    let status: Status = game_dispatcher.settle_match(quest.game_token_id.into());
+                    match status {
+                        Status::Winner(winner) => {
+                            1
+                        },
+                        Status::Active => {
+                            // Game still in progress
+                            0
+                        },
+                        _ => {
+                            // Other states (like draw)
+                            0
+                        }
+                    }
+                },
+                _ => {
+                    // Unknown game type
+                    0
+                }
+            }
         }
 
         fn get_quest_entry_price(self: @ContractState, quest_id: u64) -> u256 {
