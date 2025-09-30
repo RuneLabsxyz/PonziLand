@@ -389,14 +389,16 @@ pub mod quests {
 
         let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
         let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
-        let (settings_address, _) = minigame_world.dns(@quest_game.settings_contract_name).unwrap();
-        let settings_dispatcher = IMinigameSettingsDispatcher { contract_address: settings_address };
-        let settings_address_felt: felt252 = settings_address.into();
-        let settings_exist = settings_dispatcher.settings_exist(quest_game.settings_id);
+        
+        //let (settings_address, _) = minigame_world.dns(@quest_game.settings_contract_name).unwrap();
+        //let settings_address_felt: felt252 = settings_address.into();
+        //let settings_exist = settings_dispatcher.settings_exist(quest_game.settings_id);
         let game_address_felt: felt252 = quest_game.world_address.into();
 
+        //remove setting requirement for now, can add back when caps can validate settings
         assert!(
-            settings_exist,
+            true,
+            //settings_exist,
             "Quests: game address {} does not have settings id {}",
             game_address_felt,
             quest_game.settings_id,
