@@ -371,9 +371,13 @@ void main() {
 
         if(vHover > 0.5) {
             // If current pixel is transparent, check if we should draw outline
-            if(sampledDiffuseColor.a < 0.1) {
+            if(sampledDiffuseColor.a < 0.5) {
                 vec2 texelSize = outlineWidth / resolution;
                 bool hasOpaqueNeighbor = false;
+
+                // Calculate sprite bounds for clamping
+                vec2 spriteMin = fOffset;
+                vec2 spriteMax = fOffset + fSize;
 
                 // Check surrounding pixels to see if any are opaque
                 for(int x = -1; x <= 1; x++) {
@@ -382,11 +386,17 @@ void main() {
                             continue;
 
                         vec2 offset = vec2(float(x), float(y)) * texelSize;
-                        vec4 neighbor = texture2D(map, spriteUv + offset);
+                        vec2 sampleUv = spriteUv + offset;
+                        
+                        // Only check neighbors that are within the current sprite bounds
+                        if(sampleUv.x >= spriteMin.x && sampleUv.x <= spriteMax.x &&
+                           sampleUv.y >= spriteMin.y && sampleUv.y <= spriteMax.y) {
+                            vec4 neighbor = texture2D(map, sampleUv);
 
-                        if(neighbor.a >= 0.1) {
-                            hasOpaqueNeighbor = true;
-                            break;
+                            if(neighbor.a >= 0.5) {
+                                hasOpaqueNeighbor = true;
+                                break;
+                            }
                         }
                     }
                     if(hasOpaqueNeighbor)

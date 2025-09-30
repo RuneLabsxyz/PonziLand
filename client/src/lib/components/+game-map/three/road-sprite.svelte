@@ -27,7 +27,7 @@
       updatePosition(index, [
         tile.position[0],
         -tile.position[2],
-        tile.position[1],
+        tile.position[1] - 0.003,
       ]);
       sprite.lookAt(
         0,

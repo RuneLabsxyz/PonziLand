@@ -1,7 +1,7 @@
 export const BONK = {
   skin: 'BONK',
   icon: '/tokens/BONK/bonk.png',
-  biome: { x: 2, y: 4 },
+  biome: { x: 3, y: 6 },
   building: {
     1: {
       x: 6,
@@ -9,10 +9,10 @@ export const BONK = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BONK/1-animated.png',
+          url: '/tokens/BONK/animated-combined.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
+          width: 30,
+          height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
         },
       ],
@@ -23,11 +23,11 @@ export const BONK = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BONK/2-animated.png',
+          url: '/tokens/BONK/animated-combined.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          width: 30,
+          height: 1,
+          animations: [{ name: 'idle', frameRange: [10, 19] }],
         },
       ],
     },
@@ -37,11 +37,11 @@ export const BONK = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/BONK/3-animated.png',
+          url: '/tokens/BONK/animated-combined.png',
           type: 'rowColumn',
-          width: 3,
-          height: 4,
-          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          width: 30,
+          height: 1,
+          animations: [{ name: 'idle', frameRange: [20, 29] }],
         },
       ],
     },
