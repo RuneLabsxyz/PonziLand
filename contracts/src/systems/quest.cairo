@@ -182,8 +182,6 @@ pub mod quests {
 
             let game_token_address_felt: felt252 = game_token_address.into();
 
-            panic!("game_token_address: {}", game_token_address_felt);
-
             let time_to_start = get_block_timestamp();
             let time_to_end = time_to_start + 600000;
 
