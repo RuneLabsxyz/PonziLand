@@ -12,6 +12,7 @@
   import WidgetTutorial from './tutorial/widget-tutorial.svelte';
   import WidgetNftLink from './nft-link/widget-nft-link.svelte';
   import WidgetGuild from './guild/widget-guild.svelte';
+  import { ENABLE_GUILD } from '$lib/flags';
   import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
   import WidgetHeatmap from './heatmap/widget-heatmap.svelte';
   import WidgetSwap from './swap/widget-swap.svelte';
@@ -50,7 +51,7 @@
           <WidgetTutorial />
         {:else if type === 'nft-link'}
           <WidgetNftLink />
-        {:else if type === 'guild'}
+        {:else if type === 'guild' && ENABLE_GUILD}
           <WidgetGuild />
         {:else if type === 'leaderboard'}
           <WidgetLeaderboard />
