@@ -183,7 +183,7 @@ pub mod quests {
             let game_token_address_felt: felt252 = game_token_address.into();
 
             let time_to_start = get_block_timestamp();
-            let time_to_end = time_to_start + 600000;
+            let time_to_end = time_to_start + 60000000;
 
             let mut game_id: u64 = 0;
             match quest_game.quest_type {
@@ -295,8 +295,6 @@ pub mod quests {
                 }
             }
             if !claimable && (over || get_block_timestamp() > quest.expires_at) {
-                land.quest_id = 0;
-                world.write_model(@land);
                 quest_details.participant_count -= 1;
                 world.write_model(@quest_details);
                 quest.completed = true;
