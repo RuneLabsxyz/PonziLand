@@ -184,10 +184,12 @@
     console.log('player quest', player_quest_res);
     console.log('playuer quest 0', player_quest_res[0]);
     //TODO: this should be the quest id, not the quest details id
-    let score_res = await GetQuestScore(player_quest_res.id);
+    let quest_id = player_quest_res[0].id;
+    console.log('quest_id', quest_id);
+    let score_res = await GetQuestScore(quest_id);
     console.log(score_res);
     score = parseInt(BigInt(score_res).toString());
-    let token_res = await GetQuestToken(player_quest_res.id);
+    let token_res = await GetQuestToken(quest_id);
     console.log(token_res);
     game_token_id = parseInt(BigInt(token_res[1]).toString());
     console.log(game_token_id);
