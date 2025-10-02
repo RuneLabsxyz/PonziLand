@@ -35,8 +35,7 @@ export class HeatmapStore {
 
   setParameter(parameter: HeatmapParameter): void {
     this.parameter = parameter;
-    // Set default color scheme for the parameter
-    this.colorScheme = HEATMAP_PARAMETERS[parameter].defaultColorScheme;
+    // Don't automatically change color scheme - let user choose
   }
 
   setColorScheme(colorScheme: HeatmapColorScheme): void {
