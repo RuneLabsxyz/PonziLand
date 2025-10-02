@@ -177,10 +177,11 @@
     let quest_games = await getQuestGames();
     console.log('all quest games', quest_games);
     questDetails = questDetails_res[0];
-    let entry_price_res = await GetQuestEntryPrice(questDetails.id);
-    entry_price = parseInt(BigInt(entry_price_res).toString());
+    entry_price = parseInt(BigInt(questDetails.entry_price).toString());
     console.log('entry_price', entry_price);
     console.log(questDetails.id);
+
+    //TODO: this should be the quest id, not the quest details id
     let score_res = await GetQuestScore(questDetails.id);
     console.log(score_res);
     score = parseInt(BigInt(score_res).toString());
