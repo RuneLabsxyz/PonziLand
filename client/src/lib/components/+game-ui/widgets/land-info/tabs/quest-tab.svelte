@@ -181,7 +181,7 @@
     console.log('entry_price', entry_price);
     console.log(questDetails.id);
 
-    let player_quest_res = await getPlayerQuestAtLocation(account.address, land.location)[0];
+    let player_quest_res = await getPlayerQuestAtLocation(account.address, land.location);
     console.log('player quest', player_quest_res);
     //TODO: this should be the quest id, not the quest details id
     let score_res = await GetQuestScore(player_quest_res.id);
