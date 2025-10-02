@@ -11,6 +11,8 @@
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
   import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { getQuests, getQuestGames, getQuestDetails, getQuestDetailsFromLocation } from '$lib/api/quests.svelte';
+  import type { QuestDetails } from '$lib/models.gen';
 
   let {
     land,
@@ -26,10 +28,8 @@
     padAddress(account.address ?? '') == padAddress(land.owner),
   );
 
-  let hasQuest = $derived(
-    land.quest_id && BigInt(land.quest_id.toString()) > 0n
-  );
-
+  let questDetails = $state<QuestDetails | null>(null);
+  let hasQuest = $derived(!!questDetails);
   let loading = $state(false);
   let accountManager = useAccount();
   let score = $state(0);
@@ -168,6 +168,8 @@
   }
 
   async function getQuestInfo() {
+    let questDetails_res = await getQuestDetailsFromLocation(land.location);
+    questDetails = questDetails_res[0];
     let entry_price_res = await GetQuestEntryPrice(land.quest_id);
     entry_price = parseInt(BigInt(entry_price_res).toString());
     console.log('entry_price', entry_price);
@@ -192,7 +194,6 @@
     <div class="mb-4">
       <h3 class="font-ponzi-number text-lg mb-2">Quest Information</h3>
       <div class="space-y-2 text-sm">
-        <p><span class="font-semibold">Quest ID:</span> {land.quest_id?.toString() || '0'}</p>
         <p><span class="font-semibold">Has Quest:</span> {hasQuest ? 'Yes' : 'No'}</p>
         <p><span class="font-semibold">Owned by you:</span> {isOwner ? 'Yes' : 'No'}</p>
       </div>
