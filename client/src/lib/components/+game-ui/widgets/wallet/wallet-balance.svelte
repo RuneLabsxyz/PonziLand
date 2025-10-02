@@ -10,6 +10,7 @@
   import TokenValueDisplay from './token-value-display.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import BaseTokenSelector from './base-token-selector.svelte';
+  import { ScrollArea } from '$lib/components/ui/scroll-area';
 
   let {
     setCustomControls,
@@ -136,14 +137,18 @@
   </div>
 {/if}
 <div class="flex flex-col gap-2 mb-4">
-  {#each sortedTokenBalances as [token, balance]}
-    <div
-      class="flex justify-between items-center relative gap-2 px-4 select-text"
-    >
-      <TokenAvatar {token} class="h-6 w-6" />
-      <TokenValueDisplay amount={balance.toBigint()} {token} />
+  <ScrollArea>
+    <div class="h-80">
+      {#each sortedTokenBalances as [token, balance]}
+        <div
+          class="flex justify-between items-center relative gap-2 px-4 select-text"
+        >
+          <TokenAvatar {token} class="h-6 w-6" />
+          <TokenValueDisplay amount={balance.toBigint()} {token} />
+        </div>
+      {/each}
     </div>
-  {/each}
+  </ScrollArea>
 </div>
 
 {#snippet moreControls()}
