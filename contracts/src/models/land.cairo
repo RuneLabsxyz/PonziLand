@@ -27,7 +27,6 @@ pub struct Land {
     pub sell_price: u256,
     pub token_used: ContractAddress,
     pub level: Level,
-    pub quest_id: u64,
 }
 
 /// @notice Tracks staking and tax information for a land.
@@ -130,7 +129,7 @@ impl LandImpl of LandTrait {
         sell_price: u256,
         block_date_bought: u64,
     ) -> Land {
-        Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero, quest_id: 0 }
+        Land { location, owner, token_used, sell_price, block_date_bought, level: Level::Zero }
     }
 
     /// @notice Checks if the land has an owner.
