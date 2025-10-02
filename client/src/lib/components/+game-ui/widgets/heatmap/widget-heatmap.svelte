@@ -8,6 +8,8 @@
   } from './heatmap.config';
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import { Label } from '$lib/components/ui/label';
+  import { LandTile } from '$lib/components/+game-map/three/landTile';
+  import { landStore } from '$lib/stores/store.svelte';
   import {
     Select,
     SelectContent,
@@ -25,9 +27,45 @@
   import Timer from 'lucide-svelte/icons/timer';
   import MapPin from 'lucide-svelte/icons/map-pin';
   import { Button } from '$lib/components/ui/button';
+  import { BuildingLand } from '$lib/api/land/building_land';
+  import { AuctionLand } from '$lib/api/land/auction_land';
+  import { onMount } from 'svelte';
 
   // Available parameters - show all for now (can be filtered later based on data availability)
   let availableParameters = $derived(Object.values(HeatmapParameter));
+
+  // Get land tiles for statistics calculation
+  let visibleLandTiles: LandTile[] = $state([]);
+
+  onMount(() => {
+    landStore.getAllLands().subscribe((tiles) => {
+      visibleLandTiles = tiles.map((tile) => {
+        let tokenSymbol = 'empty';
+        let skin = 'default';
+
+        if (BuildingLand.is(tile)) {
+          tokenSymbol = tile?.token?.symbol ?? 'empty';
+          skin = tile?.token?.skin ?? 'empty';
+        }
+
+        if (AuctionLand.is(tile)) {
+          tokenSymbol = 'auction';
+          skin = 'auction';
+        }
+
+        const gridX = tile.location.x;
+        const gridY = tile.location.y;
+
+        return new LandTile(
+          [gridX, 1, gridY],
+          tokenSymbol,
+          skin,
+          tile.level,
+          tile,
+        );
+      });
+    });
+  });
 
   // Current parameter configuration
   let currentParamConfig = $derived(heatmapStore.getCurrentParameterConfig());
@@ -57,27 +95,17 @@
     }),
   );
 
-  // Parameter statistics for display - show basic stats from the store
+  // Parameter statistics for display - get proper stats from calculator
   let paramStats = $derived.by(() => {
-    if (!heatmapStore.enabled) {
+    if (!heatmapStore.enabled || !visibleLandTiles) {
       return null;
     }
 
-    // Use the stats from the heatmap store if available
-    if (
-      heatmapStore.minValue !== undefined &&
-      heatmapStore.maxValue !== undefined
-    ) {
-      return {
-        count: heatmapStore.validTileCount ?? 0,
-        min: heatmapStore.minValue,
-        max: heatmapStore.maxValue,
-        mean: (heatmapStore.minValue + heatmapStore.maxValue) / 2, // Simple approximation
-        median: (heatmapStore.minValue + heatmapStore.maxValue) / 2, // Simple approximation
-      };
-    }
-
-    return null;
+    // Get proper statistics using the calculator
+    return HeatmapCalculator.getParameterStats(
+      visibleLandTiles,
+      heatmapStore.parameter,
+    );
   });
 
   // Format values for display
@@ -93,6 +121,35 @@
     const colors = COLOR_SCHEMES[scheme].colors;
     return `linear-gradient(to right, ${colors.map((c) => `#${c.toString(16).padStart(6, '0')}`).join(', ')})`;
   }
+
+  // Create color legend gradient for current scheme
+  let colorLegendGradient = $derived.by(() => {
+    if (!heatmapStore.enabled || !heatmapStore.colorScheme) return '';
+    return getColorSchemePreview(heatmapStore.colorScheme);
+  });
+
+  // Generate legend tick marks and labels
+  let legendTicks = $derived.by(() => {
+    if (!paramStats || paramStats.count === 0) return [];
+
+    const { min, max } = paramStats;
+    const range = max - min;
+
+    // Generate 4 evenly spaced ticks
+    const ticks = [];
+    const NUMBER_OF_TICKS = 2;
+    for (let i = 0; i <= NUMBER_OF_TICKS; i++) {
+      const value = min + (range * i) / NUMBER_OF_TICKS;
+      const percentage = (i / NUMBER_OF_TICKS) * 100;
+      ticks.push({
+        value,
+        percentage,
+        label: formatDisplayValue(value, heatmapStore.parameter),
+      });
+    }
+
+    return ticks;
+  });
 
   // Get icon component for parameter
   function getParameterIcon(parameter: HeatmapParameter) {
@@ -262,35 +319,78 @@
       />
     </div>
 
-    <!-- Statistics Display -->
+    <!-- Color Legend and Statistics -->
     {#if paramStats && paramStats.count > 0}
       <hr />
 
+      <!-- Color Legend -->
       <div class="space-y-2">
-        <Label class="font-ponzi-number stroke-3d-black">Statistics</Label>
+        <Label class="font-ponzi-number stroke-3d-black">Color Legend</Label>
+        <div class="relative">
+          <!-- Gradient bar -->
+          <div
+            class="w-full h-4 rounded border border-border"
+            style="background: {colorLegendGradient}"
+          ></div>
+
+          <!-- Tick marks and labels -->
+          <div class="relative mt-1 flex justify-between">
+            {#each legendTicks as tick, i}
+              {@const isFirst = i === 0}
+              {@const isLast = i === legendTicks.length - 1}
+              <div
+                class="flex flex-col text-xs {isFirst
+                  ? 'items-start'
+                  : isLast
+                    ? 'items-end'
+                    : 'items-center'}"
+              >
+                <div class="w-0.5 h-2 bg-border mb-1"></div>
+                <span class="font-mono text-muted-foreground whitespace-nowrap">
+                  {tick.label}
+                </span>
+              </div>
+            {/each}
+          </div>
+        </div>
+      </div>
+
+      <hr />
+
+      <!-- Statistics -->
+      <div class="space-y-3">
+        <Label class="font-ponzi-number stroke-3d-black">Data Summary</Label>
+
+        <!-- Key Stats in a clean grid -->
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="bg-secondary/20 rounded p-2">
+            <div class="text-xs text-muted-foreground uppercase tracking-wide">
+              Tiles
+            </div>
+            <div class="font-ponzi-number text-lg">{paramStats.count}</div>
+          </div>
+          <div class="bg-secondary/20 rounded p-2">
+            <div class="text-xs text-muted-foreground uppercase tracking-wide">
+              Range
+            </div>
+            <div class="text-xs">
+              {formatDisplayValue(paramStats.min, heatmapStore.parameter)} →
+              {formatDisplayValue(paramStats.max, heatmapStore.parameter)}
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Stats -->
         <div class="grid grid-cols-2 gap-2 text-sm">
           <div class="flex justify-between">
-            <span class="text-muted-foreground">Count:</span>
-            <span class="bg-secondary px-2 py-1 rounded text-xs"
-              >{paramStats.count}</span
-            >
-          </div>
-          <div class="flex justify-between">
-            <span class="text-muted-foreground">Range:</span>
-            <span class="font-mono text-xs">
-              {formatDisplayValue(paramStats.min, heatmapStore.parameter)} -
-              {formatDisplayValue(paramStats.max, heatmapStore.parameter)}
-            </span>
-          </div>
-          <div class="flex justify-between">
             <span class="text-muted-foreground">Mean:</span>
-            <span class="font-mono text-xs">
+            <span class="text-xs">
               {formatDisplayValue(paramStats.mean, heatmapStore.parameter)}
             </span>
           </div>
           <div class="flex justify-between">
             <span class="text-muted-foreground">Median:</span>
-            <span class="font-mono text-xs">
+            <span class="text-xs">
               {formatDisplayValue(paramStats.median, heatmapStore.parameter)}
             </span>
           </div>
@@ -298,10 +398,8 @@
       </div>
     {/if}
 
-    <!-- Legend Toggle -->
-    <hr />
-
     <!-- Reset Button -->
+    <hr />
     <button
       class="w-full justify-center flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-muted/50 transition-colors text-sm font-ponzi-number stroke-3d-black"
       onclick={() => heatmapStore.reset()}
