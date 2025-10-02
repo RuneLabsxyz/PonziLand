@@ -3833,7 +3833,7 @@
     },
     {
       "address": "0x52b7482c5b1d2f9bf85eb8f437724d52f0dc8836cf4970b250333e287fef30f",
-      "class_hash": "0x5bdce53418ea3fb1907d927f01b136b966408f03827646598641f8656f06f2d",
+      "class_hash": "0x5568e249b490dcafee70a455fb3a52dbf13ce2714a85e04a14c79a53575b94b",
       "abi": [
         {
           "type": "impl",
