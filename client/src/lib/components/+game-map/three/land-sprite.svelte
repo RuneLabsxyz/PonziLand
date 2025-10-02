@@ -181,15 +181,11 @@
     );
   });
 
-  // Update art layer material opacity based on heatmap store
+  // Update art layer material opacity based on dev settings (heatmap no longer uses art layer)
   $effect(() => {
     if (artLayerMesh && artLayerMesh.material) {
       const material = artLayerMesh.material as MeshBasicMaterial;
-      if (heatmapStore.enabled) {
-        material.opacity = heatmapStore.opacity;
-      } else {
-        material.opacity = devsettings.artLayerOpacity;
-      }
+      material.opacity = devsettings.artLayerOpacity;
     }
   });
 
@@ -223,7 +219,7 @@
     });
   });
 
-  // Update art layer matrices when visible land tiles change
+  // Update art layer matrices when visible land tiles change (heatmap now uses shader tinting)
   $effect(() => {
     if (artLayerMesh && visibleLandTiles.length > 0) {
       const tempObject = new Object3D();
@@ -238,8 +234,8 @@
         tempObject.updateMatrix();
         if (artLayerMesh) {
           artLayerMesh.setMatrixAt(index, tempObject.matrix);
-          // Set color based on tile type
-          const color = getArtLayerColor(tile);
+          // Set color based on legacy token colors only (heatmap uses shader now)
+          const color = getLegacyArtLayerColor(tile);
           const threeColor = new Color(color);
           artLayerMesh.setColorAt(index, threeColor);
         }
@@ -535,6 +531,31 @@
     heatmapResult?.colors ?? new Map<LandTile, number>(),
   );
 
+  // Convert heatmap data to shader-compatible format
+  let heatmapTintData = $derived.by(() => {
+    if (!heatmapResult || !heatmapStore.enabled) {
+      return { indices: [], colors: [] };
+    }
+
+    const indices: number[] = [];
+    const colors: number[] = [];
+
+    for (const [tile, hexColor] of heatmapColors) {
+      // Calculate grid-based sprite index
+      const spriteIndex = tile.position[0] * GRID_SIZE + tile.position[2];
+      indices.push(spriteIndex);
+
+      // Convert hex color to RGB components (0-1 range)
+      const r = ((hexColor >> 16) & 0xff) / 255;
+      const g = ((hexColor >> 8) & 0xff) / 255;
+      const b = (hexColor & 0xff) / 255;
+
+      colors.push(r, g, b);
+    }
+
+    return { indices, colors };
+  });
+
   // Update store stats when heatmap result changes
   $effect(() => {
     if (heatmapResult) {
@@ -546,19 +567,8 @@
     }
   });
 
-  // Art layer color mapping - now supports both heatmap and legacy token colors
+  // Art layer color mapping - legacy token colors only (heatmap now uses shader tinting)
   function getArtLayerColor(tile: LandTile): number {
-    // Check if heatmap is enabled
-    if (heatmapStore.enabled) {
-      // If this tile has a heatmap color, use it
-      if (heatmapColors.has(tile)) {
-        return heatmapColors.get(tile)!;
-      }
-      // For tiles without data (empty lands), use a neutral gray color in heatmap mode
-      return 0x404040; // Dark gray for empty/no-data lands in heatmap mode
-    }
-
-    // Fall back to legacy token-based coloring when heatmap is disabled
     return getLegacyArtLayerColor(tile);
   }
 
@@ -670,6 +680,8 @@
           {ownedLandIndices}
           {auctionLandIndices}
           {isUnzoomed}
+          heatmapTintIndices={heatmapTintData.indices}
+          heatmapTintColors={heatmapTintData.colors}
         />
       </InstancedSprite>
     {/if}
@@ -690,6 +702,8 @@
           {ownedLandIndices}
           {auctionLandIndices}
           {isUnzoomed}
+          heatmapTintIndices={heatmapTintData.indices}
+          heatmapTintColors={heatmapTintData.colors}
         />
       </InstancedSprite>
     {/if}
@@ -751,8 +765,8 @@
       />
     {/if}
 
-    <!-- Art Layer / Heatmap Layer -->
-    {#if (devsettings.showArtLayer || heatmapStore.enabled) && artLayerMesh}
+    <!-- Art Layer (legacy token colors only - heatmap now uses shader tinting) -->
+    {#if devsettings.showArtLayer && artLayerMesh}
       <T is={artLayerMesh} />
     {/if}
 
