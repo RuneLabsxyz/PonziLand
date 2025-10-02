@@ -22,10 +22,17 @@ export const getQuestGames = async () => {
       .addEntityModel(ModelsMapping.QuestGame)
       .includeHashedKeys();
 
-    const questGames = await sdk.getEntities({
+    // also query initial
+    let res = await sdk.getEntities({
       query,
     });
-    return questGames;
+
+    let cleaned_res = res.items.map((item: any) => {
+        console.log('quest game item', item);
+        return item;
+    });
+
+    return cleaned_res;
 };
 
 export const getQuestDetails = async () => {
@@ -43,6 +50,7 @@ export const getQuestDetails = async () => {
 export const getQuestDetailsFromLocation = async (location: string) => {
     const { client: sdk } = useDojo();
   
+    console.log('location', location);
     const query = new ToriiQueryBuilder()
       .withClause(
         MemberClause(
@@ -55,7 +63,14 @@ export const getQuestDetailsFromLocation = async (location: string) => {
       .addEntityModel(ModelsMapping.QuestDetails);
   
     // also query initial
-    return await sdk.getEntities({
+    let res = await sdk.getEntities({
       query,
     });
+
+    let cleaned_res = res.items.map((item: any) => {
+        console.log('quest details item', item);
+        return item;
+    });
+
+    return cleaned_res;
   };
