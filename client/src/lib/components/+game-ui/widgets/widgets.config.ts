@@ -1,3 +1,5 @@
+import { ENABLE_GUILD } from '$lib/flags';
+
 export interface Widget {
   id: string;
   type: string;
@@ -25,7 +27,7 @@ export interface WidgetsState {
   [key: string]: WidgetState;
 }
 
-export const DEFAULT_WIDGETS_STATE: WidgetsState = {
+const baseWidgetsState: WidgetsState = {
   wallet: {
     id: 'wallet',
     type: 'wallet',
@@ -89,14 +91,6 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
-  guild: {
-    id: 'guild',
-    type: 'guild',
-    position: { x: 100, y: 100 },
-    dimensions: { width: 800, height: 600 },
-    isMinimized: false,
-    isOpen: false,
-  },
   leaderboard: {
     id: 'leaderboard',
     type: 'leaderboard',
@@ -142,7 +136,20 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = {
   },
 };
 
-export const availableWidgets: Widget[] = [
+const guildWidgetState: WidgetState = {
+  id: 'guild',
+  type: 'guild',
+  position: { x: 100, y: 100 },
+  dimensions: { width: 800, height: 600 },
+  isMinimized: false,
+  isOpen: false,
+};
+
+export const DEFAULT_WIDGETS_STATE: WidgetsState = ENABLE_GUILD
+  ? { ...baseWidgetsState, guild: guildWidgetState }
+  : baseWidgetsState;
+
+const allWidgets: Widget[] = [
   {
     id: 'my-lands',
     type: 'my-lands',
@@ -186,3 +193,7 @@ export const availableWidgets: Widget[] = [
   //   icon: '/ui/icons/Icon_Thin_Notification.png',
   // },
 ];
+
+export const availableWidgets: Widget[] = ENABLE_GUILD
+  ? allWidgets
+  : allWidgets.filter((widget) => widget.type !== 'guild');
