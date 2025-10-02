@@ -89,6 +89,7 @@
       );
     } finally {
       loading = false;
+      getQuestInfo();
     }
   }
 
@@ -118,6 +119,7 @@
       );
     } finally {
       loading = false;
+      getQuestInfo();
     }
   }
 
@@ -148,6 +150,7 @@
       );
     } finally {
       loading = false;
+      getQuestInfo();
     }
   }
 
@@ -165,19 +168,23 @@
     }
     gameSounds.play('claim');
     loading = false;
+    getQuestInfo();
   }
 
   async function getQuestInfo() {
     let questDetails_res = await getQuestDetailsFromLocation(land.location);
+    console.log(questDetails_res);
+    let quest_games = await getQuestGames();
+    console.log('all quest games', quest_games);
     questDetails = questDetails_res[0];
-    let entry_price_res = await GetQuestEntryPrice(land.quest_id);
+    let entry_price_res = await GetQuestEntryPrice(questDetails.id);
     entry_price = parseInt(BigInt(entry_price_res).toString());
     console.log('entry_price', entry_price);
-    console.log(land.quest_id);
-    let score_res = await GetQuestScore(land.quest_id);
+    console.log(questDetails.id);
+    let score_res = await GetQuestScore(questDetails.id);
     console.log(score_res);
     score = parseInt(BigInt(score_res).toString());
-    let token_res = await GetQuestToken(land.quest_id);
+    let token_res = await GetQuestToken(questDetails.id);
     console.log(token_res);
     game_token_id = parseInt(BigInt(token_res[1]).toString());
     console.log(game_token_id);
