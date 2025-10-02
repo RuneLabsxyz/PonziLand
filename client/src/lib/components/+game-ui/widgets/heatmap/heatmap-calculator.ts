@@ -17,6 +17,9 @@ export interface HeatmapCalculationResult {
 }
 
 export class HeatmapCalculator {
+  // Default dark tint color for lands with no value
+  private static readonly DEFAULT_NO_VALUE_COLOR = 0x202020;
+
   /**
    * Calculate heatmap colors for given tiles and parameters
    */
@@ -30,18 +33,28 @@ export class HeatmapCalculator {
 
     // Extract values from tiles
     const tileValues = new Map<LandTile, number>();
+    const tilesWithoutValues: LandTile[] = [];
 
     for (const tile of tiles) {
       const value = paramConfig.extractor(tile);
       if (value !== null && !isNaN(value) && isFinite(value)) {
         tileValues.set(tile, value);
+      } else {
+        tilesWithoutValues.push(tile);
       }
     }
 
+    const colors = new Map<LandTile, number>();
+
+    // First, assign default dark color to tiles without values
+    for (const tile of tilesWithoutValues) {
+      colors.set(tile, this.DEFAULT_NO_VALUE_COLOR);
+    }
+
     if (tileValues.size === 0) {
-      // No valid data - return empty result
+      // No valid data - return only the no-value tiles with default color
       return {
-        colors: new Map(),
+        colors,
         minValue: 0,
         maxValue: 0,
         validTileCount: 0,
@@ -70,8 +83,7 @@ export class HeatmapCalculator {
       }
     }
 
-    // Map normalized values to colors
-    const colors = new Map<LandTile, number>();
+    // Map normalized values to colors (add to existing colors map that already has no-value tiles)
     for (const [tile, normalizedValue] of normalizedTileValues) {
       const color = this.interpolateColor(normalizedValue, schemeConfig.colors);
       colors.set(tile, color);

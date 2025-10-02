@@ -21,6 +21,7 @@
     isUnzoomed = false,
     heatmapTintIndices = [],
     heatmapTintColors = [],
+    heatmapOpacity = 1.0,
   }: {
     landTiles: LandTile[];
     spritesheet: any;
@@ -30,6 +31,7 @@
     isUnzoomed: boolean;
     heatmapTintIndices: number[];
     heatmapTintColors: number[];
+    heatmapOpacity: number;
   } = $props();
 
   const { updatePosition, sprite } = useInstancedSprite();
@@ -124,6 +126,9 @@
 
   $effect(() => {
     if (outlineControls && sprite) {
+      // Set opacity first
+      outlineControls.setTintOpacity(heatmapOpacity);
+
       // Clear any existing tints first
       outlineControls.clearTints(sprite);
 
