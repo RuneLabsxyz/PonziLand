@@ -1680,19 +1680,19 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_quests_registerQuestGame_calldata = (worldAddress: string, namespace: string, gameContractName: string, settingsContractName: string, settingsId: BigNumberish, targetScore: BigNumberish): DojoCall => {
+	const build_quests_registerQuestGame_calldata = (worldAddress: string, namespace: string, gameContractName: string, settingsContractName: string, settingsId: BigNumberish, targetScore: BigNumberish, questType: CairoCustomEnum): DojoCall => {
 		return {
 			contractName: "quests",
 			entrypoint: "register_quest_game",
-			calldata: [worldAddress, namespace, gameContractName, settingsContractName, settingsId, targetScore],
+			calldata: [worldAddress, namespace, gameContractName, settingsContractName, settingsId, targetScore, questType],
 		};
 	};
 
-	const quests_registerQuestGame = async (snAccount: Account | AccountInterface, worldAddress: string, namespace: string, gameContractName: string, settingsContractName: string, settingsId: BigNumberish, targetScore: BigNumberish) => {
+	const quests_registerQuestGame = async (snAccount: Account | AccountInterface, worldAddress: string, namespace: string, gameContractName: string, settingsContractName: string, settingsId: BigNumberish, targetScore: BigNumberish, questType: CairoCustomEnum) => {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_quests_registerQuestGame_calldata(worldAddress, namespace, gameContractName, settingsContractName, settingsId, targetScore),
+				build_quests_registerQuestGame_calldata(worldAddress, namespace, gameContractName, settingsContractName, settingsId, targetScore, questType),
 				"ponzi_land",
 			);
 		} catch (error) {

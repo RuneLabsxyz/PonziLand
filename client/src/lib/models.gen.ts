@@ -34,6 +34,8 @@ export interface Config {
 	max_circles: BigNumberish;
 	claim_fee: BigNumberish;
 	buy_fee: BigNumberish;
+	quest_auction_chance: BigNumberish;
+	quest_lands_enabled: boolean;
 	our_contract_for_fee: string;
 	our_contract_for_auction: string;
 	claim_fee_threshold: BigNumberish;
@@ -48,7 +50,6 @@ export interface Land {
 	sell_price: BigNumberish;
 	token_used: string;
 	level: LevelEnum;
-	quest_id: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::LandStake` struct
@@ -84,20 +85,15 @@ export interface Lifecycle {
 	end: CairoOption<BigNumberish>;
 }
 
-// Type definition for `ponzi_land::models::quest::PlayerRegistrations` struct
-export interface PlayerRegistrations {
-	details_id: BigNumberish;
-	player_address: string;
-	quest_id: BigNumberish;
-}
-
 // Type definition for `ponzi_land::models::quest::Quest` struct
 export interface Quest {
 	id: BigNumberish;
-	details_id: BigNumberish;
+	location: BigNumberish;
+	creator_address: string;
 	player_address: string;
 	game_token_id: BigNumberish;
 	completed: boolean;
+	expires_at: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::quest::QuestCounter` struct
@@ -108,15 +104,13 @@ export interface QuestCounter {
 
 // Type definition for `ponzi_land::models::quest::QuestDetails` struct
 export interface QuestDetails {
-	id: BigNumberish;
 	location: BigNumberish;
-	reward: Reward;
 	capacity: BigNumberish;
 	participant_count: BigNumberish;
-	settings_id: BigNumberish;
+	entry_price: BigNumberish;
 	target_score: BigNumberish;
-	expires_at: BigNumberish;
-	game_address: string;
+	creator_address: string;
+	game_id: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::quest::QuestDetailsCounter` struct
@@ -125,10 +119,22 @@ export interface QuestDetailsCounter {
 	count: BigNumberish;
 }
 
-// Type definition for `ponzi_land::models::quest::Reward` struct
-export interface Reward {
-	resource_type: BigNumberish;
-	amount: BigNumberish;
+// Type definition for `ponzi_land::models::quest::QuestGame` struct
+export interface QuestGame {
+	id: BigNumberish;
+	world_address: string;
+	namespace: string;
+	game_contract_name: string;
+	settings_contract_name: string;
+	settings_id: BigNumberish;
+	target_score: BigNumberish;
+	quest_type: QuestTypeEnum;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestGameCounter` struct
+export interface QuestGameCounter {
+	key: BigNumberish;
+	count: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::quest::Score` struct
@@ -244,6 +250,15 @@ export const level = [
 export type Level = { [key in typeof level[number]]: string };
 export type LevelEnum = CairoCustomEnum;
 
+// Type definition for `ponzi_land::models::quest::QuestType` enum
+export const questType = [
+	'None',
+	'Minigame',
+	'OneOnOne',
+] as const;
+export type QuestType = { [key in typeof questType[number]]: string };
+export type QuestTypeEnum = CairoCustomEnum;
+
 export interface SchemaType extends ISchemaType {
 	ponzi_land: {
 		Auction: Auction,
@@ -253,12 +268,12 @@ export interface SchemaType extends ISchemaType {
 		GameCounter: GameCounter,
 		GameMetadata: GameMetadata,
 		Lifecycle: Lifecycle,
-		PlayerRegistrations: PlayerRegistrations,
 		Quest: Quest,
 		QuestCounter: QuestCounter,
 		QuestDetails: QuestDetails,
 		QuestDetailsCounter: QuestDetailsCounter,
-		Reward: Reward,
+		QuestGame: QuestGame,
+		QuestGameCounter: QuestGameCounter,
 		Score: Score,
 		Settings: Settings,
 		SettingsCounter: SettingsCounter,
@@ -307,6 +322,8 @@ export const schema: SchemaType = {
 			max_circles: 0,
 			claim_fee: 0,
 			buy_fee: 0,
+			quest_auction_chance: 0,
+			quest_lands_enabled: false,
 			our_contract_for_fee: "",
 			our_contract_for_auction: "",
 			claim_fee_threshold: 0,
@@ -322,7 +339,6 @@ export const schema: SchemaType = {
 					Zero: "",
 				First: undefined,
 				Second: undefined, }),
-			quest_id: 0,
 		},
 		LandStake: {
 			location: 0,
@@ -349,40 +365,48 @@ export const schema: SchemaType = {
 		start: new CairoOption(CairoOptionVariant.None),
 		end: new CairoOption(CairoOptionVariant.None),
 		},
-		PlayerRegistrations: {
-			details_id: 0,
-			player_address: "",
-			quest_id: 0,
-		},
 		Quest: {
 			id: 0,
-			details_id: 0,
+			location: 0,
+			creator_address: "",
 			player_address: "",
 			game_token_id: 0,
 			completed: false,
+			expires_at: 0,
 		},
 		QuestCounter: {
 			key: 0,
 			count: 0,
 		},
 		QuestDetails: {
-			id: 0,
 			location: 0,
-		reward: { resource_type: 0, amount: 0, },
 			capacity: 0,
 			participant_count: 0,
-			settings_id: 0,
+		entry_price: 0,
 			target_score: 0,
-			expires_at: 0,
-			game_address: "",
+			creator_address: "",
+			game_id: 0,
 		},
 		QuestDetailsCounter: {
 			key: 0,
 			count: 0,
 		},
-		Reward: {
-			resource_type: 0,
-			amount: 0,
+		QuestGame: {
+			id: 0,
+			world_address: "",
+		namespace: "",
+		game_contract_name: "",
+		settings_contract_name: "",
+			settings_id: 0,
+			target_score: 0,
+		quest_type: new CairoCustomEnum({ 
+					None: "",
+				Minigame: undefined,
+				OneOnOne: undefined, }),
+		},
+		QuestGameCounter: {
+			key: 0,
+			count: 0,
 		},
 		Score: {
 			game_id: 0,
@@ -469,12 +493,13 @@ export enum ModelsMapping {
 	GameCounter = 'ponzi_land-GameCounter',
 	GameMetadata = 'ponzi_land-GameMetadata',
 	Lifecycle = 'ponzi_land-Lifecycle',
-	PlayerRegistrations = 'ponzi_land-PlayerRegistrations',
 	Quest = 'ponzi_land-Quest',
 	QuestCounter = 'ponzi_land-QuestCounter',
 	QuestDetails = 'ponzi_land-QuestDetails',
 	QuestDetailsCounter = 'ponzi_land-QuestDetailsCounter',
-	Reward = 'ponzi_land-Reward',
+	QuestGame = 'ponzi_land-QuestGame',
+	QuestGameCounter = 'ponzi_land-QuestGameCounter',
+	QuestType = 'ponzi_land-QuestType',
 	Score = 'ponzi_land-Score',
 	Settings = 'ponzi_land-Settings',
 	SettingsCounter = 'ponzi_land-SettingsCounter',
