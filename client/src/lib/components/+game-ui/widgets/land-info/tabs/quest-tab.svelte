@@ -11,7 +11,7 @@
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
   import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
-  import { getQuests, getQuestGames, getQuestDetails, getQuestDetailsFromLocation } from '$lib/api/quests.svelte';
+  import { getQuests, getQuestGames, getQuestDetails, getQuestDetailsFromLocation, getPlayerQuestAtLocation } from '$lib/api/quests.svelte';
   import type { QuestDetails } from '$lib/models.gen';
 
   let {
@@ -181,11 +181,13 @@
     console.log('entry_price', entry_price);
     console.log(questDetails.id);
 
+    let player_quest_res = await getPlayerQuestAtLocation(account.address, land.location);
+    console.log('player quest', player_quest_res);
     //TODO: this should be the quest id, not the quest details id
-    let score_res = await GetQuestScore(questDetails.id);
+    let score_res = await GetQuestScore(player_quest_res.id);
     console.log(score_res);
     score = parseInt(BigInt(score_res).toString());
-    let token_res = await GetQuestToken(questDetails.id);
+    let token_res = await GetQuestToken(player_quest_res.id);
     console.log(token_res);
     game_token_id = parseInt(BigInt(token_res[1]).toString());
     console.log(game_token_id);

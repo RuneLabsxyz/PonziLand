@@ -74,3 +74,37 @@ export const getQuestDetailsFromLocation = async (location: string) => {
 
     return cleaned_res;
   };
+
+export const getPlayerQuestAtLocation = async (player_address: string, location: string) => {
+    const { client: sdk } = useDojo();
+
+    const query = new ToriiQueryBuilder()
+      .withClause(
+        MemberClause(
+          ModelsMapping.Quest,
+          'player_address',
+          'Eq',
+          player_address,
+        ).build(),
+      )
+      .withClause(
+        MemberClause(
+          ModelsMapping.Quest,
+          'location',
+          'Eq',
+          parseInt(location),
+        ).build(),
+      )
+      .addEntityModel(ModelsMapping.Quest);
+
+    let res = await sdk.getEntities({
+      query,
+    });
+
+    let cleaned_res = res.items.map((item: any) => {
+        console.log('quest item', item.models.ponzi_land.Quest);
+        return item.models.ponzi_land.Quest;
+    });
+
+    return cleaned_res;
+};
