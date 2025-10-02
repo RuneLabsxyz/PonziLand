@@ -682,6 +682,7 @@
           {isUnzoomed}
           heatmapTintIndices={heatmapTintData.indices}
           heatmapTintColors={heatmapTintData.colors}
+          heatmapOpacity={heatmapStore.opacity}
         />
       </InstancedSprite>
     {/if}
@@ -704,6 +705,7 @@
           {isUnzoomed}
           heatmapTintIndices={heatmapTintData.indices}
           heatmapTintColors={heatmapTintData.colors}
+          heatmapOpacity={heatmapStore.opacity}
         />
       </InstancedSprite>
     {/if}
