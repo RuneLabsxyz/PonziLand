@@ -28,8 +28,8 @@ export const getQuestGames = async () => {
     });
 
     let cleaned_res = res.items.map((item: any) => {
-        console.log('quest game item', item);
-        return item;
+        console.log('quest game item', item.models.ponzi_land.QuestGame);
+        return item.models.ponzi_land.QuestGame;
     });
 
     return cleaned_res;
@@ -50,14 +50,14 @@ export const getQuestDetails = async () => {
 export const getQuestDetailsFromLocation = async (location: string) => {
     const { client: sdk } = useDojo();
   
-    console.log('location', location);
+    console.log('location', parseInt(location));
     const query = new ToriiQueryBuilder()
       .withClause(
         MemberClause(
           ModelsMapping.QuestDetails,
           'location',
           'Eq',
-          location.toString(),
+          parseInt(location),
         ).build(),
       )
       .addEntityModel(ModelsMapping.QuestDetails);
@@ -68,8 +68,8 @@ export const getQuestDetailsFromLocation = async (location: string) => {
     });
 
     let cleaned_res = res.items.map((item: any) => {
-        console.log('quest details item', item);
-        return item;
+        console.log('quest details item', item.models.ponzi_land.QuestDetails);
+        return item.models.ponzi_land.QuestDetails;
     });
 
     return cleaned_res;
