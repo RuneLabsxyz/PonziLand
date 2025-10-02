@@ -4,7 +4,6 @@ use starknet::ContractAddress;
 #[dojo::model]
 pub struct QuestDetails {
     #[key]
-    pub id: u64,
     pub location: u16,
     pub capacity: u16,
     pub participant_count: u16,
@@ -12,7 +11,6 @@ pub struct QuestDetails {
     pub target_score: u32,
     pub creator_address: ContractAddress,
     pub game_id: u64,
-
 }
 
 #[derive(Copy, Drop, Serde, Introspect)]
@@ -49,21 +47,12 @@ pub struct QuestGameCounter {
 pub struct Quest {
     #[key]
     pub id: u64,
-    pub details_id: u64,
+    pub location: u16,
+    pub creator_address: ContractAddress,
     pub player_address: ContractAddress,
     pub game_token_id: u64,
     pub completed: bool,
     pub expires_at: u64,
-}
-
-#[derive(Copy, Drop, Serde, IntrospectPacked)]
-#[dojo::model]
-pub struct PlayerRegistrations {
-    #[key]
-    pub details_id: u64,
-    #[key]
-    pub player_address: ContractAddress,
-    pub quest_id: u64,
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked)]

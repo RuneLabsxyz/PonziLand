@@ -29,7 +29,7 @@ pub mod quests {
         IMinigameSettingsDispatcher, IMinigameSettingsDispatcherTrait,
     };
     use ponzi_land::models::quest::{
-        QuestDetailsCounter, PlayerRegistrations, QuestCounter, QuestDetails, Quest, QuestGame, QuestGameCounter,
+        QuestDetailsCounter, QuestCounter, QuestDetails, Quest, QuestGame, QuestGameCounter,
     };
     use dojo::world::{WorldStorage, WorldStorageTrait, IWorldDispatcher};
     use ponzi_land::models::land::Land;
@@ -94,24 +94,24 @@ pub mod quests {
 
             let caller = get_caller_address();
 
+            let quest_details: QuestDetails = world.read_model(land_location);
+
             assert!(land.owner == caller, "Player is not the owner of the land");
-            assert!(land.quest_id == 0, "Land already has a quest");
+            assert!(quest_details.capacity == 0, "Land already has a quest");
 
             let quest_game: QuestGame = world.read_model(game_id);
 
-            let id = create_quest(
+            let success = create_quest(
                 ref self,
                 quest_game,
-                land.location,
+                land_location,
                 1000000000000000000, // 10 strk
                 1,
                 caller
             );
 
-            assert!(id > 0, "Failed to create quest");
+            assert!(success, "Failed to create quest");
 
-            land.quest_id = id;
-            world.write_model(@land);
         }
 
         fn remove_land_quest(ref self: ContractState, land_location: u16) {
@@ -121,9 +121,9 @@ pub mod quests {
 
             let mut land: Land = world.read_model(land_location);
             assert!(land.owner == get_caller_address(), "Player is not the owner of the land");
-            assert!(land.quest_id > 0, "Land does not have a quest");
-            land.quest_id = 0;
-            world.write_model(@land);
+
+            let quest_details: QuestDetails = world.read_model(land_location);
+            world.erase_model(@quest_details);
         }
 
         fn start_quest(
@@ -135,40 +135,21 @@ pub mod quests {
             let store = StoreTrait::new(world);
             assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
 
-            let land: Land = world.read_model(land_location);
-            let auction: Auction = world.read_model(land_location);
+            let mut quest_details: QuestDetails = world.read_model(land_location);
 
-            assert!(land.quest_id != 0 || auction.quest_id != 0, "Land does not have a quest");
-
-            let mut quest_id = 0;
-            let mut to_us = false;
-            if land.quest_id != 0 {
-                quest_id = land.quest_id;
-            }
-            else {
-                quest_id = auction.quest_id;
-                to_us = true;
-            }
-
-            let mut quest_details: QuestDetails = world.read_model(quest_id);
-
-            assert(quest_details.id > 0, 'Quest details not found');
+            assert(quest_details.capacity > 0, 'Quest details not found');
             assert(
                 quest_details.participant_count < quest_details.capacity, 'Quest is at capacity',
             );
 
             let player_address = get_caller_address();
 
-            assert!(land.owner != player_address, "Player is the owner of the quest land");
+            assert!(quest_details.creator_address != player_address, "Player is the owner of the quest land");
+
+            let to_us = false; //TODO: this should be true for auction quests, which aren't implemented yet
 
             validate_and_execute_quest_payment(ref self, quest_details, get_caller_address(), store, to_us);
             
-            // Check if this realm already has a participant in this quest
-            // This is now a simple model query instead of iteration
-            let player_participation: PlayerRegistrations = world
-                .read_model((quest_details.id, player_address));
-            assert!(player_participation.quest_id == 0, "Player has already attempted this quest");
-
             let mut quest_counter: QuestCounter = world.read_model(VERSION);
             quest_counter.count += 1;
             world.write_model(@quest_counter);
@@ -210,7 +191,7 @@ pub mod quests {
                         contract_address: game_token_address,
                     };
                     game_id = game_dispatcher.create_match(
-                        land.owner,
+                        quest_details.creator_address,
                         player_address,
                         quest_game.settings_id.into(),
                     );
@@ -224,7 +205,8 @@ pub mod quests {
             
             let quest = Quest {
                 id: quest_counter.count,
-                details_id: quest_details.id,
+                location: quest_details.location,
+                creator_address: quest_details.creator_address,
                 player_address,
                 game_token_id: game_id,
                 completed: false,
@@ -236,12 +218,6 @@ pub mod quests {
             quest_details.participant_count += 1;
             world.write_model(@quest_details);
 
-            // Record realm participation with this quest
-            let player_participation = PlayerRegistrations {
-                details_id: quest_details.id, player_address, quest_id: quest.id,
-            };
-            world.write_model(@player_participation);
-
             quest.id
         }
 
@@ -251,7 +227,7 @@ pub mod quests {
             assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
 
             let mut quest: Quest = world.read_model(quest_id);
-            let mut quest_details: QuestDetails = world.read_model(quest.details_id);
+            let mut quest_details: QuestDetails = world.read_model(quest.location);
             let mut land: Land = world.read_model(quest_details.location);
 
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
@@ -309,15 +285,15 @@ pub mod quests {
                 quest_id,
             );
 
-            
-            land.quest_id = 0;
             land.owner = quest.player_address;
             world.write_model(@land);
 
             // set quest as completed
             quest.completed = true;
             world.write_model(@quest);
-            // issue reward
+
+            // delete quest details
+            world.erase_model(@quest_details);
 
             // grant tokens for Reward ??
         // TODO: Add reward logic here
@@ -326,14 +302,14 @@ pub mod quests {
         fn get_quest(self: @ContractState, quest_id: u64) -> (Quest, QuestDetails) {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
-            let quest_details: QuestDetails = world.read_model(quest.details_id);
+            let quest_details: QuestDetails = world.read_model(quest.location);
             (quest, quest_details)
         }
 
         fn get_score(self: @ContractState, quest_id: u64) -> u32 {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
-            let quest_details: QuestDetails = world.read_model(quest.details_id);
+            let quest_details: QuestDetails = world.read_model(quest.location);
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
@@ -382,7 +358,7 @@ pub mod quests {
         fn get_quest_game_token(self: @ContractState, quest_id: u64) -> (ContractAddress, u64) {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
-            let quest_details: QuestDetails = world.read_model(quest.details_id);
+            let quest_details: QuestDetails = world.read_model(quest.location);
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
             (quest_game.world_address, quest.game_token_id)
         }
@@ -407,7 +383,7 @@ pub mod quests {
         entry_price: u256,
         capacity: u16,
         creator_address: ContractAddress,
-    ) -> u64 {
+    ) -> bool{
         let mut world = self.world(DEFAULT_NS());
 
         let store = StoreTrait::new(world);
@@ -435,7 +411,6 @@ pub mod quests {
         quest_details_counter.count += 1;
 
         let quest_details = @QuestDetails {
-            id: quest_details_counter.count,
             location,
             creator_address,
             game_id: quest_game.id,
@@ -447,7 +422,7 @@ pub mod quests {
 
         world.write_model(@quest_details_counter);
         world.write_model(quest_details);
-        *quest_details.id
+        true
     }
 
     fn validate_and_execute_quest_payment(
