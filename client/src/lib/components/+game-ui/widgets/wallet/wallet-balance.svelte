@@ -98,21 +98,20 @@
 
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
   {#if totalBalance && baseToken}
-    <span class="font-ponzi-number">Value in</span>
+    <span class="font-ponzi-number">Balance</span>
+
+    <div class="flex flex-1 items-center gap-2 justify-end select-text"></div>
     <button
       class="font-ponzi-number hover:bg-gray-100/10 px-1 rounded flex items-center gap-1"
       onclick={() => (showBaseTokenSelector = !showBaseTokenSelector)}
       title="Click to change base token"
     >
-      {baseToken.symbol}
-      <Settings size={12} class="opacity-50" />
-    </button>
-    <div class="flex flex-1 items-center gap-2 justify-end select-text">
       <div class="font-ponzi-number">
         {totalBalance.toString()}
       </div>
       <TokenAvatar token={baseToken} class="h-6 w-6" />
-    </div>
+      <Settings size={12} class="opacity-50" />
+    </button>
   {/if}
 </div>
 

@@ -16,6 +16,14 @@
   const handleTokenSelect = (tokenAddress: string | null) => {
     onSelect(tokenAddress);
   };
+
+  const allowedSymbols = ['STRK', 'USDC'];
+
+  let allowedBaseToken = $derived(
+    data.availableTokens.filter((token) =>
+      allowedSymbols.includes(token.symbol),
+    ),
+  );
 </script>
 
 <div class="space-y-2">
@@ -51,7 +59,7 @@
       {/if}
     </button>
 
-    {#each data.availableTokens.filter((token) => token.address !== data.mainCurrencyAddress) as token}
+    {#each allowedBaseToken.filter((token) => token.address !== data.mainCurrencyAddress) as token}
       <button
         class="flex items-center gap-2 p-2 rounded hover:bg-gray-100/10 text-left {currentBaseToken?.address ===
         token.address
