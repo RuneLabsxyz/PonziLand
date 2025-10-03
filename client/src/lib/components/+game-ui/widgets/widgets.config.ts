@@ -1,4 +1,4 @@
-import { ENABLE_GUILD } from '$lib/flags';
+import { ENABLE_GUILD, ENABLE_LEADERBOARD } from '$lib/flags';
 
 export interface Widget {
   id: string;
@@ -91,14 +91,6 @@ const baseWidgetsState: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
-  leaderboard: {
-    id: 'leaderboard',
-    type: 'leaderboard',
-    position: { x: window.innerWidth - 320, y: 600 },
-    dimensions: { width: 320, height: 300 },
-    isMinimized: false,
-    isOpen: false,
-  },
   'data-maps': {
     id: 'data-maps',
     type: 'data-maps',
@@ -145,11 +137,22 @@ const guildWidgetState: WidgetState = {
   isOpen: false,
 };
 
-export const DEFAULT_WIDGETS_STATE: WidgetsState = ENABLE_GUILD
-  ? { ...baseWidgetsState, guild: guildWidgetState }
-  : baseWidgetsState;
+const leaderboardWidgetState: WidgetState = {
+  id: 'leaderboard',
+  type: 'leaderboard',
+  position: { x: window.innerWidth - 320, y: 600 },
+  dimensions: { width: 320, height: 300 },
+  isMinimized: false,
+  isOpen: false,
+};
 
-const allWidgets: Widget[] = [
+export const DEFAULT_WIDGETS_STATE: WidgetsState = Object.assign(
+  baseWidgetsState,
+  ENABLE_GUILD ? { guild: guildWidgetState } : {},
+  ENABLE_LEADERBOARD ? { leaderboard: leaderboardWidgetState } : {},
+);
+
+const allWidgets: (Widget & { if?: boolean })[] = [
   {
     id: 'my-lands',
     type: 'my-lands',
@@ -173,12 +176,14 @@ const allWidgets: Widget[] = [
     type: 'guild',
     label: 'Guild',
     icon: '/ui/icons/Icon_Guilds.png',
+    if: ENABLE_GUILD,
   },
   {
     id: 'leaderboard',
     type: 'leaderboard',
     label: 'Leaderboard',
     icon: '/ui/icons/Icon_Cup.png',
+    if: ENABLE_LEADERBOARD,
   },
   {
     id: 'data-maps',
@@ -194,6 +199,6 @@ const allWidgets: Widget[] = [
   // },
 ];
 
-export const availableWidgets: Widget[] = ENABLE_GUILD
-  ? allWidgets
-  : allWidgets.filter((widget) => widget.type !== 'guild');
+export const availableWidgets: Widget[] = allWidgets.filter(
+  (widget) => widget.if !== false,
+);
