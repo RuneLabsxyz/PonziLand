@@ -37,6 +37,68 @@ export function toCalldata(
  * @param value - The number to format (string | number | BigNumber)
  * @returns Formatted currency string
  */
+/**
+ * Format a number by cutting decimal places to a specific number of significant digits without using exponential notation
+ * @param value - The number to format (string | number | BigNumber)
+ * @param significantDigits - Number of significant digits to show in decimal part (default: 6)
+ * @returns Formatted number string without exponentials
+ */
+export function formatWithoutExponential(
+  value: string | number | BigNumber,
+  significantDigits: number = 6,
+): string {
+  const bn = new BigNumber(value);
+
+  // Special case for zero
+  if (bn.isZero()) {
+    return '0';
+  }
+
+  // Convert to string with high precision to work with
+  const str = bn.toFixed(20);
+  const isNegative = str.startsWith('-');
+  const absStr = isNegative ? str.substring(1) : str;
+
+  // Split into integer and decimal parts
+  const [integerPart, decimalPart = ''] = absStr.split('.');
+
+  let result = integerPart;
+
+  // If there's a decimal part, process it
+  if (decimalPart) {
+    result += '.';
+
+    let significantFound = 0;
+    let foundFirstNonZero = false;
+
+    for (
+      let i = 0;
+      i < decimalPart.length && significantFound < significantDigits;
+      i++
+    ) {
+      const digit = decimalPart[i];
+      result += digit;
+
+      // Once we find the first non-zero digit, all subsequent digits (including zeros) are significant
+      if (digit !== '0') {
+        foundFirstNonZero = true;
+      }
+
+      // Count as significant if we've found our first non-zero digit
+      if (foundFirstNonZero) {
+        significantFound++;
+      }
+    }
+
+    // Remove trailing zeros only if we haven't used all significant digits
+    if (significantFound < significantDigits) {
+      result = result.replace(/\.?0+$/, '');
+    }
+  }
+
+  return isNegative ? '-' + result : result;
+}
+
 export function displayCurrency(value: string | number | BigNumber): string {
   const bn = new BigNumber(value);
   const abs = bn.abs();

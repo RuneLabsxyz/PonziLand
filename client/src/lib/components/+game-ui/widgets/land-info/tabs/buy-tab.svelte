@@ -22,6 +22,7 @@
   import type { CairoCustomEnum } from 'starknet';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
   import { untrack } from 'svelte';
+  import { formatWithoutExponential } from '$lib/utils/currency';
 
   let {
     land,
@@ -61,13 +62,13 @@
   });
 
   let stake: string = $derived.by(() => {
-    if (!selectedToken || !sellPrice) return '';
+    if (!selectedToken) return '';
 
     return untrack(() => {
       try {
         const sellPriceNum = parseFloat(sellPrice);
         if (isNaN(sellPriceNum) || sellPriceNum <= 0) return '';
-        return (sellPriceNum / 10).toString();
+        return sellPriceNum.toString();
       } catch (error) {
         return '';
       }
@@ -123,8 +124,8 @@
       );
       // If conversion is successful, return the converted amount, otherwise return original
       return convertedPrice
-        ? convertedPrice.toString()
-        : originalPrice.toString();
+        ? formatWithoutExponential(convertedPrice.rawValue().toString(), 3)
+        : formatWithoutExponential(originalPrice.rawValue().toString(), 3);
     });
   });
 
