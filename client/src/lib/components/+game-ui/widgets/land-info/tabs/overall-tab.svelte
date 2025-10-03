@@ -15,8 +15,6 @@
   import IncreasePrice from './increase-price.svelte';
   import IncreaseStake from './increase-stake.svelte';
 
-  const BASE_TOKEN = data.mainCurrencyAddress;
-
   let {
     land,
     activeTab = $bindable(),
@@ -57,19 +55,29 @@
   );
 
   $effect(() => {
-    if (land?.token) {
-      if (land.token.address === BASE_TOKEN) {
+    if (land?.token && baseToken) {
+      if (land.token.address === baseToken.address) {
+        // If land token is already the selected base token, no conversion needed
         burnRateInBaseToken = CurrencyAmount.fromScaled(
           burnRate.toNumber(),
           land.token,
         );
       } else {
-        const tokenPrice = walletStore.getPrice(land.token.address);
-        if (tokenPrice) {
-          burnRateInBaseToken = CurrencyAmount.fromScaled(
-            burnRate.dividedBy(tokenPrice.ratio.rawValue() ?? 0).toString(),
-            land.token,
-          );
+        // Convert burn rate from land token to selected base token using wallet store
+        const burnRateAmount = CurrencyAmount.fromScaled(
+          burnRate.toNumber(),
+          land.token,
+        );
+        const convertedBurnRate = walletStore.convertTokenAmount(
+          burnRateAmount,
+          land.token,
+          baseToken,
+        );
+        if (convertedBurnRate) {
+          burnRateInBaseToken = convertedBurnRate;
+        } else {
+          // Fallback to zero if conversion fails
+          burnRateInBaseToken = CurrencyAmount.fromScaled('0', baseToken);
         }
       }
     }
@@ -81,54 +89,47 @@
   }
 
   $effect(() => {
-    if (land == undefined) return;
+    if (land == undefined || baseToken == undefined) return;
     land.getYieldInfo(false).then((info) => {
       yieldInfo = info;
 
       let totalValue = 0;
-      // Process yield information with wallet store prices
-      if (yieldInfo?.yield_info) {
-        formattedYields = Object.entries(yieldInfo.yield_info).map(
-          ([, yieldData]) => {
-            // Find token data from data.json
-            const tokenHexAddress = toHexWithPadding(yieldData.token);
-            const tokenData = data.availableTokens.find(
-              (token) => token.address === tokenHexAddress,
-            );
+      // Process yield information and convert to base token using wallet store
+      if (yieldInfo?.yield_info && baseToken) {
+        formattedYields = yieldInfo.yield_info.map((yieldData) => {
+          // Find token data from data.json
+          const tokenHexAddress = toHexWithPadding(yieldData.token);
+          const tokenData = data.availableTokens.find(
+            (token) => token.address === tokenHexAddress,
+          );
 
-            // Format the amount using CurrencyAmount with proper token data
-            const amount = CurrencyAmount.fromUnscaled(
-              yieldData.per_hour,
-              tokenData,
-            );
+          // Format the amount using CurrencyAmount with proper token data
+          const amount = CurrencyAmount.fromUnscaled(
+            yieldData.per_hour,
+            tokenData,
+          );
 
-            // Get price from wallet store
-            const priceInfo = walletStore.getPrice(tokenHexAddress);
+          // Convert to base token using wallet store's convertTokenAmount
+          const baseValue =
+            tokenData && baseToken
+              ? walletStore.convertTokenAmount(amount, tokenData, baseToken)
+              : null;
 
-            // Calculate base token value if ratio exists
-            let baseValue = null;
-            if (priceInfo?.ratio !== null && priceInfo) {
-              const baseAmount = amount
-                .rawValue()
-                .dividedBy(priceInfo.ratio.rawValue() ?? 0);
-              baseValue = CurrencyAmount.fromScaled(
-                baseAmount.toString(),
-                baseToken,
-              ).toString();
-              totalValue += Number(
-                amount.rawValue().dividedBy(priceInfo.ratio.rawValue() ?? 0),
-              );
-            } else {
-              baseValue = amount;
-              totalValue += Number(amount.rawValue());
-            }
+          let baseValueDisplay;
+          if (baseValue) {
+            baseValueDisplay = baseValue.toString();
+            totalValue += Number(baseValue.rawValue());
+          } else {
+            // Fallback: if conversion fails, use original amount (assuming it's base token)
+            baseValueDisplay = amount;
+            totalValue += Number(amount.rawValue());
+          }
 
-            return {
-              amount: amount.toString(),
-              baseValue,
-            };
-          },
-        );
+          return {
+            amount: amount.toString(),
+            baseValue: baseValueDisplay,
+          };
+        });
       }
       totalYieldValue = totalValue;
     });
