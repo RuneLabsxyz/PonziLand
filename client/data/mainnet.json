@@ -42,7 +42,7 @@
     {
       "name": "DOG GO TO THE MOON DOG",
       "symbol": "DOG",
-      "address": "0x040E81cfeB176BFDbc5047BBC55eb471CFAb20a6B221f38d8fDa134E1bFFFca4",
+      "address": "0x040e81cfeb176bfdbc5047bbc55eb471cfab20a6b221f38d8fda134e1bfffca4",
       "liquidityPoolType": "1-2",
       "decimals": 5,
       "skin": "DOG"
