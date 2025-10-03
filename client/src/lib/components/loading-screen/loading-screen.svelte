@@ -3,9 +3,15 @@
   import LoadingImage from './loading-image.svelte';
   import messages from './loading-messages.json';
   import RotatingCoin from './rotating-coin.svelte';
+  import LoadingProgressBars from './loading-progress-bars.svelte';
+  import LoadingChecklist from './loading-checklist.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
 
   let { value } = $props();
+
+  // Component constants
+  const SHOW_PROGRESS_BARS = false;
+  const SHOW_CHECKLIST = true;
 
   const randomPhrase = messages[Math.floor(Math.random() * messages.length)];
   const easingFunction = (t: any, overshoot = 1) => {
@@ -17,8 +23,8 @@
   let totalProgress = $derived(() => {
     const regularProgress = value || 0;
     const assetsProgress = loadingStore.totalProgress * 100;
-    // Weight them equally (50% regular loading, 50% 3D assets)
-    return (regularProgress + assetsProgress) / 2;
+    // Weight them based on ratio
+    return regularProgress + assetsProgress;
   });
 </script>
 
@@ -35,38 +41,13 @@
   <div class="flex flex-col gap-4 items-center justify-center z-50">
     <p class="text-white text-lg leading-none">{randomPhrase}</p>
 
-    <!-- 3D Assets Loading Progress -->
-    <div class="flex flex-col gap-2 items-center text-white text-sm opacity-80">
-      <div class="flex gap-2 items-center">
-        <span
-          >Spritesheets: {Math.round(
-            loadingStore.spritesheetProgress * 100,
-          )}%</span
-        >
-        <div class="w-20 h-1 bg-gray-700 rounded">
-          <div
-            class="h-full bg-blue-400 rounded transition-all duration-300"
-            style="width: {loadingStore.spritesheetProgress * 100}%"
-          ></div>
-        </div>
-      </div>
-
-      <div class="flex gap-2 items-center">
-        <span>Assets: {Math.round(loadingStore.assetProgress * 100)}%</span>
-        <div class="w-20 h-1 bg-gray-700 rounded">
-          <div
-            class="h-full bg-green-400 rounded transition-all duration-300"
-            style="width: {loadingStore.assetProgress * 100}%"
-          ></div>
-        </div>
-      </div>
-
-      <div class="text-xs opacity-60">
-        3D Assets: {loadingStore.spritesheets.loaded +
-          loadingStore.assets.loaded}/{loadingStore.spritesheets.total +
-          loadingStore.assets.total}
-      </div>
-    </div>
+    <!-- Loading Display Components -->
+    {#if SHOW_PROGRESS_BARS}
+      <LoadingProgressBars />
+    {/if}
+    {#if SHOW_CHECKLIST}
+      <LoadingChecklist />
+    {/if}
 
     <RotatingCoin />
   </div>

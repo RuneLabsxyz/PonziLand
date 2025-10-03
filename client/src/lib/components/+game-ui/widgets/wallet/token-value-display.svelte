@@ -102,7 +102,7 @@
 
   // Derived value for display
   let displayAmount = $derived(
-    CurrencyAmount.fromUnscaled(BigInt(tweenAmount.current), token),
+    CurrencyAmount.fromUnscaled(BigInt(Math.round(tweenAmount.current)), token),
   );
 
   // Get the currently selected base token

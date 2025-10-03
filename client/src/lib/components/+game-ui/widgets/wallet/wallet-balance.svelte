@@ -11,6 +11,7 @@
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import BaseTokenSelector from './base-token-selector.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
+  import { loadingStore } from '$lib/stores/loading.store.svelte';
 
   let {
     setCustomControls,
@@ -28,11 +29,41 @@
   let loadingBalance = $state(false);
   let errorMessage = $state<string | null>(null);
   let showBaseTokenSelector = $state(false);
+  let initialBalanceLoadCompleted = $state(false);
 
   onMount(() => {
     // Set up custom controls for the parent draggable component
     setCustomControls(moreControls);
   });
+
+  // Watch for wallet loading completion and trigger balance refresh
+  $effect(() => {
+    const walletPhaseComplete =
+      loadingStore.phases.wallet.loaded >= loadingStore.phases.wallet.total;
+    const hasAddress = !!address;
+
+    if (
+      walletPhaseComplete &&
+      hasAddress &&
+      !initialBalanceLoadCompleted &&
+      !loadingBalance
+    ) {
+      console.log('Wallet loading completed, refreshing balances...');
+      handleInitialBalanceLoad();
+    }
+  });
+
+  const handleInitialBalanceLoad = async () => {
+    if (!address) return;
+
+    loadingBalance = true;
+    try {
+      await walletStore.update(address);
+      initialBalanceLoadCompleted = true;
+    } finally {
+      loadingBalance = false;
+    }
+  };
 
   const handleRefreshBalances = async () => {
     if (!address) return;
