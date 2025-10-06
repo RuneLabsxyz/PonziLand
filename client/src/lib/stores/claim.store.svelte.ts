@@ -28,8 +28,8 @@ export async function claimAll(
     .map((claim) => claim.land);
 
   const landsToClaim: LandWithActions[][] = [];
-  for (let i = 0; i < playerLandsToClaim.length; i += 10) {
-    landsToClaim.push(playerLandsToClaim.slice(i, i + 10));
+  for (let i = 0; i < playerLandsToClaim.length; i += 5) {
+    landsToClaim.push(playerLandsToClaim.slice(i, i + 5));
   }
   for (const batch of landsToClaim) {
     const batchAggregatedTaxes = await Promise.all(
