@@ -8,7 +8,12 @@ import { walletStore } from './wallet.svelte';
 import accountState, { setup } from '$lib/account.svelte';
 import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
 import { usernamesStore } from './account.store.svelte';
-import { fetchUsernamesBatch } from '$lib/components/+game-ui/widgets/leaderboard/request';
+import {
+  fetchUsernamesBatch,
+  getUserAddresses,
+  getBuyEvents,
+  fetchTokenBalances,
+} from '$lib/components/+game-ui/widgets/leaderboard/request';
 
 interface LoadingProgress {
   total: number;
@@ -594,27 +599,93 @@ class LoadingStore {
 
   private async loadUsernames() {
     try {
-      // Get addresses from the usernames store
-      const addresses = usernamesStore
-        .getAddresses()
-        .map((addr) => addr.address);
-
-      if (addresses.length === 0) {
-        console.log('No addresses to fetch usernames for');
-        return;
-      }
-
-      console.log(`Fetching usernames for ${addresses.length} addresses...`);
-
-      // Fetch usernames in batch
-      const usernameMap = await fetchUsernamesBatch(addresses);
-
-      // Update the usernames store with fetched usernames
-      usernamesStore.updateUsernames(usernameMap);
-
       console.log(
-        `Successfully fetched ${Object.keys(usernameMap).length} usernames`,
+        'Collecting addresses from multiple sources for username fetching...',
       );
+
+      // Collect addresses from multiple sources like the leaderboard does
+      const addressSources = await Promise.allSettled([
+        // 1. Get authorized addresses from events
+        getUserAddresses().then((addresses: Array<{ address: string }>) =>
+          addresses.map(({ address }: { address: string }) => ({ address })),
+        ),
+        // 2. Get land buyer addresses
+        getBuyEvents().then((events: Array<{ buyer: string }>) =>
+          events.map(({ buyer }: { buyer: string }) => ({ address: buyer })),
+        ),
+        // 3. Get addresses with token balances
+        fetchTokenBalances().then(
+          (balanceData: Record<string, Record<string, number>>) =>
+            Object.keys(balanceData).map((address: string) => ({ address })),
+        ),
+        // 4. Get land ownership addresses from the landStore
+        Promise.resolve().then(() => {
+          // Since this is reactive, we need to get the current value
+          // This is a simplified approach - in practice, you might want to subscribe
+          const addresses: { address: string }[] = [];
+          // Add current user if available
+          if (accountState.address) {
+            addresses.push({ address: accountState.address });
+          }
+          return addresses;
+        }),
+      ]);
+
+      // Collect all unique addresses from successful sources
+      const allAddresses = new Set<string>();
+
+      addressSources.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          result.value.forEach(({ address }: { address: string }) => {
+            if (address) {
+              allAddresses.add(address);
+            }
+          });
+          console.log(
+            `Source ${index + 1} provided ${result.value.length} addresses`,
+          );
+        } else {
+          console.warn(`Address source ${index + 1} failed:`, result.reason);
+        }
+      });
+
+      const uniqueAddresses = Array.from(allAddresses).map((address) => ({
+        address,
+      }));
+      console.log(
+        `Collected ${uniqueAddresses.length} unique addresses from all sources`,
+      );
+
+      // Add addresses to the usernames store
+      if (uniqueAddresses.length > 0) {
+        usernamesStore.addAddresses(uniqueAddresses);
+
+        // Get addresses that need usernames fetched
+        const addressesToFetch = usernamesStore
+          .getAddresses()
+          .map((addr) => addr.address);
+
+        if (addressesToFetch.length === 0) {
+          console.log('No addresses to fetch usernames for');
+          return;
+        }
+
+        console.log(
+          `Fetching usernames for ${addressesToFetch.length} addresses...`,
+        );
+
+        // Fetch usernames in batch
+        const usernameMap = await fetchUsernamesBatch(addressesToFetch);
+
+        // Update the usernames store with fetched usernames
+        usernamesStore.updateUsernames(usernameMap);
+
+        console.log(
+          `Successfully fetched ${Object.keys(usernameMap).length} usernames`,
+        );
+      } else {
+        console.log('No addresses found from any source');
+      }
     } catch (error) {
       console.error('Error fetching usernames:', error);
     }
