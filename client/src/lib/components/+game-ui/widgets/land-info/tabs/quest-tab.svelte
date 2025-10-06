@@ -3,8 +3,8 @@
   import type { LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
   import * as Select from '$lib/components/ui/select';
+  import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
@@ -224,275 +224,249 @@
 </script>
 
 {#if isActive}
-  <div class="w-full h-full p-2">
+  <div class="w-full h-full">
     {#if isOwner}
       {#if !hasQuest}
         <!-- Land is owned by player and has no quest - show quest game selector 🐙 -->
-        <Card class="border-2">
-          <CardHeader>
-            <CardTitle class="text-xl">Setup Quest Land</CardTitle>
-            <CardDescription>Choose a quest game to challenge other players</CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-4">
-            <div class="space-y-2">
-              <label class="text-sm font-semibold">Select Quest Game</label>
-              <Select.Root bind:selected={selectedGameId}>
-                <Select.Trigger class="w-full">
-                  <Select.Value placeholder="Choose a quest game..." />
-                </Select.Trigger>
-                <Select.Content>
-                  {#each questGames as game}
-                    <Select.Item value={game.id.toString()}>
-                      {game.game_contract_name} (ID: {game.id.toString()})
-                    </Select.Item>
-                  {/each}
-                </Select.Content>
-              </Select.Root>
-            </div>
+        <Label class="font-ponzi-number">Select Quest Game</Label>
+        <p class="-mt-1 mb-1 opacity-75 leading-none">
+          Choose a quest game to challenge other players
+        </p>
+        <Select.Root bind:selected={selectedGameId}>
+          <Select.Trigger class="w-full">
+            <Select.Value placeholder="Choose a quest game..." />
+          </Select.Trigger>
+          <Select.Content>
+            {#each questGames as game}
+              <Select.Item value={game.id.toString()}>
+                {game.game_contract_name} (ID: {game.id.toString()})
+              </Select.Item>
+            {/each}
+          </Select.Content>
+        </Select.Root>
 
-            {#if selectedGame}
-              <div class="space-y-3 p-4 bg-muted/30 rounded-lg border">
-                <h4 class="font-semibold text-sm">Game Details</h4>
-                <div class="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span class="text-muted-foreground">Contract:</span>
-                    <p class="font-mono truncate">{selectedGame.game_contract_name}</p>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">Namespace:</span>
-                    <p class="font-mono truncate">{selectedGame.namespace}</p>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">Target Score:</span>
-                    <p class="font-semibold">{selectedGame.target_score.toString()}</p>
-                  </div>
-                  <div>
-                    <span class="text-muted-foreground">Quest Type:</span>
-                    <p class="font-semibold">{selectedGame.quest_type}</p>
-                  </div>
-                </div>
-                <div class="text-xs text-muted-foreground">
-                  <p>Players will need to achieve the target score to complete this quest and earn rewards!</p>
-                </div>
+        {#if selectedGame}
+          <div class="mt-4 space-y-2">
+            <Label class="font-ponzi-number">Game Details</Label>
+            <div class="grid grid-cols-2 gap-2 text-xs opacity-75">
+              <div>
+                <span>Contract:</span>
+                <p class="font-mono truncate">{selectedGame.game_contract_name}</p>
               </div>
+              <div>
+                <span>Namespace:</span>
+                <p class="font-mono truncate">{selectedGame.namespace}</p>
+              </div>
+              <div>
+                <span>Target Score:</span>
+                <p class="font-semibold">{selectedGame.target_score.toString()}</p>
+              </div>
+              <div>
+                <span>Quest Type:</span>
+                <p class="font-semibold">{selectedGame.quest_type?.activeVariant || 'Unknown'}</p>
+              </div>
+            </div>
+            <p class="text-xs opacity-75 leading-none">
+              Players will need to achieve the target score to complete this quest and earn rewards!
+            </p>
+          </div>
+        {/if}
 
-              {#if loading}
-                <Button class="w-full" disabled>
-                  Setting as Quest Land <ThreeDots />
-                </Button>
-              {:else}
-                <Button
-                  onclick={handleSetQuestClick}
-                  class="w-full"
-                  disabled={loading || !selectedGameId}
-                  variant="default"
-                >
-                  Set as Quest Land
-                </Button>
-              {/if}
-            {/if}
-          </CardContent>
-        </Card>
+        {#if loading}
+          <Button class="mt-3 w-full" disabled>
+            Setting as Quest Land <ThreeDots />
+          </Button>
+        {:else}
+          <Button
+            onclick={handleSetQuestClick}
+            class="mt-3 w-full"
+            disabled={loading || !selectedGameId}
+            variant="default"
+          >
+            Set as Quest Land
+          </Button>
+        {/if}
       {:else}
         <!-- Land is owned by player and has a quest - show management options -->
-        <Card class="border-2 border-primary/50">
-          <CardHeader>
-            <CardTitle class="text-xl">Quest Land Management</CardTitle>
-            <CardDescription>Your land is currently hosting a quest</CardDescription>
-          </CardHeader>
-          <CardContent class="space-y-4">
-            <div class="grid grid-cols-2 gap-3 text-sm">
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Participants</span>
-                <p class="font-semibold text-lg">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
-              </div>
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Entry Price</span>
-                <p class="font-semibold text-lg">{entry_price} {baseToken.symbol}</p>
-              </div>
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Target Score</span>
-                <p class="font-semibold text-lg">{questDetails?.target_score.toString()}</p>
-              </div>
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Game ID</span>
-                <p class="font-semibold text-lg">{questDetails?.game_id.toString()}</p>
-              </div>
-            </div>
+        <Label class="font-ponzi-number">Quest Land Management</Label>
+        <p class="-mt-1 mb-1 opacity-75 leading-none">
+          Your land is currently hosting a quest
+        </p>
+        
+        <div class="grid grid-cols-2 gap-3 text-sm mt-3">
+          <div>
+            <Label>Participants</Label>
+            <p class="font-semibold">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
+          </div>
+          <div>
+            <Label>Entry Price</Label>
+            <p class="font-semibold">{entry_price} {baseToken.symbol}</p>
+          </div>
+          <div>
+            <Label>Target Score</Label>
+            <p class="font-semibold">{questDetails?.target_score.toString()}</p>
+          </div>
+          <div>
+            <Label>Game ID</Label>
+            <p class="font-semibold">{questDetails?.game_id.toString()}</p>
+          </div>
+        </div>
 
-            {#if loading}
-              <Button class="w-full" disabled>
-                Removing Quest Land <ThreeDots />
-              </Button>
-            {:else}
-              <Button
-                onclick={handleRemoveQuestClick}
-                class="w-full"
-                disabled={loading}
-                variant="destructive"
-              >
-                Remove Quest Land
-              </Button>
-            {/if}
-          </CardContent>
-        </Card>
+        {#if loading}
+          <Button class="mt-3 w-full" disabled>
+            Removing Quest Land <ThreeDots />
+          </Button>
+        {:else}
+          <Button
+            onclick={handleRemoveQuestClick}
+            class="mt-3 w-full"
+            disabled={loading}
+            variant="destructive"
+          >
+            Remove Quest Land
+          </Button>
+        {/if}
       {/if}
     {:else if hasQuest}
       <!-- Land is not owned by player but has a quest - show challenge interface 🐙 -->
-      <Card class="border-2 border-accent">
-        <CardHeader>
-          <CardTitle class="text-xl">
-            {isOneOnOne ? '1v1 Quest Challenge' : 'Quest Challenge'}
-          </CardTitle>
-          <CardDescription>
-            {isOneOnOne ? 'Challenge the land owner in a 1v1 match!' : 'Test your skills and complete this quest!'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent class="space-y-4">
-          <div class="bg-accent/10 p-4 rounded-lg border border-accent/30 space-y-3">
-            <div class="grid grid-cols-2 gap-3 text-sm">
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Entry Price</span>
-                <p class="font-bold text-xl text-accent">{entry_price} {baseToken.symbol}</p>
+      {#key `${game_token_id}-${score}-${currentQuestGame?.id}`}
+        <Label class="font-ponzi-number">
+          {isOneOnOne ? '1v1 Quest Challenge' : 'Quest Challenge'}
+        </Label>
+        <p class="-mt-1 mb-1 opacity-75 leading-none">
+          {isOneOnOne ? 'Challenge the land owner in a 1v1 match!' : 'Test your skills and complete this quest!'}
+        </p>
+
+        <div class="grid grid-cols-2 gap-3 text-sm mt-3">
+          <div>
+            <Label>Entry Price</Label>
+            <p class="font-bold text-lg text-yellow-500">{entry_price} {baseToken.symbol}</p>
+          </div>
+          {#if isHighScore}
+            <div>
+              <Label>Target Score</Label>
+              <p class="font-bold text-lg">{questDetails?.target_score.toString()}</p>
+            </div>
+          {:else if isOneOnOne}
+            <div>
+              <Label>Game Type</Label>
+              <p class="font-bold text-lg">1v1 Match</p>
+            </div>
+          {/if}
+          <div>
+            <Label>Capacity</Label>
+            <p class="font-semibold">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
+          </div>
+          <div>
+            <Label>Game ID</Label>
+            <p class="font-semibold">{questDetails?.game_id.toString()}</p>
+          </div>
+        </div>
+
+        {#if game_token_id > 0}
+          {#if isHighScore}
+            <!-- High Score Game: Show progress bar -->
+            <div class="mt-4">
+              <div class="flex justify-between items-center mb-2">
+                <Label>Your Progress</Label>
+                <span class="text-sm font-bold">{score} / {questDetails?.target_score.toString()}</span>
               </div>
-              {#if isHighScore}
-                <div class="space-y-1">
-                  <span class="text-muted-foreground">Target Score</span>
-                  <p class="font-bold text-xl">{questDetails?.target_score.toString()}</p>
-                </div>
-              {:else if isOneOnOne}
-                <div class="space-y-1">
-                  <span class="text-muted-foreground">Game Type</span>
-                  <p class="font-bold text-xl">1v1 Match</p>
-                </div>
-              {/if}
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Capacity</span>
-                <p class="font-semibold">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
-              </div>
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Game ID</span>
-                <p class="font-semibold">{questDetails?.game_id.toString()}</p>
+              <div class="w-full bg-muted rounded-full h-3 border">
+                <div 
+                  class="bg-primary h-3 rounded-full transition-all duration-300" 
+                  style="width: {Math.min(100, (score / Number(questDetails?.target_score || 1)) * 100)}%"
+                ></div>
               </div>
             </div>
-          </div>
-
-          {#if game_token_id > 0}
-            {#if isHighScore}
-              <!-- High Score Game: Show progress bar -->
-              <div class="bg-primary/10 p-3 rounded-lg border border-primary/30">
-                <div class="flex justify-between items-center mb-2">
-                  <span class="text-sm font-semibold">Your Progress</span>
-                  <span class="text-lg font-bold">{score} / {questDetails?.target_score.toString()}</span>
-                </div>
-                <div class="w-full bg-muted rounded-full h-2">
-                  <div 
-                    class="bg-primary h-2 rounded-full transition-all duration-300" 
-                    style="width: {Math.min(100, (score / Number(questDetails?.target_score || 1)) * 100)}%"
-                  ></div>
-                </div>
-              </div>
-            {:else if isOneOnOne}
-              <!-- 1v1 Game: Show game status -->
-              <div class="bg-primary/10 p-4 rounded-lg border border-primary/30">
-                <div class="text-center">
-                  {#if score === 0}
-                    <div class="space-y-2">
-                      <p class="text-lg font-bold">⚔️ Game Active</p>
-                      <p class="text-sm text-muted-foreground">Your match is in progress</p>
-                    </div>
-                  {:else if score === 1}
-                    <div class="space-y-2">
-                      <p class="text-lg font-bold">🎉 Game Complete</p>
-                      <p class="text-sm text-muted-foreground">Ready to claim or settle</p>
-                    </div>
-                  {/if}
-                </div>
-              </div>
-            {/if}
+          {:else if isOneOnOne}
+            <!-- 1v1 Game: Show game status -->
+            <div class="mt-4 text-center p-4 border rounded">
+              {#if score === 0}
+                <p class="text-lg font-bold">⚔️ Game Active</p>
+                <p class="text-xs opacity-75">Your match is in progress</p>
+              {:else if score === 1}
+                <p class="text-lg font-bold">🎉 Game Complete</p>
+                <p class="text-xs opacity-75">Ready to claim or settle</p>
+              {/if}
+            </div>
           {/if}
+        {/if}
 
-          <div class="space-y-2">
-            {#if loading}
-              <Button class="w-full" disabled>
-                <ThreeDots />
+        <div class="space-y-2 mt-3">
+          {#if loading}
+            <Button class="w-full" disabled>
+              <ThreeDots />
+            </Button>
+          {:else}
+            {#if game_token_id === 0}
+              <Button
+                onclick={handleChallengeQuestClick}
+                class="w-full"
+                disabled={loading}
+              >
+                CHALLENGE FOR <span class="text-yellow-500">&nbsp;{entry_price} {baseToken.symbol}</span>
               </Button>
             {:else}
-              {#if game_token_id === 0}
+              {#if isHighScore}
+                <!-- High Score Game Buttons -->
                 <Button
-                  onclick={handleChallengeQuestClick}
-                  class="w-full h-12 text-lg font-bold"
+                  onclick={handleGameActionClick}
+                  class="w-full"
                   disabled={loading}
                   variant="default"
                 >
-                  Challenge ({entry_price} {baseToken.symbol})
+                  Continue Quest
                 </Button>
-              {:else}
-                {#if isHighScore}
-                  <!-- High Score Game Buttons -->
+                {#if score >= Number(questDetails?.target_score || 0)}
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full"
+                    disabled={loading}
+                    variant="secondary"
+                  >
+                    🏆 Claim Reward
+                  </Button>
+                {/if}
+              {:else if isOneOnOne}
+                <!-- 1v1 Game Buttons -->
+                {#if score === 0}
                   <Button
                     onclick={handleGameActionClick}
-                    class="w-full h-12 text-lg font-bold"
+                    class="w-full"
                     disabled={loading}
                     variant="default"
                   >
-                    Continue Quest
+                    ⚔️ Continue Match
                   </Button>
-                  {#if score >= Number(questDetails?.target_score || 0)}
-                    <Button
-                      onclick={handleClaimQuestClick}
-                      class="w-full h-10"
-                      disabled={loading}
-                      variant="secondary"
-                    >
-                      🏆 Claim Reward
-                    </Button>
-                  {/if}
-                {:else if isOneOnOne}
-                  <!-- 1v1 Game Buttons -->
-                  {#if score === 0}
-                    <Button
-                      onclick={handleGameActionClick}
-                      class="w-full h-12 text-lg font-bold"
-                      disabled={loading}
-                      variant="default"
-                    >
-                      ⚔️ Continue Match
-                    </Button>
-                  {:else if score === 1}
-                    <Button
-                      onclick={handleClaimQuestClick}
-                      class="w-full h-12 text-lg font-bold"
-                      disabled={loading}
-                      variant="secondary"
-                    >
-                      🏆 Claim / Settle
-                    </Button>
-                  {/if}
+                {:else if score === 1}
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full"
+                    disabled={loading}
+                    variant="secondary"
+                  >
+                    🏆 Claim / Settle
+                  </Button>
                 {/if}
               {/if}
-              <Button
-                onclick={getQuestInfo}
-                class="w-full h-10"
-                disabled={loading}
-                variant="outline"
-              >
-                Refresh
-              </Button>
             {/if}
-          </div>
-        </CardContent>
-      </Card>
+            <Button
+              onclick={getQuestInfo}
+              class="w-full"
+              disabled={loading}
+              variant="outline"
+            >
+              Refresh Quest Info
+            </Button>
+          {/if}
+        </div>
+      {/key}
     {:else}
       <!-- Land is not owned by player and has no quest -->
-      <Card class="border-2 border-muted">
-        <CardContent class="pt-6">
-          <div class="text-center text-muted-foreground space-y-2">
-            <p class="text-lg">This land has no active quest</p>
-            <p class="text-sm">Only the owner can set up a quest on this land.</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div class="text-center opacity-75 space-y-2 p-4">
+        <p>This land has no active quest</p>
+        <p class="text-sm">Only the owner can set up a quest on this land.</p>
+      </div>
     {/if}
   </div>
 {/if}
