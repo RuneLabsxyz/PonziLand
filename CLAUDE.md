@@ -112,6 +112,7 @@ The UI is built with a modular widget system that allows easy extension:
 - State management uses Svelte stores and runes
 - Components should be typed with TypeScript
 - Use Tailwind CSS for styling with the project's design system
+- At the end of a modification batch / end of todolist Format the code
 
 ### Smart Contract Development
 - Follow Dojo framework patterns for systems and models
