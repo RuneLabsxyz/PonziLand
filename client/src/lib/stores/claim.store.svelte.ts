@@ -8,6 +8,7 @@ import type { Account, AccountInterface } from 'starknet';
 import { claimQueue } from './event.store.svelte';
 import { nukeStore } from './nuke.store.svelte';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
+import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 
 export let claimStore: {
   value: {
@@ -28,8 +29,14 @@ export async function claimAll(
     .map((claim) => claim.land);
 
   const landsToClaim: LandWithActions[][] = [];
-  for (let i = 0; i < playerLandsToClaim.length; i += 5) {
-    landsToClaim.push(playerLandsToClaim.slice(i, i + 5));
+  for (
+    let i = 0;
+    i < playerLandsToClaim.length;
+    i += devsettings.claimAllCount
+  ) {
+    landsToClaim.push(
+      playerLandsToClaim.slice(i, i + devsettings.claimAllCount),
+    );
   }
   for (const batch of landsToClaim) {
     const batchAggregatedTaxes = await Promise.all(

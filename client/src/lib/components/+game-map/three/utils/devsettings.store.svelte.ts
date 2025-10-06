@@ -1,5 +1,8 @@
+import { MAX_CLAIM_ALL_COUNT } from '$lib/flags';
+
 export let devsettings = $state({
   frustumPadding: 2,
+  claimAllCount: MAX_CLAIM_ALL_COUNT,
   cameraControlsLeftClick: 2,
   cameraControlsRightClick: 2,
   CameraControlsWheel: 0b100000,
