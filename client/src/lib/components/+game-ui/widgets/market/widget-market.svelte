@@ -2,12 +2,26 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import WidgetAuctions from '../auctions/widget-auctions.svelte';
   import LandExplorer from './land-explorer.svelte';
+  import type { Snippet } from 'svelte';
+
+  let {
+    setCustomControls,
+  }: {
+    setCustomControls: (controls: Snippet<[]> | null) => void;
+  } = $props();
 
   let activeTab = $state<'auctions' | 'owned'>('auctions');
 
   function setActiveTab(tab: 'auctions' | 'owned') {
     activeTab = tab;
   }
+
+  // Clear custom controls when switching away from auctions tab
+  $effect(() => {
+    if (activeTab !== 'auctions') {
+      setCustomControls(null);
+    }
+  });
 </script>
 
 <div class="h-full w-full flex flex-col min-h-0">
@@ -29,7 +43,7 @@
   </div>
 
   {#if activeTab === 'auctions'}
-    <WidgetAuctions />
+    <WidgetAuctions {setCustomControls} />
   {:else if activeTab === 'owned'}
     <LandExplorer />
   {/if}

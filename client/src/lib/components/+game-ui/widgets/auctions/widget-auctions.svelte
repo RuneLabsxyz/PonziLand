@@ -18,8 +18,16 @@
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
-  import { Fullscreen } from 'lucide-svelte';
+  import { Fullscreen, RefreshCw } from 'lucide-svelte';
   import { openLandInfoWidget } from '../../game-ui.svelte';
+  import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
+  import type { Snippet } from 'svelte';
+
+  let {
+    setCustomControls,
+  }: {
+    setCustomControls: (controls: Snippet<[]> | null) => void;
+  } = $props();
 
   const dojo = useDojo();
   const account = () => {
@@ -47,6 +55,7 @@
   let lands = $state<LandWithPrice[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
+  let refreshing = $state(false);
 
   // Function to move camera to land location
   function moveToLand(land: LandWithPrice) {
@@ -68,6 +77,45 @@
     if (cursorStore.selectedTileIndex == locationNumber)
       gameStore.cameraControls?.zoomTo(250, true);
     cursorStore.selectedTileIndex = locationNumber;
+  }
+
+  // Function to refresh auctions data
+  async function refreshAuctions() {
+    if (refreshing) return;
+
+    refreshing = true;
+    try {
+      // Get fresh land data
+      const allLands = landStore.getAllLands();
+      const currentLands = get(allLands);
+
+      if (currentLands) {
+        // Filter and recreate auction lands
+        const filteredLands = currentLands
+          .filter((land): land is BuildingLand => {
+            return AuctionLand.is(land);
+          })
+          .map((land): LandWithPrice => {
+            const landWithActions = createLandWithActions(land, () => allLands);
+            return {
+              ...landWithActions,
+              price: null,
+              priceLoading: false,
+              convertedPrice: null,
+              convertedPriceLoading: false,
+            };
+          });
+
+        lands = filteredLands;
+
+        // Refresh prices for all lands
+        await Promise.all(lands.map((land) => updateLandPrice(land)));
+      }
+    } catch (error) {
+      console.error('Error refreshing auctions:', error);
+    } finally {
+      refreshing = false;
+    }
   }
 
   // Function to fetch and update price for a land
@@ -131,6 +179,8 @@
   }
 
   onMount(async () => {
+    // Set up custom controls for the parent draggable component
+    setCustomControls(refreshControls);
     try {
       if (!dojo.client) {
         console.error('Dojo client is not initialized');
@@ -266,6 +316,23 @@
     </div>
   </ScrollArea>
 </div>
+
+{#snippet refreshControls()}
+  {#if refreshing}
+    <div class="w-6 h-6 flex items-center justify-center">
+      <RotatingCoin />
+    </div>
+  {:else}
+    <button
+      class="window-control"
+      onclick={refreshAuctions}
+      aria-label="Refresh auctions"
+      title="Refresh auction data and prices"
+    >
+      <RefreshCw size={16} />
+    </button>
+  {/if}
+{/snippet}
 
 <style>
   .land-button:nth-child(odd) {

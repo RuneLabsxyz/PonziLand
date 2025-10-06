@@ -44,7 +44,7 @@
         {:else if type === 'entity-update'}
           <WidgetEntityUpdate />
         {:else if type === 'market'}
-          <WidgetMarket />
+          <WidgetMarket {setCustomControls} />
         {:else if type === 'help'}
           <WidgetHelp />
         {:else if type === 'tutorial'}
