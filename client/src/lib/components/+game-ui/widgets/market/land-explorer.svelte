@@ -124,11 +124,7 @@
   async function updateLandConvertedPrice(landWithPrice: LandWithPrice) {
     try {
       // Only convert if land has a sell price and token differs from base token
-      if (
-        landWithPrice.sellPrice &&
-        landWithPrice.token &&
-        landWithPrice.token.address !== baseToken.address
-      ) {
+      if (landWithPrice.sellPrice && landWithPrice.token) {
         landWithPrice.convertedPriceLoading = true;
         try {
           const convertedPrice = walletStore.convertTokenAmount(
@@ -156,8 +152,8 @@
   function sortLands(landsToSort: LandWithPrice[]): LandWithPrice[] {
     return [...landsToSort].sort((a, b) => {
       if (sortBy === 'price') {
-        const priceA = a.sellPrice?.rawValue().toNumber() ?? 0;
-        const priceB = b.sellPrice?.rawValue().toNumber() ?? 0;
+        const priceA = a.convertedPrice?.rawValue().toNumber() ?? 0;
+        const priceB = b.convertedPrice?.rawValue().toNumber() ?? 0;
         return sortAscending ? priceA - priceB : priceB - priceA;
       } else {
         // Sort by level first, then by purchase date
