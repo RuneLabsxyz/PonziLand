@@ -232,6 +232,8 @@ pub mod quests {
 
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
             // get score for the token id
+            let quest_address_felt: felt252 = quest_game.world_address.into();
+            panic!("quest_game.world_address: {}", quest_address_felt);
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
