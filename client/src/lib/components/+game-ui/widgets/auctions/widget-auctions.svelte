@@ -9,16 +9,17 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
-  import { padAddress, parseLocation } from '$lib/utils';
+  import { parseLocation } from '$lib/utils';
   import data from '$profileData';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
+  import { Fullscreen } from 'lucide-svelte';
+  import { openLandInfoWidget } from '../../game-ui.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -46,6 +47,28 @@
   let lands = $state<LandWithPrice[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
+
+  // Function to move camera to land location
+  function moveToLand(land: LandWithPrice) {
+    const coordinates = parseLocation(land.location);
+    const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
+    if (baseLand) {
+      selectedLand.value = get(baseLand);
+    }
+    gameStore.cameraControls?.setLookAt(
+      coordinates[0],
+      50,
+      coordinates[1],
+      coordinates[0],
+      0,
+      coordinates[1],
+      true,
+    );
+    const locationNumber = Number(land.location);
+    if (cursorStore.selectedTileIndex == locationNumber)
+      gameStore.cameraControls?.zoomTo(250, true);
+    cursorStore.selectedTileIndex = locationNumber;
+  }
 
   // Function to fetch and update price for a land
   async function updateLandPrice(landWithPrice: LandWithPrice) {
@@ -182,28 +205,11 @@
   <ScrollArea class="h-full w-full" type="scroll">
     <div class="flex flex-col">
       {#each lands as land}
-        <button
-          class="relative w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button"
-          onclick={() => {
-            const coordinates = parseLocation(land.location);
-            const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
-            if (baseLand) {
-              selectedLand.value = get(baseLand);
-            }
-            gameStore.cameraControls?.setLookAt(
-              coordinates[0],
-              50,
-              coordinates[1],
-              coordinates[0],
-              0,
-              coordinates[1],
-              true,
-            );
-            const locationNumber = Number(land.location);
-            if (cursorStore.selectedTileIndex == locationNumber)
-              gameStore.cameraControls?.zoomTo(250, true);
-            cursorStore.selectedTileIndex = locationNumber;
-          }}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+          class="relative w-full text-left flex gap-4 hover:bg-white/10 p-6 land-button group cursor-pointer"
+          onclick={() => moveToLand(land)}
         >
           {#if land}
             <LandOverview size="xs" {land} />
@@ -243,8 +249,19 @@
               </div>
             {/if}
           </div>
-          <div class="absolute bottom-0 right-0 p-2"></div>
-        </button>
+          <!-- Fullscreen icon button -->
+          <button
+            class="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            onclick={(e) => {
+              e.stopPropagation();
+              moveToLand(land);
+              openLandInfoWidget(land);
+            }}
+            title="Open land details"
+          >
+            <Fullscreen class="w-4 h-4 text-white" />
+          </button>
+        </div>
       {/each}
     </div>
   </ScrollArea>
