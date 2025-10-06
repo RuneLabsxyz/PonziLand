@@ -4,9 +4,15 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
-  import { ChartColumn, RefreshCw, ArrowUpDown, Settings, Minus } from 'lucide-svelte';
+  import {
+    ChartColumn,
+    RefreshCw,
+    ArrowUpDown,
+    Settings,
+    Minus,
+  } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import BaseTokenSelector from './base-token-selector.svelte';
@@ -31,6 +37,10 @@
   let showBaseTokenSelector = $state(false);
   let initialBalanceLoadCompleted = $state(false);
   let isMinimized = $state(false);
+  let walletHeight = $state(320); // Default height in pixels (equivalent to h-80)
+  let isResizing = $state(false);
+  let resizeStartY = $state(0);
+  let resizeStartHeight = $state(0);
 
   onMount(() => {
     // Set up custom controls for the parent draggable component
@@ -66,6 +76,14 @@
     }
   };
 
+  onDestroy(() => {
+    // Clean up resize event listeners if component is destroyed during resize
+    if (isResizing) {
+      document.removeEventListener('mousemove', handleResize);
+      document.removeEventListener('mouseup', handleResizeEnd);
+    }
+  });
+
   const handleRefreshBalances = async () => {
     if (!address) return;
 
@@ -83,6 +101,28 @@
 
   const handleMinimize = () => {
     isMinimized = !isMinimized;
+  };
+
+  const handleResizeStart = (e: MouseEvent) => {
+    isResizing = true;
+    resizeStartY = e.clientY;
+    resizeStartHeight = walletHeight;
+    document.addEventListener('mousemove', handleResize);
+    document.addEventListener('mouseup', handleResizeEnd);
+    e.preventDefault();
+  };
+
+  const handleResize = (e: MouseEvent) => {
+    if (!isResizing) return;
+    const deltaY = e.clientY - resizeStartY;
+    const newHeight = Math.max(100, Math.min(800, resizeStartHeight + deltaY)); // Min 100px, Max 800px
+    walletHeight = newHeight;
+  };
+
+  const handleResizeEnd = () => {
+    isResizing = false;
+    document.removeEventListener('mousemove', handleResize);
+    document.removeEventListener('mouseup', handleResizeEnd);
   };
 
   const totalBalance = $derived(walletStore.totalBalance);
@@ -172,9 +212,9 @@
       {errorMessage}
     </div>
   {/if}
-  <div class="flex flex-col gap-2 mb-4">
+  <div class="flex flex-col gap-2 mb-4 relative">
     <ScrollArea>
-      <div class="h-80">
+      <div style="height: {walletHeight}px;">
         {#each sortedTokenBalances as [token, balance]}
           <div
             class="flex justify-between items-center relative gap-2 px-4 select-text"
@@ -185,6 +225,23 @@
         {/each}
       </div>
     </ScrollArea>
+
+    <!-- Resize handle -->
+    <div
+      role="slider"
+      tabindex="0"
+      aria-valuenow={walletHeight}
+      aria-valuemin={100}
+      aria-valuemax={800}
+      class="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize bg-transparent hover:bg-gray-600/20 transition-colors flex items-center justify-center group"
+      onmousedown={handleResizeStart}
+      title="Drag to resize wallet height"
+      aria-label="Resize wallet height"
+    >
+      <div
+        class="w-8 h-0.5 bg-gray-500 group-hover:bg-gray-400 transition-colors"
+      ></div>
+    </div>
   </div>
 {/if}
 
