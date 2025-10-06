@@ -4,6 +4,7 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { hexStringToNumber, locationIntToString } from '$lib/utils';
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
+  import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
 
   // Function to open buy land widget
@@ -38,6 +39,8 @@
   class="z-40 absolute top-0 left-0 right-0 bottom-0"
   style="pointer-events: none;"
 >
+  <OverlayManager />
+
   <WidgetLauncher />
   <WidgetProvider />
 
