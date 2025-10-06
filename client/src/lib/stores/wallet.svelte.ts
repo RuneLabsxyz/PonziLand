@@ -128,7 +128,10 @@ export class WalletStore {
 
       this.subscription = subscription;
 
-      this.tokenPrices = await getTokenPrices();
+      // Only fetch prices if not already loaded
+      if (this.tokenPrices.length === 0) {
+        this.tokenPrices = await getTokenPrices();
+      }
 
       for (const item of tokenBalances.items) {
         this.updateTokenBalance(item);
@@ -187,7 +190,10 @@ export class WalletStore {
       this.balances.set(token.address, amount);
     }
 
-    this.tokenPrices = await getTokenPrices();
+    // Only fetch prices if not already loaded
+    if (this.tokenPrices.length === 0) {
+      this.tokenPrices = await getTokenPrices();
+    }
     this.updateConversionCache();
     await this.calculateTotalBalance();
   }
@@ -325,6 +331,15 @@ export class WalletStore {
 
   public getToken(tokenAddress: string): Token | null {
     return data.availableTokens.find((t) => t.address === tokenAddress) ?? null;
+  }
+
+  public setTokenPrices(prices: TokenPrice[]): void {
+    this.tokenPrices = prices;
+    // Update conversion cache and recalculate total balance if we have balances
+    if (this.balances.size > 0) {
+      this.updateConversionCache();
+      this.calculateTotalBalance();
+    }
   }
 
   private updateTokenBalance(item: TokenBalance) {
