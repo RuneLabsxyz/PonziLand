@@ -1,5 +1,15 @@
 <script lang="ts">
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte.js';
+  import * as ToggleGroup from '$lib/components/ui/toggle-group';
+
+  type MultipleValues = ('nuke' | 'rates')[];
+
+  let multiple: MultipleValues = $state([]);
+
+  $effect(() => {
+    devsettings.showNukeTimes = multiple.includes('nuke');
+    devsettings.showLandOverlay = multiple.includes('rates');
+  });
 </script>
 
 <div
@@ -7,12 +17,19 @@
   style="pointer-events: all;"
 >
   <div class="flex gap-2">
-    <button
-      class="px-3 py-1 text-sm bg-gray-800 text-white rounded hover:bg-gray-700 transition-colors"
-      onclick={() => (devsettings.showNukeTimes = !devsettings.showNukeTimes)}
+    <ToggleGroup.Root type="single" variant="outline">
+      <ToggleGroup.Item value="a">A</ToggleGroup.Item>
+      <ToggleGroup.Item value="b">B</ToggleGroup.Item>
+      <ToggleGroup.Item value="c">C</ToggleGroup.Item>
+    </ToggleGroup.Root>
+    <ToggleGroup.Root
+      type="multiple"
+      variant="outline"
+      value={multiple}
+      onValueChange={(e) => (multiple = e as MultipleValues)}
     >
-      Nuke Times: {devsettings.showNukeTimes ? 'ON' : 'OFF'}
-    </button>
-    <div>toggle-two</div>
+      <ToggleGroup.Item value="nuke">Nuke Times</ToggleGroup.Item>
+      <ToggleGroup.Item value="rates">Rates</ToggleGroup.Item>
+    </ToggleGroup.Root>
   </div>
 </div>
