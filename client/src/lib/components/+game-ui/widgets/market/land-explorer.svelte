@@ -10,6 +10,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
+  import type { Token } from '$lib/interfaces';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import {
@@ -32,7 +33,7 @@
   let lands = $state<LandWithActions[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
-  let selectedTokenAddress = $state<string>('');
+  let selectedToken = $state<Token | undefined>();
   let sortBy = $state<'price' | 'level'>('price');
   let searchQuery = $state('');
 
@@ -65,9 +66,9 @@
     let filtered = lands;
 
     // Token filter
-    if (selectedTokenAddress) {
+    if (selectedToken) {
       filtered = filtered.filter(
-        (land) => land.token?.address === selectedTokenAddress,
+        (land) => land.token?.address === selectedToken.address,
       );
     }
 
@@ -93,7 +94,7 @@
 
   // Update highlighted lands when filters change
   $effect(() => {
-    if (selectedTokenAddress || searchQuery) {
+    if (selectedToken || searchQuery) {
       highlightedLands.value = filteredLands.map((land) => land.location);
     } else {
       highlightedLands.value = [];
@@ -176,12 +177,12 @@
   <div class="flex flex-col gap-2 py-2 border-white/10 min-h-0">
     <div class="flex items-center gap-2">
       <div class="w-48">
-        <TokenSelect bind:value={selectedTokenAddress} />
+        <TokenSelect bind:value={selectedToken} />
       </div>
-      {#if selectedTokenAddress}
+      {#if selectedToken}
         <button
           class="text-sm font-medium text-gray-400 hover:text-white"
-          onclick={() => (selectedTokenAddress = '')}
+          onclick={() => (selectedToken = undefined)}
         >
           reset
         </button>
