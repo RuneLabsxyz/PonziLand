@@ -7,7 +7,7 @@ import {
   type HeatmapParameterConfig,
   type ColorSchemeConfig,
 } from './heatmap.config';
-import { baseToken } from '$lib/stores/wallet.svelte';
+import { getBaseToken } from '$lib/stores/wallet.svelte';
 
 export interface HeatmapCalculationResult {
   colors: Map<LandTile, number>; // Map from tile to color (as hex number)
@@ -155,6 +155,7 @@ export class HeatmapCalculator {
    */
   static formatValue(value: number, parameter: HeatmapParameter): string {
     const config = HEATMAP_PARAMETERS[parameter];
+    const currentBaseToken = getBaseToken();
 
     // Handle special formatting based on parameter type
     switch (parameter) {
@@ -164,8 +165,8 @@ export class HeatmapCalculator {
       case HeatmapParameter.AUCTION_FLOOR_PRICE:
         // Format large numbers with K/M suffixes and include base token symbol
         const formattedAmount = this.formatTokenAmount(value);
-        return baseToken
-          ? `${formattedAmount} ${baseToken.symbol}`
+        return currentBaseToken
+          ? `${formattedAmount} ${currentBaseToken.symbol}`
           : formattedAmount;
 
       case HeatmapParameter.LAND_AGE:
