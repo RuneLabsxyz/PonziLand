@@ -16,6 +16,7 @@ uniform int numOwnedLands;
 uniform float darkenFactor;
 uniform bool darkenOnlyWhenUnzoomed;
 uniform bool isUnzoomed;
+uniform float tintOpacity;
 
 varying float vHover;
 varying vec3 vOutlineColor;
@@ -411,9 +412,9 @@ void main() {
         }
 
         // Apply instance-based tinting if enabled
-        if(vTintState > 0.5) {
-            // Mix the tint color with the original sprite color
-            finalColor = mix(finalColor, vTintColor, 0.6);
+        if(vTintState > 0.5 && tintOpacity > 0.0) {
+            // Mix the tint color with the original sprite color using opacity control
+            finalColor = mix(finalColor, vTintColor, tintOpacity);
         }
 
         // Apply tint if needed

@@ -48,6 +48,7 @@ export interface OutlineControls {
     color: THREE.Color,
   ) => void;
   clearTints: (instancedMesh: THREE.InstancedMesh) => void;
+  setTintOpacity: (opacity: number) => void;
 }
 
 /**
@@ -74,6 +75,9 @@ export function setupOutlineShader(
   mat.uniforms.darkenFactor = { value: 0.4 };
   mat.uniforms.darkenOnlyWhenUnzoomed = { value: true };
   mat.uniforms.isUnzoomed = { value: false };
+
+  // Add tint opacity uniform for heatmap
+  mat.uniforms.tintOpacity = { value: 1.0 };
 
   // Helper function to create buffer attributes
   const createBufferAttributes = (instancedMesh: THREE.InstancedMesh) => {
@@ -443,6 +447,12 @@ export function setupOutlineShader(
       tintStateAttribute.needsUpdate = true;
       tintColorAttribute.needsUpdate = true;
       console.log(`Cleared all tints`);
+    },
+
+    setTintOpacity: (opacity: number) => {
+      if (mat.uniforms && mat.uniforms.tintOpacity) {
+        mat.uniforms.tintOpacity.value = Math.max(0, Math.min(1, opacity));
+      }
     },
   };
 }
