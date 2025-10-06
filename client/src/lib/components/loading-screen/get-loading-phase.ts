@@ -16,7 +16,6 @@ export function getCurrentLoadingPhase(phases: GameLoadingPhases): string {
       return 'Finalizing graphics...';
     }
     return `Loading WebGL (${phases.webgl.loaded}/${phases.webgl.total})...`;
-  }
   } else if (phases.spritesheets.loaded < phases.spritesheets.total) {
     return `Loading assets (${phases.spritesheets.loaded}/${phases.spritesheets.total})...`;
   } else if (phases.client.loaded < phases.client.total) {
