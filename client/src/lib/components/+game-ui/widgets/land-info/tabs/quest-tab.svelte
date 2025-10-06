@@ -44,8 +44,8 @@
   
   // Check if game is active and what type 🐙 tentacles checking game state
   let is_active = $derived(game_token_id !== 0);
-  let isOneOnOne = $derived(currentQuestGame?.quest_type?.activeVariant === 'OneOnOne');
-  let isHighScore = $derived(currentQuestGame?.quest_type?.activeVariant === 'Minigame');
+  let isOneOnOne = $derived(currentQuestGame?.quest_type === 'OneOnOne');
+  let isHighScore = $derived(currentQuestGame?.quest_type === 'Minigame');
 
   // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
   async function handleGameActionClick() {
@@ -198,11 +198,6 @@
       
       // Find the current quest game
       currentQuestGame = questGames.find((g: QuestGame) => g.id.toString() === questDetails.game_id.toString()) || null;
-      console.log('currentQuestGame', currentQuestGame);
-      let type = currentQuestGame?.quest_type;
-      console.log('type', type);
-      console.log('isOneOnOne', type === 'OneOnOne');
-      console.log('isHighScore', type === 'Minigame');
 
       let player_quest_res = await getPlayerQuestAtLocation(account.address, land.location);
       console.log('player quest', player_quest_res);
