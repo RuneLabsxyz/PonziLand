@@ -1,11 +1,13 @@
 import type { PageLoad } from './$types';
 
-const load: PageLoad = async ({ url }) => {
-  // Access the query parameter
-  const isAdmin = url.searchParams.get('admin') === 'true';
+export const ssr = false;
+export const prerender = false;
 
-  // Return data to the page
+export const load: PageLoad = async ({ url }) => {
+  // Extract tutorial mode from URL search params
+  const isTutorialMode = url.searchParams.has('tutorial');
+
   return {
-    isAdmin,
+    isTutorialMode,
   };
 };
