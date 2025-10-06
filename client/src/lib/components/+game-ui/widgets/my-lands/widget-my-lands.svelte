@@ -12,7 +12,6 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress, parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
-  import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
@@ -100,8 +99,53 @@
       });
   }
 
+  // Reactive lands state that updates automatically on ownership changes
   let lands = $state<LandWithActions[]>([]);
-  let unsubscribe: (() => void) | null = $state(null);
+
+  // Effect to reactively update lands when ownership or land data changes
+  $effect(() => {
+    const currentAccount = account()?.getWalletAccount();
+    if (!currentAccount || !dojo.client) {
+      lands = [];
+      return;
+    }
+
+    const userAddress = padAddress(currentAccount.address);
+    const ownedIndicesStore = landStore.getOwnedLandIndicesStore(userAddress);
+    const allLandsStore = landStore.getAllLands();
+
+    // Subscribe to ownership index changes
+    const unsubscribeOwnership = ownedIndicesStore.subscribe((ownedIndices) => {
+      // Get current lands data
+      const currentAllLands = get(allLandsStore);
+      
+      const newLands = ownedIndices
+        .map((index: number) => currentAllLands[index])
+        .filter((land): land is BuildingLand => BuildingLand.is(land))
+        .map((land: BuildingLand) => createLandWithActions(land, () => landStore.getAllLands()));
+      
+      lands = newLands;
+    });
+
+    // Subscribe to all lands changes (in case land properties change)
+    const unsubscribeAllLands = allLandsStore.subscribe((allLands) => {
+      // Get current ownership indices
+      const currentOwnedIndices = get(ownedIndicesStore);
+      
+      const newLands = currentOwnedIndices
+        .map((index: number) => allLands[index])
+        .filter((land): land is BuildingLand => BuildingLand.is(land))
+        .map((land: BuildingLand) => createLandWithActions(land, () => landStore.getAllLands()));
+      
+      lands = newLands;
+    });
+
+    // Cleanup function
+    return () => {
+      unsubscribeOwnership();
+      unsubscribeAllLands();
+    };
+  });
 
   // Filter and grouping state
   let selectedToken = $state<string>('all');
@@ -110,29 +154,8 @@
   let sortBy = $state<'location' | 'level' | 'date' | 'price'>('price');
   let sortOrder = $state<'asc' | 'desc'>('asc');
 
-  // Derived states for filtering and grouping
-  let availableTokens = $derived.by(() => {
-    const tokens = new Set<string>();
-    lands.forEach((land) => {
-      if (land.token_used) {
-        tokens.add(land.token_used);
-      }
-    });
-    return Array.from(tokens).sort();
-  });
-
-  let availableLevels = $derived.by(() => {
-    const levels = new Set<string>();
-    lands.forEach((land) => {
-      if (land.level) {
-        levels.add(land.level.toString());
-      }
-    });
-    return Array.from(levels).sort();
-  });
-
   let filteredLands = $derived.by(() => {
-    let filtered = lands.filter((land) => {
+    let filtered = lands.filter((land: LandWithActions) => {
       // Token filter
       if (selectedToken !== 'all' && land.token_used !== selectedToken) {
         return false;
@@ -147,7 +170,7 @@
     });
 
     // Sort lands
-    filtered.sort((a, b) => {
+    filtered.sort((a: LandWithActions, b: LandWithActions) => {
       let comparison = 0;
 
       switch (sortBy) {
@@ -181,7 +204,7 @@
 
     const groups: { [key: string]: LandWithActions[] } = {};
 
-    filteredLands.forEach((land) => {
+    filteredLands.forEach((land: LandWithActions) => {
       const token = land.token_used || 'No Token';
       if (!groups[token]) {
         groups[token] = [];
@@ -214,54 +237,13 @@
     cursorStore.selectedTileIndex = transposedLocation;
   }
 
-  onMount(async () => {
-    try {
-      if (!dojo.client) {
-        console.error('Dojo client is not initialized');
-        return;
-      }
-
-      const currentAccount = account()?.getWalletAccount();
-      if (!currentAccount) {
-        console.error('No wallet account available');
-        return;
-      }
-
-      const userAddress = padAddress(currentAccount.address);
-
-      const allLands = landStore.getAllLands();
-
-      unsubscribe = allLands.subscribe((landsData) => {
-        if (!landsData) {
-          console.log('No lands data received');
-          return;
-        }
-
-        const filteredLands = landsData
-          .filter((land): land is BuildingLand => {
-            if (BuildingLand.is(land)) {
-              const landOwner = padAddress(land.owner);
-              return landOwner === userAddress;
-            }
-            return false;
-          })
-          .map((land) => createLandWithActions(land, () => allLands));
-
-        lands = filteredLands;
+  // Cleanup timers when component is destroyed
+  $effect(() => {
+    return () => {
+      Object.values(timerIntervals).forEach((interval) => {
+        clearInterval(interval);
       });
-    } catch (error) {
-      console.error('Error in my-lands-widget setup:', error);
-    }
-  });
-
-  onDestroy(() => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
-    // Clean up any remaining timers
-    Object.values(timerIntervals).forEach((interval) => {
-      clearInterval(interval);
-    });
+    };
   });
 </script>
 
@@ -334,7 +316,7 @@
           {/if}
         </Button>
       {/if}
-      {#each Object.entries(groupedLands) as [groupName, groupLands]}
+      {#each Object.entries(groupedLands) as [, groupLands]}
         {#if groupByToken && Object.keys(groupedLands).length >= 1}
           {@const token = groupLands.at(0)?.token}
           {@const tokenKey = token?.symbol || token?.name || 'unknown'}
