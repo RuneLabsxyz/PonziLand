@@ -11,6 +11,7 @@
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
+  import { useDojo } from '$lib/contexts/dojo';
   import type { TabType, Token } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
@@ -151,6 +152,7 @@
   let loading = $state(false);
 
   let accountManager = useAccount();
+  const { accountManager: dojoAccountManager } = useDojo();
 
   // Error handling for inputs
   let tokenError = $derived.by(() => {
@@ -402,119 +404,141 @@
 
 {#if isActive}
   <div class="w-full h-full">
-    <!-- Buy tab content will go here -->
-    <Label class="font-ponzi-number" for="token">Token</Label>
-    <p class="-mt-1 mb-1 opacity-75 leading-none">
-      Determines the land you are going to build. You stake this token and will
-      receive this token when bought
-    </p>
-    <TokenSelect
-      bind:value={tokenValue}
-      variant="swap"
-      class={tutorialState.tutorialProgress == 6
-        ? 'border border-yellow-500 animate-pulse'
-        : ''}
-    />
-    {#if tokenError}
-      <p class="text-red-500 text-sm mt-1">{tokenError}</p>
-    {/if}
-
-    <div class="flex gap-2 items-center my-4">
-      <div class="flex-1">
-        <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
-        <p class="-mt-1 mb-1 leading-none opacity-75">
-          Locked value that will be used to pay taxes and make your land survive
-        </p>
-        <Input
-          id="stake"
-          type="number"
-          bind:value={stake}
-          class="{stakeAmountError
-            ? 'border-red-500'
-            : ''} {tutorialState.tutorialProgress == 6
-            ? 'border border-yellow-500 animate-pulse'
-            : ''}"
-        />
-        {#if stakeAmountInBaseCurrency}
-          <p class="text-xs text-gray-500 mt-1">
-            ≈ {stakeAmountInBaseCurrency.toString()}
-            {baseToken.symbol}
+    {#if !account.isConnected}
+      <!-- Wallet connection prompt -->
+      <div class="flex flex-col items-center justify-center h-full gap-4">
+        <div class="text-center">
+          <h3 class="text-lg font-semibold mb-2">Connect Wallet Required</h3>
+          <p class="text-sm opacity-75 mb-4">
+            You need to connect your wallet to buy land and participate in the
+            game.
           </p>
-        {/if}
-        {#if stakeAmountError}
-          <p class="text-red-500 text-sm mt-1">{stakeAmountError}</p>
-        {/if}
+        </div>
+        <Button
+          class="w-full"
+          onclick={async () => {
+            await dojoAccountManager?.promptForLogin();
+          }}
+        >
+          CONNECT WALLET
+        </Button>
       </div>
-      <div class="flex-1">
-        <Label class="font-ponzi-number" for="sell">Sell Price</Label>
-        <p class="-mt-1 mb-1 opacity-75 leading-none">
-          What is paid to you when your land is bought out by another player
-        </p>
-        <Input
-          id="sell"
-          type="number"
-          bind:value={sellPrice}
-          class="{sellPriceError
-            ? 'border-red-500'
-            : ''} {tutorialState.tutorialProgress == 6
-            ? 'border border-yellow-500 animate-pulse'
-            : ''}"
-        />
-        {#if sellPriceInBaseCurrency}
-          <p class="text-xs text-gray-500 mt-1">
-            ≈ {sellPriceInBaseCurrency.toString()}
-            {baseToken.symbol}
-          </p>
-        {/if}
-        {#if sellPriceError}
-          <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
-        {/if}
-      </div>
-    </div>
-
-    <div
-      class="w-full {tutorialState.tutorialProgress == 7
-        ? 'border border-yellow-500 animate-pulse'
-        : ''}"
-    >
-      <TaxImpact
-        sellAmountVal={sellPrice}
-        stakeAmountVal={stake}
-        {selectedToken}
-        {land}
-        {auctionPrice}
-      />
-    </div>
-
-    {#if balanceError}
-      <p class="text-red-500 text-sm mt-1">{balanceError}</p>
-    {/if}
-
-    {#if loading}
-      <Button class="mt-3 w-full" disabled>
-        buying <ThreeDots />
-      </Button>
     {:else}
-      <Button
-        onclick={handleBuyClick}
-        class="mt-3 w-full"
-        disabled={!isFormValid || isOwner || loading}
-      >
-        BUY FOR <span class="text-yellow-500">
-          &nbsp;
-          {#if land.type == 'auction'}
-            {#await land?.getCurrentAuctionPrice(false)}
-              fetching...
-            {:then price}
-              {price}
-            {/await}
-          {:else}
-            {land.sellPrice}
+      <!-- Buy tab content will go here -->
+      <Label class="font-ponzi-number" for="token">Token</Label>
+      <p class="-mt-1 mb-1 opacity-75 leading-none">
+        Determines the land you are going to build. You stake this token and
+        will receive this token when bought
+      </p>
+      <TokenSelect
+        bind:value={tokenValue}
+        variant="swap"
+        class={tutorialState.tutorialProgress == 6
+          ? 'border border-yellow-500 animate-pulse'
+          : ''}
+      />
+      {#if tokenError}
+        <p class="text-red-500 text-sm mt-1">{tokenError}</p>
+      {/if}
+
+      <div class="flex gap-2 items-center my-4">
+        <div class="flex-1">
+          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
+          <p class="-mt-1 mb-1 leading-none opacity-75">
+            Locked value that will be used to pay taxes and make your land
+            survive
+          </p>
+          <Input
+            id="stake"
+            type="number"
+            bind:value={stake}
+            class="{stakeAmountError
+              ? 'border-red-500'
+              : ''} {tutorialState.tutorialProgress == 6
+              ? 'border border-yellow-500 animate-pulse'
+              : ''}"
+          />
+          {#if stakeAmountInBaseCurrency}
+            <p class="text-xs text-gray-500 mt-1">
+              ≈ {stakeAmountInBaseCurrency.toString()}
+              {baseToken.symbol}
+            </p>
           {/if}
-          &nbsp;
-        </span>
-        {land.token?.symbol}
-      </Button>
+          {#if stakeAmountError}
+            <p class="text-red-500 text-sm mt-1">{stakeAmountError}</p>
+          {/if}
+        </div>
+        <div class="flex-1">
+          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
+          <p class="-mt-1 mb-1 opacity-75 leading-none">
+            What is paid to you when your land is bought out by another player
+          </p>
+          <Input
+            id="sell"
+            type="number"
+            bind:value={sellPrice}
+            class="{sellPriceError
+              ? 'border-red-500'
+              : ''} {tutorialState.tutorialProgress == 6
+              ? 'border border-yellow-500 animate-pulse'
+              : ''}"
+          />
+          {#if sellPriceInBaseCurrency}
+            <p class="text-xs text-gray-500 mt-1">
+              ≈ {sellPriceInBaseCurrency.toString()}
+              {baseToken.symbol}
+            </p>
+          {/if}
+          {#if sellPriceError}
+            <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
+          {/if}
+        </div>
+      </div>
+
+      <div
+        class="w-full {tutorialState.tutorialProgress == 7
+          ? 'border border-yellow-500 animate-pulse'
+          : ''}"
+      >
+        <TaxImpact
+          sellAmountVal={sellPrice}
+          stakeAmountVal={stake}
+          {selectedToken}
+          {land}
+          {auctionPrice}
+        />
+      </div>
+
+      {#if balanceError}
+        <p class="text-red-500 text-sm mt-1">{balanceError}</p>
+      {/if}
+
+      {#if loading}
+        <Button class="mt-3 w-full" disabled>
+          buying <ThreeDots />
+        </Button>
+      {:else}
+        <Button
+          onclick={handleBuyClick}
+          class="mt-3 w-full"
+          disabled={!isFormValid || isOwner || loading}
+        >
+          BUY FOR <span class="text-yellow-500">
+            &nbsp;
+            {#if land.type == 'auction'}
+              {#await land?.getCurrentAuctionPrice(false)}
+                fetching...
+              {:then price}
+                {price}
+              {/await}
+            {:else}
+              {land.sellPrice}
+            {/if}
+            &nbsp;
+          </span>
+          {land.token?.symbol}
+        </Button>
+      {/if}
     {/if}
   </div>
 {/if}
