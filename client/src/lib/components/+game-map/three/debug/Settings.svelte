@@ -121,6 +121,15 @@
       step={100}
     />
   </Folder>
+  <Folder title="Claim">
+    <Slider
+      bind:value={devsettings.claimAllCount}
+      label="Claim All land count"
+      min={1}
+      max={10}
+      step={1}
+    />
+  </Folder>
   <Folder title="Layers">
     <Checkbox bind:value={devsettings.showRoads} label="Roads" />
     <Checkbox bind:value={devsettings.showBiomes} label="Biomes" />
