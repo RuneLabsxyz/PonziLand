@@ -199,7 +199,7 @@
       // Find the current quest game
       currentQuestGame = questGames.find((g: QuestGame) => g.id.toString() === questDetails.game_id.toString()) || null;
       console.log('currentQuestGame', currentQuestGame);
-      let type = currentQuestGame?.quest_type?.activeVariant();
+      let type = currentQuestGame?.quest_type;
       console.log('type', type);
       console.log('isOneOnOne', type === 'OneOnOne');
       console.log('isHighScore', type === 'Minigame');
