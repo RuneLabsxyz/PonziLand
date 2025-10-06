@@ -96,6 +96,7 @@ export class AuctionLand extends BaseLand {
     this._owner = toHexWithPadding(0);
     this._level = fromDojoLevel(land.level);
 
+    this._token_used = land.token_used;
     this._token = getTokenInfo(land.token_used)!;
     this._sellPrice = CurrencyAmount.fromUnscaled(land.sell_price, this._token);
 

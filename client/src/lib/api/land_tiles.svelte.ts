@@ -702,7 +702,15 @@ export class LandTileStore {
       if (landModel !== undefined) {
         if (AuctionLand.is(newLand) && Number(landModel.owner) == 0) {
           // Do not change the land, this is an empty update.
-          return { value: previousLand };
+          const currentAuction = {
+            start_price: newLand.startPrice.toBignumberish(),
+            floor_price: newLand.floorPrice.toBignumberish(),
+            is_finished: newLand.isFinished,
+            land_location: newLand.locationString,
+            start_time: newLand.startTime.getSeconds(),
+          } as Auction;
+          newLand.update(landModel as Land, currentAuction);
+          return { value: newLand };
         } else {
           // Create new BuildingLand
           newLand = new BuildingLand(landModel as Land);
