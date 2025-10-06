@@ -1,6 +1,8 @@
 <script lang="ts">
   import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte.js';
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
+  import { HeatmapParameter } from '$lib/components/+game-ui/widgets/heatmap/heatmap.config';
+  import { heatmapStore } from '$lib/stores/heatmap.svelte';
 
   type MultipleValues = ('nuke' | 'rates')[];
 
@@ -10,6 +12,22 @@
     devsettings.showNukeTimes = multiple.includes('nuke');
     devsettings.showLandOverlay = multiple.includes('rates');
   });
+
+  type HeatmapState =
+    | HeatmapParameter.SELL_PRICE
+    | HeatmapParameter.STAKE_AMOUNT
+    | HeatmapParameter.LEVEL
+    | undefined;
+  let heatmapState = $state<HeatmapState>();
+
+  $effect(() => {
+    if (heatmapState) {
+      heatmapStore.setEnabled(true);
+      heatmapStore.setParameter(heatmapState);
+    } else {
+      heatmapStore.setEnabled(false);
+    }
+  });
 </script>
 
 <div
@@ -17,10 +35,21 @@
   style="pointer-events: all;"
 >
   <div class="flex gap-2">
-    <ToggleGroup.Root type="single" variant="outline">
-      <ToggleGroup.Item value="a">A</ToggleGroup.Item>
-      <ToggleGroup.Item value="b">B</ToggleGroup.Item>
-      <ToggleGroup.Item value="c">C</ToggleGroup.Item>
+    <ToggleGroup.Root
+      type="single"
+      variant="outline"
+      value={heatmapState}
+      onValueChange={(e) => (heatmapState = e as HeatmapState)}
+    >
+      <ToggleGroup.Item value={HeatmapParameter.SELL_PRICE}
+        >Sell Price</ToggleGroup.Item
+      >
+      <ToggleGroup.Item value={HeatmapParameter.STAKE_AMOUNT}
+        >Stake Amount</ToggleGroup.Item
+      >
+      <ToggleGroup.Item value={HeatmapParameter.LEVEL}
+        >Land Level</ToggleGroup.Item
+      >
     </ToggleGroup.Root>
     <ToggleGroup.Root
       type="multiple"
