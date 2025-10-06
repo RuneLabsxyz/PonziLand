@@ -16,11 +16,15 @@
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
 
   const dojo = useDojo();
   const getDojoAccount = () => {
     return dojo.accountManager?.getProvider();
   };
+
+  let accountManager = useAccount();
+  const { accountManager: dojoAccountManager } = useDojo();
 
   // Claiming state management
   let claimingAll = $state(false);
@@ -271,53 +275,58 @@
 </script>
 
 <div class="h-full w-full flex flex-col pb-4">
-  <!-- Filters and Controls -->
-  <div class="flex py-2 border-b border-gray-700 items-center justify-between">
-    <div class="flex items-center gap-2">
-      <input
-        type="checkbox"
-        bind:checked={groupByToken}
-        id="groupByToken"
-        class="rounded"
-      />
-      <label for="groupByToken" class="text-sm font-medium text-gray-300">
-        Group by Token
-      </label>
-    </div>
+  <!-- Filters and Controls - only show when user is connected -->
+  {#if account.isConnected}
+    <div
+      class="flex py-2 border-b border-gray-700 items-center justify-between"
+    >
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          bind:checked={groupByToken}
+          id="groupByToken"
+          class="rounded"
+        />
+        <label for="groupByToken" class="text-sm font-medium text-gray-300">
+          Group by Token
+        </label>
+      </div>
 
-    <div class="flex gap-2">
-      <div class="text-gray-200">total lands ( {lands.length} )</div>
-      <button
-        onclick={() => {
-          if (sortBy === 'price') {
-            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-          }
+      <div class="flex gap-2">
+        <div class="text-gray-200">total lands ( {lands.length} )</div>
+        <button
+          onclick={() => {
+            if (sortBy === 'price') {
+              sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
 
-          sortBy = 'price';
-        }}
-        class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
-        'price'
-          ? 'bg-blue-500 text-white'
-          : 'text-blue-500'}"
-      >
-        Price {sortBy == 'price' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
-      </button>
-      <button
-        onclick={() => {
-          if (sortBy === 'date') {
-            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-          }
-          sortBy = 'date';
-        }}
-        class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
-        'date'
-          ? 'bg-blue-500 text-white'
-          : 'text-blue-500'}"
-      >
-        Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
-      </button>
+            sortBy = 'price';
+          }}
+          class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+          'price'
+            ? 'bg-blue-500 text-white'
+            : 'text-blue-500'}"
+        >
+          Price {sortBy == 'price' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+        </button>
+        <button
+          onclick={() => {
+            if (sortBy === 'date') {
+              sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+            sortBy = 'date';
+          }}
+          class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+          'date'
+            ? 'bg-blue-500 text-white'
+            : 'text-blue-500'}"
+        >
+          Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+        </button>
+      </div>
     </div>
-  </div>
+  {/if}
+
   <!-- Lands List -->
   <ScrollArea type="scroll">
     <div class="flex flex-col">
@@ -382,24 +391,54 @@
         {/each}
       {/each}
       {#if lands.length === 0}
-        <div class="text-center text-gray-400">You don't own any lands yet</div>
-        <button
-          class="text-yellow-500 hover:opacity-90 hover:cursor-pointer"
-          onclick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            widgetsStore.addWidget({
-              id: 'market',
-              type: 'market',
-              position: { x: 40, y: 30 },
-              dimensions: { width: 450, height: 600 },
-              isMinimized: false,
-              isOpen: true,
-            });
-          }}
-        >
-          See ongoing auctions
-        </button>
+        {#if !account.isConnected}
+          <!-- Wallet connection prompt -->
+          <div
+            class="flex flex-col items-center justify-center h-full gap-4 p-8"
+          >
+            <div class="text-center">
+              <h3 class="text-lg font-semibold mb-2">
+                Connect Wallet Required
+              </h3>
+              <p class="text-sm opacity-75 mb-4">
+                You need to connect your wallet to view your lands and
+                participate in the game.
+              </p>
+            </div>
+            <Button
+              class="w-full"
+              onclick={async () => {
+                await dojoAccountManager?.promptForLogin();
+              }}
+            >
+              CONNECT WALLET
+            </Button>
+          </div>
+        {:else}
+          <!-- User is connected but has no lands -->
+          <div class="flex flex-col items-center justify-center gap-4 p-8">
+            <div class="text-center text-gray-400">
+              You don't own any lands yet
+            </div>
+            <button
+              class="text-yellow-500 hover:opacity-90 hover:cursor-pointer"
+              onclick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                widgetsStore.addWidget({
+                  id: 'market',
+                  type: 'market',
+                  position: { x: 40, y: 30 },
+                  dimensions: { width: 450, height: 600 },
+                  isMinimized: false,
+                  isOpen: true,
+                });
+              }}
+            >
+              See ongoing auctions
+            </button>
+          </div>
+        {/if}
       {/if}
       {#if filteredLands.length === 0}
         <div class="p-8 text-center text-gray-400">
