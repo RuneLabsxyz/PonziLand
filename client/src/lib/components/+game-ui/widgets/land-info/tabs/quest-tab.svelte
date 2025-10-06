@@ -168,7 +168,7 @@
   async function handleClaimQuestClick() {
     loading = true;
     console.log('Claiming quest');
-    let result = await ClaimQuest(land.quest_id);
+    let result = await ClaimQuest(land.location);
     console.log(result);
     if (result?.transaction_hash) {
       console.log('Claiming quest with TX: ', result.transaction_hash);
