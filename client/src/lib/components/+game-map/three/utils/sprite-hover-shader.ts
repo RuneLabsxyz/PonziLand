@@ -42,6 +42,12 @@ export interface OutlineControls {
     instanceIndices: number[],
   ) => void;
   setZoomState: (isUnzoomed: boolean) => void;
+  setTints: (
+    instancedMesh: THREE.InstancedMesh,
+    instanceIndices: number[],
+    color: THREE.Color,
+  ) => void;
+  clearTints: (instancedMesh: THREE.InstancedMesh) => void;
 }
 
 /**
@@ -97,6 +103,20 @@ export function setupOutlineShader(
     if (!instancedMesh.geometry.attributes.outlineColor) {
       instancedMesh.geometry.setAttribute(
         'outlineColor',
+        new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3),
+      );
+    }
+
+    if (!instancedMesh.geometry.attributes.tintState) {
+      instancedMesh.geometry.setAttribute(
+        'tintState',
+        new THREE.InstancedBufferAttribute(new Float32Array(count), 1),
+      );
+    }
+
+    if (!instancedMesh.geometry.attributes.tintColor) {
+      instancedMesh.geometry.setAttribute(
+        'tintColor',
         new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3),
       );
     }
@@ -373,6 +393,56 @@ export function setupOutlineShader(
       if (mat.uniforms && mat.uniforms.isUnzoomed) {
         mat.uniforms.isUnzoomed.value = isUnzoomed;
       }
+    },
+
+    setTints: (
+      instancedMesh: THREE.InstancedMesh,
+      instanceIndices: number[],
+      color: THREE.Color,
+    ) => {
+      createBufferAttributes(instancedMesh);
+
+      const tintStateAttribute = instancedMesh.geometry.attributes
+        .tintState as THREE.InstancedBufferAttribute;
+      const tintColorAttribute = instancedMesh.geometry.attributes
+        .tintColor as THREE.InstancedBufferAttribute;
+      const tintStateArray = tintStateAttribute.array as Float32Array;
+      const tintColorArray = tintColorAttribute.array as Float32Array;
+
+      // Set tint state and color for specified instances (accumulative)
+      instanceIndices.forEach((instanceIndex) => {
+        if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
+          tintStateArray[instanceIndex] = 1.0;
+          tintColorArray[instanceIndex * 3] = color.r;
+          tintColorArray[instanceIndex * 3 + 1] = color.g;
+          tintColorArray[instanceIndex * 3 + 2] = color.b;
+        }
+      });
+
+      tintStateAttribute.needsUpdate = true;
+      tintColorAttribute.needsUpdate = true;
+      console.log(
+        `Set tints for ${instanceIndices.length} instances with color RGB(${color.r.toFixed(2)}, ${color.g.toFixed(2)}, ${color.b.toFixed(2)})`,
+      );
+    },
+
+    clearTints: (instancedMesh: THREE.InstancedMesh) => {
+      createBufferAttributes(instancedMesh);
+
+      const tintStateAttribute = instancedMesh.geometry.attributes
+        .tintState as THREE.InstancedBufferAttribute;
+      const tintColorAttribute = instancedMesh.geometry.attributes
+        .tintColor as THREE.InstancedBufferAttribute;
+      const tintStateArray = tintStateAttribute.array as Float32Array;
+      const tintColorArray = tintColorAttribute.array as Float32Array;
+
+      // Clear all tint states and colors
+      tintStateArray.fill(0.0);
+      tintColorArray.fill(0.0);
+
+      tintStateAttribute.needsUpdate = true;
+      tintColorAttribute.needsUpdate = true;
+      console.log(`Cleared all tints`);
     },
   };
 }

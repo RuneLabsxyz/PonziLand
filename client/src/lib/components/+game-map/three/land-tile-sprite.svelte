@@ -19,6 +19,8 @@
     ownedLandIndices = [],
     auctionLandIndices = [],
     isUnzoomed = false,
+    heatmapTintIndices = [],
+    heatmapTintColors = [],
   }: {
     landTiles: LandTile[];
     spritesheet: any;
@@ -26,6 +28,8 @@
     ownedLandIndices: number[];
     auctionLandIndices: number[];
     isUnzoomed: boolean;
+    heatmapTintIndices: number[];
+    heatmapTintColors: number[];
   } = $props();
 
   const { updatePosition, sprite } = useInstancedSprite();
@@ -115,6 +119,42 @@
   $effect(() => {
     if (outlineControls) {
       outlineControls.setZoomState(isUnzoomed);
+    }
+  });
+
+  $effect(() => {
+    if (outlineControls && sprite) {
+      // Clear any existing tints first
+      outlineControls.clearTints(sprite);
+
+      if (heatmapTintIndices.length > 0 && heatmapTintColors.length > 0) {
+        // Group indices by color to optimize shader calls
+        const colorGroups = new Map<string, number[]>();
+
+        for (let i = 0; i < heatmapTintIndices.length; i++) {
+          const index = heatmapTintIndices[i];
+          const colorStart = i * 3;
+
+          if (colorStart + 2 < heatmapTintColors.length) {
+            const r = heatmapTintColors[colorStart];
+            const g = heatmapTintColors[colorStart + 1];
+            const b = heatmapTintColors[colorStart + 2];
+            const colorKey = `${r.toFixed(3)},${g.toFixed(3)},${b.toFixed(3)}`;
+
+            if (!colorGroups.has(colorKey)) {
+              colorGroups.set(colorKey, []);
+            }
+            colorGroups.get(colorKey)!.push(index);
+          }
+        }
+
+        // Apply tints for each color group
+        for (const [colorKey, indices] of colorGroups) {
+          const [r, g, b] = colorKey.split(',').map(Number);
+          const color = new THREE.Color(r, g, b);
+          outlineControls.setTints(sprite, indices, color);
+        }
+      }
     }
   });
 </script>

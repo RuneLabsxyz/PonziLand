@@ -7,11 +7,6 @@ uniform float flipX;
 uniform float flipY;
 uniform vec2 dataSize;
 uniform vec4 tint;
-uniform vec3 outlineColor;
-uniform vec3 pulseColor;
-uniform vec3 outlineColors[32]; // Support up to 32 different outline colors
-uniform vec3 pulseColors[32];   // Support up to 32 different pulse colors
-uniform int numOutlinedInstances;
 uniform float outlineWidth;
 uniform vec2 resolution;
 
@@ -24,11 +19,12 @@ uniform bool isUnzoomed;
 
 varying float vHover;
 varying vec3 vOutlineColor;
-varying vec3 vPulseColor;
 varying float vIsOwned;
 varying float vIsAuction;
-vec3 baseColor; // To store outline/glow color
-float baseAlpha; // To store outline/glow alpha
+varying float vTintState;
+varying vec3 vTintColor;
+vec3 baseColor;
+float baseAlpha;
 
 flat varying int vId;
 
@@ -414,20 +410,10 @@ void main() {
             }
         }
 
-        // Generate RGB color based on instance ID using modulo 3
-        if(false) {
-            int colorChannel = int(mod(float(vId), 3.0));
-            vec3 instanceColor = vec3(0.0);
-            if(colorChannel == 0) {
-                instanceColor = vec3(1.0, 0.2, 0.2); // Red-ish
-            } else if(colorChannel == 1) {
-                instanceColor = vec3(0.2, 1.0, 0.2); // Green-ish
-            } else {
-                instanceColor = vec3(0.2, 0.2, 1.0); // Blue-ish
-            }
-            
-            // Mix the instance color with the original sprite color
-            finalColor = mix(finalColor, instanceColor, 0.3);
+        // Apply instance-based tinting if enabled
+        if(vTintState > 0.5) {
+            // Mix the tint color with the original sprite color
+            finalColor = mix(finalColor, vTintColor, 0.6);
         }
 
         // Apply tint if needed
