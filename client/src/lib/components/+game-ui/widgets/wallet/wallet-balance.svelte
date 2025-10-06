@@ -4,7 +4,7 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
-  import { ChartColumn, RefreshCw, ArrowUpDown, Settings } from 'lucide-svelte';
+  import { ChartColumn, RefreshCw, ArrowUpDown, Settings, Minus } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
   import { onMount } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
@@ -30,6 +30,7 @@
   let errorMessage = $state<string | null>(null);
   let showBaseTokenSelector = $state(false);
   let initialBalanceLoadCompleted = $state(false);
+  let isMinimized = $state(false);
 
   onMount(() => {
     // Set up custom controls for the parent draggable component
@@ -78,6 +79,10 @@
 
   const handleToggleDisplayMode = () => {
     settingsStore.toggleWalletDisplayMode();
+  };
+
+  const handleMinimize = () => {
+    isMinimized = !isMinimized;
   };
 
   const totalBalance = $derived(walletStore.totalBalance);
@@ -146,7 +151,7 @@
   {/if}
 </div>
 
-{#if showBaseTokenSelector}
+{#if showBaseTokenSelector && !isMinimized}
   <div class="border-t border-gray-700 p-2">
     <BaseTokenSelector
       currentBaseToken={baseToken}
@@ -159,27 +164,29 @@
   </div>
 {/if}
 
-{#if errorMessage}
-  <div
-    class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center"
-  >
-    {errorMessage}
+{#if !isMinimized}
+  {#if errorMessage}
+    <div
+      class="text-red-500 bg-red-50 border border-red-200 rounded p-2 mb-2 text-center"
+    >
+      {errorMessage}
+    </div>
+  {/if}
+  <div class="flex flex-col gap-2 mb-4">
+    <ScrollArea>
+      <div class="h-80">
+        {#each sortedTokenBalances as [token, balance]}
+          <div
+            class="flex justify-between items-center relative gap-2 px-4 select-text"
+          >
+            <TokenAvatar {token} class="h-6 w-6" />
+            <TokenValueDisplay amount={balance.toBigint()} {token} />
+          </div>
+        {/each}
+      </div>
+    </ScrollArea>
   </div>
 {/if}
-<div class="flex flex-col gap-2 mb-4">
-  <ScrollArea>
-    <div class="h-80">
-      {#each sortedTokenBalances as [token, balance]}
-        <div
-          class="flex justify-between items-center relative gap-2 px-4 select-text"
-        >
-          <TokenAvatar {token} class="h-6 w-6" />
-          <TokenValueDisplay amount={balance.toBigint()} {token} />
-        </div>
-      {/each}
-    </div>
-  </ScrollArea>
-</div>
 
 {#snippet moreControls()}
   <button
@@ -216,4 +223,7 @@
       <RefreshCw size={16} />
     </button>
   {/if}
+  <button class="window-control" onclick={handleMinimize}>
+    <Minus size={16} />
+  </button>
 {/snippet}
