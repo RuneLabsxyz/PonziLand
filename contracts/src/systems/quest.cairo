@@ -237,6 +237,8 @@ pub mod quests {
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
             let mut claimable = false;
             let mut over = false;
+            let game_token_felt: felt252 = game_token_address.into();
+            panic!("game_token_address: {}", game_token_felt);
             match quest_game.quest_type {
                 QuestType::Minigame => {
                     let game_dispatcher = IMinigameTokenDataDispatcher {
