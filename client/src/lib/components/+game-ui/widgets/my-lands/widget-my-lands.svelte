@@ -15,9 +15,10 @@
   import { get } from 'svelte/store';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
+  import account from '$lib/account.svelte';
 
   const dojo = useDojo();
-  const account = () => {
+  const getDojoAccount = () => {
     return dojo.accountManager?.getProvider();
   };
 
@@ -61,7 +62,7 @@
 
   async function handleClaimAll() {
     claimingAll = true;
-    claimAll(dojo, account()?.getWalletAccount()!)
+    claimAll(dojo, getDojoAccount()?.getWalletAccount()!)
       .then(() => {
         soundAtInterval(lands.length);
         startCooldown('all');
@@ -86,7 +87,7 @@
     const tokenKey = land.token.symbol || land.token.name || 'unknown';
     claimingTokens = [...claimingTokens, tokenKey];
 
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
+    claimAllOfToken(land.token, dojo, getDojoAccount()?.getWalletAccount()!)
       .then(() => {
         soundAtInterval(nbLands);
         startCooldown(tokenKey);
@@ -104,7 +105,13 @@
 
   // Effect to reactively update lands when ownership or land data changes
   $effect(() => {
-    const currentAccount = account()?.getWalletAccount();
+    // Check if user is connected using the account store (like in buy-tab.svelte)
+    if (!account.isConnected) {
+      lands = [];
+      return;
+    }
+
+    const currentAccount = getDojoAccount()?.getWalletAccount();
     if (!currentAccount || !dojo.client) {
       lands = [];
       return;
@@ -116,27 +123,43 @@
 
     // Subscribe to ownership index changes
     const unsubscribeOwnership = ownedIndicesStore.subscribe((ownedIndices) => {
+      // Double-check connection status in subscription callback
+      if (!account.isConnected) {
+        lands = [];
+        return;
+      }
+
       // Get current lands data
       const currentAllLands = get(allLandsStore);
-      
+
       const newLands = ownedIndices
         .map((index: number) => currentAllLands[index])
         .filter((land): land is BuildingLand => BuildingLand.is(land))
-        .map((land: BuildingLand) => createLandWithActions(land, () => landStore.getAllLands()));
-      
+        .map((land: BuildingLand) =>
+          createLandWithActions(land, () => landStore.getAllLands()),
+        );
+
       lands = newLands;
     });
 
     // Subscribe to all lands changes (in case land properties change)
     const unsubscribeAllLands = allLandsStore.subscribe((allLands) => {
+      // Double-check connection status in subscription callback
+      if (!account.isConnected) {
+        lands = [];
+        return;
+      }
+
       // Get current ownership indices
       const currentOwnedIndices = get(ownedIndicesStore);
-      
+
       const newLands = currentOwnedIndices
         .map((index: number) => allLands[index])
         .filter((land): land is BuildingLand => BuildingLand.is(land))
-        .map((land: BuildingLand) => createLandWithActions(land, () => landStore.getAllLands()));
-      
+        .map((land: BuildingLand) =>
+          createLandWithActions(land, () => landStore.getAllLands()),
+        );
+
       lands = newLands;
     });
 
