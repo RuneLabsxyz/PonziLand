@@ -2,7 +2,7 @@
   import { type VariantProps, tv } from 'tailwind-variants';
 
   export const toggleVariants = tv({
-    base: 'ring-offset-background hover:bg-muted hover:text-muted-foreground focus-visible:ring-ring data-[state=on]:bg-accent data-[state=on]:text-accent-foreground inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+    base: 'ring-offset-background hover:opacity-100 opacity-50 focus-visible:ring-ring data-[state=on]:bg-[#FFF1] data-[state=on]:opacity-100 inline-flex items-center justify-center gap-2 rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
     variants: {
       variant: {
         default: 'bg-transparent',

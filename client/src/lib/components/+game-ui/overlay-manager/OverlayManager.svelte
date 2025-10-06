@@ -3,6 +3,7 @@
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
   import { HeatmapParameter } from '$lib/components/+game-ui/widgets/heatmap/heatmap.config';
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
+  import { Card } from '$lib/components/ui/card';
 
   type MultipleValues = ('nuke' | 'rates')[];
 
@@ -36,29 +37,53 @@
 >
   <div class="flex gap-2">
     <ToggleGroup.Root
+      class="rounded overflow-hidden"
       type="single"
-      variant="outline"
       value={heatmapState}
       onValueChange={(e) => (heatmapState = e as HeatmapState)}
     >
-      <ToggleGroup.Item value={HeatmapParameter.SELL_PRICE}
-        >Sell Price</ToggleGroup.Item
-      >
-      <ToggleGroup.Item value={HeatmapParameter.STAKE_AMOUNT}
-        >Stake Amount</ToggleGroup.Item
-      >
-      <ToggleGroup.Item value={HeatmapParameter.LEVEL}
-        >Land Level</ToggleGroup.Item
-      >
+      <ToggleGroup.Item value={HeatmapParameter.SELL_PRICE}>
+        <img
+          src="/ui/icons/IconTiny_Stats.png"
+          alt="Stats Icon"
+          class="inline h-4 w-4"
+        />
+      </ToggleGroup.Item>
+      <ToggleGroup.Item value={HeatmapParameter.STAKE_AMOUNT}>
+        <img
+          src="/ui/icons/IconTiny_Stats.png"
+          alt="Stats Icon"
+          class="inline h-4 w-4"
+        />
+      </ToggleGroup.Item>
+      <ToggleGroup.Item value={HeatmapParameter.LEVEL}>
+        <img
+          src="/ui/icons/IconTiny_Stats.png"
+          alt="Stats Icon"
+          class="inline h-4 w-4"
+        />
+      </ToggleGroup.Item>
     </ToggleGroup.Root>
     <ToggleGroup.Root
+      class="rounded overflow-hidden"
       type="multiple"
-      variant="outline"
       value={multiple}
       onValueChange={(e) => (multiple = e as MultipleValues)}
     >
-      <ToggleGroup.Item value="nuke">Nuke Times</ToggleGroup.Item>
-      <ToggleGroup.Item value="rates">Rates</ToggleGroup.Item>
+      <ToggleGroup.Item value="nuke">
+        <img
+          src="/ui/icons/Icon_ShieldRed.png"
+          alt="Stats Icon"
+          class="inline h-4 w-4"
+        />
+      </ToggleGroup.Item>
+      <ToggleGroup.Item value="rates">
+        <img
+          src="/ui/icons/Icon_Coin3.png"
+          alt="Stats Icon"
+          class="inline h-4 w-4"
+        />
+      </ToggleGroup.Item>
     </ToggleGroup.Root>
   </div>
 </div>
