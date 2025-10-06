@@ -141,7 +141,11 @@
     <!-- Yields -->
     <div class="flex w-full justify-center select-text">
       <div class="text-center pb-2 text-ponzi-number">
-        <span class="opacity-50">Total Tokens Earned</span>
+        <span class="opacity-50"
+          >{land.type === 'auction'
+            ? 'Potential yield /h'
+            : 'Net yield /h'}</span
+        >
         {#if land.type !== 'auction'}
           <div
             class="{totalYieldValue - Number(burnRateInBaseToken.toString()) >=
@@ -165,30 +169,35 @@
           </div>
         {:else}
           <div
-            class="text-red-500 text-2xl flex items-center justify-center gap-2"
+            class="text-green-500 text-2xl flex items-center justify-center gap-2"
           >
-            <span class="text-xl stroke-3d-black">???</span>
+            <span class="stroke-3d-black">
+              + {displayCurrency(totalYieldValue)}
+            </span>
             <TokenAvatar
               token={baseToken}
-              class="border border-white w-5 h-5"
+              class="border border-white w-6 h-6"
             />
           </div>
         {/if}
       </div>
     </div>
-    <div class="flex w-full justify-between select-text">
-      <div class="flex flex-col items-center text-ponzi-number">
-        <div class="opacity-50 text-sm">Earning / hour :</div>
-        <div class="text-green-500 flex items-center gap-2">
-          <span class="text-xl stroke-3d-black"
-            >+ {displayCurrency(totalYieldValue)}</span
-          >
-          <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
+    {#if land.type !== 'auction'}
+      <div class="flex w-full justify-between select-text">
+        <div class="flex flex-col items-center text-ponzi-number">
+          <div class="opacity-50 text-sm">Earning / hour :</div>
+          <div class="text-green-500 flex items-center gap-2">
+            <span class="text-xl stroke-3d-black"
+              >+ {displayCurrency(totalYieldValue)}</span
+            >
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-5 h-5"
+            />
+          </div>
         </div>
-      </div>
-      <div class="flex flex-col items-center text-ponzi-number">
-        <div class="opacity-50 text-sm">Cost / hour :</div>
-        {#if land.type !== 'auction'}
+        <div class="flex flex-col items-center text-ponzi-number">
+          <div class="opacity-50 text-sm">Cost / hour :</div>
           <div class="text-red-500 flex items-center gap-2">
             <span class="text-xl stroke-3d-black"
               >- {displayCurrency(burnRateInBaseToken.toString())}</span
@@ -198,17 +207,9 @@
               class="border border-white w-5 h-5"
             />
           </div>
-        {:else}
-          <div class="text-red-500 flex items-center gap-2">
-            <span class="text-xl stroke-3d-black">???</span>
-            <TokenAvatar
-              token={baseToken}
-              class="border border-white w-5 h-5"
-            />
-          </div>
-        {/if}
+        </div>
       </div>
-    </div>
+    {/if}
 
     <!-- Infos -->
     <div class="flex flex-col rounded bg-[#1E1E2D] px-4 pb-2 select-text">
