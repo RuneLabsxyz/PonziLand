@@ -37,6 +37,11 @@ class UsernamesStore {
       );
     }
   }
+
+  getUsername(address: string): string | undefined {
+    const paddedAddr = padAddress(address);
+    return paddedAddr ? this.usernames[paddedAddr] : undefined;
+  }
 }
 
 export const usernamesStore = new UsernamesStore();
