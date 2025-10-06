@@ -12,6 +12,9 @@
   import { useDojo } from '$lib/contexts/dojo';
   import type { Token } from '$lib/interfaces';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import {
     highlightedLands,
@@ -30,7 +33,23 @@
     return dojo.accountManager?.getProvider();
   };
 
-  let lands = $state<LandWithActions[]>([]);
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
+
+  interface LandWithPrice extends LandWithActions {
+    convertedPrice: CurrencyAmount | null;
+    convertedPriceLoading: boolean;
+  }
+
+  let lands = $state<LandWithPrice[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
   let selectedToken = $state<Token | undefined>();
@@ -68,7 +87,7 @@
     // Token filter
     if (selectedToken) {
       filtered = filtered.filter(
-        (land) => land.token?.address === selectedToken.address,
+        (land) => land.token?.address === selectedToken?.address,
       );
     }
 
@@ -101,8 +120,40 @@
     }
   });
 
+  // Function to fetch and update converted price for a land
+  async function updateLandConvertedPrice(landWithPrice: LandWithPrice) {
+    try {
+      // Only convert if land has a sell price and token differs from base token
+      if (
+        landWithPrice.sellPrice &&
+        landWithPrice.token &&
+        landWithPrice.token.address !== baseToken.address
+      ) {
+        landWithPrice.convertedPriceLoading = true;
+        try {
+          const convertedPrice = walletStore.convertTokenAmount(
+            landWithPrice.sellPrice,
+            landWithPrice.token,
+            baseToken,
+          );
+          landWithPrice.convertedPrice = convertedPrice;
+        } catch (error) {
+          console.error('Error converting price:', error);
+          landWithPrice.convertedPrice = null;
+        }
+        landWithPrice.convertedPriceLoading = false;
+      } else {
+        landWithPrice.convertedPrice = null;
+        landWithPrice.convertedPriceLoading = false;
+      }
+    } catch (error) {
+      console.error('Error updating converted price for land:', error);
+      landWithPrice.convertedPriceLoading = false;
+    }
+  }
+
   // Function to sort lands
-  function sortLands(landsToSort: LandWithActions[]): LandWithActions[] {
+  function sortLands(landsToSort: LandWithPrice[]): LandWithPrice[] {
     return [...landsToSort].sort((a, b) => {
       if (sortBy === 'price') {
         const priceA = a.sellPrice?.rawValue().toNumber() ?? 0;
@@ -157,9 +208,21 @@
             }
             return false;
           })
-          .map((land) => createLandWithActions(land, () => allLands));
+          .map((land): LandWithPrice => {
+            const landWithActions = createLandWithActions(land, () => allLands);
+            return {
+              ...landWithActions,
+              convertedPrice: null,
+              convertedPriceLoading: false,
+            };
+          });
 
         lands = sortLands(filteredLands);
+
+        // Fetch converted prices for all lands
+        lands.forEach((land) => {
+          updateLandConvertedPrice(land);
+        });
       });
     } catch (error) {
       console.error('Error in land-explorer setup:', error);
@@ -284,13 +347,28 @@
             <LandOverview size="xs" {land} hideLevelUp={sortBy !== 'level'} />
           {/if}
           <div
-            class="w-full flex items-center justify-start leading-none text-xl"
+            class="w-full flex flex-col items-start justify-center leading-none text-xl"
           >
             {#if land.sellPrice}
               <div class="flex gap-1 items-center">
                 <PriceDisplay price={land.sellPrice} />
                 <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
+              {#if land.convertedPrice && land.token && land.token.address !== baseToken.address}
+                <div
+                  class="flex gap-1 items-center text-xs opacity-60 h-0 mt-2"
+                >
+                  ≈ {land.convertedPrice}
+                  {baseToken.symbol}
+                </div>
+              {:else if land.convertedPriceLoading}
+                <div
+                  class="flex gap-1 items-center text-xs opacity-50 h-0 mt-2"
+                >
+                  <span>Converting...</span>
+                  <TokenAvatar class="w-3 h-3" token={baseToken} />
+                </div>
+              {/if}
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>
@@ -308,13 +386,14 @@
             <div class="flex items-center gap-1">
               <span>Owner:</span>
               {#if getAiAgent(land.owner)}
+                {@const aiAgent = getAiAgent(land.owner)}
                 <div class="flex items-center gap-1">
                   <img
-                    src={getAiAgent(land.owner)?.badgeImage}
-                    alt={getAiAgent(land.owner)?.name}
+                    src={aiAgent?.badgeImage}
+                    alt={aiAgent?.name}
                     class="w-4 h-4"
                   />
-                  <span> {getAiAgent(land.owner)?.name} </span>
+                  <span> {aiAgent?.name} </span>
                 </div>
               {:else}
                 <span>
