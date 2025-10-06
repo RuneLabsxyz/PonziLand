@@ -6,6 +6,7 @@ import { setupClient, type Client } from '$lib/contexts/client.svelte';
 import { landStore } from './store.svelte';
 import { walletStore } from './wallet.svelte';
 import accountState, { setup } from '$lib/account.svelte';
+import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
 
 interface LoadingProgress {
   total: number;
@@ -19,6 +20,7 @@ export interface GameLoadingPhases {
   assets: LoadingProgress;
   client: LoadingProgress;
   config: LoadingProgress;
+  prices: LoadingProgress;
   wallet: LoadingProgress;
   dojo: LoadingProgress;
   social: LoadingProgress;
@@ -47,13 +49,13 @@ class LoadingStore {
     assets: { total: 0, loaded: 0, items: {} },
     client: { total: 1, loaded: 0, items: { 'client-setup': false } },
     config: { total: 1, loaded: 0, items: { 'game-config': false } },
+    prices: { total: 1, loaded: 0, items: { 'token-prices': false } },
     wallet: {
-      total: 3,
+      total: 2,
       loaded: 0,
       items: {
         'wallet-connect': false,
         'account-setup': false,
-        'token-prices': false,
       },
     },
     dojo: {
@@ -157,7 +159,7 @@ class LoadingStore {
     // Adjust loading phases based on mode
     if (isTutorial) {
       // Tutorial mode: skip wallet, dojo, social, and landStore loading
-      // But still need client for config, webgl/shaders, and rendering
+      // But still load prices and keep client for config, webgl/shaders, and rendering
       this._phases.wallet.total = 0;
       this._phases.dojo.total = 0;
       this._phases.social.total = 0;
@@ -166,14 +168,14 @@ class LoadingStore {
       this.markPhaseCompleted('dojo');
       this.markPhaseCompleted('social');
       this.markPhaseCompleted('landStore');
-      // Keep rendering phase active in tutorial mode
+      // Keep prices and rendering phase active in tutorial mode
     } else {
       // Full mode: enable all loading phases including rendering
-      this._phases.wallet.total = 3;
+      this._phases.wallet.total = 2;
       this._phases.dojo.total = 2;
       this._phases.social.total = 1;
       this._phases.landStore.total = 1;
-      // Rendering phase is always active
+      // Prices and rendering phase are always active
     }
   }
 
@@ -315,7 +317,6 @@ class LoadingStore {
         await walletStore.update(accountState.address);
         console.log('Wallet balances fetched successfully');
       }
-      this.markPhaseItemLoaded('wallet', 'token-prices');
     } catch (error) {
       console.error('Wallet initialization failed:', error);
       // Mark as loaded to continue
@@ -345,6 +346,20 @@ class LoadingStore {
     } catch (error) {
       console.error('Config loading failed:', error);
       this.markPhaseItemLoaded('config', 'game-config');
+    }
+  }
+
+  // Token prices loading (independent of wallet)
+  async initializePrices() {
+    try {
+      console.log('Loading token prices...');
+      const tokenPrices = await getTokenPrices();
+      // Store the prices in the wallet store
+      walletStore.setTokenPrices(tokenPrices);
+      this.markPhaseItemLoaded('prices', 'token-prices');
+    } catch (error) {
+      console.error('Token prices loading failed:', error);
+      this.markPhaseItemLoaded('prices', 'token-prices');
     }
   }
 
@@ -689,6 +704,12 @@ class LoadingStore {
       : 0;
   }
 
+  get pricesProgress() {
+    return this._phases.prices.total > 0
+      ? this._phases.prices.loaded / this._phases.prices.total
+      : 0;
+  }
+
   get dojoProgress() {
     return this._phases.dojo.total > 0
       ? this._phases.dojo.loaded / this._phases.dojo.total
@@ -769,14 +790,17 @@ class LoadingStore {
       // Phase 2: Initialize client (required for config and dojo)
       await this.initializeClient();
 
-      // Phase 3: Initialize processes that depend on client (can run in parallel)
+      // Phase 3: Initialize processes that depend on client and independent processes (can run in parallel)
       const clientDependentProcesses = [
         this.initializeConfig(), // Config depends on client
       ];
 
+      // Initialize prices (independent of other processes)
+      const pricesProcess = this.initializePrices();
+
       if (isTutorialMode) {
-        // Tutorial mode: just config and tutorial setup
-        await Promise.all([...clientDependentProcesses]);
+        // Tutorial mode: just config, prices and tutorial setup
+        await Promise.all([...clientDependentProcesses, pricesProcess]);
       } else {
         // Non-tutorial mode: Handle all dependencies properly
 
@@ -796,6 +820,7 @@ class LoadingStore {
         // Wait for all processes to complete
         await Promise.all([
           configProcess,
+          pricesProcess,
           dojoProcess,
           walletProcess,
           socialProcess,

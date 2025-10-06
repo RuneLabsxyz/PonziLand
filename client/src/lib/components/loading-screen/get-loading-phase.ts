@@ -22,6 +22,8 @@ export function getCurrentLoadingPhase(phases: GameLoadingPhases): string {
     return 'Setting up client...';
   } else if (phases.config.loaded < phases.config.total) {
     return 'Loading game configuration...';
+  } else if (phases.prices.loaded < phases.prices.total) {
+    return 'Loading token prices...';
   } else if (
     phases.wallet.loaded < phases.wallet.total &&
     phases.wallet.total > 0
@@ -30,8 +32,6 @@ export function getCurrentLoadingPhase(phases: GameLoadingPhases): string {
       return 'Connecting wallet...';
     } else if (!phases.wallet.items['account-setup']) {
       return 'Setting up account...';
-    } else if (!phases.wallet.items['token-prices']) {
-      return 'Loading wallet data...';
     }
   } else if (phases.dojo.loaded < phases.dojo.total && phases.dojo.total > 0) {
     if (!phases.dojo.items['dojo-init']) {
