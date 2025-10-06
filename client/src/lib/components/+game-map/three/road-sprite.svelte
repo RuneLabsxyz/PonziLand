@@ -3,11 +3,9 @@
   import { useInstancedSprite } from '@threlte/extras';
   import { cursorStore } from './cursor.store.svelte';
   import type { LandTile } from './landTile';
+  import { GRID_SIZE } from '$lib/const';
 
   let { landTiles } = $props();
-
-  // Road atlas only has 'default' animation based on your roadAtlasMeta
-  const roadAnimations = ['default'];
 
   const { updatePosition, sprite } = useInstancedSprite();
 
@@ -23,8 +21,13 @@
     }
 
     // Iterate over landtiles
-    landTiles.forEach((tile: LandTile, index: number) => {
-      updatePosition(index, [
+    landTiles.forEach((tile: LandTile) => {
+      // Calculate grid-based sprite index instead of array index
+      const gridX = tile.position[0];
+      const gridY = tile.position[2];
+      const spriteIndex = gridX * GRID_SIZE + gridY;
+
+      updatePosition(spriteIndex, [
         tile.position[0],
         -tile.position[2],
         tile.position[1] - 0.003,
@@ -34,7 +37,7 @@
         0.1, // Adjusted to center the sprite vertically
         0,
       );
-      sprite.animation.setAt(index, 'default');
+      sprite.animation.setAt(spriteIndex, 'default');
     });
   });
 </script>

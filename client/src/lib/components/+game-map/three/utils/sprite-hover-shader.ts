@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import fragmentFull from '$lib/shaders/sprite/fragment_full.glsl';
 import vertexMain from '$lib/shaders/sprite/vertex_main.glsl';
 import vertexPars from '$lib/shaders/sprite/vertex_pars.glsl';
+import { loadingStore } from '$lib/stores/loading.store.svelte';
 
 export interface OutlineShaderOptions {
   outlineColor?: THREE.Color;
@@ -118,6 +119,16 @@ export function setupOutlineShader(
     // Replace fragment shader completely
     shader.fragmentShader = fragmentFull;
     console.log('Shader injection complete');
+  };
+
+  // Add afterCompile callback to track shader compilation completion
+  (mat as any).onAfterCompile = (
+    _shader: any,
+    _renderer: THREE.WebGLRenderer,
+  ) => {
+    console.log('Sprite outline shader compilation complete');
+    // Mark shader compilation as loaded in the loading store
+    loadingStore.markPhaseItemLoaded('webgl', 'sprite-outline-shader');
   };
 
   // Track hover/selected states to avoid clearing custom outlines
