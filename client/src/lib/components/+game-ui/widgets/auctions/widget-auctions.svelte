@@ -16,6 +16,7 @@
   import data from '$profileData';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { createLandWithActions } from '$lib/utils/land-actions';
+  import { walletStore } from '$lib/stores/wallet.svelte';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
 
@@ -24,9 +25,22 @@
     return dojo.accountManager?.getProvider();
   };
 
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
+
   interface LandWithPrice extends LandWithActions {
     price: CurrencyAmount | null;
     priceLoading: boolean;
+    convertedPrice: CurrencyAmount | null;
+    convertedPriceLoading: boolean;
   }
 
   let lands = $state<LandWithPrice[]>([]);
@@ -41,11 +55,36 @@
       landWithPrice.price = price ?? null;
       landWithPrice.priceLoading = false;
 
+      // Fetch converted price if original token differs from base token
+      if (
+        price &&
+        landWithPrice.token &&
+        landWithPrice.token.address !== baseToken.address
+      ) {
+        landWithPrice.convertedPriceLoading = true;
+        try {
+          const convertedPrice = walletStore.convertTokenAmount(
+            price,
+            landWithPrice.token,
+            baseToken,
+          );
+          landWithPrice.convertedPrice = convertedPrice;
+        } catch (error) {
+          console.error('Error converting price:', error);
+          landWithPrice.convertedPrice = null;
+        }
+        landWithPrice.convertedPriceLoading = false;
+      } else {
+        landWithPrice.convertedPrice = null;
+        landWithPrice.convertedPriceLoading = false;
+      }
+
       // Re-sort the array after price update
       lands = sortLandsByPrice(lands);
     } catch (error) {
       console.error('Error fetching price for land:', error);
       landWithPrice.priceLoading = false;
+      landWithPrice.convertedPriceLoading = false;
     }
   }
 
@@ -81,8 +120,6 @@
         return;
       }
 
-      const userAddress = padAddress(currentAccount.address);
-
       const allLands = landStore.getAllLands();
 
       unsubscribe = allLands.subscribe((landsData) => {
@@ -101,6 +138,8 @@
               ...landWithActions,
               price: null,
               priceLoading: false,
+              convertedPrice: null,
+              convertedPriceLoading: false,
             };
           });
 
@@ -170,7 +209,7 @@
             <LandOverview size="xs" {land} />
           {/if}
           <div
-            class="w-full flex items-center justify-start leading-none text-xl"
+            class="w-full flex flex-col items-start justify-center leading-none text-xl"
           >
             {#if land.priceLoading}
               <div class="flex gap-1 items-center">
@@ -182,6 +221,21 @@
                 <PriceDisplay price={land.price} />
                 <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
+              {#if land.convertedPrice && land.token && land.token.address !== baseToken.address}
+                <div
+                  class="flex gap-1 items-center text-xs opacity-60 h-0 mt-2"
+                >
+                  ≈ {land.convertedPrice}
+                  {baseToken.symbol}
+                </div>
+              {:else if land.convertedPriceLoading}
+                <div
+                  class="flex gap-1 items-center text-xs opacity-50 h-0 mt-2"
+                >
+                  <span>Converting...</span>
+                  <TokenAvatar class="w-3 h-3" token={baseToken} />
+                </div>
+              {/if}
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>
