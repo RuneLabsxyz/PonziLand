@@ -11,7 +11,7 @@
 
   // Component constants
   const SHOW_PROGRESS_BARS = false;
-  const SHOW_CHECKLIST = true;
+  const SHOW_CHECKLIST = false;
 
   const randomPhrase = messages[Math.floor(Math.random() * messages.length)];
   const easingFunction = (t: any, overshoot = 1) => {
