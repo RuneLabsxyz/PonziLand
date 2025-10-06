@@ -23,6 +23,7 @@ class UsernamesStore {
   }
 
   updateUsernames(newUsernames: Record<string, string>): void {
+    console.log('Updating usernames:', newUsernames);
     this.usernames = { ...this.usernames, ...newUsernames };
   }
 
