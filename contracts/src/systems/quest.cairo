@@ -230,19 +230,13 @@ pub mod quests {
             let mut quest_details: QuestDetails = world.read_model(quest.location);
             let mut land: Land = world.read_model(quest_details.location);
 
-            panic!("quest_details.game_id: {}", quest_details.game_id);
-
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
             // get score for the token id
-            let quest_address_felt: felt252 = quest_game.world_address.xinto();
-            panic!("quest_game.world_address: {}", quest_address_felt);
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
             let mut claimable = false;
             let mut over = false;
-            let game_token_felt: felt252 = game_token_address.into();
-            panic!("game_token_address: {}", game_token_felt);
             match quest_game.quest_type {
                 QuestType::Minigame => {
                     let game_dispatcher = IMinigameTokenDataDispatcher {
