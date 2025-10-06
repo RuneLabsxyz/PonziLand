@@ -13,7 +13,7 @@ interface LoadingProgress {
   items: Record<string, boolean>;
 }
 
-interface GameLoadingPhases {
+export interface GameLoadingPhases {
   webgl: LoadingProgress;
   spritesheets: LoadingProgress;
   assets: LoadingProgress;

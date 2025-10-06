@@ -6,12 +6,18 @@
   import LoadingProgressBars from './loading-progress-bars.svelte';
   import LoadingChecklist from './loading-checklist.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
+  import { getCurrentLoadingPhase } from './get-loading-phase';
 
   let { value } = $props();
 
   // Component constants
   const SHOW_PROGRESS_BARS = false;
   const SHOW_CHECKLIST = false;
+
+  // Current loading phase state derived from loading store
+  let currentLoadingPhase = $derived(() =>
+    getCurrentLoadingPhase(loadingStore.phases),
+  );
 
   const randomPhrase = messages[Math.floor(Math.random() * messages.length)];
   const easingFunction = (t: any, overshoot = 1) => {
@@ -40,6 +46,7 @@
   <LoadingImage imageUrl="/logo.png" maskProgress={totalProgress()} />
   <div class="flex flex-col gap-4 items-center justify-center z-50">
     <p class="text-white text-lg leading-none">{randomPhrase}</p>
+    <p class="text-white/70 text-sm leading-none">{currentLoadingPhase()}</p>
 
     <!-- Loading Display Components -->
     {#if SHOW_PROGRESS_BARS}
