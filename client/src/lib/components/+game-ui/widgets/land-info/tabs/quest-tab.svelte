@@ -40,6 +40,15 @@
   let questGames = $state<QuestGame[]>([]);
   let selectedGameId = $state<string>('');
   let selectedGame = $derived(questGames.find((g: QuestGame) => g.id.toString() === selectedGameId));
+  
+  // Get the quest game for the current quest details 🐙 tentacles reaching for game data
+  let currentQuestGame = $derived(
+    questDetails ? questGames.find((g: QuestGame) => g.id.toString() === questDetails.game_id.toString()) : null
+  );
+  
+  // Check if it's a OneOnOne game or Minigame (high score)
+  let isOneOnOne = $derived(currentQuestGame?.quest_type?.activeVariant === 'OneOnOne');
+  let isHighScore = $derived(currentQuestGame?.quest_type?.activeVariant === 'Minigame');
 
   // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
   async function handleGameActionClick() {
@@ -332,8 +341,12 @@
       <!-- Land is not owned by player but has a quest - show challenge interface 🐙 -->
       <Card class="border-2 border-accent">
         <CardHeader>
-          <CardTitle class="text-xl">Quest Challenge</CardTitle>
-          <CardDescription>Test your skills and complete this quest!</CardDescription>
+          <CardTitle class="text-xl">
+            {isOneOnOne ? '1v1 Quest Challenge' : 'Quest Challenge'}
+          </CardTitle>
+          <CardDescription>
+            {isOneOnOne ? 'Challenge the land owner in a 1v1 match!' : 'Test your skills and complete this quest!'}
+          </CardDescription>
         </CardHeader>
         <CardContent class="space-y-4">
           <div class="bg-accent/10 p-4 rounded-lg border border-accent/30 space-y-3">
@@ -342,10 +355,17 @@
                 <span class="text-muted-foreground">Entry Price</span>
                 <p class="font-bold text-xl text-accent">{entry_price} {baseToken.symbol}</p>
               </div>
-              <div class="space-y-1">
-                <span class="text-muted-foreground">Target Score</span>
-                <p class="font-bold text-xl">{questDetails?.target_score.toString()}</p>
-              </div>
+              {#if isHighScore}
+                <div class="space-y-1">
+                  <span class="text-muted-foreground">Target Score</span>
+                  <p class="font-bold text-xl">{questDetails?.target_score.toString()}</p>
+                </div>
+              {:else if isOneOnOne}
+                <div class="space-y-1">
+                  <span class="text-muted-foreground">Game Type</span>
+                  <p class="font-bold text-xl">1v1 Match</p>
+                </div>
+              {/if}
               <div class="space-y-1">
                 <span class="text-muted-foreground">Capacity</span>
                 <p class="font-semibold">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
@@ -358,18 +378,38 @@
           </div>
 
           {#if game_token_id > 0}
-            <div class="bg-primary/10 p-3 rounded-lg border border-primary/30">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-semibold">Your Progress</span>
-                <span class="text-lg font-bold">{score} / {questDetails?.target_score.toString()}</span>
+            {#if isHighScore}
+              <!-- High Score Game: Show progress bar -->
+              <div class="bg-primary/10 p-3 rounded-lg border border-primary/30">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-semibold">Your Progress</span>
+                  <span class="text-lg font-bold">{score} / {questDetails?.target_score.toString()}</span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-2">
+                  <div 
+                    class="bg-primary h-2 rounded-full transition-all duration-300" 
+                    style="width: {Math.min(100, (score / Number(questDetails?.target_score || 1)) * 100)}%"
+                  ></div>
+                </div>
               </div>
-              <div class="w-full bg-muted rounded-full h-2">
-                <div 
-                  class="bg-primary h-2 rounded-full transition-all duration-300" 
-                  style="width: {Math.min(100, (score / Number(questDetails?.target_score || 1)) * 100)}%"
-                ></div>
+            {:else if isOneOnOne}
+              <!-- 1v1 Game: Show game status -->
+              <div class="bg-primary/10 p-4 rounded-lg border border-primary/30">
+                <div class="text-center">
+                  {#if score === 0}
+                    <div class="space-y-2">
+                      <p class="text-lg font-bold">⚔️ Game Active</p>
+                      <p class="text-sm text-muted-foreground">Your match is in progress</p>
+                    </div>
+                  {:else if score === 1}
+                    <div class="space-y-2">
+                      <p class="text-lg font-bold">🎉 Game Complete</p>
+                      <p class="text-sm text-muted-foreground">Ready to claim or settle</p>
+                    </div>
+                  {/if}
+                </div>
               </div>
-            </div>
+            {/if}
           {/if}
 
           <div class="space-y-2">
@@ -388,23 +428,47 @@
                   Challenge ({entry_price} {baseToken.symbol})
                 </Button>
               {:else}
-                <Button
-                  onclick={handleGameActionClick}
-                  class="w-full h-12 text-lg font-bold"
-                  disabled={loading}
-                  variant="default"
-                >
-                  Continue Quest
-                </Button>
-                {#if score >= Number(questDetails?.target_score || 0)}
+                {#if isHighScore}
+                  <!-- High Score Game Buttons -->
                   <Button
-                    onclick={handleClaimQuestClick}
-                    class="w-full h-10"
+                    onclick={handleGameActionClick}
+                    class="w-full h-12 text-lg font-bold"
                     disabled={loading}
-                    variant="secondary"
+                    variant="default"
                   >
-                    🏆 Claim Reward
+                    Continue Quest
                   </Button>
+                  {#if score >= Number(questDetails?.target_score || 0)}
+                    <Button
+                      onclick={handleClaimQuestClick}
+                      class="w-full h-10"
+                      disabled={loading}
+                      variant="secondary"
+                    >
+                      🏆 Claim Reward
+                    </Button>
+                  {/if}
+                {:else if isOneOnOne}
+                  <!-- 1v1 Game Buttons -->
+                  {#if score === 0}
+                    <Button
+                      onclick={handleGameActionClick}
+                      class="w-full h-12 text-lg font-bold"
+                      disabled={loading}
+                      variant="default"
+                    >
+                      ⚔️ Continue Match
+                    </Button>
+                  {:else if score === 1}
+                    <Button
+                      onclick={handleClaimQuestClick}
+                      class="w-full h-12 text-lg font-bold"
+                      disabled={loading}
+                      variant="secondary"
+                    >
+                      🏆 Claim / Settle
+                    </Button>
+                  {/if}
                 {/if}
               {/if}
               <Button
