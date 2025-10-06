@@ -12,7 +12,7 @@
     "SN_MAIN": {
       "policies": {
         "contracts": {
-          "0x71136a37f392136762d6c5121b34dac6bda3738cd5fc3799dcb87d12530d770": {
+          "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916": {
             "name": "PonziLand Systems",
             "description": "Main game contract",
             "methods": [
@@ -53,172 +53,23 @@
               }
             ]
           },
-          "0x6447191aac18bf5d28045091bb64c1c4c5bc29053a41ae849184f00abe5ab5": {
-            "name": "PonziLand Auth System",
-            "description": "Contract to allow authorized players to play",
+          "0x4270219d365d6b017231b52e92b3fb5d7c8378b05e9abc97724537a80e93b0f": {
+            "name": "AVNU",
+            "description": "Swaps contract, for integration in game",
             "methods": [
               {
-                "name": "Add Authorized",
-                "entrypoint": "add_authorized_with_signature",
-                "description": "Add authorized with signature"
-              }
-            ]
-          },
-          "0x56893df1e063190aabda3c71304e9842a1b3d638134253dd0f69806a4f106eb": {
-            "name": "nftSTRK Token",
-            "description": "nftSTRK ERC20 methods",
-            "methods": [
+                "name": "Multi route swap",
+                "entrypoint": "multi_route_swap",
+                "description": "Swap tokens using multiple routes"
+              },
               {
-                "name": "Approve",
-                "entrypoint": "approve",
-                "description": "nftSTRK allowance"
-              }
-            ]
-          },
-          "0x40025cec149bf1f58d2e34a6924605b571a5fce7b798a47ec52cfbd3ff68b6e": {
-            "name": "eWNT Token",
-            "description": "eWNT ERC20 approval",
-            "methods": [
-              {
-                "name": "Approve",
-                "entrypoint": "approve",
-                "description": "eWNT allowance"
-              }
-            ]
-          },
-          "0x78c1138aa1cfd27436b26279d5ac4e3f8f5a432927d85d22b2a2e7c0e5528b4": {
-            "name": "eQQ Token",
-            "description": "eQQ ERC20 approval",
-            "methods": [
-              {
-                "name": "Approve",
-                "entrypoint": "approve",
-                "description": "eQQ allowance"
-              }
-            ]
-          },
-          "0x74ad80778e07102902abdec71e0161023b45d1204c29e2c4ec3befab3bb82f5": {
-            "name": "eSG Token",
-            "description": "eSG ERC20 approval",
-            "methods": [
-              {
-                "name": "Approve",
-                "entrypoint": "approve",
-                "description": "eSG allowance"
+                "name": "Exact token swap",
+                "entrypoint": "swap_exact_token_to",
+                "description": "Swap tokens using exact amount"
               }
             ]
           }
-        },
-        "messages": [
-          {
-            "name": "Socialink - Register",
-            "description": "Registers your controller wallet to a new Socialink account",
-            "types": {
-              "StarknetDomain": [
-                {
-                  "name": "name",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "version",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "chainId",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "revision",
-                  "type": "shortstring"
-                }
-              ],
-              "register": [
-                { "name": "username", "type": "felt" },
-                { "name": "timestamp", "type": "felt" }
-              ]
-            },
-            "primaryType": "register",
-            "domain": {
-              "name": "socialink",
-              "version": "1",
-              "chainId": "SN_MAIN",
-              "revision": "1"
-            }
-          },
-          {
-            "name": "Socialink - Link",
-            "description": "Links your social account to a Socialink account",
-            "types": {
-              "StarknetDomain": [
-                {
-                  "name": "name",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "version",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "chainId",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "revision",
-                  "type": "shortstring"
-                }
-              ],
-              "link": [
-                { "name": "token", "type": "string" },
-                { "name": "provider", "type": "string" },
-                { "name": "nonce", "type": "felt" },
-                { "name": "timestamp", "type": "felt" }
-              ]
-            },
-            "primaryType": "link",
-            "domain": {
-              "name": "socialink",
-              "version": "1",
-              "chainId": "SN_MAIN",
-              "revision": "1"
-            }
-          },
-          {
-            "name": "Socialink - Mint",
-            "description": "Confirms your selection of token for the tournament mint",
-            "types": {
-              "StarknetDomain": [
-                {
-                  "name": "name",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "version",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "chainId",
-                  "type": "shortstring"
-                },
-                {
-                  "name": "revision",
-                  "type": "shortstring"
-                }
-              ],
-              "mint": [
-                { "name": "token", "type": "string" },
-                { "name": "nonce", "type": "felt" },
-                { "name": "timestamp", "type": "felt" }
-              ]
-            },
-            "primaryType": "mint",
-            "domain": {
-              "name": "socialink",
-              "version": "1",
-              "chainId": "SN_MAIN",
-              "revision": "1"
-            }
-          }
-        ]
+        }
       }
     }
   }
