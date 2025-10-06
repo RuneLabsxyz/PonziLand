@@ -39,16 +39,17 @@ export async function claimAll(
       }),
     );
 
-    await sdk.client.actions
-      .claimAll(
-        account,
-        batch.map((land) => land.location as BigNumberish),
-      )
-      .then((value) => {
-        batchAggregatedTaxes.forEach((result) => {
-          handlePostClaim(batch, result, value.transaction_hash);
-        });
-      });
+    const txConfirmation = await sdk.client.actions.claimAll(
+      account,
+      batch.map((land) => land.location as BigNumberish),
+    );
+
+    batchAggregatedTaxes.forEach((result) => {
+      handlePostClaim(batch, result, txConfirmation.transaction_hash);
+    });
+
+    // Wait for the transaction to be confirmed before going to the next batch
+    await account.waitForTransaction(txConfirmation.transaction_hash);
   }
 }
 
