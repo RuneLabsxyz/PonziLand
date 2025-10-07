@@ -138,7 +138,7 @@
     <Separator />
     <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
     <Checkbox
-      bind:value={devsettings.showRatesOverlaySeparate}
+      bind:value={devsettings.showRatesOverlay}
       label="Rates Overlay Separate"
     />
     <Separator />
