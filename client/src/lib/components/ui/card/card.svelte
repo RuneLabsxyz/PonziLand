@@ -10,7 +10,7 @@
 
 <div
   class={cn(
-    'bg-card text-card-foreground border-ponzi shadow-sm relative',
+    'bg-card text-card-foreground border-ponzi-thin shadow-sm relative',
     className,
   )}
   {...$$restProps}

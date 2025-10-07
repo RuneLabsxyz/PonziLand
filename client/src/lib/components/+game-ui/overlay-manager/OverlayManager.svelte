@@ -3,7 +3,7 @@
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
   import { HeatmapParameter } from '$lib/components/+game-ui/widgets/heatmap/heatmap.config';
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
-  import { Card } from '$lib/components/ui/card';
+  import { Toggle } from '$lib/components/ui/toggle';
 
   type MultipleValues = ('nuke' | 'rates')[];
 
@@ -32,12 +32,21 @@
 </script>
 
 <div
-  class="top-0 left-1/2 -translate-x-1/2 absolute z-50 p-4"
+  class="top-0 left-1/2 -translate-x-1/2 absolute z-2 p-2"
   style="pointer-events: all;"
 >
   <div class="flex gap-2">
+    <Toggle variant="map" size="sm" class="rounded">
+      <img
+        src="/ui/icons/Icon_Book.png"
+        alt="Settings"
+        class="inline h-4 w-4"
+      />
+    </Toggle>
     <ToggleGroup.Root
-      class="rounded overflow-hidden"
+      class="overflow-hidden"
+      size="sm"
+      variant="map"
       type="single"
       value={heatmapState}
       onValueChange={(e) => (heatmapState = e as HeatmapState)}
@@ -49,23 +58,13 @@
           class="inline h-4 w-4"
         />
       </ToggleGroup.Item>
-      <ToggleGroup.Item value={HeatmapParameter.STAKE_AMOUNT}>
-        <img
-          src="/ui/icons/IconTiny_Stats.png"
-          alt="Stats Icon"
-          class="inline h-4 w-4"
-        />
-      </ToggleGroup.Item>
       <ToggleGroup.Item value={HeatmapParameter.LEVEL}>
-        <img
-          src="/ui/icons/IconTiny_Stats.png"
-          alt="Stats Icon"
-          class="inline h-4 w-4"
-        />
+        <img src="/ui/star/on.png" alt="Level" class="inline h-4 w-4" />
       </ToggleGroup.Item>
     </ToggleGroup.Root>
     <ToggleGroup.Root
-      class="rounded overflow-hidden"
+      size="sm"
+      variant="map"
       type="multiple"
       value={multiple}
       onValueChange={(e) => (multiple = e as MultipleValues)}

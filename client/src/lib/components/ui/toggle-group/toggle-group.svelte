@@ -36,6 +36,9 @@ get along, so we shut typescript up by casting `value` to `never`.
 <ToggleGroupPrimitive.Root
   bind:value={value as never}
   bind:ref
-  class={cn('flex items-center justify-center rounded overflow-hidden', className)}
+  class={cn(
+    'flex items-center justify-center rounded overflow-hidden',
+    className,
+  )}
   {...restProps}
 />
