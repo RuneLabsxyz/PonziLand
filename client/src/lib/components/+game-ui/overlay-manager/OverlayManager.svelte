@@ -11,7 +11,7 @@
 
   $effect(() => {
     devsettings.showNukeTimes = multiple.includes('nuke');
-    devsettings.showLandOverlay = multiple.includes('rates');
+    devsettings.showRatesOverlay = multiple.includes('rates');
   });
 
   type HeatmapState =

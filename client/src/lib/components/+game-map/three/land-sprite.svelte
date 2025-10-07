@@ -789,7 +789,9 @@
     distanceFactor={0.01}
   >
     {#if land}
-      <LandRatesOverlay {land} />
+      {#if !devsettings.showRatesOverlay}
+        <LandRatesOverlay {land} />
+      {/if}
       <Button
         class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
         size="sm"
