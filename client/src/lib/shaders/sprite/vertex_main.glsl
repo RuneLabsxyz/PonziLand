@@ -9,6 +9,7 @@ float isAuction = auctionState;
 vec3 currentOutlineColor = outlineColor;
 float currentTintState = tintState;
 vec3 currentTintColor = tintColor;
+float isStriped = stripedState;
 
 vIsOutlined = isOutlined;
 vOutlineColor = currentOutlineColor;
@@ -17,3 +18,4 @@ vIsOwned = isOwned;
 vIsAuction = isAuction;
 vTintState = currentTintState;
 vTintColor = currentTintColor;
+vIsStriped = isStriped;

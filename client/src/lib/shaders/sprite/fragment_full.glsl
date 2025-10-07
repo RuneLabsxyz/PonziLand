@@ -24,6 +24,7 @@ varying float vIsOwned;
 varying float vIsAuction;
 varying float vTintState;
 varying vec3 vTintColor;
+varying float vIsStriped;
 vec3 baseColor;
 float baseAlpha;
 
@@ -344,6 +345,7 @@ void main() {
         vec3 finalColor = sampledDiffuseColor.rgb;
         float finalAlpha = sampledDiffuseColor.a;
 
+        // Handle owned lands (old system when unzoomed, new system when zoomed)
         if(vIsOwned > 0.5) {
             // Apply stripe pattern darkening based on darkenOnlyWhenUnzoomed setting
             if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
@@ -355,6 +357,7 @@ void main() {
             }
         }
 
+        // Handle auction lands (old system when unzoomed, new system when zoomed)
         if(vIsAuction > 0.5) {
             // Apply stripe pattern whitening for auction lands
             if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
@@ -364,6 +367,18 @@ void main() {
                 stripe = 1.2 + stripe * 0.2; // Maps 0->1.2 and 1->1.4 (whitening)
                 finalColor = finalColor * stripe;
             }
+        }
+
+        // Handle generic striped lands (new system)
+        if(vIsStriped > 0.5 && vIsOwned < 0.5 && vIsAuction < 0.5) {
+            // Create diagonal stripe pattern
+            float interval = 20.0;
+            float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
+            
+            // Default striping for other striped lands: Maps 0->0.6 and 1->1.0
+            stripe = 0.6 + stripe * 0.4;
+            
+            finalColor = finalColor * stripe;
         }
 
         if(vIsOutlined > 0.5) {

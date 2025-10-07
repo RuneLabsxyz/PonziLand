@@ -10,6 +10,7 @@ attribute float outlineState;
 attribute vec3 outlineColor;
 attribute float tintState;
 attribute vec3 tintColor;
+attribute float stripedState;
 
 varying float vIsOutlined;
 varying float vInstanceIndex;
@@ -19,3 +20,4 @@ varying float vIsOwned;
 varying float vIsAuction;
 varying float vTintState;
 varying vec3 vTintColor;
+varying float vIsStriped;

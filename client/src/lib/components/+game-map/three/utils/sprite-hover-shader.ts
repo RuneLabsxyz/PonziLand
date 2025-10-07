@@ -49,6 +49,11 @@ export interface OutlineControls {
   ) => void;
   clearTints: (instancedMesh: THREE.InstancedMesh) => void;
   setTintOpacity: (opacity: number) => void;
+  setStripedLands: (
+    instancedMesh: THREE.InstancedMesh,
+    instanceIndices: number[],
+  ) => void;
+  clearStripedLands: (instancedMesh: THREE.InstancedMesh) => void;
 }
 
 /**
@@ -124,6 +129,13 @@ export function setupOutlineShader(
         new THREE.InstancedBufferAttribute(new Float32Array(count * 3), 3),
       );
     }
+
+    if (!instancedMesh.geometry.attributes.stripedState) {
+      instancedMesh.geometry.setAttribute(
+        'stripedState',
+        new THREE.InstancedBufferAttribute(new Float32Array(count), 1),
+      );
+    }
   };
 
   mat.onBeforeCompile = (shader: any) => {
@@ -159,8 +171,16 @@ export function setupOutlineShader(
   let currentHoverIndex = -1;
   let currentSelectedIndex = -1;
 
+  // Track zoom state for stripe application logic
+  let currentIsUnzoomed = false;
+
+  // Store current land states for reapplication when zoom changes
+  let currentOwnedLands: number[] = [];
+  let currentAuctionLands: number[] = [];
+  let currentInstancedMesh: THREE.InstancedMesh | null = null;
+
   // Return control functions
-  return {
+  const controls = {
     setHover: (instancedMesh: THREE.InstancedMesh, instanceIndex: number) => {
       createBufferAttributes(instancedMesh);
 
@@ -336,28 +356,91 @@ export function setupOutlineShader(
 
       createBufferAttributes(instancedMesh);
 
-      const ownedAttribute = instancedMesh.geometry.attributes
-        .ownedState as THREE.InstancedBufferAttribute;
-      const ownedArray = ownedAttribute.array as Float32Array;
+      // Store current state for reapplication on zoom changes
+      currentOwnedLands = [...instanceIndices];
+      currentInstancedMesh = instancedMesh;
 
-      // Always reset all to not owned first (crucial for handling shrinking arrays)
-      ownedArray.fill(0.0);
+      if (currentIsUnzoomed) {
+        // Use old system when unzoomed - set ownedState for shader stripes
+        const ownedAttribute = instancedMesh.geometry.attributes
+          .ownedState as THREE.InstancedBufferAttribute;
+        const ownedArray = ownedAttribute.array as Float32Array;
 
-      // Set owned lands to 1.0 (only if we have indices)
-      if (instanceIndices.length > 0) {
-        instanceIndices.forEach((index) => {
-          if (index >= 0 && index < ownedArray.length) {
-            ownedArray[index] = 1.0;
-          }
-        });
+        // Always reset all to not owned first
+        ownedArray.fill(0.0);
+
+        // Set owned lands to 1.0 (only if we have indices)
+        if (instanceIndices.length > 0) {
+          instanceIndices.forEach((index) => {
+            if (index >= 0 && index < ownedArray.length) {
+              ownedArray[index] = 1.0;
+            }
+          });
+        }
+
+        ownedAttribute.needsUpdate = true;
+
+        // Clear tints and stripes when using old system
+        const tintStateAttribute = instancedMesh.geometry.attributes
+          .tintState as THREE.InstancedBufferAttribute;
+        const stripedAttribute = instancedMesh.geometry.attributes
+          .stripedState as THREE.InstancedBufferAttribute;
+        tintStateAttribute.array.fill(0.0);
+        stripedAttribute.array.fill(0.0);
+        tintStateAttribute.needsUpdate = true;
+        stripedAttribute.needsUpdate = true;
+      } else {
+        // Use new system when zoomed - set tint colors only, no stripes
+        const ownedAttribute = instancedMesh.geometry.attributes
+          .ownedState as THREE.InstancedBufferAttribute;
+        const ownedArray = ownedAttribute.array as Float32Array;
+
+        // Clear old system
+        ownedArray.fill(0.0);
+        ownedAttribute.needsUpdate = true;
+
+        // Apply dark tint for owned lands (dark gray)
+        const ownedTintColor = new THREE.Color(0.3, 0.3, 0.3);
+
+        // Set tint state and color for owned lands
+        const tintStateAttribute = instancedMesh.geometry.attributes
+          .tintState as THREE.InstancedBufferAttribute;
+        const tintColorAttribute = instancedMesh.geometry.attributes
+          .tintColor as THREE.InstancedBufferAttribute;
+        const tintStateArray = tintStateAttribute.array as Float32Array;
+        const tintColorArray = tintColorAttribute.array as Float32Array;
+
+        // Clear all tint states first
+        tintStateArray.fill(0.0);
+        tintColorArray.fill(0.0);
+
+        // Set tint for owned lands (only if we have indices)
+        if (instanceIndices.length > 0) {
+          instanceIndices.forEach((instanceIndex) => {
+            if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
+              tintStateArray[instanceIndex] = 1.0;
+              tintColorArray[instanceIndex * 3] = ownedTintColor.r;
+              tintColorArray[instanceIndex * 3 + 1] = ownedTintColor.g;
+              tintColorArray[instanceIndex * 3 + 2] = ownedTintColor.b;
+            }
+          });
+        }
+
+        tintStateAttribute.needsUpdate = true;
+        tintColorAttribute.needsUpdate = true;
+
+        // Clear stripes when zoomed (no stripes for owned lands when zoomed)
+        const stripedAttribute = instancedMesh.geometry.attributes
+          .stripedState as THREE.InstancedBufferAttribute;
+        const stripedArray = stripedAttribute.array as Float32Array;
+        stripedArray.fill(0.0);
+        stripedAttribute.needsUpdate = true;
       }
 
-      // Always mark as needing update, even for empty arrays
-      ownedAttribute.needsUpdate = true;
       mat.uniforms.darkenFactor.value = darkenFactor;
 
       console.log(
-        `Updated ${instanceIndices.length} owned lands via instanced buffer attributes (cleared all first)`,
+        `Updated ${instanceIndices.length} owned lands using ${currentIsUnzoomed ? 'old' : 'new'} system`,
       );
     },
 
@@ -369,33 +452,85 @@ export function setupOutlineShader(
 
       createBufferAttributes(instancedMesh);
 
-      const auctionAttribute = instancedMesh.geometry.attributes
-        .auctionState as THREE.InstancedBufferAttribute;
-      const auctionArray = auctionAttribute.array as Float32Array;
+      // Store current state for reapplication on zoom changes
+      currentAuctionLands = [...instanceIndices];
+      currentInstancedMesh = instancedMesh;
 
-      // Always reset all to not auction first
-      auctionArray.fill(0.0);
+      if (currentIsUnzoomed) {
+        // Use old system when unzoomed - set auctionState for shader stripes
+        const auctionAttribute = instancedMesh.geometry.attributes
+          .auctionState as THREE.InstancedBufferAttribute;
+        const auctionArray = auctionAttribute.array as Float32Array;
 
-      // Set auction lands to 1.0 (only if we have indices)
-      if (instanceIndices.length > 0) {
-        instanceIndices.forEach((index) => {
-          if (index >= 0 && index < auctionArray.length) {
-            auctionArray[index] = 1.0;
-          }
-        });
+        // Always reset all to not auction first
+        auctionArray.fill(0.0);
+
+        // Set auction lands to 1.0 (only if we have indices)
+        if (instanceIndices.length > 0) {
+          instanceIndices.forEach((index) => {
+            if (index >= 0 && index < auctionArray.length) {
+              auctionArray[index] = 1.0;
+            }
+          });
+        }
+
+        auctionAttribute.needsUpdate = true;
+
+        // Clear tints and stripes when using old system
+        const tintStateAttribute = instancedMesh.geometry.attributes
+          .tintState as THREE.InstancedBufferAttribute;
+        const stripedAttribute = instancedMesh.geometry.attributes
+          .stripedState as THREE.InstancedBufferAttribute;
+        tintStateAttribute.array.fill(0.0);
+        stripedAttribute.array.fill(0.0);
+        tintStateAttribute.needsUpdate = true;
+        stripedAttribute.needsUpdate = true;
+      } else {
+        // Use new system when zoomed - no tint, no stripes for auction lands
+        const auctionAttribute = instancedMesh.geometry.attributes
+          .auctionState as THREE.InstancedBufferAttribute;
+        const auctionArray = auctionAttribute.array as Float32Array;
+
+        // Clear old system
+        auctionArray.fill(0.0);
+        auctionAttribute.needsUpdate = true;
+
+        // Clear all tint states (auction lands have no tint when zoomed)
+        const tintStateAttribute = instancedMesh.geometry.attributes
+          .tintState as THREE.InstancedBufferAttribute;
+        const tintColorAttribute = instancedMesh.geometry.attributes
+          .tintColor as THREE.InstancedBufferAttribute;
+        const tintStateArray = tintStateAttribute.array as Float32Array;
+        const tintColorArray = tintColorAttribute.array as Float32Array;
+
+        tintStateArray.fill(0.0);
+        tintColorArray.fill(0.0);
+        tintStateAttribute.needsUpdate = true;
+        tintColorAttribute.needsUpdate = true;
+
+        // Clear stripes when zoomed (no stripes for auction lands when zoomed)
+        const stripedAttribute = instancedMesh.geometry.attributes
+          .stripedState as THREE.InstancedBufferAttribute;
+        const stripedArray = stripedAttribute.array as Float32Array;
+        stripedArray.fill(0.0);
+        stripedAttribute.needsUpdate = true;
       }
 
-      // Always mark as needing update, even for empty arrays
-      auctionAttribute.needsUpdate = true;
-
       console.log(
-        `Updated ${instanceIndices.length} auction lands via instanced buffer attributes (cleared all first)`,
+        `Updated ${instanceIndices.length} auction lands using ${currentIsUnzoomed ? 'old' : 'new'} system`,
       );
     },
 
     setZoomState: (isUnzoomed: boolean) => {
+      const wasUnzoomed = currentIsUnzoomed;
+      currentIsUnzoomed = isUnzoomed;
       if (mat.uniforms && mat.uniforms.isUnzoomed) {
         mat.uniforms.isUnzoomed.value = isUnzoomed;
+      }
+
+      // If zoom state changed, reapply current land states
+      if (wasUnzoomed !== isUnzoomed && currentInstancedMesh) {
+        reapplyCurrentLandStates();
       }
     },
 
@@ -454,7 +589,76 @@ export function setupOutlineShader(
         mat.uniforms.tintOpacity.value = Math.max(0, Math.min(1, opacity));
       }
     },
+
+    setStripedLands: (
+      instancedMesh: THREE.InstancedMesh,
+      instanceIndices: number[],
+    ) => {
+      createBufferAttributes(instancedMesh);
+
+      const stripedAttribute = instancedMesh.geometry.attributes
+        .stripedState as THREE.InstancedBufferAttribute;
+      const stripedArray = stripedAttribute.array as Float32Array;
+
+      // Always reset all to not striped first
+      stripedArray.fill(0.0);
+
+      // Set striped lands to 1.0 (only if we have indices)
+      if (instanceIndices.length > 0) {
+        instanceIndices.forEach((index) => {
+          if (index >= 0 && index < stripedArray.length) {
+            stripedArray[index] = 1.0;
+          }
+        });
+      }
+
+      // Always mark as needing update, even for empty arrays
+      stripedAttribute.needsUpdate = true;
+
+      console.log(
+        `Updated ${instanceIndices.length} striped lands via instanced buffer attributes (cleared all first)`,
+      );
+    },
+
+    clearStripedLands: (instancedMesh: THREE.InstancedMesh) => {
+      createBufferAttributes(instancedMesh);
+
+      const stripedAttribute = instancedMesh.geometry.attributes
+        .stripedState as THREE.InstancedBufferAttribute;
+      const stripedArray = stripedAttribute.array as Float32Array;
+
+      // Clear all striped states
+      stripedArray.fill(0.0);
+
+      stripedAttribute.needsUpdate = true;
+      console.log(`Cleared all striped lands`);
+    },
   };
+
+  // Helper method to reapply current land states after zoom changes
+  const reapplyCurrentLandStates = () => {
+    if (!currentInstancedMesh) return;
+
+    // Reapply owned lands with current zoom state
+    if (currentOwnedLands.length > 0) {
+      const mesh = currentInstancedMesh;
+      const indices = [...currentOwnedLands];
+      // Clear stored state to prevent recursion, then reapply
+      currentOwnedLands = [];
+      controls.setOwnedLands(mesh, indices);
+    }
+
+    // Reapply auction lands with current zoom state
+    if (currentAuctionLands.length > 0) {
+      const mesh = currentInstancedMesh;
+      const indices = [...currentAuctionLands];
+      // Clear stored state to prevent recursion, then reapply
+      currentAuctionLands = [];
+      controls.setAuctionLands(mesh, indices);
+    }
+  };
+
+  return controls;
 }
 
 /**
