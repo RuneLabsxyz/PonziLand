@@ -789,7 +789,7 @@
     distanceFactor={0.01}
   >
     {#if land}
-      {#if !devsettings.showRatesOverlay}
+      {#if devsettings.showRatesOverlay}
         <LandRatesOverlay {land} />
       {/if}
       <Button
