@@ -22,7 +22,7 @@
     "@lucide/svelte": "^0.482.0",
     "@sveltejs/adapter-cloudflare": "=7.1.1",
     "@sveltejs/kit": "=2.26.0",
-    "@sveltejs/vite-plugin-svelte": "=5.1.0",
+    "@sveltejs/vite-plugin-svelte": "^6.0.0",
     "@types/stats.js": "^0.17.3",
     "@vitest/ui": "3.2.4",
     "autoprefixer": "^10.4.20",
@@ -31,6 +31,7 @@
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",
     "jsdom": "^26.1.0",
+    "patch-package": "^8.0.1",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
     "prettier-plugin-svelte": "^3.3.3",
@@ -40,7 +41,8 @@
     "tailwind-variants": "^0.2.1",
     "tailwindcss": "^3.4.15",
     "typescript": "^5.0.0",
-    "vite": "^6.3.5",
+    "vite": "^7.0.4",
+    "vite-plugin-node-polyfills": "^0.24.0",
     "vitest": "^3.0.3",
     "wrangler": "^4.26.0"
   },
@@ -83,7 +85,10 @@
     "canvas": "^3.1.0",
     "chart.js": "^4.4.8",
     "colorjs.io": "^0.5.2",
+    "@ponziland/account": "file:../pkgs/account",
+    "@ponziland/hyperlane-bridge": "file:../pkgs/hyperlane-bridge",
     "ethers": "^6.13.5",
+    "ethers-v5": "npm:ethers@^5.8.0",
     "gsap": "^3.12.7",
     "lucide-svelte": "^0.471.0",
     "moment": "=2.30.1",
@@ -101,10 +106,14 @@
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-wasm": "^3.3.0"
   },
+  "patchedDependencies": {
+    "@avnu/avnu-sdk@3.1.0": "patches/@avnu%2Favnu-sdk@3.1.0.patch",
+    "@hyperlane-xyz/sdk@18.2.0": "patches/@hyperlane-xyz%2Fsdk@18.2.0.patch",
+    "@hyperlane-xyz/core@9.0.9": "patches/@hyperlane-xyz%2Fcore@9.0.9.patch",
+    "@hyperlane-xyz/radix-sdk@18.2.0": "patches/@hyperlane-xyz%2Fradix-sdk@18.2.0.patch",
+    "zksync-web3@0.14.4": "patches/zksync-web3@0.14.4.patch"
+  },
   "overrides": {
     "@starknet-io/types-js": "0.9.1"
-  },
-  "patchedDependencies": {
-    "@avnu/avnu-sdk@3.1.0": "patches/@avnu%2Favnu-sdk@3.1.0.patch"
   }
 }

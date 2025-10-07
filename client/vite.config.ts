@@ -3,9 +3,23 @@ import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
 import glsl from 'vite-plugin-glsl';
 import process from 'node:process';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [glsl(), sveltekit(), wasm()],
+  plugins: [
+    glsl(),
+    sveltekit(),
+    wasm(),
+    nodePolyfills({
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+      protocolImports: true,
+    })
+  ],
+
   build: {
     sourcemap: false,
     minify: false,

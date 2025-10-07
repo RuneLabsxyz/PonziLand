@@ -9,6 +9,9 @@ export { default as WalletBalance } from './ui/wallet-balance.svelte';
 export { useAccount, setupAccount, type AccountProvider, type Event, type StoredSession } from './context/account.svelte.js';
 export { default as accountDataProvider, setup, refresh } from './account.svelte.js';
 
+// Wallet stores
+export { phantomWalletStore } from './wallets/phantom.svelte.js';
+
 // Utilities
 export * from './utils.js';
 export * from './types.js';
