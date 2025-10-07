@@ -12,6 +12,9 @@
   import { calculateBurnRate, getNeighbourYieldArray } from '$lib/utils/taxes';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { getOutlineControls } from '$lib/components/+game-map/three/utils/outline-controls.store.svelte';
+  import { Neighbors } from '$lib/api/neighbors';
+  import { onDestroy } from 'svelte';
   import data from '$profileData';
 
   let {
@@ -177,6 +180,48 @@
           isLoading = false;
         });
       }
+    }
+  });
+
+  // Effect to apply stripes to neighbor lands
+  $effect(() => {
+    if (land) {
+      const outlineStore = getOutlineControls();
+
+      // Get neighbor locations
+      const neighborsData = Neighbors.getLocations(BigInt(land.location));
+      const neighborIndices = neighborsData.array.map((loc) => Number(loc));
+
+      // Apply stripes to neighbors on both building and biome layers
+      if (outlineStore.buildingControls && outlineStore.buildingSprite) {
+        outlineStore.buildingControls.setStripedLands(
+          outlineStore.buildingSprite,
+          neighborIndices,
+        );
+      }
+
+      if (outlineStore.biomeControls && outlineStore.biomeSprite) {
+        outlineStore.biomeControls.setStripedLands(
+          outlineStore.biomeSprite,
+          neighborIndices,
+        );
+      }
+    }
+  });
+
+  // Cleanup stripes when component unmounts
+  onDestroy(() => {
+    const outlineStore = getOutlineControls();
+
+    // Clear stripes from both layers
+    if (outlineStore.buildingControls && outlineStore.buildingSprite) {
+      outlineStore.buildingControls.clearStripedLands(
+        outlineStore.buildingSprite,
+      );
+    }
+
+    if (outlineStore.biomeControls && outlineStore.biomeSprite) {
+      outlineStore.biomeControls.clearStripedLands(outlineStore.biomeSprite);
     }
   });
 </script>

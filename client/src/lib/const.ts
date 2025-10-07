@@ -22,4 +22,4 @@ export const AI_AGENT_ADDRESSES = data.aiAgents.map(
 );
 
 //TODO: to regulate the size of the map we have to use the MAX_CIRCLE CONST
-export const GRID_SIZE = 255;
+export const GRID_SIZE = 256;

@@ -369,9 +369,10 @@ void main() {
             }
         }
 
-        // Handle generic striped lands (new system)
-        if(vIsStriped > 0.5 && vIsOwned < 0.5 && vIsAuction < 0.5) {
-            // Create diagonal stripe pattern
+        // Handle generic striped lands (new system) - always show neighbor stripes
+        if(vIsStriped > 0.5) {
+
+            // Create diagonal stripe pattern (always show, no zoom condition)
             float interval = 20.0;
             float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
             

@@ -384,8 +384,8 @@
 
   // Optimized visible land calculation with memoization
   let visibleLandTiles = $derived.by(() => {
-    const maxCirc = configValues.maxCircles + CIRCLE_PADDING;
-    // const maxCirc = 256;
+    // const maxCirc = configValues.maxCircles + CIRCLE_PADDING;
+    const maxCirc = 256;
 
     // Check cache for circle positions
     const cacheKey = `${CENTER},${CENTER},${maxCirc}`;
@@ -780,7 +780,7 @@
 </T>
 
 <!-- Button overlay using Threlte HTML component -->
-{#if devsettings.showLandOverlay && selectedLandTilePosition && !isUnzoomed}
+{#if devsettings.showLandOverlay && selectedLandTilePosition}
   {@const land = selectedLandWithActions()?.value}
   <HTML
     portal={document.getElementById('game-canvas') ?? document.body}

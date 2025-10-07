@@ -3,6 +3,7 @@ import fragmentFull from '$lib/shaders/sprite/fragment_full.glsl';
 import vertexMain from '$lib/shaders/sprite/vertex_main.glsl';
 import vertexPars from '$lib/shaders/sprite/vertex_pars.glsl';
 import { loadingStore } from '$lib/stores/loading.store.svelte';
+import { GRID_SIZE, COORD_MULTIPLIER } from '$lib/const';
 
 export interface OutlineShaderOptions {
   outlineColor?: THREE.Color;
@@ -603,11 +604,30 @@ export function setupOutlineShader(
       // Always reset all to not striped first
       stripedArray.fill(0.0);
 
-      // Set striped lands to 1.0 (only if we have indices)
+      // Set striped lands to 1.0 for full columns and rows (only if we have indices)
       if (instanceIndices.length > 0) {
-        instanceIndices.forEach((index) => {
-          if (index >= 0 && index < stripedArray.length) {
-            stripedArray[index] = 1.0;
+        // Assuming GRID_SIZE is available or we need to calculate it
+
+        instanceIndices.forEach((instanceIndex) => {
+          // WE NEED TO TRANSPOSE FOR SPRITES WAY OF SHOWING TILES
+          if (instanceIndex >= 0 && instanceIndex < stripedArray.length) {
+            // The instanceIndex comes from neighbor locations which use COORD_MULTIPLIER encoding
+            // instanceIndex = row * COORD_MULTIPLIER + col
+            const col = Math.floor(instanceIndex / COORD_MULTIPLIER);
+            const row = instanceIndex % COORD_MULTIPLIER;
+            
+            // Convert to sprite index which uses GRID_SIZE encoding
+            // spriteIndex = row * GRID_SIZE + col
+            const spriteIndex = row * GRID_SIZE + col;
+            
+            // Set only this specific coordinate to striped
+            if (spriteIndex >= 0 && spriteIndex < stripedArray.length) {
+              stripedArray[spriteIndex] = 1.0;
+            }
+
+            console.log(
+              `[Debug] Setting striped state for index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
+            );
           }
         });
       }
