@@ -11,7 +11,7 @@ attribute vec3 outlineColor;
 attribute float tintState;
 attribute vec3 tintColor;
 
-varying float vHover;
+varying float vIsOutlined;
 varying float vInstanceIndex;
 varying vec3 vOutlineColor;
 varying vec3 vPulseColor;

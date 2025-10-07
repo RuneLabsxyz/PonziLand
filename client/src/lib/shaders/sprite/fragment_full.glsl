@@ -18,7 +18,7 @@ uniform bool darkenOnlyWhenUnzoomed;
 uniform bool isUnzoomed;
 uniform float tintOpacity;
 
-varying float vHover;
+varying float vIsOutlined;
 varying vec3 vOutlineColor;
 varying float vIsOwned;
 varying float vIsAuction;
@@ -366,7 +366,7 @@ void main() {
             }
         }
 
-        if(vHover > 0.5) {
+        if(vIsOutlined > 0.5) {
             // If current pixel is transparent, check if we should draw outline
             if(sampledDiffuseColor.a < 0.5) {
                 vec2 texelSize = outlineWidth / resolution;

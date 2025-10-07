@@ -10,7 +10,7 @@ vec3 currentOutlineColor = outlineColor;
 float currentTintState = tintState;
 vec3 currentTintColor = tintColor;
 
-vHover = isOutlined;
+vIsOutlined = isOutlined;
 vOutlineColor = currentOutlineColor;
 vPulseColor = currentOutlineColor; // Use same color for pulse
 vIsOwned = isOwned;
