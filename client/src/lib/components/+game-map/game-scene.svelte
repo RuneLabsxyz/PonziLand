@@ -10,6 +10,8 @@
   import { cursorStore } from './three/cursor.store.svelte';
   import { gameStore } from './three/game.store.svelte';
   import LandSprite from './three/land-sprite.svelte';
+  import { toLocation } from '$lib/api/land/location';
+  import { coordinatesToLocation } from '$lib/utils';
 
   let { children = undefined } = $props();
 
@@ -73,7 +75,7 @@
           gridZ >= 0 &&
           gridZ < GRID_SIZE
         ) {
-          const gridId = gridX * GRID_SIZE + gridZ;
+          const gridId = coordinatesToLocation({ x: gridX, y: gridZ });
           cursorStore.gridPosition = { x: gridX, y: gridZ, id: gridId };
 
           // hoveredTileIndex will be calculated in land-sprite.svelte based on visibleLandTiles

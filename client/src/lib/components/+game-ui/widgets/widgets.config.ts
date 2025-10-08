@@ -111,6 +111,14 @@ const baseWidgetsState: WidgetsState = {
     disableResize: true,
     fixedStyles: 'width: 400px; height: auto;',
   },
+  history: {
+    id: 'history',
+    type: 'history',
+    position: { x: 100, y: 50 },
+    dimensions: { width: 550, height: 400 },
+    isMinimized: false,
+    isOpen: false,
+  },
   disclaimer: {
     id: 'disclaimer',
     type: 'disclaimer',
@@ -190,6 +198,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     type: 'data-maps',
     label: 'Data Maps',
     icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
+  },
+  {
+    id: 'history',
+    type: 'history',
+    label: 'History',
+    icon: '/ui/icons/Icon_Notification.png',
   },
   // {
   //   id: 'notifications',

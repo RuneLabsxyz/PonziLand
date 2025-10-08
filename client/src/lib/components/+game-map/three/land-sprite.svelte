@@ -39,7 +39,8 @@
   import RoadSprite from './road-sprite.svelte';
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { devsettings } from './utils/devsettings.store.svelte';
-
+  import { toLocation } from '$lib/api/land/location';
+  import { coordinatesToLocation } from '$lib/utils';
   const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
@@ -296,7 +297,9 @@
     );
 
     // Return grid-based index if tile exists, undefined otherwise
-    return tileExists ? gridX * GRID_SIZE + gridY : undefined;
+    return tileExists
+      ? coordinatesToLocation({ x: gridX, y: gridY })
+      : undefined;
   });
 
   // Update cursor store with the correct hover index for other components
@@ -308,11 +311,17 @@
   // Derive selected tile index from cursor store
   let selectedTileIndex = $derived(cursorStore.selectedTileIndex);
 
+  $inspect('Selected Tile position:', selectedLandTilePosition);
+
   $effect(() => {
     if (selectedTileIndex !== undefined) {
+      console.log(
+        'Selected Tile Index:',
+        selectedTileIndex,
+        toLocation(selectedTileIndex),
+      );
       // Convert grid-based index back to grid coordinates
-      const gridX = Math.floor(selectedTileIndex / GRID_SIZE);
-      const gridY = selectedTileIndex % GRID_SIZE;
+      const { x: gridX, y: gridY } = toLocation(selectedTileIndex);
 
       // Find the actual tile at this grid position
       const selectedTile = visibleLandTiles.find(
@@ -321,6 +330,7 @@
 
       if (selectedTile) {
         const basePosition = selectedTile.position;
+        console.log('Selected Tile Position:', basePosition);
         selectedLandTilePosition = [
           basePosition[0],
           basePosition[1] + 0.1,
@@ -461,7 +471,7 @@
 
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
-      const landIndex = tile.land.location.x * GRID_SIZE + tile.land.location.y;
+      const landIndex = coordinatesToLocation(tile.land.location);
       return ownedIndicesSet.has(landIndex);
     });
   });
@@ -478,12 +488,10 @@
     const ownedVisibleIndices: number[] = [];
     visibleLandTiles.forEach((tile) => {
       if (BuildingLand.is(tile.land)) {
-        const landIndex =
-          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex = coordinatesToLocation(tile.land.location);
         if (ownedIndicesSet.has(landIndex)) {
           // Use grid-based sprite index instead of array index
-          const spriteIndex =
-            tile.land.location.x * GRID_SIZE + tile.land.location.y;
+          const spriteIndex = coordinatesToLocation(tile.land.location);
           ownedVisibleIndices.push(spriteIndex);
         }
       }
@@ -500,8 +508,7 @@
     visibleLandTiles.forEach((tile) => {
       if (AuctionLand.is(tile.land)) {
         // Use grid-based sprite index instead of array index
-        const spriteIndex =
-          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const spriteIndex = coordinatesToLocation(tile.land.location);
         auctionVisibleIndices.push(spriteIndex);
       }
     });
@@ -541,7 +548,10 @@
 
     for (const [tile, hexColor] of heatmapColors) {
       // Calculate grid-based sprite index
-      const spriteIndex = tile.position[0] * GRID_SIZE + tile.position[2];
+      const spriteIndex = coordinatesToLocation({
+        x: tile.position[0],
+        y: tile.position[2],
+      });
       indices.push(spriteIndex);
 
       // Convert hex color to RGB components (0-1 range)

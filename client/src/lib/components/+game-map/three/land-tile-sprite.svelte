@@ -11,6 +11,7 @@
     type OutlineControls,
   } from './utils/sprite-hover-shader';
   import { setOutlineControls } from './utils/outline-controls.store.svelte';
+  import { coordinatesToLocation } from '$lib/utils';
 
   let {
     landTiles,
@@ -73,7 +74,7 @@
       // Calculate grid-based sprite index instead of array index
       const gridX = tile.position[0];
       const gridY = tile.position[2];
-      const spriteIndex = gridX * GRID_SIZE + gridY;
+      const spriteIndex = coordinatesToLocation({ x: gridX, y: gridY });
 
       // choose between building animation name and biome animation name
       let animationName;
