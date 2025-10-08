@@ -381,15 +381,11 @@ export function setupOutlineShader(
 
         ownedAttribute.needsUpdate = true;
 
-        // Clear tints and stripes when using old system
+        // Clear tints when using old system (keep stripes)
         const tintStateAttribute = instancedMesh.geometry.attributes
           .tintState as THREE.InstancedBufferAttribute;
-        const stripedAttribute = instancedMesh.geometry.attributes
-          .stripedState as THREE.InstancedBufferAttribute;
         tintStateAttribute.array.fill(0.0);
-        stripedAttribute.array.fill(0.0);
         tintStateAttribute.needsUpdate = true;
-        stripedAttribute.needsUpdate = true;
       } else {
         // Use new system when zoomed - set tint colors only, no stripes
         const ownedAttribute = instancedMesh.geometry.attributes
@@ -429,13 +425,6 @@ export function setupOutlineShader(
 
         tintStateAttribute.needsUpdate = true;
         tintColorAttribute.needsUpdate = true;
-
-        // Clear stripes when zoomed (no stripes for owned lands when zoomed)
-        const stripedAttribute = instancedMesh.geometry.attributes
-          .stripedState as THREE.InstancedBufferAttribute;
-        const stripedArray = stripedAttribute.array as Float32Array;
-        stripedArray.fill(0.0);
-        stripedAttribute.needsUpdate = true;
       }
 
       mat.uniforms.darkenFactor.value = darkenFactor;
@@ -477,15 +466,11 @@ export function setupOutlineShader(
 
         auctionAttribute.needsUpdate = true;
 
-        // Clear tints and stripes when using old system
+        // Clear tints when using old system (keep stripes)
         const tintStateAttribute = instancedMesh.geometry.attributes
           .tintState as THREE.InstancedBufferAttribute;
-        const stripedAttribute = instancedMesh.geometry.attributes
-          .stripedState as THREE.InstancedBufferAttribute;
         tintStateAttribute.array.fill(0.0);
-        stripedAttribute.array.fill(0.0);
         tintStateAttribute.needsUpdate = true;
-        stripedAttribute.needsUpdate = true;
       } else {
         // Use new system when zoomed - no tint, no stripes for auction lands
         const auctionAttribute = instancedMesh.geometry.attributes
@@ -508,13 +493,6 @@ export function setupOutlineShader(
         tintColorArray.fill(0.0);
         tintStateAttribute.needsUpdate = true;
         tintColorAttribute.needsUpdate = true;
-
-        // Clear stripes when zoomed (no stripes for auction lands when zoomed)
-        const stripedAttribute = instancedMesh.geometry.attributes
-          .stripedState as THREE.InstancedBufferAttribute;
-        const stripedArray = stripedAttribute.array as Float32Array;
-        stripedArray.fill(0.0);
-        stripedAttribute.needsUpdate = true;
       }
 
       console.log(
@@ -604,9 +582,22 @@ export function setupOutlineShader(
       // Always reset all to not striped first
       stripedArray.fill(0.0);
 
-      // Set striped lands to 1.0 for full columns and rows (only if we have indices)
+      // Get tint attributes for applying light blue tint to neighbors
+      const tintStateAttribute = instancedMesh.geometry.attributes
+        .tintState as THREE.InstancedBufferAttribute;
+      const tintColorAttribute = instancedMesh.geometry.attributes
+        .tintColor as THREE.InstancedBufferAttribute;
+      const tintStateArray = tintStateAttribute.array as Float32Array;
+      const tintColorArray = tintColorAttribute.array as Float32Array;
+      
+      // Clear existing tints first
+      tintStateArray.fill(0.0);
+      tintColorArray.fill(0.0);
+
+      // Set striped lands to 1.0 and apply light blue tint (only if we have indices)
       if (instanceIndices.length > 0) {
-        // Assuming GRID_SIZE is available or we need to calculate it
+        // Light blue tint color for neighbors
+        const lightBlueTintColor = new THREE.Color(0.2, 0.2, 0.5);
 
         instanceIndices.forEach((instanceIndex) => {
           // WE NEED TO TRANSPOSE FOR SPRITES WAY OF SHOWING TILES
@@ -620,17 +611,28 @@ export function setupOutlineShader(
             // spriteIndex = row * GRID_SIZE + col
             const spriteIndex = row * GRID_SIZE + col;
             
-            // Set only this specific coordinate to striped
+            // Apply both stripes AND light blue tint
             if (spriteIndex >= 0 && spriteIndex < stripedArray.length) {
+              // Set striped state
               stripedArray[spriteIndex] = 1.0;
+              
+              // Apply light blue tint
+              tintStateArray[spriteIndex] = 1.0;
+              tintColorArray[spriteIndex * 3] = lightBlueTintColor.r;
+              tintColorArray[spriteIndex * 3 + 1] = lightBlueTintColor.g;
+              tintColorArray[spriteIndex * 3 + 2] = lightBlueTintColor.b;
             }
 
             console.log(
-              `[Debug] Setting striped state for index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
+              `[Debug] Setting stripes AND light blue tint for index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
             );
           }
         });
       }
+      
+      // Update all attributes
+      tintStateAttribute.needsUpdate = true;
+      tintColorAttribute.needsUpdate = true;
 
       // Always mark as needing update, even for empty arrays
       stripedAttribute.needsUpdate = true;
@@ -646,12 +648,24 @@ export function setupOutlineShader(
       const stripedAttribute = instancedMesh.geometry.attributes
         .stripedState as THREE.InstancedBufferAttribute;
       const stripedArray = stripedAttribute.array as Float32Array;
+      
+      // Also clear tint states since we apply tints with stripes
+      const tintStateAttribute = instancedMesh.geometry.attributes
+        .tintState as THREE.InstancedBufferAttribute;
+      const tintColorAttribute = instancedMesh.geometry.attributes
+        .tintColor as THREE.InstancedBufferAttribute;
+      const tintStateArray = tintStateAttribute.array as Float32Array;
+      const tintColorArray = tintColorAttribute.array as Float32Array;
 
-      // Clear all striped states
+      // Clear all striped states and their associated tints
       stripedArray.fill(0.0);
+      tintStateArray.fill(0.0);
+      tintColorArray.fill(0.0);
 
       stripedAttribute.needsUpdate = true;
-      console.log(`Cleared all striped lands`);
+      tintStateAttribute.needsUpdate = true;
+      tintColorAttribute.needsUpdate = true;
+      console.log(`Cleared all striped lands and their tints`);
     },
   };
 
