@@ -53,6 +53,7 @@ export interface OutlineControls {
   setStripedLands: (
     instancedMesh: THREE.InstancedMesh,
     instanceIndices: number[],
+    selectedLandIndex?: number,
   ) => void;
   clearStripedLands: (instancedMesh: THREE.InstancedMesh) => void;
 }
@@ -572,6 +573,7 @@ export function setupOutlineShader(
     setStripedLands: (
       instancedMesh: THREE.InstancedMesh,
       instanceIndices: number[],
+      selectedLandIndex?: number,
     ) => {
       createBufferAttributes(instancedMesh);
 
@@ -594,11 +596,14 @@ export function setupOutlineShader(
       tintStateArray.fill(0.0);
       tintColorArray.fill(0.0);
 
-      // Set striped lands to 1.0 and apply light blue tint (only if we have indices)
+      // Set striped lands to 1.0 and apply tints (only if we have indices)
       if (instanceIndices.length > 0) {
         // Cyan tint color for neighbors (actual RGB values, not multiplier)
         const cyanTintColor = new THREE.Color(0.0, 1.0, 1.0);
+        // Dark tint color for selected land
+        const darkTintColor = new THREE.Color(0.0, 0.0, 0.0);
 
+        // Handle neighbors first
         instanceIndices.forEach((instanceIndex) => {
           // WE NEED TO TRANSPOSE FOR SPRITES WAY OF SHOWING TILES
           if (instanceIndex >= 0 && instanceIndex < stripedArray.length) {
@@ -611,12 +616,12 @@ export function setupOutlineShader(
             // spriteIndex = row * GRID_SIZE + col
             const spriteIndex = row * GRID_SIZE + col;
 
-            // Apply both stripes AND light blue tint
+            // Apply both stripes AND cyan tint for neighbors
             if (spriteIndex >= 0 && spriteIndex < stripedArray.length) {
               // Set striped state
               stripedArray[spriteIndex] = 1.0;
 
-              // Apply cyan tint
+              // Apply cyan tint for neighbors
               tintStateArray[spriteIndex] = 0.1;
               tintColorArray[spriteIndex * 3] = cyanTintColor.r;
               tintColorArray[spriteIndex * 3 + 1] = cyanTintColor.g;
@@ -624,10 +629,44 @@ export function setupOutlineShader(
             }
 
             console.log(
-              `[Debug] Setting stripes AND cyan tint for index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
+              `[Debug] Setting stripes AND cyan tint for neighbor index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
             );
           }
         });
+
+        // Handle selected land separately if provided
+        if (selectedLandIndex !== undefined) {
+          if (
+            selectedLandIndex >= 0 &&
+            selectedLandIndex < stripedArray.length
+          ) {
+            // Transform selected land index the same way
+            const selectedCol = Math.floor(
+              selectedLandIndex / COORD_MULTIPLIER,
+            );
+            const selectedRow = selectedLandIndex % COORD_MULTIPLIER;
+            const selectedSpriteIndex = selectedRow * GRID_SIZE + selectedCol;
+
+            // Apply both stripes AND dark tint for selected land
+            if (
+              selectedSpriteIndex >= 0 &&
+              selectedSpriteIndex < stripedArray.length
+            ) {
+              // Set striped state
+              stripedArray[selectedSpriteIndex] = 1.0;
+
+              // Apply dark tint for selected land
+              tintStateArray[selectedSpriteIndex] = 0.7;
+              tintColorArray[selectedSpriteIndex * 3] = darkTintColor.r;
+              tintColorArray[selectedSpriteIndex * 3 + 1] = darkTintColor.g;
+              tintColorArray[selectedSpriteIndex * 3 + 2] = darkTintColor.b;
+            }
+
+            console.log(
+              `[Debug] Setting stripes AND dark tint for selected index ${selectedLandIndex} (row=${selectedRow}, col=${selectedCol}) -> spriteIndex ${selectedSpriteIndex}`,
+            );
+          }
+        }
       }
 
       // Update all attributes

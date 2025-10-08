@@ -191,7 +191,7 @@
       // Get neighbor locations
       const neighborsData = Neighbors.getLocations(BigInt(land.location));
       const neighborIndices = neighborsData.array.map((loc) => Number(loc));
-      
+
       // Add the selected land itself to the stripe list
       const selectedLandIndex = Number(land.location);
       const allStripedIndices = [selectedLandIndex, ...neighborIndices];
@@ -200,14 +200,16 @@
       if (outlineStore.buildingControls && outlineStore.buildingSprite) {
         outlineStore.buildingControls.setStripedLands(
           outlineStore.buildingSprite,
-          allStripedIndices,
+          neighborIndices,
+          selectedLandIndex,
         );
       }
 
       if (outlineStore.biomeControls && outlineStore.biomeSprite) {
         outlineStore.biomeControls.setStripedLands(
           outlineStore.biomeSprite,
-          allStripedIndices,
+          neighborIndices,
+          selectedLandIndex,
         );
       }
     }
