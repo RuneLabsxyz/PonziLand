@@ -384,8 +384,7 @@
 
   // Optimized visible land calculation with memoization
   let visibleLandTiles = $derived.by(() => {
-    // const maxCirc = configValues.maxCircles + CIRCLE_PADDING;
-    const maxCirc = 256;
+    const maxCirc = configValues.maxCircles + CIRCLE_PADDING;
 
     // Check cache for circle positions
     const cacheKey = `${CENTER},${CENTER},${maxCirc}`;
