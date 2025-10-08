@@ -6,6 +6,7 @@
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import { onMount } from 'svelte';
+  import OverlayManagerItem from './OverlayManagerItem.svelte';
 
   type MultipleValues = ('nuke' | 'rates')[];
 
@@ -59,20 +60,12 @@
         value={heatmapState}
         onValueChange={(e) => (heatmapState = e as HeatmapState)}
       >
-        <ToggleGroup.Item value={HeatmapParameter.SELL_PRICE}>
-          <div
-            class="flex items-center justify-center h-4 w-4 font-ponzi-number text-xs stroke-3d-black"
-          >
-            $
-          </div>
-        </ToggleGroup.Item>
-        <ToggleGroup.Item value={HeatmapParameter.LEVEL}>
-          <div
-            class="flex items-center justify-center h-4 w-4 font-ponzi-number text-xs stroke-3d-black"
-          >
-            lvl
-          </div>
-        </ToggleGroup.Item>
+        <OverlayManagerItem value={HeatmapParameter.SELL_PRICE} tooltip="Sell Price Heatmap">
+          <div class="font-ponzi-number text-xs stroke-3d-black">$</div>
+        </OverlayManagerItem>
+        <OverlayManagerItem value={HeatmapParameter.LEVEL} tooltip="Level Heatmap">
+          <div class="font-ponzi-number text-xs stroke-3d-black">lvl</div>
+        </OverlayManagerItem>
       </ToggleGroup.Root>
       <Separator orientation="vertical" class="my-2 opacity-50" />
       <ToggleGroup.Root
@@ -83,24 +76,28 @@
         value={multiple}
         onValueChange={(e) => (multiple = e as MultipleValues)}
       >
-        <ToggleGroup.Item value="nuke">
+        <OverlayManagerItem value="nuke" tooltip="Show Nuke Times">
           <img
             src="/ui/icons/Icon_ShieldRed.png"
             alt="Stats Icon"
             class="inline h-4 w-4"
           />
-        </ToggleGroup.Item>
-        <ToggleGroup.Item value="rates">
+        </OverlayManagerItem>
+        <OverlayManagerItem value="rates" tooltip="Show Rates Overlay">
           <img
             src="/ui/icons/Icon_Coin3.png"
             alt="Stats Icon"
             class="inline h-4 w-4"
           />
-        </ToggleGroup.Item>
+        </OverlayManagerItem>
       </ToggleGroup.Root>
     </div>
   </Card>
-  <div class="absolute left-1/2 -translate-x-1/2 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl">^</div>
+  <div
+    class="absolute left-1/2 -translate-x-1/2 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
+  >
+    ^
+  </div>
 </div>
 
 <style>
