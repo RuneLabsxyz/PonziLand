@@ -382,11 +382,7 @@ export function setupOutlineShader(
 
         ownedAttribute.needsUpdate = true;
 
-        // Clear tints when using old system (keep stripes)
-        const tintStateAttribute = instancedMesh.geometry.attributes
-          .tintState as THREE.InstancedBufferAttribute;
-        tintStateAttribute.array.fill(0.0);
-        tintStateAttribute.needsUpdate = true;
+        // Don't clear tints when using old system to preserve neighbor highlighting
       } else {
         // Use new system when zoomed - set tint colors only, no stripes
         const ownedAttribute = instancedMesh.geometry.attributes
@@ -408,9 +404,16 @@ export function setupOutlineShader(
         const tintStateArray = tintStateAttribute.array as Float32Array;
         const tintColorArray = tintColorAttribute.array as Float32Array;
 
-        // Clear all tint states first
-        tintStateArray.fill(0.0);
-        tintColorArray.fill(0.0);
+        // Only clear tints for owned land indices to preserve neighbor highlighting
+        // First reset only the owned land indices
+        instanceIndices.forEach((instanceIndex) => {
+          if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
+            tintStateArray[instanceIndex] = 0.0;
+            tintColorArray[instanceIndex * 3] = 0.0;
+            tintColorArray[instanceIndex * 3 + 1] = 0.0;
+            tintColorArray[instanceIndex * 3 + 2] = 0.0;
+          }
+        });
 
         // Set tint for owned lands (only if we have indices)
         if (instanceIndices.length > 0) {
@@ -467,11 +470,7 @@ export function setupOutlineShader(
 
         auctionAttribute.needsUpdate = true;
 
-        // Clear tints when using old system (keep stripes)
-        const tintStateAttribute = instancedMesh.geometry.attributes
-          .tintState as THREE.InstancedBufferAttribute;
-        tintStateAttribute.array.fill(0.0);
-        tintStateAttribute.needsUpdate = true;
+        // Don't clear tints when using old system to preserve neighbor highlighting
       } else {
         // Use new system when zoomed - no tint, no stripes for auction lands
         const auctionAttribute = instancedMesh.geometry.attributes
@@ -482,7 +481,7 @@ export function setupOutlineShader(
         auctionArray.fill(0.0);
         auctionAttribute.needsUpdate = true;
 
-        // Clear all tint states (auction lands have no tint when zoomed)
+        // Only clear tints for auction land indices to preserve neighbor highlighting
         const tintStateAttribute = instancedMesh.geometry.attributes
           .tintState as THREE.InstancedBufferAttribute;
         const tintColorAttribute = instancedMesh.geometry.attributes
@@ -490,8 +489,16 @@ export function setupOutlineShader(
         const tintStateArray = tintStateAttribute.array as Float32Array;
         const tintColorArray = tintColorAttribute.array as Float32Array;
 
-        tintStateArray.fill(0.0);
-        tintColorArray.fill(0.0);
+        // Clear tints only for auction land indices (auction lands have no tint when zoomed)
+        instanceIndices.forEach((instanceIndex) => {
+          if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
+            tintStateArray[instanceIndex] = 0.0;
+            tintColorArray[instanceIndex * 3] = 0.0;
+            tintColorArray[instanceIndex * 3 + 1] = 0.0;
+            tintColorArray[instanceIndex * 3 + 2] = 0.0;
+          }
+        });
+        
         tintStateAttribute.needsUpdate = true;
         tintColorAttribute.needsUpdate = true;
       }
