@@ -3,8 +3,8 @@ version = 1
 
 [[package]]
 name = "alexandria_bytes"
-version = "0.3.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+version = "0.6.1"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.6.1#3f5e6476f350bb09e919e2725489c29442f313ca"
 dependencies = [
  "alexandria_data_structures",
  "alexandria_math",
@@ -12,13 +12,13 @@ dependencies = [
 
 [[package]]
 name = "alexandria_data_structures"
-version = "0.3.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+version = "0.6.1"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.6.1#3f5e6476f350bb09e919e2725489c29442f313ca"
 
 [[package]]
 name = "alexandria_encoding"
-version = "0.3.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+version = "0.6.1"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.6.1#3f5e6476f350bb09e919e2725489c29442f313ca"
 dependencies = [
  "alexandria_bytes",
  "alexandria_data_structures",
@@ -28,13 +28,13 @@ dependencies = [
 
 [[package]]
 name = "alexandria_math"
-version = "0.3.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+version = "0.6.1"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.6.1#3f5e6476f350bb09e919e2725489c29442f313ca"
 
 [[package]]
 name = "alexandria_numeric"
-version = "0.3.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+version = "0.6.1"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.6.1#3f5e6476f350bb09e919e2725489c29442f313ca"
 dependencies = [
  "alexandria_math",
  "alexandria_searching",
@@ -42,8 +42,8 @@ dependencies = [
 
 [[package]]
 name = "alexandria_searching"
-version = "0.3.0"
-source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.3.0#e3715428c990665afc495b5428ef08ab9a2089cd"
+version = "0.6.1"
+source = "git+https://github.com/keep-starknet-strange/alexandria.git?tag=v0.6.1#3f5e6476f350bb09e919e2725489c29442f313ca"
 dependencies = [
  "alexandria_data_structures",
 ]
@@ -77,7 +77,7 @@ source = "git+https://github.com/EkuboProtocol/abis?rev=edb6de8c9baf515f1053bbab
 [[package]]
 name = "game_components_metagame"
 version = "1.5.1"
-source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
+source = "git+https://github.com/ZackAmes/game-components?rev=2af3d18e3874be5a147e79e81aff8eb23658aa3b#2af3d18e3874be5a147e79e81aff8eb23658aa3b"
 dependencies = [
  "game_components_minigame",
  "game_components_token",
@@ -89,7 +89,7 @@ dependencies = [
 [[package]]
 name = "game_components_minigame"
 version = "1.5.1"
-source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
+source = "git+https://github.com/ZackAmes/game-components?rev=2af3d18e3874be5a147e79e81aff8eb23658aa3b#2af3d18e3874be5a147e79e81aff8eb23658aa3b"
 dependencies = [
  "game_components_metagame",
  "game_components_token",
@@ -101,7 +101,7 @@ dependencies = [
 [[package]]
 name = "game_components_test_starknet"
 version = "1.5.1"
-source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
+source = "git+https://github.com/ZackAmes/game-components?rev=2af3d18e3874be5a147e79e81aff8eb23658aa3b#2af3d18e3874be5a147e79e81aff8eb23658aa3b"
 dependencies = [
  "game_components_metagame",
  "game_components_minigame",
@@ -114,7 +114,7 @@ dependencies = [
 [[package]]
 name = "game_components_token"
 version = "1.5.1"
-source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
+source = "git+https://github.com/ZackAmes/game-components?rev=2af3d18e3874be5a147e79e81aff8eb23658aa3b#2af3d18e3874be5a147e79e81aff8eb23658aa3b"
 dependencies = [
  "game_components_metagame",
  "game_components_minigame",
@@ -127,7 +127,7 @@ dependencies = [
 [[package]]
 name = "game_components_utils"
 version = "1.5.1"
-source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
+source = "git+https://github.com/ZackAmes/game-components?rev=2af3d18e3874be5a147e79e81aff8eb23658aa3b#2af3d18e3874be5a147e79e81aff8eb23658aa3b"
 dependencies = [
  "alexandria_encoding",
  "game_components_metagame",
@@ -196,6 +196,7 @@ name = "ponzi_land"
 version = "1.4.0"
 dependencies = [
  "dojo",
+ "dojo_cairo_macros",
  "dojo_cairo_test",
  "ekubo",
  "game_components_minigame",
