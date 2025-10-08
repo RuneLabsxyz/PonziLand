@@ -40,10 +40,19 @@
   );
 
   let tokenBurnRate = $derived(
-    calculateBurnRate(land.sellPrice, land.level, numberOfNeighbours),
+    land.type === 'auction'
+      ? 0n
+      : calculateBurnRate(land.sellPrice, land.level, numberOfNeighbours),
   );
 
   let displayBurnRate = $derived.by(() => {
+    if (land.type === 'auction') {
+      return {
+        amount: '',
+        symbol: '???',
+      };
+    }
+
     if (settingsStore.showRatesInBaseToken && baseToken && land.token) {
       const burnAmount = CurrencyAmount.fromScaled(
         Number(tokenBurnRate),
@@ -68,7 +77,7 @@
       const symbol =
         land.token?.symbol === 'USDC' ? '$' : land.token?.symbol || 'UNKNOWN';
       return {
-        amount: displayCurrency(tokenBurnRate),
+        amount: displayCurrency(Number(tokenBurnRate)),
         symbol: symbol,
       };
     }
@@ -189,6 +198,10 @@
 
   // Calculate net yield (total earnings - burn rate)
   let netYield = $derived.by(() => {
+    if (land.type === 'auction') {
+      return totalEarningsPerHour;
+    }
+
     if (settingsStore.showRatesInBaseToken && baseToken && land.token) {
       const burnAmount = CurrencyAmount.fromScaled(
         Number(tokenBurnRate),
@@ -320,137 +333,135 @@
   });
 </script>
 
-{#if land.type !== 'auction'}
-  <div
-    class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20 tracking-wider"
-    style="transform: translate(-150px, -150px); width: 300px; height: 300px;"
-  >
-    {#if isLoading}
-      <div class="col-span-3 row-span-3 flex items-center justify-center">
-        <RotatingCoin />
-      </div>
-    {:else}
-      {#each yieldInfo as info, i}
-        {#if info?.token && displayYields[i] && displayYields[i].amount !== '0'}
-          <div
-            class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
-          >
-            <span class="whitespace-nowrap text-[#A0EA68]">
-              +{displayYields[i].amount}{displayYields[i].symbol}
+<div
+  class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20 tracking-wider"
+  style="transform: translate(-150px, -150px); width: 300px; height: 300px;"
+>
+  {#if isLoading}
+    <div class="col-span-3 row-span-3 flex items-center justify-center">
+      <RotatingCoin />
+    </div>
+  {:else}
+    {#each yieldInfo as info, i}
+      {#if info?.token && displayYields[i] && displayYields[i].amount !== '0'}
+        <div
+          class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
+        >
+          <span class="whitespace-nowrap text-[#A0EA68]">
+            +{displayYields[i].amount}{displayYields[i].symbol}
+          </span>
+        </div>
+      {:else if i === 4 && (centerTileDisplay.totalEarnings.amount !== '0' || (centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'))}
+        <div
+          class="text-ponzi-number text-[8px] flex flex-col items-center justify-center leading-tight gap-0.5 relative"
+        >
+          <!-- Total Earnings -->
+          {#if centerTileDisplay.totalEarnings.amount !== '0'}
+            <span class="whitespace-nowrap text-green-400">
+              +{centerTileDisplay.totalEarnings.amount}{centerTileDisplay
+                .totalEarnings.symbol}
             </span>
-          </div>
-        {:else if i === 4 && (centerTileDisplay.totalEarnings.amount !== '0' || (centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'))}
-          <div
-            class="text-ponzi-number text-[8px] flex flex-col items-center justify-center leading-tight gap-0.5 relative"
-          >
-            <!-- Total Earnings -->
-            {#if centerTileDisplay.totalEarnings.amount !== '0'}
-              <span class="whitespace-nowrap text-green-400">
-                +{centerTileDisplay.totalEarnings.amount}{centerTileDisplay
-                  .totalEarnings.symbol}
-              </span>
-            {/if}
-            <!-- Burn Rate -->
-            {#if centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'}
-              <span class="whitespace-nowrap text-orange-500">
-                -{centerTileDisplay.burnRate.amount}{centerTileDisplay.burnRate
-                  .symbol}
-              </span>
-            {/if}
-            <hr
-              class=" bg-gray-300 w-10"
-              style="filter: drop-shadow(.5px .5px 0px black);"
-            />
-            <!-- Net Yield -->
-            <span
-              class="whitespace-nowrap {centerTileDisplay.netYield.isPositive
-                ? 'text-[#A0EA68]'
-                : 'text-[#F05555]'} font-bold text-[8px]"
-            >
-              {centerTileDisplay.netYield.isPositive
-                ? '+'
-                : '-'}{centerTileDisplay.netYield.amount}{centerTileDisplay
-                .netYield.symbol}
+          {/if}
+          <!-- Burn Rate -->
+          {#if centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'}
+            <span class="whitespace-nowrap text-orange-500">
+              -{centerTileDisplay.burnRate.amount}{centerTileDisplay.burnRate
+                .symbol}
             </span>
-          </div>
-        {:else}
+          {/if}
+          <hr
+            class=" bg-gray-300 w-10"
+            style="filter: drop-shadow(.5px .5px 0px black);"
+          />
+          <!-- Net Yield -->
+          <span
+            class="whitespace-nowrap {centerTileDisplay.netYield.isPositive
+              ? 'text-[#A0EA68]'
+              : 'text-[#F05555]'} font-bold text-[8px]"
+          >
+            {centerTileDisplay.netYield.isPositive
+              ? '+'
+              : '-'}{centerTileDisplay.netYield.amount}{centerTileDisplay
+              .netYield.symbol}
+          </span>
+        </div>
+      {:else}
+        <div
+          class="text-ponzi text-[32px] flex items-center justify-center leading-none"
+        ></div>
+      {/if}
+
+      <!-- Show arrows only for neighbors with actual yields (has token and yield > 0) -->
+      {#if info?.token && info.per_hour > 0n}
+        {@const scale = getArrowScale(info)}
+        <!-- Straight -->
+        {#if i === 1}
           <div
-            class="text-ponzi text-[32px] flex items-center justify-center leading-none"
-          ></div>
+            class="absolute top-1/3 left-1/2"
+            style="transform: translate(-50%, -50%) rotate(90deg) scale({scale});"
+          >
+            <Arrow type="straight" class="pr-2 w-8 h-8" />
+          </div>
+        {/if}
+        {#if i === 3}
+          <div
+            class="absolute top-1/2 left-1/3"
+            style="transform: translate(-50%, -50%) scale({scale});"
+          >
+            <Arrow type="straight" class="pr-2 w-8 h-8" />
+          </div>
+        {/if}
+        {#if i === 5}
+          <div
+            class="absolute top-1/2 right-1/3"
+            style="transform: translate(50%, -50%) rotate(180deg) scale({scale});"
+          >
+            <Arrow type="straight" class="pr-2 w-8 h-8" />
+          </div>
+        {/if}
+        {#if i === 7}
+          <div
+            class="absolute bottom-1/3 left-1/2"
+            style="transform: translate(-50%, 50%) rotate(-90deg) scale({scale});"
+          >
+            <Arrow type="straight" class="pr-2 w-8 h-8" />
+          </div>
         {/if}
 
-        <!-- Show arrows only for neighbors with actual yields (has token and yield > 0) -->
-        {#if info?.token && info.per_hour > 0n}
-          {@const scale = getArrowScale(info)}
-          <!-- Straight -->
-          {#if i === 1}
-            <div
-              class="absolute top-1/3 left-1/2"
-              style="transform: translate(-50%, -50%) rotate(90deg) scale({scale});"
-            >
-              <Arrow type="straight" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-          {#if i === 3}
-            <div
-              class="absolute top-1/2 left-1/3"
-              style="transform: translate(-50%, -50%) scale({scale});"
-            >
-              <Arrow type="straight" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-          {#if i === 5}
-            <div
-              class="absolute top-1/2 right-1/3"
-              style="transform: translate(50%, -50%) rotate(180deg) scale({scale});"
-            >
-              <Arrow type="straight" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-          {#if i === 7}
-            <div
-              class="absolute bottom-1/3 left-1/2"
-              style="transform: translate(-50%, 50%) rotate(-90deg) scale({scale});"
-            >
-              <Arrow type="straight" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-
-          <!-- Diagonals -->
-          {#if i === 0}
-            <div
-              class="absolute top-1/3 left-1/3"
-              style="transform: translate(-50%, -50%) rotate(45deg) scale({scale});"
-            >
-              <Arrow type="bent" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-          {#if i === 2}
-            <div
-              class="absolute top-1/3 right-1/3"
-              style="transform: translate(50%, -50%) rotate(135deg) scale({scale});"
-            >
-              <Arrow type="bent" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-          {#if i === 6}
-            <div
-              class="absolute bottom-1/3 left-1/3"
-              style="transform: translate(-50%, 50%) rotate(-45deg) scale({scale});"
-            >
-              <Arrow type="bent" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
-          {#if i === 8}
-            <div
-              class="absolute bottom-1/3 right-1/3"
-              style="transform: translate(50%, 50%) rotate(-135deg) scale({scale});"
-            >
-              <Arrow type="bent" class="pr-2 w-8 h-8" />
-            </div>
-          {/if}
+        <!-- Diagonals -->
+        {#if i === 0}
+          <div
+            class="absolute top-1/3 left-1/3"
+            style="transform: translate(-50%, -50%) rotate(45deg) scale({scale});"
+          >
+            <Arrow type="bent" class="pr-2 w-8 h-8" />
+          </div>
         {/if}
-      {/each}
-    {/if}
-  </div>
-{/if}
+        {#if i === 2}
+          <div
+            class="absolute top-1/3 right-1/3"
+            style="transform: translate(50%, -50%) rotate(135deg) scale({scale});"
+          >
+            <Arrow type="bent" class="pr-2 w-8 h-8" />
+          </div>
+        {/if}
+        {#if i === 6}
+          <div
+            class="absolute bottom-1/3 left-1/3"
+            style="transform: translate(-50%, 50%) rotate(-45deg) scale({scale});"
+          >
+            <Arrow type="bent" class="pr-2 w-8 h-8" />
+          </div>
+        {/if}
+        {#if i === 8}
+          <div
+            class="absolute bottom-1/3 right-1/3"
+            style="transform: translate(50%, 50%) rotate(-135deg) scale({scale});"
+          >
+            <Arrow type="bent" class="pr-2 w-8 h-8" />
+          </div>
+        {/if}
+      {/if}
+    {/each}
+  {/if}
+</div>
