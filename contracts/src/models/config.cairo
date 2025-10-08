@@ -1,17 +1,6 @@
-use dojo::model::{ModelStorage, ModelValueStorage};
-use dojo::world::WorldStorage;
-use ponzi_land::consts::{
-    AUCTION_DURATION, BASE_TIME, BUY_FEE, CLAIM_FEE, CLAIM_FEE_THRESHOLD, DECAY_RATE, DROP_RATE,
-    FLOOR_PRICE, LINEAR_DECAY_TIME, LIQUIDITY_SAFETY_MULTIPLIER, MAX_AUCTIONS,
-    MAX_AUCTIONS_FROM_BID, MAX_CIRCLES, MIN_AUCTION_PRICE, MIN_AUCTION_PRICE_MULTIPLIER,
-    OUR_CONTRACT_SEPOLIA_ADDRESS, PRICE_DECREASE_RATE, RATE_DENOMINATOR, SCALING_FACTOR, TAX_RATE,
-    TIME_SPEED,
-};
 /// @title Config Model for PonziLand
 /// @notice Model for global configuration parameters in PonziLand.
 use starknet::ContractAddress;
-<<<<<<< HEAD
-=======
 use dojo::world::{WorldStorage};
 use dojo::model::{ModelStorage, ModelValueStorage};
 use ponzi_land::consts::{
@@ -21,7 +10,6 @@ use ponzi_land::consts::{
     RATE_DENOMINATOR, MAX_CIRCLES, CLAIM_FEE, BUY_FEE, OUR_CONTRACT_SEPOLIA_ADDRESS,
     CLAIM_FEE_THRESHOLD, QUEST_AUCTION_CHANCE, QUEST_LANDS_ENABLED,
 };
->>>>>>> bfaef56a (add config flag)
 
 /// Global configuration for the PonziLand game.
 /// * `id` - Unique identifier for the config (always 1 for singleton pattern).
