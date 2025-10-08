@@ -4,12 +4,13 @@
   import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import LandOwnerInfo from '$lib/components/+game-map/land/land-owner-info.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import { getBaseToken } from '$lib/stores/wallet.svelte';
   import { padAddress } from '$lib/utils';
   import InfoTabs from './info-tabs.svelte';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -75,12 +76,12 @@
         <TokenAvatar token={land.token} class="w-7 h-7" />
       </div>
       <div
-        class="flex text-2xl items-center gap-1 mt-5 {tutorialState.tutorialProgress ==
+        class="flex flex-col text-2xl gap-1 mt-5 {tutorialState.tutorialProgress ==
         5
           ? 'border border-yellow-500 animate-pulse'
           : ''}"
       >
-        <PriceDisplay price={currentPrice} token={land.token} />
+        <PriceDisplay price={currentPrice} token={land.token} showRate />
       </div>
       {#if fetching}
         Fetching auction price...

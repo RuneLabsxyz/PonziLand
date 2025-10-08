@@ -54,10 +54,10 @@
     >
     {#if currentPrice}
       <div class="flex gap-2">
-        <PriceDisplay price={currentPrice} />
+        <PriceDisplay price={currentPrice} showRate />
         {#if !currentPrice.isZero()}
           <div
-            class="text-ponzi-number text-xl flex items-center gap-2 stroke-3d-black"
+            class="text-ponzi-number text-xl flex items-center gap-2 stroke-3d-black mb-4"
           >
             {displayToken?.symbol}
             <TokenAvatar token={displayToken} class="w-5 h-5" />

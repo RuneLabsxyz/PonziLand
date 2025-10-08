@@ -274,24 +274,9 @@
               </div>
             {:else if land.price}
               <div class="flex gap-1 items-center">
-                <PriceDisplay price={land.price} />
+                <PriceDisplay price={land.price} showRate />
                 <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
-              {#if land.convertedPrice && land.token && land.token.address !== baseToken.address}
-                <div
-                  class="flex gap-1 items-center text-xs opacity-60 h-0 mt-2"
-                >
-                  ≈ {land.convertedPrice}
-                  {baseToken.symbol}
-                </div>
-              {:else if land.convertedPriceLoading}
-                <div
-                  class="flex gap-1 items-center text-xs opacity-50 h-0 mt-2"
-                >
-                  <span>Converting...</span>
-                  <TokenAvatar class="w-3 h-3" token={baseToken} />
-                </div>
-              {/if}
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>

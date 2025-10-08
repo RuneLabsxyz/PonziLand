@@ -13,7 +13,7 @@ import { MAX_STAKE } from '$lib/flags';
 import { settingsStore } from '$lib/stores/settings.store.svelte';
 
 const BASE_TOKEN = data.mainCurrencyAddress;
-const originalBaseToken = data.availableTokens.find(
+export const originalBaseToken = data.availableTokens.find(
   (token) => token.address === BASE_TOKEN,
 )!;
 
