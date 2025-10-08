@@ -20,7 +20,7 @@
 
         # Cairo/Starknet tools
         cairo-nix.dojo
-        cairo-nix.scarb-nightly
+        cairo-nix.scarb
         cairo-nix.starkli
         cairo-nix.slot
 
