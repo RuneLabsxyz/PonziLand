@@ -589,15 +589,15 @@ export function setupOutlineShader(
         .tintColor as THREE.InstancedBufferAttribute;
       const tintStateArray = tintStateAttribute.array as Float32Array;
       const tintColorArray = tintColorAttribute.array as Float32Array;
-      
+
       // Clear existing tints first
       tintStateArray.fill(0.0);
       tintColorArray.fill(0.0);
 
       // Set striped lands to 1.0 and apply light blue tint (only if we have indices)
       if (instanceIndices.length > 0) {
-        // Light blue tint color for neighbors
-        const lightBlueTintColor = new THREE.Color(0.2, 0.2, 0.5);
+        // Cyan tint color for neighbors (actual RGB values, not multiplier)
+        const cyanTintColor = new THREE.Color(0.0, 1.0, 1.0);
 
         instanceIndices.forEach((instanceIndex) => {
           // WE NEED TO TRANSPOSE FOR SPRITES WAY OF SHOWING TILES
@@ -606,30 +606,30 @@ export function setupOutlineShader(
             // instanceIndex = row * COORD_MULTIPLIER + col
             const col = Math.floor(instanceIndex / COORD_MULTIPLIER);
             const row = instanceIndex % COORD_MULTIPLIER;
-            
+
             // Convert to sprite index which uses GRID_SIZE encoding
             // spriteIndex = row * GRID_SIZE + col
             const spriteIndex = row * GRID_SIZE + col;
-            
+
             // Apply both stripes AND light blue tint
             if (spriteIndex >= 0 && spriteIndex < stripedArray.length) {
               // Set striped state
               stripedArray[spriteIndex] = 1.0;
-              
-              // Apply light blue tint
-              tintStateArray[spriteIndex] = 1.0;
-              tintColorArray[spriteIndex * 3] = lightBlueTintColor.r;
-              tintColorArray[spriteIndex * 3 + 1] = lightBlueTintColor.g;
-              tintColorArray[spriteIndex * 3 + 2] = lightBlueTintColor.b;
+
+              // Apply cyan tint
+              tintStateArray[spriteIndex] = 0.1;
+              tintColorArray[spriteIndex * 3] = cyanTintColor.r;
+              tintColorArray[spriteIndex * 3 + 1] = cyanTintColor.g;
+              tintColorArray[spriteIndex * 3 + 2] = cyanTintColor.b;
             }
 
             console.log(
-              `[Debug] Setting stripes AND light blue tint for index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
+              `[Debug] Setting stripes AND cyan tint for index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
             );
           }
         });
       }
-      
+
       // Update all attributes
       tintStateAttribute.needsUpdate = true;
       tintColorAttribute.needsUpdate = true;
@@ -648,7 +648,7 @@ export function setupOutlineShader(
       const stripedAttribute = instancedMesh.geometry.attributes
         .stripedState as THREE.InstancedBufferAttribute;
       const stripedArray = stripedAttribute.array as Float32Array;
-      
+
       // Also clear tint states since we apply tints with stripes
       const tintStateAttribute = instancedMesh.geometry.attributes
         .tintState as THREE.InstancedBufferAttribute;

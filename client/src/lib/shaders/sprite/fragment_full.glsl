@@ -428,19 +428,9 @@ void main() {
         }
 
         // Apply instance-based tinting if enabled
-        if(vTintState > 0.5 && tintOpacity > 0.0) {
+        if(vTintState > 0.0) {
             // Mix the tint color with the original sprite color using opacity control
-            finalColor = mix(finalColor, vTintColor, tintOpacity);
-        }
-
-        // Apply tint if needed
-        if(tint.w == 1.0) {
-            vec3 hue_term = 1.0 - min(abs(vec3(tint.x) - vec3(0.0, 2.0, 1.0)), 1.0);
-            hue_term.x = 1.0 - dot(hue_term.yz, vec2(1.0));
-            vec3 res = vec3(dot(finalColor, hue_term.xyz), dot(finalColor, hue_term.zxy), dot(finalColor, hue_term.yzx));
-            res = mix(vec3(dot(res, vec3(0.2, 0.5, 0.3))), res, tint.y);
-            res = res * tint.z;
-            finalColor = res;
+            finalColor = mix(finalColor, vTintColor, vTintState);
         }
 
         baseColor = finalColor; // Store for lighting
