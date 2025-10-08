@@ -16,10 +16,10 @@ telegram = "https://t.me/dojoengine"
 default = "ponzi_land"
 
 [env]
-rpc_url = "http://localhost:5050"
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8"
 # Default account for katana with seed = 0
-account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+account_address = "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780"
+private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
 
@@ -95,13 +95,5 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "1",
     "0",
     "2",
-]
-
-# External contract deployment - Liquidity Reinjector (non-Dojo contract)
-[[external_contracts]]
-contract_name = "LiquidityReinjector"
-salt = "1"
-constructor_data = [
-    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
 ]
 
