@@ -12,6 +12,7 @@
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
   import type { LandTileStore } from '$lib/api/land_tiles.svelte';
+  import { coordinatesToLocation } from '$lib/utils';
 
   let {
     landTiles,
@@ -55,8 +56,7 @@
 
       landTiles.forEach((tile) => {
         if (!BuildingLand.is(tile.land)) return;
-        const landIndex =
-          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex = coordinatesToLocation(tile.land.location);
         if (ownedIndicesSet.has(landIndex)) {
           allOwnershipData.set(landIndex, 'crown');
         }
@@ -70,8 +70,7 @@
 
       landTiles.forEach((tile) => {
         if (!BuildingLand.is(tile.land)) return;
-        const landIndex =
-          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex = coordinatesToLocation(tile.land.location);
         if (agentIndicesSet.has(landIndex)) {
           allOwnershipData.set(landIndex, getAIAgentType(agent));
         }
@@ -82,15 +81,14 @@
     return landTiles
       .filter((tile) => {
         if (!BuildingLand.is(tile.land)) return false;
-        const landIndex =
-          tile.land.location.x * GRID_SIZE + tile.land.location.y;
+        const landIndex = coordinatesToLocation(tile.land.location);
         return allOwnershipData.has(landIndex);
       })
       .map((tile, tileIndex) => ({
         tile,
         tileIndex,
         ownerType: allOwnershipData.get(
-          tile.land.location.x * GRID_SIZE + tile.land.location.y,
+          coordinatesToLocation(tile.land.location),
         )!,
       }));
   });

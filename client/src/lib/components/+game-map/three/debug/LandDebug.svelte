@@ -117,9 +117,7 @@
   let auctionDecayRate = $derived('-');
 
   let landType = $derived(land?.type ?? 'empty');
-  let coordinate = $derived(
-    land ? land.location.x + land.location.y * GRID_SIZE : -1,
-  );
+  let coordinate = $derived(land ? coordinatesToLocation(land.location) : -1);
 
   let locationString = $derived(coordinatesToLocation(location).toString());
 

@@ -4,6 +4,8 @@ import vertexMain from '$lib/shaders/sprite/vertex_main.glsl';
 import vertexPars from '$lib/shaders/sprite/vertex_pars.glsl';
 import { loadingStore } from '$lib/stores/loading.store.svelte';
 import { GRID_SIZE, COORD_MULTIPLIER } from '$lib/const';
+import { toLocation } from '$lib/api/land/location';
+import { coordinatesToLocation } from '$lib/utils';
 
 export interface OutlineShaderOptions {
   outlineColor?: THREE.Color;
@@ -704,9 +706,19 @@ export function handleCursorState(
   if (!outlineControls || !instancedMesh) return;
 
   // Apply selected state (this will clear previous selected if different)
-  outlineControls.setSelected(instancedMesh, selectedIndex);
+  outlineControls.setSelected(
+    instancedMesh,
+    convertFromGoodToWeirdCoordinates(selectedIndex),
+  );
 
   // Apply hover state (this will clear previous hover if different and not selected)
   // Hover state shows even when something is selected (hover overrides selected visually)
-  outlineControls.setHover(instancedMesh, hoveredIndex);
+  outlineControls.setHover(
+    instancedMesh,
+    convertFromGoodToWeirdCoordinates(hoveredIndex),
+  );
+}
+
+function convertFromGoodToWeirdCoordinates(input: number): number {
+  return coordinatesToLocation(toLocation(input));
 }

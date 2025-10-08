@@ -1,7 +1,10 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { tweened } from 'svelte/motion';
 import { TILE_SIZE } from '$lib/const';
 import { parseLocation } from '$lib/utils';
+import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
+import { landStore, selectedLand } from './store.svelte';
+import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
 
 export const cameraPosition = writable({
   scale: 1,
@@ -48,8 +51,29 @@ export function moveCameraTo(
 }
 
 export function moveCameraToLocation(location: number, targetScale?: number) {
+  console.log('Moving camera to location:', location);
   // Use correct coordinate system matching contracts
   const [tileX, tileY] = parseLocation(location);
 
-  moveCameraTo(tileX + 1, tileY + 1, targetScale);
+  gameStore.cameraControls?.setLookAt(tileX, 50, tileY, tileX, 0, tileY, true);
+}
+
+export function selectLand(location: number, targetScale?: number) {
+  console.log('Selecting land:', location);
+  // Use correct coordinate system matching contracts
+  const [tileX, tileY] = parseLocation(location);
+
+  const baseLand = landStore.getLand(tileX, tileY);
+
+  if (baseLand) {
+    selectedLand.value = get(baseLand);
+  }
+
+  if (cursorStore.selectedTileIndex == location) {
+    gameStore.cameraControls?.zoomTo(250, true);
+  }
+
+  cursorStore.selectedTileIndex = location;
+
+  gameStore.cameraControls?.setLookAt(tileX, 50, tileY, tileX, 0, tileY, true);
 }

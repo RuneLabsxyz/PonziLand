@@ -4,6 +4,7 @@
   import { cursorStore } from './cursor.store.svelte';
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
+  import { coordinatesToLocation } from '$lib/utils';
 
   let { landTiles } = $props();
 
@@ -25,7 +26,7 @@
       // Calculate grid-based sprite index instead of array index
       const gridX = tile.position[0];
       const gridY = tile.position[2];
-      const spriteIndex = gridX * GRID_SIZE + gridY;
+      const spriteIndex = coordinatesToLocation({ x: gridX, y: gridY });
 
       updatePosition(spriteIndex, [
         tile.position[0],
