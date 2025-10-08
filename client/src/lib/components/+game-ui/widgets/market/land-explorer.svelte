@@ -10,7 +10,11 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { useDojo } from '$lib/contexts/dojo';
+  import type { Token } from '$lib/interfaces';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import {
     highlightedLands,
@@ -29,10 +33,26 @@
     return dojo.accountManager?.getProvider();
   };
 
-  let lands = $state<LandWithActions[]>([]);
+  let baseToken = $derived.by(() => {
+    const selectedAddress = settingsStore.selectedBaseTokenAddress;
+    const targetAddress = selectedAddress || data.mainCurrencyAddress;
+    return (
+      data.availableTokens.find((token) => token.address === targetAddress) ||
+      data.availableTokens.find(
+        (token) => token.address === data.mainCurrencyAddress,
+      )!
+    );
+  });
+
+  interface LandWithPrice extends LandWithActions {
+    convertedPrice: CurrencyAmount | null;
+    convertedPriceLoading: boolean;
+  }
+
+  let lands = $state<LandWithPrice[]>([]);
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
-  let selectedTokenAddress = $state<string>('');
+  let selectedToken = $state<Token | undefined>();
   let sortBy = $state<'price' | 'level'>('price');
   let searchQuery = $state('');
 
@@ -65,9 +85,9 @@
     let filtered = lands;
 
     // Token filter
-    if (selectedTokenAddress) {
+    if (selectedToken) {
       filtered = filtered.filter(
-        (land) => land.token?.address === selectedTokenAddress,
+        (land) => land.token?.address === selectedToken?.address,
       );
     }
 
@@ -93,19 +113,47 @@
 
   // Update highlighted lands when filters change
   $effect(() => {
-    if (selectedTokenAddress || searchQuery) {
+    if (selectedToken || searchQuery) {
       highlightedLands.value = filteredLands.map((land) => land.location);
     } else {
       highlightedLands.value = [];
     }
   });
 
+  // Function to fetch and update converted price for a land
+  async function updateLandConvertedPrice(landWithPrice: LandWithPrice) {
+    try {
+      // Only convert if land has a sell price and token differs from base token
+      if (landWithPrice.sellPrice && landWithPrice.token) {
+        landWithPrice.convertedPriceLoading = true;
+        try {
+          const convertedPrice = walletStore.convertTokenAmount(
+            landWithPrice.sellPrice,
+            landWithPrice.token,
+            baseToken,
+          );
+          landWithPrice.convertedPrice = convertedPrice;
+        } catch (error) {
+          console.error('Error converting price:', error);
+          landWithPrice.convertedPrice = null;
+        }
+        landWithPrice.convertedPriceLoading = false;
+      } else {
+        landWithPrice.convertedPrice = null;
+        landWithPrice.convertedPriceLoading = false;
+      }
+    } catch (error) {
+      console.error('Error updating converted price for land:', error);
+      landWithPrice.convertedPriceLoading = false;
+    }
+  }
+
   // Function to sort lands
-  function sortLands(landsToSort: LandWithActions[]): LandWithActions[] {
+  function sortLands(landsToSort: LandWithPrice[]): LandWithPrice[] {
     return [...landsToSort].sort((a, b) => {
       if (sortBy === 'price') {
-        const priceA = a.sellPrice?.rawValue().toNumber() ?? 0;
-        const priceB = b.sellPrice?.rawValue().toNumber() ?? 0;
+        const priceA = a.convertedPrice?.rawValue().toNumber() ?? 0;
+        const priceB = b.convertedPrice?.rawValue().toNumber() ?? 0;
         return sortAscending ? priceA - priceB : priceB - priceA;
       } else {
         // Sort by level first, then by purchase date
@@ -156,9 +204,21 @@
             }
             return false;
           })
-          .map((land) => createLandWithActions(land, () => allLands));
+          .map((land): LandWithPrice => {
+            const landWithActions = createLandWithActions(land, () => allLands);
+            return {
+              ...landWithActions,
+              convertedPrice: null,
+              convertedPriceLoading: false,
+            };
+          });
 
         lands = sortLands(filteredLands);
+
+        // Fetch converted prices for all lands
+        lands.forEach((land) => {
+          updateLandConvertedPrice(land);
+        });
       });
     } catch (error) {
       console.error('Error in land-explorer setup:', error);
@@ -176,12 +236,12 @@
   <div class="flex flex-col gap-2 py-2 border-white/10 min-h-0">
     <div class="flex items-center gap-2">
       <div class="w-48">
-        <TokenSelect bind:value={selectedTokenAddress} />
+        <TokenSelect bind:value={selectedToken} />
       </div>
-      {#if selectedTokenAddress}
+      {#if selectedToken}
         <button
           class="text-sm font-medium text-gray-400 hover:text-white"
-          onclick={() => (selectedTokenAddress = '')}
+          onclick={() => (selectedToken = undefined)}
         >
           reset
         </button>
@@ -283,13 +343,28 @@
             <LandOverview size="xs" {land} hideLevelUp={sortBy !== 'level'} />
           {/if}
           <div
-            class="w-full flex items-center justify-start leading-none text-xl"
+            class="w-full flex flex-col items-start justify-center leading-none text-xl"
           >
             {#if land.sellPrice}
               <div class="flex gap-1 items-center">
                 <PriceDisplay price={land.sellPrice} />
                 <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
+              {#if land.convertedPrice && land.token && land.token.address !== baseToken.address}
+                <div
+                  class="flex gap-1 items-center text-xs opacity-60 h-0 mt-2"
+                >
+                  ≈ {land.convertedPrice}
+                  {baseToken.symbol}
+                </div>
+              {:else if land.convertedPriceLoading}
+                <div
+                  class="flex gap-1 items-center text-xs opacity-50 h-0 mt-2"
+                >
+                  <span>Converting...</span>
+                  <TokenAvatar class="w-3 h-3" token={baseToken} />
+                </div>
+              {/if}
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>
@@ -307,13 +382,14 @@
             <div class="flex items-center gap-1">
               <span>Owner:</span>
               {#if getAiAgent(land.owner)}
+                {@const aiAgent = getAiAgent(land.owner)}
                 <div class="flex items-center gap-1">
                   <img
-                    src={getAiAgent(land.owner)?.badgeImage}
-                    alt={getAiAgent(land.owner)?.name}
+                    src={aiAgent?.badgeImage}
+                    alt={aiAgent?.name}
                     class="w-4 h-4"
                   />
-                  <span> {getAiAgent(land.owner)?.name} </span>
+                  <span> {aiAgent?.name} </span>
                 </div>
               {:else}
                 <span>
