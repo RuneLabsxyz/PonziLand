@@ -5,7 +5,7 @@
   import { landStore } from '$lib/stores/store.svelte';
   import { parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
-  import { onDestroy, onMount } from 'svelte';
+  import { onDestroy } from 'svelte';
   import LandInfos from './land-infos.svelte';
   import {
     tutorialState,
@@ -14,10 +14,19 @@
 
   let { data } = $props<{ data: { location?: string } }>();
   let land: LandWithActions | null = $state(null);
-  let unsubscribe: (() => void) | null = $state(null);
+  let unsubscribe: (() => void) | null = null;
 
-  onMount(() => {
-    if (!data?.location) return;
+  $effect(() => {
+    // Clean up previous subscription
+    if (unsubscribe) {
+      unsubscribe();
+      unsubscribe = null;
+    }
+
+    if (!data?.location) {
+      land = null;
+      return;
+    }
 
     try {
       const [x, y] = parseLocation(data.location);

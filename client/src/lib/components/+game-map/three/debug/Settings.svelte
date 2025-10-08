@@ -154,6 +154,7 @@
     <Separator />
     <Checkbox bind:value={devsettings.showArtLayer} label="Art Layer" />
     <Checkbox bind:value={devsettings.showClouds} label="Clouds" />
+    <Checkbox bind:value={devsettings.multiLandInfo} label="Multi Land Info" />
   </Folder>
   <Folder title="Debug">
     <Monitor label="Grid X" value={cursorStore.gridPosition?.x ?? -1} />
