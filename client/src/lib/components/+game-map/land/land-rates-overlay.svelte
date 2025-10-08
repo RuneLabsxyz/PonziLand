@@ -56,17 +56,20 @@
       );
 
       if (baseValue) {
+        const symbol = baseToken.symbol === 'USDC' ? '$' : baseToken.symbol;
         return {
           amount: displayCurrency(baseValue.rawValue()),
-          symbol: baseToken.symbol,
+          symbol: symbol,
         };
       } else {
         return null;
       }
     } else {
+      const symbol =
+        land.token?.symbol === 'USDC' ? '$' : land.token?.symbol || 'UNKNOWN';
       return {
         amount: displayCurrency(tokenBurnRate),
-        symbol: land.token?.symbol || 'UNKNOWN',
+        symbol: symbol,
       };
     }
   });
@@ -99,18 +102,20 @@
       if (settingsStore.showRatesInBaseToken && baseToken) {
         const baseAmount = getYieldValueInBaseToken(info);
         if (baseAmount) {
+          const symbol = baseToken.symbol === 'USDC' ? '$' : baseToken.symbol;
           return {
             amount: displayCurrency(baseAmount.rawValue()),
-            symbol: baseToken.symbol,
+            symbol: symbol,
           };
         } else {
           return null;
         }
       } else {
         const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
+        const symbol = info.token.symbol === 'USDC' ? '$' : info.token.symbol;
         return {
           amount: displayCurrency(amount.rawValue()),
-          symbol: info.token.symbol,
+          symbol: symbol,
         };
       }
     });
@@ -212,15 +217,17 @@
         ? baseToken.symbol
         : land.token?.symbol || 'UNKNOWN';
 
+    const displaySymbol = tokenSymbol === 'USDC' ? '$' : tokenSymbol;
+
     return {
       totalEarnings: {
         amount: displayCurrency(totalEarningsPerHour),
-        symbol: tokenSymbol,
+        symbol: displaySymbol,
       },
       burnRate: displayBurnRate,
       netYield: {
         amount: displayCurrency(Math.abs(netYield)),
-        symbol: tokenSymbol,
+        symbol: displaySymbol,
         isPositive: netYield >= 0,
       },
     };
@@ -315,7 +322,7 @@
 
 {#if land.type !== 'auction'}
   <div
-    class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20"
+    class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20 tracking-wider"
     style="transform: translate(-150px, -150px); width: 300px; height: 300px;"
   >
     {#if isLoading}
@@ -328,38 +335,42 @@
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
-            <span class="whitespace-nowrap text-green-300">
-              +{displayYields[i].amount}{displayYields[i].symbol}/h
+            <span class="whitespace-nowrap text-[#A0EA68]">
+              +{displayYields[i].amount}{displayYields[i].symbol}
             </span>
           </div>
         {:else if i === 4 && (centerTileDisplay.totalEarnings.amount !== '0' || (centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'))}
           <div
-            class="text-ponzi-number text-[6px] flex flex-col items-center justify-center leading-tight gap-0.5 relative"
+            class="text-ponzi-number text-[8px] flex flex-col items-center justify-center leading-tight gap-0.5 relative"
           >
             <!-- Total Earnings -->
             {#if centerTileDisplay.totalEarnings.amount !== '0'}
               <span class="whitespace-nowrap text-green-400">
                 +{centerTileDisplay.totalEarnings.amount}{centerTileDisplay
-                  .totalEarnings.symbol}/h
+                  .totalEarnings.symbol}
               </span>
             {/if}
             <!-- Burn Rate -->
             {#if centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'}
-              <span class="whitespace-nowrap text-red-500">
+              <span class="whitespace-nowrap text-orange-500">
                 -{centerTileDisplay.burnRate.amount}{centerTileDisplay.burnRate
-                  .symbol}/h
+                  .symbol}
               </span>
             {/if}
+            <hr
+              class=" bg-gray-300 w-10"
+              style="filter: drop-shadow(.5px .5px 0px black);"
+            />
             <!-- Net Yield -->
             <span
               class="whitespace-nowrap {centerTileDisplay.netYield.isPositive
-                ? 'text-green-300'
-                : 'text-red-400'} font-bold"
+                ? 'text-[#A0EA68]'
+                : 'text-[#F05555]'} font-bold text-[8px]"
             >
               {centerTileDisplay.netYield.isPositive
                 ? '+'
                 : '-'}{centerTileDisplay.netYield.amount}{centerTileDisplay
-                .netYield.symbol}/h
+                .netYield.symbol}
             </span>
           </div>
         {:else}
