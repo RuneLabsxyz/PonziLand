@@ -498,7 +498,7 @@ export function setupOutlineShader(
             tintColorArray[instanceIndex * 3 + 2] = 0.0;
           }
         });
-        
+
         tintStateAttribute.needsUpdate = true;
         tintColorAttribute.needsUpdate = true;
       }

@@ -183,24 +183,36 @@
     }
   });
 
-  // Effect to apply stripes to neighbor lands
+  // Effect to apply stripes to neighbor lands with actual yield
   $effect(() => {
-    if (land) {
+    if (land && yieldInfo.length > 0) {
       const outlineStore = getOutlineControls();
 
       // Get neighbor locations
       const neighborsData = Neighbors.getLocations(BigInt(land.location));
-      const neighborIndices = neighborsData.array.map((loc) => Number(loc));
+      const allNeighborIndices = neighborsData.array.map((loc) => Number(loc));
 
-      // Add the selected land itself to the stripe list
+      // Filter neighbors to only include those with actual yield (token and per_hour > 0)
+      const neighborsWithYield: number[] = [];
+      
+      yieldInfo.forEach((info, i) => {
+        // Skip index 4 (center/selected land) and only include neighbors with actual yield
+        if (i !== 4 && info?.token && info.per_hour > 0n) {
+          // Map yieldInfo index to neighbor location index
+          const neighborIndex = allNeighborIndices[i > 4 ? i - 1 : i]; // Adjust for center being at index 4
+          if (neighborIndex !== undefined) {
+            neighborsWithYield.push(neighborIndex);
+          }
+        }
+      });
+
       const selectedLandIndex = Number(land.location);
-      const allStripedIndices = [selectedLandIndex, ...neighborIndices];
 
-      // Apply stripes to selected land and neighbors on both building and biome layers
+      // Apply stripes to selected land and yielding neighbors on both building and biome layers
       if (outlineStore.buildingControls && outlineStore.buildingSprite) {
         outlineStore.buildingControls.setStripedLands(
           outlineStore.buildingSprite,
-          neighborIndices,
+          neighborsWithYield,
           selectedLandIndex,
         );
       }
@@ -208,10 +220,12 @@
       if (outlineStore.biomeControls && outlineStore.biomeSprite) {
         outlineStore.biomeControls.setStripedLands(
           outlineStore.biomeSprite,
-          neighborIndices,
+          neighborsWithYield,
           selectedLandIndex,
         );
       }
+
+      console.log(`Striped ${neighborsWithYield.length} neighbors with yield out of ${allNeighborIndices.length} total neighbors`);
     }
   });
 
