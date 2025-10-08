@@ -55,6 +55,8 @@ vi.mock(
 // Test tokens and constants
 const TEST_TOKEN_ADDRESS =
   '0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d';
+const TEST_AUCTION_TOKEN_ADDRESS =
+  '0x07718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938e';
 const TEST_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
 const TEST_LOCATION = coordinatesToLocation({ x: 5, y: 5 });
@@ -461,6 +463,54 @@ describe('LandTileStore', () => {
 
       land = get(landStore.getLand(5, 5)!) as BuildingLand;
       expect(land.owner).toBe(newOwner);
+    });
+
+    it('should convert BuildingLand to AuctionLand with different token (nuking scenario)', () => {
+      // Create building land with one token
+      const landModel = createLandModel({
+        token_used: TEST_TOKEN_ADDRESS,
+        owner: TEST_OWNER,
+        sell_price: '1000000000000000000',
+      });
+      const entity = createMockEntity({ Land: landModel });
+      landStore.updateLand(entity);
+
+      // Verify it's building land with original token
+      let land = get(landStore.getLand(5, 5)!) as BuildingLand;
+      expect(land).toBeInstanceOf(BuildingLand);
+      expect(land.token_used).toBe(TEST_TOKEN_ADDRESS);
+      expect(land.owner).toBe(TEST_OWNER);
+
+      // Create auction with different token (simulating nuking with different token)
+      const auctionModel = createAuctionModel({
+        start_price: '2000000000000000000',
+        floor_price: '500000000000000000',
+        is_finished: false,
+      });
+      const auctionEntity = createMockEntity({
+        Auction: auctionModel,
+      });
+
+      landStore.updateLand(auctionEntity);
+
+      // Send separate land update with new token (as would happen in real nuking)
+      const landWithAuctionModel = createLandModel({
+        token_used: TEST_AUCTION_TOKEN_ADDRESS, // Different token for auction
+        owner: '0x00', // Auction land has no direct owner
+        sell_price: '0',
+      });
+      const landEntity = createMockEntity({
+        Land: landWithAuctionModel,
+      });
+      landStore.updateLand(landEntity);
+
+      // Should become auction land with auction token, not building token
+      const auctionLand = get(landStore.getLand(5, 5)!) as AuctionLand;
+      expect(auctionLand).toBeInstanceOf(AuctionLand);
+      expect(auctionLand.token_used).toBe(TEST_AUCTION_TOKEN_ADDRESS); // Should use auction token
+      expect(auctionLand.isFinished).toBe(false);
+      expect(auctionLand.startPrice.toBigint()).toBe(2000000000000000000n);
+      expect(auctionLand.floorPrice.toBigint()).toBe(500000000000000000n);
     });
   });
 
