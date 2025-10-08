@@ -197,6 +197,14 @@
   padding: 0.5em;
 }
 
+.border-ponzi-thin {
+  background-clip: padding-box;
+  border: solid transparent 0.2em;
+  border-image: url('/ui/card/frame.png') 10 10 10 10 round round;
+  image-rendering: pixelated;
+  padding: 0.5em;
+}
+
 .bg-ponzi {
   background-image: url('/ui/card/texture.png');
 }
