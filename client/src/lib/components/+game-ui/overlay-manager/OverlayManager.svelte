@@ -36,13 +36,13 @@
   style="pointer-events: all;"
 >
   <div class="flex gap-2">
-    <Toggle variant="map" size="sm" class="rounded">
+    <!-- <Toggle variant="map" size="sm" class="rounded">
       <img
         src="/ui/icons/Icon_Book.png"
         alt="Settings"
         class="inline h-4 w-4"
       />
-    </Toggle>
+    </Toggle> -->
     <ToggleGroup.Root
       class="overflow-hidden"
       size="sm"
