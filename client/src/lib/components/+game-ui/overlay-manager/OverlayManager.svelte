@@ -39,7 +39,7 @@
 </script>
 
 <div
-  class="top-0 left-1/2 -translate-x-1/2 absolute z-2"
+  class="top-0 left-1/2 absolute z-2 overlay-container"
   style="pointer-events: all;"
 >
   <Card class="bg-ponzi">
@@ -87,17 +87,41 @@
           <img
             src="/ui/icons/Icon_ShieldRed.png"
             alt="Stats Icon"
-            class="inline h-5 w-5"
+            class="inline h-4 w-4"
           />
         </ToggleGroup.Item>
         <ToggleGroup.Item value="rates">
           <img
             src="/ui/icons/Icon_Coin3.png"
             alt="Stats Icon"
-            class="inline h-5 w-5"
+            class="inline h-4 w-4"
           />
         </ToggleGroup.Item>
       </ToggleGroup.Root>
     </div>
   </Card>
+  <div class="absolute left-1/2 -translate-x-1/2 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl">^</div>
 </div>
+
+<style>
+  .overlay-container {
+    transform: translateX(-50%) translateY(-75%);
+    transition: transform 0.3s ease-in-out;
+  }
+
+  .overlay-container:hover {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .chevron {
+    text-shadow:
+      2px 2px 0 #000,
+      -2px 2px 0 #000,
+      2px -2px 0 #000,
+      -2px -2px 0 #000,
+      0 2px 0 #000,
+      2px 0 0 #000,
+      0 -2px 0 #000,
+      -2px 0 0 #000;
+  }
+</style>
