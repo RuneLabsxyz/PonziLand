@@ -13,8 +13,9 @@ pub struct QuestDetails {
     pub game_id: u64,
 }
 
-#[derive(Copy, Drop, Serde, Introspect)]
+#[derive(Drop, Serde, DojoStore,Clone,Introspect, Default)]
 pub enum QuestType {
+    #[default]
     None,
     Minigame,
     OneOnOne,
@@ -149,7 +150,7 @@ pub struct SettingsCounter {
     pub count: u32,
 }
 
-#[derive(Copy, Drop, Serde, Introspect)]
+#[derive(Copy, Drop, Serde, Introspect, DojoStore)]
 pub struct Lifecycle {
     pub mint: u64,
     pub start: Option<u64>,
