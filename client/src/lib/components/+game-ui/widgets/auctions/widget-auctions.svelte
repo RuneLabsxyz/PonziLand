@@ -24,17 +24,6 @@
     return dojo.accountManager?.getProvider();
   };
 
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return (
-      data.availableTokens.find((token) => token.address === targetAddress) ||
-      data.availableTokens.find(
-        (token) => token.address === data.mainCurrencyAddress,
-      )!
-    );
-  });
-
   interface LandWithPrice extends LandWithActions {
     price: CurrencyAmount | null;
     priceLoading: boolean;
@@ -186,17 +175,17 @@
             {#if land.priceLoading}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Loading...</span>
-                <TokenAvatar class="w-5 h-5" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
             {:else if land.price}
               <div class="flex gap-1 items-center">
                 <PriceDisplay price={land.price} />
-                <TokenAvatar class="w-5 h-5" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
             {:else}
               <div class="flex gap-1 items-center">
                 <span class="text-sm opacity-50">Price unavailable</span>
-                <TokenAvatar class="w-5 h-5" token={baseToken} />
+                <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
             {/if}
           </div>
