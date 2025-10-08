@@ -27,4 +27,5 @@ export let devsettings = $state({
   artLayerOpacity: 1,
   showHeatmap: false,
   showClouds: true,
+  multiLandInfo: false,
 });
