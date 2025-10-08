@@ -12,15 +12,19 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress, parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
-  import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
+  import account from '$lib/account.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
 
   const dojo = useDojo();
-  const account = () => {
+  const getDojoAccount = () => {
     return dojo.accountManager?.getProvider();
   };
+
+  let accountManager = useAccount();
+  const { accountManager: dojoAccountManager } = useDojo();
 
   // Claiming state management
   let claimingAll = $state(false);
@@ -62,7 +66,7 @@
 
   async function handleClaimAll() {
     claimingAll = true;
-    claimAll(dojo, account()?.getWalletAccount()!)
+    claimAll(dojo, getDojoAccount()?.getWalletAccount()!)
       .then(() => {
         soundAtInterval(lands.length);
         startCooldown('all');
@@ -87,7 +91,7 @@
     const tokenKey = land.token.symbol || land.token.name || 'unknown';
     claimingTokens = [...claimingTokens, tokenKey];
 
-    claimAllOfToken(land.token, dojo, account()?.getWalletAccount()!)
+    claimAllOfToken(land.token, dojo, getDojoAccount()?.getWalletAccount()!)
       .then(() => {
         soundAtInterval(nbLands);
         startCooldown(tokenKey);
@@ -100,8 +104,75 @@
       });
   }
 
+  // Reactive lands state that updates automatically on ownership changes
   let lands = $state<LandWithActions[]>([]);
-  let unsubscribe: (() => void) | null = $state(null);
+
+  // Effect to reactively update lands when ownership or land data changes
+  $effect(() => {
+    // Check if user is connected using the account store (like in buy-tab.svelte)
+    if (!account.isConnected) {
+      lands = [];
+      return;
+    }
+
+    const currentAccount = getDojoAccount()?.getWalletAccount();
+    if (!currentAccount || !dojo.client) {
+      lands = [];
+      return;
+    }
+
+    const userAddress = padAddress(currentAccount.address);
+    const ownedIndicesStore = landStore.getOwnedLandIndicesStore(userAddress);
+    const allLandsStore = landStore.getAllLands();
+
+    // Subscribe to ownership index changes
+    const unsubscribeOwnership = ownedIndicesStore.subscribe((ownedIndices) => {
+      // Double-check connection status in subscription callback
+      if (!account.isConnected) {
+        lands = [];
+        return;
+      }
+
+      // Get current lands data
+      const currentAllLands = get(allLandsStore);
+
+      const newLands = ownedIndices
+        .map((index: number) => currentAllLands[index])
+        .filter((land): land is BuildingLand => BuildingLand.is(land))
+        .map((land: BuildingLand) =>
+          createLandWithActions(land, () => landStore.getAllLands()),
+        );
+
+      lands = newLands;
+    });
+
+    // Subscribe to all lands changes (in case land properties change)
+    const unsubscribeAllLands = allLandsStore.subscribe((allLands) => {
+      // Double-check connection status in subscription callback
+      if (!account.isConnected) {
+        lands = [];
+        return;
+      }
+
+      // Get current ownership indices
+      const currentOwnedIndices = get(ownedIndicesStore);
+
+      const newLands = currentOwnedIndices
+        .map((index: number) => allLands[index])
+        .filter((land): land is BuildingLand => BuildingLand.is(land))
+        .map((land: BuildingLand) =>
+          createLandWithActions(land, () => landStore.getAllLands()),
+        );
+
+      lands = newLands;
+    });
+
+    // Cleanup function
+    return () => {
+      unsubscribeOwnership();
+      unsubscribeAllLands();
+    };
+  });
 
   // Filter and grouping state
   let selectedToken = $state<string>('all');
@@ -110,29 +181,8 @@
   let sortBy = $state<'location' | 'level' | 'date' | 'price'>('price');
   let sortOrder = $state<'asc' | 'desc'>('asc');
 
-  // Derived states for filtering and grouping
-  let availableTokens = $derived.by(() => {
-    const tokens = new Set<string>();
-    lands.forEach((land) => {
-      if (land.token_used) {
-        tokens.add(land.token_used);
-      }
-    });
-    return Array.from(tokens).sort();
-  });
-
-  let availableLevels = $derived.by(() => {
-    const levels = new Set<string>();
-    lands.forEach((land) => {
-      if (land.level) {
-        levels.add(land.level.toString());
-      }
-    });
-    return Array.from(levels).sort();
-  });
-
   let filteredLands = $derived.by(() => {
-    let filtered = lands.filter((land) => {
+    let filtered = lands.filter((land: LandWithActions) => {
       // Token filter
       if (selectedToken !== 'all' && land.token_used !== selectedToken) {
         return false;
@@ -147,7 +197,7 @@
     });
 
     // Sort lands
-    filtered.sort((a, b) => {
+    filtered.sort((a: LandWithActions, b: LandWithActions) => {
       let comparison = 0;
 
       switch (sortBy) {
@@ -181,7 +231,7 @@
 
     const groups: { [key: string]: LandWithActions[] } = {};
 
-    filteredLands.forEach((land) => {
+    filteredLands.forEach((land: LandWithActions) => {
       const token = land.token_used || 'No Token';
       if (!groups[token]) {
         groups[token] = [];
@@ -214,105 +264,69 @@
     cursorStore.selectedTileIndex = transposedLocation;
   }
 
-  onMount(async () => {
-    try {
-      if (!dojo.client) {
-        console.error('Dojo client is not initialized');
-        return;
-      }
-
-      const currentAccount = account()?.getWalletAccount();
-      if (!currentAccount) {
-        console.error('No wallet account available');
-        return;
-      }
-
-      const userAddress = padAddress(currentAccount.address);
-
-      const allLands = landStore.getAllLands();
-
-      unsubscribe = allLands.subscribe((landsData) => {
-        if (!landsData) {
-          console.log('No lands data received');
-          return;
-        }
-
-        const filteredLands = landsData
-          .filter((land): land is BuildingLand => {
-            if (BuildingLand.is(land)) {
-              const landOwner = padAddress(land.owner);
-              return landOwner === userAddress;
-            }
-            return false;
-          })
-          .map((land) => createLandWithActions(land, () => allLands));
-
-        lands = filteredLands;
+  // Cleanup timers when component is destroyed
+  $effect(() => {
+    return () => {
+      Object.values(timerIntervals).forEach((interval) => {
+        clearInterval(interval);
       });
-    } catch (error) {
-      console.error('Error in my-lands-widget setup:', error);
-    }
-  });
-
-  onDestroy(() => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
-    // Clean up any remaining timers
-    Object.values(timerIntervals).forEach((interval) => {
-      clearInterval(interval);
-    });
+    };
   });
 </script>
 
 <div class="h-full w-full flex flex-col pb-4">
-  <!-- Filters and Controls -->
-  <div class="flex py-2 border-b border-gray-700 items-center justify-between">
-    <div class="flex items-center gap-2">
-      <input
-        type="checkbox"
-        bind:checked={groupByToken}
-        id="groupByToken"
-        class="rounded"
-      />
-      <label for="groupByToken" class="text-sm font-medium text-gray-300">
-        Group by Token
-      </label>
-    </div>
+  <!-- Filters and Controls - only show when user is connected -->
+  {#if account.isConnected}
+    <div
+      class="flex py-2 border-b border-gray-700 items-center justify-between"
+    >
+      <div class="flex items-center gap-2">
+        <input
+          type="checkbox"
+          bind:checked={groupByToken}
+          id="groupByToken"
+          class="rounded"
+        />
+        <label for="groupByToken" class="text-sm font-medium text-gray-300">
+          Group by Token
+        </label>
+      </div>
 
-    <div class="flex gap-2">
-      <div class="text-gray-200">total lands ( {lands.length} )</div>
-      <button
-        onclick={() => {
-          if (sortBy === 'price') {
-            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-          }
+      <div class="flex gap-2">
+        <div class="text-gray-200">total lands ( {lands.length} )</div>
+        <button
+          onclick={() => {
+            if (sortBy === 'price') {
+              sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
 
-          sortBy = 'price';
-        }}
-        class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
-        'price'
-          ? 'bg-blue-500 text-white'
-          : 'text-blue-500'}"
-      >
-        Price {sortBy == 'price' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
-      </button>
-      <button
-        onclick={() => {
-          if (sortBy === 'date') {
-            sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-          }
-          sortBy = 'date';
-        }}
-        class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
-        'date'
-          ? 'bg-blue-500 text-white'
-          : 'text-blue-500'}"
-      >
-        Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
-      </button>
+            sortBy = 'price';
+          }}
+          class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+          'price'
+            ? 'bg-blue-500 text-white'
+            : 'text-blue-500'}"
+        >
+          Price {sortBy == 'price' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+        </button>
+        <button
+          onclick={() => {
+            if (sortBy === 'date') {
+              sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+            sortBy = 'date';
+          }}
+          class="border border-blue-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+          'date'
+            ? 'bg-blue-500 text-white'
+            : 'text-blue-500'}"
+        >
+          Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+        </button>
+      </div>
     </div>
-  </div>
+  {/if}
+
   <!-- Lands List -->
   <ScrollArea type="scroll">
     <div class="flex flex-col">
@@ -334,7 +348,7 @@
           {/if}
         </Button>
       {/if}
-      {#each Object.entries(groupedLands) as [groupName, groupLands]}
+      {#each Object.entries(groupedLands) as [, groupLands]}
         {#if groupByToken && Object.keys(groupedLands).length >= 1}
           {@const token = groupLands.at(0)?.token}
           {@const tokenKey = token?.symbol || token?.name || 'unknown'}
@@ -377,24 +391,54 @@
         {/each}
       {/each}
       {#if lands.length === 0}
-        <div class="text-center text-gray-400">You don't own any lands yet</div>
-        <button
-          class="text-yellow-500 hover:opacity-90 hover:cursor-pointer"
-          onclick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            widgetsStore.addWidget({
-              id: 'market',
-              type: 'market',
-              position: { x: 40, y: 30 },
-              dimensions: { width: 450, height: 600 },
-              isMinimized: false,
-              isOpen: true,
-            });
-          }}
-        >
-          See ongoing auctions
-        </button>
+        {#if !account.isConnected}
+          <!-- Wallet connection prompt -->
+          <div
+            class="flex flex-col items-center justify-center h-full gap-4 p-8"
+          >
+            <div class="text-center">
+              <h3 class="text-lg font-semibold mb-2">
+                Connect Wallet Required
+              </h3>
+              <p class="text-sm opacity-75 mb-4">
+                You need to connect your wallet to view your lands and
+                participate in the game.
+              </p>
+            </div>
+            <Button
+              class="w-full"
+              onclick={async () => {
+                await dojoAccountManager?.promptForLogin();
+              }}
+            >
+              CONNECT WALLET
+            </Button>
+          </div>
+        {:else}
+          <!-- User is connected but has no lands -->
+          <div class="flex flex-col items-center justify-center gap-4 p-8">
+            <div class="text-center text-gray-400">
+              You don't own any lands yet
+            </div>
+            <button
+              class="text-yellow-500 hover:opacity-90 hover:cursor-pointer"
+              onclick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                widgetsStore.addWidget({
+                  id: 'market',
+                  type: 'market',
+                  position: { x: 40, y: 30 },
+                  dimensions: { width: 450, height: 600 },
+                  isMinimized: false,
+                  isOpen: true,
+                });
+              }}
+            >
+              See ongoing auctions
+            </button>
+          </div>
+        {/if}
       {/if}
       {#if filteredLands.length === 0}
         <div class="p-8 text-center text-gray-400">
