@@ -50,24 +50,24 @@ dependencies = [
 
 [[package]]
 name = "dojo"
-version = "1.7.0-alpha.2"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
+version = "1.7.1"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.7.1#cb78e550220e52bad4e4c940b20699dc6e98f7e4"
 dependencies = [
- "dojo_macros",
+ "dojo_cairo_macros",
 ]
+
+[[package]]
+name = "dojo_cairo_macros"
+version = "1.7.1"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.7.1#cb78e550220e52bad4e4c940b20699dc6e98f7e4"
 
 [[package]]
 name = "dojo_cairo_test"
-version = "1.7.0-alpha.2"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
+version = "1.7.1"
+source = "git+https://github.com/dojoengine/dojo?tag=v1.7.1#cb78e550220e52bad4e4c940b20699dc6e98f7e4"
 dependencies = [
  "dojo",
 ]
-
-[[package]]
-name = "dojo_macros"
-version = "1.7.0-alpha.2"
-source = "git+https://github.com/dojoengine/dojo?tag=v1.7.0-alpha.2#a064752fff355f325cf0b00828d236b399333432"
 
 [[package]]
 name = "ekubo"
@@ -77,7 +77,7 @@ source = "git+https://github.com/EkuboProtocol/abis?rev=edb6de8c9baf515f1053bbab
 [[package]]
 name = "game_components_metagame"
 version = "1.5.1"
-source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
 dependencies = [
  "game_components_minigame",
  "game_components_token",
@@ -89,7 +89,7 @@ dependencies = [
 [[package]]
 name = "game_components_minigame"
 version = "1.5.1"
-source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
 dependencies = [
  "game_components_metagame",
  "game_components_token",
@@ -101,7 +101,7 @@ dependencies = [
 [[package]]
 name = "game_components_test_starknet"
 version = "1.5.1"
-source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
 dependencies = [
  "game_components_metagame",
  "game_components_minigame",
@@ -114,7 +114,7 @@ dependencies = [
 [[package]]
 name = "game_components_token"
 version = "1.5.1"
-source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
 dependencies = [
  "game_components_metagame",
  "game_components_minigame",
@@ -127,7 +127,7 @@ dependencies = [
 [[package]]
 name = "game_components_utils"
 version = "1.5.1"
-source = "git+https://github.com/Provable-Games/game-components?tag=0.0.9#937ae141c61b8bfdfce417507683d070f92e6de6"
+source = "git+https://github.com/ZackAmes/game-components#d29e48882a7cdba9abb5570c272ec9f1415bc7d5"
 dependencies = [
  "alexandria_encoding",
  "game_components_metagame",
@@ -139,7 +139,7 @@ dependencies = [
 [[package]]
 name = "graffiti"
 version = "0.1.0"
-source = "git+https://github.com/ponderingdemocritus/graffiti?rev=bc569531791dbc71c6cd8d9bc154c34eedad31fe#bc569531791dbc71c6cd8d9bc154c34eedad31fe"
+source = "git+https://github.com/rsodre/graffiti?rev=url#e8b0854798ebbcebde504ea299ed556900564ff2"
 
 [[package]]
 name = "openzeppelin_access"
@@ -197,7 +197,6 @@ version = "1.4.0"
 dependencies = [
  "dojo",
  "dojo_cairo_test",
- "dojo_macros",
  "ekubo",
  "game_components_minigame",
  "openzeppelin_security",
