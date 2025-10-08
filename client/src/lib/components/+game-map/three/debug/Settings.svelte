@@ -137,6 +137,10 @@
     <Checkbox bind:value={devsettings.showNukes} label="Nukes" />
     <Separator />
     <Checkbox bind:value={devsettings.showLandOverlay} label="Land Overlay" />
+    <Checkbox
+      bind:value={devsettings.showRatesOverlay}
+      label="Rates Overlay Separate"
+    />
     <Separator />
     <Checkbox
       bind:value={devsettings.showOwnerIndicator}

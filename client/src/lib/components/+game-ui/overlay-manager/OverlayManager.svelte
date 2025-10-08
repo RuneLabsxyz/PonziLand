@@ -4,14 +4,20 @@
   import { HeatmapParameter } from '$lib/components/+game-ui/widgets/heatmap/heatmap.config';
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import { Toggle } from '$lib/components/ui/toggle';
+  import { onMount } from 'svelte';
 
   type MultipleValues = ('nuke' | 'rates')[];
 
   let multiple: MultipleValues = $state([]);
 
+  onMount(() => {
+    if (devsettings.showNukeTimes) multiple.push('nuke');
+    if (devsettings.showRatesOverlay) multiple.push('rates');
+  });
+
   $effect(() => {
     devsettings.showNukeTimes = multiple.includes('nuke');
-    devsettings.showLandOverlay = multiple.includes('rates');
+    devsettings.showRatesOverlay = multiple.includes('rates');
   });
 
   type HeatmapState =

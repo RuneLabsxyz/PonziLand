@@ -12,6 +12,9 @@
   import { calculateBurnRate, getNeighbourYieldArray } from '$lib/utils/taxes';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { getOutlineControls } from '$lib/components/+game-map/three/utils/outline-controls.store.svelte';
+  import { Neighbors } from '$lib/api/neighbors';
+  import { onDestroy } from 'svelte';
   import data from '$profileData';
 
   let {
@@ -53,17 +56,20 @@
       );
 
       if (baseValue) {
+        const symbol = baseToken.symbol === 'USDC' ? '$' : baseToken.symbol;
         return {
           amount: displayCurrency(baseValue.rawValue()),
-          symbol: baseToken.symbol,
+          symbol: symbol,
         };
       } else {
         return null;
       }
     } else {
+      const symbol =
+        land.token?.symbol === 'USDC' ? '$' : land.token?.symbol || 'UNKNOWN';
       return {
         amount: displayCurrency(tokenBurnRate),
-        symbol: land.token?.symbol || 'UNKNOWN',
+        symbol: symbol,
       };
     }
   });
@@ -96,18 +102,20 @@
       if (settingsStore.showRatesInBaseToken && baseToken) {
         const baseAmount = getYieldValueInBaseToken(info);
         if (baseAmount) {
+          const symbol = baseToken.symbol === 'USDC' ? '$' : baseToken.symbol;
           return {
             amount: displayCurrency(baseAmount.rawValue()),
-            symbol: baseToken.symbol,
+            symbol: symbol,
           };
         } else {
           return null;
         }
       } else {
         const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
+        const symbol = info.token.symbol === 'USDC' ? '$' : info.token.symbol;
         return {
           amount: displayCurrency(amount.rawValue()),
-          symbol: info.token.symbol,
+          symbol: symbol,
         };
       }
     });
@@ -158,6 +166,73 @@
     return yieldScaling().get(info) || 0;
   }
 
+  // Calculate total earnings per hour from all neighbors with yield
+  let totalEarningsPerHour = $derived.by(() => {
+    let total = 0;
+
+    yieldInfo.forEach((info) => {
+      if (info?.token && info.per_hour > 0n) {
+        if (settingsStore.showRatesInBaseToken && baseToken) {
+          const baseAmount = getYieldValueInBaseToken(info);
+          if (baseAmount) {
+            total += Number(baseAmount.rawValue());
+          }
+        } else {
+          const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
+          total += Number(amount.rawValue());
+        }
+      }
+    });
+
+    return total;
+  });
+
+  // Calculate net yield (total earnings - burn rate)
+  let netYield = $derived.by(() => {
+    if (settingsStore.showRatesInBaseToken && baseToken && land.token) {
+      const burnAmount = CurrencyAmount.fromScaled(
+        Number(tokenBurnRate),
+        land.token,
+      );
+      const baseBurnValue = walletStore.convertTokenAmount(
+        burnAmount,
+        land.token,
+        baseToken,
+      );
+
+      if (baseBurnValue) {
+        return totalEarningsPerHour - Number(baseBurnValue.rawValue());
+      }
+    } else {
+      return totalEarningsPerHour - Number(tokenBurnRate);
+    }
+
+    return totalEarningsPerHour - Number(tokenBurnRate);
+  });
+
+  // Get display values for center tile
+  let centerTileDisplay = $derived.by(() => {
+    const tokenSymbol =
+      settingsStore.showRatesInBaseToken && baseToken
+        ? baseToken.symbol
+        : land.token?.symbol || 'UNKNOWN';
+
+    const displaySymbol = tokenSymbol === 'USDC' ? '$' : tokenSymbol;
+
+    return {
+      totalEarnings: {
+        amount: displayCurrency(totalEarningsPerHour),
+        symbol: displaySymbol,
+      },
+      burnRate: displayBurnRate,
+      netYield: {
+        amount: displayCurrency(Math.abs(netYield)),
+        symbol: displaySymbol,
+        isPositive: netYield >= 0,
+      },
+    };
+  });
+
   $effect(() => {
     if (land) {
       console.log('land', land);
@@ -179,11 +254,75 @@
       }
     }
   });
+
+  // Effect to apply stripes to neighbor lands with actual yield
+  $effect(() => {
+    if (land && yieldInfo.length > 0) {
+      const outlineStore = getOutlineControls();
+
+      // Get neighbor locations
+      const neighborsData = Neighbors.getLocations(BigInt(land.location));
+      const allNeighborIndices = neighborsData.array.map((loc) => Number(loc));
+
+      // Filter neighbors to only include those with actual yield (token and per_hour > 0)
+      const neighborsWithYield: number[] = [];
+
+      yieldInfo.forEach((info, i) => {
+        // Skip index 4 (center/selected land) and only include neighbors with actual yield
+        if (i !== 4 && info?.token && info.per_hour > 0n) {
+          // Map yieldInfo index to neighbor location index
+          const neighborIndex = allNeighborIndices[i > 4 ? i - 1 : i]; // Adjust for center being at index 4
+          if (neighborIndex !== undefined) {
+            neighborsWithYield.push(neighborIndex);
+          }
+        }
+      });
+
+      const selectedLandIndex = Number(land.location);
+
+      // Apply stripes to selected land and yielding neighbors on both building and biome layers
+      if (outlineStore.buildingControls && outlineStore.buildingSprite) {
+        outlineStore.buildingControls.setStripedLands(
+          outlineStore.buildingSprite,
+          neighborsWithYield,
+          selectedLandIndex,
+        );
+      }
+
+      if (outlineStore.biomeControls && outlineStore.biomeSprite) {
+        outlineStore.biomeControls.setStripedLands(
+          outlineStore.biomeSprite,
+          neighborsWithYield,
+          selectedLandIndex,
+        );
+      }
+
+      console.log(
+        `Striped ${neighborsWithYield.length} neighbors with yield out of ${allNeighborIndices.length} total neighbors`,
+      );
+    }
+  });
+
+  // Cleanup stripes when component unmounts
+  onDestroy(() => {
+    const outlineStore = getOutlineControls();
+
+    // Clear stripes from both layers
+    if (outlineStore.buildingControls && outlineStore.buildingSprite) {
+      outlineStore.buildingControls.clearStripedLands(
+        outlineStore.buildingSprite,
+      );
+    }
+
+    if (outlineStore.biomeControls && outlineStore.biomeSprite) {
+      outlineStore.biomeControls.clearStripedLands(outlineStore.biomeSprite);
+    }
+  });
 </script>
 
 {#if land.type !== 'auction'}
   <div
-    class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20"
+    class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none z-20 tracking-wider"
     style="transform: translate(-150px, -150px); width: 300px; height: 300px;"
   >
     {#if isLoading}
@@ -196,16 +335,42 @@
           <div
             class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
           >
-            <span class="whitespace-nowrap text-green-300">
-              +{displayYields[i].amount}{displayYields[i].symbol}/h
+            <span class="whitespace-nowrap text-[#A0EA68]">
+              +{displayYields[i].amount}{displayYields[i].symbol}
             </span>
           </div>
-        {:else if i === 4 && displayBurnRate && displayBurnRate.amount !== '0'}
+        {:else if i === 4 && (centerTileDisplay.totalEarnings.amount !== '0' || (centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'))}
           <div
-            class="text-ponzi-number text-[8px] flex items-center justify-center leading-none relative"
+            class="text-ponzi-number text-[8px] flex flex-col items-center justify-center leading-tight gap-0.5 relative"
           >
-            <span class="whitespace-nowrap text-red-500">
-              -{displayBurnRate.amount}{displayBurnRate.symbol}/h
+            <!-- Total Earnings -->
+            {#if centerTileDisplay.totalEarnings.amount !== '0'}
+              <span class="whitespace-nowrap text-green-400">
+                +{centerTileDisplay.totalEarnings.amount}{centerTileDisplay
+                  .totalEarnings.symbol}
+              </span>
+            {/if}
+            <!-- Burn Rate -->
+            {#if centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'}
+              <span class="whitespace-nowrap text-orange-500">
+                -{centerTileDisplay.burnRate.amount}{centerTileDisplay.burnRate
+                  .symbol}
+              </span>
+            {/if}
+            <hr
+              class=" bg-gray-300 w-10"
+              style="filter: drop-shadow(.5px .5px 0px black);"
+            />
+            <!-- Net Yield -->
+            <span
+              class="whitespace-nowrap {centerTileDisplay.netYield.isPositive
+                ? 'text-[#A0EA68]'
+                : 'text-[#F05555]'} font-bold text-[8px]"
+            >
+              {centerTileDisplay.netYield.isPositive
+                ? '+'
+                : '-'}{centerTileDisplay.netYield.amount}{centerTileDisplay
+                .netYield.symbol}
             </span>
           </div>
         {:else}

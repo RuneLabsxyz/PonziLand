@@ -18,12 +18,13 @@ uniform bool darkenOnlyWhenUnzoomed;
 uniform bool isUnzoomed;
 uniform float tintOpacity;
 
-varying float vHover;
+varying float vIsOutlined;
 varying vec3 vOutlineColor;
 varying float vIsOwned;
 varying float vIsAuction;
 varying float vTintState;
 varying vec3 vTintColor;
+varying float vIsStriped;
 vec3 baseColor;
 float baseAlpha;
 
@@ -344,6 +345,7 @@ void main() {
         vec3 finalColor = sampledDiffuseColor.rgb;
         float finalAlpha = sampledDiffuseColor.a;
 
+        // Handle owned lands (old system when unzoomed, new system when zoomed)
         if(vIsOwned > 0.5) {
             // Apply stripe pattern darkening based on darkenOnlyWhenUnzoomed setting
             if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
@@ -355,6 +357,7 @@ void main() {
             }
         }
 
+        // Handle auction lands (old system when unzoomed, new system when zoomed)
         if(vIsAuction > 0.5) {
             // Apply stripe pattern whitening for auction lands
             if(!darkenOnlyWhenUnzoomed || isUnzoomed) {
@@ -366,7 +369,20 @@ void main() {
             }
         }
 
-        if(vHover > 0.5) {
+        // Handle generic striped lands (new system) - always show neighbor stripes
+        if(vIsStriped > 0.5) {
+
+            // Create diagonal stripe pattern (always show, no zoom condition)
+            float interval = 20.0;
+            float stripe = step(mod(gl_FragCoord.y - gl_FragCoord.x, interval) / (interval - 1.0), 0.5);
+            
+            // Default striping for other striped lands: Maps 0->0.6 and 1->1.0
+            stripe = 0.6 + stripe * 0.4;
+            
+            finalColor = finalColor * stripe;
+        }
+
+        if(vIsOutlined > 0.5) {
             // If current pixel is transparent, check if we should draw outline
             if(sampledDiffuseColor.a < 0.5) {
                 vec2 texelSize = outlineWidth / resolution;
@@ -412,19 +428,9 @@ void main() {
         }
 
         // Apply instance-based tinting if enabled
-        if(vTintState > 0.5 && tintOpacity > 0.0) {
+        if(vTintState > 0.0) {
             // Mix the tint color with the original sprite color using opacity control
-            finalColor = mix(finalColor, vTintColor, tintOpacity);
-        }
-
-        // Apply tint if needed
-        if(tint.w == 1.0) {
-            vec3 hue_term = 1.0 - min(abs(vec3(tint.x) - vec3(0.0, 2.0, 1.0)), 1.0);
-            hue_term.x = 1.0 - dot(hue_term.yz, vec2(1.0));
-            vec3 res = vec3(dot(finalColor, hue_term.xyz), dot(finalColor, hue_term.zxy), dot(finalColor, hue_term.yzx));
-            res = mix(vec3(dot(res, vec3(0.2, 0.5, 0.3))), res, tint.y);
-            res = res * tint.z;
-            finalColor = res;
+            finalColor = mix(finalColor, vTintColor, vTintState);
         }
 
         baseColor = finalColor; // Store for lighting
