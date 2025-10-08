@@ -18,7 +18,7 @@ export interface HeatmapCalculationResult {
 
 export class HeatmapCalculator {
   // Default dark tint color for lands with no value
-  private static readonly DEFAULT_NO_VALUE_COLOR = 0x202020;
+  private static readonly DEFAULT_NO_VALUE_COLOR = 0x000000;
 
   /**
    * Calculate heatmap colors for given tiles and parameters

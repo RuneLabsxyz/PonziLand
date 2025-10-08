@@ -181,6 +181,10 @@ export function setupOutlineShader(
   let currentAuctionLands: number[] = [];
   let currentInstancedMesh: THREE.InstancedMesh | null = null;
 
+  // Store current tint state set via setTints for preservation during striped operations
+  let currentTintStates: Float32Array | null = null;
+  let currentTintColors: Float32Array | null = null;
+
   // Return control functions
   const controls = {
     setHover: (instancedMesh: THREE.InstancedMesh, instanceIndex: number) => {
@@ -362,74 +366,24 @@ export function setupOutlineShader(
       currentOwnedLands = [...instanceIndices];
       currentInstancedMesh = instancedMesh;
 
-      if (currentIsUnzoomed) {
-        // Use old system when unzoomed - set ownedState for shader stripes
-        const ownedAttribute = instancedMesh.geometry.attributes
-          .ownedState as THREE.InstancedBufferAttribute;
-        const ownedArray = ownedAttribute.array as Float32Array;
+      // Use old system when unzoomed - set ownedState for shader stripes
+      const ownedAttribute = instancedMesh.geometry.attributes
+        .ownedState as THREE.InstancedBufferAttribute;
+      const ownedArray = ownedAttribute.array as Float32Array;
 
-        // Always reset all to not owned first
-        ownedArray.fill(0.0);
+      // Always reset all to not owned first
+      ownedArray.fill(0.0);
 
-        // Set owned lands to 1.0 (only if we have indices)
-        if (instanceIndices.length > 0) {
-          instanceIndices.forEach((index) => {
-            if (index >= 0 && index < ownedArray.length) {
-              ownedArray[index] = 1.0;
-            }
-          });
-        }
-
-        ownedAttribute.needsUpdate = true;
-
-        // Don't clear tints when using old system to preserve neighbor highlighting
-      } else {
-        // Use new system when zoomed - set tint colors only, no stripes
-        const ownedAttribute = instancedMesh.geometry.attributes
-          .ownedState as THREE.InstancedBufferAttribute;
-        const ownedArray = ownedAttribute.array as Float32Array;
-
-        // Clear old system
-        ownedArray.fill(0.0);
-        ownedAttribute.needsUpdate = true;
-
-        // Apply dark tint for owned lands (dark gray)
-        const ownedTintColor = new THREE.Color(0.3, 0.3, 0.3);
-
-        // Set tint state and color for owned lands
-        const tintStateAttribute = instancedMesh.geometry.attributes
-          .tintState as THREE.InstancedBufferAttribute;
-        const tintColorAttribute = instancedMesh.geometry.attributes
-          .tintColor as THREE.InstancedBufferAttribute;
-        const tintStateArray = tintStateAttribute.array as Float32Array;
-        const tintColorArray = tintColorAttribute.array as Float32Array;
-
-        // Only clear tints for owned land indices to preserve neighbor highlighting
-        // First reset only the owned land indices
-        instanceIndices.forEach((instanceIndex) => {
-          if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
-            tintStateArray[instanceIndex] = 0.0;
-            tintColorArray[instanceIndex * 3] = 0.0;
-            tintColorArray[instanceIndex * 3 + 1] = 0.0;
-            tintColorArray[instanceIndex * 3 + 2] = 0.0;
+      // Set owned lands to 1.0 (only if we have indices)
+      if (instanceIndices.length > 0) {
+        instanceIndices.forEach((index) => {
+          if (index >= 0 && index < ownedArray.length) {
+            ownedArray[index] = 1.0;
           }
         });
-
-        // Set tint for owned lands (only if we have indices)
-        if (instanceIndices.length > 0) {
-          instanceIndices.forEach((instanceIndex) => {
-            if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
-              tintStateArray[instanceIndex] = 1.0;
-              tintColorArray[instanceIndex * 3] = ownedTintColor.r;
-              tintColorArray[instanceIndex * 3 + 1] = ownedTintColor.g;
-              tintColorArray[instanceIndex * 3 + 2] = ownedTintColor.b;
-            }
-          });
-        }
-
-        tintStateAttribute.needsUpdate = true;
-        tintColorAttribute.needsUpdate = true;
       }
+
+      ownedAttribute.needsUpdate = true;
 
       mat.uniforms.darkenFactor.value = darkenFactor;
 
@@ -450,58 +404,24 @@ export function setupOutlineShader(
       currentAuctionLands = [...instanceIndices];
       currentInstancedMesh = instancedMesh;
 
-      if (currentIsUnzoomed) {
-        // Use old system when unzoomed - set auctionState for shader stripes
-        const auctionAttribute = instancedMesh.geometry.attributes
-          .auctionState as THREE.InstancedBufferAttribute;
-        const auctionArray = auctionAttribute.array as Float32Array;
+      // Use old system when unzoomed - set auctionState for shader stripes
+      const auctionAttribute = instancedMesh.geometry.attributes
+        .auctionState as THREE.InstancedBufferAttribute;
+      const auctionArray = auctionAttribute.array as Float32Array;
 
-        // Always reset all to not auction first
-        auctionArray.fill(0.0);
+      // Always reset all to not auction first
+      auctionArray.fill(0.0);
 
-        // Set auction lands to 1.0 (only if we have indices)
-        if (instanceIndices.length > 0) {
-          instanceIndices.forEach((index) => {
-            if (index >= 0 && index < auctionArray.length) {
-              auctionArray[index] = 1.0;
-            }
-          });
-        }
-
-        auctionAttribute.needsUpdate = true;
-
-        // Don't clear tints when using old system to preserve neighbor highlighting
-      } else {
-        // Use new system when zoomed - no tint, no stripes for auction lands
-        const auctionAttribute = instancedMesh.geometry.attributes
-          .auctionState as THREE.InstancedBufferAttribute;
-        const auctionArray = auctionAttribute.array as Float32Array;
-
-        // Clear old system
-        auctionArray.fill(0.0);
-        auctionAttribute.needsUpdate = true;
-
-        // Only clear tints for auction land indices to preserve neighbor highlighting
-        const tintStateAttribute = instancedMesh.geometry.attributes
-          .tintState as THREE.InstancedBufferAttribute;
-        const tintColorAttribute = instancedMesh.geometry.attributes
-          .tintColor as THREE.InstancedBufferAttribute;
-        const tintStateArray = tintStateAttribute.array as Float32Array;
-        const tintColorArray = tintColorAttribute.array as Float32Array;
-
-        // Clear tints only for auction land indices (auction lands have no tint when zoomed)
-        instanceIndices.forEach((instanceIndex) => {
-          if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
-            tintStateArray[instanceIndex] = 0.0;
-            tintColorArray[instanceIndex * 3] = 0.0;
-            tintColorArray[instanceIndex * 3 + 1] = 0.0;
-            tintColorArray[instanceIndex * 3 + 2] = 0.0;
+      // Set auction lands to 1.0 (only if we have indices)
+      if (instanceIndices.length > 0) {
+        instanceIndices.forEach((index) => {
+          if (index >= 0 && index < auctionArray.length) {
+            auctionArray[index] = 1.0;
           }
         });
-
-        tintStateAttribute.needsUpdate = true;
-        tintColorAttribute.needsUpdate = true;
       }
+
+      auctionAttribute.needsUpdate = true;
 
       console.log(
         `Updated ${instanceIndices.length} auction lands using ${currentIsUnzoomed ? 'old' : 'new'} system`,
@@ -535,15 +455,25 @@ export function setupOutlineShader(
       const tintStateArray = tintStateAttribute.array as Float32Array;
       const tintColorArray = tintColorAttribute.array as Float32Array;
 
+      // Get current tint opacity from uniform
+      const currentOpacity =
+        mat.uniforms && mat.uniforms.tintOpacity
+          ? mat.uniforms.tintOpacity.value
+          : 1.0;
+
       // Set tint state and color for specified instances (accumulative)
       instanceIndices.forEach((instanceIndex) => {
         if (instanceIndex >= 0 && instanceIndex < tintStateArray.length) {
-          tintStateArray[instanceIndex] = 1.0;
+          tintStateArray[instanceIndex] = currentOpacity;
           tintColorArray[instanceIndex * 3] = color.r;
           tintColorArray[instanceIndex * 3 + 1] = color.g;
           tintColorArray[instanceIndex * 3 + 2] = color.b;
         }
       });
+
+      // Save the set tints by copying arrays
+      currentTintColors = tintColorArray.slice();
+      currentTintStates = tintStateArray.slice();
 
       tintStateAttribute.needsUpdate = true;
       tintColorAttribute.needsUpdate = true;
@@ -565,6 +495,10 @@ export function setupOutlineShader(
       // Clear all tint states and colors
       tintStateArray.fill(0.0);
       tintColorArray.fill(0.0);
+
+      // Clear saved tint state as well
+      currentTintStates = null;
+      currentTintColors = null;
 
       tintStateAttribute.needsUpdate = true;
       tintColorAttribute.needsUpdate = true;
@@ -599,9 +533,15 @@ export function setupOutlineShader(
       const tintStateArray = tintStateAttribute.array as Float32Array;
       const tintColorArray = tintColorAttribute.array as Float32Array;
 
-      // Clear existing tints first
-      tintStateArray.fill(0.0);
-      tintColorArray.fill(0.0);
+      // Set the existing tints first
+      if (currentTintStates && currentTintColors) {
+        tintStateArray.set(currentTintStates);
+        tintColorArray.set(currentTintColors);
+      } else {
+        // Clear if no existing tints
+        tintStateArray.fill(0.0);
+        tintColorArray.fill(0.0);
+      }
 
       // Set striped lands to 1.0 and apply tints (only if we have indices)
       if (instanceIndices.length > 0) {
@@ -705,8 +645,15 @@ export function setupOutlineShader(
 
       // Clear all striped states and their associated tints
       stripedArray.fill(0.0);
-      tintStateArray.fill(0.0);
-      tintColorArray.fill(0.0);
+
+      // Set tints to current saved tints or clear if none
+      if (currentTintStates && currentTintColors) {
+        tintStateArray.set(currentTintStates);
+        tintColorArray.set(currentTintColors);
+      } else {
+        tintStateArray.fill(0.0);
+        tintColorArray.fill(0.0);
+      }
 
       stripedAttribute.needsUpdate = true;
       tintStateAttribute.needsUpdate = true;
