@@ -7,6 +7,13 @@ import { landStore } from './store.svelte';
 import { walletStore } from './wallet.svelte';
 import accountState, { setup } from '$lib/account.svelte';
 import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
+import { usernamesStore } from './account.store.svelte';
+import {
+  fetchUsernamesBatch,
+  getUserAddresses,
+  getBuyEvents,
+  fetchTokenBalances,
+} from '$lib/components/+game-ui/widgets/leaderboard/request';
 
 interface LoadingProgress {
   total: number;
@@ -25,6 +32,7 @@ export interface GameLoadingPhases {
   dojo: LoadingProgress;
   social: LoadingProgress;
   landStore: LoadingProgress;
+  usernames: LoadingProgress;
   rendering: LoadingProgress;
 }
 
@@ -65,6 +73,7 @@ class LoadingStore {
     },
     social: { total: 1, loaded: 0, items: { 'social-links': false } },
     landStore: { total: 1, loaded: 0, items: { 'land-data': false } },
+    usernames: { total: 1, loaded: 0, items: { 'username-fetch': false } },
     rendering: {
       total: 3,
       loaded: 0,
@@ -158,16 +167,18 @@ class LoadingStore {
 
     // Adjust loading phases based on mode
     if (isTutorial) {
-      // Tutorial mode: skip wallet, dojo, social, and landStore loading
+      // Tutorial mode: skip wallet, dojo, social, landStore, and usernames loading
       // But still load prices and keep client for config, webgl/shaders, and rendering
       this._phases.wallet.total = 0;
       this._phases.dojo.total = 0;
       this._phases.social.total = 0;
       this._phases.landStore.total = 0;
+      this._phases.usernames.total = 0;
       this.markPhaseCompleted('wallet');
       this.markPhaseCompleted('dojo');
       this.markPhaseCompleted('social');
       this.markPhaseCompleted('landStore');
+      this.markPhaseCompleted('usernames');
       // Keep prices and rendering phase active in tutorial mode
     } else {
       // Full mode: enable all loading phases including rendering
@@ -175,6 +186,7 @@ class LoadingStore {
       this._phases.dojo.total = 2;
       this._phases.social.total = 1;
       this._phases.landStore.total = 1;
+      this._phases.usernames.total = 1;
       // Prices and rendering phase are always active
     }
   }
@@ -232,24 +244,16 @@ class LoadingStore {
 
   // Compile sprite shaders
   private async compileShaders(): Promise<void> {
-    // Simulate shader compilation time
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Sprite outline shaders compiled');
-        resolve();
-      }, 800);
-    });
+    // Real shader compilation would happen here - for now just log completion
+    console.log('Sprite outline shaders compiled');
+    return Promise.resolve();
   }
 
   // Compile all remaining shaders
   private async compileAllShaders(): Promise<void> {
-    // Simulate general shader compilation time
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('All shaders compiled');
-        resolve();
-      }, 1200);
-    });
+    // Real shader compilation would happen here - for now just log completion
+    console.log('All shaders compiled');
+    return Promise.resolve();
   }
 
   // Client setup (required for config and dojo)
@@ -281,24 +285,33 @@ class LoadingStore {
       console.log('Setting up account manager...');
       await setup();
 
-      // Step 2: Wait for account to be connected, then initialize wallet store
+      // Step 2: Wait for account to be connected with promise-based timeout
       console.log('Waiting for account connection...');
-      let waitTime = 0;
-      const maxWaitTime = 10000; // 10 seconds timeout
-      while (
-        !accountState.isConnected &&
-        !accountState.address &&
-        waitTime < maxWaitTime
-      ) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        waitTime += 100;
-      }
-
-      if (waitTime >= maxWaitTime) {
+      await Promise.race([
+        // Create a promise that resolves when account is connected
+        new Promise<void>((resolve, reject) => {
+          const checkConnection = () => {
+            if (accountState.isConnected || accountState.address) {
+              resolve();
+            } else {
+              // Check again in 100ms
+              setTimeout(checkConnection, 100);
+            }
+          };
+          checkConnection();
+        }),
+        // Timeout after 10 seconds
+        new Promise<void>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Account connection timeout')),
+            10000,
+          ),
+        ),
+      ]).catch(() => {
         console.warn(
           'Wallet initialization timed out waiting for account connection',
         );
-      }
+      });
 
       console.log('Initializing wallet store...');
       await walletStore.init();
@@ -330,16 +343,16 @@ class LoadingStore {
   }
 
   // Config loading (depends on client setup)
-  async initializeConfig() {
+  async initializeConfig(clientPromise?: Promise<Client | undefined>) {
     try {
-      // Wait for client setup to complete
-      while (!this.isClientSetupComplete) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
+      // Wait for client to be available
+      const client = clientPromise ? await clientPromise : this._client;
 
-      if (this._client) {
+      if (client) {
         console.log('Setting up config store with client...');
-        await setupConfigStore(this._client);
+        await setupConfigStore(client);
+      } else {
+        console.warn('No client available for config setup');
       }
 
       this.markPhaseItemLoaded('config', 'game-config');
@@ -364,16 +377,20 @@ class LoadingStore {
   }
 
   // Dojo initialization (depends on client setup)
-  async initializeDojo() {
+  async initializeDojo(clientPromise?: Promise<Client | undefined>) {
     if (this._isTutorialMode) return;
 
     try {
-      // Wait for client setup to complete
-      while (!this.isClientSetupComplete) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      // Wait for client to be available
+      const client = clientPromise ? await clientPromise : this._client;
+
+      if (!client) {
+        console.warn('No client available for Dojo setup');
+        this.markPhaseCompleted('dojo');
+        return;
       }
 
-      // Dojo initialization (client is already set up)
+      // Dojo initialization (client is available)
       await this.loadDojoSetup();
       this.markPhaseItemLoaded('dojo', 'dojo-init');
 
@@ -387,27 +404,22 @@ class LoadingStore {
   }
 
   // Social links loading (depends on account setup)
-  async initializeSocial() {
+  async initializeSocial(walletPromise?: Promise<void>) {
     if (this._isTutorialMode) return;
 
     try {
-      // Wait for account setup to complete before loading social links (with timeout)
-      let waitTime = 0;
-      const maxWaitTime = 2000; // 2 seconds timeout
-      while (
-        !this.isAccountSetupComplete &&
-        !this._isTutorialMode &&
-        waitTime < maxWaitTime
-      ) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        waitTime += 100;
-      }
-
-      // If we timed out, log a warning but continue
-      if (waitTime >= maxWaitTime) {
-        console.warn(
-          'Social loading timed out waiting for account setup, continuing anyway...',
-        );
+      // Wait for wallet/account setup to complete with timeout
+      if (walletPromise) {
+        await Promise.race([
+          walletPromise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Account setup timeout')), 2000),
+          ),
+        ]).catch(() => {
+          console.warn(
+            'Social loading timed out waiting for account setup, continuing anyway...',
+          );
+        });
       }
 
       // Social links loading logic would go here
@@ -420,29 +432,36 @@ class LoadingStore {
   }
 
   // Land store initialization (depends on dojo setup)
-  async initializeLandStore() {
+  async initializeLandStore(
+    dojoPromise?: Promise<void>,
+    clientPromise?: Promise<Client | undefined>,
+  ) {
     if (this._isTutorialMode) return;
 
     try {
-      // Wait for dojo setup to complete (with timeout)
-      let waitTime = 0;
-      const maxWaitTime = 2000; // 2 seconds timeout
-      while (!this._phases.dojo.items['dojo-init'] && waitTime < maxWaitTime) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-        waitTime += 100;
+      // Wait for dojo setup to complete with timeout
+      if (dojoPromise) {
+        await Promise.race([
+          dojoPromise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Dojo setup timeout')), 2000),
+          ),
+        ]).catch(() => {
+          console.warn(
+            'Land store loading timed out waiting for dojo setup, continuing anyway...',
+          );
+        });
       }
 
-      // If we timed out, log a warning but continue
-      if (waitTime >= maxWaitTime) {
-        console.warn(
-          'Land store loading timed out waiting for dojo setup, continuing anyway...',
-        );
-      }
+      // Get client from promise or current state
+      const client = clientPromise ? await clientPromise : this._client;
 
       // Initialize land store with client
-      if (this._client) {
+      if (client) {
         console.log('Initializing land store...');
-        await landStore.setup(this._client);
+        await landStore.setup(client);
+      } else {
+        console.warn('No client available for land store setup');
       }
 
       this.markPhaseItemLoaded('landStore', 'land-data');
@@ -452,39 +471,68 @@ class LoadingStore {
     }
   }
 
+  // Usernames loading (depends on dojo setup)
+  async initializeUsernames(dojoPromise?: Promise<void>) {
+    if (this._isTutorialMode) return;
+
+    try {
+      // Wait for dojo setup to complete with timeout
+      if (dojoPromise) {
+        await Promise.race([
+          dojoPromise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Dojo setup timeout')), 2000),
+          ),
+        ]).catch(() => {
+          console.warn(
+            'Username fetching timed out waiting for dojo setup, continuing anyway...',
+          );
+        });
+      }
+
+      console.log('Fetching usernames...');
+      await this.loadUsernames();
+      this.markPhaseItemLoaded('usernames', 'username-fetch');
+    } catch (error) {
+      console.error('Username fetching failed:', error);
+      this.markPhaseItemLoaded('usernames', 'username-fetch');
+    }
+  }
+
   // Rendering initialization (depends on WebGL, assets, and Dojo in non-tutorial mode)
-  async initializeRendering() {
+  async initializeRendering(
+    webglPromise?: Promise<void>,
+    assetsPromise?: Promise<void>,
+    dojoPromise?: Promise<void>,
+  ) {
     try {
       // Wait for WebGL to be complete
-      while (!this.isWebGLComplete) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      if (webglPromise) {
+        await webglPromise;
       }
 
       // Wait for assets to be loaded
-      while (this._phases.assets.loaded < this._phases.assets.total) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+      if (assetsPromise) {
+        await assetsPromise;
       }
 
       // In non-tutorial mode, wait for Dojo setup before rendering
-      if (!this._isTutorialMode) {
+      if (!this._isTutorialMode && dojoPromise) {
         console.log('Waiting for Dojo setup before rendering...');
-        let waitTime = 0;
-        const maxWaitTime = 10000; // 10 seconds timeout
-        while (
-          !this._phases.dojo.items['dojo-init'] &&
-          waitTime < maxWaitTime
-        ) {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-          waitTime += 100;
-        }
-
-        if (waitTime >= maxWaitTime) {
-          console.warn(
-            'Rendering timed out waiting for Dojo setup, continuing anyway...',
-          );
-        } else {
-          console.log('Dojo setup complete, proceeding with rendering');
-        }
+        await Promise.race([
+          dojoPromise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('Dojo setup timeout')), 10000),
+          ),
+        ])
+          .then(() => {
+            console.log('Dojo setup complete, proceeding with rendering');
+          })
+          .catch(() => {
+            console.warn(
+              'Rendering timed out waiting for Dojo setup, continuing anyway...',
+            );
+          });
       }
 
       // Canvas ready check
@@ -507,51 +555,140 @@ class LoadingStore {
   }
 
   private async waitForCanvasReady(): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Canvas is ready');
-        resolve();
-      }, 500);
-    });
+    // Real canvas readiness check would happen here - for now just log completion
+    console.log('Canvas is ready');
+    return Promise.resolve();
   }
 
   private async waitForFirstFrame(): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('First frame rendered');
-        resolve();
-      }, 800);
-    });
+    // Real first frame check would happen here - for now just log completion
+    console.log('First frame rendered');
+    return Promise.resolve();
   }
 
   private async waitForSceneLoaded(): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        console.log('Scene loaded and ready');
-        resolve();
-      }, 1000);
-    });
+    // Real scene loaded check would happen here - for now just log completion
+    console.log('Scene loaded and ready');
+    return Promise.resolve();
   }
 
   private async loadSocialLinks() {
     // Implementation would load social links that depend on account data
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log('Social links loaded');
+    return Promise.resolve();
   }
 
   // Individual loading methods (to be implemented)
   private async loadAccountSetup() {
     // Implementation would setup account state
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log('Account setup completed');
+    return Promise.resolve();
   }
 
   private async loadDojoSetup() {
     // Implementation would setup Dojo
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    console.log('Dojo setup completed');
+    return Promise.resolve();
   }
 
   private async loadDojoSubscriptions() {
     // Implementation would setup Dojo subscriptions
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    console.log('Dojo subscriptions setup completed');
+    return Promise.resolve();
+  }
+
+  private async loadUsernames() {
+    try {
+      console.log(
+        'Collecting addresses from multiple sources for username fetching...',
+      );
+
+      // Collect addresses from multiple sources like the leaderboard does
+      const addressSources = await Promise.allSettled([
+        // 1. Get authorized addresses from events
+        getUserAddresses().then((addresses: Array<{ address: string }>) =>
+          addresses.map(({ address }: { address: string }) => ({ address })),
+        ),
+        // 2. Get land buyer addresses
+        getBuyEvents().then((events: Array<{ buyer: string }>) =>
+          events.map(({ buyer }: { buyer: string }) => ({ address: buyer })),
+        ),
+        // 3. Get addresses with token balances
+        fetchTokenBalances().then(
+          (balanceData: Record<string, Record<string, number>>) =>
+            Object.keys(balanceData).map((address: string) => ({ address })),
+        ),
+        // 4. Get land ownership addresses from the landStore
+        Promise.resolve().then(() => {
+          // Since this is reactive, we need to get the current value
+          // This is a simplified approach - in practice, you might want to subscribe
+          const addresses: { address: string }[] = [];
+          // Add current user if available
+          if (accountState.address) {
+            addresses.push({ address: accountState.address });
+          }
+          return addresses;
+        }),
+      ]);
+
+      // Collect all unique addresses from successful sources
+      const allAddresses = new Set<string>();
+
+      addressSources.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          result.value.forEach(({ address }: { address: string }) => {
+            if (address) {
+              allAddresses.add(address);
+            }
+          });
+          console.log(
+            `Source ${index + 1} provided ${result.value.length} addresses`,
+          );
+        } else {
+          console.warn(`Address source ${index + 1} failed:`, result.reason);
+        }
+      });
+
+      const uniqueAddresses = Array.from(allAddresses).map((address) => ({
+        address,
+      }));
+      console.log(
+        `Collected ${uniqueAddresses.length} unique addresses from all sources`,
+      );
+
+      // Add addresses to the usernames store
+      if (uniqueAddresses.length > 0) {
+        usernamesStore.addAddresses(uniqueAddresses);
+
+        // Get addresses that need usernames fetched
+        const addressesToFetch = usernamesStore
+          .getAddresses()
+          .map((addr) => addr.address);
+
+        if (addressesToFetch.length === 0) {
+          console.log('No addresses to fetch usernames for');
+          return;
+        }
+
+        console.log(
+          `Fetching usernames for ${addressesToFetch.length} addresses...`,
+        );
+
+        // Fetch usernames in batch
+        const usernameMap = await fetchUsernamesBatch(addressesToFetch);
+
+        // Update the usernames store with fetched usernames
+        usernamesStore.updateUsernames(usernameMap);
+
+        console.log(
+          `Successfully fetched ${Object.keys(usernameMap).length} usernames`,
+        );
+      } else {
+        console.log('No addresses found from any source');
+      }
+    } catch (error) {
+      console.error('Error fetching usernames:', error);
+    }
   }
 
   private async initializeLoading() {
@@ -728,6 +865,12 @@ class LoadingStore {
       : 1;
   }
 
+  get usernamesProgress() {
+    return this._phases.usernames.total > 0
+      ? this._phases.usernames.loaded / this._phases.usernames.total
+      : 1;
+  }
+
   get renderingProgress() {
     return this._phases.rendering.total > 0
       ? this._phases.rendering.loaded / this._phases.rendering.total
@@ -785,37 +928,45 @@ class LoadingStore {
 
     try {
       // Phase 1: Initialize WebGL and basic assets in parallel (no dependencies)
-      await Promise.all([this.initializeWebGL(), this.loadExistingAssets()]);
+      const webglPromise = this.initializeWebGL();
+      const assetsPromise = this.loadExistingAssets();
+      await Promise.all([webglPromise, assetsPromise]);
 
       // Phase 2: Initialize client (required for config and dojo)
-      await this.initializeClient();
+      const clientPromise = this.initializeClient().then(() => this._client);
 
-      // Phase 3: Initialize processes that depend on client and independent processes (can run in parallel)
-      const clientDependentProcesses = [
-        this.initializeConfig(), // Config depends on client
-      ];
-
+      // Phase 3: Initialize processes that depend on client and independent processes
       // Initialize prices (independent of other processes)
       const pricesProcess = this.initializePrices();
 
       if (isTutorialMode) {
         // Tutorial mode: just config, prices and tutorial setup
-        await Promise.all([...clientDependentProcesses, pricesProcess]);
+        await Promise.all([
+          this.initializeConfig(clientPromise),
+          pricesProcess,
+        ]);
       } else {
         // Non-tutorial mode: Handle all dependencies properly
 
         // Start processes that depend on client
-        const configProcess = Promise.all(clientDependentProcesses);
-        const dojoProcess = this.initializeDojo(); // Dojo depends on client
+        const configProcess = this.initializeConfig(clientPromise);
+        const dojoProcess = this.initializeDojo(clientPromise);
+
+        // Create a promise that resolves when dojo init is complete
+        // Since dojoProcess already handles the dojo initialization and marks it as loaded,
+        // we can just use the process completion as the signal
+        const dojoInitPromise = dojoProcess;
 
         // Start wallet process (sequential internally due to dependencies)
         const walletProcess = this.initializeWallet();
 
-        // Start social links process (depends on account setup)
-        const socialProcess = this.initializeSocial(); // This will wait for account setup internally
-
-        // Start land store process (depends on dojo setup)
-        const landStoreProcess = this.initializeLandStore(); // This will wait for dojo setup internally
+        // Start processes that depend on other processes
+        const socialProcess = this.initializeSocial(walletProcess);
+        const landStoreProcess = this.initializeLandStore(
+          dojoInitPromise,
+          clientPromise,
+        );
+        const usernamesProcess = this.initializeUsernames(dojoInitPromise);
 
         // Wait for all processes to complete
         await Promise.all([
@@ -825,11 +976,19 @@ class LoadingStore {
           walletProcess,
           socialProcess,
           landStoreProcess,
+          usernamesProcess,
         ]);
       }
 
       // Phase 4: Initialize rendering (depends on WebGL and assets being complete)
-      await this.initializeRendering();
+      const dojoCompletePromise = isTutorialMode
+        ? Promise.resolve()
+        : Promise.resolve(); // Dojo already waited for above
+      await this.initializeRendering(
+        Promise.resolve(), // WebGL already completed
+        Promise.resolve(), // Assets already completed
+        dojoCompletePromise,
+      );
 
       // Only set _isLoading to false if all phases are actually complete
       if (

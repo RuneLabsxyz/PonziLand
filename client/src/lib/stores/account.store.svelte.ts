@@ -23,6 +23,7 @@ class UsernamesStore {
   }
 
   updateUsernames(newUsernames: Record<string, string>): void {
+    console.log('Updating usernames:', newUsernames);
     this.usernames = { ...this.usernames, ...newUsernames };
   }
 
@@ -35,6 +36,11 @@ class UsernamesStore {
         `Address ${paddedAddr || address} not found in usernames store.`,
       );
     }
+  }
+
+  getUsername(address: string): string | undefined {
+    const paddedAddr = padAddress(address);
+    return paddedAddr ? this.usernames[paddedAddr] : undefined;
   }
 }
 

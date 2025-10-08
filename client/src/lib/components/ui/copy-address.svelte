@@ -1,5 +1,7 @@
 <script lang="ts">
   import { getSocialink } from '$lib/accounts/social/index.svelte';
+  import { usernamesStore } from '$lib/stores/account.store.svelte';
+  import { FUSE_DISABLE_SOCIALINK } from '$lib/flags';
   import RotatingCoin from '../loading-screen/rotating-coin.svelte';
 
   let {
@@ -13,7 +15,18 @@
 
   let socialink = getSocialink();
   let username = $derived(
-    showUsername && address ? socialink?.getUser(address) : null,
+    showUsername && address
+      ? FUSE_DISABLE_SOCIALINK
+        ? null // Don't use socialink when disabled, fall back to account store
+        : socialink?.getUser(address)
+      : null,
+  );
+
+  // Fallback username from account store when socialink is disabled
+  let fallbackUsername = $derived(
+    FUSE_DISABLE_SOCIALINK && showUsername && address
+      ? usernamesStore.getUsername(address)
+      : undefined,
   );
 
   function formatAddress(address: string): string {
@@ -44,17 +57,23 @@
   onkeydown={(e) => e.key === 'Enter' && copyToClipboard(address)}
 >
   {#if showUsername && address}
-    {#await username}
-      <RotatingCoin />
-    {:then info}
-      {#if info?.exists}
-        {info.username ?? formatAddress(address)}
-      {:else}
+    {#if FUSE_DISABLE_SOCIALINK}
+      <!-- Use fallback username from account store when socialink is disabled -->
+      {fallbackUsername ?? formatAddress(address)}
+    {:else}
+      <!-- Use socialink when enabled -->
+      {#await username}
+        <RotatingCoin />
+      {:then info}
+        {#if info?.exists}
+          {info.username ?? formatAddress(address)}
+        {:else}
+          {formatAddress(address)}
+        {/if}
+      {:catch}
         {formatAddress(address)}
-      {/if}
-    {:catch}
-      {formatAddress(address)}
-    {/await}
+      {/await}
+    {/if}
   {:else}
     {formatAddress(address)}
   {/if}
