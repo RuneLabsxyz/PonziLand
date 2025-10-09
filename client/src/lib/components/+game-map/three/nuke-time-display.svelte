@@ -4,7 +4,7 @@
   import { padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { estimateNukeTime, parseNukeTime } from '$lib/utils/taxes';
-  import { T } from '@threlte/core';
+  import { T, useTask } from '@threlte/core';
   import { onDestroy } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
   import {
@@ -52,10 +52,10 @@
 
   // Determine shield type based on days remaining (same logic as land-nuke-shield.svelte)
   function getShieldType(days: number): keyof typeof shieldTextures {
-    if (days >= 7) return 'blue';
-    if (days >= 5) return 'grey';
-    if (days >= 3) return 'yellow';
-    if (days >= 2) return 'orange';
+    if (days >= 5) return 'blue';
+    if (days >= 3) return 'grey';
+    if (days >= 2) return 'yellow';
+    if (days >= 1) return 'orange';
     return 'red';
   }
 
@@ -223,6 +223,18 @@
   const textGeometry = new PlaneGeometry(0.4, 0.2);
   const shieldGeometry = new PlaneGeometry(0.3, 0.3); // Slightly larger for shield background
 
+  // Pulse animation for nuke state
+  let pulseTime = $state(0);
+  useTask((delta) => {
+    pulseTime += delta;
+  });
+
+  // Calculate pulsing opacity for nuke state (oscillates between 0.4 and 1.0)
+  const getPulseOpacity = (isNuke: boolean) => {
+    if (!isNuke) return 1.0;
+    return 0.4 + 0.6 * (Math.sin(pulseTime * 4) * 0.5 + 0.5);
+  };
+
   onDestroy(() => {
     textureCache.clear();
     textGeometry.dispose();
@@ -233,11 +245,14 @@
 
 <!-- Render shield backgrounds and text for each nuke time -->
 {#each Array.from(nukeTimeData.entries()) as [, data]}
+  {@const isNuke = data.text === 'NUKE!'}
+  {@const pulseOpacity = getPulseOpacity(isNuke)}
   {@const shieldTexture = shieldTextures[data.shieldType]}
   {@const shieldMaterial = new MeshBasicMaterial({
     map: shieldTexture,
     transparent: true,
     alphaTest: 0.1,
+    opacity: pulseOpacity,
   })}
 
   {@const shieldOffset = isShieldMode ? [-0.2, 0, 0] : [0.4, 0, -0.4]};
@@ -262,6 +277,7 @@
     map: textTexture,
     transparent: true,
     alphaTest: 0.1,
+    opacity: pulseOpacity,
   })}
 
   <!-- Shield background -->
