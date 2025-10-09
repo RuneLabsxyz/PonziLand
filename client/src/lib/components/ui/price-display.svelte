@@ -33,14 +33,16 @@
 
     return rate;
   });
+
+  const whiteChar = ['.', ',', ' ', 'K', 'M', 'B'];
 </script>
 
-<div class="flex gap-2 items-center">
+<div class="flex gap-2 items-start">
   <div class="flex flex-col items-start">
     <div class="flex items-center gap-1 select-text">
       {#each formattedPrice as char}
-        {#if char === '.'}
-          <div class="text-ponzi-number">.</div>
+        {#if whiteChar.includes(char)}
+          <div class="text-ponzi-number stroke-display">{char}</div>
         {:else if char !== ' '}
           <div
             class="text-ponzi-number bg-[#2B2B3D] p-2 text-[#f2b545] stroke-display"
@@ -51,6 +53,9 @@
           </div>
         {/if}
       {/each}
+      {#if token}
+        <TokenAvatar {token} class="w-8 h-8" />
+      {/if}
     </div>
 
     {#if showRate}
@@ -60,9 +65,6 @@
       </div>
     {/if}
   </div>
-  {#if token}
-    <TokenAvatar {token} class="w-8 h-8" />
-  {/if}
 </div>
 
 <style>
