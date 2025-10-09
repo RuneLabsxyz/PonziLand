@@ -7,7 +7,7 @@ import { useDojo } from '$lib/contexts/dojo';
 import type { ElapsedTimeSinceLastClaim, LandYieldInfo } from '$lib/interfaces';
 import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { landStore } from '$lib/stores/store.svelte';
-import { toHexWithPadding } from '$lib/utils';
+import { getTokenInfo, toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Level } from '$lib/utils/level';
 import { estimateNukeTime } from '$lib/utils/taxes';
@@ -87,12 +87,30 @@ export const createLandWithActions = (
       const result = (await sdk.client.actions.getNextClaimInfo(
         land.locationString,
       )) as any[] | undefined;
-      return result?.map((claim) => ({
-        amount: CurrencyAmount.fromUnscaled(claim.amount),
-        tokenAddress: toHexWithPadding(claim.token_address),
-        landLocation: toHexWithPadding(claim.land_location),
-        canBeNuked: claim.can_be_nuked,
-      }));
+
+      console.log('getNextClaimInfo debug:', {
+        landLocation: land.locationString,
+        rawResult: result,
+        resultLength: result?.length,
+      });
+
+      return result?.map((claim, index) => {
+        console.log(`getNextClaimInfo claim ${index}:`, {
+          tokenAddress: claim.token_address?.toString(),
+          amount: claim.amount?.toString(),
+          landLocation: claim.land_location?.toString(),
+          canBeNuked: claim.can_be_nuked,
+        });
+
+        const token = getTokenInfo(claim.token_address.toString());
+        const claimAmount = CurrencyAmount.fromUnscaled(claim.amount, token);
+        return {
+          amount: claimAmount,
+          tokenAddress: toHexWithPadding(claim.token_address),
+          landLocation: toHexWithPadding(claim.land_location),
+          canBeNuked: claim.can_be_nuked,
+        };
+      });
     },
     async getNukable() {
       const result = (await sdk.client.actions.getTimeToNuke(
