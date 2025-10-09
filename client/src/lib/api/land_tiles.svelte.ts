@@ -1,10 +1,14 @@
+import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
 import { DEFAULT_TIMEOUT, GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
-import { gameSounds } from '$lib/stores/sfx.svelte';
 import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
+import { gameSounds } from '$lib/stores/sfx.svelte';
+import { coordinatesToLocation, padAddress } from '$lib/utils';
+import { logEntityUpdate } from '$lib/utils/entity-logger';
 import { createLandWithActions } from '$lib/utils/land-actions';
+import data from '$profileData';
 import type { ParsedEntity } from '@dojoengine/sdk';
 import {
   derived,
@@ -19,10 +23,6 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
-import { padAddress, coordinatesToLocation } from '$lib/utils';
-import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.store.svelte';
-import { logEntityUpdate } from '$lib/utils/entity-logger';
-import data from '$profileData';
 
 type Subscription = Awaited<
   ReturnType<typeof setupLandsSubscription>
@@ -558,8 +558,7 @@ export class LandTileStore {
     oldLand: BaseLand,
     newLand: BaseLand,
   ): void {
-    // Fix coordinate transposition: use x * GRID_SIZE + y instead of y * GRID_SIZE + x
-    const landIndex = location.x * GRID_SIZE + location.y;
+    const landIndex = coordinatesToLocation(location);
 
     // Get old and new owners
     const oldOwner =
