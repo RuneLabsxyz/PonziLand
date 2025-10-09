@@ -554,31 +554,14 @@ export function setupOutlineShader(
 
         // Handle neighbors first
         instanceIndices.forEach((instanceIndex) => {
-          // WE NEED TO TRANSPOSE FOR SPRITES WAY OF SHOWING TILES
-          if (instanceIndex >= 0 && instanceIndex < stripedArray.length) {
-            // The instanceIndex comes from neighbor locations which use COORD_MULTIPLIER encoding
-            // instanceIndex = row * COORD_MULTIPLIER + col
-            const { x: col, y: row } = toLocation(instanceIndex);
-            // Convert to sprite index which uses GRID_SIZE encoding
-            // spriteIndex = row * GRID_SIZE + col
-            const spriteIndex = row * GRID_SIZE + col;
+          // Set striped state
+          stripedArray[instanceIndex] = 1.0;
 
-            // Apply both stripes AND cyan tint for neighbors
-            if (spriteIndex >= 0 && spriteIndex < stripedArray.length) {
-              // Set striped state
-              stripedArray[spriteIndex] = 1.0;
-
-              // Apply cyan tint for neighbors
-              tintStateArray[spriteIndex] = 0.1;
-              tintColorArray[spriteIndex * 3] = cyanTintColor.r;
-              tintColorArray[spriteIndex * 3 + 1] = cyanTintColor.g;
-              tintColorArray[spriteIndex * 3 + 2] = cyanTintColor.b;
-            }
-
-            console.log(
-              `[Debug] Setting stripes AND cyan tint for neighbor index ${instanceIndex} (row=${row}, col=${col}) -> spriteIndex ${spriteIndex}`,
-            );
-          }
+          // Apply cyan tint for neighbors
+          tintStateArray[instanceIndex] = 0.1;
+          tintColorArray[instanceIndex * 3] = cyanTintColor.r;
+          tintColorArray[instanceIndex * 3 + 1] = cyanTintColor.g;
+          tintColorArray[instanceIndex * 3 + 2] = cyanTintColor.b;
         });
 
         // Handle selected land separately if provided
@@ -587,29 +570,13 @@ export function setupOutlineShader(
             selectedLandIndex >= 0 &&
             selectedLandIndex < stripedArray.length
           ) {
-            // Transform selected land index the same way
-            const { x: selectedCol, y: selectedRow } =
-              toLocation(selectedLandIndex);
-            const selectedSpriteIndex = selectedRow * GRID_SIZE + selectedCol;
-
-            // Apply both stripes AND dark tint for selected land
-            if (
-              selectedSpriteIndex >= 0 &&
-              selectedSpriteIndex < stripedArray.length
-            ) {
-              // Set striped state
-              stripedArray[selectedSpriteIndex] = 1.0;
-
-              // Apply dark tint for selected land
-              tintStateArray[selectedSpriteIndex] = 0.7;
-              tintColorArray[selectedSpriteIndex * 3] = darkTintColor.r;
-              tintColorArray[selectedSpriteIndex * 3 + 1] = darkTintColor.g;
-              tintColorArray[selectedSpriteIndex * 3 + 2] = darkTintColor.b;
-            }
-
-            console.log(
-              `[Debug] Setting stripes AND dark tint for selected index ${selectedLandIndex} (row=${selectedRow}, col=${selectedCol}) -> spriteIndex ${selectedSpriteIndex}`,
-            );
+            // Set striped state
+            stripedArray[selectedLandIndex] = 1.0;
+            // Apply dark tint for selected land
+            tintStateArray[selectedLandIndex] = 0.7;
+            tintColorArray[selectedLandIndex * 3] = darkTintColor.r;
+            tintColorArray[selectedLandIndex * 3 + 1] = darkTintColor.g;
+            tintColorArray[selectedLandIndex * 3 + 2] = darkTintColor.b;
           }
         }
       }
