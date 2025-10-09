@@ -87,8 +87,8 @@ export interface LandYieldInfo {
 }
 
 export interface ElapsedTimeSinceLastClaim {
-  location: bigint;
-  elapsed_time: bigint;
+  0: bigint;
+  1: bigint;
 }
 
 export type TabType = 'overall' | 'buy';
