@@ -87,7 +87,21 @@ export const createLandWithActions = (
       const result = (await sdk.client.actions.getNextClaimInfo(
         land.locationString,
       )) as any[] | undefined;
-      return result?.map((claim) => {
+
+      console.log('getNextClaimInfo debug:', {
+        landLocation: land.locationString,
+        rawResult: result,
+        resultLength: result?.length,
+      });
+
+      return result?.map((claim, index) => {
+        console.log(`getNextClaimInfo claim ${index}:`, {
+          tokenAddress: claim.token_address?.toString(),
+          amount: claim.amount?.toString(),
+          landLocation: claim.land_location?.toString(),
+          canBeNuked: claim.can_be_nuked,
+        });
+
         const token = getTokenInfo(claim.token_address.toString());
         const claimAmount = CurrencyAmount.fromUnscaled(claim.amount, token);
         return {

@@ -148,9 +148,17 @@
     });
   });
 
-  // Load pending claims data
+  // Load pending claims data - only when land location or owner status changes
   $effect(() => {
-    if (land == undefined || !isOwner) return;
+    const landLocation = land?.locationString;
+    const ownerStatus = isOwner;
+
+    console.log('Pending claims effect triggered:', {
+      landLocation,
+      ownerStatus,
+    });
+
+    if (!landLocation || !ownerStatus) return;
 
     untrack(() => {
       pendingClaimsLoading = true;
@@ -169,9 +177,17 @@
     });
   });
 
-  // Load neighbor claim time data
+  // Load neighbor claim time data - only when land location or owner status changes
   $effect(() => {
-    if (land == undefined || !isOwner) return;
+    const landLocation = land?.locationString;
+    const ownerStatus = isOwner;
+
+    console.log('Neighbor claims effect triggered:', {
+      landLocation,
+      ownerStatus,
+    });
+
+    if (!landLocation || !ownerStatus) return;
 
     untrack(() => {
       neighborClaimLoading = true;
