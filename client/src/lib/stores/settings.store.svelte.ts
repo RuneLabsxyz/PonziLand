@@ -6,7 +6,7 @@ class SettingsStore {
   private settings = $state({
     noobMode: false,
     volume: 50,
-    showRatesInBaseToken: false,
+    showRatesInBaseToken: true,
     walletDisplayMode: 'base' as 'base' | 'token', // 'base' shows base token value primarily, 'token' shows original token value
     selectedBaseTokenAddress: null as string | null, // null means use default from mainnet.json
     // Add more settings here as needed

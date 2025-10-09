@@ -51,17 +51,17 @@
       <p class="text-center font-bold text-sm md:text-base">
         HAHAHAHAHA! Still confused?
         <br />
-        Let me guide you through the depths of deception in my tutorial,
+        <!-- Let me guide you through the depths of deception in my tutorial, -->
         <br />
-        or brave the forbidden scrolls of knowledge in the documentation!
+        brave the forbidden scrolls of knowledge in the documentation!
       </p>
       <div class="flex justify-center gap-4">
-        <Button onclick={() => goto('/tutorial')}>Tutorial</Button>
+        <!-- <Button onclick={() => goto('/tutorial')}>Tutorial</Button> -->
         <a href="https://docs.ponzi.land" target="_blank"
           ><Button>Docs</Button></a
         >
       </div>
-      <Button
+      <!-- <Button
         onclick={claimTokens}
         disabled={claimState !== 'idle'}
         class="relative"
@@ -75,7 +75,7 @@
         {:else}
           No tokens? Claim here!
         {/if}
-      </Button>
+      </Button> -->
 
       <div class="flex justify-center gap-4 mt-2">
         <!-- svelte-ignore a11y_consider_explicit_label -->
