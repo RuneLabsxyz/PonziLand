@@ -12,10 +12,10 @@
   import { padAddress } from '$lib/utils';
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
-  import { baseToken, tokenStore } from '$lib/stores/tokens.store.svelte';
+  import { getBaseToken } from '$lib/stores/wallet.svelte';
   import { getQuests, getQuestGames, getQuestDetails, getQuestDetailsFromLocation, getPlayerQuestAtLocation } from '$lib/api/quests.svelte';
   import type { QuestDetails, QuestGame } from '$lib/models.gen';
-
+  import type { Token } from '$lib/interfaces';
   let {
     land,
     activeTab = $bindable(),
@@ -41,7 +41,7 @@
   let selectedGameId = $state<string>('');
   let selectedGame = $derived(questGames.find((g: QuestGame) => g.id.toString() === selectedGameId));
   let currentQuestGame = $state<QuestGame | null>(null);
-  
+  let baseToken = $state<Token | null>(null);
   // Check if game is active and what type 🐙 tentacles checking game state
   let is_active = $derived(game_token_id !== 0);
   let isOneOnOne = $derived(currentQuestGame?.quest_type === 'OneOnOne');
@@ -232,6 +232,7 @@
   }
 
   onMount(() => {
+    baseToken = getBaseToken() as Token;
     getQuestInfo();
   })
 
