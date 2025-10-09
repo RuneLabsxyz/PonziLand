@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { LandWithActions } from '$lib/api/land';
+  import type { BaseLand, LandWithActions } from '$lib/api/land';
   import { BuildingLand } from '$lib/api/land/building_land';
   import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
   import { Button } from '$lib/components/ui/button';
@@ -10,9 +10,9 @@
   import { claimAll, claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
-  import { padAddress, parseLocation } from '$lib/utils';
+  import { locationToCoordinates, padAddress, parseLocation } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
-  import { get } from 'svelte/store';
+  import { get, derived } from 'svelte/store';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
@@ -109,68 +109,46 @@
 
   // Effect to reactively update lands when ownership or land data changes
   $effect(() => {
-    // Check if user is connected using the account store (like in buy-tab.svelte)
-    if (!account.isConnected) {
+    console.log('Updating lands for account:', account.address);
+    if (!account.address) {
       lands = [];
       return;
     }
 
-    const currentAccount = getDojoAccount()?.getWalletAccount();
-    if (!currentAccount || !dojo.client) {
-      lands = [];
-      return;
-    }
+    const userAddress = padAddress(account.address);
 
-    const userAddress = padAddress(currentAccount.address);
     const ownedIndicesStore = landStore.getOwnedLandIndicesStore(userAddress);
-    const allLandsStore = landStore.getAllLands();
+    const allLandsStore = landStore.getCurrentLands();
 
-    // Subscribe to ownership index changes
-    const unsubscribeOwnership = ownedIndicesStore.subscribe((ownedIndices) => {
-      // Double-check connection status in subscription callback
-      if (!account.isConnected) {
-        lands = [];
-        return;
-      }
+    // Combined derived store to avoid double subscriptions and race conditions
+    const combinedStore = derived(
+      [ownedIndicesStore, allLandsStore],
+      ([ownedIndices, allLands]: [number[], BaseLand[][]]) => {
+        if (!account.isConnected) return [];
+        return ownedIndices
+          .map((index: number) => {
+            const coordinates = locationToCoordinates(index);
+            const land = allLands[coordinates.x][coordinates.y];
+            console.log('Mapping index to land:', index, land);
+            return land;
+          })
+          .filter((land: any): land is BuildingLand => BuildingLand.is(land))
+          .map((land: BuildingLand) =>
+            createLandWithActions(land, () => landStore.getAllLands()),
+          );
+      },
+    );
 
-      // Get current lands data
-      const currentAllLands = get(allLandsStore);
-
-      const newLands = ownedIndices
-        .map((index: number) => currentAllLands[index])
-        .filter((land): land is BuildingLand => BuildingLand.is(land))
-        .map((land: BuildingLand) =>
-          createLandWithActions(land, () => landStore.getAllLands()),
-        );
-
-      lands = newLands;
-    });
-
-    // Subscribe to all lands changes (in case land properties change)
-    const unsubscribeAllLands = allLandsStore.subscribe((allLands) => {
-      // Double-check connection status in subscription callback
-      if (!account.isConnected) {
-        lands = [];
-        return;
-      }
-
-      // Get current ownership indices
-      const currentOwnedIndices = get(ownedIndicesStore);
-
-      const newLands = currentOwnedIndices
-        .map((index: number) => allLands[index])
-        .filter((land): land is BuildingLand => BuildingLand.is(land))
-        .map((land: BuildingLand) =>
-          createLandWithActions(land, () => landStore.getAllLands()),
-        );
-
-      lands = newLands;
-    });
+    // Single subscription to the combined store
+    const unsubscribe = combinedStore.subscribe(
+      (newLands: LandWithActions[]) => {
+        lands = newLands;
+      },
+    );
 
     // Cleanup function
     return () => {
-      unsubscribeOwnership();
-      unsubscribeAllLands();
+      unsubscribe();
     };
   });
 

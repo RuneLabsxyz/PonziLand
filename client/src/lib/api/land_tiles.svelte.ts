@@ -409,6 +409,10 @@ export class LandTileStore {
     return derived([this.store[x][y]], ([land]) => land.value);
   }
 
+  public getCurrentLands(): Readable<BaseLand[][]> {
+    return this.currentLands;
+  }
+
   public getAllLands(): Readable<BaseLand[]> {
     return this.allLands;
   }
