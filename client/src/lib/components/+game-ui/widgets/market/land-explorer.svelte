@@ -341,7 +341,6 @@
                   token={land.token}
                   showRate
                 />
-                <TokenAvatar class="w-5 h-5" token={land.token} />
               </div>
             {:else}
               <div class="flex gap-1 items-center">
