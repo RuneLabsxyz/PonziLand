@@ -47,7 +47,7 @@
   </div>
 
   <!-- Rates Display Toggle -->
-  <div class="flex justify-center">
+  <!-- <div class="flex justify-center">
     <button
       class="w-full justify-center flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted/50 transition-colors"
       onclick={() => settingsStore.toggleRatesInBaseToken()}
@@ -58,5 +58,5 @@
         <Label class="font-medium cursor-pointer">Show Base Token Rates</Label>
       {/if}
     </button>
-  </div>
+  </div> -->
 </div>

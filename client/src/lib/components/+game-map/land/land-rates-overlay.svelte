@@ -202,7 +202,8 @@
       return totalEarningsPerHour;
     }
 
-    if (settingsStore.showRatesInBaseToken && baseToken && land.token) {
+    // force conversion
+    if (baseToken && land.token) {
       const burnAmount = CurrencyAmount.fromScaled(
         Number(tokenBurnRate),
         land.token,
