@@ -33,6 +33,7 @@ pub struct QuestGame {
     pub settings_id: u32,
     pub target_score: u32,
     pub quest_type: QuestType,
+    pub game_name: ByteArray,
 }
 
 #[derive(Copy, Drop, Serde, IntrospectPacked)]
