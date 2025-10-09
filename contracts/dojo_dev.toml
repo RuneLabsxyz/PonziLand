@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "quests_26141062"
+seed = "quests_17618796"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -95,6 +95,7 @@ order_inits = [
     "1",
     "20",
     "1",
+    "str:caps",
     "0",
     "0x00b6e40f8a90aaca4997cc5d9aa2b53836a786fe4e7121713451b3d87bc251c4", # caps address
     "str:planetelo",
@@ -103,12 +104,21 @@ order_inits = [
     "1",
     "0",
     "2",
+    "str:dm_mock",
 ]
 
+<<<<<<< HEAD
 # External contract deployment - Liquidity Reinjector (non-Dojo contract)
 [[external_contracts]]
 contract_name = "LiquidityReinjector"
 salt = "1"
 constructor_data = [
     "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
+=======
+[[external_contracts]]
+contract_name = LiquidityReinjector
+salt = 1
+constructor_data = [
+    0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640
+>>>>>>> dd42b909 (add game_name to model)
 ]
