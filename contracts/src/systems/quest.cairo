@@ -13,7 +13,7 @@ pub trait IQuestSystems<T> {
     fn get_score(self: @T, quest_id: u64) -> u32;
     fn get_quest_game_token(self: @T, quest_id: u64) -> (ContractAddress, u64);
     fn get_quest_entry_price(self: @T, location: u16) -> u256;
-    fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType);
+    fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType, game_name: ByteArray);
 }
 
 
@@ -363,14 +363,14 @@ pub mod quests {
             (quest_game.world_address, quest.game_token_id)
         }
 
-        fn register_quest_game(ref self: ContractState, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType) {
+        fn register_quest_game(ref self: ContractState, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType, game_name: ByteArray) {
             //TODO add permission check
             
             let mut world = self.world(DEFAULT_NS());
             let mut quest_game_count: QuestGameCounter = world.read_model(VERSION);
             quest_game_count.count += 1;
             world.write_model(@quest_game_count);
-            let quest_game = @QuestGame { id: quest_game_count.count, world_address, namespace, game_contract_name, settings_contract_name, settings_id, target_score, quest_type };
+            let quest_game = @QuestGame { id: quest_game_count.count, world_address, namespace, game_contract_name, settings_contract_name, settings_id, target_score, quest_type, game_name };
             world.write_model(quest_game);
         }
 
