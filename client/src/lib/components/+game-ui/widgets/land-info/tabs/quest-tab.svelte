@@ -8,7 +8,7 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore, ClaimQuest, GetQuestEntryPrice } from '$lib/stores/store.svelte';
+  import { SetLandQuest, RemoveLandQuest, StartQuest, GetQuestToken, GetQuestScore, ClaimQuest, GetQuestEntryPrice } from '$lib/stores/quests.svelte';
   import { padAddress } from '$lib/utils';
   import { type Call, RpcProvider } from 'starknet';
   import { onMount } from 'svelte';
