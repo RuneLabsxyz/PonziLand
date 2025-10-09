@@ -1,12 +1,7 @@
 {
   "world": {
-<<<<<<< HEAD
-    "class_hash": "0x7bc7b264612d3ac261df0a6d72a6b73c84b9386ef0095dd340d42afc01bb53c",
-    "address": "0x31d640c14263d7b4306f1fcf3eba67471865b720059bd46a4fc862ce0617434",
-    "seed": "test_313277088",
-=======
-    "class_hash": "0x685ed02eefa98fe7e208aa295042e9bbad8029b0d3d6f0ba2b32546efe0a1f9",
-    "address": "0x1cf04b3ea89ee71a773541838d3fc6adb0ac9a06cef0f8a4677a461b16ca054",
+    "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
+    "address": "0x2aed477527d40ed2d138acf1308362f844958a140a31a3ea2bc437b4f38fd1",
     "seed": "quests_26141062",
     "name": "Ponzi Land",
     "entrypoints": [
@@ -1484,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x373e2f6777e438e78f95ae16d9edb0ce8b452072d57d40c75d9ffc6138e6c7a",
-      "class_hash": "0x3c931213f1a9ad44f1a99f904335129c31b785531b0d270ddc8b634fefb4bfd",
+      "address": "0x25b688b821b4afe30d157e86fa6c6b985541e9e3010f448afe66ba6b0b08682",
+      "class_hash": "0x152b6e0516f14299d1e4269302d3a19b67d64f9a773c1c2c5ed50301057da1",
       "abi": [
         {
           "type": "impl",
@@ -1926,8 +1921,25 @@
             },
             {
               "type": "function",
-              "name": "reimburse_stakes",
-              "inputs": [],
+              "name": "withdraw_stake",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "withdraw_stakes_batch",
+              "inputs": [
+                {
+                  "name": "land_locations",
+                  "type": "core::array::Array::<core::integer::u16>"
+                }
+              ],
               "outputs": [],
               "state_mutability": "external"
             },
@@ -2322,14 +2334,14 @@
         "increase_price",
         "increase_stake",
         "level_up",
-        "reimburse_stakes",
+        "withdraw_stake",
+        "withdraw_stakes_batch",
         "upgrade"
       ]
     },
     {
-      "address": "0x5e813cc0fc286908f77c41ca19100abdeb5e5df8f1f6ccfd2b0201419b38d10",
-      "class_hash": "0x7467e84bf8f8d946ce944ddfddb1ecd46f789471d02d9d1b1505fded15b5774",
->>>>>>> 5f93bed4 (deploy world)
+      "address": "0x25b72f9f8820015e0f4b8ae57f7c328daef16bbb4c1e65710049f831066d3c9",
+      "class_hash": "0x339162d3e1a909f6babf0eef5934ddcd13f8d873324a11a6338a6462f491b1",
       "abi": [
         {
           "type": "impl",
@@ -2540,6 +2552,24 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "end_game_and_enable_withdrawals",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "is_game_ended",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
             }
           ]
         },
@@ -2667,12 +2697,13 @@
         "lock_actions",
         "unlock_actions",
         "ensure_deploy",
+        "end_game_and_enable_withdrawals",
         "upgrade"
       ]
     },
     {
-      "address": "0x2f2b4014bb68587aa794771c7e0227e25e092de5034d773a31640d6c5f364ea",
-      "class_hash": "0x334584a933dc0560cfc7589480a88553ef82073bde951fb497d035f27bc17bb",
+      "address": "0x2e6b60be627629f691e55b0a1f90f20bf1c7c0464fdc810c43beb9ececc3189",
+      "class_hash": "0x685bc40e6083dcdc0487897e250e55693ce962ccf1956b394d91dff1a293a4d",
       "abi": [
         {
           "type": "impl",
@@ -3824,8 +3855,8 @@
       ]
     },
     {
-      "address": "0x1741209899e73886fafa846a9fc4ebac666186a9eb5e68694e57d2cfafc7044",
-      "class_hash": "0xc9ec3f68edc39c50e85b1fc5b383787513510c8c8366a351a0adb550436ced",
+      "address": "0x183954b5f279874c861db444e9a19ccebd1b0f93121f92ce348d861384c332",
+      "class_hash": "0x22a5352ef2d9877bea3ab1b829bfa1d0a78d721b8dd4909800d4c2237c699f0",
       "abi": [
         {
           "type": "impl",
@@ -3839,7 +3870,7 @@
         },
         {
           "type": "impl",
-          "name": "quests__DeployedContractImpl",
+          "name": "DojoDeployedContractImpl",
           "interface_name": "dojo::meta::interface::IDeployedResource"
         },
         {
@@ -4375,9 +4406,8 @@
       ]
     },
     {
-      "address": "0x508267f3e9e0a964594dc97a23d8e6527749d4aa6f180a68342b8fe095bb535",
-      "class_hash": "0x535f32b7107120d61f8cc7d5e71bd1b61d569d871f675013032981a9927eefa",
->>>>>>> 5f93bed4 (deploy world)
+      "address": "0x3c8971daaa8dae61e0282ddf6f9a4b67b4769dcfc7bd4b0a4f4313cd3ca7c9",
+      "class_hash": "0x1c4d8162316e024400f55004265729c3eff1169b5aeb6dcfbda13934be75ebe",
       "abi": [
         {
           "type": "impl",
@@ -4649,107 +4679,103 @@
   "models": [
     {
       "members": [],
-      "class_hash": "0x5154b8a4c8e6c55d41fc525e1a18e1ae2b0c738278b3d35346a373acc08a38d",
-      "class_hash": "0x5154b8a4c8e6c55d41fc525e1a18e1ae2b0c738278b3d35346a373acc08a38d",
+      "class_hash": "0x59042eded0d3bc11732f9c56ea63dbe919e65686a5ead93983e5473e9cf687a",
       "tag": "ponzi_land-Auction",
       "selector": "0x7e0590370db3aa23e7aa340e9dfbdb6127f3fe6d5173b6051be0225a6acddec"
     },
     {
       "members": [],
-      "class_hash": "0x4324ee7fd60a406e7a249a808bea4500566c28a14b43cbada810698e1a2f149",
+      "class_hash": "0x53588a3551d53a208fd1447aac313c5cdceb70bdab05379d988e922739e9da3",
       "tag": "ponzi_land-Config",
       "selector": "0x57f837833559dae8bcd922ede064d0c5227c3f139fc4c410c93bcd58aff30ee"
     },
     {
       "members": [],
-<<<<<<< HEAD
-      "class_hash": "0x30d47f71ab7567ba1e87adae98b980b8a471465733aac5f9284a32c6e643770",
-=======
-      "class_hash": "0x5269de5cbf69d5edf4dd5b4b5e33902b44f435b62d5474ec4690f593732afcd",
+      "class_hash": "0x4ccac7ba5a7684e498f91ae18362e977b88016baef62517d7de656c3b897f1c",
       "tag": "ponzi_land-GameCounter",
       "selector": "0x548e556979ad124906e91a1f498be34c0e8f6ea402501e782636e6587ce1cff"
     },
     {
       "members": [],
-      "class_hash": "0x37d1cf9522a43f01602b62a8a6b4f13cf072a3a156285399aa65da47dbd198a",
+      "class_hash": "0x4ea775f69755302fb2a4ca5c67697faf1a4d2552e5ebaddc0e2c31ac690fcf1",
       "tag": "ponzi_land-GameMetadata",
       "selector": "0x5cd2ac7808a2074c480408bcd7243d4ea05386390213cc1964ebceb781764ba"
     },
     {
       "members": [],
-      "class_hash": "0x6d99f6e9fcf50904222ee7eac08bbee81700798445b6f0dd668cf014ff3202a",
+      "class_hash": "0x19f692013ddcbc97b1b9de929b7897abf9fd246d521b286d07dccdc3f7dc02d",
       "tag": "ponzi_land-Land",
       "selector": "0x6c48c5be88ed61b34bacc5b84e2a1530e3b691a1c89404c7ee5d2f49e1414cc"
     },
     {
       "members": [],
-      "class_hash": "0x15d3254f7a5a7c8769fc2543b84298b3fd7cf52040e3219ad3cc9d59c1f6d17",
+      "class_hash": "0x10e3c78130b31d7038471fdf3774341fb6dc89354ea984911714e717b258817",
       "tag": "ponzi_land-LandStake",
       "selector": "0x6fc377970b02dbb15634ab8c2855ba673d6ff3be113eb93bb56628d9018cadc"
     },
     {
       "members": [],
-      "class_hash": "0x17491cb8f7ff63f0d15a625c604082057f5a7fc0a3791906a137245c29e6e62",
+      "class_hash": "0x14edbb2e9e9b8e8266bd20b404e0cdda408185b0c22740ec498b015e75ff91",
       "tag": "ponzi_land-Quest",
       "selector": "0x31d30cb645e3cf0d8972e327dabd6f2a9045a7e14868a60d777822c650f078e"
     },
     {
       "members": [],
-      "class_hash": "0x1c7fcd6ef901d57339a9060c5f6b95993caf4de63c153017a4a46e89a537a75",
+      "class_hash": "0x7fa3096e35b5f93feb17ed84281392124215c6b33e6f0c9ec22b8f21967af4e",
       "tag": "ponzi_land-QuestCounter",
       "selector": "0x721f7568c70b316674009ae9b80ecbb6208bd2d537aca2b97bb46cc76a001eb"
     },
     {
       "members": [],
-      "class_hash": "0x3d1a6813eddb274e7e3cd2b2070ef83bb79d1792e83693537efb5b354cc949f",
+      "class_hash": "0x57184bcc2db77af6d60b496820b67a7c2d0bb777b06c83abbe64e7fe368713d",
       "tag": "ponzi_land-QuestDetails",
       "selector": "0x5dd5af65159f99fa0e80ffa47213fadeb96a2c1025708d6416678f13266bb3d"
     },
     {
       "members": [],
-      "class_hash": "0x75df32afec7495637bda80d9f34fa525d3f8c1c5cd48f4d716378eb12017163",
+      "class_hash": "0x1f1a06945f9fcefdf9eac090e14317892412dbdf716a9850055c49c59412763",
       "tag": "ponzi_land-QuestDetailsCounter",
       "selector": "0x3e9660097bfc101ae38263b70e627c3f63cc89757ccd9f71c0611dc7ae67eb3"
     },
     {
       "members": [],
-      "class_hash": "0x2cbf257e1816ce24641e9c28a3f1754a10b2a8793e3c87a78d92bd646395acd",
+      "class_hash": "0x6761aec3850bb7cbd81b2ffa149ee20d102dea7b1c2983fcc08bc9b55d8ad4e",
       "tag": "ponzi_land-QuestGame",
       "selector": "0x20eddaf30971606ae1766cf945a44860b916871b8992b5340f435fbd5b09c65"
     },
     {
       "members": [],
-      "class_hash": "0x10d247014af285ea21d8b4f4f22484ef967a8197b9bd6222c8877ae000c46ab",
+      "class_hash": "0x1eef706a74d6557bdd3cdffc7243c2ae9b812f3bed5c082a429d13265b3ed0",
       "tag": "ponzi_land-QuestGameCounter",
       "selector": "0x3a05fbb145ef9f1b3a0c1f501042ad5c2ce067c27e0e7f525628e9d9c7d4d66"
     },
     {
       "members": [],
-      "class_hash": "0x52750e6449235247c17cc8d10497f0a04fbb2fda85ec20826f0b307217009a6",
+      "class_hash": "0x7e3d5c056c1f83b7d8496232be382ae914ba7d083a7deea053ce2a03266102c",
       "tag": "ponzi_land-Score",
       "selector": "0x43ccbc3c6cc0aad29d7c54031c20c0018b81e3b6056987c87615309c44b5485"
     },
     {
       "members": [],
-      "class_hash": "0x54d33b487b8aaadb5c9e2e0caced578ba0c5fee5b9232638486431f2cc83c5a",
+      "class_hash": "0x29307b588e090316c6c191876e7136d256fa1faa7d122de730bb8c98773c69b",
       "tag": "ponzi_land-Settings",
       "selector": "0x76e5b7d8903e1b66e68b521ff21055f3f87de67ba4fdc87c1c869a64dee7297"
     },
     {
       "members": [],
-      "class_hash": "0x186716308f83a6fcfc422da029ecfaf4cc0da0ab1de136d449a6e2e302dc19",
+      "class_hash": "0x51c9e38c594756c0e86b308a2df4cb8ff60287723392e48b1a50a72d0f38491",
       "tag": "ponzi_land-SettingsCounter",
       "selector": "0x1be8e445f3d3b5890844b03a8324753f7ce62507ee8c09be2af65d0af0a7914"
     },
     {
       "members": [],
-      "class_hash": "0x3e6cb0a41b4c00a4c5d0224ef828a07f5b7a85732c62bff12f92561c207aa18",
+      "class_hash": "0x757b86d87d79ebc7fe59347805b8fd28e0c5ba2fc534603c1050cebe9163ed3",
       "tag": "ponzi_land-SettingsDetails",
       "selector": "0x35f6a6d365c4a0373e61954ef5deaa7b25d54a49c85909b4ae0f0869b3e9386"
     },
     {
       "members": [],
-      "class_hash": "0x29a758f6723b448e876cd80f8c40bd5d0491a47170a6b08cea9124c8dedd9b5",
+      "class_hash": "0x9163a1c0bf3b255d46a4b02e85d2a502e79c17862db2227c27595b6a33f9dc",
       "tag": "ponzi_land-TokenMetadata",
       "selector": "0x12c2ff79915b83c75da5fd151931302f7a10af2bd8b0ecae8e91619728dcf22"
     }
@@ -4757,494 +4783,70 @@
   "events": [
     {
       "members": [],
-      "class_hash": "0x215ee86a73fba29a668df95491a11de235cc941b3ae648fddafbcf214443788",
+      "class_hash": "0x46b160a391159f4f98ff984fa82830c9eac048a6d0f5c4212165c3259bc3d5c",
       "tag": "ponzi_land-AddStakeEvent",
       "selector": "0x78072b4b5cfe0dee3f20bd58bde0cb381b01ce9bbf48d0193ecfaea4e813683"
     },
     {
       "members": [],
-      "class_hash": "0x3cb5b94056e60c06d24c567042cbd84776114ebfe266a2e9f305bf44d11cb7d",
+      "class_hash": "0x7f5ba7f156f3cb9577d712643062ad1081722f1c68031d22be9fb208391e92e",
       "tag": "ponzi_land-AddressAuthorizedEvent",
       "selector": "0x14776f846375e96d33e72213fe182d77e3f35fc2d30ee5a9f13927e4ebe833e"
     },
     {
       "members": [],
-      "class_hash": "0xa57ea92c9637e0f2d46640f22ae3e36f01f409639e3f0744c6181971ed9321",
+      "class_hash": "0x5490d22e27b47c9027fdb77a57a13d428d03b031d3128d559513545ef83bc3a",
       "tag": "ponzi_land-AddressRemovedEvent",
       "selector": "0x3a20177c447e7a755a6169d2decc740986b2d1c6a552b6798451a3d1d70241f"
     },
     {
       "members": [],
-      "class_hash": "0x3c37b171ad6b118701bf47a0dfe83590a25cd99208233cb61256a25fca9dc01",
+      "class_hash": "0x6d91ea98be90330b49c7ae391a23b1d8e8e0b989377f3fd153b605a441439d1",
       "tag": "ponzi_land-AuctionFinishedEvent",
       "selector": "0x4a851acb463e71e7b60828525b2af21e21fc500b159358a7b0f0036418d3d9a"
     },
     {
       "members": [],
-      "class_hash": "0x5b1162b52213beef9680c5ac4790767ba59f5c278850fba895129aa4256442a",
+      "class_hash": "0x53fb9ffbf918a4c973c2ed135ad5d8f4f71c270d8d273638069d3dd9da9f377",
       "tag": "ponzi_land-ConfigUpdated",
       "selector": "0x2d5f551adb2ed4a5fbf86e90b65d84eb990a17e487e34f7259da38f9af09625"
     },
     {
       "members": [],
-      "class_hash": "0x6c189c090f488cfeae7f3730afc87e6e60d1fbf92de775351f43f5b951860ba",
+      "class_hash": "0x325f1a4873f58947548169cbe55bbdbec33d04290a4a5e2ee436995b4f6c3c",
+      "tag": "ponzi_land-GameEndedEvent",
+      "selector": "0x3fe1419b0eb74d077b18bfa37d7e563c44f363d61d3a8d1505e68445a947d2"
+    },
+    {
+      "members": [],
+      "class_hash": "0x561fcda6ddb2ec6604205be6d35b2280a3d8d6dc491d8cc052214dda17fdcb9",
       "tag": "ponzi_land-LandBoughtEvent",
       "selector": "0x769ef6ea223dc95effda992aef6ea6bc4434280ade20a03d3273323cd23b883"
     },
     {
       "members": [],
-      "class_hash": "0x5e98c6b161b921af226a72e557be05a036993dc04b4b270e8fb3f0f6f2d8e47",
+      "class_hash": "0x59c313f000429a9aecc6405c576d38840420cb58640c6cc690719454b6020a2",
       "tag": "ponzi_land-LandNukedEvent",
       "selector": "0x5ab63e32ba617fc00cdaf4469b0dfffd18eacb82fa7b5036437ca7f4ce3964b"
     },
     {
       "members": [],
-      "class_hash": "0x77cb2a54a51511732250bec4a4a001d9e52af7e0133ce5c6403299254b0e285",
+      "class_hash": "0x2be113af9aa60fa47dc269311aed3b967dd2401fe19cb6f6beb6a51ef6b53dc",
       "tag": "ponzi_land-LandTransferEvent",
       "selector": "0x5edc84355fabd09e6aa60c2d11c76920f69662ab39f6a499a2ffa9dfd3b70f2"
     },
     {
       "members": [],
-      "class_hash": "0x1a777bb9e4c41bf2b7ebbfc80bae750878325438fabe024532cf1ef1e79b652",
+      "class_hash": "0x3268786b6e9fa5ed87bd70541d64575e5af7a394b04d408b13fa350990e335e",
       "tag": "ponzi_land-NewAuctionEvent",
       "selector": "0x617c6bf5e078af2c93083a50e445f36b55cad4a6bd07a21a5a42540cb0d8f9f"
     },
     {
       "members": [],
-      "class_hash": "0x52de9aca3d272a1aa0a132433dd4fe783d5d8d35bd5e5a6dcbe4297ca6be93e",
+      "class_hash": "0x1eaf42c2a98c929d205b193a7a19e95bfd0c6a7e10345c6715dd03f56ced5e9",
       "tag": "ponzi_land-VerifierUpdatedEvent",
       "selector": "0x25d0221db2d5d6010d38e5df9c861dbc406c1d156a715f4a241138edb377f6d"
     }
   ],
-  "external_contracts": [
-    {
-      "class_hash": "0x1c72da1a3dd22393ada67a2efa07b152945851882c546fb644f73395340c59e",
-      "contract_name": "LiquidityReinjector",
-      "tag": "ponzi_land-LiquidityReinjector",
-      "address": "0x7c1d816e103584cc7debff5513a9b8b5b85b48097ac688a4338f42feb654119",
-      "abi": [
-        {
-          "type": "impl",
-          "name": "LiquidityReinjectorImpl",
-          "interface_name": "ponzi_land::liquidity::liquidity_reinjector::ILiquidityReinjector"
-        },
-        {
-          "type": "enum",
-          "name": "core::bool",
-          "variants": [
-            {
-              "name": "False",
-              "type": "()"
-            },
-            {
-              "name": "True",
-              "type": "()"
-            }
-          ]
-        },
-        {
-          "type": "struct",
-          "name": "core::integer::u256",
-          "members": [
-            {
-              "name": "low",
-              "type": "core::integer::u128"
-            },
-            {
-              "name": "high",
-              "type": "core::integer::u128"
-            }
-          ]
-        },
-        {
-          "type": "interface",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::ILiquidityReinjector",
-          "items": [
-            {
-              "type": "function",
-              "name": "add_authorized",
-              "inputs": [
-                {
-                  "name": "address",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "remove_authorized",
-              "inputs": [
-                {
-                  "name": "address",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "is_authorized",
-              "inputs": [
-                {
-                  "name": "address",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [
-                {
-                  "type": "core::bool"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "set_actions_contract",
-              "inputs": [
-                {
-                  "name": "actions_contract",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "execute_buy",
-              "inputs": [
-                {
-                  "name": "land_location",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "token_for_sale",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "sell_price",
-                  "type": "core::integer::u256"
-                },
-                {
-                  "name": "amount_to_stake",
-                  "type": "core::integer::u256"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "execute_bid",
-              "inputs": [
-                {
-                  "name": "land_location",
-                  "type": "core::integer::u16"
-                },
-                {
-                  "name": "token_for_sale",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "sell_price",
-                  "type": "core::integer::u256"
-                },
-                {
-                  "name": "amount_to_stake",
-                  "type": "core::integer::u256"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "withdraw_tokens",
-              "inputs": [
-                {
-                  "name": "token",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "recipient",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                },
-                {
-                  "name": "amount",
-                  "type": "core::integer::u256"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "transfer_ownership",
-              "inputs": [
-                {
-                  "name": "new_owner",
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "outputs": [],
-              "state_mutability": "external"
-            },
-            {
-              "type": "function",
-              "name": "get_owner",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "state_mutability": "view"
-            },
-            {
-              "type": "function",
-              "name": "get_actions_contract",
-              "inputs": [],
-              "outputs": [
-                {
-                  "type": "core::starknet::contract_address::ContractAddress"
-                }
-              ],
-              "state_mutability": "view"
-            }
-          ]
-        },
-        {
-          "type": "constructor",
-          "name": "constructor",
-          "inputs": [
-            {
-              "name": "owner",
-              "type": "core::starknet::contract_address::ContractAddress"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedAdded",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "address",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "key"
-            },
-            {
-              "name": "added_by",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedRemoved",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "address",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "key"
-            },
-            {
-              "name": "removed_by",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BuyExecuted",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "executor",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "key"
-            },
-            {
-              "name": "land_location",
-              "type": "core::integer::u16",
-              "kind": "data"
-            },
-            {
-              "name": "token_for_sale",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            },
-            {
-              "name": "sell_price",
-              "type": "core::integer::u256",
-              "kind": "data"
-            },
-            {
-              "name": "amount_to_stake",
-              "type": "core::integer::u256",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BidExecuted",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "executor",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "key"
-            },
-            {
-              "name": "land_location",
-              "type": "core::integer::u16",
-              "kind": "data"
-            },
-            {
-              "name": "token_for_sale",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            },
-            {
-              "name": "sell_price",
-              "type": "core::integer::u256",
-              "kind": "data"
-            },
-            {
-              "name": "amount_to_stake",
-              "type": "core::integer::u256",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::TokensWithdrawn",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "token",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            },
-            {
-              "name": "recipient",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            },
-            {
-              "name": "amount",
-              "type": "core::integer::u256",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::OwnershipTransferred",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "previous_owner",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            },
-            {
-              "name": "new_owner",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::ActionsContractSet",
-          "kind": "struct",
-          "members": [
-            {
-              "name": "actions_contract",
-              "type": "core::starknet::contract_address::ContractAddress",
-              "kind": "data"
-            }
-          ]
-        },
-        {
-          "type": "event",
-          "name": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
-          "kind": "enum",
-          "variants": []
-        },
-        {
-          "type": "event",
-          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::Event",
-          "kind": "enum",
-          "variants": [
-            {
-              "name": "AuthorizedAdded",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedAdded",
-              "kind": "nested"
-            },
-            {
-              "name": "AuthorizedRemoved",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedRemoved",
-              "kind": "nested"
-            },
-            {
-              "name": "BuyExecuted",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BuyExecuted",
-              "kind": "nested"
-            },
-            {
-              "name": "BidExecuted",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BidExecuted",
-              "kind": "nested"
-            },
-            {
-              "name": "TokensWithdrawn",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::TokensWithdrawn",
-              "kind": "nested"
-            },
-            {
-              "name": "OwnershipTransferred",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::OwnershipTransferred",
-              "kind": "nested"
-            },
-            {
-              "name": "ActionsContractSet",
-              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::ActionsContractSet",
-              "kind": "nested"
-            },
-            {
-              "name": "ReentrancyGuardEvent",
-              "type": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
-              "kind": "flat"
-            }
-          ]
-        }
-      ],
-      "constructor_calldata": [
-        "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-      ],
-      "encoded_constructor_calldata": [
-        "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-      ],
-      "entrypoints": [
-        "add_authorized",
-        "remove_authorized",
-        "set_actions_contract",
-        "execute_buy",
-        "execute_bid",
-        "withdraw_tokens",
-        "transfer_ownership"
-      ],
-      "block_number": null
-    }
-  ]
+  "external_contracts": []
 }
