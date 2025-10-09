@@ -18,177 +18,51 @@
   "availableTokens": [
     {
       "name": "Ponziland Test STRK",
-      "symbol": "pltSTRK",
+      "symbol": "STRK",
       "address": "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "images": {
-        "skin": "strk",
-        "icon": "/tokens/pltSTRK/icon.png",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
+      "skin": "STRK"
     },
     {
       "name": "Ponziland Test LORDS",
-      "symbol": "pltLORDS",
+      "symbol": "LORDS",
       "address": "0x3458d8a00b5731b743f2546f398fa5db4c78be880480b4b5e69efe702099a2a",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "images": {
-        "skin": "lords",
-        "icon": "/tokens/pltLORDS/icon.svg",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
+      "skin": "LORDS"
     },
     {
       "name": "Ponziland Test ETH",
-      "symbol": "pltETH",
+      "symbol": "ETH",
       "address": "0x59a155d61343e0b1c9016d2b0f89ee15ac9f96bcc780e94ff75178c6d74040a",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "images": {
-        "skin": "eth",
-        "icon": "/tokens/pltETH/icon.svg",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
+      "skin": "ETH"
     },
     {
       "name": "Ponziland Test PAPER",
-      "symbol": "pltPAPER",
+      "symbol": "PAPER",
       "address": "0x5891372b03bac7b0a076902a2748912a53c09efea4c0b8b6c4cba0efd43bbd0",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "images": {
-        "skin": "paper",
-        "icon": "/tokens/pltPAPER/icon.svg",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
+      "skin": "PAPER"
     },
     {
       "name": "Ponziland Test BROTHER",
-      "symbol": "pltBROTHER",
+      "symbol": "BROTHER",
       "address": "0x2326d8d563e296adb2e32bad0571ff3f61295b0ffcc97865e4111a4b9bf2d34",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "images": {
-        "skin": "brother",
-        "icon": "/tokens/pltBROTHER/icon.png",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
+      "skin": "BROTHER"
     },
     {
       "name": "Ponziland Test PAL",
-      "symbol": "pltPAL",
+      "symbol": "PAL",
       "address": "0x3cbff2ba953228299f7ab7d42dcc459354061efb6d889053439b56ef1e4bc32",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "images": {
-        "skin": "pal",
-        "icon": "/tokens/pltPAL/icon.svg",
-        "biome": {
-          "x": 2,
-          "y": 3
-        },
-        "building": {
-          "1": {
-            "x": 3,
-            "y": 3
-          },
-          "2": {
-            "x": 3,
-            "y": 4
-          },
-          "3": {
-            "x": 3,
-            "y": 5
-          }
-        }
-      }
+      "skin": "PAL"
     }
   ],
   "commonImages": {

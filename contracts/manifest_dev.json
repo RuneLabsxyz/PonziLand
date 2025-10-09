@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
-    "address": "0x2aed477527d40ed2d138acf1308362f844958a140a31a3ea2bc437b4f38fd1",
-    "seed": "quests_26141062",
+    "address": "0x403d29fa9d2796cfcecf70ef31a60c71b0130e7835fe85b9773ea681ddcd3b7",
+    "seed": "quests_110381040",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1479,7 +1479,7 @@
   },
   "contracts": [
     {
-      "address": "0x25b688b821b4afe30d157e86fa6c6b985541e9e3010f448afe66ba6b0b08682",
+      "address": "0x726f9787c3a3fb81c0422da656ee0607fab60942804f66a5234d2a511c6b378",
       "class_hash": "0x152b6e0516f14299d1e4269302d3a19b67d64f9a773c1c2c5ed50301057da1",
       "abi": [
         {
@@ -2340,7 +2340,7 @@
       ]
     },
     {
-      "address": "0x25b72f9f8820015e0f4b8ae57f7c328daef16bbb4c1e65710049f831066d3c9",
+      "address": "0x26942ec3f88eb2aac20f61c7d0468bd65d9ae079add00190e55508a68fe1025",
       "class_hash": "0x339162d3e1a909f6babf0eef5934ddcd13f8d873324a11a6338a6462f491b1",
       "abi": [
         {
@@ -2702,7 +2702,7 @@
       ]
     },
     {
-      "address": "0x2e6b60be627629f691e55b0a1f90f20bf1c7c0464fdc810c43beb9ececc3189",
+      "address": "0x641ef0b6a0610371b9815674a111bff89e5bed834b486eff50591dce3eb9af1",
       "class_hash": "0x685bc40e6083dcdc0487897e250e55693ce962ccf1956b394d91dff1a293a4d",
       "abi": [
         {
@@ -3855,8 +3855,8 @@
       ]
     },
     {
-      "address": "0x183954b5f279874c861db444e9a19ccebd1b0f93121f92ce348d861384c332",
-      "class_hash": "0x22a5352ef2d9877bea3ab1b829bfa1d0a78d721b8dd4909800d4c2237c699f0",
+      "address": "0x4c9b8354e65d2ff862c28dd8ef244212ac400524eb8b51327ea4c278f57fd29",
+      "class_hash": "0x64cb43c2a7eba7f61106914313765feba41737d2a8c6a24b8f91e7f839ef0c4",
       "abi": [
         {
           "type": "impl",
@@ -3961,6 +3961,10 @@
             {
               "name": "quest_type",
               "type": "ponzi_land::models::quest::QuestType"
+            },
+            {
+              "name": "game_name",
+              "type": "core::byte_array::ByteArray"
             }
           ]
         },
@@ -4248,6 +4252,10 @@
                 {
                   "name": "quest_type",
                   "type": "ponzi_land::models::quest::QuestType"
+                },
+                {
+                  "name": "game_name",
+                  "type": "core::byte_array::ByteArray"
                 }
               ],
               "outputs": [],
@@ -4384,6 +4392,7 @@
         "1",
         "20",
         "1",
+        "str:caps",
         "0",
         "0x00b6e40f8a90aaca4997cc5d9aa2b53836a786fe4e7121713451b3d87bc251c4",
         "str:planetelo",
@@ -4391,7 +4400,8 @@
         "str:settings_systems",
         "1",
         "0",
-        "2"
+        "2",
+        "str:dm_mock"
       ],
       "tag": "ponzi_land-quests",
       "selector": "0x5c7181752631840c2508a57b308a7e22d1ed2f7c0e02f5f8d44c8bbb227c188",
@@ -4406,7 +4416,7 @@
       ]
     },
     {
-      "address": "0x3c8971daaa8dae61e0282ddf6f9a4b67b4769dcfc7bd4b0a4f4313cd3ca7c9",
+      "address": "0x6963ec9dfd3a3c370f68d559cc32aa2224cd722f5c7f64f28a724d9d5647ffd",
       "class_hash": "0x1c4d8162316e024400f55004265729c3eff1169b5aeb6dcfbda13934be75ebe",
       "abi": [
         {
@@ -4739,7 +4749,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x6761aec3850bb7cbd81b2ffa149ee20d102dea7b1c2983fcc08bc9b55d8ad4e",
+      "class_hash": "0x5cdb493e1367c7210ad20f87f83a9ca2765945f231c5d292af6ced22a4f4333",
       "tag": "ponzi_land-QuestGame",
       "selector": "0x20eddaf30971606ae1766cf945a44860b916871b8992b5340f435fbd5b09c65"
     },
