@@ -145,39 +145,20 @@ export const estimateNukeTime = async (
 
   const remainingHours = remainingStake / rateOfActualNeighbours;
   const remainingSeconds = remainingHours * baseTime;
-  console.log('Debug - remainingStake:', remainingStake);
-  console.log('Debug - rateOfActualNeighbours:', rateOfActualNeighbours);
-  console.log('Debug - remainingHours:', remainingHours);
-  console.log('Debug - remainingSeconds:', remainingSeconds);
-
   let minRemainingSeconds = remainingSeconds;
-  console.log('Debug - initial minRemainingSeconds:', minRemainingSeconds);
   if (elapsedTimesOfNeighbors && elapsedTimesOfNeighbors.length > 0) {
-    console.log(
-      'Debug - processing neighbors, count:',
-      elapsedTimesOfNeighbors.length,
-    );
     elapsedTimesOfNeighbors.forEach((neighbor, index) => {
-      console.log(`Debug - neighbor ${index}:`, neighbor);
       const elapsedTime = neighbor[1];
-      console.log('Debug - neighbor elapsed_time:', elapsedTime);
       const remainingTime = Math.max(
         0,
         Math.floor(minRemainingSeconds) - Number(elapsedTime),
       );
-      console.log(`Debug - neighbor ${index} remainingTime:`, remainingTime);
       if (remainingTime < minRemainingSeconds) {
-        console.log(
-          `Debug - updating minRemainingSeconds from ${minRemainingSeconds} to ${remainingTime}`,
-        );
         minRemainingSeconds = remainingTime;
       }
     });
-  } else {
-    console.log('Debug - no neighbors or empty array');
   }
 
-  console.log('Debug - final minRemainingSeconds:', minRemainingSeconds);
   return minRemainingSeconds;
 };
 
