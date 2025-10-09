@@ -40,10 +40,10 @@
 </script>
 
 <div
-  class="top-0 left-1/2 absolute z-2 overlay-container"
+  class="top-0 left-1/2 absolute z-2 pb-5 overlay-hover-detect"
   style="pointer-events: all;"
 >
-  <Card class="bg-ponzi">
+  <Card class="bg-ponzi overlay-container relative">
     <div class="flex gap-2 -m-2">
       <!-- <Toggle variant="map" size="sm" class="rounded">
       <img
@@ -60,10 +60,16 @@
         value={heatmapState}
         onValueChange={(e) => (heatmapState = e as HeatmapState)}
       >
-        <OverlayManagerItem value={HeatmapParameter.SELL_PRICE} tooltip="Sell Price Heatmap">
+        <OverlayManagerItem
+          value={HeatmapParameter.SELL_PRICE}
+          tooltip="Sell Price Heatmap"
+        >
           <div class="font-ponzi-number text-xs stroke-3d-black">$</div>
         </OverlayManagerItem>
-        <OverlayManagerItem value={HeatmapParameter.LEVEL} tooltip="Level Heatmap">
+        <OverlayManagerItem
+          value={HeatmapParameter.LEVEL}
+          tooltip="Level Heatmap"
+        >
           <div class="font-ponzi-number text-xs stroke-3d-black">lvl</div>
         </OverlayManagerItem>
       </ToggleGroup.Root>
@@ -92,22 +98,25 @@
         </OverlayManagerItem>
       </ToggleGroup.Root>
     </div>
+    <div
+      class="absolute left-1/2 -translate-x-1/2 mt-2 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
+    >
+      ^
+    </div>
   </Card>
-  <div
-    class="absolute left-1/2 -translate-x-1/2 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
-  >
-    ^
-  </div>
 </div>
 
 <style>
-  .overlay-container {
-    transform: translateX(-50%) translateY(-75%);
+  :global(.overlay-container) {
+    transform: translateY(-50%);
     transition: transform 0.3s ease-in-out;
   }
+  .overlay-hover-detect {
+    transform: translateX(-50%);
+  }
 
-  .overlay-container:hover {
-    transform: translateX(-50%) translateY(0);
+  :global(.overlay-hover-detect:hover .overlay-container) {
+    transform: translateY(0);
   }
 
   .chevron {
