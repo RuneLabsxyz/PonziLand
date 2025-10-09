@@ -99,7 +99,7 @@
       </ToggleGroup.Root>
     </div>
     <div
-      class="absolute left-1/2 -translate-x-1/2 mt-2 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
+      class="absolute left-1/2 -translate-x-1/2 mt-3 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
     >
       ^
     </div>
@@ -108,8 +108,8 @@
 
 <style>
   :global(.overlay-container) {
-    transform: translateY(-50%);
-    transition: transform 0.3s ease-in-out;
+    transform: translateY(-75%);
+    transition: transform 0.2s ease-in-out;
   }
   .overlay-hover-detect {
     transform: translateX(-50%);
