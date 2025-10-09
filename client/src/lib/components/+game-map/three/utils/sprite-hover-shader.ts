@@ -558,9 +558,7 @@ export function setupOutlineShader(
           if (instanceIndex >= 0 && instanceIndex < stripedArray.length) {
             // The instanceIndex comes from neighbor locations which use COORD_MULTIPLIER encoding
             // instanceIndex = row * COORD_MULTIPLIER + col
-            const col = Math.floor(instanceIndex / COORD_MULTIPLIER);
-            const row = instanceIndex % COORD_MULTIPLIER;
-
+            const { x: col, y: row } = toLocation(instanceIndex);
             // Convert to sprite index which uses GRID_SIZE encoding
             // spriteIndex = row * GRID_SIZE + col
             const spriteIndex = row * GRID_SIZE + col;
@@ -590,10 +588,8 @@ export function setupOutlineShader(
             selectedLandIndex < stripedArray.length
           ) {
             // Transform selected land index the same way
-            const selectedCol = Math.floor(
-              selectedLandIndex / COORD_MULTIPLIER,
-            );
-            const selectedRow = selectedLandIndex % COORD_MULTIPLIER;
+            const { x: selectedCol, y: selectedRow } =
+              toLocation(selectedLandIndex);
             const selectedSpriteIndex = selectedRow * GRID_SIZE + selectedCol;
 
             // Apply both stripes AND dark tint for selected land
