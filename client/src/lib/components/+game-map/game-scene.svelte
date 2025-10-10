@@ -120,15 +120,12 @@
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
       // Get current land tiles synchronously to avoid subscription leak
-      const landTiles = get(landStore.getAllLands());
+      const landTiles = get(landStore.getCurrentLands());
 
       // Find the land tile that corresponds to our grid position
       if (cursorStore.gridPosition) {
-        const tile = landTiles.find(
-          (tile) =>
-            tile.location.x === cursorStore.gridPosition!.x &&
-            tile.location.y === cursorStore.gridPosition!.y,
-        );
+        const tile =
+          landTiles[cursorStore.gridPosition.x][cursorStore.gridPosition.y];
 
         if (tile) {
           selectedLand.value = tile;
