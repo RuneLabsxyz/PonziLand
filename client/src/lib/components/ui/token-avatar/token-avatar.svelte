@@ -6,7 +6,7 @@
   const metadata = $derived(getTokenMetadata(token.skin));
 </script>
 
-<div class={cn('border-none',className)}>
+<div class={cn('border-none', className)}>
   <img
     src={metadata?.icon || '/tokens/default/icon.png'}
     alt={token.symbol}

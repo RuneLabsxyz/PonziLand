@@ -263,6 +263,9 @@
   // Use useTask to continuously monitor camera zoom changes
   let lastLoggedZoom = 0;
   useTask(() => {
+    // Only run camera zoom monitoring if animations are enabled
+    if (!devsettings.enableAnimations) return;
+
     if (gameStore.cameraControls?.camera) {
       const currentZoom = gameStore.cameraControls.camera.zoom;
 
@@ -353,6 +356,10 @@
 
   // Add animation loop for shader time uniform
   useTask(() => {
+    // Only run shader animations if enabled
+    if (!devsettings.enableAnimations || !devsettings.enableShaderAnimations)
+      return;
+
     if (coinShaderMaterial) {
       coinShaderMaterial.updateTime(clock.getElapsedTime());
     }
@@ -668,6 +675,11 @@
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
         receiveShadow={true}
+        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(10, devsettings.animationFPS)
+            : undefined
+          : 0}
       >
         <RoadSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
@@ -681,6 +693,11 @@
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
         receiveShadow={true}
+        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(10, devsettings.animationFPS)
+            : undefined
+          : 0}
       >
         <LandTileSprite
           landTiles={visibleLandTiles}
@@ -704,6 +721,11 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
         receiveShadow={true}
+        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(10, devsettings.animationFPS)
+            : undefined
+          : 0}
       >
         <LandTileSprite
           landTiles={visibleLandTiles}
@@ -725,7 +747,13 @@
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
-        fps={10}
+        fps={devsettings.enableAnimations &&
+        devsettings.enableSpriteAnimations &&
+        devsettings.enableNukeAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(5, devsettings.animationFPS / 3)
+            : 10
+          : 0}
       >
         <NukeSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
@@ -773,6 +801,8 @@
         isShieldMode={isUnzoomed}
         {isUnzoomed}
         currentUserAddress={accountState.address}
+        enableAnimation={devsettings.enableAnimations &&
+          devsettings.enableNukeAnimations}
       />
     {/if}
 
@@ -783,7 +813,11 @@
 
     <!-- Clouds positioned at land bounds -->
     {#if devsettings.showClouds}
-      <Clouds bounds={landBounds} />
+      <Clouds
+        bounds={landBounds}
+        enableAnimation={devsettings.enableAnimations &&
+          devsettings.enableCloudAnimations}
+      />
     {/if}
   {/if}
 </T>

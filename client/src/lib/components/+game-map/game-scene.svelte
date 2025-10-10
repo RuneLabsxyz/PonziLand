@@ -12,10 +12,11 @@
   import LandSprite from './three/land-sprite.svelte';
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
+  import { devsettings } from './three/utils/devsettings.store.svelte';
 
   let { children = undefined } = $props();
 
-  const { renderer, camera } = useThrelte();
+  const { renderer, camera, scene } = useThrelte();
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.toneMapping = 1; // No tone mapping
 
