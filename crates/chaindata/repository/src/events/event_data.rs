@@ -2,7 +2,7 @@
 
 use chaindata_models::events::{
     actions::{
-        AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+        AddStakeEventModel, AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
         LandTransferEventModel, NewAuctionEventModel,
     },
     auth::{AddressAuthorizedEventModel, AddressRemovedEventModel, VerifierUpdatedEventModel},
@@ -106,6 +106,13 @@ macro_rules! implement_repository {
         )*
     };
 }
+
+implement_repository!(AddStakeEventModel, "event_add_stake", {
+    id,
+    location,
+    new_stake_amount,
+    owner
+});
 
 implement_repository!(AuctionFinishedEventModel, "event_auction_finished", {
     id,
