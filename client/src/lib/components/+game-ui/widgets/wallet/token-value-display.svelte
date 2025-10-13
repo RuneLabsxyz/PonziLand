@@ -13,7 +13,7 @@
     token: Token;
   }>();
 
-  let animating = $state(true);
+  let animating = $state(false);
   let increment = $state(0);
   let startingAmount = $state(0n); // Track the starting amount when processing begins
   let accumulatedIncrements = $state(0n); // Track total increments during processing
@@ -203,43 +203,35 @@
 
   <!-- Right side: Base token value -->
   <div class="flex flex-col items-end text-right text-lg">
-    {#if !isBaseToken && baseEquivalent && baseToken}
+    <div class="flex items-center">
+      {#if animating && baseToken}
+        <span class="animate-in-out-right text-yellow-500 pr-2">
+          +{baseEquivalent && previousBaseEquivalent
+            ? CurrencyAmount.fromRaw(
+                baseEquivalent
+                  .rawValue()
+                  .minus(previousBaseEquivalent.rawValue()),
+                baseToken,
+              ).toString()
+            : '0'}
+        </span>
+      {/if}
       <div
         class="flex items-center font-ds text-white leading-tight {animating &&
         baseToken
           ? 'text-yellow-500 font-bold'
           : ''}"
       >
-        <span class="text-lg">$ </span>{baseEquivalent.toString()}
-        {#if animating && baseToken}
-          <div class="relative inline-block">
-            <span
-              class="absolute left-1 top-0 animate-in-out-left text-yellow-500 text-xs"
-            >
-              +{baseEquivalent && previousBaseEquivalent
-                ? CurrencyAmount.fromRaw(
-                    baseEquivalent
-                      .rawValue()
-                      .minus(previousBaseEquivalent.rawValue()),
-                    baseToken,
-                  ).toString()
-                : '0'}
-            </span>
-          </div>
+        {#if baseEquivalent}
+          <span class="text-lg">$ </span>{baseEquivalent.toString()}
+        {:else if isBaseToken}
+          <span class="text-lg">$ </span>{displayAmount.toString()}
         {/if}
       </div>
-      {#if conversionRate}
-        <div class="text-xs opacity-50 font-ds text-gray-400 leading-tight">
-          1 {token.symbol} = {conversionRate.toString()} $
-        </div>
-      {/if}
-    {:else if isBaseToken}
-      <!-- For base token, show just the symbol -->
-      <div class="font-ds text-white leading-tight">
-        ${displayAmount}
-      </div>
+    </div>
+    {#if conversionRate}
       <div class="text-xs opacity-50 font-ds text-gray-400 leading-tight">
-        1 {token.symbol} = 1 $
+        1 {token.symbol} = {conversionRate.toString()} $
       </div>
     {/if}
   </div>
@@ -269,12 +261,35 @@
       opacity: 1;
     }
     100% {
-      transform: translateX(-0%);
+      transform: translateX(-100%);
+      opacity: 0;
+    }
+  }
+
+  @keyframes slideInOutRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    10% {
+      transform: translateX(0);
       opacity: 1;
+    }
+    90% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
     }
   }
 
   .animate-in-out-left {
     animation: slideInOutLeft 1250ms ease-in-out forwards;
+  }
+
+  .animate-in-out-right {
+    animation: slideInOutRight 1250ms ease-in-out forwards;
   }
 </style>
