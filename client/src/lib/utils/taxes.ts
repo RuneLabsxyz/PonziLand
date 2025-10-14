@@ -166,7 +166,7 @@ export const estimateNukeTime = async (
         Math.floor(minRemainingSeconds) - Number(elapsedTime),
       );
       console.log(`Debug - neighbor ${index} remainingTime:`, remainingTime);
-      if (remainingTime < minRemainingSeconds) {
+      if (remainingTime > minRemainingSeconds) {
         console.log(
           `Debug - updating minRemainingSeconds from ${minRemainingSeconds} to ${remainingTime}`,
         );
