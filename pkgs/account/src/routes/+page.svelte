@@ -36,7 +36,7 @@
   <p>Click the "CONNECT WALLET" button in the top right to see the wallet selection modal.</p>
 </div>
 
-<WalletBalance />
+<WalletBalance maxHeight="200px" />
 <!-- Include the components -->
 {#if initialized}
   <SelectWalletModal />
