@@ -26,8 +26,18 @@
 
     onMount(async () => {
         await walletStore.init();
+        // Load balances if account is already connected
+        if (address) {
+            await handleRefreshBalances();
+        }
     });
 
+    // Auto-load balances when wallet is opened
+    $effect(() => {
+        if (isOpen && address && walletStore.tokenBalances.length === 0) {
+            handleRefreshBalances();
+        }
+    });
     
     const handleRefreshBalances = async () => {
         if (!address) return;
