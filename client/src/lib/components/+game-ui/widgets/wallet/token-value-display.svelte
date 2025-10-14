@@ -105,11 +105,12 @@
     CurrencyAmount.fromUnscaled(BigInt(Math.round(tweenAmount.current)), token),
   );
 
-  // Get the currently selected base token
+  // Get USDC as the fixed base token
   const baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find((t) => t.address === targetAddress);
+    // Always use USDC as base token
+    const usdcAddress =
+      '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8';
+    return data.availableTokens.find((t) => t.address === usdcAddress);
   });
 
   // Check if current token is the selected base token
@@ -174,68 +175,63 @@
   });
 </script>
 
-<div class="flex flex-1 items-center justify-between text-xl tracking-wide">
-  <div class="flex flex-col flex-1">
-    {#if shouldShowBaseValue}
-      <div
-        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
-          ? 'animating text-yellow-500 font-bold'
-          : ''}"
-      >
-        <div>{baseEquivalent?.toString() || '0'}</div>
-        <div class="relative">
-          {#if animating && baseToken}
-            <span class="absolute left-0 animate-in-out-left">
-              +{baseEquivalent && previousBaseEquivalent
-                ? CurrencyAmount.fromRaw(
-                    baseEquivalent
-                      .rawValue()
-                      .minus(previousBaseEquivalent.rawValue()),
-                    baseToken,
-                  ).toString()
-                : '0'}
-            </span>
-          {/if}
-        </div>
-      </div>
-      <div class="text-sm opacity-50 font-ds text-gray-400 leading-none">
-        {displayAmount.toString()}
-        {token.symbol}
-      </div>
-    {:else}
-      <div
-        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
-          ? 'animating text-yellow-500 font-bold'
-          : ''}"
-      >
-        <div>{displayAmount}</div>
-        <div class="relative">
-          {#if animating}
-            <span class="absolute left-0 animate-in-out-left">
-              +{CurrencyAmount.fromUnscaled(increment, token)}
-            </span>
-          {/if}
-        </div>
-      </div>
-      {#if !isBaseToken && baseEquivalent && baseToken}
-        <div class="text-sm opacity-50 font-ds text-gray-400 leading-none">
-          ≈ {baseEquivalent.toString()}
-          {baseToken.symbol}
-        </div>
-      {/if}
-    {/if}
-  </div>
-  <div class="flex flex-col items-end text-right">
-    <div class="font-ds opacity-75 text-[#D9D9D9] leading-none">
-      {shouldShowBaseValue && baseToken ? baseToken.symbol : token.symbol}
+<!-- Phantom wallet style: Avatar + Token Name on top, Token Amount + Symbol below, Base Token Value on right -->
+<div class="flex items-center justify-between w-full">
+  <!-- Left side: Token info -->
+  <div class="flex flex-col">
+    <!-- Token Name -->
+    <div class="font-ds text-white font-medium leading-tight">
+      {token.name || token.symbol}
     </div>
-    {#if !isBaseToken && conversionRate && baseToken}
-      <div class="text-xs opacity-50 font-ds text-gray-400 leading-none">
-        {#if shouldShowBaseValue}
-          1 {baseToken.symbol} = {conversionRate.toString()} {token.symbol}
-        {:else}
-          1 {token.symbol} = {conversionRate.toString()} {baseToken.symbol}
+    <!-- Token Amount + Symbol with animation -->
+    <div
+      class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-tight {animating
+        ? 'animating text-yellow-500 font-bold'
+        : ''}"
+    >
+      <div>{displayAmount}</div>
+      <div class="text-gray-400">{token.symbol}</div>
+      <div class="relative">
+        {#if animating}
+          <span class="absolute left-0 animate-in-out-left text-yellow-500">
+            +{CurrencyAmount.fromUnscaled(increment, token)}
+          </span>
         {/if}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right side: Base token value -->
+  <div class="flex flex-col items-end text-right text-lg">
+    <div class="flex items-center">
+      {#if animating && baseToken}
+        <span class="animate-in-out-right text-yellow-500 pr-2">
+          +{baseEquivalent && previousBaseEquivalent
+            ? CurrencyAmount.fromRaw(
+                baseEquivalent
+                  .rawValue()
+                  .minus(previousBaseEquivalent.rawValue()),
+                baseToken,
+              ).toString()
+            : '0'}
+        </span>
+      {/if}
+      <div
+        class="flex items-center font-ds text-white leading-tight {animating &&
+        baseToken
+          ? 'text-yellow-500 font-bold'
+          : ''}"
+      >
+        {#if baseEquivalent}
+          <span class="text-lg">$ </span>{baseEquivalent.toString()}
+        {:else if isBaseToken}
+          <span class="text-lg">$ </span>{displayAmount.toString()}
+        {/if}
+      </div>
+    </div>
+    {#if conversionRate}
+      <div class="text-xs opacity-50 font-ds text-gray-400 leading-tight">
+        1 {token.symbol} = {conversionRate.toString()} $
       </div>
     {/if}
   </div>
@@ -270,7 +266,30 @@
     }
   }
 
+  @keyframes slideInOutRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    10% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    90% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
   .animate-in-out-left {
     animation: slideInOutLeft 1250ms ease-in-out forwards;
+  }
+
+  .animate-in-out-right {
+    animation: slideInOutRight 1250ms ease-in-out forwards;
   }
 </style>
