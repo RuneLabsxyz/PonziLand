@@ -28,4 +28,56 @@ export let devsettings = $state({
   showHeatmap: false,
   showClouds: true,
   multiLandInfo: false,
+  // Animation Performance Settings
+  enableAnimations: true, // Master animation toggle
+  enableSpriteAnimations: true, // Sprite animations (biomes, buildings, nukes)
+  enableShaderAnimations: true, // Coin hover effects and other shader animations
+  enableCloudAnimations: true, // Cloud movement and effects
+  enableNukeAnimations: true, // Nuke pulsing and time display animations
+  reducedAnimationMode: false, // Reduces FPS and disables non-essential animations
+  animationFPS: 30, // FPS for sprite animations (reduced from default when in reduced mode)
 });
+
+// Animation performance presets
+export function setAnimationPerformance(
+  preset: 'high' | 'medium' | 'low' | 'off',
+) {
+  switch (preset) {
+    case 'high':
+      devsettings.enableAnimations = true;
+      devsettings.enableSpriteAnimations = true;
+      devsettings.enableShaderAnimations = true;
+      devsettings.enableCloudAnimations = true;
+      devsettings.enableNukeAnimations = true;
+      devsettings.reducedAnimationMode = false;
+      devsettings.animationFPS = 60;
+      break;
+    case 'medium':
+      devsettings.enableAnimations = true;
+      devsettings.enableSpriteAnimations = true;
+      devsettings.enableShaderAnimations = true;
+      devsettings.enableCloudAnimations = true;
+      devsettings.enableNukeAnimations = true;
+      devsettings.reducedAnimationMode = true;
+      devsettings.animationFPS = 30;
+      break;
+    case 'low':
+      devsettings.enableAnimations = true;
+      devsettings.enableSpriteAnimations = true;
+      devsettings.enableShaderAnimations = false;
+      devsettings.enableCloudAnimations = false;
+      devsettings.enableNukeAnimations = false;
+      devsettings.reducedAnimationMode = true;
+      devsettings.animationFPS = 15;
+      break;
+    case 'off':
+      devsettings.enableAnimations = false;
+      devsettings.enableSpriteAnimations = false;
+      devsettings.enableShaderAnimations = false;
+      devsettings.enableCloudAnimations = false;
+      devsettings.enableNukeAnimations = false;
+      devsettings.reducedAnimationMode = true;
+      devsettings.animationFPS = 0;
+      break;
+  }
+}

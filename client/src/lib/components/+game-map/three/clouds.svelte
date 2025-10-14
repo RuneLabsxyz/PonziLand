@@ -25,9 +25,10 @@
       minY: number;
       maxY: number;
     } | null;
+    enableAnimation?: boolean;
   }
 
-  let { bounds }: Props = $props();
+  let { bounds, enableAnimation = true }: Props = $props();
 
   const CLOUDS_HEIGHT = 4; // Position clouds above the grid
   const CLOUD_SPACING = 4; // Distance between clouds in grid
@@ -271,6 +272,8 @@
 
   // Animate clouds with subtle movement
   useTask((delta) => {
+    // Only animate if enabled
+    if (!enableAnimation) return;
     time += delta * 0.1; // Very slow time progression (0.1x speed)
   });
 
@@ -514,6 +517,8 @@
 
   // Update clouds instances when positions change - using useTask for better performance
   useTask(() => {
+    // Skip animation updates if disabled
+    if (!enableAnimation) return;
     if (cloudsInstancedMesh && cloudPositions.length > 0) {
       const tempObject = new Object3D();
 
@@ -533,6 +538,8 @@
 
   // Create cloud plane meshes - using useTask for better performance
   useTask(() => {
+    // Skip cloud plane updates if animation disabled
+    if (!enableAnimation) return;
     if (cloudPlaneGeometries.length > 0) {
       const material = new MeshStandardMaterial({});
 

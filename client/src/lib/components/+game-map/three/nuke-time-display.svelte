@@ -15,12 +15,14 @@
   } from 'three';
   import type { LandTile } from './landTile';
   import { TextTextureCache } from './utils/text-texture';
+  import { devsettings } from './utils/devsettings.store.svelte';
 
   interface Props {
     landTiles: LandTile[];
     isShieldMode?: boolean;
     isUnzoomed?: boolean;
     currentUserAddress?: string;
+    enableAnimation?: boolean;
   }
 
   let {
@@ -28,6 +30,7 @@
     isShieldMode = false,
     isUnzoomed = false,
     currentUserAddress,
+    enableAnimation = true,
   }: Props = $props();
 
   const textureCache = new TextTextureCache();
@@ -226,7 +229,10 @@
   // Pulse animation for nuke state
   let pulseTime = $state(0);
   useTask((delta) => {
-    pulseTime += delta;
+    // Only run pulse animation if enabled
+    if (enableAnimation) {
+      pulseTime += delta;
+    }
   });
 
   // Calculate pulsing opacity for nuke state (oscillates between 0.4 and 1.0)

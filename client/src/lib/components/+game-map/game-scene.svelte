@@ -12,10 +12,11 @@
   import LandSprite from './three/land-sprite.svelte';
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
+  import { devsettings } from './three/utils/devsettings.store.svelte';
 
   let { children = undefined } = $props();
 
-  const { renderer, camera } = useThrelte();
+  const { renderer, camera, scene } = useThrelte();
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.toneMapping = 1; // No tone mapping
 
@@ -120,15 +121,12 @@
     // Set selectedTileIndex to the currently hovered tile
     if (cursorStore.hoveredTileIndex !== undefined) {
       // Get current land tiles synchronously to avoid subscription leak
-      const landTiles = get(landStore.getAllLands());
+      const landTiles = get(landStore.getCurrentLands());
 
       // Find the land tile that corresponds to our grid position
       if (cursorStore.gridPosition) {
-        const tile = landTiles.find(
-          (tile) =>
-            tile.location.x === cursorStore.gridPosition!.x &&
-            tile.location.y === cursorStore.gridPosition!.y,
-        );
+        const tile =
+          landTiles[cursorStore.gridPosition.x][cursorStore.gridPosition.y];
 
         if (tile) {
           selectedLand.value = tile;
