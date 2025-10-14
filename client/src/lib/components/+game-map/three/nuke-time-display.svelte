@@ -3,7 +3,7 @@
   import { landStore } from '$lib/stores/store.svelte';
   import { padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
-  import { estimateNukeTime, parseNukeTime } from '$lib/utils/taxes';
+  import { estimateNukeTimeSync, parseNukeTime } from '$lib/utils/taxes';
   import { T, useTask } from '@threlte/core';
   import { onDestroy } from 'svelte';
   import { SvelteMap } from 'svelte/reactivity';
@@ -53,7 +53,7 @@
     texture.colorSpace = 'srgb';
   });
 
-  // Determine shield type based on days remaining (same logic as land-nuke-shield.svelte)
+  // Determine shield type based on days remaining
   function getShieldType(days: number): keyof typeof shieldTextures {
     if (days >= 5) return 'blue';
     if (days >= 3) return 'grey';
@@ -99,10 +99,98 @@
     return { text: displayText, shieldType };
   }
 
-  // Cache for nuke time calculations
+  // Cache for nuke time calculations and RPC data
   let nukeTimeCache = $state(
-    new SvelteMap<string, { timeInSeconds: number; lastCalculated: number }>(),
+    new SvelteMap<
+      string,
+      {
+        timeInSeconds: number;
+        lastCalculated: number;
+        elapsedTimes?: any[];
+        minElapsedTime?: number;
+      }
+    >(),
   );
+
+  // Batch queue for RPC calls
+  let rpcBatchQueue = $state(new Set<string>());
+  let batchTimer: ReturnType<typeof setTimeout> | null = null;
+  const BATCH_DELAY = 100; // 100ms delay to batch RPC calls
+  const CACHE_DURATION = 30000; // 30 seconds
+
+  // Process RPC batch
+  async function processBatch() {
+    if (rpcBatchQueue.size === 0) return;
+
+    const locations = Array.from(rpcBatchQueue);
+    rpcBatchQueue.clear();
+    batchTimer = null;
+
+    // Process each location
+    await Promise.all(
+      locations.map(async (locationKey) => {
+        const tile = landTiles.find(
+          (t) => t.land.locationString === locationKey,
+        );
+        if (!tile || !BuildingLand.is(tile.land)) return;
+
+        try {
+          const landWithActions = createLandWithActions(
+            tile.land,
+            landStore.getAllLands,
+          );
+
+          // Get elapsed times (RPC call)
+          const elapsedTimes =
+            await landWithActions.getElapsedTimeSinceLastClaimForNeighbors();
+
+          // Calculate min elapsed time
+          const minElapsedTime = elapsedTimes?.length
+            ? Math.min(...elapsedTimes.map((neighbor) => Number(neighbor[1])))
+            : undefined;
+
+          // Get neighbor count
+          const neighborCount =
+            landWithActions.getNeighbors()?.getBaseLandsArray()?.length || 0;
+
+          // Calculate nuke time synchronously using cached data
+          const timeInSeconds = estimateNukeTimeSync(
+            landWithActions,
+            neighborCount,
+            minElapsedTime,
+          );
+
+          // Update cache
+          nukeTimeCache.set(locationKey, {
+            timeInSeconds,
+            lastCalculated: Date.now(),
+            elapsedTimes,
+            minElapsedTime,
+          });
+
+          // Force reactivity update
+          nukeTimeCache = new SvelteMap(nukeTimeCache);
+        } catch (error) {
+          console.warn('Failed to fetch nuke time for:', locationKey, error);
+        }
+      }),
+    );
+  }
+
+  // Add location to RPC batch
+  function queueRPCCall(locationKey: string) {
+    rpcBatchQueue.add(locationKey);
+
+    // Clear existing timer
+    if (batchTimer !== null) {
+      clearTimeout(batchTimer);
+    }
+
+    // Set new timer to process batch
+    batchTimer = setTimeout(() => {
+      processBatch();
+    }, BATCH_DELAY);
+  }
 
   // Filtered land tiles that should show nuke times
   let visibleNukeTiles = $derived(
@@ -123,7 +211,7 @@
     }),
   );
 
-  // Reactive nuke time data calculation with cached async calculations
+  // Reactive nuke time data calculation
   let nukeTimeData = $derived.by(() => {
     const dataMap = new SvelteMap<
       string,
@@ -140,12 +228,13 @@
         const locationKey = tile.land.locationString;
         const cachedResult = nukeTimeCache.get(locationKey);
 
-        // Use cached result if available and recent (within 30 seconds)
+        // Check if cache is valid
         const now = Date.now();
-        const useCache =
-          cachedResult && now - cachedResult.lastCalculated < 30000;
+        const isCacheValid =
+          cachedResult && now - cachedResult.lastCalculated < CACHE_DURATION;
 
-        if (useCache) {
+        if (isCacheValid) {
+          // Use cached result
           const { text, shieldType } = formatNukeTime(
             cachedResult.timeInSeconds,
           );
@@ -160,19 +249,47 @@
             timeInSeconds: cachedResult.timeInSeconds,
           });
         } else {
-          // Trigger async calculation and use placeholder for now
-          calculateNukeTimeAsync(tile);
+          // Try to calculate synchronously if we have neighbors info
+          const landWithActions = createLandWithActions(
+            tile.land as BuildingLand,
+            landStore.getAllLands,
+          );
+          const neighborCount =
+            landWithActions.getNeighbors()?.getBaseLandsArray()?.length || 0;
 
-          // Use fallback display while calculating
-          dataMap.set(locationKey, {
-            text: '...',
-            position: [
-              tile.position[0],
-              tile.position[1] + 0.1,
-              tile.position[2],
-            ],
-            shieldType: 'grey',
-          });
+          if (neighborCount > 0) {
+            // If we have cached elapsed times, use them
+            if (cachedResult?.minElapsedTime !== undefined) {
+              const timeInSeconds = estimateNukeTimeSync(
+                landWithActions,
+                neighborCount,
+                cachedResult.minElapsedTime,
+              );
+              const { text, shieldType } = formatNukeTime(timeInSeconds);
+              dataMap.set(locationKey, {
+                text,
+                position: [
+                  tile.position[0],
+                  tile.position[1] + 0.1,
+                  tile.position[2],
+                ],
+                shieldType,
+                timeInSeconds,
+              });
+            } else {
+              // Queue RPC call and show placeholder
+              queueRPCCall(locationKey);
+              dataMap.set(locationKey, {
+                text: '...',
+                position: [
+                  tile.position[0],
+                  tile.position[1] + 0.1,
+                  tile.position[2],
+                ],
+                shieldType: 'grey',
+              });
+            }
+          }
         }
       } catch (error) {
         console.warn(
@@ -195,33 +312,36 @@
     return dataMap;
   });
 
-  // Async function to calculate nuke times and update cache
-  async function calculateNukeTimeAsync(tile: LandTile) {
-    if (!BuildingLand.is(tile.land)) return;
-
-    try {
-      const landWithActions = createLandWithActions(
-        tile.land,
-        landStore.getAllLands,
-      );
-      const timeInSeconds = await estimateNukeTime(landWithActions);
-
-      // Update cache with new result
-      nukeTimeCache.set(tile.land.locationString, {
-        timeInSeconds,
-        lastCalculated: Date.now(),
-      });
-
-      // Trigger reactivity update
-      nukeTimeCache = new SvelteMap(nukeTimeCache);
-    } catch (error) {
-      console.warn(
-        'Failed to calculate nuke time for tile:',
-        tile.land.locationString,
-        error,
-      );
+  // Update cache periodically for visible tiles
+  let updateTimer: ReturnType<typeof setInterval> | null = null;
+  $effect(() => {
+    // Clear previous timer
+    if (updateTimer !== null) {
+      clearInterval(updateTimer);
     }
-  }
+
+    // Set up periodic updates for visible tiles
+    updateTimer = setInterval(() => {
+      for (const tile of visibleNukeTiles) {
+        const locationKey = tile.land.locationString;
+        const cached = nukeTimeCache.get(locationKey);
+
+        // Update if cache is stale
+        if (
+          !cached ||
+          Date.now() - cached.lastCalculated >= CACHE_DURATION - 5000
+        ) {
+          queueRPCCall(locationKey);
+        }
+      }
+    }, 5000); // Check every 5 seconds
+
+    return () => {
+      if (updateTimer !== null) {
+        clearInterval(updateTimer);
+      }
+    };
+  });
 
   const textGeometry = new PlaneGeometry(0.4, 0.2);
   const shieldGeometry = new PlaneGeometry(0.3, 0.3); // Slightly larger for shield background
@@ -246,6 +366,14 @@
     textGeometry.dispose();
     shieldGeometry.dispose();
     Object.values(shieldTextures).forEach((texture) => texture.dispose());
+
+    // Clear timers
+    if (batchTimer !== null) {
+      clearTimeout(batchTimer);
+    }
+    if (updateTimer !== null) {
+      clearInterval(updateTimer);
+    }
   });
 </script>
 
