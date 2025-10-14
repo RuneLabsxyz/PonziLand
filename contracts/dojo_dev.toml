@@ -8,7 +8,7 @@ seed = "test_313277088"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
-discord = "https://discord.gg/FB2wR6uF"
+discord = "https://discord.gg/2Mt3HhQpmD"
 github = "https://github.com/dojoengine/dojo-starter"
 telegram = "https://t.me/dojoengine"
 
@@ -83,4 +83,3 @@ salt = "1"
 constructor_data = [
     "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
 ]
-

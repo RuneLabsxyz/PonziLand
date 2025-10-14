@@ -33,7 +33,7 @@
       </h1>
       <p class="text-xl">
         Devs are doing something with the help of some mad ponziboys, get
-        <a class="text-blue-500 underline" href="https://discord.gg/WE4zghKJ">
+        <a class="text-blue-500 underline" href="https://discord.gg/2Mt3HhQpmD">
           into Discord
         </a>
         to ask for access, you may find some luck, get rugg'd!

@@ -12,7 +12,7 @@
 <img src="https://img.shields.io/github/stars/dojoengine/dojo?style=social"/>
 </a>
 
-[![discord](https://img.shields.io/badge/join-dojo-green?logo=discord&logoColor=white)](https://discord.gg/PwDa2mKhR4)
+[![discord](https://img.shields.io/badge/join-dojo-green?logo=discord&logoColor=white)](https://discord.gg/2Mt3HhQpmD)
 [![Telegram Chat][tg-badge]][tg-url]
 
 [tg-badge]: https://img.shields.io/endpoint?color=neon&logo=telegram&label=chat&style=flat-square&url=https%3A%2F%2Ftg.sumanjay.workers.dev%2Fdojoengine
