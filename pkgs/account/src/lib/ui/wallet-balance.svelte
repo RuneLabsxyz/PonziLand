@@ -5,6 +5,12 @@
     import { shortenAddress } from '../utils';
     import { onMount } from 'svelte';
 
+    interface Props {
+        maxHeight?: string;
+    }
+
+    let { maxHeight }: Props = $props();
+
     const tokenEndpoint = "https://tokens.ponzi.land"
 
     const baseToken = data.availableTokens.find(
@@ -76,7 +82,7 @@
     </div>
 
     {#if isOpen}
-        <div class="list">
+        <div class="list" style:max-height={maxHeight}>
             {#each walletStore.tokenBalances as [token, balance]}
             <div class="row">
                <div class="token">
@@ -169,6 +175,26 @@
         background-color: #181A28;
         width: 100%;
         display: block;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    /* Custom scrollbar styling */
+    .list::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .list::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .list::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }
+    
+    .list::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
     }
     .row {
         display: flex;
