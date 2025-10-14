@@ -1,0 +1,122 @@
+[
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "bid",
+    "selector": "bid"
+  },
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "buy",
+    "selector": "buy"
+  },
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "claim",
+    "selector": "claim"
+  },
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "claim_all",
+    "selector": "claim_all"
+  },
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "increase_price",
+    "selector": "increase_price"
+  },
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "increase_stake",
+    "selector": "increase_stake"
+  },
+  {
+    "contractAddress": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
+    "entrypoint": "level_up",
+    "selector": "level_up"
+  },
+  {
+    "contractAddress": "0x4270219d365d6b017231b52e92b3fb5d7c8378b05e9abc97724537a80e93b0f",
+    "entrypoint": "multi_route_swap",
+    "selector": "multi_route_swap"
+  },
+  {
+    "contractAddress": "0x4270219d365d6b017231b52e92b3fb5d7c8378b05e9abc97724537a80e93b0f",
+    "entrypoint": "swap_exact_token_to",
+    "selector": "swap_exact_token_to"
+  },
+  {
+    "contractAddress": "0x074238dfa02063792077820584c925b679a013cbab38e5ca61af5627d1eda736",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x03b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x040e81cfeb176bfdbc5047bbc55eb471cfab20a6b221f38d8fda134e1bfffca4",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x04fcaf2a7b4a072fe57c59beee807322d34ed65000d78611c909a46fead07fb1",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x075afe6402ad5a5c20dd25e10ec3b3986acaa647b77e4ae24b0cbc9a54a27a87",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x0124aeb495b947201f5fac96fd1138e326ad86195b98df6dec9009158a533b49",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x049201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x0102d5e124c51b936ee87302e0f938165aec96fb6c2027ae7f3a5ed46c77573b",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x02ab526354a39e7f5d272f327fa94e757df3688188d4a92c6dc3623ab79894e2",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x01e70aedffd376afe33cebdf51ed5365131dccb2a5b2cb36d02b785442912b9b",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x04718f5a0fc34cc1af16a1cdee98ffb20c31f5cd61d6ab07201858f4287c938d",
+    "entrypoint": "approve",
+    "selector": "approve"
+  },
+  {
+    "contractAddress": "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8",
+    "entrypoint": "approve",
+    "selector": "approve"
+  }
+]
