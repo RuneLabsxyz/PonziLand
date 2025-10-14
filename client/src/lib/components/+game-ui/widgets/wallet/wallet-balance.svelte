@@ -239,15 +239,15 @@
       : 'Show base token values'}
   >
     <ArrowUpDown size={16} />
-  </button>
+  </button> -->
   <a
-    href="/dashboard"
+    href="https://starkfam.club/minidex/"
     target="_blank"
     class="window-control w-6 h-6 flex items-center justify-center"
     aria-label="View dashboard"
   >
     <ChartColumn size={16} />
-  </a> -->
+  </a>
   {#if loadingBalance}
     <div class="w-6 h-6 flex items-center justify-center">
       <RotatingCoin />
