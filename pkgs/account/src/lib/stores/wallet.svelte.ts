@@ -13,6 +13,8 @@ import {
 } from "starknet";
 import { getProvider } from './providerConfig';
 
+export const PUBLIC_TOKEN_ENDPOINT = 'https://api.runelabs.xyz/ponziland-mainnet/api/tokens';
+
 export interface Token {
   name: string;
   symbol: string;
@@ -23,6 +25,11 @@ export interface Token {
     skin: string;
     icon: string;
   };
+}
+
+interface ApiToken {
+  symbol: string;
+  address: string;
 }
 
 export const PUBLIC_DOJO_RPC_URL = 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9';
@@ -40,6 +47,7 @@ export class WalletStore {
   public errorMessage = $state<string | null>(null);
   private balances: SvelteMap<string, CurrencyAmount> = $state(new SvelteMap());
   public tokenPrices: TokenPrice[] = $state([]);
+  public availableTokens: Token[] = $state([]);
   public tokenBalances = $derived(
     Array.from(
       this.balances.entries(),
@@ -57,12 +65,17 @@ export class WalletStore {
   constructor() {
     // Initialize RPC provider
     this.provider = getProvider(PUBLIC_DOJO_RPC_URL);
+    // Initialize with data tokens as default
+    this.availableTokens = data.availableTokens;
   }
 
   public async init() {
     if (this.cleanup != null) {
       return;
     }
+
+    // Fetch tokens on initialization
+    await this.fetchTokens();
 
     $effect(() => {
       // Trigger update when address changes
@@ -84,6 +97,62 @@ export class WalletStore {
         this.updateInterval = null;
       }
     };
+  }
+
+  private async fetchTokens() {
+    try {
+      const response = await fetch(PUBLIC_TOKEN_ENDPOINT);
+      
+      // Check if the response is ok
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const apiTokens: ApiToken[] = await response.json();
+      
+      // Validate the response is an array
+      if (!Array.isArray(apiTokens)) {
+        throw new Error('Invalid response format from token endpoint');
+      }
+      
+      // Create Token objects from API response
+      this.availableTokens = apiTokens.map((apiToken) => {
+        // Check if this token exists in the data file to get full details
+        const existingToken = data.availableTokens.find(
+          (t) => t.address.toLowerCase() === apiToken.address.toLowerCase()
+        );
+        
+        if (existingToken) {
+          // Use existing token data if available
+          return existingToken;
+        }
+        
+        // Create minimal token object for tokens not in data file
+        return {
+          name: apiToken.symbol,
+          symbol: apiToken.symbol,
+          address: apiToken.address,
+          liquidityPoolType: '1-2', // default
+          decimals: 18, // default for most Starknet tokens
+          images: {
+            skin: apiToken.symbol.toLowerCase(),
+            icon: `/tokens/${apiToken.symbol.toLowerCase()}/icon.svg`
+          }
+        } as Token;
+      });
+      
+      // Ensure base token is always included
+      if (this.baseToken && !this.availableTokens.find(t => t.address === this.baseToken.address)) {
+        this.availableTokens.unshift(this.baseToken);
+      }
+      
+      console.log(`Successfully loaded ${this.availableTokens.length} tokens from API`);
+    } catch (err) {
+      console.error('Error fetching tokens, reverting to data file:', err);
+      // Fallback to tokens from data file
+      this.availableTokens = data.availableTokens;
+      console.log(`Using ${this.availableTokens.length} tokens from data file`);
+    }
   }
 
   public async update(address: string) {
@@ -108,7 +177,7 @@ export class WalletStore {
   }
 
   private async fetchAllBalances(accountAddress: string) {
-    const balancePromises = data.availableTokens.map(async (token) => {
+    const balancePromises = this.availableTokens.map(async (token) => {
       try {
         // Create contract instance for each token
         const tokenContract = new Contract(
@@ -160,7 +229,7 @@ export class WalletStore {
   }
 
   public getBalance(tokenAddress: string): CurrencyAmount | null {
-    const token = data.availableTokens.find((t) => t.address === tokenAddress);
+    const token = this.availableTokens.find((t) => t.address === tokenAddress);
     if (!token) return null;
 
     return (
@@ -169,7 +238,7 @@ export class WalletStore {
   }
 
   public getPrice(tokenAddress: string): TokenPrice | null {
-    const token = data.availableTokens.find((t) => t.address === tokenAddress);
+    const token = this.availableTokens.find((t) => t.address === tokenAddress);
     if (!token) return null;
 
     return (
@@ -214,7 +283,7 @@ export class WalletStore {
   }
 
   public get allowedTokens(): Token[] {
-    return data.availableTokens.filter((token) => {
+    return this.availableTokens.filter((token) => {
       return this.balances.get(token.address) !== null;
     });
   }
@@ -255,7 +324,7 @@ export class WalletStore {
   }
 
   public getToken(tokenAddress: string): Token | null {
-    return data.availableTokens.find((t) => t.address === tokenAddress) ?? null;
+    return this.availableTokens.find((t) => t.address === tokenAddress) ?? null;
   }
 
   public getCapForToken(token: Token): CurrencyAmount {

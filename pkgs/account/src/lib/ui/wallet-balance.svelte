@@ -3,6 +3,7 @@
     import accountDataProvider, { setup } from '../account.svelte.js';
     import data from '../variables/mainnet.json';
     import { shortenAddress } from '../utils';
+    import { onMount } from 'svelte';
 
     const tokenEndpoint = "https://tokens.ponzi.land"
 
@@ -17,6 +18,9 @@
     let errorMessage = $state<string | null>(null);
     let isOpen = $state(false);
 
+    onMount(async () => {
+        await walletStore.init();
+    });
 
     
     const handleRefreshBalances = async () => {
