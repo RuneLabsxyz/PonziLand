@@ -103,34 +103,34 @@ describe('CurrencyAmount', () => {
     it('Formats correctly thousands with K suffix', () => {
       expect(
         CurrencyAmount.fromScaled('1500', TestTokens.standard).toString(),
-      ).toBe('1.50K');
+      ).toBe('1.50 K');
 
       expect(
         CurrencyAmount.fromScaled('12345', TestTokens.standard).toString(),
-      ).toBe('12.35K');
+      ).toBe('12.35 K');
     });
 
     it('Formats correctly millions with M suffix', () => {
       expect(
         CurrencyAmount.fromScaled('1500000', TestTokens.standard).toString(),
-      ).toBe('1.50M');
+      ).toBe('1.50 M');
 
       expect(
         CurrencyAmount.fromScaled('12345678', TestTokens.standard).toString(),
-      ).toBe('12.35M');
+      ).toBe('12.35 M');
     });
 
     it('Formats correctly billions with B suffix', () => {
       expect(
         CurrencyAmount.fromScaled('1500000000', TestTokens.standard).toString(),
-      ).toBe('1.50B');
+      ).toBe('1.50 B');
 
       expect(
         CurrencyAmount.fromScaled(
           '12345678900',
           TestTokens.standard,
         ).toString(),
-      ).toBe('12.35B');
+      ).toBe('12.35 B');
     });
 
     it('Formats correctly a number < 1 with proper precision', () => {
@@ -146,35 +146,35 @@ describe('CurrencyAmount', () => {
     });
 
     it('Formats correctly the smallest representable amount', () => {
-      // Minimal representable value with 18 decimals - now uses exponential notation for space efficiency
+      // Minimal representable value with 18 decimals - now uses formatWithoutExponential
       expect(
         CurrencyAmount.fromUnscaled('1', TestTokens.standard).toString(),
-      ).toBe('1.00e-18');
+      ).toBe('0.000000000000000001');
     });
 
-    it('Uses exponential notation for numbers with many leading zeros', () => {
-      // Numbers with >4 leading zeros use exponential notation
+    it('Formats very small numbers without exponential notation', () => {
+      // Numbers with many leading zeros now use formatWithoutExponential (3 significant digits)
       expect(
         CurrencyAmount.fromScaled(
           '0.000001234',
           TestTokens.standard,
         ).toString(),
-      ).toBe('1.23e-6');
+      ).toBe('0.00000123');
 
       expect(
         CurrencyAmount.fromScaled('0.00000987', TestTokens.standard).toString(),
-      ).toBe('9.87e-6');
+      ).toBe('0.00000987');
     });
 
-    it('Uses regular decimal notation for numbers with ≤4 leading zeros', () => {
-      // Numbers with ≤4 leading zeros use regular notation
+    it('Formats small numbers with proper significant digits', () => {
+      // Numbers with leading zeros use formatWithoutExponential with 3 significant digits
       expect(
         CurrencyAmount.fromScaled('0.0001234', TestTokens.standard).toString(),
       ).toBe('0.000123');
 
       expect(
         CurrencyAmount.fromScaled('0.00012', TestTokens.standard).toString(),
-      ).toBe('0.000120');
+      ).toBe('0.00012');
     });
   });
 });
