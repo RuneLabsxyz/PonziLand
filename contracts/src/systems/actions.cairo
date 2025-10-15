@@ -621,7 +621,7 @@ pub mod actions {
                     let land_stake = store.land_stake(neighbor_location);
                     if land_stake.amount > 0 {
                         let tax_per_neighbor = self
-                            .get_unclaimed_taxes_per_neighbor(neighbor_location, land_location);
+                            .get_unclaimed_taxes_per_neighbor(land_location, neighbor_location);
 
                         let time_to_nuke = self.get_time_to_nuke(neighbor_location);
 
