@@ -51,8 +51,15 @@ export async function claimAll(
       batch.map((land) => land.location as BigNumberish),
     );
 
+    if (txConfirmation.transaction_hash) {
+      notificationQueue.addNotification(
+        txConfirmation.transaction_hash,
+        'claim_all',
+      );
+    }
+
     batchAggregatedTaxes.forEach((result) => {
-      handlePostClaim(batch, result, txConfirmation.transaction_hash);
+      handlePostClaim(batch, result);
     });
 
     // Wait for the transaction to be confirmed before going to the next batch
@@ -83,16 +90,21 @@ export async function claimAllOfToken(
       }),
     );
 
-    await sdk.client.actions
-      .claimAll(
-        account,
-        batch.map((land) => land.location as BigNumberish),
-      )
-      .then((value) => {
-        batchAggregatedTaxes.forEach((result) => {
-          handlePostClaim(batch, result, value.transaction_hash);
-        });
-      });
+    const txConfirmation = await sdk.client.actions.claimAll(
+      account,
+      batch.map((land) => land.location as BigNumberish),
+    );
+
+    if (txConfirmation.transaction_hash) {
+      notificationQueue.addNotification(
+        txConfirmation.transaction_hash,
+        'claim_all',
+      );
+    }
+
+    batchAggregatedTaxes.forEach((result) => {
+      handlePostClaim(batch, result);
+    });
   }
 }
 
@@ -103,22 +115,22 @@ export async function claimSingleLand(
 ) {
   const result = await getAggregatedTaxes(land);
 
-  await sdk.client.actions
-    .claim(account, land.location as BigNumberish)
-    .then((value) => {
-      handlePostClaim([land], result, value.transaction_hash);
-    });
+  const txConfirmation = await sdk.client.actions.claim(
+    account,
+    land.location as BigNumberish,
+  );
+
+  if (txConfirmation.transaction_hash) {
+    notificationQueue.addNotification(txConfirmation.transaction_hash, 'claim');
+  }
+
+  handlePostClaim([land], result);
 }
 
 async function handlePostClaim(
   lands: LandWithActions[],
   result: { nukables: any[]; taxes: any[] },
-  transactionHash: string,
 ) {
-  if (transactionHash) {
-    notificationQueue.addNotification(transactionHash, 'claim');
-  }
-
   // Update claim states for all lands
   lands.forEach((land) => {
     claimStore.value[land.location].animating = true;
