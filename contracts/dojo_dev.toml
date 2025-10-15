@@ -4,11 +4,11 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "quests_110381040"
+seed = "quests_554550150"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
-discord = "https://discord.gg/2Mt3HhQpmD"
+discord = "https://discord.gg/FB2wR6uF"
 github = "https://github.com/dojoengine/dojo-starter"
 telegram = "https://t.me/dojoengine"
 
@@ -107,10 +107,3 @@ order_inits = [
     "str:dm_mock",
 ]
 
-# External contract deployment - Liquidity Reinjector (non-Dojo contract)
-[[external_contracts]]
-contract_name = "LiquidityReinjector"
-salt = "1"
-constructor_data = [
-    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
-]

@@ -22,7 +22,7 @@
       "address": "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "skin": "STRK"
+      "skin": "STARKNET"
     },
     {
       "name": "Ponziland Test LORDS",
@@ -38,7 +38,7 @@
       "address": "0x59a155d61343e0b1c9016d2b0f89ee15ac9f96bcc780e94ff75178c6d74040a",
       "liquidityPoolType": "005-01",
       "decimals": null,
-      "skin": "ETH"
+      "skin": "ETHEREUM"
     },
     {
       "name": "Ponziland Test PAPER",
