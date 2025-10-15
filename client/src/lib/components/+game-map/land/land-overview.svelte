@@ -9,6 +9,9 @@
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { get } from 'svelte/store';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import LandNukeShield from './land-nuke-shield.svelte';
+  import { estimateNukeTime } from '$lib/utils/taxes';
+  import { BuildingLand } from '$lib/api/land/building_land';
   const {
     land,
     size = 'sm',
@@ -24,16 +27,53 @@
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
   let levelUpInfo = $derived(land.getLevelInfo());
 
+  // Nuke time state (in seconds) - start with undefined until calculated
+  let estimatedNukeTime = $state<number | undefined>(undefined);
+
+  // Calculate nuke time for this land
+  async function updateNukeTime() {
+    try {
+      // Get neighbor count
+      const neighborCount =
+        land.getNeighbors()?.getBaseLandsArray()?.length || 0;
+
+      // Calculate nuke time using the existing utility function
+      if (neighborCount > 0) {
+        const timeInSeconds = await estimateNukeTime(land, neighborCount);
+        console.log(
+          'Nuke time calculated for land',
+          land.location,
+          ':',
+          timeInSeconds,
+          'seconds',
+        );
+        estimatedNukeTime = timeInSeconds;
+      } else {
+        // No neighbors means infinite time (no tax)
+        console.log('Land', land.location, 'has no neighbors - infinite time');
+        estimatedNukeTime = Infinity;
+      }
+    } catch (error) {
+      console.warn(
+        'Failed to calculate nuke time for land:',
+        land.location,
+        error,
+      );
+      estimatedNukeTime = undefined;
+    }
+  }
+
   onMount(() => {
+    // Initial nuke time calculation
+    updateNukeTime();
+
     const interval = setInterval(() => {
       levelUpInfo = land.getLevelInfo();
-    }, 1000);
+      updateNukeTime();
+    }, 5000); // Update nuke time every 5 seconds
 
     return () => clearInterval(interval);
   });
-
-  const OFF_IMAGE = '/ui/star/off.png';
-  const ON_IMAGE = '/ui/star/on.png';
 
   function handleLandClick(land: LandWithActions) {
     moveCameraTo(
@@ -101,42 +141,24 @@
       <TokenAvatar token={land.token} class="w-5 h-5 border-2 border-black" />
     </div>
 
-    {#if land.type == 'house'}
+    <!-- Nuke Shield display -->
+    {#if land.type === 'house' && estimatedNukeTime !== undefined}
       <div
-        class="absolute -bottom-3 left-0 w-full leading-none flex flex-row justify-center"
+        class="absolute bottom-0 left-0 -m-4 scale-90"
       >
-        <img
-          src={land.level >= 1 ? ON_IMAGE : OFF_IMAGE}
+        <LandNukeShield
+          {estimatedNukeTime}
           class={cn({
-            'w-8': size === 'lg',
-            'w-5': size === 'sm',
-            'w-3': size === 'xs',
+            'h-8 w-8': size === 'xs',
+            'h-12 w-12': size === 'sm',
+            'h-16 w-16': size === 'lg',
           })}
-          alt="no star"
-        />
-
-        <img
-          src={land.level >= 2 ? ON_IMAGE : OFF_IMAGE}
-          class={cn({
-            'w-8': size === 'lg',
-            'w-5': size === 'sm',
-            'w-3': size === 'xs',
-          })}
-          alt="no star"
-        />
-
-        <img
-          src={land.level >= 3 ? ON_IMAGE : OFF_IMAGE}
-          class={cn({
-            'w-8': size === 'lg',
-            'w-5': size === 'sm',
-            'w-3': size === 'xs',
-          })}
-          alt="no star"
+          lockTime={false}
         />
       </div>
     {/if}
   </button>
+
   <!-- Also show the progress bar for the next level -->
   {#if land.type == 'house' && land.level < 3 && !hideLevelUp}
     <div

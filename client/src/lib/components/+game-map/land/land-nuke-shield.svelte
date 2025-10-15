@@ -13,16 +13,26 @@
   } = $props();
 
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
+  let estimatedHours = $derived(Math.floor((estimatedNukeTime / 60 / 60) % 24));
+  let estimatedMinutes = $derived(Math.floor((estimatedNukeTime / 60) % 60));
+  
   let estimatedDaysString = $derived.by(() => {
     if (estimatedNukeTime <= 0) {
-      return '💀'; // Or any indicator for nuked state
+      return 'NUKE!'; // Match nuke-time-display format
     }
     if (estimatedDays === Infinity) {
       return '∞';
-    } else if (estimatedDays > 365) {
-      return '365+';
     }
-    return estimatedDays.toString();
+    // Use the same format as nuke-time-display: 'd', 'h', 'm'
+    if (estimatedDays > 0) {
+      return `${estimatedDays}d`;
+    } else if (estimatedHours > 0) {
+      return `${estimatedHours}h`;
+    } else if (estimatedMinutes > 0) {
+      return `${estimatedMinutes}m`;
+    } else {
+      return 'NUKE!';
+    }
   });
 
   let estimatedTimeString = $derived.by(() => {
@@ -46,39 +56,34 @@
   // Check if nuke time has passed
   let isNuked = $derived(estimatedNukeTime <= 0);
 
-  // Define thresholds with corresponding background images
+  // Define thresholds to match nuke-time-display.svelte
   const thresholds: { [key: number]: { image: string; color: string } } = {
-    7: {
+    5: {
       image: 'url(/ui/icons/Icon_ShieldBlue.png)',
       color: '#DFDFE3',
     },
-    5: {
+    3: {
       image: 'url(/ui/icons/Icon_ShieldGrey.png)',
       color: '#DFDFE3',
     },
-    3: {
+    2: {
       image: 'url(/ui/icons/Icon_ShieldYellow.png)',
       color: '#F2B545',
     },
-    2: {
+    1: {
       image: 'url(/ui/icons/Icon_ShieldOrange.png)',
       color: '#F27345',
     },
-    1: { image: 'url(/ui/icons/Icon_ShieldRed.png)', color: '#ED3939' },
+    0: { image: 'url(/ui/icons/Icon_ShieldRed.png)', color: '#ED3939' },
   };
 
-  // Determine the appropriate background image based on estimatedNukeTime
-  function getStyle(time: number) {
-    let selectedStyle = {
-      image: 'url(/ui/icons/Icon_ShieldRed.png)',
-      color: '#ED3939',
-    }; // Default style
-    for (const [days, style] of Object.entries(thresholds)) {
-      if (time >= Number(days)) {
-        selectedStyle = style;
-      }
-    }
-    return selectedStyle;
+  // Determine the appropriate background image based on days remaining (matching nuke-time-display logic)
+  function getStyle(days: number) {
+    if (days >= 5) return thresholds[5]; // blue
+    if (days >= 3) return thresholds[3]; // grey  
+    if (days >= 2) return thresholds[2]; // yellow
+    if (days >= 1) return thresholds[1]; // orange
+    return thresholds[0]; // red
   }
 
   $effect(() => {
