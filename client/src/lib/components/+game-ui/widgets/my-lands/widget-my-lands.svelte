@@ -404,7 +404,7 @@
             }
             sortBy = 'nuketime';
           }}
-          class="border border-red-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+          class="border border-red-500 px-2 text-sm font-medium flex items-center justify-center {sortBy ==
           'nuketime'
             ? 'bg-red-500 text-white'
             : 'text-red-500'}"
