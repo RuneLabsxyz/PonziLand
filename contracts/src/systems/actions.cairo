@@ -105,7 +105,8 @@ trait IActions<T> {
 
 #[dojo::contract]
 pub mod actions {
-    use core::dict::{Felt252Dict, Felt252DictEntryTrait, Felt252DictTrait};
+    use dojo::world::WorldStorageTrait;
+use core::dict::{Felt252Dict, Felt252DictEntryTrait, Felt252DictTrait};
 
     // Core Cairo imports
     use core::nullable::{FromNullableResult, Nullable, NullableTrait, match_nullable};

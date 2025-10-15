@@ -31,8 +31,8 @@ pub const DECIMALS_FACTOR: u256 = 1_000_000_000_000_000_000;
 pub const CENTER_LOCATION: u16 = 32639;
 pub const MAX_CIRCLES: u16 = 127;
 
-pub const QUEST_AUCTION_CHANCE: u8 = 0;
 pub const QUEST_LANDS_ENABLED: bool = false;
+pub const QUEST_REWARDS_ENABLED: bool = false;
 
 pub const SCALE_FACTOR_FOR_FEE: u128 = 10_000_000;
 pub const CLAIM_FEE: u128 = 900_000;

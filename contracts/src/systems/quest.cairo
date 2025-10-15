@@ -148,7 +148,10 @@ pub mod quests {
 
             let to_us = false; //TODO: this should be true for auction quests, which aren't implemented yet
 
-            validate_and_execute_quest_payment(ref self, quest_details, get_caller_address(), store, to_us);
+            // no payments if in test mode
+            if store.get_quest_rewards_enabled() {
+                validate_and_execute_quest_payment(ref self, quest_details, get_caller_address(), store, to_us);
+            }
             
             let mut quest_counter: QuestCounter = world.read_model(VERSION);
             quest_counter.count += 1;
@@ -285,9 +288,12 @@ pub mod quests {
                 quest_id,
             );
 
-            land.owner = quest.player_address;
-            world.write_model(@land);
-
+            if store.get_quest_rewards_enabled() {
+                //TODO: finalize reward logic. If transfering land then make sure to refund stake and verify new sell price/stake
+                // or if giving a % of the sell price then make sure to handle that and checking for nuke and everything
+                land.owner = quest.player_address;
+                world.write_model(@land);
+            }
             // set quest as completed
             quest.completed = true;
             world.write_model(@quest);
