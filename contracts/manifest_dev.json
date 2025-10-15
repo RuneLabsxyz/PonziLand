@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
-    "address": "0x294186a330ec43998c45bf9a4bb3e9f4585d960bebbfce20a858dc9d7eef944",
-    "seed": "quests_554550150",
+    "address": "0x5f2ebede3c53d8141c1a27856ed9ea24b915e7e236669c408678a3a72e4697",
+    "seed": "quests_57692932",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1479,8 +1479,8 @@
   },
   "contracts": [
     {
-      "address": "0x62c23c86904a93f2f8391ee7f95ab637a8fd3b77d535555410af576e7929487",
-      "class_hash": "0x609b4126c07fa54b60307587d5a1a46890f23a336ff5f965dc1cb3ad013123",
+      "address": "0x5bf80be89361cd5d4b04e9d71451c600be88eb9765b35fee4ba7ed184be3bf8",
+      "class_hash": "0x31a121e564dcf10855f038a223d4bb2f78bdb0010fb8a08654856f68d33aede",
       "abi": [
         {
           "type": "impl",
@@ -2340,7 +2340,7 @@
       ]
     },
     {
-      "address": "0x3602073a353d44d75c7982b8d7b24f32625f08c339e184248bdcf8bcba50ee",
+      "address": "0x8e9cacfdeef195a125a51cf5fade7f1eb8ce7fa12f34962ae65f62d8ce3a62",
       "class_hash": "0x339162d3e1a909f6babf0eef5934ddcd13f8d873324a11a6338a6462f491b1",
       "abi": [
         {
@@ -2702,8 +2702,8 @@
       ]
     },
     {
-      "address": "0x71928fd0795c833bce6192d99802d72aae652ebd811dad5cfd7c96cddc323af",
-      "class_hash": "0x685bc40e6083dcdc0487897e250e55693ce962ccf1956b394d91dff1a293a4d",
+      "address": "0x4bcc670d9cd4c9a4a4b67e4a4a9c17f327757202818301b8534e7694fb5f23f",
+      "class_hash": "0x4128593d4880b89f5cad42f9991c4526b8ddb43a501629742202269b121904",
       "abi": [
         {
           "type": "impl",
@@ -2864,8 +2864,8 @@
               "type": "core::integer::u128"
             },
             {
-              "name": "quest_auction_chance",
-              "type": "core::integer::u8"
+              "name": "quest_rewards_enabled",
+              "type": "core::bool"
             },
             {
               "name": "quest_lands_enabled",
@@ -2981,11 +2981,11 @@
               "type": "core::integer::u128"
             },
             {
-              "name": "quest_auction_chance",
-              "type": "core::integer::u8"
+              "name": "quest_lands_enabled",
+              "type": "core::bool"
             },
             {
-              "name": "quest_lands_enabled",
+              "name": "quest_rewards_enabled",
               "type": "core::bool"
             },
             {
@@ -3091,11 +3091,11 @@
                   "type": "core::integer::u128"
                 },
                 {
-                  "name": "quest_auction_chance",
-                  "type": "core::integer::u8"
+                  "name": "quest_lands_enabled",
+                  "type": "core::bool"
                 },
                 {
-                  "name": "quest_lands_enabled",
+                  "name": "quest_rewards_enabled",
                   "type": "core::bool"
                 },
                 {
@@ -3814,7 +3814,7 @@
         "5",
         "0",
         "0",
-        "10",
+        "1",
         "1",
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
         "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",
@@ -3855,8 +3855,8 @@
       ]
     },
     {
-      "address": "0x6e488b7072827778678eb43159decfc4c7e729949abc60b685faea019e2b9c7",
-      "class_hash": "0x64cb43c2a7eba7f61106914313765feba41737d2a8c6a24b8f91e7f839ef0c4",
+      "address": "0x4f412c346af8ae10222bc8b7b6685483d598a0ae8cc625a0bc8d32b34150219",
+      "class_hash": "0x2915cc6e962309b78897d2d371941caea0b276278a39a2eafe0be048fed4bc9",
       "abi": [
         {
           "type": "impl",
@@ -4416,7 +4416,7 @@
       ]
     },
     {
-      "address": "0x5ec0d3ffa7d63203c40a00b12379c969d4ef6c85a8f39883485030c0a5405fc",
+      "address": "0x54373c6814bfb412148948bf0b6952df9deef46852cc547e368a25ddfac9c0f",
       "class_hash": "0x1c4d8162316e024400f55004265729c3eff1169b5aeb6dcfbda13934be75ebe",
       "abi": [
         {
@@ -4695,7 +4695,7 @@
     },
     {
       "members": [],
-      "class_hash": "0x53588a3551d53a208fd1447aac313c5cdceb70bdab05379d988e922739e9da3",
+      "class_hash": "0x50b6a1d59985f4cf2e9a77dfd3f435581d40f63916f636851f126f4a47f8c65",
       "tag": "ponzi_land-Config",
       "selector": "0x57f837833559dae8bcd922ede064d0c5227c3f139fc4c410c93bcd58aff30ee"
     },
