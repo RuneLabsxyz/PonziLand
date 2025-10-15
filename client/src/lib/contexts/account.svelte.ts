@@ -319,6 +319,20 @@ export class AccountManager {
     return this._walletObject?.id;
   }
 
+  public getProviderIcon() {
+    if (!this._walletObject) return undefined;
+
+    const currentWallet = availableWallets.find(
+      (w) => w.wallet.id === this._walletObject?.id,
+    )?.wallet;
+
+    if (!currentWallet?.icon) return undefined;
+
+    return typeof currentWallet.icon === 'string'
+      ? currentWallet.icon
+      : currentWallet.icon.light;
+  }
+
   public async getChainId() {
     console.log(this._walletObject);
     const chainId = await this._walletObject?.request({
