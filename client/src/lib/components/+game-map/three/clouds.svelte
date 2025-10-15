@@ -17,6 +17,7 @@
   import { cursorStore } from './cursor.store.svelte';
   import { onMount } from 'svelte';
   import seedrandom from 'seedrandom';
+  import { onDestroy } from 'svelte';
 
   interface Props {
     bounds: {
@@ -558,6 +559,21 @@
     } else {
       cloudPlanes = [];
     }
+  });
+
+  onDestroy(() => {
+    cloudPlanes.forEach(mesh => {
+      if (mesh.geometry) mesh.geometry.dispose();
+    });
+
+    if (cloudsInstancedMesh) {
+      cloudsInstancedMesh.clear?.();
+    }
+
+    randomCache.clear();
+    cachedEdgePositions = [];
+    cachedPlaneGeometries = [];
+    cloudPlanes = [];
   });
 </script>
 

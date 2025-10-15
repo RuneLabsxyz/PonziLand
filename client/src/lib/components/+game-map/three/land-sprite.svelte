@@ -12,7 +12,7 @@
   import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
   import { T, useTask } from '@threlte/core';
   import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import {
     Clock,
@@ -661,6 +661,38 @@
     } else {
       shaderReady = false;
     }
+  });
+
+  onDestroy(() => {
+    roadTexture?.dispose();
+    crownTexture?.dispose();
+    shieldTexture?.dispose();
+    
+    planeMaterial?.dispose();
+    coinShaderMaterial?.dispose();
+    if (artLayerMesh?.material) {
+      (artLayerMesh.material as MeshBasicMaterial).dispose();
+    }
+    
+    planeGeometry?.dispose();
+    coinGeometry?.dispose();
+    
+    if (artLayerMesh) {
+      artLayerMesh.geometry?.dispose();
+      artLayerMesh.clear?.();
+    }
+    
+    circlePositionsCache.clear();
+    landTilesMap.clear();
+    
+    if (currentSubscription) {
+      currentSubscription();
+      currentSubscription = null;
+    }
+    
+    landTiles = [];
+    visibleLandTiles = [];
+    ownedCoinTiles = [];
   });
 </script>
 
