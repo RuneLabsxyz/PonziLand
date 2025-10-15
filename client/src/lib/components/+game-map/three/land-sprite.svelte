@@ -14,6 +14,7 @@
   import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
   import { onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import data from '$profileData';
   import {
     Clock,
     Color,
@@ -29,6 +30,7 @@
   import AuctionIndicator from './auction-indicator.svelte';
   import Clouds from './clouds.svelte';
   import Coin from './coin.svelte';
+  import DropLand from './drop-land.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
   import LandTileSprite from './land-tile-sprite.svelte';
@@ -483,6 +485,21 @@
     });
   });
 
+  // Drop lands - lands owned by any of the drop wallet addresses
+  const dropWalletAddresses = new Set(
+    Array.isArray(data.dropLand.address)
+      ? data.dropLand.address
+      : [data.dropLand.address],
+  );
+  let dropLandTiles = $derived.by(() => {
+    if (!visibleLandTiles) return [];
+    return visibleLandTiles.filter((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+      // Check if the land is owned by any of the drop wallet addresses
+      return dropWalletAddresses.has(tile.land.owner);
+    });
+  });
+
   // Optimized owned land indices calculation
   let ownedLandIndices = $derived.by(() => {
     if (
@@ -713,6 +730,13 @@
       </InstancedSprite>
     {/if}
 
+    <!-- Drop lands indicator (golden sparkles) -->
+    {#if dropLandTiles.length > 0}
+      {#each dropLandTiles as tile, i}
+        <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
+      {/each}
+    {/if}
+
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
@@ -846,4 +870,35 @@
       </Button>
     {/if}
   </HTML>
+{/if}
+
+<!-- Tooltip for drop lands -->
+{#if hoveredTileIndex !== undefined && cursorStore.gridPosition}
+  {@const gridPos = cursorStore.gridPosition}
+  {@const hoveredLandTile = visibleLandTiles.find(
+    (tile) => tile.position[0] === gridPos.x && tile.position[2] === gridPos.y,
+  )}
+  {#if hoveredLandTile && dropLandTiles.some((t) => t === hoveredLandTile)}
+    <HTML
+      portal={document.getElementById('game-canvas') ?? document.body}
+      position={[
+        hoveredLandTile.position[0],
+        hoveredLandTile.position[1] + 1.5,
+        hoveredLandTile.position[2],
+      ]}
+      zIndexRange={[20, 10]}
+      distanceFactor={0.01}
+    >
+      <div
+        class="bg-black/90 text-white text-xs border border-yellow-500/50 rounded-lg p-4 min-w-[150px] shadow-lg -translate-x-1/2 pointer-events-none"
+      >
+        <div class="text-yellow-400 font-bold mb-2 text-sm">
+          ✨ PonziLord's Land ✨
+        </div>
+        <div class="leading-relaxed">
+          Fees and auction money flow back here! 💰
+        </div>
+      </div>
+    </HTML>
+  {/if}
 {/if}
