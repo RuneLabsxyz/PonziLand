@@ -89,7 +89,7 @@
       type="number"
       bind:value={priceIncrease}
       placeholder="New Price"
-      on:input={() => (touched = true)}
+      oninput={() => (touched = true)}
       disabled={isLoading}
     />
     {#if touched && priceError}

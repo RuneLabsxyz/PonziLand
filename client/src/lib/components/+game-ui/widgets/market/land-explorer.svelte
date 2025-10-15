@@ -4,7 +4,7 @@
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
-  import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { Input } from '$lib/components/ui/input';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
@@ -225,7 +225,11 @@
   <div class="flex flex-col gap-2 py-2 border-white/10 min-h-0">
     <div class="flex items-center gap-2">
       <div class="w-48">
-        <TokenSelect bind:value={selectedToken} />
+        <TokenSelect
+          bind:value={selectedToken}
+          variant="swap"
+          tutorialEnabled={true}
+        />
       </div>
       {#if selectedToken}
         <button
