@@ -15,6 +15,9 @@
   "mainCurrencyAddress": "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2",
   "aiAgents": [
   ],
+  "dropLand": {
+    "address": "0x02c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd"
+  },
   "availableTokens": [
     {
       "name": "Ponziland Test STRK",
