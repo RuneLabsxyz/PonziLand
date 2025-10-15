@@ -167,6 +167,51 @@ export const estimateNukeTime = async (
   return Math.max(0, Math.floor(remainingSeconds - relevantElapsedTime));
 };
 
+/**
+ * Fast synchronous nuke time estimation without RPC calls
+ * Uses precomputed values when available
+ */
+export const estimateNukeTimeSync = (
+  land: LandWithActions,
+  neighbourNumber: number,
+  minElapsedTime?: number,
+) => {
+  const baseTime = configValues.baseTime;
+  const sellPrice = land.sellPrice.rawValue().toNumber();
+  const remainingStake = land.stakeAmount.rawValue().toNumber();
+  const buyDate = land.block_date_bought;
+
+  // Early returns for invalid cases
+  if (sellPrice <= 0 || isNaN(sellPrice) || neighbourNumber === 0) {
+    return 0;
+  }
+
+  const burnRate = Number(
+    calculateBurnRate(land.sellPrice, land.level, neighbourNumber),
+  );
+
+  if (burnRate <= 0) {
+    return 0;
+  }
+
+  // Calculate base nuke time in seconds
+  const remainingSeconds = (remainingStake / burnRate) * baseTime;
+
+  // If no elapsed time provided, return base time
+  if (minElapsedTime === undefined) {
+    return remainingSeconds;
+  }
+
+  // Calculate how long since the land was purchased
+  const currentTime = Math.floor(Date.now() / 1000);
+  const landAge = currentTime - Number(buyDate);
+
+  // Use the smaller of: neighbor's elapsed time OR land age
+  const relevantElapsedTime = Math.min(minElapsedTime, landAge);
+
+  return Math.max(0, Math.floor(remainingSeconds - relevantElapsedTime));
+};
+
 export const parseNukeTime = (givenTime: number) => {
   const time = givenTime / 60; // Convert seconds to minutes
 
