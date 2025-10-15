@@ -63,36 +63,40 @@
     return tokenValue;
   });
 
-  // Base currency input mode
+  // Base currency input mode (for display only)
   let useBaseCurrencyInput = $state(false);
+  
+  // Display values that users see in the inputs
+  let stakeDisplayValue = $state('');
+  let sellPriceDisplayValue = $state('');
 
   // Function to convert between currencies when switching modes
   function switchInputMode() {
     if (!selectedToken || !baseToken) return;
     
-    // Store current values before switching
-    const currentStake = stake;
-    const currentSellPrice = sellPrice;
+    // Store current display values before switching
+    const currentStakeDisplay = stakeDisplayValue;
+    const currentSellPriceDisplay = sellPriceDisplayValue;
     
     // Switch the mode first
     useBaseCurrencyInput = !useBaseCurrencyInput;
     
-    // Convert stake amount based on the NEW mode
-    if (currentStake && parseFloat(currentStake) > 0) {
+    // Convert stake display value based on the NEW mode
+    if (currentStakeDisplay && parseFloat(currentStakeDisplay) > 0) {
       try {
         if (useBaseCurrencyInput) {
           // NOW we're in USDC mode, so convert from token to USDC
-          const tokenAmount = CurrencyAmount.fromScaled(currentStake, selectedToken);
+          const tokenAmount = CurrencyAmount.fromScaled(currentStakeDisplay, selectedToken);
           const usdcAmount = walletStore.convertTokenAmount(tokenAmount, selectedToken, baseToken);
           if (usdcAmount) {
-            stake = usdcAmount.toString();
+            stakeDisplayValue = usdcAmount.toString();
           }
         } else {
           // NOW we're in token mode, so convert from USDC to token
-          const usdcAmount = CurrencyAmount.fromScaled(currentStake, baseToken);
+          const usdcAmount = CurrencyAmount.fromScaled(currentStakeDisplay, baseToken);
           const tokenAmount = walletStore.convertTokenAmount(usdcAmount, baseToken, selectedToken);
           if (tokenAmount) {
-            stake = tokenAmount.toString();
+            stakeDisplayValue = tokenAmount.toString();
           }
         }
       } catch (error) {
@@ -100,22 +104,22 @@
       }
     }
 
-    // Convert sell price amount based on the NEW mode
-    if (currentSellPrice && parseFloat(currentSellPrice) > 0) {
+    // Convert sell price display value based on the NEW mode
+    if (currentSellPriceDisplay && parseFloat(currentSellPriceDisplay) > 0) {
       try {
         if (useBaseCurrencyInput) {
           // NOW we're in USDC mode, so convert from token to USDC
-          const tokenAmount = CurrencyAmount.fromScaled(currentSellPrice, selectedToken);
+          const tokenAmount = CurrencyAmount.fromScaled(currentSellPriceDisplay, selectedToken);
           const usdcAmount = walletStore.convertTokenAmount(tokenAmount, selectedToken, baseToken);
           if (usdcAmount) {
-            sellPrice = usdcAmount.toString();
+            sellPriceDisplayValue = usdcAmount.toString();
           }
         } else {
           // NOW we're in token mode, so convert from USDC to token
-          const usdcAmount = CurrencyAmount.fromScaled(currentSellPrice, baseToken);
+          const usdcAmount = CurrencyAmount.fromScaled(currentSellPriceDisplay, baseToken);
           const tokenAmount = walletStore.convertTokenAmount(usdcAmount, baseToken, selectedToken);
           if (tokenAmount) {
-            sellPrice = tokenAmount.toString();
+            sellPriceDisplayValue = tokenAmount.toString();
           }
         }
       } catch (error) {
@@ -124,23 +128,33 @@
     }
   }
 
+  // Actual stake amount in selected token (used for calculations and transactions)
   let stake: string = $derived.by(() => {
-    if (!selectedToken) return '';
-
+    if (!selectedToken || !stakeDisplayValue) return '';
+    
     return untrack(() => {
       try {
-        const sellPriceNum = parseFloat(sellPrice);
-        if (isNaN(sellPriceNum) || sellPriceNum <= 0) return '';
-        return sellPriceNum.toString();
+        const displayNum = parseFloat(stakeDisplayValue);
+        if (isNaN(displayNum) || displayNum <= 0) return '';
+        
+        if (useBaseCurrencyInput) {
+          // Convert USDC display value to token amount
+          const usdcAmount = CurrencyAmount.fromScaled(stakeDisplayValue, baseToken);
+          const tokenAmount = walletStore.convertTokenAmount(usdcAmount, baseToken, selectedToken);
+          return tokenAmount ? tokenAmount.toString() : '';
+        } else {
+          // Already in token amounts
+          return stakeDisplayValue;
+        }
       } catch (error) {
         return '';
       }
     });
   });
   let stakeAmount: CurrencyAmount = $derived.by(() => {
-    const currentToken = useBaseCurrencyInput ? baseToken : selectedToken;
-    if (!currentToken) return CurrencyAmount.fromScaled(0, baseToken);
-    return CurrencyAmount.fromScaled(stake ?? 0, currentToken);
+    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
+    // stake is always in selectedToken amounts
+    return CurrencyAmount.fromScaled(stake ?? 0, selectedToken);
   });
 
   let stakeAmountInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
@@ -163,8 +177,33 @@
     );
   });
 
+  // Actual sell price amount in selected token (used for calculations and transactions)  
   let sellPrice: string = $derived.by(() => {
     if (!selectedToken) return '';
+    
+    // If user has input a display value, use that
+    if (sellPriceDisplayValue) {
+      return untrack(() => {
+        try {
+          const displayNum = parseFloat(sellPriceDisplayValue);
+          if (isNaN(displayNum) || displayNum <= 0) return '';
+          
+          if (useBaseCurrencyInput) {
+            // Convert USDC display value to token amount
+            const usdcAmount = CurrencyAmount.fromScaled(sellPriceDisplayValue, baseToken);
+            const tokenAmount = walletStore.convertTokenAmount(usdcAmount, baseToken, selectedToken);
+            return tokenAmount ? tokenAmount.toString() : '';
+          } else {
+            // Already in token amounts
+            return sellPriceDisplayValue;
+          }
+        } catch (error) {
+          return '';
+        }
+      });
+    }
+    
+    // Otherwise, calculate from land price (pre-filled default)
     return untrack(() => {
       let originalPrice: CurrencyAmount;
       let originalToken: Token;
@@ -199,9 +238,9 @@
   });
 
   let sellPriceAmount: CurrencyAmount = $derived.by(() => {
-    const currentToken = useBaseCurrencyInput ? baseToken : selectedToken;
-    if (!currentToken) return CurrencyAmount.fromScaled(0, baseToken);
-    return CurrencyAmount.fromScaled(sellPrice ?? 0, currentToken);
+    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
+    // sellPrice is always in selectedToken amounts
+    return CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken);
   });
 
   let sellPriceInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
@@ -532,7 +571,7 @@
             <Input
               id="stake"
               type="number"
-              bind:value={stake}
+              bind:value={stakeDisplayValue}
               class="flex-1 {stakeAmountError
                 ? 'border-red-500'
                 : ''} {tutorialState.tutorialProgress == 6
@@ -540,11 +579,10 @@
                 : ''}"
             />
           </div>
-          {#if useBaseCurrencyInput && selectedToken && stake && parseFloat(stake) > 0}
-            {@const tokenEquivalent = walletStore.convertTokenAmount(stakeAmount, baseToken, selectedToken)}
-            {#if tokenEquivalent}
+          {#if useBaseCurrencyInput && selectedToken && stakeDisplayValue && parseFloat(stakeDisplayValue) > 0}
+            {#if stake && parseFloat(stake) > 0}
               <p class="text-xs text-gray-500 mt-1">
-                ≈ {tokenEquivalent.toString()} {selectedToken.symbol}
+                ≈ {stake} {selectedToken.symbol}
               </p>
             {/if}
           {:else if !useBaseCurrencyInput && stakeAmountInBaseCurrency}
@@ -571,7 +609,7 @@
             <Input
               id="sell"
               type="number"
-              bind:value={sellPrice}
+              bind:value={sellPriceDisplayValue}
               class="flex-1 {sellPriceError
                 ? 'border-red-500'
                 : ''} {tutorialState.tutorialProgress == 6
@@ -579,11 +617,10 @@
                 : ''}"
             />
           </div>
-          {#if useBaseCurrencyInput && selectedToken && sellPrice && parseFloat(sellPrice) > 0}
-            {@const tokenEquivalent = walletStore.convertTokenAmount(sellPriceAmount, baseToken, selectedToken)}
-            {#if tokenEquivalent}
+          {#if useBaseCurrencyInput && selectedToken && sellPriceDisplayValue && parseFloat(sellPriceDisplayValue) > 0}
+            {#if sellPrice && parseFloat(sellPrice) > 0}
               <p class="text-xs text-gray-500 mt-1">
-                ≈ {tokenEquivalent.toString()} {selectedToken.symbol}
+                ≈ {sellPrice} {selectedToken.symbol}
               </p>
             {/if}
           {:else if !useBaseCurrencyInput && sellPriceInBaseCurrency}
