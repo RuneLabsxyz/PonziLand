@@ -485,19 +485,21 @@
     });
   });
 
-  // Drop lands - lands owned by the specific drop wallet address
-  const DROP_WALLET_ADDRESS = data.dropLand.address;
-
+  // Drop lands - lands owned by any of the drop wallet addresses
+  const dropWalletAddresses = new Set(
+    Array.isArray(data.dropLand.address)
+      ? data.dropLand.address
+      : [data.dropLand.address]
+  );
   let dropLandTiles = $derived.by(() => {
     if (!visibleLandTiles) return [];
-
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
-      // Check if the land is owned by the drop wallet address
-      return tile.land.owner === DROP_WALLET_ADDRESS;
+      // Check if the land is owned by any of the drop wallet addresses
+      return dropWalletAddresses.has(tile.land.owner);
     });
   });
-
+  
   // Optimized owned land indices calculation
   let ownedLandIndices = $derived.by(() => {
     if (
