@@ -20,7 +20,7 @@
     <li>Smart contracts have not been audited</li>
     <li>There may be bugs or vulnerabilities</li>
     <li>You could lose all your funds</li>
-    <li>You cannot stake more than 50$ per land</li>
+    <li>You cannot stake more than 250$ per land</li>
     <li>You play at your own risk</li>
     <li>You're definitely gonna get rugged</li>
     <li>Markets are the apex predator</li>
