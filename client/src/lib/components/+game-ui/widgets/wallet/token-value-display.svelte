@@ -25,11 +25,12 @@
       tweenAmount.set(Number(amount), { duration: 0 });
       startingAmount = amount;
       accumulatedIncrements = 0n;
+      increment = 0n;
     });
   });
 
   let animating = $state(false);
-  let increment = $state(0);
+  let increment = $state(0n);
   let startingAmount = $state(0n); // Track the starting amount when processing begins
   let accumulatedIncrements = $state(0n); // Track total increments during processing
   let previousBaseEquivalent = $state<CurrencyAmount | null>(null); // Track previous base equivalent for animation
@@ -61,7 +62,7 @@
     const nextEvent = localQueue[0];
     const nextIncrement = nextEvent.toBigint();
 
-    increment = Number(nextIncrement);
+    increment = nextIncrement;
     accumulatedIncrements += nextIncrement;
 
     // Store current base equivalent before animation for comparison
@@ -149,6 +150,15 @@
   const displayMode = $derived(settingsStore.walletDisplayMode);
   const shouldShowBaseValue = $derived(!isBaseToken && displayMode === 'base');
 
+  // Calculate increment in base token for animation
+  const baseIncrement = $derived.by(() => {
+    if (!animating || increment === 0n || !baseToken || isBaseToken)
+      return null;
+
+    const incrementAmount = CurrencyAmount.fromUnscaled(increment, token);
+    return walletStore.convertTokenAmount(incrementAmount, token, baseToken);
+  });
+
   // Get conversion rate for display
   const conversionRate = $derived.by(() => {
     if (isBaseToken || !baseToken) return null;
@@ -218,9 +228,11 @@
         {token.symbol}
       </div>
       <div class="relative">
-        {#if animating}
-          <span class="absolute left-0 animate-in-out-left text-yellow-500">
-            +{CurrencyAmount.fromUnscaled(increment, token)}
+        {#if animating && increment > 0n}
+          <span
+            class="absolute left-0 animate-in-out-left text-yellow-500 whitespace-nowrap"
+          >
+            +{CurrencyAmount.fromUnscaled(increment, token).toString()}
           </span>
         {/if}
       </div>
@@ -230,16 +242,11 @@
   <!-- Right side: Base token value -->
   <div class="flex flex-col items-end text-right text-lg">
     <div class="flex items-center">
-      {#if animating && baseToken}
-        <span class="animate-in-out-right text-yellow-500 pr-2">
-          +{baseEquivalent && previousBaseEquivalent
-            ? CurrencyAmount.fromRaw(
-                baseEquivalent
-                  .rawValue()
-                  .minus(previousBaseEquivalent.rawValue()),
-                baseToken,
-              ).toString()
-            : '0'}
+      {#if animating && baseIncrement}
+        <span
+          class="animate-in-out-right text-yellow-500 pr-2 whitespace-nowrap"
+        >
+          +{baseIncrement.toString()}
         </span>
       {/if}
       <div

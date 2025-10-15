@@ -354,13 +354,13 @@ export class WalletStore {
         console.warn('Invalid token balance item:', item);
         return null;
       }
-      
+
       const token = this.getToken(item.contract_address);
       if (!token) {
         console.warn('Token not found for address:', item.contract_address);
         return null;
       }
-      
+
       // Convert the balance to a BigInt
       const balance = BigInt(item.balance);
 
