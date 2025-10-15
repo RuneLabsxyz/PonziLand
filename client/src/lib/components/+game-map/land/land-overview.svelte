@@ -183,7 +183,10 @@
     <Button
       class="absolute bottom-0 right-0 -m-1 p-1"
       size="md"
-      onclick={() => handleOpenLandInfo(land)}
+      onclick={(e: any) => {
+        e.stopPropagation();
+        handleOpenLandInfo(land);
+      }}
     >
       <Search size="small" strokeWidth={4} class="-mt-1 h-4 w-3" />
     </Button>
