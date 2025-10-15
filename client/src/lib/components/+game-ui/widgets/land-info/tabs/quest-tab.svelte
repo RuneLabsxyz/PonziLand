@@ -259,7 +259,7 @@
           <Select.Content class="bg-white text-black border border-gray-300">
             {#each questGames as game}
               <Select.Item value={game.id.toString()} class="text-black hover:bg-gray-100 cursor-pointer">
-                {game.game_contract_name} (ID: {game.id.toString()})
+                {game.game_name} ({game.quest_type})
               </Select.Item>
             {/each}
           </Select.Content>
