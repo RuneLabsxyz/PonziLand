@@ -8,6 +8,7 @@
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { get } from 'svelte/store';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   const {
     land,
     size = 'sm',
@@ -69,20 +70,37 @@
     {:else if land.type == 'house'}
       <LandDisplay token={land.token} level={land.level} class="scale-125" />
     {/if}
-    <div class="absolute top-0 left-0 -mt-1 leading-none">
+    <div class="absolute top-0 left-0 -m-1 leading-none">
       <span
         class={cn('text-ponzi', {
           'text-xl': size === 'lg',
-          'text-lg': size === 'sm',
-          'text-sm': size === 'xs',
+          'text-sm': size === 'sm',
+          'text-xs': size === 'xs',
         })}
       >
         {locationIntToString(land.location)}
       </span>
-      <span class={cn('opacity-50', { 'text-xs': size === 'xs' })}
+      {#if land.type == 'house'}
+        <div class="leading-none flex flex-col justify-center mt-1 gap-[1px]">
+          {#each [1, 2, 3] as level}
+            <div
+              class="h-3 w-3 rounded-full border-2 border-black {land.level >=
+              level
+                ? 'bg-blue-500'
+                : 'bg-gray-800'}"
+            ></div>
+          {/each}
+        </div>
+      {/if}
+      <!-- <span class={cn('opacity-50', { 'text-xs': size === 'xs' })}
         >#{new Number(land.location).toString()}</span
-      >
+      > -->
     </div>
+
+    <div class="absolute top-0 right-0 leading-none -mt-2 -m-1">
+      <TokenAvatar token={land.token} class="w-5 h-5 border-2 border-black" />
+    </div>
+
     {#if land.type == 'house'}
       <div
         class="absolute -bottom-3 left-0 w-full leading-none flex flex-row justify-center"
