@@ -513,6 +513,102 @@
         <p class="text-red-500 text-sm mt-1">{balanceError}</p>
       {/if}
 
+      <!-- 
+      {#if selectedToken && stake && !isNaN(parseFloat(stake)) && parseFloat(stake) > 0}
+        <div class="mt-2 p-2 bg-gray-800 rounded text-xs">
+          <div class="flex justify-between items-start gap-4">
+            <div class="min-w-0 flex-1">
+              <span class="text-gray-400">Pay:</span>
+              <span class="text-white font-ponzi-number ml-1">
+                {#if land.type == 'auction'}
+                  {#await land?.getCurrentAuctionPrice(false)}
+                    ...
+                  {:then price}
+                    {price}
+                  {/await}
+                {:else}
+                  {land.sellPrice}
+                {/if}
+                {land.token?.symbol}
+              </span>
+              {#if land.token && padAddress(land.token.address) !== padAddress(baseToken.address)}
+                {@const landPriceInBase =
+                  land.type == 'auction' && auctionPrice
+                    ? walletStore.convertTokenAmount(
+                        auctionPrice,
+                        land.token,
+                        baseToken,
+                      )
+                    : walletStore.convertTokenAmount(
+                        land.sellPrice,
+                        land.token,
+                        baseToken,
+                      )}
+                {#if landPriceInBase}
+                  <span class="text-gray-500 block"
+                    >≈{landPriceInBase.toString()} {baseToken.symbol}</span
+                  >
+                {/if}
+              {/if}
+            </div>
+            <div class="min-w-0 flex-1 text-right">
+              <span class="text-gray-400">Stake:</span>
+              <span class="text-yellow-500 font-ponzi-number ml-1">
+                {stakeAmount.toString()}
+                {selectedToken.symbol}
+              </span>
+              {#if stakeAmountInBaseCurrency}
+                <span class="text-gray-500 block"
+                  >≈{stakeAmountInBaseCurrency.toString()}
+                  {baseToken.symbol}</span
+                >
+              {/if}
+            </div>
+            <div class="min-w-0 flex-shrink-0 text-right">
+              <span class="text-gray-400">Total:</span>
+              <span class="text-white font-ponzi-number block">
+                {#if land.token && selectedToken}
+                  {@const landPriceInBase =
+                    land.type == 'auction' && auctionPrice
+                      ? walletStore.convertTokenAmount(
+                          auctionPrice,
+                          land.token,
+                          baseToken,
+                        )
+                      : walletStore.convertTokenAmount(
+                          land.sellPrice,
+                          land.token,
+                          baseToken,
+                        )}
+                  {@const stakeInBase =
+                    stakeAmountInBaseCurrency ||
+                    (padAddress(selectedToken.address) ===
+                    padAddress(baseToken.address)
+                      ? stakeAmount
+                      : null)}
+                  {#if landPriceInBase && stakeInBase}
+                    {landPriceInBase.add(stakeInBase).toString()}
+                  {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+                    {landPriceInBase.add(stakeAmount).toString()}
+                  {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
+                    {land.type == 'auction' && auctionPrice
+                      ? auctionPrice.add(stakeInBase).toString()
+                      : land.sellPrice.add(stakeInBase).toString()}
+                  {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+                    {land.type == 'auction' && auctionPrice
+                      ? auctionPrice.add(stakeAmount).toString()
+                      : land.sellPrice.add(stakeAmount).toString()}
+                  {:else}
+                    ~
+                  {/if}
+                {/if}
+                <span class="text-gray-400">{baseToken.symbol}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      {/if} -->
+
       {#if loading}
         <Button class="mt-3 w-full" disabled>
           buying <ThreeDots />
@@ -537,7 +633,50 @@
             &nbsp;
           </span>
           {land.token?.symbol}
+          & STAKE
+          <span class="text-yellow-500">
+            &nbsp;{stakeAmount.toString()}&nbsp;
+          </span>
+          {selectedToken?.symbol}
         </Button>
+        {#if land.token && selectedToken}
+          {@const landPriceInBase =
+            land.type == 'auction' && auctionPrice
+              ? walletStore.convertTokenAmount(
+                  auctionPrice,
+                  land.token,
+                  baseToken,
+                )
+              : walletStore.convertTokenAmount(
+                  land.sellPrice,
+                  land.token,
+                  baseToken,
+                )}
+          {@const stakeInBase =
+            stakeAmountInBaseCurrency ||
+            (padAddress(selectedToken.address) === padAddress(baseToken.address)
+              ? stakeAmount
+              : null)}
+          <span class="text-gray-300 text-sm block">
+            {#if landPriceInBase && stakeInBase}
+              (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
+              {baseToken.symbol})
+            {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+              (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
+              {baseToken.symbol})
+            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
+              (Total: ≈{land.type == 'auction' && auctionPrice
+                ? auctionPrice.add(stakeInBase).toString()
+                : land.sellPrice.add(stakeInBase).toString()}
+              {baseToken.symbol})
+            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+              (Total: ≈{land.type == 'auction' && auctionPrice
+                ? auctionPrice.add(stakeAmount).toString()
+                : land.sellPrice.add(stakeAmount).toString()}
+              {baseToken.symbol})
+            {/if}
+          </span>
+        {/if}
       {/if}
     {/if}
   </div>
