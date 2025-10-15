@@ -37,6 +37,7 @@
   onMount(() => {
     // Set up custom controls for the parent draggable component
     setCustomControls(moreControls);
+    if (baseToken) settingsStore.setSelectedBaseTokenAddress(baseToken.address);
   });
 
   // Watch for wallet loading completion and trigger balance refresh
