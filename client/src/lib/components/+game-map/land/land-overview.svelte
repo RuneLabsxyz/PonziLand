@@ -127,13 +127,24 @@
         {locationIntToString(land.location)}
       </span>
       {#if land.type == 'house'}
-        <div class="leading-none flex flex-col justify-center mt-1 gap-[1px]">
+        <div
+          class={cn('leading-none flex flex-col justify-center mt-1', {
+            'gap-[0.5px]': size === 'xs',
+            'gap-[1px]': size === 'sm',
+            'gap-[2px]': size === 'lg',
+          })}
+        >
           {#each [1, 2, 3] as level}
             <div
-              class="h-3 w-3 rounded-full border-2 border-black {land.level >=
-              level
-                ? 'bg-blue-500'
-                : 'bg-gray-800'}"
+              class={cn(
+                'rounded-full border-2 border-black',
+                {
+                  'h-2 w-2': size === 'xs',
+                  'h-3 w-3': size === 'sm',
+                  'h-4 w-4': size === 'lg',
+                },
+                land.level >= level ? 'bg-blue-500' : 'bg-gray-800',
+              )}
             ></div>
           {/each}
         </div>
@@ -144,7 +155,14 @@
     </div>
 
     <div class="absolute top-0 right-0 leading-none -mt-2 -m-1">
-      <TokenAvatar token={land.token} class="w-5 h-5 border-2 border-black" />
+      <TokenAvatar
+        token={land.token}
+        class={cn('border-2 border-black', {
+          'w-4 h-4': size === 'xs',
+          'w-5 h-5': size === 'sm',
+          'w-8 h-8': size === 'lg',
+        })}
+      />
     </div>
 
     <!-- Nuke Shield display -->
