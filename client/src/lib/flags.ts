@@ -12,7 +12,7 @@ export const ENABLE_LEADERBOARD = false;
  * The maximum amount (in the base currency, so STRK), that can be staked inside of a land.
  * If set to 0, no maximum.
  */
-export const MAX_STAKE = 380n; // Around 50$
+export const MAX_STAKE = 2000n; // Around 250$
 
 /**
  * Due to an issue with controller and the gateway, if a transaction
