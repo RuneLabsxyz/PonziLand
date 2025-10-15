@@ -441,7 +441,7 @@
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
 
-      <div class="flex gap-2 items-center my-4">
+      <div class="flex gap-2 my-4">
         <div class="flex-1">
           <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
           <p class="-mt-1 mb-1 leading-none opacity-75">
@@ -459,7 +459,7 @@
               : ''}"
           />
           {#if stakeAmountInBaseCurrency}
-            <p class="text-xs text-gray-500 mt-1">
+            <p class=" text-gray-500 mt-1">
               ≈ {stakeAmountInBaseCurrency.toString()}
               {baseToken.symbol}
             </p>
@@ -484,7 +484,7 @@
               : ''}"
           />
           {#if sellPriceInBaseCurrency}
-            <p class="text-xs text-gray-500 mt-1">
+            <p class=" text-gray-500 mt-1">
               ≈ {sellPriceInBaseCurrency.toString()}
               {baseToken.symbol}
             </p>
