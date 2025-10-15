@@ -734,7 +734,7 @@
         <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
       {/each}
     {/if}
-  
+
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
