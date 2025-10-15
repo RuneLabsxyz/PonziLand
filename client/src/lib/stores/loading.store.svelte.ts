@@ -1042,6 +1042,26 @@ class LoadingStore {
       owner: this._loadedSpritesheets.owner,
     };
   }
+
+  // Dispose all loaded textures and spritesheets
+  dispose() {
+    // Dispose all loaded spritesheets
+    Object.entries(this._loadedSpritesheets).forEach(([name, spritesheet]) => {
+      if (spritesheet) {
+        // Dispose texture
+        if (spritesheet.texture) {
+          spritesheet.texture.dispose();
+        }
+        // Dispose geometry if present
+        if (spritesheet.geometry) {
+          spritesheet.geometry.dispose();
+        }
+      }
+    });
+
+    // Clear the loaded spritesheets
+    this._loadedSpritesheets = {};
+  }
 }
 
 export const loadingStore = new LoadingStore();

@@ -4,7 +4,7 @@
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { useThrelte } from '@threlte/core';
   import { interactivity } from '@threlte/extras';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { get } from 'svelte/store';
   import { Raycaster, Vector2, Vector3 } from 'three';
   import { cursorStore } from './three/cursor.store.svelte';
@@ -173,6 +173,13 @@
       canvas.removeEventListener('mousedown', handleMouseDown);
       canvas.removeEventListener('click', handleCanvasClick);
     };
+  });
+
+  onDestroy(() => {
+    // Clean up cursor pointer class
+    document.body.classList.remove('cursor-pointer');
+
+    startPosition = undefined;
   });
 </script>
 

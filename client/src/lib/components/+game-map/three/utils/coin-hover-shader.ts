@@ -53,4 +53,22 @@ export class CoinHoverShaderMaterial extends ShaderMaterial {
       }
     }
   }
+
+  dispose() {
+    // Dispose uniform objects that hold references
+    // Note: Color and Vector2 objects in uniforms don't have dispose methods,
+    // but we should null them to help garbage collection
+    if (this.uniforms.outlineColor?.value) {
+      this.uniforms.outlineColor.value = null;
+    }
+    if (this.uniforms.pulseColor?.value) {
+      this.uniforms.pulseColor.value = null;
+    }
+    if (this.uniforms.resolution?.value) {
+      this.uniforms.resolution.value = null;
+    }
+
+    // Call parent dispose
+    super.dispose();
+  }
 }
