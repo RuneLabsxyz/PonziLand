@@ -41,7 +41,7 @@
         {:else if type === 'settings'}
           <WidgetSettings />
         {:else if type === 'my-lands'}
-          <WidgetMyLands />
+          <WidgetMyLands {setCustomTitle} {setCustomControls} />
         {:else if type === 'entity-update'}
           <WidgetEntityUpdate />
         {:else if type === 'market'}
