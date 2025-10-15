@@ -9,6 +9,7 @@
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
+  import { ArrowRightLeft } from 'lucide-svelte';
   import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
@@ -62,6 +63,67 @@
     return tokenValue;
   });
 
+  // Base currency input mode
+  let useBaseCurrencyInput = $state(false);
+
+  // Function to convert between currencies when switching modes
+  function switchInputMode() {
+    if (!selectedToken || !baseToken) return;
+    
+    // Store current values before switching
+    const currentStake = stake;
+    const currentSellPrice = sellPrice;
+    
+    // Switch the mode first
+    useBaseCurrencyInput = !useBaseCurrencyInput;
+    
+    // Convert stake amount based on the NEW mode
+    if (currentStake && parseFloat(currentStake) > 0) {
+      try {
+        if (useBaseCurrencyInput) {
+          // NOW we're in USDC mode, so convert from token to USDC
+          const tokenAmount = CurrencyAmount.fromScaled(currentStake, selectedToken);
+          const usdcAmount = walletStore.convertTokenAmount(tokenAmount, selectedToken, baseToken);
+          if (usdcAmount) {
+            stake = usdcAmount.toString();
+          }
+        } else {
+          // NOW we're in token mode, so convert from USDC to token
+          const usdcAmount = CurrencyAmount.fromScaled(currentStake, baseToken);
+          const tokenAmount = walletStore.convertTokenAmount(usdcAmount, baseToken, selectedToken);
+          if (tokenAmount) {
+            stake = tokenAmount.toString();
+          }
+        }
+      } catch (error) {
+        console.warn('Error converting stake amount:', error);
+      }
+    }
+
+    // Convert sell price amount based on the NEW mode
+    if (currentSellPrice && parseFloat(currentSellPrice) > 0) {
+      try {
+        if (useBaseCurrencyInput) {
+          // NOW we're in USDC mode, so convert from token to USDC
+          const tokenAmount = CurrencyAmount.fromScaled(currentSellPrice, selectedToken);
+          const usdcAmount = walletStore.convertTokenAmount(tokenAmount, selectedToken, baseToken);
+          if (usdcAmount) {
+            sellPrice = usdcAmount.toString();
+          }
+        } else {
+          // NOW we're in token mode, so convert from USDC to token
+          const usdcAmount = CurrencyAmount.fromScaled(currentSellPrice, baseToken);
+          const tokenAmount = walletStore.convertTokenAmount(usdcAmount, baseToken, selectedToken);
+          if (tokenAmount) {
+            sellPrice = tokenAmount.toString();
+          }
+        }
+      } catch (error) {
+        console.warn('Error converting sell price:', error);
+      }
+    }
+  }
+
   let stake: string = $derived.by(() => {
     if (!selectedToken) return '';
 
@@ -76,14 +138,20 @@
     });
   });
   let stakeAmount: CurrencyAmount = $derived.by(() => {
-    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
-    return CurrencyAmount.fromScaled(stake ?? 0, selectedToken);
+    const currentToken = useBaseCurrencyInput ? baseToken : selectedToken;
+    if (!currentToken) return CurrencyAmount.fromScaled(0, baseToken);
+    return CurrencyAmount.fromScaled(stake ?? 0, currentToken);
   });
 
   let stakeAmountInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
     if (!selectedToken || !stakeAmount) return null;
 
-    // If already in base currency, return null (no conversion needed)
+    // If already in base currency mode, return null (no conversion needed)
+    if (useBaseCurrencyInput) {
+      return null;
+    }
+
+    // If token is same as base token, return null
     if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
       return null;
     }
@@ -131,14 +199,20 @@
   });
 
   let sellPriceAmount: CurrencyAmount = $derived.by(() => {
-    if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
-    return CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken);
+    const currentToken = useBaseCurrencyInput ? baseToken : selectedToken;
+    if (!currentToken) return CurrencyAmount.fromScaled(0, baseToken);
+    return CurrencyAmount.fromScaled(sellPrice ?? 0, currentToken);
   });
 
   let sellPriceInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
     if (!selectedToken || !sellPriceAmount) return null;
 
-    // If already in base currency, return null (no conversion needed)
+    // If already in base currency mode, return null (no conversion needed)
+    if (useBaseCurrencyInput) {
+      return null;
+    }
+
+    // If token is same as base token, return null
     if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
       return null;
     }
@@ -448,20 +522,34 @@
             Locked value that will be used to pay taxes and make your land
             survive
           </p>
-          <Input
-            id="stake"
-            type="number"
-            bind:value={stake}
-            class="{stakeAmountError
-              ? 'border-red-500'
-              : ''} {tutorialState.tutorialProgress == 6
-              ? 'border border-yellow-500 animate-pulse'
-              : ''}"
-          />
-          {#if stakeAmountInBaseCurrency}
-            <p class=" text-gray-500 mt-1">
-              ≈ {stakeAmountInBaseCurrency.toString()}
-              {baseToken.symbol}
+          <div class="flex items-center gap-2">
+            <button 
+              class="flex items-center justify-center w-12 h-9 rounded-md transition-colors text-xs font-medium {useBaseCurrencyInput ? 'text-yellow-400 bg-yellow-500/20 hover:bg-yellow-500/30' : 'text-blue-400 bg-blue-500/20 hover:bg-blue-500/30'}"
+              onclick={switchInputMode}
+            >
+              {useBaseCurrencyInput ? baseToken.symbol : (selectedToken?.symbol || 'TKN')}
+            </button>
+            <Input
+              id="stake"
+              type="number"
+              bind:value={stake}
+              class="flex-1 {stakeAmountError
+                ? 'border-red-500'
+                : ''} {tutorialState.tutorialProgress == 6
+                ? 'border border-yellow-500 animate-pulse'
+                : ''}"
+            />
+          </div>
+          {#if useBaseCurrencyInput && selectedToken && stake && parseFloat(stake) > 0}
+            {@const tokenEquivalent = walletStore.convertTokenAmount(stakeAmount, baseToken, selectedToken)}
+            {#if tokenEquivalent}
+              <p class="text-xs text-gray-500 mt-1">
+                ≈ {tokenEquivalent.toString()} {selectedToken.symbol}
+              </p>
+            {/if}
+          {:else if !useBaseCurrencyInput && stakeAmountInBaseCurrency}
+            <p class="text-xs text-gray-500 mt-1">
+              ≈ {stakeAmountInBaseCurrency.toString()} {baseToken.symbol}
             </p>
           {/if}
           {#if stakeAmountError}
@@ -473,20 +561,34 @@
           <p class="-mt-1 mb-1 opacity-75 leading-none">
             What is paid to you when your land is bought out by another player
           </p>
-          <Input
-            id="sell"
-            type="number"
-            bind:value={sellPrice}
-            class="{sellPriceError
-              ? 'border-red-500'
-              : ''} {tutorialState.tutorialProgress == 6
-              ? 'border border-yellow-500 animate-pulse'
-              : ''}"
-          />
-          {#if sellPriceInBaseCurrency}
-            <p class=" text-gray-500 mt-1">
-              ≈ {sellPriceInBaseCurrency.toString()}
-              {baseToken.symbol}
+          <div class="flex items-center gap-2">
+            <button 
+              class="flex items-center justify-center w-12 h-9 rounded-md transition-colors text-xs font-medium {useBaseCurrencyInput ? 'text-yellow-400 bg-yellow-500/20 hover:bg-yellow-500/30' : 'text-blue-400 bg-blue-500/20 hover:bg-blue-500/30'}"
+              onclick={switchInputMode}
+            >
+              {useBaseCurrencyInput ? baseToken.symbol : (selectedToken?.symbol || 'TKN')}
+            </button>
+            <Input
+              id="sell"
+              type="number"
+              bind:value={sellPrice}
+              class="flex-1 {sellPriceError
+                ? 'border-red-500'
+                : ''} {tutorialState.tutorialProgress == 6
+                ? 'border border-yellow-500 animate-pulse'
+                : ''}"
+            />
+          </div>
+          {#if useBaseCurrencyInput && selectedToken && sellPrice && parseFloat(sellPrice) > 0}
+            {@const tokenEquivalent = walletStore.convertTokenAmount(sellPriceAmount, baseToken, selectedToken)}
+            {#if tokenEquivalent}
+              <p class="text-xs text-gray-500 mt-1">
+                ≈ {tokenEquivalent.toString()} {selectedToken.symbol}
+              </p>
+            {/if}
+          {:else if !useBaseCurrencyInput && sellPriceInBaseCurrency}
+            <p class="text-xs text-gray-500 mt-1">
+              ≈ {sellPriceInBaseCurrency.toString()} {baseToken.symbol}
             </p>
           {/if}
           {#if sellPriceError}
