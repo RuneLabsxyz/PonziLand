@@ -4,6 +4,7 @@
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
+  import { cn } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import { Tween } from 'svelte/motion';
@@ -173,6 +174,8 @@
       return rateInSelectedBase;
     }
   });
+
+  const hasToken = $derived(tweenAmount.current !== 0);
 </script>
 
 <!-- Phantom wallet style: Avatar + Token Name on top, Token Amount + Symbol below, Base Token Value on right -->
@@ -180,17 +183,26 @@
   <!-- Left side: Token info -->
   <div class="flex flex-col">
     <!-- Token Name -->
-    <div class="font-ds text-white font-medium leading-tight">
+    <div
+      class={cn([
+        'font-ds font-medium leading-tight',
+        hasToken ? 'text-white' : 'text-gray-400',
+      ])}
+    >
       {token.name || token.symbol}
     </div>
     <!-- Token Amount + Symbol with animation -->
     <div
-      class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-tight {animating
-        ? 'animating text-yellow-500 font-bold'
-        : ''}"
+      class={cn([
+        'gap-1 flex font-ds opacity-75 leading-tight',
+        animating ? 'animating text-yellow-500 font-bold' : '',
+        hasToken ? 'text-[#6BD5DD]' : 'text-[#165b60]',
+      ])}
     >
       <div>{displayAmount}</div>
-      <div class="text-gray-400">{token.symbol}</div>
+      <div class={hasToken ? 'text-gray-400' : 'text-gray-600'}>
+        {token.symbol}
+      </div>
       <div class="relative">
         {#if animating}
           <span class="absolute left-0 animate-in-out-left text-yellow-500">
@@ -217,10 +229,12 @@
         </span>
       {/if}
       <div
-        class="flex items-center font-ds text-white leading-tight {animating &&
-        baseToken
-          ? 'text-yellow-500 font-bold'
-          : ''}"
+        class={cn({
+          'flex items-center font-ds leading-tight': true,
+          'text-gray-400': !hasToken,
+          'text-white': hasToken,
+          'text-yellow-500 font-bold': animating && baseToken,
+        })}
       >
         {#if baseEquivalent}
           <span class="text-lg">$ </span>{baseEquivalent.toString()}

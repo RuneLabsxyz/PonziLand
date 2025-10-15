@@ -12,6 +12,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
   import InfoTooltip from '$lib/components/ui/info-tooltip.svelte';
+  import { cn } from '$lib/utils';
 
   let {
     setCustomControls,
@@ -201,7 +202,13 @@
             <div
               class="flex items-center gap-3 px-2 py-1 select-text hover:bg-gray-100/5 rounded"
             >
-              <TokenAvatar {token} class="h-8 w-8 flex-shrink-0" />
+              <TokenAvatar
+                {token}
+                class={cn([
+                  'h-8 w-8 flex-shrink-0',
+                  balance.isZero() ? 'filter brightness-50' : '',
+                ])}
+              />
               <TokenValueDisplay amount={balance.toBigint()} {token} />
             </div>
           {/each}
