@@ -409,7 +409,11 @@
             ? 'bg-red-500 text-white'
             : 'text-red-500'}"
         >
-          Nuke Time {sortBy == 'nuketime' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+          Nuke Time {sortBy == 'nuketime'
+            ? sortOrder === 'asc'
+              ? '▴'
+              : '▾'
+            : ''}
         </button>
       </div>
     </div>
@@ -479,20 +483,6 @@
               <div class="flex-1">
                 <LandHudInfo {land} isOwner={true} showLand={true} />
               </div>
-              {#if nukeTimeData}
-                <div class="flex items-center gap-2 px-4">
-                  <div 
-                    class="flex items-center gap-1 px-2 py-1 rounded text-xs font-bold"
-                    class:text-red-500={nukeTimeData.shieldType === 'red'}
-                    class:text-orange-500={nukeTimeData.shieldType === 'orange'}
-                    class:text-yellow-500={nukeTimeData.shieldType === 'yellow'}
-                    class:text-gray-400={nukeTimeData.shieldType === 'grey'}
-                    class:text-blue-400={nukeTimeData.shieldType === 'blue'}
-                  >
-                    🛡️ {nukeTimeData.displayText}
-                  </div>
-                </div>
-              {/if}
             </div>
           </button>
         {/each}

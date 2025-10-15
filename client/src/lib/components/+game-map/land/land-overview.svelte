@@ -12,6 +12,8 @@
   import LandNukeShield from './land-nuke-shield.svelte';
   import { estimateNukeTime } from '$lib/utils/taxes';
   import { BuildingLand } from '$lib/api/land/building_land';
+  import { Search } from 'lucide-svelte';
+  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   const {
     land,
     size = 'sm',
@@ -86,6 +88,10 @@
       selectedLand.value = get(baseLand);
     }
   }
+
+  function handleOpenLandInfo(land: LandWithActions) {
+    openLandInfoWidget(land);
+  }
 </script>
 
 <div
@@ -143,9 +149,7 @@
 
     <!-- Nuke Shield display -->
     {#if land.type === 'house' && estimatedNukeTime !== undefined}
-      <div
-        class="absolute bottom-0 left-0 -m-4 scale-90"
-      >
+      <div class="absolute bottom-0 left-0 -mb-3 -ml-4 scale-90">
         <LandNukeShield
           {estimatedNukeTime}
           class={cn({
@@ -157,6 +161,14 @@
         />
       </div>
     {/if}
+
+    <Button
+      class="absolute bottom-0 right-0 -m-1 p-1"
+      size="md"
+      onclick={() => handleOpenLandInfo(land)}
+    >
+      <Search size="small" strokeWidth={4} class="-mt-1 h-4 w-3" />
+    </Button>
   </button>
 
   <!-- Also show the progress bar for the next level -->
