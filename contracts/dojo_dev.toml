@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "quests_554550150"
+seed = "quests_58341443"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -70,8 +70,8 @@ order_inits = [
     "5",                                                               # Max circles
     "0",                                                                 # Claim fee
     "0",                                                                   # Buy fee
-    "10",                                                      # Quest auction chance
     "1",                                                      # Quest lands enabled
+    "1",                                                      # Quest rewards enabled
     "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",                                                      # Our contract for fee
     "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",                                                  # Our contract for auction
     "10",                                                       # Claim fee threshold
