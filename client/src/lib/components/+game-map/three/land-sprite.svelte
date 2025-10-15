@@ -859,15 +859,27 @@
       {#if devsettings.showRatesOverlay}
         <LandRatesOverlay {land} />
       {/if}
-      <Button
-        class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
-        size="sm"
-        onclick={() => {
-          openLandInfoWidget(land);
-        }}
-      >
-        BUY LAND
-      </Button>
+      {#if land.owner == accountState.address}
+        <Button
+          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+          size="sm"
+          onclick={() => {
+            openLandInfoWidget(land);
+          }}
+        >
+          SEE INFO
+        </Button>
+      {:else}
+        <Button
+          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+          size="sm"
+          onclick={() => {
+            openLandInfoWidget(land);
+          }}
+        >
+          BUY LAND
+        </Button>
+      {/if}
     {/if}
   </HTML>
 {/if}
