@@ -253,12 +253,12 @@
           Choose a quest game to challenge other players
         </p>
         <Select.Root bind:selected={selectedGameId}>
-          <Select.Trigger class="w-full text-foreground">
+          <Select.Trigger class="w-full bg-muted text-primary">
             <Select.Value placeholder="Choose a quest game..." />
           </Select.Trigger>
-          <Select.Content class="bg-background text-foreground">
+          <Select.Content class="bg-popover text-popover-foreground border border-border">
             {#each questGames as game}
-              <Select.Item value={game.id.toString()} class="text-foreground hover:bg-accent">
+              <Select.Item value={game.id.toString()} class="hover:bg-accent hover:text-accent-foreground cursor-pointer">
                 {game.game_contract_name} (ID: {game.id.toString()})
               </Select.Item>
             {/each}
