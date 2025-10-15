@@ -14,6 +14,7 @@
   import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
   import { onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import data from '$profileData';
   import {
     Clock,
     Color,
@@ -485,8 +486,7 @@
   });
 
   // Drop lands - lands owned by the specific drop wallet address
-  const DROP_WALLET_ADDRESS =
-    '0x00471969056f7989e1a98365c6b487c595c24202eb84618d042c798fb090f40f';
+  const DROP_WALLET_ADDRESS = data.dropLand.address;
 
   let dropLandTiles = $derived.by(() => {
     if (!visibleLandTiles) return [];
