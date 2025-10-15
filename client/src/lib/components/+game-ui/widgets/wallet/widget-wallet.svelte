@@ -53,11 +53,15 @@
   let address = $derived(accountDataProvider.address);
   let username = $derived(socialink?.getUser(address ?? ''));
   let connected = $derived(accountDataProvider.isConnected);
+  let providerIcon = $derived(accountDataProvider.providerIcon);
 </script>
 
 {#if connected}
   <div class="flex justify-between items-center mt-2">
     <button type="button" class="flex gap-2 items-center" onclick={copy}>
+      {#if providerIcon}
+        <img src={providerIcon} alt="Wallet provider" class="h-4 w-4 rounded" />
+      {/if}
       {#await username then info}
         {#if info?.exists}
           <p class="font-ponzi-number">
