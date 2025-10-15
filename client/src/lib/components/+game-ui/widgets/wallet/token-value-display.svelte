@@ -1,18 +1,32 @@
 <script lang="ts">
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
+  import { loadingStore } from '$lib/stores/loading.store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { cn } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
+  import { untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
     amount: bigint;
     token: Token;
   }>();
+
+  // Reset tween when balance updates externally
+  $effect(() => {
+    amount;
+    token;
+
+    untrack(() => {
+      tweenAmount.set(Number(amount), { duration: 0 });
+      startingAmount = amount;
+      accumulatedIncrements = 0n;
+    });
+  });
 
   let animating = $state(false);
   let increment = $state(0);

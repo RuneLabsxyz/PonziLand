@@ -1,18 +1,16 @@
 <script lang="ts">
   import type { BaseLand } from '$lib/api/land';
   import { AuctionLand } from '$lib/api/land/auction_land';
-  import { GRID_SIZE } from '$lib/const';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { claimStore } from '$lib/stores/claim.store.svelte';
-  import { claimQueue, notificationQueue } from '$lib/stores/event.store.svelte';
+  import { claimQueue } from '$lib/stores/event.store.svelte';
   import { BuildingLand } from '$lib/api/land/building_land';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import {
     coordinatesToLocation,
-    getTokenInfo,
     padAddress,
     toHexWithPadding,
   } from '$lib/utils';
@@ -33,7 +31,7 @@
 
   let loading = $state(false);
   let error = $state<string | null>(null);
-  
+
   // Claim simulation state
   let claimSimulationLoading = $state(false);
   let claimSimulationResult = $state<{
@@ -168,14 +166,14 @@
       claimSimulationResult = {
         taxes: result.taxes,
         nukables: result.nukables,
-        landWithActions: landWithActions
+        landWithActions: landWithActions,
       };
 
       console.log('Claim simulation completed:', claimSimulationResult);
-
     } catch (e) {
       console.error('Error in claim simulation:', e);
-      claimSimulationError = e instanceof Error ? e.message : 'Unknown error occurred';
+      claimSimulationError =
+        e instanceof Error ? e.message : 'Unknown error occurred';
     } finally {
       claimSimulationLoading = false;
     }
@@ -192,7 +190,7 @@
       claimStore.value[locationString] = {
         claimable: true,
         animating: false,
-        land: land as any // Type cast for debug purposes
+        land: land as any, // Type cast for debug purposes
       };
     }
 
@@ -211,12 +209,26 @@
         claimStore.value[locationString].claimable = true;
       }
     }, 30 * 1000);
+    console.log('claimSimulationResult', claimSimulationResult);
 
-    // Add mock tax data to claim queue
-    if (landTokenUsed) {
-      // For demo purposes, just log that we would add to claim queue
-      // The actual implementation would need proper CurrencyAmount objects
-      console.log('Would add mock tax to claim queue for token:', landTokenUsed.symbol);
+    // Add real tax data to claim queue from simulation results
+    if (
+      claimSimulationResult?.taxes &&
+      claimSimulationResult.taxes.length > 0
+    ) {
+      const taxes = claimSimulationResult.taxes;
+      claimQueue.update((queue) => {
+        return [...queue, ...taxes.map((tax) => tax.totalTax)];
+      });
+      console.log(
+        'Added real tax data to claim queue:',
+        taxes.length,
+        'records',
+      );
+    } else {
+      console.log(
+        'No simulation result available - run claim simulation first',
+      );
     }
 
     console.log('Simulated postclaim animations for location:', locationString);
@@ -448,23 +460,14 @@
       title="Fetch real tax data without sending transaction"
       disabled={claimSimulationLoading}
     />
-    <Monitor
-      value={claimSimulationLoading}
-      label="Loading"
-    />
-    
+    <Monitor value={claimSimulationLoading} label="Loading" />
+
     {#if claimSimulationError}
-      <Monitor
-        value={claimSimulationError}
-        label="Error"
-      />
+      <Monitor value={claimSimulationError} label="Error" />
     {/if}
-    
+
     {#if claimSimulationResult}
-      <Monitor
-        value={claimSimulationResult.taxes.length}
-        label="Tax Records"
-      />
+      <Monitor value={claimSimulationResult.taxes.length} label="Tax Records" />
       <Monitor
         value={claimSimulationResult.nukables.length}
         label="Nukable Records"
