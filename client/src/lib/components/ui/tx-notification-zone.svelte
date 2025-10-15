@@ -10,14 +10,19 @@
     {#each notifications as notification}
       <Card>
         {#if notification.pending == true}
-          <div class="flex items-center gap-2">
+          <button
+            class="flex items-center gap-2"
+            onclick={() => {
+              navigator.clipboard.writeText(notification.txhash ?? '');
+            }}
+          >
             <div
               class="w-4 h-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"
             ></div>
             <span>{notification.txCount}. </span>
             <span class="text-ponzi-number">{notification.functionName}</span>
             <span>Pending</span>
-          </div>
+          </button>
         {:else if notification.isValid}
           <div class="flex items-center gap-2">
             <span class="text-green-500">✓</span>
