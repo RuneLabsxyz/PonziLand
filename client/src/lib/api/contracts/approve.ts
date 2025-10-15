@@ -51,6 +51,10 @@ async function getApprove(
   return [...approvals, spendingCall];
 }
 
+function max(a: bigint, b: bigint): bigint {
+  return a > b ? a : b;
+}
+
 export async function wrappedActions(provider: DojoProvider) {
   const world = setupWorld(provider);
 
@@ -69,7 +73,7 @@ export async function wrappedActions(provider: DojoProvider) {
         ? [
             {
               tokenAddress: tokenForSale,
-              amount: BigInt(amountToStake) + BigInt(currentPrice),
+              amount: BigInt(amountToStake) + max(BigInt(currentPrice), 0n),
             },
           ]
         : [
@@ -79,7 +83,7 @@ export async function wrappedActions(provider: DojoProvider) {
             },
             {
               tokenAddress: buyingToken,
-              amount: BigInt(currentPrice),
+              amount: max(BigInt(currentPrice), 0n),
             },
           ];
 
