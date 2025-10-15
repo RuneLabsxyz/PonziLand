@@ -285,9 +285,9 @@
           break;
         case 'nuketime':
           const nukeTimeA =
-            nukeTimes.get(a.locationString)?.timeInSeconds ?? Infinity;
+            nukeTimes.get(a.location)?.timeInSeconds ?? Infinity;
           const nukeTimeB =
-            nukeTimes.get(b.locationString)?.timeInSeconds ?? Infinity;
+            nukeTimes.get(b.location)?.timeInSeconds ?? Infinity;
           comparison = nukeTimeA - nukeTimeB;
           break;
       }
