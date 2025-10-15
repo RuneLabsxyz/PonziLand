@@ -494,7 +494,6 @@
     return visibleLandTiles.filter((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
       // Check if the land is owned by the drop wallet address
-      console.log('tile.land.owner', tile.land.owner);
       return tile.land.owner === DROP_WALLET_ADDRESS;
     });
   });
@@ -729,6 +728,13 @@
       </InstancedSprite>
     {/if}
 
+    <!-- Drop lands indicator (golden sparkles) -->
+    {#if dropLandTiles.length > 0}
+      {#each dropLandTiles as tile, i}
+        <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
+      {/each}
+    {/if}
+  
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
@@ -792,27 +798,6 @@
             scale={coinScale}
             shaderMaterial={coinShaderMaterial}
           />
-        {/each}
-      </InstancedMesh>
-    {/if}
-
-    <!-- Drop lands indicator (temporary red squares) -->
-    {#if dropLandTiles.length > 0}
-      <InstancedMesh
-        limit={dropLandTiles.length}
-        range={dropLandTiles.length}
-        frustumCulled={false}
-      >
-        <T is={new PlaneGeometry(0.3, 0.3)} />
-        <T
-          is={new MeshBasicMaterial({
-            color: 0xff0000,
-            transparent: true,
-            opacity: 0.8,
-          })}
-        />
-        {#each dropLandTiles as tile, i}
-          <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
         {/each}
       </InstancedMesh>
     {/if}
