@@ -15,7 +15,7 @@
   let estimatedDays = $derived(Math.floor(estimatedNukeTime / 60 / 60 / 24));
   let estimatedHours = $derived(Math.floor((estimatedNukeTime / 60 / 60) % 24));
   let estimatedMinutes = $derived(Math.floor((estimatedNukeTime / 60) % 60));
-  
+
   let estimatedDaysString = $derived.by(() => {
     if (estimatedNukeTime <= 0) {
       return 'NUKE!'; // Match nuke-time-display format
@@ -80,7 +80,7 @@
   // Determine the appropriate background image based on days remaining (matching nuke-time-display logic)
   function getStyle(days: number) {
     if (days >= 5) return thresholds[5]; // blue
-    if (days >= 3) return thresholds[3]; // grey  
+    if (days >= 3) return thresholds[3]; // grey
     if (days >= 2) return thresholds[2]; // yellow
     if (days >= 1) return thresholds[1]; // orange
     return thresholds[0]; // red
@@ -153,7 +153,6 @@
 
 <style>
   .nuke-shield {
-    font-size: 0.8em;
     background-size: cover;
     background-position: center;
     font-family: 'PonziNumber';

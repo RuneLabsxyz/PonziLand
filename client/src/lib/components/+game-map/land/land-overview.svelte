@@ -171,9 +171,9 @@
         <LandNukeShield
           {estimatedNukeTime}
           class={cn({
-            'h-8 w-8': size === 'xs',
-            'h-12 w-12': size === 'sm',
-            'h-16 w-16': size === 'lg',
+            'h-8 w-8 text-xs': size === 'xs',
+            'h-12 w-12 text-sm': size === 'sm',
+            'h-16 w-16 text-lg': size === 'lg',
           })}
           lockTime={false}
         />
