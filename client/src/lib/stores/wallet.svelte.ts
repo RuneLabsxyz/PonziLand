@@ -367,7 +367,6 @@ export class WalletStore {
   }
 
   public isWithinCap(amount: CurrencyAmount): boolean {
-    // @ts-expect-error  - This is a const, but I want the comportment to change if the value is changed.
     if (MAX_STAKE === 0n) {
       return true;
     }
