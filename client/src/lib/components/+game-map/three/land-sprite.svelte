@@ -29,6 +29,7 @@
   import AuctionIndicator from './auction-indicator.svelte';
   import Clouds from './clouds.svelte';
   import Coin from './coin.svelte';
+  import DropLand from './drop-land.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
   import LandTileSprite from './land-tile-sprite.svelte';
@@ -483,6 +484,21 @@
     });
   });
 
+  // Drop lands - lands owned by the specific drop wallet address
+  const DROP_WALLET_ADDRESS =
+    '0x00471969056f7989e1a98365c6b487c595c24202eb84618d042c798fb090f40f';
+
+  let dropLandTiles = $derived.by(() => {
+    if (!visibleLandTiles) return [];
+
+    return visibleLandTiles.filter((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+      // Check if the land is owned by the drop wallet address
+      console.log('tile.land.owner', tile.land.owner);
+      return tile.land.owner === DROP_WALLET_ADDRESS;
+    });
+  });
+
   // Optimized owned land indices calculation
   let ownedLandIndices = $derived.by(() => {
     if (
@@ -776,6 +792,27 @@
             scale={coinScale}
             shaderMaterial={coinShaderMaterial}
           />
+        {/each}
+      </InstancedMesh>
+    {/if}
+
+    <!-- Drop lands indicator (temporary red squares) -->
+    {#if dropLandTiles.length > 0}
+      <InstancedMesh
+        limit={dropLandTiles.length}
+        range={dropLandTiles.length}
+        frustumCulled={false}
+      >
+        <T is={new PlaneGeometry(0.3, 0.3)} />
+        <T
+          is={new MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.8,
+          })}
+        />
+        {#each dropLandTiles as tile, i}
+          <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
         {/each}
       </InstancedMesh>
     {/if}
