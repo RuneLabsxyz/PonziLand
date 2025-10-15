@@ -2,7 +2,6 @@
   import account from '$lib/account.svelte';
   import type { LandSetup, LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
-  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import {
     nextStep,
     tutorialState,
@@ -10,20 +9,21 @@
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { TabType, Token } from '$lib/interfaces';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
-  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { locationToCoordinates, padAddress } from '$lib/utils';
+  import { formatWithoutExponential } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import type { CairoCustomEnum } from 'starknet';
-  import TaxImpact from '../tax-impact/tax-impact.svelte';
   import { untrack } from 'svelte';
-  import { formatWithoutExponential } from '$lib/utils/currency';
+  import TaxImpact from '../tax-impact/tax-impact.svelte';
 
   let {
     land,
@@ -537,7 +537,50 @@
             &nbsp;
           </span>
           {land.token?.symbol}
+          & STAKE
+          <span class="text-yellow-500">
+            &nbsp;{stakeAmount.toString()}&nbsp;
+          </span>
+          {selectedToken?.symbol}
         </Button>
+        {#if land.token && selectedToken}
+          {@const landPriceInBase =
+            land.type == 'auction' && auctionPrice
+              ? walletStore.convertTokenAmount(
+                  auctionPrice,
+                  land.token,
+                  baseToken,
+                )
+              : walletStore.convertTokenAmount(
+                  land.sellPrice,
+                  land.token,
+                  baseToken,
+                )}
+          {@const stakeInBase =
+            stakeAmountInBaseCurrency ||
+            (padAddress(selectedToken.address) === padAddress(baseToken.address)
+              ? stakeAmount
+              : null)}
+          <span class="text-gray-300 text-sm block">
+            {#if landPriceInBase && stakeInBase}
+              (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
+              {baseToken.symbol})
+            {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+              (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
+              {baseToken.symbol})
+            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
+              (Total: ≈{land.type == 'auction' && auctionPrice
+                ? auctionPrice.add(stakeInBase).toString()
+                : land.sellPrice.add(stakeInBase).toString()}
+              {baseToken.symbol})
+            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+              (Total: ≈{land.type == 'auction' && auctionPrice
+                ? auctionPrice.add(stakeAmount).toString()
+                : land.sellPrice.add(stakeAmount).toString()}
+              {baseToken.symbol})
+            {/if}
+          </span>
+        {/if}
       {/if}
     {/if}
   </div>
