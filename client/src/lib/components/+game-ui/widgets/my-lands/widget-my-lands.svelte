@@ -6,7 +6,6 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAll, claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -16,14 +15,13 @@
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
-  import { useAccount } from '$lib/contexts/account.svelte';
+  import { estimateNukeTime, parseNukeTime } from '$lib/utils/taxes';
 
   const dojo = useDojo();
   const getDojoAccount = () => {
     return dojo.accountManager?.getProvider();
   };
 
-  let accountManager = useAccount();
   const { accountManager: dojoAccountManager } = useDojo();
 
   // Claiming state management
@@ -107,6 +105,88 @@
   // Reactive lands state that updates automatically on ownership changes
   let lands = $state<LandWithActions[]>([]);
 
+  // Nuke time cache to avoid recalculating frequently
+  let nukeTimes = $state<
+    Map<
+      string,
+      { timeInSeconds: number; displayText: string; shieldType: string }
+    >
+  >(new Map());
+
+  // Helper function to get shield type based on days remaining
+  function getShieldType(days: number): string {
+    if (days >= 5) return 'blue';
+    if (days >= 3) return 'grey';
+    if (days >= 2) return 'yellow';
+    if (days >= 1) return 'orange';
+    return 'red';
+  }
+
+  // Helper function to format nuke time for display
+  function formatNukeTime(timeInSeconds: number): {
+    text: string;
+    shieldType: string;
+  } {
+    const parsedTime = parseNukeTime(timeInSeconds);
+
+    let displayText = '';
+    if (parsedTime.days > 0) {
+      displayText = `${parsedTime.days}d`;
+    } else if (parsedTime.hours > 0) {
+      displayText = `${parsedTime.hours}h`;
+    } else if (parsedTime.minutes > 0) {
+      displayText = `${parsedTime.minutes}m`;
+    } else {
+      displayText = 'NUKE!';
+    }
+
+    const shieldType = getShieldType(parsedTime.days);
+    return { text: displayText, shieldType };
+  }
+
+  // Calculate nuke times for all lands
+  async function updateNukeTimes() {
+    const newNukeTimes = new Map();
+
+    for (const land of lands) {
+      try {
+        const neighborCount =
+          land.getNeighbors()?.getBaseLandsArray()?.length || 0;
+
+        // Only calculate nuke time if there are neighbors (otherwise it's infinite)
+        if (neighborCount > 0) {
+          const timeInSeconds = await estimateNukeTime(land, neighborCount);
+          const formatted = formatNukeTime(timeInSeconds);
+
+          newNukeTimes.set(land.location, {
+            timeInSeconds,
+            displayText: formatted.text,
+            shieldType: formatted.shieldType,
+          });
+        } else {
+          newNukeTimes.set(land.location, {
+            timeInSeconds: Infinity,
+            displayText: '∞',
+            shieldType: 'blue',
+          });
+        }
+      } catch (error) {
+        console.warn(
+          'Failed to calculate nuke time for land:',
+          land.location,
+          error,
+        );
+        newNukeTimes.set(land.location, {
+          timeInSeconds: 0,
+          displayText: '?',
+          shieldType: 'grey',
+        });
+      }
+    }
+
+    nukeTimes = newNukeTimes;
+  }
+
   // Effect to reactively update lands when ownership or land data changes
   $effect(() => {
     console.log('Updating lands for account:', account.address);
@@ -152,11 +232,20 @@
     };
   });
 
+  // Update nuke times when lands change
+  $effect(() => {
+    if (lands.length > 0) {
+      updateNukeTimes();
+    }
+  });
+
   // Filter and grouping state
   let selectedToken = $state<string>('all');
   let selectedLevel = $state<string>('all');
   let groupByToken = $state<boolean>(true);
-  let sortBy = $state<'location' | 'level' | 'date' | 'price'>('price');
+  let sortBy = $state<'location' | 'level' | 'date' | 'price' | 'nuketime'>(
+    'price',
+  );
   let sortOrder = $state<'asc' | 'desc'>('asc');
 
   let filteredLands = $derived.by(() => {
@@ -193,6 +282,13 @@
           break;
         case 'price':
           comparison = Number(a.sell_price) - Number(b.sell_price);
+          break;
+        case 'nuketime':
+          const nukeTimeA =
+            nukeTimes.get(a.locationString)?.timeInSeconds ?? Infinity;
+          const nukeTimeB =
+            nukeTimes.get(b.locationString)?.timeInSeconds ?? Infinity;
+          comparison = nukeTimeA - nukeTimeB;
           break;
       }
 
@@ -301,6 +397,20 @@
         >
           Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
         </button>
+        <button
+          onclick={() => {
+            if (sortBy === 'nuketime') {
+              sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+            sortBy = 'nuketime';
+          }}
+          class="border border-red-500 px-2 text-sm font-medium flew items-center justify-center {sortBy ==
+          'nuketime'
+            ? 'bg-red-500 text-white'
+            : 'text-red-500'}"
+        >
+          Nuke Time {sortBy == 'nuketime' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+        </button>
       </div>
     </div>
   {/if}
@@ -359,12 +469,31 @@
         {/if}
 
         {#each groupLands as land}
+          {@const nukeTimeData = nukeTimes.get(land.location)}
           <button
             class="w-full text-left hover:bg-white/10 p-2 land-button"
             class:group-item={groupByToken}
             onclick={() => handleLandClick(land)}
           >
-            <LandHudInfo {land} isOwner={true} showLand={true} />
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <LandHudInfo {land} isOwner={true} showLand={true} />
+              </div>
+              {#if nukeTimeData}
+                <div class="flex items-center gap-2 px-4">
+                  <div 
+                    class="flex items-center gap-1 px-2 py-1 rounded text-xs font-bold"
+                    class:text-red-500={nukeTimeData.shieldType === 'red'}
+                    class:text-orange-500={nukeTimeData.shieldType === 'orange'}
+                    class:text-yellow-500={nukeTimeData.shieldType === 'yellow'}
+                    class:text-gray-400={nukeTimeData.shieldType === 'grey'}
+                    class:text-blue-400={nukeTimeData.shieldType === 'blue'}
+                  >
+                    🛡️ {nukeTimeData.displayText}
+                  </div>
+                </div>
+              {/if}
+            </div>
           </button>
         {/each}
       {/each}
