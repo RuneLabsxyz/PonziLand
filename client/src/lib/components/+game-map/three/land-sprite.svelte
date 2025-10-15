@@ -869,3 +869,28 @@
     {/if}
   </HTML>
 {/if}
+
+<!-- Tooltip for drop lands -->
+{#if hoveredTileIndex !== undefined && cursorStore.gridPosition}
+  {@const gridPos = cursorStore.gridPosition}
+  {@const hoveredLandTile = visibleLandTiles.find(
+    (tile) => 
+      tile.position[0] === gridPos.x &&
+      tile.position[2] === gridPos.y
+  )}
+  {#if hoveredLandTile && dropLandTiles.some(t => t === hoveredLandTile)}
+    <HTML
+      portal={document.getElementById('game-canvas') ?? document.body}
+      position={[hoveredLandTile.position[0], hoveredLandTile.position[1] + 1.5, hoveredLandTile.position[2]]}
+      zIndexRange={[20, 10]}
+      distanceFactor={0.01}
+    >
+      <div class="bg-black/90 text-white text-xs border border-yellow-500/50 rounded-lg p-4 min-w-[150px] shadow-lg -translate-x-1/2 pointer-events-none">
+        <div class="text-yellow-400 font-bold mb-2 text-sm">✨ PonziLord's Land ✨</div>
+        <div class="leading-relaxed">
+          Fees and auction money flow back here! 💰
+        </div>
+      </div>
+    </HTML>
+  {/if}
+{/if}
