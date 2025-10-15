@@ -91,7 +91,6 @@ export class WalletStore {
   }
 
   public async update(address: string) {
-    console.log('Updating wallet balance', new Error().stack);
     this.errorMessage = null;
 
     // Cancel existing subscription
@@ -133,12 +132,19 @@ export class WalletStore {
         this.tokenPrices = await getTokenPrices();
       }
 
-      for (const item of tokenBalances.items) {
-        this.updateTokenBalance(item);
+      // Safely iterate over items if they exist
+      if (tokenBalances?.items) {
+        for (const item of tokenBalances.items) {
+          this.updateTokenBalance(item);
+        }
       }
 
       // If there is no balances from torii, then we need to fetch them from RPC
-      if (this.balances.size == 0 || tokenBalances.items.length == 0) {
+      if (
+        this.balances.size == 0 ||
+        !tokenBalances?.items ||
+        tokenBalances.items.length == 0
+      ) {
         await this.getRPCBalances();
       }
 
@@ -146,7 +152,7 @@ export class WalletStore {
       await this.calculateTotalBalance();
     } catch (err) {
       console.error(
-        'Error while fetching balances:',
+        '❌ Error while fetching balances:',
         err,
         '. Falling back to RPC',
       );
@@ -343,17 +349,28 @@ export class WalletStore {
   }
 
   private updateTokenBalance(item: TokenBalance) {
-    const token = this.getToken(item.contract_address);
-    if (!token) {
-      return null;
-    }
-    // Convert the balance to a BigInt
-    const balance = BigInt(item.balance);
+    try {
+      if (!item || !item.contract_address || item.balance === undefined) {
+        console.warn('Invalid token balance item:', item);
+        return null;
+      }
 
-    this.balances.set(
-      token.address,
-      CurrencyAmount.fromUnscaled(balance, token),
-    );
+      const token = this.getToken(item.contract_address);
+      if (!token) {
+        console.warn('Token not found for address:', item.contract_address);
+        return null;
+      }
+
+      // Convert the balance to a BigInt
+      const balance = BigInt(item.balance);
+
+      this.balances.set(
+        token.address,
+        CurrencyAmount.fromUnscaled(balance, token),
+      );
+    } catch (error) {
+      console.error('Error updating token balance:', error, 'Item:', item);
+    }
   }
 
   public getCapForToken(token: Token): CurrencyAmount {

@@ -1,10 +1,14 @@
 <script lang="ts">
   import type { BaseLand } from '$lib/api/land';
   import { AuctionLand } from '$lib/api/land/auction_land';
-  import { GRID_SIZE } from '$lib/const';
   import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
   import { nukeStore } from '$lib/stores/nuke.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
+  import { claimStore } from '$lib/stores/claim.store.svelte';
+  import { claimQueue } from '$lib/stores/event.store.svelte';
+  import { BuildingLand } from '$lib/api/land/building_land';
+  import { createLandWithActions } from '$lib/utils/land-actions';
+  import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import {
     coordinatesToLocation,
     padAddress,
@@ -27,6 +31,15 @@
 
   let loading = $state(false);
   let error = $state<string | null>(null);
+
+  // Claim simulation state
+  let claimSimulationLoading = $state(false);
+  let claimSimulationResult = $state<{
+    taxes: TaxData[];
+    nukables: any[];
+    landWithActions: any;
+  } | null>(null);
+  let claimSimulationError = $state<string | null>(null);
 
   let selectedLocation = $derived.by(() => {
     let land = selectedLand.value;
@@ -123,6 +136,102 @@
 
   function simulateNuke() {
     nukeStore.animationManager.triggerAnimation(locationString);
+  }
+
+  async function simulateClaimSingleLand() {
+    if (!land || land.type !== 'building') {
+      claimSimulationError = 'No building land selected for claim simulation';
+      return;
+    }
+
+    try {
+      claimSimulationLoading = true;
+      claimSimulationError = null;
+      claimSimulationResult = null;
+
+      // Create LandWithActions from current land
+      const landWithActions = createLandWithActions(
+        land as BuildingLand,
+        landStore.getAllLands,
+      );
+
+      if (!landWithActions) {
+        throw new Error('Failed to create LandWithActions from selected land');
+      }
+
+      // Fetch actual aggregated taxes (this is the real data)
+      const result = await getAggregatedTaxes(landWithActions);
+
+      // Store simulation result
+      claimSimulationResult = {
+        taxes: result.taxes,
+        nukables: result.nukables,
+        landWithActions: landWithActions,
+      };
+
+      console.log('Claim simulation completed:', claimSimulationResult);
+    } catch (e) {
+      console.error('Error in claim simulation:', e);
+      claimSimulationError =
+        e instanceof Error ? e.message : 'Unknown error occurred';
+    } finally {
+      claimSimulationLoading = false;
+    }
+  }
+
+  async function simulatePostClaimAnimations() {
+    if (!land || !locationString) {
+      console.error('No land selected or location string not available');
+      return;
+    }
+
+    // Initialize claim store entry if it doesn't exist
+    if (!claimStore.value[locationString]) {
+      claimStore.value[locationString] = {
+        claimable: true,
+        animating: false,
+        land: land as any, // Type cast for debug purposes
+      };
+    }
+
+    // Simulate the postclaim animation states
+    claimStore.value[locationString].animating = true;
+    claimStore.value[locationString].claimable = false;
+
+    // Animation timeout - disable animation after 2 seconds
+    setTimeout(() => {
+      claimStore.value[locationString].animating = false;
+    }, 2000);
+
+    // Claimable timeout - re-enable claimable after 30 seconds for houses
+    setTimeout(() => {
+      if (land.type === 'building') {
+        claimStore.value[locationString].claimable = true;
+      }
+    }, 30 * 1000);
+    console.log('claimSimulationResult', claimSimulationResult);
+
+    // Add real tax data to claim queue from simulation results
+    if (
+      claimSimulationResult?.taxes &&
+      claimSimulationResult.taxes.length > 0
+    ) {
+      const taxes = claimSimulationResult.taxes;
+      claimQueue.update((queue) => {
+        return [...queue, ...taxes.map((tax) => tax.totalTax)];
+      });
+      console.log(
+        'Added real tax data to claim queue:',
+        taxes.length,
+        'records',
+      );
+    } else {
+      console.log(
+        'No simulation result available - run claim simulation first',
+      );
+    }
+
+    console.log('Simulated postclaim animations for location:', locationString);
   }
 
   // Create token options for List component
@@ -342,6 +451,50 @@
       value={nukeStore.nuking[locationString] ?? false}
       label="isNuking"
     />
+  </Folder>
+
+  <Folder title="Claim Simulation" expanded={false}>
+    <Button
+      on:click={() => simulateClaimSingleLand()}
+      label="Simulate Claim"
+      title="Fetch real tax data without sending transaction"
+      disabled={claimSimulationLoading}
+    />
+    <Monitor value={claimSimulationLoading} label="Loading" />
+
+    {#if claimSimulationError}
+      <Monitor value={claimSimulationError} label="Error" />
+    {/if}
+
+    {#if claimSimulationResult}
+      <Monitor value={claimSimulationResult.taxes.length} label="Tax Records" />
+      <Monitor
+        value={claimSimulationResult.nukables.length}
+        label="Nukable Records"
+      />
+      {#if claimSimulationResult.taxes.length > 0}
+        {#each claimSimulationResult.taxes as tax, i}
+          <Monitor
+            value={`${tax.totalTax.toBignumberish().toString()} ${tax.tokenSymbol}`}
+            label={`Tax ${i + 1}`}
+          />
+        {/each}
+      {/if}
+      {#if claimSimulationResult.nukables.length > 0}
+        {#each claimSimulationResult.nukables as nukable, i}
+          <Monitor
+            value={nukable.nukable ? 'YES' : 'NO'}
+            label={`Nukable ${i + 1}`}
+          />
+        {/each}
+      {/if}
+      <Button
+        on:click={() => simulatePostClaimAnimations()}
+        label="Trigger Animations"
+        title="Trigger the postclaim frontend animations"
+        disabled={false}
+      />
+    {/if}
   </Folder>
 
   {#if error}
