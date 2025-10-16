@@ -5,28 +5,28 @@ on:
     branches:
       - main
     paths:
-      - 'pkgs/account/**'
+      - "pkgs/account/**"
   workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
-          
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
-          
+          bun-version: "v1.3.0"
+
       - name: Cache dependencies
         uses: actions/cache@v4
         with:
@@ -34,28 +34,28 @@ jobs:
           key: ${{ runner.os }}-bun-${{ hashFiles('pkgs/account/bun.lockb') }}
           restore-keys: |
             ${{ runner.os }}-bun-
-            
+
       - name: Install dependencies
         working-directory: pkgs/account
         run: bun install
-        
+
       - name: Build package
         working-directory: pkgs/account
         run: bun run build
-        
+
       - name: Check if version changed
         id: version-check
         working-directory: pkgs/account
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           PACKAGE_NAME=$(node -p "require('./package.json').name")
-          
+
           # Check if package exists on npm and get its version
           if npm view "$PACKAGE_NAME" version &>/dev/null; then
             NPM_VERSION=$(npm view "$PACKAGE_NAME" version)
             echo "Current npm version: $NPM_VERSION"
             echo "Package.json version: $PACKAGE_VERSION"
-            
+
             if [ "$PACKAGE_VERSION" = "$NPM_VERSION" ]; then
               echo "Version hasn't changed. Skipping publish."
               echo "should_publish=false" >> $GITHUB_OUTPUT
@@ -67,7 +67,7 @@ jobs:
             echo "Package doesn't exist on npm yet. Will publish."
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
-          
+
       - name: Publish to npm
         if: steps.version-check.outputs.should_publish == 'true'
         working-directory: pkgs/account
