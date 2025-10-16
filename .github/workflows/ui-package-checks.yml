@@ -3,8 +3,8 @@ name: UI Package Checks
 on:
   pull_request:
     paths:
-      - 'pkgs/ui/**'
-      - '.github/workflows/ui-package-checks.yml'
+      - "pkgs/ui/**"
+      - ".github/workflows/ui-package-checks.yml"
 
 jobs:
   lint-and-test:
@@ -16,12 +16,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: "v1.3.0"
 
       - name: Cache dependencies
         uses: actions/cache@v4
@@ -46,15 +46,15 @@ jobs:
             echo "Build failed: dist directory not found"
             exit 1
           fi
-          
+
           if [ ! -f "dist/index.js" ]; then
             echo "Build failed: dist/index.js not found"
             exit 1
           fi
-          
+
           if [ ! -f "dist/index.d.ts" ]; then
             echo "Build failed: dist/index.d.ts not found"
             exit 1
           fi
-          
+
           echo "Build successful!"
