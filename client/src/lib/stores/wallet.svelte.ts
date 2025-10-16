@@ -419,6 +419,50 @@ export class WalletStore {
     }
     this.cleanup?.();
   }
+
+  // Tutorial mode: Set fake balances for all available tokens
+  public async setTutorialBalances() {
+    console.log('Setting tutorial wallet balances...');
+    
+    // Clear existing balances
+    this.balances.clear();
+    
+    // Set fake balances for each available token
+    data.availableTokens.forEach((token, index) => {
+      // Generate varied but substantial fake balances
+      const baseAmount = 1000 + (index * 500); // Base amounts: 1000, 1500, 2000, etc.
+      const fakeBalance = CurrencyAmount.fromScaled(baseAmount, token);
+      
+      this.balances.set(token.address, fakeBalance);
+      console.log(`Tutorial balance for ${token.symbol}: ${fakeBalance.toString()}`);
+    });
+
+    // Fetch real prices for conversions
+    if (this.tokenPrices.length === 0) {
+      try {
+        this.tokenPrices = await getTokenPrices();
+      } catch (error) {
+        console.warn('Could not fetch token prices for tutorial mode:', error);
+        // Create default prices if real prices fail
+        this.setDefaultPrices();
+      }
+    }
+    
+    // Update conversion cache and total balance
+    this.updateConversionCache();
+    await this.calculateTotalBalance();
+    
+    console.log('Tutorial wallet balances set successfully');
+  }
+
+  // Fallback default prices if real price fetching fails
+  private setDefaultPrices() {
+    this.tokenPrices = data.availableTokens.map((token, index) => ({
+      symbol: token.symbol,
+      address: token.address,
+      ratio: CurrencyAmount.fromScaled(1 + (index * 0.1), token), // Fake ratios: 1.0, 1.1, 1.2, etc.
+    }));
+  }
 }
 
 export const walletStore = new WalletStore();
