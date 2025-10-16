@@ -8,6 +8,12 @@
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { get } from 'svelte/store';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import LandNukeShield from './land-nuke-shield.svelte';
+  import { estimateNukeTime } from '$lib/utils/taxes';
+  import { BuildingLand } from '$lib/api/land/building_land';
+  import { Search } from 'lucide-svelte';
+  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
   const {
     land,
     size = 'sm',
@@ -23,16 +29,53 @@
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
   let levelUpInfo = $derived(land.getLevelInfo());
 
+  // Nuke time state (in seconds) - start with undefined until calculated
+  let estimatedNukeTime = $state<number | undefined>(undefined);
+
+  // Calculate nuke time for this land
+  async function updateNukeTime() {
+    try {
+      // Get neighbor count
+      const neighborCount =
+        land.getNeighbors()?.getBaseLandsArray()?.length || 0;
+
+      // Calculate nuke time using the existing utility function
+      if (neighborCount > 0) {
+        const timeInSeconds = await estimateNukeTime(land, neighborCount);
+        console.log(
+          'Nuke time calculated for land',
+          land.location,
+          ':',
+          timeInSeconds,
+          'seconds',
+        );
+        estimatedNukeTime = timeInSeconds;
+      } else {
+        // No neighbors means infinite time (no tax)
+        console.log('Land', land.location, 'has no neighbors - infinite time');
+        estimatedNukeTime = Infinity;
+      }
+    } catch (error) {
+      console.warn(
+        'Failed to calculate nuke time for land:',
+        land.location,
+        error,
+      );
+      estimatedNukeTime = undefined;
+    }
+  }
+
   onMount(() => {
+    // Initial nuke time calculation
+    updateNukeTime();
+
     const interval = setInterval(() => {
       levelUpInfo = land.getLevelInfo();
-    }, 1000);
+      updateNukeTime();
+    }, 5000); // Update nuke time every 5 seconds
 
     return () => clearInterval(interval);
   });
-
-  const OFF_IMAGE = '/ui/star/off.png';
-  const ON_IMAGE = '/ui/star/on.png';
 
   function handleLandClick(land: LandWithActions) {
     moveCameraTo(
@@ -44,6 +87,10 @@
     if (baseLand) {
       selectedLand.value = get(baseLand);
     }
+  }
+
+  function handleOpenLandInfo(land: LandWithActions) {
+    openLandInfoWidget(land);
   }
 </script>
 
@@ -69,56 +116,82 @@
     {:else if land.type == 'house'}
       <LandDisplay token={land.token} level={land.level} class="scale-125" />
     {/if}
-    <div class="absolute top-0 left-0 -mt-1 leading-none">
+    <div class="absolute top-0 left-0 -m-1 leading-none">
       <span
         class={cn('text-ponzi', {
           'text-xl': size === 'lg',
-          'text-lg': size === 'sm',
-          'text-sm': size === 'xs',
+          'text-sm': size === 'sm',
+          'text-xs': size === 'xs',
         })}
       >
         {locationIntToString(land.location)}
       </span>
-      <span class={cn('opacity-50', { 'text-xs': size === 'xs' })}
+      {#if land.type == 'house'}
+        <div
+          class={cn('leading-none flex flex-col justify-center mt-1', {
+            'gap-[0.5px]': size === 'xs',
+            'gap-[1px]': size === 'sm',
+            'gap-[2px]': size === 'lg',
+          })}
+        >
+          {#each [1, 2, 3] as level}
+            <div
+              class={cn(
+                'rounded-full border-2 border-black',
+                {
+                  'h-2 w-2': size === 'xs',
+                  'h-3 w-3': size === 'sm',
+                  'h-4 w-4': size === 'lg',
+                },
+                land.level >= level ? 'bg-blue-500' : 'bg-gray-800',
+              )}
+            ></div>
+          {/each}
+        </div>
+      {/if}
+      <!-- <span class={cn('opacity-50', { 'text-xs': size === 'xs' })}
         >#{new Number(land.location).toString()}</span
-      >
+      > -->
     </div>
-    {#if land.type == 'house'}
-      <div
-        class="absolute -bottom-3 left-0 w-full leading-none flex flex-row justify-center"
-      >
-        <img
-          src={land.level >= 1 ? ON_IMAGE : OFF_IMAGE}
-          class={cn({
-            'w-8': size === 'lg',
-            'w-5': size === 'sm',
-            'w-3': size === 'xs',
-          })}
-          alt="no star"
-        />
 
-        <img
-          src={land.level >= 2 ? ON_IMAGE : OFF_IMAGE}
-          class={cn({
-            'w-8': size === 'lg',
-            'w-5': size === 'sm',
-            'w-3': size === 'xs',
-          })}
-          alt="no star"
-        />
+    <div class="absolute top-0 right-0 leading-none -mt-2 -m-1">
+      <TokenAvatar
+        token={land.token}
+        class={cn('border-2 border-black', {
+          'w-4 h-4': size === 'xs',
+          'w-5 h-5': size === 'sm',
+          'w-8 h-8': size === 'lg',
+        })}
+      />
+    </div>
 
-        <img
-          src={land.level >= 3 ? ON_IMAGE : OFF_IMAGE}
+    <!-- Nuke Shield display -->
+    {#if land.type === 'house' && estimatedNukeTime !== undefined}
+      <div class="absolute bottom-0 left-0 -mb-3 -ml-4 scale-90">
+        <LandNukeShield
+          {estimatedNukeTime}
           class={cn({
-            'w-8': size === 'lg',
-            'w-5': size === 'sm',
-            'w-3': size === 'xs',
+            'h-8 w-8 text-xs': size === 'xs',
+            'h-12 w-12 text-sm': size === 'sm',
+            'h-16 w-16 text-lg': size === 'lg',
           })}
-          alt="no star"
+          lockTime={false}
         />
       </div>
     {/if}
+
+    <Button
+      class="absolute bottom-0 right-0 -m-1 p-1"
+      size="md"
+      onclick={(e: any) => {
+        e.stopPropagation();
+        handleOpenLandInfo(land);
+      }}
+    >
+      <Search size="small" strokeWidth={4} class="-mt-1 h-4 w-3" />
+    </Button>
   </button>
+
   <!-- Also show the progress bar for the next level -->
   {#if land.type == 'house' && land.level < 3 && !hideLevelUp}
     <div
