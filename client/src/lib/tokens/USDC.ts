@@ -1,3 +1,5 @@
+import { scale } from 'svelte/transition';
+
 export const USDC = {
   skin: 'USDC',
   icon: '/tokens/USDC/usdc.png',
@@ -9,11 +11,13 @@ export const USDC = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/USDC/animated-combined.png',
+          url: '/tokens/USDC/1-animated-line.png',
           type: 'rowColumn',
-          width: 30,
+          width: 10,
           height: 1,
           animations: [{ name: 'idle', frameRange: [0, 9] }],
+          bottomPadding: 16,
+          scale: 0.75,
         },
       ],
     },
@@ -23,11 +27,13 @@ export const USDC = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/USDC/animated-combined.png',
+          url: '/tokens/USDC/2-animated-line.png',
           type: 'rowColumn',
-          width: 30,
+          width: 10,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [10, 19] }],
+          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          bottomPadding: 12,
+          scale: 0.75,
         },
       ],
     },
@@ -37,11 +43,12 @@ export const USDC = {
       useAnimation: true,
       animations: [
         {
-          url: '/tokens/USDC/animated-combined.png',
+          url: '/tokens/USDC/3-animated-line.png',
           type: 'rowColumn',
-          width: 30,
+          width: 10,
           height: 1,
-          animations: [{ name: 'idle', frameRange: [20, 29] }],
+          animations: [{ name: 'idle', frameRange: [0, 9] }],
+          bottomPadding: 14,
         },
       ],
     },
