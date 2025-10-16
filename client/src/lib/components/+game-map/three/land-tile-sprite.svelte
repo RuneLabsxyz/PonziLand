@@ -13,6 +13,7 @@
   import { setOutlineControls } from './utils/outline-controls.store.svelte';
   import { coordinatesToLocation } from '$lib/utils';
   import { devsettings } from './utils/devsettings.store.svelte';
+  import { onDestroy } from 'svelte';
 
   let {
     landTiles,
@@ -40,6 +41,7 @@
 
   let shaderSetup = false;
   let outlineControls: OutlineControls | null = null;
+  let colorObjects: THREE.Color[] = [];
 
   const clock = new THREE.Clock();
 
@@ -164,9 +166,39 @@
         for (const [colorKey, indices] of colorGroups) {
           const [r, g, b] = colorKey.split(',').map(Number);
           const color = new THREE.Color(r, g, b);
+          colorObjects.push(color); // Track for disposal
           outlineControls.setTints(sprite, indices, color);
         }
       }
     }
+  });
+
+  onDestroy(() => {
+    // Stop clock
+    clock.stop();
+
+    // Clean up outline controls
+    if (outlineControls) {
+      // Remove from global store
+      const layer =
+        animationProperty === 'buildingAnimationName' ? 'building' : 'biome';
+      setOutlineControls(layer, null, null);
+
+      // Clear any shader modifications
+      if (sprite?.material) {
+        // Reset any shader uniforms or modifications
+        outlineControls.clearTints(sprite);
+        outlineControls.setOwnedLands(sprite, [], 0);
+        outlineControls.setAuctionLands(sprite, []);
+      }
+
+      outlineControls = null;
+    }
+
+    // Clear color objects (though THREE.Color doesn't need explicit disposal)
+    colorObjects = [];
+
+    // Reset shader setup flag
+    shaderSetup = false;
   });
 </script>

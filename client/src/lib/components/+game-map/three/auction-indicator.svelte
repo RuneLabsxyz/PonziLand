@@ -9,6 +9,7 @@
   } from 'three';
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
+  import { onDestroy } from 'svelte';
 
   let {
     landTiles,
@@ -34,6 +35,11 @@
         tile,
         tileIndex,
       }));
+  });
+
+  onDestroy(() => {
+    // Dispose auction texture
+    auctionTexture?.dispose();
   });
 </script>
 

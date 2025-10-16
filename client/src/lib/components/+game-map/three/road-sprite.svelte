@@ -5,17 +5,21 @@
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
   import { coordinatesToLocation } from '$lib/utils';
+  import { onDestroy } from 'svelte';
+  import type { Material } from 'three';
 
   let { landTiles } = $props();
 
   const { updatePosition, sprite } = useInstancedSprite();
 
   let materialCloned = false;
+  let clonedMaterial: Material | null = null;
 
   $effect(() => {
     // Ensure road sprites have their own clean material without outline shaders
     if (sprite.material && !materialCloned) {
-      sprite.material = sprite.material.clone();
+      clonedMaterial = sprite.material.clone();
+      sprite.material = clonedMaterial;
       // Clear any existing onBeforeCompile hooks that might add outline shaders
       sprite.material.onBeforeCompile = () => {};
       materialCloned = true;
@@ -40,5 +44,16 @@
       );
       sprite.animation.setAt(spriteIndex, 'default');
     });
+  });
+
+  onDestroy(() => {
+    // Dispose cloned material
+    if (clonedMaterial) {
+      clonedMaterial.dispose();
+      clonedMaterial = null;
+    }
+
+    // Reset flags
+    materialCloned = false;
   });
 </script>

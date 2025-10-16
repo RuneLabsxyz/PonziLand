@@ -12,7 +12,7 @@
   import { landStore, selectedLandWithActions } from '$lib/stores/store.svelte';
   import { T, useTask } from '@threlte/core';
   import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import data from '$profileData';
   import {
@@ -678,6 +678,85 @@
     } else {
       shaderReady = false;
     }
+  });
+
+  onDestroy(() => {
+    // Dispose textures
+    roadTexture?.dispose();
+    crownTexture?.dispose();
+    shieldTexture?.dispose();
+
+    // Dispose materials
+    planeMaterial?.dispose();
+    coinShaderMaterial?.dispose();
+    if (artLayerMesh?.material) {
+      (artLayerMesh.material as MeshBasicMaterial).dispose();
+    }
+
+    // Dispose geometries
+    planeGeometry?.dispose();
+    coinGeometry?.dispose();
+
+    // Dispose art layer mesh
+    if (artLayerMesh) {
+      artLayerMesh.geometry?.dispose();
+      artLayerMesh.clear?.();
+      artLayerMesh = undefined;
+    }
+
+    // Dispose instanced meshes
+    if (ownerInstancedMesh) {
+      ownerInstancedMesh.geometry?.dispose();
+      ownerInstancedMesh.clear?.();
+      ownerInstancedMesh = undefined;
+    }
+
+    if (auctionInstancedMesh) {
+      auctionInstancedMesh.geometry?.dispose();
+      auctionInstancedMesh.clear?.();
+      auctionInstancedMesh = undefined;
+    }
+
+    if (coinInstancedMesh) {
+      coinInstancedMesh.geometry?.dispose();
+      coinInstancedMesh.clear?.();
+      coinInstancedMesh = undefined;
+    }
+
+    // Dispose sprite instances
+    if (roadSprite) {
+      roadSprite = undefined;
+    }
+
+    if (biomeSprite) {
+      biomeSprite = undefined;
+    }
+
+    if (buildingSprite) {
+      buildingSprite = undefined;
+    }
+
+    if (nukeSprite) {
+      nukeSprite = undefined;
+    }
+
+    // Clear caches
+    circlePositionsCache.clear();
+    landTilesMap.clear();
+
+    // Clean up subscription
+    if (currentSubscription) {
+      currentSubscription();
+      currentSubscription = null;
+    }
+
+    // Clear arrays
+    landTiles = [];
+    visibleLandTiles = [];
+    ownedCoinTiles = [];
+
+    // Stop clock
+    clock.stop();
   });
 </script>
 

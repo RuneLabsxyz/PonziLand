@@ -122,7 +122,60 @@
     return 0.4 + 0.6 * (Math.sin(pulseTime * 4) * 0.5 + 0.5);
   };
 
+  // Material cache to avoid creating materials in template
+  const materialCache = new Map<string, MeshBasicMaterial>();
+
+  function getShieldMaterial(
+    shieldType: string,
+    opacity: number,
+  ): MeshBasicMaterial {
+    const key = `shield-${shieldType}-${opacity.toFixed(2)}`;
+
+    if (!materialCache.has(key)) {
+      const material = new MeshBasicMaterial({
+        map: shieldTextures[shieldType as keyof typeof shieldTextures],
+        transparent: true,
+        alphaTest: 0.1,
+        opacity: opacity,
+      });
+      materialCache.set(key, material);
+    }
+
+    return materialCache.get(key)!;
+  }
+
+  function getTextMaterial(
+    text: string,
+    color: string,
+    opacity: number,
+  ): MeshBasicMaterial {
+    const key = `text-${text}-${color}-${opacity.toFixed(2)}`;
+
+    if (!materialCache.has(key)) {
+      const textTexture = textureCache.get(text, {
+        fontSize: 20,
+        color: color,
+        width: 128,
+        height: 64,
+      });
+
+      const material = new MeshBasicMaterial({
+        map: textTexture,
+        transparent: true,
+        alphaTest: 0.1,
+        opacity: opacity,
+      });
+      materialCache.set(key, material);
+    }
+
+    return materialCache.get(key)!;
+  }
+
   onDestroy(() => {
+    // Dispose all cached materials
+    materialCache.forEach((material) => material.dispose());
+    materialCache.clear();
+
     textureCache.clear();
     textGeometry.dispose();
     shieldGeometry.dispose();
@@ -135,13 +188,9 @@
 {#each Array.from(nukeTimeData.entries()) as [, data]}
   {@const isNuke = data.text === 'NUKE!'}
   {@const pulseOpacity = getPulseOpacity(isNuke)}
-  {@const shieldTexture = shieldTextures[data.shieldType]}
-  {@const shieldMaterial = new MeshBasicMaterial({
-    map: shieldTexture,
-    transparent: true,
-    alphaTest: 0.1,
-    opacity: pulseOpacity,
-  })}
+  {@const shieldMaterial = getShieldMaterial(data.shieldType, pulseOpacity)}
+  {@const textColor = data.shieldType === 'nuke' ? '#ff0000' : '#ffffff'}
+  {@const textMaterial = getTextMaterial(data.text, textColor, pulseOpacity)}
 
   {@const shieldOffset = isShieldMode ? [-0.2, 0, 0] : [0.4, 0, -0.4]};
   {@const textPosition: [number, number, number] = [
@@ -154,19 +203,6 @@
     textPosition[1] - 0.01, // Slightly behind the text
     textPosition[2] - .02
   ]}
-
-  {@const textTexture = textureCache.get(data.text, {
-    fontSize: 20,
-    color: data.shieldType === 'nuke' ? '#ff0000' : '#ffffff',
-    width: 128,
-    height: 64,
-  })}
-  {@const textMaterial = new MeshBasicMaterial({
-    map: textTexture,
-    transparent: true,
-    alphaTest: 0.1,
-    opacity: pulseOpacity,
-  })}
 
   <!-- Shield background -->
   <T.Mesh

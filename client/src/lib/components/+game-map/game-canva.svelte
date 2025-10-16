@@ -12,6 +12,7 @@
   import Debug from './three/debug/Debug.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { onDestroy } from 'svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -33,6 +34,13 @@
       devsettings.cameraControlsRightClick as any;
     gameStore.cameraControls.mouseButtons.wheel =
       devsettings.CameraControlsWheel as any;
+  });
+
+  onDestroy(() => {
+    // Remove hashchange event listener
+    if (typeof window !== 'undefined') {
+      window.removeEventListener('hashchange', checkDevHash);
+    }
   });
 </script>
 

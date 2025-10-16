@@ -8,11 +8,13 @@
     NearestFilter,
     TextureLoader,
     type InstancedMesh as TInstancedMesh,
+    type Texture,
   } from 'three';
   import type { LandTile } from './landTile';
   import { GRID_SIZE } from '$lib/const';
   import type { LandTileStore } from '$lib/api/land_tiles.svelte';
   import { coordinatesToLocation } from '$lib/utils';
+  import { onDestroy } from 'svelte';
 
   let {
     landTiles,
@@ -31,7 +33,7 @@
   crownTexture.colorSpace = 'srgb';
 
   // Load AI agent textures from profile data
-  let agentTextures: Record<string, any> = {};
+  let agentTextures: Record<string, Texture> = {};
 
   // Load textures for each AI agent
   data.aiAgents.forEach((agent) => {
@@ -110,6 +112,19 @@
   function getAIAgentType(aiAgent: any): string {
     return aiAgent.name.toLowerCase();
   }
+
+  onDestroy(() => {
+    // Dispose crown texture
+    crownTexture?.dispose();
+
+    // Dispose all agent textures
+    Object.values(agentTextures).forEach((texture) => {
+      texture?.dispose();
+    });
+
+    // Clear the texture map
+    agentTextures = {};
+  });
 </script>
 
 <!-- Crown instances for player-owned land -->

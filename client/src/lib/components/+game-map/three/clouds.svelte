@@ -17,6 +17,7 @@
   import { cursorStore } from './cursor.store.svelte';
   import { onMount } from 'svelte';
   import seedrandom from 'seedrandom';
+  import { onDestroy } from 'svelte';
 
   interface Props {
     bounds: {
@@ -558,6 +559,38 @@
     } else {
       cloudPlanes = [];
     }
+  });
+
+  onDestroy(() => {
+    // Dispose cloud plane meshes and materials
+    cloudPlanes.forEach((mesh) => {
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) {
+        if (Array.isArray(mesh.material)) {
+          mesh.material.forEach((mat) => mat.dispose());
+        } else {
+          mesh.material.dispose();
+        }
+      }
+    });
+
+    // Dispose cached plane geometries
+    cachedPlaneGeometries.forEach((planeData) => {
+      if (planeData.geometry) planeData.geometry.dispose();
+    });
+
+    // Dispose instanced mesh
+    if (cloudsInstancedMesh) {
+      // Note: geometry and material are from GLTF, parent should handle disposal
+      cloudsInstancedMesh.clear?.();
+      cloudsInstancedMesh = undefined;
+    }
+
+    // Clear all caches
+    randomCache.clear();
+    cachedEdgePositions = [];
+    cachedPlaneGeometries = [];
+    cloudPlanes = [];
   });
 </script>
 
