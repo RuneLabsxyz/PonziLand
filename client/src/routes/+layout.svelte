@@ -1,5 +1,6 @@
 <script lang="ts">
   import SelectWalletModal from '$lib/components/+game-ui/modals/SelectWalletModal.svelte';
+  import MobileBlock from '$lib/components/MobileBlock.svelte';
 
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupFaro } from '$lib/contexts/faro';
@@ -7,6 +8,21 @@
   import '../app.css';
   setupFaro();
   setupAccount();
+
+  let isMobile = $state(false);
+
+  $effect(() => {
+    const checkMobile = () => {
+      if (!isMobile && window.innerWidth < 768) {
+        isMobile = true;
+      }
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  });
 </script>
 
 <svelte:head>
@@ -35,5 +51,9 @@
   <meta name="twitter:image" content="https://play.ponzi.land/home/hero.png" />
 </svelte:head>
 
-<SelectWalletModal />
-<slot />
+{#if isMobile}
+  <MobileBlock />
+{:else}
+  <SelectWalletModal />
+  <slot />
+{/if}
