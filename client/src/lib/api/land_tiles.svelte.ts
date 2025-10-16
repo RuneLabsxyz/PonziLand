@@ -10,6 +10,7 @@ import { logEntityUpdate } from '$lib/utils/entity-logger';
 import { createLandWithActions } from '$lib/utils/land-actions';
 import data from '$profileData';
 import type { ParsedEntity } from '@dojoengine/sdk';
+import { CairoOption, CairoOptionVariant } from 'starknet';
 import {
   derived,
   readable,
@@ -934,6 +935,59 @@ export class LandTileStore {
           }
         }
       });
+    });
+  }
+
+  // Add default auction lands for tutorial mode
+  public addTutorialAuctions(): void {
+    console.log('Adding tutorial auction lands...');
+
+    // Tutorial auction lands at various locations
+    const auctionLocations = [
+      { x: 128, y: 128 }, // Center of map
+      { x: 130, y: 128 }, // Next to center
+      { x: 128, y: 130 }, // Below center
+      { x: 125, y: 125 }, // Northwest of center
+      { x: 132, y: 132 }, // Southeast of center
+    ];
+
+    auctionLocations.forEach(({ x, y }, index) => {
+      const location = x + y * GRID_SIZE;
+      const basePrice = DEFAULT_SELL_PRICE * (1 + index * 0.2); // Varying prices
+
+      const fakeLand: Land = {
+        owner: '0x00',
+        location,
+        block_date_bought: Date.now(),
+        sell_price: basePrice,
+        token_used: TOKEN_ADDRESSES[index % TOKEN_ADDRESSES.length], // Different tokens
+        //@ts-ignore
+        level: 'First',
+      };
+
+      const fakeAuction: Auction = {
+        land_location: location,
+        is_finished: false,
+        start_price: basePrice * 2,
+        start_time: Date.now() - index * 60000, // Different start times
+        floor_price: basePrice * 0.5,
+        sold_at_price: new CairoOption(CairoOptionVariant.None),
+      };
+
+      console.log(
+        `Adding tutorial auction at (${x}, ${y}) with token ${fakeLand.token_used}`,
+      );
+
+      // Create auction land entity to update the store
+      this.updateLand({
+        entityId: `tutorial_auction_${location}`,
+        models: {
+          ponzi_land: {
+            Land: fakeLand,
+            Auction: fakeAuction,
+          },
+        },
+      } as ParsedEntity<SchemaType>);
     });
   }
 }
