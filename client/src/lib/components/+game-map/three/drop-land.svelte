@@ -19,8 +19,8 @@
   } from 'three';
   import type { LandTile } from './landTile';
   import { devsettings } from './utils/devsettings.store.svelte';
-  import dropLandVertexShader from './shaders/dropLand.vert?raw';
-  import dropLandFragmentShader from './shaders/dropLand.frag?raw';
+  import dropLandVertexShader from './shaders/vertex_drop_land.glsl';
+  import dropLandFragmentShader from './shaders/fragment_drop_land.glsl';
 
   let {
     tile,

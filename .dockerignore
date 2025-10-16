@@ -3,3 +3,11 @@ target
 .devenv
 .direnv
 node_modules
+.svelte-kit
+
+**/.devenv
+**/.direnv
+**/node_modules
+**/.svelte-kit
+**/.wrangler
+#**/.env

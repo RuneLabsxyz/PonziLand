@@ -1,0 +1,51 @@
+{
+  "name": "ponziland",
+  "version": "1.0.0",
+  "workspaces": [
+    "pkgs/*",
+    "client",
+    "playtest"
+  ],
+  "devDependencies": {
+    "prettier": "=3.4.2",
+    "prettier-plugin-svelte": "=3.3.3"
+  },
+  "patchedDependencies": {
+    "@avnu/avnu-sdk@3.1.0": "patches/@avnu%2Favnu-sdk@3.1.0.patch"
+  },
+  "catalog": {
+    "svelte": "=5.36.16",
+    "@lucide/svelte": "=0.482.0",
+    "starknet": "=8.5.5",
+    "@starknet-io/types-js": "=0.9.1",
+    "@runelabsxyz/socialink-sdk": "=0.3.1",
+    "@starknet-io/get-starknet-core": "=4.0.8",
+    "@sveltejs/kit": "=2.26.0",
+    "@cartridge/controller": "=0.10.7",
+    "@cartridge/presets": "=0.5.2",
+    "@solana/web3.js": "=1.98.4",
+    "@argent/x-sessions": "=8.0.1",
+    "bignumber.js": "=9.1.2"
+  },
+  "catalogs": {
+    "dojo": {
+      "@dojoengine/sdk": "=1.7.6",
+      "@dojoengine/core": "=1.7.4",
+      "@dojoengine/torii-client": "=1.7.3",
+      "zustand": "=4.5.6"
+    },
+    "threejs": {
+      "@threejs-kit/instanced-sprite-mesh": "=2.5.1"
+    },
+    "interactjs": {
+      "@interactjs/actions": "=1.10.27",
+      "@interactjs/auto-start": "=1.10.27",
+      "@interactjs/dev-tools": "=1.10.27",
+      "@interactjs/interact": "=1.10.27",
+      "@interactjs/modifiers": "=1.10.27",
+      "@interactjs/reflow": "=1.10.27",
+      "@interactjs/snappers": "=1.10.27",
+      "@interactjs/types": "=1.10.27"
+    }
+  }
+}
