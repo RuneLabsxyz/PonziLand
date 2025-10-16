@@ -15,6 +15,7 @@
     setCustomControls: (controls: Snippet<[]> | null) => void;
   } = $props();
 
+  // Setup account management
   setup();
 
   let copied = $state(false);
@@ -55,6 +56,17 @@
   let connected = $derived(accountDataProvider.isConnected);
   let providerIcon = $derived(accountDataProvider.providerIcon);
   let providerName = $derived(accountDataProvider.providerName);
+
+  // Debug logging for tutorial mode
+  $effect(() => {
+    console.log('[WalletWidget] Account state:', {
+      connected,
+      address,
+      providerName,
+      providerIcon,
+      accountDataProvider: accountDataProvider,
+    });
+  });
 
   function handleProviderIconClick() {
     if (accountManager?.getProvider()) {
