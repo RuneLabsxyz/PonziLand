@@ -2,10 +2,6 @@
   import account from '$lib/account.svelte';
   import type { LandSetup, LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
-  import {
-    nextStep,
-    tutorialState,
-  } from '$lib/components/tutorial/stores.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
@@ -282,11 +278,6 @@
   async function handleBuyClick() {
     loading = true;
 
-    if (tutorialState.tutorialProgress == 7) {
-      nextStep();
-      return;
-    }
-
     // Double-check validation before proceeding
     if (!isFormValid) {
       console.error('Form validation failed');
@@ -433,9 +424,6 @@
       <TokenSelect
         bind:value={tokenValue}
         variant="swap"
-        class={tutorialState.tutorialProgress == 6
-          ? 'border border-yellow-500 animate-pulse'
-          : ''}
       />
       {#if tokenError}
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
@@ -452,11 +440,7 @@
             id="stake"
             type="number"
             bind:value={stake}
-            class="{stakeAmountError
-              ? 'border-red-500'
-              : ''} {tutorialState.tutorialProgress == 6
-              ? 'border border-yellow-500 animate-pulse'
-              : ''}"
+            class="{stakeAmountError ? 'border-red-500' : ''}"
           />
           {#if stakeAmountInBaseCurrency}
             <p class="text-xs text-gray-500 mt-1">
@@ -477,11 +461,7 @@
             id="sell"
             type="number"
             bind:value={sellPrice}
-            class="{sellPriceError
-              ? 'border-red-500'
-              : ''} {tutorialState.tutorialProgress == 6
-              ? 'border border-yellow-500 animate-pulse'
-              : ''}"
+            class="{sellPriceError ? 'border-red-500' : ''}"
           />
           {#if sellPriceInBaseCurrency}
             <p class="text-xs text-gray-500 mt-1">
@@ -495,11 +475,7 @@
         </div>
       </div>
 
-      <div
-        class="w-full {tutorialState.tutorialProgress == 7
-          ? 'border border-yellow-500 animate-pulse'
-          : ''}"
-      >
+      <div class="w-full">
         <TaxImpact
           sellAmountVal={sellPrice}
           stakeAmountVal={stake}

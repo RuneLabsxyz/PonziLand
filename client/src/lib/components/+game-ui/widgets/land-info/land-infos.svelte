@@ -4,7 +4,6 @@
   import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import LandOwnerInfo from '$lib/components/+game-map/land/land-owner-info.svelte';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
@@ -75,12 +74,7 @@
         {land.token?.symbol}
         <TokenAvatar token={land.token} class="w-7 h-7" />
       </div>
-      <div
-        class="flex flex-col text-2xl gap-1 mt-5 {tutorialState.tutorialProgress ==
-        5
-          ? 'border border-yellow-500 animate-pulse'
-          : ''}"
-      >
+      <div class="flex flex-col text-2xl gap-1 mt-5">
         <PriceDisplay price={currentPrice} token={land.token} showRate />
       </div>
       {#if fetching}

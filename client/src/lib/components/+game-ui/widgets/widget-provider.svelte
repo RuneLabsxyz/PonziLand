@@ -9,7 +9,6 @@
   import WidgetEntityUpdate from './entity-update/widget-entity-update.svelte';
   import WidgetMarket from './market/widget-market.svelte';
   import WidgetHelp from './help/widget-help.svelte';
-  import WidgetTutorial from './tutorial/widget-tutorial.svelte';
   import WidgetNftLink from './nft-link/widget-nft-link.svelte';
   import WidgetGuild from './guild/widget-guild.svelte';
   import { ENABLE_GUILD } from '$lib/flags';
@@ -48,8 +47,6 @@
           <WidgetMarket {setCustomControls} />
         {:else if type === 'help'}
           <WidgetHelp />
-        {:else if type === 'tutorial'}
-          <WidgetTutorial />
         {:else if type === 'nft-link'}
           <WidgetNftLink />
         {:else if type === 'guild' && ENABLE_GUILD}
