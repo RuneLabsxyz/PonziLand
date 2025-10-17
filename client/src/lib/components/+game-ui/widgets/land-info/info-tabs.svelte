@@ -4,7 +4,6 @@
   import BuyTab from './tabs/buy-tab.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let {
@@ -28,25 +27,13 @@
     >
       OVERALL
     </Button>
-    {#if tutorialState.tutorialProgress == 6}
-      <div class="w-full border border-yellow-500 animate-pulse">
-        <Button
-          class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
-          variant={activeTab === 'buy' ? 'blue' : undefined}
-          onclick={() => setActiveTab('buy')}
-        >
-          BUY
-        </Button>
-      </div>
-    {:else}
-      <Button
-        class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
-        variant={activeTab === 'buy' ? 'blue' : undefined}
-        onclick={() => setActiveTab('buy')}
-      >
-        BUY
-      </Button>
-    {/if}
+    <Button
+      class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
+      variant={activeTab === 'buy' ? 'blue' : undefined}
+      onclick={() => setActiveTab('buy')}
+    >
+      BUY
+    </Button>
   </div>
 
   <div class="w-full h-full mt-4">
