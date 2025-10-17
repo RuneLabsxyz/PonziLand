@@ -974,25 +974,35 @@ export class LandTileStore {
       tokenAddressMap['BONK'] || TOKEN_ADDRESSES[4], // Above - BONK
     ];
 
+    // Define specific configurations for each land
+    const landConfigs = [
+      { price: 1000000000, level: 'Second' }, // SOL - $400, Level 3
+      { price: 100000, level: 'Second' }, // BTC - $350, Level 3
+      { price: 1000000000, level: 'First' }, // ETH - $250, Level 2
+      { price: 1000000000, level: 'First' }, // DOG - $150, Level 2
+      { price: 1000000000, level: 'Zero' }, // BONK - $100, Level 1
+    ];
+
     this.currentLands.update((lands) => {
       // Add player-owned lands
       playerLandPositions.forEach(({ x, y }, index) => {
         // Use specific token for each position
         const tokenAddress = buildingTokens[index];
+        const config = landConfigs[index];
 
         const playerLand: Land = {
           owner: playerOwner,
           location: coordinatesToLocation({ x, y }),
           block_date_bought: Date.now() / 1000,
-          sell_price: TUTORIAL_BASE_PRICE * (1 + index * 0.1), // ~$100-110 per land
+          sell_price: config.price,
           token_used: tokenAddress,
           // @ts-ignore
-          level: 'First',
+          level: config.level,
         };
 
         const playerStake: LandStake = {
           location: coordinatesToLocation({ x, y }),
-          amount: DEFAULT_STAKE_AMOUNT,
+          amount: config.price,
           neighbors_info_packed: 0,
           accumulated_taxes_fee: 0,
         };
@@ -1022,15 +1032,19 @@ export class LandTileStore {
       { x: centerX - 1, y: centerY - 1 }, // Diagonal NW
     ];
 
+    const auctionPrices = [
+      10000000000000000000000, 10000000000000000000000, 10000000000000000000000,
+      10000000000000000000000, 10000000000000000000000, 10000000000000000000,
+    ];
+
     auctionPositions.forEach(({ x, y }, index) => {
       const location = coordinatesToLocation({ x, y });
-      const basePrice = DEFAULT_SELL_PRICE * (1 + index * 0.2);
 
       const fakeLand: Land = {
         owner: '0x00',
         location: location,
         block_date_bought: Date.now() / 1000,
-        sell_price: basePrice,
+        sell_price: auctionPrices[index],
         token_used: data.mainCurrencyAddress,
         //@ts-ignore
         level: 'First',
@@ -1039,9 +1053,9 @@ export class LandTileStore {
       const fakeAuction: Auction = {
         land_location: location,
         is_finished: false,
-        start_price: basePrice * 2,
+        start_price: auctionPrices[index] * 2,
         start_time: Date.now() / 1000 - index * 60,
-        floor_price: basePrice * 0.5,
+        floor_price: auctionPrices[index] * 0.5,
         sold_at_price: new CairoOption(CairoOptionVariant.None),
       };
 
