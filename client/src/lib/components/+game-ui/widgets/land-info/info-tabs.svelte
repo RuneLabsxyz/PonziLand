@@ -27,13 +27,13 @@
     >
       OVERALL
     </Button>
-      <Button
-        class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
-        variant={activeTab === 'buy' ? 'blue' : undefined}
-        onclick={() => setActiveTab('buy')}
-      >
-        BUY
-      </Button>
+    <Button
+      class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
+      variant={activeTab === 'buy' ? 'blue' : undefined}
+      onclick={() => setActiveTab('buy')}
+    >
+      BUY
+    </Button>
   </div>
 
   <div class="w-full h-full mt-4">

@@ -421,10 +421,7 @@
         Determines the land you are going to build. You stake this token and
         will receive this token when bought
       </p>
-      <TokenSelect
-        bind:value={tokenValue}
-        variant="swap"
-      />
+      <TokenSelect bind:value={tokenValue} variant="swap" />
       {#if tokenError}
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
@@ -440,7 +437,7 @@
             id="stake"
             type="number"
             bind:value={stake}
-            class="{stakeAmountError ? 'border-red-500' : ''}"
+            class={stakeAmountError ? 'border-red-500' : ''}
           />
           {#if stakeAmountInBaseCurrency}
             <p class="text-xs text-gray-500 mt-1">
@@ -461,7 +458,7 @@
             id="sell"
             type="number"
             bind:value={sellPrice}
-            class="{sellPriceError ? 'border-red-500' : ''}"
+            class={sellPriceError ? 'border-red-500' : ''}
           />
           {#if sellPriceInBaseCurrency}
             <p class="text-xs text-gray-500 mt-1">
