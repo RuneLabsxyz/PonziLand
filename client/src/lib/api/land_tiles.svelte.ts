@@ -942,25 +942,89 @@ export class LandTileStore {
   public addTutorialAuctions(): void {
     console.log('Adding tutorial auction lands...');
 
-    // Tutorial auction lands at various locations
-    const auctionLocations = [
-      { x: 128, y: 128 }, // Center of map
-      { x: 130, y: 128 }, // Next to center
-      { x: 128, y: 130 }, // Below center
-      { x: 125, y: 125 }, // Northwest of center
-      { x: 132, y: 132 }, // Southeast of center
+    // Center position
+    const centerX = Math.floor(GRID_SIZE / 2);
+    const centerY = Math.floor(GRID_SIZE / 2);
+
+    // First, add 5 player-owned lands grouped together in the center
+    const playerLandPositions = [
+      { x: centerX, y: centerY }, // Center
+      { x: centerX + 1, y: centerY }, // Right
+      { x: centerX - 1, y: centerY }, // Left
+      { x: centerX, y: centerY + 1 }, // Below
+      { x: centerX, y: centerY - 1 }, // Above
     ];
 
-    auctionLocations.forEach(({ x, y }, index) => {
-      const location = x + y * GRID_SIZE;
-      const basePrice = DEFAULT_SELL_PRICE * (1 + index * 0.2); // Varying prices
+    const playerOwner =
+      '0x0432d05c36cac355e0a74a08e8b8776b45f5bff96b59b351ec9171bf66a22a37';
+
+    this.currentLands.update((lands) => {
+      // Add player-owned lands
+      playerLandPositions.forEach(({ x, y }, index) => {
+        // Randomly select a token for each land
+        const randomToken =
+          TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
+
+        const playerLand: Land = {
+          owner: playerOwner,
+          location: coordinatesToLocation({ x, y }),
+          block_date_bought: Date.now() / 1000,
+          sell_price: DEFAULT_SELL_PRICE * (1 + index * 0.1),
+          token_used: randomToken,
+          // @ts-ignore
+          level: 'First',
+        };
+
+        const playerStake: LandStake = {
+          location: coordinatesToLocation({ x, y }),
+          amount: DEFAULT_STAKE_AMOUNT,
+          neighbors_info_packed: 0,
+          accumulated_taxes_fee: 0,
+        };
+
+        const buildingLand = new BuildingLand(playerLand);
+        buildingLand.updateStake(playerStake);
+
+        // Update ownership index
+        this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+
+        this.store[x][y].set({ value: buildingLand });
+        lands[x][y] = buildingLand;
+
+        console.log(
+          `Added player land at (${x}, ${y}) with token ${randomToken}`,
+        );
+      });
+
+      // Force ownership update after bulk operation
+      this.forceOwnershipUpdate();
+      return lands;
+    });
+
+    // Now add auction lands in contact with the player lands
+    const auctionPositions = [
+      { x: centerX + 2, y: centerY }, // Right of right land
+      { x: centerX - 2, y: centerY }, // Left of left land
+      { x: centerX, y: centerY + 2 }, // Below bottom land
+      { x: centerX, y: centerY - 2 }, // Above top land
+      { x: centerX + 1, y: centerY + 1 }, // Diagonal SE
+      { x: centerX - 1, y: centerY - 1 }, // Diagonal NW
+    ];
+
+    auctionPositions.forEach(({ x, y }, index) => {
+      const location = coordinatesToLocation({ x, y });
+      const basePrice = DEFAULT_SELL_PRICE * (1 + index * 0.2);
+
+      // Randomly select token for auction
+      const randomToken =
+        TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
 
       const fakeLand: Land = {
         owner: '0x00',
-        location,
-        block_date_bought: Date.now(),
+        location: location,
+        block_date_bought: Date.now() / 1000,
         sell_price: basePrice,
-        token_used: TOKEN_ADDRESSES[index % TOKEN_ADDRESSES.length], // Different tokens
+        token_used: randomToken,
         //@ts-ignore
         level: 'First',
       };
@@ -969,13 +1033,13 @@ export class LandTileStore {
         land_location: location,
         is_finished: false,
         start_price: basePrice * 2,
-        start_time: Date.now() - index * 60000, // Different start times
+        start_time: Date.now() / 1000 - index * 60, // Different start times
         floor_price: basePrice * 0.5,
         sold_at_price: new CairoOption(CairoOptionVariant.None),
       };
 
       console.log(
-        `Adding tutorial auction at (${x}, ${y}) with token ${fakeLand.token_used}`,
+        `Adding tutorial auction at (${x}, ${y}) with token ${randomToken}`,
       );
 
       // Create auction land entity to update the store
