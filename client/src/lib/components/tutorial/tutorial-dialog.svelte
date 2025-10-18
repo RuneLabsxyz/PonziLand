@@ -13,7 +13,7 @@
         <h1 class="text-2xl font-bold">Tutorial</h1>
         {#if currentDialog}
             <div class="text-sm">
-                {currentDialog.text}
+                {@html currentDialog.text}
             </div>
         {/if}
     </div>
