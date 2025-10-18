@@ -6,6 +6,7 @@
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import { onMount } from 'svelte';
   import { ENABLE_GUILD } from '$lib/flags';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let url = $derived(
     `${PUBLIC_SOCIALINK_URL}/api/user/${accountDataProvider.address}/team/info`,
@@ -36,6 +37,9 @@
   }
 
   onMount(async () => {
+    if (tutorialState.tutorialEnabled) {
+      widgetsStore.removeWidget('disclaimer');
+    }
     if (ENABLE_GUILD) {
       try {
         const response = await fetch(url);
