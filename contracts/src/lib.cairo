@@ -3,16 +3,19 @@ mod systems {
     mod auth;
     mod config;
     mod token_registry;
+    mod quest;
 }
 
 mod interfaces {
     mod systems;
+    mod quests;
 }
 
 mod models {
     mod auction;
     mod config;
     mod land;
+    mod quest;
 }
 
 mod helpers {

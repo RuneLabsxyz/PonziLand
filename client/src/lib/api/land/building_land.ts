@@ -17,6 +17,7 @@ export class BuildingLand extends BaseLand {
       sell_price: land._sell_price,
       token_used: land._token_used,
       level: land._level,
+      quest_id: land._quest_id,
     } as unknown as Land;
 
     // Create new instance
@@ -26,7 +27,7 @@ export class BuildingLand extends BaseLand {
     newLand._stakeAmount = land._stakeAmount;
     newLand._neighborsInfo = land._neighborsInfo;
     newLand._neighborsInfoPacked = land._neighborsInfoPacked;
-
+    newLand._quest_id = land._quest_id;
     return newLand;
   }
 
@@ -39,6 +40,7 @@ export class BuildingLand extends BaseLand {
     this._block_date_bought = land.block_date_bought;
     this._sell_price = land.sell_price;
     this._token_used = land.token_used;
+    this._quest_id = land.quest_id;
     this.update(land);
   }
 
@@ -127,6 +129,10 @@ export class BuildingLand extends BaseLand {
 
   public get tokenAddress(): string {
     return this._token.address;
+  }
+
+  public get quest_id(): BigNumberish {
+    return this._quest_id;
   }
   //endregion
 }

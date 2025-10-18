@@ -2,6 +2,8 @@
   import type { LandWithActions } from '$lib/api/land';
   import OverallTab from './tabs/overall-tab.svelte';
   import BuyTab from './tabs/buy-tab.svelte';
+  import HistoryTab from './tabs/history-tab.svelte';
+  import QuestsTab from './tabs/quest-tab.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
@@ -47,6 +49,21 @@
         BUY
       </Button>
     {/if}
+    <Button
+      disabled
+      class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
+      variant={activeTab === 'history' ? 'blue' : undefined}
+      onclick={() => setActiveTab('history')}
+    >
+      HISTORY (todo)
+    </Button>
+    <Button
+      class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
+      variant={activeTab === 'quests' ? 'blue' : undefined}
+      onclick={() => setActiveTab('quests')}
+    >
+      Quests
+    </Button>
   </div>
 
   <div class="w-full h-full mt-4">
@@ -62,5 +79,7 @@
       isActive={activeTab === 'buy'}
       {auctionPrice}
     />
+    <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
+    <QuestsTab {land} bind:activeTab isActive={activeTab === 'quests'} />
   </div>
 </div>

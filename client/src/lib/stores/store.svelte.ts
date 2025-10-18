@@ -99,6 +99,7 @@ export async function bidLand(location: string, setup: LandSetup) {
   }
 }
 
+
 export function getNeighboringLands(location: string): BaseLand[] {
   const allLands = landStore.getAllLands();
   const landsArray = Array.isArray(allLands) ? allLands : [];

@@ -124,6 +124,7 @@ export abstract class BaseLand {
   protected _block_date_bought: BigNumberish = 0;
   protected _sell_price: BigNumberish = 0;
   protected _token_used: string = '';
+  protected _quest_id: BigNumberish = 0;
 
   constructor(type: LandType, location: Location, token: Token) {
     this._type = type;
@@ -178,6 +179,10 @@ export abstract class BaseLand {
 
   public get stakeAmount(): CurrencyAmount {
     return this._stakeAmount;
+  }
+
+  public get quest_id(): BigNumberish {
+    return this._quest_id;
   }
 
   public get block_date_bought(): BigNumberish {
