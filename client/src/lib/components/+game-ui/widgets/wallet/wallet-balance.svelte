@@ -179,9 +179,8 @@
       title="Total balance in USDC"
     >
       <div class="font-ponzi-number">
-        {totalBalance.toString()}
+        ${totalBalance.toString()}
       </div>
-      <TokenAvatar token={baseToken} class="h-6 w-6" />
     </div>
   {/if}
 </div>
