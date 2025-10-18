@@ -496,7 +496,7 @@
           {/if}
           {baseToken?.symbol}/h
         </span>
-        <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
+        $
       </div>
     </div>
   </div>
