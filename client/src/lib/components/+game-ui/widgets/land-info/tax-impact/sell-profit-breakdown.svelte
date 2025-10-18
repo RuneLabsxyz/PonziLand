@@ -60,7 +60,7 @@
           {actualSellBenefit.toString()}
           {baseToken.symbol}
         </span>
-        <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+        $
       </div>
 
       <div

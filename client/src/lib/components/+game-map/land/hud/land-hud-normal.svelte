@@ -114,7 +114,7 @@
           Math.abs(totalYieldValue - Number(burnRate.toString())),
         )}
       </span>
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      $
     </div>
   </div>
 
@@ -122,7 +122,7 @@
     <span class="low-opacity">Earning / hour</span>
     <span class="flex items-center gap-2">
       +&nbsp;{displayCurrency(totalYieldValue)}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      $
     </span>
   </div>
 
@@ -130,7 +130,7 @@
     <span class="low-opacity">Cost / hour</span>
     <span class="flex items-center gap-2">
       -&nbsp;{displayCurrency(burnRate.rawValue())}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      $
     </span>
   </div>
   {#if yieldData}
