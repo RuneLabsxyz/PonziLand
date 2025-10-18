@@ -7,6 +7,7 @@
   import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
   import { enableTutorial } from '$lib/components/tutorial/stores.svelte';
+  import TutorialDialog from '$lib/components/tutorial/tutorial-dialog.svelte';
 
   let webglShow = $derived(webGLStateStore.hasError);
   let webglError = $derived(webGLStateStore.errorMessage);
@@ -36,6 +37,7 @@
     <div class="absolute inset-0">
       <GameUi />
       <GameCanva />
+      <TutorialDialog />
     </div>
   {/if}
 
