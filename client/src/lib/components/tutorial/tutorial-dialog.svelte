@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Card } from '$lib/components/ui/card';
-  import { tutorialState } from './stores.svelte';
+  import { tutorialState, nextStep } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
 
@@ -9,7 +9,7 @@
   onMount(() => {
     tutorialState.tutorialStep = 1;
     setTimeout(() => {
-      tutorialState.tutorialStep += 1;
+      nextStep();
     }, 5000);
   });
 </script>
@@ -22,6 +22,19 @@
       {#if currentDialog}
         <div class="w-32 flex-shrink-0">
           <img
+            src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
+            alt="Ponzi Worker"
+            class="h-full w-full object-contain"
+          />
+        </div>
+        <div class="text-sm">
+          {@html currentDialog.text}
+        </div>
+      {/if}
+    </div>
+  </Card>
+</div>
+
             src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
             alt="Ponzi Worker"
             class="h-full w-full object-contain"

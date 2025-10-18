@@ -6,7 +6,10 @@
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
-  import { enableTutorial } from '$lib/components/tutorial/stores.svelte';
+  import {
+    enableTutorial,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
   import TutorialDialog from '$lib/components/tutorial/tutorial-dialog.svelte';
 
   let webglShow = $derived(webGLStateStore.hasError);
@@ -34,11 +37,25 @@
 <div class="h-screen w-screen bg-black/10 overflow-visible relative">
   <!-- Game Canvas and UI - Always rendered but potentially hidden -->
   {#if !webglShow && gameContentReady}
-    <div class="absolute inset-0">
+    <div
+      class="absolute inset-0"
+      class:pointer-events-none={tutorialState.interactionsLocked}
+    >
       <GameUi />
       <GameCanva />
-      <TutorialDialog />
     </div>
+
+    <!-- Tutorial Dialog - Always interactive -->
+    {#if !webglShow && gameContentReady && tutorialState.tutorialEnabled}
+      <TutorialDialog />
+    {/if}
+
+    <!-- Dark overlay when interactions are locked -->
+    {#if tutorialState.tutorialEnabled && tutorialState.interactionsLocked}
+      <div
+        class="absolute inset-0 bg-black/60 z-[45] pointer-events-none"
+      ></div>
+    {/if}
   {/if}
 
   <!-- Loading Screen (overlay on top) -->
