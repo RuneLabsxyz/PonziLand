@@ -43,6 +43,7 @@
   import { devsettings } from './utils/devsettings.store.svelte';
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
+  import FilterEffect from '$lib/components/tutorial/filter-effect.svelte';
   const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
@@ -500,6 +501,14 @@
     });
   });
 
+  let blackSquareLandTile = $derived.by(() => {
+    if (!visibleLandTiles) return undefined;
+    return visibleLandTiles.find((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+      return tile.land.location.x === 128 && tile.land.location.y === 128;
+    });
+  });
+
   // Optimized owned land indices calculation
   let ownedLandIndices = $derived.by(() => {
     if (
@@ -735,6 +744,10 @@
       {#each dropLandTiles as tile, i}
         <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
       {/each}
+    {/if}
+
+    {#if blackSquareLandTile}
+      <FilterEffect tile={blackSquareLandTile} i={0} positionOffset={[0, 0, 0]} scale={1} />
     {/if}
 
     <!-- Building sprites (foreground layer) -->
