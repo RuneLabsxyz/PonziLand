@@ -16,12 +16,12 @@
   },
   {
     "_step": "4",
-    "text": "At the top you can see: <br><br>- the sell price <br>- in which token it's sold in <br>- the stake amount",
+    "text": "At the top you can see: <br> <br>- The token the land is solded in<br>- the sell price <br>- the stake amount",
     "image_id": 4
   },
   {
     "_step": "5",
-    "text": "The sell price determines the lands cost/hour.<br><br> As the cost is a % of the sell price. <br><br>The mony comes from the stake. Stake goes to 0 = land Nuked",
+    "text": "The sell price determines the lands cost/hour.<br><br> As the cost is a % of the sell price. <br><br>The money comes from the stake. Stake goes to 0 = land Nuked",
     "image_id": 2
   },
   {
@@ -31,7 +31,7 @@
   },
   {
     "_step": "7",
-    "text": "Finally in the center we can see the net earnings. This is calulcated based on the token prices in dollars.",
+    "text": "Finally in the center we can see the net earnings. This is calulated based on the token prices in dollars.",
     "image_id": 1
   },
   {

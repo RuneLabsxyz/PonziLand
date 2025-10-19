@@ -15,11 +15,13 @@
     totalYieldValue,
     burnRate,
     land,
+    tutorialStep,
   }: {
     yieldInfo: LandYieldInfo | undefined;
     totalYieldValue: number;
     burnRate: CurrencyAmount;
     land: LandWithActions;
+    tutorialStep?: number;
   } = $props();
 
   let baseToken = $derived.by(() => {
@@ -86,55 +88,71 @@
 </script>
 
 <div class="flex flex-col items-stretch relative w-full leading-none">
-  <div class="flex justify-between items-center text-ponzi-number">
-    <span>Token</span>
-    <span>{land?.token?.symbol}</span>
-  </div>
-  <div class="flex justify-between items-center">
-    <span class="low-opacity">Sell price</span><span
-      >{land?.sellPrice?.toString()}</span
-    >
-  </div>
-  <div class="flex justify-between items-center">
-    <span class="low-opacity">Stake Remaining</span><span
-      >{land?.stakeAmount}</span
-    >
-  </div>
-  <!-- Total net value -->
-  <div class="flex justify-between items-center text-ponzi-number py-2">
-    <span class="opacity-50">Net / hour</span>
-    <div
-      class="{totalYieldValue - Number(burnRate.toString()) >= 0
-        ? 'text-green-500'
-        : 'text-red-500'} flex items-center gap-2"
-    >
-      <span>
-        {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
-        {displayCurrency(
-          Math.abs(totalYieldValue - Number(burnRate.toString())),
-        )}
-      </span>
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+  <div
+    class={tutorialStep === 4 || tutorialStep === 5
+      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+      : ''}
+  >
+    <div class="flex justify-between items-center text-ponzi-number">
+      <span>Token</span>
+      <span>{land?.token?.symbol}</span>
+    </div>
+    <div class="flex justify-between w-full leading-none">
+      <span class="low-opacity">Sell price</span><span
+        >{land?.sellPrice?.toString()}</span
+      >
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="low-opacity">Stake Remaining</span><span
+        >{land?.stakeAmount}</span
+      >
     </div>
   </div>
+  <div
+    class={tutorialStep === 7
+      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+      : ''}
+  >
+    <!-- Total net value -->
+    <div class="flex justify-between items-center text-ponzi-number py-2">
+      <span class="opacity-50">Net / hour</span>
+      <div
+        class="{totalYieldValue - Number(burnRate.toString()) >= 0
+          ? 'text-green-500'
+          : 'text-red-500'} flex items-center gap-2"
+      >
+        <span>
+          {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
+          {displayCurrency(
+            Math.abs(totalYieldValue - Number(burnRate.toString())),
+          )}
+        </span>
+        <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      </div>
+    </div>
 
-  <div class="flex justify-between items-center text-green-400">
-    <span class="low-opacity">Earning / hour</span>
-    <span class="flex items-center gap-2">
-      +&nbsp;{displayCurrency(totalYieldValue)}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
-    </span>
-  </div>
+    <div class="flex justify-between items-center text-green-400">
+      <span class="low-opacity">Earning / hour</span>
+      <span class="flex items-center gap-2">
+        +&nbsp;{displayCurrency(totalYieldValue)}
+        <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      </span>
+    </div>
 
-  <div class="flex justify-between items-center text-red-400">
-    <span class="low-opacity">Cost / hour</span>
-    <span class="flex items-center gap-2">
-      -&nbsp;{displayCurrency(burnRate.rawValue())}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
-    </span>
+    <div class="flex justify-between items-center text-red-400">
+      <span class="low-opacity">Cost / hour</span>
+      <span class="flex items-center gap-2">
+        -&nbsp;{displayCurrency(burnRate.rawValue())}
+        <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      </span>
+    </div>
   </div>
   {#if yieldData}
-    <div class="flex flex-col pt-4">
+    <div
+      class="flex flex-col pt-4 {tutorialStep === 6
+        ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+        : ''}"
+    >
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">

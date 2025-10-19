@@ -88,7 +88,12 @@
     {:else if land.type === 'grass'}
       <!-- <LandHudEmpty /> -->
     {:else}
-      <LandHudInfo {land} {isOwner} showLand={true} />
+      <LandHudInfo
+        {land}
+        {isOwner}
+        showLand={true}
+        tutorialStep={tutorialState.tutorialStep}
+      />
     {/if}
   {/if}
 </div>
