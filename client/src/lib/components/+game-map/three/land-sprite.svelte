@@ -44,6 +44,7 @@
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
   import FilterEffect from '$lib/components/tutorial/filter-effect.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
@@ -502,7 +503,7 @@
   });
 
   let blackSquareLandTile = $derived.by(() => {
-    if (!visibleLandTiles) return undefined;
+    if (!visibleLandTiles || tutorialState.tutorialStep == 3) return undefined;
     return visibleLandTiles.find((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
       return tile.land.location.x === 128 && tile.land.location.y === 128;

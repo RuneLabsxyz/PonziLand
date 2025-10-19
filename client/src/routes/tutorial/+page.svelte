@@ -49,13 +49,6 @@
     {#if !webglShow && gameContentReady && tutorialState.tutorialEnabled}
       <TutorialDialog />
     {/if}
-
-    <!-- Dark overlay when interactions are locked -->
-    {#if tutorialState.tutorialEnabled && tutorialState.interactionsLocked}
-      <div
-        class="absolute inset-0 bg-black/60 z-[45] pointer-events-none"
-      ></div>
-    {/if}
   {/if}
 
   <!-- Loading Screen (overlay on top) -->
