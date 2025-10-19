@@ -11,27 +11,27 @@
   },
   {
     "_step": "3",
-    "text": "This is a land, it's owned by a player. Here you can see if it's making money or not.",
+    "text": "Let's see what we have here !",
     "image_id": 3
   },
   {
     "_step": "4",
-    "text": "You can buy land by clicking on an auctionned land. ",
+    "text": "At the top you can see: <br><br>- the sell price <br>- in which token it's sold in <br>- the stake amount",
     "image_id": 4
   },
   {
     "_step": "5",
-    "text": "The land price will decrease over time, until a player buys it.\n\n This is what we call a dutch auction. Make sure to snipe!",
+    "text": "The sell price determines the lands cost/hour.<br><br> As the cost is a % of the sell price. <br><br>The mony comes from the stake. Stake goes to 0 = land Nuked",
     "image_id": 2
   },
   {
     "_step": "6",
-    "text": "You need to provide 3 inputs: 1. The token you want to sell the land for 2. The price you sell the land for 3. The stake you are willing to put in the land",
+    "text": "Here we see the earnings of the land. This comes from the neighbors cost/hour. Each in there respective token",
     "image_id": 4
   },
   {
     "_step": "7",
-    "text": "When you buy a land you must set a SELL PRICE. As the tax rate you pay to your 8 neighbors is a % of the sell price.",
+    "text": "Finally in the center we can see the net earnings. This is calulcated based on the token prices in dollars.",
     "image_id": 1
   },
   {

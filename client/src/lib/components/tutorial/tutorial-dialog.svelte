@@ -1,11 +1,16 @@
 <script lang="ts">
   import { Card } from '$lib/components/ui/card';
-  import { tutorialState, nextStep } from './stores.svelte';
+  import { tutorialState, nextStep, previousStep } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
   import { selectedLand } from '$lib/stores/store.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { ChevronLeft, ChevronRight } from 'lucide-svelte';
 
   let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
+  let showNavigation = $derived(
+    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 6,
+  );
 
   $effect(() => {
     if (
@@ -18,6 +23,7 @@
   });
 
   onMount(() => {
+    settingsStore.toggleNoobMode();
     tutorialState.tutorialStep = 1;
     setTimeout(() => {
       nextStep();
@@ -38,10 +44,41 @@
             class="h-full w-full object-contain"
           />
         </div>
-        <div class="text-sm">
+        <div class="flex-1 text-sm">
           {@html currentDialog.text}
         </div>
       {/if}
     </div>
+    {#if showNavigation}
+      <div class="flex justify-between items-center px-4 pb-4">
+        <button
+          onclick={previousStep}
+          class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+          disabled={tutorialState.tutorialStep === 4}
+        >
+          <ChevronLeft class="h-4 w-4" />
+          Previous
+        </button>
+        <button
+          onclick={nextStep}
+          class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+          disabled={tutorialState.tutorialStep === 7}
+        >
+          Next
+          <ChevronRight class="h-4 w-4" />
+        </button>
+      </div>
+    {/if}
   </Card>
 </div>
+
+<style>
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  button:disabled:hover {
+    background-color: rgb(55 65 81);
+  }
+</style>

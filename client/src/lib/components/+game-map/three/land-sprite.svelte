@@ -503,7 +503,7 @@
   });
 
   let blackSquareLandTile = $derived.by(() => {
-    if (!visibleLandTiles || tutorialState.tutorialStep == 3) return undefined;
+    if (!visibleLandTiles || tutorialState.tutorialStep !== 2) return undefined;
     return visibleLandTiles.find((tile) => {
       if (!BuildingLand.is(tile.land)) return false;
       return tile.land.location.x === 128 && tile.land.location.y === 128;
