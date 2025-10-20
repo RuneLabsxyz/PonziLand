@@ -63,6 +63,7 @@
       env = {
         LD_LIBRARY_PATH = lib.makeLibraryPath [
           pkgs.stdenv.cc.cc.lib
+          pkgs.openssl
           pkgs.glibc
           pkgs.libgccjit
           pkgs.udev
