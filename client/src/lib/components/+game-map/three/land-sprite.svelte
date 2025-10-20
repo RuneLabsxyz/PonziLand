@@ -747,7 +747,12 @@
     {/if}
 
     {#if blackSquareLandTile}
-      <FilterEffect tile={blackSquareLandTile} i={0} positionOffset={[0, 0, 0]} scale={1} />
+      <FilterEffect
+        tile={blackSquareLandTile}
+        i={0}
+        positionOffset={[0, 0, 0]}
+        scale={1}
+      />
     {/if}
 
     <!-- Building sprites (foreground layer) -->
