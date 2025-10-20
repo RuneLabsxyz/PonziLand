@@ -366,6 +366,7 @@
       if (auctionFloorPrice && !isNaN(parseInt(auctionFloorPrice)))
         auction.floor_price = toHexWithPadding(parseInt(auctionFloorPrice));
 
+      window.alert(`Auction entity to be created: ${JSON.stringify(auction)}`);
       // For empty lands, we might need to create both Land and Auction entities
       const parsedEntity = {
         entityId: locationValue,
