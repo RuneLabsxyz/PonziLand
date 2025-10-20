@@ -27,6 +27,7 @@
   import { toNumber } from 'ethers';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
+  import { nukeTimeStore } from '$lib/stores/nuke-time.store.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -53,7 +54,8 @@
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
   let selectedToken = $state<Token | undefined>();
-  let sortBy = $state<'price' | 'level'>('price');
+  let sortBy = $state<'price' | 'level' | 'nuketime'>('price');
+  let nukeTimeData = $state(new Map<string, number>());
   let searchQuery = $state('');
 
   // Function to get AI agent info
@@ -68,6 +70,47 @@
     const paddedAddress = padAddress(address);
     if (!paddedAddress) return undefined;
     return usernamesStore.getUsernames()[paddedAddress];
+  }
+
+  // Function to fetch nuke time data for lands
+  async function fetchNukeTimeData(landsToFetch: LandWithPrice[]) {
+    if (landsToFetch.length === 0) return;
+
+    // Convert lands to LandTiles format for the store
+    const landTiles = landsToFetch
+      .filter((land) => BuildingLand.is(land))
+      .map((land) => ({
+        land,
+        position: [0, 0, 0] as [number, number, number], // Position not needed for sorting
+      }));
+
+    // Configure the store
+    nukeTimeStore.setLandTiles(landTiles);
+    nukeTimeStore.setDisplayMode(false, false); // Not shield mode, not unzoomed
+    nukeTimeStore.setCurrentUserAddress(undefined); // Show all nuke times
+
+    // Start periodic updates to trigger fetching
+    nukeTimeStore.startPeriodicUpdates();
+
+    // Wait a bit for initial data to load
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Extract nuke time data
+    const storeData = nukeTimeStore.nukeTimeData;
+    const newNukeTimeData = new Map<string, number>();
+
+    for (const [locationKey, data] of storeData.entries()) {
+      if (data.timeInSeconds !== undefined) {
+        newNukeTimeData.set(locationKey, data.timeInSeconds);
+      }
+    }
+
+    nukeTimeData = newNukeTimeData;
+    
+    // Re-sort lands if currently sorting by nuke time
+    if (sortBy === 'nuketime') {
+      lands = sortLands(lands);
+    }
   }
 
   let filteredLands = $derived.by(() => {
@@ -109,6 +152,27 @@
     }
   });
 
+  // Watch for nuke time data updates and re-sort if needed
+  $effect(() => {
+    const storeData = nukeTimeStore.nukeTimeData;
+    if (sortBy === 'nuketime' && storeData.size > 0) {
+      // Update local nuke time data
+      const newNukeTimeData = new Map<string, number>();
+      for (const [locationKey, data] of storeData.entries()) {
+        if (data.timeInSeconds !== undefined) {
+          newNukeTimeData.set(locationKey, data.timeInSeconds);
+        }
+      }
+      
+      // Only update if data has changed
+      if (newNukeTimeData.size !== nukeTimeData.size || 
+          [...newNukeTimeData.entries()].some(([key, value]) => nukeTimeData.get(key) !== value)) {
+        nukeTimeData = newNukeTimeData;
+        lands = sortLands(lands);
+      }
+    }
+  });
+
   // Function to fetch and update converted price for a land
   async function updateLandConvertedPrice(landWithPrice: LandWithPrice) {
     try {
@@ -144,6 +208,11 @@
         const priceA = a.convertedPrice?.rawValue().toNumber() ?? 0;
         const priceB = b.convertedPrice?.rawValue().toNumber() ?? 0;
         return sortAscending ? priceA - priceB : priceB - priceA;
+      } else if (sortBy === 'nuketime') {
+        const nukeTimeA = nukeTimeData.get(a.location) ?? Infinity;
+        const nukeTimeB = nukeTimeData.get(b.location) ?? Infinity;
+        // For nuke time, ascending means shortest time first (most urgent)
+        return sortAscending ? nukeTimeA - nukeTimeB : nukeTimeB - nukeTimeA;
       } else {
         // Sort by level first, then by purchase date
         const levelA = a.level ?? 0;
@@ -208,6 +277,11 @@
         lands.forEach((land) => {
           updateLandConvertedPrice(land);
         });
+
+        // If sorting by nuke time, fetch nuke time data
+        if (sortBy === 'nuketime') {
+          fetchNukeTimeData(filteredLands);
+        }
       });
     } catch (error) {
       console.error('Error in land-explorer setup:', error);
@@ -218,6 +292,7 @@
     if (unsubscribe) {
       unsubscribe();
     }
+    nukeTimeStore.destroy();
   });
 </script>
 
@@ -289,6 +364,31 @@
         >
           Level
           {#if sortBy === 'level'}
+            {#if sortAscending}
+              ▴
+            {:else}
+              ▾
+            {/if}
+          {/if}
+        </button>
+        <button
+          class="flex items-center gap-2 text-sm font-medium {sortBy === 'nuketime'
+            ? 'bg-blue-500'
+            : 'text-blue-500'} px-2"
+          onclick={async () => {
+            if (sortBy === 'nuketime') {
+              sortAscending = !sortAscending;
+            }
+            sortBy = 'nuketime';
+            // Fetch nuke time data if not already loaded
+            if (nukeTimeData.size === 0) {
+              await fetchNukeTimeData(lands);
+            }
+            lands = sortLands(lands);
+          }}
+        >
+          Nuke Time
+          {#if sortBy === 'nuketime'}
             {#if sortAscending}
               ▴
             {:else}
