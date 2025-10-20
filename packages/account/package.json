@@ -1,6 +1,6 @@
 {
-	"name": "account",
-	"version": "0.0.1",
+	"name": "@ponziland/account",
+	"version": "0.5.0",
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
