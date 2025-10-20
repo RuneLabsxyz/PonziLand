@@ -112,7 +112,14 @@
 
   let displayYields = $derived.by(() => {
     return yieldInfo.map((info) => {
-      if (!info?.token) return { amount: '0', symbol: '' };
+      if (!info?.token)
+        return { amount: '0', symbol: '', rawAmount: '0', rawSymbol: '' };
+
+      const rawAmount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
+      const rawDisplay = {
+        rawAmount: displayCurrency(rawAmount.rawValue()),
+        rawSymbol: info.token.symbol === 'USDC' ? '$' : info.token.symbol,
+      };
 
       if (settingsStore.showRatesInBaseToken && baseToken) {
         const baseAmount = getYieldValueInBaseToken(info);
@@ -121,6 +128,7 @@
           return {
             amount: displayCurrency(baseAmount.rawValue()),
             symbol: symbol,
+            ...rawDisplay,
           };
         } else {
           return null;
@@ -131,6 +139,7 @@
         return {
           amount: displayCurrency(amount.rawValue()),
           symbol: symbol,
+          ...rawDisplay,
         };
       }
     });
@@ -352,11 +361,18 @@
     {#each yieldInfo as info, i}
       {#if info?.token && displayYields[i] && displayYields[i].amount !== '0'}
         <div
-          class="text-ponzi-number text-[8px] flex items-center justify-center leading-none"
+          class="text-ponzi-number text-[8px] flex flex-col items-center justify-center leading-none gap-0.5"
         >
           <span class="whitespace-nowrap text-[#A0EA68]">
-            +{displayYields[i].amount}{displayYields[i].symbol}
+            +{displayYields[i].amount}
+            {displayYields[i].symbol}
           </span>
+          {#if settingsStore.showRatesInBaseToken && displayYields[i].rawAmount !== displayYields[i].amount}
+            <span class="whitespace-nowrap text-gray-400 text-[6px]">
+              +{displayYields[i].rawAmount}
+              <span class="text-gray-500">{displayYields[i].rawSymbol}</span>
+            </span>
+          {/if}
         </div>
       {:else if i === 4 && (centerTileDisplay.totalEarnings.amount !== '0' || (centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'))}
         <div
@@ -365,15 +381,15 @@
           <!-- Total Earnings -->
           {#if centerTileDisplay.totalEarnings.amount !== '0'}
             <span class="whitespace-nowrap text-green-400">
-              +{centerTileDisplay.totalEarnings.amount}{centerTileDisplay
-                .totalEarnings.symbol}
+              +{centerTileDisplay.totalEarnings.amount}
+              {centerTileDisplay.totalEarnings.symbol}
             </span>
           {/if}
           <!-- Burn Rate -->
           {#if centerTileDisplay.burnRate && centerTileDisplay.burnRate.amount !== '0'}
             <span class="whitespace-nowrap text-orange-500">
-              -{centerTileDisplay.burnRate.amount}{centerTileDisplay.burnRate
-                .symbol}
+              -{centerTileDisplay.burnRate.amount}
+              {centerTileDisplay.burnRate.symbol}
             </span>
           {/if}
           <hr
@@ -388,8 +404,8 @@
           >
             {centerTileDisplay.netYield.isPositive
               ? '+'
-              : '-'}{centerTileDisplay.netYield.amount}{centerTileDisplay
-              .netYield.symbol}
+              : '-'}{centerTileDisplay.netYield.amount}
+            {centerTileDisplay.netYield.symbol}
           </span>
         </div>
       {:else}
