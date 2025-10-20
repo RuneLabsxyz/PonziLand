@@ -20,7 +20,7 @@
   let { setCustomTitle, setCustomControls }: Props = $props();
 
   let highlighted = $derived(
-    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 8,
+    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 7,
   );
 
   const address = $derived(account.address);

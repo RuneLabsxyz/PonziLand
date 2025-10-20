@@ -9,7 +9,7 @@
 
   let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
   let showNavigation = $derived(
-    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 6,
+    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 7,
   );
 
   $effect(() => {
@@ -62,7 +62,7 @@
         <button
           onclick={nextStep}
           class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-          disabled={tutorialState.tutorialStep === 7}
+          disabled={tutorialState.tutorialStep === 8}
         >
           Next
           <ChevronRight class="h-4 w-4" />
