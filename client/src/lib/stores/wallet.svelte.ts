@@ -427,11 +427,21 @@ export class WalletStore {
     // Clear existing balances
     this.balances.clear();
 
-    // Set fake balances for each available token
-    data.availableTokens.forEach((token, index) => {
-      // Generate varied but substantial fake balances
-      const baseAmount = 1000 + index * 500; // Base amounts: 1000, 1500, 2000, etc.
-      const fakeBalance = CurrencyAmount.fromScaled(baseAmount, token);
+    // Set specific tutorial balances
+    const tutorialBalances: { [symbol: string]: number } = {
+      BTC: 0.05, // 0.05 BTC
+      ETH: 0.3, // 0.3 ETH
+      STRK: 12000, // 12000 STRK
+      SOL: 0, // 0 SOL (for tutorial clarity)
+      BONK: 0, // 0 BONK
+      DOG: 0, // 0 DOG
+      // All other tokens get 0 balance
+    };
+
+    // Set balances for each available token
+    data.availableTokens.forEach((token) => {
+      const amount = tutorialBalances[token.symbol] || 0;
+      const fakeBalance = CurrencyAmount.fromScaled(amount, token);
 
       this.balances.set(token.address, fakeBalance);
       console.log(
