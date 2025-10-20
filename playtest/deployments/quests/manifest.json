@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
-    "address": "0x5f2ebede3c53d8141c1a27856ed9ea24b915e7e236669c408678a3a72e4697",
-    "seed": "quests_57692932",
+    "address": "0x43fd8e003340b63a3a6648a38f27a26cea5b49377d1f4f8e3f4e3723a5e6924",
+    "seed": "quests_267795117",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1479,7 +1479,7 @@
   },
   "contracts": [
     {
-      "address": "0x5bf80be89361cd5d4b04e9d71451c600be88eb9765b35fee4ba7ed184be3bf8",
+      "address": "0x34408d7a7412d8862d731d0a67fb84aad5a97624775e37ca5aaaba6b14ae2ce",
       "class_hash": "0x31a121e564dcf10855f038a223d4bb2f78bdb0010fb8a08654856f68d33aede",
       "abi": [
         {
@@ -2340,7 +2340,7 @@
       ]
     },
     {
-      "address": "0x8e9cacfdeef195a125a51cf5fade7f1eb8ce7fa12f34962ae65f62d8ce3a62",
+      "address": "0x6ed05bc1a1513e88cff6567d78bd4cb42c3a8c3feb27d70f06dc515ad1d08a7",
       "class_hash": "0x339162d3e1a909f6babf0eef5934ddcd13f8d873324a11a6338a6462f491b1",
       "abi": [
         {
@@ -2702,7 +2702,7 @@
       ]
     },
     {
-      "address": "0x4bcc670d9cd4c9a4a4b67e4a4a9c17f327757202818301b8534e7694fb5f23f",
+      "address": "0x6247a90d70f4fa506ff3c09b1b97f96baa72b41796a7cec1870479a8ad61c1c",
       "class_hash": "0x4128593d4880b89f5cad42f9991c4526b8ddb43a501629742202269b121904",
       "abi": [
         {
@@ -3855,7 +3855,7 @@
       ]
     },
     {
-      "address": "0x4f412c346af8ae10222bc8b7b6685483d598a0ae8cc625a0bc8d32b34150219",
+      "address": "0x5b8fdefeb91cfe33a7e9c35c31908c29b3802c544011b1c3d12bae02bedb788",
       "class_hash": "0x2915cc6e962309b78897d2d371941caea0b276278a39a2eafe0be048fed4bc9",
       "abi": [
         {
@@ -4383,7 +4383,7 @@
         }
       ],
       "init_calldata": [
-        "2",
+        "3",
         "0",
         "0x6573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26",
         "str:mock",
@@ -4394,6 +4394,15 @@
         "1",
         "str:caps",
         "0",
+        "0x785401cf74071ec444e37dbbd87281aba48afc86570b1a1537193d1ce39086f",
+        "str:death_mountain",
+        "str:game_token_systems",
+        "str:settings_systems",
+        "1",
+        "200",
+        "1",
+        "str:death_mountain",
+        "0",
         "0x00b6e40f8a90aaca4997cc5d9aa2b53836a786fe4e7121713451b3d87bc251c4",
         "str:planetelo",
         "str:planetelo",
@@ -4401,7 +4410,7 @@
         "1",
         "0",
         "2",
-        "str:dm_mock"
+        "str:dm mock"
       ],
       "tag": "ponzi_land-quests",
       "selector": "0x5c7181752631840c2508a57b308a7e22d1ed2f7c0e02f5f8d44c8bbb227c188",
@@ -4416,7 +4425,7 @@
       ]
     },
     {
-      "address": "0x54373c6814bfb412148948bf0b6952df9deef46852cc547e368a25ddfac9c0f",
+      "address": "0x1c626d4fe738b09e7d964c9a0a1fa092be735aac2b4e959301d3ac996c58647",
       "class_hash": "0x1c4d8162316e024400f55004265729c3eff1169b5aeb6dcfbda13934be75ebe",
       "abi": [
         {
