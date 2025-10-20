@@ -81,72 +81,85 @@
 </script>
 
 <div class="flex flex-col items-stretch relative w-full leading-none">
-  <div class="flex justify-between items-center text-ponzi-number">
-    <span>Token</span>
-    <span>{land?.token?.symbol}</span>
-  </div>
-  <div class="flex justify-between items-center">
-    <span class="low-opacity">Sell price</span><span>
-      {land?.sellPrice}
-      {land.token?.symbol}
+  <div
+    class={tutorialStep === 4 || tutorialStep === 5
+      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+      : ''}
+  >
+    <div class="flex justify-between items-center text-ponzi-number">
+      <span>Token</span>
+      <span>{land?.token?.symbol}</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="low-opacity">Sell price</span><span>
+        {land?.sellPrice}
+        {land.token?.symbol}
 
-      {#if land.token && baseToken}
-        <span class="low-opacity">
-          ({walletStore.convertTokenAmount(
-            land?.sellPrice,
-            land.token,
-            baseToken,
-          )} $)
-        </span>
-      {/if}
-    </span>
-  </div>
-  <div class="flex justify-between items-center">
-    <span class="low-opacity">Stake Remaining</span><span>
-      {land?.stakeAmount}
-      {land.token?.symbol}
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.sellPrice,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
+      </span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="low-opacity">Stake Remaining</span><span>
+        {land?.stakeAmount}
+        {land.token?.symbol}
 
-      {#if land.token && baseToken}
-        <span class="low-opacity">
-          ({walletStore.convertTokenAmount(
-            land?.stakeAmount,
-            land.token,
-            baseToken,
-          )} $)
-        </span>
-      {/if}
-    </span>
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.stakeAmount,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
+      </span>
+    </div>
   </div>
   <!-- Total net value -->
-  <div class="flex justify-between items-center text-ponzi-number py-2">
-    <span class="opacity-50">Net / hour</span>
-    <div
-      class="{totalYieldValue - Number(burnRate.toString()) >= 0
-        ? 'text-green-500'
-        : 'text-red-500'} flex items-center gap-2"
-    >
-      <span>
-        {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
-        {displayCurrency(
-          Math.abs(totalYieldValue - Number(burnRate.toString())),
-        )} $
+  <div
+    class={tutorialStep === 7
+      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+      : ''}
+  >
+    <div class="flex justify-between items-center text-ponzi-number py-2">
+      <span class="opacity-50">Net / hour</span>
+      <div
+        class="{totalYieldValue - Number(burnRate.toString()) >= 0
+          ? 'text-green-500'
+          : 'text-red-500'} flex items-center gap-2"
+      >
+        <span>
+          {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
+          {displayCurrency(
+            Math.abs(totalYieldValue - Number(burnRate.toString())),
+          )} $
+        </span>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-green-400">
+      <span class="low-opacity">Earning / hour</span>
+      <span class="flex items-center gap-2">
+        +&nbsp;{displayCurrency(totalYieldValue)} $
+      </span>
+    </div>
+
+    <div class="flex justify-between items-center text-red-400">
+      <span class="low-opacity">Cost / hour</span>
+      <span class="flex items-center gap-2">
+        -&nbsp;{burnRate} $
       </span>
     </div>
   </div>
 
-  <div class="flex justify-between items-center text-green-400">
-    <span class="low-opacity">Earning / hour</span>
-    <span class="flex items-center gap-2">
-      +&nbsp;{displayCurrency(totalYieldValue)} $
-    </span>
-  </div>
-
-  <div class="flex justify-between items-center text-red-400">
-    <span class="low-opacity">Cost / hour</span>
-    <span class="flex items-center gap-2">
-      -&nbsp;{burnRate} $
-    </span>
-  </div>
   {#if yieldData}
     <div
       class="flex flex-col pt-4 {tutorialStep === 6

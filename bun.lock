@@ -100,7 +100,7 @@
     },
     "packages/account": {
       "name": "@runelabsxyz/ponziland-account",
-      "version": "0.5.3",
+      "version": "0.6.0",
       "dependencies": {
         "@argent/x-sessions": "catalog:",
         "@cartridge/controller": "catalog:",

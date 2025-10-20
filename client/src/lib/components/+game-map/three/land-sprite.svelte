@@ -503,10 +503,26 @@
   });
 
   let blackSquareLandTile = $derived.by(() => {
-    if (!visibleLandTiles || tutorialState.tutorialStep !== 2) return undefined;
+    if (!visibleLandTiles) return undefined;
+
+    // Determine coordinates based on tutorial step
+    let targetX: number | undefined;
+    let targetY: number | undefined;
+
+    if (tutorialState.tutorialStep === 2) {
+      targetX = 128;
+      targetY = 128;
+    } else if (tutorialState.tutorialStep === 8) {
+      targetX = 127;
+      targetY = 127;
+    } else {
+      return undefined;
+    }
+
     return visibleLandTiles.find((tile) => {
-      if (!BuildingLand.is(tile.land)) return false;
-      return tile.land.location.x === 128 && tile.land.location.y === 128;
+      return (
+        tile.land.location.x === targetX && tile.land.location.y === targetY
+      );
     });
   });
 

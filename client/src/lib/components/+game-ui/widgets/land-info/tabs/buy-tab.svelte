@@ -20,6 +20,7 @@
   import type { CairoCustomEnum } from 'starknet';
   import { untrack } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let {
     land,
@@ -281,6 +282,7 @@
     // Double-check validation before proceeding
     if (!isFormValid) {
       console.error('Form validation failed');
+      loading = false;
       return;
     }
 
@@ -301,9 +303,80 @@
 
     if (!land) {
       console.error('No land selected');
+      loading = false;
       return;
     }
 
+    // Check if we're in tutorial mode (step 9)
+    if (tutorialState.tutorialStep === 9) {
+      try {
+        console.log('Tutorial mode: Simulating land purchase locally');
+
+        // Optimistically update the land in the store (same as real purchase)
+        const updatedLand = {
+          ...land,
+          token: selectedToken,
+          tokenUsed: selectedToken?.address || '',
+          tokenAddress: selectedToken?.address || '',
+          token_used: selectedToken?.address || '',
+          token_address: selectedToken?.address || '',
+          owner: account.address,
+          stakeAmount: stakeAmount,
+          sell_price: sellPriceAmount.toBignumberish(),
+          block_date_bought: Date.now(),
+          // @ts-ignore
+          level: (land.level === 1
+            ? 'Zero'
+            : land.level === 2
+              ? 'First'
+              : 'Second') as CairoCustomEnum,
+        };
+
+        // Create a parsed entity for the updated land
+        const parsedEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              Land: updatedLand,
+            },
+          },
+        };
+
+        // Update the land store
+        landStore.updateLand(parsedEntity);
+
+        // Create a parsed entity for the stake
+        const stakeEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              LandStake: {
+                location: land.location,
+                amount: stakeAmount.toBignumberish(),
+              },
+            },
+          },
+        };
+
+        // Update the land store with the stake
+        landStore.updateLand(stakeEntity);
+
+        // Play purchase sound
+        gameSounds.play('buy');
+
+        // Progress to next tutorial step
+        tutorialState.tutorialStep = 10;
+
+        console.log('Tutorial: Land purchase simulated successfully');
+      } catch (error) {
+        console.error('Tutorial: Error simulating land purchase', error);
+      } finally {
+        loading = false;
+      }
+      return;
+    }
+
+    // Normal mode - proceed with actual blockchain transaction
     let result;
     try {
       if (land.type == 'auction') {
@@ -361,6 +434,7 @@
 
         // Update the land store
         landStore.updateLand(parsedEntity);
+
         // Create a parsed entity for the stake
         const stakeEntity = {
           entityId: land.location,
@@ -368,7 +442,7 @@
             ponzi_land: {
               LandStake: {
                 location: land.location,
-                amount: stakeAmount.toBignumberish(), // Ensure this is the raw value of the stake
+                amount: stakeAmount.toBignumberish(),
               },
             },
           },
