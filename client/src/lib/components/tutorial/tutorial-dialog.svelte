@@ -34,16 +34,3 @@
     </div>
   </Card>
 </div>
-
-            src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
-            alt="Ponzi Worker"
-            class="h-full w-full object-contain"
-          />
-        </div>
-        <div class="text-sm">
-          {@html currentDialog.text}
-        </div>
-      {/if}
-    </div>
-  </Card>
-</div>
