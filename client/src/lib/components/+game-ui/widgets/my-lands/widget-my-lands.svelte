@@ -16,6 +16,16 @@
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
   import { estimateNukeTime, parseNukeTime } from '$lib/utils/taxes';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { List, Eye } from 'lucide-svelte';
+  import type { Snippet } from 'svelte';
+
+  type Props = {
+    setCustomTitle?: (title: Snippet<[]> | null) => void;
+    setCustomControls?: (controls: Snippet<[]> | null) => void;
+  };
+
+  let { setCustomTitle, setCustomControls }: Props = $props();
 
   const dojo = useDojo();
   const getDojoAccount = () => {
@@ -338,6 +348,19 @@
     cursorStore.selectedTileIndex = transposedLocation;
   }
 
+  // Set custom title and controls if provided
+  $effect(() => {
+    if (setCustomTitle) {
+      setCustomTitle(customTitleSnippet);
+    }
+  });
+
+  $effect(() => {
+    if (setCustomControls) {
+      setCustomControls(customControlsSnippet);
+    }
+  });
+
   // Cleanup timers when component is destroyed
   $effect(() => {
     return () => {
@@ -347,6 +370,26 @@
     };
   });
 </script>
+
+{#snippet customTitleSnippet()}
+  My Lands ({lands.length})
+{/snippet}
+
+{#snippet customControlsSnippet()}
+  <button
+    class="window-control"
+    onclick={() => settingsStore.toggleNoobMode()}
+    aria-label={settingsStore.isNoobMode
+      ? 'Switch to Pro Mode'
+      : 'Switch to Noob Mode'}
+  >
+    {#if settingsStore.isNoobMode}
+      <Eye class="h-4 w-4" />
+    {:else}
+      <List class="h-4 w-4" />
+    {/if}
+  </button>
+{/snippet}
 
 <div class="h-full w-full flex flex-col pb-4">
   <!-- Filters and Controls - only show when user is connected -->
