@@ -14,7 +14,7 @@
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { getOutlineControls } from '$lib/components/+game-map/three/utils/outline-controls.store.svelte';
   import { Neighbors } from '$lib/api/neighbors';
-  import { onDestroy } from 'svelte';
+  import { onDestroy, onMount } from 'svelte';
   import data from '$profileData';
 
   let {
@@ -22,6 +22,12 @@
   }: {
     land: LandWithActions;
   } = $props();
+
+  onMount(() => {
+    if (!settingsStore.showRatesInBaseToken) {
+      settingsStore.toggleRatesInBaseToken();
+    }
+  });
 
   let yieldInfo = $state<
     ({
