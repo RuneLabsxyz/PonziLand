@@ -17,8 +17,13 @@ export const accountState: {
 });
 
 let isSetup = $state(false);
+let isTutorialMode = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
+  if (isTutorialMode) {
+    return;
+  }
+
   const walletAccount = provider.getWalletAccount();
 
   accountState.isConnected = walletAccount != null;
@@ -37,6 +42,10 @@ const updateState = async (provider: AccountProvider) => {
 };
 
 const resetState = () => {
+  if (isTutorialMode) {
+    return;
+  }
+
   accountState.address = undefined;
   accountState.isConnected = false;
   accountState.walletAccount = undefined;
@@ -46,6 +55,10 @@ const resetState = () => {
 };
 
 export async function refresh() {
+  if (isTutorialMode) {
+    return;
+  }
+
   const accountManager = useAccount()!;
   const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
@@ -59,6 +72,11 @@ export async function setup(): Promise<typeof accountState> {
   if (isSetup) return accountState;
 
   isSetup = true;
+
+  if (isTutorialMode) {
+    return accountState;
+  }
+
   const accountManager = useAccount()!;
 
   // Initial state
@@ -84,6 +102,8 @@ export async function setup(): Promise<typeof accountState> {
 
 // Tutorial mode: Set fake account state for tutorial
 export function setTutorialMode(enabled: boolean) {
+  isTutorialMode = enabled;
+
   if (enabled) {
     // Set fake connection state for tutorial
     accountState.isConnected = true;
@@ -94,11 +114,16 @@ export function setTutorialMode(enabled: boolean) {
     accountState.profile = { exists: true, whitelisted: true } as UserInfo; // Fake profile
     accountState.providerName = 'Tutorial Wallet';
     accountState.providerIcon = '/ui/icons/Icon_Coin2.png'; // Use existing icon
-    console.log('Tutorial account state set:', accountState);
   } else {
     // Reset to normal state
+    isTutorialMode = false;
     resetState();
   }
+}
+
+// Export function to check if in tutorial mode
+export function isTutorial() {
+  return isTutorialMode;
 }
 
 export default accountState;
