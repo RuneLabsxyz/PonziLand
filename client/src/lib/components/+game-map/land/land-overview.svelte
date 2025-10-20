@@ -9,7 +9,6 @@
   import { cn, locationIntToString, parseLocation } from '$lib/utils';
   import { estimateNukeTime } from '$lib/utils/taxes';
   import { Search } from 'lucide-svelte';
-  import { onMount } from 'svelte';
   import { get } from 'svelte/store';
   import LandDisplay from './land-display.svelte';
   import LandLevelProgress from './land-level-progress.svelte';
@@ -30,55 +29,41 @@
   // TODO: Find a better place to put it, so that we don't have multiple updates in parallel
   let levelUpInfo = $derived(land.getLevelInfo());
 
-  // Nuke time state (in seconds) - start with undefined until calculated
+  // Nuke time state (in seconds) - calculated automatically with $effect
   let estimatedNukeTime = $state<number | undefined>(undefined);
   let isUpdatingNukeTime = $state(false);
 
-  // Calculate nuke time for this land
-  async function updateNukeTime() {
-    isUpdatingNukeTime = true;
-    try {
-      // Get neighbor count
-      const neighborCount =
-        land.getNeighbors()?.getBaseLandsArray()?.length || 0;
-
-      // Calculate nuke time using the existing utility function
-      if (neighborCount > 0) {
-        const timeInSeconds = await estimateNukeTime(land, neighborCount);
-        console.log(
-          'Nuke time calculated for land',
-          land.location,
-          ':',
-          timeInSeconds,
-          'seconds',
-        );
-        estimatedNukeTime = timeInSeconds;
-      } else {
-        // No neighbors means infinite time (no tax)
-        console.log('Land', land.location, 'has no neighbors - infinite time');
-        estimatedNukeTime = Infinity;
+  // Automatically calculate nuke time when land changes
+  $effect(() => {
+    const calculateNukeTime = async () => {
+      if (!land) {
+        estimatedNukeTime = undefined;
+        return;
       }
-    } catch (error) {
-      console.warn(
-        'Failed to calculate nuke time for land:',
-        land.location,
-        error,
-      );
-      estimatedNukeTime = undefined;
-    } finally {
-      isUpdatingNukeTime = false;
-    }
-  }
 
-  onMount(() => {
-    // Initial nuke time calculation
-    updateNukeTime();
+      isUpdatingNukeTime = true;
+      try {
+        const timeInSeconds = await estimateNukeTime(land);
+        estimatedNukeTime = timeInSeconds;
+      } catch (error) {
+        console.warn(
+          'Failed to calculate nuke time for land:',
+          land.location,
+          error,
+        );
+        estimatedNukeTime = undefined;
+      } finally {
+        isUpdatingNukeTime = false;
+      }
+    };
+    calculateNukeTime();
+  });
 
+  // Update level info periodically
+  $effect(() => {
     const interval = setInterval(() => {
       levelUpInfo = land.getLevelInfo();
-      updateNukeTime();
-    }, 5000); // Update nuke time every 5 seconds
-
+    }, 5000);
     return () => clearInterval(interval);
   });
 
