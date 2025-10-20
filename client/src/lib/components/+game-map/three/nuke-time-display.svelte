@@ -1,8 +1,5 @@
 <script lang="ts">
-  import { BuildingLand } from '$lib/api/land/building_land';
-  import { landStore } from '$lib/stores/store.svelte';
-  import { padAddress } from '$lib/utils';
-  import { createLandWithActions } from '$lib/utils/land-actions';
+  import { nukeTimeStore } from '$lib/stores/nuke-time.store.svelte';
   import { T, useTask } from '@threlte/core';
   import { onDestroy } from 'svelte';
   import {
@@ -13,8 +10,6 @@
   } from 'three';
   import type { LandTile } from './landTile';
   import { TextTextureCache } from './utils/text-texture';
-  import { devsettings } from './utils/devsettings.store.svelte';
-  import { nukeTimeManager } from './utils/nuke-time-manager.svelte';
 
   interface Props {
     landTiles: LandTile[];
@@ -31,6 +26,13 @@
     currentUserAddress,
     enableAnimation = true,
   }: Props = $props();
+
+  // Update the store with props
+  $effect(() => {
+    nukeTimeStore.setLandTiles(landTiles);
+    nukeTimeStore.setDisplayMode(isShieldMode, isUnzoomed);
+    nukeTimeStore.setCurrentUserAddress(currentUserAddress);
+  });
 
   const textureCache = new TextTextureCache();
   const textureLoader = new TextureLoader();
@@ -52,55 +54,15 @@
     texture.colorSpace = 'srgb';
   });
 
-  // Check if the current user owns the land tile
-  function isOwnedByCurrentUser(tile: LandTile): boolean {
-    if (!currentUserAddress || !BuildingLand.is(tile.land)) return false;
-    return padAddress(tile.land.owner) === padAddress(currentUserAddress);
-  }
-
-  // Determine if nuke time should be displayed for this tile
-  function shouldShowNukeTime(tile: LandTile): boolean {
-    // Always show when zoomed in
-    if (!isUnzoomed) return true;
-
-    // When unzoomed, only show for lands owned by current user
-    return isOwnedByCurrentUser(tile);
-  }
-
-  // Filtered land tiles that should show nuke times
-  let visibleNukeTiles = $derived(
-    landTiles.filter((tile) => {
-      if (!BuildingLand.is(tile.land)) return false;
-      if (!shouldShowNukeTime(tile)) return false;
-
-      // Check if it has neighbors
-      try {
-        const landWithActions = createLandWithActions(
-          tile.land,
-          landStore.getAllLands,
-        );
-        return landWithActions.getNeighbors()?.getBaseLandsArray()?.length > 0;
-      } catch {
-        return false;
-      }
-    }),
-  );
-
-  // Reactive nuke time data calculation using the manager
-  let nukeTimeData = $derived.by(() => {
-    return nukeTimeManager.calculateNukeTimeData(visibleNukeTiles, landTiles);
-  });
+  // Get data from the store
+  let nukeTimeData = $derived(nukeTimeStore.nukeTimeData);
 
   // Start/stop periodic updates based on visible tiles
   $effect(() => {
-    if (visibleNukeTiles.length > 0) {
-      nukeTimeManager.startPeriodicUpdates(visibleNukeTiles, landTiles);
-    } else {
-      nukeTimeManager.stopPeriodicUpdates();
-    }
+    nukeTimeStore.startPeriodicUpdates();
 
     return () => {
-      nukeTimeManager.stopPeriodicUpdates();
+      nukeTimeStore.stopPeriodicUpdates();
     };
   });
 
@@ -127,7 +89,7 @@
     textGeometry.dispose();
     shieldGeometry.dispose();
     Object.values(shieldTextures).forEach((texture) => texture.dispose());
-    nukeTimeManager.stopPeriodicUpdates();
+    nukeTimeStore.destroy();
   });
 </script>
 
@@ -143,7 +105,9 @@
     opacity: pulseOpacity,
   })}
 
-  {@const shieldOffset = isShieldMode ? [-0.2, 0, 0] : [0.4, 0, -0.4]};
+  {@const shieldOffset = nukeTimeStore.isShieldMode
+    ? [-0.2, 0, 0]
+    : [0.4, 0, -0.4]};
   {@const textPosition: [number, number, number] = [
     data.position[0] + shieldOffset[0], // Offset slightly for shield mode
     data.position[1], // Elevated above the tile
@@ -174,7 +138,7 @@
     rotation={[-Math.PI / 2, 0, 0]}
     geometry={shieldGeometry}
     material={shieldMaterial}
-    scale={isShieldMode ? 1.5 : 1}
+    scale={nukeTimeStore.isShieldMode ? 1.5 : 1}
   />
 
   <!-- Text overlay -->
@@ -183,6 +147,6 @@
     rotation={[-Math.PI / 2, 0, 0]}
     geometry={textGeometry}
     material={textMaterial}
-    scale={isShieldMode ? 1.5 : 1}
+    scale={nukeTimeStore.isShieldMode ? 1.5 : 1}
   />
 {/each}
