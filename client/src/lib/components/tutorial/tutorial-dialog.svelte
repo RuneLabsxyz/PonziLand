@@ -3,8 +3,19 @@
   import { tutorialState, nextStep } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
+  import { selectedLand } from '$lib/stores/store.svelte';
 
   let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
+
+  $effect(() => {
+    if (
+      selectedLand.value?.location.x === 128 &&
+      selectedLand.value?.location.y === 128 &&
+      tutorialState.tutorialStep === 2
+    ) {
+      nextStep();
+    }
+  });
 
   onMount(() => {
     tutorialState.tutorialStep = 1;

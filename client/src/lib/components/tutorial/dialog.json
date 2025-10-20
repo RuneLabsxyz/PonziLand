@@ -6,12 +6,12 @@
   },
   {
     "_step": "2",
-    "text": "Click around on those lands !",
+    "text": "Click on that shiny land, let see what it is !",
     "image_id": 2
   },
   {
     "_step": "3",
-    "text": "A new auction has been launched ! We should buy it before another player claims it !",
+    "text": "This is a land, it's owned by a player. Here you can see if it's making money or not.",
     "image_id": 3
   },
   {
