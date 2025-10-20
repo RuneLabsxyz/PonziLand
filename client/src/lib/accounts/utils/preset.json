@@ -17,16 +17,6 @@
             "description": "Main game contract",
             "methods": [
               {
-                "name": "Bid",
-                "entrypoint": "bid",
-                "description": "Bid for auction land"
-              },
-              {
-                "name": "Buy",
-                "entrypoint": "buy",
-                "description": "Buy land from another player"
-              },
-              {
                 "name": "Claim",
                 "entrypoint": "claim",
                 "description": "Claim rewards for a single land"
@@ -40,11 +30,6 @@
                 "name": "Increase Price",
                 "entrypoint": "increase_price",
                 "description": "Increase price of the land"
-              },
-              {
-                "name": "Increase Stake",
-                "entrypoint": "increase_stake",
-                "description": "Increase stake of the land"
               },
               {
                 "name": "Level Up",

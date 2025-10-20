@@ -12,7 +12,7 @@
     auctionPrice,
   }: { land: LandWithActions; auctionPrice?: CurrencyAmount } = $props();
 
-  let activeTab = $state<TabType>('overall');
+  let activeTab = $state<TabType>('buy');
 
   function setActiveTab(tab: TabType) {
     activeTab = tab;
