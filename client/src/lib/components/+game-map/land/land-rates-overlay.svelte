@@ -1,9 +1,5 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import {
-    tutorialLandStore,
-    tutorialState,
-  } from '$lib/components/tutorial/stores.svelte';
   import { Arrow } from '$lib/components/ui/arrows';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import type { Token } from '$lib/interfaces';
@@ -249,23 +245,13 @@
 
   $effect(() => {
     if (land) {
-      console.log('land', land);
-      if (tutorialState.tutorialEnabled) {
-        const tutorialYield = tutorialLandStore.getNeighborsYield(
-          land.location,
-        );
-        tutorialYield.splice(4, 0, null);
-        yieldInfo = tutorialYield;
-        console.log('tutorial');
-      } else {
-        isLoading = true;
-        yieldInfo = [];
-        getNeighbourYieldArray(land, false).then((res) => {
-          yieldInfo = res;
-          yieldInfo.splice(4, 0, null);
-          isLoading = false;
-        });
-      }
+      isLoading = true;
+      yieldInfo = [];
+      getNeighbourYieldArray(land, false).then((res) => {
+        yieldInfo = res;
+        yieldInfo.splice(4, 0, null);
+        isLoading = false;
+      });
     }
   });
 

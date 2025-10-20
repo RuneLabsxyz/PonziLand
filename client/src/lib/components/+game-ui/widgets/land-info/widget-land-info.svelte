@@ -7,10 +7,6 @@
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { onDestroy } from 'svelte';
   import LandInfos from './land-infos.svelte';
-  import {
-    tutorialState,
-    tutorialLandStore,
-  } from '$lib/components/tutorial/stores.svelte';
 
   let { data } = $props<{ data: { location?: string } }>();
   let land: LandWithActions | null = $state(null);
@@ -30,15 +26,12 @@
 
     try {
       const [x, y] = parseLocation(data.location);
-      const store = tutorialState.tutorialEnabled
-        ? tutorialLandStore
-        : landStore;
-      const landReadable = store.getLand(x, y);
+      const landReadable = landStore.getLand(x, y);
 
       if (landReadable) {
         unsubscribe = landReadable.subscribe((value) => {
           if (value && (BuildingLand.is(value) || AuctionLand.is(value))) {
-            land = createLandWithActions(value, () => store.getAllLands());
+            land = createLandWithActions(value, () => landStore.getAllLands());
           } else {
             land = null;
           }
