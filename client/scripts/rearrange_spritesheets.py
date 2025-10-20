@@ -2,6 +2,49 @@
 """
 Script to rearrange spritesheet PNGs in token directories.
 Converts spritesheets from 3-column grid format to single-row format based on metadata.
+
+USAGE:
+    python3 rearrange_spritesheets.py [TOKEN_NAME]
+
+EXAMPLES:
+    # Process all tokens defined in frame_offsets.json
+    python3 rearrange_spritesheets.py
+    
+    # Process only the SURVIVOR token
+    python3 rearrange_spritesheets.py SURVIVOR
+    
+    # Process only the USDC token
+    python3 rearrange_spritesheets.py USDC
+
+REQUIREMENTS:
+    - Must be run from the client/scripts directory
+    - Requires frame_offsets.json in the same directory
+    - Token sprite files must exist in ../static/tokens/[TOKEN_NAME]/
+    - Requires Python PIL (Pillow) library: pip install pillow
+
+INPUT FORMAT:
+    - Original sprites are in 3-column grid format (e.g., 3x4 grid for 10 frames)
+    - Files named as: 1-animated.png, 2-animated.png, 3-animated.png
+    - Located in ../static/tokens/[TOKEN_NAME]/
+
+OUTPUT:
+    - Single-row format sprites: [level]-animated-line.png  
+    - Combined spritesheet: animated-combined.png
+    - Updated frame_offsets.json with corrected dimensions
+
+FRAME_OFFSETS.JSON FORMAT:
+    {
+        "TOKEN_NAME": {
+            "1": {
+                "frame_count": 10,
+                "individual_frame_width": 192,
+                "sprite_width": 1920,
+                "sprite_height": 192,
+                "offset": 0
+            },
+            ...
+        }
+    }
 """
 
 import os
@@ -87,7 +130,7 @@ def rearrange_spritesheet(input_path, output_path, frame_count, expected_frame_s
         print(f"  Error processing {input_path}: {e}")
         return False
 
-def process_token(token_name, token_data, base_path="client/static/tokens"):
+def process_token(token_name, token_data, base_path="../static/tokens"):
     """Process all spritesheets for a given token."""
     token_dir = Path(base_path) / token_name
     
@@ -145,7 +188,7 @@ def update_frame_offsets(token_name, level, frame_size, frame_count):
         print(f"  Warning: Could not update frame_offsets.json: {e}")
         return False
 
-def combine_spritesheets(token_name, token_data, base_path="client/static/tokens"):
+def combine_spritesheets(token_name, token_data, base_path="../static/tokens"):
     """Combine all level spritesheets into a single combined spritesheet with consistent height."""
     token_dir = Path(base_path) / token_name
     
