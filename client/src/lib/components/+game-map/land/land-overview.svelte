@@ -1,19 +1,20 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
+  import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
-  import { cn, locationIntToString, parseLocation } from '$lib/utils';
-  import { onMount } from 'svelte';
-  import LandDisplay from './land-display.svelte';
-  import LandLevelProgress from './land-level-progress.svelte';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
-  import { get } from 'svelte/store';
-  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import LandNukeShield from './land-nuke-shield.svelte';
+  import { cn, locationIntToString, parseLocation } from '$lib/utils';
   import { estimateNukeTime } from '$lib/utils/taxes';
-  import { BuildingLand } from '$lib/api/land/building_land';
   import { Search } from 'lucide-svelte';
-  import { openLandInfoWidget } from '$lib/components/+game-ui/game-ui.svelte';
+  import { onMount } from 'svelte';
+  import { get } from 'svelte/store';
+  import LandDisplay from './land-display.svelte';
+  import LandLevelProgress from './land-level-progress.svelte';
+  import LandNukeShield from './land-nuke-shield.svelte';
+
   const {
     land,
     size = 'sm',
@@ -31,9 +32,11 @@
 
   // Nuke time state (in seconds) - start with undefined until calculated
   let estimatedNukeTime = $state<number | undefined>(undefined);
+  let isUpdatingNukeTime = $state(false);
 
   // Calculate nuke time for this land
   async function updateNukeTime() {
+    isUpdatingNukeTime = true;
     try {
       // Get neighbor count
       const neighborCount =
@@ -62,6 +65,8 @@
         error,
       );
       estimatedNukeTime = undefined;
+    } finally {
+      isUpdatingNukeTime = false;
     }
   }
 
@@ -166,17 +171,29 @@
     </div>
 
     <!-- Nuke Shield display -->
-    {#if land.type === 'house' && estimatedNukeTime !== undefined}
+    {#if land.type === 'house'}
       <div class="absolute bottom-0 left-0 -mb-3 -ml-4 scale-90">
-        <LandNukeShield
-          {estimatedNukeTime}
-          class={cn({
-            'h-8 w-8 text-xs': size === 'xs',
-            'h-12 w-12 text-sm': size === 'sm',
-            'h-16 w-16 text-lg': size === 'lg',
-          })}
-          lockTime={false}
-        />
+        {#if isUpdatingNukeTime}
+          <div
+            class={cn('flex items-center justify-center', {
+              'h-8 w-8 text-xs': size === 'xs',
+              'h-12 w-12 text-sm': size === 'sm',
+              'h-16 w-16 text-lg': size === 'lg',
+            })}
+          >
+            <RotatingCoin />
+          </div>
+        {:else if estimatedNukeTime !== undefined}
+          <LandNukeShield
+            {estimatedNukeTime}
+            class={cn({
+              'h-8 w-8 text-xs': size === 'xs',
+              'h-12 w-12 text-sm': size === 'sm',
+              'h-16 w-16 text-lg': size === 'lg',
+            })}
+            lockTime={false}
+          />
+        {/if}
       </div>
     {/if}
 
