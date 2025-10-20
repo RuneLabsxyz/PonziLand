@@ -43,10 +43,10 @@ chrono = "0.4.40"
 uuid = "1"
 async-trait = "0.1.88"
 price-provider = {path = "./crates/price-provider"}
-torii-client = { git = "https://github.com/runelabsxyz/torii.git", branch = "main" }
-torii-grpc-client = { git = "https://github.com/runelabsxyz/torii.git", branch = "main" }
-dojo-world = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.3" }
-dojo-types = { git = "https://github.com/dojoengine/dojo", tag = "v1.7.0-alpha.3" }
+torii-client = { git = "https://github.com/dojoengine/torii.git", tag = "v1.7.3" }
+torii-grpc-client = { git = "https://github.com/dojoengine/torii.git", tag = "v1.7.3" }
+dojo-world = { git = "https://github.com/dojoengine/dojo", rev = "6daa3d0" }
+dojo-types = { git = "https://github.com/dojoengine/dojo", rev = "6daa3d0" }
 
 # Improve performance of sqlx macros
 [profile.dev.package.sqlx-macros]

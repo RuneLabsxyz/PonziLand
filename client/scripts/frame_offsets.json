@@ -21,5 +21,28 @@
       "sprite_height": 256,
       "offset": 20
     }
+  },
+  "SURVIVOR": {
+    "1": {
+      "frame_count": 10,
+      "individual_frame_width": 192,
+      "sprite_width": 1920,
+      "sprite_height": 192,
+      "offset": 0
+    },
+    "2": {
+      "frame_count": 10,
+      "individual_frame_width": 256,
+      "sprite_width": 2560,
+      "sprite_height": 256,
+      "offset": 10
+    },
+    "3": {
+      "frame_count": 10,
+      "individual_frame_width": 256,
+      "sprite_width": 2560,
+      "sprite_height": 256,
+      "offset": 20
+    }
   }
 }
