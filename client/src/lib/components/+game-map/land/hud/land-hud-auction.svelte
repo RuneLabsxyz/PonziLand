@@ -8,6 +8,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import LandOverview from '../land-overview.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -67,7 +68,14 @@
     {:else}
       <div class="text-ponzi-number text-center">Loading...</div>
     {/if}
-    <Button onclick={() => openLandInfoWidget(land)}>BUY LAND</Button>
+    <Button
+      onclick={() => {
+        if (tutorialState.tutorialStep === 8) {
+          tutorialState.tutorialStep = 9;
+        }
+        openLandInfoWidget(land);
+      }}>BUY LAND</Button
+    >
   </div>
 </div>
 
