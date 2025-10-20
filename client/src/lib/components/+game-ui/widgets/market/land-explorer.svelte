@@ -76,16 +76,13 @@
   async function fetchNukeTimeData(landsToFetch: LandWithPrice[]) {
     if (landsToFetch.length === 0) return;
 
-    // Convert lands to LandTiles format for the store
-    const landTiles = landsToFetch
-      .filter((land) => BuildingLand.is(land))
-      .map((land) => ({
-        land,
-        position: [0, 0, 0] as [number, number, number], // Position not needed for sorting
-      }));
+    // Extract location strings from lands that have building land data
+    const locationStrings = landsToFetch
+      .filter((land) => land.type === 'house') // BuildingLand equivalent check
+      .map((land) => land.location);
 
-    // Configure the store
-    nukeTimeStore.setLandTiles(landTiles);
+    // Configure the store with location strings
+    nukeTimeStore.setLocationStrings(locationStrings);
     nukeTimeStore.setDisplayMode(false, false); // Not shield mode, not unzoomed
     nukeTimeStore.setCurrentUserAddress(undefined); // Show all nuke times
 
@@ -93,7 +90,7 @@
     nukeTimeStore.startPeriodicUpdates();
 
     // Wait a bit for initial data to load
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise((resolve) => setTimeout(resolve, 100));
 
     // Extract nuke time data
     const storeData = nukeTimeStore.nukeTimeData;
@@ -106,7 +103,7 @@
     }
 
     nukeTimeData = newNukeTimeData;
-    
+
     // Re-sort lands if currently sorting by nuke time
     if (sortBy === 'nuketime') {
       lands = sortLands(lands);
@@ -163,10 +160,14 @@
           newNukeTimeData.set(locationKey, data.timeInSeconds);
         }
       }
-      
+
       // Only update if data has changed
-      if (newNukeTimeData.size !== nukeTimeData.size || 
-          [...newNukeTimeData.entries()].some(([key, value]) => nukeTimeData.get(key) !== value)) {
+      if (
+        newNukeTimeData.size !== nukeTimeData.size ||
+        [...newNukeTimeData.entries()].some(
+          ([key, value]) => nukeTimeData.get(key) !== value,
+        )
+      ) {
         nukeTimeData = newNukeTimeData;
         lands = sortLands(lands);
       }
@@ -372,7 +373,8 @@
           {/if}
         </button>
         <button
-          class="flex items-center gap-2 text-sm font-medium {sortBy === 'nuketime'
+          class="flex items-center gap-2 text-sm font-medium {sortBy ===
+          'nuketime'
             ? 'bg-blue-500'
             : 'text-blue-500'} px-2"
           onclick={async () => {
