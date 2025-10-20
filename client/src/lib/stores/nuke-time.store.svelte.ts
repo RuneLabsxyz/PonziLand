@@ -1,25 +1,28 @@
 import { BuildingLand } from '$lib/api/land/building_land';
 import { landStore } from '$lib/stores/store.svelte';
-import { padAddress } from '$lib/utils';
+import { padAddress, parseLocation } from '$lib/utils';
 import { createLandWithActions } from '$lib/utils/land-actions';
-import type { LandTile } from '$lib/components/+game-map/three/landTile';
+import { LandTile } from '$lib/components/+game-map/three/landTile';
 import {
   nukeTimeManager,
   type NukeTimeData,
 } from '$lib/components/+game-map/three/utils/nuke-time-manager.svelte';
 import { SvelteMap } from 'svelte/reactivity';
+import { get } from 'svelte/store';
 
 class NukeTimeStore {
-  private _landTiles = $state<LandTile[]>([]);
+  private _locationStrings = $state<string[]>([]);
   private _isShieldMode = $state(false);
   private _isUnzoomed = $state(false);
   private _currentUserAddress = $state<string | undefined>(undefined);
 
-  constructor() {}
+  constructor() {
+    // Initialize store
+  }
 
   // Setters for external data
-  setLandTiles(tiles: LandTile[]) {
-    this._landTiles = tiles;
+  setLocationStrings(locations: string[]) {
+    this._locationStrings = locations;
   }
 
   setDisplayMode(isShieldMode: boolean, isUnzoomed: boolean) {
@@ -31,46 +34,43 @@ class NukeTimeStore {
     this._currentUserAddress = address;
   }
 
-  // Check if the current user owns the land tile
-  private isOwnedByCurrentUser(tile: LandTile): boolean {
-    if (!this._currentUserAddress || !BuildingLand.is(tile.land)) return false;
-    return padAddress(tile.land.owner) === padAddress(this._currentUserAddress);
-  }
+  // Create LandTiles from location strings
+  private createLandTilesFromLocations(): LandTile[] {
+    return this._locationStrings
+      .map((locationString) => {
+        try {
+          const coordinates = parseLocation(locationString);
+          const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
+          if (!baseLand) return null;
 
-  // Determine if nuke time should be displayed for this tile
-  private shouldShowNukeTime(tile: LandTile): boolean {
-    // Always show when zoomed in
-    if (!this._isUnzoomed) return true;
+          const land = get(baseLand);
+          if (!BuildingLand.is(land)) return null;
 
-    // When unzoomed, only show for lands owned by current user
-    return this.isOwnedByCurrentUser(tile);
-  }
+          const position: [number, number, number] = [
+            coordinates[0],
+            0.1,
+            coordinates[1],
+          ];
 
-  // Filtered land tiles that should show nuke times
-  get visibleNukeTiles(): LandTile[] {
-    return this._landTiles.filter((tile) => {
-      if (!BuildingLand.is(tile.land)) return false;
-      if (!this.shouldShowNukeTime(tile)) return false;
-
-      // Check if it has neighbors
-      try {
-        const landWithActions = createLandWithActions(
-          tile.land,
-          landStore.getAllLands,
-        );
-        return landWithActions.getNeighbors()?.getBaseLandsArray()?.length > 0;
-      } catch {
-        return false;
-      }
-    });
+          // Create a proper LandTile object
+          return new LandTile(
+            position,
+            land.token?.name || 'empty',
+            land.token?.name || 'empty',
+            land.level,
+            land,
+          );
+        } catch {
+          return null;
+        }
+      })
+      .filter((tile): tile is LandTile => tile !== null);
   }
 
   // Reactive nuke time data calculation using the manager
   get nukeTimeData(): SvelteMap<string, NukeTimeData> {
-    return nukeTimeManager.calculateNukeTimeData(
-      this.visibleNukeTiles,
-      this._landTiles,
-    );
+    const landTiles = this.createLandTilesFromLocations();
+    return nukeTimeManager.calculateNukeTimeData(landTiles, landTiles);
   }
 
   // Getters for display properties
@@ -88,11 +88,9 @@ class NukeTimeStore {
 
   // Start/stop periodic updates based on visible tiles
   startPeriodicUpdates() {
-    if (this.visibleNukeTiles.length > 0) {
-      nukeTimeManager.startPeriodicUpdates(
-        this.visibleNukeTiles,
-        this._landTiles,
-      );
+    const landTiles = this.createLandTilesFromLocations();
+    if (landTiles.length > 0) {
+      nukeTimeManager.startPeriodicUpdates(landTiles, landTiles);
     } else {
       nukeTimeManager.stopPeriodicUpdates();
     }
