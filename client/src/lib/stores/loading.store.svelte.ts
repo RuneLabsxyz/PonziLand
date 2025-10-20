@@ -953,7 +953,7 @@ class LoadingStore {
         // Add tutorial auction lands after basic setup
         console.log('Adding tutorial auction lands...');
         landStore.addTutorialAuctions();
-        
+
         // Set fake wallet balances for tutorial
         console.log('Setting tutorial wallet balances...');
         await walletStore.setTutorialBalances();
