@@ -274,8 +274,7 @@
               </div>
             {:else if land.price}
               <div class="flex gap-1 items-center">
-                <PriceDisplay price={land.price} showRate />
-                <TokenAvatar class="w-5 h-5" token={land.token} />
+                <PriceDisplay price={land.price} showRate token={land.token} />
               </div>
             {:else}
               <div class="flex gap-1 items-center">
@@ -284,18 +283,6 @@
               </div>
             {/if}
           </div>
-          <!-- Fullscreen icon button -->
-          <button
-            class="absolute top-2 right-2 p-2 bg-black/50 hover:bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity z-10"
-            onclick={(e) => {
-              e.stopPropagation();
-              moveToLand(land);
-              openLandInfoWidget(land);
-            }}
-            title="Open land details"
-          >
-            <Fullscreen class="w-4 h-4 text-white" />
-          </button>
         </div>
       {/each}
     </div>
@@ -325,6 +312,6 @@
   }
 
   .land-button:nth-child(odd):hover {
-    background-color: #fff1;
+    background-color: #fff2;
   }
 </style>
