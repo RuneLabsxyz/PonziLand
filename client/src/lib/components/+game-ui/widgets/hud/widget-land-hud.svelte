@@ -19,7 +19,9 @@
 
   let { setCustomTitle, setCustomControls }: Props = $props();
 
-  let highlighted = $derived(tutorialState.tutorialStep == 3);
+  let highlighted = $derived(
+    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 8,
+  );
 
   const address = $derived(account.address);
   let landWithActions = $derived(selectedLandWithActions());
@@ -86,7 +88,12 @@
     {:else if land.type === 'grass'}
       <!-- <LandHudEmpty /> -->
     {:else}
-      <LandHudInfo {land} {isOwner} showLand={true} />
+      <LandHudInfo
+        {land}
+        {isOwner}
+        showLand={true}
+        tutorialStep={tutorialState.tutorialStep}
+      />
     {/if}
   {/if}
 </div>

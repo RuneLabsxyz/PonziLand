@@ -23,10 +23,12 @@
     land,
     isOwner,
     showLand,
+    tutorialStep,
   }: {
     land: LandWithActions;
     isOwner: boolean;
     showLand: boolean;
+    tutorialStep?: number;
   } = $props();
 
   let yieldInfo: LandYieldInfo | undefined = $state(undefined);
@@ -130,6 +132,7 @@
       {totalYieldValue}
       burnRate={burnRateInBaseToken}
       {land}
+      {tutorialStep}
     />
   {:else if land}
     <LandHudPro {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
