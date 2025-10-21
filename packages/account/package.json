@@ -1,5 +1,5 @@
 {
-	"name": "@ponziland/account",
+	"name": "@runelabsxyz/ponziland-account",
 	"version": "0.5.2",
 	"scripts": {
 		"dev": "vite dev",
@@ -10,10 +10,13 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"publish": "npm run prepack && bun pm pack --ignore-scripts && bun publish ./packages/account/$(echo ponziland-account-*.tgz)",
+		"publish": "npm run prepack && bun pm pack --ignore-scripts && bun publish ./packages/account/$(echo runelabsxyz-ponziland-account-*.tgz)",
 		"test": "npm run test:unit -- --run",
 		"lint": "eslint . && prettier --check .",
 		"format": "prettier --write ."
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"files": [
 		"dist",
