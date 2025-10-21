@@ -3,7 +3,7 @@ name: UI Package Checks
 on:
   pull_request:
     paths:
-      - "pkgs/ui/**"
+      - "packages/ui/**"
       - ".github/workflows/ui-package-checks.yml"
 
 jobs:
@@ -32,15 +32,15 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: bun install
 
       - name: Build package
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: bun run build
 
       - name: Check build output
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: |
           if [ ! -d "dist" ]; then
             echo "Build failed: dist directory not found"

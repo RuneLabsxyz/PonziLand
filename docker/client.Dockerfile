@@ -21,12 +21,12 @@ RUN apt-get update -qq && \
 WORKDIR /app
 # Install node modules
 COPY bun.lock package.json ./
-RUN --mount=type=bind,source=pkgs,target=/src \
-    mkdir -p /app/pkgs && \
+RUN --mount=type=bind,source=packages,target=/src \
+    mkdir -p /app/packages && \
     cd /src && \
     find . -name "package.json" -type f | while read file; do \
-    mkdir -p "/app/pkgs/$(dirname "$file")" && \
-    cp "$file" "/app/pkgs/$file"; \
+    mkdir -p "/app/packages/$(dirname "$file")" && \
+    cp "$file" "/app/packages/$file"; \
     done
 COPY client/package.json ./client/package.json
 COPY playtest/package.json ./playtest/package.json
