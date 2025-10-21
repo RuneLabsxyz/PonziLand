@@ -10,7 +10,7 @@ pub trait IQuestSystems<T> {
     fn get_quest(self: @T, quest_id: u64) -> (Quest, QuestDetails);
     fn set_land_quest(ref self: T, land_location: u16, game_id: u64);
     fn remove_land_quest(ref self: T, land_location: u16);
-    fn get_score(self: @T, quest_id: u64) -> u32;
+    fn get_score(self: @T, quest_id: u64) -> (u32, bool);
     fn get_quest_game_token(self: @T, quest_id: u64) -> (ContractAddress, u64);
     fn get_quest_entry_price(self: @T, location: u16) -> u256;
     fn register_quest_game(ref self: T, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType, game_name: ByteArray);
@@ -313,7 +313,7 @@ pub mod quests {
             (quest, quest_details)
         }
 
-        fn get_score(self: @ContractState, quest_id: u64) -> u32 {
+        fn get_score(self: @ContractState, quest_id: u64) -> (u32, bool) {
             let mut world = self.world(DEFAULT_NS());
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.location);
@@ -321,14 +321,16 @@ pub mod quests {
             let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
-            
+            let mut over = false;
             // Check the minigame type and handle accordingly 🐙 Different scoring systems for different game types!
             match quest_game.quest_type {
                 QuestType::Minigame => {
                     let game_dispatcher = IMinigameTokenDataDispatcher {
                         contract_address: game_token_address,
                     };
-                    game_dispatcher.score(quest.game_token_id)
+                    let score: u32 = game_dispatcher.score(quest.game_token_id);
+                    over = game_dispatcher.game_over(quest.game_token_id);
+                    (score, over)
                 },
                 QuestType::OneOnOne => {
                     let game_dispatcher = IOneOnOneDispatcher {
@@ -337,21 +339,27 @@ pub mod quests {
                     let status: Status = game_dispatcher.settle_match(quest.game_token_id.into());
                     match status {
                         Status::Winner(winner) => {
-                            1
+                            let score: u32 = 1;
+                            let over: bool = true;
+                            (score, over)
                         },
                         Status::Active => {
                             // Game still in progress
-                            0
+                            let score: u32 = 0;
+                            let over: bool = false;
+                            (score, over)
                         },
                         _ => {
                             // Other states (like draw)
-                            0
+                            let score: u32 = 0;
+                            let over: bool = true;
+                            (score, over)
                         }
                     }
                 },
                 _ => {
                     // Unknown game type
-                    0
+                    (0, true)
                 }
             }
         }
