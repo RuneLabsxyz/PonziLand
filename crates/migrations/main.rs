@@ -97,8 +97,14 @@ pub async fn main() {
 
 async fn recreate_database() {
     // Connect to the database
-    let options = PgConnectOptions::new().application_name("sql-migrator");
-    let mut connection = options
+    let connection = if let Ok(url) = std::env::var("DATABASE_URL") {
+        PgConnectOptions::from_str(&url).expect("Invalid database url!")
+    } else {
+        PgConnectOptions::new()
+    };
+
+    let mut connection = connection
+        .application_name("sql-migrator")
         .connect()
         .await
         .expect("Expected connection to work");
