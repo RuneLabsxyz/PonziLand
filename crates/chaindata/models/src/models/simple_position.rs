@@ -4,6 +4,8 @@ use sqlx::prelude::FromRow;
 use sqlx::types::BigDecimal as SqlxBigDecimal;
 use bigdecimal::BigDecimal;
 use std::str::FromStr;
+use std::collections::HashMap;
+use serde_json;
 
 use crate::shared::Location;
 
@@ -22,6 +24,8 @@ pub struct SimplePositionModel {
     pub sale_revenue_token: Option<SqlxBigDecimal>,
     pub sale_revenue_usd: Option<SqlxBigDecimal>,
     pub sale_token_used: Option<String>,
+    pub token_inflows: serde_json::Value,
+    pub token_outflows: serde_json::Value,
 }
 
 impl SimplePositionModel {
@@ -31,6 +35,30 @@ impl SimplePositionModel {
 
     fn from_sqlx_bigdecimal(value: Option<SqlxBigDecimal>) -> Option<BigDecimal> {
         value.and_then(|v| BigDecimal::from_str(&v.to_string()).ok())
+    }
+
+    /// Convert HashMap<String, BigDecimal> to JSON Value for database storage
+    fn hashmap_to_json(map: &HashMap<String, BigDecimal>) -> serde_json::Value {
+        let string_map: HashMap<String, String> = map
+            .iter()
+            .map(|(k, v)| (k.clone(), v.to_string()))
+            .collect();
+        serde_json::to_value(string_map).unwrap_or_else(|_| serde_json::json!({}))
+    }
+
+    /// Convert JSON Value from database to HashMap<String, BigDecimal>
+    fn json_to_hashmap(value: &serde_json::Value) -> HashMap<String, BigDecimal> {
+        match value.as_object() {
+            Some(obj) => obj
+                .iter()
+                .filter_map(|(k, v)| {
+                    v.as_str()
+                        .and_then(|s| BigDecimal::from_str(s).ok())
+                        .map(|decimal| (k.clone(), decimal))
+                })
+                .collect(),
+            None => HashMap::new(),
+        }
     }
 
     /// Create a new SimplePositionModel from a SimplePosition
@@ -50,6 +78,8 @@ impl SimplePositionModel {
             sale_revenue_token: Self::to_sqlx_bigdecimal(position.sale_revenue_token.clone()),
             sale_revenue_usd: Self::to_sqlx_bigdecimal(position.sale_revenue_usd.clone()),
             sale_token_used: position.sale_token_used.clone(),
+            token_inflows: Self::hashmap_to_json(&position.token_inflows),
+            token_outflows: Self::hashmap_to_json(&position.token_outflows),
         }
     }
 
@@ -68,6 +98,8 @@ impl SimplePositionModel {
             sale_revenue_token: Self::from_sqlx_bigdecimal(self.sale_revenue_token.clone()),
             sale_revenue_usd: Self::from_sqlx_bigdecimal(self.sale_revenue_usd.clone()),
             sale_token_used: self.sale_token_used.clone(),
+            token_inflows: Self::json_to_hashmap(&self.token_inflows),
+            token_outflows: Self::json_to_hashmap(&self.token_outflows),
         }
     }
 }

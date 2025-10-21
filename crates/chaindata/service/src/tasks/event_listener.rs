@@ -61,7 +61,11 @@ impl EventListenerTask {
                     id: EventId::parse_from_torii(&event_id).unwrap(),
                     at: at.naive_utc(),
                     data: EventData::from_json(&name, data.clone())
-                        .unwrap_or_else(|_| {
+                        .unwrap_or_else(|err| {
+                            if name.contains("LandTransfer") {
+                                error!("Failed to deserialize LandTransfer event: {err:?}");
+                                error!("LandTransfer event data: {data:#?}");
+                            }
                             panic!(
                                 "An error occurred while deserializing model for event {name}: {data:#?}"
                             )
@@ -153,13 +157,19 @@ impl Task for EventListenerTask {
 
             // Process events as they go
             let mut event_count = 0;
+            let mut land_transfer_count = 0;
             while let Some(event) = events_stream.next().await {
+                // Log LandTransfer events specifically
+                if event.name().contains("LandTransfer") {
+                    info!("Found LandTransfer event: {:?}", event);
+                    land_transfer_count += 1;
+                }
                 self.process_event(event).await;
                 event_count += 1;
             }
 
             if event_count > 0 {
-                info!("Processed {} new events", event_count);
+                info!("Processed {} new events ({} LandTransfer events)", event_count, land_transfer_count);
             } else {
                 debug!("No new events found");
             }

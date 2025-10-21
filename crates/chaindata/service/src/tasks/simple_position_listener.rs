@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chaindata_models::events::actions::{
-    AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+    AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel, LandTransferEventModel,
 };
 use chaindata_models::{
     events::{EventDataModel, EventId},
@@ -26,6 +26,7 @@ use super::Task;
 /// - `LandBoughtEvent` - Records land purchases and closes previous positions
 /// - `AuctionFinishedEvent` - Records auction wins and closes previous positions
 /// - `LandNukedEvent` - Closes positions when land is nuked
+/// - `LandTransferEvent` - Tracks token flows (inflows/outflows) for open positions
 pub struct SimplePositionListenerTask {
     client: Arc<ToriiClient>,
     simple_position_repository: Arc<SimplePositionRepository>,
@@ -97,6 +98,12 @@ impl SimplePositionListenerTask {
             EventDataModel::LandNuked(land_nuked) => {
                 if let Err(e) = self.handle_land_nuked(land_nuked, at).await {
                     error!("Failed to handle land nuked event: {}", e);
+                }
+            }
+            EventDataModel::LandTransfer(land_transfer) => {
+                info!("Received LandTransfer event: {:?}", land_transfer);
+                if let Err(e) = self.handle_land_transfer(land_transfer, at).await {
+                    error!("Failed to handle land transfer event: {}", e);
                 }
             }
             _ => {
@@ -278,6 +285,98 @@ impl SimplePositionListenerTask {
 
         Ok(())
     }
+
+    async fn handle_land_transfer(
+        &self,
+        event: LandTransferEventModel,
+        at: DateTime<Utc>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let from_location = event.from_location;
+        let to_location = event.to_location;
+        let token_address = event.token_address;
+        let amount = Self::u256_to_bigdecimal(&event.amount);
+
+        if let Some(transfer_amount) = amount {
+            info!(
+                "Processing LandTransfer: {} {} from location {:?} to location {:?}",
+                transfer_amount, token_address, from_location, to_location
+            );
+
+            // Handle outflow: token leaving from_location
+            let from_location_db = (*from_location).into();
+            match self
+                .simple_position_repository
+                .get_open_positions_by_land_location(from_location_db)
+                .await
+            {
+                Ok(from_positions) => {
+                    info!(
+                        "Found {} open positions at from_location {:?}",
+                        from_positions.len(), from_location
+                    );
+                    for position_model in from_positions {
+                    let mut position = position_model.to_simple_position();
+                    
+                    // Add to outflows for this token
+                    *position.token_outflows.entry(token_address.clone()).or_insert_with(|| BigDecimal::from(0)) += &transfer_amount;
+                    
+                    let updated_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
+                    
+                    if let Err(e) = self.simple_position_repository.save(updated_model).await {
+                        error!("Failed to update position outflows for location {:?}: {}", from_location, e);
+                    } else {
+                        debug!(
+                            "Updated token outflows for position {} at location {:?}: {} {}",
+                            position.id, from_location, transfer_amount, token_address
+                        );
+                    }
+                }
+                }
+                Err(e) => {
+                    error!("Failed to get open positions at from_location {:?}: {}", from_location, e);
+                }
+            }
+
+            // Handle inflow: token arriving at to_location
+            let to_location_db = (*to_location).into();
+            match self
+                .simple_position_repository
+                .get_open_positions_by_land_location(to_location_db)
+                .await
+            {
+                Ok(to_positions) => {
+                    info!(
+                        "Found {} open positions at to_location {:?}",
+                        to_positions.len(), to_location
+                    );
+                    for position_model in to_positions {
+                    let mut position = position_model.to_simple_position();
+                    
+                    // Add to inflows for this token
+                    *position.token_inflows.entry(token_address.clone()).or_insert_with(|| BigDecimal::from(0)) += &transfer_amount;
+                    
+                    let updated_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
+                    
+                    if let Err(e) = self.simple_position_repository.save(updated_model).await {
+                        error!("Failed to update position inflows for location {:?}: {}", to_location, e);
+                    } else {
+                        debug!(
+                            "Updated token inflows for position {} at location {:?}: {} {}",
+                            position.id, to_location, transfer_amount, token_address
+                        );
+                    }
+                }
+                }
+                Err(e) => {
+                    error!("Failed to get open positions at to_location {:?}: {}", to_location, e);
+                }
+            }
+        } else {
+            debug!("Failed to convert transfer amount {:?} to BigDecimal", event.amount);
+        }
+
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -359,16 +458,17 @@ impl Task for SimplePositionListenerTask {
                     }
                 };
 
-                // Only process land ownership events
+                // Only process land ownership and transfer events
                 match &event_data {
                     EventDataModel::LandBought(_)
                     | EventDataModel::AuctionFinished(_)
-                    | EventDataModel::LandNuked(_) => {
+                    | EventDataModel::LandNuked(_)
+                    | EventDataModel::LandTransfer(_) => {
                         position_event_count += 1;
                         self.process_event(event_data, event_id, at).await;
                     }
                     _ => {
-                        // Skip non-ownership events
+                        // Skip non-position events
                         continue;
                     }
                 }

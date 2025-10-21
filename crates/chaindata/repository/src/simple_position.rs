@@ -20,9 +20,10 @@ impl Repository {
             INSERT INTO simple_positions (
                 id, at, owner, land_location, time_bought, close_date, close_reason,
                 buy_cost_token, buy_cost_usd, buy_token_used,
-                sale_revenue_token, sale_revenue_usd, sale_token_used
+                sale_revenue_token, sale_revenue_usd, sale_token_used,
+                token_inflows, token_outflows
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
             ON CONFLICT (id) DO UPDATE SET 
                 at = EXCLUDED.at,
                 close_date = EXCLUDED.close_date,
@@ -32,7 +33,9 @@ impl Repository {
                 buy_token_used = EXCLUDED.buy_token_used,
                 sale_revenue_token = EXCLUDED.sale_revenue_token,
                 sale_revenue_usd = EXCLUDED.sale_revenue_usd,
-                sale_token_used = EXCLUDED.sale_token_used
+                sale_token_used = EXCLUDED.sale_token_used,
+                token_inflows = EXCLUDED.token_inflows,
+                token_outflows = EXCLUDED.token_outflows
             RETURNING id
             "#,
             position.id,
@@ -47,7 +50,9 @@ impl Repository {
             position.buy_token_used,
             position.sale_revenue_token,
             position.sale_revenue_usd,
-            position.sale_token_used
+            position.sale_token_used,
+            position.token_inflows,
+            position.token_outflows
         )
         .fetch_one(&mut *(self.db.acquire().await?))
         .await?
@@ -72,7 +77,9 @@ impl Repository {
                 buy_token_used,
                 sale_revenue_token,
                 sale_revenue_usd,
-                sale_token_used
+                sale_token_used,
+                token_inflows,
+                token_outflows
             FROM simple_positions
             WHERE owner = $1
             ORDER BY time_bought DESC
@@ -104,7 +111,9 @@ impl Repository {
                 buy_token_used,
                 sale_revenue_token,
                 sale_revenue_usd,
-                sale_token_used
+                sale_token_used,
+                token_inflows,
+                token_outflows
             FROM simple_positions
             WHERE land_location = $1
             ORDER BY time_bought DESC
@@ -215,7 +224,9 @@ impl Repository {
                 buy_token_used,
                 sale_revenue_token,
                 sale_revenue_usd,
-                sale_token_used
+                sale_token_used,
+                token_inflows,
+                token_outflows
             FROM simple_positions
             WHERE land_location = $1 AND close_date IS NULL
             ORDER BY time_bought DESC

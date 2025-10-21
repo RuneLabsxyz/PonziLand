@@ -3,6 +3,7 @@ use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use torii_ingester::prelude::ContractAddress;
 use bigdecimal::BigDecimal;
+use std::collections::HashMap;
 
 /// Simple position tracking land ownership history
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -31,6 +32,10 @@ pub struct SimplePosition {
     pub sale_revenue_usd: Option<BigDecimal>,
     /// Token address used for sale
     pub sale_token_used: Option<String>,
+    /// Aggregated token amounts received while holding land (taxes, etc.)
+    pub token_inflows: HashMap<String, BigDecimal>,
+    /// Aggregated token amounts paid while holding land (taxes, etc.)
+    pub token_outflows: HashMap<String, BigDecimal>,
 }
 
 impl SimplePosition {
@@ -61,6 +66,8 @@ impl SimplePosition {
             sale_revenue_token: None,
             sale_revenue_usd: None,
             sale_token_used: None,
+            token_inflows: HashMap::new(),
+            token_outflows: HashMap::new(),
         }
     }
 
@@ -94,6 +101,8 @@ impl SimplePosition {
             sale_revenue_token: None,
             sale_revenue_usd: None,
             sale_token_used: None,
+            token_inflows: HashMap::new(),
+            token_outflows: HashMap::new(),
         }
     }
 }
