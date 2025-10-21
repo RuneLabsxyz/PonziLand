@@ -1,6 +1,10 @@
 {
 	"name": "@runelabsxyz/ponziland-account",
 	"version": "0.5.3",
+	"repository": {
+		"url": "https://github.com/RuneLabsxyz/PonziLand",
+		"directory": "packages/account"
+	},
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run prepack",
