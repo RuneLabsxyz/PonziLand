@@ -4,12 +4,20 @@ import { createLandWithActions } from '$lib/utils/land-actions';
 import { estimateNukeTimeSync, parseNukeTime } from '$lib/utils/taxes';
 import { SvelteMap } from 'svelte/reactivity';
 import type { LandTile } from '../landTile';
+import type { BaseLand } from '$lib/api/land';
 
 export interface NukeTimeData {
   text: string;
   position: [number, number, number];
   shieldType: 'blue' | 'grey' | 'yellow' | 'orange' | 'red' | 'nuke';
   timeInSeconds?: number;
+}
+
+export interface MinimalLandTile {
+  position: [number, number, number];
+  land: BaseLand & {
+    locationString: string;
+  };
 }
 
 interface CachedNukeTime {
@@ -148,7 +156,7 @@ export class NukeTimeManager {
    * Calculate nuke time data for visible tiles
    */
   calculateNukeTimeData(
-    visibleNukeTiles: LandTile[],
+    visibleNukeTiles: MinimalLandTile[],
     landTiles: LandTile[],
   ): SvelteMap<string, NukeTimeData> {
     const dataMap = new SvelteMap<string, NukeTimeData>();
@@ -246,7 +254,10 @@ export class NukeTimeManager {
   /**
    * Start periodic updates for visible tiles
    */
-  startPeriodicUpdates(visibleNukeTiles: LandTile[], landTiles: LandTile[]) {
+  startPeriodicUpdates(
+    visibleNukeTiles: MinimalLandTile[],
+    landTiles: LandTile[],
+  ) {
     this.stopPeriodicUpdates();
 
     this.updateTimer = setInterval(() => {
