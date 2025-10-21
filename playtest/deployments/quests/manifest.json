@@ -3856,7 +3856,7 @@
     },
     {
       "address": "0x7cc2eae1422ac5cfaf6450025b8693caddb330d69863b24d2d811f52e2e7c5c",
-      "class_hash": "0x2915cc6e962309b78897d2d371941caea0b276278a39a2eafe0be048fed4bc9",
+      "class_hash": "0x242a81a95069726438d81a5b2d4366b62cf31974a5130d6e9a6ae1d830cc69c",
       "abi": [
         {
           "type": "impl",
@@ -4184,7 +4184,7 @@
               ],
               "outputs": [
                 {
-                  "type": "core::integer::u32"
+                  "type": "(core::integer::u32, core::bool)"
                 }
               ],
               "state_mutability": "view"

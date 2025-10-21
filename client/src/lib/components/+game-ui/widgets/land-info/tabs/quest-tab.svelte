@@ -42,10 +42,13 @@
   let selectedGame = $derived(questGames.find((g: QuestGame) => g.id.toString() === selectedGameId));
   let currentQuestGame = $state<QuestGame | null>(null);
   let baseToken = $state<Token | null>(null);
+  let is_quest_over = $state(false); // 🐙 tentacles tracking if the quest ended
   // Check if game is active and what type 🐙 tentacles checking game state
   let is_active = $derived(game_token_id !== 0);
   let isOneOnOne = $derived(currentQuestGame?.quest_type === 'OneOnOne');
   let isHighScore = $derived(currentQuestGame?.quest_type === 'Minigame');
+  let hasWon = $derived(isHighScore ? score >= Number(questDetails?.target_score || 0) : score === 1);
+  let hasFailed = $derived(is_quest_over && !hasWon);
 
   // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
   async function handleGameActionClick() {
@@ -210,8 +213,9 @@
         console.log('quest_id', quest_id);
         let score_res = await GetQuestScore(quest_id);
         console.log('score_res', score_res);
-        score = parseInt(BigInt(score_res).toString());
-        console.log('score set to:', score);
+        score = parseInt(BigInt(score_res[0]).toString());
+        is_quest_over = score_res[1] == 1;
+        console.log('score set to:', score, 'is_quest_over:', is_quest_over);
         let token_res = await GetQuestToken(quest_id);
         console.log('token_res', token_res);
         game_token_id = parseInt(BigInt(token_res[1]).toString());
@@ -221,6 +225,7 @@
         console.log('No player quest found, resetting score and game_token_id');
         score = 0;
         game_token_id = 0;
+        is_quest_over = false;
       }
     } else {
       console.log('No quest details found, resetting everything');
@@ -228,6 +233,7 @@
       currentQuestGame = null;
       score = 0;
       game_token_id = 0;
+      is_quest_over = false;
     }
   }
 
@@ -351,7 +357,7 @@
       <!-- Land is not owned by player but has a quest - show challenge interface 🐙 -->
       <!-- Debug info -->
       <div class="text-xs opacity-50 mb-2">
-        DEBUG: game_token_id={game_token_id}, score={score}, is_active={is_active}, isOneOnOne={isOneOnOne}, isHighScore={isHighScore}
+        DEBUG: game_token_id={game_token_id}, score={score}, is_active={is_active}, is_quest_over={is_quest_over}, hasWon={hasWon}, hasFailed={hasFailed}, isOneOnOne={isOneOnOne}, isHighScore={isHighScore}
       </div>
       
       <Label class="font-ponzi-number">
@@ -433,27 +439,48 @@
           {:else}
             {#if isHighScore}
               <!-- High Score Game Buttons -->
-              <Button
-                onclick={handleGameActionClick}
-                class="w-full mb-2"
-                disabled={loading}
-                variant="default"
-              >
-                CONTINUE QUEST
-              </Button>
-              {#if score >= Number(questDetails?.target_score || 0)}
+              {#if !is_quest_over}
                 <Button
-                  onclick={handleClaimQuestClick}
+                  onclick={handleGameActionClick}
                   class="w-full mb-2"
                   disabled={loading}
-                  variant="secondary"
+                  variant="default"
                 >
-                  🏆 CLAIM REWARD
+                  CONTINUE QUEST
                 </Button>
+              {/if}
+              {#if is_quest_over}
+                {#if hasWon}
+                  <div class="mb-2 p-2 text-center border rounded bg-green-500/10 border-green-500">
+                    <p class="text-lg font-bold text-green-500">🎉 Quest Complete!</p>
+                    <p class="text-xs opacity-75">You've achieved the target score!</p>
+                  </div>
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full mb-2"
+                    disabled={loading}
+                    variant="secondary"
+                  >
+                    🏆 CLAIM REWARD
+                  </Button>
+                {:else}
+                  <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
+                    <p class="text-lg font-bold text-red-500">😢 Quest Failed</p>
+                    <p class="text-xs opacity-75">You didn't reach the target score</p>
+                  </div>
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full mb-2"
+                    disabled={loading}
+                    variant="outline"
+                  >
+                    CLAIM (No Reward)
+                  </Button>
+                {/if}
               {/if}
             {:else if isOneOnOne}
               <!-- 1v1 Game Buttons -->
-              {#if score === 0}
+              {#if !is_quest_over}
                 <Button
                   onclick={handleGameActionClick}
                   class="w-full mb-2"
@@ -462,15 +489,35 @@
                 >
                   ⚔️ CONTINUE MATCH
                 </Button>
-              {:else if score === 1}
-                <Button
-                  onclick={handleClaimQuestClick}
-                  class="w-full mb-2"
-                  disabled={loading}
-                  variant="secondary"
-                >
-                  🏆 CLAIM / SETTLE
-                </Button>
+              {/if}
+              {#if is_quest_over}
+                {#if hasWon}
+                  <div class="mb-2 p-2 text-center border rounded bg-green-500/10 border-green-500">
+                    <p class="text-lg font-bold text-green-500">⚔️ Victory!</p>
+                    <p class="text-xs opacity-75">You won the 1v1 match!</p>
+                  </div>
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full mb-2"
+                    disabled={loading}
+                    variant="secondary"
+                  >
+                    🏆 CLAIM / SETTLE
+                  </Button>
+                {:else}
+                  <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
+                    <p class="text-lg font-bold text-red-500">💀 Defeat</p>
+                    <p class="text-xs opacity-75">You lost the 1v1 match</p>
+                  </div>
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full mb-2"
+                    disabled={loading}
+                    variant="outline"
+                  >
+                    SETTLE (No Reward)
+                  </Button>
+                {/if}
               {/if}
             {/if}
           {/if}
