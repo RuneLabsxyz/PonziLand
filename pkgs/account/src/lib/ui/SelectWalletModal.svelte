@@ -1,73 +1,71 @@
 <script lang="ts">
-    import { useAccount } from '../context/account.svelte.js';
-    import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
-    import { ChevronDown, ChevronUp } from 'lucide-svelte';
-    import { onMount } from 'svelte';
-    import { on } from 'svelte/events';
-    import { Button } from '@ponziland/ui';
-    import { Card } from '@ponziland/ui';
-  
-    let visible = $state(false);
-    let loading = $state(true);
-    let showAllWallets = $state(false);
-  
-    let validWallets: StarknetWindowObject[] = $state([]);
-  
-    // If we are on dev mode, only add the burner button.
-    // Otherise, check for all wallets, and setup controller.
-    // We need to store the wallet in a context, like other extensions (this is where extensionWallet comes in handy)
-    // And if a login is asked (with the event wallet_login), open the popup with the found wallets,
-    // wait for a successful login, and possibly open a popup to ask for the session popup explaining how it works.
-  
-    let account = $state<ReturnType<typeof useAccount>>();
-  
-    const promisesToWait = (async () => {
-      account = useAccount();
-      if (account != null) {
-        validWallets = (await account.wait()).getAvailableWallets();
-        console.log('validWallets', validWallets);
-      }
-    })();
+  import { useAccount } from "../context/account.svelte.js";
+  import type { StarknetWindowObject } from "@starknet-io/get-starknet-core";
+  import { ChevronDown, ChevronUp } from "@lucide/svelte";
+  import { onMount } from "svelte";
+  import { on } from "svelte/events";
+  import { Button } from "@ponziland/ui";
+  import { Card } from "@ponziland/ui";
 
-    function closeModal() {
+  let visible = $state(false);
+  let loading = $state(true);
+  let showAllWallets = $state(false);
+
+  let validWallets: StarknetWindowObject[] = $state([]);
+
+  // If we are on dev mode, only add the burner button.
+  // Otherise, check for all wallets, and setup controller.
+  // We need to store the wallet in a context, like other extensions (this is where extensionWallet comes in handy)
+  // And if a login is asked (with the event wallet_login), open the popup with the found wallets,
+  // wait for a successful login, and possibly open a popup to ask for the session popup explaining how it works.
+
+  let account = $state<ReturnType<typeof useAccount>>();
+
+  const promisesToWait = (async () => {
+    account = useAccount();
+    if (account != null) {
+      validWallets = (await account.wait()).getAvailableWallets();
+      console.log("validWallets", validWallets);
+    }
+  })();
+
+  function closeModal() {
+    loading = false;
+    visible = false;
+  }
+
+  onMount(() => {
+    on(window, "wallet_prompt", async () => {
+      console.log("EVENT!");
+      loading = true;
+      visible = true;
+
+      // Ensure everything has loaded.
+      await promisesToWait;
+
       loading = false;
-      visible = false;
-    }
-  
-    onMount(() => {
-      on(window, 'wallet_prompt', async () => {
-        console.log('EVENT!');
-        loading = true;
-        visible = true;
-  
-        // Ensure everything has loaded.
-        await promisesToWait;
-  
-        loading = false;
-      });
     });
-  
-    async function login(id: string) {
-      await account!.selectAndLogin(id);
-      console.log('Logged in!');
-  
-      // TODO(#58): Split the session setup
-      if (account!.getProvider()?.supportsSession()) {
-        await account!.setupSession();
-      }
-  
-      visible = false;
-      // resolve waiting promises.
-      window.dispatchEvent(new Event('wallet_login_success'));
+  });
+
+  async function login(id: string) {
+    await account!.selectAndLogin(id);
+    console.log("Logged in!");
+
+    // TODO(#58): Split the session setup
+    if (account!.getProvider()?.supportsSession()) {
+      await account!.setupSession();
     }
-  </script>
-  
-  {#if visible}
-    <div class="modal-backdrop">
-      &nbsp;
-    </div>
-    <div class="modal-card">
-    <Card > 
+
+    visible = false;
+    // resolve waiting promises.
+    window.dispatchEvent(new Event("wallet_login_success"));
+  }
+</script>
+
+{#if visible}
+  <div class="modal-backdrop">&nbsp;</div>
+  <div class="modal-card">
+    <Card>
       {#if loading}
         Loading...
       {:else}
@@ -81,17 +79,20 @@
             {#if validWallets.length >= 2}
               {#if !showAllWallets}
                 {@const controllerWallet = validWallets.find(
-                  (wallet) => wallet.id === 'controller',
+                  (wallet) => wallet.id === "controller",
                 )}
                 {#if controllerWallet}
                   {@const image =
-                    typeof controllerWallet.icon == 'string'
+                    typeof controllerWallet.icon == "string"
                       ? controllerWallet.icon
                       : controllerWallet.icon.light}
-                  <Button class="wallet-button" onclick={() => login(controllerWallet.id)}>
+                  <Button
+                    class="wallet-button"
+                    onclick={() => login(controllerWallet.id)}
+                  >
                     <img
                       src={image}
-                      alt={controllerWallet.name + ' logo'}
+                      alt={controllerWallet.name + " logo"}
                       class="wallet-icon-large"
                     />
                     <div class="wallet-info">
@@ -113,27 +114,26 @@
               {:else}
                 {#each validWallets as wallet}
                   {@const image =
-                    typeof wallet.icon == 'string'
+                    typeof wallet.icon == "string"
                       ? wallet.icon
                       : wallet.icon.light}
-                  <Button class="wallet-button" onclick={() => login(wallet.id)}>
+                  <Button
+                    class="wallet-button"
+                    onclick={() => login(wallet.id)}
+                  >
                     <img
                       src={image}
-                      alt={wallet.name + ' logo'}
+                      alt={wallet.name + " logo"}
                       class="icons"
                     />
                     <div class="wallet-info">
                       <div class="wallet-name">
                         {wallet.name}
                       </div>
-                      {#if wallet.id == 'controller'}
-                        <div class="free-gas-badge">
-                          FREE GAS!
-                        </div>
+                      {#if wallet.id == "controller"}
+                        <div class="free-gas-badge">FREE GAS!</div>
                       {:else}
-                        <div class="standard-badge">
-                          Standard
-                        </div>
+                        <div class="standard-badge">Standard</div>
                       {/if}
                     </div>
                   </Button>
@@ -146,15 +146,14 @@
             {:else}
               {#each validWallets as wallet}
                 {@const image =
-                  typeof wallet.icon == 'string'
+                  typeof wallet.icon == "string"
                     ? wallet.icon
                     : wallet.icon.light}
-                <Button class="wallet-button-single" onclick={() => login(wallet.id)}>
-                  <img
-                    src={image}
-                    alt={wallet.name + ' logo'}
-                    class="icons"
-                  />
+                <Button
+                  class="wallet-button-single"
+                  onclick={() => login(wallet.id)}
+                >
+                  <img src={image} alt={wallet.name + " logo"} class="icons" />
                   <div class="login-info">
                     <div class="wallet-name">Login</div>
                   </div>
@@ -165,14 +164,13 @@
         </div>
       {/if}
     </Card>
-    </div>
-  {/if}
-  
+  </div>
+{/if}
 
-  <style>
+<style>
   .icons {
-    height: 2rem;    
-    padding: 0.5rem;  
+    height: 2rem;
+    padding: 0.5rem;
   }
 
   .modal-backdrop {
@@ -203,7 +201,7 @@
   }
 
   .modal-header {
-    font-family: 'PonziNumber', sans-serif;
+    font-family: "PonziNumber", sans-serif;
     margin-bottom: 1.25 rem;
     display: flex;
     gap: 0.5rem;
@@ -216,7 +214,6 @@
     justify-content: stretch;
     gap: 0.5rem;
   }
-
 
   .wallet-icon-large {
     height: 2.5rem;
