@@ -9,13 +9,13 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_repository::LandRepository;
+use chaindata_repository::{LandRepository, SimplePositionRepository};
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
-use routes::{lands::LandsRoute, price::PriceRoute, tokens::TokenRoute};
+use routes::{lands::LandsRoute, price::PriceRoute, simple_positions::SimplePositionsRoute, tokens::TokenRoute};
 use serde::{Deserialize, Serialize};
 use service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 use sqlx::{postgres::PgConnectOptions, ConnectOptions, PgPool};
@@ -112,12 +112,14 @@ async fn main() -> Result<()> {
     chaindata_service.start();
 
     let land_repository = Arc::new(LandRepository::new(pool.clone()));
+    let simple_position_repository = Arc::new(SimplePositionRepository::new(pool.clone()));
 
     let app_state = AppState {
         token_service: token_service.clone(),
         avnu_service: avnu.clone(),
         ekubo_service: ekubo.clone(),
         land_repository,
+        simple_position_repository,
     };
 
     let cors = CorsLayer::new()
@@ -148,6 +150,10 @@ async fn main() -> Result<()> {
         .nest(
             "/lands",
             LandsRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
+            "/simple-positions",
+            SimplePositionsRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))
