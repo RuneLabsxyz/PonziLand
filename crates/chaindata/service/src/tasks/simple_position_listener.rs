@@ -96,7 +96,7 @@ impl SimplePositionListenerTask {
         // Close all previous positions for this land location
         let closed_count = self
             .simple_position_repository
-            .close_positions_by_land_location(*location, at.naive_utc(), "bought")
+            .close_positions_by_land_location((*location).into(), at.naive_utc(), "bought")
             .await
             .map_err(|e| {
                 error!("Failed to close previous positions for land bought: {}", e);
@@ -145,7 +145,7 @@ impl SimplePositionListenerTask {
         // Close all previous positions for this land location
         let closed_count = self
             .simple_position_repository
-            .close_positions_by_land_location(*location, at.naive_utc(), "bought")
+            .close_positions_by_land_location((*location).into(), at.naive_utc(), "bought")
             .await
             .map_err(|e| {
                 error!(
@@ -190,7 +190,7 @@ impl SimplePositionListenerTask {
         // Close all open positions for this land location due to nuking
         let closed_count = self
             .simple_position_repository
-            .close_positions_by_land_location(*location, at.naive_utc(), "nuked")
+            .close_positions_by_land_location((*location).into(), at.naive_utc(), "nuked")
             .await
             .map_err(|e| {
                 error!("Failed to close positions for land nuked: {}", e);
