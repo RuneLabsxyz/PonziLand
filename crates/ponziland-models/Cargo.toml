@@ -10,6 +10,8 @@ serde_json = { workspace = true }
 serde-aux = "4.7.0"
 starknet.workspace = true
 chrono.workspace = true
+sqlx = { workspace = true, features = ["bigdecimal"] }
+bigdecimal = { version = "0.3", features = ["serde"] }
 
 [lints]
 workspace = true

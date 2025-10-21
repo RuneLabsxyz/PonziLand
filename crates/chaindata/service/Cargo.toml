@@ -31,6 +31,8 @@ ponziland-models = { path = "../../ponziland-models" }
 chaindata-repository = { path = "../repository" }
 chaindata-models = { path = "../models" }
 reqwest.workspace = true
+bigdecimal = { version = "0.3", features = ["serde"] }
+num-bigint = "0.4"
 
 [lints]
 workspace = true

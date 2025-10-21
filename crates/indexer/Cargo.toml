@@ -52,6 +52,7 @@ chaindata-repository = { path = "../chaindata/repository" }
 serde_json.workspace = true
 price-provider.workspace = true
 avnu-pricing = { path = "../avnu-pricing" }
+bigdecimal = { version = "0.3", features = ["serde"] }
 
 [lints]
 workspace = true
