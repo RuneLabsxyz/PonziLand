@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
-    "address": "0x5bb03b3f311f8378b9c375c6c174b2174fa345df93ffe4f7c2c7e98268b9de9",
-    "seed": "quests_97155450",
+    "address": "0x6800f3331ef990b777a3aa4cf8e8bff555fb04083c3244e75d22d8b4be8bac1",
+    "seed": "quests_340973433",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1479,7 +1479,7 @@
   },
   "contracts": [
     {
-      "address": "0x470b85dbfc5a6c815b5e9deb0a3f3f8bcf8d1b0811a6e4b92fc80ffbb03c22e",
+      "address": "0x3743006be0553d02a0b921ff49bc700466412b870b5fa554d19cc7f89c9c37a",
       "class_hash": "0x31a121e564dcf10855f038a223d4bb2f78bdb0010fb8a08654856f68d33aede",
       "abi": [
         {
@@ -2340,7 +2340,7 @@
       ]
     },
     {
-      "address": "0x3246d8fc755ccbf3586eb895d3ec256aee7d85092c613b42ff876f8d3fd5d0",
+      "address": "0x65e274ffe1f512eb5ab0b0fe161e40564c8abaaaced9c38cef433e6126c1e53",
       "class_hash": "0x339162d3e1a909f6babf0eef5934ddcd13f8d873324a11a6338a6462f491b1",
       "abi": [
         {
@@ -2702,7 +2702,7 @@
       ]
     },
     {
-      "address": "0x2004934bfaeeb6c0c85c9c06f765f1d6006bf5309e7af0e16d8e88f829ba43d",
+      "address": "0x7d546b919e11d3ed86c1d11b17398dacd4f9ebfbcddc3aba4b6cd570ecbc277",
       "class_hash": "0x4128593d4880b89f5cad42f9991c4526b8ddb43a501629742202269b121904",
       "abi": [
         {
@@ -3855,8 +3855,8 @@
       ]
     },
     {
-      "address": "0xd0064bb0ae66af58f7d452d5d2324f03c6e7e5a596270205eab3a712e89c72",
-      "class_hash": "0x2915cc6e962309b78897d2d371941caea0b276278a39a2eafe0be048fed4bc9",
+      "address": "0x4724a6b0c4f43382737d1703d0754eb64f77d7dc5303215d544b5ac27ccc22",
+      "class_hash": "0x57d6a1cef8935aab1fbe7fd502488c88914142c250cc946426128cc3b114eef",
       "abi": [
         {
           "type": "impl",
@@ -4395,7 +4395,7 @@
         "str:Mock",
         "0",
         "0x0785401cf74071ec444e37dbbd87281aba48afc86570b1a1537193d1ce39086f",
-        "str:death_mountain",
+        "str:ls_0_0_9",
         "str:game_token_systems",
         "str:settings_systems",
         "1",
@@ -4425,7 +4425,7 @@
       ]
     },
     {
-      "address": "0x19da67abaf2bc9f4cc434a76d5729e01dbfbad22824d39178a180b257133858",
+      "address": "0x72c537de531e1e420d6f10b35961e6556a2dcb0af461d9daac1112490014f99",
       "class_hash": "0x1c4d8162316e024400f55004265729c3eff1169b5aeb6dcfbda13934be75ebe",
       "abi": [
         {
