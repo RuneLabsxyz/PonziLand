@@ -8,6 +8,10 @@ on:
       - "packages/account/**"
   workflow_dispatch:
 
+permissions:
+  id-token: write # Required for OIDC
+  contents: read
+
 jobs:
   publish:
     runs-on: ubuntu-latest
@@ -72,5 +76,3 @@ jobs:
         if: steps.version-check.outputs.should_publish == 'true'
         working-directory: packages/account
         run: bun run publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
