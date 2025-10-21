@@ -15,7 +15,10 @@ use config::Conf;
 use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
-use routes::{lands::LandsRoute, price::PriceRoute, simple_positions::SimplePositionsRoute, tokens::TokenRoute};
+use routes::{
+    lands::LandsRoute, price::PriceRoute, simple_positions::SimplePositionsRoute,
+    tokens::TokenRoute,
+};
 use serde::{Deserialize, Serialize};
 use service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 use sqlx::{postgres::PgConnectOptions, ConnectOptions, PgPool};
@@ -153,7 +156,9 @@ async fn main() -> Result<()> {
         )
         .nest(
             "/simple-positions",
-            SimplePositionsRoute::new().router().with_state(app_state.clone()),
+            SimplePositionsRoute::new()
+                .router()
+                .with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))

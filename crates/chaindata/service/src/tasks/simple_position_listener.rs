@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use chaindata_models::events::actions::{AuctionFinishedEventModel, LandBoughtEventModel};
 use chaindata_models::{
     events::{EventDataModel, EventId},
     models::SimplePositionModel,
@@ -7,7 +8,6 @@ use chaindata_models::{
 use chaindata_repository::SimplePositionRepository;
 use chrono::{DateTime, Utc};
 use ponziland_models::models::SimplePosition;
-use chaindata_models::events::actions::{LandBoughtEventModel, AuctionFinishedEventModel};
 use tokio::select;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
@@ -16,7 +16,7 @@ use tracing::{debug, error, info};
 use super::Task;
 
 /// `SimplePositionListenerTask` tracks land ownership history
-/// 
+///
 /// This task processes:
 /// - `LandBoughtEvent` - Records land purchases
 /// - `AuctionFinishedEvent` - Records auction wins
@@ -47,7 +47,12 @@ impl SimplePositionListenerTask {
         Ok(position_latest.and_utc())
     }
 
-    async fn process_event(&self, event_data: EventDataModel, _event_id: EventId, at: DateTime<Utc>) {
+    async fn process_event(
+        &self,
+        event_data: EventDataModel,
+        _event_id: EventId,
+        at: DateTime<Utc>,
+    ) {
         match event_data {
             EventDataModel::LandBought(land_bought) => {
                 if let Err(e) = self.handle_land_bought(land_bought, at).await {
@@ -81,11 +86,7 @@ impl SimplePositionListenerTask {
         }
 
         // Create simple position for the buyer
-        let position = SimplePosition::new(
-            buyer.parse()?,
-            (*location).into(),
-            at.naive_utc(),
-        );
+        let position = SimplePosition::new(buyer.parse()?, (*location).into(), at.naive_utc());
 
         let position_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
 
@@ -117,11 +118,7 @@ impl SimplePositionListenerTask {
         }
 
         // Create simple position for the auction winner
-        let position = SimplePosition::new(
-            buyer.parse()?,
-            (*location).into(),
-            at.naive_utc(),
-        );
+        let position = SimplePosition::new(buyer.parse()?, (*location).into(), at.naive_utc());
 
         let position_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
 
@@ -191,19 +188,18 @@ impl Task for SimplePositionListenerTask {
                         data,
                         event_id,
                         at,
-                    } => {
-                        match ponziland_models::events::EventData::from_json(&name, data) {
-                            Ok(event_data) => (
-                                event_data.into(),
-                                EventId::parse_from_torii(&event_id).unwrap_or_else(|_| EventId::new_test(0, 0, 0)),
-                                at,
-                            ),
-                            Err(e) => {
-                                debug!("Failed to parse event {}: {}", name, e);
-                                continue;
-                            }
+                    } => match ponziland_models::events::EventData::from_json(&name, data) {
+                        Ok(event_data) => (
+                            event_data.into(),
+                            EventId::parse_from_torii(&event_id)
+                                .unwrap_or_else(|_| EventId::new_test(0, 0, 0)),
+                            at,
+                        ),
+                        Err(e) => {
+                            debug!("Failed to parse event {}: {}", name, e);
+                            continue;
                         }
-                    }
+                    },
                     RawToriiData::Grpc(structure) => {
                         match ponziland_models::events::EventData::try_from(structure) {
                             Ok(event_data) => (
