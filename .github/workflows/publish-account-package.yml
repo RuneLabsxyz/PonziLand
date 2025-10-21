@@ -25,6 +25,9 @@ jobs:
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
+      # Required for publishing to npm
+      - name: Update npm
+        run: npm install -g npm@latest
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
