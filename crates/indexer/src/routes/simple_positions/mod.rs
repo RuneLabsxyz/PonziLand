@@ -52,7 +52,7 @@ impl SimplePositionsRoute {
     ) -> Result<Json<Vec<SimplePositionResponse>>, axum::http::StatusCode> {
         // Convert address to lowercase for case-insensitive matching
         let owner_lowercase = owner.to_lowercase();
-        
+
         let positions = simple_position_repository
             .get_by_owner(&owner_lowercase)
             .await
@@ -90,7 +90,7 @@ impl SimplePositionsRoute {
     ) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
         // Convert address to lowercase for case-insensitive matching
         let owner_lowercase = owner.to_lowercase();
-        
+
         let count = simple_position_repository
             .count_by_owner(&owner_lowercase)
             .await

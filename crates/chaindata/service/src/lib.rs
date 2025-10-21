@@ -2,14 +2,17 @@ pub mod error;
 pub mod gg_xyz_api;
 pub mod tasks;
 
-use chaindata_repository::{Database, EventRepository, LandRepository, LandStakeRepository, SimplePositionRepository};
+use chaindata_repository::{
+    Database, EventRepository, LandRepository, LandStakeRepository, SimplePositionRepository,
+};
 use gg_xyz_api::GGApi;
 use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
 use std::sync::Arc;
 use tasks::{
-    event_listener::EventListenerTask, model_listener::ModelListenerTask, simple_position_listener::SimplePositionListenerTask, Task, TaskWrapper,
+    event_listener::EventListenerTask, model_listener::ModelListenerTask,
+    simple_position_listener::SimplePositionListenerTask, Task, TaskWrapper,
 };
 use torii_ingester::{ToriiClient, ToriiConfiguration};
 

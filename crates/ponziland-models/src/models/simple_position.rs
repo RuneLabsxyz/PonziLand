@@ -1,7 +1,7 @@
+use crate::shared::Location;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use torii_ingester::prelude::ContractAddress;
-use crate::shared::Location;
 
 /// Simple position tracking land ownership history
 #[derive(Debug, Clone, Serialize, Deserialize)]
