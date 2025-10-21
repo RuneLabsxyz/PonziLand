@@ -102,9 +102,11 @@ export const getPlayerQuestAtLocation = async (player_address: string, location:
     });
 
     let cleaned_res = res.items.map((item: any) => {
-        console.log('quest item', item.models.ponzi_land.Quest);
-        return item.models.ponzi_land.Quest;
-    });
+        if (!item.models.ponzi_land.Quest.completed) {
+            return item.models.ponzi_land.Quest;
+        }
+        return null;
+    }).filter((item: any) => item !== null);
 
     return cleaned_res;
 };
