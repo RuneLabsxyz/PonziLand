@@ -10,7 +10,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
-		"publish": "npm run prepack && bun pm pack --ignore-scripts && npm publish ./packages/account/$(echo runelabsxyz-ponziland-account-*.tgz)",
+		"pack": "npm run prepack && bun pm pack --ignore-scripts",
 		"test": "npm run test:unit -- --run",
 		"lint": "eslint . && prettier --check .",
 		"format": "prettier --write ."
