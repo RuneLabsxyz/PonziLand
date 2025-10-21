@@ -6,6 +6,7 @@ use tracing::{debug, error, info};
 
 pub mod event_listener;
 pub mod model_listener;
+pub mod pnl_processor;
 
 // TODO(Red): Migrate this to a dedicated crate, as we could add more informations later.
 
