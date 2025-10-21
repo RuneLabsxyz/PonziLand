@@ -168,7 +168,7 @@ pub mod quests {
             let game_token_address_felt: felt252 = game_token_address.into();
 
             let time_to_start = get_block_timestamp();
-            let time_to_end = time_to_start + 60000000;
+            let time_to_end = time_to_start + 6000000000;
 
             let mut game_id: u64 = 0;
             match quest_game.quest_type {
@@ -180,7 +180,7 @@ pub mod quests {
                         .mint_game(
                             Option::Some(player_name), //player name
                             Option::Some(quest_game.settings_id), //settings id
-                            Option::None, //start
+                            Option::Some(time_to_start), //start
                             Option::Some(time_to_end), //end
                             Option::None, //objective ids
                             Option::None, //context
