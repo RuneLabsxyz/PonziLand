@@ -19,7 +19,7 @@ export class WalletStore {
 	private dojoSdk?: SDK<never>;
 	private provider?: Provider;
 	private apiUrl: string;
-	private baseToken: Token;
+	private baseToken?: Token;
 
 	private tokens: Token[];
 
@@ -37,13 +37,13 @@ export class WalletStore {
 					dojoSdk?: SDK<never>;
 					tokens?: Token[];
 					apiUrl: string;
-					baseToken: Token;
+					baseToken?: Token;
 			  }
 			| {
 					provider: BalanceProvider;
 					tokenPrice: TokenPriceConverter;
 					tokens: Token[];
-					baseToken: Token;
+					baseToken?: Token;
 			  }
 	) {
 		this.totalBalance = $state(CurrencyAmount.fromScaled(0, options.baseToken));
@@ -95,7 +95,7 @@ export class WalletStore {
 			this.totalBalance = computeTotalBalance(
 				this.tokenPriceConverter,
 				this.balances,
-				this.baseToken
+				this.baseToken!
 			);
 		} catch (error) {
 			console.error('Error updating balances:', error);
@@ -107,7 +107,7 @@ export class WalletStore {
 		this.totalBalance = computeTotalBalance(
 			this.tokenPriceConverter,
 			this.balances,
-			this.baseToken
+			this.baseToken!
 		);
 	}
 
