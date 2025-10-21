@@ -149,6 +149,34 @@ impl Repository {
         .map(|row| row.latest_time)
     }
 
+    /// Gets land by location (latest version)
+    ///
+    /// # Errors
+    /// Returns an error if the land could not be retrieved
+    pub async fn get_by_location(&self, location: Location) -> Result<LandModel, sqlx::Error> {
+        query_as!(
+            LandModel,
+            r#"
+            SELECT
+                id as "id: _",
+                at,
+                location as "location: Location",
+                bought_at,
+                owner,
+                sell_price as "sell_price: _",
+                token_used,
+                level as "level: _"
+            FROM land
+            WHERE location = $1
+            ORDER BY at DESC
+            LIMIT 1
+            "#,
+            location as Location
+        )
+        .fetch_one(&mut *(self.db.acquire().await?))
+        .await
+    }
+
     /// Gets the total distribution of tokens for all lands
     ///
     /// # Errors

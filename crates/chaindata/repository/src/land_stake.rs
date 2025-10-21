@@ -151,6 +151,33 @@ impl Repository {
         .await
         .map(|row| row.latest_time)
     }
+
+    /// Gets land stake by location (latest version)
+    ///
+    /// # Errors
+    /// Returns an error if the land stake could not be retrieved
+    pub async fn get_by_location(&self, location: Location) -> Result<LandStakeModel, sqlx::Error> {
+        query_as!(
+            LandStakeModel,
+            r#"
+            SELECT
+                id as "id: _",
+                at,
+                location as "location: Location",
+                earliest_claim_neighbor_time,
+                earliest_claim_neighbor_location as "earliest_claim_neighbor_location: Location",
+                num_active_neighbors as "num_active_neighbors: i16",
+                amount as "amount: _"
+            FROM land_stake
+            WHERE location = $1
+            ORDER BY at DESC
+            LIMIT 1
+            "#,
+            location as Location
+        )
+        .fetch_one(&mut *(self.db.acquire().await?))
+        .await
+    }
 }
 
 #[cfg(test)]

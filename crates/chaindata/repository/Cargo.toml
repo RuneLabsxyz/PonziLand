@@ -15,6 +15,7 @@ sqlx = { workspace = true, features = [
     "bigdecimal",
 ] }
 chaindata-models = { path = "../models" }
+serde_json.workspace = true
 thiserror.workspace = true
 
 [dev-dependencies]
