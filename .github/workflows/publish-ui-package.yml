@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "pkgs/ui/**"
+      - "packages/ui/**"
   workflow_dispatch:
 
 jobs:
@@ -38,16 +38,16 @@ jobs:
             ${{ runner.os }}-bun-
 
       - name: Install dependencies
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: bun install
 
       - name: Build package
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: bun run build
 
       - name: Check if version changed
         id: version-check
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: |
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
           NPM_VERSION=$(npm view @ponziland/ui version 2>/dev/null || echo "0.0.0")
@@ -63,7 +63,7 @@ jobs:
 
       - name: Publish to npm
         if: steps.version-check.outputs.changed == 'true'
-        working-directory: pkgs/ui
+        working-directory: packages/ui
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

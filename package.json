@@ -2,9 +2,9 @@
   "name": "ponziland",
   "version": "1.0.0",
   "workspaces": [
-    "pkgs/*",
     "client",
-    "playtest"
+    "playtest",
+    "packages/*"
   ],
   "devDependencies": {
     "prettier": "=3.4.2",
