@@ -6,7 +6,7 @@ pub trait IQuestSystems<T> {
     fn start_quest(
         ref self: T, land_location: u16, player_name: felt252,
     ) -> u64;
-    fn claim_land(ref self: T, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256);
+    fn finish_quest(ref self: T, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256);
     fn get_quest(self: @T, quest_id: u64) -> (Quest, QuestDetails);
     fn set_land_quest(ref self: T, land_location: u16, game_id: u64);
     fn remove_land_quest(ref self: T, land_location: u16);
@@ -225,12 +225,14 @@ pub mod quests {
             quest.id
         }
 
-        fn claim_land(ref self: ContractState, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256) {
+        fn finish_quest(ref self: ContractState, quest_id: u64, token_address: ContractAddress, sell_price: u256, amount_to_stake: u256) {
             let mut world = self.world(DEFAULT_NS());
             let store = StoreTrait::new(world);
             assert!(store.get_quest_lands_enabled(), "Quests are not enabled");
 
             let mut quest: Quest = world.read_model(quest_id);
+
+            assert!(quest.completed == false, "Quest is already completed");
             let mut quest_details: QuestDetails = world.read_model(quest.location);
             let mut land: Land = world.read_model(quest_details.location);
 
