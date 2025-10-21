@@ -8,11 +8,11 @@
         "oxalica": "oxalica"
       },
       "locked": {
-        "lastModified": 1757353375,
-        "narHash": "sha256-Fj8nx2ivV143IbaQJTkaEWr3ALZVbFJlBr3oAJKeWJ0=",
+        "lastModified": 1759911979,
+        "narHash": "sha256-g0zeoZTMm0CG596wvuxdzu6ueUbd+tFoEPoz2nAU2/M=",
         "owner": "knownasred",
         "repo": "cairo-nix",
-        "rev": "c2c9bdd6387af0b60306c2fe11a74f17b17281df",
+        "rev": "e0be603e458472c67e6b5e973e833eee7d1c3fe7",
         "type": "github"
       },
       "original": {
@@ -172,7 +172,7 @@
       },
       "original": {
         "owner": "nixos",
-        "ref": "release-25.05",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
@@ -197,11 +197,11 @@
     },
     "process-compose-flake": {
       "locked": {
-        "lastModified": 1749418557,
-        "narHash": "sha256-wJHHckWz4Gvj8HXtM5WVJzSKXAEPvskQANVoRiu2w1w=",
+        "lastModified": 1758658658,
+        "narHash": "sha256-y5GSCqlGe/uZzlocCPZcjc7Gj+mTq7m0P6xPGx88+No=",
         "owner": "Platonic-Systems",
         "repo": "process-compose-flake",
-        "rev": "91dcc48a6298e47e2441ec76df711f4e38eab94e",
+        "rev": "e968a94633788f5d9595d727f41c2baf0714be7b",
         "type": "github"
       },
       "original": {
