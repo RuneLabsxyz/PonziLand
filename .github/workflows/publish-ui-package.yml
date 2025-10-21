@@ -64,6 +64,6 @@ jobs:
       - name: Publish to npm
         if: steps.version-check.outputs.changed == 'true'
         working-directory: packages/ui
-        run: bun publish --access public
+        run: bun run publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
