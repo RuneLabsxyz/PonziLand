@@ -123,6 +123,8 @@ pub mod quests {
             assert!(land.owner == get_caller_address(), "Player is not the owner of the land");
 
             let quest_details: QuestDetails = world.read_model(land_location);
+
+            assert!(quest_details.participant_count == 0, "Quest has an active participant");
             world.erase_model(@quest_details);
         }
 
