@@ -87,11 +87,7 @@
         const baseLandStore = landStore.getLand(x, y);
         if (!baseLandStore) return false;
 
-        let baseLand: any;
-        const unsubscribe = baseLandStore.subscribe((land) => {
-          baseLand = land;
-        });
-        unsubscribe();
+        let baseLand = get(baseLandStore);
 
         return BuildingLand.is(baseLand);
       })
@@ -100,18 +96,12 @@
 
         // Get the actual BaseLand from the store
         const baseLandStore = landStore.getLand(x, y)!;
-        let baseLand: any;
-        const unsubscribe = baseLandStore.subscribe((land) => {
-          baseLand = land;
-        });
-        unsubscribe();
+        let baseLand = get(baseLandStore);
 
         return {
           position: [x, y, 0] as [number, number, number],
-          land: {
-            ...baseLand, // Use the actual BaseLand instance
-            locationString: baseLand.locationString,
-          },
+          // Cast to any so the resulting object satisfies MinimalLandTile at compile time
+          land: baseLand as any,
         };
       });
 
