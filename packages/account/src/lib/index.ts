@@ -3,6 +3,8 @@ export { WalletStore } from './stores/wallet.store.svelte.js';
 
 // Account state
 export { default as accountState } from './account.svelte.js';
+import * as account from './account.svelte.js';
+export { account };
 
 // Types and interfaces
 export type { Token } from '$lib/types.js';
