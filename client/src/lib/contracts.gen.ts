@@ -1603,7 +1603,7 @@ export function setupWorld(provider: DojoProvider) {
 		try {
 			return await provider.execute(
 				snAccount,
-				build_quests_claimLand_calldata(questId, tokenAddress, sellPrice, amountToStake),
+				build_quests_finishQuest_calldata(questId, tokenAddress, sellPrice, amountToStake),
 				"ponzi_land",
 			);
 		} catch (error) {
