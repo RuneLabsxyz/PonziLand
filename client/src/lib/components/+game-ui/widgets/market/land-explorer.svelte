@@ -202,12 +202,12 @@
             };
           });
 
-        lands = sortLands(filteredLands);
-
         // Fetch converted prices for all lands
-        lands.forEach((land) => {
+        filteredLands.forEach((land) => {
           updateLandConvertedPrice(land);
         });
+
+        lands = sortLands(filteredLands);
       });
     } catch (error) {
       console.error('Error in land-explorer setup:', error);
