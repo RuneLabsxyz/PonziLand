@@ -87,7 +87,7 @@ export const HEATMAP_PARAMETERS: Record<
     description: 'Development level of the land',
     applicableToBuilding: true,
     applicableToAuction: true,
-    defaultColorScheme: HeatmapColorScheme.VIRIDIS,
+    defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (BuildingLand.is(tile.land) || AuctionLand.is(tile.land)) {
         return tile.land.level;
@@ -102,8 +102,8 @@ export const HEATMAP_PARAMETERS: Record<
     description: 'Amount of tokens staked on this land',
     unit: `${getBaseToken()?.symbol} equivalent`,
     applicableToBuilding: true,
-    applicableToAuction: true,
-    defaultColorScheme: HeatmapColorScheme.COOL,
+    applicableToAuction: false,
+    defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (BuildingLand.is(tile.land) || AuctionLand.is(tile.land)) {
         const stakeAmount = tile.land.stakeAmount;
@@ -135,7 +135,7 @@ export const HEATMAP_PARAMETERS: Record<
     unit: 'days',
     applicableToBuilding: true,
     applicableToAuction: false,
-    defaultColorScheme: HeatmapColorScheme.RAINBOW,
+    defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (BuildingLand.is(tile.land)) {
         const now = new Date();
@@ -250,7 +250,7 @@ export const HEATMAP_PARAMETERS: Record<
     unit: 'hours',
     applicableToBuilding: false,
     applicableToAuction: true,
-    defaultColorScheme: HeatmapColorScheme.COOL,
+    defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       if (AuctionLand.is(tile.land)) {
         const now = new Date();
@@ -269,7 +269,7 @@ export const HEATMAP_PARAMETERS: Record<
     unit: 'tiles',
     applicableToBuilding: true,
     applicableToAuction: true,
-    defaultColorScheme: HeatmapColorScheme.GRAYSCALE,
+    defaultColorScheme: HeatmapColorScheme.HEAT,
     extractor: (tile: LandTile) => {
       const centerX = 256 / 2; // GRID_SIZE / 2
       const centerY = 256 / 2;
