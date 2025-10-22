@@ -3856,7 +3856,7 @@
     },
     {
       "address": "0x7cc2eae1422ac5cfaf6450025b8693caddb330d69863b24d2d811f52e2e7c5c",
-      "class_hash": "0x7cf5c86a8733a2d259afe7dd11eb685f4ac0b4522d37ddb8d58682eb37f48aa",
+      "class_hash": "0x719c661cf08add6d56e746a95148e792c1c03bd873d8c48de54d9744d3a5e8b",
       "abi": [
         {
           "type": "impl",
