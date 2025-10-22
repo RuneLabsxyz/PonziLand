@@ -324,6 +324,8 @@ pub mod quests {
             let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
             let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
             let mut over = false;
+            let game_token_felt: felt252 = game_token_address.into();
+            panic!("game_token_address: {}", game_token_felt);
             // Check the minigame type and handle accordingly 🐙 Different scoring systems for different game types!
             match quest_game.quest_type {
                 QuestType::Minigame => {
