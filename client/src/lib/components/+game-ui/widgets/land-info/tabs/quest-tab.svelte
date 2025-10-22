@@ -82,7 +82,8 @@
     console.log('Setting land as quest land with game ID:', selectedGameId);
 
     try {
-      const gameId = parseInt(selectedGameId);
+      const gameId = parseInt(selectedGameId.value);
+      console.log('gameId', gameId);
       const result = await SetLandQuest(land.location, gameId);
       
       if (result?.transaction_hash) {
