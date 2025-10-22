@@ -3,7 +3,7 @@
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
-  import { walletStore } from '$lib/stores/wallet.svelte';
+  import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { getTokenMetadata, toHexWithPadding } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -21,13 +21,7 @@
     land: LandWithActions;
   } = $props();
 
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find(
-      (token) => token.address === targetAddress,
-    );
-  });
+  let baseToken = $derived(getBaseToken());
 
   interface Yield {
     amount: CurrencyAmount;
@@ -90,14 +84,36 @@
     <span>{land?.token?.symbol}</span>
   </div>
   <div class="flex justify-between items-center">
-    <span class="low-opacity">Sell price</span><span
-      >{land?.sellPrice?.toString()}</span
-    >
+    <span class="low-opacity">Sell price</span><span>
+      {land?.sellPrice}
+      {land.token?.symbol}
+
+      {#if land.token && baseToken}
+        <span class="low-opacity">
+          ({walletStore.convertTokenAmount(
+            land?.sellPrice,
+            land.token,
+            baseToken,
+          )} $)
+        </span>
+      {/if}
+    </span>
   </div>
   <div class="flex justify-between items-center">
-    <span class="low-opacity">Stake Remaining</span><span
-      >{land?.stakeAmount}</span
-    >
+    <span class="low-opacity">Stake Remaining</span><span>
+      {land?.stakeAmount}
+      {land.token?.symbol}
+
+      {#if land.token && baseToken}
+        <span class="low-opacity">
+          ({walletStore.convertTokenAmount(
+            land?.stakeAmount,
+            land.token,
+            baseToken,
+          )} $)
+        </span>
+      {/if}
+    </span>
   </div>
   <!-- Total net value -->
   <div class="flex justify-between items-center text-ponzi-number py-2">
