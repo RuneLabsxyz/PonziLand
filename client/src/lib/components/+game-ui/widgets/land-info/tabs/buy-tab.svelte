@@ -327,8 +327,7 @@
           .getProvider()
           ?.getWalletAccount()
           ?.waitForTransaction(result.transaction_hash);
-        const landPromise = land.wait();
-        await Promise.any([txPromise, landPromise]);
+        await Promise.any([txPromise]);
         console.log('Buying land with TX: ', result.transaction_hash);
         gameSounds.play('buy');
 
@@ -343,7 +342,7 @@
           owner: account.address, // Assuming the owner is the current account
           stakeAmount: stakeAmount, // Set the stake amount
           sell_price: sellPriceAmount.toBignumberish(), // Ensure this is a raw value
-          block_date_bought: Date.now(), // Set the current timestamp or appropriate value
+          block_date_bought: Date.now() / 1000, // Set the current timestamp or appropriate value
           // @ts-ignore
           level: (land.level === 1
             ? 'Zero'
