@@ -69,7 +69,8 @@
     width: 100vw;
     height: 100vh;
     transform: translate(-50%, -50%);
-    background: radial-gradient(#18124480, rgba(14, 4, 21, 0.5)),
+    background:
+      radial-gradient(#18124480, rgba(14, 4, 21, 0.5)),
       url('/ui/card/texture.png');
     scale: 1.1;
   }

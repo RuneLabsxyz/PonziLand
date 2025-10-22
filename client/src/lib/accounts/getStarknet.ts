@@ -3,18 +3,14 @@ import type {
   StoredSession,
 } from '$lib/contexts/account.svelte';
 import { getDojoConfig } from '$lib/dojoConfig';
-import { padAddress, toHexWithPadding } from '$lib/utils';
-import { dojoConfig } from '$lib/dojoConfig';
 import { getStarknet } from '@starknet-io/get-starknet-core';
-import { WALLET_API, type AccountDeploymentData } from '@starknet-io/types-js';
+import { WALLET_API } from '@starknet-io/types-js';
 import {
   Account,
   PaymasterRpc,
   Provider,
   constants as SNconstants,
   WalletAccount,
-  wallet as StarknetWallet,
-  type PaymasterDetails,
 } from 'starknet';
 import { traceWallet } from './utils/walnut-trace';
 
@@ -41,6 +37,7 @@ export abstract class CommonStarknetWallet implements AccountProvider {
             ? SNconstants.StarknetChainId.SN_MAIN
             : SNconstants.StarknetChainId.SN_SEPOLIA,
       }),
+      //@ts-expect-error
       this._walletObject,
       undefined, // cairo version,
       new PaymasterRpc({

@@ -72,6 +72,12 @@
         >
           <div class="font-ponzi-number text-xs stroke-3d-black">lvl</div>
         </OverlayManagerItem>
+        <OverlayManagerItem
+          value={HeatmapParameter.STAKE_AMOUNT}
+          tooltip="Stake Amount Heatmap"
+        >
+          <div class="font-ponzi-number text-xs stroke-3d-black">⟐</div>
+        </OverlayManagerItem>
       </ToggleGroup.Root>
       <Separator orientation="vertical" class="my-2 opacity-50" />
       <ToggleGroup.Root

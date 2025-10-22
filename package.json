@@ -17,7 +17,7 @@
     "svelte": "=5.36.16",
     "@lucide/svelte": "=0.482.0",
     "starknet": "=8.5.5",
-    "@starknet-io/types-js": "=0.9.1",
+    "@starknet-io/types-js": "=0.7.7",
     "@runelabsxyz/socialink-sdk": "=0.3.1",
     "@starknet-io/get-starknet-core": "=4.0.8",
     "@sveltejs/kit": "=2.26.0",
