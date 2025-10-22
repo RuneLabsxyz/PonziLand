@@ -253,9 +253,9 @@
         <TokenSelect bind:value={sellToken} variant="swap" />
       </div>
       <div class="flex justify-between h-4">
-        <div class=" text-gray-400 mt-1 px-1">
+        <div class=" text-gray-400 mt-1 px-1 text-lg tracking-wide">
           {#if sellUsdValue}
-            ≈ ${sellUsdValue.toString()}
+            ${sellUsdValue.toString()}
           {:else if isLoadingQuotes}
             <RotatingCoin />
           {/if}
@@ -386,9 +386,9 @@
         <TokenSelect bind:value={buyToken} variant="swap" />
       </div>
       <div class="flex justify-between h-4">
-        <div class=" text-gray-400 mt-1 px-1">
+        <div class=" text-gray-400 mt-1 px-1 text-lg tracking-wide">
           {#if buyUsdValue}
-            ≈ ${buyUsdValue.toString()}
+            ${buyUsdValue.toString()}
           {:else if isLoadingQuotes}
             <RotatingCoin />
           {/if}
