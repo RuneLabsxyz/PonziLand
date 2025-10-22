@@ -1,6 +1,6 @@
 {
 	"name": "@runelabsxyz/ponziland-account",
-	"version": "0.5.3",
+	"version": "0.6.0",
 	"repository": {
 		"url": "https://github.com/RuneLabsxyz/PonziLand",
 		"directory": "packages/account"
