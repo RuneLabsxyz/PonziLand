@@ -99,7 +99,7 @@ export async function SetLandQuest(location: string) {
     const account = () => {
       return accountManager!.getProvider();
     };
-    let res = await sdk.client.quests.claimLand(
+    let res = await sdk.client.quests.finishQuest(
       account()?.getWalletAccount()!,
       questId, 
       '0x0',
