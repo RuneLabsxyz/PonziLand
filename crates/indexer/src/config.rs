@@ -38,9 +38,6 @@ pub struct Conf {
     #[config(nested)]
     pub database: DatabaseConfig,
 
-    #[config(nested)]
-    pub gg_xyz: GgXyzConfig,
-
     pub default_token: String,
 }
 
@@ -82,16 +79,6 @@ pub struct AvnuConfig {
 pub struct RpcConfig {
     #[config(env = "RPC_URL")]
     pub rpc_url: Url,
-}
-
-#[derive(Config, Debug, Clone)]
-pub struct GgXyzConfig {
-    #[config(default = false, env = "GGXYZ_ENABLED")]
-    pub enabled: bool,
-    #[config(env = "GGXYZ_API_URL")]
-    pub api_url: Url,
-    #[config(env = "GGXYZ_API_KEY")]
-    pub api_key: String,
 }
 
 #[derive(Config, Debug, Clone)]

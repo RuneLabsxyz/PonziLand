@@ -103,9 +103,6 @@ async fn main() -> Result<()> {
         ChainDataServiceConfiguration {
             torii_url: config.torii.torii_url.clone().into(),
             world_address: config.torii.world_address,
-            gg_xyz_enabled: config.gg_xyz.enabled,
-            gg_xyz_api_url: config.gg_xyz.api_url.clone(),
-            gg_xyz_api_key: config.gg_xyz.api_key.clone(),
         },
     )
     .await
