@@ -1,12 +1,11 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
-  import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
-  import { displayCurrency } from '$lib/utils/currency';
+  import { walletStore } from '$lib/stores/wallet.svelte';
   import { getTokenMetadata, toHexWithPadding } from '$lib/utils';
+  import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
 
@@ -112,25 +111,22 @@
         {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
         {displayCurrency(
           Math.abs(totalYieldValue - Number(burnRate.toString())),
-        )}
+        )} $
       </span>
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
     </div>
   </div>
 
   <div class="flex justify-between items-center text-green-400">
     <span class="low-opacity">Earning / hour</span>
     <span class="flex items-center gap-2">
-      +&nbsp;{displayCurrency(totalYieldValue)}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      +&nbsp;{displayCurrency(totalYieldValue)} $
     </span>
   </div>
 
   <div class="flex justify-between items-center text-red-400">
     <span class="low-opacity">Cost / hour</span>
     <span class="flex items-center gap-2">
-      -&nbsp;{displayCurrency(burnRate.rawValue())}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+      -&nbsp;{burnRate} $
     </span>
   </div>
   {#if yieldData}
