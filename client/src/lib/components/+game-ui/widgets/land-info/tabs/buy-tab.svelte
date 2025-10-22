@@ -322,13 +322,20 @@
       }
 
       if (result?.transaction_hash) {
-        // Only wait for the land update, not the total TX confirmation (should be fine)
+        console.log('Buying land with TX: ', result.transaction_hash);
+        // Wait for transaction confirmation
         const txPromise = accountManager!
           .getProvider()
           ?.getWalletAccount()
           ?.waitForTransaction(result.transaction_hash);
-        await Promise.any([txPromise]);
-        console.log('Buying land with TX: ', result.transaction_hash);
+
+        const txReceipt = await txPromise;
+        if (txReceipt?.statusReceipt !== 'SUCCEEDED') {
+          throw new Error(
+            `Transaction failed with status: ${txReceipt?.statusReceipt}`,
+          );
+        }
+
         gameSounds.play('buy');
 
         // Optimistically update the land in the store
@@ -378,16 +385,6 @@
 
         // Update the land store with the stake
         landStore.updateLand(stakeEntity);
-
-        const coordinates = locationToCoordinates(land.location);
-        const updatedLandOnIndexer = await landStore.waitForOwnerChange(
-          coordinates.x,
-          coordinates.y,
-          account.address ?? '',
-          30000,
-        );
-        console.log('Purchase confirmed on-indexer:', updatedLandOnIndexer);
-        gameSounds.play('buy');
       }
     } catch (error) {
       console.error(
