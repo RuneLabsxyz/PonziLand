@@ -50,7 +50,7 @@
   let hasWon = $derived(isHighScore ? score >= Number(questDetails?.target_score || 0) : score === 1);
   let hasFailed = $derived(is_quest_over && !hasWon);
 
-  // this is the action function for the mock game, it should be replaced with a redirect to the minigame for actual games
+  // Route to different games based on quest game type 🐙 tentacles reaching into multiple game dimensions
   async function handleGameActionClick() {
     if (game_token_id == 0) {
       console.log('Game Token ID is 0, getting game token id');
@@ -58,23 +58,45 @@
       return;
     }
 
-    /*
-    let call: Call = {
-      contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
-      entrypoint: 'explore',
-      calldata: [game_token_id]
+    const gameName = currentQuestGame?.game_name?.toLowerCase() || '';
+    console.log('Launching game:', gameName, 'with token ID:', game_token_id);
+
+    // Caps Jam - redirect to web game
+    if (gameName.includes('caps')) {
+      window.location.href = 'https://caps-jam.vercel.app/#/game/' + game_token_id;
     }
+    // Mock Game - execute contract call
+    else if (gameName.includes('mock')) {
+      loading = true;
+      try {
+        let call: Call = {
+          contractAddress: "0x368e82bdb7b5308228c08015c3f9c1fccf0096cd941efb30f24110e60ffa9e",
+          entrypoint: 'explore',
+          calldata: [game_token_id]
+        }
 
-    let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
-    console.log(res);
+        let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
+        console.log(res);
 
-    if (res?.transaction_hash) {
-      await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
+        if (res?.transaction_hash) {
+          await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
+        }
+      } catch (error) {
+        console.error('Error executing mock game:', error);
+      } finally {
+        loading = false;
+        getQuestInfo();
+      }
     }
-
-    */
-   window.location.href = 'https://caps-jam.vercel.app/#/game/' + game_token_id;
-    loading = false;
+    // Death Mountain - placeholder redirect
+    else if (gameName.toLowerCase().includes('death') || gameName.toLowerCase().includes('mountain')) {
+      window.location.href = 'https://death-mountain-placeholder.vercel.app/#/game/' + game_token_id;
+    }
+    // Fallback for unknown games
+    else {
+      console.warn('Unknown game type:', gameName);
+      alert('This game is not yet configured. Coming soon! 🐙');
+    }
   }
 
   async function handleSetQuestClick() {
