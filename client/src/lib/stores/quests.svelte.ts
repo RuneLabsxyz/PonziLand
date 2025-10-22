@@ -5,7 +5,7 @@ import { parseDojoCall } from '@dojoengine/core';
 import { getManifest } from '$lib/manifest';
 import { getBaseToken } from './wallet.svelte';
 
-export async function SetLandQuest(location: string) {
+export async function SetLandQuest(location: string, game_id: number) {
     const { client: sdk, accountManager } = useDojo();
     const account = () => {
       return accountManager!.getProvider();
@@ -14,7 +14,7 @@ export async function SetLandQuest(location: string) {
     let res = await sdk.client.quests.setLandQuest(
       account()?.getWalletAccount()!,
       location,
-      2,
+      game_id,
     );
     notificationQueue.addNotification(res?.transaction_hash ?? null, 'set quest tile');
     return res;

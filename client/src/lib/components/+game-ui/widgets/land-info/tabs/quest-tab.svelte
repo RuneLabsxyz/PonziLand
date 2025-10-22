@@ -79,10 +79,11 @@
 
   async function handleSetQuestClick() {
     loading = true;
-    console.log('Setting land as quest land');
+    console.log('Setting land as quest land with game ID:', selectedGameId);
 
     try {
-      const result = await SetLandQuest(land.location);
+      const gameId = parseInt(selectedGameId);
+      const result = await SetLandQuest(land.location, gameId);
       
       if (result?.transaction_hash) {
         console.log('Setting quest land with TX: ', result.transaction_hash);
