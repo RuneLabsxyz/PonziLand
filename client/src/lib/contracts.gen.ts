@@ -1591,15 +1591,15 @@ export function setupWorld(provider: DojoProvider) {
 		}
 	};
 
-	const build_quests_claimLand_calldata = (questId: BigNumberish, tokenAddress: string, sellPrice: BigNumberish, amountToStake: BigNumberish): DojoCall => {
+	const build_quests_finishQuest_calldata = (questId: BigNumberish, tokenAddress: string, sellPrice: BigNumberish, amountToStake: BigNumberish): DojoCall => {
 		return {
 			contractName: "quests",
-			entrypoint: "claim_land",
+			entrypoint: "finish_quest",
 			calldata: [questId, tokenAddress, sellPrice, amountToStake],
 		};
 	};
 
-	const quests_claimLand = async (snAccount: Account | AccountInterface, questId: BigNumberish, tokenAddress: string, sellPrice: BigNumberish, amountToStake: BigNumberish) => {
+	const quests_finishQuest = async (snAccount: Account | AccountInterface, questId: BigNumberish, tokenAddress: string, sellPrice: BigNumberish, amountToStake: BigNumberish) => {
 		try {
 			return await provider.execute(
 				snAccount,
@@ -2016,8 +2016,8 @@ export function setupWorld(provider: DojoProvider) {
 			buildSetTimeSpeedCalldata: build_config_setTimeSpeed_calldata,
 		},
 		quests: {
-			claimLand: quests_claimLand,
-			buildClaimLandCalldata: build_quests_claimLand_calldata,
+			finishQuest: quests_finishQuest,
+			buildFinishQuestCalldata: build_quests_finishQuest_calldata,
 			getQuest: quests_getQuest,
 			buildGetQuestCalldata: build_quests_getQuest_calldata,
 			getQuestEntryPrice: quests_getQuestEntryPrice,
