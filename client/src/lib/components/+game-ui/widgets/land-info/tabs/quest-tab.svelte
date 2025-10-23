@@ -88,9 +88,32 @@
         getQuestInfo();
       }
     }
-    // Death Mountain - placeholder redirect
+    // Death Mountain - handle start_game call if game over with score 0, otherwise redirect 🐙 tentacles reaching into the mountain
     else if (gameName.toLowerCase().includes('death') || gameName.toLowerCase().includes('mountain')) {
-      window.location.href = 'https://death-mountain-placeholder.vercel.app/#/game/' + game_token_id;
+      if (is_quest_over && score === 0) {
+        loading = true;
+        try {
+          let call: Call = {
+            contractAddress: "0x38197b89d5c2e676d06aa93cf97b5be9ee4bf2b13ba972de4997f931f3559ee",
+            entrypoint: 'start_game',
+            calldata: [game_token_id, 76]
+          }
+
+          let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
+          console.log(res);
+
+          if (res?.transaction_hash) {
+            await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
+          }
+        } catch (error) {
+          console.error('Error starting death mountain game:', error);
+        } finally {
+          loading = false;
+          getQuestInfo();
+        }
+      } else {
+        window.location.href = 'https://death-mountain.vercel.app/#/game/' + game_token_id;
+      }
     }
     // Fallback for unknown games
     else {
