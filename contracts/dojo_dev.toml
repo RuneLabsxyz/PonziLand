@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "quests_481023972"
+seed = "quests_425612186"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -97,7 +97,7 @@ order_inits = [
     "1",
     "str:Mock",
     "0",
-    "0x16eda1adea730fbdc03915563ba9daff347e096e6fbb29f837705ca67db1aef", # dm address
+    "0x757092d4bb00c86fd6d96429fc351f4a7d0409e08cc29d62eddd1c284cac6dc", # dm address
     "str:ls_0_0_9",
     "str:game_token_systems", # game contract name
     "str:settings_systems",
