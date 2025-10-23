@@ -1,8 +1,8 @@
 {
   "world": {
     "class_hash": "0x57994b6a75fad550ca18b41ee82e2110e158c59028c4478109a67965a0e5b1e",
-    "address": "0x6049eb004985024c048d3c6058b2562f01b5f06adacfa3ec2537bef2765df1",
-    "seed": "quests_425612186",
+    "address": "0x76172d24971c0b798ee0290e76c2d2069093b58d4c0059d2f07a1b9ec22cd3c",
+    "seed": "quests_166621606",
     "name": "Ponzi Land",
     "entrypoints": [
       "uuid",
@@ -1479,7 +1479,7 @@
   },
   "contracts": [
     {
-      "address": "0x75c20b91613e6cae23ab3e11a75472947f3604bd15feb696311408f1770bb16",
+      "address": "0x61fca4f9a3243e1a93aa3f87a3120632270b8029fda16363577fe6c0d02e95",
       "class_hash": "0x31a121e564dcf10855f038a223d4bb2f78bdb0010fb8a08654856f68d33aede",
       "abi": [
         {
@@ -2340,7 +2340,7 @@
       ]
     },
     {
-      "address": "0x23b103e9f0a55cf32c5b4f19d02adc9e5b8bc85a0ce0cabdbb38a00cb713956",
+      "address": "0x445f2a56ca8c7c7bbe25b76bf45830e8275d7d087c6841d19a927ebbb9ffec0",
       "class_hash": "0x339162d3e1a909f6babf0eef5934ddcd13f8d873324a11a6338a6462f491b1",
       "abi": [
         {
@@ -2702,7 +2702,7 @@
       ]
     },
     {
-      "address": "0x49d00c94bad22e1d0ed1cbb47c207ffd40dcd900f47827a694458dac24154a0",
+      "address": "0x8323a96971df527c22da107a4df1fb30311995e1f3ef28ddb374a909648f4",
       "class_hash": "0x4128593d4880b89f5cad42f9991c4526b8ddb43a501629742202269b121904",
       "abi": [
         {
@@ -3855,7 +3855,7 @@
       ]
     },
     {
-      "address": "0x17520d40e6cdc6aa0ab9804b45de145602ca2f3aa1c417b743fb7c832370378",
+      "address": "0x7128691e9e2882126dded721deada9cc8b0495f9c092f15b28ba43fed4e5766",
       "class_hash": "0x62acba18d29d2dcb1821d718544e7f90ce7633b8f072f375684478e36442b71",
       "abi": [
         {
@@ -4385,7 +4385,7 @@
       "init_calldata": [
         "3",
         "0",
-        "0x6573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26",
+        "0x055a50201dbd15feadb5f326dc9ec9f2aabf5f2b80e61348a83bde398c00e3bd",
         "str:mock",
         "str:game_token_systems",
         "str:settings_systems",
@@ -4394,7 +4394,7 @@
         "1",
         "str:Mock",
         "0",
-        "0x757092d4bb00c86fd6d96429fc351f4a7d0409e08cc29d62eddd1c284cac6dc",
+        "0x785401cf74071ec444e37dbbd87281aba48afc86570b1a1537193d1ce39086f",
         "str:ls_0_0_9",
         "str:game_token_systems",
         "str:settings_systems",
@@ -4425,7 +4425,7 @@
       ]
     },
     {
-      "address": "0x10913a5f73336e23f22627b1d65ed8f74f064888ef1526e3ac01c0df9a4a423",
+      "address": "0x76c86ecc65750499a32b803e0003ac72083331615968d5668efe05521391d93",
       "class_hash": "0x1c4d8162316e024400f55004265729c3eff1169b5aeb6dcfbda13934be75ebe",
       "abi": [
         {

@@ -4,7 +4,7 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "quests_425612186"
+seed = "quests_166621606"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
@@ -88,7 +88,7 @@ order_inits = [
 "ponzi_land-quests" = [
     "3",
     "0",
-    "0x6573697987d69a9d6b89dbb301079dd3052bf3ed9cd33713cfb49bd2cdbec26", # mock address
+    "0x055a50201dbd15feadb5f326dc9ec9f2aabf5f2b80e61348a83bde398c00e3bd", # mock address
     "str:mock",
     "str:game_token_systems", # game contract name
     "str:settings_systems",
@@ -97,7 +97,7 @@ order_inits = [
     "1",
     "str:Mock",
     "0",
-    "0x757092d4bb00c86fd6d96429fc351f4a7d0409e08cc29d62eddd1c284cac6dc", # dm address
+    "0x785401cf74071ec444e37dbbd87281aba48afc86570b1a1537193d1ce39086f", # dm address
     "str:ls_0_0_9",
     "str:game_token_systems", # game contract name
     "str:settings_systems",
