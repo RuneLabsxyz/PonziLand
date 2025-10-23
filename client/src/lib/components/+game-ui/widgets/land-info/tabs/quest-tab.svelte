@@ -274,6 +274,7 @@
         console.log('token_res', token_res);
         game_token_id = parseInt(BigInt(token_res[1]).toString());
         console.log('game_token_id set to:', game_token_id);
+        console.log('isDeathMountain', isDeathMountain);
       } else {
         // Reset if no player quest found
         console.log('No player quest found, resetting score and game_token_id');
