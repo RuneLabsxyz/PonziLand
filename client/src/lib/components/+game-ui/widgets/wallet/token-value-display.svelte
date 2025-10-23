@@ -1,14 +1,13 @@
 <script lang="ts">
   import type { Token } from '$lib/interfaces';
   import { claimQueue } from '$lib/stores/event.store.svelte';
-  import { loadingStore } from '$lib/stores/loading.store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { cn } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import { untrack } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
@@ -146,6 +145,13 @@
     }
   });
 
+  onMount(() => {
+    // Initialize previous base equivalent on mount
+    if (settingsStore.walletDisplayMode === 'base') {
+      settingsStore.toggleWalletDisplayMode();
+    }
+  });
+
   // Determine which display mode to use
   const displayMode = $derived(settingsStore.walletDisplayMode);
   const shouldShowBaseValue = $derived(!isBaseToken && displayMode === 'base');
@@ -251,22 +257,26 @@
       {/if}
       <div
         class={cn({
-          'flex items-center font-ds leading-tight': true,
+          'flex items-center font-ds leading-tight tracking-wide': true,
           'text-gray-400': !hasToken,
           'text-white': hasToken,
           'text-yellow-500 font-bold': animating && baseToken,
         })}
       >
         {#if baseEquivalent}
-          <span class="text-lg">$ </span>{baseEquivalent.toString()}
+          <span class="text-lg leading-none">
+            $
+          </span>{baseEquivalent.toString()}
         {:else if isBaseToken}
-          <span class="text-lg">$ </span>{displayAmount.toString()}
+          <span class="text-lg leading-none">
+            $
+          </span>{displayAmount.toString()}
         {/if}
       </div>
     </div>
     {#if conversionRate}
-      <div class="text-xs opacity-50 font-ds text-gray-400 leading-tight">
-        1 {token.symbol} = {conversionRate.toString()} $
+      <div class="text-sm opacity-50 font-ds text-gray-400 leading-tight">
+        1 {token.symbol} = ${conversionRate.toString()}
       </div>
     {/if}
   </div>
