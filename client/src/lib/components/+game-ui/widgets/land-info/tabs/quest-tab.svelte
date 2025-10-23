@@ -299,6 +299,7 @@
   $effect(() => {
     console.log('is_active', is_active);
     console.log('game_token_id', game_token_id);
+    console.log('isDeathMountain', isDeathMountain);
   })
 
 </script>
