@@ -47,8 +47,38 @@
   let is_active = $derived(game_token_id !== 0);
   let isOneOnOne = $derived(currentQuestGame?.quest_type === 'OneOnOne');
   let isHighScore = $derived(currentQuestGame?.quest_type === 'Minigame');
+  let isDeathMountain = $derived(currentQuestGame?.game_name?.toLowerCase().includes('death') || currentQuestGame?.game_name?.toLowerCase().includes('mountain'));
   let hasWon = $derived(isHighScore ? score >= Number(questDetails?.target_score || 0) : score === 1);
   let hasFailed = $derived(is_quest_over && !hasWon);
+
+  // Start Death Mountain game 🐙 tentacles awakening the mountain
+  async function handleStartDeathMountainGame() {
+    if (game_token_id == 0) {
+      console.log('Game Token ID is 0, cannot start game');
+      return;
+    }
+
+    loading = true;
+    try {
+      let call: Call = {
+        contractAddress: "0x38197b89d5c2e676d06aa93cf97b5be9ee4bf2b13ba972de4997f931f3559ee",
+        entrypoint: 'start_game',
+        calldata: [game_token_id, 76]
+      }
+
+      let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
+      console.log('Death Mountain start_game result:', res);
+
+      if (res?.transaction_hash) {
+        await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
+      }
+    } catch (error) {
+      console.error('Error starting death mountain game:', error);
+    } finally {
+      loading = false;
+      getQuestInfo();
+    }
+  }
 
   // Route to different games based on quest game type 🐙 tentacles reaching into multiple game dimensions
   async function handleGameActionClick() {
@@ -88,32 +118,9 @@
         getQuestInfo();
       }
     }
-    // Death Mountain - handle start_game call if game over with score 0, otherwise redirect 🐙 tentacles reaching into the mountain
+    // Death Mountain - redirect to play 🐙 tentacles reaching into the mountain
     else if (gameName.toLowerCase().includes('death') || gameName.toLowerCase().includes('mountain')) {
-      if (is_quest_over && score === 0) {
-        loading = true;
-        try {
-          let call: Call = {
-            contractAddress: "0x38197b89d5c2e676d06aa93cf97b5be9ee4bf2b13ba972de4997f931f3559ee",
-            entrypoint: 'start_game',
-            calldata: [game_token_id, 76]
-          }
-
-          let res = await accountManager!.getProvider()?.getWalletAccount()?.execute([call]);
-          console.log(res);
-
-          if (res?.transaction_hash) {
-            await accountManager!.getProvider()?.getWalletAccount()?.waitForTransaction(res.transaction_hash);
-          }
-        } catch (error) {
-          console.error('Error starting death mountain game:', error);
-        } finally {
-          loading = false;
-          getQuestInfo();
-        }
-      } else {
-        window.location.href = 'https://death-mountain.vercel.app/#/game/' + game_token_id;
-      }
+      window.location.href = 'https://death-mountain.vercel.app/#/game/' + game_token_id;
     }
     // Fallback for unknown games
     else {
@@ -552,18 +559,34 @@
                     🏆 CLAIM / SETTLE
                   </Button>
                 {:else}
-                  <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
-                    <p class="text-lg font-bold text-red-500">💀 Defeat</p>
-                    <p class="text-xs opacity-75">You lost the 1v1 match</p>
-                  </div>
-                  <Button
-                    onclick={handleClaimQuestClick}
-                    class="w-full mb-2"
-                    disabled={loading}
-                    variant="outline"
-                  >
-                    SETTLE (No Reward)
-                  </Button>
+                  <!-- Death Mountain special case: score 0 means game needs to be started 🐙 -->
+                  {#if isDeathMountain && score === 0}
+                    <div class="mb-2 p-2 text-center border rounded bg-orange-500/10 border-orange-500">
+                      <p class="text-lg font-bold text-orange-500">⛰️ Ready to Start</p>
+                      <p class="text-xs opacity-75">Begin your Death Mountain adventure!</p>
+                    </div>
+                    <Button
+                      onclick={handleStartDeathMountainGame}
+                      class="w-full mb-2"
+                      disabled={loading}
+                      variant="default"
+                    >
+                      🏔️ START GAME
+                    </Button>
+                  {:else}
+                    <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
+                      <p class="text-lg font-bold text-red-500">💀 Defeat</p>
+                      <p class="text-xs opacity-75">You lost the 1v1 match</p>
+                    </div>
+                    <Button
+                      onclick={handleClaimQuestClick}
+                      class="w-full mb-2"
+                      disabled={loading}
+                      variant="outline"
+                    >
+                      SETTLE (No Reward)
+                    </Button>
+                  {/if}
                 {/if}
               {/if}
             {/if}
