@@ -679,6 +679,8 @@
       shaderReady = false;
     }
   });
+
+  let selectedLand = $derived(selectedLandWithActions()?.value);
 </script>
 
 <!-- Main land sprite rendering group -->
@@ -848,33 +850,32 @@
 
 <!-- Button overlay using Threlte HTML component -->
 {#if devsettings.showLandOverlay && selectedLandTilePosition}
-  {@const land = selectedLandWithActions()?.value}
   <HTML
     portal={document.getElementById('game-canvas') ?? document.body}
     position={selectedLandTilePosition}
     zIndexRange={[10, 0]}
     distanceFactor={0.01}
   >
-    {#if land}
+    {#if selectedLand}
       {#if devsettings.showRatesOverlay}
-        <LandRatesOverlay {land} />
+        <LandRatesOverlay land={selectedLand} />
       {/if}
-      {#if land.owner == accountState.address}
+      {#if selectedLand.owner == accountState.address}
         <Button
           class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
           size="sm"
           onclick={() => {
-            openLandInfoWidget(land);
+            openLandInfoWidget(selectedLand);
           }}
         >
-          SEE INFO
+          INFO
         </Button>
       {:else}
         <Button
           class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
           size="sm"
           onclick={() => {
-            openLandInfoWidget(land);
+            openLandInfoWidget(selectedLand);
           }}
         >
           BUY LAND
