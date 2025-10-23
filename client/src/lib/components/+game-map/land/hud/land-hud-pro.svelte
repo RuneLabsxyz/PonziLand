@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { displayCurrency } from '$lib/utils/currency';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
@@ -15,13 +17,7 @@
     land: LandWithActions;
   } = $props();
 
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find(
-      (token) => token.address === targetAddress,
-    );
-  });
+  let baseToken = $derived(getBaseToken());
 </script>
 
 <div class="w-full flex flex-col gap-2">
@@ -66,18 +62,41 @@
       <div class="low-opacity">Token :</div>
       <div class="text-opacity-30">
         {land?.token?.symbol}
+        <TokenAvatar token={land?.token} class="inline-block h-4 w-4 ml-1" />
       </div>
     </div>
     <div class="flex justify-between w-full leading-none">
       <div class="low-opacity">Stake Amount :</div>
       <div class="text-opacity-30">
         {land?.stakeAmount}
+        {land.token?.symbol}
+
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.stakeAmount,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
       </div>
     </div>
     <div class="flex justify-between w-full leading-none">
       <div class="low-opacity">Sell Price :</div>
       <div class="text-opacity-30">
         {land?.sellPrice}
+        {land.token?.symbol}
+
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.sellPrice,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
       </div>
     </div>
   </div>
