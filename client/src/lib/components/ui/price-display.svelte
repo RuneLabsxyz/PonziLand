@@ -59,9 +59,10 @@
     </div>
 
     {#if showRate}
-      <div class="flex gap-1 items-center text-xs opacity-60 h-0 mt-2 mb-2">
-        ≈ {currentRate}
-        {getBaseToken().symbol}
+      <div
+        class="flex gap-1 items-center opacity-60 h-0 mt-4 mb-2 tracking-wide"
+      >
+        ${currentRate}
       </div>
     {/if}
   </div>
