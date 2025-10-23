@@ -520,18 +520,34 @@
                     🏆 CLAIM REWARD
                   </Button>
                 {:else}
-                  <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
-                    <p class="text-lg font-bold text-red-500">😢 Quest Failed</p>
-                    <p class="text-xs opacity-75">You didn't reach the target score</p>
-                  </div>
-                  <Button
-                    onclick={handleClaimQuestClick}
-                    class="w-full mb-2"
-                    disabled={loading}
-                    variant="outline"
-                  >
-                    CLAIM (No Reward)
-                  </Button>
+                  <!-- Death Mountain special case: score 0 means game needs to be started 🐙 -->
+                  {#if isDeathMountain && score === 0}
+                    <div class="mb-2 p-2 text-center border rounded bg-orange-500/10 border-orange-500">
+                      <p class="text-lg font-bold text-orange-500">⛰️ Ready to Start</p>
+                      <p class="text-xs opacity-75">Begin your Death Mountain adventure!</p>
+                    </div>
+                    <Button
+                      onclick={handleStartDeathMountainGame}
+                      class="w-full mb-2"
+                      disabled={loading}
+                      variant="default"
+                    >
+                      🏔️ START GAME
+                    </Button>
+                  {:else}
+                    <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
+                      <p class="text-lg font-bold text-red-500">😢 Quest Failed</p>
+                      <p class="text-xs opacity-75">You didn't reach the target score</p>
+                    </div>
+                    <Button
+                      onclick={handleClaimQuestClick}
+                      class="w-full mb-2"
+                      disabled={loading}
+                      variant="outline"
+                    >
+                      CLAIM (No Reward)
+                    </Button>
+                  {/if}
                 {/if}
               {/if}
             {:else if isOneOnOne}
@@ -561,34 +577,18 @@
                     🏆 CLAIM / SETTLE
                   </Button>
                 {:else}
-                  <!-- Death Mountain special case: score 0 means game needs to be started 🐙 -->
-                  {#if isDeathMountain && score === 0}
-                    <div class="mb-2 p-2 text-center border rounded bg-orange-500/10 border-orange-500">
-                      <p class="text-lg font-bold text-orange-500">⛰️ Ready to Start</p>
-                      <p class="text-xs opacity-75">Begin your Death Mountain adventure!</p>
-                    </div>
-                    <Button
-                      onclick={handleStartDeathMountainGame}
-                      class="w-full mb-2"
-                      disabled={loading}
-                      variant="default"
-                    >
-                      🏔️ START GAME
-                    </Button>
-                  {:else}
-                    <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
-                      <p class="text-lg font-bold text-red-500">💀 Defeat</p>
-                      <p class="text-xs opacity-75">You lost the 1v1 match</p>
-                    </div>
-                    <Button
-                      onclick={handleClaimQuestClick}
-                      class="w-full mb-2"
-                      disabled={loading}
-                      variant="outline"
-                    >
-                      SETTLE (No Reward)
-                    </Button>
-                  {/if}
+                  <div class="mb-2 p-2 text-center border rounded bg-red-500/10 border-red-500">
+                    <p class="text-lg font-bold text-red-500">💀 Defeat</p>
+                    <p class="text-xs opacity-75">You lost the 1v1 match</p>
+                  </div>
+                  <Button
+                    onclick={handleClaimQuestClick}
+                    class="w-full mb-2"
+                    disabled={loading}
+                    variant="outline"
+                  >
+                    SETTLE (No Reward)
+                  </Button>
                 {/if}
               {/if}
             {/if}
