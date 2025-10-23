@@ -380,7 +380,11 @@ pub mod quests {
             let quest: Quest = world.read_model(quest_id);
             let quest_details: QuestDetails = world.read_model(quest.location);
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
-            (quest_game.world_address, quest.game_token_id)
+
+            let minigame_world_dispatcher = IWorldDispatcher { contract_address: quest_game.world_address };
+            let mut minigame_world: WorldStorage = WorldStorageTrait::new(minigame_world_dispatcher, @quest_game.namespace);
+            let (game_token_address, _) = minigame_world.dns(@quest_game.game_contract_name).unwrap();
+            (game_token_address, quest.game_token_id)
         }
 
         fn register_quest_game(ref self: ContractState, world_address: ContractAddress, namespace: ByteArray, game_contract_name: ByteArray, settings_contract_name: ByteArray, settings_id: u32, target_score: u32, quest_type: QuestType, game_name: ByteArray) {
