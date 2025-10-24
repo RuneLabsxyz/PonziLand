@@ -82,4 +82,23 @@ export async function setup(): Promise<typeof accountState> {
   return accountState;
 }
 
+// Tutorial mode: Set fake account state for tutorial
+export function setTutorialMode(enabled: boolean) {
+  if (enabled) {
+    // Set fake connection state for tutorial
+    accountState.isConnected = true;
+    accountState.address =
+      '0xABCD000000000000000000000000000000000000000000000000000000FADE'; // Tutorial fake address
+    accountState.walletAccount = undefined; // Don't need actual wallet account for tutorial
+    accountState.sessionAccount = undefined;
+    accountState.profile = { exists: true, whitelisted: true } as UserInfo; // Fake profile
+    accountState.providerName = 'Tutorial Wallet';
+    accountState.providerIcon = '/ui/icons/Icon_Coin2.png'; // Use existing icon
+    console.log('Tutorial account state set:', accountState);
+  } else {
+    // Reset to normal state
+    resetState();
+  }
+}
+
 export default accountState;
