@@ -155,10 +155,14 @@ mod tests {
             close_reason: Some("bought".to_string()),
             buy_cost_token: Some("1000000000000000000".to_string()),
             buy_cost_usd: Some("1500.50".to_string()),
-            buy_token_used: Some("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7".to_string()),
+            buy_token_used: Some(
+                "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7".to_string(),
+            ),
             sale_revenue_token: Some("2000000000000000000".to_string()),
             sale_revenue_usd: Some("3000.75".to_string()),
-            sale_token_used: Some("0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7".to_string()),
+            sale_token_used: Some(
+                "0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7".to_string(),
+            ),
             net_profit_token: Some("1000000000000000000".to_string()),
             net_profit_usd: Some("1500.25".to_string()),
         };

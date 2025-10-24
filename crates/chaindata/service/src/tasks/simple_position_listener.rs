@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use bigdecimal::BigDecimal;
 use chaindata_models::events::actions::{
     AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
 };
@@ -8,11 +9,10 @@ use chaindata_models::{
     models::SimplePositionModel,
     shared::U256,
 };
-use sqlx::types::BigDecimal as SqlxBigDecimal;
-use bigdecimal::BigDecimal;
 use chaindata_repository::SimplePositionRepository;
 use chrono::{DateTime, Utc};
 use ponziland_models::models::SimplePosition;
+use sqlx::types::BigDecimal as SqlxBigDecimal;
 use tokio::select;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
@@ -123,7 +123,9 @@ impl SimplePositionListenerTask {
         // Close all previous positions for this land location with sale revenue
         let sale_revenue_token = Self::u256_to_bigdecimal(&event.price);
         let sale_token_used = Some(event.token_used.as_str());
-        let sale_revenue_usd = sale_revenue_token.as_ref().and_then(|revenue| Self::convert_to_usd(revenue, &event.token_used));
+        let sale_revenue_usd = sale_revenue_token
+            .as_ref()
+            .and_then(|revenue| Self::convert_to_usd(revenue, &event.token_used));
 
         let closed_count = self
             .simple_position_repository
@@ -151,12 +153,14 @@ impl SimplePositionListenerTask {
         // Extract financial data from the event
         let buy_cost_token = Self::u256_to_bigdecimal(&event.price);
         let buy_token_used = Some(event.token_used.clone());
-        let buy_cost_usd = buy_cost_token.as_ref().and_then(|cost| Self::convert_to_usd(cost, &event.token_used));
+        let buy_cost_usd = buy_cost_token
+            .as_ref()
+            .and_then(|cost| Self::convert_to_usd(cost, &event.token_used));
 
         // Create simple position for the buyer with financial data
         let position = SimplePosition::new_with_cost(
-            buyer.parse()?, 
-            (*location).into(), 
+            buyer.parse()?,
+            (*location).into(),
             at.naive_utc(),
             buy_cost_token,
             buy_cost_usd,
@@ -195,7 +199,9 @@ impl SimplePositionListenerTask {
         // Close all previous positions for this land location with sale revenue
         let sale_revenue_token = Self::u256_to_bigdecimal(&event.price);
         let sale_token_used = None; // TODO: Determine default auction token
-        let sale_revenue_usd = sale_revenue_token.as_ref().and_then(|revenue| Self::convert_to_usd(revenue, ""));
+        let sale_revenue_usd = sale_revenue_token
+            .as_ref()
+            .and_then(|revenue| Self::convert_to_usd(revenue, ""));
 
         let closed_count = self
             .simple_position_repository
@@ -227,12 +233,14 @@ impl SimplePositionListenerTask {
         let buy_cost_token = Self::u256_to_bigdecimal(&event.price);
         // Note: Auctions might use a default token (ETH/STRK), this should be configured
         let buy_token_used = None; // TODO: Determine default auction token
-        let buy_cost_usd = buy_cost_token.as_ref().and_then(|cost| Self::convert_to_usd(cost, ""));
+        let buy_cost_usd = buy_cost_token
+            .as_ref()
+            .and_then(|cost| Self::convert_to_usd(cost, ""));
 
         // Create simple position for the auction winner with financial data
         let position = SimplePosition::new_with_cost(
-            buyer.parse()?, 
-            (*location).into(), 
+            buyer.parse()?,
+            (*location).into(),
             at.naive_utc(),
             buy_cost_token,
             buy_cost_usd,

@@ -1,8 +1,8 @@
 use crate::shared::Location;
+use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use torii_ingester::prelude::ContractAddress;
-use bigdecimal::BigDecimal;
 
 /// Simple position tracking land ownership history
 #[derive(Debug, Clone, Serialize, Deserialize)]

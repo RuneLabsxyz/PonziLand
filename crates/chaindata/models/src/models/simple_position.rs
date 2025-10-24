@@ -1,8 +1,8 @@
+use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use ponziland_models::models::SimplePosition;
 use sqlx::prelude::FromRow;
 use sqlx::types::BigDecimal as SqlxBigDecimal;
-use bigdecimal::BigDecimal;
 use std::str::FromStr;
 
 use crate::shared::Location;
@@ -35,7 +35,6 @@ impl SimplePositionModel {
 
     /// Create a new SimplePositionModel from a SimplePosition
     pub fn from_simple_position(position: &SimplePosition, at: NaiveDateTime) -> Self {
-        
         Self {
             id: position.id.clone(),
             at,
