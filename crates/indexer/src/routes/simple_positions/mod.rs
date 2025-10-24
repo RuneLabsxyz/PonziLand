@@ -104,15 +104,11 @@ impl SimplePositionsRoute {
                 let outflows = Self::parse_token_flows(&pos.token_outflows);
                 
                 // Calculate net profit for land transaction
-                let net_profit_land = match (&pos.buy_cost_token, &pos.sale_revenue_token) {
-                    (Some(buy_cost), Some(sale_revenue)) => {
-                        Some((sale_revenue - buy_cost).to_string())
-                    }
-                    _ => None,
-                };
+                // NULL FOR NOW, as we don't have dollar values for land transactions
+                let net_profit_land = None;
 
                 // Calculate net profits for token flows
-                let mut net_profit_flows = HashMap::new();
+                let net_profit_flows = HashMap::new();
                 let all_tokens: std::collections::HashSet<String> = inflows.keys()
                     .chain(outflows.keys())
                     .cloned()
@@ -121,8 +117,6 @@ impl SimplePositionsRoute {
                 for token in all_tokens {
                     let inflow_amount = inflows.get(&token).and_then(|s| BigDecimal::from_str(s).ok()).unwrap_or_else(|| BigDecimal::from(0));
                     let outflow_amount = outflows.get(&token).and_then(|s| BigDecimal::from_str(s).ok()).unwrap_or_else(|| BigDecimal::from(0));
-                    let net_profit = inflow_amount - outflow_amount;
-                    net_profit_flows.insert(token, net_profit.to_string());
                 }
 
                 SimplePositionResponse {

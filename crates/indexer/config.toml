@@ -16,7 +16,7 @@ api_key = ""
 
 [torii]
 world_address = "0x59713eb00142d15a502824739e5f3b9a81a808c0e660875ff1ae199b533a620"
-torii_url = "https://api.cartridge.gg/x/ponziland-mainnet-world/torii"
+torii_url = "https://api.cartridge.gg/x/ponziland-mainnet-world-new/torii"
 
 [ekubo]
 api_url = "https://starknet-mainnet-api.ekubo.org"
