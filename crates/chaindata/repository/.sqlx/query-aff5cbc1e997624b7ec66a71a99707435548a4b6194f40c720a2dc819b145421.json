@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE simple_positions\n            SET close_date = $2, close_reason = $3,\n                sale_revenue_token = $4, sale_revenue_usd = $5, sale_token_used = $6\n            WHERE land_location = $1 AND close_date IS NULL\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Timestamp",
+        "Text",
+        "Numeric",
+        "Numeric",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "aff5cbc1e997624b7ec66a71a99707435548a4b6194f40c720a2dc819b145421"
+}
