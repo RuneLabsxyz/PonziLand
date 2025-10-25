@@ -14,6 +14,10 @@ pub struct SimplePosition {
     pub land_location: Location,
     /// When this land was bought
     pub time_bought: NaiveDateTime,
+    /// When this position was closed (if closed)
+    pub close_date: Option<NaiveDateTime>,
+    /// Reason for closure: "bought" or "nuked"
+    pub close_reason: Option<String>,
 }
 
 impl SimplePosition {
@@ -36,6 +40,8 @@ impl SimplePosition {
             owner: owner_hex,
             land_location,
             time_bought,
+            close_date: None,
+            close_reason: None,
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought\n            FROM simple_positions\n            WHERE land_location = $1\n            ORDER BY time_bought DESC\n            ",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason\n            FROM simple_positions\n            WHERE land_location = $1\n            ORDER BY time_bought DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -27,6 +27,16 @@
         "ordinal": 4,
         "name": "time_bought",
         "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 5,
+        "name": "close_date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 6,
+        "name": "close_reason",
+        "type_info": "Text"
       }
     ],
     "parameters": {
@@ -39,8 +49,10 @@
       false,
       false,
       false,
-      false
+      false,
+      true,
+      true
     ]
   },
-  "hash": "a05ff92a7304532a614eaa6ea0dc02511cd750718d32c30fc76f65e72901fb8c"
+  "hash": "83357a74b9ecdd5da8b85da01fc832569c48e3bdf61ffe0c846deda41cec0a04"
 }

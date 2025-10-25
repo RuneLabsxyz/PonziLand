@@ -15,6 +15,8 @@ pub struct SimplePositionResponse {
     pub owner: String,
     pub land_location: u32,
     pub time_bought: String,
+    pub close_date: Option<String>,
+    pub close_reason: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -65,6 +67,8 @@ impl SimplePositionsRoute {
                 owner: pos.owner,
                 land_location: pos.land_location.0 as u32,
                 time_bought: pos.time_bought.to_string(),
+                close_date: pos.close_date.map(|d| d.to_string()),
+                close_reason: pos.close_reason,
             })
             .collect();
 
@@ -114,11 +118,15 @@ mod tests {
             owner: "0x123".to_string(),
             land_location: 100,
             time_bought: "2023-01-01T00:00:00".to_string(),
+            close_date: Some("2023-01-02T00:00:00".to_string()),
+            close_reason: Some("bought".to_string()),
         };
 
         let json = serde_json::to_string(&response).unwrap();
         assert!(json.contains("test_position"));
         assert!(json.contains("0x123"));
         assert!(json.contains("100"));
+        assert!(json.contains("2023-01-02T00:00:00"));
+        assert!(json.contains("bought"));
     }
 }

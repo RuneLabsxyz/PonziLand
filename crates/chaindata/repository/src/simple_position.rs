@@ -17,16 +17,21 @@ impl Repository {
     pub async fn save(&self, position: SimplePositionModel) -> Result<String, Error> {
         Ok(query!(
             r#"
-            INSERT INTO simple_positions (id, at, owner, land_location, time_bought)
-            VALUES ($1, $2, $3, $4, $5)
-            ON CONFLICT (id) DO UPDATE SET at = EXCLUDED.at
+            INSERT INTO simple_positions (id, at, owner, land_location, time_bought, close_date, close_reason)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            ON CONFLICT (id) DO UPDATE SET 
+                at = EXCLUDED.at,
+                close_date = EXCLUDED.close_date,
+                close_reason = EXCLUDED.close_reason
             RETURNING id
             "#,
             position.id,
             position.at,
             position.owner,
             position.land_location as Location,
-            position.time_bought
+            position.time_bought,
+            position.close_date,
+            position.close_reason
         )
         .fetch_one(&mut *(self.db.acquire().await?))
         .await?
@@ -43,7 +48,9 @@ impl Repository {
                 at,
                 owner,
                 land_location as "land_location: Location",
-                time_bought
+                time_bought,
+                close_date,
+                close_reason
             FROM simple_positions
             WHERE owner = $1
             ORDER BY time_bought DESC
@@ -67,7 +74,9 @@ impl Repository {
                 at,
                 owner,
                 land_location as "land_location: Location",
-                time_bought
+                time_bought,
+                close_date,
+                close_reason
             FROM simple_positions
             WHERE land_location = $1
             ORDER BY time_bought DESC
@@ -104,5 +113,53 @@ impl Repository {
         .fetch_one(&mut *(self.db.acquire().await?))
         .await
         .map(|row| row.count.unwrap_or(0))
+    }
+
+    /// Closes all open positions for a land location with the given reason
+    pub async fn close_positions_by_land_location(
+        &self,
+        location: Location,
+        close_date: NaiveDateTime,
+        close_reason: &str,
+    ) -> Result<u64, sqlx::Error> {
+        query!(
+            r#"
+            UPDATE simple_positions
+            SET close_date = $2, close_reason = $3
+            WHERE land_location = $1 AND close_date IS NULL
+            "#,
+            location as Location,
+            close_date,
+            close_reason
+        )
+        .execute(&mut *(self.db.acquire().await?))
+        .await
+        .map(|result| result.rows_affected())
+    }
+
+    /// Gets all open positions for a land location (positions that haven't been closed)
+    pub async fn get_open_positions_by_land_location(
+        &self,
+        location: Location,
+    ) -> Result<Vec<SimplePositionModel>, sqlx::Error> {
+        query_as!(
+            SimplePositionModel,
+            r#"
+            SELECT
+                id,
+                at,
+                owner,
+                land_location as "land_location: Location",
+                time_bought,
+                close_date,
+                close_reason
+            FROM simple_positions
+            WHERE land_location = $1 AND close_date IS NULL
+            ORDER BY time_bought DESC
+            "#,
+            location as Location
+        )
+        .fetch_all(&mut *(self.db.acquire().await?))
+        .await
     }
 }

@@ -4,7 +4,9 @@ CREATE TABLE simple_positions (
     at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT NOW(),
     owner TEXT NOT NULL,
     land_location INT4 NOT NULL,
-    time_bought TIMESTAMP WITHOUT TIME ZONE NOT NULL
+    time_bought TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    close_date TIMESTAMP WITHOUT TIME ZONE,
+    close_reason TEXT
 );
 
 -- Create indexes for efficient querying
@@ -12,3 +14,4 @@ CREATE INDEX idx_simple_positions_owner ON simple_positions(owner);
 CREATE INDEX idx_simple_positions_land_location ON simple_positions(land_location);
 CREATE INDEX idx_simple_positions_time_bought ON simple_positions(time_bought DESC);
 CREATE INDEX idx_simple_positions_owner_time ON simple_positions(owner, time_bought DESC);
+CREATE INDEX idx_simple_positions_close_date ON simple_positions(close_date);
