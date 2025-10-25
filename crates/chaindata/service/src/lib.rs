@@ -1,12 +1,9 @@
 pub mod error;
-pub mod gg_xyz_api;
 pub mod tasks;
 
 use chaindata_repository::{
     Database, EventRepository, LandRepository, LandStakeRepository, SimplePositionRepository,
 };
-use gg_xyz_api::GGApi;
-use reqwest::Url;
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
 use std::sync::Arc;
@@ -28,9 +25,6 @@ pub struct ChainDataService {
 pub struct ChainDataServiceConfiguration {
     pub torii_url: String,
     pub world_address: Felt,
-    pub gg_xyz_enabled: bool,
-    pub gg_xyz_api_key: String,
-    pub gg_xyz_api_url: Url,
 }
 
 impl ChainDataService {
@@ -53,15 +47,8 @@ impl ChainDataService {
         let land_repository = Arc::new(LandRepository::new(database.clone()));
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
         let simple_position_repository = Arc::new(SimplePositionRepository::new(database.clone()));
-        let gg_xyz_api = Arc::new(GGApi::new(&config.gg_xyz_api_url, config.gg_xyz_api_key));
-
         Ok(Arc::new(Self {
-            event_listener_task: EventListenerTask::new(
-                client.clone(),
-                event_repository,
-                Some(gg_xyz_api).filter(|_| config.gg_xyz_enabled),
-            )
-            .wrap(),
+            event_listener_task: EventListenerTask::new(client.clone(), event_repository).wrap(),
             model_listener_task: ModelListenerTask::new(
                 client.clone(),
                 land_repository,
