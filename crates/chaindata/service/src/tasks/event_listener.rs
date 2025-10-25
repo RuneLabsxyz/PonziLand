@@ -20,10 +20,7 @@ pub struct EventListenerTask {
 }
 
 impl EventListenerTask {
-    pub fn new(
-        client: Arc<ToriiClient>,
-        event_repository: Arc<EventRepository>,
-    ) -> Self {
+    pub fn new(client: Arc<ToriiClient>, event_repository: Arc<EventRepository>) -> Self {
         Self {
             client,
             event_repository,
