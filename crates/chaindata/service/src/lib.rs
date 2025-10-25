@@ -48,11 +48,7 @@ impl ChainDataService {
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
         let simple_position_repository = Arc::new(SimplePositionRepository::new(database.clone()));
         Ok(Arc::new(Self {
-            event_listener_task: EventListenerTask::new(
-                client.clone(),
-                event_repository,
-            )
-            .wrap(),
+            event_listener_task: EventListenerTask::new(client.clone(), event_repository).wrap(),
             model_listener_task: ModelListenerTask::new(
                 client.clone(),
                 land_repository,
