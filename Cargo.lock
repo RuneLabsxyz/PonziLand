@@ -469,6 +469,18 @@ checksum = "89e25b6adfb930f02d1981565a6e5d9c547ac15a96606256d3b59040e5cd4ca3"
 
 [[package]]
 name = "bigdecimal"
+version = "0.3.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a6773ddc0eafc0e509fb60e48dff7f450f8e674a0686ae8605e8d9901bd5eefa"
+dependencies = [
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "serde",
+]
+
+[[package]]
+name = "bigdecimal"
 version = "0.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a22f228ab7a1b23027ccc6c350b72868017af7ea8356fbdf19f8d991c690013"
@@ -898,6 +910,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 name = "chaindata-models"
 version = "0.1.0"
 dependencies = [
+ "bigdecimal 0.3.1",
  "chrono",
  "migrations",
  "num-bigint",
@@ -927,11 +940,13 @@ name = "chaindata-service"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bigdecimal 0.3.1",
  "chaindata-models",
  "chaindata-repository",
  "chrono",
  "futures-util",
  "migrations",
+ "num-bigint",
  "ponziland-models",
  "reqwest",
  "serde",
@@ -2328,6 +2343,7 @@ dependencies = [
  "arc-swap",
  "avnu-pricing",
  "axum 0.8.4",
+ "bigdecimal 0.3.1",
  "chaindata-repository",
  "chaindata-service",
  "chrono",
@@ -3195,10 +3211,12 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 name = "ponziland-models"
 version = "0.1.0"
 dependencies = [
+ "bigdecimal 0.3.1",
  "chrono",
  "serde",
  "serde-aux",
  "serde_json",
+ "sqlx",
  "starknet",
  "torii-ingester",
 ]
@@ -4374,7 +4392,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ee6798b1838b6a0f69c007c133b8df5866302197e404e8b6ee8ed3e3a5e68dc6"
 dependencies = [
  "base64 0.22.1",
- "bigdecimal",
+ "bigdecimal 0.4.8",
  "bytes",
  "chrono",
  "crc",
@@ -4451,7 +4469,7 @@ checksum = "aa003f0038df784eb8fecbbac13affe3da23b45194bd57dba231c8f48199c526"
 dependencies = [
  "atoi",
  "base64 0.22.1",
- "bigdecimal",
+ "bigdecimal 0.4.8",
  "bitflags 2.9.1",
  "byteorder",
  "bytes",
@@ -4496,7 +4514,7 @@ checksum = "db58fcd5a53cf07c184b154801ff91347e4c30d17a3562a635ff028ad5deda46"
 dependencies = [
  "atoi",
  "base64 0.22.1",
- "bigdecimal",
+ "bigdecimal 0.4.8",
  "bitflags 2.9.1",
  "byteorder",
  "chrono",
