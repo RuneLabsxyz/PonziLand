@@ -379,7 +379,7 @@
         <!-- Prominent Game Name 🐙 -->
         <div class="text-center mb-3 p-3 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg border-2 border-primary/40">
           <p class="text-xl font-bold font-ponzi-number">
-            {currentQuestGame?.game_name || questDetails?.game_name.toString() || 'Unknown Game'}
+            {currentQuestGame?.game_name || 'Unknown Game'}
           </p>
         </div>
         
@@ -415,7 +415,7 @@
       <!-- Prominent Game Name Display 🐙 tentacles reaching for glory -->
       <div class="text-center mb-4 p-3 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg border-2 border-primary/40">
         <p class="text-2xl font-bold font-ponzi-number tracking-wide">
-          {questDetails?.game_name.toString()}
+          {currentQuestGame?.game_name || 'Unknown Game'}
         </p>
         <p class="text-sm opacity-75 mt-1">
           {isOneOnOne ? '⚔️ 1v1 Quest Challenge' : '🎮 Quest Challenge'}
