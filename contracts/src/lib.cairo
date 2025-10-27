@@ -2,13 +2,13 @@ mod systems {
     mod actions;
     mod auth;
     mod config;
-    mod token_registry;
     mod quest;
+    mod token_registry;
 }
 
 mod interfaces {
-    mod systems;
     mod quests;
+    mod systems;
 }
 
 mod models {

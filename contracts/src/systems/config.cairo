@@ -621,16 +621,28 @@ mod config {
             let mut world = self.world_default();
             let caller = get_caller_address();
             assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
-            world.write_member(Model::<Config>::ptr_from_keys(1), selector!("quest_auction_chance"), value);
-            world.emit_event(@ConfigUpdated { field: 'quest_auction_chance', new_value: value.into() });
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("quest_auction_chance"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'quest_auction_chance', new_value: value.into() },
+                );
         }
 
         fn set_quest_lands_enabled(ref self: ContractState, value: bool) {
             let mut world = self.world_default();
             let caller = get_caller_address();
             assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
-            world.write_member(Model::<Config>::ptr_from_keys(1), selector!("quest_lands_enabled"), value);
-            world.emit_event(@ConfigUpdated { field: 'quest_lands_enabled', new_value: value.into() });
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("quest_lands_enabled"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'quest_lands_enabled', new_value: value.into() },
+                );
         }
 
         // Getters implementation

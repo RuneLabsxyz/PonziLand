@@ -13,7 +13,7 @@ pub struct QuestDetails {
     pub game_id: u64,
 }
 
-#[derive(Drop, Serde, DojoStore,Clone,Introspect, Default)]
+#[derive(Drop, Serde, DojoStore, Clone, Introspect, Default)]
 pub enum QuestType {
     #[default]
     None,

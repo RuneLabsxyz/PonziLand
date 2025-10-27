@@ -105,8 +105,7 @@ trait IActions<T> {
 
 #[dojo::contract]
 pub mod actions {
-    use dojo::world::WorldStorageTrait;
-use core::dict::{Felt252Dict, Felt252DictEntryTrait, Felt252DictTrait};
+    use core::dict::{Felt252Dict, Felt252DictEntryTrait, Felt252DictTrait};
 
     // Core Cairo imports
     use core::nullable::{FromNullableResult, Nullable, NullableTrait, match_nullable};
@@ -114,6 +113,7 @@ use core::dict::{Felt252Dict, Felt252DictEntryTrait, Felt252DictTrait};
 
     // Dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
+    use dojo::world::WorldStorageTrait;
     use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // External dependencies
