@@ -28,7 +28,6 @@ export const getQuestGames = async () => {
   });
 
   let cleaned_res = res.items.map((item: any) => {
-    console.log('quest game item', item.models.ponzi_land.QuestGame);
     return item.models.ponzi_land.QuestGame;
   });
 

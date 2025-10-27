@@ -34,8 +34,8 @@ export interface Config {
 	max_circles: BigNumberish;
 	claim_fee: BigNumberish;
 	buy_fee: BigNumberish;
-	quest_auction_chance: BigNumberish;
 	quest_lands_enabled: boolean;
+	quest_rewards_enabled: boolean;
 	our_contract_for_fee: string;
 	our_contract_for_auction: string;
 	claim_fee_threshold: BigNumberish;
@@ -129,6 +129,7 @@ export interface QuestGame {
 	settings_id: BigNumberish;
 	target_score: BigNumberish;
 	quest_type: QuestTypeEnum;
+	game_name: string;
 }
 
 // Type definition for `ponzi_land::models::quest::QuestGameCounter` struct
@@ -229,6 +230,12 @@ export interface AddressRemovedEvent {
 	removed_at: BigNumberish;
 }
 
+// Type definition for `ponzi_land::systems::auth::auth::GameEndedEvent` struct
+export interface GameEndedEvent {
+	game_ended_at: BigNumberish;
+	finished_by: string;
+}
+
 // Type definition for `ponzi_land::systems::auth::auth::VerifierUpdatedEvent` struct
 export interface VerifierUpdatedEvent {
 	new_verifier: BigNumberish;
@@ -239,6 +246,29 @@ export interface VerifierUpdatedEvent {
 export interface ConfigUpdated {
 	field: BigNumberish;
 	new_value: BigNumberish;
+}
+
+// Type definition for `ponzi_land::utils::common_strucs::ClaimInfo` struct
+export interface ClaimInfo {
+	token_address: string;
+	amount: BigNumberish;
+	land_location: BigNumberish;
+	can_be_nuked: boolean;
+}
+
+// Type definition for `ponzi_land::utils::common_strucs::LandYieldInfo` struct
+export interface LandYieldInfo {
+	remaining_stake_time: BigNumberish;
+	yield_info: Array<YieldInfo>;
+}
+
+// Type definition for `ponzi_land::utils::common_strucs::YieldInfo` struct
+export interface YieldInfo {
+	token: string;
+	sell_price: BigNumberish;
+	per_hour: BigNumberish;
+	percent_rate: BigNumberish;
+	location: BigNumberish;
 }
 
 // Type definition for `ponzi_land::models::land::Level` enum
@@ -258,6 +288,19 @@ export const questType = [
 ] as const;
 export type QuestType = { [key in typeof questType[number]]: string };
 export type QuestTypeEnum = CairoCustomEnum;
+
+// Type definition for `ponzi_land::utils::common_strucs::LandOrAuction` enum
+export const landOrAuction = [
+	'None',
+	'Land',
+	'Auction',
+] as const;
+export type LandOrAuction = { 
+	None: string,
+	Land: Land,
+	Auction: Auction,
+};
+export type LandOrAuctionEnum = CairoCustomEnum;
 
 export interface SchemaType extends ISchemaType {
 	ponzi_land: {
@@ -287,8 +330,12 @@ export interface SchemaType extends ISchemaType {
 		NewAuctionEvent: NewAuctionEvent,
 		AddressAuthorizedEvent: AddressAuthorizedEvent,
 		AddressRemovedEvent: AddressRemovedEvent,
+		GameEndedEvent: GameEndedEvent,
 		VerifierUpdatedEvent: VerifierUpdatedEvent,
 		ConfigUpdated: ConfigUpdated,
+		ClaimInfo: ClaimInfo,
+		LandYieldInfo: LandYieldInfo,
+		YieldInfo: YieldInfo,
 	},
 }
 export const schema: SchemaType = {
@@ -299,7 +346,7 @@ export const schema: SchemaType = {
 		start_price: 0,
 		floor_price: 0,
 			is_finished: false,
-		sold_at_price: new CairoOption(CairoOptionVariant.None),
+			sold_at_price: new CairoOption(CairoOptionVariant.None),
 		},
 		Config: {
 			id: 0,
@@ -322,8 +369,8 @@ export const schema: SchemaType = {
 			max_circles: 0,
 			claim_fee: 0,
 			buy_fee: 0,
-			quest_auction_chance: 0,
 			quest_lands_enabled: false,
+			quest_rewards_enabled: false,
 			our_contract_for_fee: "",
 			our_contract_for_auction: "",
 			claim_fee_threshold: 0,
@@ -362,8 +409,8 @@ export const schema: SchemaType = {
 		},
 		Lifecycle: {
 			mint: 0,
-		start: new CairoOption(CairoOptionVariant.None),
-		end: new CairoOption(CairoOptionVariant.None),
+			start: new CairoOption(CairoOptionVariant.None),
+			end: new CairoOption(CairoOptionVariant.None),
 		},
 		Quest: {
 			id: 0,
@@ -403,6 +450,7 @@ export const schema: SchemaType = {
 					None: "",
 				Minigame: undefined,
 				OneOnOne: undefined, }),
+		game_name: "",
 		},
 		QuestGameCounter: {
 			key: 0,
@@ -474,6 +522,10 @@ export const schema: SchemaType = {
 			address: "",
 			removed_at: 0,
 		},
+		GameEndedEvent: {
+			game_ended_at: 0,
+			finished_by: "",
+		},
 		VerifierUpdatedEvent: {
 			new_verifier: 0,
 			old_verifier: 0,
@@ -481,6 +533,23 @@ export const schema: SchemaType = {
 		ConfigUpdated: {
 			field: 0,
 			new_value: 0,
+		},
+		ClaimInfo: {
+			token_address: "",
+		amount: 0,
+			land_location: 0,
+			can_be_nuked: false,
+		},
+		LandYieldInfo: {
+		remaining_stake_time: 0,
+			yield_info: [{ token: "", sell_price: 0, per_hour: 0, percent_rate: 0, location: 0, }],
+		},
+		YieldInfo: {
+			token: "",
+		sell_price: 0,
+		per_hour: 0,
+		percent_rate: 0,
+			location: 0,
 		},
 	},
 };
@@ -513,6 +582,11 @@ export enum ModelsMapping {
 	NewAuctionEvent = 'ponzi_land-NewAuctionEvent',
 	AddressAuthorizedEvent = 'ponzi_land-AddressAuthorizedEvent',
 	AddressRemovedEvent = 'ponzi_land-AddressRemovedEvent',
+	GameEndedEvent = 'ponzi_land-GameEndedEvent',
 	VerifierUpdatedEvent = 'ponzi_land-VerifierUpdatedEvent',
 	ConfigUpdated = 'ponzi_land-ConfigUpdated',
+	ClaimInfo = 'ponzi_land-ClaimInfo',
+	LandOrAuction = 'ponzi_land-LandOrAuction',
+	LandYieldInfo = 'ponzi_land-LandYieldInfo',
+	YieldInfo = 'ponzi_land-YieldInfo',
 }

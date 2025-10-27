@@ -61,8 +61,8 @@
   let is_quest_over = $state(false); // 🐙 tentacles tracking if the quest ended
   // Check if game is active and what type 🐙 tentacles checking game state
   let is_active = $derived(game_token_id !== 0);
-  let isOneOnOne = $derived(currentQuestGame?.quest_type === 'OneOnOne');
-  let isHighScore = $derived(currentQuestGame?.quest_type === 'Minigame');
+  let isOneOnOne = $derived(currentQuestGame?.quest_type.toString() === 'OneOnOne');
+  let isHighScore = $derived(currentQuestGame?.quest_type.toString() === 'Minigame');
   let isDeathMountain = $derived(
     currentQuestGame?.game_name?.toLowerCase().includes('death') ||
       currentQuestGame?.game_name?.toLowerCase().includes('mountain'),
@@ -306,11 +306,11 @@
       // Find the current quest game
       currentQuestGame =
         questGames.find(
-          (g: QuestGame) => g.id.toString() === questDetails.game_id.toString(),
+          (g: QuestGame) => g.id.toString() === questDetails?.game_id?.toString(),
         ) || null;
 
       let player_quest_res = await getPlayerQuestAtLocation(
-        account.address,
+        account.address!,
         land.location,
       );
       console.log('player quest', player_quest_res);
@@ -430,7 +430,7 @@
             onclick={handleSetQuestClick}
             class="mt-3 w-full"
             disabled={loading || !selectedGameId}
-            variant="default"
+            variant="blue"
           >
             Set as Quest Land
           </Button>
@@ -475,7 +475,7 @@
             onclick={handleRemoveQuestClick}
             class="mt-3 w-full"
             disabled={loading}
-            variant="destructive"
+            variant="red"
           >
             Remove Quest Land
           </Button>
@@ -575,7 +575,7 @@
                 onclick={handleGameActionClick}
                 class="w-full mb-2"
                 disabled={loading}
-                variant="default"
+                variant="blue"
               >
                 CONTINUE QUEST
               </Button>
@@ -596,7 +596,7 @@
                   onclick={handleClaimQuestClick}
                   class="w-full mb-2"
                   disabled={loading}
-                  variant="secondary"
+                  variant="blue"
                 >
                   🏆 CLAIM REWARD
                 </Button>
@@ -617,7 +617,7 @@
                     onclick={handleStartDeathMountainGame}
                     class="w-full mb-2"
                     disabled={loading}
-                    variant="default"
+                    variant="blue"
                   >
                     🏔️ START GAME
                   </Button>
@@ -636,7 +636,6 @@
                     onclick={handleClaimQuestClick}
                     class="w-full mb-2"
                     disabled={loading}
-                    variant="outline"
                   >
                     CLAIM (No Reward)
                   </Button>
@@ -650,7 +649,7 @@
                 onclick={handleGameActionClick}
                 class="w-full mb-2"
                 disabled={loading}
-                variant="default"
+                variant="blue"
               >
                 ⚔️ CONTINUE MATCH
               </Button>
@@ -667,7 +666,7 @@
                   onclick={handleClaimQuestClick}
                   class="w-full mb-2"
                   disabled={loading}
-                  variant="secondary"
+                  variant="blue"
                 >
                   🏆 CLAIM / SETTLE
                 </Button>
@@ -682,7 +681,6 @@
                   onclick={handleClaimQuestClick}
                   class="w-full mb-2"
                   disabled={loading}
-                  variant="outline"
                 >
                   SETTLE (No Reward)
                 </Button>
@@ -693,7 +691,6 @@
             onclick={getQuestInfo}
             class="w-full"
             disabled={loading}
-            variant="outline"
           >
             Refresh Quest Info
           </Button>

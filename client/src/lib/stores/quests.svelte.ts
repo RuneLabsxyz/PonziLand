@@ -65,7 +65,6 @@ export async function GetQuest(questId: number) {
     return accountManager!.getProvider();
   };
   let res = await sdk.client.quests.getQuest(
-    account()?.getWalletAccount()!,
     questId,
   );
   return res;
@@ -107,8 +106,6 @@ export async function ClaimQuest(questId: number) {
     account()?.getWalletAccount()!,
     questId,
     '0x0',
-    0,
-    0,
     0,
     0,
   );

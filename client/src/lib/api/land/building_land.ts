@@ -40,7 +40,6 @@ export class BuildingLand extends BaseLand {
     this._block_date_bought = land.block_date_bought;
     this._sell_price = land.sell_price;
     this._token_used = land.token_used;
-    this._quest_id = land.quest_id;
     this.update(land);
   }
 

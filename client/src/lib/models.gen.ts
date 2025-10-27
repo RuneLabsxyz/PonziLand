@@ -134,6 +134,7 @@ export interface QuestGame {
   settings_id: BigNumberish;
   target_score: BigNumberish;
   quest_type: QuestTypeEnum;
+  game_name: string;
 }
 
 // Type definition for `ponzi_land::models::quest::QuestGameCounter` struct
