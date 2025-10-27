@@ -27,7 +27,7 @@ export const getQuestGames = async () => {
     query,
   });
 
-  let cleaned_res = res.items.map((item: any) => {
+  let cleaned_res = res.getItems().map((item: any) => {
     return item.models.ponzi_land.QuestGame;
   });
 
@@ -66,7 +66,7 @@ export const getQuestDetailsFromLocation = async (location: string) => {
     query,
   });
 
-  let cleaned_res = res.items.map((item: any) => {
+  let cleaned_res = res.getItems().map((item: any) => {
     console.log('quest details item', item.models.ponzi_land.QuestDetails);
     return item.models.ponzi_land.QuestDetails;
   });
@@ -103,7 +103,8 @@ export const getPlayerQuestAtLocation = async (
     query,
   });
 
-  let cleaned_res = res.items
+  let cleaned_res = res
+    .getItems()
     .map((item: any) => {
       if (!item.models.ponzi_land.Quest.completed) {
         return item.models.ponzi_land.Quest;

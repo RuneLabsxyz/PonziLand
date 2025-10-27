@@ -395,6 +395,7 @@ export const schema: SchemaType = {
       world_address: '',
       namespace: '',
       game_contract_name: '',
+      game_name: '',
       settings_contract_name: '',
       settings_id: 0,
       target_score: 0,

@@ -274,7 +274,7 @@
     loading = true;
     console.log('Claiming quest');
     let player_quest_res = await getPlayerQuestAtLocation(
-      account.address,
+      account.address!,
       land.location,
     );
     let quest_id = player_quest_res[0].id;
@@ -299,12 +299,12 @@
     questGames = games;
     console.log('all quest games', questGames);
 
-    let questDetails_res = await getQuestDetailsFromLocation(land.location);
+    let questDetails_res = (await getQuestDetailsFromLocation(land.location)) as any[];
     console.log('questDetails_res', questDetails_res);
 
     if (questDetails_res && questDetails_res.length > 0) {
       questDetails = questDetails_res[0];
-      entry_price = parseInt(BigInt(questDetails.entry_price).toString());
+      entry_price = parseInt(BigInt(questDetails?.entry_price?.toString() || '0').toString());
       console.log('entry_price', entry_price);
 
       // Find the current quest game
@@ -328,7 +328,7 @@
         score = parseInt(BigInt(score_res[0]).toString());
         is_quest_over =
           score_res[1] == 1 ||
-          (currentQuestGame.quest_type == 'Minigame' &&
+          (currentQuestGame.quest_type.toString() == 'Minigame' &&
             score >= Number(questDetails?.target_score));
         console.log('score set to:', score, 'is_quest_over:', is_quest_over);
         let token_res = await GetQuestToken(quest_id);
@@ -571,7 +571,7 @@
             >
               CHALLENGE FOR <span class="text-yellow-500"
                 >&nbsp;{entry_price}&nbsp;</span
-              >{baseToken.symbol}
+              >{baseToken?.symbol}
             </Button>
           {:else if isHighScore}
             <!-- High Score Game Buttons -->
