@@ -61,8 +61,12 @@
   let is_quest_over = $state(false); // 🐙 tentacles tracking if the quest ended
   // Check if game is active and what type 🐙 tentacles checking game state
   let is_active = $derived(game_token_id !== 0);
-  let isOneOnOne = $derived(currentQuestGame?.quest_type.toString() === 'OneOnOne');
-  let isHighScore = $derived(currentQuestGame?.quest_type.toString() === 'Minigame');
+  let isOneOnOne = $derived(
+    currentQuestGame?.quest_type.toString() === 'OneOnOne',
+  );
+  let isHighScore = $derived(
+    currentQuestGame?.quest_type.toString() === 'Minigame',
+  );
   let isDeathMountain = $derived(
     currentQuestGame?.game_name?.toLowerCase().includes('death') ||
       currentQuestGame?.game_name?.toLowerCase().includes('mountain'),
@@ -306,7 +310,8 @@
       // Find the current quest game
       currentQuestGame =
         questGames.find(
-          (g: QuestGame) => g.id.toString() === questDetails?.game_id?.toString(),
+          (g: QuestGame) =>
+            g.id.toString() === questDetails?.game_id?.toString(),
         ) || null;
 
       let player_quest_res = await getPlayerQuestAtLocation(
@@ -687,11 +692,7 @@
               {/if}
             {/if}
           {/if}
-          <Button
-            onclick={getQuestInfo}
-            class="w-full"
-            disabled={loading}
-          >
+          <Button onclick={getQuestInfo} class="w-full" disabled={loading}>
             Refresh Quest Info
           </Button>
         {/if}

@@ -64,9 +64,7 @@ export async function GetQuest(questId: number) {
   const account = () => {
     return accountManager!.getProvider();
   };
-  let res = await sdk.client.quests.getQuest(
-    questId,
-  );
+  let res = await sdk.client.quests.getQuest(questId);
   return res;
 }
 
