@@ -243,6 +243,14 @@ pub mod quests {
             let mut quest_details: QuestDetails = world.read_model(quest.location);
             let mut land: Land = world.read_model(quest_details.location);
 
+            // if the quest has been deleted due to owner changing
+            if quest_details.participant_count == 0 {
+                world.erase_model(@quest_details);
+                quest.completed = true;
+                world.write_model(@quest);
+                return;
+            }
+
             if land.owner != quest_details.creator_address {
                 world.erase_model(@quest_details);
                 quest.completed = true;
