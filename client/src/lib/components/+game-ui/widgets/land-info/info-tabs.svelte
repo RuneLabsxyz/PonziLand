@@ -16,6 +16,8 @@
 
   let activeTab = $state<TabType>('buy');
 
+  const showDevTools = window.location.hash === '#dev';
+
   function setActiveTab(tab: TabType) {
     activeTab = tab;
   }
@@ -80,6 +82,8 @@
       {auctionPrice}
     />
     <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
+    {#if showDevTools}
     <QuestsTab {land} bind:activeTab isActive={activeTab === 'quests'} />
+    {/if}
   </div>
 </div>

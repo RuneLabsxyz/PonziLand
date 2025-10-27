@@ -50,7 +50,6 @@
   let isDeathMountain = $derived(currentQuestGame?.game_name?.toLowerCase().includes('death') || currentQuestGame?.game_name?.toLowerCase().includes('mountain'));
   let hasWon = $derived(isHighScore ? score >= Number(questDetails?.target_score || 0) : score === 1);
   let hasFailed = $derived(is_quest_over && !hasWon);
-
   // Start Death Mountain game 🐙 tentacles awakening the mountain
   async function handleStartDeathMountainGame() {
     if (game_token_id == 0) {
@@ -120,7 +119,7 @@
     }
     // Death Mountain - redirect to play 🐙 tentacles reaching into the mountain
     else if (gameName.toLowerCase().includes('death') || gameName.toLowerCase().includes('mountain')) {
-      window.location.href = 'https://death-mountain.vercel.app/#/game/' + game_token_id;
+      window.location.href = 'https://survivor.ponzis.fun/survivor/play?id=' + game_token_id;
     }
     // Fallback for unknown games
     else {
