@@ -917,6 +917,7 @@ dependencies = [
  "num-traits",
  "ponziland-models",
  "serde",
+ "serde_json",
  "sqlx",
  "thiserror 2.0.12",
  "torii-ingester",
@@ -931,6 +932,7 @@ dependencies = [
  "chaindata-models",
  "chrono",
  "migrations",
+ "serde_json",
  "sqlx",
  "thiserror 2.0.12",
 ]

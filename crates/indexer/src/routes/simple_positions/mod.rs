@@ -25,6 +25,8 @@ pub struct SimplePositionResponse {
     pub sale_token_used: Option<String>,
     pub net_profit_token: Option<String>,
     pub net_profit_usd: Option<String>,
+    pub token_inflows: serde_json::Value,
+    pub token_outflows: serde_json::Value,
 }
 
 #[derive(Debug, Deserialize)]
@@ -119,6 +121,8 @@ impl SimplePositionsRoute {
                     sale_token_used: pos.sale_token_used,
                     net_profit_token,
                     net_profit_usd,
+                    token_inflows: serde_json::to_value(&pos.token_inflows.0).unwrap_or(serde_json::json!({})),
+                    token_outflows: serde_json::to_value(&pos.token_outflows.0).unwrap_or(serde_json::json!({})),
                 }
             })
             .collect();
@@ -183,6 +187,8 @@ mod tests {
             ),
             net_profit_token: Some("1000000000000000000".to_string()),
             net_profit_usd: Some("1500.25".to_string()),
+            token_inflows: serde_json::json!({}),
+            token_outflows: serde_json::json!({}),
         };
 
         let json = serde_json::to_string(&response).unwrap();
@@ -195,5 +201,7 @@ mod tests {
         assert!(json.contains("1500.50"));
         assert!(json.contains("3000.75"));
         assert!(json.contains("1500.25"));
+        assert!(json.contains("token_inflows"));
+        assert!(json.contains("token_outflows"));
     }
 }
