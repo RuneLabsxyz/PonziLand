@@ -267,7 +267,7 @@
         let score_res = await GetQuestScore(quest_id);
         console.log('score_res', score_res);
         score = parseInt(BigInt(score_res[0]).toString());
-        is_quest_over = score_res[1] == 1 || score >= Number(questDetails?.target_score);
+        is_quest_over = score_res[1] == 1 || (currentQuestGame.quest_type == "Minigame" && score >= Number(questDetails?.target_score));
         console.log('score set to:', score, 'is_quest_over:', is_quest_over);
         let token_res = await GetQuestToken(quest_id);
         console.log('token_res', token_res);

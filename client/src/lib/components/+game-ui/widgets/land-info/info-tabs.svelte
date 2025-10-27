@@ -84,8 +84,6 @@
       {auctionPrice}
     />
     <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
-    {#if showDevTools}
     <QuestsTab {land} bind:activeTab isActive={activeTab === 'quests'} />
-    {/if}
   </div>
 </div>
