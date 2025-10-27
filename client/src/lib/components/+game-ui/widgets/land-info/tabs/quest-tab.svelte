@@ -299,12 +299,16 @@
     questGames = games;
     console.log('all quest games', questGames);
 
-    let questDetails_res = (await getQuestDetailsFromLocation(land.location)) as any[];
+    let questDetails_res = (await getQuestDetailsFromLocation(
+      land.location,
+    )) as any[];
     console.log('questDetails_res', questDetails_res);
 
     if (questDetails_res && questDetails_res.length > 0) {
       questDetails = questDetails_res[0];
-      entry_price = parseInt(BigInt(questDetails?.entry_price?.toString() || '0').toString());
+      entry_price = parseInt(
+        BigInt(questDetails?.entry_price?.toString() || '0').toString(),
+      );
       console.log('entry_price', entry_price);
 
       // Find the current quest game
