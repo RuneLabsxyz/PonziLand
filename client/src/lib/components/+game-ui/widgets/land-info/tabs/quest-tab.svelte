@@ -4,6 +4,7 @@
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import { Button } from '$lib/components/ui/button';
   import * as Select from '$lib/components/ui/select';
+  import type { Selected } from '$lib/components/ui/select';
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
@@ -52,9 +53,11 @@
   let game_token_id = $state(0);
   let entry_price = $state(0);
   let questGames = $state<QuestGame[]>([]);
-  let selectedGameId = $state<string>('');
+  let selectedGameId = $state<Selected<string> | undefined>(undefined);
   let selectedGame = $derived(
-    questGames.find((g: QuestGame) => g.id.toString() === selectedGameId),
+    questGames.find(
+      (g: QuestGame) => g.id.toString() === selectedGameId?.value,
+    ),
   );
   let currentQuestGame = $state<QuestGame | null>(null);
   let baseToken = $state<Token | null>(null);
@@ -176,10 +179,13 @@
 
   async function handleSetQuestClick() {
     loading = true;
-    console.log('Setting land as quest land with game ID:', selectedGameId);
+    console.log(
+      'Setting land as quest land with game ID:',
+      selectedGameId?.value,
+    );
 
     try {
-      const gameId = parseInt(selectedGameId);
+      const gameId = parseInt(selectedGameId?.value || '0');
       console.log('gameId', gameId);
       const result = await SetLandQuest(land.location, gameId);
 
@@ -378,7 +384,7 @@
         <p class="-mt-1 mb-1 opacity-75 leading-none">
           Choose a quest game to challenge other players
         </p>
-        <Select.Root bind:selected={selectedGameId as unknown as string}>
+        <Select.Root bind:selected={selectedGameId}>
           <Select.Trigger class="w-full bg-white text-black">
             <Select.Value placeholder="Choose a quest game..." />
           </Select.Trigger>
@@ -438,7 +444,7 @@
           <Button
             onclick={handleSetQuestClick}
             class="mt-3 w-full"
-            disabled={loading || !selectedGameId}
+            disabled={loading || !selectedGameId?.value}
             variant="blue"
           >
             Set as Quest Land
