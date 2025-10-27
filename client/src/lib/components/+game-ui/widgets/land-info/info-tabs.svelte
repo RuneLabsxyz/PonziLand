@@ -65,16 +65,7 @@
       variant={activeTab === 'quests' ? 'blue' : undefined}
       onclick={() => setActiveTab('quests')}
     >
-      Quests (BETA)
-    </Button>
-    {:else}
-    <Button
-      disabled
-      class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
-      variant={activeTab === 'quests' ? 'blue' : undefined}
-      onclick={() => setActiveTab('quests')}
-    >
-      Quests (BETA)
+      Quests
     </Button>
     {/if}
   </div>
