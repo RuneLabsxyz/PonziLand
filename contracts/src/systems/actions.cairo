@@ -113,6 +113,7 @@ pub mod actions {
 
     // Dojo imports
     use dojo::model::{ModelStorage, ModelValueStorage};
+    use dojo::world::WorldStorageTrait;
     use ekubo::interfaces::core::{ICoreDispatcher, ICoreDispatcherTrait};
 
     // External dependencies

@@ -1,0 +1,81 @@
+{
+  "ekuboPositionType": {
+    "005-01": {
+      "name": "0.05% / 0.1%",
+      "tickSpacing": 1000,
+      "fee": "170141183460469235273462165868118016"
+    },
+    "1-2": {
+      "name": "1% / 2%",
+      "tickSpacing": 19802,
+      "fee": "3402823669209384634633746074317682114"
+    }
+  },
+  "mainCurrency": "pltSTRK",
+  "mainCurrencyAddress": "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2",
+  "aiAgents": [
+  ],
+  "dropLand": {
+    "address": "0x02c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd"
+  },
+  "availableTokens": [
+    {
+      "name": "Ponziland Test STRK",
+      "symbol": "STRK",
+      "address": "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "skin": "STARKNET"
+    },
+    {
+      "name": "Ponziland Test LORDS",
+      "symbol": "LORDS",
+      "address": "0x3458d8a00b5731b743f2546f398fa5db4c78be880480b4b5e69efe702099a2a",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "skin": "LORDS"
+    },
+    {
+      "name": "Ponziland Test ETH",
+      "symbol": "ETH",
+      "address": "0x59a155d61343e0b1c9016d2b0f89ee15ac9f96bcc780e94ff75178c6d74040a",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "skin": "ETHEREUM"
+    },
+    {
+      "name": "Ponziland Test PAPER",
+      "symbol": "PAPER",
+      "address": "0x5891372b03bac7b0a076902a2748912a53c09efea4c0b8b6c4cba0efd43bbd0",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "skin": "PAPER"
+    },
+    {
+      "name": "Ponziland Test BROTHER",
+      "symbol": "BROTHER",
+      "address": "0x2326d8d563e296adb2e32bad0571ff3f61295b0ffcc97865e4111a4b9bf2d34",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "skin": "BROTHER"
+    },
+    {
+      "name": "Ponziland Test PAL",
+      "symbol": "PAL",
+      "address": "0x3cbff2ba953228299f7ab7d42dcc459354061efb6d889053439b56ef1e4bc32",
+      "liquidityPoolType": "005-01",
+      "decimals": null,
+      "skin": "PAL"
+    }
+  ],
+  "commonImages": {
+    "logo": "/images/logo.png",
+    "background": "/images/background.jpg",
+    "icons": {
+      "wallet": "/images/icons/wallet.svg",
+      "settings": "/images/icons/settings.svg"
+    }
+  },
+  "address_blacklist": [
+  ]
+}

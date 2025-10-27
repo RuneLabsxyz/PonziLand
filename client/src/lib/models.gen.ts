@@ -20,7 +20,6 @@ export interface Auction {
 // Type definition for `ponzi_land::models::config::Config` struct
 export interface Config {
   id: BigNumberish;
-  grid_width: BigNumberish;
   tax_rate: BigNumberish;
   base_time: BigNumberish;
   price_decrease_rate: BigNumberish;
@@ -32,7 +31,6 @@ export interface Config {
   liquidity_safety_multiplier: BigNumberish;
   min_auction_price: BigNumberish;
   min_auction_price_multiplier: BigNumberish;
-  center_location: BigNumberish;
   auction_duration: BigNumberish;
   scaling_factor: BigNumberish;
   linear_decay_time: BigNumberish;
@@ -41,6 +39,8 @@ export interface Config {
   max_circles: BigNumberish;
   claim_fee: BigNumberish;
   buy_fee: BigNumberish;
+  quest_auction_chance: BigNumberish;
+  quest_lands_enabled: boolean;
   our_contract_for_fee: string;
   our_contract_for_auction: string;
   claim_fee_threshold: BigNumberish;
@@ -63,6 +63,120 @@ export interface LandStake {
   amount: BigNumberish;
   neighbors_info_packed: BigNumberish;
   accumulated_taxes_fee: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::GameCounter` struct
+export interface GameCounter {
+  key: BigNumberish;
+  count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::GameMetadata` struct
+export interface GameMetadata {
+  contract_address: string;
+  creator_address: string;
+  name: BigNumberish;
+  description: string;
+  developer: BigNumberish;
+  publisher: BigNumberish;
+  genre: BigNumberish;
+  image: string;
+}
+
+// Type definition for `ponzi_land::models::quest::Lifecycle` struct
+export interface Lifecycle {
+  mint: BigNumberish;
+  start: CairoOption<BigNumberish>;
+  end: CairoOption<BigNumberish>;
+}
+
+// Type definition for `ponzi_land::models::quest::Quest` struct
+export interface Quest {
+  id: BigNumberish;
+  location: BigNumberish;
+  creator_address: string;
+  player_address: string;
+  game_token_id: BigNumberish;
+  completed: boolean;
+  expires_at: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestCounter` struct
+export interface QuestCounter {
+  key: BigNumberish;
+  count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestDetails` struct
+export interface QuestDetails {
+  location: BigNumberish;
+  capacity: BigNumberish;
+  participant_count: BigNumberish;
+  entry_price: BigNumberish;
+  target_score: BigNumberish;
+  creator_address: string;
+  game_id: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestDetailsCounter` struct
+export interface QuestDetailsCounter {
+  key: BigNumberish;
+  count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestGame` struct
+export interface QuestGame {
+  id: BigNumberish;
+  world_address: string;
+  namespace: string;
+  game_contract_name: string;
+  settings_contract_name: string;
+  settings_id: BigNumberish;
+  target_score: BigNumberish;
+  quest_type: QuestTypeEnum;
+  game_name: string;
+}
+
+// Type definition for `ponzi_land::models::quest::QuestGameCounter` struct
+export interface QuestGameCounter {
+  key: BigNumberish;
+  count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::Score` struct
+export interface Score {
+  game_id: BigNumberish;
+  score: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::Settings` struct
+export interface Settings {
+  id: BigNumberish;
+  name: BigNumberish;
+  value: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsCounter` struct
+export interface SettingsCounter {
+  key: BigNumberish;
+  count: BigNumberish;
+}
+
+// Type definition for `ponzi_land::models::quest::SettingsDetails` struct
+export interface SettingsDetails {
+  id: BigNumberish;
+  name: BigNumberish;
+  description: string;
+  exists: boolean;
+}
+
+// Type definition for `ponzi_land::models::quest::TokenMetadata` struct
+export interface TokenMetadata {
+  token_id: BigNumberish;
+  minted_by: string;
+  player_name: BigNumberish;
+  settings_id: BigNumberish;
+  lifecycle: Lifecycle;
 }
 
 // Type definition for `ponzi_land::events::AddStakeEvent` struct
@@ -138,12 +252,31 @@ export const level = ['Zero', 'First', 'Second'] as const;
 export type Level = { [key in (typeof level)[number]]: string };
 export type LevelEnum = CairoCustomEnum;
 
+// Type definition for `ponzi_land::models::quest::QuestType` enum
+export const questType = ['None', 'Minigame', 'OneOnOne'] as const;
+export type QuestType = { [key in (typeof questType)[number]]: string };
+export type QuestTypeEnum = CairoCustomEnum;
+
 export interface SchemaType extends ISchemaType {
   ponzi_land: {
     Auction: Auction;
     Config: Config;
     Land: Land;
     LandStake: LandStake;
+    GameCounter: GameCounter;
+    GameMetadata: GameMetadata;
+    Lifecycle: Lifecycle;
+    Quest: Quest;
+    QuestCounter: QuestCounter;
+    QuestDetails: QuestDetails;
+    QuestDetailsCounter: QuestDetailsCounter;
+    QuestGame: QuestGame;
+    QuestGameCounter: QuestGameCounter;
+    Score: Score;
+    Settings: Settings;
+    SettingsCounter: SettingsCounter;
+    SettingsDetails: SettingsDetails;
+    TokenMetadata: TokenMetadata;
     AddStakeEvent: AddStakeEvent;
     AuctionFinishedEvent: AuctionFinishedEvent;
     LandBoughtEvent: LandBoughtEvent;
@@ -168,7 +301,6 @@ export const schema: SchemaType = {
     },
     Config: {
       id: 0,
-      grid_width: 0,
       tax_rate: 0,
       base_time: 0,
       price_decrease_rate: 0,
@@ -180,7 +312,6 @@ export const schema: SchemaType = {
       liquidity_safety_multiplier: 0,
       min_auction_price: 0,
       min_auction_price_multiplier: 0,
-      center_location: 0,
       auction_duration: 0,
       scaling_factor: 0,
       linear_decay_time: 0,
@@ -189,6 +320,8 @@ export const schema: SchemaType = {
       max_circles: 0,
       claim_fee: 0,
       buy_fee: 0,
+      quest_auction_chance: 0,
+      quest_lands_enabled: false,
       our_contract_for_fee: '',
       our_contract_for_auction: '',
       claim_fee_threshold: 0,
@@ -211,6 +344,100 @@ export const schema: SchemaType = {
       amount: 0,
       neighbors_info_packed: 0,
       accumulated_taxes_fee: 0,
+    },
+    GameCounter: {
+      key: 0,
+      count: 0,
+    },
+    GameMetadata: {
+      contract_address: '',
+      creator_address: '',
+      name: 0,
+      description: '',
+      developer: 0,
+      publisher: 0,
+      genre: 0,
+      image: '',
+    },
+    Lifecycle: {
+      mint: 0,
+      start: new CairoOption(CairoOptionVariant.None),
+      end: new CairoOption(CairoOptionVariant.None),
+    },
+    Quest: {
+      id: 0,
+      location: 0,
+      creator_address: '',
+      player_address: '',
+      game_token_id: 0,
+      completed: false,
+      expires_at: 0,
+    },
+    QuestCounter: {
+      key: 0,
+      count: 0,
+    },
+    QuestDetails: {
+      location: 0,
+      capacity: 0,
+      participant_count: 0,
+      entry_price: 0,
+      target_score: 0,
+      creator_address: '',
+      game_id: 0,
+    },
+    QuestDetailsCounter: {
+      key: 0,
+      count: 0,
+    },
+    QuestGame: {
+      id: 0,
+      world_address: '',
+      namespace: '',
+      game_contract_name: '',
+      game_name: '',
+      settings_contract_name: '',
+      settings_id: 0,
+      target_score: 0,
+      quest_type: new CairoCustomEnum({
+        None: '',
+        Minigame: undefined,
+        OneOnOne: undefined,
+      }),
+    },
+    QuestGameCounter: {
+      key: 0,
+      count: 0,
+    },
+    Score: {
+      game_id: 0,
+      score: 0,
+    },
+    Settings: {
+      id: 0,
+      name: 0,
+      value: 0,
+    },
+    SettingsCounter: {
+      key: 0,
+      count: 0,
+    },
+    SettingsDetails: {
+      id: 0,
+      name: 0,
+      description: '',
+      exists: false,
+    },
+    TokenMetadata: {
+      token_id: 0,
+      minted_by: '',
+      player_name: 0,
+      settings_id: 0,
+      lifecycle: {
+        mint: 0,
+        start: new CairoOption(CairoOptionVariant.None),
+        end: new CairoOption(CairoOptionVariant.None),
+      },
     },
     AddStakeEvent: {
       land_location: 0,
@@ -268,6 +495,21 @@ export enum ModelsMapping {
   Land = 'ponzi_land-Land',
   LandStake = 'ponzi_land-LandStake',
   Level = 'ponzi_land-Level',
+  GameCounter = 'ponzi_land-GameCounter',
+  GameMetadata = 'ponzi_land-GameMetadata',
+  Lifecycle = 'ponzi_land-Lifecycle',
+  Quest = 'ponzi_land-Quest',
+  QuestCounter = 'ponzi_land-QuestCounter',
+  QuestDetails = 'ponzi_land-QuestDetails',
+  QuestDetailsCounter = 'ponzi_land-QuestDetailsCounter',
+  QuestGame = 'ponzi_land-QuestGame',
+  QuestGameCounter = 'ponzi_land-QuestGameCounter',
+  QuestType = 'ponzi_land-QuestType',
+  Score = 'ponzi_land-Score',
+  Settings = 'ponzi_land-Settings',
+  SettingsCounter = 'ponzi_land-SettingsCounter',
+  SettingsDetails = 'ponzi_land-SettingsDetails',
+  TokenMetadata = 'ponzi_land-TokenMetadata',
   AddStakeEvent = 'ponzi_land-AddStakeEvent',
   AuctionFinishedEvent = 'ponzi_land-AuctionFinishedEvent',
   LandBoughtEvent = 'ponzi_land-LandBoughtEvent',

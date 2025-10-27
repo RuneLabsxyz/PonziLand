@@ -91,4 +91,4 @@ export interface ElapsedTimeSinceLastClaim {
   1: bigint;
 }
 
-export type TabType = 'overall' | 'buy';
+export type TabType = 'overall' | 'buy' | 'history' | 'quests';

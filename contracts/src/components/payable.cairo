@@ -115,6 +115,7 @@ mod PayableComponent {
             self.initialize(token_address);
             let sender_balance = self.token_dispatcher.read().balanceOf(sender);
             let status = sender_balance >= amount;
+            let token_address_felt: felt252 = token_address.into();
             ValidationResult { status, token_address, amount }
         }
 
@@ -154,6 +155,8 @@ mod PayableComponent {
             validation_result: ValidationResult,
         ) -> bool {
             let token_dispatcher = self.token_dispatcher.read();
+
+            let token_address_felt: felt252 = token_dispatcher.contract_address.into();
             assert(
                 token_dispatcher.contract_address == validation_result.token_address,
                 DIFFERENT_ERC20_TOKEN_DISPATCHER,
@@ -163,6 +166,7 @@ mod PayableComponent {
                 validation_result.amount, fee_rate,
             );
 
+            let contract_felt: felt252 = our_contract_for_fee.into();
             // Perform the first transfer and check if it was successful
             let fee_transfer_success = token_dispatcher
                 .transferFrom(buyer, our_contract_for_fee, fee_amount.try_into().unwrap());

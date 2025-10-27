@@ -1,5 +1,13 @@
 import { MAX_CLAIM_ALL_COUNT } from '$lib/flags';
 
+/**
+ * Check if #dev flag is active in URL
+ * Like a tentacle sensing the development waters 🐙
+ */
+export function isDevMode(): boolean {
+  return typeof window !== 'undefined' && window.location.hash === '#dev';
+}
+
 export let devsettings = $state({
   frustumPadding: 2,
   claimAllCount: MAX_CLAIM_ALL_COUNT,

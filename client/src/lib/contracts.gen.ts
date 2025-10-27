@@ -1,5 +1,11 @@
 import { DojoProvider, type DojoCall } from '@dojoengine/core';
-import { Account, AccountInterface, type BigNumberish } from 'starknet';
+import {
+  Account,
+  AccountInterface,
+  type BigNumberish,
+  CairoOption,
+  CairoCustomEnum,
+} from 'starknet';
 import * as models from './models.gen';
 
 export function setupWorld(provider: DojoProvider) {
@@ -677,17 +683,20 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
-  const build_auth_getOwner_calldata = (): DojoCall => {
+  const build_auth_isOwnerAuth_calldata = (address: string): DojoCall => {
     return {
       contractName: 'auth',
-      entrypoint: 'get_owner',
-      calldata: [],
+      entrypoint: 'is_owner_auth',
+      calldata: [address],
     };
   };
 
-  const auth_getOwner = async () => {
+  const auth_isOwnerAuth = async (address: string) => {
     try {
-      return await provider.call('ponzi_land', build_auth_getOwner_calldata());
+      return await provider.call(
+        'ponzi_land',
+        build_auth_isOwnerAuth_calldata(address),
+      );
     } catch (error) {
       console.error(error);
       throw error;
@@ -870,26 +879,6 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
-  const build_config_getCenterLocation_calldata = (): DojoCall => {
-    return {
-      contractName: 'config',
-      entrypoint: 'get_center_location',
-      calldata: [],
-    };
-  };
-
-  const config_getCenterLocation = async () => {
-    try {
-      return await provider.call(
-        'ponzi_land',
-        build_config_getCenterLocation_calldata(),
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
   const build_config_getClaimFee_calldata = (): DojoCall => {
     return {
       contractName: 'config',
@@ -923,6 +912,26 @@ export function setupWorld(provider: DojoProvider) {
       return await provider.call(
         'ponzi_land',
         build_config_getClaimFeeThreshold_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getConfig_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_config',
+      calldata: [],
+    };
+  };
+
+  const config_getConfig = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getConfig_calldata(),
       );
     } catch (error) {
       console.error(error);
@@ -983,26 +992,6 @@ export function setupWorld(provider: DojoProvider) {
       return await provider.call(
         'ponzi_land',
         build_config_getFloorPrice_calldata(),
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
-  const build_config_getGridWidth_calldata = (): DojoCall => {
-    return {
-      contractName: 'config',
-      entrypoint: 'get_grid_width',
-      calldata: [],
-    };
-  };
-
-  const config_getGridWidth = async () => {
-    try {
-      return await provider.call(
-        'ponzi_land',
-        build_config_getGridWidth_calldata(),
       );
     } catch (error) {
       console.error(error);
@@ -1190,6 +1179,46 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const build_config_getQuestAuctionChance_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_quest_auction_chance',
+      calldata: [],
+    };
+  };
+
+  const config_getQuestAuctionChance = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getQuestAuctionChance_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_getQuestLandsEnabled_calldata = (): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'get_quest_lands_enabled',
+      calldata: [],
+    };
+  };
+
+  const config_getQuestLandsEnabled = async () => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_config_getQuestLandsEnabled_calldata(),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const build_config_getRateDenominator_calldata = (): DojoCall => {
     return {
       contractName: 'config',
@@ -1344,32 +1373,6 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
-  const build_config_setCenterLocation_calldata = (
-    value: BigNumberish,
-  ): DojoCall => {
-    return {
-      contractName: 'config',
-      entrypoint: 'set_center_location',
-      calldata: [value],
-    };
-  };
-
-  const config_setCenterLocation = async (
-    snAccount: Account | AccountInterface,
-    value: BigNumberish,
-  ) => {
-    try {
-      return await provider.execute(
-        snAccount,
-        build_config_setCenterLocation_calldata(value),
-        'ponzi_land',
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
   const build_config_setClaimFee_calldata = (value: BigNumberish): DojoCall => {
     return {
       contractName: 'config',
@@ -1497,7 +1500,6 @@ export function setupWorld(provider: DojoProvider) {
   };
 
   const build_config_setFullConfig_calldata = (
-    gridWidth: BigNumberish,
     taxRate: BigNumberish,
     baseTime: BigNumberish,
     priceDecreaseRate: BigNumberish,
@@ -1509,7 +1511,6 @@ export function setupWorld(provider: DojoProvider) {
     liquiditySafetyMultiplier: BigNumberish,
     minAuctionPrice: BigNumberish,
     minAuctionPriceMultiplier: BigNumberish,
-    centerLocation: BigNumberish,
     auctionDuration: BigNumberish,
     scalingFactor: BigNumberish,
     linearDecayTime: BigNumberish,
@@ -1518,6 +1519,8 @@ export function setupWorld(provider: DojoProvider) {
     maxCircles: BigNumberish,
     claimFee: BigNumberish,
     buyFee: BigNumberish,
+    questAuctionChance: BigNumberish,
+    questLandsEnabled: boolean,
     ourContractForFee: string,
     ourContractForAuction: string,
     claimFeeThreshold: BigNumberish,
@@ -1527,7 +1530,6 @@ export function setupWorld(provider: DojoProvider) {
       contractName: 'config',
       entrypoint: 'set_full_config',
       calldata: [
-        gridWidth,
         taxRate,
         baseTime,
         priceDecreaseRate,
@@ -1539,7 +1541,6 @@ export function setupWorld(provider: DojoProvider) {
         liquiditySafetyMultiplier,
         minAuctionPrice,
         minAuctionPriceMultiplier,
-        centerLocation,
         auctionDuration,
         scalingFactor,
         linearDecayTime,
@@ -1548,6 +1549,8 @@ export function setupWorld(provider: DojoProvider) {
         maxCircles,
         claimFee,
         buyFee,
+        questAuctionChance,
+        questLandsEnabled,
         ourContractForFee,
         ourContractForAuction,
         claimFeeThreshold,
@@ -1558,7 +1561,6 @@ export function setupWorld(provider: DojoProvider) {
 
   const config_setFullConfig = async (
     snAccount: Account | AccountInterface,
-    gridWidth: BigNumberish,
     taxRate: BigNumberish,
     baseTime: BigNumberish,
     priceDecreaseRate: BigNumberish,
@@ -1570,7 +1572,6 @@ export function setupWorld(provider: DojoProvider) {
     liquiditySafetyMultiplier: BigNumberish,
     minAuctionPrice: BigNumberish,
     minAuctionPriceMultiplier: BigNumberish,
-    centerLocation: BigNumberish,
     auctionDuration: BigNumberish,
     scalingFactor: BigNumberish,
     linearDecayTime: BigNumberish,
@@ -1579,6 +1580,8 @@ export function setupWorld(provider: DojoProvider) {
     maxCircles: BigNumberish,
     claimFee: BigNumberish,
     buyFee: BigNumberish,
+    questAuctionChance: BigNumberish,
+    questLandsEnabled: boolean,
     ourContractForFee: string,
     ourContractForAuction: string,
     claimFeeThreshold: BigNumberish,
@@ -1588,7 +1591,6 @@ export function setupWorld(provider: DojoProvider) {
       return await provider.execute(
         snAccount,
         build_config_setFullConfig_calldata(
-          gridWidth,
           taxRate,
           baseTime,
           priceDecreaseRate,
@@ -1600,7 +1602,6 @@ export function setupWorld(provider: DojoProvider) {
           liquiditySafetyMultiplier,
           minAuctionPrice,
           minAuctionPriceMultiplier,
-          centerLocation,
           auctionDuration,
           scalingFactor,
           linearDecayTime,
@@ -1609,37 +1610,13 @@ export function setupWorld(provider: DojoProvider) {
           maxCircles,
           claimFee,
           buyFee,
+          questAuctionChance,
+          questLandsEnabled,
           ourContractForFee,
           ourContractForAuction,
           claimFeeThreshold,
           mainCurrency,
         ),
-        'ponzi_land',
-      );
-    } catch (error) {
-      console.error(error);
-      throw error;
-    }
-  };
-
-  const build_config_setGridWidth_calldata = (
-    value: BigNumberish,
-  ): DojoCall => {
-    return {
-      contractName: 'config',
-      entrypoint: 'set_grid_width',
-      calldata: [value],
-    };
-  };
-
-  const config_setGridWidth = async (
-    snAccount: Account | AccountInterface,
-    value: BigNumberish,
-  ) => {
-    try {
-      return await provider.execute(
-        snAccount,
-        build_config_setGridWidth_calldata(value),
         'ponzi_land',
       );
     } catch (error) {
@@ -1932,6 +1909,58 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
+  const build_config_setQuestAuctionChance_calldata = (
+    value: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_quest_auction_chance',
+      calldata: [value],
+    };
+  };
+
+  const config_setQuestAuctionChance = async (
+    snAccount: Account | AccountInterface,
+    value: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setQuestAuctionChance_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_config_setQuestLandsEnabled_calldata = (
+    value: boolean,
+  ): DojoCall => {
+    return {
+      contractName: 'config',
+      entrypoint: 'set_quest_lands_enabled',
+      calldata: [value],
+    };
+  };
+
+  const config_setQuestLandsEnabled = async (
+    snAccount: Account | AccountInterface,
+    value: boolean,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_config_setQuestLandsEnabled_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
   const build_config_setRateDenominator_calldata = (
     value: BigNumberish,
   ): DojoCall => {
@@ -2026,6 +2055,259 @@ export function setupWorld(provider: DojoProvider) {
       return await provider.execute(
         snAccount,
         build_config_setTimeSpeed_calldata(value),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_finishQuest_calldata = (
+    questId: BigNumberish,
+    tokenAddress: string,
+    sellPrice: BigNumberish,
+    amountToStake: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'finish_quest',
+      calldata: [questId, tokenAddress, sellPrice, amountToStake],
+    };
+  };
+
+  const quests_finishQuest = async (
+    snAccount: Account | AccountInterface,
+    questId: BigNumberish,
+    tokenAddress: string,
+    sellPrice: BigNumberish,
+    amountToStake: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_quests_finishQuest_calldata(
+          questId,
+          tokenAddress,
+          sellPrice,
+          amountToStake,
+        ),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_getQuest_calldata = (questId: BigNumberish): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'get_quest',
+      calldata: [questId],
+    };
+  };
+
+  const quests_getQuest = async (questId: BigNumberish) => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_quests_getQuest_calldata(questId),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_getQuestEntryPrice_calldata = (
+    questId: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'get_quest_entry_price',
+      calldata: [questId],
+    };
+  };
+
+  const quests_getQuestEntryPrice = async (questId: BigNumberish) => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_quests_getQuestEntryPrice_calldata(questId),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_getQuestGameToken_calldata = (
+    questId: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'get_quest_game_token',
+      calldata: [questId],
+    };
+  };
+
+  const quests_getQuestGameToken = async (questId: BigNumberish) => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_quests_getQuestGameToken_calldata(questId),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_getScore_calldata = (questId: BigNumberish): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'get_score',
+      calldata: [questId],
+    };
+  };
+
+  const quests_getScore = async (questId: BigNumberish) => {
+    try {
+      return await provider.call(
+        'ponzi_land',
+        build_quests_getScore_calldata(questId),
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_registerQuestGame_calldata = (
+    worldAddress: string,
+    namespace: string,
+    gameContractName: string,
+    settingsContractName: string,
+    settingsId: BigNumberish,
+    targetScore: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'register_quest_game',
+      calldata: [
+        worldAddress,
+        namespace,
+        gameContractName,
+        settingsContractName,
+        settingsId,
+        targetScore,
+      ],
+    };
+  };
+
+  const quests_registerQuestGame = async (
+    snAccount: Account | AccountInterface,
+    worldAddress: string,
+    namespace: string,
+    gameContractName: string,
+    settingsContractName: string,
+    settingsId: BigNumberish,
+    targetScore: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_quests_registerQuestGame_calldata(
+          worldAddress,
+          namespace,
+          gameContractName,
+          settingsContractName,
+          settingsId,
+          targetScore,
+        ),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_removeLandQuest_calldata = (
+    landLocation: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'remove_land_quest',
+      calldata: [landLocation],
+    };
+  };
+
+  const quests_removeLandQuest = async (
+    snAccount: Account | AccountInterface,
+    landLocation: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_quests_removeLandQuest_calldata(landLocation),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_setLandQuest_calldata = (
+    landLocation: BigNumberish,
+    gameId: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'set_land_quest',
+      calldata: [landLocation, gameId],
+    };
+  };
+
+  const quests_setLandQuest = async (
+    snAccount: Account | AccountInterface,
+    landLocation: BigNumberish,
+    gameId: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_quests_setLandQuest_calldata(landLocation, gameId),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_quests_startQuest_calldata = (
+    landLocation: BigNumberish,
+    playerName: BigNumberish,
+  ): DojoCall => {
+    return {
+      contractName: 'quests',
+      entrypoint: 'start_quest',
+      calldata: [landLocation, playerName],
+    };
+  };
+
+  const quests_startQuest = async (
+    snAccount: Account | AccountInterface,
+    landLocation: BigNumberish,
+    playerName: BigNumberish,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_quests_startQuest_calldata(landLocation, playerName),
         'ponzi_land',
       );
     } catch (error) {
@@ -2196,8 +2478,8 @@ export function setupWorld(provider: DojoProvider) {
       buildCanTakeActionCalldata: build_auth_canTakeAction_calldata,
       ensureDeploy: auth_ensureDeploy,
       buildEnsureDeployCalldata: build_auth_ensureDeploy_calldata,
-      getOwner: auth_getOwner,
-      buildGetOwnerCalldata: build_auth_getOwner_calldata,
+      isOwnerAuth: auth_isOwnerAuth,
+      buildIsOwnerAuthCalldata: build_auth_isOwnerAuth_calldata,
       lockActions: auth_lockActions,
       buildLockActionsCalldata: build_auth_lockActions_calldata,
       removeAuthorized: auth_removeAuthorized,
@@ -2216,21 +2498,19 @@ export function setupWorld(provider: DojoProvider) {
       buildGetBaseTimeCalldata: build_config_getBaseTime_calldata,
       getBuyFee: config_getBuyFee,
       buildGetBuyFeeCalldata: build_config_getBuyFee_calldata,
-      getCenterLocation: config_getCenterLocation,
-      buildGetCenterLocationCalldata: build_config_getCenterLocation_calldata,
       getClaimFee: config_getClaimFee,
       buildGetClaimFeeCalldata: build_config_getClaimFee_calldata,
       getClaimFeeThreshold: config_getClaimFeeThreshold,
       buildGetClaimFeeThresholdCalldata:
         build_config_getClaimFeeThreshold_calldata,
+      getConfig: config_getConfig,
+      buildGetConfigCalldata: build_config_getConfig_calldata,
       getDecayRate: config_getDecayRate,
       buildGetDecayRateCalldata: build_config_getDecayRate_calldata,
       getDropRate: config_getDropRate,
       buildGetDropRateCalldata: build_config_getDropRate_calldata,
       getFloorPrice: config_getFloorPrice,
       buildGetFloorPriceCalldata: build_config_getFloorPrice_calldata,
-      getGridWidth: config_getGridWidth,
-      buildGetGridWidthCalldata: build_config_getGridWidth_calldata,
       getLinearDecayTime: config_getLinearDecayTime,
       buildGetLinearDecayTimeCalldata: build_config_getLinearDecayTime_calldata,
       getLiquiditySafetyMultiplier: config_getLiquiditySafetyMultiplier,
@@ -2253,6 +2533,12 @@ export function setupWorld(provider: DojoProvider) {
       getPriceDecreaseRate: config_getPriceDecreaseRate,
       buildGetPriceDecreaseRateCalldata:
         build_config_getPriceDecreaseRate_calldata,
+      getQuestAuctionChance: config_getQuestAuctionChance,
+      buildGetQuestAuctionChanceCalldata:
+        build_config_getQuestAuctionChance_calldata,
+      getQuestLandsEnabled: config_getQuestLandsEnabled,
+      buildGetQuestLandsEnabledCalldata:
+        build_config_getQuestLandsEnabled_calldata,
       getRateDenominator: config_getRateDenominator,
       buildGetRateDenominatorCalldata: build_config_getRateDenominator_calldata,
       getScalingFactor: config_getScalingFactor,
@@ -2267,8 +2553,6 @@ export function setupWorld(provider: DojoProvider) {
       buildSetBaseTimeCalldata: build_config_setBaseTime_calldata,
       setBuyFee: config_setBuyFee,
       buildSetBuyFeeCalldata: build_config_setBuyFee_calldata,
-      setCenterLocation: config_setCenterLocation,
-      buildSetCenterLocationCalldata: build_config_setCenterLocation_calldata,
       setClaimFee: config_setClaimFee,
       buildSetClaimFeeCalldata: build_config_setClaimFee_calldata,
       setClaimFeeThreshold: config_setClaimFeeThreshold,
@@ -2282,8 +2566,6 @@ export function setupWorld(provider: DojoProvider) {
       buildSetFloorPriceCalldata: build_config_setFloorPrice_calldata,
       setFullConfig: config_setFullConfig,
       buildSetFullConfigCalldata: build_config_setFullConfig_calldata,
-      setGridWidth: config_setGridWidth,
-      buildSetGridWidthCalldata: build_config_setGridWidth_calldata,
       setLinearDecayTime: config_setLinearDecayTime,
       buildSetLinearDecayTimeCalldata: build_config_setLinearDecayTime_calldata,
       setLiquiditySafetyMultiplier: config_setLiquiditySafetyMultiplier,
@@ -2312,6 +2594,12 @@ export function setupWorld(provider: DojoProvider) {
       setPriceDecreaseRate: config_setPriceDecreaseRate,
       buildSetPriceDecreaseRateCalldata:
         build_config_setPriceDecreaseRate_calldata,
+      setQuestAuctionChance: config_setQuestAuctionChance,
+      buildSetQuestAuctionChanceCalldata:
+        build_config_setQuestAuctionChance_calldata,
+      setQuestLandsEnabled: config_setQuestLandsEnabled,
+      buildSetQuestLandsEnabledCalldata:
+        build_config_setQuestLandsEnabled_calldata,
       setRateDenominator: config_setRateDenominator,
       buildSetRateDenominatorCalldata: build_config_setRateDenominator_calldata,
       setScalingFactor: config_setScalingFactor,
@@ -2320,6 +2608,26 @@ export function setupWorld(provider: DojoProvider) {
       buildSetTaxRateCalldata: build_config_setTaxRate_calldata,
       setTimeSpeed: config_setTimeSpeed,
       buildSetTimeSpeedCalldata: build_config_setTimeSpeed_calldata,
+    },
+    quests: {
+      finishQuest: quests_finishQuest,
+      buildFinishQuestCalldata: build_quests_finishQuest_calldata,
+      getQuest: quests_getQuest,
+      buildGetQuestCalldata: build_quests_getQuest_calldata,
+      getQuestEntryPrice: quests_getQuestEntryPrice,
+      buildGetQuestEntryPriceCalldata: build_quests_getQuestEntryPrice_calldata,
+      getQuestGameToken: quests_getQuestGameToken,
+      buildGetQuestGameTokenCalldata: build_quests_getQuestGameToken_calldata,
+      getScore: quests_getScore,
+      buildGetScoreCalldata: build_quests_getScore_calldata,
+      registerQuestGame: quests_registerQuestGame,
+      buildRegisterQuestGameCalldata: build_quests_registerQuestGame_calldata,
+      removeLandQuest: quests_removeLandQuest,
+      buildRemoveLandQuestCalldata: build_quests_removeLandQuest_calldata,
+      setLandQuest: quests_setLandQuest,
+      buildSetLandQuestCalldata: build_quests_setLandQuest_calldata,
+      startQuest: quests_startQuest,
+      buildStartQuestCalldata: build_quests_startQuest_calldata,
     },
     token_registry: {
       ensureTokenAuthorized: token_registry_ensureTokenAuthorized,

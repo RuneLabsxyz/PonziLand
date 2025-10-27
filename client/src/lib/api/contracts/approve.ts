@@ -173,6 +173,34 @@ export async function wrappedActions(provider: DojoProvider) {
     }
   };
 
+  const quests_startQuest = async (
+    snAccount: Account | AccountInterface,
+    location: BigNumberish,
+    questId: BigNumberish,
+    entry_price: BigNumberish,
+    entry_token: string,
+  ) => {
+    try {
+      console.log('entry_price', entry_price);
+      const calls = await getApprove(
+        provider,
+        [
+          {
+            tokenAddress: entry_token,
+            amount: BigInt(entry_price),
+          },
+        ],
+        world.quests.buildStartQuestCalldata(location, questId),
+      );
+
+      console.log('calls', calls);
+
+      return await provider.execute(snAccount, calls, 'ponzi_land');
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return {
     actions: {
       ...world.actions,
@@ -180,6 +208,10 @@ export async function wrappedActions(provider: DojoProvider) {
       bid: actions_bid,
       buy: actions_buy,
       increaseStake: actions_increaseStake,
+    },
+    quests: {
+      ...world.quests,
+      startQuest: quests_startQuest,
     },
   };
 }

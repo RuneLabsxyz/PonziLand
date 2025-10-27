@@ -33,6 +33,8 @@ trait IConfigSystem<T> {
         max_circles: u16,
         claim_fee: u128,
         buy_fee: u128,
+        quest_lands_enabled: bool,
+        quest_rewards_enabled: bool,
         our_contract_for_fee: ContractAddress,
         our_contract_for_auction: ContractAddress,
         claim_fee_threshold: u128,
@@ -166,6 +168,14 @@ trait IConfigSystem<T> {
     /// @param value The new main currency.
     fn set_main_currency(ref self: T, value: ContractAddress);
 
+    /// @notice Sets the quest auction chance.
+    /// @param value The new quest auction chance.
+    fn set_quest_auction_chance(ref self: T, value: u8);
+
+    /// @notice Sets the quest lands enabled.
+    /// @param value The new quest lands enabled.
+    fn set_quest_lands_enabled(ref self: T, value: bool);
+
     // Getters
     fn get_tax_rate(self: @T) -> u16;
     fn get_base_time(self: @T) -> u16;
@@ -188,6 +198,8 @@ trait IConfigSystem<T> {
     fn get_buy_fee(self: @T) -> u128;
     fn get_claim_fee_threshold(self: @T) -> u128;
     fn get_main_currency(self: @T) -> ContractAddress;
+    fn get_quest_auction_chance(self: @T) -> u8;
+    fn get_quest_lands_enabled(self: @T) -> bool;
     fn get_config(self: @T) -> Config;
 }
 
@@ -243,6 +255,8 @@ mod config {
         max_circles: u16,
         claim_fee: u128,
         buy_fee: u128,
+        quest_rewards_enabled: bool,
+        quest_lands_enabled: bool,
         our_contract_for_fee: ContractAddress,
         our_contract_for_auction: ContractAddress,
         claim_fee_threshold: u128,
@@ -269,6 +283,8 @@ mod config {
             max_circles,
             claim_fee,
             buy_fee,
+            quest_lands_enabled,
+            quest_rewards_enabled,
             our_contract_for_fee,
             our_contract_for_auction,
             claim_fee_threshold,
@@ -301,6 +317,8 @@ mod config {
             max_circles: u16,
             claim_fee: u128,
             buy_fee: u128,
+            quest_lands_enabled: bool,
+            quest_rewards_enabled: bool,
             our_contract_for_fee: ContractAddress,
             our_contract_for_auction: ContractAddress,
             claim_fee_threshold: u128,
@@ -329,6 +347,8 @@ mod config {
                 max_circles,
                 claim_fee,
                 buy_fee,
+                quest_lands_enabled,
+                quest_rewards_enabled,
                 our_contract_for_fee,
                 our_contract_for_auction,
                 claim_fee_threshold,
@@ -597,6 +617,34 @@ mod config {
             world.emit_event(@ConfigUpdated { field: 'main_currency', new_value: value.into() });
         }
 
+        fn set_quest_auction_chance(ref self: ContractState, value: u8) {
+            let mut world = self.world_default();
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("quest_auction_chance"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'quest_auction_chance', new_value: value.into() },
+                );
+        }
+
+        fn set_quest_lands_enabled(ref self: ContractState, value: bool) {
+            let mut world = self.world_default();
+            let caller = get_caller_address();
+            assert(world.auth_dispatcher().is_owner_auth(caller), 'not the owner');
+            world
+                .write_member(
+                    Model::<Config>::ptr_from_keys(1), selector!("quest_lands_enabled"), value,
+                );
+            world
+                .emit_event(
+                    @ConfigUpdated { field: 'quest_lands_enabled', new_value: value.into() },
+                );
+        }
+
         // Getters implementation
         fn get_tax_rate(self: @ContractState) -> u16 {
             let world = self.world_default();
@@ -707,6 +755,16 @@ mod config {
         fn get_main_currency(self: @ContractState) -> ContractAddress {
             let world = self.world_default();
             world.read_member(Model::<Config>::ptr_from_keys(1), selector!("main_currency"))
+        }
+
+        fn get_quest_auction_chance(self: @ContractState) -> u8 {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("quest_auction_chance"))
+        }
+
+        fn get_quest_lands_enabled(self: @ContractState) -> bool {
+            let world = self.world_default();
+            world.read_member(Model::<Config>::ptr_from_keys(1), selector!("quest_lands_enabled"))
         }
 
         fn get_config(self: @ContractState) -> Config {

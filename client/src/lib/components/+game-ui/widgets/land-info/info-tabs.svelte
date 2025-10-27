@@ -2,6 +2,8 @@
   import type { LandWithActions } from '$lib/api/land';
   import OverallTab from './tabs/overall-tab.svelte';
   import BuyTab from './tabs/buy-tab.svelte';
+  import HistoryTab from './tabs/history-tab.svelte';
+  import QuestsTab from './tabs/quest-tab.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
   import { tutorialState } from '$lib/components/tutorial/stores.svelte';
@@ -13,6 +15,8 @@
   }: { land: LandWithActions; auctionPrice?: CurrencyAmount } = $props();
 
   let activeTab = $state<TabType>('buy');
+
+  const showDevTools = window.location.hash === '#dev';
 
   function setActiveTab(tab: TabType) {
     activeTab = tab;
@@ -47,6 +51,23 @@
         BUY
       </Button>
     {/if}
+    <Button
+      disabled
+      class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
+      variant={activeTab === 'history' ? 'blue' : undefined}
+      onclick={() => setActiveTab('history')}
+    >
+      HISTORY (todo)
+    </Button>
+    {#if showDevTools}
+      <Button
+        class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
+        variant={activeTab === 'quests' ? 'blue' : undefined}
+        onclick={() => setActiveTab('quests')}
+      >
+        Quests
+      </Button>
+    {/if}
   </div>
 
   <div class="w-full h-full mt-4">
@@ -62,5 +83,7 @@
       isActive={activeTab === 'buy'}
       {auctionPrice}
     />
+    <HistoryTab {land} bind:activeTab isActive={activeTab === 'history'} />
+    <QuestsTab {land} bind:activeTab isActive={activeTab === 'quests'} />
   </div>
 </div>

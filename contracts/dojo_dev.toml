@@ -4,11 +4,11 @@ description = "The official Dojo Starter guide, the quickest and most streamline
 cover_uri = "file://assets/cover.png"
 icon_uri = "file://assets/icon.png"
 website = "https://github.com/dojoengine/dojo-starter"
-seed = "test_313277088"
+seed = "quests_166621606"
 
 [world.socials]
 x = "https://x.com/ohayo_dojo"
-discord = "https://discord.gg/2Mt3HhQpmD"
+discord = "https://discord.gg/FB2wR6uF"
 github = "https://github.com/dojoengine/dojo-starter"
 telegram = "https://t.me/dojoengine"
 
@@ -16,16 +16,24 @@ telegram = "https://t.me/dojoengine"
 default = "ponzi_land"
 
 [env]
-rpc_url = "http://localhost:5050"
+rpc_url = "https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_9"
 # Default account for katana with seed = 0
-account_address = "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"
-private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
+account_address = "0x0694182a014b39855a1b139961a3f39e7d4b43527b30d892a630d66a2abe3780"
+private_key = "0x0430638cc3ef026ad7a74d9ad143bfc15bf303cea0be1c972ab1f280c90a531a"
 # world_address = "0x06171ed98331e849d6084bf2b3e3186a7ddf35574dd68cab4691053ee8ab69d7"
 
+[migration]
+order_inits = [
+    "token_registry",
+    "actions",
+    "auth",
+    "quests",
+    "config",
+]
 
 [writers]
 # We need to be a writer to add events...
-"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config"]
+"ponzi_land" = ["ponzi_land-actions", "ponzi_land-auth", "ponzi_land-config", "ponzi_land-quests"]
 
 [init_call_args]
 "ponzi_land-auth" = [
@@ -34,12 +42,12 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
 
 "ponzi_land-token_registry" = [
     "6",                                                                  # 6 tokens,
-    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # pltSTRK
-    "0x7d08c149ba47a718f4633292931c8ada04c71bd3e901f081adea0c92078b5f", # pltLORDS
-    "0x13a8f0c28d9d769e64242ff27e369004267bca4c91c3a1eb1ea98dd0d6b72bc", # pltETH
-    "0x5d1e76ca74dfa90352e3f1f92c3a8854a8efdc4eaad22b79b78c7cea8c338c", # pltPAPER
-    "0x77eee06fb345c21e343af44ab866f80ad2aad7d25ef24cbbfd936a172f7afb2", # pltBROTHER
-    "0x16b751da6619441bb869b891611a4fcf7221d3a98b2500d9fe052c8f87c71f3", # pltPAL
+    "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2", # pltSTRK
+    "0x3458d8a00b5731b743f2546f398fa5db4c78be880480b4b5e69efe702099a2a", # pltLORDS
+    "0x59a155d61343e0b1c9016d2b0f89ee15ac9f96bcc780e94ff75178c6d74040a", # pltETH
+    "0x5891372b03bac7b0a076902a2748912a53c09efea4c0b8b6c4cba0efd43bbd0", # pltPAPER
+    "0x2326d8d563e296adb2e32bad0571ff3f61295b0ffcc97865e4111a4b9bf2d34", # pltBROTHER
+    "0x3cbff2ba953228299f7ab7d42dcc459354061efb6d889053439b56ef1e4bc32", # pltPAL
 ]
 
 "ponzi_land-config" = [
@@ -62,10 +70,12 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "5",                                                               # Max circles
     "0",                                                                 # Claim fee
     "0",                                                                   # Buy fee
+    "1",                                                      # Quest lands enabled
+    "1",                                                      # Quest rewards enabled
     "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",                                                      # Our contract for fee
     "0x0417435DE94b6dffE3a22DFa040E7ceb4FB674209e109E9DB4E43dbcc905C640",                                                  # Our contract for auction
     "10",                                                       # Claim fee threshold
-    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # Main token
+    "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2", # Main token
 ]
 "ponzi_land-actions" = [
     "128000000000000000000",                                              # Start price (low)
@@ -73,13 +83,36 @@ private_key = "0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912"
     "1000000000000000000",                                                # Floor price (low)
     "0",                                                                  # Floor price (high)
     "0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384", # Ekubo core address (unused)
-    "0x197dfa87bb9082bb0d10d4f7c190b322b2b00cec0805499d92ebf38a2808749", # Main token
+    "0x4404c4b2e9ca6b9434f3c13bcad64c5e7bcd22c0fb50b7ff2c40fd19498a0b2", # Main token
+]
+"ponzi_land-quests" = [
+    "3",
+    "0",
+    "0x055a50201dbd15feadb5f326dc9ec9f2aabf5f2b80e61348a83bde398c00e3bd", # mock address
+    "str:mock",
+    "str:game_token_systems", # game contract name
+    "str:settings_systems",
+    "0",
+    "20",
+    "1",
+    "str:Mock",
+    "0",
+    "0x785401cf74071ec444e37dbbd87281aba48afc86570b1a1537193d1ce39086f", # dm address
+    "str:ls_0_0_9",
+    "str:game_token_systems", # game contract name
+    "str:settings_systems",
+    "0",
+    "200",
+    "1",
+    "str:Death Mountain",
+    "0",
+    "0x00b6e40f8a90aaca4997cc5d9aa2b53836a786fe4e7121713451b3d87bc251c4", # caps address
+    "str:planetelo",
+    "str:planetelo", # game contract name
+    "str:settings_systems",
+    "1",
+    "0",
+    "2",
+    "str:Caps",
 ]
 
-# External contract deployment - Liquidity Reinjector (non-Dojo contract)
-[[external_contracts]]
-contract_name = "LiquidityReinjector"
-salt = "1"
-constructor_data = [
-    "0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec"  # Owner address (same as account_address from [env])
-]
