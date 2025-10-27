@@ -327,28 +327,30 @@
         </Select.Root>
 
         {#if selectedGame}
-          <div class="mt-4 space-y-2">
-            <Label class="font-ponzi-number">Game Details</Label>
-            <div class="grid grid-cols-2 gap-2 text-xs opacity-75">
-              <div>
-                <span>Contract:</span>
-                <p class="font-mono truncate">{selectedGame.game_contract_name}</p>
+          <div class="mt-4 space-y-3">
+            <!-- Prominent Game Display 🐙 tentacles showing off the game -->
+            <div class="text-center p-3 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg border-2 border-primary/40">
+              <p class="text-xl font-bold font-ponzi-number">
+                {selectedGame.game_name}
+              </p>
+              <p class="text-xs opacity-75 mt-1">
+                {selectedGame.quest_type?.activeVariant || 'Quest'} Challenge
+              </p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 text-sm">
+              <div class="text-center p-2 bg-muted/50 rounded border">
+                <Label class="text-xs">Target Score</Label>
+                <p class="font-bold text-lg">{selectedGame.target_score.toString()}</p>
               </div>
-              <div>
-                <span>Namespace:</span>
-                <p class="font-mono truncate">{selectedGame.namespace}</p>
-              </div>
-              <div>
-                <span>Target Score:</span>
-                <p class="font-semibold">{selectedGame.target_score.toString()}</p>
-              </div>
-              <div>
-                <span>Quest Type:</span>
-                <p class="font-semibold">{selectedGame.quest_type?.activeVariant || 'Unknown'}</p>
+              <div class="text-center p-2 bg-muted/50 rounded border">
+                <Label class="text-xs">Quest Type</Label>
+                <p class="font-bold text-sm">{selectedGame.quest_type?.activeVariant || 'Unknown'}</p>
               </div>
             </div>
-            <p class="text-xs opacity-75 leading-none">
-              Players will need to achieve the target score to complete this quest and earn rewards!
+            
+            <p class="text-xs opacity-75 leading-tight text-center">
+              Players will need to achieve the target score to complete this quest and earn rewards! 🎮
             </p>
           </div>
         {/if}
@@ -370,26 +372,25 @@
       {:else}
         <!-- Land is owned by player and has a quest - show management options -->
         <Label class="font-ponzi-number">Quest Land Management</Label>
-        <p class="-mt-1 mb-1 opacity-75 leading-none">
+        <p class="-mt-1 mb-2 opacity-75 leading-none">
           Your land is currently hosting a quest
         </p>
         
-        <div class="grid grid-cols-2 gap-3 text-sm mt-3">
-          <div>
-            <Label>Participants</Label>
-            <p class="font-semibold">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
+        <!-- Prominent Game Name 🐙 -->
+        <div class="text-center mb-3 p-3 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg border-2 border-primary/40">
+          <p class="text-xl font-bold font-ponzi-number">
+            {currentQuestGame?.game_name || questDetails?.game_name.toString() || 'Unknown Game'}
+          </p>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div class="text-center p-2 bg-muted/50 rounded border">
+            <Label class="text-xs">Players</Label>
+            <p class="font-bold text-lg">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
           </div>
-          <div>
-            <Label>Entry Price</Label>
-            <p class="font-semibold">{entry_price} {baseToken.symbol}</p>
-          </div>
-          <div>
-            <Label>Target Score</Label>
-            <p class="font-semibold">{questDetails?.target_score.toString()}</p>
-          </div>
-          <div>
-            <Label>Game ID</Label>
-            <p class="font-semibold">{questDetails?.game_id.toString()}</p>
+          <div class="text-center p-2 bg-muted/50 rounded border">
+            <Label class="text-xs">Target Score</Label>
+            <p class="font-bold text-lg">{questDetails?.target_score.toString()}</p>
           </div>
         </div>
 
@@ -410,41 +411,32 @@
       {/if}
     {:else if hasQuest}
       <!-- Land is not owned by player but has a quest - show challenge interface 🐙 -->
-      <!-- Debug info -->
-      <div class="text-xs opacity-50 mb-2">
-        DEBUG: game_token_id={game_token_id}, score={score}, is_active={is_active}, is_quest_over={is_quest_over}, hasWon={hasWon}, hasFailed={hasFailed}, isOneOnOne={isOneOnOne}, isHighScore={isHighScore}
-      </div>
       
-      <Label class="font-ponzi-number">
-        {isOneOnOne ? '1v1 Quest Challenge' : 'Quest Challenge'}
-      </Label>
-      <p class="-mt-1 mb-1 opacity-75 leading-none">
-        {isOneOnOne ? 'Challenge the land owner in a 1v1 match!' : 'Test your skills and complete this quest!'}
-      </p>
+      <!-- Prominent Game Name Display 🐙 tentacles reaching for glory -->
+      <div class="text-center mb-4 p-3 bg-gradient-to-r from-primary/20 to-primary/10 rounded-lg border-2 border-primary/40">
+        <p class="text-2xl font-bold font-ponzi-number tracking-wide">
+          {questDetails?.game_name.toString()}
+        </p>
+        <p class="text-sm opacity-75 mt-1">
+          {isOneOnOne ? '⚔️ 1v1 Quest Challenge' : '🎮 Quest Challenge'}
+        </p>
+      </div>
 
-      <div class="grid grid-cols-2 gap-3 text-sm mt-3">
-        <div>
-          <Label>Entry Price</Label>
-          <p class="font-bold text-lg text-yellow-500">{entry_price} {baseToken.symbol}</p>
-        </div>
+      <div class="grid grid-cols-2 gap-3 text-sm">
         {#if isHighScore}
-          <div>
-            <Label>Target Score</Label>
-            <p class="font-bold text-lg">{questDetails?.target_score.toString()}</p>
+          <div class="text-center p-3 bg-muted/50 rounded border">
+            <Label class="text-xs">Target Score</Label>
+            <p class="font-bold text-2xl mt-1">{questDetails?.target_score.toString()}</p>
           </div>
         {:else if isOneOnOne}
-          <div>
-            <Label>Game Type</Label>
-            <p class="font-bold text-lg">1v1 Match</p>
+          <div class="text-center p-3 bg-muted/50 rounded border">
+            <Label class="text-xs">Game Type</Label>
+            <p class="font-bold text-lg mt-1">1v1 Match</p>
           </div>
         {/if}
-        <div>
-          <Label>Capacity</Label>
-          <p class="font-semibold">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
-        </div>
-        <div>
-          <Label>Game ID</Label>
-          <p class="font-semibold">{questDetails?.game_id.toString()}</p>
+        <div class="text-center p-3 bg-muted/50 rounded border">
+          <Label class="text-xs">Players</Label>
+          <p class="font-bold text-lg mt-1">{questDetails?.participant_count.toString()} / {questDetails?.capacity.toString()}</p>
         </div>
       </div>
 
