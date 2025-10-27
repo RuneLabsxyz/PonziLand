@@ -4,7 +4,7 @@
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import { Button } from '$lib/components/ui/button';
   import * as Select from '$lib/components/ui/select';
-  import type { Selected } from '$lib/components/ui/select';
+  import type { Selected } from 'bits-ui';
   import Label from '$lib/components/ui/label/label.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import type { TabType } from '$lib/interfaces';
