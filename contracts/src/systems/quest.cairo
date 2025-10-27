@@ -124,6 +124,11 @@ pub mod quests {
 
             let quest_details: QuestDetails = world.read_model(land_location);
 
+            if quest_details.creator_address != land.owner {
+                world.erase_model(@quest_details);
+                return;
+            }
+
             assert!(quest_details.participant_count == 0, "Quest has an active participant");
             world.erase_model(@quest_details);
         }
@@ -237,6 +242,13 @@ pub mod quests {
             assert!(quest.completed == false, "Quest is already completed");
             let mut quest_details: QuestDetails = world.read_model(quest.location);
             let mut land: Land = world.read_model(quest_details.location);
+
+            if land.owner != quest_details.creator_address {
+                world.erase_model(@quest_details);
+                quest.completed = true;
+                world.write_model(@quest);
+                return;
+            }
 
             let quest_game: QuestGame = world.read_model(quest_details.game_id);
             // get score for the token id
