@@ -245,7 +245,6 @@ pub mod quests {
 
             // if the quest has been deleted due to owner changing
             if quest_details.participant_count == 0 {
-                world.erase_model(@quest_details);
                 quest.completed = true;
                 world.write_model(@quest);
                 return;
