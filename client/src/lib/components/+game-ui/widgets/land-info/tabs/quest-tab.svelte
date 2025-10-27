@@ -179,7 +179,7 @@
     console.log('Setting land as quest land with game ID:', selectedGameId);
 
     try {
-      const gameId = parseInt(selectedGameId.value);
+      const gameId = parseInt(selectedGameId);
       console.log('gameId', gameId);
       const result = await SetLandQuest(land.location, gameId);
 
@@ -327,15 +327,15 @@
       if (player_quest_res && player_quest_res.length > 0) {
         let quest_id = player_quest_res[0].id;
         console.log('quest_id', quest_id);
-        let score_res = await GetQuestScore(quest_id);
+        let score_res = (await GetQuestScore(quest_id)) as any[];
         console.log('score_res', score_res);
         score = parseInt(BigInt(score_res[0]).toString());
         is_quest_over =
           score_res[1] == 1 ||
-          (currentQuestGame.quest_type.toString() == 'Minigame' &&
+          (currentQuestGame?.quest_type.toString() == 'Minigame' &&
             score >= Number(questDetails?.target_score));
         console.log('score set to:', score, 'is_quest_over:', is_quest_over);
-        let token_res = await GetQuestToken(quest_id);
+        let token_res = (await GetQuestToken(quest_id)) as any[];
         console.log('token_res', token_res);
         game_token_id = parseInt(BigInt(token_res[1]).toString());
         console.log('game_token_id set to:', game_token_id);
@@ -378,7 +378,7 @@
         <p class="-mt-1 mb-1 opacity-75 leading-none">
           Choose a quest game to challenge other players
         </p>
-        <Select.Root bind:selected={selectedGameId}>
+        <Select.Root bind:selected={selectedGameId as unknown as string}>
           <Select.Trigger class="w-full bg-white text-black">
             <Select.Value placeholder="Choose a quest game..." />
           </Select.Trigger>
