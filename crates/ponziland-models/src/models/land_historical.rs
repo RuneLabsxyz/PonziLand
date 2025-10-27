@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use torii_ingester::prelude::ContractAddress;
 use torii_ingester::u256::U256;
 
-/// Simple position tracking land ownership history
+/// Land historical tracking land ownership history
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SimplePosition {
+pub struct LandHistorical {
     /// Unique identifier: owner_land_timestamp
     pub id: String,
     /// Wallet address of the owner (hex format)
@@ -38,8 +38,8 @@ pub struct SimplePosition {
     pub token_outflows: HashMap<String, U256>,
 }
 
-impl SimplePosition {
-    /// Create a new position from a land purchase
+impl LandHistorical {
+    /// Create a new historical record from a land purchase
     pub fn new(
         owner: ContractAddress,
         land_location: Location,
@@ -71,7 +71,7 @@ impl SimplePosition {
         }
     }
 
-    /// Create a new position with financial data
+    /// Create a new historical record with financial data
     pub fn new_with_cost(
         owner: ContractAddress,
         land_location: Location,

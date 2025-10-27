@@ -3,14 +3,14 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_repository::SimplePositionRepository;
+use chaindata_repository::LandHistoricalRepository;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 use crate::state::AppState;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct SimplePositionResponse {
+pub struct LandHistoricalResponse {
     pub id: String,
     pub owner: String,
     pub land_location: u32,
@@ -30,22 +30,22 @@ pub struct SimplePositionResponse {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct SimplePositionQuery {
+pub struct LandHistoricalQuery {
     #[serde(default)]
     pub limit: Option<u64>,
     #[serde(default)]
     pub offset: Option<u64>,
 }
 
-pub struct SimplePositionsRoute;
+pub struct LandHistoricalRoute;
 
-impl Default for SimplePositionsRoute {
+impl Default for LandHistoricalRoute {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl SimplePositionsRoute {
+impl LandHistoricalRoute {
     #[must_use]
     pub fn new() -> Self {
         Self
@@ -59,18 +59,18 @@ impl SimplePositionsRoute {
 
     async fn get_positions_by_owner(
         Path(owner): Path<String>,
-        Query(query): Query<SimplePositionQuery>,
-        State(simple_position_repository): State<Arc<SimplePositionRepository>>,
-    ) -> Result<Json<Vec<SimplePositionResponse>>, axum::http::StatusCode> {
+        Query(query): Query<LandHistoricalQuery>,
+        State(land_historical_repository): State<Arc<LandHistoricalRepository>>,
+    ) -> Result<Json<Vec<LandHistoricalResponse>>, axum::http::StatusCode> {
         // Convert address to lowercase for case-insensitive matching
         let owner_lowercase = owner.to_lowercase();
 
-        let positions = simple_position_repository
+        let positions = land_historical_repository
             .get_by_owner(&owner_lowercase)
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        let mut responses: Vec<SimplePositionResponse> = positions
+        let mut responses: Vec<LandHistoricalResponse> = positions
             .into_iter()
             .map(|pos| {
                 // Calculate net profit if both buy cost and sale revenue are available
@@ -106,7 +106,7 @@ impl SimplePositionsRoute {
                     _ => None,
                 };
 
-                SimplePositionResponse {
+                LandHistoricalResponse {
                     id: pos.id,
                     owner: pos.owner,
                     land_location: pos.land_location.0 as u32,
@@ -147,12 +147,12 @@ impl SimplePositionsRoute {
 
     async fn get_position_count(
         Path(owner): Path<String>,
-        State(simple_position_repository): State<Arc<SimplePositionRepository>>,
+        State(land_historical_repository): State<Arc<LandHistoricalRepository>>,
     ) -> Result<Json<serde_json::Value>, axum::http::StatusCode> {
         // Convert address to lowercase for case-insensitive matching
         let owner_lowercase = owner.to_lowercase();
 
-        let count = simple_position_repository
+        let count = land_historical_repository
             .count_by_owner(&owner_lowercase)
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
@@ -170,7 +170,7 @@ mod tests {
 
     #[test]
     fn test_simple_position_response_serialization() {
-        let response = SimplePositionResponse {
+        let response = LandHistoricalResponse {
             id: "test_position".to_string(),
             owner: "0x123".to_string(),
             land_location: 100,

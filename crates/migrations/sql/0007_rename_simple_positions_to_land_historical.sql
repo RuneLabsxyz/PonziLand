@@ -1,0 +1,11 @@
+-- Rename simple_positions table to land_historical
+ALTER TABLE simple_positions RENAME TO land_historical;
+
+-- Rename all indexes to match the new table name
+ALTER INDEX idx_simple_positions_owner RENAME TO idx_land_historical_owner;
+ALTER INDEX idx_simple_positions_land_location RENAME TO idx_land_historical_land_location;
+ALTER INDEX idx_simple_positions_time_bought RENAME TO idx_land_historical_time_bought;
+ALTER INDEX idx_simple_positions_owner_time RENAME TO idx_land_historical_owner_time;
+ALTER INDEX idx_simple_positions_close_date RENAME TO idx_land_historical_close_date;
+ALTER INDEX idx_simple_positions_token_inflows RENAME TO idx_land_historical_token_inflows;
+ALTER INDEX idx_simple_positions_token_outflows RENAME TO idx_land_historical_token_outflows;

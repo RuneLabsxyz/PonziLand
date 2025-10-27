@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::extract::FromRef;
-use chaindata_repository::{LandRepository, SimplePositionRepository};
+use chaindata_repository::{LandHistoricalRepository, LandRepository};
 
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 
@@ -11,7 +11,7 @@ pub struct AppState {
     pub avnu_service: Arc<AvnuService>,
     pub ekubo_service: Arc<EkuboService>,
     pub land_repository: Arc<LandRepository>,
-    pub simple_position_repository: Arc<SimplePositionRepository>,
+    pub land_historical_repository: Arc<LandHistoricalRepository>,
 }
 
 impl AppState {
@@ -20,14 +20,14 @@ impl AppState {
         avnu_service: Arc<AvnuService>,
         ekubo_service: Arc<EkuboService>,
         land_repository: Arc<LandRepository>,
-        simple_position_repository: Arc<SimplePositionRepository>,
+        land_historical_repository: Arc<LandHistoricalRepository>,
     ) -> Self {
         Self {
             token_service,
             avnu_service,
             ekubo_service,
             land_repository,
-            simple_position_repository,
+            land_historical_repository,
         }
     }
 }
@@ -56,8 +56,8 @@ impl FromRef<AppState> for Arc<LandRepository> {
     }
 }
 
-impl FromRef<AppState> for Arc<SimplePositionRepository> {
+impl FromRef<AppState> for Arc<LandHistoricalRepository> {
     fn from_ref(app_state: &AppState) -> Self {
-        app_state.simple_position_repository.clone()
+        app_state.land_historical_repository.clone()
     }
 }
