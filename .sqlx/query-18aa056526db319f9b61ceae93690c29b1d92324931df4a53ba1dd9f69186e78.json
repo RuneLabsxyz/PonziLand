@@ -24,7 +24,8 @@
                 "ponzi_land-NewAuctionEvent",
                 "ponzi_land-AddressAuthorizedEvent",
                 "ponzi_land-AddressRemovedEvent",
-                "ponzi_land-VerifierUpdatedEvent"
+                "ponzi_land-VerifierUpdatedEvent",
+                "ponzi_land-LandTransferEvent"
               ]
             }
           }
