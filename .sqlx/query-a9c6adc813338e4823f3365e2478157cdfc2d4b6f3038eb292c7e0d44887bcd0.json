@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token,\n                buy_cost_usd,\n                buy_token_used,\n                sale_revenue_token,\n                sale_revenue_usd,\n                sale_token_used,\n                token_inflows,\n                token_outflows\n            FROM simple_positions\n            WHERE owner = $1\n            ORDER BY time_bought DESC\n            ",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token,\n                buy_cost_usd,\n                buy_token_used,\n                sale_revenue_token,\n                sale_revenue_usd,\n                sale_token_used,\n                token_inflows,\n                token_outflows\n            FROM land_historical\n            WHERE land_location = $1 AND close_date IS NULL\n            ORDER BY time_bought DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -81,7 +81,7 @@
     ],
     "parameters": {
       "Left": [
-        "Text"
+        "Int4"
       ]
     },
     "nullable": [
@@ -102,5 +102,5 @@
       false
     ]
   },
-  "hash": "f6a8983e997b9bb6259be6f1fd1021499b9e502af50ace2a4e6ddebad943a1ef"
+  "hash": "a9c6adc813338e4823f3365e2478157cdfc2d4b6f3038eb292c7e0d44887bcd0"
 }
