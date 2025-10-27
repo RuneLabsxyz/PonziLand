@@ -6,6 +6,7 @@ use chrono::Utc;
 use ponziland_models::events::EventData;
 use sqlx::error::DatabaseError;
 use tokio::select;
+use tokio::sync::broadcast;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
@@ -17,13 +18,19 @@ use super::Task;
 pub struct EventListenerTask {
     client: Arc<ToriiClient>,
     event_repository: Arc<EventRepository>,
+    event_sender: broadcast::Sender<FetchedEvent>,
 }
 
 impl EventListenerTask {
-    pub fn new(client: Arc<ToriiClient>, event_repository: Arc<EventRepository>) -> Self {
+    pub fn new(
+        client: Arc<ToriiClient>,
+        event_repository: Arc<EventRepository>,
+        event_sender: broadcast::Sender<FetchedEvent>,
+    ) -> Self {
         Self {
             client,
             event_repository,
+            event_sender,
         }
     }
 
@@ -50,7 +57,13 @@ impl EventListenerTask {
                 debug!("Processing JSON event");
 
                 FetchedEvent {
-                    id: EventId::parse_from_torii(&event_id).unwrap(),
+                    id: match EventId::parse_from_torii(&event_id) {
+                        Ok(id) => id,
+                        Err(e) => {
+                            error!("Failed to parse event ID '{}': {:?}. Using test ID.", event_id, e);
+                            EventId::new_test(0, 0, 0)
+                        }
+                    },
                     at: at.naive_utc(),
                     data: EventData::from_json(&name, data.clone())
                         .unwrap_or_else(|_| {
@@ -77,6 +90,24 @@ impl EventListenerTask {
             return;
         }
         info!("Successfully saved event!");
+
+        // Send relevant events to land historical listener
+        use chaindata_models::events::EventDataModel;
+        let should_forward = matches!(
+            &event.data,
+            EventDataModel::LandBought(_)
+                | EventDataModel::AuctionFinished(_)
+                | EventDataModel::LandNuked(_)
+                | EventDataModel::LandTransfer(_)
+        );
+
+        if should_forward {
+            if let Err(e) = self.event_sender.send(event) {
+                debug!("No active receivers for event: {:?}", e);
+            } else {
+                debug!("Forwarded event to land historical listener");
+            }
+        }
     }
 }
 

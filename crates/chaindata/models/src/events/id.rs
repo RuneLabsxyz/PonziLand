@@ -48,7 +48,10 @@ impl Id {
     /// Returns an error if the input string is not in the correct format.
     pub fn parse_from_torii(s: &str) -> Result<Self, Error> {
         let parts: Vec<&str> = s.split(':').collect();
-        if parts.len() != 3 {
+        // Handle both 3-part and 4-part formats
+        // 3-part: block_id:tx_hash:event_idx
+        // 4-part: block_id:tx_hash:receipt_hash:event_idx
+        if parts.len() != 3 && parts.len() != 4 {
             return Err(Error::InvalidFormat);
         }
 
@@ -58,7 +61,10 @@ impl Id {
         let tx_hash = parts[1]
             .parse()
             .map_err(|_| Error::InvalidPart("transaction hash"))?;
-        let event_idx = u32::from_str_radix(parts[2].trim_start_matches("0x"), 16)
+
+        // The event index is always the last part
+        let event_idx_str = parts.last().unwrap();
+        let event_idx = u32::from_str_radix(event_idx_str.trim_start_matches("0x"), 16)
             .map_err(|_| Error::InvalidPart("event index"))?;
 
         Ok(Self {
@@ -208,6 +214,7 @@ mod tests {
 
     #[test]
     pub fn test_torii_parsing() {
+        // Test 3-part format
         let event_id = Id::parse_from_torii("0x000000000000000000000000000000000000000000000000000000000b63a9:0x5f26258a75882780784979d970a3579c091e92073d61f7e90260e1133f75c8a:0x10").unwrap();
         assert_eq!(event_id.block_id, Felt::from(0xb63a9));
         assert_eq!(
@@ -216,6 +223,16 @@ mod tests {
                 .unwrap()
         );
         assert_eq!(event_id.event_idx, 0x10);
+
+        // Test 4-part format (as seen in logs)
+        let event_id = Id::parse_from_torii("0x0000000000000000000000000000000000000000000000000000000020b3b9:0x02f1608196fcfac00e53eb4b74891b9d5db5e1a380103cda0da473e05e5437a3:0x04479801e8674c839115bc6270b9bde0d3288cc974cc8c3c03e615c44038c0ce:0x03").unwrap();
+        assert_eq!(event_id.block_id, Felt::from(0x20b3b9));
+        assert_eq!(
+            event_id.tx_hash,
+            Felt::from_hex("0x02f1608196fcfac00e53eb4b74891b9d5db5e1a380103cda0da473e05e5437a3")
+                .unwrap()
+        );
+        assert_eq!(event_id.event_idx, 0x03);
     }
 
     #[test]
