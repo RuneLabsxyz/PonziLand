@@ -59,13 +59,24 @@
     >
       HISTORY (todo)
     </Button>
+    {#if showDevTools}
     <Button
       class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
       variant={activeTab === 'quests' ? 'blue' : undefined}
       onclick={() => setActiveTab('quests')}
     >
-      Quests
+      Quests (BETA)
     </Button>
+    {:else}
+    <Button
+      disabled
+      class="w-full {activeTab === 'quests' ? '' : 'opacity-50'}"
+      variant={activeTab === 'quests' ? 'blue' : undefined}
+      onclick={() => setActiveTab('quests')}
+    >
+      Quests (BETA)
+    </Button>
+    {/if}
   </div>
 
   <div class="w-full h-full mt-4">
