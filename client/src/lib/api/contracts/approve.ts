@@ -181,7 +181,6 @@ export async function wrappedActions(provider: DojoProvider) {
     entry_token: string,
   ) => {
     try {
-
       console.log('entry_price', entry_price);
       const calls = await getApprove(
         provider,
@@ -189,7 +188,7 @@ export async function wrappedActions(provider: DojoProvider) {
           {
             tokenAddress: entry_token,
             amount: BigInt(entry_price),
-          }
+          },
         ],
         world.quests.buildStartQuestCalldata(location, questId),
       );

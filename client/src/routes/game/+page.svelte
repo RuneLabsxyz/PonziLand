@@ -38,7 +38,6 @@
   });
 </script>
 
-
 <!-- WebGL Error Modal -->
 <WebGLError isVisible={webglShow} errorMessage={webglError} />
 
