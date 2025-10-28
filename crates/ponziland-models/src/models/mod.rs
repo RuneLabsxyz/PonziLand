@@ -6,6 +6,6 @@ mod model;
 
 pub use auction::Model as Auction;
 pub use land::{Land, Level};
-pub use land_historical::LandHistorical;
+pub use land_historical::{CloseReason, LandHistorical};
 pub use land_stake::LandStake;
 pub use model::Model;

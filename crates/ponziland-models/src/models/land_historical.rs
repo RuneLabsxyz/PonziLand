@@ -5,6 +5,37 @@ use std::collections::HashMap;
 use torii_ingester::prelude::ContractAddress;
 use torii_ingester::u256::U256;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, sqlx::Type)]
+#[sqlx(type_name = "text", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
+pub enum CloseReason {
+    #[sqlx(rename = "bought")]
+    Bought,
+    #[sqlx(rename = "nuked")]
+    Nuked,
+}
+
+impl std::fmt::Display for CloseReason {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CloseReason::Bought => write!(f, "bought"),
+            CloseReason::Nuked => write!(f, "nuked"),
+        }
+    }
+}
+
+impl std::str::FromStr for CloseReason {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.to_lowercase().as_str() {
+            "bought" => Ok(CloseReason::Bought),
+            "nuked" => Ok(CloseReason::Nuked),
+            _ => Err(format!("Invalid close reason: {}", s)),
+        }
+    }
+}
+
 /// Land historical tracking land ownership history
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LandHistorical {
@@ -19,7 +50,7 @@ pub struct LandHistorical {
     /// When this position was closed (if closed)
     pub close_date: Option<NaiveDateTime>,
     /// Reason for closure: "bought" or "nuked"
-    pub close_reason: Option<String>,
+    pub close_reason: Option<CloseReason>,
     /// Cost to buy this land in token amount
     pub buy_cost_token: Option<U256>,
     /// Cost to buy this land in USD at time of purchase

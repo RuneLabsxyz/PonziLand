@@ -4,6 +4,7 @@ use chaindata_models::{
     shared::{Location, U256},
 };
 use chrono::NaiveDateTime;
+use ponziland_models::models::CloseReason;
 use serde_json;
 use sqlx::{query, query_as};
 use std::collections::HashMap;
@@ -50,7 +51,7 @@ impl Repository {
             position.land_location as Location,
             position.time_bought,
             position.close_date,
-            position.close_reason,
+            position.close_reason as Option<CloseReason>,
             position.buy_cost_token as _,
             position.buy_cost_usd as _,
             position.buy_token_used,
@@ -77,7 +78,7 @@ impl Repository {
                 land_location as "land_location: Location",
                 time_bought,
                 close_date,
-                close_reason,
+                close_reason as "close_reason: CloseReason",
                 buy_cost_token as "buy_cost_token: U256",
                 buy_cost_usd as "buy_cost_usd: U256",
                 buy_token_used,
@@ -111,7 +112,7 @@ impl Repository {
                 land_location as "land_location: Location",
                 time_bought,
                 close_date,
-                close_reason,
+                close_reason as "close_reason: CloseReason",
                 buy_cost_token as "buy_cost_token: U256",
                 buy_cost_usd as "buy_cost_usd: U256",
                 buy_token_used,
@@ -163,7 +164,7 @@ impl Repository {
         &self,
         location: Location,
         close_date: NaiveDateTime,
-        close_reason: &str,
+        close_reason: CloseReason,
     ) -> Result<u64, sqlx::Error> {
         query!(
             r#"
@@ -173,7 +174,7 @@ impl Repository {
             "#,
             location as Location,
             close_date,
-            close_reason
+            close_reason as CloseReason
         )
         .execute(&mut *(self.db.acquire().await?))
         .await
@@ -185,7 +186,7 @@ impl Repository {
         &self,
         location: Location,
         close_date: NaiveDateTime,
-        close_reason: &str,
+        close_reason: CloseReason,
         sale_revenue_token: Option<U256>,
         sale_revenue_usd: Option<U256>,
         sale_token_used: Option<&str>,
@@ -199,7 +200,7 @@ impl Repository {
             "#,
             location as Location,
             close_date,
-            close_reason,
+            close_reason as CloseReason,
             sale_revenue_token as _,
             sale_revenue_usd as _,
             sale_token_used
@@ -224,7 +225,7 @@ impl Repository {
                 land_location as "land_location: Location",
                 time_bought,
                 close_date,
-                close_reason,
+                close_reason as "close_reason: CloseReason",
                 buy_cost_token as "buy_cost_token: U256",
                 buy_cost_usd as "buy_cost_usd: U256",
                 buy_token_used,
