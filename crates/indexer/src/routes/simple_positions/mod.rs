@@ -121,8 +121,10 @@ impl SimplePositionsRoute {
                     sale_token_used: pos.sale_token_used,
                     net_profit_token,
                     net_profit_usd,
-                    token_inflows: serde_json::to_value(&pos.token_inflows.0).unwrap_or(serde_json::json!({})),
-                    token_outflows: serde_json::to_value(&pos.token_outflows.0).unwrap_or(serde_json::json!({})),
+                    token_inflows: serde_json::to_value(&pos.token_inflows.0)
+                        .unwrap_or(serde_json::json!({})),
+                    token_outflows: serde_json::to_value(&pos.token_outflows.0)
+                        .unwrap_or(serde_json::json!({})),
                 }
             })
             .collect();

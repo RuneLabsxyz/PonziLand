@@ -47,14 +47,14 @@ impl SimplePositionModel {
                     .token_inflows
                     .iter()
                     .map(|(k, v)| (k.clone(), U256::from(*v)))
-                    .collect()
+                    .collect(),
             ),
             token_outflows: Json(
                 position
                     .token_outflows
                     .iter()
                     .map(|(k, v)| (k.clone(), U256::from(*v)))
-                    .collect()
+                    .collect(),
             ),
         }
     }
