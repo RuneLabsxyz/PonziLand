@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used\n            FROM simple_positions\n            WHERE land_location = $1\n            ORDER BY time_bought DESC\n            ",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used,\n                token_inflows as \"token_inflows: sqlx::types::Json<HashMap<String, U256>>\",\n                token_outflows as \"token_outflows: sqlx::types::Json<HashMap<String, U256>>\"\n            FROM simple_positions\n            WHERE owner = $1\n            ORDER BY time_bought DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -67,11 +67,21 @@
         "ordinal": 12,
         "name": "sale_token_used",
         "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 14,
+        "name": "token_outflows: sqlx::types::Json<HashMap<String, U256>>",
+        "type_info": "Jsonb"
       }
     ],
     "parameters": {
       "Left": [
-        "Int4"
+        "Text"
       ]
     },
     "nullable": [
@@ -87,8 +97,10 @@
       true,
       true,
       true,
-      true
+      true,
+      false,
+      false
     ]
   },
-  "hash": "0ee889f0933defb588985f8c1c5fa7d0afdba84d7a8de1d9a3df5669b7b0f03c"
+  "hash": "72a30ead8a82f527bf2e2805b2862e8fa0830ffd6a511f4875229fc98a913665"
 }
