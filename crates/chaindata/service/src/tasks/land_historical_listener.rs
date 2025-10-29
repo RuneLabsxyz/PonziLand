@@ -252,7 +252,11 @@ impl LandHistoricalListenerTask {
         // Close all open positions for this land location due to nuking
         let closed_count = self
             .land_historical_repository
-            .close_positions_by_land_location((*location).into(), at.naive_utc(), CloseReason::Nuked)
+            .close_positions_by_land_location(
+                (*location).into(),
+                at.naive_utc(),
+                CloseReason::Nuked,
+            )
             .await
             .map_err(|e| {
                 error!("Failed to close positions for land nuked: {}", e);
