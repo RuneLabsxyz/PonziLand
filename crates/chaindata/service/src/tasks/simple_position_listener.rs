@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use bigdecimal::BigDecimal;
 use chaindata_models::events::actions::{
     AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
 };
@@ -12,9 +11,9 @@ use chaindata_models::{
 use chaindata_repository::SimplePositionRepository;
 use chrono::{DateTime, Utc};
 use ponziland_models::models::SimplePosition;
-use sqlx::types::BigDecimal as SqlxBigDecimal;
 use tokio::select;
 use tokio_stream::StreamExt;
+use torii_ingester::prelude::ContractAddress;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
 
@@ -42,23 +41,9 @@ impl SimplePositionListenerTask {
         }
     }
 
-    /// Convert BigDecimal to SqlxBigDecimal for database operations
-    fn to_sqlx_bigdecimal(value: Option<BigDecimal>) -> Option<SqlxBigDecimal> {
-        use std::str::FromStr;
-        value.and_then(|v| SqlxBigDecimal::from_str(&v.to_string()).ok())
-    }
-
-    /// Convert U256 to BigDecimal for financial calculations
-    fn u256_to_bigdecimal(value: &U256) -> Option<BigDecimal> {
-        // Convert to SqlxBigDecimal first, then to BigDecimal
-        let sqlx_decimal: SqlxBigDecimal = (*value).into();
-        use std::str::FromStr;
-        BigDecimal::from_str(&sqlx_decimal.to_string()).ok()
-    }
-
     /// TODO: Add USD conversion using price providers
     /// For now, this returns None but should integrate with AVNU/Ekubo price feeds
-    fn convert_to_usd(_token_amount: &BigDecimal, _token_address: &str) -> Option<BigDecimal> {
+    fn convert_to_usd(_token_amount: &U256, _token_address: &str) -> Option<U256> {
         // Placeholder for USD conversion
         // This should integrate with the existing price providers:
         // - AVNU price provider for real-time USD rates
@@ -121,7 +106,7 @@ impl SimplePositionListenerTask {
         }
 
         // Close all previous positions for this land location with sale revenue
-        let sale_revenue_token = Self::u256_to_bigdecimal(&event.price);
+        let sale_revenue_token = Some(event.price.clone());
         let sale_token_used = Some(event.token_used.as_str());
         let sale_revenue_usd = sale_revenue_token
             .as_ref()
@@ -133,8 +118,8 @@ impl SimplePositionListenerTask {
                 (*location).into(),
                 at.naive_utc(),
                 "bought",
-                Self::to_sqlx_bigdecimal(sale_revenue_token),
-                Self::to_sqlx_bigdecimal(sale_revenue_usd),
+                sale_revenue_token,
+                sale_revenue_usd,
                 sale_token_used,
             )
             .await
@@ -151,7 +136,7 @@ impl SimplePositionListenerTask {
         }
 
         // Extract financial data from the event
-        let buy_cost_token = Self::u256_to_bigdecimal(&event.price);
+        let buy_cost_token = Some(event.price.clone());
         let buy_token_used = Some(event.token_used.clone());
         let buy_cost_usd = buy_cost_token
             .as_ref()
@@ -159,11 +144,11 @@ impl SimplePositionListenerTask {
 
         // Create simple position for the buyer with financial data
         let position = SimplePosition::new_with_cost(
-            buyer.parse()?,
+            buyer.parse::<ContractAddress>()?,
             (*location).into(),
             at.naive_utc(),
-            buy_cost_token,
-            buy_cost_usd,
+            buy_cost_token.map(|v| torii_ingester::prelude::U256::from(**v)),
+            buy_cost_usd.map(|v| torii_ingester::prelude::U256::from(**v)),
             buy_token_used,
         );
 
@@ -197,7 +182,7 @@ impl SimplePositionListenerTask {
         }
 
         // Close all previous positions for this land location with sale revenue
-        let sale_revenue_token = Self::u256_to_bigdecimal(&event.price);
+        let sale_revenue_token = Some(event.price.clone());
         let sale_token_used = None; // TODO: Determine default auction token
         let sale_revenue_usd = sale_revenue_token
             .as_ref()
@@ -209,8 +194,8 @@ impl SimplePositionListenerTask {
                 (*location).into(),
                 at.naive_utc(),
                 "bought",
-                Self::to_sqlx_bigdecimal(sale_revenue_token),
-                Self::to_sqlx_bigdecimal(sale_revenue_usd),
+                sale_revenue_token,
+                sale_revenue_usd,
                 sale_token_used,
             )
             .await
@@ -230,7 +215,7 @@ impl SimplePositionListenerTask {
         }
 
         // Extract financial data from the auction event
-        let buy_cost_token = Self::u256_to_bigdecimal(&event.price);
+        let buy_cost_token = Some(event.price.clone());
         // Note: Auctions might use a default token (ETH/STRK), this should be configured
         let buy_token_used = None; // TODO: Determine default auction token
         let buy_cost_usd = buy_cost_token
@@ -239,11 +224,11 @@ impl SimplePositionListenerTask {
 
         // Create simple position for the auction winner with financial data
         let position = SimplePosition::new_with_cost(
-            buyer.parse()?,
+            buyer.parse::<ContractAddress>()?,
             (*location).into(),
             at.naive_utc(),
-            buy_cost_token,
-            buy_cost_usd,
+            buy_cost_token.map(|v| torii_ingester::prelude::U256::from(**v)),
+            buy_cost_usd.map(|v| torii_ingester::prelude::U256::from(**v)),
             buy_token_used,
         );
 

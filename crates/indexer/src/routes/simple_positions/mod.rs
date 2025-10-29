@@ -74,14 +74,20 @@ impl SimplePositionsRoute {
                 // Calculate net profit if both buy cost and sale revenue are available
                 let net_profit_token = match (&pos.buy_cost_token, &pos.sale_revenue_token) {
                     (Some(buy_cost), Some(sale_revenue)) => {
-                        Some((sale_revenue - buy_cost).to_string())
+                        // Convert to BigDecimal for arithmetic operations
+                        let buy_bd: sqlx::types::BigDecimal = (*buy_cost).into();
+                        let sale_bd: sqlx::types::BigDecimal = (*sale_revenue).into();
+                        Some((sale_bd - buy_bd).to_string())
                     }
                     _ => None,
                 };
 
                 let net_profit_usd = match (&pos.buy_cost_usd, &pos.sale_revenue_usd) {
                     (Some(buy_cost), Some(sale_revenue)) => {
-                        Some((sale_revenue - buy_cost).to_string())
+                        // Convert to BigDecimal for arithmetic operations
+                        let buy_bd: sqlx::types::BigDecimal = (*buy_cost).into();
+                        let sale_bd: sqlx::types::BigDecimal = (*sale_revenue).into();
+                        Some((sale_bd - buy_bd).to_string())
                     }
                     _ => None,
                 };

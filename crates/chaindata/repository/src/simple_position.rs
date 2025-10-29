@@ -1,5 +1,8 @@
 use crate::{Database, Error};
-use chaindata_models::{models::SimplePositionModel, shared::Location};
+use chaindata_models::{
+    models::SimplePositionModel,
+    shared::{Location, U256},
+};
 use chrono::NaiveDateTime;
 use sqlx::{query, query_as};
 
@@ -42,11 +45,11 @@ impl Repository {
             position.time_bought,
             position.close_date,
             position.close_reason,
-            position.buy_cost_token,
-            position.buy_cost_usd,
+            position.buy_cost_token as _,
+            position.buy_cost_usd as _,
             position.buy_token_used,
-            position.sale_revenue_token,
-            position.sale_revenue_usd,
+            position.sale_revenue_token as _,
+            position.sale_revenue_usd as _,
             position.sale_token_used
         )
         .fetch_one(&mut *(self.db.acquire().await?))
@@ -67,11 +70,11 @@ impl Repository {
                 time_bought,
                 close_date,
                 close_reason,
-                buy_cost_token,
-                buy_cost_usd,
+                buy_cost_token as "buy_cost_token: U256",
+                buy_cost_usd as "buy_cost_usd: U256",
                 buy_token_used,
-                sale_revenue_token,
-                sale_revenue_usd,
+                sale_revenue_token as "sale_revenue_token: U256",
+                sale_revenue_usd as "sale_revenue_usd: U256",
                 sale_token_used
             FROM simple_positions
             WHERE owner = $1
@@ -99,11 +102,11 @@ impl Repository {
                 time_bought,
                 close_date,
                 close_reason,
-                buy_cost_token,
-                buy_cost_usd,
+                buy_cost_token as "buy_cost_token: U256",
+                buy_cost_usd as "buy_cost_usd: U256",
                 buy_token_used,
-                sale_revenue_token,
-                sale_revenue_usd,
+                sale_revenue_token as "sale_revenue_token: U256",
+                sale_revenue_usd as "sale_revenue_usd: U256",
                 sale_token_used
             FROM simple_positions
             WHERE land_location = $1
@@ -171,8 +174,8 @@ impl Repository {
         location: Location,
         close_date: NaiveDateTime,
         close_reason: &str,
-        sale_revenue_token: Option<sqlx::types::BigDecimal>,
-        sale_revenue_usd: Option<sqlx::types::BigDecimal>,
+        sale_revenue_token: Option<U256>,
+        sale_revenue_usd: Option<U256>,
         sale_token_used: Option<&str>,
     ) -> Result<u64, sqlx::Error> {
         query!(
@@ -185,8 +188,8 @@ impl Repository {
             location as Location,
             close_date,
             close_reason,
-            sale_revenue_token,
-            sale_revenue_usd,
+            sale_revenue_token as _,
+            sale_revenue_usd as _,
             sale_token_used
         )
         .execute(&mut *(self.db.acquire().await?))
@@ -210,11 +213,11 @@ impl Repository {
                 time_bought,
                 close_date,
                 close_reason,
-                buy_cost_token,
-                buy_cost_usd,
+                buy_cost_token as "buy_cost_token: U256",
+                buy_cost_usd as "buy_cost_usd: U256",
                 buy_token_used,
-                sale_revenue_token,
-                sale_revenue_usd,
+                sale_revenue_token as "sale_revenue_token: U256",
+                sale_revenue_usd as "sale_revenue_usd: U256",
                 sale_token_used
             FROM simple_positions
             WHERE land_location = $1 AND close_date IS NULL

@@ -1,8 +1,8 @@
 use crate::shared::Location;
-use bigdecimal::BigDecimal;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use torii_ingester::prelude::ContractAddress;
+use torii_ingester::u256::U256;
 
 /// Simple position tracking land ownership history
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,15 +20,15 @@ pub struct SimplePosition {
     /// Reason for closure: "bought" or "nuked"
     pub close_reason: Option<String>,
     /// Cost to buy this land in token amount
-    pub buy_cost_token: Option<BigDecimal>,
+    pub buy_cost_token: Option<U256>,
     /// Cost to buy this land in USD at time of purchase
-    pub buy_cost_usd: Option<BigDecimal>,
+    pub buy_cost_usd: Option<U256>,
     /// Token address used for purchase
     pub buy_token_used: Option<String>,
     /// Revenue from selling this land in token amount
-    pub sale_revenue_token: Option<BigDecimal>,
+    pub sale_revenue_token: Option<U256>,
     /// Revenue from selling this land in USD at time of sale
-    pub sale_revenue_usd: Option<BigDecimal>,
+    pub sale_revenue_usd: Option<U256>,
     /// Token address used for sale
     pub sale_token_used: Option<String>,
 }
@@ -69,8 +69,8 @@ impl SimplePosition {
         owner: ContractAddress,
         land_location: Location,
         time_bought: NaiveDateTime,
-        buy_cost_token: Option<BigDecimal>,
-        buy_cost_usd: Option<BigDecimal>,
+        buy_cost_token: Option<U256>,
+        buy_cost_usd: Option<U256>,
         buy_token_used: Option<String>,
     ) -> Self {
         let owner_hex = format!("{:#x}", owner);
