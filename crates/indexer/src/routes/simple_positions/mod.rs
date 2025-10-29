@@ -74,20 +74,32 @@ impl SimplePositionsRoute {
                 // Calculate net profit if both buy cost and sale revenue are available
                 let net_profit_token = match (&pos.buy_cost_token, &pos.sale_revenue_token) {
                     (Some(buy_cost), Some(sale_revenue)) => {
-                        // Convert to BigDecimal for arithmetic operations
-                        let buy_bd: sqlx::types::BigDecimal = (*buy_cost).into();
-                        let sale_bd: sqlx::types::BigDecimal = (*sale_revenue).into();
-                        Some((sale_bd - buy_bd).to_string())
+                        // Dereference three times: chaindata::U256 -> torii::U256 -> starknet::U256
+                        if ***sale_revenue >= ***buy_cost {
+                            // Profit case: sale_revenue - buy_cost
+                            let result = ***sale_revenue - ***buy_cost;
+                            Some(result.to_string())
+                        } else {
+                            // Loss case: prepend minus sign
+                            let result = ***buy_cost - ***sale_revenue;
+                            Some(format!("-{}", result))
+                        }
                     }
                     _ => None,
                 };
 
                 let net_profit_usd = match (&pos.buy_cost_usd, &pos.sale_revenue_usd) {
                     (Some(buy_cost), Some(sale_revenue)) => {
-                        // Convert to BigDecimal for arithmetic operations
-                        let buy_bd: sqlx::types::BigDecimal = (*buy_cost).into();
-                        let sale_bd: sqlx::types::BigDecimal = (*sale_revenue).into();
-                        Some((sale_bd - buy_bd).to_string())
+                        // Dereference three times: chaindata::U256 -> torii::U256 -> starknet::U256
+                        if ***sale_revenue >= ***buy_cost {
+                            // Profit case: sale_revenue - buy_cost
+                            let result = ***sale_revenue - ***buy_cost;
+                            Some(result.to_string())
+                        } else {
+                            // Loss case: prepend minus sign
+                            let result = ***buy_cost - ***sale_revenue;
+                            Some(format!("-{}", result))
+                        }
                     }
                     _ => None,
                 };
