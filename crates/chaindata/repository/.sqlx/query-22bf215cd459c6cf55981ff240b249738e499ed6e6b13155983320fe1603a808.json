@@ -1,0 +1,19 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            UPDATE land_historical\n            SET close_date = $2, close_reason = $3,\n                sale_revenue_token = $4, sale_revenue_usd = $5, sale_token_used = $6\n            WHERE land_location = $1 AND close_date IS NULL\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Int4",
+        "Timestamp",
+        "Text",
+        "Numeric",
+        "Numeric",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "22bf215cd459c6cf55981ff240b249738e499ed6e6b13155983320fe1603a808"
+}

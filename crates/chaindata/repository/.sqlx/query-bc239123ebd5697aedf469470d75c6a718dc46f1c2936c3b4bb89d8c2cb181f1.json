@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT COUNT(*) as count\n            FROM simple_positions\n            WHERE owner = $1\n            ",
+  "query": "\n            SELECT COUNT(*) as count\n            FROM land_historical\n            WHERE owner = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -18,5 +18,5 @@
       null
     ]
   },
-  "hash": "05ef480d5512312d3f0a20eff0797883052a1b783026913948c3d10c66a2c5cb"
+  "hash": "bc239123ebd5697aedf469470d75c6a718dc46f1c2936c3b4bb89d8c2cb181f1"
 }

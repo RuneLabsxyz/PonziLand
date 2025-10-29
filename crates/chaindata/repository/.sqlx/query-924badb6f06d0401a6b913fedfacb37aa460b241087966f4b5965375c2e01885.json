@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used,\n                token_inflows as \"token_inflows: sqlx::types::Json<HashMap<String, U256>>\",\n                token_outflows as \"token_outflows: sqlx::types::Json<HashMap<String, U256>>\"\n            FROM simple_positions\n            WHERE land_location = $1\n            ORDER BY time_bought DESC\n            ",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used,\n                token_inflows as \"token_inflows: sqlx::types::Json<HashMap<String, U256>>\",\n                token_outflows as \"token_outflows: sqlx::types::Json<HashMap<String, U256>>\"\n            FROM land_historical\n            WHERE owner = $1\n            ORDER BY time_bought DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -81,7 +81,7 @@
     ],
     "parameters": {
       "Left": [
-        "Int4"
+        "Text"
       ]
     },
     "nullable": [
@@ -102,5 +102,5 @@
       false
     ]
   },
-  "hash": "2896b6841851c0051858113dbd0b6cc4cc2a8da22d3c1bc030ddda878a28c587"
+  "hash": "924badb6f06d0401a6b913fedfacb37aa460b241087966f4b5965375c2e01885"
 }
