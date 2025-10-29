@@ -12,8 +12,8 @@ use chaindata_repository::LandHistoricalRepository;
 use chrono::{DateTime, Utc};
 use ponziland_models::models::LandHistorical;
 use tokio::select;
-use torii_ingester::prelude::ContractAddress;
 use tokio::sync::{broadcast, Mutex};
+use torii_ingester::prelude::ContractAddress;
 use tracing::{debug, error, info};
 
 use super::Task;
