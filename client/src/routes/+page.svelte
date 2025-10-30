@@ -156,11 +156,7 @@
     >
       PLAY
     </Button>
-    <Button
-      variant="red"
-      size="lg"
-      class="z-[3] text-3xl px-12 py-4 font-bold"
-    >
+    <Button variant="red" size="lg" class="z-[3] text-3xl px-12 py-4 font-bold">
       <a href="/tutorial">Tutorial</a>
     </Button>
   </div>
