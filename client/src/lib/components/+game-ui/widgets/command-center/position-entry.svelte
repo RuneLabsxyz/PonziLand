@@ -11,10 +11,13 @@
 
   interface Props {
     position: HistoricalPosition;
+    isPositionOpen: (position: HistoricalPosition) => boolean;
   }
 
-  let { position }: Props = $props();
+  let { position, isPositionOpen }: Props = $props();
   let expanded = $state(false);
+
+  const isOpen = $derived(isPositionOpen(position));
 
   function toggleExpanded() {
     expanded = !expanded;
@@ -105,12 +108,19 @@
   const isAuctionBuy = $derived(position.buy_token_used === null);
 </script>
 
-<div class="position-entry border-b border-gray-800/50">
+<div
+  class="position-entry border-b border-gray-800/50 {isOpen
+    ? 'bg-green-900/10'
+    : ''}"
+>
   <!-- Main Row -->
   <button
-    class="w-full px-4 py-3 hover:bg-white/5 transition-colors"
+    class="w-full px-4 py-3 hover:bg-white/5 transition-colors relative"
     onclick={toggleExpanded}
   >
+    {#if isOpen}
+      <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
+    {/if}
     <div class="grid grid-cols-7 gap-2 text-sm items-center">
       <div class="flex items-center gap-2">
         <span class="text-gray-300">({coordinates.x}, {coordinates.y})</span>
@@ -123,25 +133,65 @@
       <div class="text-xs text-gray-400">
         {formatDate(position.time_bought)}
       </div>
-      <div class="text-xs text-gray-400">{formatDate(position.close_date)}</div>
-      <div class="text-xs {getStatusColor(position.close_reason)}">
-        {position.close_reason.toUpperCase()}
+      <div class="text-xs">
+        {#if isOpen}
+          <span class="text-green-400 font-semibold">ACTIVE</span>
+        {:else}
+          <span class={getStatusColor(position.close_reason)}>
+            {position.close_reason.toUpperCase()}
+          </span>
+        {/if}
         {#if isAuctionBuy}
           <span class="text-gray-500 ml-1">(auction)</span>
         {/if}
       </div>
-      <div class="text-right text-xs">
-        {formatTokenAmount(position.buy_cost_token)}
+      <div class="text-xs text-gray-400">
+        {isOpen ? '-' : formatDate(position.close_date)}
       </div>
       <div class="text-right text-xs">
-        {position.sale_revenue_token
-          ? formatTokenAmount(position.sale_revenue_token)
-          : '-'}
+        <span class="text-white"
+          >{formatTokenAmount(position.buy_cost_token)}</span
+        >
+        <span class="text-gray-500 ml-1">
+          {#if position.buy_token_used}
+            {@const buyTokenInfo = getTokenInfo(position.buy_token_used)}
+            {buyTokenInfo.symbol}
+          {:else if isAuctionBuy}
+            {data.mainCurrency}
+          {:else}
+            {data.mainCurrency}
+          {/if}
+        </span>
       </div>
-      <div class="text-right text-xs {getPnLColor(position.net_profit_token)}">
-        {position.net_profit_token
-          ? formatTokenAmount(position.net_profit_token)
-          : '-'}
+      <div class="text-right text-xs">
+        {#if isOpen}
+          <span class="text-gray-500">-</span>
+        {:else if position.sale_revenue_token}
+          <span class="text-white"
+            >{formatTokenAmount(position.sale_revenue_token)}</span
+          >
+          <span class="text-gray-500 ml-1">
+            {#if position.sale_token_used}
+              {@const saleTokenInfo = getTokenInfo(position.sale_token_used)}
+              {saleTokenInfo.symbol}
+            {:else}
+              {data.mainCurrency}
+            {/if}
+          </span>
+        {:else}
+          <span class="text-gray-500">-</span>
+        {/if}
+      </div>
+      <div
+        class="text-right text-xs {isOpen
+          ? 'text-gray-500'
+          : getPnLColor(position.net_profit_token)}"
+      >
+        {isOpen
+          ? 'TBD'
+          : position.net_profit_token
+            ? formatTokenAmount(position.net_profit_token)
+            : '-'}
       </div>
     </div>
   </button>
