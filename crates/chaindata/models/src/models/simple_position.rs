@@ -1,11 +1,10 @@
 use chrono::NaiveDateTime;
 use ponziland_models::models::SimplePosition;
-use serde::{Deserialize, Serialize};
 use sqlx::prelude::FromRow;
 
-use crate::shared::Location;
+use crate::shared::{Location, U256};
 
-#[derive(Clone, Debug, FromRow, Serialize, Deserialize)]
+#[derive(Clone, Debug, FromRow)]
 pub struct SimplePositionModel {
     pub id: String,
     pub at: NaiveDateTime,
@@ -14,6 +13,12 @@ pub struct SimplePositionModel {
     pub time_bought: NaiveDateTime,
     pub close_date: Option<NaiveDateTime>,
     pub close_reason: Option<String>,
+    pub buy_cost_token: Option<U256>,
+    pub buy_cost_usd: Option<U256>,
+    pub buy_token_used: Option<String>,
+    pub sale_revenue_token: Option<U256>,
+    pub sale_revenue_usd: Option<U256>,
+    pub sale_token_used: Option<String>,
 }
 
 impl SimplePositionModel {
@@ -27,6 +32,12 @@ impl SimplePositionModel {
             time_bought: position.time_bought,
             close_date: position.close_date,
             close_reason: position.close_reason.clone(),
+            buy_cost_token: position.buy_cost_token.map(|v| U256::from(v)),
+            buy_cost_usd: position.buy_cost_usd.map(|v| U256::from(v)),
+            buy_token_used: position.buy_token_used.clone(),
+            sale_revenue_token: position.sale_revenue_token.map(|v| U256::from(v)),
+            sale_revenue_usd: position.sale_revenue_usd.map(|v| U256::from(v)),
+            sale_token_used: position.sale_token_used.clone(),
         }
     }
 
@@ -39,6 +50,12 @@ impl SimplePositionModel {
             time_bought: self.time_bought,
             close_date: self.close_date,
             close_reason: self.close_reason.clone(),
+            buy_cost_token: self.buy_cost_token.map(|v| *v),
+            buy_cost_usd: self.buy_cost_usd.map(|v| *v),
+            buy_token_used: self.buy_token_used.clone(),
+            sale_revenue_token: self.sale_revenue_token.map(|v| *v),
+            sale_revenue_usd: self.sale_revenue_usd.map(|v| *v),
+            sale_token_used: self.sale_token_used.clone(),
         }
     }
 }

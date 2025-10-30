@@ -6,7 +6,13 @@ CREATE TABLE simple_positions (
     land_location INT4 NOT NULL,
     time_bought TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     close_date TIMESTAMP WITHOUT TIME ZONE,
-    close_reason TEXT
+    close_reason TEXT,
+    buy_cost_token NUMERIC(78, 0),
+    buy_cost_usd NUMERIC(20, 6),
+    buy_token_used TEXT,
+    sale_revenue_token NUMERIC(78, 0),
+    sale_revenue_usd NUMERIC(20, 6),
+    sale_token_used TEXT
 );
 
 -- Create indexes for efficient querying

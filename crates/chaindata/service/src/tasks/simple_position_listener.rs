@@ -6,12 +6,14 @@ use chaindata_models::events::actions::{
 use chaindata_models::{
     events::{EventDataModel, EventId},
     models::SimplePositionModel,
+    shared::U256,
 };
 use chaindata_repository::SimplePositionRepository;
 use chrono::{DateTime, Utc};
 use ponziland_models::models::SimplePosition;
 use tokio::select;
 use tokio_stream::StreamExt;
+use torii_ingester::prelude::ContractAddress;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
 
@@ -37,6 +39,16 @@ impl SimplePositionListenerTask {
             client,
             simple_position_repository,
         }
+    }
+
+    /// TODO: Add USD conversion using price providers
+    /// For now, this returns None but should integrate with AVNU/Ekubo price feeds
+    fn convert_to_usd(_token_amount: &U256, _token_address: &str) -> Option<U256> {
+        // Placeholder for USD conversion
+        // This should integrate with the existing price providers:
+        // - AVNU price provider for real-time USD rates
+        // - Token registry for decimals/scaling
+        None
     }
 
     /// Gets the most recent update time from simple position records
@@ -93,10 +105,23 @@ impl SimplePositionListenerTask {
             return Ok(());
         }
 
-        // Close all previous positions for this land location
+        // Close all previous positions for this land location with sale revenue
+        let sale_revenue_token = Some(event.price.clone());
+        let sale_token_used = Some(event.token_used.as_str());
+        let sale_revenue_usd = sale_revenue_token
+            .as_ref()
+            .and_then(|revenue| Self::convert_to_usd(revenue, &event.token_used));
+
         let closed_count = self
             .simple_position_repository
-            .close_positions_by_land_location((*location).into(), at.naive_utc(), "bought")
+            .close_positions_by_land_location_with_sale(
+                (*location).into(),
+                at.naive_utc(),
+                "bought",
+                sale_revenue_token,
+                sale_revenue_usd,
+                sale_token_used,
+            )
             .await
             .map_err(|e| {
                 error!("Failed to close previous positions for land bought: {}", e);
@@ -110,8 +135,22 @@ impl SimplePositionListenerTask {
             );
         }
 
-        // Create simple position for the buyer
-        let position = SimplePosition::new(buyer.parse()?, (*location).into(), at.naive_utc());
+        // Extract financial data from the event
+        let buy_cost_token = Some(event.price.clone());
+        let buy_token_used = Some(event.token_used.clone());
+        let buy_cost_usd = buy_cost_token
+            .as_ref()
+            .and_then(|cost| Self::convert_to_usd(cost, &event.token_used));
+
+        // Create simple position for the buyer with financial data
+        let position = SimplePosition::new_with_cost(
+            buyer.parse::<ContractAddress>()?,
+            (*location).into(),
+            at.naive_utc(),
+            buy_cost_token.map(|v| torii_ingester::prelude::U256::from(**v)),
+            buy_cost_usd.map(|v| torii_ingester::prelude::U256::from(**v)),
+            buy_token_used,
+        );
 
         let position_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
 
@@ -142,10 +181,23 @@ impl SimplePositionListenerTask {
             return Ok(());
         }
 
-        // Close all previous positions for this land location
+        // Close all previous positions for this land location with sale revenue
+        let sale_revenue_token = Some(event.price.clone());
+        let sale_token_used = None; // TODO: Determine default auction token
+        let sale_revenue_usd = sale_revenue_token
+            .as_ref()
+            .and_then(|revenue| Self::convert_to_usd(revenue, ""));
+
         let closed_count = self
             .simple_position_repository
-            .close_positions_by_land_location((*location).into(), at.naive_utc(), "bought")
+            .close_positions_by_land_location_with_sale(
+                (*location).into(),
+                at.naive_utc(),
+                "bought",
+                sale_revenue_token,
+                sale_revenue_usd,
+                sale_token_used,
+            )
             .await
             .map_err(|e| {
                 error!(
@@ -162,8 +214,23 @@ impl SimplePositionListenerTask {
             );
         }
 
-        // Create simple position for the auction winner
-        let position = SimplePosition::new(buyer.parse()?, (*location).into(), at.naive_utc());
+        // Extract financial data from the auction event
+        let buy_cost_token = Some(event.price.clone());
+        // Note: Auctions might use a default token (ETH/STRK), this should be configured
+        let buy_token_used = None; // TODO: Determine default auction token
+        let buy_cost_usd = buy_cost_token
+            .as_ref()
+            .and_then(|cost| Self::convert_to_usd(cost, ""));
+
+        // Create simple position for the auction winner with financial data
+        let position = SimplePosition::new_with_cost(
+            buyer.parse::<ContractAddress>()?,
+            (*location).into(),
+            at.naive_utc(),
+            buy_cost_token.map(|v| torii_ingester::prelude::U256::from(**v)),
+            buy_cost_usd.map(|v| torii_ingester::prelude::U256::from(**v)),
+            buy_token_used,
+        );
 
         let position_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
 

@@ -44,7 +44,6 @@ sqlx = { workspace = true, features = [
     "postgres",
     "uuid",
     "chrono",
-    "bigdecimal",
 ] }
 dotenv = "0.15.0"
 migrations = { path = "../migrations" }

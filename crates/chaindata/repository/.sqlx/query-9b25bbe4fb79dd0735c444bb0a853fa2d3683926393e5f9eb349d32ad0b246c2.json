@@ -1,0 +1,94 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used\n            FROM simple_positions\n            WHERE owner = $1\n            ORDER BY time_bought DESC\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "owner",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "land_location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 4,
+        "name": "time_bought",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 5,
+        "name": "close_date",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 6,
+        "name": "close_reason",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "buy_cost_token: U256",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 8,
+        "name": "buy_cost_usd: U256",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 9,
+        "name": "buy_token_used",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "sale_revenue_token: U256",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 11,
+        "name": "sale_revenue_usd: U256",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 12,
+        "name": "sale_token_used",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      true
+    ]
+  },
+  "hash": "9b25bbe4fb79dd0735c444bb0a853fa2d3683926393e5f9eb349d32ad0b246c2"
+}

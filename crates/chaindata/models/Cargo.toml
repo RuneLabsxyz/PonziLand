@@ -20,6 +20,7 @@ num-bigint = "0.4.6"
 num-traits = "0.2.19"
 chrono.workspace = true
 thiserror.workspace = true
+bigdecimal = { version = "0.3", features = ["serde"] }
 
 [dev-dependencies]
 migrations = { path = "../../migrations" }
