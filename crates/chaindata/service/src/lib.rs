@@ -11,6 +11,7 @@ use tasks::{
     event_listener::EventListenerTask, land_historical_listener::LandHistoricalListenerTask,
     model_listener::ModelListenerTask, Task, TaskWrapper,
 };
+use tokio::sync::broadcast;
 use torii_ingester::{ToriiClient, ToriiConfiguration};
 
 /// `ChainDataService` is a service that handles the importation and syncing of new events and data
@@ -47,8 +48,17 @@ impl ChainDataService {
         let land_repository = Arc::new(LandRepository::new(database.clone()));
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
         let land_historical_repository = Arc::new(LandHistoricalRepository::new(database.clone()));
+
+        // Create a broadcast channel for event communication
+        let (event_sender, event_receiver) = broadcast::channel(1000);
+
         Ok(Arc::new(Self {
-            event_listener_task: EventListenerTask::new(client.clone(), event_repository).wrap(),
+            event_listener_task: EventListenerTask::new(
+                client.clone(),
+                event_repository,
+                event_sender,
+            )
+            .wrap(),
             model_listener_task: ModelListenerTask::new(
                 client.clone(),
                 land_repository,
@@ -56,7 +66,7 @@ impl ChainDataService {
             )
             .wrap(),
             land_historical_listener_task: LandHistoricalListenerTask::new(
-                client.clone(),
+                event_receiver,
                 land_historical_repository,
             )
             .wrap(),
