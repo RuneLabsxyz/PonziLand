@@ -147,14 +147,26 @@
     />
   {/if}
 
-  <Button
-    variant="red"
-    size="lg"
-    onclick={startGame}
-    class="z-[3] text-3xl px-12 py-4 font-bold"
-  >
-    PLAY
-  </Button>
+  <div class="flex flex-row gap-4">
+    <Button
+      variant="red"
+      size="lg"
+      onclick={startGame}
+      class="z-[3] text-3xl px-12 py-4 font-bold"
+    >
+      PLAY
+    </Button>
+    <Button
+      variant="red"
+      size="lg"
+      onclick={() => {
+        goto('/tutorial');
+      }}
+      class="z-[3] text-3xl px-12 py-4 font-bold"
+    >
+      Tutorial
+    </Button>
+  </div>
 </main>
 
 <style>
