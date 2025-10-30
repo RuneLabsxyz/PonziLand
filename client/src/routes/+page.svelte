@@ -159,12 +159,9 @@
     <Button
       variant="red"
       size="lg"
-      onclick={() => {
-        goto('/tutorial');
-      }}
       class="z-[3] text-3xl px-12 py-4 font-bold"
     >
-      Tutorial
+      <a href="/tutorial">Tutorial</a>
     </Button>
   </div>
 </main>
