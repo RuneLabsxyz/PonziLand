@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use chaindata_models::events::{EventDataModel, EventId, FetchedEvent};
+use chaindata_models::events::{EventId, FetchedEvent};
 use chaindata_repository::event::Repository as EventRepository;
 use chrono::Utc;
 use ponziland_models::events::EventData;
@@ -10,8 +10,6 @@ use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
 
-use crate::gg_xyz_api::{GGApi, PostRequest};
-
 use super::Task;
 
 /// `EventListenerTask` is a task that subscribes to the events of the on-chain indexer (torii),
@@ -19,19 +17,13 @@ use super::Task;
 pub struct EventListenerTask {
     client: Arc<ToriiClient>,
     event_repository: Arc<EventRepository>,
-    gg_api: Option<Arc<GGApi>>,
 }
 
 impl EventListenerTask {
-    pub fn new(
-        client: Arc<ToriiClient>,
-        event_repository: Arc<EventRepository>,
-        gg_api: Option<Arc<GGApi>>,
-    ) -> Self {
+    pub fn new(client: Arc<ToriiClient>, event_repository: Arc<EventRepository>) -> Self {
         Self {
             client,
             event_repository,
-            gg_api,
         }
     }
 
@@ -85,40 +77,6 @@ impl EventListenerTask {
             return;
         }
         info!("Successfully saved event!");
-
-        if let Some(gg_api) = &self.gg_api {
-            // If the event is used to submit something to gg, send it.
-            let res: Option<Vec<(String, &'static str)>> = match event.data.clone() {
-                EventDataModel::LandNuked(val) => Some(vec![(val.owner, "Land nuked")]),
-                EventDataModel::AuctionFinished(val) => {
-                    Some(vec![(val.buyer, "Bought from auction")])
-                }
-                EventDataModel::LandBought(val) => Some(vec![
-                    (val.buyer, "Bought from player"),
-                    (val.seller, "Sold land"),
-                ]),
-                EventDataModel::AddressAuthorized(val) => {
-                    Some(vec![(val.address, "Joined the Ponzi")])
-                }
-                _ => None,
-            };
-
-            if let Some(values) = res {
-                for (user, message) in values {
-                    // Send the message to gg (don't really care about the response)
-                    info!("Submitting action {message} for {user}");
-                    if let Err(err) = gg_api
-                        .send_actions(PostRequest {
-                            address: user,
-                            actions: vec![message.to_string()],
-                        })
-                        .await
-                    {
-                        error!("Error while sending message to gg: {}", err);
-                    }
-                }
-            }
-        }
     }
 }
 
