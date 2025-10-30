@@ -926,6 +926,12 @@ class LoadingStore {
     this._isLoading = true;
     this.setTutorialMode(isTutorialMode);
 
+    // Set tutorial mode on account module immediately if in tutorial mode
+    if (isTutorialMode) {
+      console.log('Setting tutorial mode on account module...');
+      setTutorialMode(true);
+    }
+
     try {
       // Phase 1: Initialize WebGL and basic assets in parallel (no dependencies)
       const webglPromise = this.initializeWebGL();
@@ -946,9 +952,7 @@ class LoadingStore {
           pricesProcess,
         ]);
 
-        // Set fake account state for tutorial
-        console.log('Setting tutorial account state...');
-        setTutorialMode(true);
+        // Account state already set at the beginning of startComprehensiveLoading
 
         // Add tutorial auction lands after basic setup
         console.log('Adding tutorial auction lands...');
