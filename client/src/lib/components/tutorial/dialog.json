@@ -36,12 +36,12 @@
   },
   {
     "_step": "8",
-    "text": "You now own a beautiful stark land ! The token you sell the land for is represented by the buiding.",
+    "text": "Now, let's buy a land.",
     "image_id": 4
   },
   {
     "_step": "9",
-    "text": "OHHHHH, Look your house leveled up!! This is great.\n\n You can level up your house twice. You can only do it if you own the land for long enough.",
+    "text": "This land, is an auction, that means it's price starts high and goes down until somone buys it.",
     "image_id": 3
   },
   {
