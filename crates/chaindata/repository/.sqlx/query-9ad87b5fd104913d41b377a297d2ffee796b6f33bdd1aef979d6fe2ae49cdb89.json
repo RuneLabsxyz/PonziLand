@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT MAX(at) as latest_time\n            FROM simple_positions\n            ",
+  "query": "\n            SELECT MAX(at) as latest_time\n            FROM land_historical\n            ",
   "describe": {
     "columns": [
       {
@@ -16,5 +16,5 @@
       null
     ]
   },
-  "hash": "cb37ae60802c697f0b0f216d3c45b9d39647d08e962ab2cfd027b18795a4ad66"
+  "hash": "9ad87b5fd104913d41b377a297d2ffee796b6f33bdd1aef979d6fe2ae49cdb89"
 }

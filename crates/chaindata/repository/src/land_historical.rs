@@ -1,6 +1,6 @@
 use crate::{Database, Error};
 use chaindata_models::{
-    models::SimplePositionModel,
+    models::LandHistoricalModel,
     shared::{Location, U256},
 };
 use chrono::NaiveDateTime;
@@ -8,6 +8,7 @@ use serde_json;
 use sqlx::{query, query_as};
 use std::collections::HashMap;
 
+/// Repository for managing land historical records
 pub struct Repository {
     db: Database,
 }
@@ -18,11 +19,11 @@ impl Repository {
         Self { db }
     }
 
-    /// Saves a simple position model to the database
-    pub async fn save(&self, position: SimplePositionModel) -> Result<String, Error> {
+    /// Saves a land historical model to the database
+    pub async fn save(&self, position: LandHistoricalModel) -> Result<String, Error> {
         Ok(query!(
             r#"
-            INSERT INTO simple_positions (
+            INSERT INTO land_historical (
                 id, at, owner, land_location, time_bought, close_date, close_reason,
                 buy_cost_token, buy_cost_usd, buy_token_used,
                 sale_revenue_token, sale_revenue_usd, sale_token_used,
@@ -65,9 +66,9 @@ impl Repository {
     }
 
     /// Gets all positions for a specific owner
-    pub async fn get_by_owner(&self, owner: &str) -> Result<Vec<SimplePositionModel>, sqlx::Error> {
+    pub async fn get_by_owner(&self, owner: &str) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
         query_as!(
-            SimplePositionModel,
+            LandHistoricalModel,
             r#"
             SELECT
                 id,
@@ -85,7 +86,7 @@ impl Repository {
                 sale_token_used,
                 token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
                 token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
-            FROM simple_positions
+            FROM land_historical
             WHERE owner = $1
             ORDER BY time_bought DESC
             "#,
@@ -99,9 +100,9 @@ impl Repository {
     pub async fn get_by_land_location(
         &self,
         location: Location,
-    ) -> Result<Vec<SimplePositionModel>, sqlx::Error> {
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
         query_as!(
-            SimplePositionModel,
+            LandHistoricalModel,
             r#"
             SELECT
                 id,
@@ -119,7 +120,7 @@ impl Repository {
                 sale_token_used,
                 token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
                 token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
-            FROM simple_positions
+            FROM land_historical
             WHERE land_location = $1
             ORDER BY time_bought DESC
             "#,
@@ -129,12 +130,12 @@ impl Repository {
         .await
     }
 
-    /// Gets the latest timestamp from the simple_positions table
+    /// Gets the latest timestamp from the land_historical table
     pub async fn get_latest_timestamp(&self) -> Result<Option<NaiveDateTime>, sqlx::Error> {
         query!(
             r#"
             SELECT MAX(at) as latest_time
-            FROM simple_positions
+            FROM land_historical
             "#
         )
         .fetch_one(&mut *(self.db.acquire().await?))
@@ -147,7 +148,7 @@ impl Repository {
         query!(
             r#"
             SELECT COUNT(*) as count
-            FROM simple_positions
+            FROM land_historical
             WHERE owner = $1
             "#,
             owner
@@ -166,7 +167,7 @@ impl Repository {
     ) -> Result<u64, sqlx::Error> {
         query!(
             r#"
-            UPDATE simple_positions
+            UPDATE land_historical
             SET close_date = $2, close_reason = $3
             WHERE land_location = $1 AND close_date IS NULL
             "#,
@@ -191,7 +192,7 @@ impl Repository {
     ) -> Result<u64, sqlx::Error> {
         query!(
             r#"
-            UPDATE simple_positions
+            UPDATE land_historical
             SET close_date = $2, close_reason = $3,
                 sale_revenue_token = $4, sale_revenue_usd = $5, sale_token_used = $6
             WHERE land_location = $1 AND close_date IS NULL
@@ -212,9 +213,9 @@ impl Repository {
     pub async fn get_open_positions_by_land_location(
         &self,
         location: Location,
-    ) -> Result<Vec<SimplePositionModel>, sqlx::Error> {
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
         query_as!(
-            SimplePositionModel,
+            LandHistoricalModel,
             r#"
             SELECT
                 id,
@@ -232,7 +233,7 @@ impl Repository {
                 sale_token_used,
                 token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
                 token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
-            FROM simple_positions
+            FROM land_historical
             WHERE land_location = $1 AND close_date IS NULL
             ORDER BY time_bought DESC
             "#,

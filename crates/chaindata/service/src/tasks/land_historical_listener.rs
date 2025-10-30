@@ -5,12 +5,12 @@ use chaindata_models::events::actions::{
 };
 use chaindata_models::{
     events::{EventDataModel, EventId},
-    models::SimplePositionModel,
+    models::LandHistoricalModel,
     shared::U256,
 };
-use chaindata_repository::SimplePositionRepository;
+use chaindata_repository::LandHistoricalRepository;
 use chrono::{DateTime, Utc};
-use ponziland_models::models::SimplePosition;
+use ponziland_models::models::LandHistorical;
 use tokio::select;
 use tokio_stream::StreamExt;
 use torii_ingester::prelude::ContractAddress;
@@ -19,26 +19,26 @@ use tracing::{debug, error, info};
 
 use super::Task;
 
-/// `SimplePositionListenerTask` tracks land ownership history
+/// `LandHistoricalListenerTask` tracks land ownership history
 ///
 /// This task processes:
 /// - `LandBoughtEvent` - Records land purchases and closes previous positions
 /// - `AuctionFinishedEvent` - Records auction wins and closes previous positions
 /// - `LandNukedEvent` - Closes positions when land is nuked
 /// - `LandTransferEvent` - Tracks token flows (inflows/outflows) for open positions
-pub struct SimplePositionListenerTask {
+pub struct LandHistoricalListenerTask {
     client: Arc<ToriiClient>,
-    simple_position_repository: Arc<SimplePositionRepository>,
+    land_historical_repository: Arc<LandHistoricalRepository>,
 }
 
-impl SimplePositionListenerTask {
+impl LandHistoricalListenerTask {
     pub fn new(
         client: Arc<ToriiClient>,
-        simple_position_repository: Arc<SimplePositionRepository>,
+        land_historical_repository: Arc<LandHistoricalRepository>,
     ) -> Self {
         Self {
             client,
-            simple_position_repository,
+            land_historical_repository,
         }
     }
 
@@ -52,10 +52,10 @@ impl SimplePositionListenerTask {
         None
     }
 
-    /// Gets the most recent update time from simple position records
-    async fn get_last_simple_position_update_time(&self) -> Result<DateTime<Utc>, sqlx::Error> {
+    /// Gets the most recent update time from land historical records
+    async fn get_last_land_historical_update_time(&self) -> Result<DateTime<Utc>, sqlx::Error> {
         let position_latest = self
-            .simple_position_repository
+            .land_historical_repository
             .get_latest_timestamp()
             .await?
             .unwrap_or(DateTime::UNIX_EPOCH.naive_utc());
@@ -92,7 +92,7 @@ impl SimplePositionListenerTask {
                 }
             }
             _ => {
-                // We only care about land ownership events for simple position tracking
+                // We only care about land ownership events for land historical tracking
                 debug!("Ignoring non-position event");
             }
         }
@@ -120,7 +120,7 @@ impl SimplePositionListenerTask {
             .and_then(|revenue| Self::convert_to_usd(revenue, &event.token_used));
 
         let closed_count = self
-            .simple_position_repository
+            .land_historical_repository
             .close_positions_by_land_location_with_sale(
                 (*location).into(),
                 at.naive_utc(),
@@ -149,8 +149,8 @@ impl SimplePositionListenerTask {
             .as_ref()
             .and_then(|cost| Self::convert_to_usd(cost, &event.token_used));
 
-        // Create simple position for the buyer with financial data
-        let position = SimplePosition::new_with_cost(
+        // Create land historical for the buyer with financial data
+        let position = LandHistorical::new_with_cost(
             buyer.parse::<ContractAddress>()?,
             (*location).into(),
             at.naive_utc(),
@@ -159,15 +159,15 @@ impl SimplePositionListenerTask {
             buy_token_used,
         );
 
-        let position_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
+        let position_model = LandHistoricalModel::from_land_historical(&position, at.naive_utc());
 
         info!(
             "Recording land purchase: {} bought land at location {:?} at {}",
             buyer, location, at
         );
 
-        if let Err(e) = self.simple_position_repository.save(position_model).await {
-            error!("Failed to save simple position: {}", e);
+        if let Err(e) = self.land_historical_repository.save(position_model).await {
+            error!("Failed to save land historical: {}", e);
             return Err(e.into());
         }
 
@@ -196,7 +196,7 @@ impl SimplePositionListenerTask {
             .and_then(|revenue| Self::convert_to_usd(revenue, ""));
 
         let closed_count = self
-            .simple_position_repository
+            .land_historical_repository
             .close_positions_by_land_location_with_sale(
                 (*location).into(),
                 at.naive_utc(),
@@ -229,8 +229,8 @@ impl SimplePositionListenerTask {
             .as_ref()
             .and_then(|cost| Self::convert_to_usd(cost, ""));
 
-        // Create simple position for the auction winner with financial data
-        let position = SimplePosition::new_with_cost(
+        // Create land historical for the auction winner with financial data
+        let position = LandHistorical::new_with_cost(
             buyer.parse::<ContractAddress>()?,
             (*location).into(),
             at.naive_utc(),
@@ -239,14 +239,14 @@ impl SimplePositionListenerTask {
             buy_token_used,
         );
 
-        let position_model = SimplePositionModel::from_simple_position(&position, at.naive_utc());
+        let position_model = LandHistoricalModel::from_land_historical(&position, at.naive_utc());
 
         info!(
             "Recording auction win: {} won auction for land at location {:?} at {}",
             buyer, location, at
         );
 
-        if let Err(e) = self.simple_position_repository.save(position_model).await {
+        if let Err(e) = self.land_historical_repository.save(position_model).await {
             error!("Failed to save simple auction position: {}", e);
             return Err(e.into());
         }
@@ -263,7 +263,7 @@ impl SimplePositionListenerTask {
 
         // Close all open positions for this land location due to nuking
         let closed_count = self
-            .simple_position_repository
+            .land_historical_repository
             .close_positions_by_land_location((*location).into(), at.naive_utc(), "nuked")
             .await
             .map_err(|e| {
@@ -292,7 +292,7 @@ impl SimplePositionListenerTask {
         {
             // Find open position for the from_location (this is an outflow)
             let from_positions = self
-                .simple_position_repository
+                .land_historical_repository
                 .get_open_positions_by_land_location((*from_location).into())
                 .await?;
 
@@ -302,9 +302,9 @@ impl SimplePositionListenerTask {
                     position.id, from_location, amount, token_address
                 );
 
-                // Convert position to SimplePosition, update outflows, and save
-                let mut simple_pos = position.to_simple_position();
-                let current_outflow = simple_pos
+                // Convert position to LandHistorical, update outflows, and save
+                let mut land_hist = position.to_land_historical();
+                let current_outflow = land_hist
                     .token_outflows
                     .entry(token_address.clone())
                     .or_insert_with(|| torii_ingester::prelude::U256::from(0u64));
@@ -313,8 +313,8 @@ impl SimplePositionListenerTask {
                 *current_outflow = torii_ingester::prelude::U256::from(new_value);
 
                 // Convert back and save
-                position = SimplePositionModel::from_simple_position(&simple_pos, at.naive_utc());
-                if let Err(e) = self.simple_position_repository.save(position).await {
+                position = LandHistoricalModel::from_land_historical(&land_hist, at.naive_utc());
+                if let Err(e) = self.land_historical_repository.save(position).await {
                     error!(
                         "Failed to update outflow for position at location {:?}: {}",
                         from_location, e
@@ -324,7 +324,7 @@ impl SimplePositionListenerTask {
 
             // Find open position for the to_location (this is an inflow)
             let to_positions = self
-                .simple_position_repository
+                .land_historical_repository
                 .get_open_positions_by_land_location((*to_location).into())
                 .await?;
 
@@ -334,9 +334,9 @@ impl SimplePositionListenerTask {
                     position.id, to_location, amount, token_address
                 );
 
-                // Convert position to SimplePosition, update inflows, and save
-                let mut simple_pos = position.to_simple_position();
-                let current_inflow = simple_pos
+                // Convert position to LandHistorical, update inflows, and save
+                let mut land_hist = position.to_land_historical();
+                let current_inflow = land_hist
                     .token_inflows
                     .entry(token_address.clone())
                     .or_insert_with(|| torii_ingester::prelude::U256::from(0u64));
@@ -345,8 +345,8 @@ impl SimplePositionListenerTask {
                 *current_inflow = torii_ingester::prelude::U256::from(new_value);
 
                 // Convert back and save
-                position = SimplePositionModel::from_simple_position(&simple_pos, at.naive_utc());
-                if let Err(e) = self.simple_position_repository.save(position).await {
+                position = LandHistoricalModel::from_land_historical(&land_hist, at.naive_utc());
+                if let Err(e) = self.land_historical_repository.save(position).await {
                     error!(
                         "Failed to update inflow for position at location {:?}: {}",
                         to_location, e
@@ -360,18 +360,18 @@ impl SimplePositionListenerTask {
 }
 
 #[async_trait::async_trait]
-impl Task for SimplePositionListenerTask {
-    const NAME: &'static str = "SimplePositionListenerTask";
+impl Task for LandHistoricalListenerTask {
+    const NAME: &'static str = "LandHistoricalListenerTask";
 
     async fn do_task(self: std::sync::Arc<Self>, mut rx: tokio::sync::oneshot::Receiver<()>) {
-        info!("Starting SimplePositionListenerTask with 10-second polling interval");
+        info!("Starting LandHistoricalListenerTask with 10-second polling interval");
 
         loop {
             // Get the last time we processed position-related events
-            let last_check = match self.get_last_simple_position_update_time().await {
+            let last_check = match self.get_last_land_historical_update_time().await {
                 Ok(time) => time,
                 Err(e) => {
-                    error!("Failed to get last simple position update time: {}", e);
+                    error!("Failed to get last land historical update time: {}", e);
                     tokio::time::sleep(std::time::Duration::from_secs(10)).await;
                     continue;
                 }
@@ -456,11 +456,11 @@ impl Task for SimplePositionListenerTask {
 
             if event_count > 0 {
                 info!(
-                    "Processed {} events ({} land ownership events) for simple position tracking",
+                    "Processed {} events ({} land ownership events) for land historical tracking",
                     event_count, position_event_count
                 );
             } else {
-                debug!("No new events found for simple position tracking");
+                debug!("No new events found for land historical tracking");
             }
 
             // Wait for 10 seconds before the next poll (or until stop signal)
@@ -470,7 +470,7 @@ impl Task for SimplePositionListenerTask {
                 },
                 stop_result = &mut rx => {
                     match stop_result {
-                        Ok(()) => info!("Received stop signal, shutting down simple position tracking"),
+                        Ok(()) => info!("Received stop signal, shutting down land historical tracking"),
                         Err(e) => info!("Stop channel closed unexpectedly: {}", e),
                     }
                     return;

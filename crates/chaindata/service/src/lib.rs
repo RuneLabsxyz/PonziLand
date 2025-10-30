@@ -2,14 +2,14 @@ pub mod error;
 pub mod tasks;
 
 use chaindata_repository::{
-    Database, EventRepository, LandRepository, LandStakeRepository, SimplePositionRepository,
+    Database, EventRepository, LandHistoricalRepository, LandRepository, LandStakeRepository,
 };
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
 use std::sync::Arc;
 use tasks::{
-    event_listener::EventListenerTask, model_listener::ModelListenerTask,
-    simple_position_listener::SimplePositionListenerTask, Task, TaskWrapper,
+    event_listener::EventListenerTask, land_historical_listener::LandHistoricalListenerTask,
+    model_listener::ModelListenerTask, Task, TaskWrapper,
 };
 use torii_ingester::{ToriiClient, ToriiConfiguration};
 
@@ -18,7 +18,7 @@ use torii_ingester::{ToriiClient, ToriiConfiguration};
 pub struct ChainDataService {
     event_listener_task: TaskWrapper<EventListenerTask>,
     model_listener_task: TaskWrapper<ModelListenerTask>,
-    simple_position_listener_task: TaskWrapper<SimplePositionListenerTask>,
+    land_historical_listener_task: TaskWrapper<LandHistoricalListenerTask>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -46,7 +46,7 @@ impl ChainDataService {
         let event_repository = Arc::new(EventRepository::new(database.clone()));
         let land_repository = Arc::new(LandRepository::new(database.clone()));
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
-        let simple_position_repository = Arc::new(SimplePositionRepository::new(database.clone()));
+        let land_historical_repository = Arc::new(LandHistoricalRepository::new(database.clone()));
         Ok(Arc::new(Self {
             event_listener_task: EventListenerTask::new(client.clone(), event_repository).wrap(),
             model_listener_task: ModelListenerTask::new(
@@ -55,9 +55,9 @@ impl ChainDataService {
                 land_stake_repository,
             )
             .wrap(),
-            simple_position_listener_task: SimplePositionListenerTask::new(
+            land_historical_listener_task: LandHistoricalListenerTask::new(
                 client.clone(),
-                simple_position_repository,
+                land_historical_repository,
             )
             .wrap(),
         }))
@@ -66,13 +66,13 @@ impl ChainDataService {
     pub fn stop(self: &Arc<Self>) {
         self.event_listener_task.stop();
         self.model_listener_task.stop();
-        self.simple_position_listener_task.stop();
+        self.land_historical_listener_task.stop();
     }
 
     pub fn start(self: &Arc<Self>) {
         // Start all in parallel
         self.event_listener_task.start();
         self.model_listener_task.start();
-        self.simple_position_listener_task.start();
+        self.land_historical_listener_task.start();
     }
 }

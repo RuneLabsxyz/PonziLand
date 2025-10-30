@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used,\n                token_inflows as \"token_inflows: sqlx::types::Json<HashMap<String, U256>>\",\n                token_outflows as \"token_outflows: sqlx::types::Json<HashMap<String, U256>>\"\n            FROM simple_positions\n            WHERE land_location = $1 AND close_date IS NULL\n            ORDER BY time_bought DESC\n            ",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason,\n                buy_cost_token,\n                buy_cost_usd,\n                buy_token_used,\n                sale_revenue_token,\n                sale_revenue_usd,\n                sale_token_used,\n                token_inflows,\n                token_outflows\n            FROM land_historical\n            WHERE land_location = $1\n            ORDER BY time_bought DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -40,12 +40,12 @@
       },
       {
         "ordinal": 7,
-        "name": "buy_cost_token: U256",
+        "name": "buy_cost_token",
         "type_info": "Numeric"
       },
       {
         "ordinal": 8,
-        "name": "buy_cost_usd: U256",
+        "name": "buy_cost_usd",
         "type_info": "Numeric"
       },
       {
@@ -55,12 +55,12 @@
       },
       {
         "ordinal": 10,
-        "name": "sale_revenue_token: U256",
+        "name": "sale_revenue_token",
         "type_info": "Numeric"
       },
       {
         "ordinal": 11,
-        "name": "sale_revenue_usd: U256",
+        "name": "sale_revenue_usd",
         "type_info": "Numeric"
       },
       {
@@ -70,12 +70,12 @@
       },
       {
         "ordinal": 13,
-        "name": "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
+        "name": "token_inflows",
         "type_info": "Jsonb"
       },
       {
         "ordinal": 14,
-        "name": "token_outflows: sqlx::types::Json<HashMap<String, U256>>",
+        "name": "token_outflows",
         "type_info": "Jsonb"
       }
     ],
@@ -102,5 +102,5 @@
       false
     ]
   },
-  "hash": "2e2f7ce4701bea68d20e5e9b743d3b610063d942b0aae6ca7276f44772dc693b"
+  "hash": "a4377657f2ca2f83893bdcc293926ea887d8d49ab07aeb469c6a04604bb50560"
 }

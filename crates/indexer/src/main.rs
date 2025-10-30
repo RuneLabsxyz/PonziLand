@@ -9,15 +9,14 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_repository::{LandRepository, SimplePositionRepository};
+use chaindata_repository::{LandHistoricalRepository, LandRepository};
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{
-    lands::LandsRoute, price::PriceRoute, simple_positions::SimplePositionsRoute,
-    tokens::TokenRoute,
+    land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute, tokens::TokenRoute,
 };
 use serde::{Deserialize, Serialize};
 use service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
@@ -112,14 +111,14 @@ async fn main() -> Result<()> {
     chaindata_service.start();
 
     let land_repository = Arc::new(LandRepository::new(pool.clone()));
-    let simple_position_repository = Arc::new(SimplePositionRepository::new(pool.clone()));
+    let land_historical_repository = Arc::new(LandHistoricalRepository::new(pool.clone()));
 
     let app_state = AppState {
         token_service: token_service.clone(),
         avnu_service: avnu.clone(),
         ekubo_service: ekubo.clone(),
         land_repository,
-        simple_position_repository,
+        land_historical_repository,
     };
 
     let cors = CorsLayer::new()
@@ -152,8 +151,8 @@ async fn main() -> Result<()> {
             LandsRoute::new().router().with_state(app_state.clone()),
         )
         .nest(
-            "/simple-positions",
-            SimplePositionsRoute::new()
+            "/land-historical",
+            LandHistoricalRoute::new()
                 .router()
                 .with_state(app_state.clone()),
         )

@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use ponziland_models::models::SimplePosition;
+use ponziland_models::models::LandHistorical;
 use sqlx::prelude::FromRow;
 use sqlx::types::Json;
 use std::collections::HashMap;
@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use crate::shared::{Location, U256};
 
 #[derive(Clone, Debug, FromRow)]
-pub struct SimplePositionModel {
+pub struct LandHistoricalModel {
     pub id: String,
     pub at: NaiveDateTime,
     pub owner: String,
@@ -25,9 +25,9 @@ pub struct SimplePositionModel {
     pub token_outflows: Json<HashMap<String, U256>>,
 }
 
-impl SimplePositionModel {
-    /// Create a new SimplePositionModel from a SimplePosition
-    pub fn from_simple_position(position: &SimplePosition, at: NaiveDateTime) -> Self {
+impl LandHistoricalModel {
+    /// Create a new LandHistoricalModel from a LandHistorical
+    pub fn from_land_historical(position: &LandHistorical, at: NaiveDateTime) -> Self {
         Self {
             id: position.id.clone(),
             at,
@@ -59,9 +59,9 @@ impl SimplePositionModel {
         }
     }
 
-    /// Convert this model back to a SimplePosition
-    pub fn to_simple_position(&self) -> SimplePosition {
-        SimplePosition {
+    /// Convert this model back to a LandHistorical
+    pub fn to_land_historical(&self) -> LandHistorical {
+        LandHistorical {
             id: self.id.clone(),
             owner: self.owner.clone(),
             land_location: (*self.land_location).into(),
