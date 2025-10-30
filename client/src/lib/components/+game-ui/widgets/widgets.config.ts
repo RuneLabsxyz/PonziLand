@@ -103,9 +103,9 @@ const baseWidgetsState: WidgetsState = {
     disableResize: true,
     fixedStyles: 'width: 400px; height: auto;',
   },
-  history: {
-    id: 'history',
-    type: 'history',
+  'command-center': {
+    id: 'command-center',
+    type: 'command-center',
     position: { x: 100, y: 50 },
     dimensions: { width: 550, height: 400 },
     isMinimized: false,
@@ -192,9 +192,9 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
   },
   {
-    id: 'history',
-    type: 'history',
-    label: 'History',
+    id: 'command-center',
+    type: 'command-center',
+    label: 'Command Center',
     icon: '/ui/icons/Icon_Notification.png',
   },
   // {
