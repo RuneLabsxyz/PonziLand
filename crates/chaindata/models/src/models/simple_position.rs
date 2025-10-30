@@ -12,6 +12,8 @@ pub struct SimplePositionModel {
     pub owner: String,
     pub land_location: Location,
     pub time_bought: NaiveDateTime,
+    pub close_date: Option<NaiveDateTime>,
+    pub close_reason: Option<String>,
 }
 
 impl SimplePositionModel {
@@ -23,6 +25,8 @@ impl SimplePositionModel {
             owner: position.owner.clone(),
             land_location: Location::from(position.land_location),
             time_bought: position.time_bought,
+            close_date: position.close_date,
+            close_reason: position.close_reason.clone(),
         }
     }
 
@@ -33,6 +37,8 @@ impl SimplePositionModel {
             owner: self.owner.clone(),
             land_location: (*self.land_location).into(),
             time_bought: self.time_bought,
+            close_date: self.close_date,
+            close_reason: self.close_reason.clone(),
         }
     }
 }

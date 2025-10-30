@@ -1,6 +1,8 @@
 use std::sync::Arc;
 
-use chaindata_models::events::actions::{AuctionFinishedEventModel, LandBoughtEventModel};
+use chaindata_models::events::actions::{
+    AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+};
 use chaindata_models::{
     events::{EventDataModel, EventId},
     models::SimplePositionModel,
@@ -18,8 +20,9 @@ use super::Task;
 /// `SimplePositionListenerTask` tracks land ownership history
 ///
 /// This task processes:
-/// - `LandBoughtEvent` - Records land purchases
-/// - `AuctionFinishedEvent` - Records auction wins
+/// - `LandBoughtEvent` - Records land purchases and closes previous positions
+/// - `AuctionFinishedEvent` - Records auction wins and closes previous positions
+/// - `LandNukedEvent` - Closes positions when land is nuked
 pub struct SimplePositionListenerTask {
     client: Arc<ToriiClient>,
     simple_position_repository: Arc<SimplePositionRepository>,
@@ -64,9 +67,14 @@ impl SimplePositionListenerTask {
                     error!("Failed to handle auction finished event: {}", e);
                 }
             }
+            EventDataModel::LandNuked(land_nuked) => {
+                if let Err(e) = self.handle_land_nuked(land_nuked, at).await {
+                    error!("Failed to handle land nuked event: {}", e);
+                }
+            }
             _ => {
-                // We only care about land purchases for simple position tracking
-                debug!("Ignoring non-purchase event");
+                // We only care about land ownership events for simple position tracking
+                debug!("Ignoring non-position event");
             }
         }
     }
@@ -83,6 +91,23 @@ impl SimplePositionListenerTask {
         if buyer == "0x0" || buyer == "0" {
             debug!("Skipping position creation for zero address buyer");
             return Ok(());
+        }
+
+        // Close all previous positions for this land location
+        let closed_count = self
+            .simple_position_repository
+            .close_positions_by_land_location((*location).into(), at.naive_utc(), "bought")
+            .await
+            .map_err(|e| {
+                error!("Failed to close previous positions for land bought: {}", e);
+                e
+            })?;
+
+        if closed_count > 0 {
+            info!(
+                "Closed {} previous position(s) for land at location {:?} (bought)",
+                closed_count, location
+            );
         }
 
         // Create simple position for the buyer
@@ -117,6 +142,26 @@ impl SimplePositionListenerTask {
             return Ok(());
         }
 
+        // Close all previous positions for this land location
+        let closed_count = self
+            .simple_position_repository
+            .close_positions_by_land_location((*location).into(), at.naive_utc(), "bought")
+            .await
+            .map_err(|e| {
+                error!(
+                    "Failed to close previous positions for auction finished: {}",
+                    e
+                );
+                e
+            })?;
+
+        if closed_count > 0 {
+            info!(
+                "Closed {} previous position(s) for land at location {:?} (auction won)",
+                closed_count, location
+            );
+        }
+
         // Create simple position for the auction winner
         let position = SimplePosition::new(buyer.parse()?, (*location).into(), at.naive_utc());
 
@@ -131,6 +176,31 @@ impl SimplePositionListenerTask {
             error!("Failed to save simple auction position: {}", e);
             return Err(e.into());
         }
+
+        Ok(())
+    }
+
+    async fn handle_land_nuked(
+        &self,
+        event: LandNukedEventModel,
+        at: DateTime<Utc>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let location = event.location;
+
+        // Close all open positions for this land location due to nuking
+        let closed_count = self
+            .simple_position_repository
+            .close_positions_by_land_location((*location).into(), at.naive_utc(), "nuked")
+            .await
+            .map_err(|e| {
+                error!("Failed to close positions for land nuked: {}", e);
+                e
+            })?;
+
+        info!(
+            "Closed {} position(s) for land at location {:?} (nuked) at {}",
+            closed_count, location, at
+        );
 
         Ok(())
     }
@@ -158,7 +228,7 @@ impl Task for SimplePositionListenerTask {
             let safe_last_check = last_check - chrono::Duration::seconds(5);
 
             info!(
-                "Polling for land purchase events after: {:?} (with 5s safety buffer)",
+                "Polling for land ownership events after: {:?} (with 5s safety buffer)",
                 safe_last_check
             );
 
@@ -215,14 +285,16 @@ impl Task for SimplePositionListenerTask {
                     }
                 };
 
-                // Only process land purchase events
+                // Only process land ownership events
                 match &event_data {
-                    EventDataModel::LandBought(_) | EventDataModel::AuctionFinished(_) => {
+                    EventDataModel::LandBought(_)
+                    | EventDataModel::AuctionFinished(_)
+                    | EventDataModel::LandNuked(_) => {
                         position_event_count += 1;
                         self.process_event(event_data, event_id, at).await;
                     }
                     _ => {
-                        // Skip non-purchase events
+                        // Skip non-ownership events
                         continue;
                     }
                 }
@@ -230,7 +302,7 @@ impl Task for SimplePositionListenerTask {
 
             if event_count > 0 {
                 info!(
-                    "Processed {} events ({} land purchases) for simple position tracking",
+                    "Processed {} events ({} land ownership events) for simple position tracking",
                     event_count, position_event_count
                 );
             } else {
@@ -240,7 +312,7 @@ impl Task for SimplePositionListenerTask {
             // Wait for 10 seconds before the next poll (or until stop signal)
             select! {
                 () = tokio::time::sleep(std::time::Duration::from_secs(10)) => {
-                    debug!("Polling interval completed, checking for new land purchase events...");
+                    debug!("Polling interval completed, checking for new land ownership events...");
                 },
                 stop_result = &mut rx => {
                     match stop_result {
