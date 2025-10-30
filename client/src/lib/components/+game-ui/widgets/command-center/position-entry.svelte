@@ -1,10 +1,13 @@
 <script lang="ts">
-  import { locationToCoordinates } from '$lib/utils';
+  import { locationToCoordinates, getTokenMetadata } from '$lib/utils';
   import type {
     HistoricalPosition,
     TokenFlow,
   } from './historical-positions.service';
   import { ChevronDown, ChevronUp } from 'lucide-svelte';
+  import * as Avatar from '$lib/components/ui/avatar/index.js';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import data from '$profileData';
 
   interface Props {
     position: HistoricalPosition;
@@ -15,6 +18,38 @@
 
   function toggleExpanded() {
     expanded = !expanded;
+  }
+
+  // Get token information from address
+  function getTokenInfo(address: string) {
+    // Try with one leading zero first
+    let formattedAddress = address;
+    if (address.startsWith('0x')) {
+      formattedAddress = '0x0' + address.slice(2);
+    }
+
+    let token = data.availableTokens.find(
+      (t) => t.address === formattedAddress,
+    );
+
+    // If not found, try with two leading zeros
+    if (!token && address.startsWith('0x')) {
+      formattedAddress = '0x00' + address.slice(2);
+      token = data.availableTokens.find((t) => t.address === formattedAddress);
+    }
+
+    if (token) {
+      const metadata = getTokenMetadata(token.skin);
+      return {
+        symbol: token.symbol,
+        icon: metadata?.icon || '/tokens/default/icon.png',
+      };
+    }
+
+    return {
+      symbol: `0x${address.slice(2, 5)}...${address.slice(-4)}`,
+      icon: '/tokens/default/icon.png',
+    };
   }
 
   // Convert hex string to number and format
@@ -121,16 +156,25 @@
           {#if Object.keys(position.token_inflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_inflows) as [token, amount]}
-                <div class="text-xs flex justify-between">
-                  <span
-                    class="text-gray-500 truncate max-w-[150px]"
-                    title={token}
-                  >
-                    0x{token.slice(3, 6)}...{token.slice(-4)}
+                {@const tokenInfo = getTokenInfo(token)}
+                <div class="text-xs flex justify-between items-center">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <Avatar.Root class="h-5 w-5 flex-shrink-0">
+                      <Avatar.Image
+                        src={tokenInfo.icon}
+                        alt={tokenInfo.symbol}
+                      />
+                      <Avatar.Fallback class="text-[8px]"
+                        >{tokenInfo.symbol.slice(0, 3)}</Avatar.Fallback
+                      >
+                    </Avatar.Root>
+                    <span class="text-gray-400 truncate" title={token}>
+                      {tokenInfo.symbol}
+                    </span>
+                  </div>
+                  <span class="text-green-400 ml-2 flex-shrink-0">
+                    +{formatTokenAmount(amount)}
                   </span>
-                  <span class="text-green-400 ml-2"
-                    >{formatTokenAmount(amount)}</span
-                  >
                 </div>
               {/each}
             </div>
@@ -145,16 +189,25 @@
           {#if Object.keys(position.token_outflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_outflows) as [token, amount]}
-                <div class="text-xs flex justify-between">
-                  <span
-                    class="text-gray-500 truncate max-w-[150px]"
-                    title={token}
-                  >
-                    0x{token.slice(3, 6)}...{token.slice(-4)}
+                {@const tokenInfo = getTokenInfo(token)}
+                <div class="text-xs flex justify-between items-center">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <Avatar.Root class="h-5 w-5 flex-shrink-0">
+                      <Avatar.Image
+                        src={tokenInfo.icon}
+                        alt={tokenInfo.symbol}
+                      />
+                      <Avatar.Fallback class="text-[8px]"
+                        >{tokenInfo.symbol.slice(0, 3)}</Avatar.Fallback
+                      >
+                    </Avatar.Root>
+                    <span class="text-gray-400 truncate" title={token}>
+                      {tokenInfo.symbol}
+                    </span>
+                  </div>
+                  <span class="text-red-400 ml-2 flex-shrink-0">
+                    -{formatTokenAmount(amount)}
                   </span>
-                  <span class="text-red-400 ml-2"
-                    >{formatTokenAmount(amount)}</span
-                  >
                 </div>
               {/each}
             </div>
