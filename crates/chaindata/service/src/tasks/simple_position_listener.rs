@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use chaindata_models::events::actions::{
-    AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+    AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel, LandTransferEventModel,
 };
 use chaindata_models::{
     events::{EventDataModel, EventId},
@@ -25,6 +25,7 @@ use super::Task;
 /// - `LandBoughtEvent` - Records land purchases and closes previous positions
 /// - `AuctionFinishedEvent` - Records auction wins and closes previous positions
 /// - `LandNukedEvent` - Closes positions when land is nuked
+/// - `LandTransferEvent` - Tracks token flows (inflows/outflows) for open positions
 pub struct SimplePositionListenerTask {
     client: Arc<ToriiClient>,
     simple_position_repository: Arc<SimplePositionRepository>,
@@ -82,6 +83,12 @@ impl SimplePositionListenerTask {
             EventDataModel::LandNuked(land_nuked) => {
                 if let Err(e) = self.handle_land_nuked(land_nuked, at).await {
                     error!("Failed to handle land nuked event: {}", e);
+                }
+            }
+            EventDataModel::LandTransfer(land_transfer) => {
+                info!("Received LandTransfer event: {:?}", land_transfer);
+                if let Err(e) = self.handle_land_transfer(land_transfer, at).await {
+                    error!("Failed to handle land transfer event: {}", e);
                 }
             }
             _ => {
@@ -271,6 +278,85 @@ impl SimplePositionListenerTask {
 
         Ok(())
     }
+
+    async fn handle_land_transfer(
+        &self,
+        event: LandTransferEventModel,
+        at: DateTime<Utc>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let from_location = event.from_location;
+        let to_location = event.to_location;
+        let token_address = event.token_address.clone();
+        let amount = event.amount;
+
+        {
+            // Find open position for the from_location (this is an outflow)
+            let from_positions = self
+                .simple_position_repository
+                .get_open_positions_by_land_location((*from_location).into())
+                .await?;
+
+            for mut position in from_positions {
+                info!(
+                    "Updating outflow for position {} at location {:?}: {} {}",
+                    position.id, from_location, amount, token_address
+                );
+
+                // Convert position to SimplePosition, update outflows, and save
+                let mut simple_pos = position.to_simple_position();
+                let current_outflow = simple_pos
+                    .token_outflows
+                    .entry(token_address.clone())
+                    .or_insert_with(|| torii_ingester::prelude::U256::from(0u64));
+                let amount_u256 = torii_ingester::prelude::U256::from(**amount);
+                let new_value = **current_outflow + *amount_u256;
+                *current_outflow = torii_ingester::prelude::U256::from(new_value);
+
+                // Convert back and save
+                position = SimplePositionModel::from_simple_position(&simple_pos, at.naive_utc());
+                if let Err(e) = self.simple_position_repository.save(position).await {
+                    error!(
+                        "Failed to update outflow for position at location {:?}: {}",
+                        from_location, e
+                    );
+                }
+            }
+
+            // Find open position for the to_location (this is an inflow)
+            let to_positions = self
+                .simple_position_repository
+                .get_open_positions_by_land_location((*to_location).into())
+                .await?;
+
+            for mut position in to_positions {
+                info!(
+                    "Updating inflow for position {} at location {:?}: {} {}",
+                    position.id, to_location, amount, token_address
+                );
+
+                // Convert position to SimplePosition, update inflows, and save
+                let mut simple_pos = position.to_simple_position();
+                let current_inflow = simple_pos
+                    .token_inflows
+                    .entry(token_address.clone())
+                    .or_insert_with(|| torii_ingester::prelude::U256::from(0u64));
+                let amount_u256 = torii_ingester::prelude::U256::from(**amount);
+                let new_value = **current_inflow + *amount_u256;
+                *current_inflow = torii_ingester::prelude::U256::from(new_value);
+
+                // Convert back and save
+                position = SimplePositionModel::from_simple_position(&simple_pos, at.naive_utc());
+                if let Err(e) = self.simple_position_repository.save(position).await {
+                    error!(
+                        "Failed to update inflow for position at location {:?}: {}",
+                        to_location, e
+                    );
+                }
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[async_trait::async_trait]
@@ -352,11 +438,12 @@ impl Task for SimplePositionListenerTask {
                     }
                 };
 
-                // Only process land ownership events
+                // Only process land ownership and transfer events
                 match &event_data {
                     EventDataModel::LandBought(_)
                     | EventDataModel::AuctionFinished(_)
-                    | EventDataModel::LandNuked(_) => {
+                    | EventDataModel::LandNuked(_)
+                    | EventDataModel::LandTransfer(_) => {
                         position_event_count += 1;
                         self.process_event(event_data, event_id, at).await;
                     }

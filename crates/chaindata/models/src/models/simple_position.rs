@@ -1,6 +1,8 @@
 use chrono::NaiveDateTime;
 use ponziland_models::models::SimplePosition;
 use sqlx::prelude::FromRow;
+use sqlx::types::Json;
+use std::collections::HashMap;
 
 use crate::shared::{Location, U256};
 
@@ -19,6 +21,8 @@ pub struct SimplePositionModel {
     pub sale_revenue_token: Option<U256>,
     pub sale_revenue_usd: Option<U256>,
     pub sale_token_used: Option<String>,
+    pub token_inflows: Json<HashMap<String, U256>>,
+    pub token_outflows: Json<HashMap<String, U256>>,
 }
 
 impl SimplePositionModel {
@@ -38,6 +42,20 @@ impl SimplePositionModel {
             sale_revenue_token: position.sale_revenue_token.map(|v| U256::from(v)),
             sale_revenue_usd: position.sale_revenue_usd.map(|v| U256::from(v)),
             sale_token_used: position.sale_token_used.clone(),
+            token_inflows: Json(
+                position
+                    .token_inflows
+                    .iter()
+                    .map(|(k, v)| (k.clone(), U256::from(*v)))
+                    .collect(),
+            ),
+            token_outflows: Json(
+                position
+                    .token_outflows
+                    .iter()
+                    .map(|(k, v)| (k.clone(), U256::from(*v)))
+                    .collect(),
+            ),
         }
     }
 
@@ -56,6 +74,18 @@ impl SimplePositionModel {
             sale_revenue_token: self.sale_revenue_token.map(|v| *v),
             sale_revenue_usd: self.sale_revenue_usd.map(|v| *v),
             sale_token_used: self.sale_token_used.clone(),
+            token_inflows: self
+                .token_inflows
+                .0
+                .iter()
+                .map(|(k, v)| (k.clone(), **v))
+                .collect(),
+            token_outflows: self
+                .token_outflows
+                .0
+                .iter()
+                .map(|(k, v)| (k.clone(), **v))
+                .collect(),
         }
     }
 }

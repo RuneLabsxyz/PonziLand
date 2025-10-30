@@ -1,6 +1,7 @@
 use crate::shared::Location;
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use torii_ingester::prelude::ContractAddress;
 use torii_ingester::u256::U256;
 
@@ -31,6 +32,10 @@ pub struct SimplePosition {
     pub sale_revenue_usd: Option<U256>,
     /// Token address used for sale
     pub sale_token_used: Option<String>,
+    /// Token inflows to this land while the position was active (token address -> amount)
+    pub token_inflows: HashMap<String, U256>,
+    /// Token outflows from this land while the position was active (token address -> amount)
+    pub token_outflows: HashMap<String, U256>,
 }
 
 impl SimplePosition {
@@ -61,6 +66,8 @@ impl SimplePosition {
             sale_revenue_token: None,
             sale_revenue_usd: None,
             sale_token_used: None,
+            token_inflows: HashMap::new(),
+            token_outflows: HashMap::new(),
         }
     }
 
@@ -94,6 +101,8 @@ impl SimplePosition {
             sale_revenue_token: None,
             sale_revenue_usd: None,
             sale_token_used: None,
+            token_inflows: HashMap::new(),
+            token_outflows: HashMap::new(),
         }
     }
 }
