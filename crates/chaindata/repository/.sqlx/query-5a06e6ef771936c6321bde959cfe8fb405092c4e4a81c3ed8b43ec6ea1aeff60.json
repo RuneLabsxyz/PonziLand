@@ -1,0 +1,64 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH latest_lands AS (\n                SELECT DISTINCT ON (location)\n                    id, at, location, bought_at, owner, sell_price, token_used, level\n                FROM land\n                WHERE at <= $1\n                ORDER BY location, at DESC\n            )\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                bought_at,\n                owner,\n                sell_price as \"sell_price: _\",\n                token_used,\n                level as \"level: _\"\n            FROM latest_lands\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: _",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "bought_at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "owner",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "sell_price: _",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "token_used",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "level: _",
+        "type_info": "Int4"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Timestamp"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "5a06e6ef771936c6321bde959cfe8fb405092c4e4a81c3ed8b43ec6ea1aeff60"
+}

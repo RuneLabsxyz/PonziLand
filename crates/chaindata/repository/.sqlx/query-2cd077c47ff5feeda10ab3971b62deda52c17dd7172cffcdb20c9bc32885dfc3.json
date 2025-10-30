@@ -1,0 +1,50 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id as \"id: _\",\n                at,\n                event_type as \"event_type: _\"\n            FROM event\n            WHERE id = $1\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: _",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "event_type: _",
+        "type_info": {
+          "Custom": {
+            "name": "event_type",
+            "kind": {
+              "Enum": [
+                "ponzi_land-AuctionFinishedEvent",
+                "ponzi_land-LandBoughtEvent",
+                "ponzi_land-LandNukedEvent",
+                "ponzi_land-NewAuctionEvent",
+                "ponzi_land-AddressAuthorizedEvent",
+                "ponzi_land-AddressRemovedEvent",
+                "ponzi_land-VerifierUpdatedEvent",
+                "ponzi_land-LandTransferEvent"
+              ]
+            }
+          }
+        }
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "2cd077c47ff5feeda10ab3971b62deda52c17dd7172cffcdb20c9bc32885dfc3"
+}
