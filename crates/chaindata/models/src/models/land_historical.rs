@@ -1,5 +1,5 @@
 use chrono::NaiveDateTime;
-use ponziland_models::models::LandHistorical;
+use ponziland_models::models::{CloseReason, LandHistorical};
 use sqlx::prelude::FromRow;
 use sqlx::types::Json;
 use std::collections::HashMap;
@@ -14,7 +14,7 @@ pub struct LandHistoricalModel {
     pub land_location: Location,
     pub time_bought: NaiveDateTime,
     pub close_date: Option<NaiveDateTime>,
-    pub close_reason: Option<String>,
+    pub close_reason: Option<CloseReason>,
     pub buy_cost_token: Option<U256>,
     pub buy_cost_usd: Option<U256>,
     pub buy_token_used: Option<String>,

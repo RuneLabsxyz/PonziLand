@@ -4,6 +4,7 @@ use axum::{
     Json, Router,
 };
 use chaindata_repository::LandHistoricalRepository;
+use ponziland_models::models::CloseReason;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -16,7 +17,7 @@ pub struct LandHistoricalResponse {
     pub land_location: u32,
     pub time_bought: String,
     pub close_date: Option<String>,
-    pub close_reason: Option<String>,
+    pub close_reason: Option<CloseReason>,
     pub buy_cost_token: Option<String>,
     pub buy_cost_usd: Option<String>,
     pub buy_token_used: Option<String>,
@@ -176,7 +177,7 @@ mod tests {
             land_location: 100,
             time_bought: "2023-01-01T00:00:00".to_string(),
             close_date: Some("2023-01-02T00:00:00".to_string()),
-            close_reason: Some("bought".to_string()),
+            close_reason: Some(CloseReason::Bought),
             buy_cost_token: Some("1000000000000000000".to_string()),
             buy_cost_usd: Some("1500.50".to_string()),
             buy_token_used: Some(

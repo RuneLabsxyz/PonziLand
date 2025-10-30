@@ -16,6 +16,7 @@ sqlx = { workspace = true, features = [
     "bigdecimal",
 ] }
 chaindata-models = { path = "../models" }
+ponziland-models = { path = "../../ponziland-models" }
 thiserror.workspace = true
 
 [dev-dependencies]

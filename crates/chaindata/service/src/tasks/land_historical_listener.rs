@@ -10,7 +10,7 @@ use chaindata_models::{
 };
 use chaindata_repository::LandHistoricalRepository;
 use chrono::{DateTime, Utc};
-use ponziland_models::models::LandHistorical;
+use ponziland_models::models::{CloseReason, LandHistorical};
 use tokio::select;
 use tokio::sync::{broadcast, Mutex};
 use torii_ingester::prelude::ContractAddress;
@@ -112,7 +112,7 @@ impl LandHistoricalListenerTask {
             .close_positions_by_land_location_with_sale(
                 (*location).into(),
                 at.naive_utc(),
-                "bought",
+                CloseReason::Bought,
                 sale_revenue_token,
                 sale_revenue_usd,
                 sale_token_used,
@@ -188,7 +188,7 @@ impl LandHistoricalListenerTask {
             .close_positions_by_land_location_with_sale(
                 (*location).into(),
                 at.naive_utc(),
-                "bought",
+                CloseReason::Bought,
                 sale_revenue_token,
                 sale_revenue_usd,
                 sale_token_used,
@@ -252,7 +252,11 @@ impl LandHistoricalListenerTask {
         // Close all open positions for this land location due to nuking
         let closed_count = self
             .land_historical_repository
-            .close_positions_by_land_location((*location).into(), at.naive_utc(), "nuked")
+            .close_positions_by_land_location(
+                (*location).into(),
+                at.naive_utc(),
+                CloseReason::Nuked,
+            )
             .await
             .map_err(|e| {
                 error!("Failed to close positions for land nuked: {}", e);
