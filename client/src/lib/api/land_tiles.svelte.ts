@@ -35,6 +35,7 @@ const TOKEN_ADDRESSES = data.availableTokens.map(
 
 // Default values
 const DEFAULT_SELL_PRICE = 1000000000000000000;
+const TUTORIAL_BASE_PRICE = 100000000000000000000; // ~$100 worth in base currency
 const DEFAULT_STAKE_AMOUNT = 1000000000000000000;
 const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
@@ -958,26 +959,50 @@ export class LandTileStore {
     const playerOwner =
       '0x0432d05c36cac355e0a74a08e8b8776b45f5bff96b59b351ec9171bf66a22a37';
 
+    // Find specific token addresses
+    const tokenAddressMap: { [symbol: string]: string } = {};
+    data.availableTokens.forEach((token) => {
+      tokenAddressMap[token.symbol] = token.address;
+    });
+
+    // Define specific tokens for each building
+    const buildingTokens = [
+      tokenAddressMap['SOL'] || TOKEN_ADDRESSES[0], // Center - SOL
+      tokenAddressMap['BTC'] || TOKEN_ADDRESSES[1], // Right - BTC
+      tokenAddressMap['ETH'] || TOKEN_ADDRESSES[2], // Left - ETH
+      tokenAddressMap['DOG'] || TOKEN_ADDRESSES[3], // Below - DOGE
+      tokenAddressMap['BONK'] || TOKEN_ADDRESSES[4], // Above - BONK
+    ];
+
+    // Define specific configurations for each land
+    const landConfigs = [
+      { price: 1000000000, level: 'Second' }, // SOL - $400, Level 3
+      { price: 100000, level: 'Second' }, // BTC - $350, Level 3
+      { price: 1000000000, level: 'First' }, // ETH - $250, Level 2
+      { price: 1000000000, level: 'First' }, // DOG - $150, Level 2
+      { price: 1000000000, level: 'Zero' }, // BONK - $100, Level 1
+    ];
+
     this.currentLands.update((lands) => {
       // Add player-owned lands
       playerLandPositions.forEach(({ x, y }, index) => {
-        // Randomly select a token for each land
-        const randomToken =
-          TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
+        // Use specific token for each position
+        const tokenAddress = buildingTokens[index];
+        const config = landConfigs[index];
 
         const playerLand: Land = {
           owner: playerOwner,
           location: coordinatesToLocation({ x, y }),
           block_date_bought: Date.now() / 1000,
-          sell_price: DEFAULT_SELL_PRICE * (1 + index * 0.1),
-          token_used: randomToken,
+          sell_price: config.price,
+          token_used: tokenAddress,
           // @ts-ignore
-          level: 'First',
+          level: config.level,
         };
 
         const playerStake: LandStake = {
           location: coordinatesToLocation({ x, y }),
-          amount: DEFAULT_STAKE_AMOUNT,
+          amount: config.price,
           neighbors_info_packed: 0,
           accumulated_taxes_fee: 0,
         };
@@ -990,10 +1015,6 @@ export class LandTileStore {
 
         this.store[x][y].set({ value: buildingLand });
         lands[x][y] = buildingLand;
-
-        console.log(
-          `Added player land at (${x}, ${y}) with token ${randomToken}`,
-        );
       });
 
       // Force ownership update after bulk operation
@@ -1011,20 +1032,20 @@ export class LandTileStore {
       { x: centerX - 1, y: centerY - 1 }, // Diagonal NW
     ];
 
+    const auctionPrices = [
+      10000000000000000000000, 10000000000000000000000, 10000000000000000000000,
+      10000000000000000000000, 10000000000000000000000, 10000000000000000000,
+    ];
+
     auctionPositions.forEach(({ x, y }, index) => {
       const location = coordinatesToLocation({ x, y });
-      const basePrice = DEFAULT_SELL_PRICE * (1 + index * 0.2);
-
-      // Randomly select token for auction
-      const randomToken =
-        TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
 
       const fakeLand: Land = {
         owner: '0x00',
         location: location,
         block_date_bought: Date.now() / 1000,
-        sell_price: basePrice,
-        token_used: randomToken,
+        sell_price: auctionPrices[index],
+        token_used: data.mainCurrencyAddress,
         //@ts-ignore
         level: 'First',
       };
@@ -1032,17 +1053,12 @@ export class LandTileStore {
       const fakeAuction: Auction = {
         land_location: location,
         is_finished: false,
-        start_price: basePrice * 2,
-        start_time: Date.now() / 1000 - index * 60, // Different start times
-        floor_price: basePrice * 0.5,
+        start_price: auctionPrices[index] * 2,
+        start_time: Date.now() / 1000 - index * 60,
+        floor_price: auctionPrices[index] * 0.5,
         sold_at_price: new CairoOption(CairoOptionVariant.None),
       };
 
-      console.log(
-        `Adding tutorial auction at (${x}, ${y}) with token ${randomToken}`,
-      );
-
-      // Create auction land entity to update the store
       this.updateLand({
         entityId: `tutorial_auction_${location}`,
         models: {

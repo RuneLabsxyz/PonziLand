@@ -6,6 +6,8 @@
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
+  import { enableTutorial } from '$lib/components/tutorial/stores.svelte';
+  import TutorialDialog from '$lib/components/tutorial/tutorial-dialog.svelte';
 
   let webglShow = $derived(webGLStateStore.hasError);
   let webglError = $derived(webGLStateStore.errorMessage);
@@ -15,6 +17,9 @@
   let gameContentReady = $derived(!loading);
 
   onMount(async () => {
+    // Enable tutorial mode
+    enableTutorial();
+
     // Initialize WebGL first
     initializeWebGL();
 
@@ -32,6 +37,7 @@
     <div class="absolute inset-0">
       <GameUi />
       <GameCanva />
+      <TutorialDialog />
     </div>
   {/if}
 
