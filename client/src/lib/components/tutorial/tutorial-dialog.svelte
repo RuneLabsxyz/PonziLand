@@ -6,6 +6,8 @@
   import { selectedLand } from '$lib/stores/store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { ChevronLeft, ChevronRight } from 'lucide-svelte';
+  import { Button } from '$lib/components/ui/button';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
   let showNavigation = $derived(
@@ -23,12 +25,19 @@
   });
 
   onMount(() => {
+    widgetsStore.resetToDefault();
+    widgetsStore.closeWidget('disclaimer');
     settingsStore.toggleNoobMode();
     tutorialState.tutorialStep = 1;
     setTimeout(() => {
       nextStep();
     }, 5000);
   });
+
+  function enterGrid() {
+    widgetsStore.resetToDefault();
+    window.location.href = '/game';
+  }
 </script>
 
 <div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
@@ -47,6 +56,15 @@
         <div class="flex-1 text-sm">
           {@html currentDialog.text}
         </div>
+        {#if tutorialState.tutorialStep === 10}
+          <Button
+            onclick={() => {
+              enterGrid();
+            }}
+          >
+            Enter the Grid
+          </Button>
+        {/if}
       {/if}
     </div>
     {#if showNavigation}

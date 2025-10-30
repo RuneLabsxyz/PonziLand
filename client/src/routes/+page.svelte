@@ -147,14 +147,21 @@
     />
   {/if}
 
-  <Button
-    variant="red"
-    size="lg"
-    onclick={startGame}
-    class="z-[3] text-3xl px-12 py-4 font-bold"
-  >
-    PLAY
-  </Button>
+  <div class="flex flex-row gap-4">
+    <Button
+      variant="red"
+      size="lg"
+      onclick={startGame}
+      class="z-[3] text-3xl px-12 py-4 font-bold"
+    >
+      PLAY
+    </Button>
+    <a href="/tutorial" class="z-[3]">
+      <Button variant="red" size="lg" class="text-3xl px-12 py-4 font-bold">
+        Tutorial
+      </Button>
+    </a>
+  </div>
 </main>
 
 <style>
