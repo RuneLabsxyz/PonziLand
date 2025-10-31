@@ -12,7 +12,7 @@ use chaindata_repository::LandHistoricalRepository;
 use chrono::{DateTime, Utc};
 use ponziland_models::models::{CloseReason, LandHistorical};
 use tokio::select;
-use tokio::sync::{broadcast, Mutex};
+use tokio::sync::{mpsc, Mutex};
 use torii_ingester::prelude::ContractAddress;
 use tracing::{debug, error, info};
 
@@ -26,17 +26,17 @@ use super::Task;
 /// - `LandNukedEvent` - Closes positions when land is nuked
 /// - `LandTransferEvent` - Tracks token flows (inflows/outflows) for open positions
 pub struct LandHistoricalListenerTask {
-    event_receiver: Arc<Mutex<broadcast::Receiver<FetchedEvent>>>,
+    event_receiver: Mutex<Option<mpsc::Receiver<FetchedEvent>>>,
     land_historical_repository: Arc<LandHistoricalRepository>,
 }
 
 impl LandHistoricalListenerTask {
     pub fn new(
-        event_receiver: broadcast::Receiver<FetchedEvent>,
+        event_receiver: mpsc::Receiver<FetchedEvent>,
         land_historical_repository: Arc<LandHistoricalRepository>,
     ) -> Self {
         Self {
-            event_receiver: Arc::new(Mutex::new(event_receiver)),
+            event_receiver: Mutex::new(Some(event_receiver)),
             land_historical_repository,
         }
     }
@@ -358,30 +358,31 @@ impl Task for LandHistoricalListenerTask {
     async fn do_task(self: std::sync::Arc<Self>, mut rx: tokio::sync::oneshot::Receiver<()>) {
         info!("Starting LandHistoricalListenerTask receiving events from EventListenerTask");
 
+        // Take the channel for itself (no concurrent fights)
+        let mut event_receiver = self
+            .event_receiver
+            .lock()
+            .await
+            .take()
+            .expect("Multiple do_task has been called! This should not happen");
+
         let mut event_count = 0;
 
         loop {
             select! {
                 // Process events from the channel
-                event_result = async { self.event_receiver.lock().await.recv().await } => {
-                    match event_result {
-                        Ok(event) => {
-                            event_count += 1;
-                            debug!("Received event from EventListenerTask");
-                            self.process_event(event.data, event.id, event.at.and_utc()).await;
+                event_result = async { event_receiver.recv().await } => {
+                    if let Some(event) = event_result {
+                        event_count += 1;
+                        debug!("Received event from EventListenerTask");
+                        self.process_event(event.data, event.id, event.at.and_utc()).await;
 
-                            if event_count % 10 == 0 {
-                                info!("Processed {} land ownership events", event_count);
-                            }
+                        if event_count % 10 == 0 {
+                            info!("Processed {} land ownership events", event_count);
                         }
-                        Err(broadcast::error::RecvError::Closed) => {
-                            error!("Event channel closed, stopping land historical listener");
-                            return;
-                        }
-                        Err(broadcast::error::RecvError::Lagged(n)) => {
-                            error!("Land historical listener lagged by {} events", n);
-                            // Continue processing
-                        }
+                    } else {
+                        error!("Event channel closed, stopping land historical listener");
+                        return;
                     }
                 },
                 // Handle stop signal

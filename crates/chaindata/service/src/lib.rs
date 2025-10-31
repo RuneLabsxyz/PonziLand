@@ -11,7 +11,7 @@ use tasks::{
     event_listener::EventListenerTask, land_historical_listener::LandHistoricalListenerTask,
     model_listener::ModelListenerTask, Task, TaskWrapper,
 };
-use tokio::sync::broadcast;
+use tokio::sync::mpsc;
 use torii_ingester::{ToriiClient, ToriiConfiguration};
 
 /// `ChainDataService` is a service that handles the importation and syncing of new events and data
@@ -50,7 +50,7 @@ impl ChainDataService {
         let land_historical_repository = Arc::new(LandHistoricalRepository::new(database.clone()));
 
         // Create a broadcast channel for event communication
-        let (event_sender, event_receiver) = broadcast::channel(1000);
+        let (event_sender, event_receiver) = mpsc::channel(10);
 
         Ok(Arc::new(Self {
             event_listener_task: EventListenerTask::new(
