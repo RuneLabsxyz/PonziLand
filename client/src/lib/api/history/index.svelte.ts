@@ -277,39 +277,39 @@ export class AccountHistory {
     limit: number,
   ): string {
     let whereClause = `
-      WHERE (lne.internal_event_id IS NOT NULL OR lbe.internal_event_id IS NOT NULL)
-        AND (lne.owner_nuked = '${address}' OR lbe.seller = '${address}')
+      WHERE
+        (em.data ->> '$.seller') = '${address}'
+        OR (em.data ->> '$.owner_nuked') = '${address}'
     `;
 
     // Add timestamp constraints for pagination
     if (timestampConstraint) {
       if (timestampConstraint.before !== undefined) {
-        whereClause += ` AND e.created_at < ${timestampConstraint.before}`;
+        whereClause += ` AND em.created_at < ${timestampConstraint.before}`;
       }
       if (timestampConstraint.after !== undefined) {
-        whereClause += ` AND e.created_at > ${timestampConstraint.after}`;
+        whereClause += ` AND em.created_at > ${timestampConstraint.after}`;
       }
     }
 
     return `
       SELECT
-        e.event_id as id,
+        em.id as id,
         m.name as model_name,
-        lbe.seller,
-        lbe.buyer,
-        lbe.sold_price,
-        lbe.token_used,
-        lbe.land_location as lbe_land_location,
-        lne.owner_nuked,
-        lne.land_location as lne_land_location,
-        e.created_at
-      FROM event_messages_historical e
-      JOIN event_model em ON e.id = em.entity_id
-      JOIN models m ON m.id = em.model_id
-      LEFT JOIN "ponzi_land-LandNukedEvent" lne ON lne.internal_event_id = e.event_id
-      LEFT JOIN "ponzi_land-LandBoughtEvent" lbe ON lbe.internal_event_id = e.event_id
+        em.created_at as created_at,
+        -- Common
+        (em.data ->> '$.buyer') as buyer,
+        (em.data ->> '$.land_location') as location,
+        -- Land bought event
+        (em.data ->> '$.seller') as seller,
+        (em.data ->> '$.sold_price') as sold_price,
+        (em.data ->> '$.token_used') as token_used,
+        -- Land nuked event
+        (em.data ->> '$.owner_nuked') as owner
+      FROM event_messages_historical em
+      LEFT JOIN models m ON em.model_id = m.id
       ${whereClause}
-      ORDER BY e.created_at DESC
+      ORDER BY em.created_at DESC
       LIMIT ${limit}
     `;
   }
@@ -381,7 +381,7 @@ export class AccountHistory {
       if (eventType === 'LandBoughtEvent') {
         const token = raw.token_used ? getTokenInfo(raw.token_used) : null;
         const soldPrice = BigInt(raw.sold_price || 0);
-        const landLocation = toLocation(raw.lbe_land_location || 0);
+        const landLocation = toLocation(raw.location || 0);
 
         return {
           ...baseEvent,
@@ -397,12 +397,12 @@ export class AccountHistory {
           landLocation,
         } as LandBoughtHistoryEvent;
       } else if (eventType === 'LandNukedEvent') {
-        const landLocation = toLocation(raw.lne_land_location || 0);
+        const landLocation = toLocation(raw.location || 0);
 
         return {
           ...baseEvent,
           type: 'LandNukedEvent',
-          ownerNuked: raw.owner_nuked,
+          ownerNuked: raw.owner,
           landLocation,
         } as LandNukedHistoryEvent;
       }
