@@ -6,7 +6,7 @@ use chrono::Utc;
 use ponziland_models::events::EventData;
 use sqlx::error::DatabaseError;
 use tokio::select;
-use tokio::sync::broadcast;
+use tokio::sync::mpsc;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
@@ -18,14 +18,16 @@ use super::Task;
 pub struct EventListenerTask {
     client: Arc<ToriiClient>,
     event_repository: Arc<EventRepository>,
-    event_sender: broadcast::Sender<FetchedEvent>,
+    // SAFETY: We voluntarily use a mpsc that is blocking for the processing of events to make sure the stream is blocked while the subsequent processing
+    //         happens, to avoid lagging behind the catch-up process.
+    event_sender: mpsc::Sender<FetchedEvent>,
 }
 
 impl EventListenerTask {
     pub fn new(
         client: Arc<ToriiClient>,
         event_repository: Arc<EventRepository>,
-        event_sender: broadcast::Sender<FetchedEvent>,
+        event_sender: mpsc::Sender<FetchedEvent>,
     ) -> Self {
         Self {
             client,
@@ -102,7 +104,7 @@ impl EventListenerTask {
         );
 
         if should_forward {
-            if let Err(e) = self.event_sender.send(event) {
+            if let Err(e) = self.event_sender.send(event).await {
                 debug!("No active receivers for event: {:?}", e);
             } else {
                 debug!("Forwarded event to land historical listener");
