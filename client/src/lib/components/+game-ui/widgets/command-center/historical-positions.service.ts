@@ -1,3 +1,5 @@
+import { PUBLIC_PONZI_API_URL } from '$env/static/public';
+
 export interface TokenFlow {
   [tokenAddress: string]: string; // hex amount
 }

@@ -132,6 +132,11 @@
       </div>
       <div class="text-xs text-gray-400">
         {formatDate(position.time_bought)}
+        {#if isAuctionBuy}
+          <span class="text-blue-400 ml-1">(auction)</span>
+        {:else}
+          <span class="text-purple-400 ml-1">(player)</span>
+        {/if}
       </div>
       <div class="text-xs">
         {#if isOpen}
@@ -140,9 +145,6 @@
           <span class={getStatusColor(position.close_reason)}>
             {position.close_reason.toUpperCase()}
           </span>
-        {/if}
-        {#if isAuctionBuy}
-          <span class="text-gray-500 ml-1">(auction)</span>
         {/if}
       </div>
       <div class="text-xs text-gray-400">
