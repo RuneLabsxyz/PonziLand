@@ -8,7 +8,13 @@
   import { claimQueue } from '$lib/stores/event.store.svelte';
   import { BuildingLand } from '$lib/api/land/building_land';
   import { createLandWithActions } from '$lib/utils/land-actions';
-  import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
+  import {
+    getAggregatedTaxes,
+    type TaxData,
+    calculateTaxes,
+    calculateBurnRate,
+  } from '$lib/utils/taxes';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import {
     coordinatesToLocation,
     padAddress,
@@ -40,6 +46,26 @@
     landWithActions: any;
   } | null>(null);
   let claimSimulationError = $state<string | null>(null);
+
+  // Tax comparison state
+  let taxComparisonLoading = $state(false);
+  let taxComparisonResult = $state<{
+    rpcTaxes: TaxData[];
+    jsComputedTaxes: {
+      tokenAddress: string;
+      tokenSymbol: string;
+      amount: number;
+    }[];
+    comparisons: {
+      tokenAddress: string;
+      tokenSymbol: string;
+      rpcValue: number;
+      jsValue: number;
+      percentDiff: number;
+      isOutOfRange: boolean;
+    }[];
+  } | null>(null);
+  let taxComparisonError = $state<string | null>(null);
 
   let selectedLocation = $derived.by(() => {
     let land = selectedLand.value;
@@ -176,6 +202,98 @@
         e instanceof Error ? e.message : 'Unknown error occurred';
     } finally {
       claimSimulationLoading = false;
+    }
+  }
+
+  async function compareTaxValues() {
+    if (!land || land.type !== 'building') {
+      taxComparisonError = 'No building land selected for tax comparison';
+      return;
+    }
+
+    try {
+      taxComparisonLoading = true;
+      taxComparisonError = null;
+      taxComparisonResult = null;
+
+      // Create LandWithActions from current land
+      const landWithActions = createLandWithActions(
+        land as BuildingLand,
+        landStore.getAllLands,
+      );
+
+      if (!landWithActions) {
+        throw new Error('Failed to create LandWithActions from selected land');
+      }
+
+      // Get RPC values (actual blockchain data)
+      const rpcResult = await getAggregatedTaxes(landWithActions);
+
+      // Get JS computed values
+      const neighborCount = landWithActions
+        .getNeighbors()
+        .getBaseLandsArray().length;
+      const sellPrice = landWithActions.sellPrice.rawValue().toNumber();
+
+      // Calculate JS tax per neighbor using the calculateTaxes function
+      const jsComputedTaxPerNeighbor = calculateTaxes(sellPrice);
+      const jsComputedTotalTax = jsComputedTaxPerNeighbor * neighborCount;
+
+      // For JS computed taxes, we'll use the land's token
+      const jsComputedTaxes = [
+        {
+          tokenAddress: landWithActions.token?.address || '',
+          tokenSymbol: landWithActions.token?.symbol || '???',
+          amount: jsComputedTotalTax,
+        },
+      ];
+
+      // Create comparisons
+      const comparisons = rpcResult.taxes.map((rpcTax) => {
+        // Find matching JS computed tax by token
+        const matchingJsTax = jsComputedTaxes.find(
+          (jsTax) =>
+            jsTax.tokenAddress.toLowerCase() ===
+            rpcTax.tokenAddress.toLowerCase(),
+        );
+
+        const rpcValue = rpcTax.totalTax.rawValue().toNumber();
+        const jsValue = matchingJsTax?.amount || 0;
+
+        // Calculate percentage difference
+        const percentDiff =
+          rpcValue === 0
+            ? jsValue === 0
+              ? 0
+              : 100
+            : Math.abs((jsValue - rpcValue) / rpcValue) * 100;
+
+        // Check if difference is outside ±5% margin
+        const isOutOfRange = percentDiff > 5;
+
+        return {
+          tokenAddress: rpcTax.tokenAddress,
+          tokenSymbol: rpcTax.tokenSymbol,
+          rpcValue,
+          jsValue,
+          percentDiff,
+          isOutOfRange,
+        };
+      });
+
+      taxComparisonResult = {
+        rpcTaxes: rpcResult.taxes,
+        jsComputedTaxes,
+        comparisons,
+      };
+
+      console.log('Tax comparison completed:', taxComparisonResult);
+    } catch (e) {
+      console.error('Error in tax comparison:', e);
+      taxComparisonError =
+        e instanceof Error ? e.message : 'Unknown error occurred';
+    } finally {
+      taxComparisonLoading = false;
     }
   }
 
@@ -495,6 +613,54 @@
         title="Trigger the postclaim frontend animations"
         disabled={false}
       />
+    {/if}
+  </Folder>
+
+  <Folder title="Tax Comparison (JS vs RPC)" expanded={false}>
+    <Button
+      on:click={() => compareTaxValues()}
+      label="Compare Tax Values"
+      title="Compare JavaScript computed taxes with RPC values"
+      disabled={taxComparisonLoading}
+    />
+    <Monitor value={taxComparisonLoading} label="Loading" />
+
+    {#if taxComparisonError}
+      <Monitor value={taxComparisonError} label="Error" />
+    {/if}
+
+    {#if taxComparisonResult}
+      <Monitor
+        value={taxComparisonResult.comparisons.length}
+        label="Comparisons"
+      />
+
+      {#each taxComparisonResult.comparisons as comparison, i}
+        <Folder title={`${comparison.tokenSymbol} Comparison`} expanded={true}>
+          <Monitor value={comparison.rpcValue.toFixed(6)} label="RPC Value" />
+          <Monitor value={comparison.jsValue.toFixed(6)} label="JS Computed" />
+          <Monitor
+            value={`${comparison.percentDiff.toFixed(2)}%`}
+            label="Difference %"
+          />
+          <Monitor
+            value={comparison.isOutOfRange ? 'OUT OF RANGE' : 'Within 5%'}
+            label="Status"
+          />
+          {#if comparison.isOutOfRange}
+            <Monitor value="⚠️ OUTSIDE SAFE MARGIN" label="Warning" />
+          {/if}
+        </Folder>
+      {/each}
+
+      {#if taxComparisonResult.comparisons.some((c) => c.isOutOfRange)}
+        <Monitor
+          value="Some values are outside ±5% margin!"
+          label="⚠️ Warning"
+        />
+      {:else}
+        <Monitor value="All values within safe margin" label="✅ Status" />
+      {/if}
     {/if}
   </Folder>
 
