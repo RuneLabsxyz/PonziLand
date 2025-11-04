@@ -41,7 +41,6 @@ export function calculateAuctionPrice(
   const startPriceBig = startPrice;
   const floorPriceBig = floorPrice;
 
-  // If auction duration has passed, return floor price (not 0)
   if (timePassed >= BigInt(configValues.auctionDuration)) {
     return BigInt(0);
   }
