@@ -34,7 +34,7 @@ export async function fetchHistoricalPositions(
     }
 
     const response = await fetch(
-      `http://localhost:3031/land-historical/${formattedAddress}`,
+      `${PUBLIC_PONZI_API_URL}/land-historical/${formattedAddress}`,
     );
 
     if (!response.ok) {
