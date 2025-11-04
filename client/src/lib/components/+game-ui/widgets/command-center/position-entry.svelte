@@ -15,7 +15,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import { ChevronDown, ChevronUp } from 'lucide-svelte';
-  import { formatTimestamp } from '../history/utils';
+  import { formatTimestamp, formatTimestampRelative } from '../history/utils';
   import type { HistoricalPosition } from './historical-positions.service';
 
   interface Props {
@@ -396,9 +396,11 @@
             {/if}
           </div>
           {#if Object.keys(position.token_inflows).length > 0}
+            {@const fullTokenInfo = getFullTokenInfo(
+              Object.keys(position.token_inflows)[0],
+            )}
             <div class="space-y-1">
               {#each Object.entries(position.token_inflows) as [token, amount]}
-                {@const fullTokenInfo = getFullTokenInfo(token)}
                 {#if fullTokenInfo}
                   <div class=" flex justify-between items-center">
                     <div class="flex items-center gap-2 min-w-0">
@@ -420,55 +422,6 @@
                     </div>
                     <span class="text-green-400 ml-2 flex-shrink-0">
                       +{CurrencyAmount.fromUnscaled(
-                        amount,
-                        fullTokenInfo.token,
-                      )}
-                    </span>
-                  </div>
-                {/if}
-              {/each}
-            </div>
-          {:else}
-            <div class=" text-gray-600">No inflows</div>
-          {/if}
-        </div>
-
-        <!-- Token Outflows -->
-        <div>
-          <div class="flex justify-between items-center mb-2">
-            <h4 class="text-gray-400">Token Outflows</h4>
-            {#if totalOutflowBaseEquivalent && !totalOutflowBaseEquivalent.isZero()}
-              <div class="text-sm text-red-400">
-                Total: {totalOutflowBaseEquivalent.toString()}
-                {getBaseToken().symbol}
-              </div>
-            {/if}
-          </div>
-          {#if Object.keys(position.token_outflows).length > 0}
-            <div class="space-y-1">
-              {#each Object.entries(position.token_outflows) as [token, amount]}
-                {@const fullTokenInfo = getFullTokenInfo(token)}
-                {#if fullTokenInfo}
-                  <div class=" flex justify-between items-center">
-                    <div class="flex items-center gap-2 min-w-0">
-                      <Avatar.Root class="h-5 w-5 flex-shrink-0">
-                        <Avatar.Image
-                          src={fullTokenInfo.metadata?.icon}
-                          alt={fullTokenInfo.token.symbol}
-                        />
-                        <Avatar.Fallback class="text-[8px]"
-                          >{fullTokenInfo.token.symbol.slice(
-                            0,
-                            3,
-                          )}</Avatar.Fallback
-                        >
-                      </Avatar.Root>
-                      <span class="text-gray-400 truncate" title={token}>
-                        {fullTokenInfo.token.symbol}
-                      </span>
-                    </div>
-                    <span class="text-red-400 ml-2 flex-shrink-0">
-                      -{CurrencyAmount.fromUnscaled(
                         amount,
                         fullTokenInfo.token,
                       )}
