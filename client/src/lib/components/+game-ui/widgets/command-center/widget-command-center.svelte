@@ -1,12 +1,12 @@
 <script lang="ts">
-  import Button from '$lib/components/ui/button/button.svelte';
-  import HistoryList from '../history/history-list.svelte';
-  import HistoricalPositions from './historical-positions.svelte';
   import { accountHistory } from '$lib/api/history/index.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { padAddress } from '$lib/utils';
-  import { onMount, onDestroy } from 'svelte';
-  import type { Snippet } from 'svelte';
+  import { cn, padAddress } from '$lib/utils';
+  import { onDestroy, onMount } from 'svelte';
+  import HistoryList from '../history/history-list.svelte';
+  import LandExplorer from '../market/land-explorer.svelte';
+  import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
+  import HistoricalPositions from './historical-positions.svelte';
 
   const dojo = useDojo();
   const account = () => {
@@ -14,9 +14,11 @@
   };
 
   let refreshInterval: NodeJS.Timeout;
-  let activeTab = $state<'history' | 'positions'>('history');
+  let activeTab = $state<'history' | 'positions' | 'market' | 'my-lands'>(
+    'history',
+  );
 
-  function setActiveTab(tab: 'history' | 'positions') {
+  function setActiveTab(tab: 'history' | 'positions' | 'market' | 'my-lands') {
     activeTab = tab;
   }
 
@@ -51,21 +53,64 @@
 
 <div class="command-center-widget h-full w-full flex flex-col">
   <!-- Tab Navigation -->
-  <div class="flex gap-2 w-full justify-center mt-2 px-4">
-    <Button
-      class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
-      variant={activeTab === 'history' ? 'blue' : undefined}
+  <div class="flex gap-1 mt-2 px-2">
+    <button
+      class="flex items-center justify-center h-8 w-8"
       onclick={() => setActiveTab('history')}
     >
-      HISTORY
-    </Button>
-    <Button
-      class="w-full {activeTab === 'positions' ? '' : 'opacity-50'}"
-      variant={activeTab === 'positions' ? 'blue' : undefined}
+      <img
+        src="/ui/icons/Icon_Book.png"
+        alt="History"
+        class={cn('h-6 w-6', {
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'history',
+        })}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
       onclick={() => setActiveTab('positions')}
     >
-      POSITIONS
-    </Button>
+      <img
+        src="/ui/icons/Icon_Building1_Thin.png"
+        alt="Positions"
+        class={cn('h-6 w-6', {
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+            activeTab === 'positions',
+        })}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
+      onclick={() => setActiveTab('market')}
+    >
+      <img
+        src="/ui/icons/Icon_Auction.png"
+        alt="Market"
+        class={cn('h-6 w-6', {
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
+        })}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
+      onclick={() => setActiveTab('my-lands')}
+    >
+      <img
+        src="/ui/icons/Icon_Crown.png"
+        alt="My Lands"
+        class={cn('h-6 w-6', {
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'my-lands',
+        })}
+      />
+    </button>
+  </div>
+  <div
+    class="w-full flex justify-center items-center bg-black font-ponzi-number p-2 text-xs opacity-50 capitalize"
+  >
+    {activeTab.replace('-', ' ')}
   </div>
 
   <!-- Tab Content -->
@@ -74,6 +119,10 @@
       <HistoryList />
     {:else if activeTab === 'positions'}
       <HistoricalPositions />
+    {:else if activeTab === 'market'}
+      <LandExplorer />
+    {:else if activeTab === 'my-lands'}
+      <MyLandsWidget />
     {/if}
   </div>
 </div>
