@@ -269,7 +269,7 @@
       <div class="text-right">
         {#if netTokenFlow && !netTokenFlow.isZero()}
           <span class={netTokenFlow.rawValue().isPositive() ? 'text-green-400' : 'text-red-400'}>
-            {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow.toString()}
+            {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow.rawValue().toNumber().toFixed(2)} $
           </span>
         {:else}
           <span class="text-gray-500">-</span>
