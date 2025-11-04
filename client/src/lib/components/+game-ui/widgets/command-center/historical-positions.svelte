@@ -178,12 +178,6 @@
           <div class="text-right">Sale P&L</div>
           <div class="text-right">P&L</div>
         </div>
-        <!-- Active Positions Section -->
-        {#if activePositions.length > 0}
-          {#each activePositions as position (position.id)}
-            <PositionEntry {position} {isPositionOpen} />
-          {/each}
-        {/if}
 
         <!-- Closed Positions Section -->
         {#if closedPositions.length > 0}
