@@ -11,7 +11,12 @@
   } from './historical-positions.service';
   import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import { originalBaseToken, walletStore } from '$lib/stores/wallet.svelte';
+  import {
+    baseToken,
+    getBaseToken,
+    originalBaseToken,
+    walletStore,
+  } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
   import { formatTimestamp, formatTimestampRelative } from '../history/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
@@ -87,6 +92,64 @@
   let sellAmount = $derived(
     CurrencyAmount.fromScaled(position.sale_revenue_token || '0', saleToken),
   );
+
+  // Calculate total token inflow in base token equivalent
+  let totalInflowBaseEquivalent = $derived.by(() => {
+    const baseToken = getBaseToken();
+    let total = CurrencyAmount.fromScaled(0, baseToken);
+
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_inflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          inflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          total = total.add(convertedAmount);
+        }
+      }
+    }
+
+    return total;
+  });
+
+  // Calculate total token outflow in base token equivalent
+  let totalOutflowBaseEquivalent = $derived.by(() => {
+    const baseToken = getBaseToken();
+    let total = CurrencyAmount.fromScaled(0, baseToken);
+
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          outflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          total = total.add(convertedAmount);
+        }
+      }
+    }
+
+    return total;
+  });
+
+  // Calculate net token flow (inflow - outflow) in base token equivalent
+  let netTokenFlow = $derived.by(() => {
+    if (!totalInflowBaseEquivalent || !totalOutflowBaseEquivalent) return null;
+    const baseToken = getBaseToken();
+    const netValue = totalInflowBaseEquivalent.rawValue().minus(totalOutflowBaseEquivalent.rawValue());
+    return CurrencyAmount.fromRaw(netValue, baseToken);
+  });
 </script>
 
 <div
@@ -102,7 +165,7 @@
     {#if isOpen}
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
     {/if}
-    <div class="grid grid-cols-7 gap-2 items-center tracking-wide">
+    <div class="grid grid-cols-8 gap-2 items-center tracking-wide">
       <div class="flex items-center gap-2">
         <span class="text-gray-300 tracking-wide"
           >{coordinates.x}, {coordinates.y}</span
@@ -201,6 +264,18 @@
           <span class="text-gray-500">-</span>
         {/if}
       </div>
+
+      <!-- Net Flow Column -->
+      <div class="text-right">
+        {#if netTokenFlow && !netTokenFlow.isZero()}
+          <span class={netTokenFlow.rawValue().isPositive() ? 'text-green-400' : 'text-red-400'}>
+            {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow.toString()}
+          </span>
+        {:else}
+          <span class="text-gray-500">-</span>
+        {/if}
+      </div>
+
       <div
         class="text-right {isOpen
           ? 'text-gray-500'
@@ -214,10 +289,19 @@
   <!-- Expanded Details -->
   {#if expanded}
     <div class="px-4 pb-4 bg-black/20">
+
       <div class="grid grid-cols-2 gap-4 mt-2">
         <!-- Token Inflows -->
         <div>
-          <h4 class=" text-gray-400 mb-2">Token Inflows</h4>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-gray-400">Token Inflows</h4>
+            {#if totalInflowBaseEquivalent && !totalInflowBaseEquivalent.isZero()}
+              <div class="text-sm text-blue-400">
+                Total: {totalInflowBaseEquivalent.toString()}
+                {getBaseToken().symbol}
+              </div>
+            {/if}
+          </div>
           {#if Object.keys(position.token_inflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_inflows) as [token, amount]}
@@ -242,7 +326,10 @@
                       </span>
                     </div>
                     <span class="text-green-400 ml-2 flex-shrink-0">
-                      +{amount}
+                      +{CurrencyAmount.fromUnscaled(
+                        amount,
+                        fullTokenInfo.token,
+                      )}
                     </span>
                   </div>
                 {/if}
@@ -255,7 +342,15 @@
 
         <!-- Token Outflows -->
         <div>
-          <h4 class=" text-gray-400 mb-2">Token Outflows</h4>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-gray-400">Token Outflows</h4>
+            {#if totalOutflowBaseEquivalent && !totalOutflowBaseEquivalent.isZero()}
+              <div class="text-sm text-red-400">
+                Total: {totalOutflowBaseEquivalent.toString()}
+                {getBaseToken().symbol}
+              </div>
+            {/if}
+          </div>
           {#if Object.keys(position.token_outflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_outflows) as [token, amount]}
@@ -280,7 +375,10 @@
                       </span>
                     </div>
                     <span class="text-red-400 ml-2 flex-shrink-0">
-                      -{amount}
+                      -{CurrencyAmount.fromUnscaled(
+                        amount,
+                        fullTokenInfo.token,
+                      )}
                     </span>
                   </div>
                 {/if}
