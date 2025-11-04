@@ -7,6 +7,15 @@
   import LandExplorer from '../market/land-explorer.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from './historical-positions.svelte';
+  import { Separator } from '$lib/components/ui/separator';
+  import type { Snippet } from 'svelte';
+
+  type Props = {
+    setCustomTitle?: (title: Snippet<[]> | null) => void;
+    setCustomControls?: (controls: Snippet<[]> | null) => void;
+  };
+
+  let { setCustomTitle, setCustomControls }: Props = $props();
 
   const dojo = useDojo();
   const account = () => {
@@ -49,11 +58,30 @@
       clearInterval(refreshInterval);
     }
   });
+
+  // Set custom title and controls if provided
+  $effect(() => {
+    if (setCustomTitle) {
+      setCustomTitle(customTitleSnippet);
+    }
+  });
 </script>
 
-<div class="command-center-widget h-full w-full flex flex-col">
-  <!-- Tab Navigation -->
-  <div class="flex gap-1 mt-2 px-2">
+{#snippet customTitleSnippet()}
+  <div class="flex items-center gap-1">
+    <img
+      src="/ui/icons/Icon_Building1_Thin.png"
+      alt="Command Center"
+      class={cn('h-4 w-4')}
+    />
+    <span class="font-ponzi-number text-xs capitalize mr-2">
+      Command Center
+    </span>
+  </div>
+{/snippet}
+
+<div class="flex flex-col w-full h-full min-h-0">
+  <div class="flex gap-1 my-2">
     <button
       class="flex items-center justify-center h-8 w-8"
       onclick={() => setActiveTab('history')}
@@ -72,7 +100,7 @@
       onclick={() => setActiveTab('positions')}
     >
       <img
-        src="/ui/icons/Icon_Building1_Thin.png"
+        src="/ui/icons/IconTiny_Stats.png"
         alt="Positions"
         class={cn('h-6 w-6', {
           'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
@@ -107,14 +135,15 @@
       />
     </button>
   </div>
+
   <div
     class="w-full flex justify-center items-center bg-black font-ponzi-number p-2 text-xs opacity-50 capitalize"
   >
     {activeTab.replace('-', ' ')}
   </div>
 
-  <!-- Tab Content -->
-  <div class="flex-1 mt-4 min-h-0">
+  <div class="h-full w-full flex flex-col min-h-0">
+    <!-- Tab Content -->
     {#if activeTab === 'history'}
       <HistoryList />
     {:else if activeTab === 'positions'}
