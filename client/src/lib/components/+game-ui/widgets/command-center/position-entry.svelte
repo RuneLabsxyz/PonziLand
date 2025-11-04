@@ -1,14 +1,22 @@
 <script lang="ts">
-  import { locationToCoordinates, getTokenMetadata } from '$lib/utils';
-  import type {
-    HistoricalPosition,
-    TokenFlow,
-  } from './historical-positions.service';
-  import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import { walletStore } from '$lib/stores/wallet.svelte';
+  import type { Token } from '$lib/interfaces';
+  import {
+    getBaseToken,
+    originalBaseToken,
+    walletStore,
+  } from '$lib/stores/wallet.svelte';
+  import {
+    getFullTokenInfo,
+    getTokenInfo,
+    getTokenMetadata,
+    locationToCoordinates,
+  } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import { formatTimestamp, formatTimestampRelative } from '../history/utils';
+  import { ChevronDown, ChevronUp } from 'lucide-svelte';
+  import { formatTimestamp } from '../history/utils';
+  import type { HistoricalPosition } from './historical-positions.service';
 
   interface Props {
     position: HistoricalPosition;
@@ -22,57 +30,6 @@
 
   function toggleExpanded() {
     expanded = !expanded;
-  }
-
-  // Get token information from address
-  function getTokenInfo(address: string) {
-    // Try with one leading zero first
-    let formattedAddress = address;
-    if (address.startsWith('0x')) {
-      formattedAddress = '0x0' + address.slice(2);
-    }
-
-    let token = data.availableTokens.find(
-      (t) => t.address === formattedAddress,
-    );
-
-    // If not found, try with two leading zeros
-    if (!token && address.startsWith('0x')) {
-      formattedAddress = '0x00' + address.slice(2);
-      token = data.availableTokens.find((t) => t.address === formattedAddress);
-    }
-
-    if (token) {
-      const metadata = getTokenMetadata(token.skin);
-      return {
-        symbol: token.symbol,
-        icon: metadata?.icon || '/tokens/default/icon.png',
-      };
-    }
-
-    return {
-      symbol: `0x${address.slice(2, 5)}...${address.slice(-4)}`,
-      icon: '/tokens/default/icon.png',
-    };
-  }
-
-  // Convert hex string to number and format
-  function formatTokenAmount(hexAmount: string | null): string {
-    if (!hexAmount) return '0';
-
-    try {
-      const num = BigInt(hexAmount);
-      const decimals = 18; // Assuming 18 decimals, adjust if needed
-      const divisor = BigInt(10 ** decimals);
-      const whole = num / divisor;
-      const remainder = num % divisor;
-
-      // Format with 4 decimal places
-      const decimal = remainder.toString().padStart(decimals, '0').slice(0, 4);
-      return `${whole}.${decimal}`;
-    } catch {
-      return '0';
-    }
   }
 
   function formatDate(dateString: string): string {
@@ -91,6 +48,140 @@
 
   const coordinates = $derived(locationToCoordinates(position.land_location));
   const isAuctionBuy = $derived(position.buy_token_used === null);
+
+  let buyToken: Token | undefined = $derived.by(() => {
+    if (position.buy_token_used) {
+      return getTokenInfo(position.buy_token_used);
+    } else {
+      return originalBaseToken;
+    }
+  });
+
+  let saleToken: Token | undefined = $derived.by(() => {
+    if (position.sale_token_used) {
+      return getTokenInfo(position.sale_token_used);
+    } else {
+      return originalBaseToken;
+    }
+  });
+
+  let buyAmount = $derived(
+    CurrencyAmount.fromUnscaled(position.buy_cost_token, buyToken),
+  );
+
+  let sellAmount = $derived(
+    CurrencyAmount.fromScaled(position.sale_revenue_token || '0', saleToken),
+  );
+
+  // Calculate total token inflow in base token equivalent
+  let totalInflowBaseEquivalent = $derived.by(() => {
+    const baseToken = getBaseToken();
+    let total = CurrencyAmount.fromScaled(0, baseToken);
+
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_inflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          inflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          total = total.add(convertedAmount);
+        }
+      }
+    }
+
+    return total;
+  });
+
+  // Calculate total token outflow in base token equivalent
+  let totalOutflowBaseEquivalent = $derived.by(() => {
+    const baseToken = getBaseToken();
+    let total = CurrencyAmount.fromScaled(0, baseToken);
+
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          outflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          total = total.add(convertedAmount);
+        }
+      }
+    }
+
+    return total;
+  });
+
+  // Calculate net token flow (inflow - outflow) in base token equivalent
+  let netTokenFlow = $derived.by(() => {
+    if (!totalInflowBaseEquivalent || !totalOutflowBaseEquivalent) return null;
+    const baseToken = getBaseToken();
+    const netValue = totalInflowBaseEquivalent
+      .rawValue()
+      .minus(totalOutflowBaseEquivalent.rawValue());
+    return CurrencyAmount.fromRaw(netValue, baseToken);
+  });
+
+  // Calculate buy cost in base token equivalent
+  let buyCostBaseEquivalent = $derived.by(() => {
+    if (!buyToken || !buyAmount) return null;
+    const baseToken = getBaseToken();
+    return walletStore.convertTokenAmount(buyAmount, buyToken, baseToken);
+  });
+
+  // Calculate sale revenue in base token equivalent
+  let saleRevenueBaseEquivalent = $derived.by(() => {
+    if (!saleToken || !sellAmount || isOpen) return null;
+    const baseToken = getBaseToken();
+    return walletStore.convertTokenAmount(sellAmount, saleToken, baseToken);
+  });
+
+  // Calculate net sale profit (sale revenue - buy cost) in base token equivalent
+  let netSaleProfit = $derived.by(() => {
+    if (!buyCostBaseEquivalent || !saleRevenueBaseEquivalent || isOpen)
+      return null;
+    const baseToken = getBaseToken();
+    const netValue = saleRevenueBaseEquivalent
+      .rawValue()
+      .minus(buyCostBaseEquivalent.rawValue());
+    return CurrencyAmount.fromRaw(netValue, baseToken);
+  });
+
+  // Calculate Realized P&L (net flow + sale P&L) in base token equivalent
+  let realizedPnL = $derived.by(() => {
+    const baseToken = getBaseToken();
+
+    if (isOpen) {
+      // For open positions, only show net flow as unrealized
+      return netTokenFlow;
+    } else {
+      // For closed positions, combine net flow + sale P&L
+      if (!netTokenFlow && !netSaleProfit) return null;
+
+      let total = CurrencyAmount.fromScaled(0, baseToken);
+
+      if (netTokenFlow) {
+        total = total.add(netTokenFlow);
+      }
+
+      if (netSaleProfit) {
+        total = total.add(netSaleProfit);
+      }
+
+      return total;
+    }
+  });
 </script>
 
 <div
@@ -109,7 +200,7 @@
     {#if isOpen}
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
     {/if}
-    <div class="grid grid-cols-7 gap-2 items-center tracking-wide">
+    <div class="grid grid-cols-9 gap-2 items-center tracking-wide">
       <div class="flex items-center gap-2">
         <span class="text-gray-300 tracking-wide"
           >{coordinates.x}, {coordinates.y}</span
@@ -164,59 +255,127 @@
       <div class="flex text-gray-400">
         {isOpen ? '-' : formatTimestamp(new Date(position.close_date))}
       </div>
+
+      <!-- Buy Cost -->
       <div class="text-right">
-        <span class="text-white"
-          >{formatTokenAmount(position.buy_cost_token)}</span
-        >
-        <span class="text-gray-500 ml-1">
+        <div>
           {#if position.buy_token_used}
-            {@const buyTokenInfo = getTokenInfo(position.buy_token_used)}
-            {buyTokenInfo.symbol}
-          {:else if isAuctionBuy}
-            {data.mainCurrency}
-          {:else}
-            {data.mainCurrency}
-          {/if}
-        </span>
-      </div>
-      <div class="text-right">
-        {#if isOpen}
-          <span class="text-gray-500">-</span>
-        {:else if position.sale_revenue_token}
-          <span class="text-white"
-            >{formatTokenAmount(position.sale_revenue_token)}</span
-          >
-          <span class="text-gray-500 ml-1">
-            {#if position.sale_token_used}
-              {@const saleTokenInfo = getTokenInfo(position.sale_token_used)}
-              {saleTokenInfo.symbol}
+            {@const tokenInfo = getTokenInfo(position.buy_token_used)}
+            {#if tokenInfo}
+              {@const tokenMeta = getTokenMetadata(tokenInfo.skin)}
+              {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
+                position.buy_cost_token,
+                tokenInfo,
+              )}
+              <span class="text-white">
+                {buyCurrencyAmount.toString()}
+              </span>
+              <span class="text-gray-500 ml-1">
+                {tokenInfo.symbol}
+              </span>
             {:else}
-              {data.mainCurrency}
+              <span class="text-white">
+                {position.buy_cost_token}
+              </span>
+              <span class="text-gray-500 ml-1">
+                {data.mainCurrency}
+              </span>
             {/if}
+          {:else}
+            <span class="text-white">
+              {buyAmount}
+            </span>
+            <span class="text-gray-500 ml-1">
+              {data.mainCurrency}
+            </span>
+          {/if}
+        </div>
+        {#if buyCostBaseEquivalent}
+          <div class="text-xs text-gray-400">
+            ${buyCostBaseEquivalent.rawValue().toNumber().toFixed(2)}
+          </div>
+        {/if}
+      </div>
+
+      <!-- Sale Revenue -->
+      <div class="text-right">
+        <div>
+          {#if isOpen}
+            <span class="text-gray-500">-</span>
+          {:else if position.sale_revenue_token}
+            <span class="text-white">
+              {sellAmount}
+            </span>
+            <span class="text-gray-500 ml-1">
+              {#if position.sale_token_used}
+                {saleToken?.symbol}
+              {:else}
+                {data.mainCurrency}
+              {/if}
+            </span>
+          {:else}
+            <span class="text-gray-500">-</span>
+          {/if}
+        </div>
+        {#if saleRevenueBaseEquivalent && !isOpen}
+          <div class="text-xs text-gray-400">
+            ${saleRevenueBaseEquivalent.rawValue().toNumber().toFixed(2)}
+          </div>
+        {/if}
+      </div>
+
+      <!-- Net Flow Column -->
+      <div class="text-right">
+        {#if netTokenFlow && !netTokenFlow.isZero()}
+          <span
+            class={netTokenFlow.rawValue().isPositive()
+              ? 'text-green-400'
+              : 'text-red-400'}
+          >
+            {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow
+              .rawValue()
+              .toNumber()
+              .toFixed(2)} $
           </span>
         {:else}
           <span class="text-gray-500">-</span>
         {/if}
       </div>
-      <div
-        class={[
-          'text-right',
-          {
-            'text-gray-500': isOpen || !position.net_profit_token,
-            'text-red-400':
-              !isOpen && position.net_profit_token?.startsWith('-'),
-            'text-green-400':
-              !isOpen &&
-              position.net_profit_token &&
-              !position.net_profit_token.startsWith('-'),
-          },
-        ]}
-      >
-        {isOpen
-          ? 'TBD'
-          : position.net_profit_token
-            ? formatTokenAmount(position.net_profit_token)
-            : '-'}
+
+      <!-- Sale P&L Column -->
+      <div class="text-right">
+        {#if netSaleProfit && !isOpen}
+          <span
+            class={netSaleProfit.rawValue().isPositive()
+              ? 'text-green-400'
+              : 'text-red-400'}
+          >
+            {netSaleProfit.rawValue().isPositive() ? '+' : ''}{netSaleProfit
+              .rawValue()
+              .toNumber()
+              .toFixed(2)} $
+          </span>
+        {:else}
+          <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>
+        {/if}
+      </div>
+
+      <!-- Realized P&L Column -->
+      <div class="text-right">
+        {#if realizedPnL}
+          <span
+            class={realizedPnL.rawValue().isPositive()
+              ? 'text-green-400'
+              : 'text-red-400'}
+          >
+            {realizedPnL.rawValue().isPositive() ? '+' : ''}{realizedPnL
+              .rawValue()
+              .toNumber()
+              .toFixed(2)} $
+          </span>
+        {:else}
+          <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>
+        {/if}
       </div>
     </div>
   </button>
@@ -227,30 +386,46 @@
       <div class="grid grid-cols-2 gap-4 mt-2">
         <!-- Token Inflows -->
         <div>
-          <h4 class=" text-gray-400 mb-2">Token Inflows</h4>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-gray-400">Token Inflows</h4>
+            {#if totalInflowBaseEquivalent && !totalInflowBaseEquivalent.isZero()}
+              <div class="text-sm text-blue-400">
+                Total: {totalInflowBaseEquivalent.toString()}
+                {getBaseToken().symbol}
+              </div>
+            {/if}
+          </div>
           {#if Object.keys(position.token_inflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_inflows) as [token, amount]}
-                {@const tokenInfo = getTokenInfo(token)}
-                <div class=" flex justify-between items-center">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <Avatar.Root class="h-5 w-5 flex-shrink-0">
-                      <Avatar.Image
-                        src={tokenInfo.icon}
-                        alt={tokenInfo.symbol}
-                      />
-                      <Avatar.Fallback class="text-[8px]"
-                        >{tokenInfo.symbol.slice(0, 3)}</Avatar.Fallback
-                      >
-                    </Avatar.Root>
-                    <span class="text-gray-400 truncate" title={token}>
-                      {tokenInfo.symbol}
+                {@const fullTokenInfo = getFullTokenInfo(token)}
+                {#if fullTokenInfo}
+                  <div class=" flex justify-between items-center">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <Avatar.Root class="h-5 w-5 flex-shrink-0">
+                        <Avatar.Image
+                          src={fullTokenInfo.metadata?.icon}
+                          alt={fullTokenInfo.token.symbol}
+                        />
+                        <Avatar.Fallback class="text-[8px]"
+                          >{fullTokenInfo.token.symbol.slice(
+                            0,
+                            3,
+                          )}</Avatar.Fallback
+                        >
+                      </Avatar.Root>
+                      <span class="text-gray-400 truncate" title={token}>
+                        {fullTokenInfo.token.symbol}
+                      </span>
+                    </div>
+                    <span class="text-green-400 ml-2 flex-shrink-0">
+                      +{CurrencyAmount.fromUnscaled(
+                        amount,
+                        fullTokenInfo.token,
+                      )}
                     </span>
                   </div>
-                  <span class="text-green-400 ml-2 flex-shrink-0">
-                    +{formatTokenAmount(amount)}
-                  </span>
-                </div>
+                {/if}
               {/each}
             </div>
           {:else}
@@ -260,30 +435,46 @@
 
         <!-- Token Outflows -->
         <div>
-          <h4 class=" text-gray-400 mb-2">Token Outflows</h4>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-gray-400">Token Outflows</h4>
+            {#if totalOutflowBaseEquivalent && !totalOutflowBaseEquivalent.isZero()}
+              <div class="text-sm text-red-400">
+                Total: {totalOutflowBaseEquivalent.toString()}
+                {getBaseToken().symbol}
+              </div>
+            {/if}
+          </div>
           {#if Object.keys(position.token_outflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_outflows) as [token, amount]}
-                {@const tokenInfo = getTokenInfo(token)}
-                <div class=" flex justify-between items-center">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <Avatar.Root class="h-5 w-5 flex-shrink-0">
-                      <Avatar.Image
-                        src={tokenInfo.icon}
-                        alt={tokenInfo.symbol}
-                      />
-                      <Avatar.Fallback class="text-[8px]"
-                        >{tokenInfo.symbol.slice(0, 3)}</Avatar.Fallback
-                      >
-                    </Avatar.Root>
-                    <span class="text-gray-400 truncate" title={token}>
-                      {tokenInfo.symbol}
+                {@const fullTokenInfo = getFullTokenInfo(token)}
+                {#if fullTokenInfo}
+                  <div class=" flex justify-between items-center">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <Avatar.Root class="h-5 w-5 flex-shrink-0">
+                        <Avatar.Image
+                          src={fullTokenInfo.metadata?.icon}
+                          alt={fullTokenInfo.token.symbol}
+                        />
+                        <Avatar.Fallback class="text-[8px]"
+                          >{fullTokenInfo.token.symbol.slice(
+                            0,
+                            3,
+                          )}</Avatar.Fallback
+                        >
+                      </Avatar.Root>
+                      <span class="text-gray-400 truncate" title={token}>
+                        {fullTokenInfo.token.symbol}
+                      </span>
+                    </div>
+                    <span class="text-red-400 ml-2 flex-shrink-0">
+                      -{CurrencyAmount.fromUnscaled(
+                        amount,
+                        fullTokenInfo.token,
+                      )}
                     </span>
                   </div>
-                  <span class="text-red-400 ml-2 flex-shrink-0">
-                    -{formatTokenAmount(amount)}
-                  </span>
-                </div>
+                {/if}
               {/each}
             </div>
           {:else}
