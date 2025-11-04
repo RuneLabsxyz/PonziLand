@@ -5,7 +5,7 @@ import { cubicOut } from 'svelte/easing';
 import type { TransitionConfig } from 'svelte/transition';
 import { twMerge } from 'tailwind-merge';
 import type { LandWithActions } from './api/land';
-import type { TokenMetadata } from './interfaces';
+import type { TokenMetadata, Token } from './interfaces';
 import { getTokenMetadata as getTokenData } from './tokens';
 import { COORD_MULTIPLIER, COORD_MASK } from './const';
 
@@ -109,8 +109,39 @@ export function getTokenInfo(tokenAddress: string) {
   return token;
 }
 
+/**
+ * Retrieve metadata for a token associated with the provided skin identifier.
+ *
+ * @param skin - A string identifier for the skin whose token metadata should be retrieved.
+ *               This may be a name, key, or other identifier used by the lookup system.
+ * @returns The TokenMetadata object for the given skin, or `null` if no metadata is found.
+ *
+ * @remarks
+ * The function performs a lookup and does not mutate any external state. Consumers should
+ * handle the `null` case to account for missing or unknown skins.
+ */
 export function getTokenMetadata(skin: string): TokenMetadata | null {
   return getTokenData(skin);
+}
+
+/**
+ * Get complete token information including both basic token info and metadata.
+ * This combines token info from the available tokens list and metadata from the skin system.
+ *
+ * @param tokenAddress - The token contract address to look up
+ * @returns Object containing both token info and metadata, or null if token is not found
+ */
+export function getFullTokenInfo(tokenAddress: string): {
+  token: Token;
+  metadata: TokenMetadata | null;
+} | null {
+  const token = getTokenInfo(tokenAddress);
+  if (!token) {
+    return null;
+  }
+
+  const metadata = getTokenMetadata(token.skin);
+  return { token, metadata };
 }
 
 export function parseLocation(
