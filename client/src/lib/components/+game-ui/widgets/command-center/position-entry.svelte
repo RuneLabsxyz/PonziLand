@@ -72,8 +72,20 @@
     }
   });
 
+  let saleToken: Token | undefined = $derived.by(() => {
+    if (position.sale_token_used) {
+      return getTokenInfo(position.sale_token_used);
+    } else {
+      return originalBaseToken;
+    }
+  });
+
   let buyAmount = $derived(
     CurrencyAmount.fromUnscaled(position.buy_cost_token, buyToken),
+  );
+
+  let sellAmount = $derived(
+    CurrencyAmount.fromScaled(position.sale_revenue_token || '0', saleToken),
   );
 </script>
 
@@ -161,12 +173,8 @@
             </span>
           {/if}
         {:else}
-          {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
-            position.buy_cost_token,
-            originalBaseToken,
-          )}
           <span class="text-white">
-            {buyCurrencyAmount.toString()}
+            {buyAmount}
           </span>
           <span class="text-gray-500 ml-1">
             {data.mainCurrency}
@@ -180,12 +188,11 @@
           <span class="text-gray-500">-</span>
         {:else if position.sale_revenue_token}
           <span class="text-white">
-            {position.sale_revenue_token}
+            {sellAmount}
           </span>
           <span class="text-gray-500 ml-1">
             {#if position.sale_token_used}
-              {@const saleTokenInfo = getTokenInfo(position.sale_token_used)}
-              <!-- {saleTokenInfo.symbol} -->
+              {saleToken?.symbol}
             {:else}
               {data.mainCurrency}
             {/if}
