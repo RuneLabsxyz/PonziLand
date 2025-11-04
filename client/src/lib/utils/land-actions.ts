@@ -114,10 +114,11 @@ export const createLandWithActions = (
               land.floorPrice.toBigint(),
             );
 
-            // If price is 0,
-            // fall back to RPC to get the actual current price
+            // If price is 0, fall back to RPC to get the actual current price
             if (calculatedPrice === BigInt(0)) {
-              console.log('🔗 Calculated price is 0, using RPC for accurate price after nuke');
+              console.log(
+                '🔗 Calculated price is 0, using RPC for accurate price after nuke',
+              );
               const rpcPrice = (await sdk.client.actions.getCurrentAuctionPrice(
                 land.locationString,
               ))! as string;
