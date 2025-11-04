@@ -1,26 +1,22 @@
 <script lang="ts">
-  import {
-    locationToCoordinates,
-    getTokenMetadata,
-    getTokenInfo,
-    getFullTokenInfo,
-  } from '$lib/utils';
-  import type {
-    HistoricalPosition,
-    TokenFlow,
-  } from './historical-positions.service';
-  import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
+  import type { Token } from '$lib/interfaces';
   import {
-    baseToken,
     getBaseToken,
     originalBaseToken,
     walletStore,
   } from '$lib/stores/wallet.svelte';
-  import data from '$profileData';
-  import { formatTimestamp, formatTimestampRelative } from '../history/utils';
+  import {
+    getFullTokenInfo,
+    getTokenInfo,
+    getTokenMetadata,
+    locationToCoordinates,
+  } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import type { Token, TokenMetadata } from '$lib/interfaces';
+  import data from '$profileData';
+  import { ChevronDown, ChevronUp } from 'lucide-svelte';
+  import { formatTimestamp } from '../history/utils';
+  import type { HistoricalPosition } from './historical-positions.service';
 
   interface Props {
     position: HistoricalPosition;
@@ -147,7 +143,34 @@
   let netTokenFlow = $derived.by(() => {
     if (!totalInflowBaseEquivalent || !totalOutflowBaseEquivalent) return null;
     const baseToken = getBaseToken();
-    const netValue = totalInflowBaseEquivalent.rawValue().minus(totalOutflowBaseEquivalent.rawValue());
+    const netValue = totalInflowBaseEquivalent
+      .rawValue()
+      .minus(totalOutflowBaseEquivalent.rawValue());
+    return CurrencyAmount.fromRaw(netValue, baseToken);
+  });
+
+  // Calculate buy cost in base token equivalent
+  let buyCostBaseEquivalent = $derived.by(() => {
+    if (!buyToken || !buyAmount) return null;
+    const baseToken = getBaseToken();
+    return walletStore.convertTokenAmount(buyAmount, buyToken, baseToken);
+  });
+
+  // Calculate sale revenue in base token equivalent
+  let saleRevenueBaseEquivalent = $derived.by(() => {
+    if (!saleToken || !sellAmount || isOpen) return null;
+    const baseToken = getBaseToken();
+    return walletStore.convertTokenAmount(sellAmount, saleToken, baseToken);
+  });
+
+  // Calculate net sale profit (sale revenue - buy cost) in base token equivalent
+  let netSaleProfit = $derived.by(() => {
+    if (!buyCostBaseEquivalent || !saleRevenueBaseEquivalent || isOpen)
+      return null;
+    const baseToken = getBaseToken();
+    const netValue = saleRevenueBaseEquivalent
+      .rawValue()
+      .minus(buyCostBaseEquivalent.rawValue());
     return CurrencyAmount.fromRaw(netValue, baseToken);
   });
 </script>
@@ -165,7 +188,7 @@
     {#if isOpen}
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
     {/if}
-    <div class="grid grid-cols-8 gap-2 items-center tracking-wide">
+    <div class="grid grid-cols-9 gap-2 items-center tracking-wide">
       <div class="flex items-center gap-2">
         <span class="text-gray-300 tracking-wide"
           >{coordinates.x}, {coordinates.y}</span
@@ -213,66 +236,105 @@
 
       <!-- Buy Cost -->
       <div class="text-right">
-        {#if position.buy_token_used}
-          {@const tokenInfo = getTokenInfo(position.buy_token_used)}
-          {#if tokenInfo}
-            {@const tokenMeta = getTokenMetadata(tokenInfo.skin)}
-            {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
-              position.buy_cost_token,
-              tokenInfo,
-            )}
-            <span class="text-white">
-              {buyCurrencyAmount.toString()}
-            </span>
-            <span class="text-gray-500 ml-1">
-              {tokenInfo.symbol}
-            </span>
+        <div>
+          {#if position.buy_token_used}
+            {@const tokenInfo = getTokenInfo(position.buy_token_used)}
+            {#if tokenInfo}
+              {@const tokenMeta = getTokenMetadata(tokenInfo.skin)}
+              {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
+                position.buy_cost_token,
+                tokenInfo,
+              )}
+              <span class="text-white">
+                {buyCurrencyAmount.toString()}
+              </span>
+              <span class="text-gray-500 ml-1">
+                {tokenInfo.symbol}
+              </span>
+            {:else}
+              <span class="text-white">
+                {position.buy_cost_token}
+              </span>
+              <span class="text-gray-500 ml-1">
+                {data.mainCurrency}
+              </span>
+            {/if}
           {:else}
             <span class="text-white">
-              {position.buy_cost_token}
+              {buyAmount}
             </span>
             <span class="text-gray-500 ml-1">
               {data.mainCurrency}
             </span>
           {/if}
-        {:else}
-          <span class="text-white">
-            {buyAmount}
-          </span>
-          <span class="text-gray-500 ml-1">
-            {data.mainCurrency}
-          </span>
+        </div>
+        {#if buyCostBaseEquivalent}
+          <div class="text-xs text-gray-400">
+            ${buyCostBaseEquivalent.rawValue().toNumber().toFixed(2)}
+          </div>
         {/if}
       </div>
 
       <!-- Sale Revenue -->
       <div class="text-right">
-        {#if isOpen}
-          <span class="text-gray-500">-</span>
-        {:else if position.sale_revenue_token}
-          <span class="text-white">
-            {sellAmount}
-          </span>
-          <span class="text-gray-500 ml-1">
-            {#if position.sale_token_used}
-              {saleToken?.symbol}
-            {:else}
-              {data.mainCurrency}
-            {/if}
-          </span>
-        {:else}
-          <span class="text-gray-500">-</span>
+        <div>
+          {#if isOpen}
+            <span class="text-gray-500">-</span>
+          {:else if position.sale_revenue_token}
+            <span class="text-white">
+              {sellAmount}
+            </span>
+            <span class="text-gray-500 ml-1">
+              {#if position.sale_token_used}
+                {saleToken?.symbol}
+              {:else}
+                {data.mainCurrency}
+              {/if}
+            </span>
+          {:else}
+            <span class="text-gray-500">-</span>
+          {/if}
+        </div>
+        {#if saleRevenueBaseEquivalent && !isOpen}
+          <div class="text-xs text-gray-400">
+            ${saleRevenueBaseEquivalent.rawValue().toNumber().toFixed(2)}
+          </div>
         {/if}
       </div>
 
       <!-- Net Flow Column -->
       <div class="text-right">
         {#if netTokenFlow && !netTokenFlow.isZero()}
-          <span class={netTokenFlow.rawValue().isPositive() ? 'text-green-400' : 'text-red-400'}>
-            {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow.rawValue().toNumber().toFixed(2)} $
+          <span
+            class={netTokenFlow.rawValue().isPositive()
+              ? 'text-green-400'
+              : 'text-red-400'}
+          >
+            {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow
+              .rawValue()
+              .toNumber()
+              .toFixed(2)} $
           </span>
         {:else}
           <span class="text-gray-500">-</span>
+        {/if}
+      </div>
+
+      <!-- Sale P&L Column -->
+      <div class="text-right">
+        {#if netSaleProfit && !isOpen}
+          <span
+            class={netSaleProfit.rawValue().isPositive()
+              ? 'text-green-400'
+              : 'text-red-400'}
+          >
+            {netSaleProfit.rawValue().isPositive() ? '+' : ''}{netSaleProfit
+              .rawValue()
+              .toNumber()
+              .toFixed(2)} $
+          </span>
+        {:else}
+          <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>
         {/if}
       </div>
 
@@ -289,7 +351,6 @@
   <!-- Expanded Details -->
   {#if expanded}
     <div class="px-4 pb-4 bg-black/20">
-
       <div class="grid grid-cols-2 gap-4 mt-2">
         <!-- Token Inflows -->
         <div>
