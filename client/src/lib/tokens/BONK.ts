@@ -1,6 +1,7 @@
 export const BONK = {
   skin: 'BONK',
   icon: '/tokens/BONK/bonk.png',
+  color: '#F97316', // Orange for BONK
   biome: { x: 3, y: 6 },
   building: {
     1: {

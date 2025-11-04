@@ -1,6 +1,7 @@
 export const BURR = {
   skin: 'BURR',
   icon: '/tokens/BURR/burr.png',
+  color: '#A67C52',
   biome: { x: 3, y: 4 },
   building: {
     1: { x: 9, y: 3, useAnimation: false },

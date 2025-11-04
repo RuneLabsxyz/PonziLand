@@ -2,6 +2,7 @@ export const DOG = {
   skin: 'DOG',
   icon: '/tokens/DOG/dog.png',
   biome: { x: 2, y: 4 },
+  color: '#FFB6C1',
   building: {
     1: {
       x: 6,

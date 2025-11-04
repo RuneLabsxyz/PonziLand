@@ -2,6 +2,7 @@ export const SOLANA = {
   skin: 'SOLANA',
   icon: '/tokens/SOLANA/sol.png',
   biome: { x: 3, y: 5 },
+  color: '#9A45FF',
   building: {
     1: {
       x: 6,

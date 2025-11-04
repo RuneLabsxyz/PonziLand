@@ -19,6 +19,7 @@ export interface BuildingLevel {
 export interface TokenSkin {
   skin: string;
   icon: string;
+  color?: string; // Hex color for progress bars and charts
   biome: { x: number; y: number };
   building: {
     1: BuildingLevel;

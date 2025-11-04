@@ -2,6 +2,7 @@ export const PAL = {
   skin: 'PAL',
   icon: '/tokens/PAL/pal.png',
   biome: { x: 1, y: 2 },
+  color: '#C78957',
   building: {
     1: {
       x: 0,

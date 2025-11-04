@@ -1,7 +1,10 @@
+import { color } from 'three/src/nodes/TSL.js';
+
 export const LORDS = {
   skin: 'LORDS',
   icon: '/tokens/LORDS/lords.png',
   biome: { x: 3, y: 1 },
+  color: ' #000000',
   building: {
     1: {
       x: 0,

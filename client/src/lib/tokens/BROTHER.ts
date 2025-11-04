@@ -4,6 +4,7 @@ export const BROTHER = {
   skin: 'BROTHER',
   icon: '/tokens/BROTHER/brother.png',
   biome: { x: 1, y: 3 },
+  color: '#478996',
   building: {
     1: {
       x: 3,

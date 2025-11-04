@@ -111,6 +111,17 @@ const baseWidgetsState: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  share: {
+    id: 'share',
+    type: 'share',
+    position: {
+      x: window.innerWidth / 2 - 187.5,
+      y: window.innerHeight / 2 - 333.5,
+    },
+    dimensions: { width: 375, height: 667 },
+    isMinimized: false,
+    isOpen: false,
+  },
   disclaimer: {
     id: 'disclaimer',
     type: 'disclaimer',
@@ -154,22 +165,22 @@ export const DEFAULT_WIDGETS_STATE: WidgetsState = Object.assign(
 
 const allWidgets: (Widget & { if?: boolean })[] = [
   {
-    id: 'my-lands',
-    type: 'my-lands',
-    label: 'My Lands',
-    icon: '/ui/icons/Icon_Thin_MyLand.png',
+    id: 'command-center',
+    type: 'command-center',
+    label: 'Cmd. Center',
+    icon: '/ui/icons/Icon_ControlCenter.png',
   },
   {
-    id: 'market',
-    type: 'market',
-    label: 'Market',
-    icon: '/ui/icons/Icon_Thin_Auction.png',
+    id: 'data-maps',
+    type: 'data-maps',
+    label: 'Data Maps',
+    icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
   },
   {
     id: 'help',
     type: 'help',
     label: 'Help',
-    icon: '/ui/icons/Icon_Book.png',
+    icon: '/ui/icons/Icon_Thin_Book.png',
   },
   {
     id: 'guild',
@@ -185,18 +196,7 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     icon: '/ui/icons/Icon_Cup.png',
     if: ENABLE_LEADERBOARD,
   },
-  {
-    id: 'data-maps',
-    type: 'data-maps',
-    label: 'Data Maps',
-    icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
-  },
-  {
-    id: 'command-center',
-    type: 'command-center',
-    label: 'Command Center',
-    icon: '/ui/icons/Icon_Notification.png',
-  },
+
   // {
   //   id: 'notifications',
   //   type: 'notifications',
