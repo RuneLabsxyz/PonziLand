@@ -1,14 +1,21 @@
 <script lang="ts">
-  import { locationToCoordinates, getTokenMetadata } from '$lib/utils';
+  import {
+    locationToCoordinates,
+    getTokenMetadata,
+    getTokenInfo,
+    getFullTokenInfo,
+  } from '$lib/utils';
   import type {
     HistoricalPosition,
     TokenFlow,
   } from './historical-positions.service';
   import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import { walletStore } from '$lib/stores/wallet.svelte';
+  import { originalBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
   import { formatTimestamp, formatTimestampRelative } from '../history/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import type { Token, TokenMetadata } from '$lib/interfaces';
 
   interface Props {
     position: HistoricalPosition;
@@ -22,57 +29,6 @@
 
   function toggleExpanded() {
     expanded = !expanded;
-  }
-
-  // Get token information from address
-  function getTokenInfo(address: string) {
-    // Try with one leading zero first
-    let formattedAddress = address;
-    if (address.startsWith('0x')) {
-      formattedAddress = '0x0' + address.slice(2);
-    }
-
-    let token = data.availableTokens.find(
-      (t) => t.address === formattedAddress,
-    );
-
-    // If not found, try with two leading zeros
-    if (!token && address.startsWith('0x')) {
-      formattedAddress = '0x00' + address.slice(2);
-      token = data.availableTokens.find((t) => t.address === formattedAddress);
-    }
-
-    if (token) {
-      const metadata = getTokenMetadata(token.skin);
-      return {
-        symbol: token.symbol,
-        icon: metadata?.icon || '/tokens/default/icon.png',
-      };
-    }
-
-    return {
-      symbol: `0x${address.slice(2, 5)}...${address.slice(-4)}`,
-      icon: '/tokens/default/icon.png',
-    };
-  }
-
-  // Convert hex string to number and format
-  function formatTokenAmount(hexAmount: string | null): string {
-    if (!hexAmount) return '0';
-
-    try {
-      const num = BigInt(hexAmount);
-      const decimals = 18; // Assuming 18 decimals, adjust if needed
-      const divisor = BigInt(10 ** decimals);
-      const whole = num / divisor;
-      const remainder = num % divisor;
-
-      // Format with 4 decimal places
-      const decimal = remainder.toString().padStart(decimals, '0').slice(0, 4);
-      return `${whole}.${decimal}`;
-    } catch {
-      return '0';
-    }
   }
 
   function formatDate(dateString: string): string {
@@ -107,6 +63,18 @@
 
   const coordinates = $derived(locationToCoordinates(position.land_location));
   const isAuctionBuy = $derived(position.buy_token_used === null);
+
+  let buyToken: Token | undefined = $derived.by(() => {
+    if (position.buy_token_used) {
+      return getTokenInfo(position.buy_token_used);
+    } else {
+      return originalBaseToken;
+    }
+  });
+
+  let buyAmount = $derived(
+    CurrencyAmount.fromUnscaled(position.buy_cost_token, buyToken),
+  );
 </script>
 
 <div
@@ -167,32 +135,57 @@
       <div class="flex text-gray-400">
         {isOpen ? '-' : formatTimestamp(new Date(position.close_date))}
       </div>
+
+      <!-- Buy Cost -->
       <div class="text-right">
-        <span class="text-white"
-          >{formatTokenAmount(position.buy_cost_token)}</span
-        >
-        <span class="text-gray-500 ml-1">
-          {#if position.buy_token_used}
-            {@const buyTokenInfo = getTokenInfo(position.buy_token_used)}
-            {buyTokenInfo.symbol}
-          {:else if isAuctionBuy}
-            {data.mainCurrency}
+        {#if position.buy_token_used}
+          {@const tokenInfo = getTokenInfo(position.buy_token_used)}
+          {#if tokenInfo}
+            {@const tokenMeta = getTokenMetadata(tokenInfo.skin)}
+            {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
+              position.buy_cost_token,
+              tokenInfo,
+            )}
+            <span class="text-white">
+              {buyCurrencyAmount.toString()}
+            </span>
+            <span class="text-gray-500 ml-1">
+              {tokenInfo.symbol}
+            </span>
           {:else}
-            {data.mainCurrency}
+            <span class="text-white">
+              {position.buy_cost_token}
+            </span>
+            <span class="text-gray-500 ml-1">
+              {data.mainCurrency}
+            </span>
           {/if}
-        </span>
+        {:else}
+          {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
+            position.buy_cost_token,
+            originalBaseToken,
+          )}
+          <span class="text-white">
+            {buyCurrencyAmount.toString()}
+          </span>
+          <span class="text-gray-500 ml-1">
+            {data.mainCurrency}
+          </span>
+        {/if}
       </div>
+
+      <!-- Sale Revenue -->
       <div class="text-right">
         {#if isOpen}
           <span class="text-gray-500">-</span>
         {:else if position.sale_revenue_token}
-          <span class="text-white"
-            >{formatTokenAmount(position.sale_revenue_token)}</span
-          >
+          <span class="text-white">
+            {position.sale_revenue_token}
+          </span>
           <span class="text-gray-500 ml-1">
             {#if position.sale_token_used}
               {@const saleTokenInfo = getTokenInfo(position.sale_token_used)}
-              {saleTokenInfo.symbol}
+              <!-- {saleTokenInfo.symbol} -->
             {:else}
               {data.mainCurrency}
             {/if}
@@ -206,11 +199,7 @@
           ? 'text-gray-500'
           : getPnLColor(position.net_profit_token)}"
       >
-        {isOpen
-          ? 'TBD'
-          : position.net_profit_token
-            ? formatTokenAmount(position.net_profit_token)
-            : '-'}
+        {isOpen ? 'TBD' : position.net_profit_token ? 'TODO' : '-'}
       </div>
     </div>
   </button>
@@ -225,26 +214,31 @@
           {#if Object.keys(position.token_inflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_inflows) as [token, amount]}
-                {@const tokenInfo = getTokenInfo(token)}
-                <div class=" flex justify-between items-center">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <Avatar.Root class="h-5 w-5 flex-shrink-0">
-                      <Avatar.Image
-                        src={tokenInfo.icon}
-                        alt={tokenInfo.symbol}
-                      />
-                      <Avatar.Fallback class="text-[8px]"
-                        >{tokenInfo.symbol.slice(0, 3)}</Avatar.Fallback
-                      >
-                    </Avatar.Root>
-                    <span class="text-gray-400 truncate" title={token}>
-                      {tokenInfo.symbol}
+                {@const fullTokenInfo = getFullTokenInfo(token)}
+                {#if fullTokenInfo}
+                  <div class=" flex justify-between items-center">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <Avatar.Root class="h-5 w-5 flex-shrink-0">
+                        <Avatar.Image
+                          src={fullTokenInfo.metadata?.icon}
+                          alt={fullTokenInfo.token.symbol}
+                        />
+                        <Avatar.Fallback class="text-[8px]"
+                          >{fullTokenInfo.token.symbol.slice(
+                            0,
+                            3,
+                          )}</Avatar.Fallback
+                        >
+                      </Avatar.Root>
+                      <span class="text-gray-400 truncate" title={token}>
+                        {fullTokenInfo.token.symbol}
+                      </span>
+                    </div>
+                    <span class="text-green-400 ml-2 flex-shrink-0">
+                      +{amount}
                     </span>
                   </div>
-                  <span class="text-green-400 ml-2 flex-shrink-0">
-                    +{formatTokenAmount(amount)}
-                  </span>
-                </div>
+                {/if}
               {/each}
             </div>
           {:else}
@@ -258,26 +252,31 @@
           {#if Object.keys(position.token_outflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_outflows) as [token, amount]}
-                {@const tokenInfo = getTokenInfo(token)}
-                <div class=" flex justify-between items-center">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <Avatar.Root class="h-5 w-5 flex-shrink-0">
-                      <Avatar.Image
-                        src={tokenInfo.icon}
-                        alt={tokenInfo.symbol}
-                      />
-                      <Avatar.Fallback class="text-[8px]"
-                        >{tokenInfo.symbol.slice(0, 3)}</Avatar.Fallback
-                      >
-                    </Avatar.Root>
-                    <span class="text-gray-400 truncate" title={token}>
-                      {tokenInfo.symbol}
+                {@const fullTokenInfo = getFullTokenInfo(token)}
+                {#if fullTokenInfo}
+                  <div class=" flex justify-between items-center">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <Avatar.Root class="h-5 w-5 flex-shrink-0">
+                        <Avatar.Image
+                          src={fullTokenInfo.metadata?.icon}
+                          alt={fullTokenInfo.token.symbol}
+                        />
+                        <Avatar.Fallback class="text-[8px]"
+                          >{fullTokenInfo.token.symbol.slice(
+                            0,
+                            3,
+                          )}</Avatar.Fallback
+                        >
+                      </Avatar.Root>
+                      <span class="text-gray-400 truncate" title={token}>
+                        {fullTokenInfo.token.symbol}
+                      </span>
+                    </div>
+                    <span class="text-red-400 ml-2 flex-shrink-0">
+                      -{amount}
                     </span>
                   </div>
-                  <span class="text-red-400 ml-2 flex-shrink-0">
-                    -{formatTokenAmount(amount)}
-                  </span>
-                </div>
+                {/if}
               {/each}
             </div>
           {:else}
