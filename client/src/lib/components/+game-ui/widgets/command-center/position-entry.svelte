@@ -8,6 +8,7 @@
   import * as Avatar from '$lib/components/ui/avatar/index.js';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
+  import { formatTimestamp, formatTimestampRelative } from '../history/utils';
 
   interface Props {
     position: HistoricalPosition;
@@ -91,7 +92,7 @@
   function getStatusColor(reason: string): string {
     switch (reason) {
       case 'bought':
-        return 'text-green-400';
+        return 'text-yellow-500';
       case 'nuked':
         return 'text-red-400';
       default:
@@ -121,16 +122,40 @@
     {#if isOpen}
       <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
     {/if}
-    <div class="grid grid-cols-7 gap-2 text-sm items-center">
+    <div class="grid grid-cols-7 gap-2 items-center tracking-wide">
       <div class="flex items-center gap-2">
-        <span class="text-gray-300">({coordinates.x}, {coordinates.y})</span>
+        <span class="text-gray-300 tracking-wide"
+          >{coordinates.x}, {coordinates.y}</span
+        >
         {#if expanded}
           <ChevronUp size={14} class="text-gray-500" />
         {:else}
           <ChevronDown size={14} class="text-gray-500" />
         {/if}
       </div>
-      <div class="text-xs text-gray-400">
+      <div
+        class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider"
+      >
+        {#if isOpen}
+          <img
+            src="/ui/icons/IconTiny_Stats.png"
+            alt="Closed"
+            class="h-4 w-4"
+          />
+          <span class="text-green-400 font-semibold">ALIVE</span>
+        {:else}
+          {#if position.close_reason === 'nuked'}
+            <img src="/ui/icons/Icon_Nuke.png" alt="Closed" class="h-4 w-4" />
+          {/if}
+          {#if position.close_reason === 'bought'}
+            <img src="/ui/icons/Icon_Coin3.png" alt="Closed" class="h-4 w-4" />
+          {/if}
+          <span class={getStatusColor(position.close_reason)}>
+            {position.close_reason.toUpperCase()}
+          </span>
+        {/if}
+      </div>
+      <div class="flex text-gray-400">
         {formatDate(position.time_bought)}
         {#if isAuctionBuy}
           <span class="text-blue-400 ml-1">(auction)</span>
@@ -138,19 +163,11 @@
           <span class="text-purple-400 ml-1">(player)</span>
         {/if}
       </div>
-      <div class="text-xs">
-        {#if isOpen}
-          <span class="text-green-400 font-semibold">ACTIVE</span>
-        {:else}
-          <span class={getStatusColor(position.close_reason)}>
-            {position.close_reason.toUpperCase()}
-          </span>
-        {/if}
+
+      <div class="flex text-gray-400">
+        {isOpen ? '-' : formatTimestamp(new Date(position.close_date))}
       </div>
-      <div class="text-xs text-gray-400">
-        {isOpen ? '-' : formatDate(position.close_date)}
-      </div>
-      <div class="text-right text-xs">
+      <div class="text-right">
         <span class="text-white"
           >{formatTokenAmount(position.buy_cost_token)}</span
         >
@@ -165,7 +182,7 @@
           {/if}
         </span>
       </div>
-      <div class="text-right text-xs">
+      <div class="text-right">
         {#if isOpen}
           <span class="text-gray-500">-</span>
         {:else if position.sale_revenue_token}
@@ -185,7 +202,7 @@
         {/if}
       </div>
       <div
-        class="text-right text-xs {isOpen
+        class="text-right {isOpen
           ? 'text-gray-500'
           : getPnLColor(position.net_profit_token)}"
       >
@@ -204,12 +221,12 @@
       <div class="grid grid-cols-2 gap-4 mt-2">
         <!-- Token Inflows -->
         <div>
-          <h4 class="text-xs text-gray-400 mb-2">Token Inflows</h4>
+          <h4 class=" text-gray-400 mb-2">Token Inflows</h4>
           {#if Object.keys(position.token_inflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_inflows) as [token, amount]}
                 {@const tokenInfo = getTokenInfo(token)}
-                <div class="text-xs flex justify-between items-center">
+                <div class=" flex justify-between items-center">
                   <div class="flex items-center gap-2 min-w-0">
                     <Avatar.Root class="h-5 w-5 flex-shrink-0">
                       <Avatar.Image
@@ -231,18 +248,18 @@
               {/each}
             </div>
           {:else}
-            <div class="text-xs text-gray-600">No inflows</div>
+            <div class=" text-gray-600">No inflows</div>
           {/if}
         </div>
 
         <!-- Token Outflows -->
         <div>
-          <h4 class="text-xs text-gray-400 mb-2">Token Outflows</h4>
+          <h4 class=" text-gray-400 mb-2">Token Outflows</h4>
           {#if Object.keys(position.token_outflows).length > 0}
             <div class="space-y-1">
               {#each Object.entries(position.token_outflows) as [token, amount]}
                 {@const tokenInfo = getTokenInfo(token)}
-                <div class="text-xs flex justify-between items-center">
+                <div class=" flex justify-between items-center">
                   <div class="flex items-center gap-2 min-w-0">
                     <Avatar.Root class="h-5 w-5 flex-shrink-0">
                       <Avatar.Image
@@ -264,7 +281,7 @@
               {/each}
             </div>
           {:else}
-            <div class="text-xs text-gray-600">No outflows</div>
+            <div class=" text-gray-600">No outflows</div>
           {/if}
         </div>
       </div>
