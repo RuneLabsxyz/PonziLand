@@ -24,7 +24,7 @@ interface CachedNukeTime {
   timeInSeconds: number;
   lastCalculated: number;
   elapsedTimes?: any[];
-  maxElapsedTime?: number;
+  minElapsedTime?: number;
 }
 
 export class NukeTimeManager {
@@ -102,9 +102,9 @@ export class NukeTimeManager {
           const elapsedTimes =
             await landWithActions.getElapsedTimeSinceLastClaimForNeighbors();
 
-          // Calculate max elapsed time (oldest claim - the bottleneck)
-          const maxElapsedTime = elapsedTimes?.length
-            ? Math.max(...elapsedTimes.map((neighbor) => Number(neighbor[1])))
+          // Calculate min elapsed time
+          const minElapsedTime = elapsedTimes?.length
+            ? Math.min(...elapsedTimes.map((neighbor) => Number(neighbor[1])))
             : undefined;
 
           // Get neighbor count
@@ -115,7 +115,7 @@ export class NukeTimeManager {
           const timeInSeconds = estimateNukeTimeSync(
             landWithActions,
             neighborCount,
-            maxElapsedTime,
+            minElapsedTime,
           );
 
           // Update cache
@@ -123,7 +123,7 @@ export class NukeTimeManager {
             timeInSeconds,
             lastCalculated: Date.now(),
             elapsedTimes,
-            maxElapsedTime,
+            minElapsedTime,
           });
 
           // Force reactivity update
@@ -198,11 +198,11 @@ export class NukeTimeManager {
 
           if (neighborCount > 0) {
             // If we have cached elapsed times, use them
-            if (cachedResult?.maxElapsedTime !== undefined) {
+            if (cachedResult?.minElapsedTime !== undefined) {
               const timeInSeconds = estimateNukeTimeSync(
                 landWithActions,
                 neighborCount,
-                cachedResult.maxElapsedTime,
+                cachedResult.minElapsedTime,
               );
               const { text, shieldType } = this.formatNukeTime(timeInSeconds);
               dataMap.set(locationKey, {
