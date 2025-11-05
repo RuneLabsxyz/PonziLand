@@ -15,7 +15,7 @@
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
-  import { estimateNukeTime, parseNukeTime } from '$lib/utils/taxes';
+  import { estimateNukeTimeRpc, parseNukeTime } from '$lib/utils/taxes';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { List, Eye } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
@@ -165,7 +165,8 @@
 
         // Only calculate nuke time if there are neighbors (otherwise it's infinite)
         if (neighborCount > 0) {
-          const timeInSeconds = await estimateNukeTime(land, neighborCount);
+          // Use RPC algorithm with elapsed times fetched internally
+          const timeInSeconds = await estimateNukeTimeRpc(land);
           const formatted = formatNukeTime(timeInSeconds);
 
           newNukeTimes.set(land.location, {
