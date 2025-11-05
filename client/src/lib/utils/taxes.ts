@@ -151,8 +151,8 @@ export const estimateNukeTime = async (
     return remainingSeconds;
   }
 
-  // Find the maximum elapsed time (oldest claim) - this is the bottleneck
-  const maxElapsedTime = Math.max(
+  // Find the minimum elapsed time (most recent claim)
+  const minElapsedTime = Math.min(
     ...elapsedTimesOfNeighbors.map((neighbor) => Number(neighbor[1])),
   );
 
@@ -162,7 +162,7 @@ export const estimateNukeTime = async (
 
   // Use the smaller of: neighbor's elapsed time OR land age
   // (Can't owe taxes from before you owned the land)
-  const relevantElapsedTime = Math.min(maxElapsedTime, landAge);
+  const relevantElapsedTime = Math.min(minElapsedTime, landAge);
 
   return Math.max(0, Math.floor(remainingSeconds - relevantElapsedTime));
 };
