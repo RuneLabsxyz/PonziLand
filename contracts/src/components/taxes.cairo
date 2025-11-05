@@ -855,6 +855,84 @@ mod TaxesComponent {
             u64_saturating_add(current_time, min_remaining_time)
         }
 
+
+        fn calculate_nuke_time_v3(
+            self: @ComponentState<TContractState>,
+            mut store: Store,
+            land: @Land,
+            land_stake: @LandStake,
+            neighbors: Span<Land>,
+        ) -> u64 {
+            println!("----entra calculate_nuke_time_v3----");
+            let num_neighbors = neighbors.len();
+            let current_time = get_block_timestamp();
+            println!("current_time: {}", current_time);
+            println!("num_neighbors: {}", num_neighbors);
+
+            if num_neighbors == 0 {
+                return 0;
+            }
+
+            let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land, store);
+            println!("tax_rate_per_neighbor: {}", tax_rate_per_neighbor);
+            let base_time: u256 = store.get_base_time().into();
+            let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
+            println!("total_tax_rate: {}", total_tax_rate);
+
+            if total_tax_rate == 0 || store.get_time_speed() == 0 {
+                return 0;
+            }
+
+            // 1. Calculate current unclaimed taxes from all neighbors
+            // IMPORTANT: Use get_taxes_per_neighbor to match the calculation used in verification
+            let mut current_unclaimed_taxes: u256 = 0;
+            let mut sum_elapsed_times: u256 = 0;
+
+            for neighbor in neighbors {
+                let elapsed_time = self
+                    .get_elapsed_time_since_last_claim(
+                        *neighbor.location, *land.location, current_time,
+                    );
+                println!("elapsed_time: {} of neighbor {}", elapsed_time, neighbor.location);
+                sum_elapsed_times += elapsed_time.into();
+
+                // Use get_taxes_per_neighbor which includes ceiling rounding
+                // IMPORTANT: Pass 'land' (the payer), not 'neighbor' (the claimer)
+                let taxes = get_taxes_per_neighbor(land, elapsed_time, store);
+                current_unclaimed_taxes += taxes;
+            }
+
+            println!("sum_elapsed_times: {}", sum_elapsed_times);
+            println!("current_unclaimed_taxes: {}", current_unclaimed_taxes);
+
+            // 2. Calculate how much more time is needed to reach stake
+            // delta_t = (stake - current_unclaimed) * base_time / total_tax_rate
+            // Use remainder to ensure ceiling rounding: if there's a remainder, add 1
+
+            let stake: u256 = *land_stake.amount;
+
+            if current_unclaimed_taxes >= stake {
+                // Already nuked
+                return current_time;
+            }
+
+            let deficit = stake - current_unclaimed_taxes;
+            let numerator_delta = deficit * base_time;
+
+            // Use ceiling division to ensure we reach the stake threshold
+            // Formula: ceil((deficit * base_time) / total_tax_rate) = (numerator + denominator - 1)
+            // / denominator This ensures the calculated time guarantees the stake will be exceeded
+            let delta_t: u256 = numerator_delta
+                / total_tax_rate; 
+
+            println!("deficit: {}", deficit);
+            println!("delta_t: {}", delta_t);
+
+            // 3. Return nuke timestamp
+            u64_saturating_add(current_time, delta_t.try_into().unwrap())
+        }
+
+
         fn initialize_claim_info(
             ref self: ComponentState<TContractState>,
             tax_payer_location: u16,
