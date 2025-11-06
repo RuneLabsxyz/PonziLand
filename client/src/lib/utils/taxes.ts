@@ -161,9 +161,10 @@ export const estimateNukeTimeRpc = async (
   // 1. Calculate current unclaimed taxes from all neighbors
   let current_unclaimed_taxes = 0;
 
+  const tax_rate_per_neighbor = burnRate / numNeighbors;
+
   for (const elapsed_time of elapsedTimesPerNeighbor ?? []) {
     // Tax per neighbor = (burn_rate / num_neighbors) * elapsed_time / base_time
-    const tax_rate_per_neighbor = burnRate / numNeighbors;
     const taxes = (tax_rate_per_neighbor * elapsed_time) / baseTime;
     current_unclaimed_taxes += taxes;
   }
