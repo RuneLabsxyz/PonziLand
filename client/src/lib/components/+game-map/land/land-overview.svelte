@@ -7,7 +7,7 @@
   import { moveCameraTo } from '$lib/stores/camera.store';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { cn, locationIntToString, parseLocation } from '$lib/utils';
-  import { estimateNukeTime } from '$lib/utils/taxes';
+  import { estimateNukeTimeRpc } from '$lib/utils/taxes';
   import { Search } from 'lucide-svelte';
   import { get } from 'svelte/store';
   import LandDisplay from './land-display.svelte';
@@ -43,7 +43,8 @@
 
       isUpdatingNukeTime = true;
       try {
-        const timeInSeconds = await estimateNukeTime(land);
+        // Use RPC algorithm with elapsed times fetched internally
+        const timeInSeconds = await estimateNukeTimeRpc(land);
         estimatedNukeTime = timeInSeconds;
       } catch (error) {
         console.warn(

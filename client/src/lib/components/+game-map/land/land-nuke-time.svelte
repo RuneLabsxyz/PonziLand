@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import { Card } from '$lib/components/ui/card';
-  import { parseNukeTime, estimateNukeTime } from '$lib/utils/taxes';
+  import { parseNukeTime, estimateNukeTimeRpc } from '$lib/utils/taxes';
 
   let {
     land,
@@ -17,7 +17,8 @@
         nukeTime = undefined;
         return;
       }
-      const timeInSeconds = await estimateNukeTime(land);
+
+      const timeInSeconds = await estimateNukeTimeRpc(land);
       nukeTime = parseNukeTime(timeInSeconds).toString();
     };
     calculateNukeTime();

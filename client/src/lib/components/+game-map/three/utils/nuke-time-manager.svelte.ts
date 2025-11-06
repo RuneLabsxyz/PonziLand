@@ -1,7 +1,7 @@
 import { BuildingLand } from '$lib/api/land/building_land';
 import { landStore } from '$lib/stores/store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
-import { estimateNukeTimeSync, parseNukeTime } from '$lib/utils/taxes';
+import { estimateNukeTimeRpc, parseNukeTime } from '$lib/utils/taxes';
 import { SvelteMap } from 'svelte/reactivity';
 import type { LandTile } from '../landTile';
 import type { BaseLand } from '$lib/api/land';
@@ -23,8 +23,6 @@ export interface MinimalLandTile {
 interface CachedNukeTime {
   timeInSeconds: number;
   lastCalculated: number;
-  elapsedTimes?: any[];
-  minElapsedTime?: number;
 }
 
 export class NukeTimeManager {
@@ -98,32 +96,13 @@ export class NukeTimeManager {
             landStore.getAllLands,
           );
 
-          // Get elapsed times (RPC call)
-          const elapsedTimes =
-            await landWithActions.getElapsedTimeSinceLastClaimForNeighbors();
-
-          // Calculate min elapsed time
-          const minElapsedTime = elapsedTimes?.length
-            ? Math.min(...elapsedTimes.map((neighbor) => Number(neighbor[1])))
-            : undefined;
-
-          // Get neighbor count
-          const neighborCount =
-            landWithActions.getNeighbors()?.getBaseLandsArray()?.length || 0;
-
-          // Calculate nuke time synchronously using cached data
-          const timeInSeconds = estimateNukeTimeSync(
-            landWithActions,
-            neighborCount,
-            minElapsedTime,
-          );
+          // Use RPC algorithm with elapsed times fetched internally
+          const timeInSeconds = await estimateNukeTimeRpc(landWithActions);
 
           // Update cache
           this.cache.set(locationKey, {
             timeInSeconds,
             lastCalculated: Date.now(),
-            elapsedTimes,
-            minElapsedTime,
           });
 
           // Force reactivity update
@@ -188,47 +167,17 @@ export class NukeTimeManager {
             timeInSeconds: cachedResult.timeInSeconds,
           });
         } else {
-          // Try to calculate synchronously if we have neighbors info
-          const landWithActions = createLandWithActions(
-            tile.land as BuildingLand,
-            landStore.getAllLands,
-          );
-          const neighborCount =
-            landWithActions.getNeighbors()?.getBaseLandsArray()?.length || 0;
-
-          if (neighborCount > 0) {
-            // If we have cached elapsed times, use them
-            if (cachedResult?.minElapsedTime !== undefined) {
-              const timeInSeconds = estimateNukeTimeSync(
-                landWithActions,
-                neighborCount,
-                cachedResult.minElapsedTime,
-              );
-              const { text, shieldType } = this.formatNukeTime(timeInSeconds);
-              dataMap.set(locationKey, {
-                text,
-                position: [
-                  tile.position[0],
-                  tile.position[1] + 0.1,
-                  tile.position[2],
-                ],
-                shieldType,
-                timeInSeconds,
-              });
-            } else {
-              // Queue RPC call and show placeholder
-              this.queueRPCCall(locationKey, landTiles);
-              dataMap.set(locationKey, {
-                text: '...',
-                position: [
-                  tile.position[0],
-                  tile.position[1] + 0.1,
-                  tile.position[2],
-                ],
-                shieldType: 'grey',
-              });
-            }
-          }
+          // Cache is invalid, queue RPC call
+          this.queueRPCCall(locationKey, landTiles);
+          dataMap.set(locationKey, {
+            text: '...',
+            position: [
+              tile.position[0],
+              tile.position[1] + 0.1,
+              tile.position[2],
+            ],
+            shieldType: 'grey',
+          });
         }
       } catch (error) {
         console.warn(
