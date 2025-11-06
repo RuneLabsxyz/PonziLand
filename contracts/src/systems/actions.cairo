@@ -725,7 +725,7 @@ pub mod actions {
             let land = store.land(land_location);
             let land_stake = store.land_stake(land_location);
             let neighbors = get_land_neighbors(store, land.location);
-            self.taxes.calculate_nuke_time_v3(store, @land, @land_stake, neighbors)
+            self.taxes.calculate_nuke_time(store, @land, @land_stake, neighbors)
         }
 
         fn get_unclaimed_taxes_per_neighbor(
