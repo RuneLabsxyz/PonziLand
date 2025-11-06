@@ -1,0 +1,87 @@
+---
+import { getEntry } from "astro:content";
+
+// Fetch the game config
+const config = await getEntry("gameConfig", "config");
+
+if (!config) {
+  throw new Error("Game config not found");
+}
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PonziLand Game Config</title>
+  </head>
+  <body>
+    <h1>PonziLand Game Configuration</h1>
+
+    <section>
+      <h2>Timing</h2>
+      <ul>
+        <li>Auction Duration: {config.data.auction_duration}s</li>
+        <li>Base Time: {config.data.base_time}s</li>
+        <li>Linear Decay Time: {config.data.linear_decay_time}s</li>
+        <li>Time Speed: {config.data.time_speed}x</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Fees</h2>
+      <ul>
+        <li>Buy Fee: {config.data.buy_fee.toString()}</li>
+        <li>Claim Fee: {config.data.claim_fee.toString()}</li>
+        <li>Claim Fee Threshold: {config.data.claim_fee_threshold.toString()}</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Prices</h2>
+      <ul>
+        <li>Floor Price: {config.data.floor_price.toString()}</li>
+        <li>Min Auction Price: {config.data.min_auction_price.toString()}</li>
+        <li>Min Auction Price Multiplier: {config.data.min_auction_price_multiplier}x</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Rates</h2>
+      <ul>
+        <li>Decay Rate: {config.data.decay_rate}%</li>
+        <li>Drop Rate: {config.data.drop_rate}%</li>
+        <li>Tax Rate: {config.data.tax_rate}%</li>
+        <li>Price Decrease Rate: {config.data.price_decrease_rate}%</li>
+        <li>Rate Denominator: {config.data.rate_denominator}</li>
+        <li>Scaling Factor: {config.data.scaling_factor}</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Auctions</h2>
+      <ul>
+        <li>Max Auctions: {config.data.max_auctions}</li>
+        <li>Max Auctions from Bid: {config.data.max_auctions_from_bid}</li>
+        <li>Liquidity Safety Multiplier: {config.data.liquidity_safety_multiplier}x</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Other</h2>
+      <ul>
+        <li>Max Circles: {config.data.max_circles}</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Contracts</h2>
+      <ul>
+        <li>Main Currency: <code>{config.data.main_currency}</code></li>
+        <li>Auction Contract: <code>{config.data.our_contract_for_auction}</code></li>
+        <li>Fee Contract: <code>{config.data.our_contract_for_fee}</code></li>
+      </ul>
+    </section>
+  </body>
+</html>
