@@ -4,6 +4,7 @@
   "workspaces": [
     "client",
     "playtest",
+    "docs",
     "packages/*"
   ],
   "devDependencies": {
