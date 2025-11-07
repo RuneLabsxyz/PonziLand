@@ -11,7 +11,10 @@ const sidebarData = await getSidebarData();
 
 ---
 
-<aside class="w-64 border-r border-gray-200 p-6 overflow-y-auto">
+<aside 
+  id="docs-sidebar"
+  class="fixed md:static top-0 left-0 h-screen w-64 border-r border-gray-200 p-6 overflow-y-auto z-40 bg-white transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out"
+>
   <nav>
     {sidebarData.map(({ category, categoryKey, docs }) => (
       <div class="mb-6" data-category={categoryKey}>
@@ -53,7 +56,7 @@ const sidebarData = await getSidebarData();
 <script>
   // Initialize category fold states from localStorage
   const STORAGE_KEY = 'sidebar-category-states';
-  
+
   function getStoredStates(): Record<string, boolean> {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -62,7 +65,7 @@ const sidebarData = await getSidebarData();
       return {};
     }
   }
-  
+
   function saveState(categoryKey: string, isExpanded: boolean) {
     try {
       const states = getStoredStates();
@@ -72,22 +75,22 @@ const sidebarData = await getSidebarData();
       // Ignore localStorage errors
     }
   }
-  
+
   function initializeSidebar() {
     const storedStates = getStoredStates();
     const toggleButtons = document.querySelectorAll('.category-toggle');
-    
+
     toggleButtons.forEach((button) => {
       const categoryKey = button.getAttribute('data-category-key');
       if (!categoryKey) return;
-      
+
       const content = document.querySelector(`.category-content[data-category-key="${categoryKey}"]`);
       if (!content) return;
-      
+
       // Set initial state (default to expanded if not in storage)
       const isExpanded = storedStates[categoryKey] !== false;
       updateCategoryState(button as HTMLElement, content as HTMLElement, isExpanded);
-      
+
       // Add click handler
       button.addEventListener('click', () => {
         const currentExpanded = button.getAttribute('aria-expanded') === 'true';
@@ -97,11 +100,11 @@ const sidebarData = await getSidebarData();
       });
     });
   }
-  
+
   function updateCategoryState(button: HTMLElement, content: HTMLElement, isExpanded: boolean) {
     button.setAttribute('aria-expanded', String(isExpanded));
     const chevron = button.querySelector('.chevron');
-    
+
     if (isExpanded) {
       content.style.display = '';
       chevron?.classList.remove('rotate-[-90deg]');
@@ -110,10 +113,10 @@ const sidebarData = await getSidebarData();
       chevron?.classList.add('rotate-[-90deg]');
     }
   }
-  
+
   // Initialize on load
   initializeSidebar();
-  
+
   // Re-initialize on navigation (for SPAs)
   document.addEventListener('astro:page-load', initializeSidebar);
 </script>
