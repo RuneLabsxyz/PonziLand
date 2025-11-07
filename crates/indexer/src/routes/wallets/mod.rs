@@ -35,13 +35,12 @@ pub struct ActiveWalletsResponse {
 }
 
 // Global LRU/TTL cache for wallet activity
-static WALLETS_CACHE: LazyLock<Cache<String, ActiveWalletsResponse>> =
-    LazyLock::new(|| {
-        Cache::builder()
-            .time_to_live(Duration::from_secs(30))
-            .max_capacity(1_000)
-            .build()
-    });
+static WALLETS_CACHE: LazyLock<Cache<String, ActiveWalletsResponse>> = LazyLock::new(|| {
+    Cache::builder()
+        .time_to_live(Duration::from_secs(30))
+        .max_capacity(1_000)
+        .build()
+});
 
 pub struct WalletsRoute;
 
