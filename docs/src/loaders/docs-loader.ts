@@ -22,6 +22,16 @@ export function docsLoader(): Loader {
       for (const [id, entry] of entries) {
         const filePath = id as string;
 
+        // Remove extension and handle index files
+        let processedId = filePath.replace(/\.(md|mdx)$/, "");
+        if (processedId.endsWith("/index")) {
+          processedId = processedId.replace(/\/index$/, "") || "/";
+        }
+
+        // Update the store with the new id
+        const originalEntry = entry;
+        context.store.delete(id);
+
         // Extract category from file path
         const categoryKey = getCategoryFromPath(filePath);
 
@@ -61,10 +71,20 @@ export function docsLoader(): Loader {
 
 function getCategoryFromPath(filePath: string): CategoryKey | null {
   // Extract first folder from path (e.g., "getting-started/intro.md" -> "getting-started")
-  const match = filePath.match(/^([^\/]+)\//);
-  if (!match) return null;
 
-  const folder = match[1];
+  const match = filePath.match(/^([^\/]+)\//);
+  console.log(filePath);
+
+  let folder: string;
+
+  if (!match) {
+    // If no slash found, use the entire filename without extension as potential category
+    folder = filePath.replace(/\.(md|mdx)$/, "");
+  } else {
+    folder = match[1];
+  }
+
+  console.log(filePath, folder);
   return Object.keys(categories).find(
     (key) => categories[key as CategoryKey].folder === folder,
   ) as CategoryKey | null;

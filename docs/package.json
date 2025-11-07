@@ -11,11 +11,15 @@
   "dependencies": {
     "@astrojs/mdx": "^4.3.9",
     "@astrojs/starlight": "^0.36.2",
+    "@astrojs/svelte": "^7.2.2",
     "@iconify-json/lucide": "^1.2.72",
+    "@ponziland/ui": "^0.1.0",
     "@tailwindcss/vite": "^4.1.16",
     "astro": "^5.15.3",
     "astro-icon": "^1.1.5",
     "lucide-astro": "^0.552.0",
-    "tailwindcss": "^4.1.16"
+    "svelte": "^5.43.4",
+    "tailwindcss": "^4.1.16",
+    "typescript": "^5.9.3"
   }
 }

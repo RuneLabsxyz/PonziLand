@@ -1,1 +1,73 @@
 @import "tailwindcss";
+
+@source "../pages";
+@source "../components";
+@source "../layouts";
+
+/* Import fonts */
+@font-face {
+  font-family: "PonziDS";
+  font-size: small;
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/PonziDS_RegularV2.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "PonziDS";
+  font-style: normal;
+  font-weight: 600;
+  src: url("/fonts/PonziDS2_SemiBoldV3.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Nintendo DS BIOS";
+  font-size: small;
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/Nintendo-DS-BIOS.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "PonziNumber";
+  src: url("/fonts/PonziNumber_Regular_G7.ttf");
+}
+
+@layer utilities {
+  .pixelated {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+
+  .font-ponzi-number {
+    font-family: "PonziNumber", sans-serif;
+    line-height: normal;
+  }
+
+  .text-ponzi-number {
+    font-family: "PonziNumber", sans-serif;
+    line-height: normal;
+    -webkit-text-stroke: 0.25em #000;
+    paint-order: stroke fill;
+  }
+
+  .font-ponzi {
+    font-family: "PonziDS", sans-serif;
+    line-height: normal;
+  }
+
+  .text-ponzi {
+    font-family: "PonziDS", sans-serif;
+    line-height: normal;
+    -webkit-text-stroke: 0.25em #000;
+    paint-order: stroke fill;
+  }
+}
+
+/* Mobile sidebar animations */
+@media (max-width: 767px) {
+  #sidebar-backdrop {
+    transition: opacity 0.3s ease-in-out;
+  }
+}
