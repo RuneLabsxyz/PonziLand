@@ -1,6 +1,7 @@
 ---
 import Layout from "./Layout.astro";
 import Sidebar from "../components/Sidebar.astro";
+import Icon from "../components/Icon.astro";
 
 interface Props {
   title?: string;
@@ -10,14 +11,82 @@ interface Props {
 const { title = "Documentation", currentPath } = Astro.props;
 ---
 
-<Layout>
-  <div class="flex min-h-screen">
+<Layout title={title}>
+  <div class="flex min-h-screen justify-stretch">
+    <!-- Mobile hamburger button -->
+    <button
+      id="mobile-menu-button"
+      class="fixed top-4 left-4 z-50 md:hidden bg-white border border-gray-200 rounded-md p-2 shadow-md hover:bg-gray-50 transition-colors"
+      aria-label="Toggle menu"
+    >
+      <Icon name="menu" size={24} />
+    </button>
+
+    <!-- Backdrop overlay for mobile -->
+    <div
+      id="sidebar-backdrop"
+      class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"
+      aria-hidden="true"
+    ></div>
+
     <Sidebar currentPath={currentPath} />
 
-    <main class="flex-1 p-8 max-w-4xl">
-      <article class="prose prose-slate max-w-none">
+    <main class="flex-1 w-full self-stretch p-8 pt-16 md:pt-8">
         <slot />
-      </article>
     </main>
   </div>
 </Layout>
+
+<script>
+  function initializeMobileMenu() {
+    const menuButton = document.getElementById('mobile-menu-button');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sidebar = document.getElementById('docs-sidebar');
+
+    if (!menuButton || !backdrop || !sidebar) return;
+
+    function toggleSidebar() {
+      const isOpen = sidebar!.classList.contains('translate-x-0');
+
+      if (isOpen) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    }
+
+    function openSidebar() {
+      sidebar!.classList.remove('-translate-x-full');
+      sidebar!.classList.add('translate-x-0');
+      backdrop!.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+      sidebar!.classList.add('-translate-x-full');
+      sidebar!.classList.remove('translate-x-0');
+      backdrop!.classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+
+    menuButton.addEventListener('click', toggleSidebar);
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Close sidebar on navigation (mobile only)
+    const sidebarLinks = sidebar!.querySelectorAll('a');
+    sidebarLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        // Check if mobile
+        if (window.innerWidth < 768) {
+          closeSidebar();
+        }
+      });
+    });
+  }
+
+  // Initialize on load
+  initializeMobileMenu();
+
+  // Re-initialize on navigation (for SPAs)
+  document.addEventListener('astro:page-load', initializeMobileMenu);
+</script>
