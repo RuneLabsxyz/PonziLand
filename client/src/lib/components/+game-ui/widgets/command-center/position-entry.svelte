@@ -14,9 +14,17 @@
   } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import { ChevronDown, ChevronUp, Share2 } from 'lucide-svelte';
+  import {
+    ChevronDown,
+    ChevronUp,
+    Share2,
+    X,
+    Copy,
+    Download,
+  } from 'lucide-svelte';
   import { formatTimestamp } from '../history/utils';
   import type { HistoricalPosition } from './historical-positions.service';
+  import { generateShareImage } from './share-image-generator';
 
   interface Props {
     position: HistoricalPosition;
@@ -25,6 +33,8 @@
 
   let { position, isPositionOpen }: Props = $props();
   let expanded = $state(false);
+  let showShareModal = $state(false);
+  let generatedImageUrl = $state<string>('');
 
   const isOpen = $derived(isPositionOpen(position));
 
@@ -392,13 +402,16 @@
               .toNumber()
               .toFixed(2)} $
           </span>
-          <button
-            class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+          <div
+            class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10 cursor-pointer"
             onclick={sharePosition}
+            onkeydown={handleKeydown}
             title="Share position"
+            role="button"
+            tabindex="0"
           >
             <Share2 size={12} />
-          </button>
+          </div>
         {:else}
           <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>
         {/if}
@@ -464,6 +477,72 @@
     </div>
   {/if}
 </div>
+
+<!-- Share Modal -->
+{#if showShareModal}
+  <div
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+    onclick={closeModal}
+    onkeydown={(e) => e.key === 'Escape' && closeModal()}
+    role="dialog"
+    aria-modal="true"
+    tabindex="-1"
+  >
+    <div
+      class="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 relative"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={() => {}}
+      role="document"
+    >
+      <!-- Close Button -->
+      <button
+        class="absolute top-4 right-4 text-gray-400 hover:text-white"
+        onclick={closeModal}
+      >
+        <X size={20} />
+      </button>
+
+      <!-- Modal Header -->
+      <h3 class="text-xl font-bold text-white mb-4">Share Position</h3>
+
+      <!-- Image Preview -->
+      <div class="mb-6">
+        <img
+          src={generatedImageUrl}
+          alt=""
+          class="w-full rounded-lg border border-gray-700"
+        />
+      </div>
+
+      <!-- Share Options -->
+      <div class="space-y-3">
+        <button
+          class="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors"
+          onclick={shareOnX}
+        >
+          <X size={18} />
+          Share on X (Twitter)
+        </button>
+
+        <button
+          class="w-full flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors"
+          onclick={copyImageToClipboard}
+        >
+          <Copy size={18} />
+          Copy to Clipboard
+        </button>
+
+        <button
+          class="w-full flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors"
+          onclick={downloadImage}
+        >
+          <Download size={18} />
+          Download Image
+        </button>
+      </div>
+    </div>
+  </div>
+{/if}
 
 <style>
   .position-entry {
