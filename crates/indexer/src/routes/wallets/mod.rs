@@ -7,7 +7,7 @@ use chaindata_repository::WalletActivityRepository;
 use moka::future::Cache;
 use serde::{Deserialize, Serialize};
 use std::{
-    sync::{Arc, OnceLock},
+    sync::{Arc, LazyLock},
     time::Duration,
 };
 
@@ -36,7 +36,13 @@ pub struct ActiveWalletsResponse {
 
 // Global LRU/TTL cache for wallet activity
 static WALLETS_CACHE: LazyLock<Cache<String, ActiveWalletsResponse>> =
-    LazyLock::new(|| Cache::new(100));
+    LazyLock::new(|| {
+        Cache::builder()
+            .time_to_live(Duration::from_secs(30))
+            .max_capacity(1_000)
+            .build()
+    });
+
 pub struct WalletsRoute;
 
 impl Default for WalletsRoute {
@@ -64,15 +70,7 @@ impl WalletsRoute {
             None => "all_time".to_string(),
         };
 
-        // Initialize cache lazily with TTL and capacity
-        let cache = WALLETS_CACHE.get_or_init(|| {
-            Arc::new(
-                Cache::builder()
-                    .time_to_live(Duration::from_secs(30))
-                    .max_capacity(1_000)
-                    .build(),
-            )
-        });
+        let cache = &*WALLETS_CACHE;
 
         if let Some(cached) = cache.get(&cache_key).await {
             return Json(cached);
@@ -125,14 +123,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_cache_insert_and_get() {
-        let cache = WALLETS_CACHE.get_or_init(|| {
-            Arc::new(
-                Cache::builder()
-                    .time_to_live(Duration::from_secs(30))
-                    .max_capacity(1_000)
-                    .build(),
-            )
-        });
+        let cache = &*WALLETS_CACHE;
 
         // Clear cache first
         cache.invalidate_all();
