@@ -14,8 +14,8 @@
   } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import { ChevronDown, ChevronUp } from 'lucide-svelte';
-  import { formatTimestamp, formatTimestampRelative } from '../history/utils';
+  import { ChevronDown, ChevronUp, Share2 } from 'lucide-svelte';
+  import { formatTimestamp } from '../history/utils';
   import type { HistoricalPosition } from './historical-positions.service';
 
   interface Props {
@@ -43,6 +43,25 @@
       });
     } catch {
       return dateString;
+    }
+  }
+
+  function sharePosition(event: MouseEvent) {
+    event.stopPropagation();
+
+    const pnlText = realizedPnL
+      ? `${realizedPnL.rawValue().isPositive() ? '+' : ''}${realizedPnL.rawValue().toNumber().toFixed(2)} $`
+      : 'TBD';
+
+    const shareText = `PonziLand Position at ${coordinates.x}, ${coordinates.y}\nNet P&L: ${pnlText}\n${window.location.origin}`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: 'PonziLand Position',
+        text: shareText,
+      });
+    } else {
+      navigator.clipboard.writeText(shareText);
     }
   }
 
@@ -361,7 +380,7 @@
       </div>
 
       <!-- Realized P&L Column -->
-      <div class="text-right">
+      <div class="text-right flex items-center justify-end gap-1">
         {#if realizedPnL}
           <span
             class={realizedPnL.rawValue().isPositive()
@@ -373,6 +392,13 @@
               .toNumber()
               .toFixed(2)} $
           </span>
+          <button
+            class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+            onclick={sharePosition}
+            title="Share position"
+          >
+            <Share2 size={12} />
+          </button>
         {:else}
           <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>
         {/if}
