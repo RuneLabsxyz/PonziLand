@@ -1,5 +1,6 @@
 <script lang="ts">
   import { cn } from '$lib/utils';
+  import PonziProgress from './PonziProgress.svelte';
 
   interface Props {
     pnl?: number;
@@ -109,6 +110,7 @@
             {/each}
           </div>
         </div>
+        <PonziProgress />
         <div class="flex gap-2 text-xs">
           {#each tokenTickers as ticker, i}
             <div class="flex items-center gap-1">

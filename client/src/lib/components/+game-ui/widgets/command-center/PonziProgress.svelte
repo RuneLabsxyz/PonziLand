@@ -1,10 +1,10 @@
 <div class="progress-ponzi-gray w-full relative">
   <div
-    class="h-12 -m-[2em] skew left-[1.5em] top-[.5em] pr-[3em] overflow-hidden relative flex"
+    class="h-[3em] -m-[2em] skew left-[1.5em] top-[.5em] bottom-[.5em] pr-[3em] overflow-hidden relative flex"
   >
     <div class="w-full h-full bg-blue-500"></div>
-    <div class="w-2 h-full bg-black-500"></div>
-    <div class="w-full h-full bg-orange-500"></div>
+    <div class="w-full h-full bg-white"></div>
+    <div class="w-full h-full bg-red-500"></div>
   </div>
   <div
     class="bg-white h-[4px] opacity-50 absolute -m-[2em] skew left-[2.2em] top-[.65em] right-[1em]"
