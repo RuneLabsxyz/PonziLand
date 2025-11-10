@@ -3,6 +3,8 @@
   import { cn } from '$lib/utils';
   import PonziProgress from './PonziProgress.svelte';
   import type { Token } from '$lib/interfaces';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { displayCurrency } from '$lib/utils/currency';
 
   interface Props {
     pnl?: number;
@@ -17,6 +19,8 @@
       address: string;
       symbol: string;
       icon?: string;
+      originalAmount?: number;
+      token?: any;
     }>;
     taxes?: number;
     landTicker?: string;
@@ -80,6 +84,8 @@
       return {
         percentage: tokenPercentages[i] || 0,
         amount: tokenInflowAmounts[i] || 0,
+        originalAmount: metadata?.originalAmount || 0,
+        token: metadata?.token,
         color: fallbackColorMap[i] || '#6B7280',
         ticker,
         icon: metadata?.icon,
@@ -87,6 +93,23 @@
       };
     });
   });
+
+  // Helper function to format token amounts using CurrencyAmount and displayCurrency
+  const formatTokenAmount = (amount: number, token: any) => {
+    if (!token) return displayCurrency(amount);
+
+    try {
+      // Use CurrencyAmount to properly scale the amount, then displayCurrency to format
+      const currencyAmount = CurrencyAmount.fromUnscaled(
+        amount.toString(),
+        token,
+      );
+      return displayCurrency(currencyAmount.rawValue().toString());
+    } catch (error) {
+      // Fallback to displayCurrency with basic amount
+      return displayCurrency(amount);
+    }
+  };
 </script>
 
 <div
@@ -222,7 +245,7 @@
               class="w-2 h-2 rounded-full"
               style="background-color: {value.color}"
             ></div>
-            <span>{value.ticker}: ${value.amount.toFixed(2)}</span>
+            <span>{value.ticker}: {value.originalAmount}</span>
           </div>
         {/each}
       </div>
