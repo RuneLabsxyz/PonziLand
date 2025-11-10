@@ -1,10 +1,58 @@
+<script lang="ts">
+  import { color } from 'three/src/nodes/TSL.js';
+
+  interface Props {
+    values?: { percentage: number; color: string }[];
+  }
+
+  let {
+    values = [
+      {
+        percentage: 35,
+        color: '#FF00FF',
+        ticker: 'STRK',
+      },
+      {
+        percentage: 15,
+        color: '#00FFFF',
+        ticker: 'STRK',
+      },
+      {
+        percentage: 25,
+        color: '#0000FF',
+        ticker: 'STRK',
+      },
+      {
+        percentage: 15,
+        color: '#00FF00',
+      },
+      {
+        percentage: 10,
+        color: '#FF0000',
+      },
+    ],
+  } = $props();
+</script>
+
 <div class="progress-ponzi-gray w-full relative">
   <div
     class="h-[3em] -m-[2em] skew left-[1.5em] top-[.5em] bottom-[.5em] pr-[3em] overflow-hidden relative flex"
   >
-    <div class="w-full h-full bg-blue-500"></div>
-    <div class="w-full h-full bg-white"></div>
-    <div class="w-full h-full bg-red-500"></div>
+    {#each values as value}
+      <div
+        class="h-full flex items-center justify-center"
+        style="background-color: {value.color}; width: {value.percentage}%;"
+      >
+        {#if value.percentage > 10}
+          <img
+            src="/tokens/STARKNET/strk.png"
+            alt="icon"
+            class="w-8 h-8"
+            style="transform: skew(26deg);"
+          />
+        {/if}
+      </div>
+    {/each}
   </div>
   <div
     class="bg-white h-[4px] opacity-50 absolute -m-[2em] skew left-[2.2em] top-[.65em] right-[1em]"
