@@ -736,7 +736,7 @@ pub mod actions {
             let payer_land = store.land(payer_location);
             let elapsed_time = self
                 .get_elapsed_time_since_last_claim(claimer_location, payer_location);
-            get_taxes_per_neighbor(@payer_land, elapsed_time, store)
+            get_taxes_per_neighbor(@payer_land, elapsed_time, store).amount
         }
 
         fn get_unclaimed_taxes_per_neighbors_total(
