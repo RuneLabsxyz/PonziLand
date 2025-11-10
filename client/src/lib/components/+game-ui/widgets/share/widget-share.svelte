@@ -274,10 +274,8 @@
 </script>
 
 <!-- PnL Image Preview -->
-<div class="mb-8 flex justify-center">
-  <div class="border border-gray-600 rounded-lg overflow-hidden">
-    <PnlImage {...pnlImageProps} />
-  </div>
+<div class="mb-8 mt-4 flex justify-center">
+  <PnlImage {...pnlImageProps} />
 </div>
 
 <!-- Share Options -->

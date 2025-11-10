@@ -1,7 +1,7 @@
 export const STARKNET = {
   skin: 'STARKNET',
   icon: '/tokens/STARKNET/strk.png',
-  color: '#3B82F6', // Blue for Starknet
+  color: '#2A2A73', // Blue for Starknet
   biome: { x: 2, y: 3 },
   building: {
     1: {

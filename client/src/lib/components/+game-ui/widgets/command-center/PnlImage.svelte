@@ -17,7 +17,7 @@
       address: string;
       symbol: string;
       icon?: string;
-      originalAmount?: number;
+      originalAmount?: string;
       token?: any;
     }>;
     taxes?: number;
@@ -79,7 +79,6 @@
       const metadata = tokenMetadataList?.find(
         (meta) => meta.symbol === ticker,
       );
-      
       // Get color from token skin metadata, fallback to predefined colors
       let color = fallbackColorMap[i] || '#6B7280';
       if (metadata?.token?.skin) {
@@ -88,7 +87,6 @@
           color = tokenSkinMetadata.color;
         }
       }
-      
       return {
         percentage: tokenPercentages[i] || 0,
         amount: tokenInflowAmounts[i] || 0,
@@ -102,6 +100,13 @@
     });
   });
 
+  // Dynamic grid columns based on number of tokens
+  const gridColumns = $derived.by(() => {
+    const tokenCount = progressValues.length;
+    if (tokenCount <= 2) return 'grid-cols-2';
+    if (tokenCount <= 6) return 'grid-cols-3';
+    return 'grid-cols-4';
+  });
 </script>
 
 <div
@@ -110,9 +115,12 @@
     'bg-pnl-red': pnl < 0,
   })}
 >
+  <div class="opacity-90 absolute right-0 top-0 px-6 py-5 tracking-wider font-ponzi-number">
+    play.ponzi.land
+  </div>
   <div class="absolute top-[120px] left-0 bottom-0 h-[600px] w-[450px] px-8">
     <div class="w-full flex items-center gap-6">
-      <div>
+      <div class="opacity-0 w-0">
         <LandDisplay token={landToken} class="w-32 h-32" />
       </div>
       <div class="flex flex-col gap-4">
@@ -229,12 +237,12 @@
     </div>
     <!-- Full Width Progress Section -->
     <div class="mt-6 -mr-6 flex flex-col">
-      <PonziProgress values={progressValues} />
-      <div class="grid grid-cols-3">
+      <PonziProgress values={progressValues} title={`TOKENS EARNED +${tokenInflow.toFixed(2)}`} />
+      <div class="grid {gridColumns}">
         {#each progressValues as value}
           <div class="flex items-center gap-1">
             <div
-              class="w-2 h-2 rounded-full"
+              class="w-2 h-2"
               style="background-color: {value.color}"
             ></div>
             <span>{value.ticker}: {value.originalAmount}</span>
@@ -242,9 +250,6 @@
         {/each}
       </div>
     </div>
-  </div>
-  <div class="absolute left-0 bottom-0 p-4 text-xl tracking-wide">
-    play.ponzi.land
   </div>
 </div>
 
