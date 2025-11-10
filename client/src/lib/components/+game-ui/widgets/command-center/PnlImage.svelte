@@ -115,7 +115,9 @@
     'bg-pnl-red': pnl < 0,
   })}
 >
-  <div class="opacity-90 absolute right-0 top-0 px-6 py-5 tracking-wider font-ponzi-number">
+  <div
+    class="opacity-90 absolute right-0 top-0 px-6 py-5 tracking-wider font-ponzi-number"
+  >
     play.ponzi.land
   </div>
   <div class="absolute top-[120px] left-0 bottom-0 h-[600px] w-[450px] px-8">
@@ -175,7 +177,7 @@
         </span>
       </div>
     </div>
-    <div class="grid grid-cols-2 gap-4 w-full text-lg m-4">
+    <div class="grid grid-cols-3 gap-4 w-full text-lg m-4">
       <!-- Left Column -->
       <div class="flex flex-col gap-1">
         <div class="text-white stroke-3d-black">Bought at:</div>
@@ -199,13 +201,13 @@
       </div>
 
       <!-- Right Column -->
-      <div class="flex flex-col gap-2">
-        <div class="text-white stroke-3d-black flex items-bottom gap-1">
-          <img
+      <div class="flex flex-col gap-1">
+        <div class="text-white stroke-3d-black flex items-end gap-1">
+          <!-- <img
             src="/ui/icons/IconTiny_Outcome.png"
             alt="outcome"
             class="h-6 w-6"
-          />
+          /> -->
           <span> Taxes: </span>
         </div>
         <div
@@ -217,7 +219,7 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-2">
+      <!-- <div class="flex flex-col gap-2">
         <div class="text-white stroke-3d-black flex items-bottom gap-1">
           <img
             src="/ui/icons/IconTiny_Income.png"
@@ -233,18 +235,21 @@
             {tokenInflow > 0 ? '+' : ''}${Math.abs(tokenInflow).toFixed(2)}
           </span>
         </div>
-      </div>
+      </div> -->
     </div>
     <!-- Full Width Progress Section -->
+    {#snippet title()}
+      <div class="flex gap-2 items-center">
+        <span>TOKENS EARNED</span>
+        <span class="text-green-400 text-lg">+${tokenInflow.toFixed(2)}</span>
+      </div>
+    {/snippet}
     <div class="mt-6 -mr-6 flex flex-col">
-      <PonziProgress values={progressValues} title={`TOKENS EARNED +${tokenInflow.toFixed(2)}`} />
+      <PonziProgress values={progressValues} {title} />
       <div class="grid {gridColumns}">
         {#each progressValues as value}
           <div class="flex items-center gap-1">
-            <div
-              class="w-2 h-2"
-              style="background-color: {value.color}"
-            ></div>
+            <div class="w-2 h-2" style="background-color: {value.color}"></div>
             <span>{value.ticker}: {value.originalAmount}</span>
           </div>
         {/each}
