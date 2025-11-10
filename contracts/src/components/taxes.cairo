@@ -36,8 +36,8 @@ mod TaxesComponent {
     use ponzi_land::helpers::coord::max_neighbors;
     use ponzi_land::helpers::land::remove_neighbor;
     use ponzi_land::helpers::taxes::{
-        accumulate_amount_by_key, calculate_and_return_taxes_with_fee, calculate_share_for_nuke,
-        get_tax_rate_per_neighbor, get_taxes_per_neighbor,
+        TaxComputation, accumulate_amount_by_key, calculate_and_return_taxes_with_fee,
+        calculate_share_for_nuke, get_tax_rate_per_neighbor, get_taxes_per_neighbor,
     };
 
     // Models
@@ -75,6 +75,7 @@ mod TaxesComponent {
         total_taxes: u256,
         total_tax_for_claimer: u256,
         elapsed_time_claimer: u64,
+        dust_for_claimer: u256,
         cache_elapsed_time: Span<(ContractAddress, u64)>,
         total_elapsed_time: u64,
     }
@@ -278,7 +279,7 @@ mod TaxesComponent {
             );
             let num_active_neighbors = *neighbors_info.num_active_neighbors;
             let theoretical_max_payable = u256_saturating_mul(
-                tax_per_neighbor, num_active_neighbors.into(),
+                tax_per_neighbor.amount, num_active_neighbors.into(),
             );
             // Fast path: land has sufficient stake to handle maximum possible taxes
 
@@ -325,13 +326,20 @@ mod TaxesComponent {
                     *config.claimer.location, *config.tax_payer.location, *config.current_time,
                 );
 
-            let total_taxes = get_taxes_per_neighbor(config.tax_payer, elapsed_time, store);
+            let tax_result: TaxComputation = get_taxes_per_neighbor(
+                config.tax_payer, elapsed_time, store,
+            );
+            let total_taxes = tax_result.amount;
+            let dust_for_fee = tax_result.dust_for_fee;
 
             // Split taxes between claimer and protocol fee
             let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
                 total_taxes, *config.claim_fee,
             );
             payer_stake.accumulated_taxes_fee += fee_amount;
+            if dust_for_fee > 0 {
+                payer_stake.accumulated_taxes_fee += dust_for_fee.try_into().unwrap();
+            }
             self
                 ._execute_claim(
                     store, ref payer_stake, config, tax_for_claimer, ref token_transfers,
@@ -343,7 +351,7 @@ mod TaxesComponent {
                 );
 
             // Safe claim - just reduce stake and update storage
-            payer_stake.amount -= total_taxes;
+            payer_stake.amount -= total_taxes + dust_for_fee;
             store.set_land_stake(payer_stake);
 
             false // Normal claim, no nuke
@@ -366,7 +374,11 @@ mod TaxesComponent {
             let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
                 *tax_data.total_tax_for_claimer, *config.claim_fee,
             );
+            let dust_for_fee = *tax_data.dust_for_claimer;
             payer_stake.accumulated_taxes_fee += fee_amount;
+            if dust_for_fee > 0 {
+                payer_stake.accumulated_taxes_fee += dust_for_fee.try_into().unwrap();
+            }
             self
                 ._execute_claim(
                     store, ref payer_stake, config, tax_for_claimer, ref token_transfers,
@@ -376,7 +388,7 @@ mod TaxesComponent {
                     store, ref payer_stake, config, neighbors_info,
                 );
 
-            payer_stake.amount -= *tax_data.total_tax_for_claimer;
+            payer_stake.amount -= *tax_data.total_tax_for_claimer + dust_for_fee;
             store.set_land_stake(payer_stake);
             false
         }
@@ -735,6 +747,7 @@ mod TaxesComponent {
             let mut cache_elapsed_time: Array<(ContractAddress, u64)> = ArrayTrait::new();
             let mut total_elapsed_time: u64 = 0;
             let mut elapsed_time_claimer: u64 = 0;
+            let mut dust_for_claimer: u256 = 0;
             for neighbor in neighbors_of_tax_payer {
                 let neighbor_location = *neighbor.location;
                 let elapsed_time = self
@@ -743,14 +756,13 @@ mod TaxesComponent {
                     );
                 total_elapsed_time += elapsed_time;
                 cache_elapsed_time.append((*neighbor.owner, elapsed_time));
-                let tax_per_neighbor = get_taxes_per_neighbor(
-                    config.tax_payer, elapsed_time, store,
-                );
-                total_taxes += tax_per_neighbor;
+                let tax_result = get_taxes_per_neighbor(config.tax_payer, elapsed_time, store);
+                total_taxes += tax_result.amount;
 
                 if neighbor_location == *config.claimer.location {
-                    total_tax_for_claimer += tax_per_neighbor;
+                    total_tax_for_claimer += tax_result.amount;
                     elapsed_time_claimer = elapsed_time;
+                    dust_for_claimer += tax_result.dust_for_fee;
                 }
             }
             let cache_elapsed_time = cache_elapsed_time.span();
@@ -758,6 +770,7 @@ mod TaxesComponent {
                 total_taxes,
                 total_tax_for_claimer,
                 elapsed_time_claimer,
+                dust_for_claimer,
                 cache_elapsed_time,
                 total_elapsed_time,
             }
@@ -881,4 +894,3 @@ mod TaxesComponent {
         }
     }
 }
-
