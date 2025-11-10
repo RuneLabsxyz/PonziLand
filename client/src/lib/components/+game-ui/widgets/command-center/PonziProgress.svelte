@@ -1,8 +1,6 @@
 <script lang="ts">
-  import { color } from 'three/src/nodes/TSL.js';
-
   interface Props {
-    values?: { percentage: number; color: string }[];
+    values?: { percentage: number; color: string; ticker?: string }[];
   }
 
   let {
@@ -31,7 +29,7 @@
         color: '#FF0000',
       },
     ],
-  } = $props();
+  }: Props = $props();
 </script>
 
 <div class="progress-ponzi-gray w-full relative">
