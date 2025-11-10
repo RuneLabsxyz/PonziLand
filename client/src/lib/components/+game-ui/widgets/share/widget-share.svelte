@@ -208,6 +208,7 @@
       tokenMetadataList,
       taxes: 0,
       landTicker: saleToken?.symbol || 'STRK',
+      landToken: buyToken,
     };
   });
 
@@ -312,8 +313,3 @@
   </div>
 </div>
 
-<style>
-  .widget-share {
-    min-height: 400px;
-  }
-</style>
