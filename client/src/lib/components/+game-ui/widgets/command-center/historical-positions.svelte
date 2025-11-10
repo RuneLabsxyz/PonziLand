@@ -152,8 +152,8 @@
   </div>
 </div>
 <div class="flex flex-col h-full min-h-0">
-  <ScrollArea type="scroll" class="flex-1">
-    <div class="flex flex-col">
+  <ScrollArea orientation="both" type="scroll" class="flex-1">
+    <div class="flex flex-col min-h-0 min-w-[1400px]">
       {#if loading}
         <div class="text-center py-8 text-gray-400">Loading positions...</div>
       {:else if error}
