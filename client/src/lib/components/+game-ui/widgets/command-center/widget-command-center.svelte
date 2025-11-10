@@ -25,7 +25,7 @@
 
   let refreshInterval: NodeJS.Timeout;
   let activeTab = $state<'history' | 'positions' | 'market' | 'my-lands'>(
-    'history',
+    'my-lands',
   );
 
   function setActiveTab(tab: 'history' | 'positions' | 'market' | 'my-lands') {
@@ -85,7 +85,7 @@
   <div class="flex gap-1 my-2">
     <button
       class="flex items-center justify-center h-8 w-8"
-      onclick={() => setActiveTab('history')}
+      onclick={() => setActiveTab('my-lands')}
     >
       <img
         src="/ui/icons/Icon_Book.png"
@@ -135,7 +135,7 @@
 
     <button
       class="flex items-center justify-center h-8 w-8"
-      onclick={() => setActiveTab('my-lands')}
+      onclick={() => setActiveTab('history')}
     >
       <img
         src="/ui/icons/Icon_Crown.png"
