@@ -11,6 +11,11 @@
     tokenOutflow?: number;
     tokenTickers?: string[];
     tokenInflowAmounts?: number[];
+    tokenMetadataList?: Array<{
+      address: string;
+      symbol: string;
+      icon?: string;
+    }>;
     taxes?: number;
     landTicker?: string;
   }
@@ -32,6 +37,7 @@
       'DREAMS',
     ],
     tokenInflowAmounts = [100.34, 56.0, 25.5, 18.75, 12.3, 8.9, 6.55],
+    tokenMetadataList = [],
 
     landTicker = 'BROTHER',
   }: Props = $props();
@@ -54,7 +60,7 @@
   });
 
   const progressValues = $derived.by(() => {
-    const colorMap = [
+    const fallbackColorMap = [
       '#3B82F6', // blue-500
       '#8B5CF6', // purple-500
       '#10B981', // green-500
@@ -64,11 +70,16 @@
       '#EC4899', // pink-500
     ];
     
-    return tokenTickers.map((ticker, i) => ({
-      percentage: tokenPercentages[i] || 0,
-      color: colorMap[i] || '#6B7280',
-      ticker,
-    }));
+    return tokenTickers.map((ticker, i) => {
+      const metadata = tokenMetadataList?.find(meta => meta.symbol === ticker);
+      return {
+        percentage: tokenPercentages[i] || 0,
+        color: fallbackColorMap[i] || '#6B7280',
+        ticker,
+        icon: metadata?.icon,
+        tokenAddress: metadata?.address,
+      };
+    });
   });
 </script>
 
@@ -112,38 +123,23 @@
         </div>
         <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
           <div class="h-full flex">
-            {#each tokenPercentages as percentage, i}
+            {#each progressValues as value}
               <div
-                class={cn('h-full', {
-                  'bg-blue-500': i === 0,
-                  'bg-purple-500': i === 1,
-                  'bg-green-500': i === 2,
-                  'bg-yellow-500': i === 3,
-                  'bg-red-500': i === 4,
-                  'bg-orange-500': i === 5,
-                  'bg-pink-500': i === 6,
-                })}
-                style="width: {percentage}%"
+                class="h-full"
+                style="background-color: {value.color}; width: {value.percentage}%"
               ></div>
             {/each}
           </div>
         </div>
         <PonziProgress values={progressValues} />
         <div class="flex gap-2 text-xs">
-          {#each tokenTickers as ticker, i}
+          {#each progressValues as value}
             <div class="flex items-center gap-1">
               <div
-                class={cn('w-2 h-2 rounded-full', {
-                  'bg-blue-500': i === 0,
-                  'bg-purple-500': i === 1,
-                  'bg-green-500': i === 2,
-                  'bg-yellow-500': i === 3,
-                  'bg-red-500': i === 4,
-                  'bg-orange-500': i === 5,
-                  'bg-pink-500': i === 6,
-                })}
+                class="w-2 h-2 rounded-full"
+                style="background-color: {value.color}"
               ></div>
-              <span>{ticker}: {tokenPercentages[i].toFixed(1)}%</span>
+              <span>{value.ticker}: {value.percentage.toFixed(1)}%</span>
             </div>
           {/each}
         </div>
