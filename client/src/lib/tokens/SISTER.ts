@@ -2,6 +2,7 @@ export const SISTER = {
   skin: 'SISTER',
   icon: '/tokens/SISTER/sstr.png',
   biome: { x: 3, y: 2 },
+  color: '#B46A8D',
   building: {
     1: {
       x: 0,

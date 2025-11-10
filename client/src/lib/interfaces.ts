@@ -43,6 +43,7 @@ export interface Token {
 export interface TokenMetadata {
   skin: string;
   icon: string;
+  color?: string;
   biome: { x: number; y: number };
   building: {
     1: BuildingLevel;
