@@ -82,7 +82,6 @@
 {/snippet}
 
 <div class="flex flex-col w-full h-full min-h-0">
-  <PnlImage />
   <div class="flex gap-1 my-2">
     <button
       class="flex items-center justify-center h-8 w-8"
