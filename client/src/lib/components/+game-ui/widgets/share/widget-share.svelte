@@ -2,7 +2,12 @@
   import { X, Copy, Download } from 'lucide-svelte';
   import PnlImage from '../command-center/PnlImage.svelte';
   import type { HistoricalPosition } from '../command-center/historical-positions.service';
-  import { getTokenInfo, getFullTokenInfo, getTokenMetadata, locationToCoordinates } from '$lib/utils';
+  import {
+    getTokenInfo,
+    getFullTokenInfo,
+    getTokenMetadata,
+    locationToCoordinates,
+  } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import {
     getBaseToken,
@@ -53,7 +58,7 @@
 
     // Replicate the calculations from position-entry.svelte
     const isOpen = !position.close_date || position.close_reason === null;
-    
+
     // Determine position status
     let status: 'alive' | 'nuked' | 'bought' = 'bought';
     if (isOpen) {
@@ -92,7 +97,9 @@
       address: string;
       symbol: string;
       icon?: string;
-      amount: number;
+      dollarAmount: number;
+      originalAmount: string;
+      token: any;
     }> = [];
 
     for (const [tokenAddress, amount] of Object.entries(
@@ -107,12 +114,14 @@
           tokenInfo,
           baseToken,
         );
-        
+
         tokenDataList.push({
           address: tokenAddress,
           symbol: tokenInfo.symbol,
           icon: metadata?.icon,
-          amount: convertedAmount?.rawValue().toNumber() || 0,
+          dollarAmount: convertedAmount?.rawValue().toNumber() || 0,
+          originalAmount: inflowAmount.toString(), // Store the original unscaled amount
+          token: tokenInfo,
         });
 
         if (convertedAmount) {
@@ -122,19 +131,23 @@
       }
     }
 
-    // Sort tokens by amount in descending order
-    tokenDataList.sort((a, b) => b.amount - a.amount);
+    // Sort tokens by dollar amount in descending order
+    tokenDataList.sort((a, b) => b.dollarAmount - a.dollarAmount);
 
     // Extract sorted arrays
-    const tokenMetadataList = tokenDataList.map(({ address, symbol, icon }) => ({
-      address,
-      symbol,
-      icon,
-    }));
+    const tokenMetadataList = tokenDataList.map(
+      ({ address, symbol, icon, originalAmount, token }) => ({
+        address,
+        symbol,
+        icon,
+        originalAmount,
+        token,
+      }),
+    );
 
-    tokenDataList.forEach(tokenData => {
+    tokenDataList.forEach((tokenData) => {
       tokenTickers.push(tokenData.symbol);
-      tokenInflowAmounts.push(tokenData.amount);
+      tokenInflowAmounts.push(tokenData.dollarAmount);
     });
 
     // Calculate total token outflow in base token equivalent
@@ -293,34 +306,3 @@
     Download Image
   </button>
 </div>
-
-<!-- Share Stats -->
-<div class="mt-6 pt-6 border-t border-gray-700">
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-    <div>
-      <div class="text-2xl font-bold text-white">
-        ${Math.abs(pnlImageProps.pnl || 0).toFixed(2)}
-      </div>
-      <div class="text-sm text-gray-400">Net P&L</div>
-    </div>
-    <div>
-      <div class="text-2xl font-bold text-white">
-        ${(pnlImageProps.boughtAt || 0).toFixed(2)}
-      </div>
-      <div class="text-sm text-gray-400">Bought At</div>
-    </div>
-    <div>
-      <div class="text-2xl font-bold text-white">
-        ${Math.abs(pnlImageProps.tokenInflow || 0).toFixed(2)}
-      </div>
-      <div class="text-sm text-gray-400">Token Inflow</div>
-    </div>
-    <div>
-      <div class="text-2xl font-bold text-white">
-        {(pnlImageProps.tokenTickers || []).length}
-      </div>
-      <div class="text-sm text-gray-400">Tokens</div>
-    </div>
-  </div>
-</div>
-
