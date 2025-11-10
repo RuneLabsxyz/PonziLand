@@ -3,7 +3,6 @@
   import { cn } from '$lib/utils';
   import PonziProgress from './PonziProgress.svelte';
   import type { Token } from '$lib/interfaces';
-  import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
 
   interface Props {
     pnl?: number;
@@ -22,12 +21,12 @@
     taxes?: number;
     landTicker?: string;
     landToken?: Token;
+    status?: 'alive' | 'nuked' | 'bought';
   }
 
   let {
     pnl = 75.24,
     boughtAt = 10.25,
-    boughtAtTicker = 'STRK',
     soldAt = 15.87,
     tokenInflow = 156.34,
     tokenOutflow = -89.12,
@@ -42,9 +41,8 @@
     ],
     tokenInflowAmounts = [100.34, 56.0, 25.5, 18.75, 12.3, 8.9, 6.55],
     tokenMetadataList = [],
-
-    landTicker = 'BROTHER',
     landToken,
+    status = 'bought',
   }: Props = $props();
 
   const formattedValue = $derived(
@@ -81,6 +79,7 @@
       );
       return {
         percentage: tokenPercentages[i] || 0,
+        amount: tokenInflowAmounts[i] || 0,
         color: fallbackColorMap[i] || '#6B7280',
         ticker,
         icon: metadata?.icon,
@@ -101,19 +100,57 @@
       <div>
         <LandDisplay token={landToken} class="w-32 h-32" />
       </div>
-      <span
-        class={cn(
-          'font-ponzi-number tracking-wider stroke-3d-black',
-          textSizeClass,
-          {
-            'text-green-400': pnl > 0,
-            'text-red-400': pnl < 0,
-            'text-white': pnl === 0,
-          },
-        )}
-      >
-        {formattedValue}
-      </span>
+      <div class="flex flex-col gap-4">
+        <div
+          class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider"
+        >
+          {#if status === 'alive'}
+            <div
+              class="bg-green-800/50 flex items-center gap-2 px-2 py-1 rounded"
+            >
+              <img
+                src="/ui/icons/IconTiny_Stats.png"
+                alt="Closed"
+                class="h-4 w-4"
+              />
+              <span class="text-green-300 font-semibold pt-[1px]">ALIVE</span>
+            </div>
+          {/if}
+          {#if status === 'nuked'}
+            <div
+              class="bg-red-800/50 flex items-center gap-2 px-2 py-1 rounded"
+            >
+              <img src="/ui/icons/Icon_Nuke.png" alt="Closed" class="h-4 w-4" />
+              <span class="text-red-400"> NUKED </span>
+            </div>
+          {/if}
+          {#if status === 'bought'}
+            <div
+              class="bg-orange-800/50 flex items-center gap-2 px-2 py-1 rounded"
+            >
+              <img
+                src="/ui/icons/Icon_Coin3.png"
+                alt="Closed"
+                class="h-4 w-4"
+              />
+              <span class="text-orange-300"> SOLD </span>
+            </div>
+          {/if}
+        </div>
+        <span
+          class={cn(
+            'font-ponzi-number tracking-wider stroke-3d-black',
+            textSizeClass,
+            {
+              'text-green-400': pnl > 0,
+              'text-red-400': pnl < 0,
+              'text-white': pnl === 0,
+            },
+          )}
+        >
+          {formattedValue}
+        </span>
+      </div>
     </div>
     <div class="grid grid-cols-2 gap-4 w-full text-lg m-4">
       <!-- Left Column -->
@@ -133,7 +170,7 @@
         {:else}
           <div class="flex gap-1 items-center font-ponzi-number tracking-wider">
             <img src="/ui/icons/Icon_Nuke.png" alt="Nuked" class="h-4 w-4" />
-            <span class="text-red-400 number-display-shadow">NUKED</span>
+            <span class="text-red-400 number-display-shadow">n/a</span>
           </div>
         {/if}
       </div>
@@ -185,7 +222,7 @@
               class="w-2 h-2 rounded-full"
               style="background-color: {value.color}"
             ></div>
-            <span>{value.ticker}: {value.percentage.toFixed(1)}%</span>
+            <span>{value.ticker}: ${value.amount.toFixed(2)}</span>
           </div>
         {/each}
       </div>
