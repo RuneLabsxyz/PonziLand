@@ -14,11 +14,7 @@
   } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import {
-    ChevronDown,
-    ChevronUp,
-    Share2,
-  } from 'lucide-svelte';
+  import { ChevronDown, ChevronUp, Share2 } from 'lucide-svelte';
   import { formatTimestamp } from '../history/utils';
   import type { HistoricalPosition } from './historical-positions.service';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -67,7 +63,6 @@
     return amount.startsWith('-') ? 'text-red-400' : 'text-green-400';
   }
 
-
   // Function to open share widget with position data
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);
@@ -78,7 +73,7 @@
       dimensions: { width: 800, height: 600 },
       isMinimized: false,
       isOpen: true,
-      data: { 
+      data: {
         position: positionData,
         coordinates: coordinates,
       },
@@ -89,8 +84,6 @@
     event.stopPropagation();
     openShareWidget(position);
   }
-
-
 
   const coordinates = $derived(locationToCoordinates(position.land_location));
   const isAuctionBuy = $derived(position.buy_token_used === null);
@@ -228,7 +221,6 @@
       return total;
     }
   });
-
 </script>
 
 <div
@@ -268,13 +260,16 @@
         {:else}
           {#if position.close_reason === 'nuked'}
             <img src="/ui/icons/Icon_Nuke.png" alt="Closed" class="h-4 w-4" />
+            <span class={getStatusColor(position.close_reason)}>
+              {position.close_reason.toUpperCase()}
+            </span>
           {/if}
           {#if position.close_reason === 'bought'}
             <img src="/ui/icons/Icon_Coin3.png" alt="Closed" class="h-4 w-4" />
+            <span class={getStatusColor(position.close_reason)}>
+              SOLD
+            </span>
           {/if}
-          <span class={getStatusColor(position.close_reason)}>
-            {position.close_reason.toUpperCase()}
-          </span>
         {/if}
       </div>
       <div class="flex text-gray-400">
@@ -410,7 +405,8 @@
           <div
             class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10 cursor-pointer"
             onclick={sharePosition}
-            onkeydown={(e) => e.key === 'Enter' || e.key === ' ' ? sharePosition(e) : null}
+            onkeydown={(e) =>
+              e.key === 'Enter' || e.key === ' ' ? sharePosition(e) : null}
             title="Share position"
             role="button"
             tabindex="0"
@@ -529,7 +525,6 @@
     </div>
   {/if}
 </div>
-
 
 <style>
   .position-entry {
