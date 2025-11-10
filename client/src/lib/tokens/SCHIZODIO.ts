@@ -2,6 +2,7 @@ export const SCHIZODIO = {
   skin: 'SCHIZODIO',
   icon: '/tokens/SCHIZODIO/schizodio.png',
   biome: { x: 2, y: 2 },
+  color: '#0584D3',
   building: {
     1: {
       x: 3,

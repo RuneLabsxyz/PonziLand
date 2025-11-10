@@ -1,10 +1,8 @@
 <script lang="ts">
   import LandDisplay from '$lib/components/+game-map/land/land-display.svelte';
-  import { cn } from '$lib/utils';
+  import { cn, getTokenMetadata } from '$lib/utils';
   import PonziProgress from './PonziProgress.svelte';
   import type { Token } from '$lib/interfaces';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { displayCurrency } from '$lib/utils/currency';
 
   interface Props {
     pnl?: number;
@@ -81,12 +79,22 @@
       const metadata = tokenMetadataList?.find(
         (meta) => meta.symbol === ticker,
       );
+      
+      // Get color from token skin metadata, fallback to predefined colors
+      let color = fallbackColorMap[i] || '#6B7280';
+      if (metadata?.token?.skin) {
+        const tokenSkinMetadata = getTokenMetadata(metadata.token.skin);
+        if (tokenSkinMetadata?.color) {
+          color = tokenSkinMetadata.color;
+        }
+      }
+      
       return {
         percentage: tokenPercentages[i] || 0,
         amount: tokenInflowAmounts[i] || 0,
         originalAmount: metadata?.originalAmount || 0,
         token: metadata?.token,
-        color: fallbackColorMap[i] || '#6B7280',
+        color,
         ticker,
         icon: metadata?.icon,
         tokenAddress: metadata?.address,
@@ -94,22 +102,6 @@
     });
   });
 
-  // Helper function to format token amounts using CurrencyAmount and displayCurrency
-  const formatTokenAmount = (amount: number, token: any) => {
-    if (!token) return displayCurrency(amount);
-
-    try {
-      // Use CurrencyAmount to properly scale the amount, then displayCurrency to format
-      const currencyAmount = CurrencyAmount.fromUnscaled(
-        amount.toString(),
-        token,
-      );
-      return displayCurrency(currencyAmount.rawValue().toString());
-    } catch (error) {
-      // Fallback to displayCurrency with basic amount
-      return displayCurrency(amount);
-    }
-  };
 </script>
 
 <div
