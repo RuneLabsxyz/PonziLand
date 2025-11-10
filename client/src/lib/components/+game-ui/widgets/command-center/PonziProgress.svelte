@@ -1,6 +1,12 @@
 <script lang="ts">
   interface Props {
-    values?: { percentage: number; color: string; ticker?: string }[];
+    values?: { 
+      percentage: number; 
+      color: string; 
+      ticker?: string;
+      icon?: string;
+      tokenAddress?: string;
+    }[];
   }
 
   let {
@@ -41,10 +47,10 @@
         class="h-full flex items-center justify-center"
         style="background-color: {value.color}; width: {value.percentage}%;"
       >
-        {#if value.percentage > 10}
+        {#if value.percentage > 10 && value.icon}
           <img
-            src="/tokens/STARKNET/strk.png"
-            alt="icon"
+            src={value.icon}
+            alt={value.ticker || 'token'}
             class="w-8 h-8"
             style="transform: skew(26deg);"
           />
