@@ -52,6 +52,24 @@
     const total = tokenInflowAmounts.reduce((sum, amount) => sum + amount, 0);
     return tokenInflowAmounts.map((amount) => (amount / total) * 100);
   });
+
+  const progressValues = $derived.by(() => {
+    const colorMap = [
+      '#3B82F6', // blue-500
+      '#8B5CF6', // purple-500
+      '#10B981', // green-500
+      '#EAB308', // yellow-500
+      '#EF4444', // red-500
+      '#F97316', // orange-500
+      '#EC4899', // pink-500
+    ];
+    
+    return tokenTickers.map((ticker, i) => ({
+      percentage: tokenPercentages[i] || 0,
+      color: colorMap[i] || '#6B7280',
+      ticker,
+    }));
+  });
 </script>
 
 <div
@@ -110,7 +128,7 @@
             {/each}
           </div>
         </div>
-        <PonziProgress />
+        <PonziProgress values={progressValues} />
         <div class="flex gap-2 text-xs">
           {#each tokenTickers as ticker, i}
             <div class="flex items-center gap-1">

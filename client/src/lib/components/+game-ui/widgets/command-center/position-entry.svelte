@@ -18,13 +18,10 @@
     ChevronDown,
     ChevronUp,
     Share2,
-    X,
-    Copy,
-    Download,
   } from 'lucide-svelte';
   import { formatTimestamp } from '../history/utils';
   import type { HistoricalPosition } from './historical-positions.service';
-  import { generateShareImage } from './share-image-generator';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   interface Props {
     position: HistoricalPosition;
@@ -33,8 +30,6 @@
 
   let { position, isPositionOpen }: Props = $props();
   let expanded = $state(false);
-  let showShareModal = $state(false);
-  let generatedImageUrl = $state<string>('');
 
   const isOpen = $derived(isPositionOpen(position));
 
@@ -72,99 +67,30 @@
     return amount.startsWith('-') ? 'text-red-400' : 'text-green-400';
   }
 
-  async function generatePnLImage(): Promise<string> {
-    const pnlText = realizedPnL
-      ? `${realizedPnL.rawValue().isPositive() ? '+' : ''}${realizedPnL.rawValue().toNumber().toFixed(2)} $`
-      : 'TBD';
 
-    return generateShareImage({
-      positionX: coordinates.x,
-      positionY: coordinates.y,
-      pnlAmount: pnlText,
-      isProfitable: realizedPnL?.rawValue().isPositive() ?? false,
-      isActive: isOpen,
-      closeReason: position.close_reason,
-      title: 'PonziLand',
-      websiteUrl: window.location.origin,
+  // Function to open share widget with position data
+  function openShareWidget(positionData: HistoricalPosition) {
+    const coordinates = locationToCoordinates(positionData.land_location);
+    widgetsStore.addWidget({
+      id: `share-${positionData.land_location}-${Date.now()}`,
+      type: 'share',
+      position: { x: 200, y: 100 },
+      dimensions: { width: 800, height: 600 },
+      isMinimized: false,
+      isOpen: true,
+      data: { 
+        position: positionData,
+        coordinates: coordinates,
+      },
     });
   }
 
-  async function sharePosition(event: MouseEvent | KeyboardEvent) {
+  function sharePosition(event: MouseEvent | KeyboardEvent) {
     event.stopPropagation();
-
-    try {
-      // Generate image
-      const imageDataUrl = await generatePnLImage();
-      generatedImageUrl = imageDataUrl;
-      showShareModal = true;
-    } catch (error) {
-      console.error('Failed to generate image:', error);
-
-      // Fallback to text sharing
-      const pnlText = realizedPnL
-        ? `${realizedPnL.rawValue().isPositive() ? '+' : ''}${realizedPnL.rawValue().toNumber().toFixed(2)} $`
-        : 'TBD';
-
-      const shareText = `PonziLand Position at ${coordinates.x}, ${coordinates.y}\nNet P&L: ${pnlText}\n${window.location.origin}`;
-
-      if (navigator.share) {
-        navigator.share({
-          title: 'PonziLand Position',
-          text: shareText,
-        });
-      } else {
-        navigator.clipboard.writeText(shareText);
-      }
-    }
+    openShareWidget(position);
   }
 
-  async function copyImageToClipboard() {
-    try {
-      const response = await fetch(generatedImageUrl);
-      const blob = await response.blob();
 
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          'image/png': blob,
-        }),
-      ]);
-
-      console.log('Position image copied to clipboard!');
-      showShareModal = false;
-    } catch (error) {
-      console.error('Failed to copy image:', error);
-    }
-  }
-
-  function shareOnX() {
-    const pnlText = realizedPnL
-      ? `${realizedPnL.rawValue().isPositive() ? '+' : ''}${realizedPnL.rawValue().toNumber().toFixed(2)} $`
-      : 'TBD';
-
-    const tweetText = `Just made ${pnlText} on my PonziLand position at ${coordinates.x}, ${coordinates.y}! 🚀\n\n${window.location.origin}`;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
-
-    window.open(twitterUrl, '_blank');
-    showShareModal = false;
-  }
-
-  function downloadImage() {
-    const link = document.createElement('a');
-    link.download = `ponziland-position-${coordinates.x}-${coordinates.y}.png`;
-    link.href = generatedImageUrl;
-    link.click();
-  }
-
-  function closeModal() {
-    showShareModal = false;
-    generatedImageUrl = '';
-  }
-
-  function handleKeydown(event: KeyboardEvent) {
-    if (event.key === 'Enter' || event.key === ' ') {
-      sharePosition(event);
-    }
-  }
 
   const coordinates = $derived(locationToCoordinates(position.land_location));
   const isAuctionBuy = $derived(position.buy_token_used === null);
@@ -302,6 +228,7 @@
       return total;
     }
   });
+
 </script>
 
 <div
@@ -483,7 +410,7 @@
           <div
             class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10 cursor-pointer"
             onclick={sharePosition}
-            onkeydown={handleKeydown}
+            onkeydown={(e) => e.key === 'Enter' || e.key === ' ' ? sharePosition(e) : null}
             title="Share position"
             role="button"
             tabindex="0"
@@ -556,71 +483,6 @@
   {/if}
 </div>
 
-<!-- Share Modal -->
-{#if showShareModal}
-  <div
-    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
-    onclick={closeModal}
-    onkeydown={(e) => e.key === 'Escape' && closeModal()}
-    role="dialog"
-    aria-modal="true"
-    tabindex="-1"
-  >
-    <div
-      class="bg-gray-900 border border-gray-700 rounded-lg p-6 max-w-md w-full mx-4 relative"
-      onclick={(e) => e.stopPropagation()}
-      onkeydown={() => {}}
-      role="document"
-    >
-      <!-- Close Button -->
-      <button
-        class="absolute top-4 right-4 text-gray-400 hover:text-white"
-        onclick={closeModal}
-      >
-        <X size={20} />
-      </button>
-
-      <!-- Modal Header -->
-      <h3 class="text-xl font-bold text-white mb-4">Share Position</h3>
-
-      <!-- Image Preview -->
-      <div class="mb-6">
-        <img
-          src={generatedImageUrl}
-          alt=""
-          class="w-full rounded-lg border border-gray-700"
-        />
-      </div>
-
-      <!-- Share Options -->
-      <div class="space-y-3">
-        <button
-          class="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-lg transition-colors"
-          onclick={shareOnX}
-        >
-          <X size={18} />
-          Share on X (Twitter)
-        </button>
-
-        <button
-          class="w-full flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors"
-          onclick={copyImageToClipboard}
-        >
-          <Copy size={18} />
-          Copy to Clipboard
-        </button>
-
-        <button
-          class="w-full flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-3 px-4 rounded-lg transition-colors"
-          onclick={downloadImage}
-        >
-          <Download size={18} />
-          Download Image
-        </button>
-      </div>
-    </div>
-  </div>
-{/if}
 
 <style>
   .position-entry {

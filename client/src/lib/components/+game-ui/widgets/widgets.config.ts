@@ -111,6 +111,14 @@ const baseWidgetsState: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  share: {
+    id: 'share',
+    type: 'share',
+    position: { x: 200, y: 100 },
+    dimensions: { width: 800, height: 600 },
+    isMinimized: false,
+    isOpen: false,
+  },
   disclaimer: {
     id: 'disclaimer',
     type: 'disclaimer',
@@ -196,6 +204,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     type: 'command-center',
     label: 'Command Center',
     icon: '/ui/icons/Icon_Notification.png',
+  },
+  {
+    id: 'share',
+    type: 'share',
+    label: 'Share Position',
+    icon: '/ui/icons/Icon_Share.png',
   },
   // {
   //   id: 'notifications',
