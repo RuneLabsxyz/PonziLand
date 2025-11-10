@@ -53,6 +53,16 @@
 
     // Replicate the calculations from position-entry.svelte
     const isOpen = !position.close_date || position.close_reason === null;
+    
+    // Determine position status
+    let status: 'alive' | 'nuked' | 'bought' = 'bought';
+    if (isOpen) {
+      status = 'alive';
+    } else if (position.close_reason === 'nuked') {
+      status = 'nuked';
+    } else if (position.close_reason === 'bought') {
+      status = 'bought';
+    }
 
     const buyToken: Token | undefined = position.buy_token_used
       ? getTokenInfo(position.buy_token_used)
@@ -209,6 +219,7 @@
       taxes: 0,
       landTicker: saleToken?.symbol || 'STRK',
       landToken: buyToken,
+      status,
     };
   });
 
