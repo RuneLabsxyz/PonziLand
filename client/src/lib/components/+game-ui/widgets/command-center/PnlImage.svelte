@@ -1,6 +1,9 @@
 <script lang="ts">
+  import LandDisplay from '$lib/components/+game-map/land/land-display.svelte';
   import { cn } from '$lib/utils';
   import PonziProgress from './PonziProgress.svelte';
+  import type { Token } from '$lib/interfaces';
+  import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
 
   interface Props {
     pnl?: number;
@@ -18,6 +21,7 @@
     }>;
     taxes?: number;
     landTicker?: string;
+    landToken?: Token;
   }
 
   let {
@@ -40,6 +44,7 @@
     tokenMetadataList = [],
 
     landTicker = 'BROTHER',
+    landToken,
   }: Props = $props();
 
   const formattedValue = $derived(
@@ -91,15 +96,18 @@
     'bg-pnl-red': pnl < 0,
   })}
 >
-  <div class="absolute top-[120px] left-0 bottom-0 h-[600px] w-[450px] p-8">
-    <div class="w-full flex items-center justify-center">
+  <div class="absolute top-[120px] left-0 bottom-0 h-[600px] w-[450px] px-8">
+    <div class="w-full flex items-center gap-6">
+      <div>
+        <LandDisplay token={landToken} class="w-32 h-32" />
+      </div>
       <span
         class={cn(
           'font-ponzi-number tracking-wider stroke-3d-black',
           textSizeClass,
           {
-            'text-green-500': pnl > 0,
-            'text-red-500': pnl < 0,
+            'text-green-400': pnl > 0,
+            'text-red-400': pnl < 0,
             'text-white': pnl === 0,
           },
         )}
@@ -107,22 +115,20 @@
         {formattedValue}
       </span>
     </div>
-    <div class="grid grid-cols-2 gap-4 w-full text-md m-4">
+    <div class="grid grid-cols-2 gap-4 w-full text-lg m-4">
       <!-- Left Column -->
       <div class="flex flex-col gap-1">
         <div class="text-white stroke-3d-black">Bought at:</div>
-        <div class="font-ponzi-number number-display-shadow">
+        <div class="font-ponzi-number number-display-shadow tracking-wider">
           ${boughtAt.toFixed(2)}
-          {boughtAtTicker}
         </div>
       </div>
 
       <div class="flex flex-col gap-1">
         <div class="text-white stroke-3d-black">Sold at:</div>
         {#if soldAt > 0}
-          <div class="font-ponzi-number number-display-shadow text-green-400">
+          <div class="font-ponzi-number number-display-shadow tracking-wider">
             ${soldAt.toFixed(2)}
-            {landTicker}
           </div>
         {:else}
           <div class="flex gap-1 items-center font-ponzi-number tracking-wider">
@@ -133,18 +139,39 @@
       </div>
 
       <!-- Right Column -->
-      <div class="flex flex-col gap-1">
-        <div class="text-white stroke-3d-black">Token outflow:</div>
-        <div class="font-ponzi-number number-display-shadow text-red-400">
-          {tokenOutflow > 0 ? '+' : '-'}${Math.abs(tokenOutflow).toFixed(2)}
-          {landTicker}
+      <div class="flex flex-col gap-2">
+        <div class="text-white stroke-3d-black flex items-bottom gap-1">
+          <img
+            src="/ui/icons/IconTiny_Outcome.png"
+            alt="outcome"
+            class="h-6 w-6"
+          />
+          <span> Taxes: </span>
+        </div>
+        <div
+          class="font-ponzi-number number-display-shadow text-red-400 flex gap-2 items-center tracking-wider"
+        >
+          <span>
+            {tokenOutflow > 0 ? '+' : '-'}${Math.abs(tokenOutflow).toFixed(2)}
+          </span>
         </div>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <div class="text-white stroke-3d-black">Token inflow:</div>
-        <div class="font-ponzi-number number-display-shadow text-green-400">
-          {tokenInflow > 0 ? '+' : ''}${Math.abs(tokenInflow).toFixed(2)}
+      <div class="flex flex-col gap-2">
+        <div class="text-white stroke-3d-black flex items-bottom gap-1">
+          <img
+            src="/ui/icons/IconTiny_Income.png"
+            alt="income"
+            class="h-6 w-6"
+          />
+          <span> Income: </span>
+        </div>
+        <div
+          class="font-ponzi-number number-display-shadow text-green-400 flex gap-2 items-center tracking-wider"
+        >
+          <span>
+            {tokenInflow > 0 ? '+' : ''}${Math.abs(tokenInflow).toFixed(2)}
+          </span>
         </div>
       </div>
     </div>
