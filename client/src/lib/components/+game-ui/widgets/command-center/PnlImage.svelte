@@ -69,9 +69,11 @@
       '#F97316', // orange-500
       '#EC4899', // pink-500
     ];
-    
+
     return tokenTickers.map((ticker, i) => {
-      const metadata = tokenMetadataList?.find(meta => meta.symbol === ticker);
+      const metadata = tokenMetadataList?.find(
+        (meta) => meta.symbol === ticker,
+      );
       return {
         percentage: tokenPercentages[i] || 0,
         color: fallbackColorMap[i] || '#6B7280',
@@ -105,44 +107,60 @@
         {formattedValue}
       </span>
     </div>
-    <div class="flex flex-col gap-1 w-full text-sm">
-      <div>Bought at:</div>
-      <div>${boughtAt.toFixed(2)} {boughtAtTicker}</div>
-
-      <div>Sold at:</div>
-      <div>${soldAt.toFixed(2)} {landTicker}</div>
-
-      <div>Token outflow:</div>
-      <div>
-        {tokenOutflow > 0 ? '+' : ''}${Math.abs(tokenOutflow).toFixed(2)}
+    <div class="grid grid-cols-2 gap-4 w-full text-md m-4">
+      <!-- Left Column -->
+      <div class="flex flex-col gap-1">
+        <div class="text-white stroke-3d-black">Bought at:</div>
+        <div class="font-ponzi-number number-display-shadow">
+          ${boughtAt.toFixed(2)}
+          {boughtAtTicker}
+        </div>
       </div>
-      <div>Token inflow:</div>
-      <div class="space-y-1">
-        <div>
+
+      <div class="flex flex-col gap-1">
+        <div class="text-white stroke-3d-black">Sold at:</div>
+        {#if soldAt > 0}
+          <div class="font-ponzi-number number-display-shadow text-green-400">
+            ${soldAt.toFixed(2)}
+            {landTicker}
+          </div>
+        {:else}
+          <div class="flex gap-1 items-center font-ponzi-number tracking-wider">
+            <img src="/ui/icons/Icon_Nuke.png" alt="Nuked" class="h-4 w-4" />
+            <span class="text-red-400 number-display-shadow">NUKED</span>
+          </div>
+        {/if}
+      </div>
+
+      <!-- Right Column -->
+      <div class="flex flex-col gap-1">
+        <div class="text-white stroke-3d-black">Token outflow:</div>
+        <div class="font-ponzi-number number-display-shadow text-red-400">
+          {tokenOutflow > 0 ? '+' : '-'}${Math.abs(tokenOutflow).toFixed(2)}
+          {landTicker}
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-1">
+        <div class="text-white stroke-3d-black">Token inflow:</div>
+        <div class="font-ponzi-number number-display-shadow text-green-400">
           {tokenInflow > 0 ? '+' : ''}${Math.abs(tokenInflow).toFixed(2)}
         </div>
-        <div class="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
-          <div class="h-full flex">
-            {#each progressValues as value}
-              <div
-                class="h-full"
-                style="background-color: {value.color}; width: {value.percentage}%"
-              ></div>
-            {/each}
+      </div>
+    </div>
+    <!-- Full Width Progress Section -->
+    <div class="mt-6 -mr-6 flex flex-col">
+      <PonziProgress values={progressValues} />
+      <div class="grid grid-cols-3">
+        {#each progressValues as value}
+          <div class="flex items-center gap-1">
+            <div
+              class="w-2 h-2 rounded-full"
+              style="background-color: {value.color}"
+            ></div>
+            <span>{value.ticker}: {value.percentage.toFixed(1)}%</span>
           </div>
-        </div>
-        <PonziProgress values={progressValues} />
-        <div class="flex gap-2 text-xs">
-          {#each progressValues as value}
-            <div class="flex items-center gap-1">
-              <div
-                class="w-2 h-2 rounded-full"
-                style="background-color: {value.color}"
-              ></div>
-              <span>{value.ticker}: {value.percentage.toFixed(1)}%</span>
-            </div>
-          {/each}
-        </div>
+        {/each}
       </div>
     </div>
   </div>
@@ -160,5 +178,9 @@
   .bg-pnl-red {
     background-image: url('/PnL/PnL-red.png');
     background-size: cover;
+  }
+
+  .number-display-shadow {
+    text-shadow: 0px 3px 0 #000;
   }
 </style>

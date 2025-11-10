@@ -1,12 +1,13 @@
 <script lang="ts">
   interface Props {
-    values?: { 
-      percentage: number; 
-      color: string; 
+    values?: {
+      percentage: number;
+      color: string;
       ticker?: string;
       icon?: string;
       tokenAddress?: string;
     }[];
+    title?: string;
   }
 
   let {
@@ -35,10 +36,16 @@
         color: '#FF0000',
       },
     ],
+    title = 'TOKENS EARNED',
   }: Props = $props();
 </script>
 
-<div class="progress-ponzi-gray w-full relative">
+<div class="progress-ponzi-gray w-full relative -mx-4 mt-8">
+  <div class="absolute top-0 left-0 flex -m-[2em]">
+    <span class="font-ponzi-number text-gray-200 text-2xl stroke-3d-black capitalize z-50 ml-[1.25em] mt-[.25em] -translate-y-full leading-none"
+      >{title}</span
+    >
+  </div>
   <div
     class="h-[3em] -m-[2em] skew left-[1.5em] top-[.5em] bottom-[.5em] pr-[3em] overflow-hidden relative flex"
   >
