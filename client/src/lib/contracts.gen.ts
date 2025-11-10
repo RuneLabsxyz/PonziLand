@@ -539,21 +539,50 @@ export function setupWorld(provider: DojoProvider) {
     }
   };
 
-  const build_actions_reimburseStakes_calldata = (): DojoCall => {
+  const build_actions_withdrawStake_calldata = (
+    landLocation: BigNumberish,
+  ): DojoCall => {
     return {
       contractName: 'actions',
-      entrypoint: 'reimburse_stakes',
-      calldata: [],
+      entrypoint: 'withdraw_stake',
+      calldata: [landLocation],
     };
   };
 
-  const actions_reimburseStakes = async (
+  const actions_withdrawStake = async (
     snAccount: Account | AccountInterface,
+    landLocation: BigNumberish,
   ) => {
     try {
       return await provider.execute(
         snAccount,
-        build_actions_reimburseStakes_calldata(),
+        build_actions_withdrawStake_calldata(landLocation),
+        'ponzi_land',
+      );
+    } catch (error) {
+      console.error(error);
+      throw error;
+    }
+  };
+
+  const build_actions_withdrawStakesBatch_calldata = (
+    landLocations: Array<BigNumberish>,
+  ): DojoCall => {
+    return {
+      contractName: 'actions',
+      entrypoint: 'withdraw_stakes_batch',
+      calldata: [landLocations],
+    };
+  };
+
+  const actions_withdrawStakesBatch = async (
+    snAccount: Account | AccountInterface,
+    landLocations: Array<BigNumberish>,
+  ) => {
+    try {
+      return await provider.execute(
+        snAccount,
+        build_actions_withdrawStakesBatch_calldata(landLocations),
         'ponzi_land',
       );
     } catch (error) {
@@ -2181,8 +2210,11 @@ export function setupWorld(provider: DojoProvider) {
       buildLevelUpCalldata: build_actions_levelUp_calldata,
       recreateAuction: actions_recreateAuction,
       buildRecreateAuctionCalldata: build_actions_recreateAuction_calldata,
-      reimburseStakes: actions_reimburseStakes,
-      buildReimburseStakesCalldata: build_actions_reimburseStakes_calldata,
+      withdrawStake: actions_withdrawStake,
+      buildWithdrawStakeCalldata: build_actions_withdrawStake_calldata,
+      withdrawStakesBatch: actions_withdrawStakesBatch,
+      buildWithdrawStakesBatchCalldata:
+        build_actions_withdrawStakesBatch_calldata,
     },
     auth: {
       addAuthorized: auth_addAuthorized,
