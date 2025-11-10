@@ -247,9 +247,11 @@
         {:else}
           {#if position.close_reason === 'nuked'}
             <img src="/ui/icons/Icon_Nuke.png" alt="Closed" class="h-4 w-4" />
+            <span class="text-red-400"> NUKED </span>
           {/if}
           {#if position.close_reason === 'bought'}
             <img src="/ui/icons/Icon_Coin3.png" alt="Closed" class="h-4 w-4" />
+            <span class="text-yellow-500"> SOLD </span>
           {/if}
           <span
             class={[
