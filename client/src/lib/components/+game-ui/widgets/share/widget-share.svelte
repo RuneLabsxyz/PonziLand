@@ -2,9 +2,13 @@
   import { X, Copy, Download } from 'lucide-svelte';
   import PnlImage from '../command-center/PnlImage.svelte';
   import type { HistoricalPosition } from '../command-center/historical-positions.service';
-  import { getTokenInfo, locationToCoordinates } from '$lib/utils';
+  import { getTokenInfo, getFullTokenInfo, getTokenMetadata, locationToCoordinates } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { getBaseToken, originalBaseToken, walletStore } from '$lib/stores/wallet.svelte';
+  import {
+    getBaseToken,
+    originalBaseToken,
+    walletStore,
+  } from '$lib/stores/wallet.svelte';
   import type { Token } from '$lib/interfaces';
 
   interface Props {
@@ -49,17 +53,23 @@
 
     // Replicate the calculations from position-entry.svelte
     const isOpen = !position.close_date || position.close_reason === null;
-    
+
     const buyToken: Token | undefined = position.buy_token_used
       ? getTokenInfo(position.buy_token_used)
       : originalBaseToken;
-    
+
     const saleToken: Token | undefined = position.sale_token_used
       ? getTokenInfo(position.sale_token_used)
       : originalBaseToken;
 
-    const buyAmount = CurrencyAmount.fromUnscaled(position.buy_cost_token, buyToken);
-    const sellAmount = CurrencyAmount.fromScaled(position.sale_revenue_token || '0', saleToken);
+    const buyAmount = CurrencyAmount.fromUnscaled(
+      position.buy_cost_token,
+      buyToken,
+    );
+    const sellAmount = CurrencyAmount.fromScaled(
+      position.sale_revenue_token || '0',
+      saleToken,
+    );
 
     // Calculate total token inflow in base token equivalent
     const baseToken = getBaseToken();
@@ -67,59 +77,109 @@
     const tokenTickers: string[] = [];
     const tokenInflowAmounts: number[] = [];
 
-    for (const [tokenAddress, amount] of Object.entries(position.token_inflows)) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        tokenTickers.push(tokenInfo.symbol);
+    // Collect all token data first
+    const tokenDataList: Array<{
+      address: string;
+      symbol: string;
+      icon?: string;
+      amount: number;
+    }> = [];
+
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_inflows,
+    )) {
+      const fullTokenInfo = getFullTokenInfo(tokenAddress);
+      if (fullTokenInfo) {
+        const { token: tokenInfo, metadata } = fullTokenInfo;
         const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(inflowAmount, tokenInfo, baseToken);
+        const convertedAmount = walletStore.convertTokenAmount(
+          inflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        
+        tokenDataList.push({
+          address: tokenAddress,
+          symbol: tokenInfo.symbol,
+          icon: metadata?.icon,
+          amount: convertedAmount?.rawValue().toNumber() || 0,
+        });
+
         if (convertedAmount) {
-          totalInflowBaseEquivalent = totalInflowBaseEquivalent.add(convertedAmount);
-          tokenInflowAmounts.push(convertedAmount.rawValue().toNumber());
-        } else {
-          tokenInflowAmounts.push(0);
+          totalInflowBaseEquivalent =
+            totalInflowBaseEquivalent.add(convertedAmount);
         }
       }
     }
 
+    // Sort tokens by amount in descending order
+    tokenDataList.sort((a, b) => b.amount - a.amount);
+
+    // Extract sorted arrays
+    const tokenMetadataList = tokenDataList.map(({ address, symbol, icon }) => ({
+      address,
+      symbol,
+      icon,
+    }));
+
+    tokenDataList.forEach(tokenData => {
+      tokenTickers.push(tokenData.symbol);
+      tokenInflowAmounts.push(tokenData.amount);
+    });
+
     // Calculate total token outflow in base token equivalent
     let totalOutflowBaseEquivalent = CurrencyAmount.fromScaled(0, baseToken);
-    for (const [tokenAddress, amount] of Object.entries(position.token_outflows)) {
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
       const tokenInfo = getTokenInfo(tokenAddress);
       if (tokenInfo) {
         const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(outflowAmount, tokenInfo, baseToken);
+        const convertedAmount = walletStore.convertTokenAmount(
+          outflowAmount,
+          tokenInfo,
+          baseToken,
+        );
         if (convertedAmount) {
-          totalOutflowBaseEquivalent = totalOutflowBaseEquivalent.add(convertedAmount);
+          totalOutflowBaseEquivalent =
+            totalOutflowBaseEquivalent.add(convertedAmount);
         }
       }
     }
 
     // Calculate buy cost in base token equivalent
-    const buyCostBaseEquivalent = buyToken && buyAmount
-      ? walletStore.convertTokenAmount(buyAmount, buyToken, baseToken)
-      : null;
+    const buyCostBaseEquivalent =
+      buyToken && buyAmount
+        ? walletStore.convertTokenAmount(buyAmount, buyToken, baseToken)
+        : null;
 
     // Calculate sale revenue in base token equivalent
-    const saleRevenueBaseEquivalent = saleToken && sellAmount && !isOpen
-      ? walletStore.convertTokenAmount(sellAmount, saleToken, baseToken)
-      : null;
+    const saleRevenueBaseEquivalent =
+      saleToken && sellAmount && !isOpen
+        ? walletStore.convertTokenAmount(sellAmount, saleToken, baseToken)
+        : null;
 
     // Calculate net token flow (inflow - outflow)
-    const netTokenFlow = totalInflowBaseEquivalent && totalOutflowBaseEquivalent
-      ? CurrencyAmount.fromRaw(
-          totalInflowBaseEquivalent.rawValue().minus(totalOutflowBaseEquivalent.rawValue()),
-          baseToken
-        )
-      : null;
+    const netTokenFlow =
+      totalInflowBaseEquivalent && totalOutflowBaseEquivalent
+        ? CurrencyAmount.fromRaw(
+            totalInflowBaseEquivalent
+              .rawValue()
+              .minus(totalOutflowBaseEquivalent.rawValue()),
+            baseToken,
+          )
+        : null;
 
     // Calculate net sale profit (sale revenue - buy cost)
-    const netSaleProfit = buyCostBaseEquivalent && saleRevenueBaseEquivalent && !isOpen
-      ? CurrencyAmount.fromRaw(
-          saleRevenueBaseEquivalent.rawValue().minus(buyCostBaseEquivalent.rawValue()),
-          baseToken
-        )
-      : null;
+    const netSaleProfit =
+      buyCostBaseEquivalent && saleRevenueBaseEquivalent && !isOpen
+        ? CurrencyAmount.fromRaw(
+            saleRevenueBaseEquivalent
+              .rawValue()
+              .minus(buyCostBaseEquivalent.rawValue()),
+            baseToken,
+          )
+        : null;
 
     // Calculate Realized P&L (net flow + sale P&L)
     let realizedPnL = CurrencyAmount.fromScaled(0, baseToken);
@@ -145,6 +205,7 @@
       tokenOutflow: -totalOutflowBaseEquivalent.rawValue().toNumber(),
       tokenTickers,
       tokenInflowAmounts,
+      tokenMetadataList,
       taxes: 0,
       landTicker: saleToken?.symbol || 'STRK',
     };
