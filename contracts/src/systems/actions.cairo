@@ -143,7 +143,7 @@ pub mod actions {
     use ponzi_land::helpers::land::{
         add_neighbor, update_neighbors_after_delete, update_neighbors_info,
     };
-    use ponzi_land::helpers::taxes::{get_tax_rate_per_neighbor, get_taxes_per_neighbor};
+    use ponzi_land::helpers::taxes::get_tax_rate_per_neighbor;
     use ponzi_land::interfaces::systems::SystemsTrait;
     use ponzi_land::models::auction::{Auction, AuctionTrait};
 
@@ -732,11 +732,12 @@ pub mod actions {
             self: @ContractState, claimer_location: u16, payer_location: u16,
         ) -> u256 {
             let world = self.world_default();
-            let store = StoreTrait::new(world);
+            let mut store = StoreTrait::new(world);
             let payer_land = store.land(payer_location);
-            let elapsed_time = self
-                .get_elapsed_time_since_last_claim(claimer_location, payer_location);
-            get_taxes_per_neighbor(@payer_land, elapsed_time, store)
+            let current_time = get_block_timestamp();
+            self
+                .taxes
+                .get_precise_unclaimed_taxes(store, @payer_land, claimer_location, current_time)
         }
 
         fn get_unclaimed_taxes_per_neighbors_total(
