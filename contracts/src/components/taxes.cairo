@@ -37,7 +37,8 @@ mod TaxesComponent {
     use ponzi_land::helpers::land::remove_neighbor;
     use ponzi_land::helpers::taxes::{
         TaxComputation, accumulate_amount_by_key, calculate_and_return_taxes_with_fee,
-        calculate_share_for_nuke, get_tax_rate_per_neighbor, get_taxes_per_neighbor,
+        calculate_share_for_nuke, compute_tax_with_remainder, get_tax_rate_per_neighbor,
+        get_taxes_per_neighbor,
     };
 
     // Models
@@ -66,7 +67,13 @@ mod TaxesComponent {
 
     #[storage]
     struct Storage {
+        /// @notice Last claim time for tax calculations between two specific lands.
+        /// @dev Uses tuple (payer, receiver) as key to track last claim time per relationship.
         last_claim_time: Map<(u16, u16), u64>,
+        /// @notice Residual tax “ticks” that did not reach a full token in the last claim.
+        /// @dev Stored per (payer, claimer) edge so the next claim can recover the dust
+        /// instead of rounding down or up.
+        pending_tax_remainder: Map<(u16, u16), u16>,
     }
 
     /// @notice Comprehensive tax calculation results for claim strategy determination
@@ -75,7 +82,6 @@ mod TaxesComponent {
         total_taxes: u256,
         total_tax_for_claimer: u256,
         elapsed_time_claimer: u64,
-        dust_for_claimer: u256,
         cache_elapsed_time: Span<(ContractAddress, u64)>,
         total_elapsed_time: u64,
     }
@@ -132,6 +138,77 @@ mod TaxesComponent {
             current_time: u64,
         ) {
             self.last_claim_time.write((tax_payer_location, tax_receiver_location), current_time);
+            // A brand-new relationship starts with zero residual ticks.
+            self.pending_tax_remainder.write((tax_payer_location, tax_receiver_location), 0);
+        }
+
+        #[inline(always)]
+        /// @notice Computes pending taxes using the stored remainder but without mutating state.
+        /// @dev Used by view/assessment functions so they see the same totals as actual claims.
+        fn _preview_precise_taxes(
+            self: @ComponentState<TContractState>,
+            store: Store,
+            tax_payer: @Land,
+            claimer_location: u16,
+            elapsed_time: u64,
+        ) -> u256 {
+            let pending_remainder = self
+                .pending_tax_remainder
+                .read((*tax_payer.location, claimer_location));
+            let tax_rate_per_neighbor = get_tax_rate_per_neighbor(tax_payer, store);
+            let base_time: u256 = store.get_base_time().into();
+            let computation = compute_tax_with_remainder(
+                tax_rate_per_neighbor, elapsed_time, base_time, pending_remainder.into(),
+            );
+            computation.amount
+        }
+
+        #[inline(always)]
+        /// @notice Computes precise taxes and persists the updated remainder.
+        /// @dev Writes to storage only when the remainder actually changes to save gas.
+        fn _calculate_precise_taxes_and_update(
+            ref self: ComponentState<TContractState>,
+            store: Store,
+            tax_payer: @Land,
+            claimer_location: u16,
+            elapsed_time: u64,
+        ) -> u256 {
+            let pending_remainder = self
+                .pending_tax_remainder
+                .read((*tax_payer.location, claimer_location));
+            let tax_rate_per_neighbor = get_tax_rate_per_neighbor(tax_payer, store);
+            let base_time: u256 = store.get_base_time().into();
+            let computation = compute_tax_with_remainder(
+                tax_rate_per_neighbor, elapsed_time, base_time, pending_remainder.into(),
+            );
+            let new_remainder: u16 = computation.remainder.try_into().unwrap();
+            if new_remainder == 0 {
+                if pending_remainder != 0 {
+                    self.pending_tax_remainder.write((*tax_payer.location, claimer_location), 0);
+                }
+            } else if new_remainder != pending_remainder {
+                self
+                    .pending_tax_remainder
+                    .write((*tax_payer.location, claimer_location), new_remainder);
+            }
+            computation.amount
+        }
+
+        /// @notice View helper for unclaimed taxes including carried remainder.
+        /// @dev Used by external getters so they match the precise bookkeeping.
+        #[inline(always)]
+        fn get_precise_unclaimed_taxes(
+            self: @ComponentState<TContractState>,
+            store: Store,
+            tax_payer: @Land,
+            claimer_location: u16,
+            current_time: u64,
+        ) -> u256 {
+            let elapsed_time = self
+                .get_elapsed_time_since_last_claim(
+                    claimer_location, *tax_payer.location, current_time,
+                );
+            self._preview_precise_taxes(store, tax_payer, claimer_location, elapsed_time)
         }
 
         /// @notice Calculates time elapsed since the last tax claim between specific lands
@@ -279,7 +356,7 @@ mod TaxesComponent {
             );
             let num_active_neighbors = *neighbors_info.num_active_neighbors;
             let theoretical_max_payable = u256_saturating_mul(
-                tax_per_neighbor.amount, num_active_neighbors.into(),
+                tax_per_neighbor, num_active_neighbors.into(),
             );
             // Fast path: land has sufficient stake to handle maximum possible taxes
 
@@ -326,20 +403,16 @@ mod TaxesComponent {
                     *config.claimer.location, *config.tax_payer.location, *config.current_time,
                 );
 
-            let tax_result: TaxComputation = get_taxes_per_neighbor(
-                config.tax_payer, elapsed_time, store,
-            );
-            let total_taxes = tax_result.amount;
-            let dust_for_fee = tax_result.dust_for_fee;
+            let total_taxes = self
+                ._calculate_precise_taxes_and_update(
+                    store, config.tax_payer, *config.claimer.location, elapsed_time,
+                );
 
             // Split taxes between claimer and protocol fee
             let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
                 total_taxes, *config.claim_fee,
             );
             payer_stake.accumulated_taxes_fee += fee_amount;
-            if dust_for_fee > 0 {
-                payer_stake.accumulated_taxes_fee += dust_for_fee.try_into().unwrap();
-            }
             self
                 ._execute_claim(
                     store, ref payer_stake, config, tax_for_claimer, ref token_transfers,
@@ -351,7 +424,7 @@ mod TaxesComponent {
                 );
 
             // Safe claim - just reduce stake and update storage
-            payer_stake.amount -= total_taxes + dust_for_fee;
+            payer_stake.amount -= total_taxes;
             store.set_land_stake(payer_stake);
 
             false // Normal claim, no nuke
@@ -371,14 +444,17 @@ mod TaxesComponent {
             tax_data: @TaxCalculationData,
             ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
+            let precise_total_for_claimer = self
+                ._calculate_precise_taxes_and_update(
+                    store,
+                    config.tax_payer,
+                    *config.claimer.location,
+                    *tax_data.elapsed_time_claimer,
+                );
             let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
-                *tax_data.total_tax_for_claimer, *config.claim_fee,
+                precise_total_for_claimer, *config.claim_fee,
             );
-            let dust_for_fee = *tax_data.dust_for_claimer;
             payer_stake.accumulated_taxes_fee += fee_amount;
-            if dust_for_fee > 0 {
-                payer_stake.accumulated_taxes_fee += dust_for_fee.try_into().unwrap();
-            }
             self
                 ._execute_claim(
                     store, ref payer_stake, config, tax_for_claimer, ref token_transfers,
@@ -388,7 +464,7 @@ mod TaxesComponent {
                     store, ref payer_stake, config, neighbors_info,
                 );
 
-            payer_stake.amount -= *tax_data.total_tax_for_claimer + dust_for_fee;
+            payer_stake.amount -= precise_total_for_claimer;
             store.set_land_stake(payer_stake);
             false
         }
@@ -466,6 +542,9 @@ mod TaxesComponent {
                 total_share_for_neighbor, *config.claim_fee,
             );
             tax_payer_stake.accumulated_taxes_fee += fee_amount;
+            self
+                .pending_tax_remainder
+                .write((*config.tax_payer.location, *config.claimer.location), 0);
             self
                 ._execute_claim(
                     store, ref tax_payer_stake, config, share_for_neighbor, ref token_transfers,
@@ -747,7 +826,6 @@ mod TaxesComponent {
             let mut cache_elapsed_time: Array<(ContractAddress, u64)> = ArrayTrait::new();
             let mut total_elapsed_time: u64 = 0;
             let mut elapsed_time_claimer: u64 = 0;
-            let mut dust_for_claimer: u256 = 0;
             for neighbor in neighbors_of_tax_payer {
                 let neighbor_location = *neighbor.location;
                 let elapsed_time = self
@@ -756,13 +834,15 @@ mod TaxesComponent {
                     );
                 total_elapsed_time += elapsed_time;
                 cache_elapsed_time.append((*neighbor.owner, elapsed_time));
-                let tax_result = get_taxes_per_neighbor(config.tax_payer, elapsed_time, store);
-                total_taxes += tax_result.amount;
+                let tax_amount = self
+                    ._preview_precise_taxes(
+                        store, config.tax_payer, neighbor_location, elapsed_time,
+                    );
+                total_taxes += tax_amount;
 
                 if neighbor_location == *config.claimer.location {
-                    total_tax_for_claimer += tax_result.amount;
+                    total_tax_for_claimer += tax_amount;
                     elapsed_time_claimer = elapsed_time;
-                    dust_for_claimer += tax_result.dust_for_fee;
                 }
             }
             let cache_elapsed_time = cache_elapsed_time.span();
@@ -770,7 +850,6 @@ mod TaxesComponent {
                 total_taxes,
                 total_tax_for_claimer,
                 elapsed_time_claimer,
-                dust_for_claimer,
                 cache_elapsed_time,
                 total_elapsed_time,
             }
@@ -877,7 +956,10 @@ mod TaxesComponent {
             let deficit = stake - current_unclaimed_taxes;
             let numerator_delta = deficit * base_time;
 
-            let delta_t: u256 = numerator_delta / total_tax_rate;
+            let mut delta_t: u256 = numerator_delta / total_tax_rate;
+            if numerator_delta % total_tax_rate != 0 {
+                delta_t += 1;
+            }
 
             // 3. Return seconds remaining until nuke
             delta_t.try_into().unwrap()
