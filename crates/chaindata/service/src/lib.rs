@@ -3,13 +3,15 @@ pub mod tasks;
 
 use chaindata_repository::{
     Database, EventRepository, LandHistoricalRepository, LandRepository, LandStakeRepository,
+    WalletActivityRepository,
 };
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
 use std::sync::Arc;
 use tasks::{
     event_listener::EventListenerTask, land_historical_listener::LandHistoricalListenerTask,
-    model_listener::ModelListenerTask, Task, TaskWrapper,
+    model_listener::ModelListenerTask, wallet_activity_listener::WalletActivityListenerTask, Task,
+    TaskWrapper,
 };
 use tokio::sync::mpsc;
 use torii_ingester::{ToriiClient, ToriiConfiguration};
@@ -20,6 +22,7 @@ pub struct ChainDataService {
     event_listener_task: TaskWrapper<EventListenerTask>,
     model_listener_task: TaskWrapper<ModelListenerTask>,
     land_historical_listener_task: TaskWrapper<LandHistoricalListenerTask>,
+    wallet_activity_listener_task: TaskWrapper<WalletActivityListenerTask>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -48,15 +51,18 @@ impl ChainDataService {
         let land_repository = Arc::new(LandRepository::new(database.clone()));
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
         let land_historical_repository = Arc::new(LandHistoricalRepository::new(database.clone()));
+        let wallet_activity_repository = Arc::new(WalletActivityRepository::new(database.clone()));
 
-        // Create a broadcast channel for event communication
+        // Create channels for event communication
         let (event_sender, event_receiver) = mpsc::channel(10);
+        let (wallet_event_sender, wallet_event_receiver) = mpsc::channel(10);
 
         Ok(Arc::new(Self {
             event_listener_task: EventListenerTask::new(
                 client.clone(),
                 event_repository,
                 event_sender,
+                wallet_event_sender,
             )
             .wrap(),
             model_listener_task: ModelListenerTask::new(
@@ -70,6 +76,11 @@ impl ChainDataService {
                 land_historical_repository,
             )
             .wrap(),
+            wallet_activity_listener_task: WalletActivityListenerTask::new(
+                wallet_event_receiver,
+                wallet_activity_repository,
+            )
+            .wrap(),
         }))
     }
 
@@ -77,6 +88,7 @@ impl ChainDataService {
         self.event_listener_task.stop();
         self.model_listener_task.stop();
         self.land_historical_listener_task.stop();
+        self.wallet_activity_listener_task.stop();
     }
 
     pub fn start(self: &Arc<Self>) {
@@ -84,5 +96,6 @@ impl ChainDataService {
         self.event_listener_task.start();
         self.model_listener_task.start();
         self.land_historical_listener_task.start();
+        self.wallet_activity_listener_task.start();
     }
 }

@@ -7,6 +7,7 @@ use ponziland_models::events::EventData;
 use sqlx::error::DatabaseError;
 use tokio::select;
 use tokio::sync::mpsc;
+use tokio::task::JoinSet;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
@@ -20,19 +21,22 @@ pub struct EventListenerTask {
     event_repository: Arc<EventRepository>,
     // SAFETY: We voluntarily use a mpsc that is blocking for the processing of events to make sure the stream is blocked while the subsequent processing
     //         happens, to avoid lagging behind the catch-up process.
-    event_sender: mpsc::Sender<FetchedEvent>,
+    land_historical_event_sender: mpsc::Sender<FetchedEvent>,
+    wallet_activity_event_sender: mpsc::Sender<FetchedEvent>,
 }
 
 impl EventListenerTask {
     pub fn new(
         client: Arc<ToriiClient>,
         event_repository: Arc<EventRepository>,
-        event_sender: mpsc::Sender<FetchedEvent>,
+        land_historical_event_sender: mpsc::Sender<FetchedEvent>,
+        wallet_activity_event_sender: mpsc::Sender<FetchedEvent>,
     ) -> Self {
         Self {
             client,
             event_repository,
-            event_sender,
+            land_historical_event_sender,
+            wallet_activity_event_sender,
         }
     }
 
@@ -93,9 +97,9 @@ impl EventListenerTask {
         }
         info!("Successfully saved event!");
 
-        // Send relevant events to land historical listener
+        // Determine destinations first, then forward in parallel so queues progress independently
         use chaindata_models::events::EventDataModel;
-        let should_forward = matches!(
+        let forward_land_historical = matches!(
             &event.data,
             EventDataModel::LandBought(_)
                 | EventDataModel::AuctionFinished(_)
@@ -103,13 +107,40 @@ impl EventListenerTask {
                 | EventDataModel::LandTransfer(_)
         );
 
-        if should_forward {
-            if let Err(e) = self.event_sender.send(event).await {
-                debug!("No active receivers for event: {:?}", e);
-            } else {
-                debug!("Forwarded event to land historical listener");
-            }
+        // Note: We do NOT process transfers in wallet activity; remove it for performance
+        let forward_wallet_activity = matches!(
+            &event.data,
+            EventDataModel::LandBought(_)
+                | EventDataModel::AuctionFinished(_)
+                | EventDataModel::LandNuked(_)
+        );
+
+        let mut set = JoinSet::new();
+        if forward_land_historical {
+            let sender = self.land_historical_event_sender.clone();
+            let evt = event.clone();
+            set.spawn(async move {
+                if let Err(e) = sender.send(evt).await {
+                    debug!("No active land historical receivers for event: {:?}", e);
+                } else {
+                    debug!("Forwarded event to land historical listener");
+                }
+            });
         }
+
+        if forward_wallet_activity {
+            let sender = self.wallet_activity_event_sender.clone();
+            let evt = event.clone();
+            set.spawn(async move {
+                if let Err(e) = sender.send(evt).await {
+                    debug!("No active wallet activity receivers for event: {:?}", e);
+                } else {
+                    debug!("Forwarded event to wallet activity listener");
+                }
+            });
+        }
+
+        set.join_all().await;
     }
 }
 
