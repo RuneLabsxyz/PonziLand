@@ -270,28 +270,59 @@
 
   async function shareOnX() {
     const pnl = pnlImageProps.pnl ?? 0;
-    const pnlText = `${pnl > 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}`;
-    const tweetText = `Just made ${pnlText} on my PonziLand position! 🚀\n\nhttps://play.ponzi.land`;
+    const isGain = pnl > 0;
+    const pnlText = `${isGain ? '+' : '-'}$${Math.abs(pnl).toFixed(2)}`;
+    const status = (pnlImageProps as any).status || 'bought';
+    const tokenTickers = pnlImageProps.tokenTickers || [];
 
-    if (generatedImageUrl && navigator.share) {
-      // Use Web Share API if available (mobile)
-      try {
-        const response = await fetch(generatedImageUrl);
-        const blob = await response.blob();
-        const file = new File([blob], 'ponziland-position.svg', {
-          type: blob.type,
-        });
+    // Get status text
+    let statusText = '';
+    let emoji = '';
 
-        await navigator.share({
-          title: 'My PonziLand Position',
-          text: tweetText,
-          files: [file],
-        });
-        return;
-      } catch (error) {
-        console.log('Web Share API failed, falling back to URL:', error);
+    switch (status) {
+      case 'alive':
+        statusText = 'My active @ponzidotland land';
+        emoji = '🔥';
+        break;
+      case 'nuked':
+        statusText = 'My @ponzidotland land got nuked';
+        emoji = '💥';
+        break;
+      case 'bought':
+        statusText = 'Just closed my @ponzidotland land';
+        emoji = isGain ? '💰' : '📈';
+        break;
+      default:
+        statusText = 'My @ponzidotland land';
+        emoji = isGain ? '🚀' : '📈';
+    }
+
+    // Get P&L text
+    let pnlStatusText = '';
+    if (isGain) {
+      pnlStatusText = `Made ${pnlText} and`;
+    } else {
+      pnlStatusText = `Lost ${pnlText} but`;
+    }
+
+    // Add token information if available
+    let tokenText = '';
+    if (tokenTickers.length > 0) {
+      const tokenInflowAmounts = pnlImageProps.tokenInflowAmounts || [];
+      const totalTokenValue = tokenInflowAmounts.reduce((sum, amount) => sum + (amount || 0), 0);
+      const uniqueTokens = [...new Set(tokenTickers)].slice(0, 3);
+      
+      if (uniqueTokens.length === 1) {
+        tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens[0]}`;
+      } else if (uniqueTokens.length === 2) {
+        tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens[0]} and $${uniqueTokens[1]}`;
+      } else {
+        const lastToken = uniqueTokens.pop();
+        tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens.join(', $')}, and $${lastToken}`;
       }
     }
+
+    const tweetText = `${statusText} ${emoji}\n${pnlStatusText}${tokenText}! \n\nPlay at https://play.ponzi.land`;
 
     // Fallback to Twitter URL
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
@@ -327,23 +358,18 @@
   }
 
   async function downloadImage() {
-    const node = document.getElementById('render-pnl-image');
-
-    if (!node) {
-      console.error('Could not find the PnL image node to download.');
+    if (!generatedImageUrl) {
+      console.error(
+        'Image not yet generated. Please wait a moment and try again.',
+      );
       return;
     }
 
     try {
-      const dataUrl = await toSvg(node, {
-        backgroundColor: 'transparent',
-        pixelRatio: 1,
-      });
-
-      // Create download link using the fresh data URL
+      // Create download link using the pre-generated image
       const link = document.createElement('a');
-      link.download = `ponziland-position-${Date.now()}.svg`;
-      link.href = dataUrl;
+      link.download = `ponziland-position-${Date.now()}.png`;
+      link.href = generatedImageUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
