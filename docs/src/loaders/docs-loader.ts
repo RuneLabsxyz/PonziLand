@@ -39,6 +39,18 @@ export function docsLoader(): Loader {
               categoryIcon: categoryMeta.icon,
             },
           });
+        } else {
+          // Mark root-level docs (not in any category folder)
+          context.store.set({
+            id,
+            data: {
+              ...entry.data,
+              categoryKey: "root",
+              categoryLabel: null,
+              categoryOrder: 0,
+              categoryIcon: null,
+            },
+          });
         }
       }
 
