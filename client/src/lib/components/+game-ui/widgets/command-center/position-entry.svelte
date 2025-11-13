@@ -69,8 +69,8 @@
     widgetsStore.addWidget({
       id: `share-${positionData.land_location}-${Date.now()}`,
       type: 'share',
-      position: { x: 200, y: 100 },
-      dimensions: { width: 800, height: 600 },
+      position: { x: window.innerWidth / 2 - 187.5, y: window.innerHeight / 2 - 333.5 },
+      dimensions: { width: 375, height: 0 },
       isMinimized: false,
       isOpen: true,
       data: {
