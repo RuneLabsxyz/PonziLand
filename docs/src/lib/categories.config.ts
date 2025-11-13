@@ -1,4 +1,10 @@
 export const categories = {
+  tutorial: {
+    label: "Tutorial",
+    folder: "tutorial",
+    order: 0,
+    icon: "notebook-text",
+  },
   "getting-started": {
     label: "Getting Started",
     folder: "getting-started",
