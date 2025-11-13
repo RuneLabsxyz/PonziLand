@@ -1,22 +1,17 @@
 <script lang="ts">
-  import { X, Copy, Download } from 'lucide-svelte';
-  import PnlImage from '../command-center/PnlImage.svelte';
-  import type { HistoricalPosition } from '../command-center/historical-positions.service';
-  import {
-    getTokenInfo,
-    getFullTokenInfo,
-    getTokenMetadata,
-    locationToCoordinates,
-  } from '$lib/utils';
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import type { Token } from '$lib/interfaces';
   import {
     getBaseToken,
     originalBaseToken,
     walletStore,
   } from '$lib/stores/wallet.svelte';
-  import type { Token } from '$lib/interfaces';
-  import * as htmlToImage from 'html-to-image';
-  import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
+  import { getFullTokenInfo, getTokenInfo } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { toSvg } from 'html-to-image';
+  import { Copy, Download, X } from 'lucide-svelte';
+  import PnlImage from '../command-center/PnlImage.svelte';
+  import type { HistoricalPosition } from '../command-center/historical-positions.service';
+  import { onMount } from 'svelte';
 
   interface Props {
     position?: HistoricalPosition;
@@ -36,6 +31,9 @@
   }
 
   let { position, onClose, customPnlData }: Props = $props();
+
+  // State to store the generated image data URL
+  let generatedImageUrl: string | null = $state(null);
 
   // Calculate PnL data from position or use custom data
   const pnlImageProps = $derived.by(() => {
@@ -238,6 +236,37 @@
     };
   });
 
+  // Generate image when widget loads
+  onMount(() => {
+    const generateImage = async () => {
+      const node = document.getElementById('render-pnl-image');
+
+      if (!node) {
+        console.error('Could not find the PnL image node to generate image.');
+        return;
+      }
+
+      try {
+        node?.style.setProperty('display', 'block');
+        const dataUrl = await toSvg(node, {
+          backgroundColor: 'transparent',
+          pixelRatio: 1,
+        });
+        node?.style.setProperty('display', 'none');
+
+        // Create a blob URL for better display compatibility
+        const response = await fetch(dataUrl);
+        const blob = await response.blob();
+        generatedImageUrl = URL.createObjectURL(blob);
+      } catch (err) {
+        console.error('Failed to generate image on load:', err);
+      }
+    };
+
+    // Small delay to ensure DOM is fully rendered
+    setTimeout(generateImage, 100);
+  });
+
   async function shareOnX() {
     const pnl = pnlImageProps.pnl ?? 0;
     const pnlText = `${pnl > 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}`;
@@ -260,43 +289,39 @@
     }
   }
 
-  function downloadImage() {
-    const node = document.getElementById('my-node');
+  async function downloadImage() {
+    const node = document.getElementById('render-pnl-image');
 
     if (!node) {
       console.error('Could not find the PnL image node to download.');
       return;
     }
-    toSvg(node)
-      .then((dataUrl) => {
-        const img = new Image();
-        img.src = dataUrl;
-        const bottom = document.getElementById('renderer');
-        if (bottom) {
-          bottom.appendChild(img);
-        }
-        console.log(dataUrl);
-      })
-      .catch((err) => {
-        console.error('oops, something went wrong!', err);
+
+    try {
+      const dataUrl = await toSvg(node, {
+        backgroundColor: 'transparent',
+        pixelRatio: 1,
       });
 
-    // Create a canvas to render the PnlImage component
-    const canvas = document.createElement('canvas');
-    canvas.width = 760;
-    canvas.height = 600;
-
-    // For now, just trigger download of a placeholder
-    // In a real implementation, you'd render the PnlImage to canvas
-    const link = document.createElement('a');
-    link.download = `ponziland-position-${Date.now()}.png`;
-    link.href = '#'; // Would be canvas.toDataURL() in real implementation
-    console.log('Download functionality would be implemented here');
+      // Create download link using the fresh data URL
+      const link = document.createElement('a');
+      link.download = `ponziland-position-${Date.now()}.svg`;
+      link.href = dataUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Failed to download image:', err);
+    }
   }
 </script>
 
 <!-- PnL Image Preview -->
-<div class="mb-8 mt-4 flex justify-center">
+<div class="mb-8 mt-4 h-96 flex justify-center">
+  {#if generatedImageUrl}
+    <img src={generatedImageUrl} alt="PnL Position" />
+  {/if}
+  <!-- Hidden PnL component for image generation -->
   <PnlImage {...pnlImageProps} />
 </div>
 

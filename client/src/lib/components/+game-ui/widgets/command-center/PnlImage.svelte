@@ -111,7 +111,7 @@
 </script>
 
 <div
-  id="my-node"
+  id="render-pnl-image"
   class={cn('w-[760px] h-[600px] relative text-white', {
     'bg-pnl-green': pnl >= 0,
     'bg-pnl-red': pnl < 0,
