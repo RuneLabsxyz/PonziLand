@@ -189,19 +189,14 @@
         </div>
       </div>
 
-      <div class="flex flex-col gap-1">
-        <div class="text-white stroke-3d-black">Sold at:</div>
-        {#if soldAt > 0}
+      {#if soldAt > 0}
+        <div class="flex flex-col gap-1">
+          <div class="text-white stroke-3d-black">Sold at:</div>
           <div class="font-ponzi-number number-display-shadow tracking-wider">
             ${soldAt.toFixed(2)}
           </div>
-        {:else}
-          <div class="flex gap-1 items-center font-ponzi-number tracking-wider">
-            <img src="/ui/icons/Icon_Nuke.png" alt="Nuked" class="h-4 w-4" />
-            <span class="text-red-400 number-display-shadow">n/a</span>
-          </div>
-        {/if}
-      </div>
+        </div>
+      {/if}
 
       <!-- Right Column -->
       <div class="flex flex-col gap-1">
