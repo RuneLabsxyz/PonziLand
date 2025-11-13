@@ -87,6 +87,7 @@
     "colorjs.io": "^0.5.2",
     "ethers": "^6.13.5",
     "gsap": "^3.12.7",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "lucide-svelte": "^0.471.0",
     "moment": "=2.30.1",

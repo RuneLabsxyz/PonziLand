@@ -15,6 +15,8 @@
     walletStore,
   } from '$lib/stores/wallet.svelte';
   import type { Token } from '$lib/interfaces';
+  import * as htmlToImage from 'html-to-image';
+  import { toPng, toJpeg, toBlob, toPixelData, toSvg } from 'html-to-image';
 
   interface Props {
     position?: HistoricalPosition;
@@ -259,6 +261,26 @@
   }
 
   function downloadImage() {
+    const node = document.getElementById('my-node');
+
+    if (!node) {
+      console.error('Could not find the PnL image node to download.');
+      return;
+    }
+    toSvg(node)
+      .then((dataUrl) => {
+        const img = new Image();
+        img.src = dataUrl;
+        const bottom = document.getElementById('renderer');
+        if (bottom) {
+          bottom.appendChild(img);
+        }
+        console.log(dataUrl);
+      })
+      .catch((err) => {
+        console.error('oops, something went wrong!', err);
+      });
+
     // Create a canvas to render the PnlImage component
     const canvas = document.createElement('canvas');
     canvas.width = 760;
@@ -304,3 +326,5 @@
     Download Image
   </button>
 </div>
+
+<div id="renderer" class="mt-4"></div>
