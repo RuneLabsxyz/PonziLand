@@ -112,7 +112,8 @@
 
 <div
   id="render-pnl-image"
-  class={cn('w-[760px] h-[600px] relative text-white', {
+  style="display: none;"
+  class={cn('w-[760px] h-[600px] text-white relative', {
     'bg-pnl-green': pnl >= 0,
     'bg-pnl-red': pnl < 0,
   })}
