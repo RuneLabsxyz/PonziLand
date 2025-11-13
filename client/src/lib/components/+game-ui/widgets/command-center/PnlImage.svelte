@@ -3,6 +3,7 @@
   import { cn, getTokenMetadata } from '$lib/utils';
   import PonziProgress from './PonziProgress.svelte';
   import type { Token } from '$lib/interfaces';
+  import PonziProgressImage from './PonziProgressImage.svelte';
 
   interface Props {
     pnl?: number;
@@ -110,6 +111,7 @@
 </script>
 
 <div
+  id="my-node"
   class={cn('w-[760px] h-[600px] relative text-white', {
     'bg-pnl-green': pnl >= 0,
     'bg-pnl-red': pnl < 0,
@@ -120,7 +122,7 @@
   >
     play.ponzi.land
   </div>
-  <div class="absolute top-[120px] left-0 bottom-0 h-[600px] w-[450px] px-8">
+  <div class="absolute top-[120px] left-0 bottom-0 h-[480px] w-[450px] p-8">
     <div class="w-full flex items-center gap-6">
       <div class="opacity-0 w-0">
         <LandDisplay token={landToken} class="w-32 h-32" />
@@ -244,8 +246,8 @@
         <span class="text-green-400 text-lg">+${tokenInflow.toFixed(2)}</span>
       </div>
     {/snippet}
-    <div class="mt-6 -mr-6 flex flex-col">
-      <PonziProgress values={progressValues} {title} />
+    <div class="mt-16 -mr-6 flex flex-col">
+      <PonziProgressImage values={progressValues} {title} />
       <div class="grid {gridColumns}">
         {#each progressValues as value}
           <div class="flex items-center gap-1">
@@ -271,5 +273,8 @@
 
   .number-display-shadow {
     text-shadow: 0px 3px 0 #000;
+  }
+  .skew {
+    transform: skew(-26deg);
   }
 </style>
