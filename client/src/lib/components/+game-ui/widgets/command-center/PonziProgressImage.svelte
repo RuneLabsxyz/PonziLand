@@ -42,10 +42,10 @@
   }: Props = $props();
 </script>
 
-<div class="progress-ponzi-gray w-full relative -mx-4 mt-8">
-  <div class="absolute top-0 left-0 flex -m-[2em]">
+<div class="progress-ponzi-gray relative -ms-5">
+  <div class="absolute top-0 left-0 flex">
     <span
-      class="font-ponzi-number text-gray-200 text-2xl stroke-3d-black z-50 ml-[1.25em] mt-[.25em] -translate-y-full leading-none"
+      class="font-ponzi-number text-gray-200 text-2xl stroke-3d-black z-50 ml-[1.75em] mt-[.25em] -translate-y-full leading-none"
     >
       {#if typeof title === 'string'}
         {title}
@@ -55,9 +55,9 @@
     </span>
   </div>
   <div
-    class="h-[3em] -m-[2em] skew left-[1.5em] top-[.5em] bottom-[.5em] pr-[3em] overflow-hidden relative flex"
+    class="h-[63px] skew left-[30px] top-[9px] pr-[60px] overflow-hidden relative flex"
   >
-    {#each values as value}
+    {#each values as value, index}
       <div
         class="h-full flex items-center justify-center"
         style="background-color: {value.color}; width: {value.percentage}%;"
@@ -74,22 +74,20 @@
     {/each}
   </div>
   <div
-    class="bg-white h-[4px] opacity-50 absolute -m-[2em] skew left-[2.2em] top-[.65em] right-[1em]"
+    class="bg-white h-[4px] opacity-50 absolute skew left-[3em] top-[.65em] right-[1em]"
   ></div>
   <div
-    class="bg-black h-2 opacity-25 absolute -m-[2em] skew left-[1em] bottom-[.5em] right-[2.2em]"
+    class="bg-black h-2 opacity-25 absolute skew left-[1em] bottom-[.5em] right-[2.2em]"
   ></div>
 </div>
 
 <style global>
   .progress-ponzi-gray {
     background-clip: padding-box;
-    border: solid transparent 2em;
-    border-image-source: url('PnL/progress-slanted-gray.png');
-    border-image-slice: 12;
-    border-image-outset: 0;
-    border-image-width: 2;
+    background-image: url('PnL/progress-slanted-gray.png');
     image-rendering: pixelated;
+    background-size: contain;
+    aspect-ratio: auto 128 / 24;
   }
   .skew {
     transform: skew(-26deg);
