@@ -7,7 +7,7 @@
   } from '$lib/stores/wallet.svelte';
   import { getFullTokenInfo, getTokenInfo } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { toSvg } from 'html-to-image';
+  import { toPng, toSvg } from 'html-to-image';
   import { Copy, Download, X } from 'lucide-svelte';
   import PnlImage from '../command-center/PnlImage.svelte';
   import type { HistoricalPosition } from '../command-center/historical-positions.service';
@@ -34,6 +34,7 @@
 
   // State to store the generated image data URL
   let generatedImageUrl: string | null = $state(null);
+  let copyStatus: 'idle' | 'copying' | 'copied' = $state('idle');
 
   // Calculate PnL data from position or use custom data
   const pnlImageProps = $derived.by(() => {
@@ -247,8 +248,8 @@
       }
 
       try {
-        node?.style.setProperty('display', 'block');
-        const dataUrl = await toSvg(node, {
+        node?.style.setProperty('display', 'flex');
+        const dataUrl = await toPng(node, {
           backgroundColor: 'transparent',
           pixelRatio: 1,
         });
@@ -270,22 +271,58 @@
   async function shareOnX() {
     const pnl = pnlImageProps.pnl ?? 0;
     const pnlText = `${pnl > 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}`;
-    const tweetText = `Just made ${pnlText} on my PonziLand position! 🚀\n\n${window.location.origin}`;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
+    const tweetText = `Just made ${pnlText} on my PonziLand position! 🚀\n\nhttps://play.ponzi.land`;
 
+    if (generatedImageUrl && navigator.share) {
+      // Use Web Share API if available (mobile)
+      try {
+        const response = await fetch(generatedImageUrl);
+        const blob = await response.blob();
+        const file = new File([blob], 'ponziland-position.svg', {
+          type: blob.type,
+        });
+
+        await navigator.share({
+          title: 'My PonziLand Position',
+          text: tweetText,
+          files: [file],
+        });
+        return;
+      } catch (error) {
+        console.log('Web Share API failed, falling back to URL:', error);
+      }
+    }
+
+    // Fallback to Twitter URL
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
     window.open(twitterUrl, '_blank');
   }
 
   async function copyToClipboard() {
-    const pnl = pnlImageProps.pnl ?? 0;
-    const pnlText = `${pnl > 0 ? '+' : ''}$${Math.abs(pnl).toFixed(2)}`;
-    const shareText = `PonziLand Position\nNet P&L: ${pnlText}\n${window.location.origin}`;
+    if (!generatedImageUrl) {
+      console.error(
+        'Image not yet generated. Please wait a moment and try again.',
+      );
+      return;
+    }
+
+    copyStatus = 'copying';
 
     try {
-      await navigator.clipboard.writeText(shareText);
-      console.log('Position info copied to clipboard!');
+      const response = await fetch(generatedImageUrl);
+      const blob = await response.blob();
+
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          [blob.type]: blob,
+        }),
+      ]);
+
+      copyStatus = 'copied';
+      console.log('Image copied to clipboard!');
     } catch (error) {
-      console.error('Failed to copy:', error);
+      copyStatus = 'idle';
+      console.error('Failed to copy image:', error);
     }
   }
 
@@ -317,16 +354,18 @@
 </script>
 
 <!-- PnL Image Preview -->
-<div class="mb-8 mt-4 h-96 flex justify-center">
+<div class="mb-8 mt-4 min-h-[280px] flex justify-center">
   {#if generatedImageUrl}
     <img src={generatedImageUrl} alt="PnL Position" />
   {/if}
   <!-- Hidden PnL component for image generation -->
-  <PnlImage {...pnlImageProps} />
+  <div class="absolute top-[99999px] left-[99999px]">
+    <PnlImage {...pnlImageProps} />
+  </div>
 </div>
 
 <!-- Share Options -->
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="flex flex-col gap-4">
   <button
     class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-lg transition-colors font-medium"
     onclick={shareOnX}
@@ -338,9 +377,16 @@
   <button
     class="flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-4 px-6 rounded-lg transition-colors font-medium"
     onclick={copyToClipboard}
+    disabled={copyStatus === 'copying'}
   >
     <Copy size={20} />
-    Copy to Clipboard
+    {#if copyStatus === 'copying'}
+      Copying...
+    {:else if copyStatus === 'copied'}
+      Copied!
+    {:else}
+      Copy to Clipboard
+    {/if}
   </button>
 
   <button
