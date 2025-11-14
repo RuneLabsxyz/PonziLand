@@ -3,6 +3,7 @@
   import { getTokenInfo } from '$lib/utils';
   import { walletStore, getBaseToken } from '$lib/stores/wallet.svelte';
   import type { HistoricalPosition } from '../historical-positions.service';
+  import TokenFlowPopover from './token-flow-popover.svelte';
 
   interface Props {
     position: HistoricalPosition;
@@ -72,18 +73,5 @@
 </script>
 
 <div class="text-right">
-  {#if netTokenFlow && !netTokenFlow.isZero()}
-    <span
-      class={netTokenFlow.rawValue().isPositive()
-        ? 'text-green-400'
-        : 'text-red-400'}
-    >
-      {netTokenFlow.rawValue().isPositive() ? '+' : ''}{netTokenFlow
-        .rawValue()
-        .toNumber()
-        .toFixed(2)} $
-    </span>
-  {:else}
-    <span class="text-gray-500">-</span>
-  {/if}
+  <TokenFlowPopover {position} {netTokenFlow} />
 </div>
