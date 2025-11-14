@@ -17,7 +17,7 @@
     columns: ColumnDef<T, any>[];
     globalFilter?: string;
     customFilter?: FilterFn<T>;
-    expandedContent?: (row: T) => string;
+    expandedContent?: (row: T) => string | { component: any; props: any };
   }
 
   type T = $$Generic;
@@ -78,12 +78,18 @@
     return table;
   });
 
-  // Simple renderer to replace flexRender
-  function renderCell(definition: any, context: any) {
+  // Helper to render component content
+  function getComponentContent(definition: any, context: any) {
     if (typeof definition === 'function') {
-      return definition(context);
+      const result = definition(context);
+      // If it's a component result, return it as-is
+      if (result && typeof result === 'object' && result.component) {
+        return result;
+      }
+      // Otherwise treat as HTML string
+      return { html: result };
     }
-    return definition;
+    return { html: definition };
   }
 </script>
 
@@ -105,11 +111,16 @@
                       : null}
                 >
                   {#if !header.isPlaceholder}
+                    {@const headerContent = getComponentContent(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                     <div class="flex items-center gap-1">
-                      {@html renderCell(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )}
+                      {#if headerContent.component}
+                        <headerContent.component {...headerContent.props} />
+                      {:else}
+                        {@html headerContent.html}
+                      {/if}
                       {#if header.column.getCanSort()}
                         <span class="text-xs opacity-60">
                           {#if header.column.getIsSorted() === 'desc'}
@@ -142,6 +153,10 @@
               onclick={() => (canExpand ? row.toggleExpanded() : null)}
             >
               {#each row.getVisibleCells() as cell, index}
+                {@const cellContent = getComponentContent(
+                  cell.column.columnDef.cell,
+                  cell.getContext(),
+                )}
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-2">
                     {#if index === 0 && canExpand}
@@ -154,19 +169,25 @@
                       </span>
                     {/if}
                     <div>
-                      {@html renderCell(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
+                      {#if cellContent.component}
+                        <cellContent.component {...cellContent.props} />
+                      {:else}
+                        {@html cellContent.html}
+                      {/if}
                     </div>
                   </div>
                 </td>
               {/each}
             </tr>
             {#if row.getIsExpanded() && expandedContent}
+              {@const expandedResult = expandedContent(row.original)}
               <tr>
                 <td colspan={columns.length} class="px-4 pb-4 bg-black/20">
-                  {@html expandedContent(row.original)}
+                  {#if typeof expandedResult === 'object' && expandedResult && expandedResult.component}
+                    <expandedResult.component {...expandedResult.props} />
+                  {:else}
+                    {@html expandedResult}
+                  {/if}
                 </td>
               </tr>
             {/if}
