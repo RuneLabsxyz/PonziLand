@@ -7,7 +7,9 @@ import LocationCell from './cells/location-cell.svelte';
 import StatusCell from './cells/status-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
 import CostCell from './cells/cost-cell.svelte';
-import PnlCell from './cells/pnl-cell.svelte';
+import NetFlowCell from './cells/net-flow-cell.svelte';
+import SalePnlCell from './cells/sale-pnl-cell.svelte';
+import TotalPnlCell from './cells/total-pnl-cell.svelte';
 
 // Helper function to check if a position is open
 function isPositionOpen(position: HistoricalPosition): boolean {
@@ -81,7 +83,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const position = row.original;
       return renderComponent(CostCell, {
         cost: position.buy_cost_token,
-        variant: 'buy',
+        tokenAddress: position.buy_token_used,
       });
     },
   },
@@ -98,16 +100,16 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       }
       return renderComponent(CostCell, {
         cost: position.sale_revenue_token,
-        variant: 'sale',
+        tokenAddress: position.sale_token_used,
       });
     },
   },
   {
     id: 'net_flow',
     header: 'Net Flow',
-    cell: () => {
-      // Placeholder for now - will implement proper token flow calculation
-      return '<div class="text-right"><span class="text-gray-500">-</span></div>';
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(NetFlowCell, { position });
     },
   },
   {
@@ -119,8 +121,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       if (isOpen) {
         return '<div class="text-right"><span class="text-gray-500">TBD</span></div>';
       }
-      // Placeholder for now - will implement P&L calculation
-      return '<div class="text-right"><span class="text-gray-500">-</span></div>';
+      return renderComponent(SalePnlCell, { position });
     },
   },
   {
@@ -128,7 +129,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     header: 'P&L',
     cell: ({ row }) => {
       const position = row.original;
-      return renderComponent(PnlCell, { position, showShareButton: true });
+      return renderComponent(TotalPnlCell, { position, showShareButton: true });
     },
   },
 ];
