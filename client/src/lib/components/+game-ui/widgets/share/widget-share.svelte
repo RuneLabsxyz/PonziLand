@@ -281,8 +281,8 @@
 
     switch (status) {
       case 'alive':
-        statusText = 'My active @ponzidotland land';
-        emoji = '🔥';
+        statusText = 'My @ponzidotland land is printing';
+        emoji = '🚀';
         break;
       case 'nuked':
         statusText = 'My @ponzidotland land got nuked';
@@ -300,9 +300,9 @@
     // Get P&L text
     let pnlStatusText = '';
     if (isGain) {
-      pnlStatusText = `Made ${pnlText}`;
+      pnlStatusText = `I Made ${pnlText}`;
     } else {
-      pnlStatusText = `Lost ${pnlText}`;
+      pnlStatusText = `I Lost ${pnlText}`;
     }
 
     // Add token information if available
