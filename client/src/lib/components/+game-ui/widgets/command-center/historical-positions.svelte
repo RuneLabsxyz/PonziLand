@@ -55,7 +55,7 @@
       });
     }
 
-    return filtered.sort(
+    return [...filtered].sort(
       (a, b) =>
         new Date(b.time_bought).getTime() - new Date(a.time_bought).getTime(),
     );
