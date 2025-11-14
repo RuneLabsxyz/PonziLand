@@ -24,13 +24,13 @@
   const formatted = formatDate(dateString);
   const isAuction = variant === 'buy' && buyTokenUsed === null;
   const typeClass = isAuction ? 'text-blue-400' : 'text-purple-400';
-  const typeLabel = isAuction ? '(auction)' : '(player)';
+  const typeLabel = isAuction ? 'from auction' : 'from player';
 </script>
 
 {#if variant === 'buy'}
-  <div class="flex text-gray-400">
+  <div class="flex text-gray-400 flex-col">
     {formatted}
-    <span class="{typeClass} ml-1">{typeLabel}</span>
+    <span class="{typeClass}">{typeLabel}</span>
   </div>
 {:else}
   <span class="text-gray-400">{formatted}</span>
