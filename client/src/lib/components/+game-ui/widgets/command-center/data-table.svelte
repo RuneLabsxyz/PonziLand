@@ -2,15 +2,15 @@
   import {
     createTable,
     getCoreRowModel,
-    getSortedRowModel,
-    getFilteredRowModel,
     getExpandedRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
     type ColumnDef,
-    type SortingState,
-    type FilterFn,
     type ExpandedState,
-    type Table,
+    type FilterFn,
+    type SortingState,
   } from '@tanstack/table-core';
+  import { cos } from 'three/src/nodes/TSL.js';
 
   interface Props<T = any> {
     data: T[];
@@ -50,8 +50,8 @@
   }
 
   // Create table as a derived value with pure callback references
-  const table = $derived(
-    createTable({
+  const table = $derived.by(() => {
+    const table = createTable({
       data,
       columns,
       getCoreRowModel: getCoreRowModel(),
@@ -62,6 +62,10 @@
         sorting,
         globalFilter,
         expanded,
+        columnPinning: {
+          left: [],
+          right: [],
+        },
       },
       onSortingChange: setSorting,
       onExpandedChange: setExpanded,
@@ -69,8 +73,10 @@
       getRowCanExpand: () => !!expandedContent,
       renderFallbackValue: '',
       onStateChange: () => {},
-    })
-  );
+    });
+    console.log('Recreating table instance', table);
+    return table;
+  });
 
   // Simple renderer to replace flexRender
   function renderCell(definition: any, context: any) {
@@ -83,7 +89,8 @@
 
 <div class="flex flex-col min-h-0">
   <div class="overflow-auto flex-1">
-    <table class="w-full min-w-[1400px]">
+    {#if data && data.length > 0 && table}
+      <table class="w-full min-w-[1400px]">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
             <tr class="border-b border-gray-700">
@@ -165,6 +172,9 @@
             {/if}
           {/each}
         </tbody>
-    </table>
+      </table>
+    {:else}
+      <div class="text-center py-8 text-gray-400">No data available</div>
+    {/if}
   </div>
 </div>
