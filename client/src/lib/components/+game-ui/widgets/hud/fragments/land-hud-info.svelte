@@ -7,8 +7,8 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateBurnRate } from '$lib/utils/taxes';
   import data from '$profileData';
-  import LandOverview from '../land-overview.svelte';
-  import LandHudNormal from './land-hud-normal.svelte';
+  import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
+  import LandHudSimple from './land-hud-simple.svelte';
   import LandHudPro from './land-hud-pro.svelte';
 
   let baseToken = $derived.by(() => {
@@ -127,14 +127,13 @@
     <LandOverview {land} {isOwner} />
   {/if}
   {#if settingsStore.isNoobMode}
-    <LandHudNormal
+    <LandHudSimple {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
+  {:else if land}
+    <LandHudPro
       {yieldInfo}
       {totalYieldValue}
       burnRate={burnRateInBaseToken}
       {land}
-      {tutorialStep}
     />
-  {:else if land}
-    <LandHudPro {totalYieldValue} burnRate={burnRateInBaseToken} {land} />
   {/if}
 </div>

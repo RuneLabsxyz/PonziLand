@@ -1,10 +1,23 @@
 import { fontFamily } from 'tailwindcss/defaultTheme';
+const plugin = require('tailwindcss/plugin');
 
 /** @type {import('tailwindcss').Config} */
 const config = {
   darkMode: ['class'],
   content: ['./src/**/*.{html,js,svelte,ts}'],
   safelist: ['dark'],
+  plugins: [
+    plugin(function ({ matchUtilities, theme }) {
+      matchUtilities(
+        {
+          'bg-ponzi': (value) => ({
+            '--ponzi-bg-color': value,
+          }),
+        },
+        { values: theme('colors') },
+      );
+    }),
+  ],
   theme: {
     container: {
       center: true,

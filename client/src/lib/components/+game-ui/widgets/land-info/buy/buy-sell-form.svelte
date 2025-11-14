@@ -203,8 +203,4 @@
       {error}
     </div>
   {/if}
-
-  {#if land}
-    <!-- <BuyInsights {sellAmountVal} {stakeAmountVal} {selectedToken} {land} /> -->
-  {/if}
 </div>
