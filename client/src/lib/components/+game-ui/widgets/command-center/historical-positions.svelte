@@ -24,10 +24,7 @@
   let loading = $state(true);
   let error = $state<string | null>(null);
   let refreshInterval: NodeJS.Timeout;
-  let filter = $state<'all' | 'open' | 'closed'>('all');
   let timePeriod = $state<'1D' | '1W' | '1M' | '1Y' | 'ALL'>('ALL');
-  let activePositionsOpen = $state(true);
-  let closedPositionsOpen = $state(false);
 
   // Filter positions by time period and combine all filtered data
   const filteredPositions = $derived.by(() => {
