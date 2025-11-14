@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     createTable,
-    flexRender,
     getCoreRowModel,
     getSortedRowModel,
     getFilteredRowModel,
@@ -61,8 +60,18 @@
       },
       globalFilterFn: customFilter || 'includesString',
       getRowCanExpand: () => !!expandedContent,
+      renderFallbackValue: '',
+      onStateChange: () => {},
     }),
   );
+
+  // Simple renderer to replace flexRender
+  function renderCell(definition: any, context: any) {
+    if (typeof definition === 'function') {
+      return definition(context);
+    }
+    return definition;
+  }
 </script>
 
 <div class="flex flex-col min-h-0">
@@ -83,7 +92,7 @@
               >
                 {#if !header.isPlaceholder}
                   <div class="flex items-center gap-1">
-                    {@html flexRender(
+                    {@html renderCell(
                       header.column.columnDef.header,
                       header.getContext(),
                     )}
@@ -108,20 +117,15 @@
       <tbody>
         {#each table.getRowModel().rows as row}
           {@const isOpen =
-            !row.original.close_date || row.original.close_date === null}
+            !(row.original as any).close_date || (row.original as any).close_date === null}
           {@const canExpand = row.getCanExpand()}
           <tr
-            class="border-b border-gray-800/50 hover:bg-white/5 transition-colors relative {isOpen
-              ? 'bg-green-900/10'
+            class="border-b border-gray-800/50 hover:bg-white/5 transition-colors {isOpen
+              ? 'bg-green-900/10 border-l-2 border-l-green-400'
               : ''}"
             class:cursor-pointer={canExpand}
             onclick={() => (canExpand ? row.toggleExpanded() : null)}
           >
-            {#if isOpen}
-              <div
-                class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"
-              ></div>
-            {/if}
             {#each row.getVisibleCells() as cell, index}
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2">
@@ -135,7 +139,7 @@
                     </span>
                   {/if}
                   <div>
-                    {@html flexRender(
+                    {@html renderCell(
                       cell.column.columnDef.cell,
                       cell.getContext(),
                     )}
