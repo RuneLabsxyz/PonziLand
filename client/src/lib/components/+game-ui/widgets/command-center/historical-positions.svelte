@@ -197,15 +197,17 @@
     });
   }
 
-  // Expose share function globally for use in HTML
-  if (typeof window !== 'undefined') {
-    (window as any).sharePosition = (positionId: string) => {
-      const position = filteredPositions.find((p) => p.id === positionId);
-      if (position) {
-        openShareWidget(position);
-      }
-    };
-  }
+  // Expose share function globally for use in HTML - use effect to avoid state mutation in derived
+  $effect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).sharePosition = (positionId: string) => {
+        const position = filteredPositions.find((p) => p.id === positionId);
+        if (position) {
+          openShareWidget(position);
+        }
+      };
+    }
+  });
 </script>
 
 <div class="w-full flex justify-end p-2">
