@@ -85,6 +85,25 @@ const profiles = {
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
   },
+  'mainnet-local-api': {
+    PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
+    PUBLIC_DOJO_TORII_URL:
+      'https://api.cartridge.gg/x/ponziland-mainnet-world-new/torii',
+    PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
+    PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
+    PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
+    PUBLIC_DOJO_BURNER_ADDRESS: null,
+    PUBLIC_DOJO_BURNER_PRIVATE: null,
+    BYPASS_TOKEN: '',
+    LAYERSWAP_TOKEN: '',
+    PAYMASTER_API_KEY: '',
+    PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
+    PUBLIC_PONZI_API_URL: 'http://localhost:3031',
+    PUBLIC_FARO_COLLECTOR_URL:
+      'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
+    PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
+    PUBLIC_POSTHOG_KEY: null,
+  },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
     PUBLIC_DOJO_TORII_URL:
@@ -98,8 +117,7 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
-    PUBLIC_PONZI_API_URL:
-      'https://api.runelabs.xyz/ponziland-mainnet-temp/api/',
+    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-mainnet-temp/api',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
