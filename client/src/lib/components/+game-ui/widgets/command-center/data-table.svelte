@@ -9,8 +9,8 @@
     type SortingState,
     type FilterFn,
     type ExpandedState,
+    type Table,
   } from '@tanstack/table-core';
-  import { onMount } from 'svelte';
 
   interface Props<T = any> {
     data: T[];
@@ -32,7 +32,25 @@
   let sorting = $state<SortingState>([]);
   let expanded = $state<ExpandedState>({});
 
-  onMount(() => {
+  // State updater functions that can be called from table callbacks
+  function setSorting(updaterOrValue: any) {
+    if (typeof updaterOrValue === 'function') {
+      sorting = updaterOrValue(sorting);
+    } else {
+      sorting = updaterOrValue;
+    }
+  }
+
+  function setExpanded(updaterOrValue: any) {
+    if (typeof updaterOrValue === 'function') {
+      expanded = updaterOrValue(expanded);
+    } else {
+      expanded = updaterOrValue;
+    }
+  }
+
+  // Create table as a derived value with pure callback references
+  const table = $derived(
     createTable({
       data,
       columns,
@@ -45,26 +63,14 @@
         globalFilter,
         expanded,
       },
-      onSortingChange: (updaterOrValue) => {
-        if (typeof updaterOrValue === 'function') {
-          sorting = updaterOrValue(sorting);
-        } else {
-          sorting = updaterOrValue;
-        }
-      },
-      onExpandedChange: (updaterOrValue) => {
-        if (typeof updaterOrValue === 'function') {
-          expanded = updaterOrValue(expanded);
-        } else {
-          expanded = updaterOrValue;
-        }
-      },
+      onSortingChange: setSorting,
+      onExpandedChange: setExpanded,
       globalFilterFn: customFilter || 'includesString',
       getRowCanExpand: () => !!expandedContent,
       renderFallbackValue: '',
       onStateChange: () => {},
     })
-  });
+  );
 
   // Simple renderer to replace flexRender
   function renderCell(definition: any, context: any) {
@@ -77,8 +83,7 @@
 
 <div class="flex flex-col min-h-0">
   <div class="overflow-auto flex-1">
-    {#if table}
-      <table class="w-full min-w-[1400px]">
+    <table class="w-full min-w-[1400px]">
         <thead>
           {#each table.getHeaderGroups() as headerGroup}
             <tr class="border-b border-gray-700">
@@ -160,7 +165,6 @@
             {/if}
           {/each}
         </tbody>
-      </table>
-    {/if}
+    </table>
   </div>
 </div>
