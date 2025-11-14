@@ -74,7 +74,13 @@
       </thead>
       <tbody>
         {#each table.getRowModel().rows as row}
-          <tr class="border-b border-gray-800/50 hover:bg-white/5 transition-colors">
+          {@const isOpen = !row.original.close_date || row.original.close_date === null}
+          <tr 
+            class="border-b border-gray-800/50 hover:bg-white/5 transition-colors relative {isOpen ? 'bg-green-900/10' : ''}"
+          >
+            {#if isOpen}
+              <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
+            {/if}
             {#each row.getVisibleCells() as cell}
               <td class="px-4 py-3">
                 {@html flexRender(cell.column.columnDef.cell, cell.getContext())}
