@@ -6,6 +6,7 @@ import { renderComponent } from './render-helpers';
 import LocationCell from './cells/location-cell.svelte';
 import StatusCell from './cells/status-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
+import DurationCell from './cells/duration-cell.svelte';
 import CostCell from './cells/cost-cell.svelte';
 import NetFlowCell from './cells/net-flow-cell.svelte';
 import SalePnlCell from './cells/sale-pnl-cell.svelte';
@@ -72,6 +73,24 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         dateString: position.close_date,
         variant: 'close',
       });
+    },
+  },
+  {
+    id: 'duration',
+    header: 'Duration',
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const endA = posA.close_date ? new Date(posA.close_date) : new Date();
+      const endB = posB.close_date ? new Date(posB.close_date) : new Date();
+      const durationA = endA.getTime() - new Date(posA.time_bought).getTime();
+      const durationB = endB.getTime() - new Date(posB.time_bought).getTime();
+      return durationA - durationB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(DurationCell, { position });
     },
   },
   {
