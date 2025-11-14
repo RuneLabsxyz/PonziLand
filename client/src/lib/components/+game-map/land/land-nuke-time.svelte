@@ -2,7 +2,8 @@
   import type { LandWithActions } from '$lib/api/land';
   import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
   import { Card } from '$lib/components/ui/card';
-  import { parseNukeTime, estimateNukeTimeRpc } from '$lib/utils/taxes';
+  import { estimateNukeTimeRpc } from '$lib/utils/taxes';
+  import { parseNukeTime } from '$lib/utils/date';
 
   let {
     land,
@@ -20,7 +21,7 @@
       }
 
       const timeInSeconds = await estimateNukeTimeRpc(land);
-      nukeTime = parseNukeTime(timeInSeconds).toString();
+      nukeTime = parseNukeTime(timeInSeconds);
     };
     calculateNukeTime();
   });

@@ -5,6 +5,7 @@
   import { getTokenMetadata } from '$lib/utils';
   import data from '$profileData';
   import { onMount } from 'svelte';
+  import { formatDateOnly } from '$lib/utils/date';
   import type { EkuboApiResponse } from '../../api/defi/ekubo/requests';
   import {
     calculatePriceFromPool,
@@ -17,8 +18,6 @@
   import PlayerInfo from './PlayerInfo.svelte';
   import PriceChart from './PriceChart.svelte';
   import type { TokenVolume } from './requests';
-  import { mainnet } from '@reown/appkit/networks';
-  import { BASE_URL } from '@avnu/avnu-sdk';
 
   const BASE_TOKEN = data.mainCurrencyAddress;
   const BASE_TOKEN_NUMERIC = BigInt(BASE_TOKEN).toString(10);
@@ -264,9 +263,7 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-300"
-                  >Historical ({new Date(
-                    card.historicalDate,
-                  ).toLocaleDateString()}):</span
+                  >Historical ({formatDateOnly(card.historicalDate)}):</span
                 >
                 <span class="text-white font-mono"
                   >{card.historicalRate.toFixed(6)}</span

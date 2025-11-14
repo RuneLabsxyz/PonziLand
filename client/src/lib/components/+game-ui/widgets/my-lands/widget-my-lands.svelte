@@ -15,7 +15,8 @@
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
-  import { estimateNukeTimeRpc, parseNukeTime } from '$lib/utils/taxes';
+  import { estimateNukeTimeRpc } from '$lib/utils/taxes';
+  import { parseNukeTimeComponents } from '$lib/utils/date';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { List, Eye } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
@@ -137,7 +138,7 @@
     text: string;
     shieldType: string;
   } {
-    const parsedTime = parseNukeTime(timeInSeconds);
+    const parsedTime = parseNukeTimeComponents(timeInSeconds);
 
     let displayText = '';
     if (parsedTime.days > 0) {

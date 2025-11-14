@@ -1,7 +1,8 @@
 import { BuildingLand } from '$lib/api/land/building_land';
 import { landStore } from '$lib/stores/store.svelte';
 import { createLandWithActions } from '$lib/utils/land-actions';
-import { estimateNukeTimeRpc, parseNukeTime } from '$lib/utils/taxes';
+import { estimateNukeTimeRpc } from '$lib/utils/taxes';
+import { parseNukeTimeComponents } from '$lib/utils/date';
 import { SvelteMap } from 'svelte/reactivity';
 import type { LandTile } from '../landTile';
 import type { BaseLand } from '$lib/api/land';
@@ -55,7 +56,7 @@ export class NukeTimeManager {
     text: string;
     shieldType: NukeTimeData['shieldType'];
   } {
-    const parsedTime = parseNukeTime(timeInSeconds);
+    const parsedTime = parseNukeTimeComponents(timeInSeconds);
 
     let displayText = '';
     if (parsedTime.days > 0) {

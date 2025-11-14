@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import Chart from 'chart.js/auto';
+  import { formatDateOnly } from '$lib/utils/date';
 
   let { transactions }: { transactions: Array<{ date: string }> } = $props();
 
@@ -14,7 +15,7 @@
     const dailyCounts = new Map();
 
     transactions.forEach((tx) => {
-      const date = new Date(tx.date).toLocaleDateString();
+      const date = formatDateOnly(tx.date);
       dailyCounts.set(date, (dailyCounts.get(date) || 0) + 1);
     });
 
