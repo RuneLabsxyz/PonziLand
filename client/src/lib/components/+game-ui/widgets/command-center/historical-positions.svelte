@@ -25,10 +25,6 @@
   let activePositionsOpen = $state(true);
   let closedPositionsOpen = $state(false);
 
-  // Check if a position is still active (no close_date means it's still open)
-  function isPositionOpen(position: HistoricalPosition): boolean {
-    return !position.close_date || position.close_date === null;
-  }
 
   // Filter positions by time period and combine all filtered data
   const filteredPositions = $derived.by(() => {
