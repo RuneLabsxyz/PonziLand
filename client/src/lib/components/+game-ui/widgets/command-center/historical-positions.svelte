@@ -11,8 +11,9 @@
   import DataTable from './data-table.svelte';
   import { columns } from './historical-positions-columns';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import { getFullTokenInfo } from '$lib/utils';
+  import { getFullTokenInfo, locationToCoordinates } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   const dojo = useDojo();
   const account = () => {
@@ -28,11 +29,10 @@
   let activePositionsOpen = $state(true);
   let closedPositionsOpen = $state(false);
 
-
   // Filter positions by time period and combine all filtered data
   const filteredPositions = $derived.by(() => {
     let filtered = positions;
-    
+
     if (timePeriod !== 'ALL') {
       const now = new Date();
       const cutoffDate = new Date();
@@ -101,7 +101,7 @@
   function generateExpandedContent(position: HistoricalPosition): string {
     const inflowEntries = Object.entries(position.token_inflows);
     const outflowEntries = Object.entries(position.token_outflows);
-    
+
     let content = `
       <div class="grid grid-cols-2 gap-4 mt-2">
         <div>
@@ -179,6 +179,36 @@
 
     return content;
   }
+
+  // Share function for position data
+  function openShareWidget(positionData: HistoricalPosition) {
+    const coordinates = locationToCoordinates(positionData.land_location);
+    widgetsStore.addWidget({
+      id: `share-${positionData.land_location}-${Date.now()}`,
+      type: 'share',
+      position: {
+        x: window.innerWidth / 2 - 187.5,
+        y: window.innerHeight / 2 - 333.5,
+      },
+      dimensions: { width: 375, height: 0 },
+      isMinimized: false,
+      isOpen: true,
+      data: {
+        position: positionData,
+        coordinates: coordinates,
+      },
+    });
+  }
+
+  // Expose share function globally for use in HTML
+  if (typeof window !== 'undefined') {
+    (window as any).sharePosition = (positionId: string) => {
+      const position = filteredPositions.find((p) => p.id === positionId);
+      if (position) {
+        openShareWidget(position);
+      }
+    };
+  }
 </script>
 
 <div class="w-full flex justify-end p-2">
@@ -237,7 +267,11 @@
         No positions found for the selected time period
       </div>
     {:else}
-      <DataTable data={filteredPositions} {columns} expandedContent={generateExpandedContent} />
+      <DataTable
+        data={filteredPositions}
+        {columns}
+        expandedContent={generateExpandedContent}
+      />
     {/if}
   </ScrollArea>
 </div>

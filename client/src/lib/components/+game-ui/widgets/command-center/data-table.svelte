@@ -12,7 +12,7 @@
     type ExpandedState,
   } from '@tanstack/table-core';
 
-  interface Props<T> {
+  interface Props<T = any> {
     data: T[];
     columns: ColumnDef<T, any>[];
     globalFilter?: string;
@@ -21,7 +21,13 @@
   }
 
   type T = $$Generic;
-  let { data, columns, globalFilter = '', customFilter, expandedContent }: Props<T> = $props();
+  let {
+    data,
+    columns,
+    globalFilter = '',
+    customFilter,
+    expandedContent,
+  }: Props<T> = $props();
 
   let sorting = $state<SortingState>([]);
   let expanded = $state<ExpandedState>({});
@@ -55,7 +61,7 @@
       },
       globalFilterFn: customFilter || 'includesString',
       getRowCanExpand: () => !!expandedContent,
-    })
+    }),
   );
 </script>
 
@@ -66,15 +72,21 @@
         {#each table.getHeaderGroups() as headerGroup}
           <tr class="border-b border-gray-700">
             {#each headerGroup.headers as header}
-              <th 
+              <th
                 class="px-4 py-2 text-left text-xs text-gray-400 select-none"
                 class:cursor-pointer={header.column.getCanSort()}
                 class:hover:text-gray-200={header.column.getCanSort()}
-                onclick={() => header.column.getCanSort() ? header.column.toggleSorting() : null}
+                onclick={() =>
+                  header.column.getCanSort()
+                    ? header.column.toggleSorting()
+                    : null}
               >
                 {#if !header.isPlaceholder}
                   <div class="flex items-center gap-1">
-                    {@html flexRender(header.column.columnDef.header, header.getContext())}
+                    {@html flexRender(
+                      header.column.columnDef.header,
+                      header.getContext(),
+                    )}
                     {#if header.column.getCanSort()}
                       <span class="text-xs opacity-60">
                         {#if header.column.getIsSorted() === 'desc'}
@@ -95,15 +107,20 @@
       </thead>
       <tbody>
         {#each table.getRowModel().rows as row}
-          {@const isOpen = !row.original.close_date || row.original.close_date === null}
+          {@const isOpen =
+            !row.original.close_date || row.original.close_date === null}
           {@const canExpand = row.getCanExpand()}
-          <tr 
-            class="border-b border-gray-800/50 hover:bg-white/5 transition-colors relative {isOpen ? 'bg-green-900/10' : ''}"
+          <tr
+            class="border-b border-gray-800/50 hover:bg-white/5 transition-colors relative {isOpen
+              ? 'bg-green-900/10'
+              : ''}"
             class:cursor-pointer={canExpand}
-            onclick={() => canExpand ? row.toggleExpanded() : null}
+            onclick={() => (canExpand ? row.toggleExpanded() : null)}
           >
             {#if isOpen}
-              <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
+              <div
+                class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"
+              ></div>
             {/if}
             {#each row.getVisibleCells() as cell, index}
               <td class="px-4 py-3">
@@ -118,7 +135,10 @@
                     </span>
                   {/if}
                   <div>
-                    {@html flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    {@html flexRender(
+                      cell.column.columnDef.cell,
+                      cell.getContext(),
+                    )}
                   </div>
                 </div>
               </td>
