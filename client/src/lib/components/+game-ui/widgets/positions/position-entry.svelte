@@ -50,6 +50,7 @@
   // Function to open share widget with position data
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);
+
     widgetsStore.addWidget({
       id: `share-${positionData.land_location}-${Date.now()}`,
       type: 'share',
