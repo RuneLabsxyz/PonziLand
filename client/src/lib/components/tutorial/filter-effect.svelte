@@ -50,7 +50,7 @@
     background: #000000;
     opacity: 0.5;
     transform: translate(-50%, -50%);
-    pointer-events: auto;
+    pointer-events: none;
 
     /* Create a hole in the center using clip-path */
     clip-path: polygon(

@@ -7,8 +7,12 @@
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
-  import LandOverview from '../land-overview.svelte';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
+  import {
+    nextStep,
+    tutorialAttribute,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -68,14 +72,21 @@
     {:else}
       <div class="text-ponzi-number text-center">Loading...</div>
     {/if}
-    <Button
-      onclick={() => {
-        if (tutorialState.tutorialStep === 8) {
-          tutorialState.tutorialStep = 9;
-        }
-        openLandInfoWidget(land);
-      }}>BUY LAND</Button
+    <div
+      class={{
+        'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2':
+          tutorialAttribute('highlight_map_buy').has,
+      }}
     >
+      <Button
+        onclick={() => {
+          if (tutorialAttribute('wait_buy_land_open').has) {
+            nextStep();
+          }
+          openLandInfoWidget(land);
+        }}>BUY LAND</Button
+      >
+    </div>
   </div>
 </div>
 

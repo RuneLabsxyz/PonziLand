@@ -8,6 +8,7 @@
   import { loadingStore } from '$lib/stores/loading.store.svelte';
   import {
     enableTutorial,
+    tutorialAttribute,
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
   import TutorialDialog from '$lib/components/tutorial/tutorial-dialog.svelte';
@@ -39,7 +40,7 @@
   {#if !webglShow && gameContentReady}
     <div
       class="absolute inset-0"
-      class:pointer-events-none={tutorialState.interactionsLocked}
+      class:pointer-events-none={tutorialAttribute('no_interraction').has}
     >
       <GameUi />
       <GameCanva />
