@@ -1,37 +1,56 @@
 <script lang="ts">
   import { Card } from '$lib/components/ui/card';
-  import { tutorialState, nextStep, previousStep } from './stores.svelte';
+  import {
+    tutorialState,
+    nextStep,
+    previousStep,
+    tutorialAttribute,
+  } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
-  import { selectedLand } from '$lib/stores/store.svelte';
+  import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { ChevronLeft, ChevronRight } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import { get } from 'svelte/store';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
   let showNavigation = $derived(
-    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 7,
+    tutorialAttribute('previous').has || tutorialAttribute('next').has,
+  );
+
+  $inspect(
+    'navigation ==>',
+    showNavigation,
+    tutorialAttribute('previous').has,
+    tutorialAttribute('next').has,
   );
 
   $effect(() => {
     if (
       selectedLand.value?.location.x === 128 &&
       selectedLand.value?.location.y === 128 &&
-      tutorialState.tutorialStep === 2
+      tutorialAttribute('wait_select_land').has
     ) {
       nextStep();
+    }
+
+    // Also check if the wait_info_open attribute is present
+    if (tutorialAttribute('decrease_stake').has) {
+      let land = get(landStore.getLand(128, 128)!);
+      // @ts-ignore This is really bad, but at least it works
+      land._stakeAmount = CurrencyAmount.fromScaled(0.01, land.token);
+      landStore.updateLandDirectly(128, 128, land);
     }
   });
 
   onMount(() => {
     widgetsStore.resetToDefault();
     widgetsStore.closeWidget('disclaimer');
-    settingsStore.toggleNoobMode();
+    settingsStore.forceNoobMode();
     tutorialState.tutorialStep = 1;
-    setTimeout(() => {
-      nextStep();
-    }, 5000);
   });
 
   function enterGrid() {
@@ -56,7 +75,7 @@
         <div class="flex-1 text-sm">
           {@html currentDialog.text}
         </div>
-        {#if tutorialState.tutorialStep === 10}
+        {#if tutorialAttribute('enter_grid').has}
           <Button
             onclick={() => {
               enterGrid();
@@ -72,7 +91,7 @@
         <button
           onclick={previousStep}
           class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-          disabled={tutorialState.tutorialStep === 4}
+          disabled={!tutorialAttribute('previous').has}
         >
           <ChevronLeft class="h-4 w-4" />
           Previous
@@ -80,10 +99,19 @@
         <button
           onclick={nextStep}
           class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-          disabled={tutorialState.tutorialStep === 8}
+          disabled={!tutorialAttribute('next').has}
         >
           Next
           <ChevronRight class="h-4 w-4" />
+        </button>
+      </div>
+    {:else if currentDialog.continue != undefined}
+      <div class="flex justify-end items-end px-4 pb-4">
+        <button
+          class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+          disabled
+        >
+          {currentDialog.continue}
         </button>
       </div>
     {/if}

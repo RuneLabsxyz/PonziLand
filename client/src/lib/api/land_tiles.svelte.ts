@@ -24,6 +24,9 @@ import { BuildingLand } from './land/building_land';
 import { toLocation, type Location } from './land/location';
 import { setupLandsSubscription } from './land/torii';
 import { waitForLandChange, waitForLandType } from './storeWait';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { getTokenMetadata } from '$lib/tokens';
+import type { Token } from '$lib/interfaces';
 
 type Subscription = Awaited<
   ReturnType<typeof setupLandsSubscription>
@@ -965,36 +968,62 @@ export class LandTileStore {
       tokenAddressMap[token.symbol] = token.address;
     });
 
+    console.log('AddressMap: ', tokenAddressMap);
+
     // Define specific tokens for each building
-    const buildingTokens = [
-      tokenAddressMap['SOL'] || TOKEN_ADDRESSES[0], // Center - SOL
-      tokenAddressMap['BTC'] || TOKEN_ADDRESSES[1], // Right - BTC
-      tokenAddressMap['ETH'] || TOKEN_ADDRESSES[2], // Left - ETH
-      tokenAddressMap['DOG'] || TOKEN_ADDRESSES[3], // Below - DOGE
-      tokenAddressMap['BONK'] || TOKEN_ADDRESSES[4], // Above - BONK
+    const buildingTokensAddresses = [
+      tokenAddressMap['SOL']!, // Center - SOL
+      tokenAddressMap['WBTC']!, // Right - BTC
+      tokenAddressMap['ETH']!, // Left - ETH
+      tokenAddressMap['DOG']!, // Below - DOGE
+      tokenAddressMap['BONK']!, // Above - BONK
     ];
+
+    console.log('Building Tokens Addresses: ', buildingTokensAddresses);
+
+    const buildingTokens: Token[] = buildingTokensAddresses.map((address) => {
+      return data.availableTokens.find(
+        (token: Token) => token.address === address,
+      ) as Token;
+    });
 
     // Define specific configurations for each land
     const landConfigs = [
-      { price: 1000000000, level: 'Second' }, // SOL - $400, Level 3
-      { price: 100000, level: 'Second' }, // BTC - $350, Level 3
-      { price: 1000000000, level: 'First' }, // ETH - $250, Level 2
-      { price: 1000000000, level: 'First' }, // DOG - $150, Level 2
-      { price: 1000000000, level: 'Zero' }, // BONK - $100, Level 1
+      {
+        address: buildingTokensAddresses[0],
+        price: CurrencyAmount.fromScaled(0.5, buildingTokens[0]),
+        level: 'Second',
+      }, // SOL - $400, Level 3
+      {
+        price: CurrencyAmount.fromScaled(0.001, buildingTokens[1]),
+        level: 'Second',
+      }, // BTC - $350, Level 3
+      {
+        price: CurrencyAmount.fromScaled(0.25, buildingTokens[2]),
+        level: 'Second',
+      }, // ETH - $250, Level 3
+      {
+        price: CurrencyAmount.fromScaled(10000, buildingTokens[3]),
+        level: 'Second',
+      }, // DOG - $150, Level 3
+      {
+        price: CurrencyAmount.fromScaled(15000, buildingTokens[4]),
+        level: 'Second',
+      }, // BONK - $100, Level 3
     ];
 
     this.currentLands.update((lands) => {
       // Add player-owned lands
       playerLandPositions.forEach(({ x, y }, index) => {
         // Use specific token for each position
-        const tokenAddress = buildingTokens[index];
+        const tokenAddress = buildingTokensAddresses[index];
         const config = landConfigs[index];
 
         const playerLand: Land = {
           owner: playerOwner,
           location: coordinatesToLocation({ x, y }),
           block_date_bought: Date.now() / 1000,
-          sell_price: config.price,
+          sell_price: config.price.toBigint(),
           token_used: tokenAddress,
           // @ts-ignore
           level: config.level,
@@ -1002,7 +1031,7 @@ export class LandTileStore {
 
         const playerStake: LandStake = {
           location: coordinatesToLocation({ x, y }),
-          amount: config.price,
+          amount: config.price.toBigint(),
           neighbors_info_packed: 0,
           accumulated_taxes_fee: 0,
         };

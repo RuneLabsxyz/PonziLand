@@ -14,13 +14,11 @@
     totalYieldValue,
     burnRate,
     land,
-    tutorialStep,
   }: {
     yieldInfo: LandYieldInfo | undefined;
     totalYieldValue: number;
     burnRate: CurrencyAmount;
     land: LandWithActions;
-    tutorialStep?: number;
   } = $props();
 
   let baseToken = $derived(getBaseToken());
@@ -81,11 +79,7 @@
 </script>
 
 <div class="flex flex-col items-stretch relative w-full leading-none">
-  <div
-    class={tutorialStep === 4 || tutorialStep === 5
-      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-      : ''}
-  >
+  <div>
     <div class="flex justify-between items-center text-ponzi-number">
       <span>Token</span>
       <span>{land?.token?.symbol}</span>
@@ -124,11 +118,7 @@
     </div>
   </div>
   <!-- Total net value -->
-  <div
-    class={tutorialStep === 7
-      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-      : ''}
-  >
+  <div>
     <div class="flex justify-between items-center text-ponzi-number py-2">
       <span class="opacity-50">Net / hour</span>
       <div
@@ -161,11 +151,7 @@
   </div>
 
   {#if yieldData}
-    <div
-      class="flex flex-col pt-4 {tutorialStep === 6
-        ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-        : ''}"
-    >
+    <div class="flex flex-col pt-4">
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">

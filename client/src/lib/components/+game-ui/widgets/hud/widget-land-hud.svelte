@@ -1,7 +1,7 @@
 <script lang="ts">
   import account from '$lib/account.svelte';
-  import LandHudAuction from '$lib/components/+game-map/land/hud/land-hud-auction.svelte';
-  import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
+  import LandHudAuction from './fragments/land-hud-auction.svelte';
+  import LandHudInfo from './fragments/land-hud-info.svelte';
   import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
   import LandOwnerInfo from '$lib/components/+game-map/land/land-owner-info.svelte';
   import { Card } from '$lib/components/ui/card';
@@ -10,7 +10,10 @@
   import { padAddress } from '$lib/utils';
   import { List, Eye } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import {
+    tutorialAttribute,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
@@ -19,9 +22,7 @@
 
   let { setCustomTitle, setCustomControls }: Props = $props();
 
-  let highlighted = $derived(
-    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 7,
-  );
+  let highlighted = $derived(tutorialAttribute('highlight_info').has);
 
   const address = $derived(account.address);
   let landWithActions = $derived(selectedLandWithActions());

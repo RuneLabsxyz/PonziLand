@@ -44,7 +44,10 @@
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
   import FilterEffect from '$lib/components/tutorial/filter-effect.svelte';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import {
+    nextStep,
+    tutorialAttribute,
+  } from '$lib/components/tutorial/stores.svelte';
   const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
@@ -509,10 +512,10 @@
     let targetX: number | undefined;
     let targetY: number | undefined;
 
-    if (tutorialState.tutorialStep === 2) {
+    if (tutorialAttribute('highlight_building').has) {
       targetX = 128;
       targetY = 128;
-    } else if (tutorialState.tutorialStep === 8) {
+    } else if (tutorialAttribute('highlight_auction').has) {
       targetX = 127;
       targetY = 127;
     } else {
@@ -900,6 +903,9 @@
           class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
           size="sm"
           onclick={() => {
+            if (tutorialAttribute('wait_info_open').has) {
+              nextStep();
+            }
             openLandInfoWidget(selectedLand);
           }}
         >
@@ -907,9 +913,18 @@
         </Button>
       {:else}
         <Button
-          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+          class={[
+            'absolute top-[50px] -translate-y-full -translate-x-1/2 z-20',
+            {
+              'animate-pulse shadow-[0_0_20px_rgba(255,255,255,0.8)] hover:shadow-[0_0_30px_rgba(255,255,255,1)] transition-shadow duration-1000':
+                tutorialAttribute('highlight_map_buy').has,
+            },
+          ]}
           size="sm"
           onclick={() => {
+            if (tutorialAttribute('wait_buy_land_open').has) {
+              nextStep();
+            }
             openLandInfoWidget(selectedLand);
           }}
         >

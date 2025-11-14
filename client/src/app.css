@@ -206,6 +206,11 @@
 }
 
 .bg-ponzi {
+  background-image: url('/ui/card/texture.png'), var(--ponzi-bg-color, none);
+  background-blend-mode: multiply;
+}
+
+.ponzi-bg {
   background-image: url('/ui/card/texture.png');
 }
 
