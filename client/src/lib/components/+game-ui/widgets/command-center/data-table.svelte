@@ -5,9 +5,11 @@
     getCoreRowModel,
     getSortedRowModel,
     getFilteredRowModel,
+    getExpandedRowModel,
     type ColumnDef,
     type SortingState,
     type FilterFn,
+    type ExpandedState,
   } from '@tanstack/table-core';
 
   interface Props<T> {
@@ -15,12 +17,14 @@
     columns: ColumnDef<T, any>[];
     globalFilter?: string;
     customFilter?: FilterFn<T>;
+    expandedContent?: (row: T) => string;
   }
 
   type T = $$Generic;
-  let { data, columns, globalFilter = '', customFilter }: Props<T> = $props();
+  let { data, columns, globalFilter = '', customFilter, expandedContent }: Props<T> = $props();
 
   let sorting = $state<SortingState>([]);
+  let expanded = $state<ExpandedState>({});
 
   const table = $derived(
     createTable({
@@ -29,9 +33,11 @@
       getCoreRowModel: getCoreRowModel(),
       getSortedRowModel: getSortedRowModel(),
       getFilteredRowModel: getFilteredRowModel(),
+      getExpandedRowModel: getExpandedRowModel(),
       state: {
         sorting,
         globalFilter,
+        expanded,
       },
       onSortingChange: (updaterOrValue) => {
         if (typeof updaterOrValue === 'function') {
@@ -40,7 +46,15 @@
           sorting = updaterOrValue;
         }
       },
+      onExpandedChange: (updaterOrValue) => {
+        if (typeof updaterOrValue === 'function') {
+          expanded = updaterOrValue(expanded);
+        } else {
+          expanded = updaterOrValue;
+        }
+      },
       globalFilterFn: customFilter || 'includesString',
+      getRowCanExpand: () => !!expandedContent,
     })
   );
 </script>
@@ -82,18 +96,41 @@
       <tbody>
         {#each table.getRowModel().rows as row}
           {@const isOpen = !row.original.close_date || row.original.close_date === null}
+          {@const canExpand = row.getCanExpand()}
           <tr 
             class="border-b border-gray-800/50 hover:bg-white/5 transition-colors relative {isOpen ? 'bg-green-900/10' : ''}"
+            class:cursor-pointer={canExpand}
+            onclick={() => canExpand ? row.toggleExpanded() : null}
           >
             {#if isOpen}
               <div class="absolute left-0 top-0 bottom-0 w-1 bg-green-400"></div>
             {/if}
-            {#each row.getVisibleCells() as cell}
+            {#each row.getVisibleCells() as cell, index}
               <td class="px-4 py-3">
-                {@html flexRender(cell.column.columnDef.cell, cell.getContext())}
+                <div class="flex items-center gap-2">
+                  {#if index === 0 && canExpand}
+                    <span class="text-gray-500 text-xs">
+                      {#if row.getIsExpanded()}
+                        ▼
+                      {:else}
+                        ▶
+                      {/if}
+                    </span>
+                  {/if}
+                  <div>
+                    {@html flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </div>
+                </div>
               </td>
             {/each}
           </tr>
+          {#if row.getIsExpanded() && expandedContent}
+            <tr>
+              <td colspan={columns.length} class="px-4 pb-4 bg-black/20">
+                {@html expandedContent(row.original)}
+              </td>
+            </tr>
+          {/if}
         {/each}
       </tbody>
     </table>

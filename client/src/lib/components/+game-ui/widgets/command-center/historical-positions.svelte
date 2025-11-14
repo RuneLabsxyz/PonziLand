@@ -10,6 +10,9 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import DataTable from './data-table.svelte';
   import { columns } from './historical-positions-columns';
+  import * as Avatar from '$lib/components/ui/avatar/index.js';
+  import { getFullTokenInfo } from '$lib/utils';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
   const dojo = useDojo();
   const account = () => {
@@ -93,6 +96,89 @@
       }
     };
   });
+
+  // Function to generate expanded content for token flows
+  function generateExpandedContent(position: HistoricalPosition): string {
+    const inflowEntries = Object.entries(position.token_inflows);
+    const outflowEntries = Object.entries(position.token_outflows);
+    
+    let content = `
+      <div class="grid grid-cols-2 gap-4 mt-2">
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-gray-400">Token Inflows</h4>
+          </div>
+    `;
+
+    if (inflowEntries.length > 0) {
+      content += '<div class="space-y-1">';
+      for (const [token, amount] of inflowEntries) {
+        const fullTokenInfo = getFullTokenInfo(token);
+        if (fullTokenInfo) {
+          content += `
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="h-5 w-5 rounded-full bg-gray-600 flex-shrink-0 flex items-center justify-center">
+                  <span class="text-[8px]">${fullTokenInfo.token.symbol.slice(0, 3)}</span>
+                </div>
+                <span class="text-gray-400 truncate" title="${token}">
+                  ${fullTokenInfo.token.symbol}
+                </span>
+              </div>
+              <span class="text-green-400 ml-2 flex-shrink-0">
+                +${CurrencyAmount.fromUnscaled(amount, fullTokenInfo.token).toString()}
+              </span>
+            </div>
+          `;
+        }
+      }
+      content += '</div>';
+    } else {
+      content += '<div class="text-gray-600">No inflows</div>';
+    }
+
+    content += `
+        </div>
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="text-gray-400">Token Outflows</h4>
+          </div>
+    `;
+
+    if (outflowEntries.length > 0) {
+      content += '<div class="space-y-1">';
+      for (const [token, amount] of outflowEntries) {
+        const fullTokenInfo = getFullTokenInfo(token);
+        if (fullTokenInfo) {
+          content += `
+            <div class="flex justify-between items-center">
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="h-5 w-5 rounded-full bg-gray-600 flex-shrink-0 flex items-center justify-center">
+                  <span class="text-[8px]">${fullTokenInfo.token.symbol.slice(0, 3)}</span>
+                </div>
+                <span class="text-gray-400 truncate" title="${token}">
+                  ${fullTokenInfo.token.symbol}
+                </span>
+              </div>
+              <span class="text-red-400 ml-2 flex-shrink-0">
+                -${CurrencyAmount.fromUnscaled(amount, fullTokenInfo.token).toString()}
+              </span>
+            </div>
+          `;
+        }
+      }
+      content += '</div>';
+    } else {
+      content += '<div class="text-gray-600">No outflows</div>';
+    }
+
+    content += `
+        </div>
+      </div>
+    `;
+
+    return content;
+  }
 </script>
 
 <div class="w-full flex justify-end p-2">
@@ -151,7 +237,7 @@
         No positions found for the selected time period
       </div>
     {:else}
-      <DataTable data={filteredPositions} {columns} />
+      <DataTable data={filteredPositions} {columns} expandedContent={generateExpandedContent} />
     {/if}
   </ScrollArea>
 </div>
