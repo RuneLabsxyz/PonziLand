@@ -309,9 +309,12 @@
     let tokenText = '';
     if (tokenTickers.length > 0) {
       const tokenInflowAmounts = pnlImageProps.tokenInflowAmounts || [];
-      const totalTokenValue = tokenInflowAmounts.reduce((sum, amount) => sum + (amount || 0), 0);
+      const totalTokenValue = tokenInflowAmounts.reduce(
+        (sum, amount) => sum + (amount || 0),
+        0,
+      );
       const uniqueTokens = [...new Set(tokenTickers)].slice(0, 3);
-      
+
       if (uniqueTokens.length === 1) {
         tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens[0]}`;
       } else if (uniqueTokens.length === 2) {
