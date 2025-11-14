@@ -53,16 +53,23 @@
           <tr class="border-b border-gray-700">
             {#each headerGroup.headers as header}
               <th 
-                class="px-4 py-2 text-left text-xs text-gray-400 cursor-pointer hover:text-gray-200"
+                class="px-4 py-2 text-left text-xs text-gray-400 select-none"
                 class:cursor-pointer={header.column.getCanSort()}
-                onclick={() => header.column.getToggleSortingHandler()?.({})}
+                class:hover:text-gray-200={header.column.getCanSort()}
+                onclick={() => header.column.getCanSort() ? header.column.toggleSorting() : null}
               >
                 {#if !header.isPlaceholder}
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1">
                     {@html flexRender(header.column.columnDef.header, header.getContext())}
-                    {#if header.column.getIsSorted()}
-                      <span class="text-xs">
-                        {header.column.getIsSorted() === 'desc' ? '↓' : '↑'}
+                    {#if header.column.getCanSort()}
+                      <span class="text-xs opacity-60">
+                        {#if header.column.getIsSorted() === 'desc'}
+                          ▼
+                        {:else if header.column.getIsSorted() === 'asc'}
+                          ▲
+                        {:else}
+                          ⇅
+                        {/if}
                       </span>
                     {/if}
                   </div>

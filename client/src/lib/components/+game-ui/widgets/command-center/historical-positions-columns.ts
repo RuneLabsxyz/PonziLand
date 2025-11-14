@@ -33,6 +33,8 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'land_location',
     header: 'Location',
+    enableSorting: true,
+    sortingFn: 'alphanumeric',
     cell: ({ row }) => {
       const location = row.original.land_location;
       const coords = locationToCoordinates(location);
@@ -42,6 +44,14 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'close_date',
     header: 'Status',
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const aOpen = isPositionOpen(rowA.original);
+      const bOpen = isPositionOpen(rowB.original);
+      if (aOpen && !bOpen) return -1;
+      if (!aOpen && bOpen) return 1;
+      return 0;
+    },
     cell: ({ row }) => {
       const position = row.original;
       const isOpen = isPositionOpen(position);
@@ -72,6 +82,8 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'time_bought',
     header: 'Bought',
+    enableSorting: true,
+    sortingFn: 'datetime',
     cell: ({ row }) => {
       const position = row.original;
       const formatted = formatDate(position.time_bought);
@@ -88,8 +100,10 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
-    accessorKey: 'close_date',
+    accessorKey: 'close_date', 
     header: 'Close',
+    enableSorting: true,
+    sortingFn: 'datetime',
     cell: ({ row }) => {
       const position = row.original;
       const isOpen = isPositionOpen(position);
@@ -103,6 +117,8 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'buy_cost_token',
     header: 'Buy Cost',
+    enableSorting: true,
+    sortingFn: 'alphanumeric',
     cell: ({ row }) => {
       const position = row.original;
       // For now, just display the raw value - will enhance with token formatting later
@@ -117,6 +133,8 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'sale_revenue_token',
     header: 'Sold For',
+    enableSorting: true,
+    sortingFn: 'alphanumeric',
     cell: ({ row }) => {
       const position = row.original;
       const isOpen = isPositionOpen(position);
