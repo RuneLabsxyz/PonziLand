@@ -6,13 +6,8 @@ function isPositionOpen(position: HistoricalPosition): boolean {
   return !position.close_date || position.close_date === null;
 }
 
-// Helper function to convert location to coordinates (simplified version)
-function locationToCoordinates(location: number): { x: number; y: number } {
-  // This is a simplified coordinate calculation - you may need to adjust based on your land grid system
-  const x = location % 1000; // Assuming a grid width of 1000
-  const y = Math.floor(location / 1000);
-  return { x, y };
-}
+// Import the actual coordinate conversion utility
+import { locationToCoordinates } from '$lib/utils';
 
 // Helper function to format dates
 function formatDate(dateString: string): string {
@@ -55,7 +50,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     cell: ({ row }) => {
       const position = row.original;
       const isOpen = isPositionOpen(position);
-      
+
       if (isOpen) {
         return `
           <div class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider">
@@ -64,12 +59,16 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
           </div>
         `;
       } else {
-        const iconSrc = position.close_reason === 'nuked' 
-          ? '/ui/icons/Icon_Nuke.png' 
-          : '/ui/icons/Icon_Coin3.png';
-        const colorClass = position.close_reason === 'nuked' ? 'text-red-400' : 'text-yellow-500';
+        const iconSrc =
+          position.close_reason === 'nuked'
+            ? '/ui/icons/Icon_Nuke.png'
+            : '/ui/icons/Icon_Coin3.png';
+        const colorClass =
+          position.close_reason === 'nuked'
+            ? 'text-red-400'
+            : 'text-yellow-500';
         const label = position.close_reason === 'nuked' ? 'NUKED' : 'SOLD';
-        
+
         return `
           <div class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider">
             <img src="${iconSrc}" alt="${label}" class="h-4 w-4" />
@@ -90,7 +89,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const isAuction = position.buy_token_used === null;
       const typeClass = isAuction ? 'text-blue-400' : 'text-purple-400';
       const typeLabel = isAuction ? '(auction)' : '(player)';
-      
+
       return `
         <div class="flex text-gray-400">
           ${formatted}
@@ -100,7 +99,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
-    accessorKey: 'close_date', 
+    accessorKey: 'close_date',
     header: 'Close',
     enableSorting: true,
     sortingFn: 'datetime',
@@ -180,11 +179,13 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const position = row.original;
       const isOpen = isPositionOpen(position);
       const displayText = isOpen ? 'TBD' : '-';
-      
+
       return `
         <div class="text-right flex items-center justify-end gap-1">
           <span class="text-gray-500">${displayText}</span>
-          ${!isOpen ? `
+          ${
+            !isOpen
+              ? `
             <div class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10 cursor-pointer" 
                  onclick="sharePosition('${position.id}')" 
                  title="Share position">
@@ -194,7 +195,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
                 <line x1="12" y1="2" x2="12" y2="15"/>
               </svg>
             </div>
-          ` : ''}
+          `
+              : ''
+          }
         </div>
       `;
     },
