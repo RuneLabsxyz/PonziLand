@@ -4,7 +4,7 @@
   import { cn, padAddress } from '$lib/utils';
   import { onDestroy, onMount } from 'svelte';
   import HistoryList from '../history/history-list.svelte';
-  import LandExplorer from '../market/land-explorer.svelte';
+  import MarketWidget from '../market/widget-market.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from './historical-positions.svelte';
   import { Separator } from '$lib/components/ui/separator';
@@ -166,7 +166,7 @@
     {:else if activeTab === 'positions'}
       <HistoricalPositions />
     {:else if activeTab === 'market'}
-      <LandExplorer />
+      <MarketWidget setCustomControls={setCustomControls || (() => {})} />
     {:else if activeTab === 'my-lands'}
       <MyLandsWidget />
     {/if}
