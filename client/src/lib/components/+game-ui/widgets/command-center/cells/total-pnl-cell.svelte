@@ -1,12 +1,13 @@
 <script lang="ts">
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { getTokenInfo } from '$lib/utils';
+  import { getTokenInfo, locationToCoordinates } from '$lib/utils';
   import {
     walletStore,
     getBaseToken,
     originalBaseToken,
   } from '$lib/stores/wallet.svelte';
   import type { HistoricalPosition } from '../historical-positions.service';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   interface Props {
     position: HistoricalPosition;
@@ -155,6 +156,26 @@
       return total;
     }
   });
+
+  function openShareWidget(positionData: HistoricalPosition) {
+    const coordinates = locationToCoordinates(positionData.land_location);
+
+    widgetsStore.addWidget({
+      id: `share-${positionData.land_location}-${Date.now()}`,
+      type: 'share',
+      position: {
+        x: window.innerWidth / 2 - 183,
+        y: window.innerHeight / 2 - 333.5,
+      },
+      dimensions: { width: 375, height: 0 },
+      isMinimized: false,
+      isOpen: true,
+      data: {
+        position: positionData,
+        coordinates: coordinates,
+      },
+    });
+  }
 </script>
 
 <div class="text-right flex items-center justify-end gap-1">
@@ -170,9 +191,14 @@
         .toFixed(2)} $
     </span>
     {#if !isOpen && showShareButton}
+      <!-- svelte-ignore a11y_click_events_have_key_events -->
+      <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="text-gray-400 hover:text-white transition-colors p-1 rounded hover:bg-white/10 cursor-pointer"
-        onclick={() => window.sharePosition?.(position.id)}
+        onclick={(e) => {
+          e.stopPropagation();
+          openShareWidget(position);
+        }}
         title="Share position"
       >
         <svg

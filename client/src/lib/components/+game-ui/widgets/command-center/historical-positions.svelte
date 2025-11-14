@@ -98,38 +98,6 @@
   function generateExpandedContent(position: HistoricalPosition) {
     return { component: TokenFlowsExpanded, props: { position } };
   }
-
-  // Share function for position data
-  function openShareWidget(positionData: HistoricalPosition) {
-    const coordinates = locationToCoordinates(positionData.land_location);
-    widgetsStore.addWidget({
-      id: `share-${positionData.land_location}-${Date.now()}`,
-      type: 'share',
-      position: {
-        x: window.innerWidth / 2 - 187.5,
-        y: window.innerHeight / 2 - 333.5,
-      },
-      dimensions: { width: 375, height: 0 },
-      isMinimized: false,
-      isOpen: true,
-      data: {
-        position: positionData,
-        coordinates: coordinates,
-      },
-    });
-  }
-
-  // Expose share function globally for use in HTML - use effect to avoid state mutation in derived
-  $effect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).sharePosition = (positionId: string) => {
-        const position = filteredPositions.find((p) => p.id === positionId);
-        if (position) {
-          openShareWidget(position);
-        }
-      };
-    }
-  });
 </script>
 
 <div class="w-full flex justify-end p-2">
