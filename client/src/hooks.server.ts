@@ -122,9 +122,12 @@ export const handle: Handle = async ({ event, resolve }) => {
     return await resolve(event);
   }
 
+  // Check if this is the home page
+  const isHomePage = event.url.pathname === '/';
+
   // For the others, check the cookies, and if we have the good value, resolve as normal. Otherwise redirect to /maintenance
   const cookie = event.cookies.get('BypassToken');
-  if (cookie === BYPASS_TOKEN) {
+  if (cookie === BYPASS_TOKEN || isHomePage) {
     return await resolve(event);
   } else {
     return redirect(302, '/maintenance');
