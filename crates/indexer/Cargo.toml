@@ -52,6 +52,7 @@ ponziland-models = { path = "../ponziland-models" }
 serde_json.workspace = true
 price-provider.workspace = true
 avnu-pricing = { path = "../avnu-pricing" }
+moka = { version = "0.12", features = ["future"] }
 
 [lints]
 workspace = true
