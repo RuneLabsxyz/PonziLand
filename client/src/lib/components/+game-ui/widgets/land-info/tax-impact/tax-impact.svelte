@@ -538,33 +538,24 @@
   <!-- Advisor Warnings -->
   {#if advisorWarnings.length > 0}
     {#each advisorWarnings as warning}
-      {#if warning.type === 'strong'}
-        <Card class="bg-red-600/50 bg-ponzi bg-blend-overlay m-0 mt-4 p-3">
-          <div class="flex justify-stretch items-start">
-            <img
-              src="/ui/icons/Icon_ShieldRed.png"
-              alt="Shield Red Icon"
-              class="w-8 h-8 mr-2 flex-shrink-0"
-            />
-            <span class="text-lg leading-tight">
-              {warning.message}
-            </span>
-          </div>
-        </Card>
-      {:else}
-        <Card class="bg-orange-300/50 bg-ponzi bg-blend-overlay m-0 mt-4 p-3">
-          <div class="flex justify-stretch items-start">
-            <img
-              src="/ui/icons/Icon_ShieldOrange.png"
-              alt="Shield Orange Icon"
-              class="w-8 h-8 mr-2 flex-shrink-0"
-            />
-            <span class="text-lg leading-tight">
-              {warning.message}
-            </span>
-          </div>
-        </Card>
-      {/if}
+      <Card
+        class="bg-ponzi bg-blend-overlay m-0 mt-4 p-3"
+        class:bg-red-600/50={warning.type === 'strong'}
+        class:bg-orange-300/50={warning.type === 'weak'}
+      >
+        <div class="flex justify-stretch items-start">
+          <img
+            src="/ui/icons/Icon_Shield{warning.type === 'strong'
+              ? 'Red'
+              : 'Orange'}.png"
+            alt="Shield {warning.type === 'strong' ? 'Red' : 'Orange'} Icon"
+            class="w-8 h-8 mr-2 flex-shrink-0"
+          />
+          <span class="text-lg leading-tight">
+            {warning.message}
+          </span>
+        </div>
+      </Card>
     {/each}
   {/if}
 
