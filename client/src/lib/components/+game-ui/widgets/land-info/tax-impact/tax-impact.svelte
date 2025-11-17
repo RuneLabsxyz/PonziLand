@@ -14,6 +14,7 @@
   import NukeTimeBreakdown from './nuke-time-breakdown.svelte';
   import PaybackTimeBreakdown from './payback-time-breakdown.svelte';
   import SellProfitBreakdown from './sell-profit-breakdown.svelte';
+  import { Card } from '$lib/components/ui/card';
 
   // Fee calculation constants (matching smart contract values)
   const SCALE_FACTOR_FOR_FEE = 10_000_000;
@@ -455,6 +456,68 @@
       yieldPerNeighbor = CurrencyAmount.fromUnscaled('0', baseToken);
     }
   }
+
+  // Advisor warnings
+  type AdvisorWarning = {
+    type: 'weak' | 'strong';
+    message: string;
+  };
+
+  let advisorWarnings = $derived.by((): AdvisorWarning[] => {
+    const warnings: AdvisorWarning[] = [];
+
+    // Warning 1: Payback time > nuke time by more than 10%
+    if (
+      paybackTimeSeconds !== Infinity &&
+      sliderNukeTimeSeconds > 0 &&
+      paybackTimeSeconds > sliderNukeTimeSeconds * 1.1
+    ) {
+      warnings.push({
+        type: 'weak',
+        message:
+          'Your land will be nuked before you get back the price you bought it for. You can increase stake, or add more stake frequently to avoid losing your land',
+      });
+    }
+
+    // Warning 2: Sell profit is less than buy price
+    if (actualSellBenefit && actualSellBenefit.rawValue().isNegative()) {
+      const profitInBaseToken = actualSellBenefit.rawValue();
+      const buyPriceInBaseToken = originalCostInBaseToken?.rawValue();
+
+      if (buyPriceInBaseToken && !buyPriceInBaseToken.isZero()) {
+        const profitPercent = profitInBaseToken
+          .dividedBy(buyPriceInBaseToken)
+          .multipliedBy(100)
+          .toNumber();
+
+        if (profitPercent <= -20) {
+          warnings.push({
+            type: 'strong',
+            message: `If your land is bought by another player, you will get ${netSellerProceedsInSelectedToken?.toString() || '0'} ${selectedToken?.symbol}, which is ${actualSellBenefit.rawValue().abs().toString()} ${baseToken?.symbol} less than what you will be spending to buy the land.`,
+          });
+        } else if (profitPercent <= -10) {
+          warnings.push({
+            type: 'weak',
+            message: `If your land is bought by another player, you will get ${netSellerProceedsInSelectedToken?.toString() || '0'} ${selectedToken?.symbol}, which is ${actualSellBenefit.rawValue().abs().toString()} ${baseToken?.symbol} less than what you will be spending to buy the land.`,
+          });
+        }
+      }
+    }
+
+    // Warning 3: Taxes > yield
+    if (
+      sliderNetYieldInBaseToken &&
+      sliderNetYieldInBaseToken.rawValue().isNegative()
+    ) {
+      warnings.push({
+        type: 'weak',
+        message:
+          'You are spending more in taxes than what you are getting from your neighbors. Decrease the sell price to turn a profit.',
+      });
+    }
+
+    return warnings;
+  });
 </script>
 
 <div class="w-full flex flex-col gap-2">
@@ -470,6 +533,39 @@
     >
       ⚠️ Cannot convert token prices - calculations may be inaccurate
     </div>
+  {/if}
+
+  <!-- Advisor Warnings -->
+  {#if advisorWarnings.length > 0}
+    {#each advisorWarnings as warning}
+      {#if warning.type === 'strong'}
+        <Card class="bg-red-600/50 bg-ponzi bg-blend-overlay m-0 mt-4 p-3">
+          <div class="flex justify-stretch items-start">
+            <img
+              src="/ui/icons/Icon_ShieldRed.png"
+              alt="Shield Red Icon"
+              class="w-8 h-8 mr-2 flex-shrink-0"
+            />
+            <span class="text-lg leading-tight">
+              {warning.message}
+            </span>
+          </div>
+        </Card>
+      {:else}
+        <Card class="bg-orange-300/50 bg-ponzi bg-blend-overlay m-0 mt-4 p-3">
+          <div class="flex justify-stretch items-start">
+            <img
+              src="/ui/icons/Icon_ShieldOrange.png"
+              alt="Shield Orange Icon"
+              class="w-8 h-8 mr-2 flex-shrink-0"
+            />
+            <span class="text-lg leading-tight">
+              {warning.message}
+            </span>
+          </div>
+        </Card>
+      {/if}
+    {/each}
   {/if}
 
   <!-- Horizontal Slider Above -->
