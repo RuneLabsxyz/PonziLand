@@ -5,13 +5,11 @@
   import { Select, SelectContent } from '$lib/components/ui/select';
   import SelectItem from '$lib/components/ui/select/select-item.svelte';
   import SelectTrigger from '$lib/components/ui/select/select-trigger.svelte';
-  import { Card } from '$lib/components/ui/card';
   import type { Token } from '$lib/interfaces';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getTokenMetadata } from '$lib/utils';
-  import { calculateTaxes } from '$lib/utils/taxes';
   import data from '$profileData';
 
   let {
@@ -143,138 +141,6 @@
     stakeAmount = CurrencyAmount.fromScaled(stakeAmountVal);
     sellAmount = CurrencyAmount.fromScaled(sellAmountVal);
   });
-
-  // Advisor calculations
-  let neighbors = $derived(land?.getNeighbors());
-  let nbNeighbors = $derived(neighbors?.getBaseLandsArray().length ?? 0);
-
-  // Calculate taxes per neighbor based on sell price
-  let taxPerNeighbor = $derived.by(() => {
-    if (!sellAmountVal || isNaN(parseFloat(sellAmountVal))) return 0;
-    return calculateTaxes(parseFloat(sellAmountVal));
-  });
-
-  // Calculate total hourly cost (taxes * neighbors)
-  let totalHourlyCost = $derived(taxPerNeighbor * nbNeighbors);
-
-  // Calculate nuke time in seconds
-  let nukeTimeSeconds = $derived.by(() => {
-    if (!stakeAmountVal || totalHourlyCost === 0) return 0;
-    const parsedStake = parseFloat(stakeAmountVal);
-    if (isNaN(parsedStake) || parsedStake <= 0) return 0;
-    const remainingHours = parsedStake / totalHourlyCost;
-    return remainingHours * 3600;
-  });
-
-  // Get current buy price (auction or regular)
-  let currentBuyPrice = $state<CurrencyAmount | undefined>(undefined);
-  $effect(() => {
-    if (land.type === 'auction') {
-      land.getCurrentAuctionPrice(false).then((price) => {
-        currentBuyPrice = price || undefined;
-      });
-    } else {
-      currentBuyPrice = land.sellPrice;
-    }
-  });
-
-  // Calculate yield from neighbors
-  let yieldPerHour = $state(0);
-  $effect(() => {
-    if (land) {
-      land.getYieldInfo().then((info) => {
-        if (!info?.yield_info) return;
-        let total = 0;
-        for (const yieldData of Object.values(info.yield_info)) {
-          total += parseFloat(yieldData.per_hour.toString());
-        }
-        yieldPerHour = total;
-      });
-    }
-  });
-
-  // Calculate net yield (yield - taxes) in base currency
-  let netYieldPerHour = $derived(yieldPerHour - totalHourlyCost);
-
-  // Calculate payback time in seconds
-  let paybackTimeSeconds = $derived.by(() => {
-    if (!currentBuyPrice || netYieldPerHour <= 0) return Infinity;
-    const buyPriceValue = parseFloat(currentBuyPrice.toString());
-    if (isNaN(buyPriceValue) || buyPriceValue <= 0) return Infinity;
-    const hoursNeeded = buyPriceValue / netYieldPerHour;
-    return hoursNeeded * 3600;
-  });
-
-  // Calculate sell profit/loss
-  let sellProfit = $derived.by(() => {
-    if (!sellAmountVal || !currentBuyPrice) return 0;
-    const sellValue = parseFloat(sellAmountVal);
-    const buyValue = parseFloat(currentBuyPrice.toString());
-    if (isNaN(sellValue) || isNaN(buyValue)) return 0;
-    // Account for 5% seller fee
-    const netSellValue = sellValue * 0.95;
-    return netSellValue - buyValue;
-  });
-
-  let sellProfitPercent = $derived.by(() => {
-    if (!currentBuyPrice) return 0;
-    const buyValue = parseFloat(currentBuyPrice.toString());
-    if (buyValue === 0) return 0;
-    return (sellProfit / buyValue) * 100;
-  });
-
-  // Advisor warnings
-  type AdvisorWarning = {
-    type: 'weak' | 'strong';
-    message: string;
-  };
-
-  let advisorWarnings = $derived.by((): AdvisorWarning[] => {
-    const warnings: AdvisorWarning[] = [];
-
-    // Warning 1: Payback time > nuke time by more than 10%
-    if (
-      paybackTimeSeconds !== Infinity &&
-      nukeTimeSeconds > 0 &&
-      paybackTimeSeconds > nukeTimeSeconds * 1.1
-    ) {
-      warnings.push({
-        type: 'weak',
-        message:
-          'Your land will be nuked before you get back the price you bought it for. You can increase stake, or add more stake frequently to avoid losing your land',
-      });
-    }
-
-    // Warning 2: Sell profit is less than buy price
-    if (sellProfit < 0 && currentBuyPrice) {
-      const sellValue = parseFloat(sellAmountVal || '0');
-      const netSellValue = sellValue * 0.95; // After 5% fee
-      const lossAmount = Math.abs(sellProfit);
-
-      if (sellProfitPercent <= -20) {
-        warnings.push({
-          type: 'strong',
-          message: `If your land is bought by another player, you will get ${netSellValue.toFixed(2)} ${selectedToken?.symbol}, which is ${lossAmount.toFixed(2)} ${selectedToken?.symbol} less than what you will be spending to buy the land.`,
-        });
-      } else if (sellProfitPercent <= -10) {
-        warnings.push({
-          type: 'weak',
-          message: `If your land is bought by another player, you will get ${netSellValue.toFixed(2)} ${selectedToken?.symbol}, which is ${lossAmount.toFixed(2)} ${selectedToken?.symbol} less than what you will be spending to buy the land.`,
-        });
-      }
-    }
-
-    // Warning 3: Taxes > yield
-    if (netYieldPerHour < 0) {
-      warnings.push({
-        type: 'weak',
-        message:
-          'You are spending more in taxes than what you are getting from your neighbors. Decrease the sell price to turn a profit.',
-      });
-    }
-
-    return warnings;
-  });
 </script>
 
 <div class="w-full flex flex-col gap-2 text-stroke-none">
@@ -336,38 +202,5 @@
     <div class="text-red-500 mt-2 p-2 bg-red-50 border border-red-200 rounded">
       {error}
     </div>
-  {/if}
-
-  <!-- Advisor Warnings -->
-  {#if advisorWarnings.length > 0}
-    {#each advisorWarnings as warning}
-      {#if warning.type === 'strong'}
-        <Card class="bg-red-600/50 ponzi-bg bg-blend-overlay m-0 mt-4">
-          <div class="flex justify-stretch">
-            <img
-              src="/ui/icons/Icon_ShieldRed.png"
-              alt="Shield Red Icon"
-              class="w-8 h-8 mr-2"
-            />
-            <span class="text-lg">
-              {warning.message}
-            </span>
-          </div>
-        </Card>
-      {:else}
-        <Card class="bg-orange-300/50 ponzi-bg bg-blend-overlay m-0 mt-4">
-          <div class="flex justify-stretch">
-            <img
-              src="/ui/icons/Icon_ShieldOrange.png"
-              alt="Shield Orange Icon"
-              class="w-8 h-8 mr-2"
-            />
-            <span class="text-lg">
-              {warning.message}
-            </span>
-          </div>
-        </Card>
-      {/if}
-    {/each}
   {/if}
 </div>
