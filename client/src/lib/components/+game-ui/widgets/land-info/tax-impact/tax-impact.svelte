@@ -493,12 +493,12 @@
         if (profitPercent <= -20) {
           warnings.push({
             type: 'strong',
-            message: `If your land is bought by another player, you will get ${netSellerProceedsInSelectedToken?.toString() || '0'} ${selectedToken?.symbol}, which is ${actualSellBenefit.rawValue().abs().toString()} ${baseToken?.symbol} less than what you will be spending to buy the land.`,
+            message: `If your land is bought by another player, you will get ${netSellerProceedsInSelectedToken?.toString() || '0'} ${selectedToken?.symbol}, which is ${actualSellBenefit.rawValue().abs().decimalPlaces(2).toString()} ${baseToken?.symbol} less than what you will be spending to buy the land.`,
           });
         } else if (profitPercent <= -10) {
           warnings.push({
             type: 'weak',
-            message: `If your land is bought by another player, you will get ${netSellerProceedsInSelectedToken?.toString() || '0'} ${selectedToken?.symbol}, which is ${actualSellBenefit.rawValue().abs().toString()} ${baseToken?.symbol} less than what you will be spending to buy the land.`,
+            message: `If your land is bought by another player, you will get ${netSellerProceedsInSelectedToken?.toString() || '0'} ${selectedToken?.symbol}, which is ${actualSellBenefit.rawValue().abs().decimalPlaces(2).toString()} ${baseToken?.symbol} less than what you will be spending to buy the land.`,
           });
         }
       }
@@ -533,30 +533,6 @@
     >
       ⚠️ Cannot convert token prices - calculations may be inaccurate
     </div>
-  {/if}
-
-  <!-- Advisor Warnings -->
-  {#if advisorWarnings.length > 0}
-    {#each advisorWarnings as warning}
-      <Card
-        class="bg-ponzi bg-blend-overlay m-0 mt-4 p-3"
-        class:bg-red-600/50={warning.type === 'strong'}
-        class:bg-orange-300/50={warning.type === 'weak'}
-      >
-        <div class="flex justify-stretch items-start">
-          <img
-            src="/ui/icons/Icon_Shield{warning.type === 'strong'
-              ? 'Red'
-              : 'Orange'}.png"
-            alt="Shield {warning.type === 'strong' ? 'Red' : 'Orange'} Icon"
-            class="w-8 h-8 mr-2 flex-shrink-0"
-          />
-          <span class="text-lg leading-tight">
-            {warning.message}
-          </span>
-        </div>
-      </Card>
-    {/each}
   {/if}
 
   <!-- Horizontal Slider Above -->
@@ -640,4 +616,28 @@
       {/if}
     </ScrollArea>
   </div>
+
+  <!-- Advisor Warnings -->
+  {#if advisorWarnings.length > 0}
+    {#each advisorWarnings as warning}
+      <Card
+        class="ponzi-bg bg-blend-overlay m-0 mt-4 p-3 {warning.type === 'strong'
+          ? 'bg-red-600/50'
+          : 'bg-orange-300/50'}"
+      >
+        <div class="flex justify-stretch items-start">
+          <img
+            src="/ui/icons/Icon_Shield{warning.type === 'strong'
+              ? 'Red'
+              : 'Orange'}.png"
+            alt="Shield {warning.type === 'strong' ? 'Red' : 'Orange'} Icon"
+            class="w-8 h-8 mr-2 flex-shrink-0"
+          />
+          <span class="text-lg leading-tight">
+            {warning.message}
+          </span>
+        </div>
+      </Card>
+    {/each}
+  {/if}
 </div>
