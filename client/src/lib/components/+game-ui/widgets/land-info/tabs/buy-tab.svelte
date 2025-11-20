@@ -20,8 +20,13 @@
   import type { CairoCustomEnum } from 'starknet';
   import { untrack } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
-  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+  import {
+    nextStep,
+    tutorialAttribute,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
   import { Card } from '$lib/components/ui/card';
+  import { widgetsStore } from '$lib/stores/widgets.store';
 
   let {
     land,
@@ -49,6 +54,8 @@
   let isOwner = $derived(
     padAddress(account.address ?? '') == padAddress(land.owner),
   );
+
+  let hasAdvisorWarnings = $state(false);
 
   let tokenValue: Token | string | undefined = $state(data.mainCurrencyAddress);
   let selectedToken: Token | undefined = $derived.by(() => {
@@ -268,6 +275,9 @@
         }
       }
     }
+    if (tutorialState.tutorialEnabled && hasAdvisorWarnings) {
+      return 'Fix the warnings above to continue';
+    }
 
     return null;
   });
@@ -309,7 +319,7 @@
     }
 
     // Check if we're in tutorial mode (step 9)
-    if (tutorialState.tutorialStep === 9) {
+    if (tutorialAttribute('wait_buy_land').has) {
       try {
         console.log('Tutorial mode: Simulating land purchase locally');
 
@@ -366,7 +376,9 @@
         gameSounds.play('buy');
 
         // Progress to next tutorial step
-        tutorialState.tutorialStep = 10;
+        nextStep();
+
+        widgetsStore.closeWidget('land-info');
 
         console.log('Tutorial: Land purchase simulated successfully');
       } catch (error) {
@@ -374,6 +386,9 @@
       } finally {
         loading = false;
       }
+      return;
+    } else if (tutorialState.tutorialEnabled) {
+      console.error('Tutorial: Land purchase failed, wrong time!');
       return;
     }
 
@@ -550,6 +565,7 @@
           {selectedToken}
           {land}
           {auctionPrice}
+          bind:hasAdvisorWarnings
         />
       </div>
 
@@ -565,7 +581,10 @@
         <Button
           onclick={handleBuyClick}
           class="mt-3 w-full"
-          disabled={!isFormValid || isOwner || loading}
+          disabled={!isFormValid ||
+            isOwner ||
+            loading ||
+            (tutorialState.tutorialEnabled && hasAdvisorWarnings)}
         >
           BUY FOR <span class="text-yellow-500">
             &nbsp;

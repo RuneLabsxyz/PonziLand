@@ -430,9 +430,8 @@ export class WalletStore {
     // Set specific tutorial balances
     const tutorialBalances: { [symbol: string]: number } = {
       BTC: 0.05, // 0.05 BTC
-      ETH: 0.3, // 0.3 ETH
       STRK: 12000, // 12000 STRK
-      SOL: 0, // 0 SOL (for tutorial clarity)
+      SOL: 1, // 1 SOL (for tutorial clarity)
       BONK: 0, // 0 BONK
       DOG: 0, // 0 DOG
       // All other tokens get 0 balance
