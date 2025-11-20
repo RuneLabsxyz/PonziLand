@@ -91,21 +91,21 @@
     <div class="flex gap-2 px-4 pb-3">
       <Button
         class="text-xs px-3 py-1 {filter === 'all' ? '' : 'opacity-60'}"
-        variant={filter === 'all' ? 'blue' : 'ghost'}
+        variant={filter === 'all' ? 'blue' : undefined}
         onclick={() => (filter = 'all')}
       >
         All ({positions.length})
       </Button>
       <Button
         class="text-xs px-3 py-1 {filter === 'open' ? '' : 'opacity-60'}"
-        variant={filter === 'open' ? 'green' : 'ghost'}
+        variant={filter === 'open' ? 'blue' : undefined}
         onclick={() => (filter = 'open')}
       >
         Active ({positions.filter(isPositionOpen).length})
       </Button>
       <Button
         class="text-xs px-3 py-1 {filter === 'closed' ? '' : 'opacity-60'}"
-        variant={filter === 'closed' ? 'red' : 'ghost'}
+        variant={filter === 'closed' ? 'red' : undefined}
         onclick={() => (filter = 'closed')}
       >
         Closed ({positions.filter((p) => !isPositionOpen(p)).length})
