@@ -26,12 +26,14 @@
     selectedToken,
     land,
     auctionPrice = undefined,
+    hasAdvisorWarnings = $bindable(false),
   }: {
     sellAmountVal?: string;
     stakeAmountVal?: string;
     selectedToken: Token | undefined;
     land: LandWithActions;
     auctionPrice?: CurrencyAmount;
+    hasAdvisorWarnings?: boolean;
   } = $props();
 
   let baseToken = $derived.by(() => {
@@ -517,6 +519,11 @@
     }
 
     return warnings;
+  });
+
+  // Update the bindable prop whenever advisorWarnings changes
+  $effect(() => {
+    hasAdvisorWarnings = advisorWarnings.length > 0;
   });
 </script>
 

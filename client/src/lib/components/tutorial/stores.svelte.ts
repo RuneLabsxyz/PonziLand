@@ -6,7 +6,7 @@ export let tutorialState = $state({
 });
 
 export function nextStep() {
-  if (tutorialState.tutorialStep < tutorialData.length - 1) {
+  if (tutorialState.tutorialStep < tutorialData.length) {
     tutorialState.tutorialStep += 1;
   }
 }

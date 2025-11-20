@@ -18,7 +18,9 @@
 
   let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
   let showNavigation = $derived(
-    tutorialAttribute('previous').has || tutorialAttribute('next').has,
+    tutorialAttribute('previous').has ||
+      tutorialAttribute('next').has ||
+      tutorialAttribute('enter_grid').has,
   );
 
   $inspect(
@@ -33,6 +35,14 @@
       selectedLand.value?.location.x === 128 &&
       selectedLand.value?.location.y === 128 &&
       tutorialAttribute('wait_select_land').has
+    ) {
+      nextStep();
+    }
+
+    if (
+      selectedLand.value?.location.x === 127 &&
+      selectedLand.value?.location.y === 127 &&
+      tutorialAttribute('wait_auction_selected').has
     ) {
       nextStep();
     }
@@ -75,15 +85,6 @@
         <div class="flex-1 text-sm">
           {@html currentDialog.text}
         </div>
-        {#if tutorialAttribute('enter_grid').has}
-          <Button
-            onclick={() => {
-              enterGrid();
-            }}
-          >
-            Enter the Grid
-          </Button>
-        {/if}
       {/if}
     </div>
     {#if showNavigation}
@@ -96,14 +97,24 @@
           <ChevronLeft class="h-4 w-4" />
           Previous
         </button>
-        <button
-          onclick={nextStep}
-          class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-          disabled={!tutorialAttribute('next').has}
-        >
-          Next
-          <ChevronRight class="h-4 w-4" />
-        </button>
+        {#if tutorialAttribute('enter_grid').has}
+          <Button
+            onclick={() => {
+              enterGrid();
+            }}
+          >
+            Enter the Grid
+          </Button>
+        {:else}
+          <button
+            onclick={nextStep}
+            class="flex items-center gap-1 px-3 py-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+            disabled={!tutorialAttribute('next').has}
+          >
+            Next
+            <ChevronRight class="h-4 w-4" />
+          </button>
+        {/if}
       </div>
     {:else if currentDialog.continue != undefined}
       <div class="flex justify-end items-end px-4 pb-4">
