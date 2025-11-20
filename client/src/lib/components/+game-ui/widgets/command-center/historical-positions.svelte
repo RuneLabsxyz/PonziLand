@@ -166,7 +166,7 @@
         </div>
       {:else}
         <div
-          class="px-4 grid grid-cols-7 gap-2 text-xs text-gray-400 border-b border-gray-700 pb-2 mb-2"
+          class="px-4 grid grid-cols-9 gap-2 text-xs text-gray-400 border-b border-gray-700 pb-2 mb-2"
         >
           <div>Location</div>
           <div>Status</div>
@@ -174,6 +174,8 @@
           <div>Close</div>
           <div class="text-right">Buy Cost</div>
           <div class="text-right">Sold For</div>
+          <div class="text-right">Net Flow</div>
+          <div class="text-right">Sale P&L</div>
           <div class="text-right">P&L</div>
         </div>
         <!-- Active Positions Section -->
