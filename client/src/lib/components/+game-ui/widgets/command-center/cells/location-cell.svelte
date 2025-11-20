@@ -10,4 +10,9 @@
   const coords = locationToCoordinates(location);
 </script>
 
-<span class="text-gray-300 tracking-wide">{coords.x}, {coords.y}</span>
+<div class="flex flex-col">
+  <div class="text-gray-300 tracking-wide leading-none">
+    {coords.x}, {coords.y}
+  </div>
+  <div class="text-gray-400 tracking-wide leading-none">#{location}</div>
+</div>
