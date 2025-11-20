@@ -2,6 +2,7 @@
   import type { BaseLand, LandWithActions } from '$lib/api/land';
   import type { Neighbors } from '$lib/api/neighbors';
   import LandNukeShield from '$lib/components/+game-map/land/land-nuke-shield.svelte';
+  import Card from '$lib/components/ui/card/card.svelte';
   import { Label } from '$lib/components/ui/label';
   import { Slider } from '$lib/components/ui/slider';
   import type { Token } from '$lib/interfaces';

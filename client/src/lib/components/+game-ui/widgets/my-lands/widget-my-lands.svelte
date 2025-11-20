@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { BaseLand, LandWithActions } from '$lib/api/land';
   import { BuildingLand } from '$lib/api/land/building_land';
-  import LandHudInfo from '$lib/components/+game-map/land/hud/land-hud-info.svelte';
+  import LandHudInfo from '$lib/components/+game-ui/widgets/hud/fragments/land-hud-info.svelte';
   import { Button } from '$lib/components/ui/button';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
