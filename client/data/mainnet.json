@@ -20,6 +20,9 @@
       "badgeImage": ""
     }
   ],
+  "dropLand": {
+    "address": "0x02c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd"
+  },
   "availableTokens": [
     {
       "name": "Bonk",
@@ -38,8 +41,8 @@
       "skin": "BROTHER"
     },
     {
-      "name": "Bitcoin",
-      "symbol": "BTC",
+      "name": "Bitcoin (WBTC)",
+      "symbol": "WBTC",
       "address": "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac",
       "liquidityPoolType": "1-2",
       "decimals": 8,
@@ -141,6 +144,14 @@
       "liquidityPoolType": "1-2",
       "decimals": 6,
       "skin": "USDC"
+    },
+    {
+      "name": "Survivor",
+      "symbol": "SURVIVOR",
+      "address": "0x042dd777885ad2c116be96d4d634abc90a26a790ffb5871e037dd5ae7d2ec86b",
+      "liquidityPoolType": "1-2",
+      "decimals": 18,
+      "skin": "SURVIVOR"
     }
   ],
   "commonImages": {

@@ -1,16 +1,19 @@
 pub mod error;
-pub mod gg_xyz_api;
 pub mod tasks;
 
-use chaindata_repository::{Database, EventRepository, LandRepository, LandStakeRepository};
-use gg_xyz_api::GGApi;
-use reqwest::Url;
+use chaindata_repository::{
+    Database, EventRepository, LandHistoricalRepository, LandRepository, LandStakeRepository,
+    WalletActivityRepository,
+};
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
 use std::sync::Arc;
 use tasks::{
-    event_listener::EventListenerTask, model_listener::ModelListenerTask, Task, TaskWrapper,
+    event_listener::EventListenerTask, land_historical_listener::LandHistoricalListenerTask,
+    model_listener::ModelListenerTask, wallet_activity_listener::WalletActivityListenerTask, Task,
+    TaskWrapper,
 };
+use tokio::sync::mpsc;
 use torii_ingester::{ToriiClient, ToriiConfiguration};
 
 /// `ChainDataService` is a service that handles the importation and syncing of new events and data
@@ -18,15 +21,14 @@ use torii_ingester::{ToriiClient, ToriiConfiguration};
 pub struct ChainDataService {
     event_listener_task: TaskWrapper<EventListenerTask>,
     model_listener_task: TaskWrapper<ModelListenerTask>,
+    land_historical_listener_task: TaskWrapper<LandHistoricalListenerTask>,
+    wallet_activity_listener_task: TaskWrapper<WalletActivityListenerTask>,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
 pub struct ChainDataServiceConfiguration {
     pub torii_url: String,
     pub world_address: Felt,
-    pub gg_xyz_enabled: bool,
-    pub gg_xyz_api_key: String,
-    pub gg_xyz_api_url: Url,
 }
 
 impl ChainDataService {
@@ -48,13 +50,19 @@ impl ChainDataService {
         let event_repository = Arc::new(EventRepository::new(database.clone()));
         let land_repository = Arc::new(LandRepository::new(database.clone()));
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
-        let gg_xyz_api = Arc::new(GGApi::new(&config.gg_xyz_api_url, config.gg_xyz_api_key));
+        let land_historical_repository = Arc::new(LandHistoricalRepository::new(database.clone()));
+        let wallet_activity_repository = Arc::new(WalletActivityRepository::new(database.clone()));
+
+        // Create channels for event communication
+        let (event_sender, event_receiver) = mpsc::channel(10);
+        let (wallet_event_sender, wallet_event_receiver) = mpsc::channel(10);
 
         Ok(Arc::new(Self {
             event_listener_task: EventListenerTask::new(
                 client.clone(),
                 event_repository,
-                Some(gg_xyz_api).filter(|_| config.gg_xyz_enabled),
+                event_sender,
+                wallet_event_sender,
             )
             .wrap(),
             model_listener_task: ModelListenerTask::new(
@@ -63,17 +71,31 @@ impl ChainDataService {
                 land_stake_repository,
             )
             .wrap(),
+            land_historical_listener_task: LandHistoricalListenerTask::new(
+                event_receiver,
+                land_historical_repository,
+            )
+            .wrap(),
+            wallet_activity_listener_task: WalletActivityListenerTask::new(
+                wallet_event_receiver,
+                wallet_activity_repository,
+            )
+            .wrap(),
         }))
     }
 
     pub fn stop(self: &Arc<Self>) {
         self.event_listener_task.stop();
         self.model_listener_task.stop();
+        self.land_historical_listener_task.stop();
+        self.wallet_activity_listener_task.stop();
     }
 
     pub fn start(self: &Arc<Self>) {
         // Start all in parallel
         self.event_listener_task.start();
         self.model_listener_task.start();
+        self.land_historical_listener_task.start();
+        self.wallet_activity_listener_task.start();
     }
 }

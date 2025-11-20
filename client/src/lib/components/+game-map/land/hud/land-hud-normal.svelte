@@ -1,12 +1,11 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import * as Avatar from '$lib/components/ui/avatar/index.js';
-  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
-  import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
-  import { displayCurrency } from '$lib/utils/currency';
+  import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { getTokenMetadata, toHexWithPadding } from '$lib/utils';
+  import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
 
@@ -15,20 +14,16 @@
     totalYieldValue,
     burnRate,
     land,
+    tutorialStep,
   }: {
     yieldInfo: LandYieldInfo | undefined;
     totalYieldValue: number;
     burnRate: CurrencyAmount;
     land: LandWithActions;
+    tutorialStep?: number;
   } = $props();
 
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find(
-      (token) => token.address === targetAddress,
-    );
-  });
+  let baseToken = $derived(getBaseToken());
 
   interface Yield {
     amount: CurrencyAmount;
@@ -86,55 +81,91 @@
 </script>
 
 <div class="flex flex-col items-stretch relative w-full leading-none">
-  <div class="flex justify-between items-center text-ponzi-number">
-    <span>Token</span>
-    <span>{land?.token?.symbol}</span>
-  </div>
-  <div class="flex justify-between items-center">
-    <span class="low-opacity">Sell price</span><span
-      >{land?.sellPrice?.toString()}</span
-    >
-  </div>
-  <div class="flex justify-between items-center">
-    <span class="low-opacity">Stake Remaining</span><span
-      >{land?.stakeAmount}</span
-    >
+  <div
+    class={tutorialStep === 4 || tutorialStep === 5
+      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+      : ''}
+  >
+    <div class="flex justify-between items-center text-ponzi-number">
+      <span>Token</span>
+      <span>{land?.token?.symbol}</span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="low-opacity">Sell price</span><span>
+        {land?.sellPrice}
+        {land.token?.symbol}
+
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.sellPrice,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
+      </span>
+    </div>
+    <div class="flex justify-between items-center">
+      <span class="low-opacity">Stake Remaining</span><span>
+        {land?.stakeAmount}
+        {land.token?.symbol}
+
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.stakeAmount,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
+      </span>
+    </div>
   </div>
   <!-- Total net value -->
-  <div class="flex justify-between items-center text-ponzi-number py-2">
-    <span class="opacity-50">Net / hour</span>
-    <div
-      class="{totalYieldValue - Number(burnRate.toString()) >= 0
-        ? 'text-green-500'
-        : 'text-red-500'} flex items-center gap-2"
-    >
-      <span>
-        {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
-        {displayCurrency(
-          Math.abs(totalYieldValue - Number(burnRate.toString())),
-        )}
+  <div
+    class={tutorialStep === 7
+      ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+      : ''}
+  >
+    <div class="flex justify-between items-center text-ponzi-number py-2">
+      <span class="opacity-50">Net / hour</span>
+      <div
+        class="{totalYieldValue - Number(burnRate.toString()) >= 0
+          ? 'text-green-500'
+          : 'text-red-500'} flex items-center gap-2"
+      >
+        <span>
+          {totalYieldValue - Number(burnRate.toString()) >= 0 ? '+ ' : '- '}
+          {displayCurrency(
+            Math.abs(totalYieldValue - Number(burnRate.toString())),
+          )} $
+        </span>
+      </div>
+    </div>
+
+    <div class="flex justify-between items-center text-green-400">
+      <span class="low-opacity">Earning / hour</span>
+      <span class="flex items-center gap-2">
+        +&nbsp;{displayCurrency(totalYieldValue)} $
       </span>
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
+    </div>
+
+    <div class="flex justify-between items-center text-red-400">
+      <span class="low-opacity">Cost / hour</span>
+      <span class="flex items-center gap-2">
+        -&nbsp;{burnRate} $
+      </span>
     </div>
   </div>
 
-  <div class="flex justify-between items-center text-green-400">
-    <span class="low-opacity">Earning / hour</span>
-    <span class="flex items-center gap-2">
-      +&nbsp;{displayCurrency(totalYieldValue)}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
-    </span>
-  </div>
-
-  <div class="flex justify-between items-center text-red-400">
-    <span class="low-opacity">Cost / hour</span>
-    <span class="flex items-center gap-2">
-      -&nbsp;{displayCurrency(burnRate.rawValue())}
-      <TokenAvatar token={baseToken} class="border border-white w-4 h-4" />
-    </span>
-  </div>
   {#if yieldData}
-    <div class="flex flex-col pt-4">
+    <div
+      class="flex flex-col pt-4 {tutorialStep === 6
+        ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
+        : ''}"
+    >
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">

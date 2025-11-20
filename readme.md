@@ -13,7 +13,7 @@
   <a href="https://www.cairo-lang.org/"><img src="https://img.shields.io/badge/Cairo-grey.svg?logo=data:image/svg%2bxml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIGlkPSJTdGFya05ldF9sb2dvIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MDAgNTAwIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2ZlNGEzYzt9PC9zdHlsZT48L2RlZnM+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMjUwLDQuNUMxMTQuMiw0LjUsMy45NywxMTQuNzQsMy45NywyNTAuNTNjMCw1Ny41MSwyMC4yNCwxMTAuNzcsNTMuMjUsMTUyLjg0LDI2LjYzLTM3LjgxLDU1LjM4LTczLjQ5LDkxLjYtMTAyLjc4LDEuMDctMS4wNywzLjczLTIuNjYsNi45Mi00Ljc5LDE0LjkxLTExLjE4LDI1LjU2LTI3LjY5LDI4LjIyLTQ2LjMzdi0uNTNjOS4wNS02MC4xOCwzMy41NS04MC45NSwxMDIuMjUtODAuOTUsNS44NiwwLDEyLjc4LDAsMTkuMTcsLjUzLDM1LjE1LDEuNiw1NS4zOCwxMS43Miw1Ny41MSwxNy4wNCwxLjYsMi42NiwxLjA3LDUuODYsLjUzLDkuMDVsLTIuNjYtLjUzYy0yMS44My0yLjY2LTU0Ljg1LDMuNzMtNTkuNjQsMjcuNjktMi42NiwxMy4zMSwuNTMsMjguMjIsMS42LDQxLjU0LDEuNiwxMy44NSwyLjY2LDI4LjIyLDIuNjYsNDIuMDcsMCwxLjA3LTEuMDcsNi4zOSwwLDYuOTItMzcuMjgtMzUuNjgtMTIzLjU1LDkuMDUtMTUwLjcxLDI4Ljc2LDIuNjYtMS4wNyw1LjMzLTIuMTMsOC41Mi0zLjIsMjYuMDktOS4wNSwxMDQuMzgtMzIuNDgsMTM0LjczLTYuMzksMjUuNTYsMzEuNDIsMi42Niw4OS40Ny0xNi41MSwxMTguMjItMTEuMTgsMTcuMDQtMjUuMDMsMzIuNDgtNDAuNDcsNDUuOGg5LjA1YzEzNS44LDAsMjQ2LjAzLTExMC4yNCwyNDYuMDMtMjQ2LjAzUzM4Ni4zMyw0LjUsMjUwLDQuNVptMjguMjIsMTMzLjEzYy0yNi42MywwLTQ4LjQ2LTIxLjgzLTQ4LjQ2LTQ4LjQ2czIxLjgzLTQ4LjQ2LDQ4LjQ2LTQ4LjQ2LDQ4LjQ2LDIxLjgzLDQ4LjQ2LDQ4LjQ2LTIxLjMsNDguNDYtNDguNDYsNDguNDZaIi8+PC9zdmc+" alt="CairoLang"></a>
   <a href="https://github.com/RuneLabsxyz/PonziLand/stargazers"><img src="https://img.shields.io/github/stars/RuneLabsxyz/PonziLand?style=flat-square" alt="GitHub stars"></a>
   <a href="https://x.com/ponzidotland"><img src="https://img.shields.io/twitter/follow/ponzidotland?style=flat-square&logo=twitter" alt="Twitter Follow"></a>
-  <a href="https://discord.gg/ponziland"><img src="https://img.shields.io/discord/1201234567890123456?style=flat-square&logo=discord" alt="Discord"></a>
+  <a href="https://discord.gg/2Mt3HhQpmD"><img src="https://img.shields.io/discord/1201234567890123456?style=flat-square&logo=discord" alt="Discord"></a>
 </p>
 
 <p align="center">
@@ -102,7 +102,7 @@ For a full list of smart contract actions and view functions, see [contracts/DEV
 
 - Fork and clone the repo.
 - See [GAMEJAM.md](GAMEJAM.md) for widget and UI modding.
-- Join the [Discord](https://discord.gg/ponziland) for support and collaboration.
+- Join the [Discord](https://discord.gg/2Mt3HhQpmD) for support and collaboration.
 
 ---
 
@@ -112,7 +112,7 @@ For a full list of smart contract actions and view functions, see [contracts/DEV
 - **Play:** [play.ponzi.land](https://play.ponzi.land)
 - **Docs:** [docs.ponzi.land](https://docs.ponzi.land)
 - **Twitter:** [@ponzidotland](https://x.com/ponzidotland)
-- **Discord:** [discord.gg/ponziland](https://discord.gg/ponziland)
+- **Discord:** [discord.gg/ponziland](https://discord.gg/2Mt3HhQpmD)
 - **RuneLabs:** [runelabs.xyz](https://www.runelabs.xyz) | [@runelabsxyz](https://x.com/runelabsxyz)
 
 ---

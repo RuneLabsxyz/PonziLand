@@ -5,7 +5,7 @@ import { setupConfigStore } from './config.store.svelte';
 import { setupClient, type Client } from '$lib/contexts/client.svelte';
 import { landStore } from './store.svelte';
 import { walletStore } from './wallet.svelte';
-import accountState, { setup } from '$lib/account.svelte';
+import accountState, { setup, setTutorialMode } from '$lib/account.svelte';
 import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
 import { usernamesStore } from './account.store.svelte';
 import {
@@ -926,6 +926,12 @@ class LoadingStore {
     this._isLoading = true;
     this.setTutorialMode(isTutorialMode);
 
+    // Set tutorial mode on account module immediately if in tutorial mode
+    if (isTutorialMode) {
+      console.log('Setting tutorial mode on account module...');
+      setTutorialMode(true);
+    }
+
     try {
       // Phase 1: Initialize WebGL and basic assets in parallel (no dependencies)
       const webglPromise = this.initializeWebGL();
@@ -945,6 +951,16 @@ class LoadingStore {
           this.initializeConfig(clientPromise),
           pricesProcess,
         ]);
+
+        // Account state already set at the beginning of startComprehensiveLoading
+
+        // Add tutorial auction lands after basic setup
+        console.log('Adding tutorial auction lands...');
+        landStore.addTutorialAuctions();
+
+        // Set fake wallet balances for tutorial
+        console.log('Setting tutorial wallet balances...');
+        await walletStore.setTutorialBalances();
       } else {
         // Non-tutorial mode: Handle all dependencies properly
 

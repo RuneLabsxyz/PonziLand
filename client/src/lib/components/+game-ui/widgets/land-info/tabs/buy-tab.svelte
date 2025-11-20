@@ -2,28 +2,25 @@
   import account from '$lib/account.svelte';
   import type { LandSetup, LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
-  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
-  import {
-    nextStep,
-    tutorialState,
-  } from '$lib/components/tutorial/stores.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { TabType, Token } from '$lib/interfaces';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
-  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { locationToCoordinates, padAddress } from '$lib/utils';
+  import { formatWithoutExponential } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import type { CairoCustomEnum } from 'starknet';
-  import TaxImpact from '../tax-impact/tax-impact.svelte';
   import { untrack } from 'svelte';
-  import { formatWithoutExponential } from '$lib/utils/currency';
+  import TaxImpact from '../tax-impact/tax-impact.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   let {
     land,
@@ -282,14 +279,10 @@
   async function handleBuyClick() {
     loading = true;
 
-    if (tutorialState.tutorialProgress == 7) {
-      nextStep();
-      return;
-    }
-
     // Double-check validation before proceeding
     if (!isFormValid) {
       console.error('Form validation failed');
+      loading = false;
       return;
     }
 
@@ -310,29 +303,16 @@
 
     if (!land) {
       console.error('No land selected');
+      loading = false;
       return;
     }
 
-    let result;
-    try {
-      if (land.type == 'auction') {
-        result = await bidLand(land.location, landSetup);
-      } else {
-        result = await buyLand(land.location, landSetup);
-      }
+    // Check if we're in tutorial mode (step 9)
+    if (tutorialState.tutorialStep === 9) {
+      try {
+        console.log('Tutorial mode: Simulating land purchase locally');
 
-      if (result?.transaction_hash) {
-        // Only wait for the land update, not the total TX confirmation (should be fine)
-        const txPromise = accountManager!
-          .getProvider()
-          ?.getWalletAccount()
-          ?.waitForTransaction(result.transaction_hash);
-        const landPromise = land.wait();
-        await Promise.any([txPromise, landPromise]);
-        console.log('Buying land with TX: ', result.transaction_hash);
-        gameSounds.play('buy');
-
-        // Optimistically update the land in the store
+        // Optimistically update the land in the store (same as real purchase)
         const updatedLand = {
           ...land,
           token: selectedToken,
@@ -340,10 +320,10 @@
           tokenAddress: selectedToken?.address || '',
           token_used: selectedToken?.address || '',
           token_address: selectedToken?.address || '',
-          owner: account.address, // Assuming the owner is the current account
-          stakeAmount: stakeAmount, // Set the stake amount
-          sell_price: sellPriceAmount.toBignumberish(), // Ensure this is a raw value
-          block_date_bought: Date.now(), // Set the current timestamp or appropriate value
+          owner: account.address,
+          stakeAmount: stakeAmount,
+          sell_price: sellPriceAmount.toBignumberish(),
+          block_date_bought: Date.now(),
           // @ts-ignore
           level: (land.level === 1
             ? 'Zero'
@@ -364,6 +344,7 @@
 
         // Update the land store
         landStore.updateLand(parsedEntity);
+
         // Create a parsed entity for the stake
         const stakeEntity = {
           entityId: land.location,
@@ -371,7 +352,7 @@
             ponzi_land: {
               LandStake: {
                 location: land.location,
-                amount: stakeAmount.toBignumberish(), // Ensure this is the raw value of the stake
+                amount: stakeAmount.toBignumberish(),
               },
             },
           },
@@ -380,15 +361,95 @@
         // Update the land store with the stake
         landStore.updateLand(stakeEntity);
 
-        const coordinates = locationToCoordinates(land.location);
-        const updatedLandOnIndexer = await landStore.waitForOwnerChange(
-          coordinates.x,
-          coordinates.y,
-          account.address ?? '',
-          30000,
-        );
-        console.log('Purchase confirmed on-indexer:', updatedLandOnIndexer);
+        // Play purchase sound
         gameSounds.play('buy');
+
+        // Progress to next tutorial step
+        tutorialState.tutorialStep = 10;
+
+        console.log('Tutorial: Land purchase simulated successfully');
+      } catch (error) {
+        console.error('Tutorial: Error simulating land purchase', error);
+      } finally {
+        loading = false;
+      }
+      return;
+    }
+
+    // Normal mode - proceed with actual blockchain transaction
+    let result;
+    try {
+      if (land.type == 'auction') {
+        result = await bidLand(land.location, landSetup);
+      } else {
+        result = await buyLand(land.location, landSetup);
+      }
+
+      if (result?.transaction_hash) {
+        console.log('Buying land with TX: ', result.transaction_hash);
+        // Wait for transaction confirmation
+        const txPromise = accountManager!
+          .getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(result.transaction_hash);
+
+        const txReceipt = await txPromise;
+        if (txReceipt?.statusReceipt !== 'SUCCEEDED') {
+          throw new Error(
+            `Transaction failed with status: ${txReceipt?.statusReceipt}`,
+          );
+        }
+
+        gameSounds.play('buy');
+
+        // Optimistically update the land in the store
+        const updatedLand = {
+          ...land,
+          token: selectedToken,
+          tokenUsed: selectedToken?.address || '',
+          tokenAddress: selectedToken?.address || '',
+          token_used: selectedToken?.address || '',
+          token_address: selectedToken?.address || '',
+          owner: account.address, // Assuming the owner is the current account
+          stakeAmount: stakeAmount, // Set the stake amount
+          sell_price: sellPriceAmount.toBignumberish(), // Ensure this is a raw value
+          block_date_bought: Date.now() / 1000, // Set the current timestamp or appropriate value
+          // @ts-ignore
+          level: (land.level === 1
+            ? 'Zero'
+            : land.level === 2
+              ? 'First'
+              : 'Second') as CairoCustomEnum,
+        };
+
+        // Create a parsed entity for the updated land
+        const parsedEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              Land: updatedLand,
+            },
+          },
+        };
+
+        // Update the land store
+        landStore.updateLand(parsedEntity);
+
+        // Create a parsed entity for the stake
+        const stakeEntity = {
+          entityId: land.location,
+          models: {
+            ponzi_land: {
+              LandStake: {
+                location: land.location,
+                amount: stakeAmount.toBignumberish(),
+              },
+            },
+          },
+        };
+
+        // Update the land store with the stake
+        landStore.updateLand(stakeEntity);
       }
     } catch (error) {
       console.error(
@@ -430,13 +491,7 @@
         Determines the land you are going to build. You stake this token and
         will receive this token when bought
       </p>
-      <TokenSelect
-        bind:value={tokenValue}
-        variant="swap"
-        class={tutorialState.tutorialProgress == 6
-          ? 'border border-yellow-500 animate-pulse'
-          : ''}
-      />
+      <TokenSelect bind:value={tokenValue} variant="swap" />
       {#if tokenError}
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
@@ -452,11 +507,7 @@
             id="stake"
             type="number"
             bind:value={stake}
-            class="{stakeAmountError
-              ? 'border-red-500'
-              : ''} {tutorialState.tutorialProgress == 6
-              ? 'border border-yellow-500 animate-pulse'
-              : ''}"
+            class={stakeAmountError ? 'border-red-500' : ''}
           />
           {#if stakeAmountInBaseCurrency}
             <p class="text-xs text-gray-500 mt-1">
@@ -477,11 +528,7 @@
             id="sell"
             type="number"
             bind:value={sellPrice}
-            class="{sellPriceError
-              ? 'border-red-500'
-              : ''} {tutorialState.tutorialProgress == 6
-              ? 'border border-yellow-500 animate-pulse'
-              : ''}"
+            class={sellPriceError ? 'border-red-500' : ''}
           />
           {#if sellPriceInBaseCurrency}
             <p class="text-xs text-gray-500 mt-1">
@@ -495,11 +542,7 @@
         </div>
       </div>
 
-      <div
-        class="w-full {tutorialState.tutorialProgress == 7
-          ? 'border border-yellow-500 animate-pulse'
-          : ''}"
-      >
+      <div class="w-full">
         <TaxImpact
           sellAmountVal={sellPrice}
           stakeAmountVal={stake}
@@ -537,7 +580,50 @@
             &nbsp;
           </span>
           {land.token?.symbol}
+          & STAKE
+          <span class="text-yellow-500">
+            &nbsp;{stakeAmount.toString()}&nbsp;
+          </span>
+          {selectedToken?.symbol}
         </Button>
+        {#if land.token && selectedToken}
+          {@const landPriceInBase =
+            land.type == 'auction' && auctionPrice
+              ? walletStore.convertTokenAmount(
+                  auctionPrice,
+                  land.token,
+                  baseToken,
+                )
+              : walletStore.convertTokenAmount(
+                  land.sellPrice,
+                  land.token,
+                  baseToken,
+                )}
+          {@const stakeInBase =
+            stakeAmountInBaseCurrency ||
+            (padAddress(selectedToken.address) === padAddress(baseToken.address)
+              ? stakeAmount
+              : null)}
+          <span class="text-gray-300 text-sm block">
+            {#if landPriceInBase && stakeInBase}
+              (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
+              {baseToken.symbol})
+            {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+              (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
+              {baseToken.symbol})
+            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
+              (Total: ≈{land.type == 'auction' && auctionPrice
+                ? auctionPrice.add(stakeInBase).toString()
+                : land.sellPrice.add(stakeInBase).toString()}
+              {baseToken.symbol})
+            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+              (Total: ≈{land.type == 'auction' && auctionPrice
+                ? auctionPrice.add(stakeAmount).toString()
+                : land.sellPrice.add(stakeAmount).toString()}
+              {baseToken.symbol})
+            {/if}
+          </span>
+        {/if}
       {/if}
     {/if}
   </div>

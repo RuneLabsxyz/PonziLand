@@ -4,7 +4,7 @@
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
-  import TokenSelect from '$lib/components/swap/token-select.svelte';
+  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { Input } from '$lib/components/ui/input';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
@@ -16,6 +16,13 @@
   import { walletStore } from '$lib/stores/wallet.svelte';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { moveCameraTo } from '$lib/stores/camera.store';
+  import {
+    nukeTimeManager,
+    type MinimalLandTile,
+    type NukeTimeData,
+  } from '$lib/components/+game-map/three/utils/nuke-time-manager.svelte';
+  import { LandTile } from '$lib/components/+game-map/three/landTile';
+  import { SvelteMap } from 'svelte/reactivity';
   import {
     highlightedLands,
     landStore,
@@ -53,7 +60,7 @@
   let unsubscribe: (() => void) | null = $state(null);
   let sortAscending = $state(true);
   let selectedToken = $state<Token | undefined>();
-  let sortBy = $state<'price' | 'level'>('price');
+  let sortBy = $state<'price' | 'level' | 'nuketime'>('price');
   let searchQuery = $state('');
 
   // Function to get AI agent info
@@ -69,6 +76,58 @@
     if (!paddedAddress) return undefined;
     return usernamesStore.getUsernames()[paddedAddress];
   }
+
+  // Function to get nuke times for filtered lands
+  function getNukeTimesForFilteredLands(): SvelteMap<string, NukeTimeData> {
+    // Convert filtered lands to MinimalLandTile format by extracting just the base land data
+    const minimalTiles: MinimalLandTile[] = filteredLands
+      .filter((landWithPrice) => {
+        // Check if the underlying land is a BuildingLand by trying to find it in the store
+        const [x, y] = parseLocation(landWithPrice.location);
+        const baseLandStore = landStore.getLand(x, y);
+        if (!baseLandStore) return false;
+
+        let baseLand = get(baseLandStore);
+
+        return BuildingLand.is(baseLand);
+      })
+      .map((landWithPrice) => {
+        const [x, y] = parseLocation(landWithPrice.location);
+
+        // Get the actual BaseLand from the store
+        const baseLandStore = landStore.getLand(x, y)!;
+        let baseLand = get(baseLandStore);
+
+        return {
+          position: [x, y, 0] as [number, number, number],
+          // Cast to any so the resulting object satisfies MinimalLandTile at compile time
+          land: baseLand as any,
+        };
+      });
+
+    // Get all lands and create proper LandTile instances using the constructor
+    const allLands = landStore.getAllLands();
+    const allLandTiles =
+      get(allLands)?.map((baseLand) => {
+        const [x, y] = parseLocation(baseLand.locationString);
+        const position = [x, y, 0] as [number, number, number];
+
+        return new LandTile(
+          position,
+          baseLand.token?.symbol || 'unknown',
+          'default',
+          baseLand.level || 0,
+          baseLand,
+        );
+      }) || [];
+
+    return nukeTimeManager.calculateNukeTimeData(minimalTiles, allLandTiles);
+  }
+
+  // Get nuke time data for sorting
+  let nukeTimeData = $derived.by(() => {
+    return getNukeTimesForFilteredLands();
+  });
 
   let filteredLands = $derived.by(() => {
     let filtered = lands;
@@ -144,6 +203,13 @@
         const priceA = a.convertedPrice?.rawValue().toNumber() ?? 0;
         const priceB = b.convertedPrice?.rawValue().toNumber() ?? 0;
         return sortAscending ? priceA - priceB : priceB - priceA;
+      } else if (sortBy === 'nuketime') {
+        // Sort by nuke time (timeInSeconds)
+        const nukeTimeA =
+          nukeTimeData.get(a.location)?.timeInSeconds ?? Infinity;
+        const nukeTimeB =
+          nukeTimeData.get(b.location)?.timeInSeconds ?? Infinity;
+        return sortAscending ? nukeTimeA - nukeTimeB : nukeTimeB - nukeTimeA;
       } else {
         // Sort by level first, then by purchase date
         const levelA = a.level ?? 0;
@@ -202,12 +268,12 @@
             };
           });
 
-        lands = sortLands(filteredLands);
-
         // Fetch converted prices for all lands
-        lands.forEach((land) => {
+        filteredLands.forEach((land) => {
           updateLandConvertedPrice(land);
         });
+
+        lands = sortLands(filteredLands);
       });
     } catch (error) {
       console.error('Error in land-explorer setup:', error);
@@ -225,7 +291,11 @@
   <div class="flex flex-col gap-2 py-2 border-white/10 min-h-0">
     <div class="flex items-center gap-2">
       <div class="w-48">
-        <TokenSelect bind:value={selectedToken} />
+        <TokenSelect
+          bind:value={selectedToken}
+          variant="swap"
+          tutorialEnabled={true}
+        />
       </div>
       {#if selectedToken}
         <button
@@ -285,6 +355,28 @@
         >
           Level
           {#if sortBy === 'level'}
+            {#if sortAscending}
+              ▴
+            {:else}
+              ▾
+            {/if}
+          {/if}
+        </button>
+        <button
+          class="flex items-center gap-2 text-sm font-medium {sortBy ===
+          'nuketime'
+            ? 'bg-blue-500'
+            : 'text-blue-500'} px-2"
+          onclick={() => {
+            if (sortBy === 'nuketime') {
+              sortAscending = !sortAscending;
+            }
+            sortBy = 'nuketime';
+            lands = sortLands(lands);
+          }}
+        >
+          Nuke Time
+          {#if sortBy === 'nuketime'}
             {#if sortAscending}
               ▴
             {:else}

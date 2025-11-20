@@ -1,18 +1,19 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
+  import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
-  import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
   import { toHexWithPadding } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { calculateTaxes } from '$lib/utils/taxes';
   import data from '$profileData';
   import BuyInsightsNeighborGrid from './buy-insights-neighbor-grid.svelte';
-  import SellProfitBreakdown from './sell-profit-breakdown.svelte';
   import NukeTimeBreakdown from './nuke-time-breakdown.svelte';
   import PaybackTimeBreakdown from './payback-time-breakdown.svelte';
+  import SellProfitBreakdown from './sell-profit-breakdown.svelte';
 
   // Fee calculation constants (matching smart contract values)
   const SCALE_FACTOR_FOR_FEE = 10_000_000;
@@ -508,7 +509,7 @@
       {/if}
     </div>
 
-    <div class="flex flex-col flex-1 gap-2">
+    <ScrollArea class="flex flex-col flex-1 gap-2 max-h-48 pr-2">
       <PaybackTimeBreakdown
         {paybackTimeString}
         {paybackTimeSeconds}
@@ -550,6 +551,6 @@
           {actualSellBenefit}
         />
       {/if}
-    </div>
+    </ScrollArea>
   </div>
 </div>

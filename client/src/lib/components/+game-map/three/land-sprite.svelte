@@ -14,6 +14,7 @@
   import { HTML, InstancedMesh, InstancedSprite } from '@threlte/extras';
   import { onMount } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
+  import data from '$profileData';
   import {
     Clock,
     Color,
@@ -29,6 +30,7 @@
   import AuctionIndicator from './auction-indicator.svelte';
   import Clouds from './clouds.svelte';
   import Coin from './coin.svelte';
+  import DropLand from './drop-land.svelte';
   import { cursorStore } from './cursor.store.svelte';
   import { gameStore } from './game.store.svelte';
   import LandTileSprite from './land-tile-sprite.svelte';
@@ -41,6 +43,8 @@
   import { devsettings } from './utils/devsettings.store.svelte';
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
+  import FilterEffect from '$lib/components/tutorial/filter-effect.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
@@ -263,6 +267,9 @@
   // Use useTask to continuously monitor camera zoom changes
   let lastLoggedZoom = 0;
   useTask(() => {
+    // Only run camera zoom monitoring if animations are enabled
+    if (!devsettings.enableAnimations) return;
+
     if (gameStore.cameraControls?.camera) {
       const currentZoom = gameStore.cameraControls.camera.zoom;
 
@@ -353,6 +360,10 @@
 
   // Add animation loop for shader time uniform
   useTask(() => {
+    // Only run shader animations if enabled
+    if (!devsettings.enableAnimations || !devsettings.enableShaderAnimations)
+      return;
+
     if (coinShaderMaterial) {
       coinShaderMaterial.updateTime(clock.getElapsedTime());
     }
@@ -473,6 +484,45 @@
       if (!BuildingLand.is(tile.land)) return false;
       const landIndex = coordinatesToLocation(tile.land.location);
       return ownedIndicesSet.has(landIndex);
+    });
+  });
+
+  // Drop lands - lands owned by any of the drop wallet addresses
+  const dropWalletAddresses = new Set(
+    Array.isArray(data.dropLand.address)
+      ? data.dropLand.address
+      : [data.dropLand.address],
+  );
+  let dropLandTiles = $derived.by(() => {
+    if (!visibleLandTiles) return [];
+    return visibleLandTiles.filter((tile) => {
+      if (!BuildingLand.is(tile.land)) return false;
+      // Check if the land is owned by any of the drop wallet addresses
+      return dropWalletAddresses.has(tile.land.owner);
+    });
+  });
+
+  let blackSquareLandTile = $derived.by(() => {
+    if (!visibleLandTiles) return undefined;
+
+    // Determine coordinates based on tutorial step
+    let targetX: number | undefined;
+    let targetY: number | undefined;
+
+    if (tutorialState.tutorialStep === 2) {
+      targetX = 128;
+      targetY = 128;
+    } else if (tutorialState.tutorialStep === 8) {
+      targetX = 127;
+      targetY = 127;
+    } else {
+      return undefined;
+    }
+
+    return visibleLandTiles.find((tile) => {
+      return (
+        tile.land.location.x === targetX && tile.land.location.y === targetY
+      );
     });
   });
 
@@ -655,6 +705,8 @@
       shaderReady = false;
     }
   });
+
+  let selectedLand = $derived(selectedLandWithActions()?.value);
 </script>
 
 <!-- Main land sprite rendering group -->
@@ -668,6 +720,11 @@
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
         receiveShadow={true}
+        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(10, devsettings.animationFPS)
+            : undefined
+          : 0}
       >
         <RoadSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
@@ -681,6 +738,11 @@
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
         receiveShadow={true}
+        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(10, devsettings.animationFPS)
+            : undefined
+          : 0}
       >
         <LandTileSprite
           landTiles={visibleLandTiles}
@@ -696,6 +758,22 @@
       </InstancedSprite>
     {/if}
 
+    <!-- Drop lands indicator (golden sparkles) -->
+    {#if dropLandTiles.length > 0}
+      {#each dropLandTiles as tile, i}
+        <DropLand {tile} {i} positionOffset={[0, 0, 0]} scale={1} />
+      {/each}
+    {/if}
+
+    {#if blackSquareLandTile}
+      <FilterEffect
+        tile={blackSquareLandTile}
+        i={0}
+        positionOffset={[0, 0, 0]}
+        scale={1}
+      />
+    {/if}
+
     <!-- Building sprites (foreground layer) -->
     {#if devsettings.showBuildings}
       <InstancedSprite
@@ -704,6 +782,11 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
         receiveShadow={true}
+        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(10, devsettings.animationFPS)
+            : undefined
+          : 0}
       >
         <LandTileSprite
           landTiles={visibleLandTiles}
@@ -725,7 +808,13 @@
         {billboarding}
         spritesheet={nukeSpritesheet}
         bind:ref={nukeSprite}
-        fps={10}
+        fps={devsettings.enableAnimations &&
+        devsettings.enableSpriteAnimations &&
+        devsettings.enableNukeAnimations
+          ? devsettings.reducedAnimationMode
+            ? Math.max(5, devsettings.animationFPS / 3)
+            : 10
+          : 0}
       >
         <NukeSprite landTiles={visibleLandTiles} />
       </InstancedSprite>
@@ -773,6 +862,8 @@
         isShieldMode={isUnzoomed}
         {isUnzoomed}
         currentUserAddress={accountState.address}
+        enableAnimation={devsettings.enableAnimations &&
+          devsettings.enableNukeAnimations}
       />
     {/if}
 
@@ -783,33 +874,79 @@
 
     <!-- Clouds positioned at land bounds -->
     {#if devsettings.showClouds}
-      <Clouds bounds={landBounds} />
+      <Clouds
+        bounds={landBounds}
+        enableAnimation={devsettings.enableAnimations &&
+          devsettings.enableCloudAnimations}
+      />
     {/if}
   {/if}
 </T>
 
 <!-- Button overlay using Threlte HTML component -->
 {#if devsettings.showLandOverlay && selectedLandTilePosition}
-  {@const land = selectedLandWithActions()?.value}
   <HTML
     portal={document.getElementById('game-canvas') ?? document.body}
     position={selectedLandTilePosition}
     zIndexRange={[10, 0]}
     distanceFactor={0.01}
   >
-    {#if land}
+    {#if selectedLand}
       {#if devsettings.showRatesOverlay}
-        <LandRatesOverlay {land} />
+        <LandRatesOverlay land={selectedLand} />
       {/if}
-      <Button
-        class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
-        size="sm"
-        onclick={() => {
-          openLandInfoWidget(land);
-        }}
-      >
-        BUY LAND
-      </Button>
+      {#if selectedLand.owner == accountState.address}
+        <Button
+          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+          size="sm"
+          onclick={() => {
+            openLandInfoWidget(selectedLand);
+          }}
+        >
+          INFO
+        </Button>
+      {:else}
+        <Button
+          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+          size="sm"
+          onclick={() => {
+            openLandInfoWidget(selectedLand);
+          }}
+        >
+          BUY LAND
+        </Button>
+      {/if}
     {/if}
   </HTML>
+{/if}
+
+<!-- Tooltip for drop lands -->
+{#if hoveredTileIndex !== undefined && cursorStore.gridPosition}
+  {@const gridPos = cursorStore.gridPosition}
+  {@const hoveredLandTile = visibleLandTiles.find(
+    (tile) => tile.position[0] === gridPos.x && tile.position[2] === gridPos.y,
+  )}
+  {#if hoveredLandTile && dropLandTiles.some((t) => t === hoveredLandTile)}
+    <HTML
+      portal={document.getElementById('game-canvas') ?? document.body}
+      position={[
+        hoveredLandTile.position[0],
+        hoveredLandTile.position[1] + 1.5,
+        hoveredLandTile.position[2],
+      ]}
+      zIndexRange={[20, 10]}
+      distanceFactor={0.01}
+    >
+      <div
+        class="bg-black/90 text-white text-xs border border-yellow-500/50 rounded-lg p-4 min-w-[150px] shadow-lg -translate-x-1/2 pointer-events-none"
+      >
+        <div class="text-yellow-400 font-bold mb-2 text-sm">
+          ✨ PonziLord's Land ✨
+        </div>
+        <div class="leading-relaxed">
+          Fees and auction money flow back here! 💰
+        </div>
+      </div>
+    </HTML>
+  {/if}
 {/if}

@@ -10,6 +10,7 @@
   import { padAddress } from '$lib/utils';
   import { List, Eye } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
@@ -17,6 +18,10 @@
   };
 
   let { setCustomTitle, setCustomControls }: Props = $props();
+
+  let highlighted = $derived(
+    tutorialState.tutorialStep >= 3 && tutorialState.tutorialStep <= 7,
+  );
 
   const address = $derived(account.address);
   let landWithActions = $derived(selectedLandWithActions());
@@ -59,6 +64,9 @@
   </button>
 {/snippet}
 
+{#if highlighted}
+  <div class="spotlight-overlay"></div>
+{/if}
 {#if land}
   {#if land.type !== 'auction'}
     <div class="absolute left-0 top-0 -translate-y-full">
@@ -70,11 +78,79 @@
       </Card>
     </div>
   {/if}
-  {#if land.type === 'auction'}
-    <LandHudAuction {land} />
-  {:else if land.type === 'grass'}
-    <!-- <LandHudEmpty /> -->
-  {:else}
-    <LandHudInfo {land} {isOwner} showLand={true} />
-  {/if}
 {/if}
+<div class="content-wrapper" class:highlighted>
+  {#if highlighted}
+    <div class="spotlight-glow"></div>
+  {/if}
+  {#if land}
+    {#if land.type === 'auction'}
+      <LandHudAuction {land} />
+    {:else if land.type === 'grass'}
+      <!-- <LandHudEmpty /> -->
+    {:else}
+      <LandHudInfo
+        {land}
+        {isOwner}
+        showLand={true}
+        tutorialStep={tutorialState.tutorialStep}
+      />
+    {/if}
+  {/if}
+</div>
+
+<style>
+  .spotlight-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    pointer-events: auto;
+    z-index: 9998;
+  }
+
+  .content-wrapper {
+    position: relative;
+  }
+
+  .content-wrapper.highlighted {
+    position: relative;
+    z-index: 9999;
+    pointer-events: auto;
+    overflow: visible;
+  }
+
+  .spotlight-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200%;
+    height: 400%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0.12) 30%,
+      rgba(255, 255, 255, 0.06) 50%,
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: -1;
+    filter: blur(30px);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 0.7;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+  }
+</style>

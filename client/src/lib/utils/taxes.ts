@@ -115,70 +115,120 @@ export const getNeighbourYieldArray = async (
   return infosFormatted;
 };
 
-export const estimateNukeTime = async (
+/**
+ * Estimates when a land will be nuked using RPC-fetched elapsed times
+ * Matches the logic of calculate_nuke_time_v3 in the smart contract
+ *
+ * Algorithm:
+ * 1. Fetch elapsed times from neighbors via RPC
+ * 2. Calculate current unclaimed taxes from all neighbors
+ * 3. Calculate how much more time is needed to reach stake
+ * 4. Return remaining seconds until nuke
+ *
+ * @param land - The land to calculate nuke time for
+ * @returns Remaining seconds until land will be nuked
+ */
+export const estimateNukeTimeRpc = async (
   land: LandWithActions,
-  neighbourNumber: number | undefined = undefined,
+): Promise<number> => {
+  const neighborCount = land.getNeighbors()?.getBaseLandsArray()?.length ?? 0;
+
+  // Early returns for invalid cases
+  if (neighborCount === 0) {
+    return 0;
+  }
+
+  // Fetch elapsed times for neighbors (RPC call)
+  const elapsedTimes = await land.getElapsedTimeSinceLastClaimForNeighbors();
+  const elapsedTimesPerNeighbor = elapsedTimes?.map((neighbor) =>
+    Number(neighbor[1]),
+  );
+  const numNeighbors = elapsedTimesPerNeighbor?.length ?? 0;
+
+  if (numNeighbors === 0) {
+    return 0;
+  }
+
+  const baseTime = configValues.baseTime;
+  const burnRate = Number(
+    calculateBurnRate(land.sellPrice, land.level, numNeighbors),
+  );
+
+  if (burnRate <= 0 || configValues.gameSpeed === 0) {
+    return 0;
+  }
+
+  // 1. Calculate current unclaimed taxes from all neighbors
+  let current_unclaimed_taxes = 0;
+
+  const tax_rate_per_neighbor = burnRate / numNeighbors;
+
+  for (const elapsed_time of elapsedTimesPerNeighbor ?? []) {
+    // Tax per neighbor = (burn_rate / num_neighbors) * elapsed_time / base_time
+    const taxes = (tax_rate_per_neighbor * elapsed_time) / baseTime;
+    current_unclaimed_taxes += taxes;
+  }
+
+  // 2. Calculate how much more time is needed to reach stake
+  const stake = land.stakeAmount.rawValue().toNumber();
+
+  if (current_unclaimed_taxes >= stake) {
+    // Already nuked
+    return 0;
+  }
+
+  const deficit = stake - current_unclaimed_taxes;
+
+  // delta_t = (deficit * base_time) / burn_rate
+  const delta_t = Math.floor((deficit * baseTime) / burnRate);
+
+  // 3. Return remaining seconds until nuke
+  return delta_t;
+};
+
+/**
+ * Fast synchronous nuke time estimation without RPC calls
+ * Uses precomputed values when available
+ */
+export const estimateNukeTimeSync = (
+  land: LandWithActions,
+  neighbourNumber: number,
+  minElapsedTime?: number,
 ) => {
   const baseTime = configValues.baseTime;
-  let sellPrice = land.sellPrice.rawValue().toNumber();
-  let remainingStake = land.stakeAmount.rawValue().toNumber();
+  const sellPrice = land.sellPrice.rawValue().toNumber();
+  const remainingStake = land.stakeAmount.rawValue().toNumber();
+  const buyDate = land.block_date_bought;
 
-  if (!neighbourNumber) {
-    neighbourNumber = land.getNeighbors().getBaseLandsArray().length;
-  }
-  if (sellPrice <= 0 || isNaN(sellPrice)) {
+  // Early returns for invalid cases
+  if (sellPrice <= 0 || isNaN(sellPrice) || neighbourNumber === 0) {
     return 0;
   }
-  if (neighbourNumber === 0) {
-    return 0;
-  }
-  const rateOfActualNeighbours = Number(
+
+  const burnRate = Number(
     calculateBurnRate(land.sellPrice, land.level, neighbourNumber),
   );
-  if (rateOfActualNeighbours <= 0) {
+
+  if (burnRate <= 0) {
     return 0;
   }
 
-  const elapsedTimesOfNeighbors =
-    await land.getElapsedTimeSinceLastClaimForNeighbors();
-  console.log('elapsedTimesOfNeighbors', elapsedTimesOfNeighbors);
+  // Calculate base nuke time in seconds
+  const remainingSeconds = (remainingStake / burnRate) * baseTime;
 
-  const remainingHours = remainingStake / rateOfActualNeighbours;
-  const remainingSeconds = remainingHours * baseTime;
-  console.log('Debug - remainingStake:', remainingStake);
-  console.log('Debug - rateOfActualNeighbours:', rateOfActualNeighbours);
-  console.log('Debug - remainingHours:', remainingHours);
-  console.log('Debug - remainingSeconds:', remainingSeconds);
-
-  let minRemainingSeconds = remainingSeconds;
-  console.log('Debug - initial minRemainingSeconds:', minRemainingSeconds);
-  if (elapsedTimesOfNeighbors && elapsedTimesOfNeighbors.length > 0) {
-    console.log(
-      'Debug - processing neighbors, count:',
-      elapsedTimesOfNeighbors.length,
-    );
-    elapsedTimesOfNeighbors.forEach((neighbor, index) => {
-      console.log(`Debug - neighbor ${index}:`, neighbor);
-      const elapsedTime = neighbor[1];
-      console.log('Debug - neighbor elapsed_time:', elapsedTime);
-      const remainingTime = Math.max(
-        0,
-        Math.floor(minRemainingSeconds) - Number(elapsedTime),
-      );
-      console.log(`Debug - neighbor ${index} remainingTime:`, remainingTime);
-      if (remainingTime < minRemainingSeconds) {
-        console.log(
-          `Debug - updating minRemainingSeconds from ${minRemainingSeconds} to ${remainingTime}`,
-        );
-        minRemainingSeconds = remainingTime;
-      }
-    });
-  } else {
-    console.log('Debug - no neighbors or empty array');
+  // If no elapsed time provided, return base time
+  if (minElapsedTime === undefined) {
+    return remainingSeconds;
   }
 
-  console.log('Debug - final minRemainingSeconds:', minRemainingSeconds);
-  return minRemainingSeconds;
+  // Calculate how long since the land was purchased
+  const currentTime = Math.floor(Date.now() / 1000);
+  const landAge = currentTime - Number(buyDate);
+
+  // Use the smaller of: neighbor's elapsed time OR land age
+  const relevantElapsedTime = Math.min(minElapsedTime, landAge);
+
+  return Math.max(0, Math.floor(remainingSeconds - relevantElapsedTime));
 };
 
 export const parseNukeTime = (givenTime: number) => {

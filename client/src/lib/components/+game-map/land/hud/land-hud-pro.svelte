@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { displayCurrency } from '$lib/utils/currency';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import data from '$profileData';
 
   let {
@@ -16,19 +17,13 @@
     land: LandWithActions;
   } = $props();
 
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find(
-      (token) => token.address === targetAddress,
-    );
-  });
+  let baseToken = $derived(getBaseToken());
 </script>
 
 <div class="w-full flex flex-col gap-2">
   <div class="flex w-full justify-center select-text">
     <div class="text-center pb-2 text-ponzi-number">
-      <span class="opacity-50">Total Tokens Earned</span>
+      <span class="opacity-50">Net Yield</span>
       <div
         class="{totalYieldValue - Number(burnRate.toString()) >= 0
           ? 'text-green-500'
@@ -39,9 +34,8 @@
             ? '+ '
             : '- '}{displayCurrency(
             Math.abs(totalYieldValue - Number(burnRate.toString())),
-          )}
+          )} $
         </span>
-        <TokenAvatar token={baseToken} class="border border-white w-6 h-6" />
       </div>
     </div>
   </div>
@@ -50,18 +44,16 @@
       <div class="opacity-50 text-sm">Earning / hour :</div>
       <div class="text-green-500 flex items-center gap-2">
         <span class="text-xl stroke-3d-black">
-          +&nbsp;{displayCurrency(totalYieldValue)}
+          +&nbsp;{displayCurrency(totalYieldValue)} $
         </span>
-        <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
       </div>
     </div>
     <div class="flex flex-col items-center text-ponzi-number">
       <div class="opacity-50 text-sm">Cost / hour :</div>
       <div class="text-red-500 flex items-center gap-2">
         <span class="text-xl stroke-3d-black">
-          -&nbsp;{displayCurrency(burnRate.rawValue())}
+          -&nbsp;{displayCurrency(burnRate.rawValue())} $
         </span>
-        <TokenAvatar token={baseToken} class="border border-white w-5 h-5" />
       </div>
     </div>
   </div>
@@ -69,19 +61,42 @@
     <div class="flex justify-between w-full pt-2 leading-none">
       <div class="low-opacity">Token :</div>
       <div class="text-opacity-30">
-        ${land?.token?.symbol}
+        {land?.token?.symbol}
+        <TokenAvatar token={land?.token} class="inline-block h-4 w-4 ml-1" />
       </div>
     </div>
     <div class="flex justify-between w-full leading-none">
       <div class="low-opacity">Stake Amount :</div>
       <div class="text-opacity-30">
         {land?.stakeAmount}
+        {land.token?.symbol}
+
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.stakeAmount,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
       </div>
     </div>
     <div class="flex justify-between w-full leading-none">
       <div class="low-opacity">Sell Price :</div>
       <div class="text-opacity-30">
         {land?.sellPrice}
+        {land.token?.symbol}
+
+        {#if land.token && baseToken}
+          <span class="low-opacity">
+            ({walletStore.convertTokenAmount(
+              land?.sellPrice,
+              land.token,
+              baseToken,
+            )} $)
+          </span>
+        {/if}
       </div>
     </div>
   </div>

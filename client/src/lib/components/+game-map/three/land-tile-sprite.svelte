@@ -12,6 +12,7 @@
   } from './utils/sprite-hover-shader';
   import { setOutlineControls } from './utils/outline-controls.store.svelte';
   import { coordinatesToLocation } from '$lib/utils';
+  import { devsettings } from './utils/devsettings.store.svelte';
 
   let {
     landTiles,
@@ -43,7 +44,12 @@
   const clock = new THREE.Clock();
 
   useTask(() => {
-    if (outlineControls) {
+    // Only run shader time updates if animations are enabled
+    if (
+      outlineControls &&
+      devsettings.enableAnimations &&
+      devsettings.enableShaderAnimations
+    ) {
       outlineControls.updateTime(clock.getElapsedTime());
     }
   });

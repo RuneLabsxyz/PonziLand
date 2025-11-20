@@ -10,7 +10,7 @@ import { landStore } from '$lib/stores/store.svelte';
 import { toHexWithPadding } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { Level } from '$lib/utils/level';
-import { estimateNukeTime } from '$lib/utils/taxes';
+import { estimateNukeTimeRpc } from '$lib/utils/taxes';
 import type { Readable } from 'svelte/store';
 import {
   calculateAuctionPrice,
@@ -114,6 +114,17 @@ export const createLandWithActions = (
               land.floorPrice.toBigint(),
             );
 
+            // If price is 0, fall back to RPC to get the actual current price
+            if (calculatedPrice === BigInt(0)) {
+              console.log(
+                '🔗 Calculated price is 0, using RPC for accurate price after nuke',
+              );
+              const rpcPrice = (await sdk.client.actions.getCurrentAuctionPrice(
+                land.locationString,
+              ))! as string;
+              return CurrencyAmount.fromUnscaled(rpcPrice, land.token);
+            }
+
             // Return as CurrencyAmount
             return CurrencyAmount.fromUnscaled(
               calculatedPrice.toString(),
@@ -183,10 +194,7 @@ export const createLandWithActions = (
       return res;
     },
     async getEstimatedNukeTime() {
-      return await estimateNukeTime(
-        this,
-        land.getNeighbors(landStore).getBaseLandsArray().length,
-      );
+      return await estimateNukeTimeRpc(this);
     },
     getNeighbors() {
       return land.getNeighbors(landStore);

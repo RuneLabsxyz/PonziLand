@@ -54,49 +54,46 @@ export function formatWithoutExponential(
     return '0';
   }
 
-  // Convert to string with high precision to work with
-  const str = bn.toFixed(20);
-  const isNegative = str.startsWith('-');
-  const absStr = isNegative ? str.substring(1) : str;
+  // Use BigNumber's precision method for proper rounding
+  const rounded = bn.precision(significantDigits, BigNumber.ROUND_HALF_UP);
 
-  // Split into integer and decimal parts
-  const [integerPart, decimalPart = ''] = absStr.split('.');
+  // Convert to fixed decimal notation to avoid exponential
+  // Calculate how many decimal places we need
+  const abs = rounded.abs();
+  let decimalPlaces = 0;
 
-  let result = integerPart;
-
-  // If there's a decimal part, process it
-  if (decimalPart) {
-    result += '.';
-
-    let significantFound = 0;
-    let foundFirstNonZero = false;
-
-    for (
-      let i = 0;
-      i < decimalPart.length && significantFound < significantDigits;
-      i++
-    ) {
-      const digit = decimalPart[i];
-      result += digit;
-
-      // Once we find the first non-zero digit, all subsequent digits (including zeros) are significant
-      if (digit !== '0') {
-        foundFirstNonZero = true;
+  if (abs.isLessThan(1)) {
+    // For numbers < 1, we need enough decimal places to show the significant digits
+    const str = abs.toString();
+    const decimalIndex = str.indexOf('.');
+    if (decimalIndex !== -1) {
+      // Count leading zeros after decimal point
+      let leadingZeros = 0;
+      for (let i = decimalIndex + 1; i < str.length; i++) {
+        if (str[i] === '0') {
+          leadingZeros++;
+        } else {
+          break;
+        }
       }
-
-      // Count as significant if we've found our first non-zero digit
-      if (foundFirstNonZero) {
-        significantFound++;
-      }
+      // Need enough places for leading zeros + significant digits
+      decimalPlaces = leadingZeros + significantDigits;
     }
-
-    // Remove trailing zeros only if we haven't used all significant digits
-    if (significantFound < significantDigits) {
-      result = result.replace(/\.?0+$/, '');
-    }
+  } else {
+    // For numbers >= 1, use a reasonable number of decimal places
+    decimalPlaces = Math.max(
+      0,
+      significantDigits - rounded.integerValue().toString().length,
+    );
   }
 
-  return isNegative ? '-' + result : result;
+  // Use toFixed to get the decimal representation, then remove trailing zeros
+  let result = rounded.toFixed(Math.min(decimalPlaces, 20));
+
+  // Remove trailing zeros and unnecessary decimal point
+  result = result.replace(/\.?0+$/, '');
+
+  return result;
 }
 
 export function displayCurrency(value: string | number | BigNumber): string {
@@ -113,31 +110,18 @@ export function displayCurrency(value: string | number | BigNumber): string {
 
   if (abs.isGreaterThanOrEqualTo(1_000_000_000)) {
     formatted = bn.dividedBy(1_000_000_000).toFormat(2);
-    suffix = 'B';
+    suffix = ' B';
   } else if (abs.isGreaterThanOrEqualTo(1_000_000)) {
     formatted = bn.dividedBy(1_000_000).toFormat(2);
-    suffix = 'M';
+    suffix = ' M';
   } else if (abs.isGreaterThanOrEqualTo(1_000)) {
     formatted = bn.dividedBy(1_000).toFormat(2);
-    suffix = 'K';
+    suffix = ' K';
   } else if (abs.isGreaterThanOrEqualTo(1)) {
     formatted = bn.toFormat(2);
   } else {
-    // Very small number < 1 — use subexponent formatting for very small numbers
-    formatted = bn.toFixed(20);
-
-    const decimalStr = formatted.split('.')[1] ?? '';
-    const leadingZeros = decimalStr.match(/^0*/)?.[0].length ?? 0;
-
-    // If there are more than 4 leading zeros, use exponential notation to save space
-    if (leadingZeros > 4) {
-      // Use exponential notation with 3 significant digits
-      formatted = bn.toExponential(2);
-    } else {
-      // Calculate the number of significant digits to show (at least 3, but at most 6 for readability)
-      const significantDigits = Math.min(Math.max(3, leadingZeros + 3), 6);
-      formatted = bn.toFixed(significantDigits);
-    }
+    // Very small number < 1 — use formatWithoutExponential to avoid exponential notation
+    formatted = formatWithoutExponential(bn, 3);
   }
 
   return formatted + suffix;

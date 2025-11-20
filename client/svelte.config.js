@@ -26,6 +26,8 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL: process.env.FARO_COLLECTOR_URL,
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: process.env.POSTHOG_KEY,
+    PAYMASTER_API_KEY: process.env.PAYMASTER_API_KEY,
+    LAYERSWAP_TOKEN: process.env.LAYERSWAP_TOKEN,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -41,6 +43,7 @@ const profiles = {
       '0xc5b2fcab997346f3ea1c00b002ecf6f382c5f9c9659a3894eb783c5320f912',
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
+    PAYMASTER_API_KEY: '',
     PUBLIC_FARO_COLLECTOR_URL: null,
     PUBLIC_GIT_COMMIT_HASH: null,
     PUBLIC_POSTHOG_KEY: null,
@@ -56,6 +59,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
+    PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-sepolia/api/',
     PUBLIC_FARO_COLLECTOR_URL:
@@ -84,7 +88,7 @@ const profiles = {
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
     PUBLIC_DOJO_TORII_URL:
-      'https://api.cartridge.gg/x/ponziland-mainnet-world/torii',
+      'https://api.cartridge.gg/x/ponziland-mainnet-world-new/torii',
     PUBLIC_DOJO_CHAIN_ID: 'SN_MAIN',
     PUBLIC_AVNU_URL: 'https://starknet.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://mainnet-api.ekubo.org',
@@ -92,6 +96,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
+    PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-mainnet/api/',
     PUBLIC_FARO_COLLECTOR_URL:
@@ -110,6 +115,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
+    PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL:
       'https://' + process.env['DEPLOY_NAME'] + '.ponzis.fun/api',
@@ -130,6 +136,7 @@ const profiles = {
     PUBLIC_DOJO_BURNER_PRIVATE: null,
     BYPASS_TOKEN: '',
     LAYERSWAP_TOKEN: '',
+    PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://play.ponzis.fun/api',
     PUBLIC_FARO_COLLECTOR_URL:

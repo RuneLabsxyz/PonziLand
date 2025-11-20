@@ -14,6 +14,7 @@ historical = [
     "ponzi_land-AuctionFinishedEvent",
     "ponzi_land-LandBoughtEvent",
     "ponzi_land-LandNukedEvent",
+    "ponzi_land-LandTransferEvent",
 
     "ponzi_land-NewAuctionEvent",
 

@@ -6,7 +6,6 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
   import { gameSounds } from '$lib/stores/sfx.svelte';
-  import { moveCameraTo } from '$lib/stores/camera.store';
   import { claimAll, claimAllOfToken } from '$lib/stores/claim.store.svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -16,14 +15,23 @@
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { cursorStore } from '$lib/components/+game-map/three/cursor.store.svelte';
   import account from '$lib/account.svelte';
-  import { useAccount } from '$lib/contexts/account.svelte';
+  import { estimateNukeTimeRpc, parseNukeTime } from '$lib/utils/taxes';
+  import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { List, Eye } from 'lucide-svelte';
+  import type { Snippet } from 'svelte';
+
+  type Props = {
+    setCustomTitle?: (title: Snippet<[]> | null) => void;
+    setCustomControls?: (controls: Snippet<[]> | null) => void;
+  };
+
+  let { setCustomTitle, setCustomControls }: Props = $props();
 
   const dojo = useDojo();
   const getDojoAccount = () => {
     return dojo.accountManager?.getProvider();
   };
 
-  let accountManager = useAccount();
   const { accountManager: dojoAccountManager } = useDojo();
 
   // Claiming state management
@@ -107,6 +115,89 @@
   // Reactive lands state that updates automatically on ownership changes
   let lands = $state<LandWithActions[]>([]);
 
+  // Nuke time cache to avoid recalculating frequently
+  let nukeTimes = $state<
+    Map<
+      string,
+      { timeInSeconds: number; displayText: string; shieldType: string }
+    >
+  >(new Map());
+
+  // Helper function to get shield type based on days remaining
+  function getShieldType(days: number): string {
+    if (days >= 5) return 'blue';
+    if (days >= 3) return 'grey';
+    if (days >= 2) return 'yellow';
+    if (days >= 1) return 'orange';
+    return 'red';
+  }
+
+  // Helper function to format nuke time for display
+  function formatNukeTime(timeInSeconds: number): {
+    text: string;
+    shieldType: string;
+  } {
+    const parsedTime = parseNukeTime(timeInSeconds);
+
+    let displayText = '';
+    if (parsedTime.days > 0) {
+      displayText = `${parsedTime.days}d`;
+    } else if (parsedTime.hours > 0) {
+      displayText = `${parsedTime.hours}h`;
+    } else if (parsedTime.minutes > 0) {
+      displayText = `${parsedTime.minutes}m`;
+    } else {
+      displayText = 'NUKE!';
+    }
+
+    const shieldType = getShieldType(parsedTime.days);
+    return { text: displayText, shieldType };
+  }
+
+  // Calculate nuke times for all lands
+  async function updateNukeTimes() {
+    const newNukeTimes = new Map();
+
+    for (const land of lands) {
+      try {
+        const neighborCount =
+          land.getNeighbors()?.getBaseLandsArray()?.length || 0;
+
+        // Only calculate nuke time if there are neighbors (otherwise it's infinite)
+        if (neighborCount > 0) {
+          // Use RPC algorithm with elapsed times fetched internally
+          const timeInSeconds = await estimateNukeTimeRpc(land);
+          const formatted = formatNukeTime(timeInSeconds);
+
+          newNukeTimes.set(land.location, {
+            timeInSeconds,
+            displayText: formatted.text,
+            shieldType: formatted.shieldType,
+          });
+        } else {
+          newNukeTimes.set(land.location, {
+            timeInSeconds: Infinity,
+            displayText: '∞',
+            shieldType: 'blue',
+          });
+        }
+      } catch (error) {
+        console.warn(
+          'Failed to calculate nuke time for land:',
+          land.location,
+          error,
+        );
+        newNukeTimes.set(land.location, {
+          timeInSeconds: 0,
+          displayText: '?',
+          shieldType: 'grey',
+        });
+      }
+    }
+
+    nukeTimes = newNukeTimes;
+  }
+
   // Effect to reactively update lands when ownership or land data changes
   $effect(() => {
     console.log('Updating lands for account:', account.address);
@@ -152,11 +243,20 @@
     };
   });
 
+  // Update nuke times when lands change
+  $effect(() => {
+    if (lands.length > 0) {
+      updateNukeTimes();
+    }
+  });
+
   // Filter and grouping state
   let selectedToken = $state<string>('all');
   let selectedLevel = $state<string>('all');
   let groupByToken = $state<boolean>(true);
-  let sortBy = $state<'location' | 'level' | 'date' | 'price'>('price');
+  let sortBy = $state<'location' | 'level' | 'date' | 'price' | 'nuketime'>(
+    'price',
+  );
   let sortOrder = $state<'asc' | 'desc'>('asc');
 
   let filteredLands = $derived.by(() => {
@@ -193,6 +293,13 @@
           break;
         case 'price':
           comparison = Number(a.sell_price) - Number(b.sell_price);
+          break;
+        case 'nuketime':
+          const nukeTimeA =
+            nukeTimes.get(a.location)?.timeInSeconds ?? Infinity;
+          const nukeTimeB =
+            nukeTimes.get(b.location)?.timeInSeconds ?? Infinity;
+          comparison = nukeTimeA - nukeTimeB;
           break;
       }
 
@@ -242,6 +349,19 @@
     cursorStore.selectedTileIndex = transposedLocation;
   }
 
+  // Set custom title and controls if provided
+  $effect(() => {
+    if (setCustomTitle) {
+      setCustomTitle(customTitleSnippet);
+    }
+  });
+
+  $effect(() => {
+    if (setCustomControls) {
+      setCustomControls(customControlsSnippet);
+    }
+  });
+
   // Cleanup timers when component is destroyed
   $effect(() => {
     return () => {
@@ -251,6 +371,26 @@
     };
   });
 </script>
+
+{#snippet customTitleSnippet()}
+  My Lands ({lands.length})
+{/snippet}
+
+{#snippet customControlsSnippet()}
+  <button
+    class="window-control"
+    onclick={() => settingsStore.toggleNoobMode()}
+    aria-label={settingsStore.isNoobMode
+      ? 'Switch to Pro Mode'
+      : 'Switch to Noob Mode'}
+  >
+    {#if settingsStore.isNoobMode}
+      <Eye class="h-4 w-4" />
+    {:else}
+      <List class="h-4 w-4" />
+    {/if}
+  </button>
+{/snippet}
 
 <div class="h-full w-full flex flex-col pb-4">
   <!-- Filters and Controls - only show when user is connected -->
@@ -300,6 +440,24 @@
             : 'text-blue-500'}"
         >
           Date {sortBy == 'date' ? (sortOrder === 'asc' ? '▴' : '▾') : ''}
+        </button>
+        <button
+          onclick={() => {
+            if (sortBy === 'nuketime') {
+              sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+            }
+            sortBy = 'nuketime';
+          }}
+          class="border border-red-500 px-2 text-sm font-medium flex items-center justify-center {sortBy ==
+          'nuketime'
+            ? 'bg-red-500 text-white'
+            : 'text-red-500'}"
+        >
+          Nuke Time {sortBy == 'nuketime'
+            ? sortOrder === 'asc'
+              ? '▴'
+              : '▾'
+            : ''}
         </button>
       </div>
     </div>
@@ -359,12 +517,17 @@
         {/if}
 
         {#each groupLands as land}
+          {@const nukeTimeData = nukeTimes.get(land.location)}
           <button
             class="w-full text-left hover:bg-white/10 p-2 land-button"
             class:group-item={groupByToken}
             onclick={() => handleLandClick(land)}
           >
-            <LandHudInfo {land} isOwner={true} showLand={true} />
+            <div class="flex items-center justify-between">
+              <div class="flex-1">
+                <LandHudInfo {land} isOwner={true} showLand={true} />
+              </div>
+            </div>
           </button>
         {/each}
       {/each}

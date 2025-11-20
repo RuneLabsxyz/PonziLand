@@ -10,6 +10,7 @@ import { logEntityUpdate } from '$lib/utils/entity-logger';
 import { createLandWithActions } from '$lib/utils/land-actions';
 import data from '$profileData';
 import type { ParsedEntity } from '@dojoengine/sdk';
+import { CairoOption, CairoOptionVariant } from 'starknet';
 import {
   derived,
   readable,
@@ -34,6 +35,7 @@ const TOKEN_ADDRESSES = data.availableTokens.map(
 
 // Default values
 const DEFAULT_SELL_PRICE = 1000000000000000000;
+const TUTORIAL_BASE_PRICE = 100000000000000000000; // ~$100 worth in base currency
 const DEFAULT_STAKE_AMOUNT = 1000000000000000000;
 const DEFAULT_OWNER =
   '0x05144466224fde5d648d6295a2fb6e7cd45f2ca3ede06196728026f12c84c9ff';
@@ -934,6 +936,138 @@ export class LandTileStore {
           }
         }
       });
+    });
+  }
+
+  // Add default auction lands for tutorial mode
+  public addTutorialAuctions(): void {
+    console.log('Adding tutorial auction lands...');
+
+    // Center position
+    const centerX = Math.floor(GRID_SIZE / 2);
+    const centerY = Math.floor(GRID_SIZE / 2);
+
+    // First, add 5 player-owned lands grouped together in the center
+    const playerLandPositions = [
+      { x: centerX, y: centerY }, // Center
+      { x: centerX + 1, y: centerY }, // Right
+      { x: centerX - 1, y: centerY }, // Left
+      { x: centerX, y: centerY + 1 }, // Below
+      { x: centerX, y: centerY - 1 }, // Above
+    ];
+
+    const playerOwner =
+      '0x0432d05c36cac355e0a74a08e8b8776b45f5bff96b59b351ec9171bf66a22a37';
+
+    // Find specific token addresses
+    const tokenAddressMap: { [symbol: string]: string } = {};
+    data.availableTokens.forEach((token) => {
+      tokenAddressMap[token.symbol] = token.address;
+    });
+
+    // Define specific tokens for each building
+    const buildingTokens = [
+      tokenAddressMap['SOL'] || TOKEN_ADDRESSES[0], // Center - SOL
+      tokenAddressMap['BTC'] || TOKEN_ADDRESSES[1], // Right - BTC
+      tokenAddressMap['ETH'] || TOKEN_ADDRESSES[2], // Left - ETH
+      tokenAddressMap['DOG'] || TOKEN_ADDRESSES[3], // Below - DOGE
+      tokenAddressMap['BONK'] || TOKEN_ADDRESSES[4], // Above - BONK
+    ];
+
+    // Define specific configurations for each land
+    const landConfigs = [
+      { price: 1000000000, level: 'Second' }, // SOL - $400, Level 3
+      { price: 100000, level: 'Second' }, // BTC - $350, Level 3
+      { price: 1000000000, level: 'First' }, // ETH - $250, Level 2
+      { price: 1000000000, level: 'First' }, // DOG - $150, Level 2
+      { price: 1000000000, level: 'Zero' }, // BONK - $100, Level 1
+    ];
+
+    this.currentLands.update((lands) => {
+      // Add player-owned lands
+      playerLandPositions.forEach(({ x, y }, index) => {
+        // Use specific token for each position
+        const tokenAddress = buildingTokens[index];
+        const config = landConfigs[index];
+
+        const playerLand: Land = {
+          owner: playerOwner,
+          location: coordinatesToLocation({ x, y }),
+          block_date_bought: Date.now() / 1000,
+          sell_price: config.price,
+          token_used: tokenAddress,
+          // @ts-ignore
+          level: config.level,
+        };
+
+        const playerStake: LandStake = {
+          location: coordinatesToLocation({ x, y }),
+          amount: config.price,
+          neighbors_info_packed: 0,
+          accumulated_taxes_fee: 0,
+        };
+
+        const buildingLand = new BuildingLand(playerLand);
+        buildingLand.updateStake(playerStake);
+
+        // Update ownership index
+        this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+
+        this.store[x][y].set({ value: buildingLand });
+        lands[x][y] = buildingLand;
+      });
+
+      // Force ownership update after bulk operation
+      this.forceOwnershipUpdate();
+      return lands;
+    });
+
+    // Now add auction lands in contact with the player lands
+    const auctionPositions = [
+      { x: centerX + 2, y: centerY }, // Right of right land
+      { x: centerX - 2, y: centerY }, // Left of left land
+      { x: centerX, y: centerY + 2 }, // Below bottom land
+      { x: centerX, y: centerY - 2 }, // Above top land
+      { x: centerX + 1, y: centerY + 1 }, // Diagonal SE
+      { x: centerX - 1, y: centerY - 1 }, // Diagonal NW
+    ];
+
+    const auctionPrices = [
+      10000000000000000000000, 10000000000000000000000, 10000000000000000000000,
+      10000000000000000000000, 10000000000000000000000, 10000000000000000000,
+    ];
+
+    auctionPositions.forEach(({ x, y }, index) => {
+      const location = coordinatesToLocation({ x, y });
+
+      const fakeLand: Land = {
+        owner: '0x00',
+        location: location,
+        block_date_bought: Date.now() / 1000,
+        sell_price: auctionPrices[index],
+        token_used: data.mainCurrencyAddress,
+        //@ts-ignore
+        level: 'First',
+      };
+
+      const fakeAuction: Auction = {
+        land_location: location,
+        is_finished: false,
+        start_price: auctionPrices[index] * 2,
+        start_time: Date.now() / 1000 - index * 60,
+        floor_price: auctionPrices[index] * 0.5,
+        sold_at_price: new CairoOption(CairoOptionVariant.None),
+      };
+
+      this.updateLand({
+        entityId: `tutorial_auction_${location}`,
+        models: {
+          ponzi_land: {
+            Land: fakeLand,
+            Auction: fakeAuction,
+          },
+        },
+      } as ParsedEntity<SchemaType>);
     });
   }
 }

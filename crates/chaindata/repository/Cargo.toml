@@ -6,6 +6,7 @@ edition = "2021"
 [dependencies]
 async-trait.workspace = true
 chrono.workspace = true
+serde_json.workspace = true
 sqlx = { workspace = true, features = [
     "derive",
     "runtime-tokio",
@@ -15,6 +16,7 @@ sqlx = { workspace = true, features = [
     "bigdecimal",
 ] }
 chaindata-models = { path = "../models" }
+ponziland-models = { path = "../../ponziland-models" }
 thiserror.workspace = true
 
 [dev-dependencies]

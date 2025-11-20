@@ -80,7 +80,7 @@
       <div class="flex justify-center gap-4 mt-2">
         <!-- svelte-ignore a11y_consider_explicit_label -->
         <a
-          href="https://discord.gg/ponziland"
+          href="https://discord.gg/2Mt3HhQpmD"
           target="_blank"
           class="text-blue-400 hover:text-blue-300 transition-colors"
         >

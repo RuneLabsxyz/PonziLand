@@ -26,12 +26,17 @@
 >
   <Card>
     <div class="p-5 max-w-[35rem]">
-      <h1 class="text-4xl font-bold text-center mb-2">
-        We are closed (for now)!
+      <h1
+        class="text-4xl font-bold font-ponzi-number stroke-3d-black text-center mb-3"
+      >
+        Exclusive closed alpha ongoing !
       </h1>
       <p class="text-xl">
-        The ponziboys are hard at work! Let them cook, and I promise that we
-        will be back soon. At least now you know that we are working on it.
+        Devs are doing something with the help of some mad ponziboys, get
+        <a class="text-blue-500 underline" href="https://discord.gg/2Mt3HhQpmD">
+          into Discord
+        </a>
+        to ask for access, you may find some luck, get rugg'd!
       </p>
 
       <!-- Only show the timer if we have a date in the future and DATE_GATE is defined. -->

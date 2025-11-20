@@ -4,37 +4,30 @@
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
-  import {
-    ChartColumn,
-    RefreshCw,
-    ArrowUpDown,
-    Settings,
-    Minus,
-  } from 'lucide-svelte';
+  import { ChartColumn, RefreshCw, ArrowUpDown, Minus } from 'lucide-svelte';
   import type { Snippet } from 'svelte';
   import { onMount, onDestroy } from 'svelte';
   import TokenValueDisplay from './token-value-display.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
-  import BaseTokenSelector from './base-token-selector.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
+  import InfoTooltip from '$lib/components/ui/info-tooltip.svelte';
+  import { cn } from '$lib/utils';
 
   let {
     setCustomControls,
   }: { setCustomControls: (controls: Snippet<[]> | null) => void } = $props();
   const baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find(
-      (token) => token.address === targetAddress,
-    );
+    // Always use USDC as base token
+    const usdcAddress =
+      '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8';
+    return data.availableTokens.find((token) => token.address === usdcAddress);
   });
 
   const address = $derived(accountData.address);
 
   let loadingBalance = $state(false);
   let errorMessage = $state<string | null>(null);
-  let showBaseTokenSelector = $state(false);
   let initialBalanceLoadCompleted = $state(false);
   let isMinimized = $state(false);
   let walletHeight = $state(320); // Default height in pixels (equivalent to h-80)
@@ -45,6 +38,7 @@
   onMount(() => {
     // Set up custom controls for the parent draggable component
     setCustomControls(moreControls);
+    if (baseToken) settingsStore.setSelectedBaseTokenAddress(baseToken.address);
   });
 
   // Watch for wallet loading completion and trigger balance refresh
@@ -141,7 +135,7 @@
     );
 
     // Sort other tokens by their equivalent base token balance (descending)
-    const sortedOthers = otherTokens.sort(([tokenA], [tokenB]) => {
+    const sortedOthers = tokens.sort(([tokenA], [tokenB]) => {
       // Use cached conversion values instead of converting on each comparison
       const equivalentA = walletStore.getCachedBaseTokenEquivalent(
         tokenA.address,
@@ -168,41 +162,29 @@
     });
 
     // Return base token first, then sorted others
-    return baseTokenEntry ? [baseTokenEntry, ...sortedOthers] : sortedOthers;
+    return sortedOthers;
   });
 </script>
 
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
   {#if totalBalance && baseToken}
-    <span class="font-ponzi-number">Balance</span>
+    <span class="font-ponzi-number">
+      Balance
+      <InfoTooltip text="Balance of usable tokens in ponzi-land" />
+    </span>
 
     <div class="flex flex-1 items-center gap-2 justify-end select-text"></div>
-    <button
-      class="font-ponzi-number hover:bg-gray-100/10 px-1 rounded flex items-center gap-1"
-      onclick={() => (showBaseTokenSelector = !showBaseTokenSelector)}
-      title="Click to change base token"
+    <div
+      class="font-ponzi-number px-1 rounded flex items-center gap-1"
+      title="Total balance in USDC"
     >
       <div class="font-ponzi-number">
         {totalBalance.toString()}
       </div>
       <TokenAvatar token={baseToken} class="h-6 w-6" />
-      <Settings size={12} class="opacity-50" />
-    </button>
+    </div>
   {/if}
 </div>
-
-{#if showBaseTokenSelector && !isMinimized}
-  <div class="border-t border-gray-700 p-2">
-    <BaseTokenSelector
-      currentBaseToken={baseToken}
-      onSelect={(tokenAddress: string | null) => {
-        settingsStore.setSelectedBaseTokenAddress(tokenAddress);
-        showBaseTokenSelector = false;
-      }}
-      onCancel={() => (showBaseTokenSelector = false)}
-    />
-  </div>
-{/if}
 
 {#if !isMinimized}
   {#if errorMessage}
@@ -212,20 +194,27 @@
       {errorMessage}
     </div>
   {/if}
-  <div class="flex flex-col gap-2 mb-4 relative">
-    <ScrollArea>
-      <div style="height: {walletHeight}px;">
-        {#each sortedTokenBalances as [token, balance]}
-          <div
-            class="flex justify-between items-center relative gap-2 px-4 select-text"
-          >
-            <TokenAvatar {token} class="h-6 w-6" />
-            <TokenValueDisplay amount={balance.toBigint()} {token} />
-          </div>
-        {/each}
-      </div>
-    </ScrollArea>
-
+  <div class="flex flex-col gap-2 mb-4 relative -m-1">
+    {#if sortedTokenBalances.length > 0}
+      <ScrollArea class="p-1">
+        <div class="pr-2" style="height: {walletHeight}px;">
+          {#each sortedTokenBalances as [token, balance]}
+            <div
+              class="flex items-center gap-3 px-2 py-1 select-text hover:bg-gray-100/5 rounded"
+            >
+              <TokenAvatar
+                {token}
+                class={cn([
+                  'h-8 w-8 flex-shrink-0',
+                  balance.isZero() ? 'filter brightness-50' : '',
+                ])}
+              />
+              <TokenValueDisplay amount={balance.toBigint()} {token} />
+            </div>
+          {/each}
+        </div>
+      </ScrollArea>
+    {/if}
     <!-- Resize handle -->
     <div
       role="slider"
@@ -246,7 +235,7 @@
 {/if}
 
 {#snippet moreControls()}
-  <button
+  <!-- <button
     class="window-control"
     onclick={handleToggleDisplayMode}
     aria-label="Toggle wallet display mode ({settingsStore.walletDisplayMode ===
@@ -258,9 +247,9 @@
       : 'Show base token values'}
   >
     <ArrowUpDown size={16} />
-  </button>
+  </button> -->
   <a
-    href="/dashboard"
+    href="https://starkfam.club/minidex/"
     target="_blank"
     class="window-control w-6 h-6 flex items-center justify-center"
     aria-label="View dashboard"

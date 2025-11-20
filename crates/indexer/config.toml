@@ -16,7 +16,7 @@ api_key = ""
 
 [torii]
 world_address = "0x59713eb00142d15a502824739e5f3b9a81a808c0e660875ff1ae199b533a620"
-torii_url = "https://api.cartridge.gg/x/ponziland-mainnet-world/torii"
+torii_url = "https://api.cartridge.gg/x/ponziland-mainnet-world-new/torii"
 
 [ekubo]
 api_url = "https://starknet-mainnet-api.ekubo.org"
@@ -70,3 +70,6 @@ address = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"
 [[token]]
 symbol = "SCHIZO"
 address = "0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2"
+[[token]]
+symbol = "SURVIVOR"
+address = "0x042dd777885ad2c116be96d4d634abc90a26a790ffb5871e037dd5ae7d2ec86b"

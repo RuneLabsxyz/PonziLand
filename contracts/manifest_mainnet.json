@@ -1480,7 +1480,7 @@
   "contracts": [
     {
       "address": "0x7e2dd623390edcbadde1def93aa6c8a1866c664273d9a4e5f8129a060d25916",
-      "class_hash": "0x2bdfd17e0403e69478012abc4fe1120a9fb5b41452ea3a5db9565e69ae3be0b",
+      "class_hash": "0x642c954a1346cdd4dc5b319fb9e78b858ab8a9fd98c6aee4d6165056acfdc28",
       "abi": [
         {
           "type": "impl",
@@ -1921,8 +1921,25 @@
             },
             {
               "type": "function",
-              "name": "reimburse_stakes",
-              "inputs": [],
+              "name": "withdraw_stake",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "withdraw_stakes_batch",
+              "inputs": [
+                {
+                  "name": "land_locations",
+                  "type": "core::array::Array::<core::integer::u16>"
+                }
+              ],
               "outputs": [],
               "state_mutability": "external"
             },
@@ -2317,13 +2334,14 @@
         "increase_price",
         "increase_stake",
         "level_up",
-        "reimburse_stakes",
+        "withdraw_stake",
+        "withdraw_stakes_batch",
         "upgrade"
       ]
     },
     {
       "address": "0x4708f47cafbd0f07b42f7831dff8624950e5e847ea761aac22979507bbd1ab5",
-      "class_hash": "0x6d59419dbd4c9157c495c8bd899849b60d01519357947d8f47d3ab5f96e3cce",
+      "class_hash": "0x1ea86e318e073dc0b20f82d89d25f6c8d2fe4134a24479107801e0c1fe68484",
       "abi": [
         {
           "type": "impl",
@@ -2534,6 +2552,24 @@
                 }
               ],
               "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "end_game_and_enable_withdrawals",
+              "inputs": [],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "is_game_ended",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
             }
           ]
         },
@@ -2661,6 +2697,7 @@
         "lock_actions",
         "unlock_actions",
         "ensure_deploy",
+        "end_game_and_enable_withdrawals",
         "upgrade"
       ]
     },
@@ -4068,6 +4105,12 @@
     },
     {
       "members": [],
+      "class_hash": "0x7d5c7d420feb426fb86ac8e6e34887ddc7248408968bc1bbf9a5682f0ecab87",
+      "tag": "ponzi_land-GameEndedEvent",
+      "selector": "0x3fe1419b0eb74d077b18bfa37d7e563c44f363d61d3a8d1505e68445a947d2"
+    },
+    {
+      "members": [],
       "class_hash": "0x6c189c090f488cfeae7f3730afc87e6e60d1fbf92de775351f43f5b951860ba",
       "tag": "ponzi_land-LandBoughtEvent",
       "selector": "0x769ef6ea223dc95effda992aef6ea6bc4434280ade20a03d3273323cd23b883"
@@ -4097,5 +4140,448 @@
       "selector": "0x25d0221db2d5d6010d38e5df9c861dbc406c1d156a715f4a241138edb377f6d"
     }
   ],
-  "external_contracts": []
+  "external_contracts": [
+    {
+      "class_hash": "0x1df995b7c82961eff649aae333ab45acc69017f01283b1b910e1a36f44f2d75",
+      "contract_name": "LiquidityReinjector",
+      "tag": "ponzi_land-LiquidityReinjector",
+      "address": "0x75acbf1731ee2486682ce2dcb8fd3700a81a2e4b1d305bf76fa2a0a6ce5620",
+      "abi": [
+        {
+          "type": "impl",
+          "name": "LiquidityReinjectorImpl",
+          "interface_name": "ponzi_land::liquidity::liquidity_reinjector::ILiquidityReinjector"
+        },
+        {
+          "type": "enum",
+          "name": "core::bool",
+          "variants": [
+            {
+              "name": "False",
+              "type": "()"
+            },
+            {
+              "name": "True",
+              "type": "()"
+            }
+          ]
+        },
+        {
+          "type": "struct",
+          "name": "core::integer::u256",
+          "members": [
+            {
+              "name": "low",
+              "type": "core::integer::u128"
+            },
+            {
+              "name": "high",
+              "type": "core::integer::u128"
+            }
+          ]
+        },
+        {
+          "type": "interface",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::ILiquidityReinjector",
+          "items": [
+            {
+              "type": "function",
+              "name": "add_authorized",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "remove_authorized",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "is_authorized",
+              "inputs": [
+                {
+                  "name": "address",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [
+                {
+                  "type": "core::bool"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "set_actions_contract",
+              "inputs": [
+                {
+                  "name": "actions_contract",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "execute_buy",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "token_for_sale",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "sell_price",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "amount_to_stake",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "execute_bid",
+              "inputs": [
+                {
+                  "name": "land_location",
+                  "type": "core::integer::u16"
+                },
+                {
+                  "name": "token_for_sale",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "sell_price",
+                  "type": "core::integer::u256"
+                },
+                {
+                  "name": "amount_to_stake",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "withdraw_tokens",
+              "inputs": [
+                {
+                  "name": "token",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "amount",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "claim",
+              "inputs": [
+                {
+                  "name": "token",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                },
+                {
+                  "name": "amount",
+                  "type": "core::integer::u256"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "transfer_ownership",
+              "inputs": [
+                {
+                  "name": "new_owner",
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "outputs": [],
+              "state_mutability": "external"
+            },
+            {
+              "type": "function",
+              "name": "get_owner",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            },
+            {
+              "type": "function",
+              "name": "get_actions_contract",
+              "inputs": [],
+              "outputs": [
+                {
+                  "type": "core::starknet::contract_address::ContractAddress"
+                }
+              ],
+              "state_mutability": "view"
+            }
+          ]
+        },
+        {
+          "type": "constructor",
+          "name": "constructor",
+          "inputs": [
+            {
+              "name": "owner",
+              "type": "core::starknet::contract_address::ContractAddress"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedAdded",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "added_by",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedRemoved",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "address",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "removed_by",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BuyExecuted",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "executor",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "land_location",
+              "type": "core::integer::u16",
+              "kind": "data"
+            },
+            {
+              "name": "token_for_sale",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            },
+            {
+              "name": "sell_price",
+              "type": "core::integer::u256",
+              "kind": "data"
+            },
+            {
+              "name": "amount_to_stake",
+              "type": "core::integer::u256",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BidExecuted",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "executor",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "key"
+            },
+            {
+              "name": "land_location",
+              "type": "core::integer::u16",
+              "kind": "data"
+            },
+            {
+              "name": "token_for_sale",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            },
+            {
+              "name": "sell_price",
+              "type": "core::integer::u256",
+              "kind": "data"
+            },
+            {
+              "name": "amount_to_stake",
+              "type": "core::integer::u256",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::TokensWithdrawn",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "token",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            },
+            {
+              "name": "recipient",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            },
+            {
+              "name": "amount",
+              "type": "core::integer::u256",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::OwnershipTransferred",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "previous_owner",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            },
+            {
+              "name": "new_owner",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::ActionsContractSet",
+          "kind": "struct",
+          "members": [
+            {
+              "name": "actions_contract",
+              "type": "core::starknet::contract_address::ContractAddress",
+              "kind": "data"
+            }
+          ]
+        },
+        {
+          "type": "event",
+          "name": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+          "kind": "enum",
+          "variants": []
+        },
+        {
+          "type": "event",
+          "name": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::Event",
+          "kind": "enum",
+          "variants": [
+            {
+              "name": "AuthorizedAdded",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedAdded",
+              "kind": "nested"
+            },
+            {
+              "name": "AuthorizedRemoved",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::AuthorizedRemoved",
+              "kind": "nested"
+            },
+            {
+              "name": "BuyExecuted",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BuyExecuted",
+              "kind": "nested"
+            },
+            {
+              "name": "BidExecuted",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::BidExecuted",
+              "kind": "nested"
+            },
+            {
+              "name": "TokensWithdrawn",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::TokensWithdrawn",
+              "kind": "nested"
+            },
+            {
+              "name": "OwnershipTransferred",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::OwnershipTransferred",
+              "kind": "nested"
+            },
+            {
+              "name": "ActionsContractSet",
+              "type": "ponzi_land::liquidity::liquidity_reinjector::LiquidityReinjector::ActionsContractSet",
+              "kind": "nested"
+            },
+            {
+              "name": "ReentrancyGuardEvent",
+              "type": "openzeppelin_security::reentrancyguard::ReentrancyGuardComponent::Event",
+              "kind": "flat"
+            }
+          ]
+        }
+      ],
+      "constructor_calldata": [
+        "0x03febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d"
+      ],
+      "encoded_constructor_calldata": [
+        "0x3febde9c120adc3c592205b5701ecb0fcdcd3a7ea20e15e66a92af9d2563e0d"
+      ],
+      "entrypoints": [
+        "add_authorized",
+        "remove_authorized",
+        "set_actions_contract",
+        "execute_buy",
+        "execute_bid",
+        "withdraw_tokens",
+        "claim",
+        "transfer_ownership"
+      ],
+      "block_number": null
+    }
+  ]
 }

@@ -1,5 +1,5 @@
 import { wrappedActions } from '$lib/api/contracts/approve';
-import { PaymasteredDojoProvider } from '$lib/api/contracts/PaymasteredDojoProvider';
+import { createPaymasteredDojoProvider } from '$lib/api/contracts/PaymasteredDojoProvider';
 import { loadDojoConfig, type DojoConfig } from '$lib/dojoConfig';
 import { type SchemaType as Schema } from '$lib/models.gen';
 import { init } from '@dojoengine/sdk';
@@ -27,7 +27,12 @@ async function _setupDojo(config: DojoConfig) {
     },
   });
 
-  const provider = new PaymasteredDojoProvider(config.manifest, config.rpcUrl);
+  const provider = createPaymasteredDojoProvider(
+    config.manifest,
+    config.rpcUrl,
+    undefined,
+    { enabled: true },
+  );
   return {
     ...initialized,
     provider,

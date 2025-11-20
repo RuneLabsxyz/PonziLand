@@ -4,8 +4,10 @@
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
+  import { cn } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
+  import { onMount, untrack } from 'svelte';
   import { Tween } from 'svelte/motion';
 
   let { amount, token }: { amount: bigint; token: Token } = $props<{
@@ -13,8 +15,21 @@
     token: Token;
   }>();
 
+  // Reset tween when balance updates externally
+  $effect(() => {
+    amount;
+    token;
+
+    untrack(() => {
+      tweenAmount.set(Number(amount), { duration: 0 });
+      startingAmount = amount;
+      accumulatedIncrements = 0n;
+      increment = 0n;
+    });
+  });
+
   let animating = $state(false);
-  let increment = $state(0);
+  let increment = $state(0n);
   let startingAmount = $state(0n); // Track the starting amount when processing begins
   let accumulatedIncrements = $state(0n); // Track total increments during processing
   let previousBaseEquivalent = $state<CurrencyAmount | null>(null); // Track previous base equivalent for animation
@@ -46,7 +61,7 @@
     const nextEvent = localQueue[0];
     const nextIncrement = nextEvent.toBigint();
 
-    increment = Number(nextIncrement);
+    increment = nextIncrement;
     accumulatedIncrements += nextIncrement;
 
     // Store current base equivalent before animation for comparison
@@ -105,11 +120,12 @@
     CurrencyAmount.fromUnscaled(BigInt(Math.round(tweenAmount.current)), token),
   );
 
-  // Get the currently selected base token
+  // Get USDC as the fixed base token
   const baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return data.availableTokens.find((t) => t.address === targetAddress);
+    // Always use USDC as base token
+    const usdcAddress =
+      '0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8';
+    return data.availableTokens.find((t) => t.address === usdcAddress);
   });
 
   // Check if current token is the selected base token
@@ -129,9 +145,25 @@
     }
   });
 
+  onMount(() => {
+    // Initialize previous base equivalent on mount
+    if (settingsStore.walletDisplayMode === 'base') {
+      settingsStore.toggleWalletDisplayMode();
+    }
+  });
+
   // Determine which display mode to use
   const displayMode = $derived(settingsStore.walletDisplayMode);
   const shouldShowBaseValue = $derived(!isBaseToken && displayMode === 'base');
+
+  // Calculate increment in base token for animation
+  const baseIncrement = $derived.by(() => {
+    if (!animating || increment === 0n || !baseToken || isBaseToken)
+      return null;
+
+    const incrementAmount = CurrencyAmount.fromUnscaled(increment, token);
+    return walletStore.convertTokenAmount(incrementAmount, token, baseToken);
+  });
 
   // Get conversion rate for display
   const conversionRate = $derived.by(() => {
@@ -172,70 +204,79 @@
       return rateInSelectedBase;
     }
   });
+
+  const hasToken = $derived(tweenAmount.current !== 0);
 </script>
 
-<div class="flex flex-1 items-center justify-between text-xl tracking-wide">
-  <div class="flex flex-col flex-1">
-    {#if shouldShowBaseValue}
-      <div
-        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
-          ? 'animating text-yellow-500 font-bold'
-          : ''}"
-      >
-        <div>{baseEquivalent?.toString() || '0'}</div>
-        <div class="relative">
-          {#if animating && baseToken}
-            <span class="absolute left-0 animate-in-out-left">
-              +{baseEquivalent && previousBaseEquivalent
-                ? CurrencyAmount.fromRaw(
-                    baseEquivalent
-                      .rawValue()
-                      .minus(previousBaseEquivalent.rawValue()),
-                    baseToken,
-                  ).toString()
-                : '0'}
-            </span>
-          {/if}
-        </div>
-      </div>
-      <div class="text-sm opacity-50 font-ds text-gray-400 leading-none">
-        {displayAmount.toString()}
+<!-- Phantom wallet style: Avatar + Token Name on top, Token Amount + Symbol below, Base Token Value on right -->
+<div class="flex items-center justify-between w-full">
+  <!-- Left side: Token info -->
+  <div class="flex flex-col">
+    <!-- Token Name -->
+    <div
+      class={cn([
+        'font-ds font-medium leading-tight',
+        hasToken ? 'text-white' : 'text-gray-400',
+      ])}
+    >
+      {token.name || token.symbol}
+    </div>
+    <!-- Token Amount + Symbol with animation -->
+    <div
+      class={cn([
+        'gap-1 flex font-ds opacity-75 leading-tight',
+        animating ? 'animating text-yellow-500 font-bold' : '',
+        hasToken ? 'text-[#6BD5DD]' : 'text-[#165b60]',
+      ])}
+    >
+      <div>{displayAmount}</div>
+      <div class={hasToken ? 'text-gray-400' : 'text-gray-600'}>
         {token.symbol}
       </div>
-    {:else}
-      <div
-        class="gap-1 flex font-ds opacity-75 text-[#6BD5DD] leading-none {animating
-          ? 'animating text-yellow-500 font-bold'
-          : ''}"
-      >
-        <div>{displayAmount}</div>
-        <div class="relative">
-          {#if animating}
-            <span class="absolute left-0 animate-in-out-left">
-              +{CurrencyAmount.fromUnscaled(increment, token)}
-            </span>
-          {/if}
-        </div>
-      </div>
-      {#if !isBaseToken && baseEquivalent && baseToken}
-        <div class="text-sm opacity-50 font-ds text-gray-400 leading-none">
-          ≈ {baseEquivalent.toString()}
-          {baseToken.symbol}
-        </div>
-      {/if}
-    {/if}
-  </div>
-  <div class="flex flex-col items-end text-right">
-    <div class="font-ds opacity-75 text-[#D9D9D9] leading-none">
-      {shouldShowBaseValue && baseToken ? baseToken.symbol : token.symbol}
-    </div>
-    {#if !isBaseToken && conversionRate && baseToken}
-      <div class="text-xs opacity-50 font-ds text-gray-400 leading-none">
-        {#if shouldShowBaseValue}
-          1 {baseToken.symbol} = {conversionRate.toString()} {token.symbol}
-        {:else}
-          1 {token.symbol} = {conversionRate.toString()} {baseToken.symbol}
+      <div class="relative">
+        {#if animating && increment > 0n}
+          <span
+            class="absolute left-0 animate-in-out-left text-yellow-500 whitespace-nowrap"
+          >
+            +{CurrencyAmount.fromUnscaled(increment, token).toString()}
+          </span>
         {/if}
+      </div>
+    </div>
+  </div>
+
+  <!-- Right side: Base token value -->
+  <div class="flex flex-col items-end text-right text-lg">
+    <div class="flex items-center">
+      {#if animating && baseIncrement}
+        <span
+          class="animate-in-out-right text-yellow-500 pr-2 whitespace-nowrap"
+        >
+          +{baseIncrement.toString()}
+        </span>
+      {/if}
+      <div
+        class={cn({
+          'flex items-center font-ds leading-tight tracking-wide': true,
+          'text-gray-400': !hasToken,
+          'text-white': hasToken,
+          'text-yellow-500 font-bold': animating && baseToken,
+        })}
+      >
+        {#if baseEquivalent}
+          <span class="text-lg leading-none">
+            $
+          </span>{baseEquivalent.toString()}
+        {:else if isBaseToken}
+          <span class="text-lg leading-none">
+            $
+          </span>{displayAmount.toString()}
+        {/if}
+      </div>
+    </div>
+    {#if conversionRate}
+      <div class="text-sm opacity-50 font-ds text-gray-400 leading-tight">
+        1 {token.symbol} = ${conversionRate.toString()}
       </div>
     {/if}
   </div>
@@ -270,7 +311,30 @@
     }
   }
 
+  @keyframes slideInOutRight {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    10% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    90% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+  }
+
   .animate-in-out-left {
     animation: slideInOutLeft 1250ms ease-in-out forwards;
+  }
+
+  .animate-in-out-right {
+    animation: slideInOutRight 1250ms ease-in-out forwards;
   }
 </style>

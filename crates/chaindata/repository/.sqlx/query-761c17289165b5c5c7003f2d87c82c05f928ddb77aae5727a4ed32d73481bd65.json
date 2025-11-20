@@ -1,0 +1,20 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT MAX(at) as latest_time\n            FROM land\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "latest_time",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      null
+    ]
+  },
+  "hash": "761c17289165b5c5c7003f2d87c82c05f928ddb77aae5727a4ed32d73481bd65"
+}

@@ -1,16 +1,16 @@
 use std::sync::Arc;
 
-use chaindata_models::events::{EventDataModel, EventId, FetchedEvent};
+use chaindata_models::events::{EventId, FetchedEvent};
 use chaindata_repository::event::Repository as EventRepository;
 use chrono::Utc;
 use ponziland_models::events::EventData;
 use sqlx::error::DatabaseError;
 use tokio::select;
+use tokio::sync::mpsc;
+use tokio::task::JoinSet;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
 use tracing::{debug, error, info};
-
-use crate::gg_xyz_api::{GGApi, PostRequest};
 
 use super::Task;
 
@@ -19,19 +19,24 @@ use super::Task;
 pub struct EventListenerTask {
     client: Arc<ToriiClient>,
     event_repository: Arc<EventRepository>,
-    gg_api: Option<Arc<GGApi>>,
+    // SAFETY: We voluntarily use a mpsc that is blocking for the processing of events to make sure the stream is blocked while the subsequent processing
+    //         happens, to avoid lagging behind the catch-up process.
+    land_historical_event_sender: mpsc::Sender<FetchedEvent>,
+    wallet_activity_event_sender: mpsc::Sender<FetchedEvent>,
 }
 
 impl EventListenerTask {
     pub fn new(
         client: Arc<ToriiClient>,
         event_repository: Arc<EventRepository>,
-        gg_api: Option<Arc<GGApi>>,
+        land_historical_event_sender: mpsc::Sender<FetchedEvent>,
+        wallet_activity_event_sender: mpsc::Sender<FetchedEvent>,
     ) -> Self {
         Self {
             client,
             event_repository,
-            gg_api,
+            land_historical_event_sender,
+            wallet_activity_event_sender,
         }
     }
 
@@ -58,7 +63,13 @@ impl EventListenerTask {
                 debug!("Processing JSON event");
 
                 FetchedEvent {
-                    id: EventId::parse_from_torii(&event_id).unwrap(),
+                    id: match EventId::parse_from_torii(&event_id) {
+                        Ok(id) => id,
+                        Err(e) => {
+                            error!("Failed to parse event ID '{}': {:?}. Using test ID.", event_id, e);
+                            EventId::new_test(0, 0, 0)
+                        }
+                    },
                     at: at.naive_utc(),
                     data: EventData::from_json(&name, data.clone())
                         .unwrap_or_else(|_| {
@@ -86,39 +97,50 @@ impl EventListenerTask {
         }
         info!("Successfully saved event!");
 
-        if let Some(gg_api) = &self.gg_api {
-            // If the event is used to submit something to gg, send it.
-            let res: Option<Vec<(String, &'static str)>> = match event.data.clone() {
-                EventDataModel::LandNuked(val) => Some(vec![(val.owner, "Land nuked")]),
-                EventDataModel::AuctionFinished(val) => {
-                    Some(vec![(val.buyer, "Bought from auction")])
-                }
-                EventDataModel::LandBought(val) => Some(vec![
-                    (val.buyer, "Bought from player"),
-                    (val.seller, "Sold land"),
-                ]),
-                EventDataModel::AddressAuthorized(val) => {
-                    Some(vec![(val.address, "Joined the Ponzi")])
-                }
-                _ => None,
-            };
+        // Determine destinations first, then forward in parallel so queues progress independently
+        use chaindata_models::events::EventDataModel;
+        let forward_land_historical = matches!(
+            &event.data,
+            EventDataModel::LandBought(_)
+                | EventDataModel::AuctionFinished(_)
+                | EventDataModel::LandNuked(_)
+                | EventDataModel::LandTransfer(_)
+        );
 
-            if let Some(values) = res {
-                for (user, message) in values {
-                    // Send the message to gg (don't really care about the response)
-                    info!("Submitting action {message} for {user}");
-                    if let Err(err) = gg_api
-                        .send_actions(PostRequest {
-                            address: user,
-                            actions: vec![message.to_string()],
-                        })
-                        .await
-                    {
-                        error!("Error while sending message to gg: {}", err);
-                    }
+        // Note: We do NOT process transfers in wallet activity; remove it for performance
+        let forward_wallet_activity = matches!(
+            &event.data,
+            EventDataModel::LandBought(_)
+                | EventDataModel::AuctionFinished(_)
+                | EventDataModel::LandNuked(_)
+        );
+
+        let mut set = JoinSet::new();
+        if forward_land_historical {
+            let sender = self.land_historical_event_sender.clone();
+            let evt = event.clone();
+            set.spawn(async move {
+                if let Err(e) = sender.send(evt).await {
+                    debug!("No active land historical receivers for event: {:?}", e);
+                } else {
+                    debug!("Forwarded event to land historical listener");
                 }
-            }
+            });
         }
+
+        if forward_wallet_activity {
+            let sender = self.wallet_activity_event_sender.clone();
+            let evt = event.clone();
+            set.spawn(async move {
+                if let Err(e) = sender.send(evt).await {
+                    debug!("No active wallet activity receivers for event: {:?}", e);
+                } else {
+                    debug!("Forwarded event to wallet activity listener");
+                }
+            });
+        }
+
+        set.join_all().await;
     }
 }
 

@@ -12,63 +12,85 @@ import {
 type LogLevel = any;
 
 /**
- * PaymasteredDojoProvider extends DojoProvider to add automatic paymaster support
- * for all execute calls. When an account supports paymaster transactions,
- * it will automatically use sponsored fee mode.
+ * Configuration for paymaster behavior
  */
-export class PaymasteredDojoProvider extends DojoProvider {
-  private paymasterEnabled: boolean = true;
+export interface PaymasterConfig {
+  enabled?: boolean;
+  fallbackOnError?: boolean;
+}
 
-  constructor(manifest?: any, url?: string, logLevel?: LogLevel) {
-    super(manifest, url, logLevel);
-  }
-
-  /**
-   * Enable or disable paymaster for all transactions
-   */
-  setPaymasterEnabled(enabled: boolean) {
-    this.paymasterEnabled = enabled;
-  }
-
-  /**
-   * Check if an account supports paymaster transactions
-   */
-  private async supportsPaymaster(account: Account): Promise<boolean> {
-    return (
-      (await account.getSnip9Version()) !== OutsideExecutionVersion.UNSUPPORTED
-    );
-  }
-
-  /**
-   * Convert DojoCall or Call array to the format needed for executePaymasterTransaction
-   */
-  private convertCallsForPaymaster(
-    calls: AllowArray<DojoCall | Call>,
+/**
+ * Additional paymaster methods interface
+ */
+export interface PaymasterMethods {
+  setPaymasterEnabled(enabled: boolean): void;
+  executeWithPaymaster(
+    account: Account | AccountInterface,
+    call: AllowArray<DojoCall | Call>,
     nameSpace: string,
-  ): Call[] {
-    const callsArray = Array.isArray(calls) ? calls : [calls];
+    details?: UniversalDetails,
+  ): Promise<InvokeFunctionResponse>;
+  executeWithoutPaymaster(
+    account: Account | AccountInterface,
+    call: AllowArray<DojoCall | Call>,
+    nameSpace: string,
+    details?: UniversalDetails,
+  ): Promise<InvokeFunctionResponse>;
+  canUsePaymaster(account: Account | AccountInterface): Promise<boolean>;
+}
 
-    return callsArray.map((call) => {
-      // If it's already a Call object with contractAddress, return as-is
-      if ('contractAddress' in call) {
-        return call as Call;
-      }
+/**
+ * Extended provider type with paymaster methods
+ */
+export type PaymasteredDojoProvider<Actions = never> = DojoProvider<Actions> &
+  PaymasterMethods;
 
-      // Otherwise, it's a DojoCall that needs to be parsed
-      return parseDojoCall(this.manifest, nameSpace, call as DojoCall);
-    });
-  }
+/**
+ * Internal state for paymaster functionality
+ */
+interface PaymasterState {
+  isPaymasterEnabled: boolean;
+  originalExecute: DojoProvider['execute'];
+}
 
-  /**
-   * Override the execute method to add paymaster support
-   *
-   * @param {Account | AccountInterface} account - The account to use
-   * @param {AllowArray<DojoCall | Call>} call - The call or calls to execute
-   * @param {string} nameSpace - The namespace for the contract
-   * @param {UniversalDetails} details - Optional transaction details
-   * @returns {Promise<InvokeFunctionResponse>} - The transaction response
-   */
-  async execute(
+/**
+ * Check if an account supports paymaster transactions
+ */
+async function supportsPaymaster(account: Account): Promise<boolean> {
+  return (
+    (await account.getSnip9Version()) !== OutsideExecutionVersion.UNSUPPORTED
+  );
+}
+
+/**
+ * Convert DojoCall or Call array to the format needed for executePaymasterTransaction
+ */
+function convertCallsForPaymaster(
+  calls: AllowArray<DojoCall | Call>,
+  nameSpace: string,
+  manifest: any,
+): Call[] {
+  const callsArray = Array.isArray(calls) ? calls : [calls];
+
+  return callsArray.map((call) => {
+    // If it's already a Call object with contractAddress, return as-is
+    if ('contractAddress' in call) {
+      return call as Call;
+    }
+
+    // Otherwise, it's a DojoCall that needs to be parsed
+    return parseDojoCall(manifest, nameSpace, call as DojoCall);
+  });
+}
+
+/**
+ * Create enhanced execute function with paymaster support
+ */
+function createPaymasteredExecute(
+  provider: DojoProvider,
+  state: PaymasterState,
+) {
+  return async function execute(
     account: Account | AccountInterface,
     call: AllowArray<DojoCall | Call>,
     nameSpace: string,
@@ -76,16 +98,20 @@ export class PaymasteredDojoProvider extends DojoProvider {
   ): Promise<InvokeFunctionResponse> {
     // Check if paymaster is enabled and account supports it
     if (
-      this.paymasterEnabled &&
-      (await this.supportsPaymaster(account as Account))
+      state.isPaymasterEnabled &&
+      (await supportsPaymaster(account as Account))
     ) {
       try {
         // Convert calls to the format needed for paymaster
-        const parsedCalls = this.convertCallsForPaymaster(call, nameSpace);
+        const parsedCalls = convertCallsForPaymaster(
+          call,
+          nameSpace,
+          provider.manifest,
+        );
 
         // Log if logger is available
-        if (this.logger) {
-          this.logger.info('Executing paymastered transaction', {
+        if (provider.logger) {
+          provider.logger.info('Executing paymastered transaction', {
             calls: parsedCalls.length,
             namespace: nameSpace,
           });
@@ -99,14 +125,14 @@ export class PaymasteredDojoProvider extends DojoProvider {
           },
         };
 
-        // Cast to any to access executePaymasterTransaction
+        // Execute with paymaster
         const response = await account.executePaymasterTransaction(
           parsedCalls,
           paymasterDetails,
         );
 
-        if (this.logger) {
-          this.logger.info('Paymastered transaction executed', {
+        if (provider.logger) {
+          provider.logger.info('Paymastered transaction executed', {
             transactionHash: response.transaction_hash,
           });
         }
@@ -114,97 +140,149 @@ export class PaymasteredDojoProvider extends DojoProvider {
         return response;
       } catch (error) {
         // Log error and fall back to regular execution
-        if (this.logger) {
-          this.logger.error(
+        if (provider.logger) {
+          provider.logger.error(
             'Paymaster execution failed, falling back to regular execution',
             error,
           );
         }
 
         // Fall back to regular execution
-        return super.execute(account, call, nameSpace, details);
+        return state.originalExecute.call(
+          provider,
+          account,
+          call,
+          nameSpace,
+          details,
+        );
       }
     }
 
     // If paymaster is not enabled or not supported, use regular execution
     if (
-      this.logger &&
-      this.paymasterEnabled &&
-      !(await this.supportsPaymaster(account as Account))
+      provider.logger &&
+      state.isPaymasterEnabled &&
+      !(await supportsPaymaster(account as Account))
     ) {
-      this.logger.warn(
+      provider.logger.warn(
         'Account does not support paymaster transactions, using regular execution',
       );
     }
 
-    return super.execute(account, call, nameSpace, details);
-  }
-
-  /**
-   * Execute with explicit paymaster control
-   * Allows overriding the default paymaster behavior for specific calls
-   */
-  async executeWithPaymaster(
-    account: Account | AccountInterface,
-    call: AllowArray<DojoCall | Call>,
-    nameSpace: string,
-    details?: UniversalDetails,
-  ): Promise<InvokeFunctionResponse> {
-    const originalEnabled = this.paymasterEnabled;
-    this.paymasterEnabled = true;
-    try {
-      return await this.execute(account, call, nameSpace, details);
-    } finally {
-      this.paymasterEnabled = originalEnabled;
-    }
-  }
-
-  /**
-   * Execute without paymaster (regular execution)
-   * Useful when you explicitly want to avoid paymaster for certain calls
-   */
-  async executeWithoutPaymaster(
-    account: Account | AccountInterface,
-    call: AllowArray<DojoCall | Call>,
-    nameSpace: string,
-    details?: UniversalDetails,
-  ): Promise<InvokeFunctionResponse> {
-    const originalEnabled = this.paymasterEnabled;
-    this.paymasterEnabled = false;
-    try {
-      return await this.execute(account, call, nameSpace, details);
-    } finally {
-      this.paymasterEnabled = originalEnabled;
-    }
-  }
-
-  /**
-   * Helper method to check if a specific account can use paymaster
-   */
-  async canUsePaymaster(account: Account | AccountInterface): Promise<boolean> {
-    return (
-      this.paymasterEnabled &&
-      (await this.supportsPaymaster(account as Account))
+    return state.originalExecute.call(
+      provider,
+      account,
+      call,
+      nameSpace,
+      details,
     );
-  }
+  };
 }
 
 /**
- * Factory function to create a PaymasteredDojoProvider with the same signature as DojoProvider
+ * Decorator function that enhances a DojoProvider with paymaster functionality
+ *
+ * @param provider - The DojoProvider instance to enhance
+ * @param config - Optional paymaster configuration
+ * @returns Enhanced provider with paymaster capabilities
  */
-export function createPaymasteredDojoProvider(
+export function withPaymaster<Actions = never>(
+  provider: DojoProvider<Actions>,
+  config: PaymasterConfig = {},
+): PaymasteredDojoProvider<Actions> {
+  // Create internal state
+  const state: PaymasterState = {
+    isPaymasterEnabled: config.enabled ?? true,
+    originalExecute: provider.execute.bind(provider),
+  };
+
+  // Create the enhanced provider object
+  const enhancedProvider = Object.create(
+    provider,
+  ) as PaymasteredDojoProvider<Actions>;
+
+  // Override the execute method with paymaster support
+  enhancedProvider.execute = createPaymasteredExecute(provider, state);
+
+  // Add paymaster-specific methods
+  enhancedProvider.setPaymasterEnabled = function (enabled: boolean): void {
+    state.isPaymasterEnabled = enabled;
+  };
+
+  enhancedProvider.executeWithPaymaster = async function (
+    account: Account | AccountInterface,
+    call: AllowArray<DojoCall | Call>,
+    nameSpace: string,
+    details?: UniversalDetails,
+  ): Promise<InvokeFunctionResponse> {
+    const originalEnabled = state.isPaymasterEnabled;
+    state.isPaymasterEnabled = true;
+    try {
+      return await this.execute(account, call, nameSpace, details);
+    } finally {
+      state.isPaymasterEnabled = originalEnabled;
+    }
+  };
+
+  enhancedProvider.executeWithoutPaymaster = async function (
+    account: Account | AccountInterface,
+    call: AllowArray<DojoCall | Call>,
+    nameSpace: string,
+    details?: UniversalDetails,
+  ): Promise<InvokeFunctionResponse> {
+    const originalEnabled = state.isPaymasterEnabled;
+    state.isPaymasterEnabled = false;
+    try {
+      return await this.execute(account, call, nameSpace, details);
+    } finally {
+      state.isPaymasterEnabled = originalEnabled;
+    }
+  };
+
+  enhancedProvider.canUsePaymaster = async function (
+    account: Account | AccountInterface,
+  ): Promise<boolean> {
+    return (
+      state.isPaymasterEnabled && (await supportsPaymaster(account as Account))
+    );
+  };
+
+  return enhancedProvider;
+}
+
+/**
+ * Factory function that creates a DojoProvider and immediately decorates it with paymaster support
+ *
+ * @param manifest - Dojo manifest
+ * @param url - RPC URL
+ * @param logLevel - Log level
+ * @param config - Paymaster configuration
+ * @returns PaymasteredDojoProvider instance
+ */
+export function createPaymasteredDojoProvider<Actions = never>(
   manifest?: any,
   url?: string,
   logLevel?: LogLevel,
-): PaymasteredDojoProvider {
-  return new PaymasteredDojoProvider(manifest, url, logLevel);
+  config: PaymasterConfig = {},
+): PaymasteredDojoProvider<Actions> {
+  const provider = new DojoProvider<Actions>(manifest, url, logLevel);
+  return withPaymaster(provider, config);
 }
 
 /**
  * Helper type to extract the provider type from setupWorld or similar functions
  */
 export type WithPaymasteredProvider<T> = T extends (
-  provider: DojoProvider,
+  provider: DojoProvider<infer Actions>,
 ) => infer R
-  ? (provider: PaymasteredDojoProvider) => R
+  ? (provider: PaymasteredDojoProvider<Actions>) => R
   : never;
+
+/**
+ * Type guard to check if a provider has paymaster capabilities
+ */
+export function isPaymasteredProvider<Actions = never>(
+  provider: DojoProvider<Actions> | PaymasteredDojoProvider<Actions>,
+): provider is PaymasteredDojoProvider<Actions> {
+  return 'setPaymasterEnabled' in provider;
+}

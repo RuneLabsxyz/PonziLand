@@ -3,23 +3,27 @@
   import type { InputEvents } from './index.js';
   import { cn } from '$lib/utils.js';
 
-  type $$Props = HTMLInputAttributes;
+  type $$Props = HTMLInputAttributes & {
+    inputElement?: HTMLInputElement;
+  };
   type $$Events = InputEvents;
 
-  let className: $$Props['class'] = undefined;
-  export let value: $$Props['value'] = undefined;
-  export { className as class };
-
-  // Workaround for https://github.com/sveltejs/svelte/issues/9305
-  // Fixed in Svelte 5, but not backported to 4.x.
-  export let readonly: $$Props['readonly'] = undefined;
+  let {
+    class: className = undefined,
+    value = $bindable(),
+    readonly = undefined,
+    inputElement = $bindable<HTMLInputElement | undefined>(),
+    ...restProps
+  }: $$Props = $props();
 </script>
 
 <input
+  bind:this={inputElement}
   class={cn(
-    'text-white text-lg bg-[#282835] ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded px-3 py-2 file:border-0 file:bg-transparent file: file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
+    'text-white text-2xl bg-[#282835] ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded px-2 py-2 file:border-0 file:bg-transparent file: file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50',
     className,
   )}
+  style="line-height: 3rem; "
   bind:value
   {readonly}
   on:blur
@@ -38,5 +42,19 @@
   on:paste
   on:input
   on:wheel|passive
-  {...$$restProps}
+  {...restProps}
 />
+
+<style>
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+</style>

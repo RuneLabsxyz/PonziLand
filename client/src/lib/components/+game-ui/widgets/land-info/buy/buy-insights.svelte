@@ -9,7 +9,7 @@
   import {
     calculateBurnRate,
     calculateTaxes,
-    estimateNukeTime,
+    estimateNukeTimeRpc,
   } from '$lib/utils/taxes';
   import BuyInsightsNeighborGrid from '../tax-impact/buy-insights-neighbor-grid.svelte';
 
@@ -129,7 +129,7 @@
 
       estimatedNukeTimeSeconds = remainingNukeTimeFromNow;
     } else {
-      estimateNukeTime(land).then((time) => {
+      estimateNukeTimeRpc(land).then((time) => {
         estimatedNukeTimeSeconds = time;
       });
     }

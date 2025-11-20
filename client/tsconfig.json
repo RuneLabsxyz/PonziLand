@@ -11,7 +11,7 @@
     "strict": true,
     "moduleResolution": "bundler",
     "types": ["vite-plugin-glsl/ext"],
-    "lib": ["es2021"]
+    "lib": ["es2022"]
   }
   // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
   // except $lib which is handled by https://svelte.dev/docs/kit/configuration#files

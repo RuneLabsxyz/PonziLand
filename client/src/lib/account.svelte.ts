@@ -11,13 +11,19 @@ export const accountState: {
   walletAccount?: AccountInterface;
   profile?: UserInfo;
   providerName?: string;
+  providerIcon?: string;
 } = $state({
   isConnected: false,
 });
 
 let isSetup = $state(false);
+let isTutorialMode = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
+  if (isTutorialMode) {
+    return;
+  }
+
   const walletAccount = provider.getWalletAccount();
 
   accountState.isConnected = walletAccount != null;
@@ -30,18 +36,29 @@ const updateState = async (provider: AccountProvider) => {
     const profile = await getSocialink().getUser(accountState.address!);
     accountState.profile = profile;
   }
-  accountState.providerName = useAccount()?.getProviderName();
+  const accountManager = useAccount();
+  accountState.providerName = accountManager?.getProviderName();
+  accountState.providerIcon = accountManager?.getProviderIcon();
 };
 
 const resetState = () => {
+  if (isTutorialMode) {
+    return;
+  }
+
   accountState.address = undefined;
   accountState.isConnected = false;
   accountState.walletAccount = undefined;
   accountState.profile = undefined;
   accountState.providerName = undefined;
+  accountState.providerIcon = undefined;
 };
 
 export async function refresh() {
+  if (isTutorialMode) {
+    return;
+  }
+
   const accountManager = useAccount()!;
   const currentProvider = accountManager.getProvider();
   if (currentProvider != null) {
@@ -55,6 +72,11 @@ export async function setup(): Promise<typeof accountState> {
   if (isSetup) return accountState;
 
   isSetup = true;
+
+  if (isTutorialMode) {
+    return accountState;
+  }
+
   const accountManager = useAccount()!;
 
   // Initial state
@@ -76,6 +98,32 @@ export async function setup(): Promise<typeof accountState> {
   });
 
   return accountState;
+}
+
+// Tutorial mode: Set fake account state for tutorial
+export function setTutorialMode(enabled: boolean) {
+  isTutorialMode = enabled;
+
+  if (enabled) {
+    // Set fake connection state for tutorial
+    accountState.isConnected = true;
+    accountState.address =
+      '0xABCD000000000000000000000000000000000000000000000000000000FADE'; // Tutorial fake address
+    accountState.walletAccount = undefined; // Don't need actual wallet account for tutorial
+    accountState.sessionAccount = undefined;
+    accountState.profile = { exists: true, whitelisted: true } as UserInfo; // Fake profile
+    accountState.providerName = 'Tutorial Wallet';
+    accountState.providerIcon = '/ui/icons/Icon_Coin2.png'; // Use existing icon
+  } else {
+    // Reset to normal state
+    isTutorialMode = false;
+    resetState();
+  }
+}
+
+// Export function to check if in tutorial mode
+export function isTutorial() {
+  return isTutorialMode;
 }
 
 export default accountState;

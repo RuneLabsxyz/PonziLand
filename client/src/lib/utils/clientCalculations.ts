@@ -29,7 +29,7 @@ export function calculateAuctionPrice(
   floorPrice: bigint,
 ): bigint {
   const currentTime = BigInt(Math.floor(Date.now() / 1000)); // Convert to seconds to match contract
-  const startTime = BigInt(startTimeSeconds);
+  const startTime = BigInt(Math.trunc(startTimeSeconds));
 
   // Calculate raw time difference first
   const rawTimeDiff =
@@ -41,7 +41,6 @@ export function calculateAuctionPrice(
   const startPriceBig = startPrice;
   const floorPriceBig = floorPrice;
 
-  // If auction duration has passed, return floor price (not 0)
   if (timePassed >= BigInt(configValues.auctionDuration)) {
     return BigInt(0);
   }
