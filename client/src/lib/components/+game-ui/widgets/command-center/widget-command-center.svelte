@@ -4,11 +4,12 @@
   import { cn, padAddress } from '$lib/utils';
   import { onDestroy, onMount } from 'svelte';
   import HistoryList from '../history/history-list.svelte';
-  import LandExplorer from '../market/land-explorer.svelte';
+  import MarketWidget from '../market/widget-market.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from './historical-positions.svelte';
   import { Separator } from '$lib/components/ui/separator';
   import type { Snippet } from 'svelte';
+  import PnlImage from './PnlImage.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
@@ -24,7 +25,7 @@
 
   let refreshInterval: NodeJS.Timeout;
   let activeTab = $state<'history' | 'positions' | 'market' | 'my-lands'>(
-    'history',
+    'my-lands',
   );
 
   function setActiveTab(tab: 'history' | 'positions' | 'market' | 'my-lands') {
@@ -84,13 +85,13 @@
   <div class="flex gap-1 my-2">
     <button
       class="flex items-center justify-center h-8 w-8"
-      onclick={() => setActiveTab('history')}
+      onclick={() => setActiveTab('my-lands')}
     >
       <img
-        src="/ui/icons/Icon_Book.png"
-        alt="History"
+        src="/ui/icons/Icon_Crown.png"
+        alt="My Lands"
         class={cn('h-6 w-6', {
-          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'history',
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'my-lands',
         })}
       />
     </button>
@@ -124,13 +125,13 @@
 
     <button
       class="flex items-center justify-center h-8 w-8"
-      onclick={() => setActiveTab('my-lands')}
+      onclick={() => setActiveTab('history')}
     >
       <img
-        src="/ui/icons/Icon_Crown.png"
-        alt="My Lands"
+        src="/ui/icons/Icon_Book.png"
+        alt="History"
         class={cn('h-6 w-6', {
-          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'my-lands',
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'history',
         })}
       />
     </button>
@@ -151,7 +152,7 @@
     {:else if activeTab === 'positions'}
       <HistoricalPositions />
     {:else if activeTab === 'market'}
-      <LandExplorer />
+      <MarketWidget setCustomControls={setCustomControls || (() => {})} />
     {:else if activeTab === 'my-lands'}
       <MyLandsWidget />
     {/if}

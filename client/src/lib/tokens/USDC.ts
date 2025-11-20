@@ -1,6 +1,7 @@
 export const USDC = {
   skin: 'USDC',
   icon: '/tokens/USDC/usdc.png',
+  color: '#2775CA', // USDC blue
   biome: { x: 2, y: 5 },
   building: {
     1: {
