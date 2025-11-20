@@ -30,7 +30,7 @@
 {#if variant === 'buy'}
   <div class="flex text-gray-400 flex-col">
     {formatted}
-    <span class="{typeClass}">{typeLabel}</span>
+    <span class={typeClass}>{typeLabel}</span>
   </div>
 {:else}
   <span class="text-gray-400">{formatted}</span>

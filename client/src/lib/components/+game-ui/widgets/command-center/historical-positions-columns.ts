@@ -159,14 +159,17 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
-      
+
       // Helper function to calculate ROI per hour for sorting
       const calculateROI = (pos: HistoricalPosition): number => {
         try {
           const start = new Date(pos.time_bought);
           const end = pos.close_date ? new Date(pos.close_date) : new Date();
-          const durationHours = Math.max((end.getTime() - start.getTime()) / (1000 * 60 * 60), 0.01);
-          
+          const durationHours = Math.max(
+            (end.getTime() - start.getTime()) / (1000 * 60 * 60),
+            0.01,
+          );
+
           // Calculate net token flow
           let netFlow = 0;
           for (const [, amount] of Object.entries(pos.token_inflows)) {
@@ -175,7 +178,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
           for (const [, amount] of Object.entries(pos.token_outflows)) {
             netFlow -= parseFloat(amount) || 0;
           }
-          
+
           const buyCost = parseFloat(pos.buy_cost_token) || 1;
           const hourlyYield = netFlow / durationHours;
           return (hourlyYield / buyCost) * 100; // ROI percentage per hour
@@ -183,7 +186,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
           return 0;
         }
       };
-      
+
       return calculateROI(posA) - calculateROI(posB);
     },
     cell: ({ row }) => {
