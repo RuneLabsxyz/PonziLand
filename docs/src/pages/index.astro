@@ -1,0 +1,67 @@
+---
+import DocsLayout from "../layouts/DocsLayout.astro";
+import { Image } from 'astro:assets';
+import blueprint from '../assets/blueprint.png';
+import logo from '../assets/logo.png';
+import { Card, Button} from '@ponziland/ui';
+import { Icon } from "astro-icon/components";
+---
+
+<DocsLayout>
+    <div class="w-full h-full flex">
+        <Image src={blueprint} alt="" class="-z-10 fixed top-0 left-0 w-full h-full object-cover" />
+        <div class="w-full h-full flex flex-col items-start text-white gap-3  text-ponzi-number">
+            <Image src={logo} alt="PonziLand Logo" class="w-128 pixelated -mt-20 self-center" />
+            <h1 class="text-6xl font-bold text-center text-white -mt-20">PonziDocs</h1>
+            <span class="font-ponzi-number text-2xl mb-10">The place to learn how to play and master PonziLand!</span>
+            <div class="flex flex-col lg:flex-row w-full gap-4">
+                <Card class="w-full flex-1 max-w-xl">
+                    <div class="flex flex-col gap-3 h-full">
+                        <h1 class="text-xl font-bold">Getting Started</h1>
+                        <p class="text-ponzi flex-1">Learn the basics of PonziLand, how to play, and initial strategies to enjoy everything PonziLand has to offer.</p>
+
+                        <div class="flex justify-end w-full self-end">
+                            <a href="/tokens/info" class="w-min">
+                                <Button class="mt-auto">Let's gooo <Icon name="lucide:chevron-right" class="ml-2"/></Button>
+                            </a>
+                        </div>
+                    </div>
+                </Card>
+
+                <Card class="w-full flex-1 max-w-xl">
+                    <div class="flex flex-col gap-3 h-full">
+                        <h1 class="text-xl font-bold">Strategies</h1>
+                        <p class="text-ponzi">
+                            Strategies are the key to success in PonziLand. We compiled our best strategies, along with some made by the community, to hopefully help you reach the top.
+                        </p>
+
+                        <div class="flex justify-end w-full self-stretch">
+                            <a href="/tokens/info" class="w-min">
+                                <Button class="mt-auto">Here for some alpha <Icon name="lucide:chevron-right" class="ml-2"/></Button>
+                            </a>
+                        </div>
+
+                    </div>
+                </Card>
+
+                <Card class="w-full flex-1 max-w-xl">
+                    <div class="flex flex-col gap-3 h-full">
+                    <h1 class="text-xl font-bold">Tokens</h1>
+                    <p class="text-ponzi">
+                        In PonziLand, you play with tokens you probably already own. Learn more about what tokens are currently supported,
+                        and how to request new tokens.
+                    </p>
+
+                    <div class="flex justify-end w-full self-stretch">
+                        <a href="/tokens/info" class="w-min">
+                            <Button class="mt-auto">Take me there <Icon name="lucide:chevron-right" class="ml-2"/></Button>
+                        </a>
+                    </div>
+
+                    </div>
+                </Card>
+            </div>
+
+        </div>
+    </div>
+</DocsLayout>
