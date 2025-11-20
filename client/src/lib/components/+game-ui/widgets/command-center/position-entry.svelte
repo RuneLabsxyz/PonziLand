@@ -177,24 +177,24 @@
   // Calculate Realized P&L (net flow + sale P&L) in base token equivalent
   let realizedPnL = $derived.by(() => {
     const baseToken = getBaseToken();
-    
+
     if (isOpen) {
       // For open positions, only show net flow as unrealized
       return netTokenFlow;
     } else {
       // For closed positions, combine net flow + sale P&L
       if (!netTokenFlow && !netSaleProfit) return null;
-      
+
       let total = CurrencyAmount.fromScaled(0, baseToken);
-      
+
       if (netTokenFlow) {
         total = total.add(netTokenFlow);
       }
-      
+
       if (netSaleProfit) {
         total = total.add(netSaleProfit);
       }
-      
+
       return total;
     }
   });
@@ -366,8 +366,15 @@
       <!-- Realized P&L Column -->
       <div class="text-right">
         {#if realizedPnL}
-          <span class={realizedPnL.rawValue().isPositive() ? 'text-green-400' : 'text-red-400'}>
-            {realizedPnL.rawValue().isPositive() ? '+' : ''}{realizedPnL.rawValue().toNumber().toFixed(2)} $
+          <span
+            class={realizedPnL.rawValue().isPositive()
+              ? 'text-green-400'
+              : 'text-red-400'}
+          >
+            {realizedPnL.rawValue().isPositive() ? '+' : ''}{realizedPnL
+              .rawValue()
+              .toNumber()
+              .toFixed(2)} $
           </span>
         {:else}
           <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>

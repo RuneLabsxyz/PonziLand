@@ -131,15 +131,15 @@ export function getTokenMetadata(skin: string): TokenMetadata | null {
  * @param tokenAddress - The token contract address to look up
  * @returns Object containing both token info and metadata, or null if token is not found
  */
-export function getFullTokenInfo(tokenAddress: string): { 
-  token: Token; 
-  metadata: TokenMetadata | null 
+export function getFullTokenInfo(tokenAddress: string): {
+  token: Token;
+  metadata: TokenMetadata | null;
 } | null {
   const token = getTokenInfo(tokenAddress);
   if (!token) {
     return null;
   }
-  
+
   const metadata = getTokenMetadata(token.skin);
   return { token, metadata };
 }
