@@ -35,7 +35,7 @@
           <button
             onclick={handleLoadMore}
             disabled={loading}
-            class="load-more-button px-4 py-2 text-white text-sm rounded transition-colors"
+            class="load-more-button px-4 py-2 text-white rounded transition-colors"
           >
             {loading ? 'Loading...' : 'Load More'}
           </button>
