@@ -77,13 +77,15 @@
   {
     "_step": "13",
     "text": "Wouh. That's a cool castle.",
-    "image_id": 1
+    "image_id": 1,
+    "has": ["next"]
   },
   {
     "_step": "14",
     "text": "There is another way to get a land, construction sites.",
+    "continue": "Click on the auction",
     "image_id": 3,
-    "has": ["highlight_auction", "wait_auction_selected"]
+    "has": ["highlight_auction", "wait_auction_selected", "previous"]
   },
   {
     "_step": "15",
@@ -120,12 +122,6 @@
     "text": "If the lands around you increased a lot in price, you can also increase the price of your land on this screen.",
     "image_id": 3,
     "has": ["next"]
-  },
-  {
-    "_step": "20",
-    "text": "If you want to sell your land, you can do it here",
-    "image_id": 3,
-    "has": ["next", "previous"]
   },
   {
     "_step": "21",
