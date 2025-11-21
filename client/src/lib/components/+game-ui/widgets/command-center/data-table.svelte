@@ -98,12 +98,10 @@
       <table class="w-full min-w-[1400px]">
         <thead class="sticky top-0 z-10">
           {#each table.getHeaderGroups() as headerGroup}
-            <tr
-              class="border-b border-gray-700 bg-gray-900/95 backdrop-blur-sm"
-            >
+            <tr class="border-b border-gray-500/50">
               {#each headerGroup.headers as header}
                 <th
-                  class="px-4 py-2 text-left text-xs text-gray-400 select-none bg-gray-900/95"
+                  class="px-4 py-2 text-left text-gray-400 select-none leading-none"
                   class:cursor-pointer={header.column.getCanSort()}
                   class:hover:text-gray-200={header.column.getCanSort()}
                   onclick={() =>
@@ -123,7 +121,7 @@
                         {@html headerContent.html}
                       {/if}
                       {#if header.column.getCanSort()}
-                        <span class="text-xs opacity-60">
+                        <span class="opacity-60 text-xs leading-none">
                           {#if header.column.getIsSorted() === 'desc'}
                             ▼
                           {:else if header.column.getIsSorted() === 'asc'}

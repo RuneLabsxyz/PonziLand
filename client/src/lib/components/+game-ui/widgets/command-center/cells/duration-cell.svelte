@@ -35,12 +35,14 @@
     return !position.close_date || position.close_date === null;
   }
 
-  const isOpen = isPositionOpen(position);
-  const duration = formatDuration(position.time_bought, position.close_date);
-  const textColor = isOpen ? 'text-green-400' : 'text-gray-400';
+  const isOpen = $derived(isPositionOpen(position));
+  const duration = $derived(
+    formatDuration(position.time_bought, position.close_date),
+  );
+  const textColor = $derived(isOpen ? 'text-green-400' : 'text-gray-400');
 </script>
 
-<div class="text-right {textColor}">
+<div class="text-right tracking-wider {textColor}">
   {duration}
   {#if isOpen}
     <span class="text-xs text-green-300 ml-1">ongoing</span>

@@ -8,7 +8,7 @@
 
   let { position }: Props = $props();
 
-  const isOpen = !position.close_date || position.close_date === null;
+  const isOpen = $derived(!position.close_date || position.close_date === null);
 </script>
 
 {#if isOpen}

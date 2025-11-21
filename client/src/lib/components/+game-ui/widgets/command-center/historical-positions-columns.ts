@@ -30,15 +30,14 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
-    accessorKey: 'close_date',
+    accessorKey: 'status',
     header: 'Status',
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
-      const aOpen = isPositionOpen(rowA.original);
-      const bOpen = isPositionOpen(rowB.original);
-      if (aOpen && !bOpen) return -1;
-      if (!aOpen && bOpen) return 1;
-      return 0;
+      // sort by close reason alphabetically
+      const closeA = rowA.original.close_reason;
+      const closeB = rowB.original.close_reason;
+      return closeA.localeCompare(closeB);
     },
     cell: ({ row }) => {
       const position = row.original;
@@ -73,11 +72,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       return renderComponent(DateCell, {
         dateString: position.close_date,
         variant: 'close',
+        position: position,
       });
     },
   },
   {
-    id: 'duration',
+    accessorKey: 'duration',
     header: 'Duration',
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
@@ -150,48 +150,6 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(TotalPnlCell, { position, showShareButton: true });
-    },
-  },
-  {
-    id: 'roi',
-    header: 'ROI/h',
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-
-      // Helper function to calculate ROI per hour for sorting
-      const calculateROI = (pos: HistoricalPosition): number => {
-        try {
-          const start = new Date(pos.time_bought);
-          const end = pos.close_date ? new Date(pos.close_date) : new Date();
-          const durationHours = Math.max(
-            (end.getTime() - start.getTime()) / (1000 * 60 * 60),
-            0.01,
-          );
-
-          // Calculate net token flow
-          let netFlow = 0;
-          for (const [, amount] of Object.entries(pos.token_inflows)) {
-            netFlow += parseFloat(amount) || 0;
-          }
-          for (const [, amount] of Object.entries(pos.token_outflows)) {
-            netFlow -= parseFloat(amount) || 0;
-          }
-
-          const buyCost = parseFloat(pos.buy_cost_token) || 1;
-          const hourlyYield = netFlow / durationHours;
-          return (hourlyYield / buyCost) * 100; // ROI percentage per hour
-        } catch {
-          return 0;
-        }
-      };
-
-      return calculateROI(posA) - calculateROI(posB);
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(ROICell, { position });
     },
   },
 ];
