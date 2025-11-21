@@ -281,8 +281,8 @@
 
     switch (status) {
       case 'alive':
-        statusText = 'My active @ponzidotland land';
-        emoji = '🔥';
+        statusText = 'My @ponzidotland land is printing';
+        emoji = '🚀';
         break;
       case 'nuked':
         statusText = 'My @ponzidotland land got nuked';
@@ -300,9 +300,9 @@
     // Get P&L text
     let pnlStatusText = '';
     if (isGain) {
-      pnlStatusText = `Made ${pnlText} and`;
+      pnlStatusText = `I Made ${pnlText}`;
     } else {
-      pnlStatusText = `Lost ${pnlText} but`;
+      pnlStatusText = `I Lost ${pnlText}`;
     }
 
     // Add token information if available
@@ -316,16 +316,16 @@
       const uniqueTokens = [...new Set(tokenTickers)].slice(0, 3);
 
       if (uniqueTokens.length === 1) {
-        tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens[0]}`;
+        tokenText = `while accumulating $${uniqueTokens[0]}`;
       } else if (uniqueTokens.length === 2) {
-        tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens[0]} and $${uniqueTokens[1]}`;
+        tokenText = `while accumulating $${uniqueTokens[0]} and $${uniqueTokens[1]}`;
       } else {
         const lastToken = uniqueTokens.pop();
-        tokenText = ` accumulated $${totalTokenValue.toFixed(2)} in $${uniqueTokens.join(', $')}, and $${lastToken}`;
+        tokenText = `while accumulating $${uniqueTokens.join(', $')}, and $${lastToken}`;
       }
     }
 
-    const tweetText = `${statusText} ${emoji}\n${pnlStatusText}${tokenText}! \n\nPlay at https://play.ponzi.land`;
+    const tweetText = `${statusText} ${emoji}\n${pnlStatusText} ${tokenText}! \n\nPlay at https://play.ponzi.land`;
 
     // Fallback to Twitter URL
     const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}`;
