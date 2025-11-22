@@ -803,6 +803,7 @@ pub mod actions {
             our_contract_for_fee: ContractAddress,
         ) {
             let neighbors = get_land_neighbors(store, land.location);
+            let nuked_land_owner = land.owner;
 
             if !has_liquidity_requirements && land_stake.amount > 0 {
                 self.stake._refund(store, land, ref land_stake, our_contract_address);
@@ -811,13 +812,17 @@ pub mod actions {
             }
 
             assert(land_stake.amount == 0, 'land not valid to nuke');
+
             //Last claim for nuked land
+            let mut token_transfers: Array<(ContractAddress, u256)> = ArrayTrait::new();
+
             for neighbor in neighbors {
                 let mut neighbor_stake = store.land_stake(*neighbor.location);
                 let neighbor_stake_before_claim = neighbor_stake.amount;
                 if *neighbor.owner != ContractAddressZeroable::zero()
                     && neighbor_stake.amount > 0
                     && *neighbor.location != land.location {
+                    // Claim from neighbor and accumulate token transfers
                     let is_dead = self
                         .taxes
                         .claim(
@@ -831,6 +836,7 @@ pub mod actions {
                             claim_fee_threshold,
                             our_contract_for_fee,
                             true,
+                            ref token_transfers,
                         );
 
                     // Handle dead land detection - when a land becomes isolated with zero stake
@@ -842,8 +848,13 @@ pub mod actions {
                     }
                 }
             }
+            // === Execute batched transfers ===
+            self
+                .taxes
+                ._execute_batched_claim_transfers(
+                    token_transfers.span(), land.owner, our_contract_address,
+                );
 
-            // Reuse common deletion and auction creation logic
             self._delete_land_and_create_auction(store, land, land_stake, land_stake_before_claim);
             // Update neighbor info after deleting the land
             update_neighbors_after_delete(store, neighbors);
@@ -888,47 +899,63 @@ pub mod actions {
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
         ) {
-            if neighbors.len() != 0 {
-                for mut tax_payer in neighbors {
-                    let mut tax_payer_stake = store.land_stake(*tax_payer.location);
-                    let tax_payer_stake_before_claim = tax_payer_stake.amount;
-                    let is_nuke = self
-                        .taxes
-                        .claim(
+            if neighbors.is_empty() {
+                return;
+            }
+
+            let claimer_address = *claimer_land.owner;
+            let mut token_transfers: Array<(ContractAddress, u256)> = ArrayTrait::new();
+
+            // Tokens are deduplicated incrementally as claims are processed
+            for mut tax_payer in neighbors {
+                let mut tax_payer_stake = store.land_stake(*tax_payer.location);
+                let tax_payer_stake_before_claim = tax_payer_stake.amount;
+
+                // Process claim and accumulate transfer amounts
+                let is_nuke = self
+                    .taxes
+                    .claim(
+                        store,
+                        *claimer_land,
+                        *tax_payer,
+                        ref tax_payer_stake,
+                        current_time,
+                        our_contract_address,
+                        claim_fee,
+                        claim_fee_threshold,
+                        our_contract_for_fee,
+                        false,
+                        ref token_transfers,
+                    );
+
+                // Check if tax payer land should be nuked
+                let has_liquidity_requirements = self
+                    .world_default()
+                    .token_registry_dispatcher()
+                    .is_token_authorized(*tax_payer.token_used);
+
+                if (is_nuke || !has_liquidity_requirements) && !from_buy {
+                    self
+                        .nuke(
                             store,
-                            *claimer_land,
                             *tax_payer,
                             ref tax_payer_stake,
+                            tax_payer_stake_before_claim,
+                            has_liquidity_requirements,
                             current_time,
                             our_contract_address,
                             claim_fee,
                             claim_fee_threshold,
                             our_contract_for_fee,
-                            false,
                         );
-
-                    let has_liquidity_requirements = self
-                        .world_default()
-                        .token_registry_dispatcher()
-                        .is_token_authorized(*tax_payer.token_used);
-
-                    if (is_nuke || !has_liquidity_requirements) && !from_buy {
-                        self
-                            .nuke(
-                                store,
-                                *tax_payer,
-                                ref tax_payer_stake,
-                                tax_payer_stake_before_claim,
-                                has_liquidity_requirements,
-                                current_time,
-                                our_contract_address,
-                                claim_fee,
-                                claim_fee_threshold,
-                                our_contract_for_fee,
-                            );
-                    }
-                };
+                }
             }
+            // === Execute batched transfers ===
+            self
+                .taxes
+                ._execute_batched_claim_transfers(
+                    token_transfers.span(), claimer_address, our_contract_address,
+                );
         }
 
         fn execute_bid_purchase(

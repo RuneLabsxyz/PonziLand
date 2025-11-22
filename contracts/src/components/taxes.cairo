@@ -36,8 +36,8 @@ mod TaxesComponent {
     use ponzi_land::helpers::coord::max_neighbors;
     use ponzi_land::helpers::land::remove_neighbor;
     use ponzi_land::helpers::taxes::{
-        calculate_and_return_taxes_with_fee, calculate_share_for_nuke, get_tax_rate_per_neighbor,
-        get_taxes_per_neighbor,
+        accumulate_amount_by_key, calculate_and_return_taxes_with_fee, calculate_share_for_nuke,
+        get_tax_rate_per_neighbor, get_taxes_per_neighbor,
     };
 
     // Models
@@ -151,7 +151,8 @@ mod TaxesComponent {
 
         /// @notice Main entry point for tax claim processing between neighboring lands
         /// @dev Orchestrates the entire claim flow by setting up configuration and delegating
-        /// to the appropriate claim strategy. Handles neighbor info unpacking and validation.
+        /// to the appropriate claim strategy. Accumulates transfer amounts in tuple array.
+        /// @param token_transfers Array to accumulate (token_address, amount) tuples
         /// @return bool True if land was nuked during claim, false for normal claims
         fn claim(
             ref self: ComponentState<TContractState>,
@@ -165,6 +166,7 @@ mod TaxesComponent {
             claim_fee_threshold: u128,
             our_contract_for_fee: ContractAddress,
             from_nuke: bool,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
             let config = ClaimConfig {
                 claimer: claimer,
@@ -192,12 +194,15 @@ mod TaxesComponent {
                 earliest_claim_neighbor_location,
             };
 
-            self._process_claim(store, ref payer_stake, @config, @neighbors_info)
+            self
+                ._process_claim(
+                    store, ref payer_stake, @config, @neighbors_info, ref token_transfers,
+                )
         }
 
         /// @notice Routes claim processing to the appropriate execution strategy
         /// @dev Central dispatcher that determines claim strategy and delegates to specific
-        /// execution functions. Handles the strategy pattern for different claim scenarios.
+        /// execution functions. Passes tuple array for batched token transfer accumulation.
         /// @return bool True if land was nuked, false for normal claims
         fn _process_claim(
             ref self: ComponentState<TContractState>,
@@ -205,26 +210,47 @@ mod TaxesComponent {
             ref payer_stake: LandStake,
             config: @ClaimConfig,
             neighbors_info: @NeighborsInfo,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
             let claim_strategy = self
                 ._assess_claim_strategy(store, @payer_stake, neighbors_info, config);
 
             match claim_strategy {
                 ClaimStrategy::Fast => self
-                    ._execute_fast_claim(store, ref payer_stake, neighbors_info, config),
+                    ._execute_fast_claim(
+                        store, ref payer_stake, neighbors_info, config, ref token_transfers,
+                    ),
                 ClaimStrategy::Safe(tax_data) => {
                     self
                         ._execute_safe_claim(
-                            store, ref payer_stake, config, neighbors_info, @tax_data,
+                            store,
+                            ref payer_stake,
+                            config,
+                            neighbors_info,
+                            @tax_data,
+                            ref token_transfers,
                         )
                 },
                 ClaimStrategy::Nuke(tax_data) => {
-                    self._execute_nuke(store, ref payer_stake, config.tax_payer, @tax_data, config)
+                    self
+                        ._execute_nuke(
+                            store,
+                            ref payer_stake,
+                            config.tax_payer,
+                            @tax_data,
+                            config,
+                            ref token_transfers,
+                        )
                 },
                 ClaimStrategy::NukeCascadeProtection(tax_data) => {
                     self
                         ._execute_nuke_cascade_protection(
-                            store, ref payer_stake, config, neighbors_info, @tax_data,
+                            store,
+                            ref payer_stake,
+                            config,
+                            neighbors_info,
+                            @tax_data,
+                            ref token_transfers,
                         )
                 },
             }
@@ -291,6 +317,7 @@ mod TaxesComponent {
             ref payer_stake: LandStake,
             neighbors_info: @NeighborsInfo,
             config: @ClaimConfig,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
             // Calculate actual taxes owed to this specific claimer
             let elapsed_time = self
@@ -305,8 +332,10 @@ mod TaxesComponent {
                 total_taxes, *config.claim_fee,
             );
             payer_stake.accumulated_taxes_fee += fee_amount;
-            self._execute_claim(store, ref payer_stake, config, tax_for_claimer);
-
+            self
+                ._execute_claim(
+                    store, ref payer_stake, config, tax_for_claimer, ref token_transfers,
+                );
             // Handle different update paths based on claimer position
             self
                 ._handle_earliest_neighbor_claim_info(
@@ -332,13 +361,16 @@ mod TaxesComponent {
             config: @ClaimConfig,
             neighbors_info: @NeighborsInfo,
             tax_data: @TaxCalculationData,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
             let (tax_for_claimer, fee_amount) = calculate_and_return_taxes_with_fee(
                 *tax_data.total_tax_for_claimer, *config.claim_fee,
             );
             payer_stake.accumulated_taxes_fee += fee_amount;
-            self._execute_claim(store, ref payer_stake, config, tax_for_claimer);
-
+            self
+                ._execute_claim(
+                    store, ref payer_stake, config, tax_for_claimer, ref token_transfers,
+                );
             self
                 ._handle_earliest_neighbor_claim_info(
                     store, ref payer_stake, config, neighbors_info,
@@ -361,6 +393,7 @@ mod TaxesComponent {
             tax_payer: @Land,
             tax_data: @TaxCalculationData,
             config: @ClaimConfig,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
             let mut tax_amount_for_neighbor: Array<(ContractAddress, u256)> = ArrayTrait::new();
             let mut total_shares_calculated: u256 = 0;
@@ -408,6 +441,7 @@ mod TaxesComponent {
             config: @ClaimConfig,
             neighbors_info: @NeighborsInfo,
             tax_data: @TaxCalculationData,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
             // Normal cascade protection: partial payment without full nuke
             // Send share for the claimer but not nuked the land because we are in a cascade
@@ -420,8 +454,10 @@ mod TaxesComponent {
                 total_share_for_neighbor, *config.claim_fee,
             );
             tax_payer_stake.accumulated_taxes_fee += fee_amount;
-            self._execute_claim(store, ref tax_payer_stake, config, share_for_neighbor);
-
+            self
+                ._execute_claim(
+                    store, ref tax_payer_stake, config, share_for_neighbor, ref token_transfers,
+                );
             self
                 ._handle_earliest_neighbor_claim_info(
                     store, ref tax_payer_stake, config, neighbors_info,
@@ -434,29 +470,24 @@ mod TaxesComponent {
 
 
         /// @notice Executes the actual claim of taxes
-        /// @dev Handles token transfer and updates claim tracking
+        /// @dev Handles token transfer, updates claim tracking, and accumulates transfer data
         fn _execute_claim(
             ref self: ComponentState<TContractState>,
             mut store: Store,
             ref payer_stake: LandStake,
             config: @ClaimConfig,
             available_tax_for_claimer: u256,
+            ref token_transfers: Array<(ContractAddress, u256)>,
         ) {
-            if available_tax_for_claimer > 0 && available_tax_for_claimer < payer_stake.amount {
-                //TODO:ver si podemos mejorar esto
-                self
-                    ._transfer_tokens(
-                        *config.claimer.owner,
-                        *config.tax_payer.owner,
-                        TokenInfo {
-                            token_address: *config.tax_payer.token_used,
-                            amount: available_tax_for_claimer,
-                        },
-                        ref payer_stake,
-                        config,
-                        false,
-                    );
+            if available_tax_for_claimer > 0 && available_tax_for_claimer <= payer_stake.amount {
+                let token = *config.tax_payer.token_used;
 
+                // Accumulate transfer amount for batching transfers
+                token_transfers =
+                    accumulate_amount_by_key(token_transfers, token, available_tax_for_claimer);
+                self._transfer_accumulated_fees(ref payer_stake, config, false);
+
+                // Emit event for transparency
                 store
                     .world
                     .emit_event(
@@ -479,9 +510,9 @@ mod TaxesComponent {
 
 
         /// @notice Distributes nuked land's stake proportionally to all neighbors
-        /// @dev Handles the actual token transfers when a land is nuked. Validates
-        /// that total distribution doesn't exceed available stake and processes
-        /// transfers to each neighbor based on their calculated share.
+        /// @dev Handles batched token transfers when a land is nuked. First accumulates
+        /// amounts by neighbor address (deduplicating if same address appears multiple times),
+        /// then executes batched transfers.
         fn _distribute_nuke(
             ref self: ComponentState<TContractState>,
             store: Store,
@@ -491,21 +522,126 @@ mod TaxesComponent {
             config: @ClaimConfig,
         ) {
             let mut total_to_distribute: u256 = 0;
-            for (_, tax_amount) in neighbors_of_nuked_land {
+            let mut accumulated_transfers: Array<(ContractAddress, u256)> = ArrayTrait::new();
+
+            // Accumulate amounts by neighbor address (deduplicates identical neighbors)
+            for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
                 total_to_distribute += *tax_amount;
+                accumulated_transfers =
+                    accumulate_amount_by_key(accumulated_transfers, *neighbor_address, *tax_amount);
             }
+
             assert(total_to_distribute <= nuked_land_stake.amount, 'Distribution of nuke > stake');
 
-            for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
-                self
-                    ._transfer_tokens(
-                        *neighbor_address,
-                        *nuked_land.owner,
-                        TokenInfo { token_address: *nuked_land.token_used, amount: *tax_amount },
-                        ref nuked_land_stake,
-                        config,
-                        true,
+            // Execute batched transfers to all neighbors (deduplicated)
+            self._transfer_accumulated_fees(ref nuked_land_stake, config, true);
+            self
+                ._execute_batched_nuke_transfers(
+                    accumulated_transfers.span(),
+                    *nuked_land.token_used,
+                    *config.our_contract,
+                    total_to_distribute,
+                );
+        }
+
+        /// @notice Executes batched token transfers to a single claimer (normal claim)
+        /// @dev Optimized for normal claims with deduplication by token address.
+        /// Validates once per token and transfers to a single destination.
+        /// @param token_amounts Array of (token_address, total_amount) tuples already deduplicated
+        /// @param claimer_address Address to receive all tokens
+        #[inline(always)]
+        fn _execute_batched_claim_transfers(
+            ref self: ComponentState<TContractState>,
+            token_amounts: Span<(ContractAddress, u256)>,
+            claimer_address: ContractAddress,
+            our_contract_address: ContractAddress,
+        ) {
+            let mut payable = get_dep_component_mut!(ref self, Payable);
+
+            // Process each unique token in the batch
+            for (token_address, total_amount) in token_amounts {
+                if *total_amount > 0 {
+                    // Validate token and amount
+                    let validation_result = payable
+                        .validate(*token_address, our_contract_address, *total_amount);
+
+                    // Execute transfer
+                    let status = payable.transfer(claimer_address, validation_result);
+                    assert(status, ERC20_TRANSFER_CLAIM_FAILED);
+                }
+            };
+        }
+
+        /// @notice Executes batched token transfers to multiple recipients (nuke distribution)
+        /// @dev Optimized for nuke scenarios where multiple neighbors receive proportional shares
+        /// of the same token. Single validation for total amount, then distributes to each
+        /// recipient.
+        /// @param recipient_amounts Array of (recipient_address, amount) tuples for nuke
+        /// distribution
+        /// @param token_address The token being distributed (from nuked land)
+        /// @param contract_address The contract address for validation
+        /// @param total_to_transfer Pre-calculated total amount to transfer (avoids recalculation)
+        #[inline(always)]
+        fn _execute_batched_nuke_transfers(
+            ref self: ComponentState<TContractState>,
+            recipient_amounts: Span<(ContractAddress, u256)>,
+            token_address: ContractAddress,
+            our_contract_address: ContractAddress,
+            total_to_transfer: u256,
+        ) {
+            let mut payable = get_dep_component_mut!(ref self, Payable);
+
+            if total_to_transfer > 0 {
+                // Single validation for all recipients
+                let validation_result = payable
+                    .validate(token_address, our_contract_address, total_to_transfer);
+
+                // Transfer to each recipient
+                for (recipient_address, amount) in recipient_amounts {
+                    if *amount > 0 {
+                        let recipient_validation = ValidationResult {
+                            status: validation_result.status,
+                            token_address: validation_result.token_address,
+                            amount: *amount,
+                        };
+
+                        let status = payable.transfer(*recipient_address, recipient_validation);
+                        assert(status, ERC20_TRANSFER_CLAIM_FAILED);
+                    }
+                };
+            }
+        }
+
+        /// @notice Transfers accumulated fees when threshold is reached
+        /// @dev Checks accumulated_taxes_fee against threshold and transfers if needed.
+        /// Always transfers fees when from_nuke is true.
+        fn _transfer_accumulated_fees(
+            ref self: ComponentState<TContractState>,
+            ref payer_stake: LandStake,
+            config: @ClaimConfig,
+            from_nuke: bool,
+        ) {
+            if (from_nuke || payer_stake.accumulated_taxes_fee >= *config.claim_fee_threshold)
+                && payer_stake.accumulated_taxes_fee > 0 {
+                let mut payable = get_dep_component_mut!(ref self, Payable);
+
+                let validation_result = payable
+                    .validate(
+                        *config.tax_payer.token_used,
+                        *config.our_contract,
+                        payer_stake.accumulated_taxes_fee.into(),
                     );
+
+                let validation_result_for_fees = ValidationResult {
+                    status: validation_result.status,
+                    token_address: validation_result.token_address,
+                    amount: payer_stake.accumulated_taxes_fee.into(),
+                };
+
+                let status = payable
+                    .transfer(*config.our_contract_for_fee, validation_result_for_fees);
+                assert(status, ERC20_TRANSFER_CLAIM_FAILED);
+                payer_stake.accumulated_taxes_fee = 0;
             }
         }
 
