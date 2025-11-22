@@ -26,7 +26,8 @@
   }
 
   $effect(() => {
-    if (!gameStore.cameraControls) return;
+    if (!gameStore.cameraControls || !gameStore.cameraControls.mouseButtons)
+      return;
     gameStore.cameraControls.mouseButtons.left =
       devsettings.cameraControlsLeftClick as any;
     gameStore.cameraControls.mouseButtons.right =
