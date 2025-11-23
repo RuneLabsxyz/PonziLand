@@ -44,14 +44,14 @@ impl From<BigDecimal> for U256 {
     fn from(value: BigDecimal) -> Self {
         let (mut int_val, exponent) = value.as_bigint_and_exponent();
 
-        if exponent > 0 {
-            let ten = BigInt::from(10);
-            for _ in 0..exponent {
-                int_val = int_val * &ten;
-            }
-        } else if exponent < 0 {
+        if exponent < 0 {
             let ten = BigInt::from(10);
             for _ in 0..(-exponent) {
+                int_val = int_val * &ten;
+            }
+        } else if exponent > 0 {
+            let ten = BigInt::from(10);
+            for _ in 0..exponent {
                 int_val = int_val / &ten;
             }
         }
