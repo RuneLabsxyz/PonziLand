@@ -42,9 +42,21 @@ impl FromStr for U256 {
 
 impl From<BigDecimal> for U256 {
     fn from(value: BigDecimal) -> Self {
-        let data: Vec<u64> = value
-            .as_bigint_and_exponent()
-            .0
+        let (mut int_val, exponent) = value.as_bigint_and_exponent();
+
+        if exponent > 0 {
+            let ten = BigInt::from(10);
+            for _ in 0..exponent {
+                int_val = int_val * &ten;
+            }
+        } else if exponent < 0 {
+            let ten = BigInt::from(10);
+            for _ in 0..(-exponent) {
+                int_val = int_val / &ten;
+            }
+        }
+
+        let data: Vec<u64> = int_val
             .iter_u64_digits()
             .chain(std::iter::repeat(0))
             .take(4)
@@ -289,5 +301,23 @@ mod tests {
         let decimal_from_max = BigDecimal::from(max_u256);
         let u256_from_decimal = U256::from(decimal_from_max.clone());
         assert_eq!(max_u256.0, u256_from_decimal.0);
+    }
+
+    #[test]
+    fn test_bigdecimal_with_exponent_to_u256() {
+        // 6.02 * 10^18 = 6020000000000000000
+        // This might be represented as 602 * 10^16 in BigDecimal
+        // BigDecimal::new(digits, scale). Value = digits / 10^scale.
+        // So for 602 * 10^16, we need scale = -16.
+        let big_int_val = BigInt::parse_bytes(b"602", 10).unwrap();
+        let big_decimal = BigDecimal::new(big_int_val, -16);
+        
+        let u256 = U256::from(big_decimal.clone());
+        
+        // Expected: 6020000000000000000
+        let expected_str = "6020000000000000000";
+        let expected = U256::from_str(expected_str).unwrap();
+        
+        assert_eq!(u256, expected, "Failed to convert BigDecimal with negative scale (positive exponent)");
     }
 }
