@@ -311,13 +311,16 @@ mod tests {
         // So for 602 * 10^16, we need scale = -16.
         let big_int_val = BigInt::parse_bytes(b"602", 10).unwrap();
         let big_decimal = BigDecimal::new(big_int_val, -16);
-        
+
         let u256 = U256::from(big_decimal.clone());
-        
+
         // Expected: 6020000000000000000
         let expected_str = "6020000000000000000";
         let expected = U256::from_str(expected_str).unwrap();
-        
-        assert_eq!(u256, expected, "Failed to convert BigDecimal with negative scale (positive exponent)");
+
+        assert_eq!(
+            u256, expected,
+            "Failed to convert BigDecimal with negative scale (positive exponent)"
+        );
     }
 }
