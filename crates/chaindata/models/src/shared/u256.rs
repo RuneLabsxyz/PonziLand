@@ -306,9 +306,6 @@ mod tests {
     #[test]
     fn test_bigdecimal_with_exponent_to_u256() {
         // 6.02 * 10^18 = 6020000000000000000
-        // This might be represented as 602 * 10^16 in BigDecimal
-        // BigDecimal::new(digits, scale). Value = digits / 10^scale.
-        // So for 602 * 10^16, we need scale = -16.
         let big_int_val = BigInt::parse_bytes(b"602", 10).unwrap();
         let big_decimal = BigDecimal::new(big_int_val, -16);
 
