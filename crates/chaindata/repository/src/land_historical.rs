@@ -31,7 +31,7 @@ impl Repository {
                 token_inflows, token_outflows
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-            ON CONFLICT (id) DO UPDATE SET 
+            ON CONFLICT (id) DO UPDATE SET
                 at = EXCLUDED.at,
                 close_date = EXCLUDED.close_date,
                 close_reason = EXCLUDED.close_reason,
@@ -244,7 +244,7 @@ impl Repository {
         .await
     }
 
-    /// Gets all closed positions since a given date (for leaderboard)
+    /// Gets all closed positions since a given date (for leaderboard) - from main
     pub async fn get_closed_positions_since(
         &self,
         since: NaiveDateTime,
@@ -278,7 +278,7 @@ impl Repository {
         .await
     }
 
-    /// Gets all positions for multiple owners (for aggregate calculations)
+    /// Gets all positions for multiple owners (for aggregate calculations) - from main
     pub async fn get_by_owners(
         &self,
         owners: &[String],
@@ -293,5 +293,98 @@ impl Repository {
         all_positions.sort_by(|a, b| b.time_bought.cmp(&a.time_bought));
 
         Ok(all_positions)
+    }
+
+    /// Gets all open positions for a specific owner (active drops/positions) - from feature
+    pub async fn get_open_positions_by_owner(
+        &self,
+        owner: &str,
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
+        query_as!(
+            LandHistoricalModel,
+            r#"
+            SELECT
+                id,
+                at,
+                owner,
+                land_location as "land_location: Location",
+                time_bought,
+                close_date,
+                close_reason as "close_reason: CloseReason",
+                buy_cost_token as "buy_cost_token: U256",
+                buy_cost_usd as "buy_cost_usd: U256",
+                buy_token_used,
+                sale_revenue_token as "sale_revenue_token: U256",
+                sale_revenue_usd as "sale_revenue_usd: U256",
+                sale_token_used,
+                token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
+                token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
+            FROM land_historical
+            WHERE owner = $1 AND close_date IS NULL
+            ORDER BY time_bought DESC
+            "#,
+            owner
+        )
+        .fetch_all(&mut *(self.db.acquire().await?))
+        .await
+    }
+
+    /// Parses and sums token inflows from a land position - from feature
+    /// Returns HashMap of token_address -> total_amount
+    pub fn parse_token_inflows(
+        token_inflows: &serde_json::Value,
+    ) -> Result<HashMap<String, U256>, Error> {
+        serde_json::from_value(token_inflows.clone())
+            .map_err(|e| Error::Database(format!("Failed to parse token_inflows: {}", e)))
+    }
+
+    /// Parses and sums token outflows from a land position - from feature
+    /// Returns HashMap of token_address -> total_amount
+    pub fn parse_token_outflows(
+        token_outflows: &serde_json::Value,
+    ) -> Result<HashMap<String, U256>, Error> {
+        serde_json::from_value(token_outflows.clone())
+            .map_err(|e| Error::Database(format!("Failed to parse token_outflows: {}", e)))
+    }
+
+    /// Sums all values in a token HashMap - from feature
+    pub fn sum_token_map(token_map: &HashMap<String, U256>) -> U256 {
+        token_map.values().sum()
+    }
+
+    /// Gets the total sum of token inflows for a land location - from feature
+    pub async fn get_token_inflows_total(&self, location: Location) -> Result<U256, Error> {
+        let position = self
+            .get_open_positions_by_land_location(location)
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?
+            .first()
+            .cloned();
+
+        match position {
+            Some(pos) => {
+                let inflows = Self::parse_token_inflows(&pos.token_inflows)?;
+                Ok(Self::sum_token_map(&inflows))
+            }
+            None => Ok(U256::from(0)),
+        }
+    }
+
+    /// Gets the total sum of token outflows for a land location - from feature
+    pub async fn get_token_outflows_total(&self, location: Location) -> Result<U256, Error> {
+        let position = self
+            .get_open_positions_by_land_location(location)
+            .await
+            .map_err(|e| Error::Database(e.to_string()))?
+            .first()
+            .cloned();
+
+        match position {
+            Some(pos) => {
+                let outflows = Self::parse_token_outflows(&pos.token_outflows)?;
+                Ok(Self::sum_token_map(&outflows))
+            }
+            None => Ok(U256::from(0)),
+        }
     }
 }
