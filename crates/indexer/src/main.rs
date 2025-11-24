@@ -9,15 +9,15 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository};
+use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository,DropLandQueriesRepository};
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{
-    land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute, tokens::TokenRoute,
-    wallets::WalletsRoute,
+    drops::DropsRoute, land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute,
+    tokens::TokenRoute, wallets::WalletsRoute,
 };
 use serde::{Deserialize, Serialize};
 use service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
@@ -114,15 +114,17 @@ async fn main() -> Result<()> {
     let land_repository = Arc::new(LandRepository::new(pool.clone()));
     let land_historical_repository = Arc::new(LandHistoricalRepository::new(pool.clone()));
     let wallet_activity_repository = Arc::new(WalletActivityRepository::new(pool.clone()));
+    let drop_land_queries_repository = Arc::new(DropLandQueriesRepository::new(pool.clone()));
 
-    let app_state = AppState {
-        token_service: token_service.clone(),
-        avnu_service: avnu.clone(),
-        ekubo_service: ekubo.clone(),
+    let app_state = AppState::new(
+        token_service.clone(),
+        avnu.clone(),
+        ekubo.clone(),
         land_repository,
         land_historical_repository,
         wallet_activity_repository,
-    };
+        drop_land_queries_repository,
+    );
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
@@ -162,6 +164,8 @@ async fn main() -> Result<()> {
         .nest(
             "/wallets",
             WalletsRoute::new().router().with_state(app_state.clone()),
+            "/drops",
+            DropsRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))

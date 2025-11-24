@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::extract::FromRef;
 use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository};
+use chaindata_repository::{DropLandQueriesRepository, LandHistoricalRepository, LandRepository};
 
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 
@@ -13,6 +14,7 @@ pub struct AppState {
     pub land_repository: Arc<LandRepository>,
     pub land_historical_repository: Arc<LandHistoricalRepository>,
     pub wallet_activity_repository: Arc<WalletActivityRepository>,
+    pub drop_land_queries_repository: Arc<DropLandQueriesRepository>,
 }
 
 impl AppState {
@@ -23,6 +25,7 @@ impl AppState {
         land_repository: Arc<LandRepository>,
         land_historical_repository: Arc<LandHistoricalRepository>,
         wallet_activity_repository: Arc<WalletActivityRepository>,
+        drop_land_queries_repository: Arc<DropLandQueriesRepository>,
     ) -> Self {
         Self {
             token_service,
@@ -31,6 +34,7 @@ impl AppState {
             land_repository,
             land_historical_repository,
             wallet_activity_repository,
+            drop_land_queries_repository,
         }
     }
 }
@@ -68,5 +72,8 @@ impl FromRef<AppState> for Arc<LandHistoricalRepository> {
 impl FromRef<AppState> for Arc<WalletActivityRepository> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.wallet_activity_repository.clone()
+impl FromRef<AppState> for Arc<DropLandQueriesRepository> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.drop_land_queries_repository.clone()
     }
 }
