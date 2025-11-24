@@ -212,6 +212,7 @@ impl ToriiClient {
                 FROM event_messages_historical em
                 LEFT JOIN models m on em.model_id = m.id
                 WHERE {where}
+                ORDER BY length(em.event_id) ASC, em.event_id ASC
                 LIMIT 100 OFFSET {current_offset};
                 ")
         })
