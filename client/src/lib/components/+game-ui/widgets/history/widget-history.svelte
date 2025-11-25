@@ -4,24 +4,17 @@
   import { padAddress } from '$lib/utils';
   import { onMount, onDestroy } from 'svelte';
   import HistoryList from './history-list.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import account from '$lib/account.svelte';
 
-  const dojo = useDojo();
-  const account = () => {
-    return dojo.accountManager?.getProvider();
-  };
+  const { accountManager: dojoAccountManager } = useDojo();
 
   let refreshInterval: NodeJS.Timeout;
 
   onMount(async () => {
     try {
-      const currentAccount = account()?.getWalletAccount();
-      if (!currentAccount) {
-        console.error('No wallet account available');
-        return;
-      }
-
-      const userAddress = padAddress(currentAccount.address)!;
-      accountHistory.setAccount(userAddress);
+      const userAddress = padAddress(account?.address ?? ' ');
+      accountHistory.setAccount(userAddress ?? ' ');
 
       // Set up auto-refresh every 30 seconds
       refreshInterval = setInterval(() => {
@@ -39,7 +32,26 @@
   });
 </script>
 
-<div class="history-widget h-full w-full flex flex-col">
-  <!-- Events List -->
-  <HistoryList />
+<div class="h-full w-full flex flex-col">
+  {#if !account.isConnected}
+    <!-- Wallet connection prompt -->
+    <div class="flex flex-col items-center justify-center h-full gap-4 p-8">
+      <div class="text-center tracking-wide">
+        <p class="opacity-75 text-xl">
+          To see your transaction history please connect your wallet.
+        </p>
+      </div>
+      <Button
+        class=""
+        onclick={async () => {
+          await dojoAccountManager?.promptForLogin();
+        }}
+      >
+        CONNECT WALLET
+      </Button>
+    </div>
+  {:else}
+    <!-- Events List -->
+    <HistoryList />
+  {/if}
 </div>

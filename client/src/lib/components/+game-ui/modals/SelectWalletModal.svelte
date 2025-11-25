@@ -66,7 +66,7 @@
     &nbsp;
   </div>
   <Card
-    class="absolute top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] p-10 text-2xl min-w-80"
+    class="absolute bg-ponzi top-absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-[100] p-10 text-2xl min-w-80"
   >
     <CloseButton
       onclick={() => {
@@ -76,9 +76,9 @@
     {#if loading}
       Loading...
     {:else}
-      <div class="m-3 mt-0">
+      <div class="m-1 mt-0">
         <div class="mb-5 flex gap-2">
-          <div>WALLETS</div>
+          <div class="font-ponzi-number text-sm mt-1">Wallets</div>
         </div>
 
         <div class="flex flex-col justify-stretch gap-2">
