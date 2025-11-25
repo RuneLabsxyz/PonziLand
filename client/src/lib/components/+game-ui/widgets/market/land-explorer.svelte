@@ -34,11 +34,7 @@
   import { toNumber } from 'ethers';
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
-
-  const dojo = useDojo();
-  const account = () => {
-    return dojo.accountManager?.getProvider();
-  };
+  import accountState from '$lib/account.svelte';
 
   let baseToken = $derived.by(() => {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
@@ -229,18 +225,7 @@
 
   onMount(async () => {
     try {
-      if (!dojo.client) {
-        console.error('Dojo client is not initialized');
-        return;
-      }
-
-      const currentAccount = account()?.getWalletAccount();
-      if (!currentAccount) {
-        console.error('No wallet account available');
-        return;
-      }
-
-      const userAddress = padAddress(currentAccount.address);
+      const userAddress = accountState.address;
 
       const allLands = landStore.getAllLands();
 
