@@ -73,7 +73,7 @@
   });
 </script>
 
-<div class="text-right">
+<div class="text-right font-ponzi-number text-sm tracking-widest">
   {#if netSaleProfit && !isPositionOpen(position)}
     <span
       class={netSaleProfit.rawValue().isPositive()

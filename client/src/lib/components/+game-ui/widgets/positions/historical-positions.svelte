@@ -112,9 +112,7 @@
       CONNECT WALLET
     </Button>
   </div>
-{/if}
-
-{#if account.isConnected}
+{:else}
   <div class="w-full flex justify-end p-2">
     <div class="flex">
       <Button

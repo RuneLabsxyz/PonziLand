@@ -179,7 +179,9 @@
   }
 </script>
 
-<div class="text-right flex items-center justify-end gap-1">
+<div
+  class="text-right flex items-center justify-end gap-1 font-ponzi-number text-sm tracking-widest"
+>
   {#if realizedPnL}
     <span
       class={realizedPnL.rawValue().isPositive()
