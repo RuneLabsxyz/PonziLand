@@ -991,7 +991,7 @@ export class LandTileStore {
     const landConfigs = [
       {
         address: buildingTokensAddresses[0],
-        price: CurrencyAmount.fromScaled(0.5, buildingTokens[0]),
+        price: CurrencyAmount.fromScaled(0.75, buildingTokens[0]),
         level: 'Second',
       }, // SOL - $400, Level 3
       {

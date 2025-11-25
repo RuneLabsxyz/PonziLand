@@ -5,6 +5,8 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import type { TabType } from '$lib/interfaces';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
+  import { onMount } from 'svelte';
 
   let {
     land,
@@ -12,6 +14,12 @@
   }: { land: LandWithActions; auctionPrice?: CurrencyAmount } = $props();
 
   let activeTab = $state<TabType>('buy');
+
+  onMount(() => {
+    if (tutorialAttribute('wait_increase_stake').has) {
+      activeTab = 'overall';
+    }
+  });
 
   function setActiveTab(tab: TabType) {
     activeTab = tab;

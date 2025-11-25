@@ -11,19 +11,12 @@
   import { landStore } from '$lib/stores/store.svelte';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
   import data from '$profileData';
+  import {
+    nextStep,
+    tutorialAttribute,
+  } from '$lib/components/tutorial/stores.svelte';
 
   let { land }: { land: LandWithActions } = $props();
-
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return (
-      data.availableTokens.find((token) => token.address === targetAddress) ||
-      data.availableTokens.find(
-        (token) => token.address === data.mainCurrencyAddress,
-      )!
-    );
-  });
 
   let accountManager = useAccount();
   let disabled = writable(false);
@@ -63,6 +56,13 @@
       console.error('No land selected');
       return;
     }
+
+    // Handle tutorial
+    if (tutorialAttribute('wait_increase_stake').has) {
+      nextStep();
+      return;
+    }
+
     isLoading = true;
     try {
       let amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
