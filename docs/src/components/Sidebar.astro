@@ -1,0 +1,42 @@
+---
+import { getSidebarData } from "../lib/sidebar";
+import Icon from "./Icon.astro";
+
+interface Props {
+  currentPath?: string;
+}
+
+const { currentPath } = Astro.props;
+const sidebarData = await getSidebarData();
+
+---
+
+<aside class="w-64 border-r border-gray-200 p-6 overflow-y-auto">
+  <nav>
+    {sidebarData.map(({ category, docs }) => (
+      <div class="mb-6">
+        <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
+          {category.icon && <Icon name={category.icon} size={18} />}
+          {category.label}
+        </h3>
+        <ul class="space-y-1">
+          {docs.map((doc) => (
+            <li>
+              <a
+                href={`/${doc.id.replace(/\.mdx?$/, '')}`}
+                class:list={[
+                  "block px-3 py-1.5 text-sm rounded-md transition-colors",
+                  currentPath === "/" + doc.id
+                    ? "bg-blue-50 text-blue-700 font-medium"
+                    : "text-gray-700 hover:bg-gray-50",
+                ]}
+              >
+                {doc.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </nav>
+</aside>

@@ -1,0 +1,9 @@
+---
+import { Icon as IconComponent } from 'astro-icon/components'
+
+const { name, class: className, size = 20 } = Astro.props;
+
+---
+
+<!-- Embed the `account` icon from `@iconify-json/mdi` -->
+<IconComponent name={"lucide:" + name} class={className} size={size} />

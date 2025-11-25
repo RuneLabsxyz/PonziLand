@@ -1,0 +1,23 @@
+---
+import Layout from "./Layout.astro";
+import Sidebar from "../components/Sidebar.astro";
+
+interface Props {
+  title?: string;
+  currentPath?: string;
+}
+
+const { title = "Documentation", currentPath } = Astro.props;
+---
+
+<Layout>
+  <div class="flex min-h-screen">
+    <Sidebar currentPath={currentPath} />
+
+    <main class="flex-1 p-8 max-w-4xl">
+      <article class="prose prose-slate max-w-none">
+        <slot />
+      </article>
+    </main>
+  </div>
+</Layout>
