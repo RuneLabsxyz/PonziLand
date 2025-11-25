@@ -21,6 +21,12 @@ export interface WidgetState {
   disableControls?: boolean; // Whether to disable minimize and close buttons
   transparency?: number; // Widget transparency (0-1, where 0 is fully transparent and 1 is fully opaque)
   disableResize?: boolean;
+  isMaximized?: boolean; // Whether the widget is maximized
+  preMaximizeState?: {
+    position: { x: number; y: number };
+    dimensions: { width: number; height: number };
+  }; // State before maximizing
+  showMaximize?: boolean; // Whether to show the maximize button
 }
 
 export interface WidgetsState {
@@ -110,6 +116,7 @@ const baseWidgetsState: WidgetsState = {
     dimensions: { width: 550, height: 400 },
     isMinimized: false,
     isOpen: false,
+    showMaximize: true,
   },
   share: {
     id: 'share',

@@ -288,6 +288,64 @@ function createWidgetsStore() {
         saveState(normalizedState);
         return normalizedState;
       }),
+    maximizeWidget: (id: string) =>
+      update((state) => {
+        if (!state[id]) {
+          console.error('Widget not found:', id);
+          return state;
+        }
+        const widget = state[id];
+
+        // Save current state before maximizing
+        const preMaximizeState = {
+          position: { ...widget.position },
+          dimensions: widget.dimensions
+            ? { ...widget.dimensions }
+            : { width: 550, height: 400 },
+        };
+
+        const newState = {
+          ...state,
+          [id]: {
+            ...widget,
+            isMaximized: true,
+            preMaximizeState,
+            position: { x: 0, y: 0 },
+            dimensions: {
+              width: typeof window !== 'undefined' ? window.innerWidth : 1920,
+              height: typeof window !== 'undefined' ? window.innerHeight : 1080,
+            },
+          },
+        };
+        saveState(newState);
+        return newState;
+      }),
+    restoreWidget: (id: string) =>
+      update((state) => {
+        if (!state[id]) {
+          console.error('Widget not found:', id);
+          return state;
+        }
+        const widget = state[id];
+
+        if (!widget.preMaximizeState) {
+          console.error('No pre-maximize state found for widget:', id);
+          return state;
+        }
+
+        const newState = {
+          ...state,
+          [id]: {
+            ...widget,
+            isMaximized: false,
+            position: { ...widget.preMaximizeState.position },
+            dimensions: { ...widget.preMaximizeState.dimensions },
+            preMaximizeState: undefined,
+          },
+        };
+        saveState(newState);
+        return newState;
+      }),
   };
 }
 
