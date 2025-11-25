@@ -1,7 +1,8 @@
 use crate::{Database, Error};
-use chaindata_models::shared::Location;
+use chaindata_models::shared::{Location, U256};
 use chrono::NaiveDateTime;
-use sqlx::query;
+use sqlx::{query, Row};
+use std::ops::Deref;
 
 /// Repository for querying drop land metrics and data
 pub struct DropLandQueriesRepository {
@@ -75,18 +76,18 @@ impl DropLandQueriesRepository {
         };
 
         result
-            .map_err(|e| Error::Database(e.to_string()))
+            .map_err(|e| Error::SqlError(e))
             .map(|rows| {
                 rows.iter()
                     .map(|row| {
-                        let land_location: i32 = row.get("land_location");
+                        let land_location: Location = row.get("land_location");
                         let owner: String = row.get("owner");
                         let time_bought: NaiveDateTime = row.get("time_bought");
                         let buy_cost_token: String = row.get("buy_cost_token");
                         let close_date: Option<NaiveDateTime> = row.get("close_date");
 
                         (
-                            Location::from(land_location),
+                            land_location,
                             owner,
                             time_bought,
                             buy_cost_token,
@@ -101,7 +102,7 @@ impl DropLandQueriesRepository {
     pub async fn get_current_remaining_stake(
         &self,
         location: Location,
-    ) -> Result<Option<String>, Error> {
+    ) -> Result<Option<U256>, Error> {
         let result = query(
             r#"
             SELECT COALESCE(amount, '0') as amount
@@ -110,12 +111,12 @@ impl DropLandQueriesRepository {
             LIMIT 1
             "#,
         )
-        .bind(location as i32)
+        .bind(location)
         .fetch_optional(&mut *(self.db.acquire().await?))
         .await
-        .map_err(|e| Error::Database(e.to_string()))?;
+        .map_err(|e| Error::SqlError(e))?;
 
-        Ok(result.map(|row| row.get::<String, _>("amount")))
+        Ok(result.map(|row| row.get::<U256, _>("amount")))
     }
 
     /// Get the sum of token inflows for a land location
@@ -130,10 +131,10 @@ impl DropLandQueriesRepository {
             LIMIT 1
             "#,
         )
-        .bind(location as i32)
+        .bind(location)
         .fetch_optional(&mut *(self.db.acquire().await?))
         .await
-        .map_err(|e| Error::Database(e.to_string()))?;
+        .map_err(|e| Error::SqlError(e))?;
 
         Ok(result
             .map(|row| row.get::<String, _>("token_inflows"))
@@ -143,9 +144,9 @@ impl DropLandQueriesRepository {
     /// Get the 8 neighboring locations for a given location
     /// Returns the set of neighbor locations
     pub fn get_area_neighbors(&self, location: Location) -> Vec<Location> {
-        let loc_u16 = u16::from(location);
-        let x = (loc_u16 & 0xFF) as i16;
-        let y = ((loc_u16 >> 8) & 0xFF) as i16;
+        let loc_u64 = location.deref().0;
+        let x = (loc_u64 & 0xFF) as i16;
+        let y = ((loc_u64 >> 8) & 0xFF) as i16;
 
         let mut neighbors = Vec::new();
 
@@ -161,8 +162,8 @@ impl DropLandQueriesRepository {
 
                 // Check bounds (0-255 for both x and y)
                 if nx >= 0 && nx < 256 && ny >= 0 && ny < 256 {
-                    let neighbor_u16 = (nx as u16) | ((ny as u16) << 8);
-                    neighbors.push(Location::from(neighbor_u16));
+                    let neighbor_u64 = (nx as u64) | ((ny as u64) << 8);
+                    neighbors.push(Location::from(neighbor_u64));
                 }
             }
         }
@@ -249,7 +250,7 @@ impl DropLandQueriesRepository {
 
         // Bind location parameters
         for loc in &area_locations {
-            q = q.bind(*loc as i32);
+            q = q.bind(*loc);
         }
 
         // Bind time parameters
@@ -263,7 +264,7 @@ impl DropLandQueriesRepository {
         let result = q
             .fetch_one(&mut *(self.db.acquire().await?))
             .await
-            .map_err(|e| Error::Database(e.to_string()))?;
+            .map_err(|e| Error::SqlError(e))?;
 
         let total_transfer_amount: String = result.get::<String, _>("total");
 
@@ -295,10 +296,10 @@ impl DropLandQueriesRepository {
                 LIMIT 1
                 "#,
             )
-            .bind(location as i32)
+            .bind(location)
             .fetch_optional(&mut *(self.db.acquire().await?))
             .await
-            .map_err(|e| Error::Database(e.to_string()))?
+            .map_err(|e| Error::SqlError(e))?
             .map(|row| row.get::<String, _>("buy_cost_token"));
 
             result.unwrap_or_else(|| "0".to_string())
@@ -307,6 +308,7 @@ impl DropLandQueriesRepository {
         let drop_remaining_stake = self
             .get_current_remaining_stake(location)
             .await?
+            .map(|u256_val| u256_val.to_string())
             .unwrap_or_else(|| "0".to_string());
 
         let neighbor_taxes_received = self.get_neighbor_taxes_received(location).await?;
@@ -357,6 +359,7 @@ impl DropLandQueriesRepository {
             let remaining = self
                 .get_current_remaining_stake(location)
                 .await?
+                .map(|u256_val| u256_val.to_string())
                 .unwrap_or_else(|| "0".to_string());
 
             if let (Ok(initial), Ok(remaining_u128)) = (drop_initial_stake.parse::<u128>(), remaining.parse::<u128>()) {

@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
 use axum::extract::FromRef;
-use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository};
-use chaindata_repository::{DropLandQueriesRepository, LandHistoricalRepository, LandRepository};
+use chaindata_repository::{
+    DropLandQueriesRepository, LandHistoricalRepository, LandRepository, WalletActivityRepository,
+};
 
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 
@@ -72,6 +73,9 @@ impl FromRef<AppState> for Arc<LandHistoricalRepository> {
 impl FromRef<AppState> for Arc<WalletActivityRepository> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.wallet_activity_repository.clone()
+    }
+}
+
 impl FromRef<AppState> for Arc<DropLandQueriesRepository> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.drop_land_queries_repository.clone()

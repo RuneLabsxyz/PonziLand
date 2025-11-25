@@ -164,6 +164,8 @@ async fn main() -> Result<()> {
         .nest(
             "/wallets",
             WalletsRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
             "/drops",
             DropsRoute::new().router().with_state(app_state.clone()),
         )

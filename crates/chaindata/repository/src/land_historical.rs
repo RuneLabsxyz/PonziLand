@@ -5,9 +5,9 @@ use chaindata_models::{
 };
 use chrono::NaiveDateTime;
 use ponziland_models::models::CloseReason;
-use serde_json;
-use sqlx::{query, query_as};
+use sqlx::{query, query_as, types::Json};
 use std::collections::HashMap;
+use std::str::FromStr;
 
 /// Repository for managing land historical records
 pub struct Repository {
@@ -281,24 +281,29 @@ impl Repository {
     /// Parses and sums token inflows from a land position
     /// Returns HashMap of token_address -> total_amount
     pub fn parse_token_inflows(
-        token_inflows: &serde_json::Value,
+        token_inflows: &Json<HashMap<String, U256>>,
     ) -> Result<HashMap<String, U256>, Error> {
-        serde_json::from_value(token_inflows.clone())
-            .map_err(|e| Error::Database(format!("Failed to parse token_inflows: {}", e)))
+        Ok(token_inflows.0.clone())
     }
 
     /// Parses and sums token outflows from a land position
     /// Returns HashMap of token_address -> total_amount
     pub fn parse_token_outflows(
-        token_outflows: &serde_json::Value,
+        token_outflows: &Json<HashMap<String, U256>>,
     ) -> Result<HashMap<String, U256>, Error> {
-        serde_json::from_value(token_outflows.clone())
-            .map_err(|e| Error::Database(format!("Failed to parse token_outflows: {}", e)))
+        Ok(token_outflows.0.clone())
     }
 
     /// Sums all values in a token HashMap
     pub fn sum_token_map(token_map: &HashMap<String, U256>) -> U256 {
-        token_map.values().sum()
+        token_map.values().fold(U256::from_str("0").unwrap(), |acc, &val| {
+            // Since U256 doesn't implement Add, we convert through string representation
+            let acc_str = acc.to_string();
+            let val_str = val.to_string();
+            let acc_u128 = acc_str.parse::<u128>().unwrap_or(0);
+            let val_u128 = val_str.parse::<u128>().unwrap_or(0);
+            U256::from_str(&(acc_u128 + val_u128).to_string()).unwrap()
+        })
     }
 
     /// Gets the total sum of token inflows for a land location
@@ -306,7 +311,7 @@ impl Repository {
         let position = self
             .get_open_positions_by_land_location(location)
             .await
-            .map_err(|e| Error::Database(e.to_string()))?
+            .map_err(|e| Error::SqlError(e))?
             .first()
             .cloned();
 
@@ -315,7 +320,7 @@ impl Repository {
                 let inflows = Self::parse_token_inflows(&pos.token_inflows)?;
                 Ok(Self::sum_token_map(&inflows))
             }
-            None => Ok(U256::from(0)),
+            None => U256::from_str("0").map_err(|_| Error::SqlError(sqlx::Error::RowNotFound)),
         }
     }
 
@@ -324,7 +329,7 @@ impl Repository {
         let position = self
             .get_open_positions_by_land_location(location)
             .await
-            .map_err(|e| Error::Database(e.to_string()))?
+            .map_err(|e| Error::SqlError(e))?
             .first()
             .cloned();
 
@@ -333,7 +338,7 @@ impl Repository {
                 let outflows = Self::parse_token_outflows(&pos.token_outflows)?;
                 Ok(Self::sum_token_map(&outflows))
             }
-            None => Ok(U256::from(0)),
+            None => U256::from_str("0").map_err(|_| Error::SqlError(sqlx::Error::RowNotFound)),
         }
     }
 }
