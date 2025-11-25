@@ -107,8 +107,7 @@ pub fn calculate_and_return_taxes_with_fee(
 /// @notice Accumulates token transfer amounts with lazy deduplication
 /// @dev Intelligently handles token accumulation with minimal gas overhead:
 /// - Fast path for empty array: O(1) append only
-/// - No duplicates: O(n) search but O(1) append when not found
-/// - Duplicates found: Only then rebuilds array with updated amount
+/// - Single pass: O(n) iteration with O(1) operations per element
 /// Optimized for typical 2-3 unique tokens per claim.
 /// @param existing Existing array of (address, amount) tuples
 /// @param key Address key to search and accumulate
@@ -128,37 +127,30 @@ pub fn accumulate_amount_by_key(
     }
 
     let existing_span = existing.span();
+    let mut updated: Array<(ContractAddress, u256)> = ArrayTrait::new();
+    let mut found = false;
     let mut i = 0;
 
-    // Search for existing key in the array
+    // Single pass: iterate through all elements
     while i < len {
         let (existing_key, existing_amount) = *existing_span.at(i);
 
-        // If key found, rebuild array with summed amount and return
         if existing_key == key {
-            let mut updated: Array<(ContractAddress, u256)> = ArrayTrait::new();
-            let mut j = 0;
-
-            while j < len {
-                let (k, a) = *existing_span.at(j);
-                if j == i {
-                    // Add accumulated amount to existing key
-                    updated.append((k, a + amount));
-                } else {
-                    // Copy other entries unchanged
-                    updated.append((k, a));
-                }
-                j += 1;
-            }
-
-            return updated;
+            // Key found: accumulate amount
+            updated.append((existing_key, existing_amount + amount));
+            found = true;
+        } else {
+            // Copy other entries unchanged
+            updated.append((existing_key, existing_amount));
         }
 
         i += 1;
     }
 
-    // Key not found → append to array and return
-    let mut updated: Array<(ContractAddress, u256)> = existing;
-    updated.append((key, amount));
+    // Key not found → append new key with amount
+    if !found {
+        updated.append((key, amount));
+    }
+
     updated
 }
