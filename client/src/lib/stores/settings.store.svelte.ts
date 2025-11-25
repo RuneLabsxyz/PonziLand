@@ -60,6 +60,11 @@ class SettingsStore {
     return this.settings.selectedBaseTokenAddress;
   }
 
+  forceNoobMode() {
+    this.settings.noobMode = true;
+    this.saveSettings();
+  }
+
   toggleNoobMode() {
     this.settings.noobMode = !this.settings.noobMode;
     this.saveSettings();

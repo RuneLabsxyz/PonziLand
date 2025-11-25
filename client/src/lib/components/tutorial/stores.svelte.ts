@@ -1,37 +1,47 @@
+import tutorialData from './dialog.json';
+
 export let tutorialState = $state({
   tutorialEnabled: false,
   tutorialStep: 1,
-  interactionsLocked: true,
 });
 
 export function nextStep() {
-  if (tutorialState.tutorialStep < 25) {
+  if (tutorialState.tutorialStep < tutorialData.length - 1) {
     tutorialState.tutorialStep += 1;
-    updateInteractionLock();
   }
 }
 
 export function previousStep() {
   if (tutorialState.tutorialStep > 1) {
     tutorialState.tutorialStep -= 1;
-    updateInteractionLock();
   }
 }
 
 export function enableTutorial() {
   tutorialState.tutorialEnabled = true;
   tutorialState.tutorialStep = 1;
-  updateInteractionLock();
 }
 
 export function disableTutorial() {
   tutorialState.tutorialEnabled = false;
 }
 
-export function shouldLockInteractions() {
-  return tutorialState.tutorialEnabled && tutorialState.tutorialStep === 1;
+// Create a derived value that contains the current step's attributes
+let currentStepAttributes = $derived(
+  tutorialState.tutorialEnabled
+    ? tutorialData[tutorialState.tutorialStep - 1].has || []
+    : [],
+);
+
+export function tutorialAttribute(attribute: string) {
+  return {
+    get has() {
+      return (
+        tutorialState.tutorialEnabled &&
+        currentStepAttributes.includes(attribute)
+      );
+    },
+  };
 }
 
-export function updateInteractionLock() {
-  tutorialState.interactionsLocked = shouldLockInteractions();
-}
+export function checkProfitability() {}
