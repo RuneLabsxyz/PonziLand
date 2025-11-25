@@ -13,13 +13,22 @@ const sidebarData = await getSidebarData();
 
 <aside class="w-64 border-r border-gray-200 p-6 overflow-y-auto">
   <nav>
-    {sidebarData.map(({ category, docs }) => (
-      <div class="mb-6">
-        <h3 class="flex items-center gap-2 text-sm font-semibold text-gray-900 mb-2">
-          {category.icon && <Icon name={category.icon} size={18} />}
-          {category.label}
-        </h3>
-        <ul class="space-y-1">
+    {sidebarData.map(({ category, categoryKey, docs }) => (
+      <div class="mb-6" data-category={categoryKey}>
+        {categoryKey !== "root" && (
+          <button
+            class="category-toggle flex items-center justify-between w-full text-sm font-semibold text-gray-900 mb-2 hover:text-gray-700 transition-colors"
+            data-category-key={categoryKey}
+            aria-expanded="true"
+          >
+            <div class="flex items-center gap-2">
+              {category.icon && <Icon name={category.icon} size={18} />}
+              {category.label}
+            </div>
+            <Icon name="chevron-down" size={16} class="chevron transition-transform" />
+          </button>
+        )}
+        <ul class="category-content space-y-1" data-category-key={categoryKey}>
           {docs.map((doc) => (
             <li>
               <a
@@ -40,3 +49,71 @@ const sidebarData = await getSidebarData();
     ))}
   </nav>
 </aside>
+
+<script>
+  // Initialize category fold states from localStorage
+  const STORAGE_KEY = 'sidebar-category-states';
+  
+  function getStoredStates(): Record<string, boolean> {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  }
+  
+  function saveState(categoryKey: string, isExpanded: boolean) {
+    try {
+      const states = getStoredStates();
+      states[categoryKey] = isExpanded;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+  
+  function initializeSidebar() {
+    const storedStates = getStoredStates();
+    const toggleButtons = document.querySelectorAll('.category-toggle');
+    
+    toggleButtons.forEach((button) => {
+      const categoryKey = button.getAttribute('data-category-key');
+      if (!categoryKey) return;
+      
+      const content = document.querySelector(`.category-content[data-category-key="${categoryKey}"]`);
+      if (!content) return;
+      
+      // Set initial state (default to expanded if not in storage)
+      const isExpanded = storedStates[categoryKey] !== false;
+      updateCategoryState(button as HTMLElement, content as HTMLElement, isExpanded);
+      
+      // Add click handler
+      button.addEventListener('click', () => {
+        const currentExpanded = button.getAttribute('aria-expanded') === 'true';
+        const newExpanded = !currentExpanded;
+        updateCategoryState(button as HTMLElement, content as HTMLElement, newExpanded);
+        saveState(categoryKey, newExpanded);
+      });
+    });
+  }
+  
+  function updateCategoryState(button: HTMLElement, content: HTMLElement, isExpanded: boolean) {
+    button.setAttribute('aria-expanded', String(isExpanded));
+    const chevron = button.querySelector('.chevron');
+    
+    if (isExpanded) {
+      content.style.display = '';
+      chevron?.classList.remove('rotate-[-90deg]');
+    } else {
+      content.style.display = 'none';
+      chevron?.classList.add('rotate-[-90deg]');
+    }
+  }
+  
+  // Initialize on load
+  initializeSidebar();
+  
+  // Re-initialize on navigation (for SPAs)
+  document.addEventListener('astro:page-load', initializeSidebar);
+</script>
