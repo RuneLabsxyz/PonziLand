@@ -557,36 +557,6 @@
         <p class="text-red-500 text-sm mt-1">{balanceError}</p>
       {/if}
 
-      <Card class="bg-red-600/50 ponzi-bg bg-blend-overlay m-0 mt-4">
-        <div class="flex justify-stretch">
-          <img
-            src="/ui/icons/Icon_ShieldRed.png"
-            alt="Shield Red Icon"
-            class="w-8 h-8 mr-2"
-          />
-
-          <span class="text-lg">
-            You land will never pay for itself, as you pay more in taxes than
-            you earn back !
-          </span>
-        </div>
-      </Card>
-
-      <Card class="bg-orange-300/50 ponzi-bg bg-blend-overlay m-0 mt-4">
-        <div class="flex justify-stretch">
-          <img
-            src="/ui/icons/Icon_ShieldOrange.png"
-            alt="Shield Orange Icon"
-            class="w-8 h-8 mr-2"
-          />
-
-          <span class="text-lg">
-            If someone buys your land immediately, you will loose 0.26$ ! You
-            might want to increase the sell price to avoid this.
-          </span>
-        </div>
-      </Card>
-
       {#if loading}
         <Button class="mt-3 w-full" disabled>
           buying <ThreeDots />
