@@ -1273,13 +1273,11 @@ fn test_time_to_nuke() {
     let time_to_nuke = actions_system.get_time_to_nuke(CENTER_LOCATION);
 
     set_block_timestamp(block_timestamp + time_to_nuke - 5);
-    let new_block_timestamp = get_block_timestamp();
     let future_auction_price = get_suggested_sell_price(store, CENTER_LOCATION);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(CENTER_LOCATION);
     assert!(unclaimed_taxes < land_stake.amount, "stake should be > unclaimed taxes");
     assert!(time_to_nuke != get_block_timestamp(), "should be not nukable yet");
     set_block_timestamp(block_timestamp + time_to_nuke);
-    let new_block_timestamp = get_block_timestamp();
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(CENTER_LOCATION);
     assert!(unclaimed_taxes >= land_stake.amount, "stake should be <= unclaimed taxes");
 

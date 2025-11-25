@@ -836,7 +836,6 @@ mod TaxesComponent {
             }
 
             // 1. Calculate current unclaimed taxes from all neighbors
-            // IMPORTANT: Use get_taxes_per_neighbor to match the calculation used in verification
             let mut current_unclaimed_taxes: u256 = 0;
             let mut sum_elapsed_times: u256 = 0;
 
@@ -847,8 +846,6 @@ mod TaxesComponent {
                     );
                 sum_elapsed_times += elapsed_time.into();
 
-                // Use get_taxes_per_neighbor which includes ceiling rounding
-                // IMPORTANT: Pass 'land' (the payer), not 'neighbor' (the claimer)
                 let taxes = get_taxes_per_neighbor(land, elapsed_time, store);
                 current_unclaimed_taxes += taxes;
             }
