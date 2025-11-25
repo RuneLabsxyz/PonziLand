@@ -3,8 +3,9 @@ use axum::{
     routing::get,
     Json, Router,
 };
+use chaindata_models::shared::Location;
 use chaindata_repository::{DropLandQueriesRepository, LandHistoricalRepository};
-use chrono::NaiveDateTime;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -91,9 +92,9 @@ impl DropsRoute {
             // Main's endpoint
             .route("/emitted", get(Self::get_drops_emitted))
             // Feature branch endpoints
-            .route("/:reinjector/list", get(Self::get_drop_lands))
-            .route("/:location/metrics", get(Self::get_drop_metrics))
-            .route("/:reinjector/global-metrics", get(Self::get_global_metrics))
+            .route("/{reinjector}/list", get(Self::get_drop_lands))
+            .route("/{location}/metrics", get(Self::get_drop_metrics))
+            .route("/{reinjector}/global-metrics", get(Self::get_global_metrics))
     }
 
     // === Handler from main: /drops/emitted ===
@@ -218,9 +219,9 @@ impl DropsRoute {
                     (
                         location.to_string(),
                         owner,
-                        time_bought.to_rfc3339(),
-                        initial_stake.to_string(),
-                        close_date.map(|d| d.to_rfc3339()),
+                        DateTime::<Utc>::from_naive_utc_and_offset(time_bought, Utc).to_rfc3339(),
+                        initial_stake,
+                        close_date.map(|d| DateTime::<Utc>::from_naive_utc_and_offset(d, Utc).to_rfc3339()),
                     )
                 },
             )
@@ -236,8 +237,8 @@ impl DropsRoute {
         Query(query): Query<DropMetricsQuery>,
         State(repo): State<Arc<DropLandQueriesRepository>>,
     ) -> Result<Json<DropLandResponse>, axum::http::StatusCode> {
-        let location_i16 = location as u16;
-        let location_obj = chaindata_models::shared::Location::from(location_i16);
+        let location_u16 = location as u16;
+        let location_obj = Location::from(location_u16 as u64);
         let fee_rate = query.fee_rate_basis_points.unwrap_or(900_000);
 
         let (initial, remaining, neighbor_taxes, area_fees) = repo
@@ -245,14 +246,19 @@ impl DropsRoute {
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        let distributed = if initial > remaining {
-            initial - remaining
+        // Convert strings to u128 for arithmetic
+        let initial_u128: u128 = initial.parse().unwrap_or(0);
+        let remaining_u128: u128 = remaining.parse().unwrap_or(0);
+        let area_fees_u128: u128 = area_fees.parse().unwrap_or(0);
+
+        let distributed = if initial_u128 > remaining_u128 {
+            initial_u128 - remaining_u128
         } else {
-            chaindata_models::shared::U256::from(0)
+            0
         };
 
-        let drop_roi = if distributed > chaindata_models::shared::U256::from(0) {
-            area_fees.to_f64() / distributed.to_f64()
+        let drop_roi = if distributed > 0 {
+            area_fees_u128 as f64 / distributed as f64
         } else {
             0.0
         };
@@ -260,12 +266,12 @@ impl DropsRoute {
         let response = DropLandResponse {
             land_location: location,
             owner: "reinjector".to_string(),
-            time_bought: chrono::Utc::now().to_rfc3339(),
-            drop_initial_stake: initial.to_string(),
-            drop_remaining_stake: remaining.to_string(),
+            time_bought: Utc::now().to_rfc3339(),
+            drop_initial_stake: initial,
+            drop_remaining_stake: remaining,
             drop_distributed_total: distributed.to_string(),
-            neighbor_taxes_received: neighbor_taxes.to_string(),
-            area_protocol_fees_total: area_fees.to_string(),
+            neighbor_taxes_received: neighbor_taxes,
+            area_protocol_fees_total: area_fees,
             drop_roi,
             close_date: None,
             is_active: true,
@@ -284,15 +290,15 @@ impl DropsRoute {
         let reinjector_lowercase = reinjector.to_lowercase();
         let fee_rate = query.fee_rate_basis_points.unwrap_or(900_000);
 
-        // Parse timestamps
-        let since = NaiveDateTime::parse_from_rfc3339(&query.since)
+        // Parse timestamps from ISO 8601 format
+        let since = DateTime::parse_from_rfc3339(&query.since)
             .ok()
-            .and_then(|dt| Some(dt.and_utc().naive_utc()))
+            .map(|dt| dt.with_timezone(&Utc).naive_utc())
             .ok_or(axum::http::StatusCode::BAD_REQUEST)?;
 
-        let until = NaiveDateTime::parse_from_rfc3339(&query.until)
+        let until = DateTime::parse_from_rfc3339(&query.until)
             .ok()
-            .and_then(|dt| Some(dt.and_utc().naive_utc()))
+            .map(|dt| dt.with_timezone(&Utc).naive_utc())
             .ok_or(axum::http::StatusCode::BAD_REQUEST)?;
 
         let (total_revenue, total_distributed) = repo
@@ -300,15 +306,19 @@ impl DropsRoute {
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        let global_roi = if total_distributed > chaindata_models::shared::U256::from(0) {
-            total_revenue.to_f64() / total_distributed.to_f64()
+        // Convert strings to u128 for ROI calculation
+        let revenue_u128: u128 = total_revenue.parse().unwrap_or(0);
+        let distributed_u128: u128 = total_distributed.parse().unwrap_or(0);
+
+        let global_roi = if distributed_u128 > 0 {
+            revenue_u128 as f64 / distributed_u128 as f64
         } else {
             0.0
         };
 
         let response = GlobalDropMetricsResponse {
-            total_revenue: total_revenue.to_string(),
-            total_drops_distributed: total_distributed.to_string(),
+            total_revenue,
+            total_drops_distributed: total_distributed,
             global_roi,
             since: query.since,
             until: query.until,
