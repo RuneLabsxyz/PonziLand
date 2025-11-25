@@ -3,8 +3,9 @@
   import { getTokenInfo } from '$lib/utils';
   import { walletStore, getBaseToken } from '$lib/stores/wallet.svelte';
   import * as Popover from '$lib/components/ui/popover';
-  import * as Avatar from '$lib/components/ui/avatar';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { HistoricalPosition } from '../historical-positions.service';
+  import { Card } from '$lib/components/ui/card';
 
   interface Props {
     position: HistoricalPosition;
@@ -43,6 +44,13 @@
         });
       }
     }
+
+    // Sort flows by dollar equivalent (highest first)
+    flows.sort((a, b) => {
+      const valueA = a.baseEquivalent?.rawValue().toNumber() || 0;
+      const valueB = b.baseEquivalent?.rawValue().toNumber() || 0;
+      return valueB - valueA;
+    });
 
     return { flows, totalBaseValue };
   });
@@ -118,117 +126,90 @@
   </Popover.Trigger>
 
   {#if hasFlows}
-    <Popover.Content class="w-96 bg-gray-900 border border-gray-700 shadow-xl">
-      <div class="space-y-4">
-        <div
-          class="text-sm font-medium text-gray-200 border-b border-gray-700 pb-2"
-        >
-          Token Flow Details
-        </div>
-
-        <!-- Net Summary -->
-        {#if netTokenFlow && !netTokenFlow.isZero()}
-          <div class="bg-gray-800 rounded p-3">
-            <div class="flex justify-between items-center">
-              <span class="text-gray-400">Net Flow</span>
-              <span
-                class="font-semibold {netTokenFlow.rawValue().isPositive()
-                  ? 'text-green-400'
-                  : 'text-red-400'}"
-              >
-                {netTokenFlow.rawValue().isPositive() ? '+' : ''}${netTokenFlow
-                  .rawValue()
-                  .toNumber()
-                  .toFixed(2)}
-              </span>
-            </div>
-          </div>
-        {/if}
-
-        <!-- Inflows Section -->
-        {#if inflowData.flows.length > 0}
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="text-sm font-medium text-green-400">Token Inflows</h4>
-              <span class="text-xs text-green-400">
-                +${inflowData.totalBaseValue.rawValue().toNumber().toFixed(2)}
-              </span>
-            </div>
-            <div class="space-y-2 max-h-32 overflow-y-auto">
-              {#each inflowData.flows as flow}
-                <div
-                  class="flex items-center justify-between bg-green-900/20 rounded p-2"
-                >
-                  <div class="flex items-center gap-2 min-w-0">
-                    <Avatar.Root class="h-6 w-6 flex-shrink-0">
-                      <Avatar.Fallback
-                        class="text-[9px] bg-gray-700 text-gray-300"
-                      >
-                        {flow.token.symbol.slice(0, 2)}
-                      </Avatar.Fallback>
-                    </Avatar.Root>
-                    <div class="flex flex-col min-w-0">
-                      <span class="text-sm text-gray-200 truncate">
-                        {flow.token.symbol}
-                      </span>
-                      <span class="text-xs text-green-400">
-                        +{flow.amount.toString()}
-                      </span>
-                    </div>
-                  </div>
-                  {#if flow.baseEquivalent && !flow.baseEquivalent.isZero()}
-                    <span class="text-xs text-green-400 ml-2 flex-shrink-0">
-                      +${flow.baseEquivalent.rawValue().toNumber().toFixed(2)}
-                    </span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
-
-        <!-- Outflows Section -->
-        {#if outflowData.flows.length > 0}
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <h4 class="text-sm font-medium text-red-400">Token Outflows</h4>
-              <span class="text-xs text-red-400">
-                -${outflowData.totalBaseValue.rawValue().toNumber().toFixed(2)}
-              </span>
-            </div>
-            <div class="space-y-2 max-h-32 overflow-y-auto">
-              {#each outflowData.flows as flow}
-                <div
-                  class="flex items-center justify-between bg-red-900/20 rounded p-2"
-                >
-                  <div class="flex items-center gap-2 min-w-0">
-                    <Avatar.Root class="h-6 w-6 flex-shrink-0">
-                      <Avatar.Fallback
-                        class="text-[9px] bg-gray-700 text-gray-300"
-                      >
-                        {flow.token.symbol.slice(0, 2)}
-                      </Avatar.Fallback>
-                    </Avatar.Root>
-                    <div class="flex flex-col min-w-0">
-                      <span class="text-sm text-gray-200 truncate">
-                        {flow.token.symbol}
-                      </span>
-                      <span class="text-xs text-red-400">
-                        -{flow.amount.toString()}
-                      </span>
-                    </div>
-                  </div>
-                  {#if flow.baseEquivalent && !flow.baseEquivalent.isZero()}
-                    <span class="text-xs text-red-400 ml-2 flex-shrink-0">
-                      -${flow.baseEquivalent.rawValue().toNumber().toFixed(2)}
-                    </span>
-                  {/if}
-                </div>
-              {/each}
-            </div>
-          </div>
-        {/if}
+    <Popover.Content class="bg-ponzi w-80">
+      <div
+        class=" font-ponzi-number text-xs stroke-3d-black text-gray-200 border-b border-gray-700 pb-2 mb-3"
+      >
+        Token Flow Details
       </div>
+
+      <!-- Income Section -->
+      {#if inflowData.flows.length > 0}
+        <div class="mb-4">
+          <div class="flex justify-between items-center mb-3">
+            <h4
+              class="font-ponzi-number text-xs stroke-3d-black text-green-400"
+            >
+              Income
+            </h4>
+            <span class="tracking-wider text-green-400 font-medium">
+              +${inflowData.totalBaseValue.rawValue().toNumber().toFixed(2)}
+            </span>
+          </div>
+          <div class="space-y-2 tracking-wider">
+            {#each inflowData.flows as flow}
+              <div
+                class="flex items-center justify-between bg-green-900/20 rounded p-2"
+              >
+                <div class="flex items-center gap-2">
+                  <TokenAvatar token={flow.token} class="h-6 w-6" />
+                  <div class="flex flex-col leading-none">
+                    <span class="text-gray-200">
+                      {flow.token.symbol}
+                    </span>
+                    <span class=" text-green-400">
+                      +{flow.amount.toString()}
+                    </span>
+                  </div>
+                </div>
+                {#if flow.baseEquivalent && !flow.baseEquivalent.isZero()}
+                  <span class="text-green-400 font-medium">
+                    +${flow.baseEquivalent.rawValue().toNumber().toFixed(2)}
+                  </span>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      <!-- Outcome Section -->
+      {#if outflowData.flows.length > 0}
+        <div>
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="font-ponzi-number text-xs stroke-3d-black text-red-400">
+              Outcome
+            </h4>
+            <span class=" text-red-400 font-medium">
+              -${outflowData.totalBaseValue.rawValue().toNumber().toFixed(2)}
+            </span>
+          </div>
+          <div class="space-y-2 tracking-wider">
+            {#each outflowData.flows as flow}
+              <div
+                class="flex items-center justify-between bg-red-900/20 rounded p-2"
+              >
+                <div class="flex items-center gap-2 leading-none">
+                  <TokenAvatar token={flow.token} class="h-6 w-6" />
+                  <div class="flex flex-col">
+                    <span class=" text-gray-200">
+                      {flow.token.symbol}
+                    </span>
+                    <span class=" text-red-400">
+                      -{flow.amount.toString()}
+                    </span>
+                  </div>
+                </div>
+                {#if flow.baseEquivalent && !flow.baseEquivalent.isZero()}
+                  <span class=" text-red-400 font-medium">
+                    -${flow.baseEquivalent.rawValue().toNumber().toFixed(2)}
+                  </span>
+                {/if}
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
     </Popover.Content>
   {/if}
 </Popover.Root>

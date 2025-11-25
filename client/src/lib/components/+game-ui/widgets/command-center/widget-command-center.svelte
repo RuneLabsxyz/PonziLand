@@ -136,7 +136,7 @@
     >
       <img
         src="/ui/icons/Icon_Notification.png"
-        alt="History"
+        alt="Notifications"
         class={[
           'h-6 w-6',
           {
