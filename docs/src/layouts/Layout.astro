@@ -1,5 +1,11 @@
 ---
 import '../styles/global.css'
+
+const { title } = Astro.props;
+const path = Astro.url.pathname;
+
+const pageTitle = path !== "/" ? `${title} - ` : "";
+const metaTitle = `${pageTitle}PonziDocs`;
 ---
 
 <!doctype html>
@@ -9,7 +15,7 @@ import '../styles/global.css'
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
-		<title>PonziLand - Documentation</title>
+		<title>{metaTitle}</title>
 	</head>
 	<body>
 		<slot />

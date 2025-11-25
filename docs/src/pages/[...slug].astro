@@ -17,6 +17,8 @@ const currentPath = `/${page.id.replace(/\.mdx?$/, '')}`;
 ---
 
 <DocsLayout title={page.data.title} currentPath={currentPath}>
-    <h1 class="font-bold text-2xl mb-4">{page.data.title}</h1>
-  <Content />
+    <article class="prose prose-slate max-w-none">
+        <h1 class="font-bold text-2xl mb-4">{page.data.title}</h1>
+        <Content />
+    </article>
 </DocsLayout>

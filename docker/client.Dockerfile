@@ -30,6 +30,7 @@ RUN --mount=type=bind,source=packages,target=/src \
     done
 COPY client/package.json ./client/package.json
 COPY playtest/package.json ./playtest/package.json
+COPY docs/package.json ./docs/package.json
 RUN ls -la .
 COPY patches ./patches
 RUN bun install --frozen-lockfile
