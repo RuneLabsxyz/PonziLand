@@ -1,15 +1,11 @@
 <!-- TransferForm.svelte -->
 <script lang="ts">
-    // Import bridge logic from package
-    import {
-      hyperlaneStore,
-      tokenTransferStore,
-      type Token,
-      type WalletProvider
-    } from '@ponziland/hyperlane-bridge';
+    import { hyperlaneStore } from './hyperlane-store.svelte';
+    import { tokenTransferStore } from './token-transfer-store.svelte';
+    import type { Token } from '@hyperlane-xyz/sdk';
 
     // Import account management
-    import { useAccount, phantomWalletStore } from '@ponziland/account';
+    import { useAccount } from '$lib/contexts/account.svelte';
     import { accountState } from '$lib/account.svelte';
 
     // Estado del formulario usando runes
@@ -58,13 +54,13 @@
     // Check connection status
     const isConnected = $derived(
       isStarknet ? accountState.isConnected :
-      isSolana ? phantomWalletStore.isConnected :
+      isSolana ? false : // TODO: phantomWalletStore.isConnected when Solana is implemented
       false
     );
 
     const connectedAddress = $derived(
       isStarknet ? accountState.address :
-      isSolana ? phantomWalletStore.walletAddress :
+      isSolana ? null : // TODO: phantomWalletStore.walletAddress when Solana is implemented
       null
     );
 
@@ -130,7 +126,8 @@
       if (isStarknet) {
         await accountManager?.promptForLogin();
       } else if (isSolana) {
-        await phantomWalletStore.connect({ forcePrompt: true });
+        alert('Solana wallet connection not yet implemented');
+        // TODO: await phantomWalletStore.connect({ forcePrompt: true });
       } else {
         alert('Unsupported chain. Please use Starknet or Solana.');
       }
@@ -140,7 +137,7 @@
       if (isStarknet) {
         accountManager?.disconnect();
       } else if (isSolana) {
-        await phantomWalletStore.disconnect();
+        // TODO: await phantomWalletStore.disconnect();
       }
     }
 
@@ -152,24 +149,8 @@
         return;
       }
 
-      // Create wallet provider for the transfer
-      const walletProvider: WalletProvider = {
-        getStarknetAccount: () => {
-          if (isStarknet) {
-            return accountManager?.getProvider()?.getWalletAccount() ?? null;
-          }
-          return null;
-        },
-        getSolanaWallet: () => {
-          if (isSolana && typeof window !== 'undefined') {
-            return (window as any).solana ?? null;
-          }
-          return null;
-        }
-      };
-
       try {
-        const result = await tokenTransferStore.executeTransfer(formData, walletProvider);
+        const result = await tokenTransferStore.executeTransfer(formData);
 
         if (result.success) {
           console.log('Transfer successful!', result.txHashes);
