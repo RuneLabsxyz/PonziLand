@@ -38,5 +38,8 @@ export {
 	type StoredSession
 } from './context/account.svelte.js';
 
+// Phantom wallet (Solana)
+export { phantomWalletStore } from './wallets/phantom.svelte.js';
+
 // Types for external consumers
 export type { ProviderInterface } from 'starknet';
