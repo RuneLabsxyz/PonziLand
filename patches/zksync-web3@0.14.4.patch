@@ -1,0 +1,484 @@
+diff --git a/node_modules/zksync-web3/.bun-tag-7e1e20d1c4028163 b/.bun-tag-7e1e20d1c4028163
+new file mode 100644
+index 0000000000000000000000000000000000000000..e69de29bb2d1d6434b8b29ae775ad8c2e48c5391
+diff --git a/build/src/adapters.d.ts b/build/src/adapters.d.ts
+index 79ae96e9ba5cfb996904cac66a8c7de93b4dacce..bc597654d4f20864cf62c0b1e6a72ddb56cd8cd8 100644
+--- a/build/src/adapters.d.ts
++++ b/build/src/adapters.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber, BigNumberish, BytesLike, ethers } from 'ethers';
++import { BigNumber, BigNumberish, BytesLike, ethers } from 'ethers-v5';
+ import { Provider } from './provider';
+ import { Address, BalancesMap, BlockTag, Eip712Meta, PriorityOpResponse, TransactionResponse } from './types';
+ type Constructor<T = {}> = new (...args: any[]) => T;
+diff --git a/build/src/adapters.js b/build/src/adapters.js
+index 79a83ef21e7a64293817f8a765fd86b52997ed88..5fdb196a1f8057e2ffb5060aabc02bfbea71fc6d 100644
+--- a/build/src/adapters.js
++++ b/build/src/adapters.js
+@@ -1,7 +1,7 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.AdapterL2 = exports.AdapterL1 = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ const typechain_1 = require("../typechain");
+ const utils_1 = require("./utils");
+ function AdapterL1(Base) {
+diff --git a/build/src/contract.d.ts b/build/src/contract.d.ts
+index 9e6a77995ae061fca59c49433defeab019d8cd09..1aca4543d40a150ba7d538b2000b1ccbe94ac7c2 100644
+--- a/build/src/contract.d.ts
++++ b/build/src/contract.d.ts
+@@ -1,8 +1,8 @@
+ import { Wallet } from './wallet';
+ import { Signer } from './signer';
+-import { Contract, ContractInterface, ethers } from 'ethers';
++import { Contract, ContractInterface, ethers } from 'ethers-v5';
+ import { DeploymentType } from './types';
+-export { Contract } from 'ethers';
++export { Contract } from 'ethers-v5';
+ export declare class ContractFactory extends ethers.ContractFactory {
+     readonly signer: Wallet | Signer;
+     readonly deploymentType: DeploymentType;
+diff --git a/build/src/contract.js b/build/src/contract.js
+index 5fd4b86e3e31b47fe64620dad9d63a21436fba06..63de4b8e61a00d15b6647c7bf5e0d22133e6036a 100644
+--- a/build/src/contract.js
++++ b/build/src/contract.js
+@@ -1,10 +1,10 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.ContractFactory = exports.Contract = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ const utils_1 = require("./utils");
+ const types_1 = require("./types");
+-var ethers_2 = require("ethers");
++var ethers_2 = require("ethers-v5");
+ Object.defineProperty(exports, "Contract", { enumerable: true, get: function () { return ethers_2.Contract; } });
+ class ContractFactory extends ethers_1.ethers.ContractFactory {
+     constructor(abi, bytecode, signer, deploymentType) {
+diff --git a/build/src/paymaster-utils.d.ts b/build/src/paymaster-utils.d.ts
+index 6a3dbb0fd8739dd46fef157177713ae8bcec9f23..8366f1321df33ebaf6aa4e4aced776b071b185a0 100644
+--- a/build/src/paymaster-utils.d.ts
++++ b/build/src/paymaster-utils.d.ts
+@@ -1,4 +1,4 @@
+-import { BytesLike, ethers } from 'ethers';
++import { BytesLike, ethers } from 'ethers-v5';
+ import { Address, ApprovalBasedPaymasterInput, GeneralPaymasterInput, PaymasterInput, PaymasterParams } from './types';
+ export declare const IPaymasterFlow: ethers.utils.Interface;
+ export declare function getApprovalBasedPaymasterInput(paymasterInput: ApprovalBasedPaymasterInput): BytesLike;
+diff --git a/build/src/paymaster-utils.js b/build/src/paymaster-utils.js
+index f175e3349218435239926356c7c2337196abd946..4d16f1a2631eef797843100f8e1a1693f3b69553 100644
+--- a/build/src/paymaster-utils.js
++++ b/build/src/paymaster-utils.js
+@@ -1,7 +1,7 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.getPaymasterParams = exports.getGeneralPaymasterInput = exports.getApprovalBasedPaymasterInput = exports.IPaymasterFlow = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ exports.IPaymasterFlow = new ethers_1.ethers.utils.Interface(require('../../abi/IPaymasterFlow.json').abi);
+ function getApprovalBasedPaymasterInput(paymasterInput) {
+     return exports.IPaymasterFlow.encodeFunctionData('approvalBased', [
+diff --git a/build/src/provider.d.ts b/build/src/provider.d.ts
+index 26b75aed415e7a7bb3ad547091444d0c7b4dc11e..bd1d71faef9b93af572888ba4fabbd57b3ed5145 100644
+--- a/build/src/provider.d.ts
++++ b/build/src/provider.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers, BigNumber, BigNumberish, utils, providers, BytesLike } from 'ethers';
++import { ethers, BigNumber, BigNumberish, utils, providers, BytesLike } from 'ethers-v5';
+ import Formatter = providers.Formatter;
+ import { ExternalProvider } from '@ethersproject/providers';
+ import { ConnectionInfo } from '@ethersproject/web';
+diff --git a/build/src/provider.js b/build/src/provider.js
+index 358eb7cd12e0a8aee509872ae2d79060c4bf1ebc..202717d4083abac2aaf8f98708ad2cf798f73aba 100644
+--- a/build/src/provider.js
++++ b/build/src/provider.js
+@@ -1,7 +1,7 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.Web3Provider = exports.Provider = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ var Formatter = ethers_1.providers.Formatter;
+ const web_1 = require("@ethersproject/web");
+ const typechain_1 = require("../typechain");
+diff --git a/build/src/signer.d.ts b/build/src/signer.d.ts
+index d596a8e2b5df0c19a97033557f0984e9cb33b016..04786f0c90bc85991492f5cfe91e354554761409 100644
+--- a/build/src/signer.d.ts
++++ b/build/src/signer.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { Provider } from './provider';
+ import { BlockTag, TransactionResponse, Signature, TransactionRequest } from './types';
+ import { TypedDataSigner } from '@ethersproject/abstract-signer';
+diff --git a/build/src/signer.js b/build/src/signer.js
+index d81922ec61f0fb45f4859caa4588e9a3fdb2933f..f2bceeaaab658d3df8f5d2e3e8ca9c6f1eff296c 100644
+--- a/build/src/signer.js
++++ b/build/src/signer.js
+@@ -1,7 +1,7 @@
+ "use strict";
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.L1Signer = exports.Signer = exports.EIP712Signer = exports.eip712Types = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ const utils_1 = require("./utils");
+ const hash_1 = require("@ethersproject/hash");
+ const adapters_1 = require("./adapters");
+diff --git a/build/src/types.d.ts b/build/src/types.d.ts
+index 04bb22088a2659c7d233ff26f5e90f563b3ddb91..b34726d6a1a1873740fb18ff375e1107578a57f6 100644
+--- a/build/src/types.d.ts
++++ b/build/src/types.d.ts
+@@ -1,4 +1,4 @@
+-import { BytesLike, BigNumberish, providers, BigNumber } from 'ethers';
++import { BytesLike, BigNumberish, providers, BigNumber } from 'ethers-v5';
+ import { BlockWithTransactions as EthersBlockWithTransactions } from '@ethersproject/abstract-provider';
+ export type Address = string;
+ export type Signature = string;
+diff --git a/build/src/utils.d.ts b/build/src/utils.d.ts
+index 1f49b04c1082bfd08cf59d937b9ab3e95a8ceaa0..e0358186a43292d64482ff9a32a79df87af54c9d 100644
+--- a/build/src/utils.d.ts
++++ b/build/src/utils.d.ts
+@@ -1,4 +1,4 @@
+-import { utils, ethers, BigNumber, BigNumberish, BytesLike } from 'ethers';
++import { utils, ethers, BigNumber, BigNumberish, BytesLike } from 'ethers-v5';
+ import { SignatureLike } from '@ethersproject/bytes';
+ import { Address, PriorityQueueType, PriorityOpTree, DeploymentInfo } from './types';
+ import { TypedDataDomain, TypedDataField } from '@ethersproject/abstract-signer';
+diff --git a/build/src/utils.js b/build/src/utils.js
+index 753e4091299a4fa2db4af299f7c8e8460a055b90..f336573865262524158300fad87d150c16563c2e 100644
+--- a/build/src/utils.js
++++ b/build/src/utils.js
+@@ -15,11 +15,11 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
+ };
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.estimateDefaultBridgeDepositL2Gas = exports.isTypedDataSignatureCorrect = exports.isMessageSignatureCorrect = exports.getERC20BridgeCalldata = exports.undoL1ToL2Alias = exports.applyL1ToL2Alias = exports.getL2HashFromPriorityOp = exports.parseTransaction = exports.hashBytecode = exports.serialize = exports.checkBaseCost = exports.createAddress = exports.create2Address = exports.getDeployedContracts = exports.getHashedL2ToL1Msg = exports.layer1TxDefaults = exports.sleep = exports.isETH = exports.REQUIRED_L1_TO_L2_GAS_PER_PUBDATA_LIMIT = exports.DEFAULT_GAS_PER_PUBDATA_LIMIT = exports.MAX_BYTECODE_LEN_BYTES = exports.PRIORITY_OPERATION_L2_TX_TYPE = exports.EIP712_TX_TYPE = exports.EIP1271_MAGIC_VALUE = exports.L1_TO_L2_ALIAS_OFFSET = exports.L2_ETH_TOKEN_ADDRESS = exports.L1_MESSENGER_ADDRESS = exports.CONTRACT_DEPLOYER_ADDRESS = exports.BOOTLOADER_FORMAL_ADDRESS = exports.L2_BRIDGE_ABI = exports.L1_BRIDGE_ABI = exports.IERC1271 = exports.IERC20 = exports.L1_MESSENGER = exports.CONTRACT_DEPLOYER = exports.ZKSYNC_MAIN_ABI = exports.ETH_ADDRESS = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ const types_1 = require("./types");
+ const signer_1 = require("./signer");
+ const typechain_1 = require("../typechain");
+-const utils_1 = require("ethers/lib/utils");
++const utils_1 = require("ethers-v5/lib/utils");
+ __exportStar(require("./paymaster-utils"), exports);
+ exports.ETH_ADDRESS = '0x0000000000000000000000000000000000000000';
+ exports.ZKSYNC_MAIN_ABI = new ethers_1.utils.Interface(require('../../abi/IZkSync.json').abi);
+diff --git a/build/src/wallet.d.ts b/build/src/wallet.d.ts
+index 99148ab6b0b80429234060190cbcabcfa6e14eb9..9958e656bb7c49631c212ffeac62032d79df7f4b 100644
+--- a/build/src/wallet.d.ts
++++ b/build/src/wallet.d.ts
+@@ -1,6 +1,6 @@
+ import { EIP712Signer } from './signer';
+ import { Provider } from './provider';
+-import { ethers, utils } from 'ethers';
++import { ethers, utils } from 'ethers-v5';
+ import { BlockTag, TransactionResponse, TransactionRequest } from './types';
+ import { ProgressCallback } from '@ethersproject/json-wallets';
+ declare const Wallet_base: {
+diff --git a/build/src/wallet.js b/build/src/wallet.js
+index 6dce8d5fce03ed16cce5ee41a05af197fd34ffec..18b75bf6a3217bc0e8946cf269e19f8b172e8b40 100644
+--- a/build/src/wallet.js
++++ b/build/src/wallet.js
+@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.Wallet = void 0;
+ const signer_1 = require("./signer");
+ const utils_1 = require("./utils");
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ const adapters_1 = require("./adapters");
+ class Wallet extends (0, adapters_1.AdapterL2)((0, adapters_1.AdapterL1)(ethers_1.ethers.Wallet)) {
+     _providerL1() {
+diff --git a/build/typechain/IAllowList.d.ts b/build/typechain/IAllowList.d.ts
+index c7e4e1e3dbc29c431d6924d6e1b12b9380c1c555..13e3de6a3f5ef95df51e2e7f1e5b313c2e7e0f41 100644
+--- a/build/typechain/IAllowList.d.ts
++++ b/build/typechain/IAllowList.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/build/typechain/IAllowListFactory.d.ts b/build/typechain/IAllowListFactory.d.ts
+index e4413c287a285d92fe09477c1155eb4c04271dd7..63524007785a60f90f45400ddcfe8c91e581e12d 100644
+--- a/build/typechain/IAllowListFactory.d.ts
++++ b/build/typechain/IAllowListFactory.d.ts
+@@ -1,4 +1,4 @@
+-import { Signer } from "ethers";
++import { Signer } from "ethers-v5";
+ import { Provider } from "@ethersproject/providers";
+ import type { IAllowList } from "./IAllowList";
+ export declare class IAllowListFactory {
+diff --git a/build/typechain/IAllowListFactory.js b/build/typechain/IAllowListFactory.js
+index ada17c0ab1e4df4b76c541cbb87b7b8ce549a0f4..bff123b5af21f65cae3ecfc6e83d7f986ecfa96f 100644
+--- a/build/typechain/IAllowListFactory.js
++++ b/build/typechain/IAllowListFactory.js
+@@ -4,7 +4,7 @@
+ /* eslint-disable */
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.IAllowListFactory = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ class IAllowListFactory {
+     static connect(address, signerOrProvider) {
+         return new ethers_1.Contract(address, _abi, signerOrProvider);
+diff --git a/build/typechain/IERC20Metadata.d.ts b/build/typechain/IERC20Metadata.d.ts
+index b6c3181b26fca18328e4b974b8cb466d1fffef88..fb124e8d081b0d3ba5d8df3a43509d4a612fc7b5 100644
+--- a/build/typechain/IERC20Metadata.d.ts
++++ b/build/typechain/IERC20Metadata.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/build/typechain/IERC20MetadataFactory.d.ts b/build/typechain/IERC20MetadataFactory.d.ts
+index d795b8a55d76e17d364c608ed3aee31b294bbc74..c8072245732b089c259f149a8a23a81cb45d1a0e 100644
+--- a/build/typechain/IERC20MetadataFactory.d.ts
++++ b/build/typechain/IERC20MetadataFactory.d.ts
+@@ -1,4 +1,4 @@
+-import { Signer } from "ethers";
++import { Signer } from "ethers-v5";
+ import { Provider } from "@ethersproject/providers";
+ import type { IERC20Metadata } from "./IERC20Metadata";
+ export declare class IERC20MetadataFactory {
+diff --git a/build/typechain/IERC20MetadataFactory.js b/build/typechain/IERC20MetadataFactory.js
+index b621a66108b29800563d8ced929664201f7329ef..edc52b24493bc965bffd5727b72043c1c88b0248 100644
+--- a/build/typechain/IERC20MetadataFactory.js
++++ b/build/typechain/IERC20MetadataFactory.js
+@@ -4,7 +4,7 @@
+ /* eslint-disable */
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.IERC20MetadataFactory = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ class IERC20MetadataFactory {
+     static connect(address, signerOrProvider) {
+         return new ethers_1.Contract(address, _abi, signerOrProvider);
+diff --git a/build/typechain/IEthToken.d.ts b/build/typechain/IEthToken.d.ts
+index 11f00956d90350c4bfe5eff48276def30169a1d1..5220c534cde76898b5f8f9457ab842b3e88aca20 100644
+--- a/build/typechain/IEthToken.d.ts
++++ b/build/typechain/IEthToken.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/build/typechain/IEthTokenFactory.d.ts b/build/typechain/IEthTokenFactory.d.ts
+index 032040c857937f8158d951f944473a70b1e997c4..e913c9f99f1fa81f06c963aafe9a487e387016c8 100644
+--- a/build/typechain/IEthTokenFactory.d.ts
++++ b/build/typechain/IEthTokenFactory.d.ts
+@@ -1,4 +1,4 @@
+-import { Signer } from "ethers";
++import { Signer } from "ethers-v5";
+ import { Provider } from "@ethersproject/providers";
+ import type { IEthToken } from "./IEthToken";
+ export declare class IEthTokenFactory {
+diff --git a/build/typechain/IEthTokenFactory.js b/build/typechain/IEthTokenFactory.js
+index d22dd9227bd202f0b5175b82a3cc684c2077dc4a..e08d7c47cb3ae09ab118198e4b9daaf57cfd06bc 100644
+--- a/build/typechain/IEthTokenFactory.js
++++ b/build/typechain/IEthTokenFactory.js
+@@ -4,7 +4,7 @@
+ /* eslint-disable */
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.IEthTokenFactory = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ class IEthTokenFactory {
+     static connect(address, signerOrProvider) {
+         return new ethers_1.Contract(address, _abi, signerOrProvider);
+diff --git a/build/typechain/IL1Bridge.d.ts b/build/typechain/IL1Bridge.d.ts
+index e770ca81975faac00ef43b4cf83d02c10b70350c..05c76edb4d1860fa01ceebe7057b54a2856d9d88 100644
+--- a/build/typechain/IL1Bridge.d.ts
++++ b/build/typechain/IL1Bridge.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/build/typechain/IL1BridgeFactory.d.ts b/build/typechain/IL1BridgeFactory.d.ts
+index a4b9b2d1811db2b4ceaef5df8ac8ec9676278ba3..0700de19ba03fc336e4ccd9ce8c5e873333227d6 100644
+--- a/build/typechain/IL1BridgeFactory.d.ts
++++ b/build/typechain/IL1BridgeFactory.d.ts
+@@ -1,4 +1,4 @@
+-import { Signer } from "ethers";
++import { Signer } from "ethers-v5";
+ import { Provider } from "@ethersproject/providers";
+ import type { IL1Bridge } from "./IL1Bridge";
+ export declare class IL1BridgeFactory {
+diff --git a/build/typechain/IL1BridgeFactory.js b/build/typechain/IL1BridgeFactory.js
+index cd5c1cb99d3726fbcfff573abab35c6bc177ec23..a94d0aa593cb2654770bd7e33e4b0f5081f68541 100644
+--- a/build/typechain/IL1BridgeFactory.js
++++ b/build/typechain/IL1BridgeFactory.js
+@@ -4,7 +4,7 @@
+ /* eslint-disable */
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.IL1BridgeFactory = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ class IL1BridgeFactory {
+     static connect(address, signerOrProvider) {
+         return new ethers_1.Contract(address, _abi, signerOrProvider);
+diff --git a/build/typechain/IL2Bridge.d.ts b/build/typechain/IL2Bridge.d.ts
+index 7e3e33ea2e4a401afa1b261343449e5d7b66ca7f..d2c8fddcd15120ce3d16e79c57c98d3016566f61 100644
+--- a/build/typechain/IL2Bridge.d.ts
++++ b/build/typechain/IL2Bridge.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/build/typechain/IL2BridgeFactory.d.ts b/build/typechain/IL2BridgeFactory.d.ts
+index ed86074dd9ddae7802a52bb62de18e3993745b72..dccf5a180c8377d650be2ecd3a0914a22987db05 100644
+--- a/build/typechain/IL2BridgeFactory.d.ts
++++ b/build/typechain/IL2BridgeFactory.d.ts
+@@ -1,4 +1,4 @@
+-import { Signer } from "ethers";
++import { Signer } from "ethers-v5";
+ import { Provider } from "@ethersproject/providers";
+ import type { IL2Bridge } from "./IL2Bridge";
+ export declare class IL2BridgeFactory {
+diff --git a/build/typechain/IL2BridgeFactory.js b/build/typechain/IL2BridgeFactory.js
+index 9d69b570e8e13ccfaebe0f6743332f7a127130ad..abfefd44be85af986673cac9d9acce62645bbb62 100644
+--- a/build/typechain/IL2BridgeFactory.js
++++ b/build/typechain/IL2BridgeFactory.js
+@@ -4,7 +4,7 @@
+ /* eslint-disable */
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.IL2BridgeFactory = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ class IL2BridgeFactory {
+     static connect(address, signerOrProvider) {
+         return new ethers_1.Contract(address, _abi, signerOrProvider);
+diff --git a/build/typechain/IZkSync.d.ts b/build/typechain/IZkSync.d.ts
+index 34d2062cb95771fe5b22e795cb307a1dd87848a0..6f46d0a62bc4c126af37bf2275ae0659837145d2 100644
+--- a/build/typechain/IZkSync.d.ts
++++ b/build/typechain/IZkSync.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/build/typechain/IZkSyncFactory.d.ts b/build/typechain/IZkSyncFactory.d.ts
+index 78a12c5b9f26341c5e38718de3e92439b2c7e2a4..718e521548d2f9d01b384b240e7e76c0839b5815 100644
+--- a/build/typechain/IZkSyncFactory.d.ts
++++ b/build/typechain/IZkSyncFactory.d.ts
+@@ -1,4 +1,4 @@
+-import { Signer } from "ethers";
++import { Signer } from "ethers-v5";
+ import { Provider } from "@ethersproject/providers";
+ import type { IZkSync } from "./IZkSync";
+ export declare class IZkSyncFactory {
+diff --git a/build/typechain/IZkSyncFactory.js b/build/typechain/IZkSyncFactory.js
+index bcfa4449a647a6e4b7bbf68fa9e162c704f86fdf..3d83d2e4f54cfcc5d0ee6e70e1dc681ee34d6408 100644
+--- a/build/typechain/IZkSyncFactory.js
++++ b/build/typechain/IZkSyncFactory.js
+@@ -4,7 +4,7 @@
+ /* eslint-disable */
+ Object.defineProperty(exports, "__esModule", { value: true });
+ exports.IZkSyncFactory = void 0;
+-const ethers_1 = require("ethers");
++const ethers_1 = require("ethers-v5");
+ class IZkSyncFactory {
+     static connect(address, signerOrProvider) {
+         return new ethers_1.Contract(address, _abi, signerOrProvider);
+diff --git a/typechain/IAllowList.d.ts b/typechain/IAllowList.d.ts
+index c7e4e1e3dbc29c431d6924d6e1b12b9380c1c555..13e3de6a3f5ef95df51e2e7f1e5b313c2e7e0f41 100644
+--- a/typechain/IAllowList.d.ts
++++ b/typechain/IAllowList.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/typechain/IERC20Metadata.d.ts b/typechain/IERC20Metadata.d.ts
+index b6c3181b26fca18328e4b974b8cb466d1fffef88..fb124e8d081b0d3ba5d8df3a43509d4a612fc7b5 100644
+--- a/typechain/IERC20Metadata.d.ts
++++ b/typechain/IERC20Metadata.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/typechain/IEthToken.d.ts b/typechain/IEthToken.d.ts
+index 11f00956d90350c4bfe5eff48276def30169a1d1..5220c534cde76898b5f8f9457ab842b3e88aca20 100644
+--- a/typechain/IEthToken.d.ts
++++ b/typechain/IEthToken.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/typechain/IL1Bridge.d.ts b/typechain/IL1Bridge.d.ts
+index e770ca81975faac00ef43b4cf83d02c10b70350c..05c76edb4d1860fa01ceebe7057b54a2856d9d88 100644
+--- a/typechain/IL1Bridge.d.ts
++++ b/typechain/IL1Bridge.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/typechain/IL2Bridge.d.ts b/typechain/IL2Bridge.d.ts
+index 7e3e33ea2e4a401afa1b261343449e5d7b66ca7f..d2c8fddcd15120ce3d16e79c57c98d3016566f61 100644
+--- a/typechain/IL2Bridge.d.ts
++++ b/typechain/IL2Bridge.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
+diff --git a/typechain/IZkSync.d.ts b/typechain/IZkSync.d.ts
+index 34d2062cb95771fe5b22e795cb307a1dd87848a0..6f46d0a62bc4c126af37bf2275ae0659837145d2 100644
+--- a/typechain/IZkSync.d.ts
++++ b/typechain/IZkSync.d.ts
+@@ -9,7 +9,7 @@ import {
+   BigNumber,
+   BigNumberish,
+   PopulatedTransaction,
+-} from "ethers";
++} from "ethers-v5";
+ import {
+   Contract,
+   ContractTransaction,
