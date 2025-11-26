@@ -8,7 +8,6 @@
     import { useAccount } from '$lib/contexts/account.svelte';
     import { accountState } from '$lib/account.svelte';
 
-    // Estado del formulario usando runes
     let formData = $state({
       originChain: '',
       destinationChain: '',
@@ -23,7 +22,6 @@
 
     const accountManager = useAccount();
 
-    // Derivados reactivos usando runes
     const availableChains = $derived(
       hyperlaneStore.warpCore
         ? Array.from(new Set(hyperlaneStore.warpCore.tokens.map((t: Token) => t.chainName)))
@@ -162,7 +160,6 @@
       }
     }
 
-    // Limpiar error cuando cambian los datos del formulario
     $effect(() => {
       if (tokenTransferStore.error) {
         tokenTransferStore.clearError();

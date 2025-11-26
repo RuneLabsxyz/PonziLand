@@ -37,7 +37,6 @@ class TokenTransferStore {
     txHashes: [],
   });
 
-  // Getters usando runes
   get status() {
     return this.state.status;
   }
@@ -207,7 +206,6 @@ class TokenTransferStore {
         throw new Error('Insufficient collateral on destination chain');
       }
 
-      // 5. Obtener transacciones necesarias
       console.log('Getting transfer transactions...');
       const transactions = await hyperlaneStore.warpCore.getTransferRemoteTxs({
         originTokenAmount: tokenAmount,
@@ -218,7 +216,6 @@ class TokenTransferStore {
 
       console.log('Transactions to execute:', transactions);
 
-      // 5. Ejecutar transacciones según el tipo de chain
       this.state.status = 'transferring';
       const chainType = this.getChainType(originChain);
 
@@ -272,5 +269,4 @@ class TokenTransferStore {
   }
 }
 
-// Exportar instancia global del store
 export const tokenTransferStore = new TokenTransferStore();

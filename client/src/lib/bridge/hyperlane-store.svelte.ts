@@ -5,7 +5,7 @@ import { GithubRegistry } from '@hyperlane-xyz/registry';
 
 
 interface HyperlaneState {
-  warpCore: WarpCore | null; // Usar any para evitar tipos estáticos de Hyperlane
+  warpCore: WarpCore | null; 
   multiProvider: MultiProtocolProvider | null;
   registry: GithubRegistry | null;
   chainAddresses: ChainMap<Record<string, string>>| null;
@@ -70,7 +70,6 @@ class HyperlaneStore {
     }
   }
 
-  // Método para reinicializar si es necesario
   async reinitialize() {
     this.state.isReady = false;
     this.state.error = null;
@@ -78,5 +77,4 @@ class HyperlaneStore {
   }
 }
 
-// Exportar instancia global del store
 export const hyperlaneStore = new HyperlaneStore();
