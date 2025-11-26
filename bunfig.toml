@@ -1,0 +1,8 @@
+[install]
+registry = "https://registry.npmjs.org"
+
+[install.scopes]
+"@sveltejs" = "https://registry.npmjs.org"
+"@dojoengine" = "https://registry.npmjs.org"
+"@interactjs" = "https://registry.npmjs.org"
+"@threejs-kit" = "https://registry.npmjs.org"
