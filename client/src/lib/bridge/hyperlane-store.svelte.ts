@@ -1,14 +1,17 @@
 // HyperlaneProvider.tsx
 import { initializeHyperlane } from './config';
-import { WarpCore, MultiProtocolProvider, type ChainMap } from '@hyperlane-xyz/sdk';
+import {
+  WarpCore,
+  MultiProtocolProvider,
+  type ChainMap,
+} from '@hyperlane-xyz/sdk';
 import { GithubRegistry } from '@hyperlane-xyz/registry';
 
-
 interface HyperlaneState {
-  warpCore: WarpCore | null; 
+  warpCore: WarpCore | null;
   multiProvider: MultiProtocolProvider | null;
   registry: GithubRegistry | null;
-  chainAddresses: ChainMap<Record<string, string>>| null;
+  chainAddresses: ChainMap<Record<string, string>> | null;
   isReady: boolean;
   error: string | null;
 }
@@ -18,9 +21,9 @@ class HyperlaneStore {
     warpCore: null,
     multiProvider: null,
     registry: null,
-  chainAddresses: null,
+    chainAddresses: null,
     isReady: false,
-    error: null
+    error: null,
   });
 
   constructor() {
@@ -54,19 +57,26 @@ class HyperlaneStore {
 
   private async initialize() {
     try {
-      const { warpCore, multiProvider, registry, chainAddresses } = await initializeHyperlane();
-      console.log('Hyperlane initialized:', { warpCore, multiProvider, registry, chainAddresses })
+      const { warpCore, multiProvider, registry, chainAddresses } =
+        await initializeHyperlane();
+      console.log('Hyperlane initialized:', {
+        warpCore,
+        multiProvider,
+        registry,
+        chainAddresses,
+      });
       this.state = {
         warpCore,
         multiProvider,
         registry,
         chainAddresses,
         isReady: true,
-        error: null
+        error: null,
       };
     } catch (error) {
       console.error('Error initializing Hyperlane:', error);
-      this.state.error = error instanceof Error ? error.message : 'Unknown error';
+      this.state.error =
+        error instanceof Error ? error.message : 'Unknown error';
     }
   }
 

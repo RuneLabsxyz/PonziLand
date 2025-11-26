@@ -16,7 +16,13 @@ interface TransferParams {
   sender: string;
 }
 
-type TransferStatus = 'idle' | 'preparing' | 'approving' | 'transferring' | 'success' | 'error';
+type TransferStatus =
+  | 'idle'
+  | 'preparing'
+  | 'approving'
+  | 'transferring'
+  | 'success'
+  | 'error';
 
 interface TransferState {
   status: TransferStatus;
@@ -42,7 +48,11 @@ class TokenTransferStore {
   }
 
   get isLoading() {
-    return this.state.status !== 'idle' && this.state.status !== 'success' && this.state.status !== 'error';
+    return (
+      this.state.status !== 'idle' &&
+      this.state.status !== 'success' &&
+      this.state.status !== 'error'
+    );
   }
 
   get error() {
@@ -56,7 +66,11 @@ class TokenTransferStore {
   private getChainType(chainName: string): 'starknet' | 'solana' | 'evm' {
     const chainLower = chainName.toLowerCase();
 
-    if (chainLower.includes('starknet') || chainLower === 'sepolia' || chainLower === 'mainnet') {
+    if (
+      chainLower.includes('starknet') ||
+      chainLower === 'sepolia' ||
+      chainLower === 'mainnet'
+    ) {
       return 'starknet';
     }
     if (chainLower.includes('solana') || chainLower === 'solana') {
@@ -69,7 +83,7 @@ class TokenTransferStore {
   async getTokenBalance(
     chainName: string,
     tokenSymbol: string,
-    address: string
+    address: string,
   ): Promise<TokenAmount | null> {
     if (!hyperlaneStore.warpCore || !hyperlaneStore.multiProvider) {
       console.warn('Hyperlane not initialized');
@@ -79,7 +93,7 @@ class TokenTransferStore {
     try {
       // Find the token
       const token = hyperlaneStore.warpCore.tokens.find(
-        (t: Token) => t.chainName === chainName && t.symbol === tokenSymbol
+        (t: Token) => t.chainName === chainName && t.symbol === tokenSymbol,
       );
 
       if (!token) {
@@ -88,7 +102,10 @@ class TokenTransferStore {
       }
 
       // Get balance using Hyperlane's method
-      const balance = await token.getBalance(hyperlaneStore.multiProvider, address);
+      const balance = await token.getBalance(
+        hyperlaneStore.multiProvider,
+        address,
+      );
       return balance;
     } catch (err) {
       console.error('Error fetching token balance:', err);
@@ -96,7 +113,10 @@ class TokenTransferStore {
     }
   }
 
-  private async executeStarknetTransactions(transactions: any[], sender: string): Promise<string[]> {
+  private async executeStarknetTransactions(
+    transactions: any[],
+    sender: string,
+  ): Promise<string[]> {
     const accountManager = useAccount();
     const provider = accountManager?.getProvider();
     const account = provider?.getWalletAccount();
@@ -130,7 +150,10 @@ class TokenTransferStore {
     return txHashes;
   }
 
-  private async executeSolanaTransactions(transactions: any[], sender: string): Promise<string[]> {
+  private async executeSolanaTransactions(
+    transactions: any[],
+    sender: string,
+  ): Promise<string[]> {
     // TODO: Uncomment when using @ponziland/account package with phantomWalletStore
     // if (!phantomWalletStore.isConnected) {
     //   throw new Error('Phantom wallet not connected');
@@ -142,13 +165,20 @@ class TokenTransferStore {
 
     // TODO: Implement Solana transaction execution
     // This requires @solana/web3.js integration
-    throw new Error('Solana transaction execution not yet implemented. Coming soon!');
+    throw new Error(
+      'Solana transaction execution not yet implemented. Coming soon!',
+    );
   }
 
-  private async executeEvmTransactions(transactions: any[], sender: string): Promise<string[]> {
+  private async executeEvmTransactions(
+    transactions: any[],
+    sender: string,
+  ): Promise<string[]> {
     // TODO: Implement EVM transaction execution
     // This requires ethers or viem wallet connection
-    throw new Error('EVM transaction execution not yet implemented. Connect MetaMask or similar wallet.');
+    throw new Error(
+      'EVM transaction execution not yet implemented. Connect MetaMask or similar wallet.',
+    );
   }
 
   async executeTransfer(params: TransferParams): Promise<TransferResult> {
@@ -168,15 +198,14 @@ class TokenTransferStore {
         tokenSymbol,
         amount,
         recipient,
-        sender
+        sender,
       } = params;
 
       console.log('Transfer params:', params);
 
       const tokens = hyperlaneStore.warpCore.tokens;
-      const originToken = tokens.find((t: Token) =>
-        t.chainName === originChain &&
-        t.symbol === tokenSymbol
+      const originToken = tokens.find(
+        (t: Token) => t.chainName === originChain && t.symbol === tokenSymbol,
       );
       console.log('Origin token:', originToken);
 
@@ -193,14 +222,15 @@ class TokenTransferStore {
       console.log('Token amount created:', {
         amount: tokenAmount.amount.toString(),
         decimals: tokenAmount.token.decimals,
-        symbol: tokenAmount.token.symbol
+        symbol: tokenAmount.token.symbol,
       });
 
       console.log('Checking collateral...');
-      const isCollateralSufficient = await hyperlaneStore.warpCore.isDestinationCollateralSufficient({
-        originTokenAmount: tokenAmount,
-        destination: destinationChain,
-      });
+      const isCollateralSufficient =
+        await hyperlaneStore.warpCore.isDestinationCollateralSufficient({
+          originTokenAmount: tokenAmount,
+          destination: destinationChain,
+        });
 
       if (!isCollateralSufficient) {
         throw new Error('Insufficient collateral on destination chain');
@@ -222,7 +252,10 @@ class TokenTransferStore {
       let txHashes: string[];
       switch (chainType) {
         case 'starknet':
-          txHashes = await this.executeStarknetTransactions(transactions, sender);
+          txHashes = await this.executeStarknetTransactions(
+            transactions,
+            sender,
+          );
           break;
         case 'solana':
           txHashes = await this.executeSolanaTransactions(transactions, sender);
@@ -242,7 +275,6 @@ class TokenTransferStore {
         success: true,
         txHashes: this.state.txHashes,
       };
-
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       this.state.error = errorMessage;
