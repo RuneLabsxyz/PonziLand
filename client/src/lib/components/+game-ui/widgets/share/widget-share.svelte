@@ -263,9 +263,7 @@
         console.error('Failed to generate image on load:', err);
       }
     };
-
-    // Small delay to ensure DOM is fully rendered
-    setTimeout(generateImage, 100);
+    generateImage();
   });
 
   async function shareOnX() {
