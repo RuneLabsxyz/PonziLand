@@ -19,8 +19,15 @@
     // Check if widget already exists
     if ($widgetsStore[widget.id]) {
       if ($widgetsStore[widget.id].isOpen) {
-        widgetsStore.updateWidget(widget.id, { isOpen: false });
+        // If widget is open but minimized, unminimize it
+        if ($widgetsStore[widget.id].isMinimized) {
+          widgetsStore.updateWidget(widget.id, { isMinimized: false });
+        } else {
+          // If widget is open and not minimized, close it
+          widgetsStore.updateWidget(widget.id, { isOpen: false });
+        }
       } else {
+        // If widget is closed, open it
         widgetsStore.updateWidget(widget.id, { isOpen: true });
       }
       return;
