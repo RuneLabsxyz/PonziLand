@@ -24,9 +24,10 @@
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
     setCustomControls?: (controls: Snippet<[]> | null) => void;
+    onGoToMarket?: () => void;
   };
 
-  let { setCustomTitle, setCustomControls }: Props = $props();
+  let { setCustomTitle, setCustomControls, onGoToMarket }: Props = $props();
 
   const dojo = useDojo();
   const getDojoAccount = () => {
@@ -567,14 +568,19 @@
               onclick={(e: Event) => {
                 e.preventDefault();
                 e.stopPropagation();
-                widgetsStore.addWidget({
-                  id: 'market',
-                  type: 'market',
-                  position: { x: 40, y: 30 },
-                  dimensions: { width: 450, height: 600 },
-                  isMinimized: false,
-                  isOpen: true,
-                });
+                if (onGoToMarket) {
+                  onGoToMarket();
+                } else {
+                  // Fallback to opening separate market widget
+                  widgetsStore.addWidget({
+                    id: 'market',
+                    type: 'market',
+                    position: { x: 40, y: 30 },
+                    dimensions: { width: 450, height: 600 },
+                    isMinimized: false,
+                    isOpen: true,
+                  });
+                }
               }}
             >
               Go to market !
