@@ -142,7 +142,9 @@
               {
                 'text-yellow-500': position.close_reason === 'bought',
                 'text-red-400': position.close_reason === 'nuked',
-                'text-gray-400': position.close_reason !== 'bought' && position.close_reason !== 'nuked',
+                'text-gray-400':
+                  position.close_reason !== 'bought' &&
+                  position.close_reason !== 'nuked',
               },
             ]}
           >
@@ -201,8 +203,12 @@
           'text-right',
           {
             'text-gray-500': isOpen || !position.net_profit_token,
-            'text-red-400': !isOpen && position.net_profit_token?.startsWith('-'),
-            'text-green-400': !isOpen && position.net_profit_token && !position.net_profit_token.startsWith('-'),
+            'text-red-400':
+              !isOpen && position.net_profit_token?.startsWith('-'),
+            'text-green-400':
+              !isOpen &&
+              position.net_profit_token &&
+              !position.net_profit_token.startsWith('-'),
           },
         ]}
       >
