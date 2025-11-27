@@ -13,21 +13,50 @@ use starknet::{ContractAddress, get_block_timestamp};
 /// owners.
 
 /// @notice Calculates the total tax amount owed by a land to a specific neighbor
-/// @dev This is the core tax calculation function that determines yield payments
+/// @dev Maintains extra precision so rounding dust can be accumulated via stored remainders.
 /// Formula: (tax_rate_per_neighbor * elapsed_time) / base_time
 /// @param land The land that owes taxes (tax payer)
 /// @param elapsed_time Time elapsed since last claim in seconds
 /// @param store Game configuration store containing base time and other parameters
-/// @return u256 The total tax amount owed to the neighbor
+/// @return u256 The payable amount (floor division without applying stored remainder)
 #[inline(always)]
 pub fn get_taxes_per_neighbor(land: @Land, elapsed_time: u64, store: Store) -> u256 {
     let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land, store);
+    let base_time: u256 = store.get_base_time().into();
+
+    if tax_rate_per_neighbor == 0 || elapsed_time == 0 || base_time == 0 {
+        return 0;
+    }
 
     // Calculate tax based on elapsed time proportional to base time
-    let tax_per_neighbor: u256 = (tax_rate_per_neighbor * elapsed_time.into())
-        / (store.get_base_time().into());
-
+    let elapsed_as_u256: u256 = elapsed_time.into();
+    let numerator = tax_rate_per_neighbor * elapsed_as_u256;
+    let tax_per_neighbor: u256 = numerator / base_time;
     tax_per_neighbor
+}
+
+/// @notice Detailed result for precision-aware tax computation with stored remainder (in base_time
+/// ticks)
+#[derive(Copy, Drop, Serde, Debug)]
+pub struct TaxComputation {
+    pub amount: u256,
+    pub remainder: u256,
+}
+
+/// @notice Calculates taxes using a carried-over remainder to avoid rounding loss
+#[inline(always)]
+pub fn compute_tax_with_remainder(
+    tax_rate_per_neighbor: u256, elapsed_time: u64, base_time: u256, pending_remainder: u256,
+) -> TaxComputation {
+    if tax_rate_per_neighbor == 0 || elapsed_time == 0 || base_time == 0 {
+        return TaxComputation { amount: 0, remainder: pending_remainder };
+    }
+
+    let elapsed_as_u256: u256 = elapsed_time.into();
+    let numerator = tax_rate_per_neighbor * elapsed_as_u256 + pending_remainder;
+    let amount = numerator / base_time;
+    let remainder = numerator % base_time;
+    TaxComputation { amount, remainder }
 }
 
 

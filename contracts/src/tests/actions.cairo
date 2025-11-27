@@ -1565,6 +1565,100 @@ fn test_precision_in_nuke_distribution() {
     assert(received_our_contract_for_fee > 0, 'Complete precision loss');
 }
 
+#[test]
+fn test_claim_precision_no_token_loss() {
+    let (store, actions_system, main_currency, ekubo_testing_dispatcher, token_dispatcher, _, _) =
+        setup_test();
+    let our_contract_for_fee = store.get_our_contract_for_fee();
+
+    // Setup liquidity pool and neighbor tokens
+    setup_liquidity_pool(ekubo_testing_dispatcher, main_currency, 10000);
+    let (erc20_neighbor_1, erc20_neighbor_2, _) = deploy_erc20_with_pool(
+        ekubo_testing_dispatcher, main_currency.contract_address, NEIGHBOR_1(),
+    );
+    authorize_token(token_dispatcher, erc20_neighbor_1.contract_address);
+    authorize_token(token_dispatcher, erc20_neighbor_2.contract_address);
+
+    setup_test_block_env(1, 1000);
+
+    // Create center land with moderate stake
+    let next_location_1 = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        RECIPIENT(),
+        CENTER_LOCATION,
+        10000,
+        5000,
+        main_currency,
+    );
+
+    // Create neighbor with stake that will generate taxes with rounding
+    let neighbor_location = next_location_1;
+    let _ = initialize_land_and_capture_next_auction(
+        store,
+        actions_system,
+        main_currency,
+        NEIGHBOR_1(),
+        neighbor_location,
+        1000000,
+        7777, // Odd number to trigger rounding issues
+        erc20_neighbor_1,
+    );
+
+    // Record initial state
+    let stake_before_first = store.land_stake(neighbor_location);
+    let initial_balance_claimer = erc20_neighbor_1.balanceOf(RECIPIENT());
+    let initial_balance_fees = erc20_neighbor_1.balanceOf(our_contract_for_fee);
+
+    // Advance time and claim
+    set_block_timestamp(25000);
+    set_contract_address(RECIPIENT());
+    actions_system.claim(CENTER_LOCATION);
+
+    // Get final state
+    let stake_after_first = store.land_stake(neighbor_location);
+    let balance_claimer_after_first = erc20_neighbor_1.balanceOf(RECIPIENT());
+    let balance_fees_after_first = erc20_neighbor_1.balanceOf(our_contract_for_fee);
+
+    let received_claimer_first = balance_claimer_after_first - initial_balance_claimer;
+    let fee_transferred_first = balance_fees_after_first - initial_balance_fees;
+    let pending_fee_before_first: u256 = stake_before_first.accumulated_taxes_fee.into();
+    let pending_fee_after_first: u256 = stake_after_first.accumulated_taxes_fee.into();
+    let fee_pending_first = if pending_fee_after_first >= pending_fee_before_first {
+        pending_fee_after_first - pending_fee_before_first
+    } else {
+        0
+    };
+    let stake_decrease_first = stake_before_first.amount - stake_after_first.amount;
+
+    assert(
+        received_claimer_first + fee_transferred_first + fee_pending_first == stake_decrease_first,
+        'stake delta mismatch',
+    );
+    assert(stake_after_first.amount < stake_before_first.amount, 'Stake should have decreased');
+    assert(fee_pending_first + fee_transferred_first > 0, 'Fees accumulated or transferred');
+
+    // === Second claim to trigger nuke ===
+    let remaining_stake_before_nuke = stake_after_first.amount;
+    set_block_timestamp(200000);
+    actions_system.claim(CENTER_LOCATION);
+
+    let final_balance_claimer = erc20_neighbor_1.balanceOf(RECIPIENT());
+    let final_balance_fees = erc20_neighbor_1.balanceOf(our_contract_for_fee);
+
+    let received_claimer_second = final_balance_claimer - balance_claimer_after_first;
+    let fee_transferred_second = final_balance_fees - balance_fees_after_first;
+
+    assert(
+        received_claimer_second + fee_transferred_second == remaining_stake_before_nuke,
+        'nuke delta mismatch',
+    );
+
+    let neighbor_land_after = store.land(neighbor_location);
+    assert(neighbor_land_after.owner.is_zero(), 'Neighbor should be nuked');
+}
+
 
 #[test]
 fn test_first_grade_of_nuke_and_dead_land() {
@@ -1905,4 +1999,3 @@ fn test_nuke_cascade() {
     // Verify total conservation of tokens
     assert(total_accounted <= total_initial_contract_tokens, 'Cannot create tokens');
 }
-
