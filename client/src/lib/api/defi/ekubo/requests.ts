@@ -108,7 +108,7 @@ export function calculatePriceFromPool(
 }
 
 export async function getTokenPrices(): Promise<TokenPrice[]> {
-  const url = PUBLIC_PONZI_API_URL + 'price';
+  const url = PUBLIC_PONZI_API_URL + '/price';
 
   try {
     const res = await fetch(url);
