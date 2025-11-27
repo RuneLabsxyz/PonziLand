@@ -27,7 +27,7 @@
   }
 
   // Filter and sort positions
-  const filteredPositions = $derived(() => {
+  const filteredPositions = $derived.by(() => {
     let filtered = positions;
 
     if (filter === 'open') {
@@ -125,7 +125,7 @@
         <div class="text-center py-8 text-gray-400">
           No historical positions yet
         </div>
-      {:else if filteredPositions().length === 0}
+      {:else if filteredPositions.length === 0}
         <div class="text-center py-8 text-gray-400">
           No {filter === 'open' ? 'active' : 'closed'} positions
         </div>
@@ -143,7 +143,7 @@
             <div class="text-right">P&L</div>
           </div>
         </div>
-        {#each filteredPositions() as position (position.id)}
+        {#each filteredPositions as position (position.id)}
           <PositionEntry {position} {isPositionOpen} />
         {/each}
       {/if}
