@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locationToCoordinates, getTokenMetadata } from '$lib/utils';
+  import { locationToCoordinates, getTokenMetadata, cn } from '$lib/utils';
   import type {
     HistoricalPosition,
     TokenFlow,
@@ -89,30 +89,15 @@
     }
   }
 
-  function getStatusColor(reason: string): string {
-    switch (reason) {
-      case 'bought':
-        return 'text-yellow-500';
-      case 'nuked':
-        return 'text-red-400';
-      default:
-        return 'text-gray-400';
-    }
-  }
-
-  function getPnLColor(amount: string | null): string {
-    if (!amount) return 'text-gray-400';
-    return amount.startsWith('-') ? 'text-red-400' : 'text-green-400';
-  }
-
   const coordinates = $derived(locationToCoordinates(position.land_location));
   const isAuctionBuy = $derived(position.buy_token_used === null);
 </script>
 
 <div
-  class="position-entry border-b border-gray-800/50 {isOpen
-    ? 'bg-green-900/10'
-    : ''}"
+  class={cn(
+    'position-entry border-b border-gray-800/50',
+    isOpen && 'bg-green-900/10',
+  )}
 >
   <!-- Main Row -->
   <button
@@ -150,7 +135,15 @@
           {#if position.close_reason === 'bought'}
             <img src="/ui/icons/Icon_Coin3.png" alt="Closed" class="h-4 w-4" />
           {/if}
-          <span class={getStatusColor(position.close_reason)}>
+          <span
+            class={cn(
+              position.close_reason === 'bought' && 'text-yellow-500',
+              position.close_reason === 'nuked' && 'text-red-400',
+              position.close_reason !== 'bought' &&
+                position.close_reason !== 'nuked' &&
+                'text-gray-400',
+            )}
+          >
             {position.close_reason.toUpperCase()}
           </span>
         {/if}
@@ -202,9 +195,17 @@
         {/if}
       </div>
       <div
-        class="text-right {isOpen
-          ? 'text-gray-500'
-          : getPnLColor(position.net_profit_token)}"
+        class={cn(
+          'text-right',
+          (isOpen || !position.net_profit_token) && 'text-gray-500',
+          !isOpen &&
+            position.net_profit_token?.startsWith('-') &&
+            'text-red-400',
+          !isOpen &&
+            position.net_profit_token &&
+            !position.net_profit_token.startsWith('-') &&
+            'text-green-400',
+        )}
       >
         {isOpen
           ? 'TBD'
