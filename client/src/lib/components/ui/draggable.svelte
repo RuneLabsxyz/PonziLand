@@ -76,9 +76,13 @@
       ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0};opacity:${transparency}`
       : isMaximized
         ? `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events:all; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}; transform: none;`
-        : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
-            currentDimensions?.height == 0 ? 'auto' : currentDimensions.height
-          }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
+        : isMinimized
+          ? `transform: translate(20px, ${currentPosition.y}px) scale(0.1); pointer-events:none; width:${currentDimensions?.width}px; height:${
+              currentDimensions?.height == 0 ? 'auto' : currentDimensions.height
+            }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency * 0.7};`
+          : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
+              currentDimensions?.height == 0 ? 'auto' : currentDimensions.height
+            }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
   );
 
   function handleClick() {
@@ -351,6 +355,9 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     min-width: 200px;
     min-height: 50px;
+    transition:
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      opacity 0.3s ease;
   }
 
   .draggable.fixed {
