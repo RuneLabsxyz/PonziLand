@@ -27,7 +27,7 @@
 
 {#if minimizedWidgets.length > 0}
   <div class="minimized-toolbar">
-    <Card class="toolbar-card">
+    <Card class="bg-ponzi">
       {#each minimizedWidgets as widget}
         <button
           class="toolbar-icon"
@@ -68,7 +68,6 @@
   }
 
   .toolbar-icon {
-    background: rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 6px;
     width: 40px;
