@@ -1,16 +1,16 @@
+use core::array::ArrayTrait;
 use ponzi_land::consts::{DECIMALS_FACTOR, SCALE_FACTOR_FOR_FEE};
 use ponzi_land::helpers::coord::max_neighbors;
 use ponzi_land::models::land::{Land, LandStake};
 use ponzi_land::store::{Store, StoreTrait};
+use ponzi_land::utils::level_up::calculate_discount_for_level;
+use starknet::{ContractAddress, get_block_timestamp};
 /// @title Tax Calculation Helpers for PonziLand
 /// @notice This module contains core tax calculation logic for the PonziLand game.
 /// Tax calculations are based on land price, neighbor count, time elapsed, and land level
 /// progression.
 /// The tax system implements a yield mechanism where land owners pay taxes to neighboring land
 /// owners.
-
-use ponzi_land::utils::level_up::calculate_discount_for_level;
-use starknet::get_block_timestamp;
 
 /// @notice Calculates the total tax amount owed by a land to a specific neighbor
 /// @dev This is the core tax calculation function that determines yield payments
@@ -102,4 +102,55 @@ pub fn calculate_and_return_taxes_with_fee(
     let fee_amount = total_taxes_amount * fee_rate.into() / SCALE_FACTOR_FOR_FEE.into();
     let amount_for_claimer = total_taxes_amount - fee_amount;
     (amount_for_claimer, fee_amount.try_into().unwrap())
+}
+
+/// @notice Accumulates token transfer amounts with lazy deduplication
+/// @dev Intelligently handles token accumulation with minimal gas overhead:
+/// - Fast path for empty array: O(1) append only
+/// - Single pass: O(n) iteration with O(1) operations per element
+/// Optimized for typical 2-3 unique tokens per claim.
+/// @param existing Existing array of (address, amount) tuples
+/// @param key Address key to search and accumulate
+/// @param amount Amount to add to this key
+/// @return Array Updated array with key amount accumulated
+#[inline(always)]
+pub fn accumulate_amount_by_key(
+    existing: Array<(ContractAddress, u256)>, key: ContractAddress, amount: u256,
+) -> Array<(ContractAddress, u256)> {
+    let len = existing.len();
+
+    // Fast path: empty array → return new array with single element
+    if len == 0 {
+        let mut result: Array<(ContractAddress, u256)> = ArrayTrait::new();
+        result.append((key, amount));
+        return result;
+    }
+
+    let existing_span = existing.span();
+    let mut updated: Array<(ContractAddress, u256)> = ArrayTrait::new();
+    let mut found = false;
+    let mut i = 0;
+
+    // Single pass: iterate through all elements
+    while i < len {
+        let (existing_key, existing_amount) = *existing_span.at(i);
+
+        if existing_key == key {
+            // Key found: accumulate amount
+            updated.append((existing_key, existing_amount + amount));
+            found = true;
+        } else {
+            // Copy other entries unchanged
+            updated.append((existing_key, existing_amount));
+        }
+
+        i += 1;
+    }
+
+    // Key not found → append new key with amount
+    if !found {
+        updated.append((key, amount));
+    }
+
+    updated
 }
