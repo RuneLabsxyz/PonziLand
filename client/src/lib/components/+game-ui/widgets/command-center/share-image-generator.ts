@@ -1,3 +1,26 @@
+// Import canvas polyfills
+import '$lib/utils/canvas-polyfills';
+
+// Re-declare the global interface to ensure TypeScript recognizes the methods
+declare global {
+  interface CanvasRenderingContext2D {
+    fillRoundRect(
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      radius: number,
+    ): void;
+    strokeRoundRect(
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      radius: number,
+    ): void;
+  }
+}
+
 interface ShareImageData {
   positionX: number;
   positionY: number;
@@ -113,87 +136,8 @@ export async function generateShareImage(
       gradient.addColorStop(1, '#3730a3'); // indigo-800
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, 760, 600);
-
-      // Continue with the rest of the drawing code...
-      // (same code as in onload but without the bgImage.onload wrapper)
     };
 
     bgImage.src = '/PnL/PnL-green.png';
   });
-}
-
-// Add rounded rectangle method to canvas context if not available
-declare global {
-  interface CanvasRenderingContext2D {
-    fillRoundRect(
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-      radius: number,
-    ): void;
-    strokeRoundRect(
-      x: number,
-      y: number,
-      width: number,
-      height: number,
-      radius: number,
-    ): void;
-  }
-}
-
-if (!CanvasRenderingContext2D.prototype.fillRoundRect) {
-  CanvasRenderingContext2D.prototype.fillRoundRect = function (
-    x,
-    y,
-    width,
-    height,
-    radius,
-  ) {
-    this.beginPath();
-    this.moveTo(x + radius, y);
-    this.lineTo(x + width - radius, y);
-    this.quadraticCurveTo(x + width, y, x + width, y + radius);
-    this.lineTo(x + width, y + height - radius);
-    this.quadraticCurveTo(
-      x + width,
-      y + height,
-      x + width - radius,
-      y + height,
-    );
-    this.lineTo(x + radius, y + height);
-    this.quadraticCurveTo(x, y + height, x, y + height - radius);
-    this.lineTo(x, y + radius);
-    this.quadraticCurveTo(x, y, x + radius, y);
-    this.closePath();
-    this.fill();
-  };
-}
-
-if (!CanvasRenderingContext2D.prototype.strokeRoundRect) {
-  CanvasRenderingContext2D.prototype.strokeRoundRect = function (
-    x,
-    y,
-    width,
-    height,
-    radius,
-  ) {
-    this.beginPath();
-    this.moveTo(x + radius, y);
-    this.lineTo(x + width - radius, y);
-    this.quadraticCurveTo(x + width, y, x + width, y + radius);
-    this.lineTo(x + width, y + height - radius);
-    this.quadraticCurveTo(
-      x + width,
-      y + height,
-      x + width - radius,
-      y + height,
-    );
-    this.lineTo(x + radius, y + height);
-    this.quadraticCurveTo(x, y + height, x, y + height - radius);
-    this.lineTo(x, y + radius);
-    this.quadraticCurveTo(x, y, x + radius, y);
-    this.closePath();
-    this.stroke();
-  };
 }
