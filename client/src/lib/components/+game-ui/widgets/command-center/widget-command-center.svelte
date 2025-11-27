@@ -165,7 +165,7 @@
     {:else if activeTab === 'market'}
       <MarketWidget setCustomControls={setCustomControls || (() => {})} />
     {:else if activeTab === 'my-lands'}
-      <MyLandsWidget />
+      <MyLandsWidget onGoToMarket={() => setActiveTab('market')} />
     {/if}
   </div>
 </div>
