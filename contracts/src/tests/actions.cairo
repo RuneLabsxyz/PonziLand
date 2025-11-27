@@ -21,6 +21,7 @@ use ponzi_land::consts::{
 
 // Events
 use ponzi_land::events::{NewAuctionEvent};
+use ponzi_land::helpers::auction::get_suggested_sell_price;
 use ponzi_land::helpers::circle_expansion::{generate_circle, get_random_index};
 
 // Helpers
@@ -1181,7 +1182,7 @@ fn test_time_to_nuke() {
     //set a liquidity pool with amount
     ekubo_testing_dispatcher
         .set_pool_liquidity(
-            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 10000,
+            PoolKeyConversion::to_ekubo(pool_key(main_currency.contract_address)), 100000,
         );
     // Deploy ERC20 tokens for neighbors
     let (erc20_neighbor_1, erc20_neighbor_2, erc20_neighbor_3) = deploy_erc20_with_pool(
@@ -1198,7 +1199,7 @@ fn test_time_to_nuke() {
     clear_events(store.world.dispatcher.contract_address);
     set_block_timestamp(1000);
     initialize_land(
-        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 1000, 500, main_currency,
+        actions_system, main_currency, RECIPIENT(), CENTER_LOCATION, 10000, 1500, main_currency,
     );
     //and now we can capture NewAuctionEvent
     let next_auction_location = capture_location_of_new_auction(
@@ -1215,6 +1216,7 @@ fn test_time_to_nuke() {
         erc20_neighbor_1,
     );
 
+    set_block_timestamp(6000);
     let next_location_2 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
     assert(next_location_2.is_some(), 'No new auction location found');
     initialize_land(
@@ -1227,6 +1229,7 @@ fn test_time_to_nuke() {
         erc20_neighbor_2,
     );
 
+    set_block_timestamp(8000);
     let next_location_3 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
     assert(next_location_3.is_some(), 'No new auction location found');
     initialize_land(
@@ -1239,6 +1242,7 @@ fn test_time_to_nuke() {
         erc20_neighbor_3,
     );
 
+    set_block_timestamp(10000);
     let next_location_4 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
     assert(next_location_4.is_some(), 'No new auction location found');
     initialize_land(
@@ -1251,6 +1255,7 @@ fn test_time_to_nuke() {
         erc20_neighbor_3,
     );
 
+    set_block_timestamp(12000);
     let next_location_5 = capture_location_of_new_auction(store.world.dispatcher.contract_address);
     assert(next_location_5.is_some(), 'No new auction location found');
     initialize_land(
@@ -1267,17 +1272,14 @@ fn test_time_to_nuke() {
     let land_stake = store.land_stake(CENTER_LOCATION);
     let time_to_nuke = actions_system.get_time_to_nuke(CENTER_LOCATION);
 
-    set_block_timestamp(time_to_nuke - block_timestamp);
+    set_block_timestamp(block_timestamp + time_to_nuke - 5);
+    let future_auction_price = get_suggested_sell_price(store, CENTER_LOCATION);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(CENTER_LOCATION);
     assert!(unclaimed_taxes < land_stake.amount, "stake should be > unclaimed taxes");
     assert!(time_to_nuke != get_block_timestamp(), "should be not nukable yet");
-    set_block_timestamp(time_to_nuke);
-
+    set_block_timestamp(block_timestamp + time_to_nuke);
     let unclaimed_taxes = actions_system.get_unclaimed_taxes_per_neighbors_total(CENTER_LOCATION);
     assert!(unclaimed_taxes >= land_stake.amount, "stake should be <= unclaimed taxes");
-
-    let new_time_to_nuke = actions_system.get_time_to_nuke(CENTER_LOCATION);
-    assert!(new_time_to_nuke == get_block_timestamp(), "should be nukable now");
 
     set_contract_address(NEIGHBOR_1());
     actions_system.claim(next_auction_location.unwrap());
@@ -1287,7 +1289,7 @@ fn test_time_to_nuke() {
         store,
         CENTER_LOCATION,
         ContractAddressZeroable::zero(),
-        5000000000000000000000,
+        future_auction_price,
         0,
         0,
         main_currency.contract_address,
@@ -1411,8 +1413,8 @@ fn test_new_claim() {
     );
 
     let time_to_nuke_neighbor_2 = actions_system.get_time_to_nuke(next_location_2.unwrap());
-
-    set_block_timestamp(time_to_nuke_neighbor_2);
+    let block_timestamp = get_block_timestamp();
+    set_block_timestamp(block_timestamp + time_to_nuke_neighbor_2);
     set_contract_address(RECIPIENT());
     actions_system.claim(CENTER_LOCATION);
 

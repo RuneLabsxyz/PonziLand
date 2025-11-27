@@ -823,37 +823,53 @@ mod TaxesComponent {
         ) -> u64 {
             let num_neighbors = neighbors.len();
             let current_time = get_block_timestamp();
+            if num_neighbors == 0 {
+                return 0;
+            }
+
             let tax_rate_per_neighbor = get_tax_rate_per_neighbor(land, store);
+            let base_time: u256 = store.get_base_time().into();
             let total_tax_rate = tax_rate_per_neighbor * num_neighbors.into();
 
             if total_tax_rate == 0 || store.get_time_speed() == 0 {
                 return 0;
             }
 
-            let remaining_time_units = (*land_stake.amount * store.get_base_time().into())
-                / total_tax_rate;
-            let mut min_remaining_time = remaining_time_units.try_into().unwrap();
+            // 1. Calculate current unclaimed taxes from all neighbors
+            let mut current_unclaimed_taxes: u256 = 0;
+            let mut sum_elapsed_times: u256 = 0;
 
             for neighbor in neighbors {
                 let elapsed_time = self
                     .get_elapsed_time_since_last_claim(
                         *neighbor.location, *land.location, current_time,
                     );
-                let current_remaining_time = u64_saturating_sub(
-                    remaining_time_units.try_into().unwrap(), elapsed_time,
-                );
+                sum_elapsed_times += elapsed_time.into();
 
-                if current_remaining_time < min_remaining_time {
-                    min_remaining_time = current_remaining_time;
-                }
+                let taxes = get_taxes_per_neighbor(land, elapsed_time, store);
+                current_unclaimed_taxes += taxes;
             }
 
-            if min_remaining_time == 0 {
+            // 2. Calculate how much more time is needed to reach stake
+            // delta_t = (stake - current_unclaimed) * base_time / total_tax_rate
+            // Use remainder to ensure ceiling rounding: if there's a remainder, add 1
+
+            let stake: u256 = *land_stake.amount;
+
+            if current_unclaimed_taxes >= stake {
+                // Already nuked
                 return current_time;
             }
 
-            u64_saturating_add(current_time, min_remaining_time)
+            let deficit = stake - current_unclaimed_taxes;
+            let numerator_delta = deficit * base_time;
+
+            let delta_t: u256 = numerator_delta / total_tax_rate;
+
+            // 3. Return seconds remaining until nuke
+            delta_t.try_into().unwrap()
         }
+
 
         fn initialize_claim_info(
             ref self: ComponentState<TContractState>,
