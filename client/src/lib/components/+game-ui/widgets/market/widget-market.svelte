@@ -20,6 +20,8 @@
     activeTab = tab;
   }
 
+  let currentAccount = $derived(account);
+
   // Clear custom controls when switching away from auctions tab
   $effect(() => {
     if (activeTab !== 'auctions') {
@@ -28,7 +30,7 @@
   });
 </script>
 
-{#if !account.isConnected}
+{#if !currentAccount.isConnected}
   <!-- Wallet connection prompt -->
   <div class="flex flex-col items-center justify-center gap-4 p-8">
     <div class="text-center tracking-wide">
