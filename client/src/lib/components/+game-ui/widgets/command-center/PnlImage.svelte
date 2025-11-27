@@ -1,8 +1,7 @@
 <script lang="ts">
   import LandDisplay from '$lib/components/+game-map/land/land-display.svelte';
-  import { cn, getTokenMetadata } from '$lib/utils';
-  import PonziProgress from './PonziProgress.svelte';
   import type { Token } from '$lib/interfaces';
+  import { getTokenMetadata } from '$lib/utils';
   import PonziProgressImage from './PonziProgressImage.svelte';
 
   interface Props {
@@ -49,16 +48,8 @@
   }: Props = $props();
 
   const formattedValue = $derived(
-    `${pnl > 0 ? '+' : '-'}$${Math.abs(pnl).toFixed(2)}`,
+    `${pnl > 0 ? '+' : '-'}${Math.abs(pnl).toFixed(2)}$`,
   );
-  const textSizeClass = $derived.by(() => {
-    const length = formattedValue.length;
-    if (length <= 8) return 'text-6xl';
-    if (length <= 10) return 'text-5xl';
-    if (length <= 12) return 'text-4xl';
-    if (length <= 14) return 'text-3xl';
-    return 'text-2xl';
-  });
 
   const tokenPercentages = $derived.by(() => {
     const total = tokenInflowAmounts.reduce((sum, amount) => sum + amount, 0);
@@ -66,22 +57,12 @@
   });
 
   const progressValues = $derived.by(() => {
-    const fallbackColorMap = [
-      '#3B82F6', // blue-500
-      '#8B5CF6', // purple-500
-      '#10B981', // green-500
-      '#EAB308', // yellow-500
-      '#EF4444', // red-500
-      '#F97316', // orange-500
-      '#EC4899', // pink-500
-    ];
-
     return tokenTickers.map((ticker, i) => {
       const metadata = tokenMetadataList?.find(
         (meta) => meta.symbol === ticker,
       );
       // Get color from token skin metadata, fallback to predefined colors
-      let color = fallbackColorMap[i] || '#6B7280';
+      let color = '#6B7280';
       if (metadata?.token?.skin) {
         const tokenSkinMetadata = getTokenMetadata(metadata.token.skin);
         if (tokenSkinMetadata?.color) {
@@ -100,23 +81,18 @@
       };
     });
   });
-
-  // Dynamic grid columns based on number of tokens
-  const gridColumns = $derived.by(() => {
-    const tokenCount = progressValues.length;
-    if (tokenCount <= 2) return 'grid-cols-2';
-    if (tokenCount <= 6) return 'grid-cols-3';
-    return 'grid-cols-4';
-  });
 </script>
 
 <div
   id="render-pnl-image"
   style="display: none;"
-  class={cn('w-[760px] h-[600px] text-white relative', {
-    'bg-pnl-green': pnl >= 0,
-    'bg-pnl-red': pnl < 0,
-  })}
+  class={[
+    'w-[760px] h-[600px] text-white relative',
+    {
+      'bg-pnl-green': pnl >= 0,
+      'bg-pnl-red': pnl < 0,
+    },
+  ]}
 >
   <div
     class="opacity-90 absolute right-0 top-0 px-6 py-5 tracking-wider font-ponzi-number"
@@ -166,15 +142,22 @@
           {/if}
         </div>
         <span
-          class={cn(
+          class={[
             'font-ponzi-number tracking-wider stroke-3d-black',
-            textSizeClass,
             {
+              'text-6xl': formattedValue.length <= 8,
+              'text-5xl':
+                formattedValue.length > 8 && formattedValue.length <= 10,
+              'text-4xl':
+                formattedValue.length > 10 && formattedValue.length <= 12,
+              'text-3xl':
+                formattedValue.length > 12 && formattedValue.length <= 14,
+              'text-2xl': formattedValue.length > 14,
               'text-green-400': pnl > 0,
               'text-red-400': pnl < 0,
               'text-white': pnl === 0,
             },
-          )}
+          ]}
         >
           {formattedValue}
         </span>
@@ -201,11 +184,6 @@
       <!-- Right Column -->
       <div class="flex flex-col gap-1">
         <div class="text-white stroke-3d-black flex items-end gap-1">
-          <!-- <img
-            src="/ui/icons/IconTiny_Outcome.png"
-            alt="outcome"
-            class="h-6 w-6"
-          /> -->
           <span> Taxes: </span>
         </div>
         <div
@@ -216,24 +194,6 @@
           </span>
         </div>
       </div>
-
-      <!-- <div class="flex flex-col gap-2">
-        <div class="text-white stroke-3d-black flex items-bottom gap-1">
-          <img
-            src="/ui/icons/IconTiny_Income.png"
-            alt="income"
-            class="h-6 w-6"
-          />
-          <span> Income: </span>
-        </div>
-        <div
-          class="font-ponzi-number number-display-shadow text-green-400 flex gap-2 items-center tracking-wider"
-        >
-          <span>
-            {tokenInflow > 0 ? '+' : ''}${Math.abs(tokenInflow).toFixed(2)}
-          </span>
-        </div>
-      </div> -->
     </div>
     <!-- Full Width Progress Section -->
     {#snippet title()}
@@ -244,7 +204,17 @@
     {/snippet}
     <div class="mt-16 -mr-6 flex flex-col">
       <PonziProgressImage values={progressValues} {title} />
-      <div class="grid {gridColumns}">
+      <div
+        class={[
+          'grid',
+          {
+            'grid-cols-2': progressValues.length <= 2,
+            'grid-cols-3':
+              progressValues.length > 2 && progressValues.length <= 6,
+            'grid-cols-4': progressValues.length > 6,
+          },
+        ]}
+      >
         {#each progressValues as value}
           <div class="flex items-center gap-1">
             <div class="w-2 h-2" style="background-color: {value.color}"></div>
