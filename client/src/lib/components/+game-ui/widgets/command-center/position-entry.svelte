@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { locationToCoordinates, getTokenMetadata, cn } from '$lib/utils';
+  import { locationToCoordinates, getTokenMetadata } from '$lib/utils';
   import type {
     HistoricalPosition,
     TokenFlow,
@@ -94,10 +94,12 @@
 </script>
 
 <div
-  class={cn(
+  class={[
     'position-entry border-b border-gray-800/50',
-    isOpen && 'bg-green-900/10',
-  )}
+    {
+      'bg-green-900/10': isOpen,
+    },
+  ]}
 >
   <!-- Main Row -->
   <button
@@ -136,13 +138,13 @@
             <img src="/ui/icons/Icon_Coin3.png" alt="Closed" class="h-4 w-4" />
           {/if}
           <span
-            class={cn(
-              position.close_reason === 'bought' && 'text-yellow-500',
-              position.close_reason === 'nuked' && 'text-red-400',
-              position.close_reason !== 'bought' &&
-                position.close_reason !== 'nuked' &&
-                'text-gray-400',
-            )}
+            class={[
+              {
+                'text-yellow-500': position.close_reason === 'bought',
+                'text-red-400': position.close_reason === 'nuked',
+                'text-gray-400': position.close_reason !== 'bought' && position.close_reason !== 'nuked',
+              },
+            ]}
           >
             {position.close_reason.toUpperCase()}
           </span>
@@ -195,17 +197,14 @@
         {/if}
       </div>
       <div
-        class={cn(
+        class={[
           'text-right',
-          (isOpen || !position.net_profit_token) && 'text-gray-500',
-          !isOpen &&
-            position.net_profit_token?.startsWith('-') &&
-            'text-red-400',
-          !isOpen &&
-            position.net_profit_token &&
-            !position.net_profit_token.startsWith('-') &&
-            'text-green-400',
-        )}
+          {
+            'text-gray-500': isOpen || !position.net_profit_token,
+            'text-red-400': !isOpen && position.net_profit_token?.startsWith('-'),
+            'text-green-400': !isOpen && position.net_profit_token && !position.net_profit_token.startsWith('-'),
+          },
+        ]}
       >
         {isOpen
           ? 'TBD'
