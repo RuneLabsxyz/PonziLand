@@ -1,5 +1,12 @@
 <script lang="ts" generics="TData, TValue">
-  import { type ColumnDef, getCoreRowModel } from '@tanstack/table-core';
+  import {
+    type ColumnDef,
+    type ColumnFiltersState,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    type SortingState,
+  } from '@tanstack/table-core';
   import {
     createSvelteTable,
     FlexRender,
@@ -9,9 +16,22 @@
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
     data: TData[];
+    columnFilters?: ColumnFiltersState;
+    onColumnFiltersChange?: (
+      updater:
+        | ColumnFiltersState
+        | ((old: ColumnFiltersState) => ColumnFiltersState),
+    ) => void;
   };
 
-  let { data, columns }: DataTableProps<TData, TValue> = $props();
+  let {
+    data,
+    columns,
+    columnFilters = $bindable([]),
+    onColumnFiltersChange,
+  }: DataTableProps<TData, TValue> = $props();
+
+  let sorting = $state<SortingState>([]);
 
   const table = createSvelteTable({
     get data() {
@@ -19,6 +39,33 @@
     },
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: (updater) => {
+      if (typeof updater === 'function') {
+        columnFilters = updater(columnFilters);
+      } else {
+        columnFilters = updater;
+      }
+      if (onColumnFiltersChange) {
+        onColumnFiltersChange(columnFilters);
+      }
+    },
+    onSortingChange: (updater) => {
+      if (typeof updater === 'function') {
+        sorting = updater(sorting);
+      } else {
+        sorting = updater;
+      }
+    },
+    state: {
+      get columnFilters() {
+        return columnFilters;
+      },
+      get sorting() {
+        return sorting;
+      },
+    },
   });
 </script>
 

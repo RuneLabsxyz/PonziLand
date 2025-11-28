@@ -4,7 +4,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress } from '$lib/utils';
   import { onMount } from 'svelte';
-  import TokenFlowsExpanded from './cells/token-flows-expanded.svelte';
+  import type { ColumnFiltersState } from '@tanstack/table-core';
   import DataTable from './data-table.svelte';
   import { columns } from './historical-positions-columns';
   import {
@@ -20,41 +20,26 @@
   let error = $state<string | null>(null);
   let refreshInterval: NodeJS.Timeout;
   let timePeriod = $state<'1D' | '1W' | '1M' | '1Y' | 'ALL'>('ALL');
+  let columnFilters = $state<ColumnFiltersState>([]);
 
-  // Filter positions by time period and combine all filtered data
-  const filteredPositions = $derived.by(() => {
-    let filtered = positions;
+  // Function to update the time period filter
+  function setTimePeriodFilter(period: '1D' | '1W' | '1M' | '1Y' | 'ALL') {
+    timePeriod = period;
 
-    if (timePeriod !== 'ALL') {
-      const now = new Date();
-      const cutoffDate = new Date();
-
-      switch (timePeriod) {
-        case '1D':
-          cutoffDate.setDate(now.getDate() - 1);
-          break;
-        case '1W':
-          cutoffDate.setDate(now.getDate() - 7);
-          break;
-        case '1M':
-          cutoffDate.setMonth(now.getMonth() - 1);
-          break;
-        case '1Y':
-          cutoffDate.setFullYear(now.getFullYear() - 1);
-          break;
-      }
-
-      filtered = positions.filter((position) => {
-        const positionDate = new Date(position.time_bought);
-        return positionDate >= cutoffDate;
-      });
-    }
-
-    return [...filtered].sort(
-      (a, b) =>
-        new Date(b.time_bought).getTime() - new Date(a.time_bought).getTime(),
+    // Update the column filter for time_bought column
+    const existingFilters = columnFilters.filter(
+      (filter) => filter.id !== 'time_bought',
     );
-  });
+
+    if (period === 'ALL') {
+      columnFilters = existingFilters;
+    } else {
+      columnFilters = [
+        ...existingFilters,
+        { id: 'time_bought', value: period },
+      ];
+    }
+  }
 
   async function loadPositions() {
     try {
@@ -113,35 +98,35 @@
       <Button
         size="md"
         variant={timePeriod === '1D' ? 'blue' : 'red'}
-        onclick={() => (timePeriod = '1D')}
+        onclick={() => setTimePeriodFilter('1D')}
       >
         1D
       </Button>
       <Button
         size="md"
         variant={timePeriod === '1W' ? 'blue' : 'red'}
-        onclick={() => (timePeriod = '1W')}
+        onclick={() => setTimePeriodFilter('1W')}
       >
         1W
       </Button>
       <Button
         size="md"
         variant={timePeriod === '1M' ? 'blue' : 'red'}
-        onclick={() => (timePeriod = '1M')}
+        onclick={() => setTimePeriodFilter('1M')}
       >
         1M
       </Button>
       <Button
         size="md"
         variant={timePeriod === '1Y' ? 'blue' : 'red'}
-        onclick={() => (timePeriod = '1Y')}
+        onclick={() => setTimePeriodFilter('1Y')}
       >
         1Y
       </Button>
       <Button
         size="md"
         variant={timePeriod === 'ALL' ? 'blue' : 'red'}
-        onclick={() => (timePeriod = 'ALL')}
+        onclick={() => setTimePeriodFilter('ALL')}
       >
         ALL
       </Button>
@@ -159,12 +144,8 @@
         <div class="text-center py-8 text-gray-400">
           No historical positions yet
         </div>
-      {:else if filteredPositions.length === 0}
-        <div class="text-center py-8 text-gray-400">
-          No positions found for the selected time period
-        </div>
       {:else}
-        <DataTable data={filteredPositions} {columns} />
+        <DataTable data={positions} {columns} bind:columnFilters />
       {/if}
     </ScrollArea>
   </div>

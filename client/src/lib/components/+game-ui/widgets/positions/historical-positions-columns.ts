@@ -5,7 +5,7 @@ import {
 } from '$lib/stores/wallet.svelte';
 import { getTokenInfo } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-import type { ColumnDef } from '@tanstack/table-core';
+import type { ColumnDef, FilterFn } from '@tanstack/table-core';
 import type { HistoricalPosition } from './historical-positions.service';
 
 // Import cell components
@@ -23,6 +23,44 @@ import TotalPnlCell from './cells/total-pnl-cell.svelte';
 function isPositionOpen(position: HistoricalPosition): boolean {
   return !position.close_date || position.close_date === null;
 }
+
+// Custom filter function for time period filtering
+const timePeriodFilter: FilterFn<HistoricalPosition> = (
+  row,
+  columnId,
+  filterValue,
+) => {
+  if (!filterValue || filterValue === 'ALL') {
+    return true;
+  }
+
+  const position = row.original;
+  const positionDate = new Date(position.time_bought);
+  const now = new Date();
+  const cutoffDate = new Date();
+
+  switch (filterValue) {
+    case '1D':
+      cutoffDate.setDate(now.getDate() - 1);
+      break;
+    case '1W':
+      cutoffDate.setDate(now.getDate() - 7);
+      break;
+    case '1M':
+      cutoffDate.setMonth(now.getMonth() - 1);
+      break;
+    case '1Y':
+      cutoffDate.setFullYear(now.getFullYear() - 1);
+      break;
+    default:
+      return true;
+  }
+
+  return positionDate >= cutoffDate;
+};
+
+// Remove empty filter values
+timePeriodFilter.autoRemove = (val: any) => !val || val === 'ALL';
 
 // Helper function to get dollar equivalent value for sorting
 function getDollarEquivalent(
@@ -272,6 +310,9 @@ function getTotalPnlValue(position: HistoricalPosition): number {
   }
 }
 
+// Export the custom filter function for external use
+export { timePeriodFilter };
+
 export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'land_location',
@@ -303,6 +344,8 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     header: 'Bought',
     enableSorting: true,
     sortingFn: 'datetime',
+    enableColumnFilter: true,
+    filterFn: timePeriodFilter,
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(DateCell, {
