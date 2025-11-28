@@ -62,8 +62,8 @@
       };
 
       # Run frontend in dev mode on Sepolia
-      settings.processes.frontend-sepolia = {
-        command = "${pkgs.bun}/bin/bun dev:sepolia";
+      settings.processes.frontend-mainnet-local-api = {
+        command = "${pkgs.bun}/bin/bun dev:mainnet-local-api";
         working_dir = "./client";
       };
     };
