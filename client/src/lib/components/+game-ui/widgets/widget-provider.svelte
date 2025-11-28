@@ -60,7 +60,7 @@
         {:else if type === 'disclaimer'}
           <WidgetDisclaimer />
         {:else if type === 'command-center'}
-          <WidgetCommandCenter />
+          <WidgetCommandCenter {setCustomTitle} {setCustomControls} />
         {/if}
       {/snippet}
     </Draggable>

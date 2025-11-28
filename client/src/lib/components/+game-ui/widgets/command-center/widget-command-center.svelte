@@ -1,12 +1,21 @@
 <script lang="ts">
-  import Button from '$lib/components/ui/button/button.svelte';
-  import HistoryList from '../history/history-list.svelte';
-  import HistoricalPositions from './historical-positions.svelte';
   import { accountHistory } from '$lib/api/history/index.svelte';
   import { useDojo } from '$lib/contexts/dojo';
-  import { padAddress } from '$lib/utils';
-  import { onMount, onDestroy } from 'svelte';
+  import { cn, padAddress } from '$lib/utils';
+  import { onDestroy, onMount } from 'svelte';
+  import HistoryList from '../history/history-list.svelte';
+  import LandExplorer from '../market/land-explorer.svelte';
+  import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
+  import HistoricalPositions from './historical-positions.svelte';
+  import { Separator } from '$lib/components/ui/separator';
   import type { Snippet } from 'svelte';
+
+  type Props = {
+    setCustomTitle?: (title: Snippet<[]> | null) => void;
+    setCustomControls?: (controls: Snippet<[]> | null) => void;
+  };
+
+  let { setCustomTitle, setCustomControls }: Props = $props();
 
   const dojo = useDojo();
   const account = () => {
@@ -14,9 +23,11 @@
   };
 
   let refreshInterval: NodeJS.Timeout;
-  let activeTab = $state<'history' | 'positions'>('history');
+  let activeTab = $state<'history' | 'positions' | 'market' | 'my-lands'>(
+    'history',
+  );
 
-  function setActiveTab(tab: 'history' | 'positions') {
+  function setActiveTab(tab: 'history' | 'positions' | 'market' | 'my-lands') {
     activeTab = tab;
   }
 
@@ -47,33 +58,114 @@
       clearInterval(refreshInterval);
     }
   });
+
+  // Set custom title and controls if provided
+  $effect(() => {
+    if (setCustomTitle) {
+      setCustomTitle(customTitleSnippet);
+    }
+  });
 </script>
 
-<div class="command-center-widget h-full w-full flex flex-col">
-  <!-- Tab Navigation -->
-  <div class="flex gap-2 w-full justify-center mt-2 px-4">
-    <Button
-      class="w-full {activeTab === 'history' ? '' : 'opacity-50'}"
-      variant={activeTab === 'history' ? 'blue' : undefined}
+{#snippet customTitleSnippet()}
+  <div class="flex items-center gap-1">
+    <img
+      src="/ui/icons/Icon_Building1_Thin.png"
+      alt="Command Center"
+      class="h-4 w-4"
+    />
+    <span class="font-ponzi-number text-xs capitalize mr-2">
+      Command Center
+    </span>
+  </div>
+{/snippet}
+
+<div class="flex flex-col w-full h-full min-h-0">
+  <div class="flex gap-1 my-2">
+    <button
+      class="flex items-center justify-center h-8 w-8"
       onclick={() => setActiveTab('history')}
     >
-      HISTORY
-    </Button>
-    <Button
-      class="w-full {activeTab === 'positions' ? '' : 'opacity-50'}"
-      variant={activeTab === 'positions' ? 'blue' : undefined}
+      <img
+        src="/ui/icons/Icon_Book.png"
+        alt="History"
+        class={[
+          'h-6 w-6',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+              activeTab === 'history',
+          },
+        ]}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
       onclick={() => setActiveTab('positions')}
     >
-      POSITIONS
-    </Button>
+      <img
+        src="/ui/icons/IconTiny_Stats.png"
+        alt="Positions"
+        class={[
+          'h-6 w-6',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+              activeTab === 'positions',
+          },
+        ]}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
+      onclick={() => setActiveTab('market')}
+    >
+      <img
+        src="/ui/icons/Icon_Auction.png"
+        alt="Market"
+        class={[
+          'h-6 w-6',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
+          },
+        ]}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
+      onclick={() => setActiveTab('my-lands')}
+    >
+      <img
+        src="/ui/icons/Icon_Crown.png"
+        alt="My Lands"
+        class={[
+          'h-6 w-6',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+              activeTab === 'my-lands',
+          },
+        ]}
+      />
+    </button>
   </div>
 
-  <!-- Tab Content -->
-  <div class="flex-1 mt-4 min-h-0">
+  <div
+    class="w-full flex justify-center items-center bg-black font-ponzi-number p-2 text-xs opacity-50 capitalize"
+  >
+    {activeTab.replace('-', ' ')}
+  </div>
+
+  <div class="h-full w-full flex flex-col min-h-0">
+    <!-- Tab Content -->
     {#if activeTab === 'history'}
       <HistoryList />
     {:else if activeTab === 'positions'}
       <HistoricalPositions />
+    {:else if activeTab === 'market'}
+      <LandExplorer />
+    {:else if activeTab === 'my-lands'}
+      <MyLandsWidget />
     {/if}
   </div>
 </div>
