@@ -88,11 +88,6 @@
       }
     };
   });
-
-  // Function to generate expanded content for token flows - now returns component
-  function generateExpandedContent(position: HistoricalPosition) {
-    return { component: TokenFlowsExpanded, props: { position } };
-  }
 </script>
 
 {#if !account.isConnected}
