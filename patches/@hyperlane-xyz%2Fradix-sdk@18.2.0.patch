@@ -1,0 +1,37 @@
+diff --git a/dist/index.js b/dist/index.js
+index 828e88b22e926e9ca49331e9e55a709b15f0b3dd..1f0f66f297cd3036b5afafd2f3f0a267a5e388fd 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1,6 +1,6 @@
+ import { GatewayApiClient } from '@radixdlt/babylon-gateway-api-sdk';
+ import { NetworkId } from '@radixdlt/radix-engine-toolkit';
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { assert, strip0x } from '@hyperlane-xyz/utils';
+ import { RadixCorePopulate } from './core/populate.js';
+ import { RadixCoreQuery } from './core/query.js';
+diff --git a/dist/utils/base.js b/dist/utils/base.js
+index 0100311bb8efb1d0e87a2609638d86d6dfa28503..c68959c46b1f0a1f22723cbdadaa10abb31a3a61 100644
+--- a/dist/utils/base.js
++++ b/dist/utils/base.js
+@@ -1,7 +1,7 @@
+ import { LTSRadixEngineToolkit, ManifestBuilder, PrivateKey, RadixEngineToolkit, address, bucket, decimal, enumeration, expression, generateRandomNonce, } from '@radixdlt/radix-engine-toolkit';
+ import { BigNumber } from 'bignumber.js';
+ import { Decimal } from 'decimal.js';
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { assert, retryAsync } from '@hyperlane-xyz/utils';
+ import { INSTRUCTIONS } from './types.js';
+ export class RadixBase {
+diff --git a/dist/warp/query.js b/dist/warp/query.js
+index d00740040f4d804298ee2ab33a2aef617c5401fe..5cb47ac17f668b055670109549e28a5441d0f8a8 100644
+--- a/dist/warp/query.js
++++ b/dist/warp/query.js
+@@ -1,6 +1,6 @@
+ import { PrivateKey, generateRandomNonce, } from '@radixdlt/radix-engine-toolkit';
+ import { BigNumber } from 'bignumber.js';
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { assert } from '@hyperlane-xyz/utils';
+ export class RadixWarpQuery {
+     networkId;
