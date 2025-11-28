@@ -3,7 +3,7 @@
   import { getSocialink } from '$lib/accounts/social/index.svelte';
   import { Button } from '$lib/components/ui/button';
   import { useDojo } from '$lib/contexts/dojo';
-  import { ENABLE_TOKEN_DROP } from '$lib/flags';
+  import { ENABLE_BRIDGE, ENABLE_TOKEN_DROP } from '$lib/flags';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
@@ -47,6 +47,10 @@
 
   function openSwapWidget() {
     widgetsStore.updateWidget('swap', { isOpen: true });
+  }
+
+  function openBridgeWidget() {
+    widgetsStore.updateWidget('bridge', { isOpen: true });
   }
 
   let socialink = getSocialink();
@@ -139,7 +143,14 @@
 
   <div class="flex flex-col">
     <WalletBalance {setCustomControls} />
-    <Button size="md" class="w-full" onclick={openSwapWidget}>SWAP</Button>
+    <div class="flex gap-2">
+      <Button size="md" class="flex-1" onclick={openSwapWidget}>SWAP</Button>
+      {#if ENABLE_BRIDGE}
+        <Button size="md" class="flex-1" onclick={openBridgeWidget}
+          >BRIDGE</Button
+        >
+      {/if}
+    </div>
   </div>
 {:else}
   <Button
