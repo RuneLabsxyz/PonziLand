@@ -1,7 +1,10 @@
+import { color } from 'three/src/nodes/TSL.js';
+
 export const BITCOIN = {
   skin: 'BITCOIN',
   icon: '/tokens/BITCOIN/wbtc.png',
   biome: { x: 2, y: 0 },
+  color: '#F09343',
   building: {
     1: {
       x: 0,

@@ -2,6 +2,7 @@ export const DREAMS = {
   skin: 'DREAMS',
   icon: '/tokens/DREAMS/dreams.png',
   biome: { x: 0, y: 5 },
+  color: '#3A306E',
   building: {
     1: {
       x: 6,

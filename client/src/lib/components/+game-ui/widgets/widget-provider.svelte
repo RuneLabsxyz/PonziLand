@@ -17,6 +17,7 @@
   import WidgetSwap from './swap/widget-swap.svelte';
   import WidgetDisclaimer from './disclaimer/widget-disclaimer.svelte';
   import WidgetCommandCenter from './command-center/widget-command-center.svelte';
+  import WidgetShare from './share/widget-share.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -61,6 +62,8 @@
           <WidgetDisclaimer />
         {:else if type === 'command-center'}
           <WidgetCommandCenter {setCustomTitle} {setCustomControls} />
+        {:else if type === 'share'}
+          <WidgetShare position={widget.data?.position} />
         {/if}
       {/snippet}
     </Draggable>
