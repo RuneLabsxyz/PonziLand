@@ -72,20 +72,20 @@
 <Table.Root>
   <Table.Header>
     {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
-      <Table.Row>
-        {#each headerGroup.headers as header (header.id)}
-          <Table.Head colspan={header.colSpan}>
-            {#if !header.isPlaceholder}
-              <FlexRender
-                content={header.column.columnDef.header}
-                context={header.getContext()}
-              />
-            {/if}
-          </Table.Head>
-        {/each}
-      </Table.Row>
+      {#each headerGroup.headers as header (header.id)}
+        <Table.Head colspan={header.colSpan}>
+          {#if !header.isPlaceholder}
+            <FlexRender
+              content={header.column.columnDef.header}
+              context={header.getContext()}
+            />
+          {/if}
+        </Table.Head>
+      {/each}
     {/each}
   </Table.Header>
+  <!-- DIVIDER ROW -->
+  <Table.Row />
   <Table.Body>
     {#each table.getRowModel().rows as row (row.id)}
       <Table.Row data-state={row.getIsSelected() && 'selected'}>
