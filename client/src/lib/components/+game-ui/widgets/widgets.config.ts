@@ -1,4 +1,4 @@
-import { ENABLE_GUILD, ENABLE_LEADERBOARD } from '$lib/flags';
+import { ENABLE_BRIDGE, ENABLE_GUILD, ENABLE_LEADERBOARD } from '$lib/flags';
 
 export interface Widget {
   id: string;
@@ -186,10 +186,22 @@ const leaderboardWidgetState: WidgetState = {
   isOpen: false,
 };
 
+const bridgeWidgetState: WidgetState = {
+  id: 'bridge',
+  type: 'bridge',
+  position: { x: 100, y: 80 },
+  dimensions: { width: 420, height: 0 },
+  isMinimized: false,
+  isOpen: false,
+  disableResize: true,
+  fixedStyles: 'width: 420px; height: auto;',
+};
+
 export const DEFAULT_WIDGETS_STATE: WidgetsState = Object.assign(
   baseWidgetsState,
   ENABLE_GUILD ? { guild: guildWidgetState } : {},
   ENABLE_LEADERBOARD ? { leaderboard: leaderboardWidgetState } : {},
+  ENABLE_BRIDGE ? { bridge: bridgeWidgetState } : {},
 );
 
 const allWidgets: (Widget & { if?: boolean })[] = [

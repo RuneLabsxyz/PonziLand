@@ -2,7 +2,7 @@
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import { Button } from '$lib/components/ui/button';
   import { useDojo } from '$lib/contexts/dojo';
-  import { ENABLE_TOKEN_DROP } from '$lib/flags';
+  import { ENABLE_BRIDGE, ENABLE_TOKEN_DROP } from '$lib/flags';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { usernameStore } from '$lib/stores/username.store.svelte';
   import { padAddress, shortenHex } from '$lib/utils';
@@ -50,6 +50,14 @@
     widgetsStore.updateWidget('swap', { isOpen: true });
   }
 
+<<<<<<< HEAD
+=======
+  function openBridgeWidget() {
+    widgetsStore.updateWidget('bridge', { isOpen: true });
+  }
+
+  let socialink = getSocialink();
+>>>>>>> f2ebf374 (feat: add bridging directly in app)
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
   let username = $derived(usernameStore.promise);
@@ -137,7 +145,14 @@
 
   <div class="flex flex-col">
     <WalletBalance {setCustomControls} />
-    <Button size="md" class="w-full" onclick={openSwapWidget}>SWAP</Button>
+    <div class="flex gap-2">
+      <Button size="md" class="flex-1" onclick={openSwapWidget}>SWAP</Button>
+      {#if ENABLE_BRIDGE}
+        <Button size="md" class="flex-1" onclick={openBridgeWidget}
+          >BRIDGE</Button
+        >
+      {/if}
+    </div>
   </div>
 {:else}
   <Button
