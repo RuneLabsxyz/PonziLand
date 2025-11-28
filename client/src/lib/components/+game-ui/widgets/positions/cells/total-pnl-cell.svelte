@@ -179,14 +179,16 @@
   }
 </script>
 
-<div class="text-right flex items-center justify-end gap-1">
+<div
+  class="text-right flex items-center justify-end gap-1 font-ponzi-number text-sm tracking-widest"
+>
   {#if realizedPnL}
     <span
       class={realizedPnL.rawValue().isPositive()
         ? 'text-green-400'
         : 'text-red-400'}
     >
-      {realizedPnL.rawValue().isPositive() ? '+' : ''}{realizedPnL
+      {realizedPnL.rawValue().isPositive() ? '' : ''}{realizedPnL
         .rawValue()
         .toNumber()
         .toFixed(2)} $

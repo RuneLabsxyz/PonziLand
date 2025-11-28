@@ -18,13 +18,13 @@
       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
       if (diffDays > 0) {
-        return `${diffDays}d`;
+        return `${diffDays} ${diffDays === 1 ? 'day' : 'days'}`;
       } else if (diffHours > 0) {
-        return `${diffHours}h`;
+        return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'}`;
       } else if (diffMinutes > 0) {
-        return `${diffMinutes}m`;
+        return `${diffMinutes} ${diffMinutes === 1 ? 'minute' : 'minutes'}`;
       } else {
-        return '<1m';
+        return '<1 minute';
       }
     } catch {
       return '-';
