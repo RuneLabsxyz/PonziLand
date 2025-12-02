@@ -231,7 +231,6 @@ export const estimateNukeTimeSync = (
   return Math.max(0, Math.floor(remainingSeconds - relevantElapsedTime));
 };
 
-
 export const estimateTax = (sellPrice: number) => {
   if (sellPrice <= 0 || isNaN(sellPrice)) {
     return {

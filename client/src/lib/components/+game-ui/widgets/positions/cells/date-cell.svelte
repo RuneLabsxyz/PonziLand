@@ -24,7 +24,6 @@
   let icon = $derived(
     isAuction ? '/ui/icons/Icon_Auction.png' : '/ui/icons/Icon_MyLand2.png',
   );
-
 </script>
 
 {#if variant === 'buy'}
