@@ -28,9 +28,9 @@ function isPositionOpen(position: HistoricalPosition): boolean {
 function getDollarEquivalent(
   cost: string | null,
   tokenAddress: string | null,
-): number {
+): CurrencyAmount | null {
   if (!cost) {
-    return 0;
+    return null;
   }
 
   // Follow cost-cell pattern: use token if available, otherwise originalBaseToken
@@ -42,7 +42,7 @@ function getDollarEquivalent(
   }
 
   if (!token) {
-    return 0;
+    return null;
   }
 
   try {
@@ -53,14 +53,14 @@ function getDollarEquivalent(
       getBaseToken(),
     );
 
-    return baseEquivalent?.rawValue().toNumber() || 0;
+    return baseEquivalent;
   } catch {
-    return 0;
+    return null;
   }
 }
 
 // Helper function to calculate net flow value for sorting
-function getNetFlowValue(position: HistoricalPosition): number {
+function getNetFlowValue(position: HistoricalPosition): CurrencyAmount | null {
   try {
     const baseToken = getBaseToken();
     let totalInflow = CurrencyAmount.fromScaled(0, baseToken);
@@ -103,9 +103,9 @@ function getNetFlowValue(position: HistoricalPosition): number {
     }
 
     const netValue = totalInflow.rawValue().minus(totalOutflow.rawValue());
-    return netValue.toNumber();
+    return CurrencyAmount.fromRaw(netValue, baseToken);
   } catch {
-    return 0;
+    return null;
   }
 }
 
@@ -363,7 +363,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         posB.buy_cost_token,
         posB.buy_token_used,
       );
-      return dollarA - dollarB;
+      const valueA = dollarA?.rawValue().toNumber() || 0;
+      const valueB = dollarB?.rawValue().toNumber() || 0;
+      return valueA - valueB;
     },
     cell: ({ row }) => {
       const position = row.original;
@@ -397,7 +399,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         posB.sale_revenue_token,
         posB.sale_token_used,
       );
-      return dollarA - dollarB;
+      const valueA = dollarA?.rawValue().toNumber() || 0;
+      const valueB = dollarB?.rawValue().toNumber() || 0;
+      return valueA - valueB;
     },
     cell: ({ row }) => {
       const position = row.original;
@@ -420,7 +424,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const posB = rowB.original;
       const netFlowA = getNetFlowValue(posA);
       const netFlowB = getNetFlowValue(posB);
-      return netFlowA - netFlowB;
+      const valueA = netFlowA?.rawValue().toNumber() || 0;
+      const valueB = netFlowB?.rawValue().toNumber() || 0;
+      return valueA - valueB;
     },
     cell: ({ row }) => {
       const position = row.original;
