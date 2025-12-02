@@ -55,7 +55,7 @@
         class="flex gap-1 tracking-widest font-ponzi-number text-xs items-center"
       >
         <span class="flex opacity-80">
-          <span class="">$</span>
+          <span>$</span>
           {displayData.baseEquivalent.rawValue().toNumber().toFixed(2)}
         </span>
         <span><TokenAvatar token={displayData.token} /></span>
