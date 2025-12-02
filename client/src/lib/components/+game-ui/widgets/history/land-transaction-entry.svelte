@@ -3,7 +3,7 @@
     LandNukedHistoryEvent,
     LandBoughtHistoryEvent,
   } from '$lib/api/history/index.svelte';
-  import { formatTimestamp, formatTimestampRelative } from './utils';
+  import { formatTimestamp, formatTimestampRelative } from '$lib/utils/date';
   import { moveCameraToLocation, selectLand } from '$lib/stores/camera.store';
   import { coordinatesToLocation } from '$lib/utils';
   import { formatAddress } from '../leaderboard/helpers';
