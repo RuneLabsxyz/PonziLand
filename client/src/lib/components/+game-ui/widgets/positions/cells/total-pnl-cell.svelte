@@ -188,7 +188,7 @@
         ? 'text-green-400'
         : 'text-red-400'}
     >
-      {realizedPnL.rawValue().isPositive() ? '' : ''}{realizedPnL
+      {realizedPnL.rawValue().isPositive() ? '+' : ''}{realizedPnL
         .rawValue()
         .toNumber()
         .toFixed(2)} $
