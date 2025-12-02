@@ -37,7 +37,7 @@
     }
 
     // Sort: open positions first, then by time_bought descending
-    return filtered.sort((a, b) => {
+    return [...filtered].sort((a, b) => {
       const aOpen = isPositionOpen(a);
       const bOpen = isPositionOpen(b);
 
