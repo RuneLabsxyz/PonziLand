@@ -205,7 +205,6 @@ export function calculateNetSaleProfit(
 export function calculateTotalPnL(
   netTokenFlow: CurrencyAmount | null,
   netSaleProfit: CurrencyAmount | null,
-  isOpen: boolean,
 ): CurrencyAmount | null {
   const baseToken = getBaseToken();
 
@@ -323,7 +322,7 @@ export function calculatePositionMetrics(
     saleRevenueBaseEquivalent,
     isOpen,
   );
-  const totalPnL = calculateTotalPnL(netTokenFlow, netSaleProfit, isOpen);
+  const totalPnL = calculateTotalPnL(netTokenFlow, netSaleProfit);
   const roi = calculateROI(
     buyCostBaseEquivalent,
     saleRevenueBaseEquivalent,

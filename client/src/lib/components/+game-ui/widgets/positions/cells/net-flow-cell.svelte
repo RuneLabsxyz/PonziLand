@@ -14,6 +14,8 @@
   const netTokenFlow = $derived(metrics.netTokenFlow);
 </script>
 
-<div class="font-ponzi-number text-sm text-right tracking-widest">
+<div
+  class="font-ponzi-number text-sm text-right tracking-widest whitespace-nowrap"
+>
   <TokenFlowPopover {position} {netTokenFlow} />
 </div>

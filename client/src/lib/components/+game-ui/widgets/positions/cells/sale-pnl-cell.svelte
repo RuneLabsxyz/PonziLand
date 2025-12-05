@@ -14,7 +14,9 @@
   const isOpen = $derived(metrics.isOpen);
 </script>
 
-<div class="text-right font-ponzi-number text-sm tracking-widest">
+<div
+  class="text-right font-ponzi-number text-sm tracking-widest whitespace-nowrap"
+>
   {#if netSaleProfit}
     <span
       class={netSaleProfit.rawValue().isPositive()

@@ -12,7 +12,9 @@
 </script>
 
 {#if isOpen}
-  <div class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider">
+  <div
+    class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider whitespace-nowrap"
+  >
     <img src="/ui/icons/IconTiny_Stats.png" alt="Alive" class="h-4 w-4" />
     <span class="text-green-400 font-semibold">ALIVE</span>
   </div>
@@ -25,7 +27,9 @@
     position.close_reason === 'nuked' ? 'text-red-400' : 'text-yellow-500'}
   {@const label = position.close_reason === 'nuked' ? 'NUKED' : 'SOLD'}
 
-  <div class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider">
+  <div
+    class="flex gap-1 items-center font-ponzi-number text-xs tracking-wider whitespace-nowrap"
+  >
     <img src={iconSrc} alt={label} class="h-4 w-4" />
     <span class={colorClass}>{label}</span>
   </div>
