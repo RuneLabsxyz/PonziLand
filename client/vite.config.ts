@@ -25,11 +25,15 @@ function hyperlaneEthersPlugin(): Plugin {
     enforce: 'pre',
     resolveId(source, importer) {
       // Only intercept 'ethers' imports from @hyperlane-xyz packages
-      if (source === 'ethers' && importer && importer.includes('@hyperlane-xyz')) {
+      if (
+        source === 'ethers' &&
+        importer &&
+        importer.includes('@hyperlane-xyz')
+      ) {
         return this.resolve('ethers-v5', importer, { skipSelf: true });
       }
       return null;
-    }
+    },
   };
 }
 
@@ -39,7 +43,11 @@ const hyperlaneEthersEsbuildPlugin = {
   setup(build: any) {
     // Handle bare 'ethers' imports from @hyperlane-xyz packages
     build.onResolve({ filter: /^ethers$/ }, (args: any) => {
-      if (args.importer && args.importer.includes('@hyperlane-xyz') && ethersV5Dir) {
+      if (
+        args.importer &&
+        args.importer.includes('@hyperlane-xyz') &&
+        ethersV5Dir
+      ) {
         return { path: path.join(ethersV5Dir, 'lib.esm', 'index.js') };
       }
       return null;
@@ -61,7 +69,7 @@ const hyperlaneEthersEsbuildPlugin = {
       }
       return null;
     });
-  }
+  },
 };
 
 export default defineConfig({
@@ -77,7 +85,7 @@ export default defineConfig({
         process: true,
       },
       protocolImports: true,
-    })
+    }),
   ],
   build: {
     sourcemap: false,
