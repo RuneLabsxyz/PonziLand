@@ -1,12 +1,10 @@
 <script lang="ts">
   import type { HTMLInputAttributes } from 'svelte/elements';
-  import type { InputEvents } from './index.js';
   import { cn } from '$lib/utils.js';
 
-  type $$Props = HTMLInputAttributes & {
+  type Props = HTMLInputAttributes & {
     inputElement?: HTMLInputElement;
   };
-  type $$Events = InputEvents;
 
   let {
     class: className = undefined,
@@ -14,7 +12,7 @@
     readonly = undefined,
     inputElement = $bindable<HTMLInputElement | undefined>(),
     ...restProps
-  }: $$Props = $props();
+  }: Props = $props();
 </script>
 
 <input
@@ -26,22 +24,6 @@
   style="line-height: 3rem; "
   bind:value
   {readonly}
-  on:blur
-  on:change
-  on:click
-  on:focus
-  on:focusin
-  on:focusout
-  on:keydown
-  on:keypress
-  on:keyup
-  on:mouseover
-  on:mouseenter
-  on:mouseleave
-  on:mousemove
-  on:paste
-  on:input
-  on:wheel|passive
   {...restProps}
 />
 
@@ -55,6 +37,7 @@
 
   /* Firefox */
   input[type='number'] {
+    appearance: textfield;
     -moz-appearance: textfield;
   }
 </style>
