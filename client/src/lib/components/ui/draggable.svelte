@@ -61,7 +61,8 @@
   let currentPosition = $state<Position>(initialPosition);
   let currentDimensions = $state<Dimensions>(initialDimensions);
   let isFixed = $state($widgetsStore[id]?.fixed || false);
-  let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
+  // Reactively track fixedStyles from the store
+  let fixedStyles = $derived($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
   let isMaximized = $state($widgetsStore[id]?.isMaximized || false);
@@ -211,7 +212,6 @@
       });
     } else {
       isFixed = currentWidget.fixed || false;
-      fixedStyles = currentWidget.fixedStyles || '';
     }
 
     // Set up interact
