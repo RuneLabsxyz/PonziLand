@@ -15,7 +15,8 @@ import CostCell from './cells/cost-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
 import DurationCell from './cells/duration-cell.svelte';
 import LocationCell from './cells/location-cell.svelte';
-import NetFlowCell from './cells/net-flow-cell.svelte';
+import TokenInflowCell from './cells/token-inflow-cell.svelte';
+import TokenOutflowCell from './cells/token-outflow-cell.svelte';
 import SalePnlCell from './cells/sale-pnl-cell.svelte';
 import StatusCell from './cells/status-cell.svelte';
 import TotalPnlCell from './cells/total-pnl-cell.svelte';
@@ -100,53 +101,23 @@ function getDollarEquivalent(
   }
 }
 
-// Helper function to calculate net flow value for sorting
-function getNetFlowValue(position: HistoricalPosition): CurrencyAmount | null {
+// Helper function to get token inflow value for sorting
+function getTokenInflowValue(position: HistoricalPosition): number {
   try {
-    const baseToken = getBaseToken();
-    let totalInflow = CurrencyAmount.fromScaled(0, baseToken);
-    let totalOutflow = CurrencyAmount.fromScaled(0, baseToken);
-
-    // Calculate inflows
-    for (const [tokenAddress, amount] of Object.entries(
-      position.token_inflows,
-    )) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(
-          inflowAmount,
-          tokenInfo,
-          baseToken,
-        );
-        if (convertedAmount) {
-          totalInflow = totalInflow.add(convertedAmount);
-        }
-      }
-    }
-
-    // Calculate outflows
-    for (const [tokenAddress, amount] of Object.entries(
-      position.token_outflows,
-    )) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(
-          outflowAmount,
-          tokenInfo,
-          baseToken,
-        );
-        if (convertedAmount) {
-          totalOutflow = totalOutflow.add(convertedAmount);
-        }
-      }
-    }
-
-    const netValue = totalInflow.rawValue().minus(totalOutflow.rawValue());
-    return CurrencyAmount.fromRaw(netValue, baseToken);
+    const metrics = calculatePositionMetrics(position);
+    return metrics.totalInflowBaseEquivalent?.rawValue().toNumber() || 0;
   } catch {
-    return null;
+    return 0;
+  }
+}
+
+// Helper function to get token outflow value for sorting
+function getTokenOutflowValue(position: HistoricalPosition): number {
+  try {
+    const metrics = calculatePositionMetrics(position);
+    return metrics.totalOutflowBaseEquivalent?.rawValue().toNumber() || 0;
+  } catch {
+    return 0;
   }
 }
 
@@ -466,10 +437,10 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
-    accessorKey: 'net_flow',
+    accessorKey: 'token_inflows',
     header: ({ column }) =>
       renderComponent(DataTableSortableHeader, {
-        title: 'Net Flow',
+        title: 'Token Inflows',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
       }),
@@ -477,15 +448,34 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
-      const netFlowA = getNetFlowValue(posA);
-      const netFlowB = getNetFlowValue(posB);
-      const valueA = netFlowA?.rawValue().toNumber() || 0;
-      const valueB = netFlowB?.rawValue().toNumber() || 0;
-      return valueA - valueB;
+      const inflowA = getTokenInflowValue(posA);
+      const inflowB = getTokenInflowValue(posB);
+      return inflowA - inflowB;
     },
     cell: ({ row }) => {
       const position = row.original;
-      return renderComponent(NetFlowCell, { position });
+      return renderComponent(TokenInflowCell, { position });
+    },
+  },
+  {
+    accessorKey: 'token_outflows',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'Token Outflows',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const outflowA = getTokenOutflowValue(posA);
+      const outflowB = getTokenOutflowValue(posB);
+      return outflowA - outflowB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(TokenOutflowCell, { position });
     },
   },
   {
