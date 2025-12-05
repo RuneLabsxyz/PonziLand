@@ -50,7 +50,7 @@
   }: Props = $props();
 
   const formattedValue = $derived(
-    `${pnl > 0 ? '+' : '-'}${Math.abs(pnl).toFixed(2)}$`,
+    `${pnl > 0 ? '+' : '-'}$${Math.abs(pnl).toFixed(2)}`,
   );
 
   const tokenPercentages = $derived.by(() => {

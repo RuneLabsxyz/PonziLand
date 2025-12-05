@@ -13,14 +13,13 @@ import { calculatePositionMetrics } from './position-pnl-calculator';
 import { renderComponent } from '$lib/components/ui/data-table';
 import CostCell from './cells/cost-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
-import DurationCell from './cells/duration-cell.svelte';
 import LocationCell from './cells/location-cell.svelte';
-import NetFlowCell from './cells/net-flow-cell.svelte';
-import SalePnlCell from './cells/sale-pnl-cell.svelte';
+import RoiCell from './cells/roi-cell.svelte';
 import StatusCell from './cells/status-cell.svelte';
+import TokenInflowCell from './cells/token-inflow-cell.svelte';
+import TokenOutflowCell from './cells/token-outflow-cell.svelte';
 import TotalPnlCell from './cells/total-pnl-cell.svelte';
 import DataTableSortableHeader from './data-table-sortable-header.svelte';
-import RoiCell from './cells/roi-cell.svelte';
 
 // Helper function to check if a position is open
 function isPositionOpen(position: HistoricalPosition): boolean {
@@ -100,53 +99,23 @@ function getDollarEquivalent(
   }
 }
 
-// Helper function to calculate net flow value for sorting
-function getNetFlowValue(position: HistoricalPosition): CurrencyAmount | null {
+// Helper function to get token inflow value for sorting
+function getTokenInflowValue(position: HistoricalPosition): number {
   try {
-    const baseToken = getBaseToken();
-    let totalInflow = CurrencyAmount.fromScaled(0, baseToken);
-    let totalOutflow = CurrencyAmount.fromScaled(0, baseToken);
-
-    // Calculate inflows
-    for (const [tokenAddress, amount] of Object.entries(
-      position.token_inflows,
-    )) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(
-          inflowAmount,
-          tokenInfo,
-          baseToken,
-        );
-        if (convertedAmount) {
-          totalInflow = totalInflow.add(convertedAmount);
-        }
-      }
-    }
-
-    // Calculate outflows
-    for (const [tokenAddress, amount] of Object.entries(
-      position.token_outflows,
-    )) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(
-          outflowAmount,
-          tokenInfo,
-          baseToken,
-        );
-        if (convertedAmount) {
-          totalOutflow = totalOutflow.add(convertedAmount);
-        }
-      }
-    }
-
-    const netValue = totalInflow.rawValue().minus(totalOutflow.rawValue());
-    return CurrencyAmount.fromRaw(netValue, baseToken);
+    const metrics = calculatePositionMetrics(position);
+    return metrics.totalInflowBaseEquivalent?.rawValue().toNumber() || 0;
   } catch {
-    return null;
+    return 0;
+  }
+}
+
+// Helper function to get token outflow value for sorting
+function getTokenOutflowValue(position: HistoricalPosition): number {
+  try {
+    const metrics = calculatePositionMetrics(position);
+    return metrics.totalOutflowBaseEquivalent?.rawValue().toNumber() || 0;
+  } catch {
+    return 0;
   }
 }
 
@@ -322,6 +291,52 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
+    accessorKey: 'total_pnl',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'P&L',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const totalPnlA = getTotalPnlValue(posA);
+      const totalPnlB = getTotalPnlValue(posB);
+      return totalPnlA - totalPnlB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(TotalPnlCell, {
+        position,
+        showShareButton: true,
+        showPercentage: true,
+      });
+    },
+  },
+  {
+    accessorKey: 'roi',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'ROI',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const roiA = getRoiValue(posA);
+      const roiB = getRoiValue(posB);
+      return roiA - roiB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(RoiCell, { position });
+    },
+  },
+  {
     accessorKey: 'time_bought',
     header: ({ column }) =>
       renderComponent(DataTableSortableHeader, {
@@ -354,38 +369,11 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     sortingFn: 'datetime',
     cell: ({ row }) => {
       const position = row.original;
-      const isOpen = isPositionOpen(position);
-      if (isOpen) {
-        return '-';
-      }
       return renderComponent(DateCell, {
         dateString: position.close_date,
         variant: 'close',
         position: position,
       });
-    },
-  },
-  {
-    accessorKey: 'duration',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Duration',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const endA = posA.close_date ? new Date(posA.close_date) : new Date();
-      const endB = posB.close_date ? new Date(posB.close_date) : new Date();
-      const durationA = endA.getTime() - new Date(posA.time_bought).getTime();
-      const durationB = endB.getTime() - new Date(posB.time_bought).getTime();
-      return durationA - durationB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(DurationCell, { position });
     },
   },
   {
@@ -417,7 +405,29 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       return renderComponent(CostCell, {
         cost: position.buy_cost_token,
         tokenAddress: position.buy_token_used,
+        variant: 'buy',
       });
+    },
+  },
+  {
+    accessorKey: 'token_outflows',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'Token Outflows',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const outflowA = getTokenOutflowValue(posA);
+      const outflowB = getTokenOutflowValue(posB);
+      return outflowA - outflowB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(TokenOutflowCell, { position });
     },
   },
   {
@@ -462,14 +472,15 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       return renderComponent(CostCell, {
         cost: position.sale_revenue_token,
         tokenAddress: position.sale_token_used,
+        variant: 'sell',
       });
     },
   },
   {
-    accessorKey: 'net_flow',
+    accessorKey: 'token_inflows',
     header: ({ column }) =>
       renderComponent(DataTableSortableHeader, {
-        title: 'Net Flow',
+        title: 'Token Inflows',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
       }),
@@ -477,78 +488,34 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
-      const netFlowA = getNetFlowValue(posA);
-      const netFlowB = getNetFlowValue(posB);
-      const valueA = netFlowA?.rawValue().toNumber() || 0;
-      const valueB = netFlowB?.rawValue().toNumber() || 0;
-      return valueA - valueB;
+      const inflowA = getTokenInflowValue(posA);
+      const inflowB = getTokenInflowValue(posB);
+      return inflowA - inflowB;
     },
     cell: ({ row }) => {
       const position = row.original;
-      return renderComponent(NetFlowCell, { position });
+      return renderComponent(TokenInflowCell, { position });
     },
   },
-  {
-    accessorKey: 'sale_pnl',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Sale P&L',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const salePnlA = getSalePnlValue(posA);
-      const salePnlB = getSalePnlValue(posB);
-      return salePnlA - salePnlB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(SalePnlCell, { position });
-    },
-  },
-  {
-    accessorKey: 'total_pnl',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'P&L',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const totalPnlA = getTotalPnlValue(posA);
-      const totalPnlB = getTotalPnlValue(posB);
-      return totalPnlA - totalPnlB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(TotalPnlCell, { position, showShareButton: true });
-    },
-  },
-  {
-    accessorKey: 'roi',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'ROI',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const roiA = getRoiValue(posA);
-      const roiB = getRoiValue(posB);
-      return roiA - roiB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(RoiCell, { position });
-    },
-  },
+  // {
+  //   accessorKey: 'sale_pnl',
+  //   header: ({ column }) =>
+  //     renderComponent(DataTableSortableHeader, {
+  //       title: 'Sale P&L',
+  //       sortDirection: column.getIsSorted(),
+  //       onclick: column.getToggleSortingHandler(),
+  //     }),
+  //   enableSorting: true,
+  //   sortingFn: (rowA, rowB) => {
+  //     const posA = rowA.original;
+  //     const posB = rowB.original;
+  //     const salePnlA = getSalePnlValue(posA);
+  //     const salePnlB = getSalePnlValue(posB);
+  //     return salePnlA - salePnlB;
+  //   },
+  //   cell: ({ row }) => {
+  //     const position = row.original;
+  //     return renderComponent(SalePnlCell, { position });
+  //   },
+  // },
 ];

@@ -60,19 +60,18 @@ export function formatDuration(startDate: string, endDate: string): string {
     const end = new Date(endDate);
 
     const diffMs = end.getTime() - start.getTime();
-    const diffMinutes = Math.floor(diffMs / (1000 * 60));
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(
+      (diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+    );
+    const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
-    if (diffDays > 0) {
-      return `${diffDays}d`;
-    } else if (diffHours > 0) {
-      return `${diffHours}h`;
-    } else if (diffMinutes > 0) {
-      return `${diffMinutes}m`;
-    } else {
-      return '<1m';
-    }
+    const parts = [];
+    if (diffDays > 0) parts.push(`${diffDays}d`);
+    if (diffHours > 0) parts.push(`${diffHours}h`);
+    if (diffMinutes > 0) parts.push(`${diffMinutes}m`);
+
+    return parts.length > 0 ? parts.join(' ') : '<1m';
   } catch {
     return '-';
   }
@@ -182,4 +181,22 @@ export function formatDurationHMS(durationInSeconds: number): string {
   const seconds = Math.floor(durationInSeconds % 60);
 
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}
+
+/**
+ * Format a date string to dd/mm/yy hh:mm format
+ */
+export function formatDateCompact(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  } catch {
+    return dateString;
+  }
 }

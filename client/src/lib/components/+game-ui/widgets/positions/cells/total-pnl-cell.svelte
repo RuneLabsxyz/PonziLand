@@ -7,13 +7,33 @@
   interface Props {
     position: HistoricalPosition;
     showShareButton?: boolean;
+    showPercentage?: boolean;
   }
 
-  let { position, showShareButton = true }: Props = $props();
+  let {
+    position,
+    showShareButton = true,
+    showPercentage = false,
+  }: Props = $props();
 
   // Use pre-calculated metrics
   const realizedPnL = $derived(position.metrics?.totalPnL ?? null);
   const isOpen = $derived(position.metrics?.isOpen ?? false);
+  const roi = $derived(position.metrics?.roi ?? null);
+
+  // Format percentage with appropriate precision
+  function formatPercentage(value: number): string {
+    const abs = Math.abs(value);
+    if (abs >= 10) {
+      return value.toFixed(1);
+    } else if (abs >= 1) {
+      return value.toFixed(2);
+    } else if (abs >= 0.01) {
+      return value.toFixed(3);
+    } else {
+      return value.toFixed(4);
+    }
+  }
 
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);
@@ -37,19 +57,35 @@
 </script>
 
 <div
-  class="text-right flex items-center justify-end gap-1 font-ponzi-number text-sm tracking-widest"
+  class="text-right flex items-center justify-end gap-1 text-sm tracking-widest whitespace-nowrap"
 >
   {#if realizedPnL}
-    <span
-      class={realizedPnL.rawValue().isPositive()
-        ? 'text-green-400'
-        : 'text-red-400'}
-    >
-      {realizedPnL.rawValue().isPositive() ? '+' : ''}{realizedPnL
-        .rawValue()
-        .toNumber()
-        .toFixed(2)} $
-    </span>
+    <div class="flex flex-col items-end">
+      <span
+        class={[
+          'leading-none font-ponzi-number',
+          realizedPnL.rawValue().isPositive()
+            ? 'text-green-400'
+            : 'text-red-400',
+        ]}
+      >
+        {realizedPnL.rawValue().isPositive() ? '+' : '-'}${realizedPnL
+          .rawValue()
+          .abs()
+          .toNumber()
+          .toFixed(2)}
+      </span>
+      {#if showPercentage && roi !== null}
+        <span
+          class={[
+            'text-lg font-normal tracking-wider leading-none',
+            roi > 0 ? 'text-green-400' : 'text-red-400',
+          ]}
+        >
+          {roi > 0 ? '+' : ''}{formatPercentage(roi)}%
+        </span>
+      {/if}
+    </div>
     {#if showShareButton}
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <!-- svelte-ignore a11y_no_static_element_interactions -->
@@ -61,7 +97,7 @@
         }}
         title="Share position"
       >
-        <Share class="w-4 h-4" />
+        <Share class="w-3 h-3" />
       </div>
     {/if}
   {:else}
