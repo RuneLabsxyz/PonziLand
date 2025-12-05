@@ -9,13 +9,12 @@
   import {
     getFullTokenInfo,
     getTokenInfo,
-    getTokenMetadata,
     locationToCoordinates,
   } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import { ChevronDown, ChevronUp, Share2 } from 'lucide-svelte';
-  import { formatTimestamp } from '../history/utils';
+  import { formatTimestamp } from '$lib/utils/date';
   import type { HistoricalPosition } from './historical-positions.service';
   import { widgetsStore } from '$lib/stores/widgets.store';
 
@@ -33,7 +32,7 @@
     expanded = !expanded;
   }
 
-  function formatDate(dateString: string): string {
+  function formatDateShort(dateString: string): string {
     try {
       const date = new Date(dateString);
       return date.toLocaleString('en-US', {
@@ -50,6 +49,7 @@
   // Function to open share widget with position data
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);
+
     widgetsStore.addWidget({
       id: `share-${positionData.land_location}-${Date.now()}`,
       type: 'share',
@@ -272,7 +272,7 @@
         {/if}
       </div>
       <div class="flex text-gray-400">
-        {formatDate(position.time_bought)}
+        {formatDateShort(position.time_bought)}
         {#if isAuctionBuy}
           <span class="text-blue-400 ml-1">(auction)</span>
         {:else}
@@ -290,7 +290,6 @@
           {#if position.buy_token_used}
             {@const tokenInfo = getTokenInfo(position.buy_token_used)}
             {#if tokenInfo}
-              {@const tokenMeta = getTokenMetadata(tokenInfo.skin)}
               {@const buyCurrencyAmount = CurrencyAmount.fromUnscaled(
                 position.buy_cost_token,
                 tokenInfo,

@@ -6,10 +6,10 @@
   import HistoryList from '../history/history-list.svelte';
   import MarketWidget from '../market/widget-market.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
-  import HistoricalPositions from './historical-positions.svelte';
+  import HistoricalPositions from '../positions/historical-positions.svelte';
   import { Separator } from '$lib/components/ui/separator';
   import type { Snippet } from 'svelte';
-  import PnlImage from './PnlImage.svelte';
+  import PnlImage from '../share/PnlImage.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
