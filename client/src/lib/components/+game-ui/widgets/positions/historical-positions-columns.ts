@@ -293,6 +293,52 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
+    accessorKey: 'total_pnl',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'P&L',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const totalPnlA = getTotalPnlValue(posA);
+      const totalPnlB = getTotalPnlValue(posB);
+      return totalPnlA - totalPnlB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(TotalPnlCell, {
+        position,
+        showShareButton: true,
+        showPercentage: true,
+      });
+    },
+  },
+  {
+    accessorKey: 'roi',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'ROI',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const roiA = getRoiValue(posA);
+      const roiB = getRoiValue(posB);
+      return roiA - roiB;
+    },
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(RoiCell, { position });
+    },
+  },
+  {
     accessorKey: 'time_bought',
     header: ({ column }) =>
       renderComponent(DataTableSortableHeader, {
@@ -325,10 +371,6 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     sortingFn: 'datetime',
     cell: ({ row }) => {
       const position = row.original;
-      const isOpen = isPositionOpen(position);
-      if (isOpen) {
-        return '-';
-      }
       return renderComponent(DateCell, {
         dateString: position.close_date,
         variant: 'close',
@@ -336,29 +378,29 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       });
     },
   },
-  {
-    accessorKey: 'duration',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Duration',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const endA = posA.close_date ? new Date(posA.close_date) : new Date();
-      const endB = posB.close_date ? new Date(posB.close_date) : new Date();
-      const durationA = endA.getTime() - new Date(posA.time_bought).getTime();
-      const durationB = endB.getTime() - new Date(posB.time_bought).getTime();
-      return durationA - durationB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(DurationCell, { position });
-    },
-  },
+  // {
+  //   accessorKey: 'duration',
+  //   header: ({ column }) =>
+  //     renderComponent(DataTableSortableHeader, {
+  //       title: 'Duration',
+  //       sortDirection: column.getIsSorted(),
+  //       onclick: column.getToggleSortingHandler(),
+  //     }),
+  //   enableSorting: true,
+  //   sortingFn: (rowA, rowB) => {
+  //     const posA = rowA.original;
+  //     const posB = rowB.original;
+  //     const endA = posA.close_date ? new Date(posA.close_date) : new Date();
+  //     const endB = posB.close_date ? new Date(posB.close_date) : new Date();
+  //     const durationA = endA.getTime() - new Date(posA.time_bought).getTime();
+  //     const durationB = endB.getTime() - new Date(posB.time_bought).getTime();
+  //     return durationA - durationB;
+  //   },
+  //   cell: ({ row }) => {
+  //     const position = row.original;
+  //     return renderComponent(DurationCell, { position });
+  //   },
+  // },
   {
     accessorKey: 'buy_cost_token',
     header: ({ column }) =>
@@ -501,46 +543,4 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   //     return renderComponent(SalePnlCell, { position });
   //   },
   // },
-  {
-    accessorKey: 'total_pnl',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'P&L',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const totalPnlA = getTotalPnlValue(posA);
-      const totalPnlB = getTotalPnlValue(posB);
-      return totalPnlA - totalPnlB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(TotalPnlCell, { position, showShareButton: true });
-    },
-  },
-  {
-    accessorKey: 'roi',
-    header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'ROI',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
-    enableSorting: true,
-    sortingFn: (rowA, rowB) => {
-      const posA = rowA.original;
-      const posB = rowB.original;
-      const roiA = getRoiValue(posA);
-      const roiB = getRoiValue(posB);
-      return roiA - roiB;
-    },
-    cell: ({ row }) => {
-      const position = row.original;
-      return renderComponent(RoiCell, { position });
-    },
-  },
 ];

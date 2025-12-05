@@ -82,25 +82,23 @@
 </script>
 
 <div class="text-right whitespace-nowrap">
-  <div class="flex items-start justify-end gap-1">
-    <div class="flex flex-col items-end">
-      <!-- ROI Display -->
-      {#if roi !== null}
-        <div
-          class={`font-ponzi-number text-sm tracking-widest ${roi > 0 ? 'text-green-400' : 'text-red-400'}`}
-        >
-          {roi > 0 ? '+' : ''}{formatPercentage(roi)}%
-        </div>
-      {:else}
-        <div class="font-ponzi-number text-sm tracking-widest text-gray-500">
-          -
-        </div>
-      {/if}
-    </div>
+  <div class="flex items-center justify-end gap-1">
+    <!-- ROI Display -->
+    {#if roi !== null}
+      <div
+        class={`font-ponzi-number text-sm tracking-widest ${roi > 0 ? 'text-green-400' : 'text-red-400'}`}
+      >
+        {roi > 0 ? '+' : ''}{formatPercentage(roi)}%
+      </div>
+    {:else}
+      <div class="font-ponzi-number text-sm tracking-widest text-gray-500">
+        -
+      </div>
+    {/if}
 
     <!-- Info Tooltip with detailed breakdown -->
-    <div class="mt-0.5">
+    <!-- <div class="mt-0.5">
       <InfoTooltip text={calculationDetails} />
-    </div>
+    </div> -->
   </div>
 </div>
