@@ -88,15 +88,28 @@
       onclick={() => setActiveTab('my-lands')}
     >
       <img
-        src="/ui/icons/Icon_Book.png"
-        alt="History"
+        src="/ui/icons/Icon_Crown.png"
+        alt="My Lands"
         class={[
           'h-6 w-6',
           {
             'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
-              activeTab === 'history',
+              activeTab === 'my-lands',
           },
         ]}
+      />
+    </button>
+
+    <button
+      class="flex items-center justify-center h-8 w-8"
+      onclick={() => setActiveTab('market')}
+    >
+      <img
+        src="/ui/icons/Icon_Auction.png"
+        alt="Market"
+        class={cn('h-6 w-6', {
+          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
+        })}
       />
     </button>
 
@@ -119,32 +132,16 @@
 
     <button
       class="flex items-center justify-center h-8 w-8"
-      onclick={() => setActiveTab('market')}
-    >
-      <img
-        src="/ui/icons/Icon_Auction.png"
-        alt="Market"
-        class={[
-          'h-6 w-6',
-          {
-            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
-          },
-        ]}
-      />
-    </button>
-
-    <button
-      class="flex items-center justify-center h-8 w-8"
       onclick={() => setActiveTab('history')}
     >
       <img
-        src="/ui/icons/Icon_Crown.png"
-        alt="My Lands"
+        src="/ui/icons/Icon_Notification.png"
+        alt="History"
         class={[
           'h-6 w-6',
           {
             'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
-              activeTab === 'my-lands',
+              activeTab === 'history',
           },
         ]}
       />

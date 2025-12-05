@@ -538,17 +538,13 @@
           <div
             class="flex flex-col items-center justify-center h-full gap-4 p-8"
           >
-            <div class="text-center">
-              <h3 class="text-lg font-semibold mb-2">
-                Connect Wallet Required
-              </h3>
-              <p class="text-sm opacity-75 mb-4">
-                You need to connect your wallet to view your lands and
-                participate in the game.
+            <div class="text-center tracking-wide">
+              <p class="opacity-75 text-xl">
+                To see lands you own please connect your wallet.
               </p>
             </div>
             <Button
-              class="w-full"
+              class=""
               onclick={async () => {
                 await dojoAccountManager?.promptForLogin();
               }}
@@ -582,7 +578,7 @@
           </div>
         {/if}
       {/if}
-      {#if filteredLands.length === 0}
+      {#if filteredLands.length === 0 && lands.length > 0}
         <div class="p-8 text-center text-gray-400">
           <p>No lands found matching your filters.</p>
         </div>

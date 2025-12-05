@@ -187,12 +187,6 @@
         return;
       }
 
-      const currentAccount = account()?.getWalletAccount();
-      if (!currentAccount) {
-        console.error('No wallet account available');
-        return;
-      }
-
       const allLands = landStore.getAllLands();
 
       unsubscribe = allLands.subscribe((landsData) => {
