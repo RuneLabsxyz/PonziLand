@@ -104,18 +104,11 @@
     "vite-plugin-mkcert": "^1.17.8",
     "vite-plugin-node-polyfills": "^0.24.0",
     "vite-plugin-wasm": "^3.3.0",
-    "@ponziland/hyperlane-bridge": "file:../packages/hyperlane-bridge",
-    "@solana/web3.js": "catalog:",
-    "ethers-v5": "npm:ethers@^5.7.2"
+    "@ponziland/hyperlane-bridge": "workspace:*",
+    "@solana/web3.js": "catalog:"
   },
   "overrides": {
     "@starknet-io/types-js": "catalog:",
-    "starknet": "catalog:",
-    "@hyperlane-xyz/core": {
-      "ethers": "^5.7.2"
-    },
-    "@hyperlane-xyz/sdk": {
-      "ethers": "^5.7.2"
-    }
+    "starknet": "catalog:"
   }
 }
