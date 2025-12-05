@@ -16,7 +16,22 @@
 
   let {
     setCustomControls,
-  }: { setCustomControls: (controls: Snippet<[]> | null) => void } = $props();
+    bridgableSymbols = [],
+    onBridgeTokenClick,
+    title,
+  }: {
+    setCustomControls: (controls: Snippet<[]> | null) => void;
+    bridgableSymbols?: string[];
+    onBridgeTokenClick?: (symbol: string) => void;
+    title?: string;
+  } = $props();
+
+  // Check if a token is bridgable (case-insensitive)
+  function isBridgable(symbol: string): boolean {
+    return bridgableSymbols.some(
+      (s) => s.toUpperCase() === symbol.toUpperCase(),
+    );
+  }
   const baseToken = $derived.by(() => {
     // Always use USDC as base token
     const usdcBridgedAddress =
@@ -168,6 +183,20 @@
   });
 </script>
 
+{#if title}
+  <!-- Bridge mode header with title and address -->
+  <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
+    <span class="font-ponzi-number">{title}</span>
+    {#if address}
+      <div class="flex flex-1 items-center gap-2 justify-end">
+        <span class="text-xs text-gray-500 font-mono">
+          {address.slice(0, 6)}...{address.slice(-4)}
+        </span>
+      </div>
+    {/if}
+  </div>
+{/if}
+
 <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
   {#if totalBalance && baseToken}
     <span class="font-ponzi-number">
@@ -201,8 +230,17 @@
       <ScrollArea class="p-1">
         <div class="pr-2" style="height: {walletHeight}px;">
           {#each sortedTokenBalances as [token, balance]}
+            {@const canBridge = isBridgable(token.symbol) && onBridgeTokenClick}
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <!-- svelte-ignore a11y_click_events_have_key_events -->
             <div
-              class="flex items-center gap-3 px-2 py-1 select-text hover:bg-gray-100/5 rounded"
+              class={cn(
+                'flex items-center gap-3 px-2 py-1 select-text rounded',
+                canBridge
+                  ? 'hover:bg-cyan-500/10 cursor-pointer'
+                  : 'hover:bg-gray-100/5',
+              )}
+              onclick={() => canBridge && onBridgeTokenClick?.(token.symbol)}
             >
               <TokenAvatar
                 {token}
@@ -212,6 +250,9 @@
                 ])}
               />
               <TokenValueDisplay amount={balance.toBigint()} {token} />
+              {#if canBridge}
+                <div class="text-cyan-400 text-xs ml-auto">↔</div>
+              {/if}
             </div>
           {/each}
         </div>
