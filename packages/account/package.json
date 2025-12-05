@@ -30,15 +30,14 @@
 	"sideEffects": [
 		"**/*.css"
 	],
-	"svelte": "./src/lib/index.ts",
+	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"type": "module",
-	"main": "./src/lib/index.ts",
 	"exports": {
 		".": {
 			"types": "./dist/index.d.ts",
-			"svelte": "./src/lib/index.ts",
-			"default": "./src/lib/index.ts"
+			"svelte": "./dist/index.js",
+			"default": "./dist/index.js"
 		}
 	},
 	"dependencies": {
