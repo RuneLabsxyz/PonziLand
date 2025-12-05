@@ -1,10 +1,7 @@
 <script lang="ts">
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { getTokenInfo } from '$lib/utils';
-  import {
-    walletStore,
-    getBaseToken,
-  } from '$lib/stores/wallet.svelte';
+  import { walletStore, getBaseToken } from '$lib/stores/wallet.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import type { HistoricalPosition } from '../historical-positions.service';
@@ -23,14 +20,19 @@
 
   // Process all inflow tokens with their details
   const inflowTokens = $derived.by(() => {
-    if (!position.token_inflows || Object.keys(position.token_inflows).length === 0) {
+    if (
+      !position.token_inflows ||
+      Object.keys(position.token_inflows).length === 0
+    ) {
       return [];
     }
 
     const baseToken = getBaseToken();
     const tokens = [];
 
-    for (const [tokenAddress, amount] of Object.entries(position.token_inflows)) {
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_inflows,
+    )) {
       const tokenInfo = getTokenInfo(tokenAddress);
       if (tokenInfo) {
         const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
@@ -39,7 +41,7 @@
           tokenInfo,
           baseToken,
         );
-        
+
         if (baseEquivalent && !baseEquivalent.isZero()) {
           tokens.push({
             token: tokenInfo,
@@ -51,8 +53,10 @@
     }
 
     // Sort by base equivalent value (largest first)
-    return tokens.sort((a, b) => 
-      b.baseEquivalent.rawValue().toNumber() - a.baseEquivalent.rawValue().toNumber()
+    return tokens.sort(
+      (a, b) =>
+        b.baseEquivalent.rawValue().toNumber() -
+        a.baseEquivalent.rawValue().toNumber(),
     );
   });
 
@@ -64,12 +68,14 @@
     <!-- Summary Row -->
     <div class="flex items-center gap-1">
       {#if totalInflowBaseEquivalent && !totalInflowBaseEquivalent.isZero()}
-        <div class="flex gap-1 tracking-widest font-ponzi-number text-xs items-center">
+        <div
+          class="flex gap-1 tracking-widest font-ponzi-number text-xs items-center"
+        >
           <span class="flex opacity-80 text-green-400">
             <span>+$</span>
             {totalInflowBaseEquivalent.rawValue().toNumber().toFixed(2)}
           </span>
-          
+
           <!-- Token Avatars -->
           <div class="flex -space-x-1">
             {#each inflowTokens.slice(0, 3) as tokenData}
@@ -78,18 +84,20 @@
               </div>
             {/each}
             {#if inflowTokens.length > 3}
-              <div class="w-4 h-4 bg-gray-700 rounded-full flex items-center justify-center text-[8px] text-gray-300">
+              <div
+                class="w-4 h-4 bg-gray-700 rounded-full flex items-center justify-center text-[8px] text-gray-300"
+              >
                 +{inflowTokens.length - 3}
               </div>
             {/if}
           </div>
         </div>
       {/if}
-      
+
       <!-- Expand/Collapse Button -->
       {#if hasMultipleTokens}
         <button
-          onclick={() => isExpanded = !isExpanded}
+          onclick={() => (isExpanded = !isExpanded)}
           class="text-gray-400 hover:text-gray-200 transition-colors p-0.5"
           title={isExpanded ? 'Collapse details' : 'Expand details'}
         >
@@ -101,7 +109,6 @@
         </button>
       {/if}
     </div>
-
 
     <!-- Expanded Details -->
     {#if isExpanded && hasMultipleTokens}

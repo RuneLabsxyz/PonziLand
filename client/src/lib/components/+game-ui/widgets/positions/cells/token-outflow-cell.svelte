@@ -17,7 +17,10 @@
 
   // Get the largest outflow token and amount for display
   const displayData = $derived.by(() => {
-    if (!position.token_outflows || Object.keys(position.token_outflows).length === 0) {
+    if (
+      !position.token_outflows ||
+      Object.keys(position.token_outflows).length === 0
+    ) {
       return null;
     }
 
@@ -26,7 +29,9 @@
     let largestValue = 0;
 
     // Find the outflow with the largest base token equivalent value
-    for (const [tokenAddress, amount] of Object.entries(position.token_outflows)) {
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
       const tokenInfo = getTokenInfo(tokenAddress);
       if (tokenInfo) {
         const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
@@ -35,7 +40,7 @@
           tokenInfo,
           baseToken,
         );
-        
+
         if (baseEquivalent) {
           const value = baseEquivalent.rawValue().toNumber();
           if (value > largestValue) {
@@ -58,7 +63,9 @@
     const baseToken = getBaseToken();
     let total = CurrencyAmount.fromScaled(0, baseToken);
 
-    for (const [tokenAddress, amount] of Object.entries(position.token_outflows)) {
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
       const tokenInfo = getTokenInfo(tokenAddress);
       if (tokenInfo) {
         const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);

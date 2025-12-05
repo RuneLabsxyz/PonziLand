@@ -86,11 +86,15 @@
     <div class="flex flex-col items-end">
       <!-- ROI Display -->
       {#if roi !== null}
-        <div class={`text-sm ${roi > 0 ? 'text-green-400' : 'text-red-400'}`}>
+        <div
+          class={`font-ponzi-number text-sm tracking-widest ${roi > 0 ? 'text-green-400' : 'text-red-400'}`}
+        >
           {roi > 0 ? '+' : ''}{formatPercentage(roi)}%
         </div>
       {:else}
-        <div class="text-sm text-gray-500">-</div>
+        <div class="font-ponzi-number text-sm tracking-widest text-gray-500">
+          -
+        </div>
       {/if}
     </div>
 
