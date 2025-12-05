@@ -11,12 +11,13 @@
   import WidgetHelp from './help/widget-help.svelte';
   import WidgetNftLink from './nft-link/widget-nft-link.svelte';
   import WidgetGuild from './guild/widget-guild.svelte';
-  import { ENABLE_GUILD } from '$lib/flags';
+  import { ENABLE_BRIDGE, ENABLE_GUILD } from '$lib/flags';
   import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
   import WidgetHeatmap from './heatmap/widget-heatmap.svelte';
   import WidgetSwap from './swap/widget-swap.svelte';
   import WidgetDisclaimer from './disclaimer/widget-disclaimer.svelte';
   import WidgetHistory from './history/widget-history.svelte';
+  import WidgetBridge from './bridge/widget-bridge.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -61,6 +62,8 @@
           <WidgetDisclaimer />
         {:else if type === 'history'}
           <WidgetHistory />
+        {:else if type === 'bridge' && ENABLE_BRIDGE}
+          <WidgetBridge />
         {/if}
       {/snippet}
     </Draggable>
