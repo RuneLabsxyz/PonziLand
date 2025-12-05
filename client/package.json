@@ -102,7 +102,10 @@
     "tsparticles": "^3.8.1",
     "vite-plugin-glsl": "^1.5.1",
     "vite-plugin-mkcert": "^1.17.8",
-    "vite-plugin-wasm": "^3.3.0"
+    "vite-plugin-node-polyfills": "^0.24.0",
+    "vite-plugin-wasm": "^3.3.0",
+    "@ponziland/hyperlane-bridge": "workspace:*",
+    "@solana/web3.js": "catalog:"
   },
   "overrides": {
     "@starknet-io/types-js": "catalog:",

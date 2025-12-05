@@ -52,7 +52,7 @@
 
   let network = $derived(
     data.networks?.find(
-      (network) =>
+      (network: NetworkWithTokens.Data) =>
         Number(network.chain_id) === Number((provider.current as any)?.chainId),
     ),
   );
