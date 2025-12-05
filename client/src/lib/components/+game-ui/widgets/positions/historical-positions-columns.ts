@@ -1,21 +1,275 @@
+import {
+  getBaseToken,
+  originalBaseToken,
+  walletStore,
+} from '$lib/stores/wallet.svelte';
+import { getTokenInfo } from '$lib/utils';
+import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { ColumnDef } from '@tanstack/table-core';
 import type { HistoricalPosition } from './historical-positions.service';
 
 // Import cell components
-import LocationCell from './cells/location-cell.svelte';
-import StatusCell from './cells/status-cell.svelte';
+import { renderComponent } from '$lib/components/ui/data-table';
+import CostCell from './cells/cost-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
 import DurationCell from './cells/duration-cell.svelte';
-import CostCell from './cells/cost-cell.svelte';
+import LocationCell from './cells/location-cell.svelte';
 import NetFlowCell from './cells/net-flow-cell.svelte';
 import SalePnlCell from './cells/sale-pnl-cell.svelte';
+import StatusCell from './cells/status-cell.svelte';
 import TotalPnlCell from './cells/total-pnl-cell.svelte';
-import ROICell from './cells/roi-cell.svelte';
-import { renderComponent, renderSnippet } from '$lib/components/ui/data-table';
 
 // Helper function to check if a position is open
 function isPositionOpen(position: HistoricalPosition): boolean {
   return !position.close_date || position.close_date === null;
+}
+
+// Helper function to get dollar equivalent value for sorting
+function getDollarEquivalent(
+  cost: string | null,
+  tokenAddress: string | null,
+): CurrencyAmount | null {
+  if (!cost) {
+    return null;
+  }
+
+  // Follow cost-cell pattern: use token if available, otherwise originalBaseToken
+  let token;
+  if (tokenAddress) {
+    token = getTokenInfo(tokenAddress);
+  } else {
+    token = originalBaseToken;
+  }
+
+  if (!token) {
+    return null;
+  }
+
+  try {
+    const amount = CurrencyAmount.fromUnscaled(cost, token);
+    const baseEquivalent = walletStore.convertTokenAmount(
+      amount,
+      token,
+      getBaseToken(),
+    );
+
+    return baseEquivalent;
+  } catch {
+    return null;
+  }
+}
+
+// Helper function to calculate net flow value for sorting
+function getNetFlowValue(position: HistoricalPosition): CurrencyAmount | null {
+  try {
+    const baseToken = getBaseToken();
+    let totalInflow = CurrencyAmount.fromScaled(0, baseToken);
+    let totalOutflow = CurrencyAmount.fromScaled(0, baseToken);
+
+    // Calculate inflows
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_inflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          inflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          totalInflow = totalInflow.add(convertedAmount);
+        }
+      }
+    }
+
+    // Calculate outflows
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          outflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          totalOutflow = totalOutflow.add(convertedAmount);
+        }
+      }
+    }
+
+    const netValue = totalInflow.rawValue().minus(totalOutflow.rawValue());
+    return CurrencyAmount.fromRaw(netValue, baseToken);
+  } catch {
+    return null;
+  }
+}
+
+// Helper function to calculate sale P&L value for sorting - matches sale-pnl-cell.svelte netSaleProfit calculation
+function getSalePnlValue(position: HistoricalPosition): number {
+  if (isPositionOpen(position)) return 0;
+
+  try {
+    // Match position-entry pattern for token selection
+    const buyToken = position.buy_token_used
+      ? getTokenInfo(position.buy_token_used)
+      : originalBaseToken;
+    const saleToken = position.sale_token_used
+      ? getTokenInfo(position.sale_token_used)
+      : originalBaseToken;
+
+    if (!buyToken || !saleToken) return 0;
+
+    const buyAmount = CurrencyAmount.fromUnscaled(
+      position.buy_cost_token,
+      buyToken,
+    );
+    const sellAmount = CurrencyAmount.fromUnscaled(
+      position.sale_revenue_token || '0',
+      saleToken,
+    );
+
+    // Calculate buy cost in base token equivalent
+    const baseToken = getBaseToken();
+    const buyCostBaseEquivalent = walletStore.convertTokenAmount(
+      buyAmount,
+      buyToken,
+      baseToken,
+    );
+    if (!buyCostBaseEquivalent) return 0;
+
+    // Calculate sale revenue in base token equivalent
+    const saleRevenueBaseEquivalent = walletStore.convertTokenAmount(
+      sellAmount,
+      saleToken,
+      baseToken,
+    );
+    if (!saleRevenueBaseEquivalent) return 0;
+
+    // Calculate net sale profit (sale revenue - buy cost) in base token equivalent
+    const netValue = saleRevenueBaseEquivalent
+      .rawValue()
+      .minus(buyCostBaseEquivalent.rawValue());
+    return netValue.toNumber();
+  } catch {
+    return 0;
+  }
+}
+
+// Helper function to calculate total P&L value for sorting - matches total-pnl-cell.svelte realizedPnL calculation
+function getTotalPnlValue(position: HistoricalPosition): number {
+  try {
+    const baseToken = getBaseToken();
+    const isOpen = isPositionOpen(position);
+
+    // Calculate total token inflow in base token equivalent
+    let totalInflowBaseEquivalent = CurrencyAmount.fromScaled(0, baseToken);
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_inflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          inflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          totalInflowBaseEquivalent =
+            totalInflowBaseEquivalent.add(convertedAmount);
+        }
+      }
+    }
+
+    // Calculate total token outflow in base token equivalent
+    let totalOutflowBaseEquivalent = CurrencyAmount.fromScaled(0, baseToken);
+    for (const [tokenAddress, amount] of Object.entries(
+      position.token_outflows,
+    )) {
+      const tokenInfo = getTokenInfo(tokenAddress);
+      if (tokenInfo) {
+        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
+        const convertedAmount = walletStore.convertTokenAmount(
+          outflowAmount,
+          tokenInfo,
+          baseToken,
+        );
+        if (convertedAmount) {
+          totalOutflowBaseEquivalent =
+            totalOutflowBaseEquivalent.add(convertedAmount);
+        }
+      }
+    }
+
+    // Calculate net token flow (inflow - outflow) in base token equivalent
+    let netTokenFlow = null;
+    if (totalInflowBaseEquivalent && totalOutflowBaseEquivalent) {
+      const netValue = totalInflowBaseEquivalent
+        .rawValue()
+        .minus(totalOutflowBaseEquivalent.rawValue());
+      netTokenFlow = CurrencyAmount.fromRaw(netValue, baseToken);
+    }
+
+    if (isOpen) {
+      // For open positions, only show net flow as unrealized
+      return netTokenFlow ? netTokenFlow.rawValue().toNumber() : 0;
+    } else {
+      // For closed positions, combine net flow + sale P&L
+      if (!netTokenFlow) return 0;
+
+      let total = CurrencyAmount.fromScaled(0, baseToken);
+
+      // Add net token flow
+      total = total.add(netTokenFlow);
+
+      // Calculate net sale profit - matches total-pnl-cell logic
+      const buyToken = position.buy_token_used
+        ? getTokenInfo(position.buy_token_used)
+        : originalBaseToken;
+      const saleToken = position.sale_token_used
+        ? getTokenInfo(position.sale_token_used)
+        : originalBaseToken;
+
+      if (buyToken && saleToken) {
+        const buyAmount = CurrencyAmount.fromUnscaled(
+          position.buy_cost_token,
+          buyToken,
+        );
+        const sellAmount = CurrencyAmount.fromUnscaled(
+          position.sale_revenue_token || '0',
+          saleToken,
+        );
+
+        const buyCostBaseEquivalent = walletStore.convertTokenAmount(
+          buyAmount,
+          buyToken,
+          baseToken,
+        );
+        const saleRevenueBaseEquivalent = walletStore.convertTokenAmount(
+          sellAmount,
+          saleToken,
+          baseToken,
+        );
+
+        if (buyCostBaseEquivalent && saleRevenueBaseEquivalent) {
+          const netValue = saleRevenueBaseEquivalent
+            .rawValue()
+            .minus(buyCostBaseEquivalent.rawValue());
+          const netSaleProfit = CurrencyAmount.fromRaw(netValue, baseToken);
+          total = total.add(netSaleProfit);
+        }
+      }
+
+      return total.rawValue().toNumber();
+    }
+  } catch {
+    return 0;
+  }
 }
 
 export const columns: ColumnDef<HistoricalPosition>[] = [
@@ -98,7 +352,21 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     accessorKey: 'buy_cost_token',
     header: 'Buy Cost',
     enableSorting: true,
-    sortingFn: 'alphanumeric',
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const dollarA = getDollarEquivalent(
+        posA.buy_cost_token,
+        posA.buy_token_used,
+      );
+      const dollarB = getDollarEquivalent(
+        posB.buy_cost_token,
+        posB.buy_token_used,
+      );
+      const valueA = dollarA?.rawValue().toNumber() || 0;
+      const valueB = dollarB?.rawValue().toNumber() || 0;
+      return valueA - valueB;
+    },
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(CostCell, {
@@ -111,7 +379,30 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     accessorKey: 'sale_revenue_token',
     header: 'Sold For',
     enableSorting: true,
-    sortingFn: 'alphanumeric',
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+
+      // Open positions should sort last (treat as 0 value)
+      const isOpenA = isPositionOpen(posA);
+      const isOpenB = isPositionOpen(posB);
+
+      if (isOpenA && !isOpenB) return 1;
+      if (!isOpenA && isOpenB) return -1;
+      if (isOpenA && isOpenB) return 0;
+
+      const dollarA = getDollarEquivalent(
+        posA.sale_revenue_token,
+        posA.sale_token_used,
+      );
+      const dollarB = getDollarEquivalent(
+        posB.sale_revenue_token,
+        posB.sale_token_used,
+      );
+      const valueA = dollarA?.rawValue().toNumber() || 0;
+      const valueB = dollarB?.rawValue().toNumber() || 0;
+      return valueA - valueB;
+    },
     cell: ({ row }) => {
       const position = row.original;
       const isOpen = isPositionOpen(position);
@@ -125,16 +416,43 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
-    id: 'net_flow',
+    accessorKey: 'net_flow',
     header: 'Net Flow',
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const netFlowA = getNetFlowValue(posA);
+      const netFlowB = getNetFlowValue(posB);
+      const valueA = netFlowA?.rawValue().toNumber() || 0;
+      const valueB = netFlowB?.rawValue().toNumber() || 0;
+      return valueA - valueB;
+    },
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(NetFlowCell, { position });
     },
   },
   {
-    id: 'sale_pnl',
+    accessorKey: 'sale_pnl',
     header: 'Sale P&L',
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+
+      // Open positions should sort last (treat as 0 value)
+      const isOpenA = isPositionOpen(posA);
+      const isOpenB = isPositionOpen(posB);
+
+      if (isOpenA && !isOpenB) return 1;
+      if (!isOpenA && isOpenB) return -1;
+      if (isOpenA && isOpenB) return 0;
+
+      const salePnlA = getSalePnlValue(posA);
+      const salePnlB = getSalePnlValue(posB);
+      return salePnlA - salePnlB;
+    },
     cell: ({ row }) => {
       const position = row.original;
       const isOpen = isPositionOpen(position);
@@ -145,8 +463,16 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     },
   },
   {
-    id: 'total_pnl',
+    accessorKey: 'total_pnl',
     header: 'P&L',
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const totalPnlA = getTotalPnlValue(posA);
+      const totalPnlB = getTotalPnlValue(posB);
+      return totalPnlA - totalPnlB;
+    },
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(TotalPnlCell, { position, showShareButton: true });

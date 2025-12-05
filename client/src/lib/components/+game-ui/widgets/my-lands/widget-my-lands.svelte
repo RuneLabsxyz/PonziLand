@@ -544,7 +544,6 @@
               </p>
             </div>
             <Button
-              class=""
               onclick={async () => {
                 await dojoAccountManager?.promptForLogin();
               }}
