@@ -1,12 +1,7 @@
 <script lang="ts">
-  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-  import { getTokenInfo, locationToCoordinates } from '$lib/utils';
-  import {
-    walletStore,
-    getBaseToken,
-    originalBaseToken,
-  } from '$lib/stores/wallet.svelte';
+  import { locationToCoordinates } from '$lib/utils';
   import type { HistoricalPosition } from '../historical-positions.service';
+  import { calculatePositionMetrics } from '../position-pnl-calculator';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { Share } from 'lucide-svelte';
 
@@ -17,146 +12,10 @@
 
   let { position, showShareButton = true }: Props = $props();
 
-  function isPositionOpen(position: HistoricalPosition): boolean {
-    return !position.close_date || position.close_date === null;
-  }
-
-  const isOpen = $derived(isPositionOpen(position));
-
-  // Match position-entry pattern for token selection
-  let buyToken = $derived.by(() => {
-    if (position.buy_token_used) {
-      return getTokenInfo(position.buy_token_used);
-    } else {
-      return originalBaseToken;
-    }
-  });
-
-  let saleToken = $derived.by(() => {
-    if (position.sale_token_used) {
-      return getTokenInfo(position.sale_token_used);
-    } else {
-      return originalBaseToken;
-    }
-  });
-
-  let buyAmount = $derived(
-    CurrencyAmount.fromUnscaled(position.buy_cost_token, buyToken),
-  );
-
-  let sellAmount = $derived(
-    CurrencyAmount.fromUnscaled(position.sale_revenue_token || '0', saleToken),
-  );
-
-  // Calculate total token inflow in base token equivalent
-  const totalInflowBaseEquivalent = $derived.by(() => {
-    const baseToken = getBaseToken();
-    let total = CurrencyAmount.fromScaled(0, baseToken);
-
-    for (const [tokenAddress, amount] of Object.entries(
-      position.token_inflows,
-    )) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        const inflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(
-          inflowAmount,
-          tokenInfo,
-          baseToken,
-        );
-        if (convertedAmount) {
-          total = total.add(convertedAmount);
-        }
-      }
-    }
-
-    return total;
-  });
-
-  // Calculate total token outflow in base token equivalent
-  const totalOutflowBaseEquivalent = $derived.by(() => {
-    const baseToken = getBaseToken();
-    let total = CurrencyAmount.fromScaled(0, baseToken);
-
-    for (const [tokenAddress, amount] of Object.entries(
-      position.token_outflows,
-    )) {
-      const tokenInfo = getTokenInfo(tokenAddress);
-      if (tokenInfo) {
-        const outflowAmount = CurrencyAmount.fromUnscaled(amount, tokenInfo);
-        const convertedAmount = walletStore.convertTokenAmount(
-          outflowAmount,
-          tokenInfo,
-          baseToken,
-        );
-        if (convertedAmount) {
-          total = total.add(convertedAmount);
-        }
-      }
-    }
-
-    return total;
-  });
-
-  // Calculate net token flow (inflow - outflow) in base token equivalent
-  const netTokenFlow = $derived.by(() => {
-    if (!totalInflowBaseEquivalent || !totalOutflowBaseEquivalent) return null;
-    const baseToken = getBaseToken();
-    const netValue = totalInflowBaseEquivalent
-      .rawValue()
-      .minus(totalOutflowBaseEquivalent.rawValue());
-    return CurrencyAmount.fromRaw(netValue, baseToken);
-  });
-
-  // Calculate buy cost in base token equivalent
-  let buyCostBaseEquivalent = $derived.by(() => {
-    if (!buyToken || !buyAmount) return null;
-    const baseToken = getBaseToken();
-    return walletStore.convertTokenAmount(buyAmount, buyToken, baseToken);
-  });
-
-  // Calculate sale revenue in base token equivalent
-  let saleRevenueBaseEquivalent = $derived.by(() => {
-    if (!saleToken || !sellAmount || isOpen) return null;
-    const baseToken = getBaseToken();
-    return walletStore.convertTokenAmount(sellAmount, saleToken, baseToken);
-  });
-
-  // Calculate net sale profit (sale revenue - buy cost) in base token equivalent
-  let netSaleProfit = $derived.by(() => {
-    if (!buyCostBaseEquivalent || !saleRevenueBaseEquivalent || isOpen)
-      return null;
-    const baseToken = getBaseToken();
-    const netValue = saleRevenueBaseEquivalent
-      .rawValue()
-      .minus(buyCostBaseEquivalent.rawValue());
-    return CurrencyAmount.fromRaw(netValue, baseToken);
-  });
-
-  // Calculate Realized P&L (net flow + sale P&L) in base token equivalent - matches position-entry
-  let realizedPnL = $derived.by(() => {
-    const baseToken = getBaseToken();
-
-    if (isOpen) {
-      // For open positions, only show net flow as unrealized
-      return netTokenFlow;
-    } else {
-      // For closed positions, combine net flow + sale P&L
-      if (!netTokenFlow && !netSaleProfit) return null;
-
-      let total = CurrencyAmount.fromScaled(0, baseToken);
-
-      if (netTokenFlow) {
-        total = total.add(netTokenFlow);
-      }
-
-      if (netSaleProfit) {
-        total = total.add(netSaleProfit);
-      }
-
-      return total;
-    }
-  });
+  // Calculate all position metrics once
+  const metrics = $derived(calculatePositionMetrics(position));
+  const realizedPnL = $derived(metrics.totalPnL);
+  const isOpen = $derived(metrics.isOpen);
 
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);
