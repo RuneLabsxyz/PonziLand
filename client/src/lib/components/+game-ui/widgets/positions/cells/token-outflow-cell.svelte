@@ -85,7 +85,7 @@
 </script>
 
 {#if displayData}
-  <div class="flex flex-col items-end leading-none tracking-wider">
+  <div class="flex flex-col items-end leading-none tracking-wider whitespace-nowrap">
     {#if totalOutflowBaseEquivalent && !totalOutflowBaseEquivalent.isZero()}
       <div
         class="flex gap-1 tracking-widest font-ponzi-number text-xs items-center"

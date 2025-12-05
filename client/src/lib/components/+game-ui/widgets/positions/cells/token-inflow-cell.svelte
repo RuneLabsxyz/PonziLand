@@ -64,7 +64,7 @@
 </script>
 
 {#if inflowTokens.length > 0}
-  <div class="flex flex-col items-end leading-none tracking-wider">
+  <div class="flex flex-col items-end leading-none tracking-wider whitespace-nowrap">
     <!-- Summary Row -->
     <div class="flex items-center gap-1">
       {#if totalInflowBaseEquivalent && !totalInflowBaseEquivalent.isZero()}

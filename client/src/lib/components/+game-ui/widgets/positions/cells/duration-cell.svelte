@@ -22,7 +22,7 @@
   const textColor = $derived(isOpen ? 'text-green-400' : 'text-gray-400');
 </script>
 
-<div class="text-right tracking-wider {textColor}">
+<div class="text-right tracking-wider whitespace-nowrap {textColor}">
   {duration}
   {#if isOpen}
     <span class="text-xs text-green-300 ml-1">ongoing</span>

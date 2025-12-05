@@ -1,6 +1,6 @@
 <script lang="ts">
   import { cn } from '$lib/utils';
-  import { formatDate } from '$lib/utils/date';
+  import { formatDateCompact } from '$lib/utils/date';
   import type { HistoricalPosition } from '../historical-positions.service';
 
   interface Props {
@@ -17,7 +17,7 @@
     position,
   }: Props = $props();
 
-  let formatted = $derived(formatDate(dateString));
+  let formatted = $derived(formatDateCompact(dateString));
   let isAuction = $derived(variant === 'buy' && buyTokenUsed === null);
   let typeClass = $derived(isAuction ? 'text-blue-400' : 'text-purple-400');
   let typeLabel = $derived(isAuction ? 'From Auction' : 'From Player');
@@ -27,9 +27,9 @@
 </script>
 
 {#if variant === 'buy'}
-  <div class="flex gap-2 items-center">
+  <div class="flex gap-2 items-center whitespace-nowrap">
     <img src={icon} alt={typeLabel} class="inline h-6 w-6 mr-1" />
-    <div class="flex text-gray-400 flex-col leading-none tracking-wider">
+    <div class="flex text-gray-400 flex-col leading-none tracking-wider whitespace-nowrap">
       <span class={cn(typeClass, 'tracking-wider')}>
         {typeLabel}
       </span>
@@ -37,7 +37,7 @@
     </div>
   </div>
 {:else}
-  <div class="flex flex-col text-gray-400 tracking-wider leading-none">
+  <div class="flex flex-col text-gray-400 tracking-wider leading-none whitespace-nowrap">
     <span>{formatted}</span>
   </div>
 {/if}

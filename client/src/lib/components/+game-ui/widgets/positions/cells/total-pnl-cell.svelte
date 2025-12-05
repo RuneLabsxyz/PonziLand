@@ -39,7 +39,7 @@
 </script>
 
 <div
-  class="text-right flex items-center justify-end gap-1 font-ponzi-number text-sm tracking-widest"
+  class="text-right flex items-center justify-end gap-1 font-ponzi-number text-sm tracking-widest whitespace-nowrap"
 >
   {#if realizedPnL}
     <span

@@ -81,7 +81,7 @@
   }
 </script>
 
-<div class="text-right">
+<div class="text-right whitespace-nowrap">
   <div class="flex items-start justify-end gap-1">
     <div class="flex flex-col items-end">
       <!-- ROI Display -->
