@@ -7,6 +7,7 @@ use chaindata_models::{
 use chaindata_repository::{LandRepository, LandStakeRepository};
 use chrono::{DateTime, Utc};
 use ponziland_models::models::Model;
+use serde_json::de;
 use sqlx::error::DatabaseError;
 use tokio::select;
 use tokio_stream::StreamExt;
@@ -101,7 +102,7 @@ impl ModelListenerTask {
             // It is a duplicate, so ignore it
             return;
         }
-        info!("Successfully saved event!");
+        debug!("Successfully saved event!");
     }
 }
 
@@ -137,7 +138,7 @@ impl Task for ModelListenerTask {
             }
 
             if model_count > 0 {
-                info!("Processed {} new models", model_count);
+                debug!("Processed {} new models", model_count);
             } else {
                 debug!("No new models found");
             }
