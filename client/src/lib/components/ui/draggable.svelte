@@ -61,7 +61,8 @@
   let currentPosition = $state<Position>(initialPosition);
   let currentDimensions = $state<Dimensions>(initialDimensions);
   let isFixed = $state($widgetsStore[id]?.fixed || false);
-  let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
+  // Reactively track fixedStyles from the store
+  let fixedStyles = $derived($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
   // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
@@ -117,7 +118,6 @@
       });
     } else {
       isFixed = currentWidget.fixed || false;
-      fixedStyles = currentWidget.fixedStyles || '';
     }
 
     // Only set up interact if the widget is not fixed
