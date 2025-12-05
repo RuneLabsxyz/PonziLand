@@ -152,50 +152,9 @@ function getNetFlowValue(position: HistoricalPosition): CurrencyAmount | null {
 
 // Helper function to calculate sale P&L value for sorting - matches sale-pnl-cell.svelte netSaleProfit calculation
 function getSalePnlValue(position: HistoricalPosition): number {
-  if (isPositionOpen(position)) return 0;
-
   try {
-    // Match position-entry pattern for token selection
-    const buyToken = position.buy_token_used
-      ? getTokenInfo(position.buy_token_used)
-      : originalBaseToken;
-    const saleToken = position.sale_token_used
-      ? getTokenInfo(position.sale_token_used)
-      : originalBaseToken;
-
-    if (!buyToken || !saleToken) return 0;
-
-    const buyAmount = CurrencyAmount.fromUnscaled(
-      position.buy_cost_token,
-      buyToken,
-    );
-    const sellAmount = CurrencyAmount.fromUnscaled(
-      position.sale_revenue_token || '0',
-      saleToken,
-    );
-
-    // Calculate buy cost in base token equivalent
-    const baseToken = getBaseToken();
-    const buyCostBaseEquivalent = walletStore.convertTokenAmount(
-      buyAmount,
-      buyToken,
-      baseToken,
-    );
-    if (!buyCostBaseEquivalent) return 0;
-
-    // Calculate sale revenue in base token equivalent
-    const saleRevenueBaseEquivalent = walletStore.convertTokenAmount(
-      sellAmount,
-      saleToken,
-      baseToken,
-    );
-    if (!saleRevenueBaseEquivalent) return 0;
-
-    // Calculate net sale profit (sale revenue - buy cost) in base token equivalent
-    const netValue = saleRevenueBaseEquivalent
-      .rawValue()
-      .minus(buyCostBaseEquivalent.rawValue());
-    return netValue.toNumber();
+    const metrics = calculatePositionMetrics(position);
+    return metrics.netSaleProfit?.rawValue().toNumber() || 0;
   } catch {
     return 0;
   }
@@ -541,25 +500,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
-
-      // Open positions should sort last (treat as 0 value)
-      const isOpenA = isPositionOpen(posA);
-      const isOpenB = isPositionOpen(posB);
-
-      if (isOpenA && !isOpenB) return 1;
-      if (!isOpenA && isOpenB) return -1;
-      if (isOpenA && isOpenB) return 0;
-
       const salePnlA = getSalePnlValue(posA);
       const salePnlB = getSalePnlValue(posB);
       return salePnlA - salePnlB;
     },
     cell: ({ row }) => {
       const position = row.original;
-      const isOpen = isPositionOpen(position);
-      if (isOpen) {
-        return 'TBD';
-      }
       return renderComponent(SalePnlCell, { position });
     },
   },
