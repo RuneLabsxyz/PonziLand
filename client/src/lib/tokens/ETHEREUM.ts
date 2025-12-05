@@ -1,6 +1,7 @@
 export const ETHEREUM = {
   skin: 'ETHEREUM',
   icon: '/tokens/ETHEREUM/eth.png',
+  color: '#627EEA', // ETH blue
   biome: { x: 1, y: 1 },
   building: {
     1: {

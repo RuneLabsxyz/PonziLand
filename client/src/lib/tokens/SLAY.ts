@@ -2,6 +2,7 @@ export const SLAY = {
   skin: 'SLAY',
   icon: '/tokens/SLAY/slay.png',
   biome: { x: 0, y: 3 },
+  color: '#FFFFFF',
   building: {
     1: {
       x: 0,
