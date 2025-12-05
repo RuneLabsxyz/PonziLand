@@ -110,12 +110,6 @@
   },
   "overrides": {
     "@starknet-io/types-js": "catalog:",
-    "starknet": "catalog:",
-    "@hyperlane-xyz/core": {
-      "ethers": "^5.7.2"
-    },
-    "@hyperlane-xyz/sdk": {
-      "ethers": "^5.7.2"
-    }
+    "starknet": "catalog:"
   }
 }
