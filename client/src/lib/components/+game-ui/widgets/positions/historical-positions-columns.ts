@@ -19,6 +19,7 @@ import SalePnlCell from './cells/sale-pnl-cell.svelte';
 import StatusCell from './cells/status-cell.svelte';
 import TotalPnlCell from './cells/total-pnl-cell.svelte';
 import DataTableSortableHeader from './data-table-sortable-header.svelte';
+import RoiCell from './cells/roi-cell.svelte';
 
 // Helper function to check if a position is open
 function isPositionOpen(position: HistoricalPosition): boolean {
@@ -385,7 +386,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const position = row.original;
       const isOpen = isPositionOpen(position);
       if (isOpen) {
-        return '<span class="text-gray-400">-</span>';
+        return '-';
       }
       return renderComponent(DateCell, {
         dateString: position.close_date,
@@ -486,7 +487,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const position = row.original;
       const isOpen = isPositionOpen(position);
       if (isOpen) {
-        return '<div class="text-right"><span class="text-gray-500">-</span></div>';
+        return '-';
       }
       return renderComponent(CostCell, {
         cost: position.sale_revenue_token,
@@ -546,7 +547,7 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
       const position = row.original;
       const isOpen = isPositionOpen(position);
       if (isOpen) {
-        return '<div class="text-right"><span class="text-gray-500">TBD</span></div>';
+        return 'TBD';
       }
       return renderComponent(SalePnlCell, { position });
     },
@@ -570,6 +571,13 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(TotalPnlCell, { position, showShareButton: true });
+    },
+  },
+  {
+    accessorKey: 'roi',
+    cell: ({ row }) => {
+      const position = row.original;
+      return renderComponent(RoiCell, { position });
     },
   },
 ];
