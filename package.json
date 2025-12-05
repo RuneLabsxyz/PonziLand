@@ -11,6 +11,9 @@
     "prettier": "=3.4.2",
     "prettier-plugin-svelte": "=3.3.3"
   },
+  "overrides": {
+    "cpu-features": "npm:@aspect-dev/empty@0.0.0"
+  },
   "patchedDependencies": {
     "@avnu/avnu-sdk@3.1.0": "patches/@avnu%2Favnu-sdk@3.1.0.patch",
     "@hyperlane-xyz/sdk@18.2.0": "patches/@hyperlane-xyz%2Fsdk@18.2.0.patch",
