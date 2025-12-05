@@ -1,14 +1,24 @@
 <script lang="ts">
   import { Progress } from '$lib/components/ui/progress';
-  import type { PageData } from './$types';
   import { Temporal } from 'temporal-polyfill';
   import { formatDurationHMS } from '$lib/utils/date';
+
+  type SwapInfo = {
+    id: string;
+    amount: number;
+    sourceSymbol: string;
+    status: string;
+    txExplorerTemplate?: string;
+    failReason?: string;
+    transactions: unknown[];
+    averageCompletionTime: string | number;
+  };
 
   const {
     swap,
     transferTime,
   }: {
-    swap: PageData['swap'];
+    swap: SwapInfo;
     transferTime?: string;
   } = $props();
 

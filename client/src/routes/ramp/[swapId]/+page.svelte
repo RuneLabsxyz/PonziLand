@@ -6,10 +6,27 @@
   import { sessionState } from '@sv-use/core';
   import WalletSetups from '../WalletSetups.svelte';
   import type { PageData } from './$types';
+  import type { ListTransferDepositAction } from '@layerswap/sdk/resources/swaps/deposit-actions.mjs';
   import ExecuteTransfer from './ExecuteTransfer.svelte';
   import Wait from './Wait.svelte';
 
-  let { data }: { data: PageData } = $props();
+  type SwapInfo = {
+    id: string;
+    amount: number;
+    sourceSymbol: string;
+    status: string;
+    txExplorerTemplate?: string;
+    failReason?: string;
+    transactions: unknown[];
+    averageCompletionTime: string | number;
+  };
+
+  type SwapPageData = PageData & {
+    swap: SwapInfo;
+    deposits?: ListTransferDepositAction.Data[];
+  };
+
+  let { data }: { data: SwapPageData } = $props();
 
   let swap = $state(data.swap);
 
