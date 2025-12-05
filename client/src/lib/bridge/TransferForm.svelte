@@ -1,342 +1,358 @@
 <!-- TransferForm.svelte -->
 <script lang="ts">
-    // Import bridge logic from package
-    import {
-      hyperlaneStore,
-      tokenTransferStore,
-      type Token,
-      type WalletProvider
-    } from '@ponziland/hyperlane-bridge';
+  // Import bridge logic from package
+  import {
+    hyperlaneStore,
+    tokenTransferStore,
+    type Token,
+    type WalletProvider,
+  } from '@ponziland/hyperlane-bridge';
 
-    // Import account management
-    import { useAccount } from '$lib/contexts/account.svelte';
-    import { accountState } from '$lib/account.svelte';
-    import { phantomWalletStore } from './phantom.svelte';
+  // Import account management
+  import { useAccount } from '$lib/contexts/account.svelte';
+  import { accountState } from '$lib/account.svelte';
+  import { phantomWalletStore } from './phantom.svelte';
 
-    // Estado del formulario usando runes
-    let formData = $state({
-      originChain: '',
-      destinationChain: '',
-      tokenSymbol: '',
-      amount: '',
-      recipient: '',
-      sender: ''
-    });
+  // Estado del formulario usando runes
+  let formData = $state({
+    originChain: '',
+    destinationChain: '',
+    tokenSymbol: '',
+    amount: '',
+    recipient: '',
+    sender: '',
+  });
 
-    let balance = $state<string | null>(null);
-    let balanceLoading = $state(false);
+  let balance = $state<string | null>(null);
+  let balanceLoading = $state(false);
 
-    const accountManager = useAccount();
+  const accountManager = useAccount();
 
-    // Derivados reactivos usando runes
-    const availableChains = $derived(
-      hyperlaneStore.warpCore
-        ? Array.from(new Set(hyperlaneStore.warpCore.tokens.map((t: Token) => t.chainName)))
-        : []
-    );
+  // Derivados reactivos usando runes
+  const availableChains = $derived(
+    hyperlaneStore.warpCore
+      ? Array.from(
+          new Set(
+            hyperlaneStore.warpCore.tokens.map((t: Token) => t.chainName),
+          ),
+        )
+      : [],
+  );
 
-    const availableTokens = $derived(
-      hyperlaneStore.warpCore && formData.originChain
-        ? hyperlaneStore.warpCore.tokens
-            .filter((t: Token) => t.chainName === formData.originChain)
-            .map((t: Token) => t.symbol)
-        : []
-    );
+  const availableTokens = $derived(
+    hyperlaneStore.warpCore && formData.originChain
+      ? hyperlaneStore.warpCore.tokens
+          .filter((t: Token) => t.chainName === formData.originChain)
+          .map((t: Token) => t.symbol)
+      : [],
+  );
 
-    // Detect chain type
-    const isStarknet = $derived(
-      formData.originChain &&
+  // Detect chain type
+  const isStarknet = $derived(
+    formData.originChain &&
       (formData.originChain.toLowerCase().includes('starknet') ||
-       formData.originChain === 'sepolia' ||
-       formData.originChain === 'mainnet')
-    );
+        formData.originChain === 'sepolia' ||
+        formData.originChain === 'mainnet'),
+  );
 
-    const isSolana = $derived(
-      formData.originChain &&
-      (formData.originChain.toLowerCase().includes('solana') || formData.originChain === 'solana')
-    );
+  const isSolana = $derived(
+    formData.originChain &&
+      (formData.originChain.toLowerCase().includes('solana') ||
+        formData.originChain === 'solana'),
+  );
 
-    // Check connection status
-    const isConnected = $derived(
-      isStarknet ? accountState.isConnected :
-      isSolana ? phantomWalletStore.isConnected :
-      false
-    );
+  // Check connection status
+  const isConnected = $derived(
+    isStarknet
+      ? accountState.isConnected
+      : isSolana
+        ? phantomWalletStore.isConnected
+        : false,
+  );
 
-    const connectedAddress = $derived(
-      isStarknet ? accountState.address :
-      isSolana ? phantomWalletStore.walletAddress :
-      null
-    );
+  const connectedAddress = $derived(
+    isStarknet
+      ? accountState.address
+      : isSolana
+        ? phantomWalletStore.walletAddress
+        : null,
+  );
 
-    // Debug logging
-    $effect(() => {
-      console.log('🔍 Debug Bridge State:', {
-        originChain: formData.originChain,
-        isStarknet,
-        accountStateConnected: accountState.isConnected,
-        accountStateAddress: accountState.address,
-        isConnected,
-        connectedAddress,
-        sender: formData.sender
-      });
+  // Debug logging
+  $effect(() => {
+    console.log('🔍 Debug Bridge State:', {
+      originChain: formData.originChain,
+      isStarknet,
+      accountStateConnected: accountState.isConnected,
+      accountStateAddress: accountState.address,
+      isConnected,
+      connectedAddress,
+      sender: formData.sender,
     });
+  });
 
-    // Update sender when wallet connects
-    $effect(() => {
-      if (connectedAddress) {
-        formData.sender = connectedAddress;
-      } else {
-        formData.sender = '';
-      }
-    });
+  // Update sender when wallet connects
+  $effect(() => {
+    if (connectedAddress) {
+      formData.sender = connectedAddress;
+    } else {
+      formData.sender = '';
+    }
+  });
 
-    // Fetch balance when conditions met
-    $effect(() => {
-      if (formData.originChain && formData.tokenSymbol && formData.sender) {
-        fetchBalance();
+  // Fetch balance when conditions met
+  $effect(() => {
+    if (formData.originChain && formData.tokenSymbol && formData.sender) {
+      fetchBalance();
+    } else {
+      balance = null;
+    }
+  });
+
+  async function fetchBalance() {
+    balanceLoading = true;
+    try {
+      const tokenBalance = await tokenTransferStore.getTokenBalance(
+        formData.originChain,
+        formData.tokenSymbol,
+        formData.sender,
+      );
+
+      if (tokenBalance) {
+        balance = String(tokenBalance.getDecimalFormattedAmount());
       } else {
         balance = null;
       }
-    });
+    } catch (err) {
+      console.error('Error fetching balance:', err);
+      balance = null;
+    } finally {
+      balanceLoading = false;
+    }
+  }
 
-    async function fetchBalance() {
-      balanceLoading = true;
-      try {
-        const tokenBalance = await tokenTransferStore.getTokenBalance(
-          formData.originChain,
-          formData.tokenSymbol,
-          formData.sender
-        );
-
-        if (tokenBalance) {
-          balance = String(tokenBalance.getDecimalFormattedAmount());
-        } else {
-          balance = null;
-        }
-      } catch (err) {
-        console.error('Error fetching balance:', err);
-        balance = null;
-      } finally {
-        balanceLoading = false;
-      }
+  async function handleConnectWallet() {
+    if (!formData.originChain) {
+      alert('Please select an origin chain first');
+      return;
     }
 
-    async function handleConnectWallet() {
-      if (!formData.originChain) {
-        alert('Please select an origin chain first');
-        return;
-      }
+    if (isStarknet) {
+      await accountManager?.promptForLogin();
+    } else if (isSolana) {
+      await phantomWalletStore.connect({ forcePrompt: true });
+    } else {
+      alert('Unsupported chain. Please use Starknet or Solana.');
+    }
+  }
 
-      if (isStarknet) {
-        await accountManager?.promptForLogin();
-      } else if (isSolana) {
-        await phantomWalletStore.connect({ forcePrompt: true });
+  async function handleDisconnect() {
+    if (isStarknet) {
+      accountManager?.disconnect();
+    } else if (isSolana) {
+      await phantomWalletStore.disconnect();
+    }
+  }
+
+  async function handleSubmit(e: Event) {
+    e.preventDefault();
+
+    if (!formData.sender) {
+      alert('Please connect your wallet first');
+      return;
+    }
+
+    // Create wallet provider for the transfer
+    const walletProvider: WalletProvider = {
+      getStarknetAccount: () => {
+        if (isStarknet) {
+          return accountManager?.getProvider()?.getWalletAccount() ?? null;
+        }
+        return null;
+      },
+      getSolanaWallet: () => {
+        if (isSolana && typeof window !== 'undefined') {
+          return (window as any).solana ?? null;
+        }
+        return null;
+      },
+    };
+
+    try {
+      const result = await tokenTransferStore.executeTransfer(
+        formData,
+        walletProvider,
+      );
+
+      if (result.success) {
+        console.log('Transfer successful!', result.txHashes);
       } else {
-        alert('Unsupported chain. Please use Starknet or Solana.');
+        console.error('Transfer failed:', result.error);
       }
+    } catch (err) {
+      console.error('Transfer failed:', err);
     }
+  }
 
-    async function handleDisconnect() {
-      if (isStarknet) {
-        accountManager?.disconnect();
-      } else if (isSolana) {
-        await phantomWalletStore.disconnect();
-      }
+  // Limpiar error cuando cambian los datos del formulario
+  $effect(() => {
+    if (tokenTransferStore.error) {
+      tokenTransferStore.clearError();
     }
+  });
+</script>
 
-    async function handleSubmit(e: Event) {
-      e.preventDefault();
-
-      if (!formData.sender) {
-        alert('Please connect your wallet first');
-        return;
-      }
-
-      // Create wallet provider for the transfer
-      const walletProvider: WalletProvider = {
-        getStarknetAccount: () => {
-          if (isStarknet) {
-            return accountManager?.getProvider()?.getWalletAccount() ?? null;
-          }
-          return null;
-        },
-        getSolanaWallet: () => {
-          if (isSolana && typeof window !== 'undefined') {
-            return (window as any).solana ?? null;
-          }
-          return null;
-        }
-      };
-
-      try {
-        const result = await tokenTransferStore.executeTransfer(formData, walletProvider);
-
-        if (result.success) {
-          console.log('Transfer successful!', result.txHashes);
-        } else {
-          console.error('Transfer failed:', result.error);
-        }
-      } catch (err) {
-        console.error('Transfer failed:', err);
-      }
-    }
-
-    // Limpiar error cuando cambian los datos del formulario
-    $effect(() => {
-      if (tokenTransferStore.error) {
-        tokenTransferStore.clearError();
-      }
-    });
-  </script>
-  
-  {#if !hyperlaneStore.isReady}
-    <div class="loading">
-      Loading Hyperlane...
+{#if !hyperlaneStore.isReady}
+  <div class="loading">Loading Hyperlane...</div>
+{:else}
+  <form onsubmit={handleSubmit} class="space-y-4">
+    <div>
+      <label for="originChain">Origin Chain:</label>
+      <select id="originChain" bind:value={formData.originChain}>
+        <option value="">Select Chain</option>
+        {#each availableChains as chain}
+          <option value={chain}>{chain}</option>
+        {/each}
+      </select>
     </div>
-  {:else}
-    <form onsubmit={handleSubmit} class="space-y-4">
-      <div>
-        <label for="originChain">Origin Chain:</label>
-        <select id="originChain" bind:value={formData.originChain}>
-          <option value="">Select Chain</option>
-          {#each availableChains as chain}
-            <option value={chain}>{chain}</option>
-          {/each}
-        </select>
-      </div>
 
-      <!-- Wallet Connection -->
-      {#if formData.originChain}
-        <div class="wallet-section">
-          {#if isConnected && connectedAddress}
-            <div class="connected">
-              <span class="label">Connected:</span>
-              <span class="address">{connectedAddress.slice(0, 6)}...{connectedAddress.slice(-4)}</span>
-              <button
-                type="button"
-                onclick={handleDisconnect}
-                class="disconnect-btn"
-              >
-                Disconnect
-              </button>
-            </div>
-          {:else}
+    <!-- Wallet Connection -->
+    {#if formData.originChain}
+      <div class="wallet-section">
+        {#if isConnected && connectedAddress}
+          <div class="connected">
+            <span class="label">Connected:</span>
+            <span class="address"
+              >{connectedAddress.slice(0, 6)}...{connectedAddress.slice(
+                -4,
+              )}</span
+            >
             <button
               type="button"
-              onclick={handleConnectWallet}
-              class="connect-btn"
+              onclick={handleDisconnect}
+              class="disconnect-btn"
             >
-              {#if isStarknet}
-                Connect Starknet Wallet
-              {:else if isSolana}
-                Connect Phantom
-              {:else}
-                Connect Wallet
-              {/if}
+              Disconnect
             </button>
+          </div>
+        {:else}
+          <button
+            type="button"
+            onclick={handleConnectWallet}
+            class="connect-btn"
+          >
+            {#if isStarknet}
+              Connect Starknet Wallet
+            {:else if isSolana}
+              Connect Phantom
+            {:else}
+              Connect Wallet
+            {/if}
+          </button>
+        {/if}
+      </div>
+    {/if}
+
+    <div>
+      <label for="destinationChain">Destination Chain:</label>
+      <select id="destinationChain" bind:value={formData.destinationChain}>
+        <option value="">Select Chain</option>
+        {#each availableChains as chain}
+          <option value={chain}>{chain}</option>
+        {/each}
+      </select>
+    </div>
+
+    <div>
+      <label for="tokenSymbol">Token:</label>
+      <select id="tokenSymbol" bind:value={formData.tokenSymbol}>
+        <option value="">Select Token</option>
+        {#each availableTokens as token}
+          <option value={token}>{token}</option>
+        {/each}
+      </select>
+
+      <!-- Balance Display -->
+      {#if formData.tokenSymbol && isConnected}
+        <div class="balance-display">
+          {#if balanceLoading}
+            <span class="balance-loading">Loading balance...</span>
+          {:else if balance}
+            <span class="balance-label">Balance:</span>
+            <span class="balance-value">{balance} {formData.tokenSymbol}</span>
+          {:else}
+            <span class="balance-error">Unable to fetch balance</span>
           {/if}
         </div>
       {/if}
+    </div>
 
-      <div>
-        <label for="destinationChain">Destination Chain:</label>
-        <select id="destinationChain" bind:value={formData.destinationChain}>
-          <option value="">Select Chain</option>
-          {#each availableChains as chain}
-            <option value={chain}>{chain}</option>
-          {/each}
-        </select>
-      </div>
+    <div>
+      <label for="amount">Amount:</label>
+      <input
+        id="amount"
+        type="number"
+        step="any"
+        bind:value={formData.amount}
+        placeholder="0.0"
+      />
+    </div>
 
-      <div>
-        <label for="tokenSymbol">Token:</label>
-        <select id="tokenSymbol" bind:value={formData.tokenSymbol}>
-          <option value="">Select Token</option>
-          {#each availableTokens as token}
-            <option value={token}>{token}</option>
-          {/each}
-        </select>
+    <div>
+      <label for="recipient">Recipient Address:</label>
+      <input
+        id="recipient"
+        type="text"
+        bind:value={formData.recipient}
+        placeholder="0x..."
+      />
+    </div>
 
-        <!-- Balance Display -->
-        {#if formData.tokenSymbol && isConnected}
-          <div class="balance-display">
-            {#if balanceLoading}
-              <span class="balance-loading">Loading balance...</span>
-            {:else if balance}
-              <span class="balance-label">Balance:</span>
-              <span class="balance-value">{balance} {formData.tokenSymbol}</span>
-            {:else}
-              <span class="balance-error">Unable to fetch balance</span>
+    <!-- Transfer Status -->
+    {#if tokenTransferStore.status !== 'idle'}
+      <div class="status-section">
+        {#if tokenTransferStore.status === 'preparing'}
+          <div class="status preparing">Preparing transfer...</div>
+        {:else if tokenTransferStore.status === 'approving'}
+          <div class="status approving">Approving token...</div>
+        {:else if tokenTransferStore.status === 'transferring'}
+          <div class="status transferring">Transferring...</div>
+        {:else if tokenTransferStore.status === 'success'}
+          <div class="status success">
+            ✓ Transfer successful!
+            {#if tokenTransferStore.txHashes.length > 0}
+              <div class="tx-hashes">
+                {#each tokenTransferStore.txHashes as hash}
+                  <div class="tx-hash">
+                    Tx: {hash.slice(0, 10)}...{hash.slice(-8)}
+                  </div>
+                {/each}
+              </div>
             {/if}
           </div>
         {/if}
       </div>
+    {/if}
 
-      <div>
-        <label for="amount">Amount:</label>
-        <input
-          id="amount"
-          type="number"
-          step="any"
-          bind:value={formData.amount}
-          placeholder="0.0"
-        />
+    {#if tokenTransferStore.error}
+      <div class="text-red-500">
+        Error: {tokenTransferStore.error}
       </div>
+    {/if}
 
-      <div>
-        <label for="recipient">Recipient Address:</label>
-        <input
-          id="recipient"
-          type="text"
-          bind:value={formData.recipient}
-          placeholder="0x..."
-        />
+    {#if hyperlaneStore.error}
+      <div class="text-red-500">
+        Hyperlane Error: {hyperlaneStore.error}
       </div>
+    {/if}
+    <!-- disabled={tokenTransferStore.isLoading || !formData.sender} -->
 
-      <!-- Transfer Status -->
-      {#if tokenTransferStore.status !== 'idle'}
-        <div class="status-section">
-          {#if tokenTransferStore.status === 'preparing'}
-            <div class="status preparing">Preparing transfer...</div>
-          {:else if tokenTransferStore.status === 'approving'}
-            <div class="status approving">Approving token...</div>
-          {:else if tokenTransferStore.status === 'transferring'}
-            <div class="status transferring">Transferring...</div>
-          {:else if tokenTransferStore.status === 'success'}
-            <div class="status success">
-              ✓ Transfer successful!
-              {#if tokenTransferStore.txHashes.length > 0}
-                <div class="tx-hashes">
-                  {#each tokenTransferStore.txHashes as hash}
-                    <div class="tx-hash">Tx: {hash.slice(0, 10)}...{hash.slice(-8)}</div>
-                  {/each}
-                </div>
-              {/if}
-            </div>
-          {/if}
-        </div>
-      {/if}
-
-      {#if tokenTransferStore.error}
-        <div class="text-red-500">
-          Error: {tokenTransferStore.error}
-        </div>
-      {/if}
-
-      {#if hyperlaneStore.error}
-        <div class="text-red-500">
-          Hyperlane Error: {hyperlaneStore.error}
-        </div>
-      {/if}
-      <!-- disabled={tokenTransferStore.isLoading || !formData.sender} -->
-
-      <button
-        type="submit"
-        class="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-      >
+    <button
+      type="submit"
+      class="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+    >
       Transfer
-        <!-- {#if tokenTransferStore.status === 'preparing'}
+      <!-- {#if tokenTransferStore.status === 'preparing'}
           Preparing...
         {:else if tokenTransferStore.status === 'approving'}
           Approving...
@@ -344,193 +360,195 @@
           Transferring...
         {:else}
         {/if} -->
-      </button>
-    </form>
-  {/if}
-  
-  <style>
-    .space-y-4 > * + * {
-      margin-top: 1rem;
-    }
+    </button>
+  </form>
+{/if}
 
-    .loading {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 200px;
-    }
+<style>
+  .space-y-4 > * + * {
+    margin-top: 1rem;
+  }
 
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 500;
-    }
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
 
-    input, select {
-      width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 0.375rem;
-    }
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+  }
 
-    button {
-      cursor: pointer;
-    }
+  input,
+  select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.375rem;
+  }
 
-    button:disabled {
-      cursor: not-allowed;
-    }
+  button {
+    cursor: pointer;
+  }
 
-    .text-red-500 {
-      color: #ef4444;
-    }
+  button:disabled {
+    cursor: not-allowed;
+  }
 
-    .bg-blue-500 {
-      background-color: #3b82f6;
-    }
+  .text-red-500 {
+    color: #ef4444;
+  }
 
-    .text-white {
-      color: white;
-    }
+  .bg-blue-500 {
+    background-color: #3b82f6;
+  }
 
-    .px-4 {
-      padding-left: 1rem;
-      padding-right: 1rem;
-    }
+  .text-white {
+    color: white;
+  }
 
-    .py-2 {
-      padding-top: 0.5rem;
-      padding-bottom: 0.5rem;
-    }
+  .px-4 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
 
-    .rounded {
-      border-radius: 0.375rem;
-    }
+  .py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
 
-    .disabled\:opacity-50:disabled {
-      opacity: 0.5;
-    }
+  .rounded {
+    border-radius: 0.375rem;
+  }
 
-    /* Wallet Section */
-    .wallet-section {
-      padding: 1rem;
-      background-color: #f9fafb;
-      border-radius: 0.5rem;
-      border: 1px solid #e5e7eb;
-    }
+  .disabled\:opacity-50:disabled {
+    opacity: 0.5;
+  }
 
-    .connected {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+  /* Wallet Section */
+  .wallet-section {
+    padding: 1rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+  }
 
-    .connected .label {
-      font-weight: 500;
-      color: #10b981;
-    }
+  .connected {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
-    .connected .address {
-      font-family: monospace;
-      color: #6b7280;
-    }
+  .connected .label {
+    font-weight: 500;
+    color: #10b981;
+  }
 
-    .connect-btn, .disconnect-btn {
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      font-weight: 500;
-      border: none;
-    }
+  .connected .address {
+    font-family: monospace;
+    color: #6b7280;
+  }
 
-    .connect-btn {
-      background-color: #3b82f6;
-      color: white;
-      width: 100%;
-    }
+  .connect-btn,
+  .disconnect-btn {
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    border: none;
+  }
 
-    .connect-btn:hover:not(:disabled) {
-      background-color: #2563eb;
-    }
+  .connect-btn {
+    background-color: #3b82f6;
+    color: white;
+    width: 100%;
+  }
 
-    .disconnect-btn {
-      background-color: #ef4444;
-      color: white;
-      font-size: 0.875rem;
-      padding: 0.25rem 0.75rem;
-      margin-left: auto;
-    }
+  .connect-btn:hover:not(:disabled) {
+    background-color: #2563eb;
+  }
 
-    .disconnect-btn:hover {
-      background-color: #dc2626;
-    }
+  .disconnect-btn {
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.875rem;
+    padding: 0.25rem 0.75rem;
+    margin-left: auto;
+  }
 
-    /* Balance Display */
-    .balance-display {
-      margin-top: 0.5rem;
-      padding: 0.5rem;
-      background-color: #f0f9ff;
-      border-radius: 0.25rem;
-      font-size: 0.875rem;
-    }
+  .disconnect-btn:hover {
+    background-color: #dc2626;
+  }
 
-    .balance-label {
-      font-weight: 500;
-      color: #6b7280;
-      margin-right: 0.5rem;
-    }
+  /* Balance Display */
+  .balance-display {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f0f9ff;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+  }
 
-    .balance-value {
-      font-family: monospace;
-      color: #10b981;
-      font-weight: 600;
-    }
+  .balance-label {
+    font-weight: 500;
+    color: #6b7280;
+    margin-right: 0.5rem;
+  }
 
-    .balance-loading {
-      color: #6b7280;
-      font-style: italic;
-    }
+  .balance-value {
+    font-family: monospace;
+    color: #10b981;
+    font-weight: 600;
+  }
 
-    .balance-error {
-      color: #ef4444;
-      font-size: 0.75rem;
-    }
+  .balance-loading {
+    color: #6b7280;
+    font-style: italic;
+  }
 
-    /* Status Section */
-    .status-section {
-      padding: 1rem;
-      border-radius: 0.5rem;
-      background-color: #f0f9ff;
-      border: 1px solid #bae6fd;
-    }
+  .balance-error {
+    color: #ef4444;
+    font-size: 0.75rem;
+  }
 
-    .status {
-      font-weight: 500;
-    }
+  /* Status Section */
+  .status-section {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #f0f9ff;
+    border: 1px solid #bae6fd;
+  }
 
-    .status.preparing {
-      color: #0284c7;
-    }
+  .status {
+    font-weight: 500;
+  }
 
-    .status.approving {
-      color: #ea580c;
-    }
+  .status.preparing {
+    color: #0284c7;
+  }
 
-    .status.transferring {
-      color: #7c3aed;
-    }
+  .status.approving {
+    color: #ea580c;
+  }
 
-    .status.success {
-      color: #10b981;
-    }
+  .status.transferring {
+    color: #7c3aed;
+  }
 
-    .tx-hashes {
-      margin-top: 0.5rem;
-      font-size: 0.875rem;
-    }
+  .status.success {
+    color: #10b981;
+  }
 
-    .tx-hash {
-      font-family: monospace;
-      color: #6b7280;
-      padding: 0.25rem 0;
-    }
-  </style>
+  .tx-hashes {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+  }
+
+  .tx-hash {
+    font-family: monospace;
+    color: #6b7280;
+    padding: 0.25rem 0;
+  }
+</style>
