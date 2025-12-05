@@ -13,7 +13,8 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RuneLabsxyz/PonziLand/tree/main/pkgs/ui"
+    "url": "git+https://github.com/RuneLabsxyz/PonziLand.git",
+    "directory": "packages/ui"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^6.0.0",
