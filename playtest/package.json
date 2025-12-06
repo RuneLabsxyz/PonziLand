@@ -5,6 +5,9 @@
     "starknet": "catalog:"
   },
   "type": "module",
+  "scripts": {
+    "balance-server": "bun run scripts/check_stake_vs_balance_server.ts"
+  },
   "devDependencies": {
     "@ledgerhq/hw-transport-node-hid": "^6.29.6",
     "@types/bun": "^1.3.0",
