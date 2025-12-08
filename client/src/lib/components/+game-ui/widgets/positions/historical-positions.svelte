@@ -133,20 +133,18 @@
     </div>
   </div>
   <div class="flex flex-col h-full min-h-0">
-    <ScrollArea orientation="both" type="scroll" class="flex-1">
-      {#if loading}
-        <div class="text-center py-8 text-gray-400">Loading positions...</div>
-      {:else if error}
-        <div class="text-center py-8 text-red-400">
-          Error: {error}
-        </div>
-      {:else if positions.length === 0}
-        <div class="text-center py-8 text-gray-400">
-          No historical positions yet
-        </div>
-      {:else}
-        <DataTable data={positions} {columns} bind:columnFilters />
-      {/if}
-    </ScrollArea>
+    {#if loading}
+      <div class="text-center py-8 text-gray-400">Loading positions...</div>
+    {:else if error}
+      <div class="text-center py-8 text-red-400">
+        Error: {error}
+      </div>
+    {:else if positions.length === 0}
+      <div class="text-center py-8 text-gray-400">
+        No historical positions yet
+      </div>
+    {:else}
+      <DataTable data={positions} {columns} bind:columnFilters />
+    {/if}
   </div>
 {/if}
