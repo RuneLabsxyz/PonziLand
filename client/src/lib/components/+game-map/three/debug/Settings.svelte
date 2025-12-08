@@ -67,6 +67,21 @@
       label="Camera Wheel"
       options={cameraOptions}
     />
+    <List
+      bind:value={devsettings.cameraControlsOneFinger}
+      label="Touch One Finger"
+      options={cameraOptions}
+    />
+    <List
+      bind:value={devsettings.cameraControlsTwoFinger}
+      label="Touch Two Finger"
+      options={cameraOptions}
+    />
+    <List
+      bind:value={devsettings.cameraControlsThreeFinger}
+      label="Touch Three Finger"
+      options={cameraOptions}
+    />
     <Checkbox bind:value={devsettings.billboarding} label="Billboarding" />
   </Folder>
   <Folder title="Simulation" expanded={false}>

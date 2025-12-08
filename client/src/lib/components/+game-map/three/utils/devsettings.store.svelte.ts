@@ -6,6 +6,9 @@ export let devsettings = $state({
   cameraControlsLeftClick: 2,
   cameraControlsRightClick: 2,
   CameraControlsWheel: 0b100000,
+  cameraControlsOneFinger: 0b100000000000, // TOUCH_ZOOM
+  cameraControlsTwoFinger: 0b10000000000000, // TOUCH_DOLLY_SCREEN_PAN
+  cameraControlsThreeFinger: 0b10000000, // TOUCH_TRUCK
   billboarding: false,
   randomUpdates: false, // Enable/disable random land updates
   minRandomUpdates: 10,
