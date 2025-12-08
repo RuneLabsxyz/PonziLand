@@ -112,8 +112,8 @@
           Everything is ready! You can now join the fight for your own lands!
         </p>
         <p class="text-xl pb-5">
-          Your tokens are safe in your new controller! <br /> Make sure to login
-          with your controller account to play the game.
+          Your tokens are safe in your new controller! <br /> Make sure to login with
+          your controller account to play the game.
         </p>
         <div class="flex justify-center">
           <a href="/game">

@@ -10,7 +10,10 @@ import type { HistoricalPosition } from './historical-positions.service';
 import { calculatePositionMetrics } from './position-pnl-calculator';
 
 // Import cell components
-import { renderComponent } from '$lib/components/ui/data-table';
+import {
+  DataTableSortableHeader,
+  renderComponent,
+} from '$lib/components/ui/data-table';
 import CostCell from './cells/cost-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
 import LocationCell from './cells/location-cell.svelte';
@@ -19,7 +22,6 @@ import StatusCell from './cells/status-cell.svelte';
 import TokenInflowCell from './cells/token-inflow-cell.svelte';
 import TokenOutflowCell from './cells/token-outflow-cell.svelte';
 import TotalPnlCell from './cells/total-pnl-cell.svelte';
-import DataTableSortableHeader from './data-table-sortable-header.svelte';
 
 // Helper function to check if a position is open
 function isPositionOpen(position: HistoricalPosition): boolean {
@@ -297,6 +299,15 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'P&L',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onSort: (direction) => {
+          if (direction === false) {
+            column.clearSorting();
+          } else {
+            column.toggleSorting(direction === 'desc');
+          }
+        },
+        enableSorting: true,
       }),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
@@ -322,8 +333,20 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'ROI',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onToggleVisibility: () => column.toggleVisibility(),
+        isVisible: column.getIsVisible(),
+        onSort: (direction) => {
+          if (direction === false) {
+            column.clearSorting();
+          } else {
+            column.toggleSorting(direction === 'desc');
+          }
+        },
+        enableSorting: true,
       }),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -364,8 +387,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'Close',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onToggleVisibility: () => column.toggleVisibility(),
+        isVisible: column.getIsVisible(),
       }),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: 'datetime',
     cell: ({ row }) => {
       const position = row.original;
@@ -383,8 +410,20 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'Buy Cost',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onToggleVisibility: () => column.toggleVisibility(),
+        isVisible: column.getIsVisible(),
+        onSort: (direction) => {
+          if (direction === false) {
+            column.clearSorting();
+          } else {
+            column.toggleSorting(direction === 'desc');
+          }
+        },
+        enableSorting: true,
       }),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -416,8 +455,20 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'Token Outflows',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onToggleVisibility: () => column.toggleVisibility(),
+        isVisible: column.getIsVisible(),
+        onSort: (direction) => {
+          if (direction === false) {
+            column.clearSorting();
+          } else {
+            column.toggleSorting(direction === 'desc');
+          }
+        },
+        enableSorting: true,
       }),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -437,8 +488,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'Sold For',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onToggleVisibility: () => column.toggleVisibility(),
+        isVisible: column.getIsVisible(),
       }),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -483,8 +538,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
         title: 'Token Inflows',
         sortDirection: column.getIsSorted(),
         onclick: column.getToggleSortingHandler(),
+        showDropdown: true,
+        onToggleVisibility: () => column.toggleVisibility(),
+        isVisible: column.getIsVisible(),
       }),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;

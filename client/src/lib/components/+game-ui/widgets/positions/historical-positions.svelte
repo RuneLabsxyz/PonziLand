@@ -4,8 +4,15 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress } from '$lib/utils';
   import { onMount } from 'svelte';
-  import type { ColumnFiltersState } from '@tanstack/table-core';
+  import type {
+    ColumnFiltersState,
+    VisibilityState,
+  } from '@tanstack/table-core';
   import DataTable from './data-table.svelte';
+  import {
+    DataTableColumnVisibility,
+    DataTableFilter,
+  } from '$lib/components/ui/data-table';
   import { columns } from './historical-positions-columns';
   import {
     fetchHistoricalPositions,
@@ -21,6 +28,7 @@
   let refreshInterval: NodeJS.Timeout;
   let timePeriod = $state<'1D' | '1W' | '1M' | '1Y' | 'ALL'>('ALL');
   let columnFilters = $state<ColumnFiltersState>([]);
+  let columnVisibility = $state<VisibilityState>({});
 
   // Function to update the time period filter
   function setTimePeriodFilter(period: '1D' | '1W' | '1M' | '1Y' | 'ALL') {
@@ -93,45 +101,7 @@
     </Button>
   </div>
 {:else}
-  <div class="w-full flex justify-end p-2">
-    <div class="flex">
-      <Button
-        size="md"
-        variant={timePeriod === '1D' ? 'blue' : 'red'}
-        onclick={() => setTimePeriodFilter('1D')}
-      >
-        1D
-      </Button>
-      <Button
-        size="md"
-        variant={timePeriod === '1W' ? 'blue' : 'red'}
-        onclick={() => setTimePeriodFilter('1W')}
-      >
-        1W
-      </Button>
-      <Button
-        size="md"
-        variant={timePeriod === '1M' ? 'blue' : 'red'}
-        onclick={() => setTimePeriodFilter('1M')}
-      >
-        1M
-      </Button>
-      <Button
-        size="md"
-        variant={timePeriod === '1Y' ? 'blue' : 'red'}
-        onclick={() => setTimePeriodFilter('1Y')}
-      >
-        1Y
-      </Button>
-      <Button
-        size="md"
-        variant={timePeriod === 'ALL' ? 'blue' : 'red'}
-        onclick={() => setTimePeriodFilter('ALL')}
-      >
-        ALL
-      </Button>
-    </div>
-  </div>
+  <!-- Time period filter will be moved to DataTableFilter component -->
   <div class="flex flex-col h-full min-h-0">
     {#if loading}
       <div class="text-center py-8 text-gray-400">Loading positions...</div>
@@ -144,7 +114,57 @@
         No historical positions yet
       </div>
     {:else}
-      <DataTable data={positions} {columns} bind:columnFilters />
+      <DataTable
+        data={positions}
+        {columns}
+        bind:columnFilters
+        bind:columnVisibility
+      >
+        {#snippet toolbar(table)}
+          <DataTableFilter {table}>
+            {#snippet customFilters()}
+              <div class="flex gap-1">
+                <Button
+                  size="md"
+                  variant={timePeriod === '1D' ? 'blue' : 'red'}
+                  onclick={() => setTimePeriodFilter('1D')}
+                >
+                  1D
+                </Button>
+                <Button
+                  size="md"
+                  variant={timePeriod === '1W' ? 'blue' : 'red'}
+                  onclick={() => setTimePeriodFilter('1W')}
+                >
+                  1W
+                </Button>
+                <Button
+                  size="md"
+                  variant={timePeriod === '1M' ? 'blue' : 'red'}
+                  onclick={() => setTimePeriodFilter('1M')}
+                >
+                  1M
+                </Button>
+                <Button
+                  size="md"
+                  variant={timePeriod === '1Y' ? 'blue' : 'red'}
+                  onclick={() => setTimePeriodFilter('1Y')}
+                >
+                  1Y
+                </Button>
+                <Button
+                  size="md"
+                  variant={timePeriod === 'ALL' ? 'blue' : 'red'}
+                  onclick={() => setTimePeriodFilter('ALL')}
+                >
+                  ALL
+                </Button>
+              </div>
+              <DataTableColumnVisibility {table} />
+            {/snippet}
+          </DataTableFilter>
+        {/snippet}
+      </DataTable>
     {/if}
   </div>
 {/if}
