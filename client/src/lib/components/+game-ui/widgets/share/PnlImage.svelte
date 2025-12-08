@@ -25,6 +25,7 @@
     landToken?: Token;
     status?: 'alive' | 'nuked' | 'bought';
     elementRef?: HTMLElement;
+    roi?: number;
   }
 
   let {
@@ -47,11 +48,25 @@
     landToken,
     status = 'bought',
     elementRef = $bindable(),
+    roi = 734.6,
   }: Props = $props();
 
   const formattedValue = $derived(
     `${pnl > 0 ? '+' : '-'}$${Math.abs(pnl).toFixed(2)}`,
   );
+
+  const formattedRoi = $derived.by(() => {
+    if (roi === null || roi === undefined) return '';
+
+    // Format percentage with appropriate precision like in total-pnl-cell.svelte
+    const abs = Math.abs(roi);
+    let precision = 1;
+    if (abs < 10) precision = 2;
+    else if (abs < 1) precision = 3;
+    else if (abs < 0.01) precision = 4;
+
+    return `${roi > 0 ? '+' : ''}${roi.toFixed(precision)}%`;
+  });
 
   const tokenPercentages = $derived.by(() => {
     const total = tokenInflowAmounts.reduce((sum, amount) => sum + amount, 0);
@@ -143,26 +158,42 @@
             </div>
           {/if}
         </div>
-        <span
-          class={[
-            'font-ponzi-number tracking-wider stroke-3d-black',
-            {
-              'text-6xl': formattedValue.length <= 8,
-              'text-5xl':
-                formattedValue.length > 8 && formattedValue.length <= 10,
-              'text-4xl':
-                formattedValue.length > 10 && formattedValue.length <= 12,
-              'text-3xl':
-                formattedValue.length > 12 && formattedValue.length <= 14,
-              'text-2xl': formattedValue.length > 14,
-              'text-green-400': pnl > 0,
-              'text-red-400': pnl < 0,
-              'text-white': pnl === 0,
-            },
-          ]}
-        >
-          {formattedValue}
-        </span>
+        <div class="flex flex-col gap-1">
+          <span
+            class={[
+              'font-ponzi-number tracking-wider stroke-3d-black leading-none',
+              {
+                'text-5xl': formattedValue.length <= 8,
+                'text-4xl':
+                  formattedValue.length > 8 && formattedValue.length <= 10,
+                'text-3xl':
+                  formattedValue.length > 10 && formattedValue.length <= 12,
+                'text-2xl':
+                  formattedValue.length > 12 && formattedValue.length <= 14,
+                'text-xl': formattedValue.length > 14,
+                'text-green-400': pnl > 0,
+                'text-red-400': pnl < 0,
+                'text-white': pnl === 0,
+              },
+            ]}
+          >
+            {formattedValue}
+          </span>
+          {#if formattedRoi}
+            <span
+              class={[
+                'font-ponzi-number tracking-wider stroke-3d-black text-2xl leading-none',
+                {
+                  'text-green-400': roi > 0,
+                  'text-red-400': roi < 0,
+                  'text-white': roi === 0,
+                },
+              ]}
+            >
+              {formattedRoi}
+            </span>
+          {/if}
+        </div>
       </div>
     </div>
     <div class="grid grid-cols-3 gap-4 w-full text-lg m-4">
