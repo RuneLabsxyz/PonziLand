@@ -35,6 +35,8 @@
   import { onDestroy, onMount } from 'svelte';
   import { get } from 'svelte/store';
   import accountState from '$lib/account.svelte';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
+  import { openMobileLandDetails } from '$lib/stores/mobile-nav.store';
 
   let baseToken = $derived.by(() => {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
@@ -378,30 +380,49 @@
         <button
           class="relative w-full text-left flex gap-6 hover:bg-white/10 p-6 land-button"
           onclick={() => {
-            moveCameraTo(
-              parseLocation(land.location)[0] + 1,
-              parseLocation(land.location)[1] + 1,
-            );
-            const location = parseLocation(land.location);
-            gameStore.cameraControls?.setLookAt(
-              location[0],
-              50,
-              location[1],
-              location[0],
-              0,
-              location[1],
-              true,
-            );
-            console.log(
-              'location number',
-              land.location,
-              Number(land.location),
-            );
-            cursorStore.selectedTileIndex = Number(land.location);
-            const coordinates = parseLocation(land.location);
-            const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
-            if (baseLand) {
-              selectedLand.value = get(baseLand);
+            if (deviceStore.isMobile) {
+              // On mobile, open the land details in the market tab
+              const coordinates = parseLocation(land.location);
+              const baseLand = landStore.getLand(
+                coordinates[0],
+                coordinates[1],
+              );
+              if (baseLand) {
+                const baseLandValue = get(baseLand);
+                if (baseLandValue && 'owner' in baseLandValue) {
+                  openMobileLandDetails(baseLandValue);
+                }
+              }
+            } else {
+              // On desktop, move camera and select land
+              moveCameraTo(
+                parseLocation(land.location)[0] + 1,
+                parseLocation(land.location)[1] + 1,
+              );
+              const location = parseLocation(land.location);
+              gameStore.cameraControls?.setLookAt(
+                location[0],
+                50,
+                location[1],
+                location[0],
+                0,
+                location[1],
+                true,
+              );
+              console.log(
+                'location number',
+                land.location,
+                Number(land.location),
+              );
+              cursorStore.selectedTileIndex = Number(land.location);
+              const coordinates = parseLocation(land.location);
+              const baseLand = landStore.getLand(
+                coordinates[0],
+                coordinates[1],
+              );
+              if (baseLand) {
+                selectedLand.value = get(baseLand);
+              }
             }
           }}
         >

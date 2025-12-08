@@ -55,32 +55,48 @@
 </script>
 
 {#if land.type !== 'auction'}
-  <div class="absolute left-0 top-0 -translate-y-full">
+  <div class="absolute left-0 top-0 -translate-y-full hidden md:block">
     <LandOwnerInfo {land} {isOwner} />
   </div>
-  <div class="absolute top-0 right-0 -translate-y-full">
+  <div class="absolute top-0 right-0 -translate-y-full hidden md:block">
     <Card>
       <LandNukeTime {land} />
     </Card>
   </div>
 {/if}
 <div class="h-full w-full flex flex-col">
-  <div class="w-full flex">
-    <div class="flex flex-col items-center px-8 pt-8">
+  <!-- Mobile: Stack vertically, Desktop: Side by side -->
+  <div class="w-full flex flex-col md:flex-row">
+    <!-- Land Overview Section -->
+    <div class="flex flex-col items-center px-4 md:px-8 pt-4 md:pt-8">
       <LandOverview {land} {isOwner} size="lg" />
       <div
-        class="mt-6 text-ponzi-number text-2xl flex items-center gap-2 stroke-3d-black"
+        class="mt-3 md:mt-6 text-ponzi-number text-lg md:text-2xl flex items-center gap-2 stroke-3d-black"
       >
         {land.token?.symbol}
-        <TokenAvatar token={land.token} class="w-7 h-7" />
+        <TokenAvatar token={land.token} class="w-5 h-5 md:w-7 md:h-7" />
       </div>
-      <div class="flex flex-col text-2xl gap-1 mt-5">
+      <div class="flex flex-col text-lg md:text-2xl gap-1 mt-3 md:mt-5">
         <PriceDisplay price={currentPrice} token={land.token} showRate />
       </div>
       {#if fetching}
-        Fetching auction price...
+        <span class="text-sm">Fetching auction price...</span>
+      {/if}
+
+      <!-- Mobile: Show owner info and nuke time here -->
+      {#if land.type !== 'auction'}
+        <div class="md:hidden flex flex-col gap-2 mt-4 w-full">
+          <LandOwnerInfo {land} {isOwner} />
+          <Card>
+            <LandNukeTime {land} />
+          </Card>
+        </div>
       {/if}
     </div>
-    <InfoTabs {land} auctionPrice={currentPrice} />
+
+    <!-- Tabs Section -->
+    <div class="flex-1">
+      <InfoTabs {land} auctionPrice={currentPrice} />
+    </div>
   </div>
 </div>

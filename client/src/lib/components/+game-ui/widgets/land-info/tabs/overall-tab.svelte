@@ -137,11 +137,11 @@
 </script>
 
 {#if isActive}
-  <div class="w-full flex flex-col gap-2">
+  <div class="w-full flex flex-col gap-1.5 md:gap-2">
     <!-- Yields -->
     <div class="flex w-full justify-center select-text">
-      <div class="text-center pb-2 text-ponzi-number">
-        <span class="opacity-50"
+      <div class="text-center pb-1 md:pb-2 text-ponzi-number">
+        <span class="opacity-50 text-sm md:text-base"
           >{land.type === 'auction'
             ? 'Potential yield /h'
             : 'Net yield /h'}</span
@@ -151,7 +151,7 @@
             class="{totalYieldValue - Number(burnRateInBaseToken.toString()) >=
             0
               ? 'text-green-500'
-              : 'text-red-500'} text-2xl flex items-center justify-center gap-2"
+              : 'text-red-500'} text-lg md:text-2xl flex items-center justify-center gap-1 md:gap-2"
           >
             <span class="stroke-3d-black">
               {totalYieldValue - Number(burnRateInBaseToken.toString()) >= 0
@@ -164,19 +164,19 @@
             </span>
             <TokenAvatar
               token={baseToken}
-              class="border border-white w-6 h-6"
+              class="border border-white w-5 h-5 md:w-6 md:h-6"
             />
           </div>
         {:else}
           <div
-            class="text-green-500 text-2xl flex items-center justify-center gap-2"
+            class="text-green-500 text-lg md:text-2xl flex items-center justify-center gap-1 md:gap-2"
           >
             <span class="stroke-3d-black">
               + {displayCurrency(totalYieldValue)}
             </span>
             <TokenAvatar
               token={baseToken}
-              class="border border-white w-6 h-6"
+              class="border border-white w-5 h-5 md:w-6 md:h-6"
             />
           </div>
         {/if}
@@ -185,26 +185,26 @@
     {#if land.type !== 'auction'}
       <div class="flex w-full justify-between select-text">
         <div class="flex flex-col items-center text-ponzi-number">
-          <div class="opacity-50 text-sm">Earning / hour :</div>
-          <div class="text-green-500 flex items-center gap-2">
-            <span class="text-xl stroke-3d-black"
+          <div class="opacity-50 text-xs md:text-sm">Earning / hour :</div>
+          <div class="text-green-500 flex items-center gap-1 md:gap-2">
+            <span class="text-base md:text-xl stroke-3d-black"
               >+ {displayCurrency(totalYieldValue)}</span
             >
             <TokenAvatar
               token={baseToken}
-              class="border border-white w-5 h-5"
+              class="border border-white w-4 h-4 md:w-5 md:h-5"
             />
           </div>
         </div>
         <div class="flex flex-col items-center text-ponzi-number">
-          <div class="opacity-50 text-sm">Cost / hour :</div>
-          <div class="text-red-500 flex items-center gap-2">
-            <span class="text-xl stroke-3d-black"
+          <div class="opacity-50 text-xs md:text-sm">Cost / hour :</div>
+          <div class="text-red-500 flex items-center gap-1 md:gap-2">
+            <span class="text-base md:text-xl stroke-3d-black"
               >- {displayCurrency(burnRateInBaseToken.toString())}</span
             >
             <TokenAvatar
               token={baseToken}
-              class="border border-white w-5 h-5"
+              class="border border-white w-4 h-4 md:w-5 md:h-5"
             />
           </div>
         </div>
@@ -212,23 +212,25 @@
     {/if}
 
     <!-- Infos -->
-    <div class="flex flex-col rounded bg-[#1E1E2D] px-4 pb-2 select-text">
-      <div class="w-full flex gap-2 items-center opacity-50">
+    <div
+      class="flex flex-col rounded bg-[#1E1E2D] px-3 md:px-4 pb-1.5 md:pb-2 select-text"
+    >
+      <div class="w-full flex gap-1 md:gap-2 items-center opacity-50">
         <div class="flex-1 h-[1px] bg-white"></div>
-        <div class="">Main informations</div>
+        <div class="text-xs md:text-sm">Main informations</div>
         <div class="flex-1 h-[1px] bg-white"></div>
       </div>
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center text-xs md:text-sm">
         <div class="opacity-50">Token</div>
         <div>{land?.token?.name}</div>
       </div>
       {#if land.type !== 'auction'}
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center text-xs md:text-sm">
           <div class="opacity-50">Stake Amount</div>
           <div>{land?.stakeAmount}</div>
         </div>
       {/if}
-      <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center text-xs md:text-sm">
         <div class="opacity-50">Sell price</div>
         {#if land.type == 'auction' && auctionPrice}
           <div>
@@ -242,7 +244,7 @@
 
     <!-- Interaction -->
     {#if isOwner}
-      <div class="flex gap-4">
+      <div class="flex gap-2 md:gap-4">
         <div class="w-full">
           <IncreaseStake {land} />
         </div>

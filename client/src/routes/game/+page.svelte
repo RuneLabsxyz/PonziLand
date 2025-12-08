@@ -7,7 +7,6 @@
   import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
-  import type { PageData } from './$types';
 
   let webglShow = $derived(webGLStateStore.hasError);
   let webglError = $derived(webGLStateStore.errorMessage);
@@ -30,7 +29,10 @@
 <!-- WebGL Error Modal -->
 <WebGLError isVisible={webglShow} errorMessage={webglError} />
 
-<div class="h-screen w-screen bg-black/10 overflow-visible relative">
+<div
+  class="mobile-vh-fix w-screen bg-black/10 overflow-hidden relative"
+  style="height: calc(var(--vh, 1vh) * 100);"
+>
   <!-- Game Canvas and UI - Always rendered but potentially hidden -->
   {#if !webglShow && gameContentReady}
     <div class="absolute inset-0">

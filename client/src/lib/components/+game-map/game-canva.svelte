@@ -10,8 +10,18 @@
   import Scene from './game-scene.svelte';
   import { gameStore } from './three/game.store.svelte';
   import Debug from './three/debug/Debug.svelte';
-  import { devsettings } from './three/utils/devsettings.store.svelte';
+  import {
+    devsettings,
+    setAnimationPerformance,
+  } from './three/utils/devsettings.store.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { redbellyMainnet } from '@reown/appkit/networks';
+  import {
+    deviceStore,
+    initDeviceDetection,
+    getDevicePerformancePreset,
+  } from '$lib/stores/device.store.svelte';
+  import { onMount } from 'svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -25,6 +35,24 @@
     window.addEventListener('hashchange', checkDevHash);
   }
 
+  // Initialize device detection and auto-configure performance
+  onMount(() => {
+    const cleanup = initDeviceDetection();
+
+    // Auto-configure performance based on device
+    const performancePreset = getDevicePerformancePreset();
+    setAnimationPerformance(performancePreset);
+
+    // Log device detection
+    console.log('Device detected:', {
+      isMobile: deviceStore.isMobile,
+      deviceType: deviceStore.deviceType,
+      performancePreset,
+    });
+
+    return cleanup;
+  });
+
   $effect(() => {
     if (!gameStore.cameraControls) return;
     gameStore.cameraControls.mouseButtons.left =
@@ -33,6 +61,12 @@
       devsettings.cameraControlsRightClick as any;
     gameStore.cameraControls.mouseButtons.wheel =
       devsettings.CameraControlsWheel as any;
+    gameStore.cameraControls.touches.one =
+      devsettings.cameraControlsOneFinger as any;
+    gameStore.cameraControls.touches.two =
+      devsettings.cameraControlsTwoFinger as any;
+    gameStore.cameraControls.touches.three =
+      devsettings.cameraControlsThreeFinger as any;
   });
 </script>
 
@@ -63,6 +97,12 @@
           ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
           ref.mouseButtons.right = devsettings.cameraControlsRightClick as any;
           ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;
+          ref.touches.one = devsettings.cameraControlsOneFinger as any;
+          ref.touches.two = devsettings.cameraControlsTwoFinger as any;
+          ref.touches.three = devsettings.cameraControlsThreeFinger as any;
+          // ref.smoothTime = 0.05;
+          // ref.draggingSmoothTime = 0.02;
+          // ref.dollySpeed = 2.0;
         }}
       />
     </T.OrthographicCamera>

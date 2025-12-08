@@ -9,7 +9,8 @@ export const accountState: {
 	walletAccount?: AccountInterface;
 	providerName?: string;
 } = $state({
-	isConnected: false
+	isConnected: true,
+	address: "0x019895c4D4A46a827485f084D2b15bD5C79333Dd028B54Da1A897a75b7B04230",
 });
 
 let isSetup = $state(false);

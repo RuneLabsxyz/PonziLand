@@ -1,4 +1,5 @@
 import { MAX_CLAIM_ALL_COUNT } from '$lib/flags';
+import { CAMERA_OPTIONS } from '$lib/utils/camera-options';
 
 export let devsettings = $state({
   frustumPadding: 2,
@@ -6,6 +7,9 @@ export let devsettings = $state({
   cameraControlsLeftClick: 2,
   cameraControlsRightClick: 2,
   CameraControlsWheel: 0b100000,
+  cameraControlsOneFinger: CAMERA_OPTIONS.TOUCH_TRUCK, // TOUCH_ZOOM
+  cameraControlsTwoFinger: CAMERA_OPTIONS.TOUCH_ZOOM_TRUCK, // TOUCH_DOLLY
+  cameraControlsThreeFinger: CAMERA_OPTIONS.TOUCH_ROTATE, // TOUCH_TRUCK
   billboarding: false,
   randomUpdates: false, // Enable/disable random land updates
   minRandomUpdates: 10,
