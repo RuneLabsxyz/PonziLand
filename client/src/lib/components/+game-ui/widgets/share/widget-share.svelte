@@ -202,9 +202,9 @@
     if (roi !== null && roi !== undefined) {
       const abs = Math.abs(roi);
       let precision = 1;
-      if (abs < 10) precision = 2;
+      if (abs < 0.01) precision = 4;
       else if (abs < 1) precision = 3;
-      else if (abs < 0.01) precision = 4;
+      else if (abs < 10) precision = 2;
 
       roiText = ` (${roi > 0 ? '+' : ''}${roi.toFixed(precision)}%)`;
     }
