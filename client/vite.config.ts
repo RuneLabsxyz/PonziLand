@@ -3,9 +3,10 @@ import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
 import glsl from 'vite-plugin-glsl';
 import process from 'node:process';
+import mkcert from 'vite-plugin-mkcert';
 
 export default defineConfig({
-  plugins: [glsl(), sveltekit(), wasm()],
+  plugins: [glsl(), sveltekit(), wasm(), mkcert()],
   build: {
     sourcemap: false,
     minify: false,
