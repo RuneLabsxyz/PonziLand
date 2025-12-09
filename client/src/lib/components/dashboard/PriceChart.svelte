@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from 'svelte';
   import Chart from 'chart.js/auto';
+  import { formatDateOnly } from '$lib/utils/date';
 
   let {
     data,
@@ -24,7 +25,7 @@
   function createChart() {
     if (!canvas) return;
 
-    const labels = data.map((d) => new Date(d.date).toLocaleDateString());
+    const labels = data.map((d) => formatDateOnly(d.date));
     const prices = data.map((d) => 1 / d.price);
 
     const ctx = canvas.getContext('2d');

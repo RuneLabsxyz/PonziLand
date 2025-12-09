@@ -231,31 +231,6 @@ export const estimateNukeTimeSync = (
   return Math.max(0, Math.floor(remainingSeconds - relevantElapsedTime));
 };
 
-export const parseNukeTime = (givenTime: number) => {
-  const time = givenTime / 60; // Convert seconds to minutes
-
-  // Convert minutes (bigint) to days, hours, minutes, and seconds
-  const minutes = Math.floor(time % 60);
-  const hours = Math.floor((time / 60) % 24);
-  const days = Math.floor(time / 1440); // 1440 minutes in a day
-
-  // Build the formatted string
-  const parts: string[] = [];
-
-  if (days > 0) parts.push(`${days}d`);
-  if (hours > 0 || days > 0)
-    parts.push(`${hours.toString().padStart(2, '0')}h`);
-  if (minutes > 0 || hours > 0 || days > 0)
-    parts.push(`${minutes.toString().padStart(2, '0')}m`);
-
-  return {
-    minutes,
-    hours,
-    days,
-    toString: () => parts.join(' '),
-  };
-};
-
 export const estimateTax = (sellPrice: number) => {
   if (sellPrice <= 0 || isNaN(sellPrice)) {
     return {

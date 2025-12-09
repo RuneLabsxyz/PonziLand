@@ -2,6 +2,7 @@
   import { Progress } from '$lib/components/ui/progress';
   import type { PageData } from './$types';
   import { Temporal } from 'temporal-polyfill';
+  import { formatDurationHMS } from '$lib/utils/date';
 
   const {
     swap,
@@ -54,12 +55,8 @@
   let max = $derived(duration.total('seconds'));
 
   function formatDuration(d: Temporal.Duration) {
-    const duration = d.round({ largestUnit: 'hours' });
-
-    const hours = duration.hours.toString().padStart(2, '0');
-    const minutes = duration.minutes.toString().padStart(2, '0');
-    const seconds = duration.seconds.toString().padStart(2, '0');
-    return `${hours}:${minutes}:${seconds}`;
+    const totalSeconds = d.total('seconds');
+    return formatDurationHMS(totalSeconds);
   }
 </script>
 

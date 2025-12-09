@@ -1,0 +1,185 @@
+/**
+ * Centralized date utility functions for PonziLand
+ */
+
+/**
+ * Format a date string to a human-readable format with date and time
+ */
+export function formatDate(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+/**
+ * Format a date string to show only the date portion
+ */
+export function formatDateOnly(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+/**
+ * Format a date string to show only the time portion
+ */
+export function formatTimeOnly(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString(undefined, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return dateString;
+  }
+}
+
+/**
+ * Calculate and format the duration between two dates in a human-readable format
+ */
+export function formatDuration(startDate: string, endDate: string): string {
+  try {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+
+    const diffMs = end.getTime() - start.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays > 0) {
+      return `${diffDays}d`;
+    } else if (diffHours > 0) {
+      return `${diffHours}h`;
+    } else if (diffMinutes > 0) {
+      return `${diffMinutes}m`;
+    } else {
+      return '<1m';
+    }
+  } catch {
+    return '-';
+  }
+}
+
+/**
+ * Calculate the duration from a start date to now
+ */
+export function formatDurationFromNow(startDate: string): string {
+  return formatDuration(startDate, new Date().toISOString());
+}
+
+/**
+ * Check if a date string represents a valid date
+ */
+export function isValidDate(dateString: string): boolean {
+  try {
+    const date = new Date(dateString);
+    return !isNaN(date.getTime());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Format timestamp to match the display format: YYYY/MM/DD at HH:MM
+ */
+export function formatTimestamp(timestamp: Date): string {
+  const year = timestamp.getFullYear();
+  const month = String(timestamp.getMonth() + 1).padStart(2, '0');
+  const day = String(timestamp.getDate()).padStart(2, '0');
+  const hours = String(timestamp.getHours()).padStart(2, '0');
+  const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+
+  return `${year}/${month}/${day} at ${hours}:${minutes}`;
+}
+
+/**
+ * Format timestamp in relative terms (e.g., "2 hours ago", "just now")
+ */
+export function formatTimestampRelative(timestamp: Date): string {
+  const now = new Date();
+  const diffMs = now.getTime() - timestamp.getTime();
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMinutes < 1) {
+    return 'just now';
+  } else if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
+  } else if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
+  } else {
+    return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
+  }
+}
+
+/**
+ * Parse seconds into time components (days, hours, minutes)
+ */
+export function parseNukeTimeComponents(timeInSeconds: number): {
+  days: number;
+  hours: number;
+  minutes: number;
+  toString: () => string;
+} {
+  if (timeInSeconds <= 0) {
+    return {
+      days: 0,
+      hours: 0,
+      minutes: 0,
+      toString: () => '0m',
+    };
+  }
+
+  const days = Math.floor(timeInSeconds / 86400);
+  const hours = Math.floor((timeInSeconds % 86400) / 3600);
+  const minutes = Math.floor((timeInSeconds % 3600) / 60);
+
+  const parts: string[] = [];
+  if (days > 0) parts.push(`${days}d`);
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${minutes}m`);
+
+  return {
+    days,
+    hours,
+    minutes,
+    toString: () => (parts.length > 0 ? parts.join(' ') : '<1m'),
+  };
+}
+
+/**
+ * Parse seconds into formatted time with days, hours, minutes (nuke time format)
+ */
+export function parseNukeTime(timeInSeconds: number): string {
+  return parseNukeTimeComponents(timeInSeconds).toString();
+}
+
+/**
+ * Format duration as HH:MM:SS for countdown displays
+ */
+export function formatDurationHMS(durationInSeconds: number): string {
+  const hours = Math.floor(durationInSeconds / 3600);
+  const minutes = Math.floor((durationInSeconds % 3600) / 60);
+  const seconds = Math.floor(durationInSeconds % 60);
+
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+}

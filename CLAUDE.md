@@ -115,6 +115,30 @@ The UI is built with a modular widget system that allows easy extension:
 - At the end of a modification batch / end of todolist Format the code
 - The syntax class={['base-classes', { 'conditional-class': condition }]} is a clean, idiomatic way to handle conditional styling in Svelte.
 
+#### Date Utilities
+Use centralized date utilities from `$lib/utils/date` for consistent date formatting:
+
+**Basic Date Formatting:**
+- `formatDate(dateString)` - Full date with time (e.g., "Dec 2, 2024, 10:30 AM")
+- `formatDateOnly(dateString)` - Date only (e.g., "Dec 2, 2024")
+- `formatTimeOnly(dateString)` - Time only (e.g., "10:30 AM")
+
+**Duration Formatting:**
+- `formatDuration(startDate, endDate)` - Duration between dates (e.g., "2d", "3h", "45m")
+- `formatDurationFromNow(startDate)` - Duration from start to now
+- `parseNukeTime(timeInSeconds)` - Parse seconds into nuke time format string (e.g., "2d 3h 45m")
+- `parseNukeTimeComponents(timeInSeconds)` - Parse seconds into object with `{days, hours, minutes, toString()}` for when individual components are needed
+- `formatDurationHMS(durationInSeconds)` - Format as HH:MM:SS for countdown displays
+
+**History & Timestamps:**
+- `formatTimestamp(timestamp)` - Format as "YYYY/MM/DD at HH:MM"
+- `formatTimestampRelative(timestamp)` - Relative time (e.g., "2 hours ago", "just now")
+
+**Validation:**
+- `isValidDate(dateString)` - Check if date string is valid
+
+**Important:** Always import and use these utilities instead of creating duplicate date formatting functions in components. This ensures consistency across the entire application.
+
 ### Smart Contract Development
 - Follow Dojo framework patterns for systems and models
 - Use the existing components for common functionality (payable, taxes)

@@ -1,6 +1,7 @@
 <script lang="ts">
   import * as Tooltip from '$lib/components/ui/tooltip';
   import { cn } from '$lib/utils';
+  import { parseNukeTime, formatDate } from '$lib/utils/date';
 
   let {
     estimatedNukeTime,
@@ -18,12 +19,11 @@
 
   let estimatedDaysString = $derived.by(() => {
     if (estimatedNukeTime <= 0) {
-      return 'NUKE!'; // Match nuke-time-display format
+      return 'NUKE!';
     }
-    if (estimatedDays === Infinity) {
+    if (estimatedNukeTime === Infinity) {
       return '∞';
     }
-    // Use the same format as nuke-time-display: 'd', 'h', 'm'
     if (estimatedDays > 0) {
       return `${estimatedDays}d`;
     } else if (estimatedHours > 0) {
@@ -31,26 +31,21 @@
     } else if (estimatedMinutes > 0) {
       return `${estimatedMinutes}m`;
     } else {
-      return 'NUKE!';
+      return '<1m';
     }
   });
 
   let estimatedTimeString = $derived.by(() => {
-    // Convert estimatedNukeTime to a human-readable string
     if (estimatedNukeTime === Infinity) return 'no neighbors = no tax';
     if (estimatedNukeTime <= 0) return 'NUKABLE !';
-    const days = Math.floor(estimatedNukeTime / 60 / 60 / 24);
-    const hours = Math.floor((estimatedNukeTime / 60 / 60) % 24);
-    const minutes = Math.floor((estimatedNukeTime / 60) % 60);
-    const seconds = Math.floor(estimatedNukeTime % 60);
-    return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    return parseNukeTime(estimatedNukeTime);
   });
 
   let estimatedNukeDate = $derived.by(() => {
     const time = estimatedNukeTime;
     const date = new Date();
     date.setSeconds(date.getSeconds() + time);
-    return date.toLocaleString();
+    return formatDate(date.toISOString());
   });
 
   // Check if nuke time has passed
