@@ -33,7 +33,7 @@
   const CLOUDS_HEIGHT = 4; // Position clouds above the grid
   const CLOUD_SPACING = 4; // Distance between clouds in grid
   const LAND_EXCLUSION_PADDING = 10; // Extra padding around land bounds
-  const CLOUD_POSITION_OFFSET = 0; // Offset for cloud positioning
+  const CLOUD_POSITION_OFFSET = 2; // Offset for cloud positioning
   const MAX_INSTANCES = 256 ** 2; // Max instances for instanced mesh
   const MAX_INFLUENCE_DISTANCE = 10; // Maximum distance for mouse influence
   const PLANE_SIZE = 500; // Size of the colored planes
@@ -441,7 +441,7 @@
     // Create planes that cover the entire camera viewport, excluding land bounds
     const planes: any[] = [];
     const planePositions = [
-      // North plane (above land bounds) - extends to camera bounds
+      // South plane (below land bounds) - extends to camera bounds
       {
         x:
           (Math.min(landMinX, cameraMinX) + Math.max(landMaxX, cameraMaxX)) / 2,
@@ -449,11 +449,11 @@
         width: Math.max(landMaxX, cameraMaxX) - Math.min(landMinX, cameraMinX),
         height: cameraMaxZ - landMaxZ,
       },
-      // South plane (below land bounds) - extends to camera bounds
+      // North plane (above land bounds) - extends to camera bounds
       {
         x:
           (Math.min(landMinX, cameraMinX) + Math.max(landMaxX, cameraMaxX)) / 2,
-        z: (landMinZ + cameraMinZ) / 2,
+        z: (landMinZ + cameraMinZ) / 2 + CLOUD_POSITION_OFFSET,
         width: Math.max(landMaxX, cameraMaxX) - Math.min(landMinX, cameraMinX),
         height: landMinZ - cameraMinZ,
       },
@@ -466,7 +466,7 @@
       },
       // West plane (left of land bounds) - extends to camera bounds
       {
-        x: (landMinX + cameraMinX) / 2,
+        x: (landMinX + cameraMinX) / 2 + CLOUD_POSITION_OFFSET,
         z: cameraZ,
         width: landMinX - cameraMinX,
         height: cameraMaxZ - cameraMinZ,

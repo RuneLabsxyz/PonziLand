@@ -29,9 +29,7 @@
   <div
     class="fixed left-2.5 top-1/2 -translate-y-1/2 z-[1000] pointer-events-auto"
   >
-    <Card
-      class="bg-black/80 border-white/10 rounded-lg px-1 py-2 flex flex-col gap-1 min-w-12 backdrop-blur-[10px]"
-    >
+    <Card class="bg-ponzi">
       {#each minimizedWidgets as widget}
         <button
           class="bg-white/10 border-0 rounded-md w-10 h-10 flex items-center justify-center cursor-pointer transition-all duration-200 ease-in-out p-1 hover:bg-white/20 hover:scale-105"
