@@ -7,6 +7,7 @@
   } from '$lib/stores/wallet.svelte';
   import { getFullTokenInfo, getTokenInfo } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { formatPercentage } from '$lib/utils/format';
   import { toPng } from 'html-to-image';
   import { Copy, Download, X } from 'lucide-svelte';
   import type { HistoricalPosition } from '../positions/historical-positions.service';
@@ -200,13 +201,7 @@
     // Format ROI percentage
     let roiText = '';
     if (roi !== null && roi !== undefined) {
-      const abs = Math.abs(roi);
-      let precision = 1;
-      if (abs < 0.01) precision = 4;
-      else if (abs < 1) precision = 3;
-      else if (abs < 10) precision = 2;
-
-      roiText = ` (${roi > 0 ? '+' : ''}${roi.toFixed(precision)}%)`;
+      roiText = ` (${formatPercentage(roi)})`;
     }
 
     // Get status text

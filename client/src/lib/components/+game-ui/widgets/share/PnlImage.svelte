@@ -2,6 +2,7 @@
   import LandDisplay from '$lib/components/+game-map/land/land-display.svelte';
   import type { Token } from '$lib/interfaces';
   import { getTokenMetadata } from '$lib/utils';
+  import { formatPercentage } from '$lib/utils/format';
   import PonziProgressImage from './PonziProgressImage.svelte';
 
   interface Props {
@@ -57,15 +58,7 @@
 
   const formattedRoi = $derived.by(() => {
     if (roi === null || roi === undefined) return '';
-
-    // Format percentage with appropriate precision like in total-pnl-cell.svelte
-    const abs = Math.abs(roi);
-    let precision = 1;
-    if (abs < 0.01) precision = 4;
-    else if (abs < 1) precision = 3;
-    else if (abs < 10) precision = 2;
-
-    return `${roi > 0 ? '+' : ''}${roi.toFixed(precision)}%`;
+    return formatPercentage(roi);
   });
 
   const tokenPercentages = $derived.by(() => {

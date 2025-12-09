@@ -3,6 +3,7 @@
   import type { HistoricalPosition } from '../historical-positions.service';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { Share } from 'lucide-svelte';
+  import { formatPercentage } from '$lib/utils/format';
 
   interface Props {
     position: HistoricalPosition;
@@ -20,20 +21,6 @@
   const realizedPnL = $derived(position.metrics?.totalPnL ?? null);
   const isOpen = $derived(position.metrics?.isOpen ?? false);
   const roi = $derived(position.metrics?.roi ?? null);
-
-  // Format percentage with appropriate precision
-  function formatPercentage(value: number): string {
-    const abs = Math.abs(value);
-    if (abs >= 10) {
-      return value.toFixed(1);
-    } else if (abs >= 1) {
-      return value.toFixed(2);
-    } else if (abs >= 0.01) {
-      return value.toFixed(3);
-    } else {
-      return value.toFixed(4);
-    }
-  }
 
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);
@@ -82,7 +69,7 @@
             roi > 0 ? 'text-green-400' : 'text-red-400',
           ]}
         >
-          {roi > 0 ? '+' : ''}{formatPercentage(roi)}%
+          {formatPercentage(roi)}
         </span>
       {/if}
     </div>
