@@ -7,6 +7,7 @@ import { getTokenInfo } from '$lib/utils';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { ColumnDef, FilterFn } from '@tanstack/table-core';
 import type { HistoricalPosition } from './historical-positions.service';
+import { calculatePositionMetrics } from './position-pnl-calculator';
 
 // Import cell components
 import { renderComponent } from '$lib/components/ui/data-table';
@@ -312,6 +313,16 @@ function getTotalPnlValue(position: HistoricalPosition): number {
   }
 }
 
+// Helper function to get ROI value for sorting
+function getRoiValue(position: HistoricalPosition): number {
+  try {
+    const metrics = calculatePositionMetrics(position);
+    return metrics.roi || 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Export the custom filter function for external use
 export { timePeriodFilter };
 
@@ -575,6 +586,20 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   },
   {
     accessorKey: 'roi',
+    header: ({ column }) =>
+      renderComponent(DataTableSortableHeader, {
+        title: 'ROI',
+        sortDirection: column.getIsSorted(),
+        onclick: column.getToggleSortingHandler(),
+      }),
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const posA = rowA.original;
+      const posB = rowB.original;
+      const roiA = getRoiValue(posA);
+      const roiB = getRoiValue(posB);
+      return roiA - roiB;
+    },
     cell: ({ row }) => {
       const position = row.original;
       return renderComponent(RoiCell, { position });
