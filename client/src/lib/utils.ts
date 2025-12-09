@@ -235,3 +235,6 @@ export function groupLands(lands: LandWithActions[]) {
 
   return Array.from(map.entries());
 }
+
+// Re-export formatting utilities
+export { formatPercentage, formatPercentageFixed } from './utils/format';
