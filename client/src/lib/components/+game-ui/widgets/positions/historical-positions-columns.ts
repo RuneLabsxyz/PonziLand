@@ -253,6 +253,26 @@ function getRoiValue(position: HistoricalPosition): number {
   }
 }
 
+// Helper function to create common sortable header props with visibility toggle
+function createSortableHeaderProps(column: any, title: string) {
+  return {
+    title,
+    sortDirection: column.getIsSorted(),
+    onclick: column.getToggleSortingHandler(),
+    showDropdown: true,
+    onToggleVisibility: () => column.toggleVisibility(),
+    isVisible: column.getIsVisible(),
+    onSort: (direction: any) => {
+      if (direction === false) {
+        column.clearSorting();
+      } else {
+        column.toggleSorting(direction === 'desc');
+      }
+    },
+    enableSorting: true,
+  };
+}
+
 // Export the custom filter function for external use
 export { timePeriodFilter };
 
@@ -295,20 +315,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'total_pnl',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'P&L',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onSort: (direction) => {
-          if (direction === false) {
-            column.clearSorting();
-          } else {
-            column.toggleSorting(direction === 'desc');
-          }
-        },
-        enableSorting: true,
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'P&L')
+      ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
@@ -329,22 +338,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'roi',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'ROI',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onToggleVisibility: () => column.toggleVisibility(),
-        isVisible: column.getIsVisible(),
-        onSort: (direction) => {
-          if (direction === false) {
-            column.clearSorting();
-          } else {
-            column.toggleSorting(direction === 'desc');
-          }
-        },
-        enableSorting: true,
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'ROI')
+      ),
     enableSorting: true,
     enableHiding: true,
     sortingFn: (rowA, rowB) => {
@@ -383,14 +379,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'close_date',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Close',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onToggleVisibility: () => column.toggleVisibility(),
-        isVisible: column.getIsVisible(),
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'Close')
+      ),
     enableSorting: true,
     enableHiding: true,
     sortingFn: 'datetime',
@@ -406,22 +397,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'buy_cost_token',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Buy Cost',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onToggleVisibility: () => column.toggleVisibility(),
-        isVisible: column.getIsVisible(),
-        onSort: (direction) => {
-          if (direction === false) {
-            column.clearSorting();
-          } else {
-            column.toggleSorting(direction === 'desc');
-          }
-        },
-        enableSorting: true,
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'Buy Cost')
+      ),
     enableSorting: true,
     enableHiding: true,
     sortingFn: (rowA, rowB) => {
@@ -451,22 +429,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'token_outflows',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Token Outflows',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onToggleVisibility: () => column.toggleVisibility(),
-        isVisible: column.getIsVisible(),
-        onSort: (direction) => {
-          if (direction === false) {
-            column.clearSorting();
-          } else {
-            column.toggleSorting(direction === 'desc');
-          }
-        },
-        enableSorting: true,
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'Token Outflows')
+      ),
     enableSorting: true,
     enableHiding: true,
     sortingFn: (rowA, rowB) => {
@@ -484,14 +449,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'sale_revenue_token',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Sold For',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onToggleVisibility: () => column.toggleVisibility(),
-        isVisible: column.getIsVisible(),
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'Sold For')
+      ),
     enableSorting: true,
     enableHiding: true,
     sortingFn: (rowA, rowB) => {
@@ -534,14 +494,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'token_inflows',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Token Inflows',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-        showDropdown: true,
-        onToggleVisibility: () => column.toggleVisibility(),
-        isVisible: column.getIsVisible(),
-      }),
+      renderComponent(DataTableSortableHeader, 
+        createSortableHeaderProps(column, 'Token Inflows')
+      ),
     enableSorting: true,
     enableHiding: true,
     sortingFn: (rowA, rowB) => {
