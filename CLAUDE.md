@@ -113,6 +113,7 @@ The UI is built with a modular widget system that allows easy extension:
 - Components should be typed with TypeScript
 - Use Tailwind CSS for styling with the project's design system
 - At the end of a modification batch / end of todolist Format the code
+- The syntax class={['base-classes', { 'conditional-class': condition }]} is a clean, idiomatic way to handle conditional styling in Svelte.
 
 ### Smart Contract Development
 - Follow Dojo framework patterns for systems and models

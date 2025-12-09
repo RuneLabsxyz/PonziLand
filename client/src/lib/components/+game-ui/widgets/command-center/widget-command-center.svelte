@@ -104,7 +104,7 @@
       onclick={() => setActiveTab('positions')}
     >
       <img
-        src="/ui/icons/IconTiny_Stats.png"
+        src="/ui/icons/IconTiny_Bills.png"
         alt="Positions"
         class={[
           'h-6 w-6',
@@ -155,6 +155,8 @@
   >
     {activeTab.replace('-', ' ')}
   </div>
+
+  <Separator class="my-2 opacity-50" />
 
   <div class="h-full w-full flex flex-col min-h-0">
     <!-- Tab Content -->
