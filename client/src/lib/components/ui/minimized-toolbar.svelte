@@ -26,74 +26,25 @@
 </script>
 
 {#if minimizedWidgets.length > 0}
-  <div class="minimized-toolbar">
-    <Card class="toolbar-card">
+  <div
+    class="fixed left-2.5 top-1/2 -translate-y-1/2 z-[1000] pointer-events-auto"
+  >
+    <Card
+      class="bg-black/80 border-white/10 rounded-lg px-1 py-2 flex flex-col gap-1 min-w-12 backdrop-blur-[10px]"
+    >
       {#each minimizedWidgets as widget}
         <button
-          class="toolbar-icon"
+          class="bg-white/10 border-0 rounded-md w-10 h-10 flex items-center justify-center cursor-pointer transition-all duration-200 ease-in-out p-1 hover:bg-white/20 hover:scale-105"
           onclick={() => restoreWidget(widget.id)}
           title={getWidgetLabel(widget.type)}
         >
           <img
             src={getWidgetIcon(widget.type)}
             alt={getWidgetLabel(widget.type)}
-            class="icon-image"
+            class="w-6 h-6 object-contain brightness-90 hover:brightness-110"
           />
         </button>
       {/each}
     </Card>
   </div>
 {/if}
-
-<style>
-  .minimized-toolbar {
-    position: fixed;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 1000;
-    pointer-events: all;
-  }
-
-  :global(.toolbar-card) {
-    background: rgba(0, 0, 0, 0.8);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 8px 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    min-width: 48px;
-    backdrop-filter: blur(10px);
-  }
-
-  .toolbar-icon {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 6px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    padding: 4px;
-  }
-
-  .toolbar-icon:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: scale(1.05);
-  }
-
-  .icon-image {
-    width: 24px;
-    height: 24px;
-    object-fit: contain;
-    filter: brightness(0.9);
-  }
-
-  .toolbar-icon:hover .icon-image {
-    filter: brightness(1.1);
-  }
-</style>
