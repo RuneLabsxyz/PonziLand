@@ -22,9 +22,7 @@
 
   const { accountManager: dojoAccountManager } = useDojo();
 
-  let positions = $state<HistoricalPosition[]>([]);
-  let loading = $state(true);
-  let error = $state<string | null>(null);
+  let positionsPromise = $state<Promise<HistoricalPosition[]> | null>(null);
   let refreshInterval: NodeJS.Timeout;
   let timePeriod = $state<'1D' | '1W' | '1M' | '1Y' | 'ALL'>('ALL');
   let columnFilters = $state<ColumnFiltersState>([]);
@@ -49,31 +47,25 @@
     }
   }
 
-  async function loadPositions() {
-    try {
-      const currentAccount = account.walletAccount;
-      if (!currentAccount) {
-        error = 'No wallet account available';
-        loading = false;
-        return;
-      }
-
-      const userAddress = padAddress(currentAccount.address)!;
-      positions = await fetchHistoricalPositions(userAddress);
-      error = null;
-    } catch (err) {
-      error = err instanceof Error ? err.message : 'Failed to load positions';
-      console.error('Error loading positions:', err);
-    } finally {
-      loading = false;
+  function loadPositions(): Promise<HistoricalPosition[]> {
+    const currentAccount = account.walletAccount;
+    if (!currentAccount) {
+      return Promise.reject(new Error('No wallet account available'));
     }
+
+    const userAddress = padAddress(currentAccount.address)!;
+    return fetchHistoricalPositions(userAddress);
+  }
+
+  function refreshPositions() {
+    positionsPromise = loadPositions();
   }
 
   onMount(() => {
-    loadPositions();
+    refreshPositions();
 
     // Refresh every 60 seconds
-    refreshInterval = setInterval(loadPositions, 60000);
+    refreshInterval = setInterval(refreshPositions, 60000);
 
     return () => {
       if (refreshInterval) {
@@ -103,23 +95,21 @@
 {:else}
   <!-- Time period filter will be moved to DataTableFilter component -->
   <div class="flex flex-col h-full min-h-0">
-    {#if loading}
-      <div class="text-center py-8 text-gray-400">Loading positions...</div>
-    {:else if error}
-      <div class="text-center py-8 text-red-400">
-        Error: {error}
-      </div>
-    {:else if positions.length === 0}
-      <div class="text-center py-8 text-gray-400">
-        No historical positions yet
-      </div>
-    {:else}
-      <DataTable
-        data={positions}
-        {columns}
-        bind:columnFilters
-        bind:columnVisibility
-      >
+    {#if positionsPromise}
+      {#await positionsPromise}
+        <div class="text-center py-8 text-gray-400">Loading positions...</div>
+      {:then positions}
+        {#if positions.length === 0}
+          <div class="text-center py-8 text-gray-400">
+            No historical positions yet
+          </div>
+        {:else}
+          <DataTable
+            data={positions}
+            {columns}
+            bind:columnFilters
+            bind:columnVisibility
+          >
         {#snippet toolbar(table)}
           <DataTableFilter {table}>
             {#snippet customFilters()}
@@ -164,7 +154,15 @@
             {/snippet}
           </DataTableFilter>
         {/snippet}
-      </DataTable>
+          </DataTable>
+        {/if}
+      {:catch error}
+        <div class="text-center py-8 text-red-400">
+          Error: {error.message}
+        </div>
+      {/await}
+    {:else}
+      <div class="text-center py-8 text-gray-400">Loading positions...</div>
     {/if}
   </div>
 {/if}
