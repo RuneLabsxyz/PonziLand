@@ -1,5 +1,8 @@
 import { PUBLIC_PONZI_API_URL } from '$env/static/public';
-import { calculatePositionMetrics, type PositionMetrics } from './position-pnl-calculator';
+import {
+  calculatePositionMetrics,
+  type PositionMetrics,
+} from './position-pnl-calculator';
 
 export interface TokenFlow {
   [tokenAddress: string]: string; // hex amount
@@ -47,11 +50,11 @@ export async function fetchHistoricalPositions(
 
     const data = await response.json();
     const positions = data as HistoricalPosition[];
-    
+
     // Calculate metrics once for each position
-    return positions.map(position => ({
+    return positions.map((position) => ({
       ...position,
-      metrics: calculatePositionMetrics(position)
+      metrics: calculatePositionMetrics(position),
     }));
   } catch (error) {
     console.error('Error fetching historical positions:', error);
