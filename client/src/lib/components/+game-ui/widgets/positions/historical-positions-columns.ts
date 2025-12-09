@@ -315,8 +315,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'total_pnl',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'P&L')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'P&L'),
       ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
@@ -338,8 +339,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'roi',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'ROI')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'ROI'),
       ),
     enableSorting: true,
     enableHiding: true,
@@ -379,8 +381,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'close_date',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'Close')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Close'),
       ),
     enableSorting: true,
     enableHiding: true,
@@ -397,8 +400,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'buy_cost_token',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'Buy Cost')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Buy Cost'),
       ),
     enableSorting: true,
     enableHiding: true,
@@ -429,8 +433,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'token_outflows',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'Token Outflows')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Token Outflows'),
       ),
     enableSorting: true,
     enableHiding: true,
@@ -449,8 +454,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'sale_revenue_token',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'Sold For')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Sold For'),
       ),
     enableSorting: true,
     enableHiding: true,
@@ -494,8 +500,9 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'token_inflows',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, 
-        createSortableHeaderProps(column, 'Token Inflows')
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Token Inflows'),
       ),
     enableSorting: true,
     enableHiding: true,

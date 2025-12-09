@@ -12,7 +12,11 @@
 
   function handleToggle(column: any) {
     column.toggleVisibility();
-    // Force a reactivity update by accessing the table state
+    refresh();
+  }
+
+  // Force a reactivity update - easier to reason about and can be cleaned up later
+  function refresh() {
     table.getState();
   }
 </script>

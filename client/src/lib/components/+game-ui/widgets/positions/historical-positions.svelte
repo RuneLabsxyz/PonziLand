@@ -1,6 +1,5 @@
 <script lang="ts">
   import Button from '$lib/components/ui/button/button.svelte';
-  import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { useDojo } from '$lib/contexts/dojo';
   import { padAddress } from '$lib/utils';
   import { onMount } from 'svelte';
@@ -19,6 +18,16 @@
     type HistoricalPosition,
   } from './historical-positions.service';
   import account from '$lib/account.svelte';
+  import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
+  import { RefreshCw } from 'lucide-svelte';
+  import type { Snippet } from 'svelte';
+
+  type Props = {
+    setCustomTitle?: (title: Snippet<[]> | null) => void;
+    setCustomControls?: (controls: Snippet<[]> | null) => void;
+  };
+
+  let { setCustomTitle, setCustomControls }: Props = $props();
 
   const { accountManager: dojoAccountManager } = useDojo();
 
@@ -27,6 +36,7 @@
   let timePeriod = $state<'1D' | '1W' | '1M' | '1Y' | 'ALL'>('ALL');
   let columnFilters = $state<ColumnFiltersState>([]);
   let columnVisibility = $state<VisibilityState>({});
+  let isRefreshing = $state(false);
 
   // Function to update the time period filter
   function setTimePeriodFilter(period: '1D' | '1W' | '1M' | '1Y' | 'ALL') {
@@ -57,21 +67,37 @@
     return fetchHistoricalPositions(userAddress);
   }
 
-  function refreshPositions() {
-    positionsPromise = loadPositions();
+  // Refresh function that retriggers data fetching - easier to reason about and can be cleaned up later
+  async function refresh() {
+    isRefreshing = true;
+    positionsPromise = null; // Clear existing promise first
+
+    try {
+      positionsPromise = loadPositions();
+      await positionsPromise; // Wait for completion
+    } finally {
+      isRefreshing = false;
+    }
   }
 
   onMount(() => {
-    refreshPositions();
+    refresh();
 
     // Refresh every 60 seconds
-    refreshInterval = setInterval(refreshPositions, 60000);
+    refreshInterval = setInterval(refresh, 60000);
 
     return () => {
       if (refreshInterval) {
         clearInterval(refreshInterval);
       }
     };
+  });
+
+  // Set up custom controls with refresh button
+  $effect(() => {
+    if (setCustomControls) {
+      setCustomControls(refreshControls);
+    }
   });
 </script>
 
@@ -97,7 +123,12 @@
   <div class="flex flex-col h-full min-h-0">
     {#if positionsPromise}
       {#await positionsPromise}
-        <div class="text-center py-8 text-gray-400">Loading positions...</div>
+        <div
+          class="text-center py-8 text-gray-400 flex flex-col items-center gap-4"
+        >
+          <RotatingCoin />
+          <span>Loading positions...</span>
+        </div>
       {:then positions}
         {#if positions.length === 0}
           <div class="text-center py-8 text-gray-400">
@@ -110,50 +141,50 @@
             bind:columnFilters
             bind:columnVisibility
           >
-        {#snippet toolbar(table)}
-          <DataTableFilter {table}>
-            {#snippet customFilters()}
-              <div class="flex gap-1">
-                <Button
-                  size="md"
-                  variant={timePeriod === '1D' ? 'blue' : 'red'}
-                  onclick={() => setTimePeriodFilter('1D')}
-                >
-                  1D
-                </Button>
-                <Button
-                  size="md"
-                  variant={timePeriod === '1W' ? 'blue' : 'red'}
-                  onclick={() => setTimePeriodFilter('1W')}
-                >
-                  1W
-                </Button>
-                <Button
-                  size="md"
-                  variant={timePeriod === '1M' ? 'blue' : 'red'}
-                  onclick={() => setTimePeriodFilter('1M')}
-                >
-                  1M
-                </Button>
-                <Button
-                  size="md"
-                  variant={timePeriod === '1Y' ? 'blue' : 'red'}
-                  onclick={() => setTimePeriodFilter('1Y')}
-                >
-                  1Y
-                </Button>
-                <Button
-                  size="md"
-                  variant={timePeriod === 'ALL' ? 'blue' : 'red'}
-                  onclick={() => setTimePeriodFilter('ALL')}
-                >
-                  ALL
-                </Button>
-              </div>
-              <DataTableColumnVisibility {table} />
+            {#snippet toolbar(table)}
+              <DataTableFilter {table}>
+                {#snippet customFilters()}
+                  <div class="flex gap-1">
+                    <Button
+                      size="md"
+                      variant={timePeriod === '1D' ? 'blue' : 'red'}
+                      onclick={() => setTimePeriodFilter('1D')}
+                    >
+                      1D
+                    </Button>
+                    <Button
+                      size="md"
+                      variant={timePeriod === '1W' ? 'blue' : 'red'}
+                      onclick={() => setTimePeriodFilter('1W')}
+                    >
+                      1W
+                    </Button>
+                    <Button
+                      size="md"
+                      variant={timePeriod === '1M' ? 'blue' : 'red'}
+                      onclick={() => setTimePeriodFilter('1M')}
+                    >
+                      1M
+                    </Button>
+                    <Button
+                      size="md"
+                      variant={timePeriod === '1Y' ? 'blue' : 'red'}
+                      onclick={() => setTimePeriodFilter('1Y')}
+                    >
+                      1Y
+                    </Button>
+                    <Button
+                      size="md"
+                      variant={timePeriod === 'ALL' ? 'blue' : 'red'}
+                      onclick={() => setTimePeriodFilter('ALL')}
+                    >
+                      ALL
+                    </Button>
+                  </div>
+                  <DataTableColumnVisibility {table} />
+                {/snippet}
+              </DataTableFilter>
             {/snippet}
-          </DataTableFilter>
-        {/snippet}
           </DataTable>
         {/if}
       {:catch error}
@@ -162,7 +193,29 @@
         </div>
       {/await}
     {:else}
-      <div class="text-center py-8 text-gray-400">Loading positions...</div>
+      <div
+        class="text-center py-8 text-gray-400 flex flex-col items-center gap-4"
+      >
+        <RotatingCoin />
+        <span>Loading positions...</span>
+      </div>
     {/if}
   </div>
 {/if}
+
+{#snippet refreshControls()}
+  {#if isRefreshing}
+    <div class="w-6 h-6 flex items-center justify-center">
+      <RotatingCoin />
+    </div>
+  {:else}
+    <button
+      class="window-control"
+      onclick={refresh}
+      aria-label="Refresh positions"
+      title="Refresh historical positions data"
+    >
+      <RefreshCw size={16} />
+    </button>
+  {/if}
+{/snippet}
