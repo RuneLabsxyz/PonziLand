@@ -7,11 +7,21 @@ import {
 } from '$lib/stores/wallet.svelte';
 import type { HistoricalPosition } from './historical-positions.service';
 
+export interface TokenFlowDetail {
+  token: any;
+  amount: CurrencyAmount;
+  baseEquivalent: CurrencyAmount;
+}
+
 export interface PositionMetrics {
   // Raw flows
   totalInflowBaseEquivalent: CurrencyAmount | null;
   totalOutflowBaseEquivalent: CurrencyAmount | null;
   netTokenFlow: CurrencyAmount | null;
+
+  // Token flow details
+  inflowTokens: TokenFlowDetail[];
+  outflowTokens: TokenFlowDetail[];
 
   // Cost conversions
   buyCostBaseEquivalent: CurrencyAmount | null;
@@ -33,13 +43,15 @@ export interface PositionMetrics {
 }
 
 /**
- * Calculate total token inflows in base token equivalent
+ * Calculate token inflows with detailed breakdown
  */
-export function calculateTokenInflows(
-  position: HistoricalPosition,
-): CurrencyAmount | null {
+export function calculateTokenInflows(position: HistoricalPosition): {
+  total: CurrencyAmount | null;
+  details: TokenFlowDetail[];
+} {
   const baseToken = getBaseToken();
   let total = CurrencyAmount.fromScaled(0, baseToken);
+  const details: TokenFlowDetail[] = [];
 
   for (const [tokenAddress, amount] of Object.entries(position.token_inflows)) {
     const tokenInfo = getTokenInfo(tokenAddress);
@@ -50,23 +62,37 @@ export function calculateTokenInflows(
         tokenInfo,
         baseToken,
       );
-      if (convertedAmount) {
+      if (convertedAmount && !convertedAmount.isZero()) {
         total = total.add(convertedAmount);
+        details.push({
+          token: tokenInfo,
+          amount: inflowAmount,
+          baseEquivalent: convertedAmount,
+        });
       }
     }
   }
 
-  return total;
+  // Sort by base equivalent value (largest first)
+  details.sort(
+    (a, b) =>
+      b.baseEquivalent.rawValue().toNumber() -
+      a.baseEquivalent.rawValue().toNumber(),
+  );
+
+  return { total, details };
 }
 
 /**
- * Calculate total token outflows in base token equivalent
+ * Calculate token outflows with detailed breakdown
  */
-export function calculateTokenOutflows(
-  position: HistoricalPosition,
-): CurrencyAmount | null {
+export function calculateTokenOutflows(position: HistoricalPosition): {
+  total: CurrencyAmount | null;
+  details: TokenFlowDetail[];
+} {
   const baseToken = getBaseToken();
   let total = CurrencyAmount.fromScaled(0, baseToken);
+  const details: TokenFlowDetail[] = [];
 
   for (const [tokenAddress, amount] of Object.entries(
     position.token_outflows,
@@ -79,13 +105,25 @@ export function calculateTokenOutflows(
         tokenInfo,
         baseToken,
       );
-      if (convertedAmount) {
+      if (convertedAmount && !convertedAmount.isZero()) {
         total = total.add(convertedAmount);
+        details.push({
+          token: tokenInfo,
+          amount: outflowAmount,
+          baseEquivalent: convertedAmount,
+        });
       }
     }
   }
 
-  return total;
+  // Sort by base equivalent value (largest first)
+  details.sort(
+    (a, b) =>
+      b.baseEquivalent.rawValue().toNumber() -
+      a.baseEquivalent.rawValue().toNumber(),
+  );
+
+  return { total, details };
 }
 
 /**
@@ -205,7 +243,6 @@ export function calculateNetSaleProfit(
 export function calculateTotalPnL(
   netTokenFlow: CurrencyAmount | null,
   netSaleProfit: CurrencyAmount | null,
-  isOpen: boolean,
 ): CurrencyAmount | null {
   const baseToken = getBaseToken();
 
@@ -289,12 +326,12 @@ export function calculatePositionMetrics(
 ): PositionMetrics {
   const isOpen = isPositionOpen(position);
 
-  // Calculate token flows
-  const totalInflowBaseEquivalent = calculateTokenInflows(position);
-  const totalOutflowBaseEquivalent = calculateTokenOutflows(position);
+  // Calculate token flows with details
+  const inflowResult = calculateTokenInflows(position);
+  const outflowResult = calculateTokenOutflows(position);
   const netTokenFlow = calculateNetTokenFlow(
-    totalInflowBaseEquivalent,
-    totalOutflowBaseEquivalent,
+    inflowResult.total,
+    outflowResult.total,
   );
 
   // Get token info
@@ -323,19 +360,23 @@ export function calculatePositionMetrics(
     saleRevenueBaseEquivalent,
     isOpen,
   );
-  const totalPnL = calculateTotalPnL(netTokenFlow, netSaleProfit, isOpen);
+  const totalPnL = calculateTotalPnL(netTokenFlow, netSaleProfit);
   const roi = calculateROI(
     buyCostBaseEquivalent,
     saleRevenueBaseEquivalent,
-    totalInflowBaseEquivalent,
-    totalOutflowBaseEquivalent,
+    inflowResult.total,
+    outflowResult.total,
   );
 
   return {
     // Raw flows
-    totalInflowBaseEquivalent,
-    totalOutflowBaseEquivalent,
+    totalInflowBaseEquivalent: inflowResult.total,
+    totalOutflowBaseEquivalent: outflowResult.total,
     netTokenFlow,
+
+    // Token flow details
+    inflowTokens: inflowResult.details,
+    outflowTokens: outflowResult.details,
 
     // Cost conversions
     buyCostBaseEquivalent,

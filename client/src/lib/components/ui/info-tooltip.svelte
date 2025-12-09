@@ -15,7 +15,9 @@
       <Info size={12} />
     </button>
   </Tooltip.Trigger>
-  <Tooltip.Content class="bg-black/90 text-white text-xs border-gray-600">
+  <Tooltip.Content
+    class="bg-black/90 text-white border-gray-600 whitespace-pre-line"
+  >
     {text}
   </Tooltip.Content>
 </Tooltip.Root>

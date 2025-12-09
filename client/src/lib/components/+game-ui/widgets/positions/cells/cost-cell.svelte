@@ -12,9 +12,10 @@
   interface Props {
     cost: string | null;
     tokenAddress?: string | null;
+    variant?: 'buy' | 'sell';
   }
 
-  let { cost, tokenAddress }: Props = $props();
+  let { cost, tokenAddress, variant }: Props = $props();
 
   const displayData = $derived.by(() => {
     if (!cost) {
@@ -49,12 +50,22 @@
 </script>
 
 {#if displayData}
-  <div class="flex flex-col items-end leading-none tracking-wider">
+  <div
+    class="flex flex-col items-end leading-none tracking-wider whitespace-nowrap"
+  >
     {#if displayData.baseEquivalent && !displayData.baseEquivalent.isZero()}
       <div
         class="flex gap-1 tracking-widest font-ponzi-number text-xs items-center"
       >
-        <span class="flex opacity-80">
+        <span
+          class={[
+            'flex opacity-80',
+            {
+              'text-red-400': variant === 'buy',
+              'text-green-400': variant === 'sell',
+            },
+          ]}
+        >
           <span>$</span>
           {displayData.baseEquivalent.rawValue().toNumber().toFixed(2)}
         </span>
