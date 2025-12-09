@@ -28,7 +28,7 @@
   });
 </script>
 
-{#if account.isConnected}
+{#if !account.isConnected}
   <!-- Wallet connection prompt -->
   <div class="flex flex-col items-center justify-center gap-4 p-8">
     <div class="text-center tracking-wide">
