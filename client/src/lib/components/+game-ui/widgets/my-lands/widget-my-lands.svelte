@@ -24,9 +24,10 @@
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
     setCustomControls?: (controls: Snippet<[]> | null) => void;
+    onGoToMarket?: () => void;
   };
 
-  let { setCustomTitle, setCustomControls }: Props = $props();
+  let { setCustomTitle, setCustomControls, onGoToMarket }: Props = $props();
 
   const dojo = useDojo();
   const getDojoAccount = () => {
@@ -554,26 +555,36 @@
         {:else}
           <!-- User is connected but has no lands -->
           <div class="flex flex-col items-center justify-center gap-4 p-8">
+            <img
+              src="/gifs/SAD_NO_BACKGROUND.gif"
+              alt="sad ponziboy"
+              class="w-40 h-40"
+            />
             <div class="text-center text-gray-400">
               You don't own any lands yet
             </div>
-            <button
-              class="text-yellow-500 hover:opacity-90 hover:cursor-pointer"
-              onclick={(e) => {
+            <Button
+              class=" hover:cursor-pointer font-ponzi-number"
+              onclick={(e: Event) => {
                 e.preventDefault();
                 e.stopPropagation();
-                widgetsStore.addWidget({
-                  id: 'market',
-                  type: 'market',
-                  position: { x: 40, y: 30 },
-                  dimensions: { width: 450, height: 600 },
-                  isMinimized: false,
-                  isOpen: true,
-                });
+                if (onGoToMarket) {
+                  onGoToMarket();
+                } else {
+                  // Fallback to opening separate market widget
+                  widgetsStore.addWidget({
+                    id: 'market',
+                    type: 'market',
+                    position: { x: 40, y: 30 },
+                    dimensions: { width: 450, height: 600 },
+                    isMinimized: false,
+                    isOpen: true,
+                  });
+                }
               }}
             >
-              See ongoing auctions
-            </button>
+              Go to market !
+            </Button>
           </div>
         {/if}
       {/if}
