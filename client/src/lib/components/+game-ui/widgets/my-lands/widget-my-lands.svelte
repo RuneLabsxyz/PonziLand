@@ -392,7 +392,7 @@
   </button>
 {/snippet}
 
-<div class="h-full w-full flex flex-col pb-4">
+<div class="h-full w-full flex flex-col">
   <!-- Filters and Controls - only show when user is connected -->
   {#if account.isConnected}
     <div

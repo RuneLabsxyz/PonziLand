@@ -265,7 +265,7 @@
         {/if}
       </div>
     </div>
-    <div class="w-full h-full {isMinimized ? 'hidden' : ''}">
+    <div class="min-h-0 w-full h-full {isMinimized ? 'hidden' : ''}">
       {@render children({ setCustomControls, setCustomTitle })}
     </div>
   </Card>
