@@ -12,6 +12,7 @@
   import Debug from './three/debug/Debug.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { redbellyMainnet } from '@reown/appkit/networks';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -72,6 +73,9 @@
           ref.touches.one = devsettings.cameraControlsOneFinger as any;
           ref.touches.two = devsettings.cameraControlsTwoFinger as any;
           ref.touches.three = devsettings.cameraControlsThreeFinger as any;
+          ref.smoothTime = 0.05;
+          ref.draggingSmoothTime = 0.02;
+          ref.dollySpeed = 2.0;
         }}
       />
     </T.OrthographicCamera>
