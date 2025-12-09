@@ -18,10 +18,11 @@
   import WidgetDisclaimer from './disclaimer/widget-disclaimer.svelte';
   import WidgetCommandCenter from './command-center/widget-command-center.svelte';
   import WidgetShare from './share/widget-share.svelte';
+  import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
-  {#if widget.isOpen}
+  {#if widget.isOpen && !widget.isMinimized}
     <Draggable
       {id}
       type={widget.type}
@@ -69,3 +70,6 @@
     </Draggable>
   {/if}
 {/each}
+
+<!-- Minimized Windows Toolbar -->
+<MinimizedToolbar />

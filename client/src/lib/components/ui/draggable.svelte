@@ -14,7 +14,7 @@
   import '@interactjs/reflow';
   import '@interactjs/snappers';
   import { Minus, MoreVertical, X, Maximize, Minimize } from 'lucide-svelte';
-  import { onMount } from 'svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   interface Position {
     x: number;
@@ -77,11 +77,7 @@
       : isMaximized
         ? `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events:all; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}; transform: none;`
         : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
-            isMinimized
-              ? 0
-              : currentDimensions?.height == 0
-                ? 'auto'
-                : currentDimensions.height
+            currentDimensions?.height == 0 ? 'auto' : currentDimensions.height
           }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
   );
 
@@ -101,6 +97,96 @@
 
   function setCustomTitle(title: Snippet<[]> | null) {
     customTitle = title;
+  }
+
+  let interactInstance = $state<any>(null);
+
+  function cleanupInteract() {
+    if (interactInstance) {
+      interactInstance.unset();
+      interactInstance = null;
+    }
+  }
+
+  function setupInteract() {
+    // Clean up existing instance first
+    cleanupInteract();
+
+    if (!el || isFixed || isMaximized) return;
+
+    const interactable = interact(el).draggable({
+      allowFrom: '.window-header',
+      modifiers: [
+        interact.modifiers.snap({
+          targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
+          range: Infinity,
+          relativePoints: [{ x: 0, y: 0 }],
+        }),
+        ...(restrictToParent
+          ? [
+              interact.modifiers.restrict({
+                restriction: el.parentNode as HTMLElement,
+                elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
+                endOnly: true,
+              }),
+            ]
+          : []),
+      ],
+      listeners: {
+        move(event) {
+          currentPosition = {
+            x: currentPosition.x + event.dx,
+            y: currentPosition.y + event.dy,
+          };
+
+          // Save both position and current dimensions
+          widgetsStore.updateWidget(id, {
+            position: { ...currentPosition },
+            dimensions: currentDimensions || undefined,
+          });
+        },
+      },
+    });
+
+    if (!disableResize) {
+      interactable.resizable({
+        allowFrom: '.window-resize-handle',
+        edges: { right: true, bottom: true },
+        listeners: {
+          move(event) {
+            // Update current dimensions
+            currentDimensions = {
+              width: event.rect.width,
+              height: event.rect.height,
+            };
+
+            // Save both position and dimensions
+            widgetsStore.updateWidget(id, {
+              dimensions: currentDimensions,
+            });
+          },
+        },
+        modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: 200, height: 50 },
+          }),
+        ],
+      });
+    }
+
+    interactInstance = interactable;
+
+    async function onWindowResize() {
+      // start a resize action and wait for inertia to finish
+      if (interactInstance) {
+        await interactInstance.reflow({ name: 'drag', axis: 'xy' });
+      }
+    }
+
+    window.addEventListener('resize', onWindowResize);
+
+    // Store reference to cleanup later
+    return () => window.removeEventListener('resize', onWindowResize);
   }
 
   onMount(() => {
@@ -124,75 +210,13 @@
       fixedStyles = currentWidget.fixedStyles || '';
     }
 
-    // Only set up interact if the widget is not fixed and not maximized
-    if (!isFixed && !isMaximized) {
-      const interactable = interact(el).draggable({
-        allowFrom: '.window-header',
-        modifiers: [
-          interact.modifiers.snap({
-            targets: [interact.snappers.grid({ x: gridSize, y: gridSize })],
-            range: Infinity,
-            relativePoints: [{ x: 0, y: 0 }],
-          }),
-          ...(restrictToParent
-            ? [
-                interact.modifiers.restrict({
-                  restriction: el.parentNode as HTMLElement,
-                  elementRect: { top: 0, left: 0, bottom: 1, right: 1 },
-                  endOnly: true,
-                }),
-              ]
-            : []),
-        ],
-        listeners: {
-          move(event) {
-            currentPosition = {
-              x: currentPosition.x + event.dx,
-              y: currentPosition.y + event.dy,
-            };
+    // Set up interact
+    const cleanup = setupInteract();
 
-            // Save both position and current dimensions
-            widgetsStore.updateWidget(id, {
-              position: { ...currentPosition },
-              dimensions: currentDimensions || undefined,
-            });
-          },
-        },
-      });
-
-      if (!disableResize) {
-        interactable.resizable({
-          allowFrom: '.window-resize-handle',
-          edges: { right: true, bottom: true },
-          listeners: {
-            move(event) {
-              // Update current dimensions
-              currentDimensions = {
-                width: event.rect.width,
-                height: event.rect.height,
-              };
-
-              // Save both position and dimensions
-              widgetsStore.updateWidget(id, {
-                dimensions: currentDimensions,
-              });
-            },
-          },
-          modifiers: [
-            interact.modifiers.restrictSize({
-              min: { width: 200, height: 50 },
-            }),
-          ],
-        });
-      }
-
-      async function onWindowResize() {
-        // start a resize action and wait for inertia to finish
-        await interactable.reflow({ name: 'drag', axis: 'xy' });
-      }
-
-      window.addEventListener('resize', onWindowResize);
-    }
+    return () => {
+      cleanupInteract();
+      if (cleanup) cleanup();
+    };
   });
 
   function handleMinimize() {
@@ -219,12 +243,19 @@
     }
   }
 
-  // Update local state when store changes
+  // Update local state when store changes and re-setup interact when needed
   $effect(() => {
     const storeWidget = $widgetsStore[id];
     if (storeWidget) {
+      const wasMaximized = isMaximized;
       isMaximized = storeWidget.isMaximized || false;
       showMaximize = storeWidget.showMaximize || false;
+
+      // If maximized state changed, re-setup interact
+      if (wasMaximized !== isMaximized) {
+        setupInteract();
+      }
+
       if (storeWidget.position) {
         currentPosition = storeWidget.position;
       }
@@ -301,11 +332,11 @@
         {/if}
       </div>
     </div>
-    <div class="min-h-0 w-full h-full {isMinimized ? 'hidden' : ''}">
+    <div class="min-h-0 w-full h-full">
       {@render children({ setCustomControls, setCustomTitle })}
     </div>
   </Card>
-  {#if !isMinimized && !isFixed && !disableResize && !isMaximized}
+  {#if !isFixed && !disableResize && !isMaximized}
     <div class="window-resize-handle" style="pointer-events:all"></div>
   {/if}
 </div>
