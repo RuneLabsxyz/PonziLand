@@ -2,6 +2,7 @@ export const EKUBO = {
   skin: 'EKUBO',
   icon: '/tokens/EKUBO/ekubo.png',
   biome: { x: 0, y: 1 },
+  color: '#6B46C1',
   building: {
     1: {
       x: 0,

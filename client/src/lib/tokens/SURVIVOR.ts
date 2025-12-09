@@ -2,6 +2,7 @@ export const SURVIVOR = {
   skin: 'SURVIVOR',
   icon: '/tokens/SURVIVOR/survivor.png',
   biome: { x: 2, y: 6 },
+  color: '#294133',
   building: {
     1: {
       x: 9,
