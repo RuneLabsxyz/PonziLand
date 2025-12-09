@@ -214,6 +214,7 @@
     const cleanup = setupInteract();
 
     return () => {
+      cleanupInteract();
       if (cleanup) cleanup();
     };
   });
@@ -262,10 +263,6 @@
         currentDimensions = storeWidget.dimensions;
       }
     }
-  });
-
-  onDestroy(() => {
-    cleanupInteract();
   });
 </script>
 
