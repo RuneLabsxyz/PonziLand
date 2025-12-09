@@ -13,13 +13,13 @@
   let { title, sortDirection = false, onclick }: Props = $props();
 </script>
 
-<button class={['flex gap-1 items-center hover:opacity-75']} {onclick}>
+<button class={['flex gap-1 items-center hover:opacity-75 group']} {onclick}>
   {title}
   {#if sortDirection === 'asc'}
     <ArrowUp class="h-3 w-3" />
   {:else if sortDirection === 'desc'}
     <ArrowDown class="h-3 w-3" />
   {:else}
-    <ArrowUpDown class="h-3 w-3" />
+    <ArrowUpDown class="h-3 w-3 opacity-0 group-hover:opacity-100" />
   {/if}
 </button>

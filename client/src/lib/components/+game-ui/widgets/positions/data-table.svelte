@@ -70,7 +70,7 @@
 </script>
 
 <Table.Root>
-  <Table.Header>
+  <Table.Header class="sticky top-0 z-10 bg-black">
     {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
       {#each headerGroup.headers as header (header.id)}
         <Table.Head colspan={header.colSpan}>
