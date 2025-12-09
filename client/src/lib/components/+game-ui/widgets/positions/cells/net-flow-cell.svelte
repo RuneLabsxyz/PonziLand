@@ -72,6 +72,6 @@
   });
 </script>
 
-<div class="text-right">
+<div class="font-ponzi-number text-sm text-right tracking-widest">
   <TokenFlowPopover {position} {netTokenFlow} />
 </div>

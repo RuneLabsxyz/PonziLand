@@ -107,9 +107,12 @@
       <img
         src="/ui/icons/Icon_Auction.png"
         alt="Market"
-        class={cn('h-6 w-6', {
-          'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
-        })}
+        class={[
+          'h-6 w-6',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
+          },
+        ]}
       />
     </button>
 
@@ -136,7 +139,7 @@
     >
       <img
         src="/ui/icons/Icon_Notification.png"
-        alt="History"
+        alt="Notifications"
         class={[
           'h-6 w-6',
           {

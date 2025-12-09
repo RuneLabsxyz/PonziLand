@@ -7,6 +7,7 @@
     originalBaseToken,
   } from '$lib/stores/wallet.svelte';
   import data from '$profileData';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
 
   interface Props {
     cost: string | null;
@@ -47,20 +48,24 @@
   });
 </script>
 
-<div class="text-right">
-  {#if displayData}
-    <div class="flex flex-col items-end">
-      <div class="flex items-center gap-1">
-        <span class="text-white">{displayData.amount.toString()}</span>
-        <span class="text-gray-500">{displayData.token.symbol}</span>
+{#if displayData}
+  <div class="flex flex-col items-end leading-none tracking-wider">
+    {#if displayData.baseEquivalent && !displayData.baseEquivalent.isZero()}
+      <div
+        class="flex gap-1 tracking-widest font-ponzi-number text-xs items-center"
+      >
+        <span class="flex opacity-80">
+          <span>$</span>
+          {displayData.baseEquivalent.rawValue().toNumber().toFixed(2)}
+        </span>
+        <span><TokenAvatar token={displayData.token} /></span>
       </div>
-      {#if displayData.baseEquivalent && !displayData.baseEquivalent.isZero()}
-        <div class="text-xs text-gray-400">
-          ${displayData.baseEquivalent.rawValue().toNumber().toFixed(2)}
-        </div>
-      {/if}
+    {/if}
+    <div class="flex items-center gap-1 leading-none">
+      <span class="text-gray-400">{displayData.amount.toString()}</span>
+      <span class="text-gray-500">{displayData.token.symbol}</span>
     </div>
-  {:else}
-    <span class="text-gray-500">-</span>
-  {/if}
-</div>
+  </div>
+{:else}
+  <span class="text-gray-500">-</span>
+{/if}
