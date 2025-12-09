@@ -11,11 +11,9 @@
     fetchHistoricalPositions,
     type HistoricalPosition,
   } from './historical-positions.service';
+  import account from '$lib/account.svelte';
 
-  const dojo = useDojo();
-  const account = () => {
-    return dojo.accountManager?.getProvider();
-  };
+  const { accountManager: dojoAccountManager } = useDojo();
 
   let positions = $state<HistoricalPosition[]>([]);
   let loading = $state(true);
@@ -60,7 +58,7 @@
 
   async function loadPositions() {
     try {
-      const currentAccount = account()?.getWalletAccount();
+      const currentAccount = account.walletAccount;
       if (!currentAccount) {
         error = 'No wallet account available';
         loading = false;
@@ -97,63 +95,84 @@
   }
 </script>
 
-<div class="w-full flex justify-end p-2">
-  <div class="flex">
+{#if !account.isConnected}
+  <!-- Wallet connection prompt -->
+  <div class="flex flex-col items-center justify-center gap-4 p-8">
+    <div class="text-center tracking-wide">
+      <p class="opacity-75 text-xl">
+        To see your positions please connect your wallet.
+      </p>
+    </div>
     <Button
-      size="md"
-      variant={timePeriod === '1D' ? 'blue' : 'red'}
-      onclick={() => (timePeriod = '1D')}
+      class=""
+      onclick={async () => {
+        await dojoAccountManager?.promptForLogin();
+      }}
     >
-      1D
-    </Button>
-    <Button
-      size="md"
-      variant={timePeriod === '1W' ? 'blue' : 'red'}
-      onclick={() => (timePeriod = '1W')}
-    >
-      1W
-    </Button>
-    <Button
-      size="md"
-      variant={timePeriod === '1M' ? 'blue' : 'red'}
-      onclick={() => (timePeriod = '1M')}
-    >
-      1M
-    </Button>
-    <Button
-      size="md"
-      variant={timePeriod === '1Y' ? 'blue' : 'red'}
-      onclick={() => (timePeriod = '1Y')}
-    >
-      1Y
-    </Button>
-    <Button
-      size="md"
-      variant={timePeriod === 'ALL' ? 'blue' : 'red'}
-      onclick={() => (timePeriod = 'ALL')}
-    >
-      ALL
+      CONNECT WALLET
     </Button>
   </div>
-</div>
-<div class="flex flex-col h-full min-h-0">
-  <ScrollArea orientation="both" type="scroll" class="flex-1">
-    {#if loading}
-      <div class="text-center py-8 text-gray-400">Loading positions...</div>
-    {:else if error}
-      <div class="text-center py-8 text-red-400">
-        Error: {error}
-      </div>
-    {:else if positions.length === 0}
-      <div class="text-center py-8 text-gray-400">
-        No historical positions yet
-      </div>
-    {:else if filteredPositions.length === 0}
-      <div class="text-center py-8 text-gray-400">
-        No positions found for the selected time period
-      </div>
-    {:else}
-      <DataTable data={filteredPositions} {columns} />
-    {/if}
-  </ScrollArea>
-</div>
+{/if}
+
+{#if account.isConnected}
+  <div class="w-full flex justify-end p-2">
+    <div class="flex">
+      <Button
+        size="md"
+        variant={timePeriod === '1D' ? 'blue' : 'red'}
+        onclick={() => (timePeriod = '1D')}
+      >
+        1D
+      </Button>
+      <Button
+        size="md"
+        variant={timePeriod === '1W' ? 'blue' : 'red'}
+        onclick={() => (timePeriod = '1W')}
+      >
+        1W
+      </Button>
+      <Button
+        size="md"
+        variant={timePeriod === '1M' ? 'blue' : 'red'}
+        onclick={() => (timePeriod = '1M')}
+      >
+        1M
+      </Button>
+      <Button
+        size="md"
+        variant={timePeriod === '1Y' ? 'blue' : 'red'}
+        onclick={() => (timePeriod = '1Y')}
+      >
+        1Y
+      </Button>
+      <Button
+        size="md"
+        variant={timePeriod === 'ALL' ? 'blue' : 'red'}
+        onclick={() => (timePeriod = 'ALL')}
+      >
+        ALL
+      </Button>
+    </div>
+  </div>
+  <div class="flex flex-col h-full min-h-0">
+    <ScrollArea orientation="both" type="scroll" class="flex-1">
+      {#if loading}
+        <div class="text-center py-8 text-gray-400">Loading positions...</div>
+      {:else if error}
+        <div class="text-center py-8 text-red-400">
+          Error: {error}
+        </div>
+      {:else if positions.length === 0}
+        <div class="text-center py-8 text-gray-400">
+          No historical positions yet
+        </div>
+      {:else if filteredPositions.length === 0}
+        <div class="text-center py-8 text-gray-400">
+          No positions found for the selected time period
+        </div>
+      {:else}
+        <DataTable data={filteredPositions} {columns} />
+      {/if}
+    </ScrollArea>
+  </div>
+{/if}
