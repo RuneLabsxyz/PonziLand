@@ -1,3 +1,5 @@
+import { PUBLIC_PONZI_API_URL } from '$env/static/public';
+
 export interface TokenFlow {
   [tokenAddress: string]: string; // hex amount
 }
@@ -32,7 +34,7 @@ export async function fetchHistoricalPositions(
     }
 
     const response = await fetch(
-      `http://localhost:3031/land-historical/${formattedAddress}`,
+      `${PUBLIC_PONZI_API_URL}/land-historical/${formattedAddress}`,
     );
 
     if (!response.ok) {
