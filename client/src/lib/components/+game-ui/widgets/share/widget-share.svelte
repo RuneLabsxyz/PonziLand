@@ -13,7 +13,9 @@
   import type { HistoricalPosition } from '../positions/historical-positions.service';
   import { calculatePositionMetrics } from '../positions/position-pnl-calculator';
   import { onMount } from 'svelte';
+  import { tick } from 'svelte';
   import PnlImage from './PnlImage.svelte';
+  import { Button } from '$lib/components/ui/button';
 
   interface Props {
     position?: HistoricalPosition;
@@ -39,11 +41,12 @@
   let generatedImageUrl: string | null = $state(null);
   let copyStatus: 'idle' | 'copying' | 'copied' = $state('idle');
   let pnlImageElement: HTMLElement | undefined = $state();
+  let displayMode: 'pnl' | 'roi' = $state('pnl');
 
   // Calculate PnL data from position or use custom data
   const pnlImageProps = $derived.by(() => {
     if (customPnlData) {
-      return customPnlData;
+      return { ...customPnlData, displayMode };
     }
 
     if (!position) {
@@ -59,6 +62,7 @@
         taxes: 0,
         landTicker: 'STRK',
         roi: 734.6, // Mock ROI percentage
+        displayMode,
       };
     }
 
@@ -158,36 +162,56 @@
       landToken: metrics.buyToken,
       status,
       roi: metrics.roi || 0,
+      displayMode,
     };
   });
 
+  // Function to generate image
+  const generateImage = async () => {
+    if (!pnlImageElement) {
+      console.error('PnL image element not yet bound.');
+      return;
+    }
+
+    try {
+      pnlImageElement.style.setProperty('display', 'flex');
+      const dataUrl = await toPng(pnlImageElement, {
+        backgroundColor: 'transparent',
+        pixelRatio: 1,
+      });
+      pnlImageElement.style.setProperty('display', 'none');
+
+      // Clean up previous blob URL to prevent memory leaks
+      if (generatedImageUrl) {
+        URL.revokeObjectURL(generatedImageUrl);
+      }
+
+      // Create a blob URL for better display compatibility
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      generatedImageUrl = URL.createObjectURL(blob);
+    } catch (err) {
+      console.error('Failed to generate image:', err);
+    }
+  };
+
   // Generate image when widget loads
   onMount(() => {
-    const generateImage = async () => {
-      if (!pnlImageElement) {
-        console.error('PnL image element not yet bound.');
-        return;
-      }
-
-      try {
-        pnlImageElement.style.setProperty('display', 'flex');
-        const dataUrl = await toPng(pnlImageElement, {
-          backgroundColor: 'transparent',
-          pixelRatio: 1,
-        });
-        pnlImageElement.style.setProperty('display', 'none');
-
-        // Create a blob URL for better display compatibility
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-        generatedImageUrl = URL.createObjectURL(blob);
-      } catch (err) {
-        console.error('Failed to generate image on load:', err);
-      }
-    };
-
     // Wait a tick to ensure the element is bound
     setTimeout(generateImage, 0);
+  });
+
+  // Regenerate image when display mode changes
+  $effect(() => {
+    // Watch for displayMode changes
+    displayMode;
+
+    if (pnlImageElement && generatedImageUrl) {
+      // Wait for the next tick to ensure the DOM is updated with new props
+      tick().then(() => {
+        generateImage();
+      });
+    }
   });
 
   async function shareOnX() {
@@ -317,22 +341,26 @@
   </div>
 </div>
 
+<!-- Display Mode Toggle -->
+<div class="mb-6">
+  <label class="flex items-center gap-3 text-white cursor-pointer">
+    <input
+      type="checkbox"
+      checked={displayMode === 'roi'}
+      class="w-4 h-4 rounded border-gray-300 bg-gray-700 border-gray-600 focus:ring-blue-500 focus:ring-2"
+      onchange={(e) => {
+        displayMode = e.currentTarget.checked ? 'roi' : 'pnl';
+      }}
+    />
+    <span class="text-sm">Show ROI percentage instead of P&L amount</span>
+  </label>
+</div>
+
 <!-- Share Options -->
 <div class="flex flex-col gap-4">
-  <button
-    class="flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white py-4 px-6 rounded-lg transition-colors font-medium"
-    onclick={shareOnX}
-  >
-    <X size={20} />
-    Share on X (Twitter)
-  </button>
+  <Button onclick={shareOnX}>Share on X (Twitter)</Button>
 
-  <button
-    class="flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-4 px-6 rounded-lg transition-colors font-medium"
-    onclick={copyToClipboard}
-    disabled={copyStatus === 'copying'}
-  >
-    <Copy size={20} />
+  <Button onclick={copyToClipboard} disabled={copyStatus === 'copying'}>
     {#if copyStatus === 'copying'}
       Copying...
     {:else if copyStatus === 'copied'}
@@ -340,15 +368,9 @@
     {:else}
       Copy to Clipboard
     {/if}
-  </button>
+  </Button>
 
-  <button
-    class="flex items-center justify-center gap-3 bg-gray-700 hover:bg-gray-600 text-white py-4 px-6 rounded-lg transition-colors font-medium"
-    onclick={downloadImage}
-  >
-    <Download size={20} />
-    Download Image
-  </button>
+  <Button onclick={downloadImage}>Download Image</Button>
 </div>
 
 <div id="renderer" class="mt-4"></div>

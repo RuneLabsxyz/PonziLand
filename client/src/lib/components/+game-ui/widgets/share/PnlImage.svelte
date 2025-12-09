@@ -27,6 +27,7 @@
     status?: 'alive' | 'nuked' | 'bought';
     elementRef?: HTMLElement;
     roi?: number;
+    displayMode?: 'pnl' | 'roi';
   }
 
   let {
@@ -50,6 +51,7 @@
     status = 'bought',
     elementRef = $bindable(),
     roi = 734.6,
+    displayMode = 'pnl',
   }: Props = $props();
 
   const formattedValue = $derived(
@@ -152,31 +154,40 @@
           {/if}
         </div>
         <div class="flex flex-col gap-1">
-          <span
-            class={[
-              'font-ponzi-number tracking-wider stroke-3d-black leading-none',
-              {
-                'text-5xl': formattedValue.length <= 8,
-                'text-4xl':
-                  formattedValue.length > 8 && formattedValue.length <= 10,
-                'text-3xl':
-                  formattedValue.length > 10 && formattedValue.length <= 12,
-                'text-2xl':
-                  formattedValue.length > 12 && formattedValue.length <= 14,
-                'text-xl': formattedValue.length > 14,
-                'text-green-400': pnl > 0,
-                'text-red-400': pnl < 0,
-                'text-white': pnl === 0,
-              },
-            ]}
-          >
-            {formattedValue}
-          </span>
-          {#if formattedRoi}
+          {#if displayMode === 'pnl'}
             <span
               class={[
-                'font-ponzi-number tracking-wider stroke-3d-black text-2xl leading-none',
+                'font-ponzi-number tracking-wider stroke-3d-black leading-none',
                 {
+                  'text-5xl': formattedValue.length <= 8,
+                  'text-4xl':
+                    formattedValue.length > 8 && formattedValue.length <= 10,
+                  'text-3xl':
+                    formattedValue.length > 10 && formattedValue.length <= 12,
+                  'text-2xl':
+                    formattedValue.length > 12 && formattedValue.length <= 14,
+                  'text-xl': formattedValue.length > 14,
+                  'text-green-400': pnl > 0,
+                  'text-red-400': pnl < 0,
+                  'text-white': pnl === 0,
+                },
+              ]}
+            >
+              {formattedValue}
+            </span>
+          {:else if displayMode === 'roi' && formattedRoi}
+            <span
+              class={[
+                'font-ponzi-number tracking-wider stroke-3d-black leading-none',
+                {
+                  'text-5xl': formattedRoi.length <= 8,
+                  'text-4xl':
+                    formattedRoi.length > 8 && formattedRoi.length <= 10,
+                  'text-3xl':
+                    formattedRoi.length > 10 && formattedRoi.length <= 12,
+                  'text-2xl':
+                    formattedRoi.length > 12 && formattedRoi.length <= 14,
+                  'text-xl': formattedRoi.length > 14,
                   'text-green-400': roi > 0,
                   'text-red-400': roi < 0,
                   'text-white': roi === 0,
