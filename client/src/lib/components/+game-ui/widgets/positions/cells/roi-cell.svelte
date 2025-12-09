@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { HistoricalPosition } from '../historical-positions.service';
-  import { calculatePositionMetrics } from '../position-pnl-calculator';
 
   interface Props {
     position: HistoricalPosition;
@@ -8,9 +7,8 @@
 
   let { position }: Props = $props();
 
-  // Calculate all position metrics once
-  const metrics = $derived(calculatePositionMetrics(position));
-  const roi = $derived(metrics.roi);
+  // Use pre-calculated metrics
+  const roi = $derived(position.metrics?.roi ?? null);
 
   // Format percentage with appropriate precision
   function formatPercentage(value: number): string {

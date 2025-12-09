@@ -1,7 +1,6 @@
 <script lang="ts">
   import { locationToCoordinates } from '$lib/utils';
   import type { HistoricalPosition } from '../historical-positions.service';
-  import { calculatePositionMetrics } from '../position-pnl-calculator';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { Share } from 'lucide-svelte';
 
@@ -12,10 +11,9 @@
 
   let { position, showShareButton = true }: Props = $props();
 
-  // Calculate all position metrics once
-  const metrics = $derived(calculatePositionMetrics(position));
-  const realizedPnL = $derived(metrics.totalPnL);
-  const isOpen = $derived(metrics.isOpen);
+  // Use pre-calculated metrics
+  const realizedPnL = $derived(position.metrics?.totalPnL ?? null);
+  const isOpen = $derived(position.metrics?.isOpen ?? false);
 
   function openShareWidget(positionData: HistoricalPosition) {
     const coordinates = locationToCoordinates(positionData.land_location);

@@ -1,6 +1,5 @@
 <script lang="ts">
   import type { HistoricalPosition } from '../historical-positions.service';
-  import { calculatePositionMetrics } from '../position-pnl-calculator';
 
   interface Props {
     position: HistoricalPosition;
@@ -8,10 +7,9 @@
 
   let { position }: Props = $props();
 
-  // Calculate all position metrics once
-  const metrics = $derived(calculatePositionMetrics(position));
-  const netSaleProfit = $derived(metrics.netSaleProfit);
-  const isOpen = $derived(metrics.isOpen);
+  // Use pre-calculated metrics
+  const netSaleProfit = $derived(position.metrics?.netSaleProfit ?? null);
+  const isOpen = $derived(position.metrics?.isOpen ?? false);
 </script>
 
 <div class="text-right font-ponzi-number text-sm tracking-widest">
