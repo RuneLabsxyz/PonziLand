@@ -13,7 +13,7 @@
   import '@interactjs/modifiers';
   import '@interactjs/reflow';
   import '@interactjs/snappers';
-  import { Minus, MoreVertical, X } from 'lucide-svelte';
+  import { Minus, MoreVertical, X, Maximize, Minimize } from 'lucide-svelte';
   import { onMount } from 'svelte';
 
   interface Position {
@@ -64,21 +64,25 @@
   let fixedStyles = $state($widgetsStore[id]?.fixedStyles || '');
   let disableControls = $state($widgetsStore[id]?.disableControls || false);
   let transparency = $state($widgetsStore[id]?.transparency ?? 1);
+  let isMaximized = $state($widgetsStore[id]?.isMaximized || false);
+  let showMaximize = $state($widgetsStore[id]?.showMaximize || false);
   // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
   let sliderValue = $state(transparency * 100);
   let customControls = $state<Snippet<[]> | null>(null);
   let customTitle = $state<Snippet<[]> | null>(null);
-  // Compute the style string based on whether the widget is fixed or not
+  // Compute the style string based on whether the widget is fixed, maximized, or normal
   let styleString = $derived(
     isFixed
       ? `${fixedStyles} pointer-events:all;z-index:${$widgetsStore[id]?.zIndex || 0};opacity:${transparency}`
-      : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
-          isMinimized
-            ? 0
-            : currentDimensions?.height == 0
-              ? 'auto'
-              : currentDimensions.height
-        }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
+      : isMaximized
+        ? `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events:all; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}; transform: none;`
+        : `transform: translate(${currentPosition.x}px, ${currentPosition.y}px); pointer-events:all; width:${currentDimensions?.width}px; height:${
+            isMinimized
+              ? 0
+              : currentDimensions?.height == 0
+                ? 'auto'
+                : currentDimensions.height
+          }px; z-index: ${$widgetsStore[id]?.zIndex || 0}; opacity:${transparency}`,
   );
 
   function handleClick() {
@@ -120,8 +124,8 @@
       fixedStyles = currentWidget.fixedStyles || '';
     }
 
-    // Only set up interact if the widget is not fixed
-    if (!isFixed) {
+    // Only set up interact if the widget is not fixed and not maximized
+    if (!isFixed && !isMaximized) {
       const interactable = interact(el).draggable({
         allowFrom: '.window-header',
         modifiers: [
@@ -206,6 +210,29 @@
   function handleClose() {
     widgetsStore.closeWidget(id);
   }
+
+  function handleMaximize() {
+    if (isMaximized) {
+      widgetsStore.restoreWidget(id);
+    } else {
+      widgetsStore.maximizeWidget(id);
+    }
+  }
+
+  // Update local state when store changes
+  $effect(() => {
+    const storeWidget = $widgetsStore[id];
+    if (storeWidget) {
+      isMaximized = storeWidget.isMaximized || false;
+      showMaximize = storeWidget.showMaximize || false;
+      if (storeWidget.position) {
+        currentPosition = storeWidget.position;
+      }
+      if (storeWidget.dimensions) {
+        currentDimensions = storeWidget.dimensions;
+      }
+    }
+  });
 </script>
 
 <!-- svelte-ignore a11y_click_events_have_key_events -->
@@ -218,7 +245,7 @@
   onclick={handleClick}
 >
   <Card class="w-full h-full bg-ponzi flex flex-col">
-    <div class="window-header" class:no-drag={isFixed}>
+    <div class="window-header" class:no-drag={isFixed || isMaximized}>
       <div class="window-title font-ponzi-number">
         {#if customTitle}
           {@render customTitle()}
@@ -256,6 +283,15 @@
           </DropdownMenu.Content>
         </DropdownMenu.Root>
         {#if !disableControls}
+          {#if showMaximize}
+            <button class="window-control" onclick={handleMaximize}>
+              {#if isMaximized}
+                <Minimize size={16} />
+              {:else}
+                <Maximize size={16} />
+              {/if}
+            </button>
+          {/if}
           <button class="window-control" onclick={handleMinimize}>
             <Minus size={16} />
           </button>
@@ -269,7 +305,7 @@
       {@render children({ setCustomControls, setCustomTitle })}
     </div>
   </Card>
-  {#if !isMinimized && !isFixed && !disableResize}
+  {#if !isMinimized && !isFixed && !disableResize && !isMaximized}
     <div class="window-resize-handle" style="pointer-events:all"></div>
   {/if}
 </div>
