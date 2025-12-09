@@ -166,25 +166,41 @@ export function calculateSaleRevenue(
 
 /**
  * Calculate net sale profit (sale revenue - buy cost)
+ * For open positions, shows unrealized loss (negative buy cost)
+ * For nuked positions, shows full loss (negative buy cost)
  */
 export function calculateNetSaleProfit(
   buyCostBaseEquivalent: CurrencyAmount | null,
   saleRevenueBaseEquivalent: CurrencyAmount | null,
   isOpen: boolean,
 ): CurrencyAmount | null {
-  if (!buyCostBaseEquivalent || !saleRevenueBaseEquivalent || isOpen)
-    return null;
+  if (!buyCostBaseEquivalent) return null;
 
   const baseToken = getBaseToken();
-  const netValue = saleRevenueBaseEquivalent
-    .rawValue()
-    .minus(buyCostBaseEquivalent.rawValue());
 
-  return CurrencyAmount.fromRaw(netValue, baseToken);
+  if (isOpen) {
+    // For open positions, show unrealized loss (negative of buy cost)
+    const unrealizedLoss = buyCostBaseEquivalent.rawValue().negated();
+    return CurrencyAmount.fromRaw(unrealizedLoss, baseToken);
+  } else {
+    // For closed positions
+    if (!saleRevenueBaseEquivalent) {
+      // No sale revenue (nuked) - show full loss (negative buy cost)
+      const totalLoss = buyCostBaseEquivalent.rawValue().negated();
+      return CurrencyAmount.fromRaw(totalLoss, baseToken);
+    } else {
+      // Has sale revenue - calculate actual sale profit
+      const netValue = saleRevenueBaseEquivalent
+        .rawValue()
+        .minus(buyCostBaseEquivalent.rawValue());
+      return CurrencyAmount.fromRaw(netValue, baseToken);
+    }
+  }
 }
 
 /**
  * Calculate total P&L (net flow + sale P&L)
+ * Always combines net token flow and sale P&L for complete picture
  */
 export function calculateTotalPnL(
   netTokenFlow: CurrencyAmount | null,
@@ -193,25 +209,20 @@ export function calculateTotalPnL(
 ): CurrencyAmount | null {
   const baseToken = getBaseToken();
 
-  if (isOpen) {
-    // For open positions, only show net flow as unrealized
-    return netTokenFlow;
-  } else {
-    // For closed positions, combine net flow + sale P&L
-    if (!netTokenFlow && !netSaleProfit) return null;
+  // Always combine net flow + sale P&L for total position P&L
+  if (!netTokenFlow && !netSaleProfit) return null;
 
-    let total = CurrencyAmount.fromScaled(0, baseToken);
+  let total = CurrencyAmount.fromScaled(0, baseToken);
 
-    if (netTokenFlow) {
-      total = total.add(netTokenFlow);
-    }
-
-    if (netSaleProfit) {
-      total = total.add(netSaleProfit);
-    }
-
-    return total;
+  if (netTokenFlow) {
+    total = total.add(netTokenFlow);
   }
+
+  if (netSaleProfit) {
+    total = total.add(netSaleProfit);
+  }
+
+  return total;
 }
 
 /**

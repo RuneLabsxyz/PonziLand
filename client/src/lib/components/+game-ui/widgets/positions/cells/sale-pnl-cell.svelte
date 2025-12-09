@@ -13,7 +13,7 @@
 </script>
 
 <div class="text-right font-ponzi-number text-sm tracking-widest">
-  {#if netSaleProfit && !isOpen}
+  {#if netSaleProfit}
     <span
       class={netSaleProfit.rawValue().isPositive()
         ? 'text-green-400'
@@ -25,6 +25,6 @@
         .toFixed(2)} $
     </span>
   {:else}
-    <span class="text-gray-500">{isOpen ? 'TBD' : '-'}</span>
+    <span class="text-gray-500">-</span>
   {/if}
 </div>
