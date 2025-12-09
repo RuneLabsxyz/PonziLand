@@ -1,21 +1,14 @@
 <script lang="ts">
-  import type { Token } from '$lib/interfaces';
-  import {
-    getBaseToken,
-    originalBaseToken,
-    walletStore,
-  } from '$lib/stores/wallet.svelte';
-  import { getFullTokenInfo, getTokenInfo } from '$lib/utils';
+  import { Button } from '$lib/components/ui/button';
+  import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
+  import { getFullTokenInfo } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { formatPercentage } from '$lib/utils/format';
   import { toPng } from 'html-to-image';
-  import { Copy, Download, X } from 'lucide-svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import type { HistoricalPosition } from '../positions/historical-positions.service';
   import { calculatePositionMetrics } from '../positions/position-pnl-calculator';
-  import { onMount } from 'svelte';
-  import { tick } from 'svelte';
   import PnlImage from './PnlImage.svelte';
-  import { Button } from '$lib/components/ui/button';
 
   interface Props {
     position?: HistoricalPosition;
@@ -206,12 +199,11 @@
     // Watch for displayMode changes
     displayMode;
 
-    if (pnlImageElement && generatedImageUrl) {
-      // Wait for the next tick to ensure the DOM is updated with new props
-      tick().then(() => {
+    untrack(() => {
+      if (pnlImageElement && generatedImageUrl) {
         generateImage();
-      });
-    }
+      }
+    });
   });
 
   async function shareOnX() {
