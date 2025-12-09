@@ -184,6 +184,9 @@
     }
 
     window.addEventListener('resize', onWindowResize);
+
+    // Store reference to cleanup later
+    return () => window.removeEventListener('resize', onWindowResize);
   }
 
   onMount(() => {
@@ -208,7 +211,11 @@
     }
 
     // Set up interact
-    setupInteract();
+    const cleanup = setupInteract();
+
+    return () => {
+      if (cleanup) cleanup();
+    };
   });
 
   function handleMinimize() {
