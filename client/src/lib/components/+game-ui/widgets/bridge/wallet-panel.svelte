@@ -6,7 +6,7 @@
   import { cn, getTokenMetadata } from '$lib/utils';
   import data from '$profileData';
 
-  import { tokenTransferStore } from '@ponziland/hyperlane-bridge';
+  import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
   import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
   import { accountState } from '$lib/account.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
@@ -92,16 +92,13 @@
         // Fetch Solana balances via Hyperlane
         for (const symbol of gameCompatibleSymbols) {
           try {
-            const tokenBalance = await tokenTransferStore.getTokenBalance(
+            const tokenBalance = await bridgeStore.getBalance(
               'solanamainnet',
               symbol,
               walletAddress,
             );
             if (tokenBalance) {
-              newBalances.set(
-                symbol,
-                String(tokenBalance.getDecimalFormattedAmount()),
-              );
+              newBalances.set(symbol, tokenBalance.formatted);
             } else {
               newBalances.set(symbol, '0');
             }

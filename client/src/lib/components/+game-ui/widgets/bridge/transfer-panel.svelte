@@ -2,11 +2,8 @@
   import { Button } from '$lib/components/ui/button';
   import Input from '$lib/components/ui/input/input.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
-  import {
-    hyperlaneStore,
-    tokenTransferStore,
-    type WalletProvider,
-  } from '@ponziland/hyperlane-bridge';
+  import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
+  import type { WalletProvider } from '$lib/bridge/types';
   import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
   import { accountState } from '$lib/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
@@ -55,7 +52,7 @@
       amount &&
       parseFloat(amount) > 0 &&
       parseFloat(amount) <= parseFloat(sourceBalance || '0') &&
-      !tokenTransferStore.isLoading,
+      !bridgeStore.isLoading,
   );
 
   function handleMaxClick() {
@@ -90,7 +87,7 @@
     };
 
     try {
-      const result = await tokenTransferStore.executeTransfer(
+      const result = await bridgeStore.executeTransfer(
         {
           originChain: sourceChain,
           destinationChain: destChain,
@@ -113,8 +110,8 @@
 
   // Clear error when inputs change
   $effect(() => {
-    if (tokenTransferStore.error && (selectedToken || amount)) {
-      tokenTransferStore.clearError();
+    if (bridgeStore.transferError && (selectedToken || amount)) {
+      bridgeStore.clearError();
     }
   });
 </script>
@@ -172,39 +169,39 @@
       </div>
 
       <!-- Transfer status -->
-      {#if tokenTransferStore.status !== 'idle'}
+      {#if bridgeStore.transferStatus !== 'idle'}
         <div
-          class="p-2 rounded text-sm {tokenTransferStore.status === 'success'
+          class="p-2 rounded text-sm {bridgeStore.transferStatus === 'success'
             ? 'bg-green-900/20 text-green-400'
-            : tokenTransferStore.status === 'error'
+            : bridgeStore.transferStatus === 'error'
               ? 'bg-red-900/20 text-red-400'
               : 'bg-blue-900/20 text-blue-400'}"
         >
-          {#if tokenTransferStore.status === 'preparing'}
+          {#if bridgeStore.transferStatus === 'fetching_quote' || bridgeStore.transferStatus === 'building_tx'}
             <div class="flex items-center gap-2">
               <RotatingCoin />
               <span>Preparing transfer...</span>
             </div>
-          {:else if tokenTransferStore.status === 'approving'}
+          {:else if bridgeStore.transferStatus === 'signing'}
             <div class="flex items-center gap-2">
               <RotatingCoin />
-              <span>Approving token...</span>
+              <span>Please sign in your wallet...</span>
             </div>
-          {:else if tokenTransferStore.status === 'transferring'}
+          {:else if bridgeStore.transferStatus === 'sending'}
             <div class="flex items-center gap-2">
               <RotatingCoin />
               <span>Transferring...</span>
             </div>
-          {:else if tokenTransferStore.status === 'success'}
+          {:else if bridgeStore.transferStatus === 'success'}
             <span>Transfer successful!</span>
           {/if}
         </div>
       {/if}
 
       <!-- Error display -->
-      {#if tokenTransferStore.error}
+      {#if bridgeStore.transferError}
         <div class="p-2 rounded bg-red-900/20 text-red-400 text-sm">
-          {tokenTransferStore.error}
+          {bridgeStore.transferError}
         </div>
       {/if}
 
@@ -216,7 +213,7 @@
             onclick={handleTransfer}
             disabled={!canTransfer}
           >
-            {#if tokenTransferStore.isLoading}
+            {#if bridgeStore.isLoading}
               <span class="flex items-center gap-2">
                 <RotatingCoin />
                 Processing...
@@ -231,7 +228,7 @@
             onclick={handleTransfer}
             disabled={!canTransfer}
           >
-            {#if tokenTransferStore.isLoading}
+            {#if bridgeStore.isLoading}
               <span class="flex items-center gap-2">
                 <RotatingCoin />
                 Processing...

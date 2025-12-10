@@ -1,19 +1,15 @@
 <!-- TransferForm.svelte -->
 <script lang="ts">
-  // Import bridge logic from package
-  import {
-    hyperlaneStore,
-    tokenTransferStore,
-    type Token,
-    type WalletProvider,
-  } from '@ponziland/hyperlane-bridge';
+  // Import bridge store (NO Hyperlane SDK)
+  import { bridgeStore } from './bridge-store.svelte';
+  import type { WalletProvider, TokenInfo } from './types';
 
   // Import account management
   import { useAccount } from '$lib/contexts/account.svelte';
   import { accountState } from '$lib/account.svelte';
   import { phantomWalletStore } from './phantom.svelte';
 
-  // Estado del formulario usando runes
+  // Form state
   let formData = $state({
     originChain: '',
     destinationChain: '',
@@ -28,22 +24,27 @@
 
   const accountManager = useAccount();
 
-  // Derivados reactivos usando runes
+  // Load config on mount
+  $effect(() => {
+    bridgeStore.loadConfig().catch((err) => {
+      console.error('Failed to load bridge config:', err);
+    });
+  });
+
+  // Derived values from bridge config
   const availableChains = $derived(
-    hyperlaneStore.warpCore
+    bridgeStore.config
       ? Array.from(
-          new Set(
-            hyperlaneStore.warpCore.tokens.map((t: Token) => t.chainName),
-          ),
+          new Set(bridgeStore.config.tokens.map((t: TokenInfo) => t.chainName)),
         )
       : [],
   );
 
   const availableTokens = $derived(
-    hyperlaneStore.warpCore && formData.originChain
-      ? hyperlaneStore.warpCore.tokens
-          .filter((t: Token) => t.chainName === formData.originChain)
-          .map((t: Token) => t.symbol)
+    bridgeStore.config && formData.originChain
+      ? bridgeStore.config.tokens
+          .filter((t: TokenInfo) => t.chainName === formData.originChain)
+          .map((t: TokenInfo) => t.symbol)
       : [],
   );
 
@@ -112,14 +113,14 @@
   async function fetchBalance() {
     balanceLoading = true;
     try {
-      const tokenBalance = await tokenTransferStore.getTokenBalance(
+      const tokenBalance = await bridgeStore.getBalance(
         formData.originChain,
         formData.tokenSymbol,
         formData.sender,
       );
 
       if (tokenBalance) {
-        balance = String(tokenBalance.getDecimalFormattedAmount());
+        balance = tokenBalance.formatted;
       } else {
         balance = null;
       }
@@ -179,7 +180,7 @@
     };
 
     try {
-      const result = await tokenTransferStore.executeTransfer(
+      const result = await bridgeStore.executeTransfer(
         formData,
         walletProvider,
       );
@@ -194,16 +195,24 @@
     }
   }
 
-  // Limpiar error cuando cambian los datos del formulario
+  // Clear error when form data changes
   $effect(() => {
-    if (tokenTransferStore.error) {
-      tokenTransferStore.clearError();
+    if (bridgeStore.transferError) {
+      bridgeStore.clearError();
     }
   });
 </script>
 
-{#if !hyperlaneStore.isReady}
-  <div class="loading">Loading Hyperlane...</div>
+{#if !bridgeStore.isReady}
+  <div class="loading">
+    {#if bridgeStore.isLoading}
+      Loading Bridge Config...
+    {:else if bridgeStore.configError}
+      Error: {bridgeStore.configError}
+    {:else}
+      Initializing...
+    {/if}
+  </div>
 {:else}
   <form onsubmit={handleSubmit} class="space-y-4">
     <div>
@@ -309,20 +318,22 @@
     </div>
 
     <!-- Transfer Status -->
-    {#if tokenTransferStore.status !== 'idle'}
+    {#if bridgeStore.transferStatus !== 'idle'}
       <div class="status-section">
-        {#if tokenTransferStore.status === 'preparing'}
-          <div class="status preparing">Preparing transfer...</div>
-        {:else if tokenTransferStore.status === 'approving'}
-          <div class="status approving">Approving token...</div>
-        {:else if tokenTransferStore.status === 'transferring'}
-          <div class="status transferring">Transferring...</div>
-        {:else if tokenTransferStore.status === 'success'}
+        {#if bridgeStore.transferStatus === 'fetching_quote'}
+          <div class="status preparing">Checking route...</div>
+        {:else if bridgeStore.transferStatus === 'building_tx'}
+          <div class="status preparing">Building transaction...</div>
+        {:else if bridgeStore.transferStatus === 'signing'}
+          <div class="status approving">Please sign in your wallet...</div>
+        {:else if bridgeStore.transferStatus === 'sending'}
+          <div class="status transferring">Sending...</div>
+        {:else if bridgeStore.transferStatus === 'success'}
           <div class="status success">
             ✓ Transfer successful!
-            {#if tokenTransferStore.txHashes.length > 0}
+            {#if bridgeStore.txHashes.length > 0}
               <div class="tx-hashes">
-                {#each tokenTransferStore.txHashes as hash}
+                {#each bridgeStore.txHashes as hash}
                   <div class="tx-hash">
                     Tx: {hash.slice(0, 10)}...{hash.slice(-8)}
                   </div>
@@ -334,32 +345,22 @@
       </div>
     {/if}
 
-    {#if tokenTransferStore.error}
+    {#if bridgeStore.transferError}
       <div class="text-red-500">
-        Error: {tokenTransferStore.error}
+        Error: {bridgeStore.transferError}
       </div>
     {/if}
-
-    {#if hyperlaneStore.error}
-      <div class="text-red-500">
-        Hyperlane Error: {hyperlaneStore.error}
-      </div>
-    {/if}
-    <!-- disabled={tokenTransferStore.isLoading || !formData.sender} -->
 
     <button
       type="submit"
       class="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+      disabled={bridgeStore.isLoading || !formData.sender}
     >
-      Transfer
-      <!-- {#if tokenTransferStore.status === 'preparing'}
-          Preparing...
-        {:else if tokenTransferStore.status === 'approving'}
-          Approving...
-        {:else if tokenTransferStore.status === 'transferring'}
-          Transferring...
-        {:else}
-        {/if} -->
+      {#if bridgeStore.isLoading}
+        Processing...
+      {:else}
+        Transfer
+      {/if}
     </button>
   </form>
 {/if}

@@ -11,11 +11,8 @@
   import SetUsernameButton from '$lib/components/socialink/SetUsernameButton.svelte';
   import WalletPanel from '../bridge/wallet-panel.svelte';
   import TransferPanel from '../bridge/transfer-panel.svelte';
-  import {
-    hyperlaneStore,
-    tokenTransferStore,
-    type Token,
-  } from '@ponziland/hyperlane-bridge';
+  import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
+  import type { TokenInfo } from '$lib/bridge/types';
   import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
   import { accountState } from '$lib/account.svelte';
   import { onMount } from 'svelte';
@@ -43,18 +40,22 @@
     'width: 700px; height: auto; top: 0px; right: 0px; transform: none;';
 
   // Get bridgable token symbols (tokens that exist on BOTH chains)
-  const bridgableSymbols = $derived.by(() => {
-    if (!hyperlaneStore.warpCore) return [];
+  const bridgableSymbols = $derived.by((): string[] => {
+    if (!bridgeStore.config) return [];
 
-    const solanaTokens = hyperlaneStore.warpCore.tokens
-      .filter((t: Token) => t.chainName.toLowerCase().includes('solana'))
-      .map((t: Token) => t.symbol);
+    const solanaTokens = bridgeStore.config.tokens
+      .filter((t: TokenInfo) => t.chainName.toLowerCase().includes('solana'))
+      .map((t: TokenInfo) => t.symbol);
 
-    const starknetTokens = hyperlaneStore.warpCore.tokens
-      .filter((t: Token) => t.chainName.toLowerCase().includes('starknet'))
-      .map((t: Token) => t.symbol);
+    const starknetTokens = bridgeStore.config.tokens
+      .filter((t: TokenInfo) => t.chainName.toLowerCase().includes('starknet'))
+      .map((t: TokenInfo) => t.symbol);
 
-    return [...new Set(solanaTokens.filter((s) => starknetTokens.includes(s)))];
+    return [
+      ...new Set(
+        solanaTokens.filter((s: string) => starknetTokens.includes(s)),
+      ),
+    ];
   });
 
   // Fetch source balance when token/direction changes
@@ -81,13 +82,13 @@
     }
 
     try {
-      const tokenBalance = await tokenTransferStore.getTokenBalance(
+      const tokenBalance = await bridgeStore.getBalance(
         sourceChain,
         selectedToken,
         sourceAddress,
       );
       if (tokenBalance) {
-        sourceBalance = String(tokenBalance.getDecimalFormattedAmount());
+        sourceBalance = tokenBalance.formatted;
       } else {
         sourceBalance = '0';
       }
@@ -130,6 +131,10 @@
     if (bridgeMode) {
       widgetsStore.updateWidget('wallet', { fixedStyles: BRIDGE_STYLES });
       phantomWalletStore.initialize();
+      // Load bridge config
+      bridgeStore.loadConfig().catch((err) => {
+        console.error('Failed to load bridge config:', err);
+      });
     } else {
       widgetsStore.updateWidget('wallet', { fixedStyles: NORMAL_STYLES });
       selectedToken = null;
@@ -261,13 +266,13 @@
       {#if bridgeMode && ENABLE_BRIDGE}
         <!-- Left: Solana Wallet Panel (shown when bridge mode is active) -->
         <div class="flex-1">
-          {#if !hyperlaneStore.isReady}
+          {#if !bridgeStore.isReady}
             <div class="flex flex-col items-center justify-center py-8 gap-2">
               <span class="text-gray-400 text-sm">Initializing bridge...</span>
             </div>
-          {:else if hyperlaneStore.error}
+          {:else if bridgeStore.configError}
             <div class="p-3 bg-red-800/20 rounded text-red-400 text-sm">
-              Bridge error: {hyperlaneStore.error}
+              Bridge error: {bridgeStore.configError}
             </div>
           {:else}
             <WalletPanel
@@ -292,7 +297,7 @@
       </div>
     </div>
 
-    {#if bridgeMode && ENABLE_BRIDGE && hyperlaneStore.isReady && !hyperlaneStore.error}
+    {#if bridgeMode && ENABLE_BRIDGE && bridgeStore.isReady && !bridgeStore.configError}
       <!-- Transfer Panel (only in bridge mode) -->
       <TransferPanel {selectedToken} {transferDirection} {sourceBalance} />
 
