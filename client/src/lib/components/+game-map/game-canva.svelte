@@ -12,6 +12,7 @@
   import Debug from './three/debug/Debug.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import { redbellyMainnet } from '@reown/appkit/networks';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
 
@@ -33,6 +34,12 @@
       devsettings.cameraControlsRightClick as any;
     gameStore.cameraControls.mouseButtons.wheel =
       devsettings.CameraControlsWheel as any;
+    gameStore.cameraControls.touches.one =
+      devsettings.cameraControlsOneFinger as any;
+    gameStore.cameraControls.touches.two =
+      devsettings.cameraControlsTwoFinger as any;
+    gameStore.cameraControls.touches.three =
+      devsettings.cameraControlsThreeFinger as any;
   });
 </script>
 
@@ -63,6 +70,12 @@
           ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
           ref.mouseButtons.right = devsettings.cameraControlsRightClick as any;
           ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;
+          ref.touches.one = devsettings.cameraControlsOneFinger as any;
+          ref.touches.two = devsettings.cameraControlsTwoFinger as any;
+          ref.touches.three = devsettings.cameraControlsThreeFinger as any;
+          ref.smoothTime = 0.05;
+          ref.draggingSmoothTime = 0.02;
+          ref.dollySpeed = 2.0;
         }}
       />
     </T.OrthographicCamera>

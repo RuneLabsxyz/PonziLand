@@ -7,6 +7,8 @@
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
   import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
+  import MobileBottomNavbar from '../ui/mobile-bottom-navbar.svelte';
+  import MobileContentContainer from '../ui/mobile-content-container.svelte';
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
@@ -30,8 +32,15 @@
 >
   <OverlayManager />
 
-  <WidgetLauncher />
-  <WidgetProvider />
+  <!-- Desktop widget launcher and provider -->
+  <div class="hidden md:block">
+    <WidgetLauncher />
+    <WidgetProvider />
+  </div>
 
   <TxNotificationZone />
+
+  <!-- Mobile navigation and content -->
+  <MobileBottomNavbar />
+  <MobileContentContainer />
 </div>
