@@ -2,6 +2,7 @@
   import {
     type ColumnDef,
     type ColumnFiltersState,
+    type VisibilityState,
     getCoreRowModel,
     getFilteredRowModel,
     getSortedRowModel,
@@ -12,6 +13,7 @@
     FlexRender,
   } from '$lib/components/ui/data-table/index.js';
   import * as Table from '$lib/components/ui/table/index';
+  import type { Snippet } from 'svelte';
 
   type DataTableProps<TData, TValue> = {
     columns: ColumnDef<TData, TValue>[];
@@ -22,6 +24,12 @@
         | ColumnFiltersState
         | ((old: ColumnFiltersState) => ColumnFiltersState),
     ) => void;
+    columnVisibility?: VisibilityState;
+    onColumnVisibilityChange?: (
+      updater: VisibilityState | ((old: VisibilityState) => VisibilityState),
+    ) => void;
+    toolbar?: Snippet<[table: any]>;
+    children?: Snippet<[table: any]>;
   };
 
   let {
@@ -29,6 +37,10 @@
     columns,
     columnFilters = $bindable([]),
     onColumnFiltersChange,
+    columnVisibility = $bindable({}),
+    onColumnVisibilityChange,
+    toolbar,
+    children,
   }: DataTableProps<TData, TValue> = $props();
 
   let sorting = $state<SortingState>([]);
@@ -51,6 +63,16 @@
         onColumnFiltersChange(columnFilters);
       }
     },
+    onColumnVisibilityChange: (updater) => {
+      if (typeof updater === 'function') {
+        columnVisibility = updater(columnVisibility);
+      } else {
+        columnVisibility = updater;
+      }
+      if (onColumnVisibilityChange) {
+        onColumnVisibilityChange(columnVisibility);
+      }
+    },
     onSortingChange: (updater) => {
       if (typeof updater === 'function') {
         sorting = updater(sorting);
@@ -65,9 +87,20 @@
       get sorting() {
         return sorting;
       },
+      get columnVisibility() {
+        return columnVisibility;
+      },
     },
   });
 </script>
+
+{#if toolbar}
+  {@render toolbar(table)}
+{/if}
+
+{#if children}
+  {@render children(table)}
+{/if}
 
 <Table.Root>
   <Table.Header class="sticky top-0 z-10 bg-black">

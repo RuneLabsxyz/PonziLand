@@ -164,7 +164,7 @@
     {#if activeTab === 'history'}
       <HistoryList />
     {:else if activeTab === 'positions'}
-      <HistoricalPositions />
+      <HistoricalPositions {setCustomControls} />
     {:else if activeTab === 'market'}
       <MarketWidget setCustomControls={setCustomControls || (() => {})} />
     {:else if activeTab === 'my-lands'}

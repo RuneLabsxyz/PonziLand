@@ -10,7 +10,10 @@ import type { HistoricalPosition } from './historical-positions.service';
 import { calculatePositionMetrics } from './position-pnl-calculator';
 
 // Import cell components
-import { renderComponent } from '$lib/components/ui/data-table';
+import {
+  DataTableSortableHeader,
+  renderComponent,
+} from '$lib/components/ui/data-table';
 import CostCell from './cells/cost-cell.svelte';
 import DateCell from './cells/date-cell.svelte';
 import LocationCell from './cells/location-cell.svelte';
@@ -19,7 +22,6 @@ import StatusCell from './cells/status-cell.svelte';
 import TokenInflowCell from './cells/token-inflow-cell.svelte';
 import TokenOutflowCell from './cells/token-outflow-cell.svelte';
 import TotalPnlCell from './cells/total-pnl-cell.svelte';
-import DataTableSortableHeader from './data-table-sortable-header.svelte';
 
 // Helper function to check if a position is open
 function isPositionOpen(position: HistoricalPosition): boolean {
@@ -251,6 +253,26 @@ function getRoiValue(position: HistoricalPosition): number {
   }
 }
 
+// Helper function to create common sortable header props with visibility toggle
+function createSortableHeaderProps(column: any, title: string) {
+  return {
+    title,
+    sortDirection: column.getIsSorted(),
+    onclick: column.getToggleSortingHandler(),
+    showDropdown: true,
+    onToggleVisibility: () => column.toggleVisibility(),
+    isVisible: column.getIsVisible(),
+    onSort: (direction: any) => {
+      if (direction === false) {
+        column.clearSorting();
+      } else {
+        column.toggleSorting(direction === 'desc');
+      }
+    },
+    enableSorting: true,
+  };
+}
+
 // Export the custom filter function for external use
 export { timePeriodFilter };
 
@@ -293,11 +315,10 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'total_pnl',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'P&L',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'P&L'),
+      ),
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
@@ -318,12 +339,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'roi',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'ROI',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'ROI'),
+      ),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -360,12 +381,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'close_date',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Close',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Close'),
+      ),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: 'datetime',
     cell: ({ row }) => {
       const position = row.original;
@@ -379,12 +400,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'buy_cost_token',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Buy Cost',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Buy Cost'),
+      ),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -412,12 +433,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'token_outflows',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Token Outflows',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Token Outflows'),
+      ),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -433,12 +454,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'sale_revenue_token',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Sold For',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Sold For'),
+      ),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
@@ -479,12 +500,12 @@ export const columns: ColumnDef<HistoricalPosition>[] = [
   {
     accessorKey: 'token_inflows',
     header: ({ column }) =>
-      renderComponent(DataTableSortableHeader, {
-        title: 'Token Inflows',
-        sortDirection: column.getIsSorted(),
-        onclick: column.getToggleSortingHandler(),
-      }),
+      renderComponent(
+        DataTableSortableHeader,
+        createSortableHeaderProps(column, 'Token Inflows'),
+      ),
     enableSorting: true,
+    enableHiding: true,
     sortingFn: (rowA, rowB) => {
       const posA = rowA.original;
       const posB = rowB.original;
