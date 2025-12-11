@@ -1,0 +1,46 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT id, symbol, price, usd_ratio, timestamp\n            FROM historical_price_feed\n            WHERE symbol = $1\n            ORDER BY timestamp DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 1,
+        "name": "symbol",
+        "type_info": "Varchar"
+      },
+      {
+        "ordinal": 2,
+        "name": "price",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 3,
+        "name": "usd_ratio",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 4,
+        "name": "timestamp",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "c82115d3743ad7ab9fdf375f9034cc8e5f5055523a81a44a74319ef760d7ca04"
+}

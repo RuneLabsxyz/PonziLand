@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO wallet_activity (\n                address, \n                first_activity_at, \n                last_activity_at, \n                activity_count\n            )\n            VALUES ($1, $2, $2, 1)\n            ON CONFLICT (address) DO UPDATE SET\n                last_activity_at = $2,\n                activity_count = wallet_activity.activity_count + 1,\n                updated_at = NOW()\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "5e61dadb557581ad0a8ae1500da3998fb46f4c08d00e40f22d71766415a439e7"
+}
