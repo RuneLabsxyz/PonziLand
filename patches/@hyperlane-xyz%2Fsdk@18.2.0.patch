@@ -1,0 +1,992 @@
+diff --git a/dist/ccip/utils.js b/dist/ccip/utils.js
+index b256ec8261a40d099f3c78539b34b83ab9007a60..ab70e3226a09b4ad86d5cc351b12a2080d345d1f 100644
+--- a/dist/ccip/utils.js
++++ b/dist/ccip/utils.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { CCIP_NETWORKS, CCIP_ROUTER_CLIENT_ABI } from './consts.js';
+ /**
+  * Gets the chain name from a CCIP chain selector value
+diff --git a/dist/consts/igp.d.ts b/dist/consts/igp.d.ts
+index fe13bc30c03474476963fdc5429a1fea2dd8b1fa..abd66572fd31fd9c058b813c165ed18018cef50c 100644
+--- a/dist/consts/igp.d.ts
++++ b/dist/consts/igp.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import { ProtocolType } from '@hyperlane-xyz/utils';
+ export declare const TOKEN_EXCHANGE_RATE_DECIMALS_ETHEREUM = 10;
+ export declare const TOKEN_EXCHANGE_RATE_SCALE_ETHEREUM: BigNumber;
+diff --git a/dist/consts/igp.js b/dist/consts/igp.js
+index 6da84e4a8c9e61cf3481dec3b9d30336acfa4444..abe4bbff7c6c0ab11f8356c78d1cab2832aa6c2a 100644
+--- a/dist/consts/igp.js
++++ b/dist/consts/igp.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, ethers } from 'ethers';
++import { BigNumber, ethers } from 'ethers-v5';
+ import { ProtocolType } from '@hyperlane-xyz/utils';
+ export const TOKEN_EXCHANGE_RATE_DECIMALS_ETHEREUM = 10;
+ export const TOKEN_EXCHANGE_RATE_SCALE_ETHEREUM = ethers.utils.parseUnits('1', TOKEN_EXCHANGE_RATE_DECIMALS_ETHEREUM);
+diff --git a/dist/contracts/contracts.hardhat-test.js b/dist/contracts/contracts.hardhat-test.js
+index dafca6f8575b343ddf685419552c2839610ff3a1..2cc4ff3823d428e87c43604d3b626c60f654d9ee 100644
+--- a/dist/contracts/contracts.hardhat-test.js
++++ b/dist/contracts/contracts.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { ERC20Test__factory } from '@hyperlane-xyz/core';
+ import { TestChainName } from '../consts/testChains.js';
+diff --git a/dist/contracts/contracts.js b/dist/contracts/contracts.js
+index 1e82006af64524d23dd897df01bdfc998d6409aa..afc4bdc4e2021ff0d3d4de87c9531e282e25f96c 100644
+--- a/dist/contracts/contracts.js
++++ b/dist/contracts/contracts.js
+@@ -1,4 +1,4 @@
+-import { constants } from 'ethers';
++import { constants } from 'ethers-v5';
+ import { Ownable__factory } from '@hyperlane-xyz/core';
+ import { ProtocolType, addressToByteHexString, assert, eqAddress, hexOrBase58ToHex, objFilter, objMap, pick, rootLogger, } from '@hyperlane-xyz/utils';
+ export function serializeContractsMap(contractsMap) {
+diff --git a/dist/contracts/types.d.ts b/dist/contracts/types.d.ts
+index ec570e7a1198252d2cdff71bc8dd8f1fb024a76b..f871d98763ee6d9f6a5b9076b327535f4d6b55e0 100644
+--- a/dist/contracts/types.d.ts
++++ b/dist/contracts/types.d.ts
+@@ -1,4 +1,4 @@
+-import type { ethers } from 'ethers';
++import type { ethers } from 'ethers-v5';
+ import type { Address } from '@hyperlane-xyz/utils';
+ import type { ChainMap } from '../types.js';
+ export type AddressesMap = {
+diff --git a/dist/core/EvmCoreModule.hardhat-test.js b/dist/core/EvmCoreModule.hardhat-test.js
+index e083eae7d14956282687e91724a1c5c3cb53d113..552bb5bb221caf2c3e0b4b0653c4a52fc6d3daa3 100644
+--- a/dist/core/EvmCoreModule.hardhat-test.js
++++ b/dist/core/EvmCoreModule.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { constants } from 'ethers';
++import { constants } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { Mailbox__factory, ProxyAdmin__factory, TestRecipient__factory, TimelockController__factory, ValidatorAnnounce__factory, } from '@hyperlane-xyz/core';
+ import { objMap } from '@hyperlane-xyz/utils';
+diff --git a/dist/core/EvmCoreReader.d.ts b/dist/core/EvmCoreReader.d.ts
+index a6c496dd59cf51381f37ad10e31d042a3f249735..a7cf8f0e4dc575064bda968b02e85a4b7d97b82d 100644
+--- a/dist/core/EvmCoreReader.d.ts
++++ b/dist/core/EvmCoreReader.d.ts
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { Address } from '@hyperlane-xyz/utils';
+ import { EvmHookReader } from '../hook/EvmHookReader.js';
+ import { EvmIcaRouterReader } from '../ica/EvmIcaReader.js';
+diff --git a/dist/core/EvmIcaModule.hardhat-test.js b/dist/core/EvmIcaModule.hardhat-test.js
+index bdcb1e5a170ea395ae2cff587f0eb94fd721cc34..46f19546364777ee348c5dc2d4f687be1690aac3 100644
+--- a/dist/core/EvmIcaModule.hardhat-test.js
++++ b/dist/core/EvmIcaModule.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { Mailbox__factory } from '@hyperlane-xyz/core';
+ import { TestChainName } from '../consts/testChains.js';
+diff --git a/dist/core/EvmIcaModule.js b/dist/core/EvmIcaModule.js
+index 17087c2fc3a8d1633e8ecf8e1253e853bba4ba7e..e666a985ead1e9026ec83250488c49e2d765368e 100644
+--- a/dist/core/EvmIcaModule.js
++++ b/dist/core/EvmIcaModule.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { InterchainAccountRouter__factory } from '@hyperlane-xyz/core';
+ import { addressToBytes32, bytes32ToAddress, difference, rootLogger, } from '@hyperlane-xyz/utils';
+ import { serializeContracts } from '../contracts/contracts.js';
+diff --git a/dist/core/HyperlaneCore.d.ts b/dist/core/HyperlaneCore.d.ts
+index eb7d0b74ea02f8971e45290704f372c7f21eaa65..6f4b5185019989aa2c3cd6377d96ff6687a9d3c7 100644
+--- a/dist/core/HyperlaneCore.d.ts
++++ b/dist/core/HyperlaneCore.d.ts
+@@ -1,5 +1,5 @@
+ import { TransactionReceipt } from '@ethersproject/providers';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import type { TransactionReceipt as ViemTxReceipt } from 'viem';
+ import { IMessageRecipient } from '@hyperlane-xyz/core';
+ import { Address, AddressBytes32 } from '@hyperlane-xyz/utils';
+diff --git a/dist/core/HyperlaneCore.js b/dist/core/HyperlaneCore.js
+index 2ab1d78d5d6a28d90f3432f92311e63ae41f0517..79c67688c7b4819eb97716870b7443e13e422ccf 100644
+--- a/dist/core/HyperlaneCore.js
++++ b/dist/core/HyperlaneCore.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { IMessageRecipient__factory, MailboxClient__factory, Mailbox__factory, } from '@hyperlane-xyz/core';
+ import { ProtocolType, addBufferToGasLimit, addressToBytes32, assert, bytes32ToAddress, isZeroishAddress, messageId, objFilter, objMap, parseMessage, pollAsync, promiseObjAll, } from '@hyperlane-xyz/utils';
+ import { HyperlaneApp } from '../app/HyperlaneApp.js';
+diff --git a/dist/core/HyperlaneCoreChecker.js b/dist/core/HyperlaneCoreChecker.js
+index 84fa60ed4eedd5ac6a03b0cb2fbb4007afdf3737..f084fa0afd47ff070657a268e2f43d6a2aee71a3 100644
+--- a/dist/core/HyperlaneCoreChecker.js
++++ b/dist/core/HyperlaneCoreChecker.js
+@@ -1,4 +1,4 @@
+-import { ethers, utils as ethersUtils } from 'ethers';
++import { ethers, utils as ethersUtils } from 'ethers-v5';
+ import { Ownable__factory } from '@hyperlane-xyz/core';
+ import { assert, eqAddress, rootLogger } from '@hyperlane-xyz/utils';
+ import { BytecodeHash } from '../consts/bytecode.js';
+diff --git a/dist/core/HyperlaneRelayer.d.ts b/dist/core/HyperlaneRelayer.d.ts
+index d343d211721eb6558c96521db24a49f19594f36f..674f7ccee6d73a9067ee599298ca32e86d654b73 100644
+--- a/dist/core/HyperlaneRelayer.d.ts
++++ b/dist/core/HyperlaneRelayer.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers, providers } from 'ethers';
++import { ethers, providers } from 'ethers-v5';
+ import { Logger } from 'pino';
+ import { z } from 'zod';
+ import { Address, ParsedMessage } from '@hyperlane-xyz/utils';
+diff --git a/dist/core/MultiProtocolCore.test.js b/dist/core/MultiProtocolCore.test.js
+index b83b312e2c3fdb6e6f38554de905e18c5cdf5b50..5222f020b33a34a04a0f71afd618630124b97254 100644
+--- a/dist/core/MultiProtocolCore.test.js
++++ b/dist/core/MultiProtocolCore.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { TestChainName, test1 } from '../consts/testChains.js';
+ import { MultiProtocolProvider } from '../providers/MultiProtocolProvider.js';
+ import { MultiProtocolCore } from './MultiProtocolCore.js';
+diff --git a/dist/core/TestCoreApp.d.ts b/dist/core/TestCoreApp.d.ts
+index adb8dccad491d077a22e6fb21e7bd2e470ed842a..da1d7f84ca84ee8bd8678caa3587903a552c64fb 100644
+--- a/dist/core/TestCoreApp.d.ts
++++ b/dist/core/TestCoreApp.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { TestMailbox__factory } from '@hyperlane-xyz/core';
+ import { HyperlaneContracts } from '../contracts/types.js';
+ import { ChainName } from '../types.js';
+diff --git a/dist/deploy/HyperlaneAppChecker.js b/dist/deploy/HyperlaneAppChecker.js
+index 51ecab03e1e2ad9ae91e1823cb9a2a8f3fe17d04..133d6bac217818d0f39eda5796f0bebff2094833 100644
+--- a/dist/deploy/HyperlaneAppChecker.js
++++ b/dist/deploy/HyperlaneAppChecker.js
+@@ -1,4 +1,4 @@
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { ProxyAdmin__factory, TimelockController__factory, } from '@hyperlane-xyz/core';
+ import { ProtocolType, assert, eqAddress, objMap, promiseObjAll, rootLogger, } from '@hyperlane-xyz/utils';
+ import { BytecodeHash } from '../consts/bytecode.js';
+diff --git a/dist/deploy/HyperlaneDeployer.d.ts b/dist/deploy/HyperlaneDeployer.d.ts
+index 27ba1c0cb24071c459b51610cac797e11fe247c9..5d47a6014b1c3e7d6a645acbfe74ea7d8d0594f0 100644
+--- a/dist/deploy/HyperlaneDeployer.d.ts
++++ b/dist/deploy/HyperlaneDeployer.d.ts
+@@ -1,4 +1,4 @@
+-import { Contract, PopulatedTransaction, ethers } from 'ethers';
++import { Contract, PopulatedTransaction, ethers } from 'ethers-v5';
+ import { Logger } from 'pino';
+ import { ITransparentUpgradeableProxy, MailboxClient, Ownable, ProxyAdmin, TimelockController } from '@hyperlane-xyz/core';
+ import { Address } from '@hyperlane-xyz/utils';
+diff --git a/dist/deploy/HyperlaneDeployer.js b/dist/deploy/HyperlaneDeployer.js
+index c32beb5412353594b33fa0afffbde7e592620f1f..2db8c483cf523f30b3887f06fa6108923927f5ed 100644
+--- a/dist/deploy/HyperlaneDeployer.js
++++ b/dist/deploy/HyperlaneDeployer.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { ProxyAdmin__factory, TimelockController__factory, TransparentUpgradeableProxy__factory, } from '@hyperlane-xyz/core';
+ import { buildArtifact as coreBuildArtifact } from '@hyperlane-xyz/core/buildArtifact.js';
+ import { ProtocolType, addBufferToGasLimit, eqAddress, isZeroishAddress, rootLogger, runWithTimeout, } from '@hyperlane-xyz/utils';
+diff --git a/dist/deploy/proxy.d.ts b/dist/deploy/proxy.d.ts
+index 79f28ccea4ea08116bf3c2512398e6a54e4e4740..e46b4094e4ce6294421898c4b73a1f97bcea5d22 100644
+--- a/dist/deploy/proxy.d.ts
++++ b/dist/deploy/proxy.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { Provider as ZKSyncProvider } from 'zksync-ethers';
+ import { Address, ChainId } from '@hyperlane-xyz/utils';
+ import { AnnotatedEV5Transaction } from '../providers/ProviderType.js';
+diff --git a/dist/deploy/proxy.js b/dist/deploy/proxy.js
+index 62ecd1cfccfa05f3f2c3322bd273b83bac3983c7..6ad20dec2acfaff8b0743aaf99fcfec66ff5bac5 100644
+--- a/dist/deploy/proxy.js
++++ b/dist/deploy/proxy.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { ProxyAdmin__factory } from '@hyperlane-xyz/core';
+ import { eqAddress } from '@hyperlane-xyz/utils';
+ import { transferOwnershipTransactions } from '../contracts/contracts.js';
+diff --git a/dist/deploy/proxyFactoryUtils.js b/dist/deploy/proxyFactoryUtils.js
+index d14ea5bc8aef6ef3d5fa94bff286a19347ebf561..245e67be980ddf22c65a4b500db5b6ba5a22f5dc 100644
+--- a/dist/deploy/proxyFactoryUtils.js
++++ b/dist/deploy/proxyFactoryUtils.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { objMap } from '@hyperlane-xyz/utils';
+ import { proxyFactoryFactories } from './contracts.js';
+ /**
+diff --git a/dist/deploy/types.d.ts b/dist/deploy/types.d.ts
+index 3cba21e235e636167b29d5ec9971b7d11965ec71..af2ab916deacdf14191541c6c21d9e232d1ab3f0 100644
+--- a/dist/deploy/types.d.ts
++++ b/dist/deploy/types.d.ts
+@@ -1,4 +1,4 @@
+-import type { Contract } from 'ethers';
++import type { Contract } from 'ethers-v5';
+ import { z } from 'zod';
+ import type { AccessControl, Ownable, TimelockController } from '@hyperlane-xyz/core';
+ import { Address } from '@hyperlane-xyz/utils';
+diff --git a/dist/deploy/verify/utils.d.ts b/dist/deploy/verify/utils.d.ts
+index 03a1750be9f5536b3a41a6fb74bc1f69bc4f4d9b..f4ca4ba1bb516dfaef7d2900cc43ad7de59c91ff 100644
+--- a/dist/deploy/verify/utils.d.ts
++++ b/dist/deploy/verify/utils.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers, utils } from 'ethers';
++import { ethers, utils } from 'ethers-v5';
+ import { ZKSyncArtifact } from '@hyperlane-xyz/core';
+ import { Address } from '@hyperlane-xyz/utils';
+ import { MultiProvider } from '../../providers/MultiProvider.js';
+diff --git a/dist/deploy/verify/utils.js b/dist/deploy/verify/utils.js
+index ff305181a72c322b7ecbc675e75eb3a5d91421b3..8a38a5382a91731fae3f7efec85e97f1090fb55c 100644
+--- a/dist/deploy/verify/utils.js
++++ b/dist/deploy/verify/utils.js
+@@ -1,4 +1,4 @@
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { decodeFunctionData, parseAbi } from 'viem';
+ import { ProxyAdmin__factory, TransparentUpgradeableProxy__factory, } from '@hyperlane-xyz/core';
+ import { assert, eqAddress } from '@hyperlane-xyz/utils';
+diff --git a/dist/gas/HyperlaneIgp.d.ts b/dist/gas/HyperlaneIgp.d.ts
+index 1f84cb4a1b89965ae92532d55492980e95af8a91..1d3acfb7b0572df857f799fd2e942b1bff163891 100644
+--- a/dist/gas/HyperlaneIgp.d.ts
++++ b/dist/gas/HyperlaneIgp.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import { Address } from '@hyperlane-xyz/utils';
+ import { HyperlaneApp } from '../app/HyperlaneApp.js';
+ import { HyperlaneAddressesMap } from '../contracts/types.js';
+diff --git a/dist/gas/HyperlaneIgpChecker.js b/dist/gas/HyperlaneIgpChecker.js
+index 8d80808bbce63afe8207236dc4d13c1d4aa2eb25..9619c2ca2b6f867393de6cc8fd1cd0a88e0a4fdf 100644
+--- a/dist/gas/HyperlaneIgpChecker.js
++++ b/dist/gas/HyperlaneIgpChecker.js
+@@ -1,4 +1,4 @@
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import { eqAddress } from '@hyperlane-xyz/utils';
+ import { BytecodeHash } from '../consts/bytecode.js';
+ import { HyperlaneAppChecker } from '../deploy/HyperlaneAppChecker.js';
+diff --git a/dist/gas/HyperlaneIgpDeployer.js b/dist/gas/HyperlaneIgpDeployer.js
+index d5ff99c294c37f484cb5d5b3b3e68fcb8ba32887..32c00461a480d73400ae1cfa4d5c1689d76e38b7 100644
+--- a/dist/gas/HyperlaneIgpDeployer.js
++++ b/dist/gas/HyperlaneIgpDeployer.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { addBufferToGasLimit, eqAddress, rootLogger, } from '@hyperlane-xyz/utils';
+ import { TOKEN_EXCHANGE_RATE_SCALE_ETHEREUM } from '../consts/igp.js';
+ import { HyperlaneDeployer } from '../deploy/HyperlaneDeployer.js';
+diff --git a/dist/gas/oracle/configure-gas-oracles.hardhat-test.js b/dist/gas/oracle/configure-gas-oracles.hardhat-test.js
+index 5b56dca3348d1caed4f023e50f6f59255ae4dac9..b2d93f71d3fde7a6cb0d2c63a3da5bd63da95747 100644
+--- a/dist/gas/oracle/configure-gas-oracles.hardhat-test.js
++++ b/dist/gas/oracle/configure-gas-oracles.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { TestChainName } from '../../consts/testChains.js';
+ import { MultiProvider } from '../../providers/MultiProvider.js';
+diff --git a/dist/gas/oracle/types.d.ts b/dist/gas/oracle/types.d.ts
+index bc2b189d59100901f433630f7a5392d64aa16f79..a094b3d7f3fd1c1d39f778717bb2282434555f61 100644
+--- a/dist/gas/oracle/types.d.ts
++++ b/dist/gas/oracle/types.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { z } from 'zod';
+ import { ProtocolType } from '@hyperlane-xyz/utils';
+ export declare const StorageGasOracleConfigSchema: z.ZodObject<{
+diff --git a/dist/gas/oracle/types.js b/dist/gas/oracle/types.js
+index 50e1978ef851fd594298e58c4d5722f61956dba5..2786cef88166f84249beca14a55d72d8dcee87b0 100644
+--- a/dist/gas/oracle/types.js
++++ b/dist/gas/oracle/types.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { z } from 'zod';
+ import { getProtocolExchangeRateDecimals } from '../../consts/igp.js';
+ export const StorageGasOracleConfigSchema = z.object({
+diff --git a/dist/gas/types.d.ts b/dist/gas/types.d.ts
+index 349cdc5c67f1b32a38a832630f3badfee6472e81..3c1b2350791bd366c2fe9e931c477b5849e7ae57 100644
+--- a/dist/gas/types.d.ts
++++ b/dist/gas/types.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import { z } from 'zod';
+ import { InterchainGasPaymaster } from '@hyperlane-xyz/core';
+ import type { Address } from '@hyperlane-xyz/utils';
+diff --git a/dist/gas/utils.js b/dist/gas/utils.js
+index aeb4dc1d66082aba9a0847952a4a3d1249518811..21409d6144816dc030d0332dac2af444aa3709f2 100644
+--- a/dist/gas/utils.js
++++ b/dist/gas/utils.js
+@@ -1,5 +1,5 @@
+ import { BigNumber as BigNumberJs } from 'bignumber.js';
+-import { BigNumber, ethers } from 'ethers';
++import { BigNumber, ethers } from 'ethers-v5';
+ import { ProtocolType, assert, convertDecimals, objMap, } from '@hyperlane-xyz/utils';
+ import { getProtocolExchangeRateDecimals } from '../consts/igp.js';
+ import { getCosmosRegistryChain } from '../utils/cosmos.js';
+diff --git a/dist/hook/EvmHookModule.d.ts b/dist/hook/EvmHookModule.d.ts
+index e5e246d268443d4cc74392d5b4e92441ce5e9175..21ce17beaa59b7f8bf8ea25e18174b367bf37604 100644
+--- a/dist/hook/EvmHookModule.d.ts
++++ b/dist/hook/EvmHookModule.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { AmountRoutingHook, ArbL2ToL1Hook, CCIPHook, DomainRoutingHook, InterchainGasPaymaster, OPStackHook, PausableHook, ProtocolFee, StaticAggregationHook, StorageGasOracle } from '@hyperlane-xyz/core';
+ import { Address, Domain, EvmChainId, ProtocolType } from '@hyperlane-xyz/utils';
+ import { CCIPContractCache } from '../ccip/utils.js';
+diff --git a/dist/hook/EvmHookModule.js b/dist/hook/EvmHookModule.js
+index ed5feaf95f0bf63f2ca2527b74d9397caf2c0910..741117b6ae432fd4fe238902f8cbe8b9e0485a4c 100644
+--- a/dist/hook/EvmHookModule.js
++++ b/dist/hook/EvmHookModule.js
+@@ -1,5 +1,5 @@
+ import { getArbitrumNetwork } from '@arbitrum/sdk';
+-import { BigNumber, ethers } from 'ethers';
++import { BigNumber, ethers } from 'ethers-v5';
+ import { ArbL2ToL1Ism__factory, CCIPHook__factory, DomainRoutingHook__factory, IL1CrossDomainMessenger__factory, IPostDispatchHook__factory, InterchainGasPaymaster__factory, OPStackIsm__factory, Ownable__factory, PausableHook__factory, ProtocolFee__factory, StaticAggregationHookFactory__factory, StaticAggregationHook__factory, StorageGasOracle__factory, } from '@hyperlane-xyz/core';
+ import { ZERO_ADDRESS_HEX_32, addressToBytes32, assert, deepEquals, eqAddress, isZeroishAddress, rootLogger, } from '@hyperlane-xyz/utils';
+ import { TOKEN_EXCHANGE_RATE_SCALE_ETHEREUM } from '../consts/igp.js';
+diff --git a/dist/hook/EvmHookReader.js b/dist/hook/EvmHookReader.js
+index 2a7adfcfd83b50e255dac725e9973e896c1c60ac..b61e56464031479da0d81294e0ee7666690ef619 100644
+--- a/dist/hook/EvmHookReader.js
++++ b/dist/hook/EvmHookReader.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { AmountRoutingHook__factory, ArbL2ToL1Hook__factory, CCIPHook__factory, DefaultHook__factory, DomainRoutingHook__factory, FallbackDomainRoutingHook__factory, IPostDispatchHook__factory, InterchainGasPaymaster__factory, MerkleTreeHook__factory, OPStackHook__factory, PausableHook__factory, ProtocolFee__factory, StaticAggregationHook__factory, StorageGasOracle__factory, } from '@hyperlane-xyz/core';
+ import { assert, concurrentMap, eqAddress, getLogLevel, objMap, promiseObjAll, rootLogger, } from '@hyperlane-xyz/utils';
+ import { DEFAULT_CONTRACT_READ_CONCURRENCY } from '../consts/concurrency.js';
+diff --git a/dist/hook/EvmHookReader.test.js b/dist/hook/EvmHookReader.test.js
+index bf467b0bf6d52cc58511a1906df2071a3a318d24..f22656d30f4657ac38de4a7b4989f878fb4dab52 100644
+--- a/dist/hook/EvmHookReader.test.js
++++ b/dist/hook/EvmHookReader.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { randomBytes } from 'ethers/lib/utils.js';
+ import sinon from 'sinon';
+ import { CCIPHook__factory, DefaultHook__factory, IPostDispatchHook__factory, MerkleTreeHook__factory, OPStackHook__factory, PausableHook__factory, ProtocolFee__factory, } from '@hyperlane-xyz/core';
+diff --git a/dist/ism/EvmIsmModule.js b/dist/ism/EvmIsmModule.js
+index 95db72b0aa4efb834333fa5ea9563f48324284be..63b1d22deac431a6dbc51769ec830422f3642860 100644
+--- a/dist/ism/EvmIsmModule.js
++++ b/dist/ism/EvmIsmModule.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { DomainRoutingIsm__factory } from '@hyperlane-xyz/core';
+ import { assert, deepEquals, intersection, rootLogger, } from '@hyperlane-xyz/utils';
+ import { transferOwnershipTransactions } from '../contracts/contracts.js';
+diff --git a/dist/ism/EvmIsmReader.js b/dist/ism/EvmIsmReader.js
+index cd5a92abd385a4d2c68d72fe3bd83e169a43cb59..3658a2927a927c279026b0c17b9055378fa453c7 100644
+--- a/dist/ism/EvmIsmReader.js
++++ b/dist/ism/EvmIsmReader.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, ethers } from 'ethers';
++import { BigNumber, ethers } from 'ethers-v5';
+ import { AbstractCcipReadIsm__factory, AbstractRoutingIsm__factory, AmountRoutingIsm__factory, ArbL2ToL1Ism__factory, CCIPIsm__factory, DefaultFallbackRoutingIsm__factory, IInterchainSecurityModule__factory, IMultisigIsm__factory, IOutbox__factory, InterchainAccountRouter__factory, OPStackIsm__factory, Ownable__factory, PausableIsm__factory, StaticAggregationIsm__factory, TrustedRelayerIsm__factory, } from '@hyperlane-xyz/core';
+ import { assert, concurrentMap, getLogLevel, objMap, promiseObjAll, rootLogger, } from '@hyperlane-xyz/utils';
+ import { getChainNameFromCCIPSelector } from '../ccip/utils.js';
+diff --git a/dist/ism/metadata/aggregation.test.js b/dist/ism/metadata/aggregation.test.js
+index bdd0ef72968c594f8fd832f49d7b4fcda68d9e44..7c98d7893a677947cba50951244abd4f82a301ff 100644
+--- a/dist/ism/metadata/aggregation.test.js
++++ b/dist/ism/metadata/aggregation.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { existsSync, readFileSync, readdirSync } from 'fs';
+ import { IsmType } from '../types.js';
+ import { AggregationMetadataBuilder, } from './aggregation.js';
+diff --git a/dist/ism/metadata/arbL2ToL1.d.ts b/dist/ism/metadata/arbL2ToL1.d.ts
+index e032f80b1add0eb4a7b7ae5cd4f7384b2c8da3ab..e91823b69a94e8897bc73d1182d4304a42bf08e1 100644
+--- a/dist/ism/metadata/arbL2ToL1.d.ts
++++ b/dist/ism/metadata/arbL2ToL1.d.ts
+@@ -1,6 +1,6 @@
+ import { ArbitrumProvider, ChildToParentMessageReader, ChildToParentMessageStatus, EventArgs } from '@arbitrum/sdk';
+ import { L2ToL1TxEvent } from '@arbitrum/sdk/dist/lib/abi/ArbSys.js';
+-import { BigNumber, BytesLike } from 'ethers';
++import { BigNumber, BytesLike } from 'ethers-v5';
+ import { WithAddress } from '@hyperlane-xyz/utils';
+ import { HyperlaneCore } from '../../core/HyperlaneCore.js';
+ import { ArbL2ToL1HookConfig } from '../../hook/types.js';
+diff --git a/dist/ism/metadata/arbL2ToL1.hardhat-test.js b/dist/ism/metadata/arbL2ToL1.hardhat-test.js
+index 7ad65444ce5e49395170dfbd82b6190359b7edda..bc16321f6f8e241967998bf652caf1b649f85c52 100644
+--- a/dist/ism/metadata/arbL2ToL1.hardhat-test.js
++++ b/dist/ism/metadata/arbL2ToL1.hardhat-test.js
+@@ -1,6 +1,6 @@
+ import { ChildToParentMessageStatus } from '@arbitrum/sdk';
+ import { expect } from 'chai';
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import hre from 'hardhat';
+ import sinon from 'sinon';
+ import { ArbL2ToL1Hook__factory, ArbL2ToL1Ism__factory, MockArbBridge__factory, MockArbSys__factory, } from '@hyperlane-xyz/core';
+diff --git a/dist/ism/metadata/arbL2ToL1.js b/dist/ism/metadata/arbL2ToL1.js
+index b60980d1d38163b34ced1192d6319111ab1718d6..e862a773228e62f75ac7c9797202ab051311dd08 100644
+--- a/dist/ism/metadata/arbL2ToL1.js
++++ b/dist/ism/metadata/arbL2ToL1.js
+@@ -1,5 +1,5 @@
+ import { ArbitrumProvider, ChildToParentMessageReader, ChildToParentMessageStatus, } from '@arbitrum/sdk';
+-import { BigNumber, providers, utils } from 'ethers';
++import { BigNumber, providers, utils } from 'ethers-v5';
+ import { AbstractMessageIdAuthorizedIsm__factory, ArbSys__factory, IOutbox__factory, } from '@hyperlane-xyz/core';
+ import { assert, rootLogger } from '@hyperlane-xyz/utils';
+ import { findMatchingLogEvents } from '../../utils/logUtils.js';
+diff --git a/dist/ism/metadata/ccipread.hardhat-test.js b/dist/ism/metadata/ccipread.hardhat-test.js
+index ec89043447fe0bd34575f158bc0139d0756d7f9f..98d1fed822a07880d1b6baed8fc3365d60e745a3 100644
+--- a/dist/ism/metadata/ccipread.hardhat-test.js
++++ b/dist/ism/metadata/ccipread.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import sinon from 'sinon';
+ import { TestCcipReadIsm__factory } from '@hyperlane-xyz/core';
+diff --git a/dist/ism/metadata/ccipread.js b/dist/ism/metadata/ccipread.js
+index 69c1229487d70fe8a2f211ad4785eff7a4131c5b..250e162085429eb2bb234ba76ac01292d96bd5a1 100644
+--- a/dist/ism/metadata/ccipread.js
++++ b/dist/ism/metadata/ccipread.js
+@@ -1,4 +1,4 @@
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { AbstractCcipReadIsm__factory } from '@hyperlane-xyz/core';
+ import { IsmType } from '../types.js';
+ export class OffchainLookupMetadataBuilder {
+diff --git a/dist/ism/metadata/types.d.ts b/dist/ism/metadata/types.d.ts
+index d76ed66c855ba672a1b0acf4d90d5a14243d55db..778345ac5548ab85607d91cecf3cd16b39fe4aa1 100644
+--- a/dist/ism/metadata/types.d.ts
++++ b/dist/ism/metadata/types.d.ts
+@@ -1,4 +1,4 @@
+-import type { providers } from 'ethers';
++import type { providers } from 'ethers-v5';
+ import type { DispatchedMessage } from '../../core/types.js';
+ import type { DerivedHookConfig } from '../../hook/types.js';
+ import type { DerivedIsmConfig } from '../types.js';
+diff --git a/dist/ism/types.test.js b/dist/ism/types.test.js
+index e816a46113b3edcc2d2ae7b05d1201f677c77aab..92d88c3543b15d8ce927fa147b0bd8045b587e07 100644
+--- a/dist/ism/types.test.js
++++ b/dist/ism/types.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { AggregationIsmConfigSchema, IsmType } from './types.js';
+ const SOME_ADDRESS = ethers.Wallet.createRandom().address;
+ describe('AggregationIsmConfigSchema refine', () => {
+diff --git a/dist/ism/utils.js b/dist/ism/utils.js
+index 5116f8906d5c0d0af8b59d8587d23fe0631ff183..19a7c21aceec35b11519e98ea55391bee83abf69 100644
+--- a/dist/ism/utils.js
++++ b/dist/ism/utils.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { AbstractStorageMultisigIsm__factory, AmountRoutingIsm__factory, CCIPIsm__factory, DomainRoutingIsm__factory, IAggregationIsm__factory, IInterchainSecurityModule__factory, IMultisigIsm__factory, IRoutingIsm__factory, MailboxClient__factory, OPStackIsm__factory, PausableIsm__factory, StaticAggregationIsm__factory, TrustedRelayerIsm__factory, } from '@hyperlane-xyz/core';
+ import { deepEquals, eqAddress, formatMessage, normalizeAddress, objMap, rootLogger, } from '@hyperlane-xyz/utils';
+ import { getChainNameFromCCIPSelector } from '../ccip/utils.js';
+diff --git a/dist/middleware/account/InterchainAccount.d.ts b/dist/middleware/account/InterchainAccount.d.ts
+index 35dba4ba6aa6c80d93db74c48f6643d179b15131..af8dfa0dfe09b70952da0d6d0d6e3f07418116f6 100644
+--- a/dist/middleware/account/InterchainAccount.d.ts
++++ b/dist/middleware/account/InterchainAccount.d.ts
+@@ -1,4 +1,4 @@
+-import { PopulatedTransaction } from 'ethers';
++import { PopulatedTransaction } from 'ethers-v5';
+ import { z } from 'zod';
+ import { InterchainAccountRouter } from '@hyperlane-xyz/core';
+ import { Address, CallData } from '@hyperlane-xyz/utils';
+diff --git a/dist/middleware/account/InterchainAccount.js b/dist/middleware/account/InterchainAccount.js
+index aea00abfe151a5384c1dce8d27cc300d62e49811..936bfc2840e58fe902d5c8fd9f5768ebc59ade66 100644
+--- a/dist/middleware/account/InterchainAccount.js
++++ b/dist/middleware/account/InterchainAccount.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, utils } from 'ethers';
++import { BigNumber, utils } from 'ethers-v5';
+ import { z } from 'zod';
+ import { InterchainAccountRouter__factory, } from '@hyperlane-xyz/core';
+ import { addBufferToGasLimit, addressToBytes32, arrayToObject, bytes32ToAddress, eqAddress, isZeroishAddress, objFilter, objMap, promiseObjAll, } from '@hyperlane-xyz/utils';
+diff --git a/dist/middleware/account/InterchainAccountDeployer.js b/dist/middleware/account/InterchainAccountDeployer.js
+index f23b93f128042d2ccbaf92606b4a42aa47b5d215..04a178b166a54c3aa2d1f2fb6422df9881016c5d 100644
+--- a/dist/middleware/account/InterchainAccountDeployer.js
++++ b/dist/middleware/account/InterchainAccountDeployer.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { assert } from '@hyperlane-xyz/utils';
+ import { HyperlaneRouterDeployer } from '../../router/HyperlaneRouterDeployer.js';
+ import { interchainAccountFactories, } from './contracts.js';
+diff --git a/dist/middleware/account/accounts.hardhat-test.js b/dist/middleware/account/accounts.hardhat-test.js
+index 937cbddac0345c2a0c8bc49f0b87d9250b3172c2..7e2c8d81b2e3ffca791d94170d1781f5fda6a0f2 100644
+--- a/dist/middleware/account/accounts.hardhat-test.js
++++ b/dist/middleware/account/accounts.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { constants } from 'ethers';
++import { constants } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { TestRecipient__factory, } from '@hyperlane-xyz/core';
+ import { objMap } from '@hyperlane-xyz/utils';
+diff --git a/dist/middleware/query/InterchainQueryDeployer.js b/dist/middleware/query/InterchainQueryDeployer.js
+index 1de494d09ccbadb53d34b889f02251415737a117..e3f2d12e1e5525925b8dda8bae44e2f97deac49c 100644
+--- a/dist/middleware/query/InterchainQueryDeployer.js
++++ b/dist/middleware/query/InterchainQueryDeployer.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { ProxiedRouterDeployer } from '../../router/ProxiedRouterDeployer.js';
+ import { interchainQueryFactories, } from './contracts.js';
+ export class InterchainQueryDeployer extends ProxiedRouterDeployer {
+diff --git a/dist/providers/MultiProvider.d.ts b/dist/providers/MultiProvider.d.ts
+index 1044fd07d5b92b8acfecfc7c36a79dff49dfb7da..d82cb74fb58b7cb5192086fef7e4b6fe7914896d 100644
+--- a/dist/providers/MultiProvider.d.ts
++++ b/dist/providers/MultiProvider.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber, ContractFactory, ContractReceipt, ContractTransaction, PopulatedTransaction, Signer, providers } from 'ethers';
++import { BigNumber, ContractFactory, ContractReceipt, ContractTransaction, PopulatedTransaction, Signer, providers } from 'ethers-v5';
+ import { Logger } from 'pino';
+ import { ContractFactory as ZKSyncContractFactory, Provider as ZKSyncProvider } from 'zksync-ethers';
+ import { ZKSyncArtifact } from '@hyperlane-xyz/core';
+diff --git a/dist/providers/MultiProvider.js b/dist/providers/MultiProvider.js
+index c78d56fe181847aa0ba6ea6e17a699bbcf87720f..c14b11b28ecac02f2722e29add9e0b280003173d 100644
+--- a/dist/providers/MultiProvider.js
++++ b/dist/providers/MultiProvider.js
+@@ -1,4 +1,4 @@
+-import { providers, } from 'ethers';
++import { providers, } from 'ethers-v5';
+ import { Provider as ZKSyncProvider, } from 'zksync-ethers';
+ import { addBufferToGasLimit, pick, rootLogger, } from '@hyperlane-xyz/utils';
+ import { testChainMetadata, testChains } from '../consts/testChains.js';
+diff --git a/dist/providers/ProviderType.d.ts b/dist/providers/ProviderType.d.ts
+index 83d79047ff1449fe3d028068cc886d043bae13b1..376ffa7a3c1348cc4852c769aaa4c3029a1b916b 100644
+--- a/dist/providers/ProviderType.d.ts
++++ b/dist/providers/ProviderType.d.ts
+@@ -4,7 +4,7 @@ import type { DeliverTxResponse, StargateClient } from '@cosmjs/stargate';
+ import { TransactionCommittedDetailsResponse } from '@radixdlt/babylon-gateway-api-sdk';
+ import { TransactionManifest } from '@radixdlt/radix-engine-toolkit';
+ import type { Connection, Transaction as SolTransaction, VersionedTransactionResponse as SolTransactionReceipt } from '@solana/web3.js';
+-import type { Contract as EV5Contract, providers as EV5Providers, PopulatedTransaction as EV5Transaction } from 'ethers';
++import type { Contract as EV5Contract, providers as EV5Providers, PopulatedTransaction as EV5Transaction } from 'ethers-v5';
+ import { Contract as StarknetContract, Invocation as StarknetInvocation, Provider as StarknetProvider, GetTransactionReceiptResponse as StarknetTxReceipt } from 'starknet';
+ import type { GetContractReturnType, PublicClient, Transaction as VTransaction, TransactionReceipt as VTransactionReceipt } from 'viem';
+ import { Contract as ZKSyncBaseContract, Provider as ZKSyncBaseProvider, types as zkSyncTypes } from 'zksync-ethers';
+diff --git a/dist/providers/SmartProvider/HyperlaneEtherscanProvider.d.ts b/dist/providers/SmartProvider/HyperlaneEtherscanProvider.d.ts
+index b9618ae07fcf6dcecd2b90caf7993da87db0338f..dd5cd79544905a538e5dd3c8df60344ca3eb0987 100644
+--- a/dist/providers/SmartProvider/HyperlaneEtherscanProvider.d.ts
++++ b/dist/providers/SmartProvider/HyperlaneEtherscanProvider.d.ts
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { BlockExplorer } from '../../metadata/chainMetadataTypes.js';
+ import { IProviderMethods, ProviderMethod } from './ProviderMethods.js';
+ export declare class HyperlaneEtherscanProvider extends providers.EtherscanProvider implements IProviderMethods {
+diff --git a/dist/providers/SmartProvider/HyperlaneEtherscanProvider.js b/dist/providers/SmartProvider/HyperlaneEtherscanProvider.js
+index 5cf599c13c53702f3f416fd40c50a7b64b344e94..792a8fa7906ab5baae3f18eab2012f35abcb1c8f 100644
+--- a/dist/providers/SmartProvider/HyperlaneEtherscanProvider.js
++++ b/dist/providers/SmartProvider/HyperlaneEtherscanProvider.js
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { objFilter, rootLogger, sleep } from '@hyperlane-xyz/utils';
+ import { ProviderMethod, excludeProviderMethods, } from './ProviderMethods.js';
+ // Used for crude rate-limiting of explorer queries without API keys
+diff --git a/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.d.ts b/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.d.ts
+index 52c31a5e3369e0c8a60b7e93f7452de5b551ec7e..95c5393e1b3dd2111b45a5e3db499b56544a3fa9 100644
+--- a/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.d.ts
++++ b/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.d.ts
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { IProviderMethods, ProviderMethod } from './ProviderMethods.js';
+ import { RpcConfigWithConnectionInfo } from './types.js';
+ export declare class HyperlaneJsonRpcProvider extends providers.StaticJsonRpcProvider implements IProviderMethods {
+diff --git a/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.js b/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.js
+index f9cbf40b4517d87ffa82f4465216632382bc9b3c..3686cfe93beb8f157988d9ff052507327477998f 100644
+--- a/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.js
++++ b/dist/providers/SmartProvider/HyperlaneJsonRpcProvider.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, providers, utils } from 'ethers';
++import { BigNumber, providers, utils } from 'ethers-v5';
+ import { chunk, isBigNumberish, isNullish, rootLogger, } from '@hyperlane-xyz/utils';
+ import { AllProviderMethods, ProviderMethod, } from './ProviderMethods.js';
+ const NUM_LOG_BLOCK_RANGES_TO_QUERY = 10;
+diff --git a/dist/providers/SmartProvider/SmartProvider.d.ts b/dist/providers/SmartProvider/SmartProvider.d.ts
+index 3fc197b30b27464e43f10d1e993921314ab09235..d402f492e192b81de0b7aed64e46da0a123b4d61 100644
+--- a/dist/providers/SmartProvider/SmartProvider.d.ts
++++ b/dist/providers/SmartProvider/SmartProvider.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber, providers } from 'ethers';
++import { BigNumber, providers } from 'ethers-v5';
+ import { Logger, pino } from 'pino';
+ import { BlockExplorer, RpcUrl } from '../../metadata/chainMetadataTypes.js';
+ import { HyperlaneEtherscanProvider } from './HyperlaneEtherscanProvider.js';
+diff --git a/dist/providers/SmartProvider/SmartProvider.foundry-test.js b/dist/providers/SmartProvider/SmartProvider.foundry-test.js
+index 8b9bd725f0aef60e0fb543c26fc7268a6d4795c6..d2734330d5590a3c62ad06684c43344445e9eadc 100644
+--- a/dist/providers/SmartProvider/SmartProvider.foundry-test.js
++++ b/dist/providers/SmartProvider/SmartProvider.foundry-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { errors as EthersError, Wallet, constants } from 'ethers';
++import { errors as EthersError, Wallet, constants } from 'ethers-v5';
+ import { ERC20__factory } from '@hyperlane-xyz/core';
+ import { randomAddress } from '../../test/testUtils.js';
+ import { HyperlaneSmartProvider, getSmartProviderErrorMessage, } from './SmartProvider.js';
+diff --git a/dist/providers/SmartProvider/SmartProvider.js b/dist/providers/SmartProvider/SmartProvider.js
+index 1966e7a96812fe562e65ff6934b078986be1e0d0..eeeb1617bc2c1b3c75691e62a9be73b07a59bec0 100644
+--- a/dist/providers/SmartProvider/SmartProvider.js
++++ b/dist/providers/SmartProvider/SmartProvider.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, errors as EthersError, providers, utils } from 'ethers';
++import { BigNumber, errors as EthersError, providers, utils } from 'ethers-v5';
+ import { raceWithContext, retryAsync, rootLogger, runWithTimeout, sleep, } from '@hyperlane-xyz/utils';
+ import { ExplorerFamily, } from '../../metadata/chainMetadataTypes.js';
+ import { HyperlaneEtherscanProvider } from './HyperlaneEtherscanProvider.js';
+diff --git a/dist/providers/SmartProvider/types.d.ts b/dist/providers/SmartProvider/types.d.ts
+index c5228cbe01a61705f3734410072f96ddc365427f..9f5e7bac3324ace4787c64c3acf6c479e768ba46 100644
+--- a/dist/providers/SmartProvider/types.d.ts
++++ b/dist/providers/SmartProvider/types.d.ts
+@@ -1,4 +1,4 @@
+-import type { utils } from 'ethers';
++import type { utils } from 'ethers-v5';
+ import { ChainMetadata, RpcUrl } from '../../metadata/chainMetadataTypes.js';
+ export type RpcConfigWithConnectionInfo = RpcUrl & {
+     connection?: utils.ConnectionInfo;
+diff --git a/dist/providers/providerBuilders.d.ts b/dist/providers/providerBuilders.d.ts
+index 841ad7cdf9f4dca7622cba360daf5a5f54335c8a..eefe231c884ff490b1bb7e1ffc1580d2289e1217 100644
+--- a/dist/providers/providerBuilders.d.ts
++++ b/dist/providers/providerBuilders.d.ts
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { Provider as ZKProvider } from 'zksync-ethers';
+ import { ProtocolType } from '@hyperlane-xyz/utils';
+ import { ChainMetadata, RpcUrl } from '../metadata/chainMetadataTypes.js';
+diff --git a/dist/router/EvmRouterReader.js b/dist/router/EvmRouterReader.js
+index a397e95d1264c17127b5479a9dd91ab9cf6a9b8e..6fd8144d9d57046b8d011744a61367049c7daee0 100644
+--- a/dist/router/EvmRouterReader.js
++++ b/dist/router/EvmRouterReader.js
+@@ -1,4 +1,4 @@
+-import { constants } from 'ethers';
++import { constants } from 'ethers-v5';
+ import { MailboxClient__factory, Router__factory } from '@hyperlane-xyz/core';
+ import { eqAddress, rootLogger } from '@hyperlane-xyz/utils';
+ import { DEFAULT_CONTRACT_READ_CONCURRENCY } from '../consts/concurrency.js';
+diff --git a/dist/router/HyperlaneRouterChecker.js b/dist/router/HyperlaneRouterChecker.js
+index 842aa5d9faa078f1185d9b6270f8b44e831b1477..1f2acf1527bcae80d9877ef3083518397f0a8b89 100644
+--- a/dist/router/HyperlaneRouterChecker.js
++++ b/dist/router/HyperlaneRouterChecker.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { addressToBytes32, eqAddress, isZeroishAddress, rootLogger, } from '@hyperlane-xyz/utils';
+ import { HyperlaneAppChecker } from '../deploy/HyperlaneAppChecker.js';
+ import { EvmIsmReader } from '../ism/EvmIsmReader.js';
+diff --git a/dist/router/MultiProtocolRouterApps.test.js b/dist/router/MultiProtocolRouterApps.test.js
+index 0f329ceec31f6630559addefa488b63320fc501e..71db92e6defc08f2e49b8e85598408c5047b1e50 100644
+--- a/dist/router/MultiProtocolRouterApps.test.js
++++ b/dist/router/MultiProtocolRouterApps.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { TestChainName } from '../consts/testChains.js';
+ import { MultiProtocolProvider } from '../providers/MultiProtocolProvider.js';
+ import { MultiProtocolRouterApp } from './MultiProtocolRouterApps.js';
+diff --git a/dist/router/ProxiedRouterDeployer.js b/dist/router/ProxiedRouterDeployer.js
+index 0eceaf79648dc4f7dd484fff5956619f16bda106..358c76c5b6f9c6c5dd5068b724e58bb5f63f6a39 100644
+--- a/dist/router/ProxiedRouterDeployer.js
++++ b/dist/router/ProxiedRouterDeployer.js
+@@ -1,4 +1,4 @@
+-import { constants } from 'ethers';
++import { constants } from 'ethers-v5';
+ import { ProxyAdmin__factory, TimelockController__factory, } from '@hyperlane-xyz/core';
+ import { eqAddress } from '@hyperlane-xyz/utils';
+ import { HyperlaneRouterDeployer } from './HyperlaneRouterDeployer.js';
+diff --git a/dist/router/RouterApps.d.ts b/dist/router/RouterApps.d.ts
+index aadeae2574a801529a22db6d33e08554e6e8a67f..36f2ae5eec9d16b3866cbae022d9448943e04409 100644
+--- a/dist/router/RouterApps.d.ts
++++ b/dist/router/RouterApps.d.ts
+@@ -1,4 +1,4 @@
+-import type { BigNumber } from 'ethers';
++import type { BigNumber } from 'ethers-v5';
+ import { Logger } from 'pino';
+ import { GasRouter, Router } from '@hyperlane-xyz/core';
+ import { Address } from '@hyperlane-xyz/utils';
+diff --git a/dist/rpc/evm/EvmEventLogsReader.hardhat-test.js b/dist/rpc/evm/EvmEventLogsReader.hardhat-test.js
+index 9e214ad95d011a7f4095783e1d1e1972b9dff071..b14813a6f42072870d78d1d5e1363c60077616e8 100644
+--- a/dist/rpc/evm/EvmEventLogsReader.hardhat-test.js
++++ b/dist/rpc/evm/EvmEventLogsReader.hardhat-test.js
+@@ -1,6 +1,6 @@
+ import chai, { expect } from 'chai';
+ import chaiAsPromised from 'chai-as-promised';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { ERC20Test__factory } from '@hyperlane-xyz/core';
+ import { assert } from '@hyperlane-xyz/utils';
+diff --git a/dist/rpc/evm/utils.hardhat-test.js b/dist/rpc/evm/utils.hardhat-test.js
+index 50a37fe4ad5d2c2888d39c77eb8e8bff72b4cdf2..67874cf221b8ac0193358cc2d4f5cbc8e57fdcb0 100644
+--- a/dist/rpc/evm/utils.hardhat-test.js
++++ b/dist/rpc/evm/utils.hardhat-test.js
+@@ -1,6 +1,6 @@
+ import chai, { expect } from 'chai';
+ import chaiAsPromised from 'chai-as-promised';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { ERC20Test__factory } from '@hyperlane-xyz/core';
+ import { assert } from '@hyperlane-xyz/utils';
+diff --git a/dist/test/testUtils.js b/dist/test/testUtils.js
+index 91e0f85b1cb88f0c138a1d6944639419a944da0b..940a462e4222c1062a163d8b41322c35f5bf36a7 100644
+--- a/dist/test/testUtils.js
++++ b/dist/test/testUtils.js
+@@ -1,5 +1,5 @@
+ import { DirectSecp256k1Wallet } from '@cosmjs/proto-signing';
+-import { BigNumber, ethers } from 'ethers';
++import { BigNumber, ethers } from 'ethers-v5';
+ import { exclude, objMap } from '@hyperlane-xyz/utils';
+ import { testChains } from '../consts/testChains.js';
+ import { HookType } from '../hook/types.js';
+diff --git a/dist/timelock/evm/EvmTimelockDeployer.js b/dist/timelock/evm/EvmTimelockDeployer.js
+index 974c0ffef6e1d3cd3471707880d0672b538577f4..35b03375eed7cb9b99a4f2013eca51ef730d00be 100644
+--- a/dist/timelock/evm/EvmTimelockDeployer.js
++++ b/dist/timelock/evm/EvmTimelockDeployer.js
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { addBufferToGasLimit, eqAddress, isZeroishAddress, rootLogger, } from '@hyperlane-xyz/utils';
+ import { HyperlaneDeployer } from '../../deploy/HyperlaneDeployer.js';
+ import { CANCELLER_ROLE } from './constants.js';
+diff --git a/dist/timelock/evm/EvmTimelockReader.hardhat-test.js b/dist/timelock/evm/EvmTimelockReader.hardhat-test.js
+index ffe111a3268722be4e45ce659ac4da5fd89d58c7..1b845cf18c240a9461cab4831c41f7904a881b78 100644
+--- a/dist/timelock/evm/EvmTimelockReader.hardhat-test.js
++++ b/dist/timelock/evm/EvmTimelockReader.hardhat-test.js
+@@ -1,6 +1,6 @@
+ import chai, { expect } from 'chai';
+ import chaiAsPromised from 'chai-as-promised';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { TimelockController__factory } from '@hyperlane-xyz/core';
+ import { assert, deepCopy, normalizeAddressEvm } from '@hyperlane-xyz/utils';
+diff --git a/dist/timelock/evm/EvmTimelockReader.js b/dist/timelock/evm/EvmTimelockReader.js
+index 5da363d63d0a1e1c5d5b6975d3405f740929ea6d..eb565e4de7a25becde1c3a45ac95be957321719d 100644
+--- a/dist/timelock/evm/EvmTimelockReader.js
++++ b/dist/timelock/evm/EvmTimelockReader.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, constants } from 'ethers';
++import { BigNumber, constants } from 'ethers-v5';
+ import { getAbiItem, parseEventLogs, toEventSelector, } from 'viem';
+ import { TimelockController__factory, } from '@hyperlane-xyz/core';
+ import { arrayToObject, objFilter, objMap, promiseObjAll, } from '@hyperlane-xyz/utils';
+diff --git a/dist/token/EvmERC20WarpRouteReader.js b/dist/token/EvmERC20WarpRouteReader.js
+index 91737d216264bb45eb50724410d897a2f127298c..614861475ee9840c75715fd39489945ee3b93cfc 100644
+--- a/dist/token/EvmERC20WarpRouteReader.js
++++ b/dist/token/EvmERC20WarpRouteReader.js
+@@ -1,5 +1,5 @@
+ import { compareVersions } from 'compare-versions';
+-import { BigNumber, Contract } from 'ethers';
++import { BigNumber, Contract } from 'ethers-v5';
+ import { HypERC20Collateral__factory, HypERC20__factory, HypERC4626Collateral__factory, HypERC4626OwnerCollateral__factory, HypERC4626__factory, HypXERC20Lockbox__factory, HypXERC20__factory, IFiatToken__factory, ISafe__factory, IXERC20__factory, MovableCollateralRouter__factory, OpL1NativeTokenBridge__factory, OpL2NativeTokenBridge__factory, Ownable__factory, PackageVersioned__factory, ProxyAdmin__factory, TokenBridgeCctp__factory, TokenRouter__factory, } from '@hyperlane-xyz/core';
+ import { buildArtifact as coreBuildArtifact } from '@hyperlane-xyz/core/buildArtifact.js';
+ import { arrayToObject, assert, getLogLevel, isZeroishAddress, objFilter, objMap, promiseObjAll, rootLogger, } from '@hyperlane-xyz/utils';
+diff --git a/dist/token/Token.test.js b/dist/token/Token.test.js
+index b661722a50b4967a5d4dc38eb88dd15f4a72c88a..300e3e49d50767e375ef311ab378ab1e877c850d 100644
+--- a/dist/token/Token.test.js
++++ b/dist/token/Token.test.js
+@@ -1,7 +1,7 @@
+ /* eslint-disable no-console */
+ import { SystemProgram } from '@solana/web3.js';
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { ProtocolType } from '@hyperlane-xyz/utils';
+ import { TestChainName, test1, testCosmosChain, testSealevelChain, } from '../consts/testChains.js';
+ import { MultiProtocolProvider } from '../providers/MultiProtocolProvider.js';
+diff --git a/dist/token/TokenAmount.test.js b/dist/token/TokenAmount.test.js
+index 758c7af740c391fa2da4540305a017f386cb8b8e..cc58e3fadbcb5507c733d049aa029e9165cbfb66 100644
+--- a/dist/token/TokenAmount.test.js
++++ b/dist/token/TokenAmount.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { TestChainName, test2 } from '../consts/testChains.js';
+ import { Token } from './Token.js';
+ import { TokenAmount } from './TokenAmount.js';
+diff --git a/dist/token/adapters/EvmTokenAdapter.d.ts b/dist/token/adapters/EvmTokenAdapter.d.ts
+index 4d45750549174f9fcf9f3303de8402a832799bb0..112d5d22d54fe3f95d30b444b25142d3b47be87b 100644
+--- a/dist/token/adapters/EvmTokenAdapter.d.ts
++++ b/dist/token/adapters/EvmTokenAdapter.d.ts
+@@ -1,5 +1,5 @@
+ /// <reference types="node" resolution-mode="require"/>
+-import { PopulatedTransaction } from 'ethers';
++import { PopulatedTransaction } from 'ethers-v5';
+ import { ERC20, HypERC20, HypERC20Collateral, HypERC4626, HypERC4626Collateral, HypXERC20, HypXERC20Lockbox, IXERC20, IXERC20VS } from '@hyperlane-xyz/core';
+ import { Address, Domain, Numberish } from '@hyperlane-xyz/utils';
+ import { BaseEvmAdapter } from '../../app/MultiProtocolApp.js';
+diff --git a/dist/token/adapters/EvmTokenAdapter.js b/dist/token/adapters/EvmTokenAdapter.js
+index 646a803da5c15ca8d0781ed4a84bfdf71d429a9a..55672e0889d37d3e77f407cf77b42b6ef6d3e617 100644
+--- a/dist/token/adapters/EvmTokenAdapter.js
++++ b/dist/token/adapters/EvmTokenAdapter.js
+@@ -1,4 +1,4 @@
+-import { BigNumber, constants as ethersConstants, } from 'ethers';
++import { BigNumber, constants as ethersConstants, } from 'ethers-v5';
+ import { ERC20__factory, ERC4626__factory, GasRouter__factory, HypERC20Collateral__factory, HypERC20__factory, HypERC4626Collateral__factory, HypERC4626__factory, HypXERC20Lockbox__factory, HypXERC20__factory, IFiatToken__factory, IXERC20VS__factory, IXERC20__factory, ValueTransferBridge__factory, } from '@hyperlane-xyz/core';
+ import { ZERO_ADDRESS_HEX_32, addressToByteHexString, addressToBytes32, bytes32ToAddress, strip0x, } from '@hyperlane-xyz/utils';
+ import { BaseEvmAdapter } from '../../app/MultiProtocolApp.js';
+diff --git a/dist/token/adapters/StarknetTokenAdapter.js b/dist/token/adapters/StarknetTokenAdapter.js
+index e0961317706df5394e78ccc7dfe752d7184a4d3c..10fd3ba3e44900eb6c0446a21ffeaf1b3d95b933 100644
+--- a/dist/token/adapters/StarknetTokenAdapter.js
++++ b/dist/token/adapters/StarknetTokenAdapter.js
+@@ -1,4 +1,4 @@
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import { CairoOption, CairoOptionVariant, cairo, num, } from 'starknet';
+ import { ProtocolType, addressToBytes32, assert, } from '@hyperlane-xyz/utils';
+ import { BaseStarknetAdapter } from '../../app/MultiProtocolApp.js';
+diff --git a/dist/token/checker.js b/dist/token/checker.js
+index b5d60254b189b3dfc236f9d4a17a1287ee1a6071..b66a0b655c9de9bd977edbc0f1b7ed85f3772ac3 100644
+--- a/dist/token/checker.js
++++ b/dist/token/checker.js
+@@ -1,4 +1,4 @@
+-import { BigNumber } from 'ethers';
++import { BigNumber } from 'ethers-v5';
+ import { ERC20__factory, IXERC20Lockbox__factory, Ownable__factory, ProxyAdmin__factory, } from '@hyperlane-xyz/core';
+ import { eqAddress, objMap } from '@hyperlane-xyz/utils';
+ import { filterOwnableContracts } from '../contracts/contracts.js';
+diff --git a/dist/token/deploy.hardhat-test.js b/dist/token/deploy.hardhat-test.js
+index 479a100419bd327af9b93c39668aeda273354f29..f197eaf6e045c493ef1e0fa6aa0f3fa7d47bc80c 100644
+--- a/dist/token/deploy.hardhat-test.js
++++ b/dist/token/deploy.hardhat-test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import hre from 'hardhat';
+ import { ERC20Test__factory, ProxyAdmin__factory, TransparentUpgradeableProxy__factory, XERC20Test__factory, } from '@hyperlane-xyz/core';
+ import { objMap } from '@hyperlane-xyz/utils';
+diff --git a/dist/token/deploy.js b/dist/token/deploy.js
+index 1eebdbdfc37c932e44f48e11a0e0b94169791fdc..0e68858d6441b8bbad62ef5453ecf3beca5f63a4 100644
+--- a/dist/token/deploy.js
++++ b/dist/token/deploy.js
+@@ -1,4 +1,4 @@
+-import { constants } from 'ethers';
++import { constants } from 'ethers-v5';
+ import { ERC20__factory, ERC721Enumerable__factory, IERC4626__factory, IMessageTransmitter__factory, IXERC20Lockbox__factory, MovableCollateralRouter__factory, OpL1V1NativeTokenBridge__factory, OpL2NativeTokenBridge__factory, TokenBridgeCctp__factory, } from '@hyperlane-xyz/core';
+ import { ProtocolType, assert, objFilter, objKeys, objMap, promiseObjAll, rootLogger, } from '@hyperlane-xyz/utils';
+ import { GasRouterDeployer } from '../router/GasRouterDeployer.js';
+diff --git a/dist/token/types.test.js b/dist/token/types.test.js
+index 7f99a7f34ca1fe82def94423530836fdbcec33fd..f68f77d9bc82e55c557196d98154905472ec9227 100644
+--- a/dist/token/types.test.js
++++ b/dist/token/types.test.js
+@@ -1,5 +1,5 @@
+ import { expect } from 'chai';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { assert } from '@hyperlane-xyz/utils';
+ import { TokenType } from './config.js';
+ import { WarpRouteDeployConfigSchema, WarpRouteDeployConfigSchemaErrors, isCollateralTokenConfig, } from './types.js';
+diff --git a/dist/types.d.ts b/dist/types.d.ts
+index 5c58d68df40784385442bf5692b30ccca81103eb..32601d2c32886cad96a9848f5cb757301f656836 100644
+--- a/dist/types.d.ts
++++ b/dist/types.d.ts
+@@ -1,4 +1,4 @@
+-import type { BigNumber, Signer, ethers } from 'ethers';
++import type { BigNumber, Signer, ethers } from 'ethers-v5';
+ import { z } from 'zod';
+ import { SigningHyperlaneModuleClient } from '@hyperlane-xyz/cosmos-sdk';
+ import type { Address, Domain, ProtocolType } from '@hyperlane-xyz/utils';
+diff --git a/dist/utils/HyperlaneReader.d.ts b/dist/utils/HyperlaneReader.d.ts
+index 5b43ca126a0e0da595b0333ba96dab2a21907b50..51cb595938490514b140645e3982dee37498f970 100644
+--- a/dist/utils/HyperlaneReader.d.ts
++++ b/dist/utils/HyperlaneReader.d.ts
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { LevelWithSilentOrString } from 'pino';
+ import { MultiProvider } from '../providers/MultiProvider.js';
+ import { ChainNameOrId } from '../types.js';
+diff --git a/dist/utils/fork.d.ts b/dist/utils/fork.d.ts
+index 734a559460994fa92c10e400751fd049620bf346..d2e6b863101455b1931a16db7f81edbdeb45f6b6 100644
+--- a/dist/utils/fork.d.ts
++++ b/dist/utils/fork.d.ts
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { Address } from '@hyperlane-xyz/utils';
+ import { MultiProvider } from '../providers/MultiProvider.js';
+ import { ChainName } from '../types.js';
+diff --git a/dist/utils/fork.js b/dist/utils/fork.js
+index 775b993f9f553a09625c668be38ae51e3bb552f6..c98c36103398d891fd521a63c17abecb4d1c7f14 100644
+--- a/dist/utils/fork.js
++++ b/dist/utils/fork.js
+@@ -1,4 +1,4 @@
+-import { providers } from 'ethers';
++import { providers } from 'ethers-v5';
+ import { isValidAddressEvm, rootLogger } from '@hyperlane-xyz/utils';
+ const ENDPOINT_PREFIX = 'http';
+ const DEFAULT_ANVIL_ENDPOINT = 'http://127.0.0.1:8545';
+diff --git a/dist/utils/gnosisSafe.js b/dist/utils/gnosisSafe.js
+index b2d4363694982cd02530f832f08999eafc742cde..e2de308eca8cb1f70c27d38f4e757cdbb075e97e 100644
+--- a/dist/utils/gnosisSafe.js
++++ b/dist/utils/gnosisSafe.js
+@@ -5,7 +5,7 @@ import {
+   getMultiSendCallOnlyDeployment,
+   getMultiSendDeployment,
+ } from '@safe-global/safe-deployments';
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ 
+ export function getSafeService(chain, multiProvider) {
+   const signer = multiProvider.getSigner(chain);
+diff --git a/dist/utils/logUtils.d.ts b/dist/utils/logUtils.d.ts
+index 0a35a1f2562874dcc3ef21df35de7a673de798f2..07d7a05715f0168674d33b1878957c3ea8530516 100644
+--- a/dist/utils/logUtils.d.ts
++++ b/dist/utils/logUtils.d.ts
+@@ -1,4 +1,4 @@
+-import { ethers } from 'ethers';
++import { ethers } from 'ethers-v5';
+ import { Log } from 'viem';
+ export declare function findMatchingLogEvents(logs: (ethers.providers.Log | Log<bigint, number, false>)[], iface: ethers.utils.Interface, eventName: string): ethers.utils.LogDescription[];
+ //# sourceMappingURL=logUtils.d.ts.map
+\ No newline at end of file
+diff --git a/dist/utils/starknet.js b/dist/utils/starknet.js
+index d17565538fc1afe6d8b5ba4bbcea68e05782a40b..cfd5c598aca0873ca21b2a4b6241b234bb34e0ad 100644
+--- a/dist/utils/starknet.js
++++ b/dist/utils/starknet.js
+@@ -1,4 +1,4 @@
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { Contract, } from 'starknet';
+ import { ContractType, getCompiledContract, } from '@hyperlane-xyz/starknet-core';
+ import { eqAddressStarknet } from '@hyperlane-xyz/utils';
+diff --git a/dist/zksync/ZKSyncDeployer.d.ts b/dist/zksync/ZKSyncDeployer.d.ts
+index 7268ad49fc1e556bf5c6af4c21a9ab8990f0108d..c29941c8422d55cebac7c3f13bdebbecf124ada4 100644
+--- a/dist/zksync/ZKSyncDeployer.d.ts
++++ b/dist/zksync/ZKSyncDeployer.d.ts
+@@ -1,4 +1,4 @@
+-import { BigNumber, BytesLike, Overrides } from 'ethers';
++import { BigNumber, BytesLike, Overrides } from 'ethers-v5';
+ import { Contract, Wallet, types as zksyncTypes } from 'zksync-ethers';
+ import { ZKSyncArtifact } from '@hyperlane-xyz/core';
+ /**
+diff --git a/dist/zksync/ZKSyncDeployer.js b/dist/zksync/ZKSyncDeployer.js
+index abfe83f0c788bfb4817d6fad8ee364877ccec2b3..d8dccb41569e9f8309cb1f23adffdb29f2981430 100644
+--- a/dist/zksync/ZKSyncDeployer.js
++++ b/dist/zksync/ZKSyncDeployer.js
+@@ -1,4 +1,4 @@
+-import { utils } from 'ethers';
++import { utils } from 'ethers-v5';
+ import { ContractFactory, } from 'zksync-ethers';
+ import { assert } from '@hyperlane-xyz/utils';
+ import { defaultZKProviderBuilder } from '../providers/providerBuilders.js';
