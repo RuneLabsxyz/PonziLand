@@ -25,9 +25,6 @@
 
   const { accountManager } = useDojo();
 
-  // Filter to only show tokens that exist in our game's availableTokens
-  // This ensures we only display game-compatible tokens with proper icons
-  // Use case-insensitive matching since Hyperlane symbols may differ in casing
   const gameCompatibleSymbols = $derived(
     bridgableSymbols.filter((symbol) =>
       data.availableTokens.some(
@@ -36,15 +33,6 @@
     ),
   );
 
-  // Debug: log what symbols we're getting
-  $effect(() => {
-    if (bridgableSymbols.length > 0) {
-      console.log(`[Bridge] ${chain} bridgable symbols:`, bridgableSymbols);
-      console.log(`[Bridge] ${chain} game-compatible:`, gameCompatibleSymbols);
-    }
-  });
-
-  // Connection status based on chain
   const isConnected = $derived(
     chain === 'solana'
       ? phantomWalletStore.isConnected
@@ -71,12 +59,10 @@
   async function fetchBalances() {
     loadingBalances = true;
     const newBalances = new Map<string, string>();
-
-    // Use Hyperlane chain names
-    const hyperlaneChainName = chain === 'solana' ? 'solanamainnet' : 'starknet';
+    const hyperlaneChainName =
+      chain === 'solana' ? 'solanamainnet' : 'starknet';
 
     try {
-      // Fetch balances via Hyperlane API for both chains
       for (const symbol of gameCompatibleSymbols) {
         try {
           const tokenBalance = await bridgeStore.getBalance(
@@ -108,8 +94,6 @@
     }
   }
 
-  // Get token from game data by symbol (works for both chains since bridgable tokens share symbols)
-  // Use case-insensitive matching
   function getToken(symbol: string): Token | undefined {
     return data.availableTokens.find(
       (t) => t.symbol.toUpperCase() === symbol.toUpperCase(),
