@@ -43,10 +43,6 @@ jobs:
         working-directory: ./client
         run: bun install --frozen-lockfile
 
-      - name: "[TEMP] - Build hyperlane-bridge"
-        working-directory: ./packages/hyperlane-bridge
-        run: bun run build
-
       - name: Check client types & usage
         working-directory: ./client
         run: bun run check
