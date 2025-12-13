@@ -2,6 +2,7 @@
   import { Button } from '$lib/components/ui/button';
   import Input from '$lib/components/ui/input/input.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
+  import BridgeSteps from './bridge-steps.svelte';
   import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
   import type { WalletProvider } from '$lib/bridge/types';
   import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
@@ -175,42 +176,14 @@
         {/if}
       </div>
 
-      <!-- Transfer status -->
-      {#if bridgeStore.transferStatus !== 'idle'}
-        <div
-          class="p-2 rounded text-sm {bridgeStore.transferStatus === 'success'
-            ? 'bg-green-900/20 text-green-400'
-            : bridgeStore.transferStatus === 'error'
-              ? 'bg-red-900/20 text-red-400'
-              : 'bg-blue-900/20 text-blue-400'}"
-        >
-          {#if bridgeStore.transferStatus === 'fetching_quote' || bridgeStore.transferStatus === 'building_tx'}
-            <div class="flex items-center gap-2">
-              <RotatingCoin />
-              <span>Preparing transfer...</span>
-            </div>
-          {:else if bridgeStore.transferStatus === 'signing'}
-            <div class="flex items-center gap-2">
-              <RotatingCoin />
-              <span>Please sign in your wallet...</span>
-            </div>
-          {:else if bridgeStore.transferStatus === 'sending'}
-            <div class="flex items-center gap-2">
-              <RotatingCoin />
-              <span>Transferring...</span>
-            </div>
-          {:else if bridgeStore.transferStatus === 'success'}
-            <span>Transfer successful!</span>
-          {/if}
-        </div>
-      {/if}
-
-      <!-- Error display -->
-      {#if bridgeStore.transferError}
-        <div class="p-2 rounded bg-red-900/20 text-red-400 text-sm">
-          {bridgeStore.transferError}
-        </div>
-      {/if}
+      <!-- Transfer progress steps -->
+      <BridgeSteps
+        status={bridgeStore.transferStatus}
+        txHashes={bridgeStore.txHashes}
+        {sourceChain}
+        {destChain}
+        error={bridgeStore.transferError}
+      />
 
       <!-- Transfer buttons -->
       <div class="flex gap-2">
