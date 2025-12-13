@@ -101,7 +101,7 @@ impl ModelListenerTask {
             // It is a duplicate, so ignore it
             return;
         }
-        info!("Successfully saved event!");
+        debug!("Successfully saved event!");
     }
 }
 
@@ -137,7 +137,7 @@ impl Task for ModelListenerTask {
             }
 
             if model_count > 0 {
-                info!("Processed {} new models", model_count);
+                debug!("Processed {} new models", model_count);
             } else {
                 debug!("No new models found");
             }

@@ -4,7 +4,7 @@ use reqwest::{Client, ClientBuilder, IntoUrl, Url};
 use serde::de::DeserializeOwned;
 use std::fmt::Debug;
 use thiserror::Error;
-use tracing::{info, instrument};
+use tracing::{debug, info, instrument};
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -74,7 +74,7 @@ impl SqlClient {
     {
         let query = query.into();
 
-        info!("Making query: {}", query);
+        debug!("Making query: {}", query);
 
         // Make a request to the sql endpoint
         let response = self

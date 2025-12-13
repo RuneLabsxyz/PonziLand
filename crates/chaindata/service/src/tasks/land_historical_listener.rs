@@ -74,7 +74,7 @@ impl LandHistoricalListenerTask {
                 }
             }
             EventDataModel::LandTransfer(land_transfer) => {
-                info!("Received LandTransfer event: {:?}", land_transfer);
+                debug!("Received LandTransfer event: {:?}", land_transfer);
                 if let Err(e) = self.handle_land_transfer(land_transfer, at).await {
                     error!("Failed to handle land transfer event: {}", e);
                 }
@@ -124,7 +124,7 @@ impl LandHistoricalListenerTask {
             })?;
 
         if closed_count > 0 {
-            info!(
+            debug!(
                 "Closed {} previous position(s) for land at location {:?} (bought)",
                 closed_count, location
             );
@@ -149,7 +149,7 @@ impl LandHistoricalListenerTask {
 
         let position_model = LandHistoricalModel::from_land_historical(&position, at.naive_utc());
 
-        info!(
+        debug!(
             "Recording land purchase: {} bought land at location {:?} at {}",
             buyer, location, at
         );
@@ -203,7 +203,7 @@ impl LandHistoricalListenerTask {
             })?;
 
         if closed_count > 0 {
-            info!(
+            debug!(
                 "Closed {} previous position(s) for land at location {:?} (auction won)",
                 closed_count, location
             );
@@ -229,7 +229,7 @@ impl LandHistoricalListenerTask {
 
         let position_model = LandHistoricalModel::from_land_historical(&position, at.naive_utc());
 
-        info!(
+        debug!(
             "Recording auction win: {} won auction for land at location {:?} at {}",
             buyer, location, at
         );
@@ -263,7 +263,7 @@ impl LandHistoricalListenerTask {
                 e
             })?;
 
-        info!(
+        debug!(
             "Closed {} position(s) for land at location {:?} (nuked) at {}",
             closed_count, location, at
         );
@@ -289,7 +289,7 @@ impl LandHistoricalListenerTask {
                 .await?;
 
             for mut position in from_positions {
-                info!(
+                debug!(
                     "Updating outflow for position {} at location {:?}: {} {}",
                     position.id, from_location, amount, token_address
                 );
@@ -321,7 +321,7 @@ impl LandHistoricalListenerTask {
                 .await?;
 
             for mut position in to_positions {
-                info!(
+                debug!(
                     "Updating inflow for position {} at location {:?}: {} {}",
                     position.id, to_location, amount, token_address
                 );
@@ -378,7 +378,7 @@ impl Task for LandHistoricalListenerTask {
                         self.process_event(event.data, event.id, event.at.and_utc()).await;
 
                         if event_count % 10 == 0 {
-                            info!("Processed {} land ownership events", event_count);
+                            debug!("Processed {} land ownership events", event_count);
                         }
                     } else {
                         error!("Event channel closed, stopping land historical listener");

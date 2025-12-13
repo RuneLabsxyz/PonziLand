@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT \n                    id,\n                    address,\n                    first_activity_at,\n                    last_activity_at,\n                    activity_count,\n                    event_types,\n                    created_at,\n                    updated_at\n                FROM wallet_activity\n                WHERE last_activity_at >= (NOW() - INTERVAL '1 week' * $1)::timestamp\n                ORDER BY activity_count DESC, last_activity_at DESC\n                ",
+  "query": "\n            SELECT \n                id,\n                address,\n                first_activity_at,\n                last_activity_at,\n                activity_count,\n                created_at,\n                updated_at\n            FROM wallet_activity\n            WHERE address = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -30,23 +30,18 @@
       },
       {
         "ordinal": 5,
-        "name": "event_types",
-        "type_info": "TextArray"
-      },
-      {
-        "ordinal": 6,
         "name": "created_at",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 7,
+        "ordinal": 6,
         "name": "updated_at",
         "type_info": "Timestamp"
       }
     ],
     "parameters": {
       "Left": [
-        "Float8"
+        "Text"
       ]
     },
     "nullable": [
@@ -56,9 +51,8 @@
       false,
       false,
       false,
-      false,
       false
     ]
   },
-  "hash": "ccb9c062e0a700cb67f5e6cce2dc18c2a88766106d1c8b40a01571c7029ebffd"
+  "hash": "e9070916d5ed4e69748a7991a6cde2a5fc5e79759b45a132a2a997497823bb55"
 }
