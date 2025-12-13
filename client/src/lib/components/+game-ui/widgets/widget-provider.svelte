@@ -19,6 +19,7 @@
   import WidgetCommandCenter from './command-center/widget-command-center.svelte';
   import WidgetShare from './share/widget-share.svelte';
   import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
+  import WidgetHistory from './history/widget-history.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -65,6 +66,8 @@
           <WidgetCommandCenter {setCustomTitle} {setCustomControls} />
         {:else if type === 'share'}
           <WidgetShare position={widget.data?.position} />
+        {:else if type === 'history'}
+          <WidgetHistory />
         {/if}
       {/snippet}
     </Draggable>
