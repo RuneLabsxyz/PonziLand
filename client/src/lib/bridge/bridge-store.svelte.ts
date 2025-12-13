@@ -1,6 +1,3 @@
-// Bridge store - lightweight client-side store that calls ponzixperience API
-// NO Hyperlane SDK imports - all SDK operations happen on the server
-
 import { PUBLIC_BRIDGE_API_URL } from '$env/static/public';
 import { VersionedTransaction } from '@solana/web3.js';
 import type {
@@ -52,7 +49,6 @@ class BridgeStore {
 
   private configPromise: Promise<BridgeConfig> | null = null;
 
-  // Config getters
   get config() {
     return this.configState.config;
   }
@@ -69,7 +65,6 @@ class BridgeStore {
     return this.configState.config !== null;
   }
 
-  // Transfer state getters
   get transferStatus() {
     return this.transferState.status;
   }
@@ -90,14 +85,11 @@ class BridgeStore {
     );
   }
 
-  // Load config from API
   async loadConfig(): Promise<BridgeConfig> {
-    // Return cached config if available
     if (this.configState.config) {
       return this.configState.config;
     }
 
-    // Return existing promise if already loading
     if (this.configPromise) {
       return this.configPromise;
     }
@@ -130,7 +122,6 @@ class BridgeStore {
     return this.configPromise;
   }
 
-  // Get token balance
   async getBalance(
     chainName: string,
     tokenSymbol: string,
@@ -157,7 +148,6 @@ class BridgeStore {
     }
   }
 
-  // Get quote
   async getQuote(
     params: Omit<TransferParams, 'recipient'>,
   ): Promise<QuoteResult> {
@@ -186,23 +176,16 @@ class BridgeStore {
     }
   }
 
-  // Execute transfer
   async executeTransfer(
     params: TransferParams,
     walletProvider: WalletProvider,
   ): Promise<TransferResult> {
-    console.log('[BridgeStore] executeTransfer called with params:', params);
-
-    // Reset state
     this.transferState.status = 'fetching_quote';
     this.transferState.error = null;
     this.transferState.txHashes = [];
 
     try {
-      // 1. Get quote first to check collateral
-      console.log('[BridgeStore] Fetching quote...');
       const quote = await this.getQuote(params);
-      console.log('[BridgeStore] Quote result:', quote);
 
       if (!quote.isCollateralSufficient) {
         throw new Error(
@@ -210,7 +193,6 @@ class BridgeStore {
         );
       }
 
-      // 2. Get unsigned transactions from server
       this.transferState.status = 'building_tx';
 
       const response = await fetch(
@@ -231,7 +213,6 @@ class BridgeStore {
       const { transactions, chainType } =
         txData as TransferTransactionsResponse;
 
-      // 3. Sign and send using wallet
       this.transferState.status = 'signing';
 
       let txHashes: string[];
@@ -259,7 +240,6 @@ class BridgeStore {
         txHashes,
       };
     } catch (err) {
-      console.error('[BridgeStore] Transfer error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       this.transferState.error = errorMessage;
       this.transferState.status = 'error';
@@ -290,17 +270,12 @@ class BridgeStore {
     const txHashes: string[] = [];
 
     for (const tx of transactions) {
-      console.log('Executing Starknet transaction:', tx);
-
       const result = await account.execute({
         contractAddress: tx.contractAddress,
         entrypoint: tx.entrypoint,
         calldata: tx.calldata,
       });
-
-      const txHash = result.transaction_hash;
-      console.log('Transaction hash:', txHash);
-      txHashes.push(txHash);
+      txHashes.push(result.transaction_hash);
     }
 
     return txHashes;
@@ -329,20 +304,12 @@ class BridgeStore {
     const txHashes: string[] = [];
 
     for (const tx of transactions) {
-      console.log('Executing Solana transaction');
-
-      // Deserialize the transaction
       const serialized = Buffer.from(tx.serializedTransaction, 'base64');
       const transaction = VersionedTransaction.deserialize(serialized);
-
-      // Sign and send via Phantom
       const result = await wallet.signAndSendTransaction(transaction, {
         skipPreflight: false,
       });
-
-      const signature = result.signature;
-      console.log('Transaction signature:', signature);
-      txHashes.push(signature);
+      txHashes.push(result.signature);
     }
 
     return txHashes;
@@ -359,5 +326,4 @@ class BridgeStore {
   }
 }
 
-// Export singleton instance
 export const bridgeStore = new BridgeStore();
