@@ -39,12 +39,13 @@ WORKDIR /app/client
 
 # Copy application code
 COPY ./client /app/client
-COPY ./packages /app/packages
 COPY ./client/test.json ./manifest.json
 
 COPY ./contracts/manifest_*.json /app/contracts/
 
-RUN cd /app/packages/hyperlane-bridge && bun run build
+
+
+RUN ls -la .
 
 # Accept build arguments
 ARG POSTHOG_KEY

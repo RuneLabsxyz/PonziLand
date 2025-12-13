@@ -3,22 +3,9 @@ import wasm from 'vite-plugin-wasm';
 import { defineConfig } from 'vitest/config';
 import glsl from 'vite-plugin-glsl';
 import process from 'node:process';
-import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  plugins: [
-    glsl(),
-    sveltekit(),
-    wasm(),
-    nodePolyfills({
-      globals: {
-        Buffer: true,
-        global: true,
-        process: true,
-      },
-      protocolImports: true,
-    }),
-  ],
+  plugins: [glsl(), sveltekit(), wasm()],
   build: {
     sourcemap: false,
     minify: false,
@@ -28,7 +15,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 3000,
     fs: {
-      allow: ['..'],
+      allow: ['../constracts/manifest_*.json', 'data/'],
     },
   },
   resolve: {
@@ -41,6 +28,7 @@ export default defineConfig({
   define: {
     global: {},
   },
+
   ssr: {
     noExternal: ['@dojoengine/torii-wasm'],
   },
