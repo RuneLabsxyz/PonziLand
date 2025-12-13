@@ -27,8 +27,7 @@ export class SvelteController extends Controller implements AccountProvider {
         this._username = await super.username();
 
         console.info(
-          `User ${this.getUsername()} has logged in successfully!\nAddress; ${
-            this._account?.address
+          `User ${this.getUsername()} has logged in successfully!\nAddress; ${this._account?.address
           }`,
         );
 
@@ -74,7 +73,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
 const accountKey = Symbol('controller');
 
-export async function connect(controller: SvelteController) {}
+export async function connect(controller: SvelteController) { }
 
 function a2hex(str: string): string {
   var arr = [];
@@ -105,6 +104,32 @@ export async function setupController(
   });
 
   console.info('Starting controller!');
+
+  // Check if the controller is already connected
+  if (await controller.probe()) {
+    await controller.connect();
+  }
+
+  return controller;
+}
+
+export async function setupPhantomController(
+  config: DojoConfig,
+): Promise<SvelteController | undefined> {
+  if (typeof window === 'undefined') {
+    // We are on the server. Return nothing.
+    return undefined;
+  }
+
+  const controller = new SvelteController({
+    defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
+    chains: [{ rpcUrl: config.rpcUrl }],
+    preset: 'ponziland',
+    policies: preset.chains.SN_MAIN.policies as any,
+    signupOptions: ['phantom-evm'],
+  });
+
+  console.info('Starting phantom controller!');
 
   // Check if the controller is already connected
   if (await controller.probe()) {
