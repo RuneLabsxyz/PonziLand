@@ -8,6 +8,8 @@ export const ENABLE_GUILD = false;
 
 export const ENABLE_LEADERBOARD = false;
 
+export const ENABLE_BRIDGE = true;
+
 /**
  * The maximum amount (in the base currency, so STRK), that can be staked inside of a land.
  * If set to 0, no maximum.
