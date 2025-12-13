@@ -1,4 +1,5 @@
 import { PUBLIC_BRIDGE_API_URL } from '$env/static/public';
+import { Buffer } from 'buffer';
 import { VersionedTransaction } from '@solana/web3.js';
 import type {
   BridgeConfig,
