@@ -34,6 +34,7 @@
         "@reown/appkit": "^1.6.8",
         "@reown/appkit-adapter-ethers": "^1.6.8",
         "@runelabsxyz/socialink-sdk": "catalog:",
+        "@solana/web3.js": "^1.98.4",
         "@starknet-io/get-starknet-core": "catalog:",
         "@starknet-io/types-js": "catalog:",
         "@sv-use/core": "^1.15.1",
