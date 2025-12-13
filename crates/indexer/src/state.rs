@@ -1,9 +1,7 @@
 use std::sync::Arc;
 
 use axum::extract::FromRef;
-use chaindata_repository::{
-    LandHistoricalRepository, LandRepository, PriceFeedRepository, WalletActivityRepository,
-};
+use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository};
 
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 
@@ -15,7 +13,6 @@ pub struct AppState {
     pub land_repository: Arc<LandRepository>,
     pub land_historical_repository: Arc<LandHistoricalRepository>,
     pub wallet_activity_repository: Arc<WalletActivityRepository>,
-    pub price_feed_repository: Arc<PriceFeedRepository>,
 }
 
 impl AppState {
@@ -26,7 +23,6 @@ impl AppState {
         land_repository: Arc<LandRepository>,
         land_historical_repository: Arc<LandHistoricalRepository>,
         wallet_activity_repository: Arc<WalletActivityRepository>,
-        price_feed_repository: Arc<PriceFeedRepository>,
     ) -> Self {
         Self {
             token_service,
@@ -35,7 +31,6 @@ impl AppState {
             land_repository,
             land_historical_repository,
             wallet_activity_repository,
-            price_feed_repository,
         }
     }
 }
@@ -73,11 +68,5 @@ impl FromRef<AppState> for Arc<LandHistoricalRepository> {
 impl FromRef<AppState> for Arc<WalletActivityRepository> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.wallet_activity_repository.clone()
-    }
-}
-
-impl FromRef<AppState> for Arc<PriceFeedRepository> {
-    fn from_ref(app_state: &AppState) -> Self {
-        app_state.price_feed_repository.clone()
     }
 }

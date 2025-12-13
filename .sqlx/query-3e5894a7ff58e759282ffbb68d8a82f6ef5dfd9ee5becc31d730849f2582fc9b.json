@@ -1,0 +1,16 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO wallet_activity (\n                address, \n                first_activity_at, \n                last_activity_at, \n                activity_count, \n                event_types\n            )\n            VALUES ($1, $2, $2, 1, ARRAY[$3])\n            ON CONFLICT (address) DO UPDATE SET\n                last_activity_at = $2,\n                activity_count = wallet_activity.activity_count + 1,\n                event_types = (\n                    SELECT ARRAY(\n                        SELECT DISTINCT unnest(wallet_activity.event_types || ARRAY[$3])\n                    )\n                ),\n                updated_at = NOW()\n            ",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "3e5894a7ff58e759282ffbb68d8a82f6ef5dfd9ee5becc31d730849f2582fc9b"
+}

@@ -95,7 +95,7 @@ impl EventListenerTask {
             // It is a duplicate, so ignore it
             return;
         }
-        debug!("Successfully saved event!");
+        info!("Successfully saved event!");
 
         // Determine destinations first, then forward in parallel so queues progress independently
         use chaindata_models::events::EventDataModel;
@@ -181,7 +181,7 @@ impl Task for EventListenerTask {
             }
 
             if event_count > 0 {
-                debug!("Processed {} new events", event_count);
+                info!("Processed {} new events", event_count);
             } else {
                 debug!("No new events found");
             }

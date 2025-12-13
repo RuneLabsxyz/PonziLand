@@ -9,9 +9,7 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_repository::{
-    LandHistoricalRepository, LandRepository, PriceFeedRepository, WalletActivityRepository,
-};
+use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository};
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
@@ -22,9 +20,7 @@ use routes::{
     wallets::WalletsRoute,
 };
 use serde::{Deserialize, Serialize};
-use service::{
-    avnu::AvnuService, ekubo::EkuboService, price_feed::PriceFeedService, token::TokenService,
-};
+use service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 use sqlx::{postgres::PgConnectOptions, ConnectOptions, PgPool};
 use state::AppState;
 use tokio::{
@@ -118,17 +114,6 @@ async fn main() -> Result<()> {
     let land_repository = Arc::new(LandRepository::new(pool.clone()));
     let land_historical_repository = Arc::new(LandHistoricalRepository::new(pool.clone()));
     let wallet_activity_repository = Arc::new(WalletActivityRepository::new(pool.clone()));
-    let price_feed_repository = Arc::new(PriceFeedRepository::new(pool.clone()));
-
-    // Start price feed service to record prices every minute
-    let _price_feed_service = PriceFeedService::new(
-        token_service.clone(),
-        avnu.clone(),
-        ekubo.clone(),
-        price_feed_repository.clone(),
-        &monitor,
-    )
-    .with_context(|| "Error while setting up price feed service")?;
 
     let app_state = AppState {
         token_service: token_service.clone(),
@@ -137,7 +122,6 @@ async fn main() -> Result<()> {
         land_repository,
         land_historical_repository,
         wallet_activity_repository,
-        price_feed_repository,
     };
 
     let cors = CorsLayer::new()
