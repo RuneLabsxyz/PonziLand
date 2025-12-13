@@ -186,7 +186,7 @@ impl Task for WalletActivityListenerTask {
                         self.process_event(event.data, event.id, event.at.and_utc()).await;
 
                         if event_count % 50 == 0 {
-                            debug!("Processed {} events for wallet activity tracking", event_count);
+                            info!("Processed {} events for wallet activity tracking", event_count);
                         }
                     } else {
                         error!("Event channel closed, stopping wallet activity listener");

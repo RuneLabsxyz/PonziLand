@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n                SELECT \n                    id,\n                    address,\n                    first_activity_at,\n                    last_activity_at,\n                    activity_count,\n                    created_at,\n                    updated_at\n                FROM wallet_activity\n                ORDER BY activity_count DESC, last_activity_at DESC\n                ",
+  "query": "\n            SELECT \n                id,\n                address,\n                first_activity_at,\n                last_activity_at,\n                activity_count,\n                event_types,\n                created_at,\n                updated_at\n            FROM wallet_activity\n            WHERE address = $1\n            ",
   "describe": {
     "columns": [
       {
@@ -30,19 +30,27 @@
       },
       {
         "ordinal": 5,
+        "name": "event_types",
+        "type_info": "TextArray"
+      },
+      {
+        "ordinal": 6,
         "name": "created_at",
         "type_info": "Timestamp"
       },
       {
-        "ordinal": 6,
+        "ordinal": 7,
         "name": "updated_at",
         "type_info": "Timestamp"
       }
     ],
     "parameters": {
-      "Left": []
+      "Left": [
+        "Text"
+      ]
     },
     "nullable": [
+      false,
       false,
       false,
       false,
@@ -52,5 +60,5 @@
       false
     ]
   },
-  "hash": "de296f20096f6ee73781a17f77cd786ebe2e330ede8377d535a071f7436ed13f"
+  "hash": "090916148ebe026ed1093a371b32a5f874ff463cae725cbf7ba19236eb289207"
 }
