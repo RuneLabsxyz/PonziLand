@@ -9,7 +9,6 @@
   import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
   import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
   import { accountState } from '$lib/account.svelte';
-  import { walletStore } from '$lib/stores/wallet.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { Token } from '$lib/interfaces';
 
@@ -62,8 +61,7 @@
   let balances = $state<Map<string, string>>(new Map());
   let loadingBalances = $state(false);
 
-  // For Starknet, get balances from walletStore
-  // For Solana, fetch via Hyperlane
+  // Fetch balances via Hyperlane API for both chains
   $effect(() => {
     if (isConnected && walletAddress && gameCompatibleSymbols.length > 0) {
       fetchBalances();
@@ -74,38 +72,26 @@
     loadingBalances = true;
     const newBalances = new Map<string, string>();
 
+    // Use Hyperlane chain names
+    const hyperlaneChainName = chain === 'solana' ? 'solanamainnet' : 'starknet';
+
     try {
-      if (chain === 'starknet') {
-        // Use existing wallet store for Starknet balances
-        for (const symbol of gameCompatibleSymbols) {
-          const token = data.availableTokens.find((t) => t.symbol === symbol);
-          if (token) {
-            const balance = walletStore.getBalance(token.address);
-            if (balance) {
-              newBalances.set(symbol, balance.toString());
-            } else {
-              newBalances.set(symbol, '0');
-            }
-          }
-        }
-      } else {
-        // Fetch Solana balances via Hyperlane
-        for (const symbol of gameCompatibleSymbols) {
-          try {
-            const tokenBalance = await bridgeStore.getBalance(
-              'solanamainnet',
-              symbol,
-              walletAddress,
-            );
-            if (tokenBalance) {
-              newBalances.set(symbol, tokenBalance.formatted);
-            } else {
-              newBalances.set(symbol, '0');
-            }
-          } catch (err) {
-            console.error(`Error fetching ${symbol} balance:`, err);
+      // Fetch balances via Hyperlane API for both chains
+      for (const symbol of gameCompatibleSymbols) {
+        try {
+          const tokenBalance = await bridgeStore.getBalance(
+            hyperlaneChainName,
+            symbol,
+            walletAddress,
+          );
+          if (tokenBalance) {
+            newBalances.set(symbol, tokenBalance.formatted);
+          } else {
             newBalances.set(symbol, '0');
           }
+        } catch (err) {
+          console.error(`Error fetching ${symbol} balance on ${chain}:`, err);
+          newBalances.set(symbol, '0');
         }
       }
     } finally {
