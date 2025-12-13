@@ -27,7 +27,8 @@ export class SvelteController extends Controller implements AccountProvider {
         this._username = await super.username();
 
         console.info(
-          `User ${this.getUsername()} has logged in successfully!\nAddress; ${this._account?.address
+          `User ${this.getUsername()} has logged in successfully!\nAddress; ${
+            this._account?.address
           }`,
         );
 
@@ -73,7 +74,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
 const accountKey = Symbol('controller');
 
-export async function connect(controller: SvelteController) { }
+export async function connect(controller: SvelteController) {}
 
 function a2hex(str: string): string {
   var arr = [];
