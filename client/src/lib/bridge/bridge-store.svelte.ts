@@ -191,6 +191,8 @@ class BridgeStore {
     params: TransferParams,
     walletProvider: WalletProvider,
   ): Promise<TransferResult> {
+    console.log('[BridgeStore] executeTransfer called with params:', params);
+
     // Reset state
     this.transferState.status = 'fetching_quote';
     this.transferState.error = null;
@@ -198,7 +200,9 @@ class BridgeStore {
 
     try {
       // 1. Get quote first to check collateral
+      console.log('[BridgeStore] Fetching quote...');
       const quote = await this.getQuote(params);
+      console.log('[BridgeStore] Quote result:', quote);
 
       if (!quote.isCollateralSufficient) {
         throw new Error(
@@ -255,6 +259,7 @@ class BridgeStore {
         txHashes,
       };
     } catch (err) {
+      console.error('[BridgeStore] Transfer error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
       this.transferState.error = errorMessage;
       this.transferState.status = 'error';

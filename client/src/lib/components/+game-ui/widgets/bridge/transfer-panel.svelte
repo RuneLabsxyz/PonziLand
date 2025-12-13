@@ -55,6 +55,24 @@
       !bridgeStore.isLoading,
   );
 
+  // Debug: log canTransfer state
+  $effect(() => {
+    console.log('[Bridge] canTransfer state:', {
+      canTransfer,
+      selectedToken,
+      transferDirection,
+      sourceWalletConnected,
+      destWalletConnected,
+      amount,
+      sourceBalance,
+      amountValid: amount ? parseFloat(amount) > 0 : false,
+      amountInBalance: amount
+        ? parseFloat(amount) <= parseFloat(sourceBalance || '0')
+        : false,
+      isLoading: bridgeStore.isLoading,
+    });
+  });
+
   function handleMaxClick() {
     if (sourceBalance) {
       amount = sourceBalance;
@@ -62,12 +80,28 @@
   }
 
   async function handleTransfer() {
+    console.log('[Bridge] handleTransfer called', {
+      selectedToken,
+      transferDirection,
+      sourceAddress,
+      destAddress,
+      sourceChain,
+      destChain,
+      amount,
+    });
+
     if (
       !selectedToken ||
       !transferDirection ||
       !sourceAddress ||
       !destAddress
     ) {
+      console.warn('[Bridge] Early return - missing required fields', {
+        selectedToken: !!selectedToken,
+        transferDirection: !!transferDirection,
+        sourceAddress: !!sourceAddress,
+        destAddress: !!destAddress,
+      });
       return;
     }
 
@@ -108,11 +142,20 @@
     }
   }
 
-  // Clear error when inputs change
+  // Track previous values to detect actual changes (not just presence)
+  let prevSelectedToken = $state<string | null>(null);
+  let prevAmount = $state('');
+
+  // Clear error only when inputs actually change, not just when they exist
   $effect(() => {
-    if (bridgeStore.transferError && (selectedToken || amount)) {
-      bridgeStore.clearError();
+    if (bridgeStore.transferError) {
+      if (selectedToken !== prevSelectedToken || amount !== prevAmount) {
+        console.log('[Bridge] Clearing error due to input change');
+        bridgeStore.clearError();
+      }
     }
+    prevSelectedToken = selectedToken;
+    prevAmount = amount;
   });
 </script>
 
