@@ -210,7 +210,7 @@
   },
   "catalog": {
     "@argent/x-sessions": "=8.0.1",
-    "@cartridge/controller": "=0.10.7",
+    "@cartridge/controller": "=0.11.3",
     "@cartridge/presets": "=0.5.2",
     "@lucide/svelte": "=0.482.0",
     "@runelabsxyz/socialink-sdk": "=0.3.1",
@@ -304,9 +304,9 @@
 
     "@capsizecss/unpack": ["@capsizecss/unpack@3.0.1", "", { "dependencies": { "fontkit": "^2.0.2" } }, "sha512-8XqW8xGn++Eqqbz3e9wKuK7mxryeRjs4LOHLxbh2lwKeSbuNR4NFifDZT4KzvjU6HMOPbiNTsWpniK5EJfTWkg=="],
 
-    "@cartridge/controller": ["@cartridge/controller@0.10.7", "", { "dependencies": { "@cartridge/controller-wasm": "^0.3.7", "@cartridge/penpal": "^6.2.4", "@starknet-io/types-js": "0.9.1", "@telegram-apps/sdk": "^2.4.0", "@turnkey/sdk-browser": "^4.0.0", "@walletconnect/ethereum-provider": "^2.20.0", "bs58": "^6.0.0", "cbor-x": "^1.5.0", "ethers": "^6.13.5", "micro-sol-signer": "^0.5.0", "mipd": "^0.0.7", "open": "^10.1.0", "starknet": "^8.5.2" } }, "sha512-fcAPIB8q3wkXYUjtbIBJV878kkRLHfqG0Hv4rIx+RqBaGQs4XLHvyTptyRtWEfHhjovkSyZ/TuZ+ySW9yRYApw=="],
+    "@cartridge/controller": ["@cartridge/controller@0.11.3", "", { "dependencies": { "@cartridge/controller-wasm": "0.8.0", "@cartridge/penpal": "^6.2.4", "@starknet-io/types-js": "0.9.1", "@telegram-apps/sdk": "^2.4.0", "@turnkey/sdk-browser": "^4.0.0", "@walletconnect/ethereum-provider": "^2.20.0", "bs58": "^6.0.0", "cbor-x": "^1.5.0", "ethers": "^6.13.5", "micro-sol-signer": "^0.5.0", "mipd": "^0.0.7", "open": "^10.1.0", "starknet": "^8.5.2" } }, "sha512-oJ7sGO0o6PJCr09Hi5jHQitLDC7AcKa3hSOOYsc6txMe72Y6hoSgI/By/iqUjKA77ntAVhYicx6GX9YQy8Hm3g=="],
 
-    "@cartridge/controller-wasm": ["@cartridge/controller-wasm@0.3.19", "", {}, "sha512-dz+Clq3ji1+zQzylBUKJJrrTo4AgB98xIZgzfKkTk9yo24WfItZPoWZ8DhyJovVfrSHpi3WLa1cRvfHieoMIQg=="],
+    "@cartridge/controller-wasm": ["@cartridge/controller-wasm@0.8.0", "", {}, "sha512-wxwrIMceVX/xyfv8z43sF+hCGunQZ6kV/h+VlZn8beDP3rlAEMTaSpjBox1YhKp+xImT4KvxuCSR6+3vVDJFMA=="],
 
     "@cartridge/penpal": ["@cartridge/penpal@6.2.4", "", {}, "sha512-tdpOnSJJBFMlgLZ1+z9Ho5e6cG5EgMAb1Cmmh1lGT2tmplogU/XPMjLE6CwvKAPDoe6a38iMnbH+ySTAWWIOKA=="],
 
