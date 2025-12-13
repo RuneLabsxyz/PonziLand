@@ -113,3 +113,29 @@ export async function setupController(
 
   return controller;
 }
+
+export async function setupPhantomController(
+  config: DojoConfig,
+): Promise<SvelteController | undefined> {
+  if (typeof window === 'undefined') {
+    // We are on the server. Return nothing.
+    return undefined;
+  }
+
+  const controller = new SvelteController({
+    defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
+    chains: [{ rpcUrl: config.rpcUrl }],
+    preset: 'ponziland',
+    policies: preset.chains.SN_MAIN.policies as any,
+    signupOptions: ['phantom-evm'],
+  });
+
+  console.info('Starting phantom controller!');
+
+  // Check if the controller is already connected
+  if (await controller.probe()) {
+    await controller.connect();
+  }
+
+  return controller;
+}
