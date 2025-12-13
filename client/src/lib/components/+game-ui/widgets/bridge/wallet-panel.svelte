@@ -49,7 +49,7 @@
   let balances = $state<Map<string, string>>(new Map());
   let loadingBalances = $state(false);
 
-  // Fetch balances via Hyperlane API for both chains
+  // Fetch balances on connect
   $effect(() => {
     if (isConnected && walletAddress && gameCompatibleSymbols.length > 0) {
       fetchBalances();
@@ -94,6 +94,16 @@
     }
   }
 
+  async function handleDisconnect() {
+    if (chain === 'solana') {
+      await phantomWalletStore.disconnect();
+      balances = new Map();
+    } else {
+      await accountManager?.disconnect();
+      balances = new Map();
+    }
+  }
+
   function getToken(symbol: string): Token | undefined {
     return data.availableTokens.find(
       (t) => t.symbol.toUpperCase() === symbol.toUpperCase(),
@@ -111,7 +121,7 @@
 </script>
 
 <div class="flex flex-col">
-  <!-- Header - matches wallet-balance.svelte style -->
+  <!-- Header -->
   <div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
     <span class="font-ponzi-number">{title}</span>
     {#if isConnected && walletAddress}
@@ -119,15 +129,38 @@
         <span class="text-xs text-gray-500 font-mono">
           {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
         </span>
+        <button
+          type="button"
+          class="text-[10px] text-gray-400 hover:text-gray-300 transition-colors {loadingBalances
+            ? 'animate-spin'
+            : ''}"
+          onclick={fetchBalances}
+          disabled={loadingBalances}
+          title="Refresh balances"
+        >
+          ⟳
+        </button>
+        <button
+          type="button"
+          class="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+          onclick={handleDisconnect}
+          title="Disconnect"
+        >
+          ✕
+        </button>
       </div>
     {/if}
   </div>
 
-  <!-- Content - matches wallet-balance.svelte token list style -->
+  <!-- Content -->
   {#if !isConnected}
     <div class="flex flex-col items-center justify-center gap-3 py-4">
-      <div class="text-sm text-gray-400">Connect Phantom wallet</div>
-      <Button size="sm" onclick={handleConnect}>Connect Phantom</Button>
+      <div class="text-sm text-gray-400">
+        Connect {chain === 'solana' ? 'Phantom' : 'Starknet'} wallet
+      </div>
+      <Button size="sm" onclick={handleConnect}>
+        Connect {chain === 'solana' ? 'Phantom' : 'Starknet'}
+      </Button>
     </div>
   {:else if loadingBalances}
     <div class="flex items-center justify-center py-8">
