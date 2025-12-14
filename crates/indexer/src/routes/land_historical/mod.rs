@@ -42,8 +42,12 @@ pub struct LandHistoricalQuery {
 
 #[derive(Debug, Deserialize)]
 pub struct LeaderboardQuery {
+    /// Number of days to look back (default: 7). Ignored if `since` is provided.
     #[serde(default = "default_days")]
     pub days: u32,
+    /// ISO 8601 timestamp to filter from (e.g., "2024-12-01T00:00:00" or "2024-12-01T00:00:00Z").
+    /// If provided, `days` is ignored. Useful for tournaments with a specific start time.
+    pub since: Option<String>,
 }
 
 fn default_days() -> u32 {
@@ -60,7 +64,8 @@ pub struct LeaderboardEntry {
 #[derive(Debug, Clone, Serialize)]
 pub struct LeaderboardResponse {
     pub entries: Vec<LeaderboardEntry>,
-    pub period_days: u32,
+    /// The timestamp from which positions were queried
+    pub since: String,
 }
 
 pub struct LandHistoricalRoute;
@@ -194,11 +199,21 @@ impl LandHistoricalRoute {
         Query(query): Query<LeaderboardQuery>,
         State(land_historical_repository): State<Arc<LandHistoricalRepository>>,
     ) -> Result<Json<LeaderboardResponse>, axum::http::StatusCode> {
-        // Calculate the "since" timestamp based on days parameter
-        let since = Utc::now()
-            .naive_utc()
-            .checked_sub_signed(Duration::days(i64::from(query.days)))
-            .ok_or(axum::http::StatusCode::BAD_REQUEST)?;
+        // Determine the "since" timestamp: use explicit `since` param if provided, otherwise calculate from `days`
+        let since = if let Some(since_str) = &query.since {
+            // Parse ISO 8601 timestamp (supports both "2024-12-01T00:00:00" and "2024-12-01T00:00:00Z")
+            chrono::NaiveDateTime::parse_from_str(since_str, "%Y-%m-%dT%H:%M:%S")
+                .or_else(|_| {
+                    chrono::DateTime::parse_from_rfc3339(since_str).map(|dt| dt.naive_utc())
+                })
+                .map_err(|_| axum::http::StatusCode::BAD_REQUEST)?
+        } else {
+            // Fall back to calculating from days
+            Utc::now()
+                .naive_utc()
+                .checked_sub_signed(Duration::days(i64::from(query.days)))
+                .ok_or(axum::http::StatusCode::BAD_REQUEST)?
+        };
 
         // Fetch all closed positions since the given date
         let positions = land_historical_repository
@@ -273,7 +288,7 @@ impl LandHistoricalRoute {
 
         Ok(Json(LeaderboardResponse {
             entries,
-            period_days: query.days,
+            since: since.to_string(),
         }))
     }
 }
