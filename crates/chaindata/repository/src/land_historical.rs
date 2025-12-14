@@ -243,4 +243,38 @@ impl Repository {
         .fetch_all(&mut *(self.db.acquire().await?))
         .await
     }
+
+    /// Gets all closed positions since a given date (for leaderboard)
+    pub async fn get_closed_positions_since(
+        &self,
+        since: NaiveDateTime,
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
+        query_as!(
+            LandHistoricalModel,
+            r#"
+            SELECT
+                id,
+                at,
+                owner,
+                land_location as "land_location: Location",
+                time_bought,
+                close_date,
+                close_reason as "close_reason: CloseReason",
+                buy_cost_token as "buy_cost_token: U256",
+                buy_cost_usd as "buy_cost_usd: U256",
+                buy_token_used,
+                sale_revenue_token as "sale_revenue_token: U256",
+                sale_revenue_usd as "sale_revenue_usd: U256",
+                sale_token_used,
+                token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
+                token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
+            FROM land_historical
+            WHERE close_date IS NOT NULL AND close_date >= $1
+            ORDER BY close_date DESC
+            "#,
+            since
+        )
+        .fetch_all(&mut *(self.db.acquire().await?))
+        .await
+    }
 }
