@@ -4,6 +4,7 @@
   import { RefreshCw } from 'lucide-svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import TournamentLeaderboard from './tournament-leaderboard.svelte';
+  import Button from '$lib/components/ui/button/button.svelte';
   import {
     fetchTournamentLeaderboard,
     sortEntriesByRankingMode,
@@ -84,7 +85,7 @@
 
   <!-- Tab buttons -->
   <div class="flex border-b border-gray-700">
-    <button
+    <Button
       class="flex-1 py-2 text-sm font-medium transition-colors {rankingMode ===
       'best'
         ? 'bg-purple-600 text-white'
@@ -92,8 +93,8 @@
       onclick={() => (rankingMode = 'best')}
     >
       Best Position
-    </button>
-    <button
+    </Button>
+    <Button
       class="flex-1 py-2 text-sm font-medium transition-colors {rankingMode ===
       'total'
         ? 'bg-purple-600 text-white'
@@ -101,7 +102,7 @@
       onclick={() => (rankingMode = 'total')}
     >
       Total PnL
-    </button>
+    </Button>
   </div>
 
   <!-- Content -->
