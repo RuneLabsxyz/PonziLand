@@ -33,6 +33,7 @@
   });
 
   async function refresh() {
+    if (isRefreshing) return;
     isRefreshing = true;
     leaderboardPromise = null;
 
