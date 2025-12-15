@@ -79,7 +79,6 @@ impl LandHistoricalRoute {
 
     pub fn router(self) -> Router<AppState> {
         Router::new()
-            // Leaderboard route must come before /{owner} to avoid path conflicts
             .route("/leaderboard", get(Self::get_leaderboard))
             .route("/{owner}", get(Self::get_positions_by_owner))
             .route("/{owner}/count", get(Self::get_position_count))
