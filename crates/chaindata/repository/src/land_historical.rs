@@ -277,4 +277,84 @@ impl Repository {
         .fetch_all(&mut *(self.db.acquire().await?))
         .await
     }
+
+    /// Gets all closed positions between two dates (for spectator mode timeline)
+    /// If `until` is None, no upper bound is applied.
+    pub async fn get_closed_positions_between(
+        &self,
+        since: NaiveDateTime,
+        until: Option<NaiveDateTime>,
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
+        match until {
+            Some(until_dt) => {
+                query_as!(
+                    LandHistoricalModel,
+                    r#"
+                    SELECT
+                        id,
+                        at,
+                        owner,
+                        land_location as "land_location: Location",
+                        time_bought,
+                        close_date,
+                        close_reason as "close_reason: CloseReason",
+                        buy_cost_token as "buy_cost_token: U256",
+                        buy_cost_usd as "buy_cost_usd: U256",
+                        buy_token_used,
+                        sale_revenue_token as "sale_revenue_token: U256",
+                        sale_revenue_usd as "sale_revenue_usd: U256",
+                        sale_token_used,
+                        token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
+                        token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
+                    FROM land_historical
+                    WHERE close_date IS NOT NULL
+                      AND close_date >= $1
+                      AND close_date <= $2
+                    ORDER BY close_date ASC
+                    "#,
+                    since,
+                    until_dt
+                )
+                .fetch_all(&mut *(self.db.acquire().await?))
+                .await
+            }
+            None => self.get_closed_positions_since(since).await,
+        }
+    }
+
+    /// Gets all positions that were active at a specific timestamp (for spectator mode snapshot)
+    /// Returns positions where: time_bought <= at AND (close_date IS NULL OR close_date > at)
+    pub async fn get_snapshot_at(
+        &self,
+        at: NaiveDateTime,
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
+        query_as!(
+            LandHistoricalModel,
+            r#"
+            SELECT
+                id,
+                at,
+                owner,
+                land_location as "land_location: Location",
+                time_bought,
+                close_date,
+                close_reason as "close_reason: CloseReason",
+                buy_cost_token as "buy_cost_token: U256",
+                buy_cost_usd as "buy_cost_usd: U256",
+                buy_token_used,
+                sale_revenue_token as "sale_revenue_token: U256",
+                sale_revenue_usd as "sale_revenue_usd: U256",
+                sale_token_used,
+                token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
+                token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
+            FROM land_historical
+            WHERE time_bought <= $1
+              AND (close_date IS NULL OR close_date > $1)
+            ORDER BY land_location ASC
+            "#,
+            at
+        )
+        .fetch_all(&mut *(self.db.acquire().await?))
+        .await
+    }
 }
