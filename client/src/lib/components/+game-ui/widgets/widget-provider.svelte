@@ -18,6 +18,7 @@
   import WidgetDisclaimer from './disclaimer/widget-disclaimer.svelte';
   import WidgetCommandCenter from './command-center/widget-command-center.svelte';
   import WidgetShare from './share/widget-share.svelte';
+  import WidgetTournament from './tournament/widget-tournament.svelte';
   import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
 </script>
 
@@ -65,6 +66,8 @@
           <WidgetCommandCenter {setCustomTitle} {setCustomControls} />
         {:else if type === 'share'}
           <WidgetShare position={widget.data?.position} />
+        {:else if type === 'tournament'}
+          <WidgetTournament {setCustomTitle} {setCustomControls} />
         {/if}
       {/snippet}
     </Draggable>
