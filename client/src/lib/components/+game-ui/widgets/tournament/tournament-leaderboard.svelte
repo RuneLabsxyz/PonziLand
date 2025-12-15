@@ -139,12 +139,12 @@
 
           <!-- Player Name -->
           <div class="flex items-center gap-2 truncate">
-            <span class="truncate" title={entry.owner}>
+            <span class="truncate text-base font-medium" title={entry.owner}>
               {getDisplayName(entry.owner)}
             </span>
             {#if isUser}
               <span
-                class="text-[10px] bg-purple-600 text-white px-1.5 py-0.5 rounded"
+                class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded"
               >
                 You
               </span>
@@ -245,12 +245,12 @@
 
           <!-- Player Name -->
           <div class="flex items-center gap-1 truncate">
-            <span class="truncate text-[11px]" title={owner}>
+            <span class="truncate text-base font-medium" title={owner}>
               {getDisplayName(owner)}
             </span>
             {#if isUser}
               <span
-                class="text-[8px] bg-purple-600 text-white px-1 py-0.5 rounded shrink-0"
+                class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded shrink-0"
               >
                 You
               </span>

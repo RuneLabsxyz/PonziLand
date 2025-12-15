@@ -101,7 +101,7 @@
         : 'bg-gray-800 text-gray-400 hover:text-white'}"
       onclick={() => (rankingMode = 'total')}
     >
-      Total PnL
+      Best PnL
     </Button>
   </div>
 
