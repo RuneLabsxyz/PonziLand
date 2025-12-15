@@ -2,6 +2,11 @@
   import account from '$lib/account.svelte';
   import type { LandSetup, LandWithActions } from '$lib/api/land';
   import ThreeDots from '$lib/components/loading-screen/three-dots.svelte';
+  import {
+    nextStep,
+    tutorialAttribute,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
@@ -9,24 +14,17 @@
   import { useAccount } from '$lib/contexts/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { TabType, Token } from '$lib/interfaces';
-  import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
-  import { walletStore } from '$lib/stores/wallet.svelte';
-  import { locationToCoordinates, padAddress } from '$lib/utils';
+  import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
+  import { widgetsStore } from '$lib/stores/widgets.store';
+  import { padAddress } from '$lib/utils';
   import { formatWithoutExponential } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import type { CairoCustomEnum } from 'starknet';
   import { untrack } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
-  import {
-    nextStep,
-    tutorialAttribute,
-    tutorialState,
-  } from '$lib/components/tutorial/stores.svelte';
-  import { Card } from '$lib/components/ui/card';
-  import { widgetsStore } from '$lib/stores/widgets.store';
 
   let {
     land,
@@ -40,16 +38,7 @@
     auctionPrice?: CurrencyAmount;
   } = $props();
 
-  let baseToken = $derived.by(() => {
-    const selectedAddress = settingsStore.selectedBaseTokenAddress;
-    const targetAddress = selectedAddress || data.mainCurrencyAddress;
-    return (
-      data.availableTokens.find((token) => token.address === targetAddress) ||
-      data.availableTokens.find(
-        (token) => token.address === data.mainCurrencyAddress,
-      )!
-    );
-  });
+  let baseToken = $derived(getBaseToken());
 
   let isOwner = $derived(
     padAddress(account.address ?? '') == padAddress(land.owner),
@@ -143,6 +132,11 @@
   let sellPriceInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
     if (!selectedToken || !sellPriceAmount) return null;
 
+    console.log(
+      'Calculating sell price in base currency',
+      baseToken,
+      selectedToken,
+    );
     // If already in base currency, return null (no conversion needed)
     if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
       return null;
@@ -514,6 +508,27 @@
 
       <div class="flex gap-2 items-center my-4">
         <div class="flex-1">
+          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
+          <p class="-mt-1 mb-1 opacity-75 leading-none">
+            What is paid to you when your land is bought out by another player
+          </p>
+          <Input
+            id="sell"
+            type="number"
+            bind:value={sellPrice}
+            class={sellPriceError ? 'border-red-500' : ''}
+          />
+          {#if sellPriceInBaseCurrency}
+            <p class="text-xs text-gray-500 mt-1">
+              ≈ {sellPriceInBaseCurrency.toString()}
+              {baseToken.symbol}
+            </p>
+          {/if}
+          {#if sellPriceError}
+            <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
+          {/if}
+        </div>
+        <div class="flex-1">
           <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
           <p class="-mt-1 mb-1 leading-none opacity-75">
             Locked value that will be used to pay taxes and make your land
@@ -533,27 +548,6 @@
           {/if}
           {#if stakeAmountError}
             <p class="text-red-500 text-sm mt-1">{stakeAmountError}</p>
-          {/if}
-        </div>
-        <div class="flex-1">
-          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
-          <p class="-mt-1 mb-1 opacity-75 leading-none">
-            What is paid to you when your land is bought out by another player
-          </p>
-          <Input
-            id="sell"
-            type="number"
-            bind:value={sellPrice}
-            class={sellPriceError ? 'border-red-500' : ''}
-          />
-          {#if sellPriceInBaseCurrency}
-            <p class="text-xs text-gray-500 mt-1">
-              ≈ {sellPriceInBaseCurrency.toString()}
-              {baseToken.symbol}
-            </p>
-          {/if}
-          {#if sellPriceError}
-            <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
           {/if}
         </div>
       </div>
