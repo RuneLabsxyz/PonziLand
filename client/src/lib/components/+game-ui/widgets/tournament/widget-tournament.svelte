@@ -14,6 +14,9 @@
     TOURNAMENT_START,
   } from './tournament.service';
 
+  // Tournament end: Dec 19, 14:30 Paris time (CET = UTC+1) = 13:30 UTC
+  const TOURNAMENT_END = '2025-12-19T13:30:00Z';
+
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
     setCustomControls?: (controls: Snippet<[]> | null) => void;
@@ -23,8 +26,31 @@
 
   let leaderboardPromise = $state<Promise<LeaderboardResponse> | null>(null);
   let refreshInterval: NodeJS.Timeout;
+  let countdownInterval: NodeJS.Timeout;
   let isRefreshing = $state(false);
   let rankingMode = $state<RankingMode>('best');
+  let now = $state(new Date());
+
+  // Tournament timing
+  const tournamentStart = new Date(TOURNAMENT_START);
+  const tournamentEnd = new Date(TOURNAMENT_END);
+
+  const hasStarted = $derived(now >= tournamentStart);
+  const hasEnded = $derived(now >= tournamentEnd);
+
+  const countdown = $derived.by(() => {
+    const targetDate = hasStarted ? tournamentEnd : tournamentStart;
+    const diff = targetDate.getTime() - now.getTime();
+
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+    return { days, hours, minutes, seconds };
+  });
 
   const sortedEntries = $derived.by(() => {
     if (!leaderboardPromise) return null;
@@ -46,16 +72,34 @@
     }
   }
 
+  function formatCountdown(c: {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  }): string {
+    const parts = [];
+    if (c.days > 0) parts.push(`${c.days}d`);
+    if (c.hours > 0 || c.days > 0) parts.push(`${c.hours}h`);
+    if (c.minutes > 0 || c.hours > 0 || c.days > 0) parts.push(`${c.minutes}m`);
+    parts.push(`${c.seconds}s`);
+    return parts.join(' ');
+  }
+
   onMount(() => {
     refresh();
 
-    // Refresh every 60 seconds
+    // Refresh leaderboard every 60 seconds
     refreshInterval = setInterval(refresh, 60000);
 
+    // Update countdown every second
+    countdownInterval = setInterval(() => {
+      now = new Date();
+    }, 1000);
+
     return () => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
+      if (refreshInterval) clearInterval(refreshInterval);
+      if (countdownInterval) clearInterval(countdownInterval);
     };
   });
 
@@ -78,9 +122,38 @@
 </script>
 
 <div class="flex flex-col h-full min-h-0">
+  <!-- Countdown Timer -->
+  <div class="px-3 py-2 bg-gray-900/50 border-b border-gray-700">
+    {#if hasEnded}
+      <div class="text-center">
+        <span class="text-yellow-400 font-semibold text-sm">
+          Tournament Ended
+        </span>
+      </div>
+    {:else if hasStarted}
+      <div class="text-center">
+        <span class="text-gray-400 text-md">Tournament ends in</span>
+        <div
+          class="text-green-400 font-ponzi-number text-lg font-bold tracking-wider"
+        >
+          T-{formatCountdown(countdown)}
+        </div>
+      </div>
+    {:else}
+      <div class="text-center">
+        <span class="text-gray-400 text-md">Tournament starts in</span>
+        <div
+          class="text-yellow-400 font-ponzi-number text-lg font-bold tracking-wider"
+        >
+          T-{formatCountdown(countdown)}
+        </div>
+      </div>
+    {/if}
+  </div>
+
   <!-- Header with tournament info -->
   <div class="px-2 py-1 text-xs text-gray-400 border-b border-gray-700">
-    Positions closed since {formattedStartDate}
+    Positions since {formattedStartDate}
   </div>
 
   <!-- Tab buttons -->
