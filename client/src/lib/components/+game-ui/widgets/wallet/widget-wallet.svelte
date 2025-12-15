@@ -1,14 +1,14 @@
 <script lang="ts">
   import accountDataProvider, { setup } from '$lib/account.svelte';
-  import { getSocialink } from '$lib/accounts/social/index.svelte';
   import { Button } from '$lib/components/ui/button';
   import { useDojo } from '$lib/contexts/dojo';
   import { ENABLE_TOKEN_DROP } from '$lib/flags';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import { usernameStore } from '$lib/stores/username.store.svelte';
   import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
   import WalletBalance from './wallet-balance.svelte';
-  import UsernameModal from '../../modals/UsernameModal.svelte';
+  import SetUsernameButton from '$lib/components/socialink/SetUsernameButton.svelte';
 
   let {
     setCustomControls,
@@ -20,8 +20,6 @@
   setup();
 
   let copied = $state(false);
-  let usernameModalVisible = $state(false);
-  let usernameRefetchKey = $state(0);
 
   function copy() {
     try {
@@ -54,21 +52,7 @@
 
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
-
-  // Fetch username from socialink when address changes or after registration
-  let username: Promise<{ exists: boolean; username?: string } | null> = $state(
-    Promise.resolve(null),
-  );
-  $effect(() => {
-    // Track refetchKey to trigger refetch after registration
-    const _ = usernameRefetchKey;
-    if (address) {
-      const socialink = getSocialink();
-      if (socialink) {
-        username = socialink.getUser(address);
-      }
-    }
-  });
+  let username = $derived(usernameStore.promise);
   let connected = $derived(accountDataProvider.isConnected);
   let providerIcon = $derived(accountDataProvider.providerIcon);
   let providerName = $derived(accountDataProvider.providerName);
@@ -92,17 +76,7 @@
       }
     }
   }
-
-  function handleUsernameRegistered() {
-    // Trigger refetch of username
-    usernameRefetchKey++;
-  }
 </script>
-
-<UsernameModal
-  bind:visible={usernameModalVisible}
-  onfinish={handleUsernameRegistered}
-/>
 
 {#if connected}
   <div class="flex justify-between items-center mt-2">
@@ -140,13 +114,7 @@
             ({info.username})
           </span>
         {:else}
-          <Button
-            size="sm"
-            onclick={() => (usernameModalVisible = true)}
-            class="text-xs px-2 py-0.5"
-          >
-            Set Username
-          </Button>
+          <SetUsernameButton />
         {/if}
       {/await}
     </div>
