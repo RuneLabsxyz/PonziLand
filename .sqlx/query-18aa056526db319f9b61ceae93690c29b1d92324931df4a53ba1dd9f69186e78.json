@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            INSERT INTO event (id, at, event_type)\n            VALUES ($1, $2, $3)\n            RETURNING id\n        ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Timestamp",
+        {
+          "Custom": {
+            "name": "event_type",
+            "kind": {
+              "Enum": [
+                "ponzi_land-AuctionFinishedEvent",
+                "ponzi_land-LandBoughtEvent",
+                "ponzi_land-LandNukedEvent",
+                "ponzi_land-NewAuctionEvent",
+                "ponzi_land-AddressAuthorizedEvent",
+                "ponzi_land-AddressRemovedEvent",
+                "ponzi_land-VerifierUpdatedEvent",
+                "ponzi_land-LandTransferEvent"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false
+    ]
+  },
+  "hash": "18aa056526db319f9b61ceae93690c29b1d92324931df4a53ba1dd9f69186e78"
+}
