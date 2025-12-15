@@ -18,9 +18,10 @@ export const accountState: {
 
 let isSetup = $state(false);
 let isTutorialMode = $state(false);
+let isSpectatorMode = $state(false);
 
 const updateState = async (provider: AccountProvider) => {
-  if (isTutorialMode) {
+  if (isTutorialMode || isSpectatorMode) {
     return;
   }
 
@@ -42,7 +43,7 @@ const updateState = async (provider: AccountProvider) => {
 };
 
 const resetState = () => {
-  if (isTutorialMode) {
+  if (isTutorialMode || isSpectatorMode) {
     return;
   }
 
@@ -55,7 +56,7 @@ const resetState = () => {
 };
 
 export async function refresh() {
-  if (isTutorialMode) {
+  if (isTutorialMode || isSpectatorMode) {
     return;
   }
 
@@ -73,7 +74,7 @@ export async function setup(): Promise<typeof accountState> {
 
   isSetup = true;
 
-  if (isTutorialMode) {
+  if (isTutorialMode || isSpectatorMode) {
     return accountState;
   }
 
@@ -124,6 +125,30 @@ export function setTutorialMode(enabled: boolean) {
 // Export function to check if in tutorial mode
 export function isTutorial() {
   return isTutorialMode;
+}
+
+// Spectator mode: Set fake account state for spectator viewing
+export function setSpectatorMode(enabled: boolean) {
+  isSpectatorMode = enabled;
+
+  if (enabled) {
+    // Set minimal connection state for spectator mode
+    accountState.isConnected = false; // Spectator is read-only, no wallet
+    accountState.address = undefined;
+    accountState.walletAccount = undefined;
+    accountState.sessionAccount = undefined;
+    accountState.profile = undefined;
+    accountState.providerName = 'Spectator Mode';
+    accountState.providerIcon = '/ui/icons/Icon_Thin_Eye.png';
+  } else {
+    isSpectatorMode = false;
+    resetState();
+  }
+}
+
+// Export function to check if in spectator mode
+export function isSpectator() {
+  return isSpectatorMode;
 }
 
 export default accountState;

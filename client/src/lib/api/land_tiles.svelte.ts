@@ -5,7 +5,11 @@ import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
 import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { gameSounds } from '$lib/stores/sfx.svelte';
-import { coordinatesToLocation, padAddress } from '$lib/utils';
+import {
+  coordinatesToLocation,
+  locationToCoordinates,
+  padAddress,
+} from '$lib/utils';
 import { logEntityUpdate } from '$lib/utils/entity-logger';
 import { createLandWithActions } from '$lib/utils/land-actions';
 import data from '$profileData';
@@ -27,6 +31,8 @@ import { waitForLandChange, waitForLandType } from './storeWait';
 import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import { getTokenMetadata } from '$lib/tokens';
 import type { Token } from '$lib/interfaces';
+import type { LandHistoricalResponse } from '$lib/spectator/spectator.service';
+import type { ReplayEvent } from '$lib/spectator/replay-engine';
 
 type Subscription = Awaited<
   ReturnType<typeof setupLandsSubscription>
@@ -1098,5 +1104,158 @@ export class LandTileStore {
         },
       } as ParsedEntity<SchemaType>);
     });
+  }
+
+  // ================== Spectator Mode Methods ==================
+
+  /**
+   * Clear all lands to empty state (for spectator mode initialization)
+   */
+  public clearAllLands(): void {
+    this.currentLands.update((lands) => {
+      for (let x = 0; x < GRID_SIZE; x++) {
+        for (let y = 0; y < GRID_SIZE; y++) {
+          const emptyLand = new EmptyLand({ x, y });
+          this.store[x][y].set({ value: emptyLand });
+          lands[x][y] = emptyLand;
+        }
+      }
+      return lands;
+    });
+
+    // Clear ownership index
+    this.ownershipIndex.clear();
+    this.ownershipIndexStore.set(new Map());
+
+    // Clear pending stakes
+    this.pendingStake.clear();
+  }
+
+  /**
+   * Load a land from historical data (for spectator mode snapshot)
+   */
+  public loadSpectatorLand(historicalLand: LandHistoricalResponse): void {
+    const { x, y } = locationToCoordinates(historicalLand.land_location);
+
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    // Create a BuildingLand from historical data
+    const fakeLand: Land = {
+      owner: historicalLand.owner,
+      location: historicalLand.land_location,
+      block_date_bought: new Date(historicalLand.time_bought).getTime() / 1000,
+      sell_price: 1000000000000000000, // Placeholder since we don't have this data
+      token_used: historicalLand.buy_token_used || data.mainCurrencyAddress,
+      // @ts-ignore - level not in historical data, default to First
+      level: 'First',
+    };
+
+    const fakeStake: LandStake = {
+      location: historicalLand.land_location,
+      amount: 1000000000000000000, // Placeholder
+      neighbors_info_packed: 0,
+      accumulated_taxes_fee: 0,
+    };
+
+    const buildingLand = new BuildingLand(fakeLand);
+    buildingLand.updateStake(fakeStake);
+
+    this.currentLands.update((lands) => {
+      // Update ownership index
+      this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+
+      this.store[x][y].set({ value: buildingLand });
+      lands[x][y] = buildingLand;
+      return lands;
+    });
+  }
+
+  /**
+   * Apply a buy event from replay (for spectator mode)
+   */
+  public applySpectatorBuy(event: ReplayEvent): void {
+    if (!event.position) return;
+
+    const { x, y } = locationToCoordinates(event.location);
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    const pos = event.position;
+
+    // Create a BuildingLand from the event
+    const fakeLand: Land = {
+      owner: pos.owner,
+      location: event.location,
+      block_date_bought: new Date(pos.time_bought).getTime() / 1000,
+      sell_price: 1000000000000000000, // Placeholder
+      token_used: pos.buy_token_used || data.mainCurrencyAddress,
+      // @ts-ignore
+      level: 'First',
+    };
+
+    const fakeStake: LandStake = {
+      location: event.location,
+      amount: 1000000000000000000, // Placeholder
+      neighbors_info_packed: 0,
+      accumulated_taxes_fee: 0,
+    };
+
+    const buildingLand = new BuildingLand(fakeLand);
+    buildingLand.updateStake(fakeStake);
+
+    this.currentLands.update((lands) => {
+      // Update ownership index
+      this.updateOwnershipIndex({ x, y }, lands[x][y], buildingLand);
+
+      this.store[x][y].set({ value: buildingLand });
+      lands[x][y] = buildingLand;
+      return lands;
+    });
+  }
+
+  /**
+   * Apply a nuke event from replay (for spectator mode)
+   * Converts the land to an auction state
+   */
+  public applySpectatorNuke(event: ReplayEvent): void {
+    const { x, y } = locationToCoordinates(event.location);
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    // Create an auction land (land was nuked, goes to auction)
+    const fakeAuction: Auction = {
+      land_location: event.location,
+      is_finished: false,
+      start_price: 1000000000000000000,
+      start_time: event.time.getTime() / 1000,
+      floor_price: 100000000000000000,
+      sold_at_price: new CairoOption(CairoOptionVariant.None),
+    };
+
+    const fakeLand: Land = {
+      owner: '0x00',
+      location: event.location,
+      block_date_bought: event.time.getTime() / 1000,
+      sell_price: 1000000000000000000,
+      token_used: data.mainCurrencyAddress,
+      // @ts-ignore
+      level: 'First',
+    };
+
+    const auctionLand = new AuctionLand(fakeLand, fakeAuction);
+
+    this.currentLands.update((lands) => {
+      // Update ownership index (remove old owner)
+      this.updateOwnershipIndex({ x, y }, lands[x][y], auctionLand);
+
+      this.store[x][y].set({ value: auctionLand });
+      lands[x][y] = auctionLand;
+      return lands;
+    });
+  }
+
+  /**
+   * Force update ownership index store (call after bulk spectator operations)
+   */
+  public finalizeSpectatorLoad(): void {
+    this.forceOwnershipUpdate();
   }
 }

@@ -5,7 +5,11 @@ import { setupConfigStore } from './config.store.svelte';
 import { setupClient, type Client } from '$lib/contexts/client.svelte';
 import { landStore } from './store.svelte';
 import { walletStore } from './wallet.svelte';
-import accountState, { setup, setTutorialMode } from '$lib/account.svelte';
+import accountState, {
+  setup,
+  setTutorialMode,
+  setSpectatorMode as setAccountSpectatorMode,
+} from '$lib/account.svelte';
 import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
 import { usernamesStore } from './account.store.svelte';
 import {
@@ -87,6 +91,7 @@ class LoadingStore {
 
   private _isLoading = $state(true);
   private _isTutorialMode = $state<boolean | null>(null);
+  private _isSpectatorMode = $state<boolean | null>(null);
   private _client = $state<Client | undefined>(undefined);
 
   // Spritesheet atlas instances
@@ -189,6 +194,30 @@ class LoadingStore {
       this._phases.usernames.total = 1;
       // Prices and rendering phase are always active
     }
+  }
+
+  // Spectator mode detection and setup
+  setSpectatorMode(isSpectator: boolean) {
+    this._isSpectatorMode = isSpectator;
+
+    // Spectator mode is similar to tutorial - skip blockchain loading phases
+    if (isSpectator) {
+      this._phases.wallet.total = 0;
+      this._phases.dojo.total = 0;
+      this._phases.social.total = 0;
+      this._phases.landStore.total = 0;
+      this._phases.usernames.total = 0;
+      this.markPhaseCompleted('wallet');
+      this.markPhaseCompleted('dojo');
+      this.markPhaseCompleted('social');
+      this.markPhaseCompleted('landStore');
+      this.markPhaseCompleted('usernames');
+      // Keep prices and rendering phase active for spectator mode
+    }
+  }
+
+  get isSpectatorMode() {
+    return this._isSpectatorMode;
   }
 
   // Generic method to mark phase items as loaded
