@@ -4,7 +4,7 @@ import {
   type PositionMetrics,
 } from '../positions/position-pnl-calculator';
 
-export const TOURNAMENT_START = '2025-12-14T00:00:00';
+export const TOURNAMENT_START = '2025-12-15T19:00:00';
 
 export interface TokenFlow {
   [tokenAddress: string]: string;
