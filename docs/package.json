@@ -6,14 +6,20 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "check": "astro check",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "validate": "npm run check"
   },
   "dependencies": {
+    "@astrojs/check": "^0.9.6",
     "@astrojs/mdx": "^4.3.9",
+    "@astrojs/node": "^9.5.1",
     "@astrojs/starlight": "^0.36.2",
     "@astrojs/svelte": "^7.2.2",
     "@iconify-json/lucide": "^1.2.72",
-    "@ponziland/ui": "^0.1.0",
+    "@ponziland/ui": "workspace:*",
     "@tailwindcss/vite": "^4.1.16",
     "astro": "^5.15.3",
     "astro-icon": "^1.1.5",
@@ -21,5 +27,8 @@
     "svelte": "^5.43.4",
     "tailwindcss": "^4.1.16",
     "typescript": "^5.9.3"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
