@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import Button from '$lib/components/ui/button/button.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
+  import { ENABLE_TUTORIAL } from '$lib/flags';
   import type { Container } from '@tsparticles/engine';
   import { loadSlim } from '@tsparticles/slim';
   import Particles, { particlesInit } from '@tsparticles/svelte';
@@ -156,11 +157,13 @@
     >
       PLAY
     </Button>
-    <a href="/tutorial" class="z-[3]">
-      <Button variant="red" size="lg" class="text-3xl px-12 py-4 font-bold">
-        Tutorial
-      </Button>
-    </a>
+    {#if ENABLE_TUTORIAL}
+      <a href="/tutorial" class="z-[3]">
+        <Button variant="red" size="lg" class="text-3xl px-12 py-4 font-bold">
+          Tutorial
+        </Button>
+      </a>
+    {/if}
   </div>
 </main>
 
