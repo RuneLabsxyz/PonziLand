@@ -90,7 +90,10 @@ async function setupSession(
 
     provider: new RpcProvider({
       nodeUrl: config.rpcUrl,
-      chainId: constants.StarknetChainId.SN_SEPOLIA,
+      chainId:
+        config.profile == 'mainnet'
+          ? constants.StarknetChainId.SN_MAIN
+          : constants.StarknetChainId.SN_SEPOLIA,
     }),
   });
 

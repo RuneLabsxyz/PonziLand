@@ -33,8 +33,11 @@ const updateState = async (provider: AccountProvider) => {
   if (FUSE_DISABLE_SOCIALINK) {
     accountState.profile = { exists: true, whitelisted: true } as UserInfo;
   } else {
-    const profile = await getSocialink().getUser(accountState.address!);
-    accountState.profile = profile;
+    const socialink = getSocialink();
+    if (socialink) {
+      const profile = await socialink.getUser(accountState.address!);
+      accountState.profile = profile;
+    }
   }
   const accountManager = useAccount();
   accountState.providerName = accountManager?.getProviderName();

@@ -8,6 +8,7 @@
   import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
   import WalletBalance from './wallet-balance.svelte';
+  import UsernameModal from '../../modals/UsernameModal.svelte';
 
   let {
     setCustomControls,
@@ -19,6 +20,8 @@
   setup();
 
   let copied = $state(false);
+  let usernameModalVisible = $state(false);
+  let usernameRefetchKey = $state(0);
 
   function copy() {
     try {
@@ -49,10 +52,23 @@
     widgetsStore.updateWidget('swap', { isOpen: true });
   }
 
-  let socialink = getSocialink();
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
-  let username = $derived(socialink?.getUser(address ?? ''));
+
+  // Fetch username from socialink when address changes or after registration
+  let username: Promise<{ exists: boolean; username?: string } | null> = $state(
+    Promise.resolve(null),
+  );
+  $effect(() => {
+    // Track refetchKey to trigger refetch after registration
+    const _ = usernameRefetchKey;
+    if (address) {
+      const socialink = getSocialink();
+      if (socialink) {
+        username = socialink.getUser(address);
+      }
+    }
+  });
   let connected = $derived(accountDataProvider.isConnected);
   let providerIcon = $derived(accountDataProvider.providerIcon);
   let providerName = $derived(accountDataProvider.providerName);
@@ -76,7 +92,17 @@
       }
     }
   }
+
+  function handleUsernameRegistered() {
+    // Trigger refetch of username
+    usernameRefetchKey++;
+  }
 </script>
+
+<UsernameModal
+  bind:visible={usernameModalVisible}
+  onfinish={handleUsernameRegistered}
+/>
 
 {#if connected}
   <div class="flex justify-between items-center mt-2">
@@ -99,26 +125,30 @@
         </button>
       {/if}
       <button type="button" onclick={copy} class="text-left relative">
-        {#await username then info}
-          {#if info?.exists}
-            <p class="font-ponzi-number">
-              {info.username ?? ''}
-              <span class="opacity-50">
-                {shortenHex(padAddress(address ?? ''), 4)}
-              </span>
-            </p>
-          {:else}
-            <p>
-              {shortenHex(padAddress(address ?? ''), 4)}
-            </p>
-          {/if}
-        {/await}
+        <p class="font-ponzi-number">
+          {shortenHex(padAddress(address ?? ''), 4)}
+        </p>
         {#if copied}
           <div class="absolute right-0 translate-x-full pl-2 top-0">
             Copied!
           </div>
         {/if}
       </button>
+      {#await username then info}
+        {#if info?.exists}
+          <span class="font-ponzi-number text-sm opacity-75">
+            ({info.username})
+          </span>
+        {:else}
+          <Button
+            size="sm"
+            onclick={() => (usernameModalVisible = true)}
+            class="text-xs px-2 py-0.5"
+          >
+            Set Username
+          </Button>
+        {/if}
+      {/await}
     </div>
     <button
       onclick={() => {
