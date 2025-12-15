@@ -118,6 +118,15 @@ const baseWidgetsState: WidgetsState = {
     isOpen: false,
     showMaximize: true,
   },
+  tournament: {
+    id: 'tournament',
+    type: 'tournament',
+    position: { x: 120, y: 70 },
+    dimensions: { width: 650, height: 500 },
+    isMinimized: false,
+    isOpen: false,
+    showMaximize: true,
+  },
   share: {
     id: 'share',
     type: 'share',
@@ -176,6 +185,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     type: 'command-center',
     label: 'Cmd. Center',
     icon: '/ui/icons/Icon_ControlCenter.png',
+  },
+  {
+    id: 'tournament',
+    type: 'tournament',
+    label: 'Tournament',
+    icon: '/ui/icons/Icon_Cup.png',
   },
   {
     id: 'data-maps',
