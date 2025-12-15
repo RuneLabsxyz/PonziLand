@@ -60,6 +60,7 @@
     "build:assets": "node scripts/build-assets.js",
     "prepack": "svelte-kit sync && npm run build:assets && svelte-package && npm run build:css && npm run build:static && publint",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check-types": "bun run check",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
   },
   "sideEffects": [

@@ -4037,12 +4037,7 @@
       ],
       "tag": "ponzi_land-token_registry",
       "selector": "0x38a3281232978be4d0d2b8f8ecf2fb5c51f067656637f3a036d527d2ddf5e00",
-      "systems": [
-        "dojo_init",
-        "register_token",
-        "remove_token",
-        "upgrade"
-      ]
+      "systems": ["dojo_init", "register_token", "remove_token", "upgrade"]
     }
   ],
   "libraries": [],

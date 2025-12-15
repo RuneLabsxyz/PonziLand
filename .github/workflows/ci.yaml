@@ -40,6 +40,8 @@ jobs:
               - 'Cargo.lock'
             client:
               - 'client/**'
+            docs:
+              - 'docs/**'
 
   # Formatting workflows
   format-contracts:
@@ -53,6 +55,12 @@ jobs:
     needs: detect-changes
     if: ${{ needs.detect-changes.outputs.rust == 'true' }}
     uses: ./.github/workflows/_formatting-rust.yaml
+
+  format-docs:
+    name: Format docs code
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.docs == 'true' }}
+    uses: ./.github/workflows/_formatting-docs.yaml
 
   format-client:
     name: Format client code
@@ -79,6 +87,12 @@ jobs:
     if: ${{ needs.detect-changes.outputs.client == 'true' && (needs.format-client.result == 'success' || needs.format-client.result == 'skipped') }}
     uses: ./.github/workflows/_test-client.yaml
 
+  test-docs:
+    name: Test docs code
+    needs: [detect-changes, format-docs]
+    if: ${{ needs.detect-changes.outputs.docs == 'true' && (needs.format-docs.result == 'success' || needs.format-docs.result == 'skipped') }}
+    uses: ./.github/workflows/_test-docs.yaml
+
   # Summary job
   ci-status:
     name: CI Status Check
@@ -89,9 +103,11 @@ jobs:
         format-contracts,
         format-rust,
         format-client,
+        format-docs,
         test-contracts,
         test-rust,
         test-client,
+        test-docs,
       ]
     if: always()
     steps:
@@ -107,6 +123,7 @@ jobs:
           | 📄 Contracts | ${{ needs.detect-changes.outputs.contracts == 'true' && '✅ Yes' || '❌ No' }} |
           | 🦀 Rust | ${{ needs.detect-changes.outputs.rust == 'true' && '✅ Yes' || '❌ No' }} |
           | 🌐 Client | ${{ needs.detect-changes.outputs.client == 'true' && '✅ Yes' || '❌ No' }} |
+          | 📖 Docs | ${{ needs.detect-changes.outputs.docs == 'true' && '✅ Yes' || '❌ No' }} |
 
           ## 🎨 Formatting Results
           | Component | Status |
@@ -117,6 +134,7 @@ jobs:
           contracts_format="${{ needs.format-contracts.result }}"
           rust_format="${{ needs.format-rust.result }}"
           client_format="${{ needs.format-client.result }}"
+          docs_format="${{ needs.format-docs.result }}"
 
           get_status_icon() {
             case "$1" in
@@ -131,6 +149,7 @@ jobs:
           [ "$contracts_format" != "" ] && echo "| 📄 Contracts | $(get_status_icon "$contracts_format") $contracts_format |" >> $GITHUB_STEP_SUMMARY
           [ "$rust_format" != "" ] && echo "| 🦀 Rust | $(get_status_icon "$rust_format") $rust_format |" >> $GITHUB_STEP_SUMMARY
           [ "$client_format" != "" ] && echo "| 🌐 Client | $(get_status_icon "$client_format") $client_format |" >> $GITHUB_STEP_SUMMARY
+          [ "$docs_format" != "" ] && echo "| 📖 Docs | $(get_status_icon "$docs_format") $docs_format |" >> $GITHUB_STEP_SUMMARY
 
           cat >> $GITHUB_STEP_SUMMARY << 'EOF'
 
@@ -143,10 +162,12 @@ jobs:
           contracts_test="${{ needs.test-contracts.result }}"
           rust_test="${{ needs.test-rust.result }}"
           client_test="${{ needs.test-client.result }}"
+          docs_test="${{ needs.test-docs.result }}"
 
           [ "$contracts_test" != "" ] && echo "| 📄 Contracts | $(get_status_icon "$contracts_test") $contracts_test |" >> $GITHUB_STEP_SUMMARY
           [ "$rust_test" != "" ] && echo "| 🦀 Rust | $(get_status_icon "$rust_test") $rust_test |" >> $GITHUB_STEP_SUMMARY
           [ "$client_test" != "" ] && echo "| 🌐 Client | $(get_status_icon "$client_test") $client_test |" >> $GITHUB_STEP_SUMMARY
+          [ "$docs_test" != "" ] && echo "| 📖 Docs | $(get_status_icon "$docs_test") $docs_test |" >> $GITHUB_STEP_SUMMARY
 
           # Check for failures
           failed_jobs=()
@@ -155,11 +176,13 @@ jobs:
           [[ "$contracts_format" == "failure" ]] && failed_jobs+=("Contracts formatting")
           [[ "$rust_format" == "failure" ]] && failed_jobs+=("Rust formatting")
           [[ "$client_format" == "failure" ]] && failed_jobs+=("Client formatting")
+          [[ "$docs_format" == "failure" ]] && failed_jobs+=("Docs formatting")
 
           # Check test failures
           [[ "$contracts_test" == "failure" ]] && failed_jobs+=("Contracts tests")
           [[ "$rust_test" == "failure" ]] && failed_jobs+=("Rust tests")
           [[ "$client_test" == "failure" ]] && failed_jobs+=("Client tests")
+          [[ "$docs_test" == "failure" ]] && failed_jobs+=("Docs tests")
 
           # Add final result to summary
           if [ ${#failed_jobs[@]} -gt 0 ]; then
@@ -208,11 +231,26 @@ jobs:
       SCW_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
       SCW_ACCESS_KEY_SECRET: ${{ secrets.SCW_ACCESS_KEY_SECRET }}
       POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
+  deploy-docs-docker:
+    name: Deploy Docs to Docker
+    needs: [ci-status, detect-changes]
+    if: always() && needs.ci-status.result == 'success' && needs.detect-changes.outputs.docs == 'true'
+    uses: ./.github/workflows/_deploy-docs-docker.yaml
+    secrets:
+      SCW_ACCESS_KEY_ID: ${{ secrets.SCW_ACCESS_KEY_ID }}
+      SCW_ACCESS_KEY_SECRET: ${{ secrets.SCW_ACCESS_KEY_SECRET }}
   # Deployment summary job
   deployment-status:
     name: Deployment Status Check
     runs-on: ubuntu-latest
-    needs: [ci-status, deploy-cloudflare, deploy-indexer-docker, deploy-client-docker]
+    needs:
+      [
+        ci-status,
+        deploy-cloudflare,
+        deploy-indexer-docker,
+        deploy-client-docker,
+        deploy-docs-docker,
+      ]
     if: always() && needs.ci-status.result == 'success'
     steps:
       - name: Report deployment status
@@ -230,6 +268,7 @@ jobs:
           cloudflare_deploy="${{ needs.deploy-cloudflare.result }}"
           indexer_docker_deploy="${{ needs.deploy-indexer-docker.result }}"
           client_docker_deploy="${{ needs.deploy-client-docker.result }}"
+          docs_docker_deploy="${{ needs.deploy-docs-docker.result }}"
 
           get_status_icon() {
             case "$1" in
@@ -244,6 +283,7 @@ jobs:
           [ "$cloudflare_deploy" != "" ] && echo "| ☁️ Cloudflare | $(get_status_icon "$cloudflare_deploy") $cloudflare_deploy |" >> $GITHUB_STEP_SUMMARY
           [ "$indexer_docker_deploy" != "" ] && echo "| 🐳 Indexer Docker | $(get_status_icon "$indexer_docker_deploy") $indexer_docker_deploy |" >> $GITHUB_STEP_SUMMARY
           [ "$client_docker_deploy" != "" ] && echo "| 🐳 Client Docker | $(get_status_icon "$client_docker_deploy") $client_docker_deploy |" >> $GITHUB_STEP_SUMMARY
+          [ "$docs_docker_deploy" != "" ] && echo "| 🐳 Docs Docker | $(get_status_icon "$docs_docker_deploy") $docs_docker_deploy |" >> $GITHUB_STEP_SUMMARY
 
           # Check for failures
           failed_deployments=()
@@ -252,6 +292,7 @@ jobs:
           [[ "$cloudflare_deploy" == "failure" ]] && failed_deployments+=("Cloudflare deployment")
           [[ "$indexer_docker_deploy" == "failure" ]] && failed_deployments+=("Indexer Docker deployment")
           [[ "$client_docker_deploy" == "failure" ]] && failed_deployments+=("Client Docker deployment")
+          [[ "$docs_docker_deploy" == "failure" ]] && failed_deployments+=("Docs Docker deployment")
 
           # Add final result to summary
           if [ ${#failed_deployments[@]} -gt 0 ]; then
