@@ -25,7 +25,7 @@ impl TryFrom<Struct> for Model {
         Ok(match &*value.name {
             "ponzi_land-Land" => Model::Land(Land::try_from(value)?),
             "ponzi_land-LandStake" => Model::LandStake(LandStake::try_from(value)?),
-            "ponzi_land-Auction" => Model::Auction(Auction::try_from(value)?),
+            // "ponzi_land-Auction" => Model::Auction(Auction::try_from(value)?),
             name => Err(ToriiConversionError::UnknownVariant {
                 enum_name: "Models".to_string(),
                 variant_name: name.to_string(),
@@ -44,7 +44,7 @@ impl Model {
         Ok(match name {
             "ponzi_land-Land" => Model::Land(serde_json::from_value(json)?),
             "ponzi_land-LandStake" => Model::LandStake(serde_json::from_value(json)?),
-            "ponzi_land-Auction" => Model::Auction(serde_json::from_value(json)?),
+            // "ponzi_land-Auction" => Model::Auction(serde_json::from_value(json)?),
             name => Err(ToriiConversionError::UnknownVariant {
                 enum_name: "Models".to_string(),
                 variant_name: name.to_string(),

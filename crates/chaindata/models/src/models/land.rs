@@ -46,9 +46,9 @@ impl Model {
             at,
             location: land.location.into(),
             bought_at: naive_from_u64(land.block_date_bought),
-            owner: land.owner.to_string(),
+            owner: land.owner.to_hex_string(),
             sell_price: land.sell_price.into(),
-            token_used: land.token_used.to_string(),
+            token_used: land.token_used.to_hex_string(),
             level: land.level.into(),
         }
     }

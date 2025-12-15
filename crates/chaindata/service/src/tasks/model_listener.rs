@@ -11,7 +11,7 @@ use sqlx::error::DatabaseError;
 use tokio::select;
 use tokio_stream::StreamExt;
 use torii_ingester::{RawToriiData, ToriiClient};
-use tracing::{debug, error, info};
+use tracing::{debug, error, info, warn};
 
 use super::Task;
 
@@ -64,42 +64,120 @@ impl ModelListenerTask {
 
     #[allow(clippy::match_wildcard_for_single_variants)]
     async fn process_model(&self, model_data: RawToriiData) {
-        let model = Model::parse(model_data).expect("Error while parsing model data");
-        let result = match model.model {
-            Model::Land(land) => {
-                self.land_repository
-                    .save(LandModel::from_at(
-                        &land,
-                        EventId::parse_from_torii(&model.event_id.unwrap()).unwrap(),
-                        model.timestamp.unwrap_or(Utc::now()).naive_utc(),
-                    ))
-                    .await
-            }
-            Model::LandStake(land_stake) => {
-                self.land_stake_repository
-                    .save(LandStakeModel::from_at(
-                        &land_stake,
-                        EventId::parse_from_torii(&model.event_id.unwrap()).unwrap(),
-                        model.timestamp.unwrap_or(Utc::now()).naive_utc(),
-                    ))
-                    .await
-            }
-            _ => {
-                //TODO: Implement this later
+        let parsed = match Model::parse(model_data.clone()) {
+            Ok(model) => model,
+            Err(err) => {
+                warn!(
+                    "Skipping model that failed to parse ({}): {:?}",
+                    err,
+                    model_data.name()
+                );
                 return;
             }
         };
 
-        if let Err(chaindata_repository::Error::SqlError(err)) = result {
-            if !err
-                .as_database_error()
-                .is_some_and(DatabaseError::is_unique_violation)
-            {
-                error!("Failed to save event: {}", err);
+        let event_id = match parsed
+            .event_id
+            .as_ref()
+            .map(|id| EventId::parse_from_torii(id))
+        {
+            Some(Ok(id)) => id,
+            _ => {
+                warn!(
+                    "Skipping model with invalid or missing event_id: {:?}",
+                    parsed.event_id
+                );
+                return;
             }
+        };
 
-            // It is a duplicate, so ignore it
-            return;
+        let timestamp = parsed.timestamp.unwrap_or(Utc::now()).naive_utc();
+
+        let (result, model_name, location_for_log) = match parsed.model {
+            Model::Land(land) => {
+                let location_for_log = Some(format!("{:?}", land.location));
+                let result = self
+                    .land_repository
+                    .save(LandModel::from_at(&land, event_id.clone(), timestamp))
+                    .await;
+
+                (result, "Land", location_for_log)
+            }
+            Model::LandStake(land_stake) => {
+                let location_for_log = Some(format!("{:?}", land_stake.location));
+                let result = self
+                    .land_stake_repository
+                    .save(LandStakeModel::from_at(
+                        &land_stake,
+                        event_id.clone(),
+                        timestamp,
+                    ))
+                    .await;
+
+                (result, "LandStake", location_for_log)
+            }
+            _ => {
+                //TODO: Implement Auction model later
+                return;
+            }
+        };
+
+        match result {
+            Ok(_) => {
+                info!("Successfully saved event!");
+            }
+            Err(err) => {
+                let location = location_for_log.as_deref();
+
+                if Self::is_unique_violation(&err) {
+                    debug!(
+                        event_id = %event_id.as_string(),
+                        model = model_name,
+                        location = %location.unwrap_or("unknown"),
+                        "Duplicate model, skipping"
+                    );
+                    return;
+                }
+
+                Self::log_save_error(model_name, &err, &event_id, location);
+                return;
+            }
+        }
+    }
+
+    fn is_unique_violation(err: &chaindata_repository::Error) -> bool {
+        matches!(err, chaindata_repository::Error::SqlError(sql_err)
+            if sql_err
+                .as_database_error()
+                .is_some_and(DatabaseError::is_unique_violation))
+    }
+
+    fn log_save_error(
+        model: &str,
+        err: &chaindata_repository::Error,
+        event_id: &EventId,
+        location: Option<&str>,
+    ) {
+        let location = location.unwrap_or("unknown");
+        match err {
+            chaindata_repository::Error::SqlError(sql_err) => {
+                error!(
+                    event_id = %event_id.as_string(),
+                    model = model,
+                    location = %location,
+                    error = %sql_err,
+                    "Failed to save model (SQL)"
+                );
+            }
+            _ => {
+                error!(
+                    event_id = %event_id.as_string(),
+                    model = model,
+                    location = %location,
+                    error = %err,
+                    "Failed to save model"
+                );
+            }
         }
         debug!("Successfully saved event!");
     }
@@ -126,7 +204,7 @@ impl Task for ModelListenerTask {
             // Get all entities that were updated after the last check
             let mut models_stream = self
                 .client
-                .get_all_entities_after(last_check)
+                .get_land_and_stake_entities_after(last_check)
                 .expect("Error while fetching entities");
 
             // Process models as they go

@@ -14,9 +14,10 @@ use std::{
 
 use dojo_types::primitive::Primitive;
 use serde::{
-    de::{self, Visitor},
+    de::{self, value::MapAccessDeserializer, MapAccess, Visitor},
     Deserialize, Serialize,
 };
+use serde_json::Value;
 use starknet::core::types::U256 as RawU256;
 
 use crate::{conversions::FromPrimitive, error::ToriiConversionError};
@@ -147,7 +148,7 @@ impl<'de> Deserialize<'de> for U256 {
     {
         struct U256Visitor;
 
-        impl Visitor<'_> for U256Visitor {
+        impl<'de> Visitor<'de> for U256Visitor {
             type Value = U256;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -194,9 +195,120 @@ impl<'de> Deserialize<'de> for U256 {
                     de::Error::custom("f64 too big to be stored in a U256")
                 })?))
             }
+
+            fn visit_map<M>(self, map: M) -> Result<Self::Value, M::Error>
+            where
+                M: MapAccess<'de>,
+            {
+                let value = Value::deserialize(MapAccessDeserializer::new(map)).map_err(|err| {
+                    de::Error::custom(format!(
+                        "Failed to deserialize map representation of U256: {err}"
+                    ))
+                })?;
+
+                parse_u256_value(value).map_err(de::Error::custom)
+            }
         }
 
         deserializer.deserialize_any(U256Visitor)
+    }
+}
+
+fn parse_u128_from_str(value: &str) -> Result<u128, String> {
+    let trimmed = value.trim();
+    if trimmed.is_empty() {
+        return Ok(0);
+    }
+
+    let (digits, radix) = if let Some(hex) = trimmed
+        .strip_prefix("0x")
+        .or_else(|| trimmed.strip_prefix("0X"))
+    {
+        (hex, 16)
+    } else {
+        (trimmed, 10)
+    };
+
+    u128::from_str_radix(digits, radix).map_err(|err| err.to_string())
+}
+
+fn parse_u128_component(value: Value) -> Result<u128, String> {
+    match value {
+        Value::String(s) => parse_u128_from_str(&s),
+        Value::Number(num) => parse_u128_from_str(&num.to_string()),
+        Value::Object(mut map) => {
+            if let Some(inner) = map.remove("value") {
+                return parse_u128_component(inner);
+            }
+            Err(format!(
+                "Unsupported object representation for U256 component: {:?}",
+                map
+            ))
+        }
+        Value::Array(mut arr) => {
+            if let Some(first) = arr.pop() {
+                parse_u128_component(first)
+            } else {
+                Err("Empty array cannot represent a U256 component".to_string())
+            }
+        }
+        Value::Bool(_) | Value::Null => Err("Unsupported value for a U256 component".to_string()),
+    }
+}
+
+fn parse_u256_value(value: Value) -> Result<U256, String> {
+    match value {
+        Value::String(s) => {
+            U256::from_str(&s).map_err(|err| format!("Failed to parse U256 string: {err}"))
+        }
+        Value::Number(num) => U256::from_str(&num.to_string())
+            .map_err(|err| format!("Failed to parse numeric U256: {err}")),
+        Value::Object(mut map) => {
+            if let Some(inner) = map.remove("value") {
+                return parse_u256_value(inner);
+            }
+
+            if let Some(low_value) = map.remove("low") {
+                let low = parse_u128_component(low_value)?;
+                let high = map
+                    .remove("high")
+                    .map(parse_u128_component)
+                    .transpose()?
+                    .unwrap_or(0);
+                return Ok(U256::from_words(low, high));
+            }
+
+            if let Some(hex_value) = map.remove("hex") {
+                return parse_u256_value(hex_value);
+            }
+
+            Err(format!(
+                "Unsupported object representation for U256: {:?}",
+                map
+            ))
+        }
+        Value::Array(arr) => {
+            let mut iter = arr.into_iter();
+            let first = iter
+                .next()
+                .ok_or_else(|| "Array cannot be empty for U256 parsing".to_string())?;
+
+            if let Some(second) = iter.next() {
+                let low = parse_u128_component(first)?;
+                let high = parse_u128_component(second)?;
+
+                if iter.next().is_some() {
+                    return Err(
+                        "Array must only contain two elements for low/high U256".to_string()
+                    );
+                }
+
+                Ok(U256::from_words(low, high))
+            } else {
+                parse_u256_value(first)
+            }
+        }
+        Value::Bool(_) | Value::Null => Err("Unsupported value for U256".to_string()),
     }
 }
 
@@ -229,6 +341,18 @@ mod test {
         assert_eq!(
             serde_json::from_str::<U256>(json).expect("Deserialization error"),
             U256::from(123_456_789u32)
+        );
+
+        let json_map = r#"{ "low": "0x1", "high": "0x0" }"#;
+        assert_eq!(
+            serde_json::from_str::<U256>(json_map).expect("Map deserialization error"),
+            U256::from(1u32)
+        );
+
+        let json_nested = r#"{ "value": { "low": "2", "high": "0" } }"#;
+        assert_eq!(
+            serde_json::from_str::<U256>(json_nested).expect("Nested map deserialization error"),
+            U256::from(2u32)
         );
     }
 

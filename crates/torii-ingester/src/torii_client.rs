@@ -125,6 +125,20 @@ impl ToriiClient {
         self.do_entities_sql_request(format!("e.created_at > \"{}\"", instant.format("%F %T")))
     }
 
+    /// Get only Land and LandStake entities after a given instant.
+    ///
+    /// # Errors
+    /// Returns an error if the SQL query fails.
+    pub fn get_land_and_stake_entities_after(
+        &self,
+        instant: chrono::DateTime<Utc>,
+    ) -> Result<impl Stream<Item = RawToriiData>, Error> {
+        self.do_entities_sql_request(format!(
+            "e.created_at > \"{}\" AND m.name IN ('Land','LandStake')",
+            instant.format("%F %T")
+        ))
+    }
+
     /// Subscribe to events.
     ///
     /// # Errors
@@ -189,7 +203,7 @@ impl ToriiClient {
         &self,
         r#where: impl Into<String>,
     ) -> Result<impl Stream<Item = RawToriiData>, Error> {
-        let r#where = r#where.into();
+        let r#where = format!("m.namespace = 'ponzi_land' AND ({})", r#where.into());
         self.do_request(move |current_offset| {
             format!(r"
                 SELECT concat( m.namespace, '-', m.name) as selector, e.data as data, e.event_id as event_id, e.created_at as created_at
@@ -205,7 +219,7 @@ impl ToriiClient {
         &self,
         r#where: impl Into<String>,
     ) -> Result<impl Stream<Item = RawToriiData>, Error> {
-        let r#where = r#where.into();
+        let r#where = format!("m.namespace = 'ponzi_land' AND ({})", r#where.into());
         self.do_request(move |current_offset| {
             format!(r"
                 SELECT concat(m.namespace, '-',  m.name) as selector, em.data as data, em.event_id as event_id, em.created_at as created_at

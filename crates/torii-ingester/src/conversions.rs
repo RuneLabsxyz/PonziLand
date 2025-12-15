@@ -1,5 +1,5 @@
 use core::fmt;
-use serde::{de, Deserialize, Deserializer};
+use serde::{de, de::IgnoredAny, Deserialize, Deserializer};
 use starknet::core::types::Felt;
 use std::marker::PhantomData;
 
@@ -148,4 +148,35 @@ where
     }
 
     deserializer.deserialize_map(EnumVisitor(PhantomData))
+}
+
+/// Deserializes a Dojo-style `Option` where values come tagged as `{"Some": value}` or `{"None":[]}`.
+///
+/// # Errors
+/// Returns an error if the inner value cannot be deserialized into `T`.
+pub fn torii_option_deserializer<'de, T, D>(deserializer: D) -> Result<Option<T>, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de>,
+{
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum OptionHelper<T> {
+        Some {
+            #[serde(rename = "Some")]
+            value: T,
+        },
+        None {
+            #[serde(rename = "None")]
+            _ignored: IgnoredAny,
+        },
+        Value(T),
+        Null,
+    }
+
+    match OptionHelper::deserialize(deserializer)? {
+        OptionHelper::Some { value } => Ok(Some(value)),
+        OptionHelper::Value(value) => Ok(Some(value)),
+        OptionHelper::None { .. } | OptionHelper::Null => Ok(None),
+    }
 }
