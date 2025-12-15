@@ -5,6 +5,8 @@ import tailwindcss from "@tailwindcss/vite";
 import icon from "astro-icon";
 import svelte from "@astrojs/svelte";
 
+import node from "@astrojs/node";
+
 // https://astro.build/config
 export default defineConfig({
   integrations: [mdx(), icon(), svelte()],
@@ -18,6 +20,7 @@ export default defineConfig({
       conditions: ["svelte", "import", "module", "browser", "default"],
     },
   },
+
   env: {
     schema: {
       TORII_URL: envField.string({
@@ -28,4 +31,8 @@ export default defineConfig({
       }),
     },
   },
+
+  adapter: node({
+    mode: "standalone",
+  }),
 });

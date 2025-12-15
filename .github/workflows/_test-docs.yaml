@@ -1,0 +1,29 @@
+name: test-docs
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  check-docs:
+    name: Check docs
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup repo
+        uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "v1.3.0"
+
+      - name: Install dependencies
+        working-directory: ./docs
+        run: bun install --frozen-lockfile
+
+      - name: Check docs types & usage
+        working-directory: ./docs
+        run: bun run check
