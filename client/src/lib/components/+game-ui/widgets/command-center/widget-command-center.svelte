@@ -1,15 +1,14 @@
 <script lang="ts">
   import { accountHistory } from '$lib/api/history/index.svelte';
+  import { Separator } from '$lib/components/ui/separator';
   import { useDojo } from '$lib/contexts/dojo';
-  import { cn, padAddress } from '$lib/utils';
+  import { padAddress } from '$lib/utils';
+  import type { Snippet } from 'svelte';
   import { onDestroy, onMount } from 'svelte';
   import HistoryList from '../history/history-list.svelte';
   import MarketWidget from '../market/widget-market.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from '../positions/historical-positions.svelte';
-  import { Separator } from '$lib/components/ui/separator';
-  import type { Snippet } from 'svelte';
-  import PnlImage from '../share/PnlImage.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
@@ -84,14 +83,14 @@
 <div class="flex flex-col w-full h-full min-h-0">
   <div class="flex gap-1 my-2">
     <button
-      class="flex items-center justify-center h-8 w-8"
+      class="flex items-center justify-center h-10 w-10"
       onclick={() => setActiveTab('my-lands')}
     >
       <img
         src="/ui/icons/Icon_Crown.png"
         alt="My Lands"
         class={[
-          'h-6 w-6',
+          'h-8 w-8',
           {
             'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
               activeTab === 'my-lands',
@@ -101,30 +100,14 @@
     </button>
 
     <button
-      class="flex items-center justify-center h-8 w-8"
-      onclick={() => setActiveTab('market')}
-    >
-      <img
-        src="/ui/icons/Icon_Auction.png"
-        alt="Market"
-        class={[
-          'h-6 w-6',
-          {
-            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]': activeTab === 'market',
-          },
-        ]}
-      />
-    </button>
-
-    <button
-      class="flex items-center justify-center h-8 w-8"
+      class="flex items-center justify-center h-10 w-10"
       onclick={() => setActiveTab('positions')}
     >
       <img
         src="/ui/icons/IconTiny_Bills.png"
         alt="Positions"
         class={[
-          'h-6 w-6',
+          'h-8 w-8',
           {
             'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
               activeTab === 'positions',
@@ -134,14 +117,14 @@
     </button>
 
     <button
-      class="flex items-center justify-center h-8 w-8"
+      class="flex items-center justify-center h-10 w-10"
       onclick={() => setActiveTab('history')}
     >
       <img
         src="/ui/icons/Icon_Notification.png"
         alt="Notifications"
         class={[
-          'h-6 w-6',
+          'h-8 w-8',
           {
             'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
               activeTab === 'history',
@@ -165,10 +148,8 @@
       <HistoryList />
     {:else if activeTab === 'positions'}
       <HistoricalPositions {setCustomControls} />
-    {:else if activeTab === 'market'}
-      <MarketWidget setCustomControls={setCustomControls || (() => {})} />
     {:else if activeTab === 'my-lands'}
-      <MyLandsWidget onGoToMarket={() => setActiveTab('market')} />
+      <MyLandsWidget {setCustomControls} />
     {/if}
   </div>
 </div>

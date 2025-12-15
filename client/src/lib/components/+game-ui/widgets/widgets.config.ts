@@ -206,6 +206,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     icon: '/ui/icons/Icon_Cup.png',
   },
   {
+    id: 'market',
+    type: 'market',
+    label: 'Market',
+    icon: '/ui/icons/Icon_Thin_Auction.png',
+  },
+  {
     id: 'data-maps',
     type: 'data-maps',
     label: 'Data Maps',

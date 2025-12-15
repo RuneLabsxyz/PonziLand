@@ -84,7 +84,7 @@
         }}
         title="Share position"
       >
-        <Share class="w-3 h-3" />
+        <Share class="w-5 h-5" />
       </div>
     {/if}
   {:else}

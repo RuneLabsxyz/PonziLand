@@ -2,7 +2,7 @@
   import type { LandWithActions } from '$lib/api/land';
   import OverallTab from './tabs/overall-tab.svelte';
   import BuyTab from './tabs/buy-tab.svelte';
-  import Button from '$lib/components/ui/button/button.svelte';
+  import TabNavigation from '$lib/components/ui/tab-navigation.svelte';
   import type { TabType } from '$lib/interfaces';
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
@@ -24,24 +24,21 @@
   function setActiveTab(tab: TabType) {
     activeTab = tab;
   }
+
+  const tabs = [
+    { id: 'overall', label: 'OVERALL' },
+    { id: 'buy', label: 'BUY' },
+  ];
 </script>
 
 <div class="w-full h-full flex flex-col mt-6 mr-6">
   <div class="flex gap-2 w-full justify-center">
-    <Button
-      class="w-full {activeTab === 'overall' ? '' : 'opacity-50'}"
-      variant={activeTab === 'overall' ? 'blue' : undefined}
-      onclick={() => setActiveTab('overall')}
-    >
-      OVERALL
-    </Button>
-    <Button
-      class="w-full {activeTab === 'buy' ? '' : 'opacity-50'}"
-      variant={activeTab === 'buy' ? 'blue' : undefined}
-      onclick={() => setActiveTab('buy')}
-    >
-      BUY
-    </Button>
+    <TabNavigation
+      {tabs}
+      {activeTab}
+      onTabChange={(tabId) => setActiveTab(tabId as TabType)}
+      borderBottom={false}
+    />
   </div>
 
   <div class="w-full h-full mt-4">

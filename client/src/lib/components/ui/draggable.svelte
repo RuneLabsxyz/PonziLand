@@ -355,9 +355,6 @@
     border: 1px solid rgba(255, 255, 255, 0.1);
     min-width: 200px;
     min-height: 50px;
-    transition:
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      opacity 0.3s ease;
   }
 
   .draggable.fixed {
