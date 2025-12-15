@@ -3,7 +3,6 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_models::shared::{Location};
 use chaindata_repository::DropLandQueriesRepository;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -16,11 +15,17 @@ pub struct DropLandResponse {
     pub land_location: u32,
     pub owner: String,
     pub time_bought: String,
+    pub stake_token: String,
     pub drop_initial_stake: String,
     pub drop_remaining_stake: String,
     pub drop_distributed_total: String,
-    pub neighbor_taxes_received: String,
-    pub area_protocol_fees_total: String,
+    pub token_inflows: serde_json::Value,
+    pub token_inflows_usd: Option<String>,
+    pub area_protocol_fees_total: serde_json::Value,
+    pub area_protocol_fees_total_usd: Option<String>,
+    pub sale_protocol_fees_total: serde_json::Value,
+    pub sale_protocol_fees_total_usd: Option<String>,
+    pub influenced_auctions_total: String,
     pub drop_roi: f64,
     pub close_date: Option<String>,
     pub is_active: bool,
@@ -29,24 +34,57 @@ pub struct DropLandResponse {
 #[derive(Debug, Clone, Serialize)]
 pub struct GlobalDropMetricsResponse {
     pub total_revenue: String,
+    pub total_sale_fees: String,
     pub total_drops_distributed: String,
+    pub total_token_inflows: String,
+    pub total_influenced_auctions: String,
     pub global_roi: f64,
     pub since: String,
     pub until: String,
+    pub per_token: Vec<GlobalTokenMetricsResponse>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct DropMetricsQuery {
-    #[serde(default)]
-    pub fee_rate_basis_points: Option<u128>,
+#[derive(Debug, Clone, Serialize)]
+pub struct GlobalTokenMetricsResponse {
+    pub token: String,
+    pub fees: String,
+    pub sale_fees: String,
+    pub distributed: String,
+    pub inflows: String,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct GlobalMetricsQuery {
-    pub since: String, // ISO 8601 timestamp
-    pub until: String, // ISO 8601 timestamp
     #[serde(default)]
-    pub fee_rate_basis_points: Option<u128>,
+    pub since: Option<String>, // ISO 8601 timestamp
+    #[serde(default)]
+    pub until: Option<String>, // ISO 8601 timestamp
+    #[serde(default)]
+    pub fee_rate_basis_points: Option<String>, // Parse as string then convert to u128
+    #[serde(default)]
+    pub sale_fee_basis_points: Option<String>, // Parse as string then convert to u128
+    #[serde(default = "default_level")]
+    pub level: u8, // Neighbor level (1-3)
+}
+
+#[derive(Debug, Deserialize)]
+pub struct DropListQuery {
+    #[serde(default)]
+    pub since: Option<String>, // ISO 8601 timestamp
+    #[serde(default)]
+    pub until: Option<String>, // ISO 8601 timestamp
+    #[serde(default)]
+    pub location: Option<u32>, // Land location (0-65535)
+    #[serde(default = "default_level")]
+    pub level: u8, // Neighbor level (1-3)
+    #[serde(default)]
+    pub fee_rate_basis_points: Option<String>, // Parse as string then convert to u128
+    #[serde(default)]
+    pub sale_fee_basis_points: Option<String>, // Parse as string then convert to u128
+}
+
+fn default_level() -> u8 {
+    1
 }
 
 pub struct DropsRoute;
@@ -65,137 +103,314 @@ impl DropsRoute {
 
     pub fn router(self) -> Router<AppState> {
         Router::new()
-            .route("/{reinjector}/list", get(Self::get_drop_lands))
-            .route("/{location}/metrics", get(Self::get_drop_metrics))
-            .route("/{reinjector}/global-metrics", get(Self::get_global_metrics))
+            .route("/{reinjector}/lands", get(Self::get_drop_lands))
+            .route(
+                "/{reinjector}/global-metrics",
+                get(Self::get_global_metrics),
+            )
     }
 
-    /// Get all drop lands for a reinjector address
-    /// GET /drops/{reinjector}/list
+    /// Get all drop lands for a reinjector address with full metrics
+    /// GET /drops/{reinjector}/lands?since=...&until=...&location=...&level=...&fee_rate_basis_points=...
     async fn get_drop_lands(
         Path(reinjector): Path<String>,
+        Query(query): Query<DropListQuery>,
         State(repo): State<Arc<DropLandQueriesRepository>>,
-    ) -> Result<Json<Vec<(String, String, String, String, Option<String>)>>, axum::http::StatusCode>
-    {
+    ) -> Result<Json<Vec<DropLandResponse>>, axum::http::StatusCode> {
         let reinjector_lowercase = reinjector.to_lowercase();
+        let fee_rate = query
+            .fee_rate_basis_points
+            .as_ref()
+            .and_then(|s| s.parse::<u128>().ok())
+            .unwrap_or(250_000);
+        let sale_fee_rate = query
+            .sale_fee_basis_points
+            .as_ref()
+            .and_then(|s| s.parse::<u128>().ok())
+            .unwrap_or(500_000);
+
+        // Parse timestamps from ISO 8601 format if provided
+        let since = query.since.as_ref().and_then(|s| {
+            DateTime::parse_from_rfc3339(s)
+                .ok()
+                .map(|dt| dt.with_timezone(&Utc).naive_utc())
+        });
+
+        let until = query.until.as_ref().and_then(|u| {
+            DateTime::parse_from_rfc3339(u)
+                .ok()
+                .map(|dt| dt.with_timezone(&Utc).naive_utc())
+        });
 
         let drops = repo
-            .get_drop_lands(&reinjector_lowercase, None, None)
-            .await
-            .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
-
-        let response = drops
-            .into_iter()
-            .map(
-                |(location, owner, time_bought, initial_stake, close_date)| {
-                    (
-                        location.to_string(),
-                        owner,
-                        DateTime::<Utc>::from_naive_utc_and_offset(time_bought, Utc).to_rfc3339(),
-                        initial_stake,
-                        close_date.map(|d| DateTime::<Utc>::from_naive_utc_and_offset(d, Utc).to_rfc3339()),
-                    )
-                },
+            .get_drop_lands(
+                &reinjector_lowercase,
+                since,
+                until,
+                query.level,
+                fee_rate,
+                sale_fee_rate,
             )
+            .await
+            .map_err(|e| {
+                println!("❌ [ERROR] Failed to fetch drops: {:?}", e);
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR
+            })?;
+
+        let responses: Vec<DropLandResponse> = drops
+            .into_iter()
+            .filter(|drop| {
+                if let Some(loc) = query.location {
+                    drop.land_location.0 as u32 == loc
+                } else {
+                    true
+                }
+            })
+            .map(|drop| DropLandResponse {
+                land_location: drop.land_location.0 as u32,
+                owner: drop.owner,
+                time_bought: DateTime::<Utc>::from_naive_utc_and_offset(drop.time_bought, Utc)
+                    .to_rfc3339(),
+                stake_token: drop.token_address,
+                drop_initial_stake: drop.drop_initial_stake.to_string(),
+                drop_remaining_stake: drop.drop_remaining_stake.to_string(),
+                drop_distributed_total: drop.drop_distributed_total.to_string(),
+                token_inflows: serde_json::to_value(&drop.token_inflows.0)
+                    .unwrap_or(serde_json::json!({})),
+                token_inflows_usd: None,
+                area_protocol_fees_total: serde_json::to_value(&drop.area_protocol_fees_total.0)
+                    .unwrap_or(serde_json::json!({})),
+                area_protocol_fees_total_usd: None,
+                sale_protocol_fees_total: serde_json::to_value(&drop.sale_protocol_fees_total.0)
+                    .unwrap_or(serde_json::json!({})),
+                sale_protocol_fees_total_usd: None,
+                influenced_auctions_total: drop.influenced_auctions_total.to_string(),
+                drop_roi: drop.drop_roi,
+                close_date: drop
+                    .close_date
+                    .map(|d| DateTime::<Utc>::from_naive_utc_and_offset(d, Utc).to_rfc3339()),
+                is_active: drop.is_active,
+            })
             .collect();
 
-        Ok(Json(response))
-    }
-
-    /// Get metrics for a specific drop land
-    /// GET /drops/{location}/metrics?fee_rate_basis_points=900000
-    async fn get_drop_metrics(
-        Path(location): Path<u32>,
-        Query(query): Query<DropMetricsQuery>,
-        State(repo): State<Arc<DropLandQueriesRepository>>,
-    ) -> Result<Json<DropLandResponse>, axum::http::StatusCode> {
-        let location_u16 = location as u16;
-        let location_obj = Location::from(location_u16 as u64);
-        let fee_rate = query.fee_rate_basis_points.unwrap_or(900_000);
-
-        let (initial, remaining, neighbor_taxes, area_fees) = repo
-            .get_drop_metrics(location_obj, fee_rate)
-            .await
-            .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
-
-        // Convert strings to u128 for arithmetic
-        let initial_u128: u128 = initial.parse().unwrap_or(0);
-        let remaining_u128: u128 = remaining.parse().unwrap_or(0);
-        let area_fees_u128: u128 = area_fees.parse().unwrap_or(0);
-
-        let distributed = if initial_u128 > remaining_u128 {
-            initial_u128 - remaining_u128
-        } else {
-            0
-        };
-
-        let drop_roi = if distributed > 0 {
-            area_fees_u128 as f64 / distributed as f64
-        } else {
-            0.0
-        };
-
-        let response = DropLandResponse {
-            land_location: location,
-            owner: "reinjector".to_string(),
-            time_bought: Utc::now().to_rfc3339(),
-            drop_initial_stake: initial,
-            drop_remaining_stake: remaining,
-            drop_distributed_total: distributed.to_string(),
-            neighbor_taxes_received: neighbor_taxes,
-            area_protocol_fees_total: area_fees,
-            drop_roi,
-            close_date: None,
-            is_active: true,
-        };
-
-        Ok(Json(response))
+        Ok(Json(responses))
     }
 
     /// Get global metrics for all drops in a time period
-    /// GET /drops/{reinjector}/global-metrics?since=2024-01-01T00:00:00Z&until=2024-01-02T00:00:00Z&fee_rate_basis_points=900000
+    /// GET /drops/{reinjector}/global-metrics?since=2024-01-01T00:00:00Z&until=2024-01-02T00:00:00Z&fee_rate_basis_points=250000
     async fn get_global_metrics(
         Path(reinjector): Path<String>,
         Query(query): Query<GlobalMetricsQuery>,
         State(repo): State<Arc<DropLandQueriesRepository>>,
     ) -> Result<Json<GlobalDropMetricsResponse>, axum::http::StatusCode> {
         let reinjector_lowercase = reinjector.to_lowercase();
-        let fee_rate = query.fee_rate_basis_points.unwrap_or(900_000);
+        let fee_rate = query
+            .fee_rate_basis_points
+            .as_ref()
+            .and_then(|s| s.parse::<u128>().ok())
+            .unwrap_or(250_000);
+        let sale_fee_rate = query
+            .sale_fee_basis_points
+            .as_ref()
+            .and_then(|s| s.parse::<u128>().ok())
+            .unwrap_or(500_000);
+        let level = query.level;
 
-        // Parse timestamps from ISO 8601 format
-        let since = DateTime::parse_from_rfc3339(&query.since)
-            .ok()
-            .map(|dt| dt.with_timezone(&Utc).naive_utc())
-            .ok_or(axum::http::StatusCode::BAD_REQUEST)?;
+        // Parse timestamps from ISO 8601 format if provided (optional time window)
+        let since = query.since.as_ref().map(|s| {
+            DateTime::parse_from_rfc3339(s)
+                .ok()
+                .map(|dt| dt.with_timezone(&Utc).naive_utc())
+        });
+        let until = query.until.as_ref().map(|u| {
+            DateTime::parse_from_rfc3339(u)
+                .ok()
+                .map(|dt| dt.with_timezone(&Utc).naive_utc())
+        });
 
-        let until = DateTime::parse_from_rfc3339(&query.until)
-            .ok()
-            .map(|dt| dt.with_timezone(&Utc).naive_utc())
-            .ok_or(axum::http::StatusCode::BAD_REQUEST)?;
+        // Return 400 only if a provided timestamp fails to parse
+        let since = match since {
+            Some(Some(dt)) => Some(dt),
+            Some(None) => return Err(axum::http::StatusCode::BAD_REQUEST),
+            None => None,
+        };
+        let until = match until {
+            Some(Some(dt)) => Some(dt),
+            Some(None) => return Err(axum::http::StatusCode::BAD_REQUEST),
+            None => None,
+        };
 
-        let (total_revenue, total_distributed) = repo
-            .get_global_metrics(&reinjector_lowercase, fee_rate, since, until)
+        let metrics = repo
+            .get_global_metrics(
+                &reinjector_lowercase,
+                level,
+                fee_rate,
+                sale_fee_rate,
+                since,
+                until,
+            )
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
-        // Convert strings to u128 for ROI calculation
-        let revenue_u128: u128 = total_revenue.parse().unwrap_or(0);
-        let distributed_u128: u128 = total_distributed.parse().unwrap_or(0);
+        // Sum area protocol fees across all tokens
+        use sqlx::types::BigDecimal;
+        let zero_bd = BigDecimal::from(0);
+        let total_revenue_bd: BigDecimal = metrics
+            .area_fees_per_token
+            .0
+            .values()
+            .fold(zero_bd.clone(), |acc, v| acc + BigDecimal::from(*v));
+        let total_inflows_bd: BigDecimal = metrics
+            .inflows_per_token
+            .0
+            .values()
+            .fold(zero_bd.clone(), |acc, v| acc + BigDecimal::from(*v));
+        let total_sale_fees_bd: BigDecimal = metrics
+            .sale_fees_per_token
+            .0
+            .values()
+            .fold(zero_bd.clone(), |acc, v| acc + BigDecimal::from(*v));
 
-        let global_roi = if distributed_u128 > 0 {
-            revenue_u128 as f64 / distributed_u128 as f64
+        // Calculate ROI
+        let distributed_bd = BigDecimal::from(metrics.total_distributed);
+        let global_roi = if distributed_bd > zero_bd {
+            let ratio = &total_revenue_bd / &distributed_bd;
+            ratio.to_string().parse::<f64>().unwrap_or(0.0)
         } else {
             0.0
         };
 
+        // Build per-token aggregates so the client can apply decimals/prices per token
+        let mut token_keys = std::collections::HashSet::new();
+        for k in metrics.distributed_per_token.0.keys() {
+            token_keys.insert(k.clone());
+        }
+        for k in metrics.area_fees_per_token.0.keys() {
+            token_keys.insert(k.clone());
+        }
+        for k in metrics.inflows_per_token.0.keys() {
+            token_keys.insert(k.clone());
+        }
+        for k in metrics.sale_fees_per_token.0.keys() {
+            token_keys.insert(k.clone());
+        }
+
         let response = GlobalDropMetricsResponse {
-            total_revenue,
-            total_drops_distributed: total_distributed,
+            total_revenue: total_revenue_bd.to_string(),
+            total_sale_fees: total_sale_fees_bd.to_string(),
+            total_drops_distributed: metrics.total_distributed.to_string(),
+            total_token_inflows: total_inflows_bd.to_string(),
+            total_influenced_auctions: metrics.total_influenced_auctions.to_string(),
             global_roi,
-            since: query.since,
-            until: query.until,
+            since: query.since.unwrap_or_else(|| "all".to_string()),
+            until: query.until.unwrap_or_else(|| "all".to_string()),
+            per_token: token_keys
+                .into_iter()
+                .map(|token| GlobalTokenMetricsResponse {
+                    token: token.clone(),
+                    distributed: metrics
+                        .distributed_per_token
+                        .0
+                        .get(&token)
+                        .cloned()
+                        .unwrap_or_else(|| sqlx::types::BigDecimal::from(0i32).into())
+                        .to_string(),
+                    fees: metrics
+                        .area_fees_per_token
+                        .0
+                        .get(&token)
+                        .cloned()
+                        .unwrap_or_else(|| sqlx::types::BigDecimal::from(0i32).into())
+                        .to_string(),
+                    sale_fees: metrics
+                        .sale_fees_per_token
+                        .0
+                        .get(&token)
+                        .cloned()
+                        .unwrap_or_else(|| sqlx::types::BigDecimal::from(0i32).into())
+                        .to_string(),
+                    inflows: metrics
+                        .inflows_per_token
+                        .0
+                        .get(&token)
+                        .cloned()
+                        .unwrap_or_else(|| sqlx::types::BigDecimal::from(0i32).into())
+                        .to_string(),
+                })
+                .collect(),
         };
 
         Ok(Json(response))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_drop_land_response_serialization() {
+        let response = DropLandResponse {
+            land_location: 12345,
+            owner: "0x123abc".to_string(),
+            time_bought: "2024-01-01T00:00:00Z".to_string(),
+            stake_token: "0xtoken".to_string(),
+            drop_initial_stake: "1000000".to_string(),
+            drop_remaining_stake: "500000".to_string(),
+            drop_distributed_total: "500000".to_string(),
+            token_inflows: serde_json::json!({"0xtoken": "100"}),
+            token_inflows_usd: Some("50.0".to_string()),
+            area_protocol_fees_total: serde_json::json!({"0xtoken": "25"}),
+            area_protocol_fees_total_usd: Some("12.5".to_string()),
+            sale_protocol_fees_total: serde_json::json!({"0xtoken": "12"}),
+            sale_protocol_fees_total_usd: Some("6.0".to_string()),
+            influenced_auctions_total: "200".to_string(),
+            drop_roi: 0.15,
+            close_date: None,
+            is_active: true,
+        };
+
+        let json = serde_json::to_string(&response).unwrap();
+        assert!(json.contains("land_location"));
+        assert!(json.contains("owner"));
+        assert!(json.contains("drop_initial_stake"));
+        assert!(json.contains("is_active"));
+    }
+
+    #[test]
+    fn test_global_drop_metrics_response_serialization() {
+        let response = GlobalDropMetricsResponse {
+            total_revenue: "1000000".to_string(),
+            total_sale_fees: "50000".to_string(),
+            total_drops_distributed: "500000".to_string(),
+            total_token_inflows: "250000".to_string(),
+            total_influenced_auctions: "12345".to_string(),
+            global_roi: 0.25,
+            since: "2024-01-01T00:00:00Z".to_string(),
+            until: "2024-01-31T00:00:00Z".to_string(),
+            per_token: vec![GlobalTokenMetricsResponse {
+                token: "0xtoken".to_string(),
+                fees: "100".to_string(),
+                sale_fees: "10".to_string(),
+                distributed: "200".to_string(),
+                inflows: "50".to_string(),
+            }],
+        };
+
+        let json = serde_json::to_string(&response).unwrap();
+        assert!(json.contains("total_revenue"));
+        assert!(json.contains("total_sale_fees"));
+        assert!(json.contains("total_drops_distributed"));
+        assert!(json.contains("total_token_inflows"));
+        assert!(json.contains("total_influenced_auctions"));
+        assert!(json.contains("global_roi"));
+        assert!(json.contains("since"));
+        assert!(json.contains("until"));
+        assert!(json.contains("per_token"));
+    }
+
+    #[test]
+    fn test_default_level() {
+        assert_eq!(default_level(), 1);
     }
 }

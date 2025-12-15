@@ -1,12 +1,26 @@
 use crate::{Database, Error};
+use chaindata_models::models::{DropLandModel, GlobalDropMetricsModel};
 use chaindata_models::shared::{Location, U256};
-use chrono::NaiveDateTime;
-use sqlx::{query, Row};
+use chrono::{NaiveDateTime, Utc};
+use sqlx::types::BigDecimal;
+use sqlx::{query, query_as, types::Json, Row};
+use std::collections::HashMap;
 use std::ops::Deref;
+use std::str::FromStr;
 
 /// Repository for querying drop land metrics and data
 pub struct DropLandQueriesRepository {
     db: Database,
+}
+/// Internal struct for query_as! macro - represents a drop land from land_historical
+#[derive(sqlx::FromRow)]
+struct DropLandRow {
+    land_location: Location,
+    owner: String,
+    time_bought: NaiveDateTime,
+    close_date: Option<NaiveDateTime>,
+    token_inflows: Json<HashMap<String, U256>>,
+    token_outflows: Json<HashMap<String, U256>>,
 }
 
 impl DropLandQueriesRepository {
@@ -15,103 +29,399 @@ impl DropLandQueriesRepository {
         Self { db }
     }
 
-    /// Get all drop lands owned by a reinjector address
-    ///
-    /// # Arguments
-    /// * `reinjector_address` - The address that owns the drop lands (hex format)
-    /// * `since` - Optional start time to filter drops
-    /// * `until` - Optional end time to filter drops
+    /// Get all drop lands owned by a reinjector address with optional time filters
+    /// Unified query function that handles all time filter combinations
+    async fn get_drop_lands_query(
+        &self,
+        reinjector_address: &str,
+        since: Option<NaiveDateTime>,
+        until: Option<NaiveDateTime>,
+    ) -> Result<Vec<DropLandRow>, Error> {
+        // Build WHERE clause dynamically based on provided filters
+        let mut where_conditions = vec!["lh.owner = $1".to_string()];
+        let mut param_index = 2;
+
+        if since.is_some() {
+            where_conditions.push(format!("lh.time_bought >= ${}", param_index));
+            param_index += 1;
+        }
+
+        if until.is_some() {
+            where_conditions.push(format!("lh.time_bought <= ${}", param_index));
+        }
+
+        let where_clause = where_conditions.join(" AND ");
+
+        let query_str = format!(
+            r#"
+            SELECT
+                lh.land_location,
+                lh.owner,
+                lh.time_bought,
+                lh.close_date,
+                lh.token_inflows,
+                lh.token_outflows
+            FROM land_historical lh
+            WHERE {}
+            ORDER BY lh.time_bought DESC
+            "#,
+            where_clause
+        );
+
+        let mut q = query(&query_str).bind(reinjector_address);
+
+        if let Some(s) = since {
+            q = q.bind(s);
+        }
+
+        if let Some(u) = until {
+            q = q.bind(u);
+        }
+
+        let rows = q
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await
+            .map_err(|e| Error::SqlError(e))?;
+
+        // Map rows to DropLandRow
+        let drop_lands: Vec<DropLandRow> = rows
+            .into_iter()
+            .map(|row| DropLandRow {
+                land_location: row.get("land_location"),
+                owner: row.get("owner"),
+                time_bought: row.get("time_bought"),
+                close_date: row.get("close_date"),
+                token_inflows: row.get("token_inflows"),
+                token_outflows: row.get("token_outflows"),
+            })
+            .collect();
+
+        Ok(drop_lands)
+    }
+
+    fn normalize_address(address: &str) -> String {
+        if let Some(hex_part) = address.strip_prefix("0x") {
+            let trimmed = hex_part.trim_start_matches('0');
+            let normalized = if trimmed.is_empty() {
+                "0".to_string()
+            } else {
+                trimmed.to_lowercase()
+            };
+            format!("0x{}", normalized)
+        } else {
+            address.to_lowercase()
+        }
+    }
+
+    /// Get all drop lands for a reinjector with raw data (internal helper)
+    /// Returns tuple: (location, owner, time_bought, initial_stake, close_date, token_address)
+    async fn get_drop_lands_raw(
+        &self,
+        reinjector_address: &str,
+        since: Option<NaiveDateTime>,
+        until: Option<NaiveDateTime>,
+    ) -> Result<Vec<DropLandRow>, Error> {
+        let normalized_address = Self::normalize_address(reinjector_address);
+        self.get_drop_lands_query(&normalized_address, since, until)
+            .await
+    }
+
+    /// Public wrapper for get_drop_lands with optional time filters
+    /// Returns all drops owned by a reinjector with all metrics calculated
+    /// Optionally filtered by time_bought range
     pub async fn get_drop_lands(
         &self,
         reinjector_address: &str,
         since: Option<NaiveDateTime>,
         until: Option<NaiveDateTime>,
-    ) -> Result<Vec<(Location, String, NaiveDateTime, String, Option<NaiveDateTime>)>, Error> {
-        let mut query_str = String::from(
-            r#"
-            SELECT
-                land_location,
-                owner,
-                time_bought,
-                COALESCE(buy_cost_token, '0') as buy_cost_token,
-                close_date
-            FROM land_historical
-            WHERE owner = $1
-            "#,
-        );
+        level: u8,
+        fee_rate_basis_points: u128,
+        sale_fee_basis_points: u128,
+    ) -> Result<Vec<DropLandModel>, Error> {
+        let drop_lands_raw = self
+            .get_drop_lands_raw(reinjector_address, since, until)
+            .await?;
 
-        if since.is_some() {
-            query_str.push_str("AND time_bought >= $2 ");
+        let mut results = Vec::new();
+        for row in drop_lands_raw {
+            // Determine the stake token from token_outflows (reflects the token actually staked)
+            // If no claims happened yet (no outflows), fall back to the token used to buy the land
+            let token_address = row
+                .token_outflows
+                .0
+                .keys()
+                .next()
+                .cloned()
+                .unwrap_or_else(|| "0x0".to_string());
+
+            // Calculate total outflows from token_outflows (used as fallback)
+            // token_outflows values are U256, sum them all
+            let outflows_total: U256 =
+                row.token_outflows
+                    .0
+                    .values()
+                    .fold(Self::zero_u256(), |acc, val| {
+                        let acc_bd = BigDecimal::from(acc);
+                        let val_bd = BigDecimal::from(*val);
+                        U256::from(acc_bd + val_bd)
+                    });
+
+            // Get initial stake from land_stake - first snapshot at or after time_bought
+            // But ONLY if it's within the drop's time period
+            let stake_from_db = self
+                .get_stake_amount_in_period(row.land_location, row.time_bought, row.close_date)
+                .await?;
+
+            // Determine if we should use DB stake or fallback to outflows
+            // Use outflows if: no stake found, or stake is suspiciously small compared to outflows
+            let (drop_initial_stake, drop_remaining_stake, drop_distributed_total) =
+                if let Some(initial) = stake_from_db {
+                    // We have valid stake data from the DB
+                    let remaining = if row.close_date.is_some() {
+                        self.get_stake_amount_at(row.land_location, row.close_date)
+                            .await?
+                            .unwrap_or_else(Self::zero_u256)
+                    } else {
+                        self.get_stake_amount_at(row.land_location, None)
+                            .await?
+                            .unwrap_or_else(Self::zero_u256)
+                    };
+
+                    let distributed = {
+                        let initial_bd = BigDecimal::from(initial);
+                        let remaining_bd = BigDecimal::from(remaining);
+                        if initial_bd > remaining_bd {
+                            U256::from(initial_bd - remaining_bd)
+                        } else {
+                            Self::zero_u256()
+                        }
+                    };
+
+                    (initial, remaining, distributed)
+                } else {
+                    // No valid stake data - use token_outflows as fallback
+                    // For closed drops: initial = distributed = outflows_total, remaining = 0
+                    // For active drops: we can't determine, use outflows as distributed so far
+                    if row.close_date.is_some() {
+                        // Closed drop: all stake was distributed
+                        (outflows_total, Self::zero_u256(), outflows_total)
+                    } else {
+                        // Active drop: we don't know initial, use outflows as minimum distributed
+                        // This is an approximation
+                        (outflows_total, Self::zero_u256(), outflows_total)
+                    }
+                };
+
+            // Get area protocol fees per token
+            let area_protocol_fees_total = self
+                .get_area_protocol_fees_per_token(
+                    row.land_location,
+                    level,
+                    fee_rate_basis_points,
+                    row.time_bought,
+                    row.close_date,
+                )
+                .await?;
+
+            // Get sale protocol fees for neighbor sales
+            let sale_protocol_fees_total = self
+                .get_sale_protocol_fees_per_token(
+                    row.land_location,
+                    level,
+                    sale_fee_basis_points,
+                    row.time_bought,
+                    row.close_date,
+                )
+                .await?;
+
+            // Get influenced auctions
+            let influenced_auctions_total = self
+                .get_influenced_auctions(row.land_location, row.time_bought, row.close_date, level)
+                .await?;
+
+            // Calculate token_inflows_usd from token_inflows (will be converted to USD later)
+            let token_inflows_usd: u64 = 0; // TODO: Convert token_inflows to USD value
+
+            // Calculate area_protocol_fees_usd from area_protocol_fees_total (will be converted to USD later)
+            let area_protocol_fees_usd: u64 = 0; // TODO: Convert area_protocol_fees_total to USD value
+            let sale_protocol_fees_usd: u64 = 0; // TODO: Convert sale_protocol_fees_total to USD value
+
+            // ROI calculation requires token price conversions which are not available server-side.
+            // This should be calculated in the client where token prices are accessible.
+            // Formula: ROI = (area_protocol_fees_usd + influenced_auctions_usd + token_inflows_usd) / drop_distributed_usd
+            let drop_roi = 0.0;
+
+            let is_active = row.close_date.is_none();
+
+            results.push(DropLandModel {
+                land_location: row.land_location,
+                owner: row.owner,
+                token_address,
+                time_bought: row.time_bought,
+                drop_initial_stake,
+                drop_remaining_stake,
+                drop_distributed_total,
+                token_inflows: row.token_inflows,
+                token_inflows_usd,
+                area_protocol_fees_total,
+                area_protocol_fees_usd,
+                sale_protocol_fees_total,
+                sale_protocol_fees_usd,
+                influenced_auctions_total,
+                drop_roi,
+                close_date: row.close_date,
+                is_active,
+            });
         }
-        if until.is_some() {
-            query_str.push_str("AND time_bought <= $3 ");
-        }
 
-        query_str.push_str("ORDER BY time_bought DESC");
-
-        let result = if let (Some(start), Some(end)) = (since, until) {
-            query(query_str.as_str())
-                .bind(reinjector_address)
-                .bind(start)
-                .bind(end)
-                .fetch_all(&mut *(self.db.acquire().await?))
-                .await
-        } else if let Some(start) = since {
-            query(query_str.as_str())
-                .bind(reinjector_address)
-                .bind(start)
-                .fetch_all(&mut *(self.db.acquire().await?))
-                .await
-        } else if let Some(end) = until {
-            query(query_str.as_str())
-                .bind(reinjector_address)
-                .bind(end)
-                .fetch_all(&mut *(self.db.acquire().await?))
-                .await
-        } else {
-            query(query_str.as_str())
-                .bind(reinjector_address)
-                .fetch_all(&mut *(self.db.acquire().await?))
-                .await
-        };
-
-        result
-            .map_err(|e| Error::SqlError(e))
-            .map(|rows| {
-                rows.iter()
-                    .map(|row| {
-                        let land_location: Location = row.get("land_location");
-                        let owner: String = row.get("owner");
-                        let time_bought: NaiveDateTime = row.get("time_bought");
-                        let buy_cost_token: String = row.get("buy_cost_token");
-                        let close_date: Option<NaiveDateTime> = row.get("close_date");
-
-                        (
-                            land_location,
-                            owner,
-                            time_bought,
-                            buy_cost_token,
-                            close_date,
-                        )
-                    })
-                    .collect()
-            })
+        Ok(results)
     }
 
-    /// Get the current remaining stake for a land location
-    pub async fn get_current_remaining_stake(
+    /// Get the buyer's initial stake ONLY if data exists within the drop's time period.
+    /// Returns None if no stake data exists within [time_bought, close_date].
+    /// This prevents using stake data from a completely different time period.
+    pub async fn get_stake_amount_in_period(
         &self,
         location: Location,
+        time_bought: NaiveDateTime,
+        close_date: Option<NaiveDateTime>,
     ) -> Result<Option<U256>, Error> {
-        let result = query(
+        // First check if ANY stake data exists within the drop's period
+        let period_end = close_date.unwrap_or_else(|| Utc::now().naive_utc());
+
+        let exists_in_period = query(
             r#"
-            SELECT COALESCE(amount, '0') as amount
+            SELECT 1
             FROM land_stake
-            WHERE location = $1
+            WHERE location = $1 AND at >= $2 AND at <= $3
             LIMIT 1
             "#,
         )
         .bind(location)
+        .bind(time_bought)
+        .bind(period_end)
+        .fetch_optional(&mut *(self.db.acquire().await?))
+        .await
+        .map_err(|e| Error::SqlError(e))?;
+
+        // If no data exists in the period, return None (will trigger fallback)
+        if exists_in_period.is_none() {
+            return Ok(None);
+        }
+
+        // Data exists in the period, use the existing logic to find initial stake
+        self.get_stake_amount_after(location, time_bought).await
+    }
+
+    /// Get the stake snapshot for a land location at or before a specific time (or latest if None)
+    /// Uses at <= as_of, ordered DESC - gets the most recent snapshot before or at the given time
+    /// Use this for: remaining stake at close_date, or current stake (None)
+    pub async fn get_stake_amount_at(
+        &self,
+        location: Location,
+        as_of: Option<NaiveDateTime>,
+    ) -> Result<Option<U256>, Error> {
+        let query_str = if as_of.is_some() {
+            r#"
+            SELECT COALESCE(amount, '0') as amount
+            FROM land_stake
+            WHERE location = $1 AND at <= $2
+            ORDER BY at DESC
+            LIMIT 1
+            "#
+        } else {
+            r#"
+            SELECT COALESCE(amount, '0') as amount
+            FROM land_stake
+            WHERE location = $1
+            ORDER BY at DESC
+            LIMIT 1
+            "#
+        };
+
+        let mut q = query(query_str).bind(location);
+        if let Some(ts) = as_of {
+            q = q.bind(ts);
+        }
+
+        let result = q
+            .fetch_optional(&mut *(self.db.acquire().await?))
+            .await
+            .map_err(|e| Error::SqlError(e))?;
+
+        Ok(result.map(|row| row.get::<U256, _>("amount")))
+    }
+
+    /// Get the buyer's initial stake for a land location at the time of purchase.
+    ///
+    /// When a land is bought, the sequence is:
+    /// 1. Seller pays final taxes (stake decreases)
+    /// 2. Seller's stake goes to 0 (ownership transfer)
+    /// 3. Buyer stakes new amount
+    ///
+    /// Multiple stake snapshots can have the same timestamp. We use the event id
+    /// to get the correct order since ids are sequential (e.g., e_00000020, e_00000022).
+    ///
+    /// Strategy: Find a zero stake within the same timestamp window. If found,
+    /// get the first non-zero stake after that id. Otherwise, get the first stake
+    /// at or after time_bought ordered by id.
+    pub async fn get_stake_amount_after(
+        &self,
+        location: Location,
+        after: NaiveDateTime,
+    ) -> Result<Option<U256>, Error> {
+        // Look for a zero stake ONLY within the same timestamp as time_bought
+        // This indicates ownership transfer happened at purchase time
+        let zero_stake_result = query(
+            r#"
+            SELECT id
+            FROM land_stake
+            WHERE location = $1 AND at = $2 AND amount = '0'
+            ORDER BY id ASC
+            LIMIT 1
+            "#,
+        )
+        .bind(location)
+        .bind(after)
+        .fetch_optional(&mut *(self.db.acquire().await?))
+        .await
+        .map_err(|e| Error::SqlError(e))?;
+
+        // If there's a zero stake at the exact time_bought, get the first non-zero stake AFTER that id
+        // This represents the new owner's initial stake
+        if let Some(zero_row) = zero_stake_result {
+            let zero_id: String = zero_row.get("id");
+            let result = query(
+                r#"
+                SELECT COALESCE(amount, '0') as amount
+                FROM land_stake
+                WHERE location = $1 AND id > $2 AND amount != '0'
+                ORDER BY id ASC
+                LIMIT 1
+                "#,
+            )
+            .bind(location)
+            .bind(zero_id)
+            .fetch_optional(&mut *(self.db.acquire().await?))
+            .await
+            .map_err(|e| Error::SqlError(e))?;
+
+            return Ok(result.map(|row| row.get::<U256, _>("amount")));
+        }
+
+        // No zero stake at time_bought - this is a first purchase or auction win
+        // Return the first stake at or after the given time, ordered by id
+        let result = query(
+            r#"
+            SELECT COALESCE(amount, '0') as amount
+            FROM land_stake
+            WHERE location = $1 AND at >= $2
+            ORDER BY id ASC
+            LIMIT 1
+            "#,
+        )
+        .bind(location)
+        .bind(after)
         .fetch_optional(&mut *(self.db.acquire().await?))
         .await
         .map_err(|e| Error::SqlError(e))?;
@@ -119,30 +429,8 @@ impl DropLandQueriesRepository {
         Ok(result.map(|row| row.get::<U256, _>("amount")))
     }
 
-    /// Get the sum of token inflows for a land location
-    /// Returns a HashMap serialized as JSON string
-    pub async fn get_token_inflows_sum(&self, location: Location) -> Result<String, Error> {
-        let result = query(
-            r#"
-            SELECT COALESCE(token_inflows, '{}') as token_inflows
-            FROM land_historical
-            WHERE land_location = $1
-            ORDER BY time_bought DESC
-            LIMIT 1
-            "#,
-        )
-        .bind(location)
-        .fetch_optional(&mut *(self.db.acquire().await?))
-        .await
-        .map_err(|e| Error::SqlError(e))?;
-
-        Ok(result
-            .map(|row| row.get::<String, _>("token_inflows"))
-            .unwrap_or_default())
-    }
-
-    /// Get the 8 neighboring locations for a given location
-    /// Returns the set of neighbor locations
+    /// Get the 8 neighboring locations for a given location (Level 1 - 3x3 area)
+    /// Includes boundary checking for edge and corner locations
     pub fn get_area_neighbors(&self, location: Location) -> Vec<Location> {
         let loc_u64 = location.deref().0;
         let x = (loc_u64 & 0xFF) as i16;
@@ -150,7 +438,7 @@ impl DropLandQueriesRepository {
 
         let mut neighbors = Vec::new();
 
-        // 8-directional neighbors
+        // 8-directional neighbors (excluding center)
         for dx in [-1, 0, 1].iter() {
             for dy in [-1, 0, 1].iter() {
                 if *dx == 0 && *dy == 0 {
@@ -171,253 +459,402 @@ impl DropLandQueriesRepository {
         neighbors
     }
 
-    /// Get the sum of token inflows from all neighbors of a location
-    /// This represents taxes received from neighboring lands
-    /// Returns the total as a string
-    pub async fn get_neighbor_taxes_received(&self, location: Location) -> Result<String, Error> {
-        let inflows_json = self.get_token_inflows_sum(location).await?;
-
-        // Parse JSON and sum all values
-        if let Ok(map) = serde_json::from_str::<std::collections::HashMap<String, String>>(&inflows_json) {
-            let total: u128 = map
-                .values()
-                .filter_map(|v| v.parse::<u128>().ok())
-                .sum();
-            Ok(total.to_string())
-        } else {
-            Ok("0".to_string())
+    /// Get all neighbors for a specified level
+    /// Level 1: Direct neighbors (8 neighbors + center = 9 total)
+    /// Level 2: Direct + neighbors of neighbors (25 total without duplicates)
+    /// Level 3: Level 2 + neighbors of level 2 neighbors (49 total without duplicates)
+    pub fn get_area_neighbors_by_level(&self, location: Location, level: u8) -> Vec<Location> {
+        if level == 1 {
+            // Level 1: just the direct neighbors + center
+            let mut result = vec![location];
+            result.extend(self.get_area_neighbors(location));
+            return result;
         }
+
+        // Level 2 and 3: use iterative approach
+        let mut all_locations = vec![location];
+        let mut current_level_neighbors = self.get_area_neighbors(location);
+        all_locations.extend(current_level_neighbors.clone());
+
+        for _ in 1..level {
+            let mut next_level = Vec::new();
+            for neighbor in &current_level_neighbors {
+                let neighbors_of_neighbor = self.get_area_neighbors(*neighbor);
+                for n in neighbors_of_neighbor {
+                    if !all_locations.contains(&n) && !next_level.contains(&n) {
+                        next_level.push(n);
+                    }
+                }
+            }
+            if next_level.is_empty() {
+                break;
+            }
+            all_locations.extend(next_level.clone());
+            current_level_neighbors = next_level;
+        }
+
+        all_locations
     }
 
-    /// Calculate protocol fee from a transaction amount
-    /// fee = amount * fee_rate_basis_points / 10_000_000
-    fn calculate_protocol_fee(amount_str: &str, fee_rate_basis_points: u128) -> String {
-        if let Ok(amount) = amount_str.parse::<u128>() {
-            let fee = (amount * fee_rate_basis_points) / 10_000_000;
-            fee.to_string()
-        } else {
-            "0".to_string()
+    /// Calculate protocol fee per token from token inflows
+    /// Given: amount with fee already deducted
+    /// Fee = amount × (fee_rate_basis_points / (10_000_000 - fee_rate_basis_points))
+    fn calculate_fee_per_token(inflow_amount: U256, fee_rate_basis_points: u128) -> U256 {
+        let denominator = 10_000_000u128.saturating_sub(fee_rate_basis_points);
+        if denominator == 0 {
+            return U256::from(BigDecimal::from(0));
         }
+        // Convert to BigDecimal, do math, convert back
+        let inflow_bd = BigDecimal::from(inflow_amount);
+        let fee_rate_bd = BigDecimal::from(fee_rate_basis_points as i64);
+        let denominator_bd = BigDecimal::from(denominator as i64);
+        let fee_bd = inflow_bd * fee_rate_bd / denominator_bd;
+        U256::from(fee_bd)
     }
 
-    /// Get the total protocol fees earned from the 3x3 area around a drop land
-    /// This includes fees from the drop land itself and its 8 neighbors
-    pub async fn get_area_protocol_fees_total(
+    /// Calculate simple fee from gross amount (e.g., secondary sale)
+    /// Fee = amount × (fee_rate_basis_points / 10_000_000)
+    fn calculate_sale_fee(amount: U256, fee_rate_basis_points: u128) -> U256 {
+        let numerator_bd = BigDecimal::from(fee_rate_basis_points as i64);
+        let denominator_bd = BigDecimal::from(10_000_000i64);
+        let amount_bd = BigDecimal::from(amount);
+        let fee_bd = amount_bd * numerator_bd / denominator_bd;
+        U256::from(fee_bd)
+    }
+
+    /// Get protocol fees from the area of a drop (per-token calculation)
+    /// Queries event_land_transfer inflows for neighbor lands during the drop window
+    /// Returns HashMap<token_address, fee_amount>
+    pub async fn get_area_protocol_fees_per_token(
         &self,
         location: Location,
+        level: u8,
         fee_rate_basis_points: u128,
-        since: Option<NaiveDateTime>,
-        until: Option<NaiveDateTime>,
-    ) -> Result<String, Error> {
-        // Get the area: center + 8 neighbors
-        let mut area_locations = vec![location];
-        area_locations.extend(self.get_area_neighbors(location));
+        time_bought: NaiveDateTime,
+        close_date: Option<NaiveDateTime>,
+    ) -> Result<Json<HashMap<String, U256>>, Error> {
+        let area_locations = self.get_area_neighbors_by_level(location, level);
+        if area_locations.is_empty() {
+            return Ok(Json(HashMap::new()));
+        }
 
-        // Query all LandTransferEvents FROM locations in the area
+        let period_end = close_date.unwrap_or_else(|| Utc::now().naive_utc());
+
+        #[derive(sqlx::FromRow)]
+        struct TokenFeeRow {
+            token_address: String,
+            total_amount: BigDecimal,
+        }
+
         let mut query_str = String::from(
-            r#"
-            SELECT COALESCE(SUM(CAST(amount AS NUMERIC)), 0) as total
-            FROM event_land_transfer
-            WHERE from_location IN (
-            "#,
+            "SELECT elt.token_address as token_address, COALESCE(SUM(CAST(elt.amount AS NUMERIC)), 0) as total_amount\n             FROM event_land_transfer elt\n             JOIN event e ON elt.id = e.id\n             WHERE elt.to_location IN (",
         );
 
-        // Add location placeholders
         for i in 0..area_locations.len() {
             if i > 0 {
                 query_str.push(',');
             }
-            query_str.push('$');
-            query_str.push_str(&(i + 1).to_string());
+            query_str.push_str(&format!("${}", i + 1));
         }
 
-        let mut param_index = area_locations.len() + 1;
+        query_str.push_str(") AND e.at >= $");
+        query_str.push_str(&format!("{}", area_locations.len() + 1));
+        query_str.push_str(" AND e.at <= $");
+        query_str.push_str(&format!("{}", area_locations.len() + 2));
+        query_str.push_str(" GROUP BY elt.token_address");
 
-        query_str.push_str(")");
-
-        if since.is_some() {
-            query_str.push_str(" AND ts >= $");
-            query_str.push_str(&param_index.to_string());
-            param_index += 1;
-        }
-
-        if until.is_some() {
-            query_str.push_str(" AND ts <= $");
-            query_str.push_str(&param_index.to_string());
-        }
-
-        let mut q = query(query_str.as_str());
-
-        // Bind location parameters
+        let mut q = query_as::<_, TokenFeeRow>(&query_str);
         for loc in &area_locations {
             q = q.bind(*loc);
         }
+        q = q.bind(time_bought);
+        q = q.bind(period_end);
 
-        // Bind time parameters
-        if let Some(start) = since {
-            q = q.bind(start);
+        let rows = q
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await
+            .map_err(|e| Error::SqlError(e))?;
+
+        let mut merged_fees: HashMap<String, U256> = HashMap::new();
+        for row in rows {
+            let inflow_amount = U256::from(row.total_amount.clone());
+            let fee = Self::calculate_fee_per_token(inflow_amount, fee_rate_basis_points);
+            merged_fees.insert(row.token_address, fee);
         }
-        if let Some(end) = until {
-            q = q.bind(end);
+
+        Ok(Json(merged_fees))
+    }
+
+    /// Get protocol fees from secondary sales (LandBought events) in the neighbor area
+    /// Applies sale_fee_basis_points to each sale price and aggregates per token
+    pub async fn get_sale_protocol_fees_per_token(
+        &self,
+        location: Location,
+        level: u8,
+        sale_fee_basis_points: u128,
+        time_bought: NaiveDateTime,
+        close_date: Option<NaiveDateTime>,
+    ) -> Result<Json<HashMap<String, U256>>, Error> {
+        let area_locations = self.get_area_neighbors_by_level(location, level);
+        if area_locations.is_empty() {
+            return Ok(Json(HashMap::new()));
         }
+
+        let period_end = close_date.unwrap_or_else(|| Utc::now().naive_utc());
+
+        #[derive(sqlx::FromRow)]
+        struct SaleRow {
+            token_used: String,
+            total_price: BigDecimal,
+        }
+
+        let mut query_str = String::from(
+            "SELECT elb.token_used as token_used, COALESCE(SUM(CAST(elb.price AS NUMERIC)), 0) as total_price\n             FROM event_land_bought elb\n             JOIN event e ON elb.id = e.id\n             WHERE elb.location IN (",
+        );
+
+        for i in 0..area_locations.len() {
+            if i > 0 {
+                query_str.push(',');
+            }
+            query_str.push_str(&format!("${}", i + 1));
+        }
+
+        query_str.push_str(") AND e.at >= $");
+        query_str.push_str(&format!("{}", area_locations.len() + 1));
+        query_str.push_str(" AND e.at <= $");
+        query_str.push_str(&format!("{}", area_locations.len() + 2));
+        query_str.push_str(" GROUP BY elb.token_used");
+
+        let mut q = query_as::<_, SaleRow>(&query_str);
+        for loc in &area_locations {
+            q = q.bind(*loc);
+        }
+        q = q.bind(time_bought);
+        q = q.bind(period_end);
+
+        let rows = q
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await
+            .map_err(|e| Error::SqlError(e))?;
+
+        let mut merged_fees: HashMap<String, U256> = HashMap::new();
+        for row in rows {
+            let price_amount = U256::from(row.total_price.clone());
+            let fee = Self::calculate_sale_fee(price_amount, sale_fee_basis_points);
+            merged_fees.insert(row.token_used, fee);
+        }
+
+        Ok(Json(merged_fees))
+    }
+
+    /// Get auctions sold in neighbor locations during a drop's lifetime
+    /// Filters event_auction_finished for neighbor locations within [time_bought, close_date or now]
+    /// Returns the sum of price values
+    pub async fn get_influenced_auctions(
+        &self,
+        location: Location,
+        time_bought: NaiveDateTime,
+        close_date: Option<NaiveDateTime>,
+        level: u8,
+    ) -> Result<U256, Error> {
+        let area_locations = self.get_area_neighbors_by_level(location, level);
+        if area_locations.is_empty() {
+            return Ok(Self::zero_u256());
+        }
+
+        let period_end = close_date.unwrap_or_else(|| Utc::now().naive_utc());
+        // Build dynamic query for location IN clause - need to join with event table for timestamp
+        let mut query_str = String::from(
+            r#"SELECT COALESCE(SUM(CAST(eaf.price AS NUMERIC)), 0) as total
+               FROM event_auction_finished eaf
+               JOIN event e ON eaf.id = e.id
+               WHERE eaf.location IN ("#,
+        );
+
+        for i in 0..area_locations.len() {
+            if i > 0 {
+                query_str.push(',');
+            }
+            query_str.push_str(&format!("${}", i + 1));
+        }
+        query_str.push_str(") AND e.at >= $");
+        query_str.push_str(&format!("{}", area_locations.len() + 1));
+        query_str.push_str(" AND e.at <= $");
+        query_str.push_str(&format!("{}", area_locations.len() + 2));
+
+        let mut q = query(&query_str);
+        for loc in &area_locations {
+            q = q.bind(*loc); // Bind location as Location type
+        }
+        q = q.bind(time_bought);
+        q = q.bind(period_end);
 
         let result = q
             .fetch_one(&mut *(self.db.acquire().await?))
             .await
-            .map_err(|e| Error::SqlError(e))?;
+            .map_err(|e| {
+                Error::SqlError(e)
+            })?;
 
-        let total_transfer_amount: String = result.get::<String, _>("total");
+        let total_amount: U256 = result.get("total");
 
-        // Apply fee rate to compute protocol fees
-        let protocol_fees = Self::calculate_protocol_fee(&total_transfer_amount, fee_rate_basis_points);
-
-        Ok(protocol_fees)
+        Ok(total_amount)
     }
 
-    /// Get drop metrics for a specific drop land
-    ///
-    /// Returns:
-    /// - drop_initial_stake
-    /// - drop_remaining_stake
-    /// - neighbor_taxes_received
-    /// - area_protocol_fees_total
+    /// Helper function to create a zero U256 value
+    fn zero_u256() -> U256 {
+        U256::from_str("0").unwrap_or_else(|_| U256::from(BigDecimal::from(0)))
+    }
+
+    /// Get all metrics for a specific drop land
+    /// Returns: (initial_stake, remaining_stake, area_fees_per_token, influenced_auctions)
     pub async fn get_drop_metrics(
         &self,
         location: Location,
+        time_bought: NaiveDateTime,
+        close_date: Option<NaiveDateTime>,
+        level: u8,
         fee_rate_basis_points: u128,
-    ) -> Result<(String, String, String, String), Error> {
-        let drop_initial_stake = {
-            let result = query(
-                r#"
-                SELECT COALESCE(buy_cost_token, '0') as buy_cost_token
-                FROM land_historical
-                WHERE land_location = $1
-                ORDER BY time_bought DESC
-                LIMIT 1
-                "#,
-            )
-            .bind(location)
-            .fetch_optional(&mut *(self.db.acquire().await?))
-            .await
-            .map_err(|e| Error::SqlError(e))?
-            .map(|row| row.get::<String, _>("buy_cost_token"));
+    ) -> Result<(U256, U256, Json<HashMap<String, U256>>, U256), Error> {
+        // Get initial stake from land_stake - first snapshot at or after time_bought
+        let drop_initial_stake = self
+            .get_stake_amount_after(location, time_bought)
+            .await?
+            .unwrap_or_else(Self::zero_u256);
 
-            result.unwrap_or_else(|| "0".to_string())
+        // Get remaining stake
+        // If land is still active (no close_date), get the current/latest stake amount
+        // If land is closed, get the stake amount at close_date
+        let drop_remaining_stake = if close_date.is_some() {
+            self.get_stake_amount_at(location, close_date)
+                .await?
+                .unwrap_or_else(Self::zero_u256)
+        } else {
+            // Active land: get the latest stake amount (no time constraint)
+            self.get_stake_amount_at(location, None)
+                .await?
+                .unwrap_or_else(Self::zero_u256)
         };
 
-        let drop_remaining_stake = self
-            .get_current_remaining_stake(location)
-            .await?
-            .map(|u256_val| u256_val.to_string())
-            .unwrap_or_else(|| "0".to_string());
+        // Get area protocol fees per token
+        let area_fees_per_token = self
+            .get_area_protocol_fees_per_token(
+                location,
+                level,
+                fee_rate_basis_points,
+                time_bought,
+                close_date,
+            )
+            .await?;
 
-        let neighbor_taxes_received = self.get_neighbor_taxes_received(location).await?;
-
-        let area_protocol_fees_total = self
-            .get_area_protocol_fees_total(location, fee_rate_basis_points, None, None)
+        // Get influenced auctions
+        let influenced_auctions = self
+            .get_influenced_auctions(location, time_bought, close_date, level)
             .await?;
 
         Ok((
             drop_initial_stake,
             drop_remaining_stake,
-            neighbor_taxes_received,
-            area_protocol_fees_total,
+            area_fees_per_token,
+            influenced_auctions,
         ))
     }
 
-    /// Get global metrics for a time period
-    ///
-    /// Returns:
-    /// - total_revenue_in_period (sum of protocol fees from all areas)
-    /// - total_drops_distributed_in_period (sum of outflows from all reinjector positions)
+    /// Get global metrics for all drops owned by a reinjector in a time period
+    /// Returns: (total_area_fees_per_token, total_distributed, total_influenced_auction_value)
     pub async fn get_global_metrics(
         &self,
         reinjector_address: &str,
+        level: u8,
         fee_rate_basis_points: u128,
-        since: NaiveDateTime,
-        until: NaiveDateTime,
-    ) -> Result<(String, String), Error> {
-        // Get all drop lands in the time period
+        sale_fee_basis_points: u128,
+        since: Option<NaiveDateTime>,
+        until: Option<NaiveDateTime>,
+    ) -> Result<GlobalDropMetricsModel, Error> {
+        // Get all drop lands in the time period with all metrics already calculated
         let drop_lands = self
-            .get_drop_lands(reinjector_address, Some(since), Some(until))
+            .get_drop_lands(
+                reinjector_address,
+                since,
+                until,
+                level,
+                fee_rate_basis_points,
+                sale_fee_basis_points,
+            )
             .await?;
 
-        let mut total_revenue = 0u128;
-        let mut total_distributed = 0u128;
+        let mut merged_area_fees: HashMap<String, U256> = HashMap::new();
+        let mut distributed_per_token: HashMap<String, U256> = HashMap::new();
+        let mut inflows_per_token: HashMap<String, U256> = HashMap::new();
+        let mut sale_fees_per_token: HashMap<String, U256> = HashMap::new();
+        let mut total_distributed = Self::zero_u256();
+        let mut total_influenced_auctions = Self::zero_u256();
 
-        for (location, _, _, drop_initial_stake, _) in drop_lands {
-            // Get area fees for this drop
-            let area_fees = self
-                .get_area_protocol_fees_total(location, fee_rate_basis_points, Some(since), Some(until))
-                .await?;
+        for drop in drop_lands {
+            // Add to total distributed using BigDecimal
+            let total_distributed_bd = BigDecimal::from(total_distributed);
+            let distributed_bd = BigDecimal::from(drop.drop_distributed_total);
+            total_distributed = U256::from(total_distributed_bd + distributed_bd);
 
-            if let Ok(fees_u128) = area_fees.parse::<u128>() {
-                total_revenue = total_revenue.saturating_add(fees_u128);
+            // Group distributed by stake token for downstream per-token ROI calculations
+            distributed_per_token
+                .entry(drop.token_address.clone())
+                .and_modify(|e| {
+                    let e_bd = BigDecimal::from(*e);
+                    let dist_bd = BigDecimal::from(drop.drop_distributed_total);
+                    *e = U256::from(e_bd + dist_bd);
+                })
+                .or_insert(drop.drop_distributed_total);
+
+            // Merge area fees into global map
+            for (token_address, fee_amount) in drop.area_protocol_fees_total.0.iter() {
+                merged_area_fees
+                    .entry(token_address.clone())
+                    .and_modify(|e| {
+                        let e_bd = BigDecimal::from(*e);
+                        let fee_bd = BigDecimal::from(*fee_amount);
+                        *e = U256::from(e_bd + fee_bd);
+                    })
+                    .or_insert(*fee_amount);
             }
 
-            // Get distributed amount
-            let remaining = self
-                .get_current_remaining_stake(location)
-                .await?
-                .map(|u256_val| u256_val.to_string())
-                .unwrap_or_else(|| "0".to_string());
-
-            if let (Ok(initial), Ok(remaining_u128)) = (drop_initial_stake.parse::<u128>(), remaining.parse::<u128>()) {
-                let distributed = if initial > remaining_u128 {
-                    initial - remaining_u128
-                } else {
-                    0
-                };
-                total_distributed = total_distributed.saturating_add(distributed);
+            // Merge inflows into global map
+            for (token_address, inflow_amount) in drop.token_inflows.0.iter() {
+                inflows_per_token
+                    .entry(token_address.clone())
+                    .and_modify(|e| {
+                        let e_bd = BigDecimal::from(*e);
+                        let inflow_bd = BigDecimal::from(*inflow_amount);
+                        *e = U256::from(e_bd + inflow_bd);
+                    })
+                    .or_insert(*inflow_amount);
             }
+
+            // Merge sale fees into global map
+            for (token_address, fee_amount) in drop.sale_protocol_fees_total.0.iter() {
+                sale_fees_per_token
+                    .entry(token_address.clone())
+                    .and_modify(|e| {
+                        let e_bd = BigDecimal::from(*e);
+                        let fee_bd = BigDecimal::from(*fee_amount);
+                        *e = U256::from(e_bd + fee_bd);
+                    })
+                    .or_insert(*fee_amount);
+            }
+
+            // Add to total influenced auctions using BigDecimal
+            let total_influenced_bd = BigDecimal::from(total_influenced_auctions);
+            let influenced_bd = BigDecimal::from(drop.influenced_auctions_total);
+            total_influenced_auctions = U256::from(total_influenced_bd + influenced_bd);
         }
 
-        Ok((total_revenue.to_string(), total_distributed.to_string()))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_calculate_protocol_fee() {
-        // Test fee calculation: 900_000 basis points (9%) on 1e18
-        let amount = "1000000000000000000";
-        let fee_rate = 900_000u128;
-        let fee = DropLandQueriesRepository::calculate_protocol_fee(amount, fee_rate);
-
-        // Should be 9% of 1e18 = 90_000_000_000_000_000
-        assert_eq!(fee, "90000000000000000");
-    }
-
-    #[test]
-    fn test_get_area_neighbors_center() {
-        let repo = DropLandQueriesRepository::new(sqlx::PgPoolOptions::new().connect_lazy("").ok().unwrap());
-
-        // Test center location (128, 128)
-        let center = Location::from(((128 << 8) | 128) as u16);
-        let neighbors = repo.get_area_neighbors(center);
-        assert_eq!(neighbors.len(), 8);
-    }
-
-    #[test]
-    fn test_get_area_neighbors_corner() {
-        let repo = DropLandQueriesRepository::new(sqlx::PgPoolOptions::new().connect_lazy("").ok().unwrap());
-
-        // Test corner location (0, 0) - should have only 3 neighbors
-        let corner = Location::from(0u16);
-        let neighbors = repo.get_area_neighbors(corner);
-        assert_eq!(neighbors.len(), 3);
-    }
-
-    #[test]
-    fn test_get_area_neighbors_edge() {
-        let repo = DropLandQueriesRepository::new(sqlx::PgPoolOptions::new().connect_lazy("").ok().unwrap());
-
-        // Test edge location (0, 128) - should have only 5 neighbors
-        let edge = Location::from(((128 << 8) | 0) as u16);
-        let neighbors = repo.get_area_neighbors(edge);
-        assert_eq!(neighbors.len(), 5);
+        Ok(GlobalDropMetricsModel {
+            area_fees_per_token: Json(merged_area_fees),
+            distributed_per_token: Json(distributed_per_token),
+            inflows_per_token: Json(inflows_per_token),
+            sale_fees_per_token: Json(sale_fees_per_token),
+            total_distributed,
+            total_influenced_auctions,
+        })
     }
 }

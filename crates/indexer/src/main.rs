@@ -9,7 +9,9 @@ use axum::{
     routing::get,
     Json, Router,
 };
-use chaindata_repository::{LandHistoricalRepository, LandRepository, WalletActivityRepository,DropLandQueriesRepository};
+use chaindata_repository::{
+    DropLandQueriesRepository, LandHistoricalRepository, LandRepository, WalletActivityRepository,
+};
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
 use confique::Config;
