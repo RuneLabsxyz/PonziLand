@@ -4,7 +4,8 @@ import {
   type PositionMetrics,
 } from '../positions/position-pnl-calculator';
 
-export const TOURNAMENT_START = '2025-12-15T19:00:00';
+// Tournament start: Dec 15, 20:00 Paris time (CET = UTC+1) = 19:00 UTC
+export const TOURNAMENT_START = '2025-12-15T19:00:00Z';
 
 export interface TokenFlow {
   [tokenAddress: string]: string;
