@@ -269,8 +269,8 @@ impl Repository {
                 token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
                 token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
             FROM land_historical
-            WHERE close_date IS NOT NULL AND close_date >= $1
-            ORDER BY close_date DESC
+            WHERE time_bought >= $1
+            ORDER BY time_bought DESC
             "#,
             since
         )
