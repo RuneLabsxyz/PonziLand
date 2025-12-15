@@ -5,6 +5,8 @@
   import CostCell from '../../positions/cells/cost-cell.svelte';
   import TokenInflowCell from '../../positions/cells/token-inflow-cell.svelte';
   import TokenOutflowCell from '../../positions/cells/token-outflow-cell.svelte';
+  import DateCell from '../../positions/cells/date-cell.svelte';
+  import RoiCell from '../../positions/cells/roi-cell.svelte';
   import { locationToCoordinates } from '$lib/utils';
 
   interface Props {
@@ -17,7 +19,7 @@
 </script>
 
 <div
-  class="grid grid-cols-[60px_70px_90px_90px_90px_90px_90px] gap-1 px-3 py-1.5 text-xs border-b border-gray-800/50 hover:bg-gray-800/20"
+  class="grid grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 text-xs border-b border-gray-800/50 hover:bg-gray-800/20"
 >
   <!-- Location -->
   <div class="font-ponzi-number text-gray-300">
@@ -32,6 +34,25 @@
   <!-- PnL (without share button) -->
   <div class="flex justify-end">
     <TotalPnlCell {position} showShareButton={false} showPercentage={false} />
+  </div>
+
+  <!-- ROI -->
+  <div class="flex justify-end">
+    <RoiCell {position} />
+  </div>
+
+  <!-- Bought Date -->
+  <div class="flex justify-end">
+    <DateCell
+      dateString={position.time_bought}
+      buyTokenUsed={position.buy_token_used}
+      variant="buy"
+    />
+  </div>
+
+  <!-- Close Date -->
+  <div class="flex justify-end">
+    <DateCell dateString={position.close_date} variant="close" {position} />
   </div>
 
   <!-- Buy Cost -->
