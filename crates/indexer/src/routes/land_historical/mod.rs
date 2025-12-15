@@ -12,6 +12,24 @@ use std::sync::Arc;
 
 use crate::state::AppState;
 
+fn deserialize_optional_datetime<'de, D>(
+    deserializer: D,
+) -> Result<Option<chrono::NaiveDateTime>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    use serde::Deserialize;
+
+    let opt: Option<String> = Option::deserialize(deserializer)?;
+    match opt {
+        None => Ok(None),
+        Some(s) => chrono::NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S")
+            .or_else(|_| chrono::DateTime::parse_from_rfc3339(&s).map(|dt| dt.naive_utc()))
+            .map(Some)
+            .map_err(serde::de::Error::custom),
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub struct LandHistoricalResponse {
     pub id: String,
@@ -42,8 +60,13 @@ pub struct LandHistoricalQuery {
 
 #[derive(Debug, Deserialize)]
 pub struct LeaderboardQuery {
+    /// Number of days to look back (default: 7). Ignored if `since` is provided.
     #[serde(default = "default_days")]
     pub days: u32,
+    /// ISO 8601 timestamp to filter from (e.g., "2024-12-01T00:00:00" or "2024-12-01T00:00:00Z").
+    /// If provided, `days` is ignored. Useful for tournaments with a specific start time.
+    #[serde(default, deserialize_with = "deserialize_optional_datetime")]
+    pub since: Option<chrono::NaiveDateTime>,
 }
 
 fn default_days() -> u32 {
@@ -60,7 +83,8 @@ pub struct LeaderboardEntry {
 #[derive(Debug, Clone, Serialize)]
 pub struct LeaderboardResponse {
     pub entries: Vec<LeaderboardEntry>,
-    pub period_days: u32,
+    /// The timestamp from which positions were queried
+    pub since: String,
 }
 
 pub struct LandHistoricalRoute;
@@ -194,11 +218,14 @@ impl LandHistoricalRoute {
         Query(query): Query<LeaderboardQuery>,
         State(land_historical_repository): State<Arc<LandHistoricalRepository>>,
     ) -> Result<Json<LeaderboardResponse>, axum::http::StatusCode> {
-        // Calculate the "since" timestamp based on days parameter
-        let since = Utc::now()
-            .naive_utc()
-            .checked_sub_signed(Duration::days(i64::from(query.days)))
-            .ok_or(axum::http::StatusCode::BAD_REQUEST)?;
+        // Determine the "since" timestamp: use explicit `since` param if provided, otherwise calculate from `days`
+        let since = match query.since {
+            Some(dt) => dt,
+            None => Utc::now()
+                .naive_utc()
+                .checked_sub_signed(Duration::days(i64::from(query.days)))
+                .ok_or(axum::http::StatusCode::BAD_REQUEST)?,
+        };
 
         // Fetch all closed positions since the given date
         let positions = land_historical_repository
@@ -273,7 +300,7 @@ impl LandHistoricalRoute {
 
         Ok(Json(LeaderboardResponse {
             entries,
-            period_days: query.days,
+            since: since.to_string(),
         }))
     }
 }
