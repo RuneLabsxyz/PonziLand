@@ -5,9 +5,8 @@ use chaindata_models::{
 };
 use chrono::NaiveDateTime;
 use ponziland_models::models::CloseReason;
-use sqlx::{query, query_as, types::Json};
+use sqlx::{query, query_as};
 use std::collections::HashMap;
-use std::str::FromStr;
 
 /// Repository for managing land historical records
 pub struct Repository {
@@ -293,103 +292,5 @@ impl Repository {
         all_positions.sort_by(|a, b| b.time_bought.cmp(&a.time_bought));
 
         Ok(all_positions)
-    }
-
-    /// Gets all open positions for a specific owner (active drops/positions) - from feature
-    pub async fn get_open_positions_by_owner(
-        &self,
-        owner: &str,
-    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
-        query_as!(
-            LandHistoricalModel,
-            r#"
-            SELECT
-                id,
-                at,
-                owner,
-                land_location as "land_location: Location",
-                time_bought,
-                close_date,
-                close_reason as "close_reason: CloseReason",
-                buy_cost_token as "buy_cost_token: U256",
-                buy_cost_usd as "buy_cost_usd: U256",
-                buy_token_used,
-                sale_revenue_token as "sale_revenue_token: U256",
-                sale_revenue_usd as "sale_revenue_usd: U256",
-                sale_token_used,
-                token_inflows as "token_inflows: sqlx::types::Json<HashMap<String, U256>>",
-                token_outflows as "token_outflows: sqlx::types::Json<HashMap<String, U256>>"
-            FROM land_historical
-            WHERE owner = $1 AND close_date IS NULL
-            ORDER BY time_bought DESC
-            "#,
-            owner
-        )
-        .fetch_all(&mut *(self.db.acquire().await?))
-        .await
-    }
-
-    /// Parses and sums token inflows from a land position - from feature
-    /// Returns HashMap of token_address -> total_amount
-    pub fn parse_token_inflows(
-        token_inflows: &Json<HashMap<String, U256>>,
-    ) -> Result<HashMap<String, U256>, Error> {
-        Ok(token_inflows.0.clone())
-    }
-
-    /// Parses and sums token outflows from a land position - from feature
-    /// Returns HashMap of token_address -> total_amount
-    pub fn parse_token_outflows(
-        token_outflows: &Json<HashMap<String, U256>>,
-    ) -> Result<HashMap<String, U256>, Error> {
-        Ok(token_outflows.0.clone())
-    }
-
-    /// Sums all values in a token HashMap - from feature
-    pub fn sum_token_map(token_map: &HashMap<String, U256>) -> U256 {
-        token_map.values().fold(U256::from_str("0").unwrap(), |acc, &val| {
-            // Since U256 doesn't implement Add, we convert through string representation
-            let acc_str = acc.to_string();
-            let val_str = val.to_string();
-            let acc_u128 = acc_str.parse::<u128>().unwrap_or(0);
-            let val_u128 = val_str.parse::<u128>().unwrap_or(0);
-            U256::from_str(&(acc_u128 + val_u128).to_string()).unwrap()
-        })
-    }
-
-    /// Gets the total sum of token inflows for a land location - from feature
-    pub async fn get_token_inflows_total(&self, location: Location) -> Result<U256, Error> {
-        let position = self
-            .get_open_positions_by_land_location(location)
-            .await
-            .map_err(|e| Error::SqlError(e))?
-            .first()
-            .cloned();
-
-        match position {
-            Some(pos) => {
-                let inflows = Self::parse_token_inflows(&pos.token_inflows)?;
-                Ok(Self::sum_token_map(&inflows))
-            }
-            None => U256::from_str("0").map_err(|_| Error::SqlError(sqlx::Error::RowNotFound)),
-        }
-    }
-
-    /// Gets the total sum of token outflows for a land location - from feature
-    pub async fn get_token_outflows_total(&self, location: Location) -> Result<U256, Error> {
-        let position = self
-            .get_open_positions_by_land_location(location)
-            .await
-            .map_err(|e| Error::SqlError(e))?
-            .first()
-            .cloned();
-
-        match position {
-            Some(pos) => {
-                let outflows = Self::parse_token_outflows(&pos.token_outflows)?;
-                Ok(Self::sum_token_map(&outflows))
-            }
-            None => U256::from_str("0").map_err(|_| Error::SqlError(sqlx::Error::RowNotFound)),
-        }
     }
 }
