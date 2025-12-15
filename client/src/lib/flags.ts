@@ -21,3 +21,11 @@ export const MAX_STAKE = 2000n; // Around 250$
  * to avoid issues.
  */
 export const MAX_CLAIM_ALL_COUNT = 3;
+
+/**
+ * Due to the current state of the tutorial, it should be disabled in order to not confuse and
+ * drop players.
+ *
+ * Once it has been reworked, this flag should be removed.
+ */
+export const ENABLE_TUTORIAL = false;
