@@ -1,6 +1,6 @@
 {
   "db_name": "PostgreSQL",
-  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason as \"close_reason: CloseReason\",\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used,\n                token_inflows as \"token_inflows: sqlx::types::Json<HashMap<String, U256>>\",\n                token_outflows as \"token_outflows: sqlx::types::Json<HashMap<String, U256>>\"\n            FROM land_historical\n            WHERE land_location = $1 AND close_date IS NULL\n            ORDER BY time_bought DESC\n            ",
+  "query": "\n            SELECT\n                id,\n                at,\n                owner,\n                land_location as \"land_location: Location\",\n                time_bought,\n                close_date,\n                close_reason as \"close_reason: CloseReason\",\n                buy_cost_token as \"buy_cost_token: U256\",\n                buy_cost_usd as \"buy_cost_usd: U256\",\n                buy_token_used,\n                sale_revenue_token as \"sale_revenue_token: U256\",\n                sale_revenue_usd as \"sale_revenue_usd: U256\",\n                sale_token_used,\n                token_inflows as \"token_inflows: sqlx::types::Json<HashMap<String, U256>>\",\n                token_outflows as \"token_outflows: sqlx::types::Json<HashMap<String, U256>>\"\n            FROM land_historical\n            WHERE close_date IS NOT NULL AND close_date >= $1\n            ORDER BY close_date DESC\n            ",
   "describe": {
     "columns": [
       {
@@ -81,7 +81,7 @@
     ],
     "parameters": {
       "Left": [
-        "Int4"
+        "Timestamp"
       ]
     },
     "nullable": [
@@ -102,5 +102,5 @@
       false
     ]
   },
-  "hash": "bdc54f7567788be067f38df297db571c07fed41e572279a37686f9c40092bbf3"
+  "hash": "c82a6643c40bf399ddb07de1bcc9eef3d36eef4a949cc4548c7dc78a133ae874"
 }
