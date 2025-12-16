@@ -108,7 +108,7 @@
       <Button
         onclick={handleRegister}
         class="px-6 py-3 bg-primary-500 hover:bg-primary-600 rounded-lg font-semibold transition-colors "
-        disabled={!username.trim()}
+        disabled={!username.trim() || usernameError !== undefined || checking}
       >
         Register
       </Button>
