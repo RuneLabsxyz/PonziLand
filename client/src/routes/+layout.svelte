@@ -4,10 +4,12 @@
 
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupFaro } from '$lib/contexts/faro';
+  import { setupSocialink } from '$lib/accounts/social/index.svelte';
 
   import '../app.css';
   setupFaro();
   setupAccount();
+  setupSocialink();
 
   let isMobile = $state(false);
 

@@ -13,6 +13,7 @@
     type RankingMode,
     TOURNAMENT_START,
   } from './tournament.service';
+  import SetUsernameButton from '$lib/components/socialink/SetUsernameButton.svelte';
 
   // Tournament end: Dec 19, 14:30 Paris time (CET = UTC+1) = 13:30 UTC
   const TOURNAMENT_END = '2025-12-19T13:30:00Z';
@@ -124,31 +125,44 @@
 <div class="flex flex-col h-full min-h-0">
   <!-- Countdown Timer -->
   <div class="px-3 py-2 bg-gray-900/50 border-b border-gray-700">
-    {#if hasEnded}
-      <div class="text-center">
-        <span class="text-yellow-400 font-semibold text-sm">
-          Tournament Ended
-        </span>
+    <div class="flex items-center">
+      <!-- Left column: Set Username button (or empty space) -->
+      <div class="flex-1 flex justify-start">
+        <SetUsernameButton />
       </div>
-    {:else if hasStarted}
-      <div class="text-center">
-        <span class="text-gray-400 text-md">Tournament ends in</span>
-        <div
-          class="text-green-400 font-ponzi-number text-lg font-bold tracking-wider"
-        >
-          T-{formatCountdown(countdown)}
-        </div>
+
+      <!-- Center column: Countdown -->
+      <div class="flex-1 flex justify-center">
+        {#if hasEnded}
+          <div class="text-center">
+            <span class="text-yellow-400 font-semibold text-sm">
+              Tournament Ended
+            </span>
+          </div>
+        {:else if hasStarted}
+          <div class="text-center">
+            <span class="text-gray-400 text-md">Tournament ends in</span>
+            <div
+              class="text-green-400 font-ponzi-number text-lg font-bold tracking-wider"
+            >
+              T-{formatCountdown(countdown)}
+            </div>
+          </div>
+        {:else}
+          <div class="text-center">
+            <span class="text-gray-400 text-md">Tournament starts in</span>
+            <div
+              class="text-yellow-400 font-ponzi-number text-lg font-bold tracking-wider"
+            >
+              T-{formatCountdown(countdown)}
+            </div>
+          </div>
+        {/if}
       </div>
-    {:else}
-      <div class="text-center">
-        <span class="text-gray-400 text-md">Tournament starts in</span>
-        <div
-          class="text-yellow-400 font-ponzi-number text-lg font-bold tracking-wider"
-        >
-          T-{formatCountdown(countdown)}
-        </div>
-      </div>
-    {/if}
+
+      <!-- Right column: Empty for balance -->
+      <div class="flex-1"></div>
+    </div>
   </div>
 
   <!-- Header with tournament info -->
