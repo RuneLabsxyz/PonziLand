@@ -175,7 +175,6 @@
     toggleBridgeMode();
   }
 
-  let socialink = getSocialink();
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
   let username = $derived(usernameStore.promise);
