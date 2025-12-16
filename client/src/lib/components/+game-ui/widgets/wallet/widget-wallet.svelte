@@ -1,13 +1,14 @@
 <script lang="ts">
   import accountDataProvider, { setup } from '$lib/account.svelte';
-  import { getSocialink } from '$lib/accounts/social/index.svelte';
   import { Button } from '$lib/components/ui/button';
   import { useDojo } from '$lib/contexts/dojo';
   import { ENABLE_TOKEN_DROP } from '$lib/flags';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import { usernameStore } from '$lib/stores/username.store.svelte';
   import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
   import WalletBalance from './wallet-balance.svelte';
+  import SetUsernameButton from '$lib/components/socialink/SetUsernameButton.svelte';
 
   let {
     setCustomControls,
@@ -49,10 +50,9 @@
     widgetsStore.updateWidget('swap', { isOpen: true });
   }
 
-  let socialink = getSocialink();
   const { accountManager } = useDojo();
   let address = $derived(accountDataProvider.address);
-  let username = $derived(socialink?.getUser(address ?? ''));
+  let username = $derived(usernameStore.promise);
   let connected = $derived(accountDataProvider.isConnected);
   let providerIcon = $derived(accountDataProvider.providerIcon);
   let providerName = $derived(accountDataProvider.providerName);
@@ -99,26 +99,24 @@
         </button>
       {/if}
       <button type="button" onclick={copy} class="text-left relative">
-        {#await username then info}
-          {#if info?.exists}
-            <p class="font-ponzi-number">
-              {info.username ?? ''}
-              <span class="opacity-50">
-                {shortenHex(padAddress(address ?? ''), 4)}
-              </span>
-            </p>
-          {:else}
-            <p>
-              {shortenHex(padAddress(address ?? ''), 4)}
-            </p>
-          {/if}
-        {/await}
+        <p class="font-ponzi-number">
+          {shortenHex(padAddress(address ?? ''), 4)}
+        </p>
         {#if copied}
           <div class="absolute right-0 translate-x-full pl-2 top-0">
             Copied!
           </div>
         {/if}
       </button>
+      {#await username then info}
+        {#if info?.exists}
+          <span class="font-ponzi-number text-sm opacity-75">
+            ({info.username})
+          </span>
+        {:else}
+          <SetUsernameButton />
+        {/if}
+      {/await}
     </div>
     <button
       onclick={() => {
