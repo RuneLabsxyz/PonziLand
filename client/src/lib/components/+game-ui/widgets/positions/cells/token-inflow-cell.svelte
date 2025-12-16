@@ -69,7 +69,7 @@
 
     <!-- Expanded Details -->
     {#if isExpanded && hasMultipleTokens}
-      <div class="mt-1 space-y-0.5 text-md">
+      <div class="mt-1 space-y-0.5 text-base">
         {#each inflowTokens as tokenData}
           <div class="flex items-center gap-1 justify-end">
             <span class="text-gray-400">+{tokenData.amount.toString()}</span>
