@@ -64,17 +64,10 @@ impl ModelListenerTask {
 
     #[allow(clippy::match_wildcard_for_single_variants)]
     async fn process_model(&self, model_data: RawToriiData) {
-        let parsed = match Model::parse(model_data.clone()) {
-            Ok(model) => model,
-            Err(err) => {
-                warn!(
-                    "Skipping model that failed to parse ({}): {:?}",
-                    err,
-                    model_data.name()
-                );
-                return;
-            }
-        };
+        let model_name = model_data.name().to_string();
+        let parsed = Model::parse(model_data).unwrap_or_else(|err| {
+            panic!("Failed to parse {model_name}: {err}");
+        });
 
         let event_id = match parsed
             .event_id

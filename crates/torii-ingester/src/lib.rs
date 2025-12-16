@@ -12,6 +12,7 @@ pub mod macros;
 
 pub mod conversions;
 
+pub mod u256_parsing;
 pub mod u256;
 
 pub mod error;
