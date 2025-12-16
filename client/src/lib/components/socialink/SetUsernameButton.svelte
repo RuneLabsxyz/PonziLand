@@ -5,7 +5,7 @@
 
   let {
     class: className = '',
-    size = 'sm',
+    size = 'md',
   }: {
     class?: string;
     size?: 'default' | 'sm' | 'md';
@@ -20,11 +20,7 @@
 
 {#await username then info}
   {#if !info?.exists}
-    <Button
-      {size}
-      onclick={openUsernameWidget}
-      class="text-xs px-2 py-0.5 {className}"
-    >
+    <Button {size} onclick={openUsernameWidget} class="text-xs {className}">
       Set Username
     </Button>
   {/if}
