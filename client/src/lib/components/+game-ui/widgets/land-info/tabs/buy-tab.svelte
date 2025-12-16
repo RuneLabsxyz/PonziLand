@@ -23,8 +23,8 @@
   import type { CairoCustomEnum } from 'starknet';
   import { untrack } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
-  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import RatioInput from '$lib/components/ui/ratio-input/ratio-input.svelte';
+  import { displayCurrency } from '$lib/utils/currency';
 
   let {
     land,
@@ -61,7 +61,9 @@
 
     return untrack(() => {
       try {
-        const sellPriceNum = parseFloat(sellPrice);
+        // Clean formatted currency value before parsing
+        const cleanSellPrice = (sellPrice ?? '').toString().replace(/[,$\s]/g, '');
+        const sellPriceNum = parseFloat(cleanSellPrice);
         if (isNaN(sellPriceNum) || sellPriceNum <= 0) return '';
         return sellPriceNum.toString();
       } catch (error) {
@@ -92,11 +94,62 @@
   // State variables for editable sell price and base equivalent
   let sellPrice: string = $state('');
   let sellPriceBase: string = $state('');
-  let userHasEdited: boolean = $state(false);
+  let userHasInteracted: boolean = $state(false);
+
+  // Track the token address to detect changes more reliably
+  let previousTokenAddress: string = $state('');
+
+  // Set sell price to match current land's selling price when token changes
+  $effect(() => {
+    if (!selectedToken) return;
+    
+    // Check if token actually changed
+    const currentTokenAddress = selectedToken.address;
+    if (currentTokenAddress === previousTokenAddress && userHasInteracted) return;
+    
+    // Reset interaction flag when token changes
+    if (currentTokenAddress !== previousTokenAddress) {
+      userHasInteracted = false;
+      previousTokenAddress = currentTokenAddress;
+    }
+    
+    // Don't update if user has interacted with the current token
+    if (userHasInteracted) return;
+
+    try {
+      // Use the current land's sell price as the default
+      const landSellPriceInSelectedToken = walletStore.convertTokenAmount(
+        land.sellPrice,
+        land.token!,
+        selectedToken,
+      );
+
+      if (landSellPriceInSelectedToken) {
+        sellPrice = displayCurrency(landSellPriceInSelectedToken.rawValue());
+        
+        // Calculate the equivalent in base currency
+        const convertedToBase = walletStore.convertTokenAmount(
+          landSellPriceInSelectedToken,
+          selectedToken,
+          baseToken,
+        );
+        sellPriceBase = convertedToBase
+          ? displayCurrency(convertedToBase.rawValue())
+          : '';
+      }
+    } catch (error) {
+      console.error('Error initializing sell price from land price:', error);
+      // Fallback to land's original sell price if conversion fails
+      sellPrice = displayCurrency(land.sellPrice.rawValue());
+      sellPriceBase = '';
+    }
+  });
 
   let sellPriceAmount: CurrencyAmount = $derived.by(() => {
     if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
-    return CurrencyAmount.fromScaled(sellPrice ?? 0, selectedToken);
+    // Clean formatted currency value for calculations
+    const cleanSellPrice = (sellPrice ?? '0').toString().replace(/[,$\s]/g, '');
+    return CurrencyAmount.fromScaled(cleanSellPrice || 0, selectedToken);
   });
 
   let loading = $state(false);
@@ -154,7 +207,9 @@
       return 'Sell price is required';
     }
 
-    let parsedSellPrice = parseFloat(sellPrice);
+    // Clean formatted currency value before parsing
+    const cleanSellPrice = sellPrice.toString().replace(/[,$\s]/g, '');
+    let parsedSellPrice = parseFloat(cleanSellPrice);
     if (isNaN(parsedSellPrice) || parsedSellPrice <= 0) {
       return 'Sell price must be a number greater than 0';
     }
@@ -471,7 +526,10 @@
                 token1={selectedToken}
                 token2={baseToken}
                 oninput={() => {
-                  userHasEdited = true;
+                  userHasInteracted = true;
+                }}
+                onadjust={() => {
+                  userHasInteracted = true;
                 }}
               />
             {/if}
