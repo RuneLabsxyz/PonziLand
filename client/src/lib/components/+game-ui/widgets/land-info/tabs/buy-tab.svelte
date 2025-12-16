@@ -18,7 +18,6 @@
   import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { padAddress } from '$lib/utils';
-  import { formatWithoutExponential } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import type { CairoCustomEnum } from 'starknet';
@@ -93,128 +92,7 @@
   // State variables for editable sell price and base equivalent
   let sellPrice: string = $state('');
   let sellPriceBase: string = $state('');
-  let isUpdatingFromBase = $state(false);
-  let isUpdatingFromSellPrice = $state(false);
-
-  // Initialize sell price when component loads or token changes
-  $effect(() => {
-    if (!selectedToken) {
-      sellPrice = '';
-      sellPriceBase = '';
-      return;
-    }
-
-    // Don't update if we're in the middle of a conversion to avoid loops
-    if (isUpdatingFromBase || isUpdatingFromSellPrice) return;
-
-    let originalPrice: CurrencyAmount;
-    let originalToken: Token;
-
-    if (land.type == 'auction') {
-      if (!auctionPrice) {
-        sellPrice = '';
-        sellPriceBase = '';
-        return;
-      }
-      originalPrice = auctionPrice;
-      originalToken = land.token!;
-    } else {
-      originalPrice = land.sellPrice;
-      originalToken = land.token!;
-    }
-
-    // If tokens are the same, no conversion needed
-    if (
-      padAddress(originalToken.address) === padAddress(selectedToken.address)
-    ) {
-      sellPrice = originalPrice.toString();
-      sellPriceBase = originalPrice.toString(); // Set base equivalent directly
-    } else {
-      // Try to convert the price to the selected token
-      const convertedPrice = walletStore.convertTokenAmount(
-        originalPrice,
-        originalToken,
-        selectedToken,
-      );
-      sellPrice = convertedPrice
-        ? formatWithoutExponential(convertedPrice.rawValue().toString(), 3)
-        : formatWithoutExponential(originalPrice.rawValue().toString(), 3);
-
-      // Convert to base currency for the base input
-      const baseEquivalent = walletStore.convertTokenAmount(
-        originalPrice,
-        originalToken,
-        baseToken,
-      );
-      sellPriceBase = baseEquivalent
-        ? formatWithoutExponential(baseEquivalent.rawValue().toString(), 3)
-        : '';
-    }
-  });
-
-  // Update base currency when sell price changes
-  function updateBaseCurrencyFromSellPrice(event: Event) {
-    const target = event.target as HTMLInputElement;
-    sellPrice = target.value;
-
-    if (!selectedToken || !sellPrice || isUpdatingFromBase) return;
-
-    isUpdatingFromSellPrice = true;
-
-    try {
-      const sellAmount = CurrencyAmount.fromScaled(sellPrice, selectedToken);
-
-      if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
-        sellPriceBase = sellPrice;
-      } else {
-        const baseEquivalent = walletStore.convertTokenAmount(
-          sellAmount,
-          selectedToken,
-          baseToken,
-        );
-        sellPriceBase = baseEquivalent
-          ? formatWithoutExponential(baseEquivalent.rawValue().toString(), 3)
-          : '';
-      }
-    } catch (error) {
-      console.error('Error updating base currency from sell price:', error);
-      sellPriceBase = '';
-    } finally {
-      isUpdatingFromSellPrice = false;
-    }
-  }
-
-  // Update sell price when base currency equivalent changes
-  function updateSellPriceFromBase(event: Event) {
-    const target = event.target as HTMLInputElement;
-    sellPriceBase = target.value;
-
-    if (!selectedToken || !sellPriceBase || isUpdatingFromSellPrice) return;
-
-    isUpdatingFromBase = true;
-
-    try {
-      const baseAmount = CurrencyAmount.fromScaled(sellPriceBase, baseToken);
-
-      if (padAddress(selectedToken.address) === padAddress(baseToken.address)) {
-        sellPrice = sellPriceBase;
-      } else {
-        const tokenEquivalent = walletStore.convertTokenAmount(
-          baseAmount,
-          baseToken,
-          selectedToken,
-        );
-        sellPrice = tokenEquivalent
-          ? formatWithoutExponential(tokenEquivalent.rawValue().toString(), 3)
-          : '';
-      }
-    } catch (error) {
-      console.error('Error updating sell price from base currency:', error);
-      sellPrice = '';
-    } finally {
-      isUpdatingFromBase = false;
-    }
-  }
+  let userHasEdited: boolean = $state(false);
 
   let sellPriceAmount: CurrencyAmount = $derived.by(() => {
     if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
@@ -592,6 +470,9 @@
                 bind:value2={sellPriceBase}
                 token1={selectedToken}
                 token2={baseToken}
+                oninput={() => {
+                  userHasEdited = true;
+                }}
               />
             {/if}
           </div>
