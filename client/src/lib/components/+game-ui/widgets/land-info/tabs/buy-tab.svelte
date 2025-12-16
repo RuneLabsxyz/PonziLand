@@ -57,23 +57,6 @@
     return tokenValue;
   });
 
-  let stake: string = $derived.by(() => {
-    if (!selectedToken) return '';
-
-    return untrack(() => {
-      try {
-        // Clean formatted currency value before parsing
-        const cleanStakePrice = (stakePrice ?? '')
-          .toString()
-          .replace(/[,$\s]/g, '');
-        const stakePriceNum = parseFloat(cleanStakePrice);
-        if (isNaN(stakePriceNum) || stakePriceNum <= 0) return '';
-        return stakePriceNum.toString();
-      } catch (error) {
-        return '';
-      }
-    });
-  });
   let stakeAmount: CurrencyAmount = $derived.by(() => {
     if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
     // Clean formatted currency value before parsing
@@ -113,6 +96,8 @@
 
   // Track the token address to detect changes more reliably
   let previousTokenAddress: string = $state('');
+  // Track auction price to detect changes
+  let previousAuctionPrice: string = $state('');
 
   // Set sell price to match current land's selling price when token changes
   $effect(() => {
@@ -120,32 +105,50 @@
 
     // Check if token actually changed
     const currentTokenAddress = selectedToken.address;
-    if (currentTokenAddress === previousTokenAddress && userHasInteracted)
-      return;
+    const currentAuctionPriceStr = auctionPrice?.toString() || '';
+    
+    // Check if either token or auction price changed
+    const tokenChanged = currentTokenAddress !== previousTokenAddress;
+    const auctionPriceChanged = land.type === 'auction' && currentAuctionPriceStr !== previousAuctionPrice;
+    
+    if (!tokenChanged && !auctionPriceChanged && userHasInteracted) return;
 
-    // Reset interaction flag when token changes
-    if (currentTokenAddress !== previousTokenAddress) {
-      userHasInteracted = false;
-      previousTokenAddress = currentTokenAddress;
+    // Reset interaction flag when token changes or auction price updates
+    if (tokenChanged || auctionPriceChanged) {
+      if (tokenChanged) {
+        userHasInteracted = false;
+        previousTokenAddress = currentTokenAddress;
+      }
+      if (auctionPriceChanged) {
+        previousAuctionPrice = currentAuctionPriceStr;
+        // Only reset interaction if this is an auction and price changed
+        if (land.type === 'auction') {
+          userHasInteracted = false;
+        }
+      }
     }
 
-    // Don't update if user has interacted with the current token
-    if (userHasInteracted) return;
+    // Don't update if user has interacted with the current token (unless auction price changed)
+    if (userHasInteracted && !auctionPriceChanged) return;
 
     try {
-      // Use the current land's sell price as the default
-      const landSellPriceInSelectedToken = walletStore.convertTokenAmount(
-        land.sellPrice,
+      // For auctions, use the current auction price; otherwise use land's sell price
+      const priceToUse = land.type === 'auction' && auctionPrice 
+        ? auctionPrice 
+        : land.sellPrice;
+      
+      const landPriceInSelectedToken = walletStore.convertTokenAmount(
+        priceToUse,
         land.token!,
         selectedToken,
       );
 
-      if (landSellPriceInSelectedToken) {
-        sellPrice = displayCurrency(landSellPriceInSelectedToken.rawValue());
+      if (landPriceInSelectedToken) {
+        sellPrice = displayCurrency(landPriceInSelectedToken.rawValue());
 
         // Calculate the equivalent in base currency
         const convertedToBase = walletStore.convertTokenAmount(
-          landSellPriceInSelectedToken,
+          landPriceInSelectedToken,
           selectedToken,
           baseToken,
         );
@@ -153,14 +156,17 @@
           ? displayCurrency(convertedToBase.rawValue())
           : '';
 
-        // Initialize stake amount to match sell price
+        // Initialize stake amount to match the price
         stakePrice = sellPrice;
         stakePriceBase = sellPriceBase;
       }
     } catch (error) {
       console.error('Error initializing sell price from land price:', error);
-      // Fallback to land's original sell price if conversion fails
-      sellPrice = displayCurrency(land.sellPrice.rawValue());
+      // Fallback to the appropriate price if conversion fails
+      const fallbackPrice = land.type === 'auction' && auctionPrice 
+        ? auctionPrice 
+        : land.sellPrice;
+      sellPrice = displayCurrency(fallbackPrice.rawValue());
       sellPriceBase = '';
       stakePrice = sellPrice;
       stakePriceBase = sellPriceBase;
@@ -239,11 +245,14 @@
   });
 
   let stakeAmountError = $derived.by(() => {
-    if (!stake || !stake.toString().trim()) {
+    // Use stakePrice directly for reactivity instead of the untracked stake
+    const cleanStakePrice = (stakePrice ?? '').toString().replace(/[,$\s]/g, '');
+    
+    if (!cleanStakePrice || !cleanStakePrice.trim()) {
       return 'Stake amount is required';
     }
 
-    let parsedStake = parseFloat(stake);
+    let parsedStake = parseFloat(cleanStakePrice);
     if (isNaN(parsedStake) || parsedStake <= 0) {
       return 'Stake amount must be a number greater than 0';
     }
@@ -291,6 +300,10 @@
   });
 
   let balanceError = $derived.by(() => {
+    // Use stakePrice directly for reactivity
+    const cleanStakePrice = (stakePrice ?? '').toString().replace(/[,$\s]/g, '');
+    const parsedStake = parseFloat(cleanStakePrice || '0');
+    
     // Check land purchase requirements
     if (land.type == 'auction') {
       const landPrice = auctionPrice;
@@ -308,7 +321,7 @@
       if (selectedToken?.address === land.token?.address) {
         // Convert stakeAmount to the same token as landPrice to avoid currency mismatch
         const stakeAmountInLandToken = CurrencyAmount.fromScaled(
-          stake ?? 0,
+          parsedStake,
           land.token!,
         );
         const totalCost = landPrice.add(stakeAmountInLandToken);
@@ -336,7 +349,7 @@
         try {
           // Convert stakeAmount to the same token as land.sellPrice to avoid currency mismatch
           const stakeAmountInLandToken = CurrencyAmount.fromScaled(
-            stake ?? 0,
+            parsedStake,
             land.token!,
           );
           const totalCost = land.sellPrice.add(stakeAmountInLandToken);
@@ -390,10 +403,18 @@
         : 0;
 
       if (stakeNeeded > currentBalance) {
-        // Set the swap to get the full stake amount needed (not just the shortfall)
+        // Calculate the shortfall (difference between needed and current balance)
+        const shortfall = stakeNeeded - currentBalance;
+        const amountWithBuffer = shortfall * 1.01; // Add 1% buffer for fees
+        // For small amounts, ensure we don't round to zero
+        const requiredAmount = amountWithBuffer < 1 
+          ? parseFloat(amountWithBuffer.toFixed(6)) // Keep precision for small amounts
+          : Math.ceil(amountWithBuffer);
+        
         return {
           destinationToken: selectedToken,
-          requiredAmount: Math.ceil(stakeNeeded * 1.01), // Add 1% buffer for fees
+          requiredAmount,
+          stakeNeeded, // Keep track of the full amount needed for display
         };
       }
     }
@@ -436,10 +457,18 @@
       }
 
       if (neededToken && totalNeeded > currentBalance) {
-        // Set the swap to get the full amount needed
+        // Calculate the shortfall (difference between needed and current balance)
+        const shortfall = totalNeeded - currentBalance;
+        const amountWithBuffer = shortfall * 1.01; // Add 1% buffer for fees
+        // For small amounts, ensure we don't round to zero
+        const requiredAmount = amountWithBuffer < 1 
+          ? parseFloat(amountWithBuffer.toFixed(6)) // Keep precision for small amounts
+          : Math.ceil(amountWithBuffer);
+        
         return {
           destinationToken: neededToken,
-          requiredAmount: Math.ceil(totalNeeded * 1.01), // Add 1% buffer for fees
+          requiredAmount,
+          totalNeeded, // Keep track of the full amount needed for display
           isForBoth: isSameToken, // Track if this is for both land and stake
         };
       }
@@ -772,7 +801,7 @@
                 <p class="text-red-500 text-sm">{stakeAmountError}</p>
                 {#if stakeAmountError.includes("don't have enough") && insufficientStakeInfo}
                   <Button size="md" onclick={openSwapForStake}>
-                    SWAP for {stakeAmount} {insufficientStakeInfo.destinationToken.symbol}
+                    SWAP {insufficientStakeInfo.requiredAmount} {insufficientStakeInfo.destinationToken.symbol}
                   </Button>
                 {/if}
               </div>
