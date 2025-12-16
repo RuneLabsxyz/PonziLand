@@ -15,6 +15,8 @@
   import { debounce } from '$lib/utils/debounce.svelte';
   import data from '$profileData';
   import type { Quote } from '@avnu/avnu-sdk';
+  import { swapStore } from '$lib/stores/swap.store.svelte';
+  import { untrack } from 'svelte';
 
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
@@ -43,6 +45,38 @@
 
   let sliderVisible = $state(false);
   let buttonsVisible = $state(true);
+
+  // Watch for swap store config changes
+  $effect(() => {
+    const config = swapStore.getConfig();
+    
+    // Use untrack to read current values without creating dependencies
+    untrack(() => {
+      // Only update if values actually changed to avoid loops
+      if (config.destinationToken && config.destinationToken !== buyToken) {
+        buyToken = config.destinationToken;
+      }
+      
+      if (config.destinationAmount && config.destinationAmount.toString() !== buyAmount) {
+        buyAmount = config.destinationAmount.toString();
+        leadingSide = 'buy';
+        // Clear sell amount when switching to buy-led mode
+        sellAmount = '';
+        // Trigger quote fetch for the buy amount
+        isLoadingQuotes = true;
+      }
+      
+      if (config.sourceToken && config.sourceToken !== sellToken) {
+        sellToken = config.sourceToken;
+      }
+      
+      // Clear the config after applying it to prevent re-applying
+      if (config.destinationToken || config.destinationAmount || config.sourceToken) {
+        swapStore.clearConfig();
+      }
+    });
+  });
+
 
   // Check if sell amount exceeds balance
   const hasInsufficientBalance = $derived.by(() => {
@@ -132,7 +166,7 @@
     leadingSide = 'sell';
   }
 
-  let debouncedInput = debounce(
+  let debouncedQuoteHandler = debounce(
     () => {
       if (!sellToken || !buyToken) {
         return;
@@ -174,7 +208,7 @@
   );
 
   $effect(() => {
-    const data = debouncedInput.current;
+    const data = debouncedQuoteHandler.current;
     if (!data) {
       isLoadingQuotes = false;
       return;
@@ -204,7 +238,7 @@
         }
         isLoadingQuotes = false;
       })
-      .catch((error) => {
+      .catch(() => {
         noRouteAvailable = true;
         isLoadingQuotes = false;
       });

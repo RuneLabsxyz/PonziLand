@@ -17,6 +17,7 @@
   import { bidLand, buyLand, landStore } from '$lib/stores/store.svelte';
   import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import { swapStore } from '$lib/stores/swap.store.svelte';
   import { padAddress } from '$lib/utils';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
@@ -75,7 +76,15 @@
   });
   let stakeAmount: CurrencyAmount = $derived.by(() => {
     if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
-    return CurrencyAmount.fromScaled(stake ?? 0, selectedToken);
+    // Clean formatted currency value before parsing
+    const cleanStakePrice = (stakePrice ?? '')
+      .toString()
+      .replace(/[,$\s]/g, '');
+    const stakePriceNum = parseFloat(cleanStakePrice);
+    if (isNaN(stakePriceNum) || stakePriceNum <= 0) {
+      return CurrencyAmount.fromScaled(0, selectedToken);
+    }
+    return CurrencyAmount.fromScaled(stakePriceNum, selectedToken);
   });
 
   let stakeAmountInBaseCurrency: CurrencyAmount | null = $derived.by(() => {
@@ -165,6 +174,42 @@
     return CurrencyAmount.fromScaled(cleanSellPrice || 0, selectedToken);
   });
 
+  // Calculate total cost in base currency for display
+  let totalCostInBase = $derived.by(() => {
+    if (!land.token || !selectedToken) return null;
+
+    // Get land price in base currency
+    const landPriceInBase =
+      land.type == 'auction' && auctionPrice
+        ? walletStore.convertTokenAmount(auctionPrice, land.token, baseToken)
+        : walletStore.convertTokenAmount(land.sellPrice, land.token, baseToken);
+
+    // Get stake amount in base currency
+    let stakeInBase = stakeAmountInBaseCurrency;
+    if (
+      !stakeInBase &&
+      padAddress(selectedToken.address) === padAddress(baseToken.address)
+    ) {
+      stakeInBase = stakeAmount;
+    }
+
+    // Calculate total based on different scenarios
+    if (landPriceInBase && stakeInBase) {
+      return landPriceInBase.add(stakeInBase);
+    }
+
+    if (
+      padAddress(land.token.address) === padAddress(baseToken.address) &&
+      stakeInBase
+    ) {
+      const landPrice =
+        land.type == 'auction' && auctionPrice ? auctionPrice : land.sellPrice;
+      return landPrice.add(stakeInBase);
+    }
+
+    return null;
+  });
+
   let loading = $state(false);
 
   let accountManager = useAccount();
@@ -246,6 +291,7 @@
   });
 
   let balanceError = $derived.by(() => {
+    // Check land purchase requirements
     if (land.type == 'auction') {
       const landPrice = auctionPrice;
       if (!landPrice) {
@@ -267,7 +313,7 @@
         );
         const totalCost = landPrice.add(stakeAmountInLandToken);
         if (landTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
-          return `You don't have enough ${land.token?.symbol} to buy this land and stake (max: ${landTokenAmount.toString()})`;
+          return `You don't have enough ${land.token?.symbol} for both purchase and stake (max: ${landTokenAmount.toString()})`;
         }
       }
     }
@@ -285,7 +331,7 @@
       const selectedAddress = padAddress(selectedToken?.address ?? '');
       const landTokenAddress = padAddress(land.token?.address ?? '');
 
-      // if selectedToken is land.token, check if has enough for stake
+      // if selectedToken is land.token, check if has enough for both
       if (selectedAddress === landTokenAddress) {
         try {
           // Convert stakeAmount to the same token as land.sellPrice to avoid currency mismatch
@@ -296,10 +342,10 @@
           const totalCost = land.sellPrice.add(stakeAmountInLandToken);
 
           if (landTokenAmount.rawValue().isLessThan(totalCost.rawValue())) {
-            return `You don't have enough ${land.token?.symbol} to stake (max: ${landTokenAmount.toString()})`;
+            return `You don't have enough ${land.token?.symbol} for both purchase and stake (max: ${landTokenAmount.toString()})`;
           }
         } catch (error) {
-          return 'Error calculating total cost for stake';
+          return 'Error calculating total cost';
         }
       }
     }
@@ -319,62 +365,35 @@
       !balanceError,
   );
 
-  // Helper to detect insufficient balance errors and calculate needed amounts
-  let insufficientBalanceInfo = $derived.by(() => {
-    if (!balanceError || !selectedToken) return null;
+  // Check if land token and selected token are the same
+  let isSameToken = $derived(
+    land.token && selectedToken && 
+    padAddress(land.token.address) === padAddress(selectedToken.address)
+  );
 
-    // Check if it's an insufficient balance error
-    if (balanceError.includes("You don't have enough")) {
-      let neededToken: Token | undefined;
-      let neededAmount = 0;
-      let shortfall = 0;
+  // Helper for stake-specific insufficient balance
+  let insufficientStakeInfo = $derived.by(() => {
+    if (!stakeAmountError || !selectedToken) return null;
 
-      // Parse different error messages to determine needed token and amount
-      if (balanceError.includes(`${selectedToken.symbol} to stake`)) {
-        // Staking error - need selectedToken for stake amount
-        neededToken = selectedToken;
-        neededAmount = parseFloat(stake || '0');
+    if (stakeAmountError.includes("don't have enough")) {
+      // Use stakePrice directly for better reactivity when input changes
+      const cleanStakePrice = (stakePrice ?? '')
+        .toString()
+        .replace(/[,$\s]/g, '');
+      const stakeNeeded = parseFloat(cleanStakePrice || '0');
 
-        // Calculate shortfall
-        const currentBalance = walletStore.getBalance(selectedToken.address);
-        if (currentBalance) {
-          shortfall =
-            neededAmount - parseFloat(currentBalance.rawValue().toString());
-        } else {
-          shortfall = neededAmount;
-        }
-      } else if (
-        balanceError.includes(`${land.token?.symbol} to buy this land`) &&
-        land.token
-      ) {
-        // Land purchase error - need land token
-        neededToken = land.token;
+      if (isNaN(stakeNeeded) || stakeNeeded <= 0) return null;
 
-        if (land.type === 'auction' && auctionPrice) {
-          neededAmount = parseFloat(auctionPrice.rawValue().toString());
-        } else {
-          neededAmount = parseFloat(land.sellPrice.rawValue().toString());
-        }
+      const balance = walletStore.getBalance(selectedToken.address);
+      const currentBalance = balance
+        ? parseFloat(balance.rawValue().toString())
+        : 0;
 
-        // If same token for stake, add stake amount
-        if (selectedToken?.address === land.token.address && stake) {
-          neededAmount += parseFloat(stake);
-        }
-
-        // Calculate shortfall
-        const currentBalance = walletStore.getBalance(land.token.address);
-        if (currentBalance) {
-          shortfall =
-            neededAmount - parseFloat(currentBalance.rawValue().toString());
-        } else {
-          shortfall = neededAmount;
-        }
-      }
-
-      if (neededToken && shortfall > 0) {
+      if (stakeNeeded > currentBalance) {
+        // Set the swap to get the full stake amount needed (not just the shortfall)
         return {
-          destinationToken: neededToken,
-          requiredAmount: Math.ceil(shortfall * 1.1), // Add 10% buffer
+          destinationToken: selectedToken,
+          requiredAmount: Math.ceil(stakeNeeded * 1.01), // Add 1% buffer for fees
         };
       }
     }
@@ -382,19 +401,91 @@
     return null;
   });
 
-  // Function to open swap widget with preset values
-  function openSwapWidget() {
-    if (!insufficientBalanceInfo) return;
+  // Helper for purchase/combined insufficient balance
+  let insufficientBalanceInfo = $derived.by(() => {
+    if (!balanceError || !land.token) return null;
 
-    // Update the existing swap widget with new token settings
+    // Check if it's an insufficient balance error
+    if (balanceError.includes("You don't have enough")) {
+      let neededToken: Token | undefined = land.token;
+      let totalNeeded = 0;
+      let currentBalance = 0;
+
+      // Determine the land price
+      const landPrice =
+        land.type === 'auction' && auctionPrice
+          ? parseFloat(auctionPrice.rawValue().toString())
+          : parseFloat(land.sellPrice.rawValue().toString());
+
+      const balance = walletStore.getBalance(land.token.address);
+      currentBalance = balance ? parseFloat(balance.rawValue().toString()) : 0;
+
+      // If same token, always include stake amount in the total
+      if (isSameToken) {
+        // Use stakePrice directly for better reactivity
+        const cleanStakePrice = (stakePrice ?? '')
+          .toString()
+          .replace(/[,$\s]/g, '');
+        const stakePriceNum = parseFloat(cleanStakePrice || '0');
+        // Need total of land price + stake amount
+        totalNeeded = landPrice + (isNaN(stakePriceNum) ? 0 : stakePriceNum);
+      }
+      // Otherwise just need land price
+      else {
+        totalNeeded = landPrice;
+      }
+
+      if (neededToken && totalNeeded > currentBalance) {
+        // Set the swap to get the full amount needed
+        return {
+          destinationToken: neededToken,
+          requiredAmount: Math.ceil(totalNeeded * 1.01), // Add 1% buffer for fees
+          isForBoth: isSameToken, // Track if this is for both land and stake
+        };
+      }
+    }
+
+    return null;
+  });
+
+  // Function to open swap widget for stake errors
+  function openSwapForStake(event: MouseEvent) {
+    event.stopPropagation();
+    if (!insufficientStakeInfo) return;
+
+    // Set the swap configuration in the store
+    swapStore.setConfig({
+      destinationToken: insufficientStakeInfo.destinationToken,
+      destinationAmount: insufficientStakeInfo.requiredAmount,
+      sourceToken: baseToken,
+    });
+
+    // Open the swap widget
     widgetsStore.updateWidget('swap', {
       isOpen: true,
       isMinimized: false,
-      data: {
-        destinationToken: insufficientBalanceInfo.destinationToken,
-        destinationAmount: insufficientBalanceInfo.requiredAmount,
-        sourceToken: baseToken,
-      },
+    });
+
+    // Bring the swap widget to front
+    widgetsStore.bringToFront('swap');
+  }
+
+  // Function to open swap widget for balance errors
+  function openSwapForBalance(event: MouseEvent) {
+    event.stopPropagation();
+    if (!insufficientBalanceInfo) return;
+
+    // Set the swap configuration in the store
+    swapStore.setConfig({
+      destinationToken: insufficientBalanceInfo.destinationToken,
+      destinationAmount: insufficientBalanceInfo.requiredAmount,
+      sourceToken: baseToken,
+    });
+
+    // Open the swap widget
+    widgetsStore.updateWidget('swap', {
+      isOpen: true,
+      isMinimized: false,
     });
 
     // Bring the swap widget to front
@@ -676,6 +767,15 @@
             </div>
             {#if stakePriceError}
               <p class="text-red-500 text-sm mt-1">{stakePriceError}</p>
+            {:else if stakeAmountError}
+              <div class="mt-1 flex gap-2">
+                <p class="text-red-500 text-sm">{stakeAmountError}</p>
+                {#if stakeAmountError.includes("don't have enough") && insufficientStakeInfo}
+                  <Button size="md" onclick={openSwapForStake}>
+                    SWAP for {stakeAmount} {insufficientStakeInfo.destinationToken.symbol}
+                  </Button>
+                {/if}
+              </div>
             {/if}
           </div>
         </div>
@@ -690,11 +790,11 @@
             bind:hasAdvisorWarnings
           />
         </div>
-
       </div>
 
       <div
-        class="sticky bottom-0 mt-auto bg-ponzi border-t border-gray-700 pt-4 pb-2"
+        class="sticky bottom-0 mt-auto bg-ponzi border-t border-gray-700 pt-4 pb-2 relative"
+        style="z-index: 1"
       >
         {#if balanceError}
           <div class="mb-3">
@@ -703,9 +803,13 @@
               <Button
                 size="md"
                 class="mt-2 border border-gray-600 bg-transparent text-white hover:bg-gray-700"
-                onclick={openSwapWidget}
+                onclick={openSwapForBalance}
               >
-                OPEN SWAP to {insufficientBalanceInfo.destinationToken.symbol}
+                {#if isSameToken}
+                  SWAP {insufficientBalanceInfo.requiredAmount} {insufficientBalanceInfo.destinationToken.symbol} ({land.type === 'auction' && auctionPrice ? auctionPrice : land.sellPrice}+{stakeAmount})
+                {:else}
+                  SWAP {insufficientBalanceInfo.requiredAmount} {insufficientBalanceInfo.destinationToken.symbol}
+                {/if}
               </Button>
             {/if}
           </div>
@@ -743,43 +847,10 @@
             </span>
             {selectedToken?.symbol}
           </Button>
-          {#if land.token && selectedToken}
-            {@const landPriceInBase =
-              land.type == 'auction' && auctionPrice
-                ? walletStore.convertTokenAmount(
-                    auctionPrice,
-                    land.token,
-                    baseToken,
-                  )
-                : walletStore.convertTokenAmount(
-                    land.sellPrice,
-                    land.token,
-                    baseToken,
-                  )}
-            {@const stakeInBase =
-              stakeAmountInBaseCurrency ||
-              (padAddress(selectedToken.address) ===
-              padAddress(baseToken.address)
-                ? stakeAmount
-                : null)}
+          {#if totalCostInBase}
             <span class="text-gray-300 text-sm block mt-2">
-              {#if landPriceInBase && stakeInBase}
-                (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
-                {baseToken.symbol})
-              {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
-                (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
-                {baseToken.symbol})
-              {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
-                (Total: ≈{land.type == 'auction' && auctionPrice
-                  ? auctionPrice.add(stakeInBase).toString()
-                  : land.sellPrice.add(stakeInBase).toString()}
-                {baseToken.symbol})
-              {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
-                (Total: ≈{land.type == 'auction' && auctionPrice
-                  ? auctionPrice.add(stakeAmount).toString()
-                  : land.sellPrice.add(stakeAmount).toString()}
-                {baseToken.symbol})
-              {/if}
+              (Total: ≈{totalCostInBase.toString()}
+              {baseToken.symbol})
             </span>
           {/if}
         {/if}
