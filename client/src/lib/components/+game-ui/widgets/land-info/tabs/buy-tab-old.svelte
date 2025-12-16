@@ -528,7 +528,6 @@
             <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
           {/if}
         </div>
-        
       </div>
 
       <div class="w-full">

@@ -48,8 +48,20 @@
   let editValue2 = $state('');
 
   // Display values - formatted when not editing, plain when editing
-  let displayValue1 = $derived(isEditingValue1 ? editValue1 : (value1 ? displayCurrency(value1.replace(/[,$\s]/g, '')) : ''));
-  let displayValue2 = $derived(isEditingValue2 ? editValue2 : (value2 ? displayCurrency(value2.replace(/[,$\s]/g, '')) : ''));
+  let displayValue1 = $derived(
+    isEditingValue1
+      ? editValue1
+      : value1
+        ? displayCurrency(value1.replace(/[,$\s]/g, ''))
+        : '',
+  );
+  let displayValue2 = $derived(
+    isEditingValue2
+      ? editValue2
+      : value2
+        ? displayCurrency(value2.replace(/[,$\s]/g, ''))
+        : '',
+  );
 
   // Percentage adjustment options
   const percentages = [0.5, 1, 5, 10, 25, 50];
@@ -115,11 +127,11 @@
     if (isUpdatingFromValue2) return;
 
     const target = event.target as HTMLInputElement;
-    
+
     if (isEditingValue1) {
       editValue1 = target.value;
     }
-    
+
     value1 = target.value;
     oninput?.();
 
@@ -175,11 +187,11 @@
     if (isUpdatingFromValue1) return;
 
     const target = event.target as HTMLInputElement;
-    
+
     if (isEditingValue2) {
       editValue2 = target.value;
     }
-    
+
     value2 = target.value;
     oninput?.();
 

@@ -106,11 +106,13 @@
     // Check if token actually changed
     const currentTokenAddress = selectedToken.address;
     const currentAuctionPriceStr = auctionPrice?.toString() || '';
-    
+
     // Check if either token or auction price changed
     const tokenChanged = currentTokenAddress !== previousTokenAddress;
-    const auctionPriceChanged = land.type === 'auction' && currentAuctionPriceStr !== previousAuctionPrice;
-    
+    const auctionPriceChanged =
+      land.type === 'auction' &&
+      currentAuctionPriceStr !== previousAuctionPrice;
+
     if (!tokenChanged && !auctionPriceChanged && userHasInteracted) return;
 
     // Reset interaction flag when token changes or auction price updates
@@ -133,10 +135,9 @@
 
     try {
       // For auctions, use the current auction price; otherwise use land's sell price
-      const priceToUse = land.type === 'auction' && auctionPrice 
-        ? auctionPrice 
-        : land.sellPrice;
-      
+      const priceToUse =
+        land.type === 'auction' && auctionPrice ? auctionPrice : land.sellPrice;
+
       const landPriceInSelectedToken = walletStore.convertTokenAmount(
         priceToUse,
         land.token!,
@@ -163,9 +164,8 @@
     } catch (error) {
       console.error('Error initializing sell price from land price:', error);
       // Fallback to the appropriate price if conversion fails
-      const fallbackPrice = land.type === 'auction' && auctionPrice 
-        ? auctionPrice 
-        : land.sellPrice;
+      const fallbackPrice =
+        land.type === 'auction' && auctionPrice ? auctionPrice : land.sellPrice;
       sellPrice = displayCurrency(fallbackPrice.rawValue());
       sellPriceBase = '';
       stakePrice = sellPrice;
@@ -246,8 +246,10 @@
 
   let stakeAmountError = $derived.by(() => {
     // Use stakePrice directly for reactivity instead of the untracked stake
-    const cleanStakePrice = (stakePrice ?? '').toString().replace(/[,$\s]/g, '');
-    
+    const cleanStakePrice = (stakePrice ?? '')
+      .toString()
+      .replace(/[,$\s]/g, '');
+
     if (!cleanStakePrice || !cleanStakePrice.trim()) {
       return 'Stake amount is required';
     }
@@ -301,9 +303,11 @@
 
   let balanceError = $derived.by(() => {
     // Use stakePrice directly for reactivity
-    const cleanStakePrice = (stakePrice ?? '').toString().replace(/[,$\s]/g, '');
+    const cleanStakePrice = (stakePrice ?? '')
+      .toString()
+      .replace(/[,$\s]/g, '');
     const parsedStake = parseFloat(cleanStakePrice || '0');
-    
+
     // Check land purchase requirements
     if (land.type == 'auction') {
       const landPrice = auctionPrice;
@@ -380,8 +384,9 @@
 
   // Check if land token and selected token are the same
   let isSameToken = $derived(
-    land.token && selectedToken && 
-    padAddress(land.token.address) === padAddress(selectedToken.address)
+    land.token &&
+      selectedToken &&
+      padAddress(land.token.address) === padAddress(selectedToken.address),
   );
 
   // Helper for stake-specific insufficient balance
@@ -407,10 +412,11 @@
         const shortfall = stakeNeeded - currentBalance;
         const amountWithBuffer = shortfall * 1.01; // Add 1% buffer for fees
         // For small amounts, ensure we don't round to zero
-        const requiredAmount = amountWithBuffer < 1 
-          ? parseFloat(amountWithBuffer.toFixed(6)) // Keep precision for small amounts
-          : Math.ceil(amountWithBuffer);
-        
+        const requiredAmount =
+          amountWithBuffer < 1
+            ? parseFloat(amountWithBuffer.toFixed(6)) // Keep precision for small amounts
+            : Math.ceil(amountWithBuffer);
+
         return {
           destinationToken: selectedToken,
           requiredAmount,
@@ -461,10 +467,11 @@
         const shortfall = totalNeeded - currentBalance;
         const amountWithBuffer = shortfall * 1.01; // Add 1% buffer for fees
         // For small amounts, ensure we don't round to zero
-        const requiredAmount = amountWithBuffer < 1 
-          ? parseFloat(amountWithBuffer.toFixed(6)) // Keep precision for small amounts
-          : Math.ceil(amountWithBuffer);
-        
+        const requiredAmount =
+          amountWithBuffer < 1
+            ? parseFloat(amountWithBuffer.toFixed(6)) // Keep precision for small amounts
+            : Math.ceil(amountWithBuffer);
+
         return {
           destinationToken: neededToken,
           requiredAmount,
@@ -801,7 +808,8 @@
                 <p class="text-red-500 text-sm">{stakeAmountError}</p>
                 {#if stakeAmountError.includes("don't have enough") && insufficientStakeInfo}
                   <Button size="md" onclick={openSwapForStake}>
-                    SWAP {insufficientStakeInfo.requiredAmount} {insufficientStakeInfo.destinationToken.symbol}
+                    SWAP {insufficientStakeInfo.requiredAmount}
+                    {insufficientStakeInfo.destinationToken.symbol}
                   </Button>
                 {/if}
               </div>
@@ -835,9 +843,14 @@
                 onclick={openSwapForBalance}
               >
                 {#if isSameToken}
-                  SWAP {insufficientBalanceInfo.requiredAmount} {insufficientBalanceInfo.destinationToken.symbol} ({land.type === 'auction' && auctionPrice ? auctionPrice : land.sellPrice}+{stakeAmount})
+                  SWAP {insufficientBalanceInfo.requiredAmount}
+                  {insufficientBalanceInfo.destinationToken.symbol} ({land.type ===
+                    'auction' && auctionPrice
+                    ? auctionPrice
+                    : land.sellPrice}+{stakeAmount})
                 {:else}
-                  SWAP {insufficientBalanceInfo.requiredAmount} {insufficientBalanceInfo.destinationToken.symbol}
+                  SWAP {insufficientBalanceInfo.requiredAmount}
+                  {insufficientBalanceInfo.destinationToken.symbol}
                 {/if}
               </Button>
             {/if}

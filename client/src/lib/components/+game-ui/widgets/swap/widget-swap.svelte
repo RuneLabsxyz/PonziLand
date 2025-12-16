@@ -49,15 +49,18 @@
   // Watch for swap store config changes
   $effect(() => {
     const config = swapStore.getConfig();
-    
+
     // Use untrack to read current values without creating dependencies
     untrack(() => {
       // Only update if values actually changed to avoid loops
       if (config.destinationToken && config.destinationToken !== buyToken) {
         buyToken = config.destinationToken;
       }
-      
-      if (config.destinationAmount && config.destinationAmount.toString() !== buyAmount) {
+
+      if (
+        config.destinationAmount &&
+        config.destinationAmount.toString() !== buyAmount
+      ) {
         buyAmount = config.destinationAmount.toString();
         leadingSide = 'buy';
         // Clear sell amount when switching to buy-led mode
@@ -65,18 +68,21 @@
         // Trigger quote fetch for the buy amount
         isLoadingQuotes = true;
       }
-      
+
       if (config.sourceToken && config.sourceToken !== sellToken) {
         sellToken = config.sourceToken;
       }
-      
+
       // Clear the config after applying it to prevent re-applying
-      if (config.destinationToken || config.destinationAmount || config.sourceToken) {
+      if (
+        config.destinationToken ||
+        config.destinationAmount ||
+        config.sourceToken
+      ) {
         swapStore.clearConfig();
       }
     });
   });
-
 
   // Check if sell amount exceeds balance
   const hasInsufficientBalance = $derived.by(() => {
