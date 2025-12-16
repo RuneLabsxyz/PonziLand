@@ -5,7 +5,7 @@
 
   let {
     class: className = '',
-    size = 'sm',
+    size = 'md',
   }: {
     class?: string;
     size?: 'default' | 'sm' | 'md';
