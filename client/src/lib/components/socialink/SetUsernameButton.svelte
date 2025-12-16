@@ -23,7 +23,7 @@
     <Button
       {size}
       onclick={openUsernameWidget}
-      class="text-xs px-2 py-0.5 {className}"
+      class="text-xs {className}"
     >
       Set Username
     </Button>
