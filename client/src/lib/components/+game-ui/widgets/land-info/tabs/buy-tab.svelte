@@ -62,7 +62,9 @@
     return untrack(() => {
       try {
         // Clean formatted currency value before parsing
-        const cleanStakePrice = (stakePrice ?? '').toString().replace(/[,$\s]/g, '');
+        const cleanStakePrice = (stakePrice ?? '')
+          .toString()
+          .replace(/[,$\s]/g, '');
         const stakePriceNum = parseFloat(cleanStakePrice);
         if (isNaN(stakePriceNum) || stakePriceNum <= 0) return '';
         return stakePriceNum.toString();
@@ -106,17 +108,18 @@
   // Set sell price to match current land's selling price when token changes
   $effect(() => {
     if (!selectedToken) return;
-    
+
     // Check if token actually changed
     const currentTokenAddress = selectedToken.address;
-    if (currentTokenAddress === previousTokenAddress && userHasInteracted) return;
-    
+    if (currentTokenAddress === previousTokenAddress && userHasInteracted)
+      return;
+
     // Reset interaction flag when token changes
     if (currentTokenAddress !== previousTokenAddress) {
       userHasInteracted = false;
       previousTokenAddress = currentTokenAddress;
     }
-    
+
     // Don't update if user has interacted with the current token
     if (userHasInteracted) return;
 
@@ -130,7 +133,7 @@
 
       if (landSellPriceInSelectedToken) {
         sellPrice = displayCurrency(landSellPriceInSelectedToken.rawValue());
-        
+
         // Calculate the equivalent in base currency
         const convertedToBase = walletStore.convertTokenAmount(
           landSellPriceInSelectedToken,
@@ -309,8 +312,94 @@
 
   // Check if form is valid
   let isFormValid = $derived(
-    !tokenError && !stakePriceError && !stakeAmountError && !sellPriceError && !balanceError,
+    !tokenError &&
+      !stakePriceError &&
+      !stakeAmountError &&
+      !sellPriceError &&
+      !balanceError,
   );
+
+  // Helper to detect insufficient balance errors and calculate needed amounts
+  let insufficientBalanceInfo = $derived.by(() => {
+    if (!balanceError || !selectedToken) return null;
+
+    // Check if it's an insufficient balance error
+    if (balanceError.includes("You don't have enough")) {
+      let neededToken: Token | undefined;
+      let neededAmount = 0;
+      let shortfall = 0;
+
+      // Parse different error messages to determine needed token and amount
+      if (balanceError.includes(`${selectedToken.symbol} to stake`)) {
+        // Staking error - need selectedToken for stake amount
+        neededToken = selectedToken;
+        neededAmount = parseFloat(stake || '0');
+
+        // Calculate shortfall
+        const currentBalance = walletStore.getBalance(selectedToken.address);
+        if (currentBalance) {
+          shortfall =
+            neededAmount - parseFloat(currentBalance.rawValue().toString());
+        } else {
+          shortfall = neededAmount;
+        }
+      } else if (
+        balanceError.includes(`${land.token?.symbol} to buy this land`) &&
+        land.token
+      ) {
+        // Land purchase error - need land token
+        neededToken = land.token;
+
+        if (land.type === 'auction' && auctionPrice) {
+          neededAmount = parseFloat(auctionPrice.rawValue().toString());
+        } else {
+          neededAmount = parseFloat(land.sellPrice.rawValue().toString());
+        }
+
+        // If same token for stake, add stake amount
+        if (selectedToken?.address === land.token.address && stake) {
+          neededAmount += parseFloat(stake);
+        }
+
+        // Calculate shortfall
+        const currentBalance = walletStore.getBalance(land.token.address);
+        if (currentBalance) {
+          shortfall =
+            neededAmount - parseFloat(currentBalance.rawValue().toString());
+        } else {
+          shortfall = neededAmount;
+        }
+      }
+
+      if (neededToken && shortfall > 0) {
+        return {
+          destinationToken: neededToken,
+          requiredAmount: Math.ceil(shortfall * 1.1), // Add 10% buffer
+        };
+      }
+    }
+
+    return null;
+  });
+
+  // Function to open swap widget with preset values
+  function openSwapWidget() {
+    if (!insufficientBalanceInfo) return;
+
+    // Update the existing swap widget with new token settings
+    widgetsStore.updateWidget('swap', {
+      isOpen: true,
+      isMinimized: false,
+      data: {
+        destinationToken: insufficientBalanceInfo.destinationToken,
+        destinationAmount: insufficientBalanceInfo.requiredAmount,
+        sourceToken: baseToken,
+      },
+    });
+
+    // Bring the swap widget to front
+    widgetsStore.bringToFront('swap');
+  }
 
   async function handleBuyClick() {
     loading = true;
@@ -505,7 +594,7 @@
 </script>
 
 {#if isActive}
-  <div class="w-full h-full">
+  <div class="w-full h-full flex flex-col">
     {#if !account.isConnected}
       <!-- Wallet connection prompt -->
       <div class="flex flex-col items-center justify-center h-full gap-4">
@@ -527,151 +616,174 @@
       </div>
     {:else}
       <!-- Buy tab content will go here -->
-      <Label class="font-ponzi-number" for="token">Token</Label>
-      <p class="-mt-1 mb-1 opacity-75 leading-none">
-        Determines the land you are going to build. You stake this token and
-        will receive this token when bought
-      </p>
-      <TokenSelect bind:value={tokenValue} variant="swap" />
-      {#if tokenError}
-        <p class="text-red-500 text-sm mt-1">{tokenError}</p>
-      {/if}
-
-      <div class="flex gap-2 items-center my-4">
-        <div class="flex-1">
-          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
-          <p class="-mt-1 mb-1 opacity-75 leading-none">
-            What is paid to you when your land is bought out by another player
-          </p>
-          <div class="flex justify-center">
-            {#if selectedToken}
-              <RatioInput
-                bind:value1={sellPrice}
-                bind:value2={sellPriceBase}
-                token1={selectedToken}
-                token2={baseToken}
-                oninput={() => {
-                  userHasInteracted = true;
-                }}
-                onadjust={() => {
-                  userHasInteracted = true;
-                }}
-              />
-            {/if}
-          </div>
-        </div>
-      </div>
-
-      <div class="flex gap-2 items-center my-4">
-        <div class="flex-1">
-          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
-          <p class="-mt-1 mb-1 opacity-75 leading-none">
-            Amount you stake to secure your land position
-          </p>
-          <div class="flex justify-center">
-            {#if selectedToken}
-              <RatioInput
-                bind:value1={stakePrice}
-                bind:value2={stakePriceBase}
-                bind:userInteracted={userHasInteracted}
-                token1={selectedToken}
-                token2={baseToken}
-              />
-            {/if}
-          </div>
-          {#if stakePriceError}
-            <p class="text-red-500 text-sm mt-1">{stakePriceError}</p>
-          {/if}
-        </div>
-      </div>
-
-      <div class="w-full">
-        <TaxImpact
-          sellAmountVal={sellPrice}
-          stakeAmountVal={stakePrice}
-          {selectedToken}
-          {land}
-          {auctionPrice}
-          bind:hasAdvisorWarnings
-        />
-      </div>
-
-      {#if balanceError}
-        <p class="text-red-500 text-sm mt-1">{balanceError}</p>
-      {/if}
-
-      {#if loading}
-        <Button class="mt-3 w-full" disabled>
-          buying <ThreeDots />
-        </Button>
-      {:else}
-        <Button
-          onclick={handleBuyClick}
-          class="mt-3 w-full"
-          disabled={!isFormValid ||
-            isOwner ||
-            loading ||
-            (tutorialState.tutorialEnabled && hasAdvisorWarnings)}
-        >
-          BUY FOR <span class="text-yellow-500">
-            &nbsp;
-            {#if land.type == 'auction'}
-              {#await land?.getCurrentAuctionPrice(false)}
-                fetching...
-              {:then price}
-                {price}
-              {/await}
-            {:else}
-              {land.sellPrice}
-            {/if}
-            &nbsp;
-          </span>
-          {land.token?.symbol}
-          & STAKE
-          <span class="text-yellow-500">
-            &nbsp;{stakeAmount.toString()}&nbsp;
-          </span>
-          {selectedToken?.symbol}
-        </Button>
-        {#if land.token && selectedToken}
-          {@const landPriceInBase =
-            land.type == 'auction' && auctionPrice
-              ? walletStore.convertTokenAmount(
-                  auctionPrice,
-                  land.token,
-                  baseToken,
-                )
-              : walletStore.convertTokenAmount(
-                  land.sellPrice,
-                  land.token,
-                  baseToken,
-                )}
-          {@const stakeInBase =
-            stakeAmountInBaseCurrency ||
-            (padAddress(selectedToken.address) === padAddress(baseToken.address)
-              ? stakeAmount
-              : null)}
-          <span class="text-gray-300 text-sm block">
-            {#if landPriceInBase && stakeInBase}
-              (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
-              {baseToken.symbol})
-            {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
-              (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
-              {baseToken.symbol})
-            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
-              (Total: ≈{land.type == 'auction' && auctionPrice
-                ? auctionPrice.add(stakeInBase).toString()
-                : land.sellPrice.add(stakeInBase).toString()}
-              {baseToken.symbol})
-            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
-              (Total: ≈{land.type == 'auction' && auctionPrice
-                ? auctionPrice.add(stakeAmount).toString()
-                : land.sellPrice.add(stakeAmount).toString()}
-              {baseToken.symbol})
-            {/if}
-          </span>
+      <div class="flex-1 overflow-y-auto pb-2">
+        <Label class="font-ponzi-number" for="token">Token</Label>
+        <p class="-mt-1 mb-1 opacity-75 leading-none">
+          Determines the land you are going to build. You stake this token and
+          will receive this token when bought
+        </p>
+        <TokenSelect bind:value={tokenValue} variant="swap" />
+        {#if tokenError}
+          <p class="text-red-500 text-sm mt-1">{tokenError}</p>
         {/if}
-      {/if}
+
+        <div class="flex gap-2 items-center my-4">
+          <div class="flex-1">
+            <Label class="font-ponzi-number" for="sell">Sell Price</Label>
+            <p class="-mt-1 mb-1 opacity-75 leading-none">
+              What is paid to you when your land is bought out by another player
+            </p>
+            <div class="flex justify-center">
+              {#if selectedToken}
+                <RatioInput
+                  bind:value1={sellPrice}
+                  bind:value2={sellPriceBase}
+                  token1={selectedToken}
+                  token2={baseToken}
+                  oninput={() => {
+                    userHasInteracted = true;
+                  }}
+                  onadjust={() => {
+                    userHasInteracted = true;
+                  }}
+                />
+              {/if}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex gap-2 items-center my-4">
+          <div class="flex-1">
+            <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
+            <p class="-mt-1 mb-1 opacity-75 leading-none">
+              Amount you stake to secure your land position
+            </p>
+            <div class="flex justify-center">
+              {#if selectedToken}
+                <RatioInput
+                  bind:value1={stakePrice}
+                  bind:value2={stakePriceBase}
+                  token1={selectedToken}
+                  token2={baseToken}
+                  oninput={() => {
+                    userHasInteracted = true;
+                  }}
+                  onadjust={() => {
+                    userHasInteracted = true;
+                  }}
+                />
+              {/if}
+            </div>
+            {#if stakePriceError}
+              <p class="text-red-500 text-sm mt-1">{stakePriceError}</p>
+            {/if}
+          </div>
+        </div>
+
+        <div class="w-full">
+          <TaxImpact
+            sellAmountVal={sellPrice}
+            stakeAmountVal={stakePrice}
+            {selectedToken}
+            {land}
+            {auctionPrice}
+            bind:hasAdvisorWarnings
+          />
+        </div>
+
+      </div>
+
+      <div
+        class="sticky bottom-0 mt-auto bg-ponzi border-t border-gray-700 pt-4 pb-2"
+      >
+        {#if balanceError}
+          <div class="mb-3">
+            <p class="text-red-500 text-sm">{balanceError}</p>
+            {#if insufficientBalanceInfo}
+              <Button
+                size="md"
+                class="mt-2 border border-gray-600 bg-transparent text-white hover:bg-gray-700"
+                onclick={openSwapWidget}
+              >
+                OPEN SWAP to {insufficientBalanceInfo.destinationToken.symbol}
+              </Button>
+            {/if}
+          </div>
+        {/if}
+        {#if loading}
+          <Button class="w-full" disabled>
+            buying <ThreeDots />
+          </Button>
+        {:else}
+          <Button
+            onclick={handleBuyClick}
+            class="w-full"
+            disabled={!isFormValid ||
+              isOwner ||
+              loading ||
+              (tutorialState.tutorialEnabled && hasAdvisorWarnings)}
+          >
+            BUY FOR <span class="text-yellow-500">
+              &nbsp;
+              {#if land.type == 'auction'}
+                {#await land?.getCurrentAuctionPrice(false)}
+                  fetching...
+                {:then price}
+                  {price}
+                {/await}
+              {:else}
+                {land.sellPrice}
+              {/if}
+              &nbsp;
+            </span>
+            {land.token?.symbol}
+            & STAKE
+            <span class="text-yellow-500">
+              &nbsp;{stakeAmount.toString()}&nbsp;
+            </span>
+            {selectedToken?.symbol}
+          </Button>
+          {#if land.token && selectedToken}
+            {@const landPriceInBase =
+              land.type == 'auction' && auctionPrice
+                ? walletStore.convertTokenAmount(
+                    auctionPrice,
+                    land.token,
+                    baseToken,
+                  )
+                : walletStore.convertTokenAmount(
+                    land.sellPrice,
+                    land.token,
+                    baseToken,
+                  )}
+            {@const stakeInBase =
+              stakeAmountInBaseCurrency ||
+              (padAddress(selectedToken.address) ===
+              padAddress(baseToken.address)
+                ? stakeAmount
+                : null)}
+            <span class="text-gray-300 text-sm block mt-2">
+              {#if landPriceInBase && stakeInBase}
+                (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
+                {baseToken.symbol})
+              {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+                (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
+                {baseToken.symbol})
+              {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
+                (Total: ≈{land.type == 'auction' && auctionPrice
+                  ? auctionPrice.add(stakeInBase).toString()
+                  : land.sellPrice.add(stakeInBase).toString()}
+                {baseToken.symbol})
+              {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+                (Total: ≈{land.type == 'auction' && auctionPrice
+                  ? auctionPrice.add(stakeAmount).toString()
+                  : land.sellPrice.add(stakeAmount).toString()}
+                {baseToken.symbol})
+              {/if}
+            </span>
+          {/if}
+        {/if}
+      </div>
     {/if}
   </div>
 {/if}

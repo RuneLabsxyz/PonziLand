@@ -41,7 +41,7 @@
     />
   </div>
 
-  <div class="w-full h-full mt-4">
+  <div class="w-full mt-4 max-h-[80vh] overflow-y-auto">
     <OverallTab
       {land}
       bind:activeTab
