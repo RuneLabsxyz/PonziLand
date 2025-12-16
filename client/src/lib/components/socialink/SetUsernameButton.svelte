@@ -20,11 +20,7 @@
 
 {#await username then info}
   {#if !info?.exists}
-    <Button
-      {size}
-      onclick={openUsernameWidget}
-      class="text-xs {className}"
-    >
+    <Button {size} onclick={openUsernameWidget} class="text-xs {className}">
       Set Username
     </Button>
   {/if}
