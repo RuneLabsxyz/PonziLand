@@ -232,7 +232,7 @@
           {disabled}
         />
       </span>
-      <span><TokenAvatar token={displayToken2} /></span>
+      <span><TokenAvatar token={token1} /></span>
     </div>
 
     <div class="flex items-center gap-1 leading-none text-lg">

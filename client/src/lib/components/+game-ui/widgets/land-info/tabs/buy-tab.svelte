@@ -62,10 +62,10 @@
     return untrack(() => {
       try {
         // Clean formatted currency value before parsing
-        const cleanSellPrice = (sellPrice ?? '').toString().replace(/[,$\s]/g, '');
-        const sellPriceNum = parseFloat(cleanSellPrice);
-        if (isNaN(sellPriceNum) || sellPriceNum <= 0) return '';
-        return sellPriceNum.toString();
+        const cleanStakePrice = (stakePrice ?? '').toString().replace(/[,$\s]/g, '');
+        const stakePriceNum = parseFloat(cleanStakePrice);
+        if (isNaN(stakePriceNum) || stakePriceNum <= 0) return '';
+        return stakePriceNum.toString();
       } catch (error) {
         return '';
       }
@@ -95,6 +95,10 @@
   let sellPrice: string = $state('');
   let sellPriceBase: string = $state('');
   let userHasInteracted: boolean = $state(false);
+
+  // State variables for stake amount
+  let stakePrice: string = $state('');
+  let stakePriceBase: string = $state('');
 
   // Track the token address to detect changes more reliably
   let previousTokenAddress: string = $state('');
@@ -136,12 +140,18 @@
         sellPriceBase = convertedToBase
           ? displayCurrency(convertedToBase.rawValue())
           : '';
+
+        // Initialize stake amount to match sell price
+        stakePrice = sellPrice;
+        stakePriceBase = sellPriceBase;
       }
     } catch (error) {
       console.error('Error initializing sell price from land price:', error);
       // Fallback to land's original sell price if conversion fails
       sellPrice = displayCurrency(land.sellPrice.rawValue());
       sellPriceBase = '';
+      stakePrice = sellPrice;
+      stakePriceBase = sellPriceBase;
     }
   });
 
@@ -162,6 +172,21 @@
     if (!tokenValue || !selectedToken) {
       return 'Please select a token';
     }
+    return null;
+  });
+
+  let stakePriceError = $derived.by(() => {
+    if (!stakePrice || !stakePrice.toString().trim()) {
+      return 'Stake amount is required';
+    }
+
+    // Clean formatted currency value before parsing
+    const cleanStakePrice = stakePrice.toString().replace(/[,$\s]/g, '');
+    let parsedStakePrice = parseFloat(cleanStakePrice);
+    if (isNaN(parsedStakePrice) || parsedStakePrice <= 0) {
+      return 'Stake amount must be a number greater than 0';
+    }
+
     return null;
   });
 
@@ -284,7 +309,7 @@
 
   // Check if form is valid
   let isFormValid = $derived(
-    !tokenError && !stakeAmountError && !sellPriceError && !balanceError,
+    !tokenError && !stakePriceError && !stakeAmountError && !sellPriceError && !balanceError,
   );
 
   async function handleBuyClick() {
@@ -537,10 +562,33 @@
         </div>
       </div>
 
+      <div class="flex gap-2 items-center my-4">
+        <div class="flex-1">
+          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
+          <p class="-mt-1 mb-1 opacity-75 leading-none">
+            Amount you stake to secure your land position
+          </p>
+          <div class="flex justify-center">
+            {#if selectedToken}
+              <RatioInput
+                bind:value1={stakePrice}
+                bind:value2={stakePriceBase}
+                bind:userInteracted={userHasInteracted}
+                token1={selectedToken}
+                token2={baseToken}
+              />
+            {/if}
+          </div>
+          {#if stakePriceError}
+            <p class="text-red-500 text-sm mt-1">{stakePriceError}</p>
+          {/if}
+        </div>
+      </div>
+
       <div class="w-full">
         <TaxImpact
           sellAmountVal={sellPrice}
-          stakeAmountVal={stake}
+          stakeAmountVal={stakePrice}
           {selectedToken}
           {land}
           {auctionPrice}
