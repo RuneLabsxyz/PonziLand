@@ -151,9 +151,8 @@ impl<'de> Deserialize<'de> for U256 {
             U256Input::String(value) => U256::from_str(&value).map_err(|err| {
                 de::Error::custom(format!("Failed to parse U256 from string: {err}"))
             }),
-            U256Input::Number(value) => U256::from_str(&value.to_string()).map_err(|err| {
-                de::Error::custom(format!("Failed to parse numeric U256: {err}"))
-            }),
+            U256Input::Number(value) => U256::from_str(&value.to_string())
+                .map_err(|err| de::Error::custom(format!("Failed to parse numeric U256: {err}"))),
         }
     }
 }
@@ -210,9 +209,7 @@ mod test {
     #[test]
     fn test_partitioned_custom_deserializer() {
         #[derive(Deserialize)]
-        struct Wrapper(
-            #[serde(deserialize_with = "deserialize_partitioned_u256")] U256,
-        );
+        struct Wrapper(#[serde(deserialize_with = "deserialize_partitioned_u256")] U256);
 
         let json_map = r#"{ "low": "0x1", "high": "0x0" }"#;
         let wrapped: Wrapper = serde_json::from_str(json_map).expect("Map deserialization error");
