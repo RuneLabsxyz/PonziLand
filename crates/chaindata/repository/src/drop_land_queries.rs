@@ -692,9 +692,7 @@ impl DropLandQueriesRepository {
         let result = q
             .fetch_one(&mut *(self.db.acquire().await?))
             .await
-            .map_err(|e| {
-                Error::SqlError(e)
-            })?;
+            .map_err(|e| Error::SqlError(e))?;
 
         let total_amount: U256 = result.get("total");
 
