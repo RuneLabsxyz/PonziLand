@@ -153,6 +153,19 @@ const baseWidgetsState: WidgetsState = {
     disableControls: true,
     zIndex: 9999,
   },
+  username: {
+    id: 'username',
+    type: 'username',
+    position: {
+      x: window.innerWidth / 2 - 200,
+      y: window.innerHeight / 2 - 150,
+    },
+    dimensions: { width: 400, height: 0 },
+    fixedStyles: 'width: 400px; height: auto;',
+    isMinimized: false,
+    isOpen: false,
+    disableResize: true,
+  },
 };
 
 const guildWidgetState: WidgetState = {
