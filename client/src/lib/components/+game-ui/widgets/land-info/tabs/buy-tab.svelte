@@ -25,12 +25,19 @@
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
   import { Card } from '$lib/components/ui/card';
+  import { Slider } from '$lib/components/ui/slider';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import {
     findBestSourceToken,
     calculateDeficitWithBuffer,
   } from '$lib/utils/swap-helper';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+
+  // Preset values for sell price slider (% offset from buy price)
+  const SELL_PRICE_PRESETS = [-50, -25, -10, -5, -1, 0, 1, 5, 10, 25, 50, 100];
+
+  // Preset values for stake slider (% of sell price)
+  const STAKE_PRESETS = [10, 25, 50, 100, 200, 300, 500, 1000];
 
   let {
     land,
@@ -117,19 +124,114 @@
     return tokenValue;
   });
 
-  let stake: string = $derived.by(() => {
-    if (!selectedToken) return '';
+  // Slider state for sell price (% offset from buy price, default 0%)
+  let sellPricePercent = $state(0);
 
-    return untrack(() => {
-      try {
-        const sellPriceNum = parseFloat(sellPrice);
-        if (isNaN(sellPriceNum) || sellPriceNum <= 0) return '';
-        return sellPriceNum.toString();
-      } catch (error) {
-        return '';
-      }
-    });
+  // Slider state for stake (% of sell price, default 200% = 2x)
+  let stakePercent = $state(200);
+
+  // Base price in selected token (the buy price converted to selected token)
+  let basePriceInSelectedToken = $derived.by(() => {
+    if (!selectedToken || !land.token) return null;
+
+    const originalPrice =
+      land.type === 'auction' ? auctionPrice : land.sellPrice;
+    if (!originalPrice) return null;
+
+    // If tokens are the same, no conversion needed
+    if (padAddress(land.token.address) === padAddress(selectedToken.address)) {
+      return originalPrice;
+    }
+
+    // Convert to selected token
+    return walletStore.convertTokenAmount(
+      originalPrice,
+      land.token,
+      selectedToken,
+    );
   });
+
+  // Sell price and stake as editable state
+  let sellPrice = $state('');
+  let stake = $state('');
+
+  // Track if user is manually editing (to avoid overwriting their input)
+  let isManualSellPriceEdit = $state(false);
+  let isManualStakeEdit = $state(false);
+
+  // Update sell price when percentage or base price changes
+  $effect(() => {
+    if (isManualSellPriceEdit) return;
+    if (!basePriceInSelectedToken || !selectedToken) {
+      sellPrice = '';
+      return;
+    }
+    const multiplier = 1 + sellPricePercent / 100;
+    const price = basePriceInSelectedToken.rawValue().times(multiplier);
+    sellPrice = formatWithoutExponential(price.toString(), 6);
+  });
+
+  // Update stake when sell price or stake percentage changes
+  $effect(() => {
+    if (isManualStakeEdit) return;
+    if (!sellPrice || !selectedToken) {
+      stake = '';
+      return;
+    }
+    const sellPriceNum = parseFloat(sellPrice);
+    if (isNaN(sellPriceNum) || sellPriceNum <= 0) {
+      stake = '';
+      return;
+    }
+    const stakeValue = sellPriceNum * (stakePercent / 100);
+    stake = formatWithoutExponential(stakeValue.toString(), 6);
+  });
+
+  // Handler for manual sell price input
+  function onSellPriceInput(value: string) {
+    isManualSellPriceEdit = true;
+    sellPrice = value;
+
+    // Calculate new percentage from manual input (no clamping)
+    if (basePriceInSelectedToken && value !== '') {
+      const inputValue = parseFloat(value);
+      const baseValue = basePriceInSelectedToken.rawValue().toNumber();
+      if (!isNaN(inputValue) && baseValue > 0) {
+        const newPercent = ((inputValue - baseValue) / baseValue) * 100;
+        sellPricePercent = newPercent;
+      }
+    }
+  }
+
+  // Handler for manual stake input
+  function onStakeInput(value: string) {
+    isManualStakeEdit = true;
+    stake = value;
+
+    // Calculate new percentage from manual input (no clamping)
+    if (value !== '') {
+      const sellPriceNum = parseFloat(sellPrice);
+      const stakeNum = parseFloat(value);
+      if (!isNaN(sellPriceNum) && !isNaN(stakeNum) && sellPriceNum > 0) {
+        const newPercent = (stakeNum / sellPriceNum) * 100;
+        stakePercent = newPercent;
+      }
+    }
+  }
+
+  // Reset manual edit flags on blur
+  function onSellPriceBlur() {
+    setTimeout(() => {
+      isManualSellPriceEdit = false;
+    }, 0);
+  }
+
+  function onStakeBlur() {
+    setTimeout(() => {
+      isManualStakeEdit = false;
+    }, 0);
+  }
+
   let stakeAmount: CurrencyAmount = $derived.by(() => {
     if (!selectedToken) return CurrencyAmount.fromScaled(0, baseToken);
     return CurrencyAmount.fromScaled(stake ?? 0, selectedToken);
@@ -148,41 +250,6 @@
       selectedToken,
       baseToken,
     );
-  });
-
-  let sellPrice: string = $derived.by(() => {
-    if (!selectedToken) return '';
-    return untrack(() => {
-      let originalPrice: CurrencyAmount;
-      let originalToken: Token;
-
-      if (land.type == 'auction') {
-        if (!auctionPrice) return '';
-        originalPrice = auctionPrice;
-        originalToken = land.token!;
-      } else {
-        originalPrice = land.sellPrice;
-        originalToken = land.token!;
-      }
-
-      // If tokens are the same, no conversion needed
-      if (
-        padAddress(originalToken.address) === padAddress(selectedToken.address)
-      ) {
-        return originalPrice.toString();
-      }
-
-      // Try to convert the price to the selected token
-      const convertedPrice = walletStore.convertTokenAmount(
-        originalPrice,
-        originalToken,
-        selectedToken,
-      );
-      // If conversion is successful, return the converted amount, otherwise return original
-      return convertedPrice
-        ? formatWithoutExponential(convertedPrice.rawValue().toString(), 3)
-        : formatWithoutExponential(originalPrice.rawValue().toString(), 3);
-    });
   });
 
   let sellPriceAmount: CurrencyAmount = $derived.by(() => {
@@ -654,6 +721,7 @@
         <button
           type="button"
           class="flex items-center justify-center w-8 h-8 rounded border border-white/30 hover:bg-white/10 transition-all shrink-0 ml-auto"
+          aria-label="Toggle token dropdown"
           onclick={() => (showTokenDropdown = !showTokenDropdown)}
         >
           <svg
@@ -731,48 +799,136 @@
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
 
-      <div class="flex gap-2 items-center my-4">
-        <div class="flex-1">
-          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
-          <p class="-mt-1 mb-1 leading-none opacity-75">
-            Locked value that will be used to pay taxes and make your land
-            survive
+      <div class="flex flex-col gap-4 my-4">
+        <!-- Sell Price Section -->
+        <div class="flex flex-col gap-2">
+          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
+          <p class="-mt-1 mb-1 opacity-75 leading-none text-sm">
+            What is paid to you when your land is bought out
           </p>
-          <Input
-            id="stake"
-            type="number"
-            bind:value={stake}
-            class={stakeAmountError ? 'border-red-500' : ''}
+
+          <!-- Preset buttons -->
+          <div class="flex flex-wrap gap-1">
+            {#each SELL_PRICE_PRESETS as preset}
+              <button
+                type="button"
+                class={[
+                  'px-2 py-1 rounded border text-xs transition-all',
+                  'hover:bg-white/10',
+                  {
+                    'border-yellow-500 bg-yellow-500/20':
+                      sellPricePercent === preset,
+                    'border-white/30': sellPricePercent !== preset,
+                  },
+                ]}
+                onclick={() => (sellPricePercent = preset)}
+              >
+                {preset >= 0 ? '+' : ''}{preset}%
+              </button>
+            {/each}
+          </div>
+
+          <!-- Slider -->
+          <Slider
+            type="single"
+            min={-50}
+            max={100}
+            step={1}
+            value={sellPricePercent}
+            onValueChange={(v) => (sellPricePercent = v)}
+            class="w-full"
           />
-          {#if stakeAmountInBaseCurrency}
-            <p class="text-xs text-gray-500 mt-1">
-              ≈ {stakeAmountInBaseCurrency.toString()}
-              {baseToken.symbol}
-            </p>
-          {/if}
-          {#if stakeAmountError}
-            <p class="text-red-500 text-sm mt-1">{stakeAmountError}</p>
+
+          <!-- Value display -->
+          <div class="flex gap-2 items-center">
+            <Input
+              id="sell"
+              type="number"
+              value={sellPrice}
+              oninput={(e) => onSellPriceInput(e.currentTarget.value)}
+              onblur={onSellPriceBlur}
+              class={['flex-1', { 'border-red-500': sellPriceError }]}
+            />
+            <span class="text-sm text-gray-400 whitespace-nowrap">
+              {selectedToken?.symbol}
+            </span>
+            {#if sellPriceInBaseCurrency}
+              <span
+                class="text-m font-ponzi-number text-white whitespace-nowrap"
+              >
+                ≈ {sellPriceInBaseCurrency.toString()}
+                {baseToken.symbol}
+              </span>
+            {/if}
+          </div>
+          {#if sellPriceError}
+            <p class="text-red-500 text-sm">{sellPriceError}</p>
           {/if}
         </div>
-        <div class="flex-1">
-          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
-          <p class="-mt-1 mb-1 opacity-75 leading-none">
-            What is paid to you when your land is bought out by another player
+
+        <!-- Stake Amount Section -->
+        <div class="flex flex-col gap-2">
+          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
+          <p class="-mt-1 mb-1 leading-none opacity-75 text-sm">
+            Locked value to pay taxes and survive (ratio of sell price)
           </p>
-          <Input
-            id="sell"
-            type="number"
-            bind:value={sellPrice}
-            class={sellPriceError ? 'border-red-500' : ''}
+
+          <!-- Preset buttons -->
+          <div class="flex flex-wrap gap-1">
+            {#each STAKE_PRESETS as preset}
+              <button
+                type="button"
+                class={[
+                  'px-2 py-1 rounded border text-xs transition-all',
+                  'hover:bg-white/10',
+                  {
+                    'border-yellow-500 bg-yellow-500/20':
+                      stakePercent === preset,
+                    'border-white/30': stakePercent !== preset,
+                  },
+                ]}
+                onclick={() => (stakePercent = preset)}
+              >
+                {preset >= 100 ? `${preset / 100}x` : `${preset}%`}
+              </button>
+            {/each}
+          </div>
+
+          <!-- Slider -->
+          <Slider
+            type="single"
+            min={10}
+            max={1000}
+            step={10}
+            value={stakePercent}
+            onValueChange={(v) => (stakePercent = v)}
+            class="w-full"
           />
-          {#if sellPriceInBaseCurrency}
-            <p class="text-xs text-gray-500 mt-1">
-              ≈ {sellPriceInBaseCurrency.toString()}
-              {baseToken.symbol}
-            </p>
-          {/if}
-          {#if sellPriceError}
-            <p class="text-red-500 text-sm mt-1">{sellPriceError}</p>
+
+          <!-- Value display -->
+          <div class="flex gap-2 items-center">
+            <Input
+              id="stake"
+              type="number"
+              value={stake}
+              oninput={(e) => onStakeInput(e.currentTarget.value)}
+              onblur={onStakeBlur}
+              class={['flex-1', { 'border-red-500': stakeAmountError }]}
+            />
+            <span class="text-sm text-gray-400 whitespace-nowrap">
+              {selectedToken?.symbol}
+            </span>
+            {#if stakeAmountInBaseCurrency}
+              <span
+                class="text-m font-ponzi-number text-white whitespace-nowrap"
+              >
+                ≈ {stakeAmountInBaseCurrency.toString()}
+                {baseToken.symbol}
+              </span>
+            {/if}
+          </div>
+          {#if stakeAmountError}
+            <p class="text-red-500 text-sm">{stakeAmountError}</p>
           {/if}
         </div>
       </div>
