@@ -239,7 +239,6 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     if: ENABLE_GUILD,
   },
 
-
   // {
   //   id: 'notifications',
   //   type: 'notifications',
