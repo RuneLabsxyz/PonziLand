@@ -8,6 +8,7 @@
     LeaderboardEntry,
     RankingMode,
     TournamentPosition,
+    MetricType,
   } from './tournament.service';
   import PositionRow from './cells/position-row.svelte';
   import StatusCell from '../positions/cells/status-cell.svelte';
@@ -21,9 +22,21 @@
   interface Props {
     entries: LeaderboardEntry[];
     rankingMode: RankingMode;
+    /** Show all columns including buy/sell (true) or simplified view (false) */
+    showFullDetails?: boolean;
+    /** Cap the number of results displayed */
+    limit?: number;
+    /** Which metric to use for sorting/display: 'pnl' includes buy/sell, 'tokenFlow' excludes it */
+    metricType?: MetricType;
   }
 
-  let { entries, rankingMode }: Props = $props();
+  let {
+    entries,
+    rankingMode,
+    showFullDetails = true,
+    limit,
+    metricType = 'pnl',
+  }: Props = $props();
 
   // Track which rows are expanded (for total PnL mode)
   let expandedRows = $state<Set<string>>(new Set());
@@ -38,34 +51,52 @@
     expandedRows = newSet;
   }
 
-  // For "total" mode: entries sorted by total PnL (aggregate)
+  // Get the display value for an entry based on metric type
+  function getEntryDisplayValue(entry: LeaderboardEntry): number {
+    if (metricType === 'tokenFlow') {
+      return entry.totalTokenFlow ?? 0;
+    }
+    return entry.totalPnL ?? 0;
+  }
+
+  // Get the display value for a position based on metric type
+  function getPositionDisplayValue(position: TournamentPosition): number {
+    if (metricType === 'tokenFlow') {
+      return position.metrics?.netTokenFlow?.rawValue().toNumber() ?? -Infinity;
+    }
+    return position.metrics?.totalPnL?.rawValue().toNumber() ?? -Infinity;
+  }
+
+  // For "total" mode: entries sorted by aggregate value
   const sortedEntriesByTotal = $derived.by(() => {
-    return [...entries].sort((a, b) => (b.totalPnL ?? 0) - (a.totalPnL ?? 0));
+    const sorted = [...entries].sort(
+      (a, b) => getEntryDisplayValue(b) - getEntryDisplayValue(a),
+    );
+    return limit ? sorted.slice(0, limit) : sorted;
   });
 
-  // For "best" mode: flatten ALL positions and sort by individual PnL
+  // For "best" mode: flatten ALL positions and sort by individual value
   const allPositionsSorted = $derived.by(() => {
     const positions: Array<{
       owner: string;
       position: TournamentPosition;
-      pnlValue: number;
+      displayValue: number;
     }> = [];
 
     for (const entry of entries) {
       for (const pos of entry.positions) {
-        const pnl = pos.metrics?.totalPnL?.rawValue().toNumber() ?? -Infinity;
         positions.push({
           owner: entry.owner,
           position: pos,
-          pnlValue: pnl,
+          displayValue: getPositionDisplayValue(pos),
         });
       }
     }
 
-    // Sort by PnL value (highest first)
-    positions.sort((a, b) => b.pnlValue - a.pnlValue);
+    // Sort by value (highest first)
+    positions.sort((a, b) => b.displayValue - a.displayValue);
 
-    return positions;
+    return limit ? positions.slice(0, limit) : positions;
   });
 
   function isCurrentUser(owner: string): boolean {
@@ -80,13 +111,13 @@
     return username || formatAddress(owner);
   }
 
-  function formatPnL(value: number): string {
+  function formatValue(value: number): string {
     const isPositive = value >= 0;
     const formatted = Math.abs(value).toFixed(2);
     return `${isPositive ? '+' : '-'}$${formatted}`;
   }
 
-  function getPnLColorClass(value: number): string {
+  function getValueColorClass(value: number): string {
     if (value > 0) return 'text-green-400';
     if (value < 0) return 'text-red-400';
     return 'text-gray-400';
@@ -95,11 +126,20 @@
   function getCoordinates(location: number): { x: number; y: number } {
     return locationToCoordinates(location);
   }
+
+  // Grid column definitions
+  const fullGridCols =
+    'grid-cols-[32px_minmax(70px,1fr)_50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]';
+  const simplifiedGridCols =
+    'grid-cols-[32px_minmax(80px,1fr)_50px_60px_1fr_1fr_1fr_1fr]';
+  const fullExpandedGridCols =
+    'grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]';
+  const simplifiedExpandedGridCols = 'grid-cols-[50px_60px_1fr_1fr_1fr_1fr]';
 </script>
 
 <div class="flex flex-col h-full">
   {#if rankingMode === 'total'}
-    <!-- TOTAL PnL MODE: Expandable player view -->
+    <!-- TOTAL MODE: Expandable player view -->
     <!-- Header -->
     <div
       class="grid grid-cols-[40px_1fr_100px_70px] gap-2 px-3 py-2 bg-gray-800/50 text-xs text-gray-400 font-medium border-b border-gray-700"
@@ -115,7 +155,7 @@
       {#each sortedEntriesByTotal as entry, index}
         {@const isExpanded = expandedRows.has(entry.owner)}
         {@const isUser = isCurrentUser(entry.owner)}
-        {@const displayPnL = entry.totalPnL ?? 0}
+        {@const displayValue = getEntryDisplayValue(entry)}
 
         <!-- Player Row -->
         <button
@@ -151,13 +191,13 @@
             {/if}
           </div>
 
-          <!-- PnL -->
+          <!-- Value -->
           <div
-            class="text-right font-ponzi-number tracking-wider {getPnLColorClass(
-              displayPnL,
+            class="text-right font-ponzi-number tracking-wider {getValueColorClass(
+              displayValue,
             )}"
           >
-            {formatPnL(displayPnL)}
+            {formatValue(displayValue)}
           </div>
 
           <!-- Position Count + Expand -->
@@ -175,24 +215,37 @@
         {#if isExpanded}
           <div class="bg-gray-900/50 border-b border-gray-700 overflow-x-auto">
             <!-- Positions Header -->
-            <div
-              class="grid grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
-            >
-              <div>Location</div>
-              <div>Status</div>
-              <div class="text-right">PnL</div>
-              <div class="text-right">ROI</div>
-              <div class="text-right">Bought</div>
-              <div class="text-right">Closed</div>
-              <div class="text-right">Buy Cost</div>
-              <div class="text-right">Sold For</div>
-              <div class="text-right">Inflows</div>
-              <div class="text-right">Outflows</div>
-            </div>
+            {#if showFullDetails}
+              <div
+                class="grid {fullExpandedGridCols} gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
+              >
+                <div>Location</div>
+                <div>Status</div>
+                <div class="text-right">PnL</div>
+                <div class="text-right">ROI</div>
+                <div class="text-right">Bought</div>
+                <div class="text-right">Closed</div>
+                <div class="text-right">Buy Cost</div>
+                <div class="text-right">Sold For</div>
+                <div class="text-right">Inflows</div>
+                <div class="text-right">Outflows</div>
+              </div>
+            {:else}
+              <div
+                class="grid {simplifiedExpandedGridCols} gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
+              >
+                <div>Location</div>
+                <div>Status</div>
+                <div class="text-right">Bought</div>
+                <div class="text-right">Closed</div>
+                <div class="text-right">Inflows</div>
+                <div class="text-right">Outflows</div>
+              </div>
+            {/if}
 
             <!-- Position Rows -->
             {#each entry.positions as position}
-              <PositionRow {position} />
+              <PositionRow {position} {showFullDetails} />
             {/each}
           </div>
         {/if}
@@ -201,136 +254,230 @@
   {:else}
     <!-- BEST POSITION MODE: Flat list of ALL positions -->
     <!-- Header -->
-    <div
-      class="grid grid-cols-[32px_minmax(70px,1fr)_50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
-    >
-      <div class="text-center">#</div>
-      <div>Player</div>
-      <div>Location</div>
-      <div>Status</div>
-      <div class="text-right">PnL</div>
-      <div class="text-right">ROI</div>
-      <div class="text-right">Bought</div>
-      <div class="text-right">Closed</div>
-      <div class="text-right">Buy Cost</div>
-      <div class="text-right">Sold For</div>
-      <div class="text-right">Inflows</div>
-      <div class="text-right">Outflows</div>
-    </div>
+    {#if showFullDetails}
+      <div
+        class="grid {fullGridCols} gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
+      >
+        <div class="text-center">#</div>
+        <div>Player</div>
+        <div>Location</div>
+        <div>Status</div>
+        <div class="text-right">PnL</div>
+        <div class="text-right">ROI</div>
+        <div class="text-right">Bought</div>
+        <div class="text-right">Closed</div>
+        <div class="text-right">Buy Cost</div>
+        <div class="text-right">Sold For</div>
+        <div class="text-right">Inflows</div>
+        <div class="text-right">Outflows</div>
+      </div>
+    {:else}
+      <div
+        class="grid {simplifiedGridCols} gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
+      >
+        <div class="text-center">#</div>
+        <div>Player</div>
+        <div>Location</div>
+        <div>Status</div>
+        <div class="text-right">Bought</div>
+        <div class="text-right">Closed</div>
+        <div class="text-right">Inflows</div>
+        <div class="text-right">Outflows</div>
+      </div>
+    {/if}
 
     <!-- All Positions -->
     <div class="flex-1 overflow-auto">
-      {#each allPositionsSorted as { owner, position }, index}
+      {#each allPositionsSorted as { owner, position, displayValue }, index}
         {@const isUser = isCurrentUser(owner)}
         {@const coordinates = getCoordinates(position.land_location)}
 
-        <div
-          class={[
-            'grid grid-cols-[32px_minmax(70px,1fr)_50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 items-center text-xs border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors',
-            { 'bg-purple-900/30': isUser },
-          ]}
-        >
-          <!-- Rank -->
-          <div class="text-center font-ponzi-number">
-            {#if index === 0}
-              <span class="text-yellow-400">👑</span>
-            {:else if index === 1}
-              <span class="text-gray-300">🥈</span>
-            {:else if index === 2}
-              <span class="text-amber-600">🥉</span>
-            {:else}
-              <span class="text-gray-400">{index + 1}</span>
-            {/if}
-          </div>
+        {#if showFullDetails}
+          <div
+            class={[
+              'grid',
+              fullGridCols,
+              'gap-2 px-3 py-1.5 items-center text-xs border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors',
+              { 'bg-purple-900/30': isUser },
+            ]}
+          >
+            <!-- Rank -->
+            <div class="text-center font-ponzi-number">
+              {#if index === 0}
+                <span class="text-yellow-400">👑</span>
+              {:else if index === 1}
+                <span class="text-gray-300">🥈</span>
+              {:else if index === 2}
+                <span class="text-amber-600">🥉</span>
+              {:else}
+                <span class="text-gray-400">{index + 1}</span>
+              {/if}
+            </div>
 
-          <!-- Player Name -->
-          <div class="flex items-center gap-1 truncate">
-            <span class="truncate text-base font-medium" title={owner}>
-              {getDisplayName(owner)}
-            </span>
-            {#if isUser}
-              <span
-                class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded shrink-0"
-              >
-                You
+            <!-- Player Name -->
+            <div class="flex items-center gap-1 truncate">
+              <span class="truncate text-base font-medium" title={owner}>
+                {getDisplayName(owner)}
               </span>
-            {/if}
-          </div>
+              {#if isUser}
+                <span
+                  class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded shrink-0"
+                >
+                  You
+                </span>
+              {/if}
+            </div>
 
-          <!-- Location -->
-          <div class="font-ponzi-number text-gray-300">
-            ({coordinates.x}, {coordinates.y})
-          </div>
+            <!-- Location -->
+            <div class="font-ponzi-number text-gray-300">
+              ({coordinates.x}, {coordinates.y})
+            </div>
 
-          <!-- Status -->
-          <div>
-            <StatusCell {position} />
-          </div>
+            <!-- Status -->
+            <div>
+              <StatusCell {position} />
+            </div>
 
-          <!-- PnL -->
-          <div class="flex justify-end">
-            <TotalPnlCell
-              {position}
-              showShareButton={false}
-              showPercentage={false}
-            />
-          </div>
-
-          <!-- ROI -->
-          <div class="flex justify-end">
-            <RoiCell {position} />
-          </div>
-
-          <!-- Bought Date -->
-          <div class="flex justify-end">
-            <DateCell
-              dateString={position.time_bought}
-              buyTokenUsed={position.buy_token_used}
-              variant="buy"
-            />
-          </div>
-
-          <!-- Close Date -->
-          <div class="flex justify-end">
-            <DateCell
-              dateString={position.close_date}
-              variant="close"
-              {position}
-            />
-          </div>
-
-          <!-- Buy Cost -->
-          <div class="flex justify-end">
-            <CostCell
-              cost={position.buy_cost_token}
-              tokenAddress={position.buy_token_used}
-              variant="buy"
-            />
-          </div>
-
-          <!-- Sold For -->
-          <div class="flex justify-end">
-            {#if position.sale_revenue_token}
-              <CostCell
-                cost={position.sale_revenue_token}
-                tokenAddress={position.sale_token_used}
-                variant="sell"
+            <!-- PnL -->
+            <div class="flex justify-end">
+              <TotalPnlCell
+                {position}
+                showShareButton={false}
+                showPercentage={false}
               />
-            {:else}
-              <span class="text-gray-500">-</span>
-            {/if}
-          </div>
+            </div>
 
-          <!-- Token Inflows -->
-          <div class="flex justify-end">
-            <TokenInflowCell {position} />
-          </div>
+            <!-- ROI -->
+            <div class="flex justify-end">
+              <RoiCell {position} />
+            </div>
 
-          <!-- Token Outflows -->
-          <div class="flex justify-end">
-            <TokenOutflowCell {position} />
+            <!-- Bought Date -->
+            <div class="flex justify-end">
+              <DateCell
+                dateString={position.time_bought}
+                buyTokenUsed={position.buy_token_used}
+                variant="buy"
+              />
+            </div>
+
+            <!-- Close Date -->
+            <div class="flex justify-end">
+              <DateCell
+                dateString={position.close_date}
+                variant="close"
+                {position}
+              />
+            </div>
+
+            <!-- Buy Cost -->
+            <div class="flex justify-end">
+              <CostCell
+                cost={position.buy_cost_token}
+                tokenAddress={position.buy_token_used}
+                variant="buy"
+              />
+            </div>
+
+            <!-- Sold For -->
+            <div class="flex justify-end">
+              {#if position.sale_revenue_token}
+                <CostCell
+                  cost={position.sale_revenue_token}
+                  tokenAddress={position.sale_token_used}
+                  variant="sell"
+                />
+              {:else}
+                <span class="text-gray-500">-</span>
+              {/if}
+            </div>
+
+            <!-- Token Inflows -->
+            <div class="flex justify-end">
+              <TokenInflowCell {position} />
+            </div>
+
+            <!-- Token Outflows -->
+            <div class="flex justify-end">
+              <TokenOutflowCell {position} />
+            </div>
           </div>
-        </div>
+        {:else}
+          <!-- Simplified view -->
+          <div
+            class={[
+              'grid',
+              simplifiedGridCols,
+              'gap-2 px-3 py-1.5 items-center text-xs border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors',
+              { 'bg-purple-900/30': isUser },
+            ]}
+          >
+            <!-- Rank -->
+            <div class="text-center font-ponzi-number">
+              {#if index === 0}
+                <span class="text-yellow-400">👑</span>
+              {:else if index === 1}
+                <span class="text-gray-300">🥈</span>
+              {:else if index === 2}
+                <span class="text-amber-600">🥉</span>
+              {:else}
+                <span class="text-gray-400">{index + 1}</span>
+              {/if}
+            </div>
+
+            <!-- Player Name -->
+            <div class="flex items-center gap-1 truncate">
+              <span class="truncate text-base font-medium" title={owner}>
+                {getDisplayName(owner)}
+              </span>
+              {#if isUser}
+                <span
+                  class="text-xs bg-purple-600 text-white px-1.5 py-0.5 rounded shrink-0"
+                >
+                  You
+                </span>
+              {/if}
+            </div>
+
+            <!-- Location -->
+            <div class="font-ponzi-number text-gray-300">
+              ({coordinates.x}, {coordinates.y})
+            </div>
+
+            <!-- Status -->
+            <div>
+              <StatusCell {position} />
+            </div>
+
+            <!-- Bought Date -->
+            <div class="flex justify-end">
+              <DateCell
+                dateString={position.time_bought}
+                buyTokenUsed={position.buy_token_used}
+                variant="buy"
+              />
+            </div>
+
+            <!-- Close Date -->
+            <div class="flex justify-end">
+              <DateCell
+                dateString={position.close_date}
+                variant="close"
+                {position}
+              />
+            </div>
+
+            <!-- Token Inflows -->
+            <div class="flex justify-end">
+              <TokenInflowCell {position} />
+            </div>
+
+            <!-- Token Outflows -->
+            <div class="flex justify-end">
+              <TokenOutflowCell {position} />
+            </div>
+          </div>
+        {/if}
       {/each}
     </div>
   {/if}

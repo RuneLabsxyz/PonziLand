@@ -35,9 +35,12 @@ export interface LeaderboardEntry {
   owner: string;
   total_positions: number;
   positions: TournamentPosition[];
-  // Computed fields
+  // Computed fields - Full PnL (includes buy/sell costs)
   bestPnL?: number;
   totalPnL?: number;
+  // Computed fields - Token Flow only (excludes buy/sell costs)
+  bestTokenFlow?: number;
+  totalTokenFlow?: number;
 }
 
 export interface LeaderboardResponse {
@@ -66,7 +69,7 @@ export async function fetchTournamentLeaderboard(): Promise<LeaderboardResponse>
         metrics: calculatePositionMetrics(pos),
       }));
 
-      // Calculate aggregate metrics for the entry
+      // Calculate aggregate PnL metrics (includes buy/sell costs)
       const pnlValues = positionsWithMetrics
         .map((p) => p.metrics?.totalPnL?.rawValue().toNumber() ?? null)
         .filter((v): v is number => v !== null);
@@ -74,11 +77,22 @@ export async function fetchTournamentLeaderboard(): Promise<LeaderboardResponse>
       const bestPnL = pnlValues.length > 0 ? Math.max(...pnlValues) : 0;
       const totalPnL = pnlValues.reduce((sum, v) => sum + v, 0);
 
+      // Calculate aggregate Token Flow metrics (excludes buy/sell costs)
+      const tokenFlowValues = positionsWithMetrics
+        .map((p) => p.metrics?.netTokenFlow?.rawValue().toNumber() ?? null)
+        .filter((v): v is number => v !== null);
+
+      const bestTokenFlow =
+        tokenFlowValues.length > 0 ? Math.max(...tokenFlowValues) : 0;
+      const totalTokenFlow = tokenFlowValues.reduce((sum, v) => sum + v, 0);
+
       return {
         ...entry,
         positions: positionsWithMetrics,
         bestPnL,
         totalPnL,
+        bestTokenFlow,
+        totalTokenFlow,
       };
     });
 
@@ -93,17 +107,29 @@ export async function fetchTournamentLeaderboard(): Promise<LeaderboardResponse>
 }
 
 export type RankingMode = 'best' | 'total';
+export type MetricType = 'pnl' | 'tokenFlow';
 
 export function sortEntriesByRankingMode(
   entries: LeaderboardEntry[],
   mode: RankingMode,
+  metricType: MetricType = 'pnl',
 ): LeaderboardEntry[] {
   const sorted = [...entries];
 
-  if (mode === 'best') {
-    sorted.sort((a, b) => (b.bestPnL ?? 0) - (a.bestPnL ?? 0));
+  if (metricType === 'tokenFlow') {
+    // Sort by token flow (excludes buy/sell)
+    if (mode === 'best') {
+      sorted.sort((a, b) => (b.bestTokenFlow ?? 0) - (a.bestTokenFlow ?? 0));
+    } else {
+      sorted.sort((a, b) => (b.totalTokenFlow ?? 0) - (a.totalTokenFlow ?? 0));
+    }
   } else {
-    sorted.sort((a, b) => (b.totalPnL ?? 0) - (a.totalPnL ?? 0));
+    // Sort by PnL (includes buy/sell)
+    if (mode === 'best') {
+      sorted.sort((a, b) => (b.bestPnL ?? 0) - (a.bestPnL ?? 0));
+    } else {
+      sorted.sort((a, b) => (b.totalPnL ?? 0) - (a.totalPnL ?? 0));
+    }
   }
 
   return sorted;
