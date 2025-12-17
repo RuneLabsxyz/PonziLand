@@ -125,6 +125,34 @@ impl ToriiClient {
         self.do_entities_sql_request(format!("e.created_at > \"{}\"", instant.format("%F %T")))
     }
 
+    /// Get only Land entities after a given instant.
+    ///
+    /// # Errors
+    /// Returns an error if the SQL query fails.
+    pub fn get_land_entities_after(
+        &self,
+        instant: chrono::DateTime<Utc>,
+    ) -> Result<impl Stream<Item = RawToriiData>, Error> {
+        self.do_entities_sql_request(format!(
+            "e.created_at > \"{}\" AND m.name = 'Land'",
+            instant.format("%F %T")
+        ))
+    }
+
+    /// Get only LandStake entities after a given instant.
+    ///
+    /// # Errors
+    /// Returns an error if the SQL query fails.
+    pub fn get_land_stake_entities_after(
+        &self,
+        instant: chrono::DateTime<Utc>,
+    ) -> Result<impl Stream<Item = RawToriiData>, Error> {
+        self.do_entities_sql_request(format!(
+            "e.created_at > \"{}\" AND m.name = 'LandStake'",
+            instant.format("%F %T")
+        ))
+    }
+
     /// Subscribe to events.
     ///
     /// # Errors
