@@ -20,6 +20,7 @@
   import WidgetShare from './share/widget-share.svelte';
   import WidgetTournament from './tournament/widget-tournament.svelte';
   import WidgetUsername from './username/widget-username.svelte';
+  import WidgetAutomation from './automation/widget-automation.svelte';
   import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
 </script>
 
@@ -71,6 +72,8 @@
           <WidgetTournament {setCustomTitle} {setCustomControls} />
         {:else if type === 'username'}
           <WidgetUsername />
+        {:else if type === 'automation'}
+          <WidgetAutomation {setCustomTitle} {setCustomControls} />
         {/if}
       {/snippet}
     </Draggable>

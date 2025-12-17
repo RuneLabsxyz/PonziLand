@@ -166,6 +166,14 @@ const baseWidgetsState: WidgetsState = {
     isOpen: false,
     disableResize: true,
   },
+  automation: {
+    id: 'automation',
+    type: 'automation',
+    position: { x: 140, y: 90 },
+    dimensions: { width: 450, height: 500 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 const guildWidgetState: WidgetState = {
@@ -230,6 +238,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     label: 'Leaderboard',
     icon: '/ui/icons/Icon_Cup.png',
     if: ENABLE_LEADERBOARD,
+  },
+  {
+    id: 'automation',
+    type: 'automation',
+    label: 'Automation',
+    icon: '/ui/icons/Icon_ControlCenter.png',
   },
 
   // {
