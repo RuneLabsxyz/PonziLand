@@ -221,11 +221,15 @@
 
   // Reset manual edit flags on blur
   function onSellPriceBlur() {
-    isManualSellPriceEdit = false;
+    setTimeout(() => {
+      isManualSellPriceEdit = false;
+    }, 0);
   }
 
   function onStakeBlur() {
-    isManualStakeEdit = false;
+    setTimeout(() => {
+      isManualStakeEdit = false;
+    }, 0);
   }
 
   let stakeAmount: CurrencyAmount = $derived.by(() => {
