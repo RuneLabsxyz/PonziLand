@@ -5,6 +5,7 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { cn, getTokenMetadata } from '$lib/utils';
   import data from '$profileData';
+  import { RefreshCw } from 'lucide-svelte';
 
   import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
   import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
@@ -138,7 +139,7 @@
           disabled={loadingBalances}
           title="Refresh balances"
         >
-          ⟳
+          <RefreshCw size={16} />
         </button>
         <button
           type="button"
