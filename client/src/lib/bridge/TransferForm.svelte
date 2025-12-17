@@ -1,15 +1,11 @@
 <!-- TransferForm.svelte -->
 <script lang="ts">
-  // Import bridge store (NO Hyperlane SDK)
   import { bridgeStore } from './bridge-store.svelte';
   import type { WalletProvider, TokenInfo } from './types';
-
-  // Import account management
   import { useAccount } from '$lib/contexts/account.svelte';
   import { accountState } from '$lib/account.svelte';
   import { phantomWalletStore } from './phantom.svelte';
 
-  // Form state
   let formData = $state({
     originChain: '',
     destinationChain: '',
@@ -24,14 +20,12 @@
 
   const accountManager = useAccount();
 
-  // Load config on mount
   $effect(() => {
     bridgeStore.loadConfig().catch((err) => {
       console.error('Failed to load bridge config:', err);
     });
   });
 
-  // Derived values from bridge config
   const availableChains = $derived(
     bridgeStore.config
       ? Array.from(

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { TransferStatus } from '$lib/bridge/types';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
+  import { cn } from '$lib/utils';
 
   interface Props {
     status: TransferStatus;
@@ -92,19 +93,19 @@
         <div class="flex flex-col items-center flex-1">
           <!-- Step circle -->
           <div
-            class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all
-              {state === 'completed'
-              ? 'bg-green-500/20 text-green-400 border border-green-500/50'
-              : ''}
-              {state === 'active'
-              ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50'
-              : ''}
-              {state === 'pending'
-              ? 'bg-gray-700/50 text-gray-500 border border-gray-600/30'
-              : ''}
-              {state === 'error'
-              ? 'bg-red-500/20 text-red-400 border border-red-500/50'
-              : ''}"
+            class={cn(
+              'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all',
+              {
+                'bg-green-500/20 text-green-400 border border-green-500/50':
+                  state === 'completed',
+                'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50':
+                  state === 'active',
+                'bg-gray-700/50 text-gray-500 border border-gray-600/30':
+                  state === 'pending',
+                'bg-red-500/20 text-red-400 border border-red-500/50':
+                  state === 'error',
+              },
+            )}
           >
             {#if state === 'completed'}
               ✓
@@ -118,11 +119,12 @@
           </div>
           <!-- Step label -->
           <span
-            class="text-[10px] mt-1 text-center
-              {state === 'completed' ? 'text-green-400' : ''}
-              {state === 'active' ? 'text-cyan-400' : ''}
-              {state === 'pending' ? 'text-gray-500' : ''}
-              {state === 'error' ? 'text-red-400' : ''}"
+            class={cn('text-[10px] mt-1 text-center', {
+              'text-green-400': state === 'completed',
+              'text-cyan-400': state === 'active',
+              'text-gray-500': state === 'pending',
+              'text-red-400': state === 'error',
+            })}
           >
             {step.label}
           </span>
@@ -130,10 +132,12 @@
         <!-- Connector line -->
         {#if i < steps.length - 1}
           <div
-            class="flex-1 h-0.5 mx-1 -mt-4
-              {getStepState(i) === 'completed'
-              ? 'bg-green-500/50'
-              : 'bg-gray-700/50'}"
+            class={cn(
+              'flex-1 h-0.5 mx-1 -mt-4',
+              getStepState(i) === 'completed'
+                ? 'bg-green-500/50'
+                : 'bg-gray-700/50',
+            )}
           ></div>
         {/if}
       {/each}

@@ -237,6 +237,9 @@
   <div
     class="text-xs text-gray-600 text-center mt-3 pt-3 border-t border-[#ffffff11]"
   >
-    Powered by Hyperlane
+    Powered by <a
+      href="https://nexus.hyperlane.xyz/?origin=solanamainnet&destination=starknet"
+      target="_blank">Hyperlane</a
+    >
   </div>
 </div>
