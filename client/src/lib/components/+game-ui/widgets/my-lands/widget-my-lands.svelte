@@ -24,10 +24,9 @@
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
     setCustomControls?: (controls: Snippet<[]> | null) => void;
-    onGoToMarket?: () => void;
   };
 
-  let { setCustomTitle, setCustomControls, onGoToMarket }: Props = $props();
+  let { setCustomTitle, setCustomControls }: Props = $props();
 
   const dojo = useDojo();
   const getDojoAccount = () => {
@@ -568,19 +567,15 @@
               onclick={(e: Event) => {
                 e.preventDefault();
                 e.stopPropagation();
-                if (onGoToMarket) {
-                  onGoToMarket();
-                } else {
-                  // Fallback to opening separate market widget
-                  widgetsStore.addWidget({
-                    id: 'market',
-                    type: 'market',
-                    position: { x: 40, y: 30 },
-                    dimensions: { width: 450, height: 600 },
-                    isMinimized: false,
-                    isOpen: true,
-                  });
-                }
+                // Always open separate market widget instead of switching tabs
+                widgetsStore.addWidget({
+                  id: 'market',
+                  type: 'market',
+                  position: { x: 40, y: 30 },
+                  dimensions: { width: 450, height: 600 },
+                  isMinimized: false,
+                  isOpen: true,
+                });
               }}
             >
               Go to market !

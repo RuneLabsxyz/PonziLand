@@ -3,6 +3,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import WidgetAuctions from '../auctions/widget-auctions.svelte';
   import LandExplorer from './land-explorer.svelte';
+  import TabNavigation from '$lib/components/ui/tab-navigation.svelte';
   import type { Snippet } from 'svelte';
   import account from '$lib/account.svelte';
 
@@ -19,6 +20,11 @@
   function setActiveTab(tab: 'auctions' | 'owned') {
     activeTab = tab;
   }
+
+  const tabs = [
+    { id: 'auctions', label: 'AUCTIONS' },
+    { id: 'owned', label: 'LANDS' },
+  ];
 
   let currentAccount = $derived(account);
 
@@ -49,21 +55,12 @@
   </div>
 {:else}
   <div class="h-full w-full flex flex-col min-h-0">
-    <div class="flex gap-2 w-full justify-center mt-2">
-      <Button
-        class="w-full {activeTab === 'auctions' ? '' : 'opacity-50'}"
-        variant={activeTab === 'auctions' ? 'blue' : undefined}
-        onclick={() => setActiveTab('auctions')}
-      >
-        AUCTIONS
-      </Button>
-      <Button
-        class="w-full {activeTab === 'owned' ? '' : 'opacity-50'}"
-        variant={activeTab === 'owned' ? 'blue' : undefined}
-        onclick={() => setActiveTab('owned')}
-      >
-        LANDS
-      </Button>
+    <div class="mt-2 w-full">
+      <TabNavigation
+        {tabs}
+        {activeTab}
+        onTabChange={(tabId) => setActiveTab(tabId as 'auctions' | 'owned')}
+      />
     </div>
 
     {#if activeTab === 'auctions'}

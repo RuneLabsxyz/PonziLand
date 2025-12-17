@@ -4,7 +4,7 @@
   import { RefreshCw } from 'lucide-svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import TournamentLeaderboard from './tournament-leaderboard.svelte';
-  import Button from '$lib/components/ui/button/button.svelte';
+  import TabNavigation from '$lib/components/ui/tab-navigation.svelte';
   import {
     fetchTournamentLeaderboard,
     sortEntriesByRankingMode,
@@ -120,6 +120,15 @@
       year: 'numeric',
     },
   );
+
+  const tabs = [
+    { id: 'best', label: 'Best Position' },
+    { id: 'total', label: 'Best PnL' },
+  ];
+
+  function handleTabChange(tabId: string) {
+    rankingMode = tabId as RankingMode;
+  }
 </script>
 
 <div class="flex flex-col h-full min-h-0">
@@ -171,26 +180,7 @@
   </div>
 
   <!-- Tab buttons -->
-  <div class="flex border-b border-gray-700">
-    <Button
-      class="flex-1 py-2 text-sm font-medium transition-colors {rankingMode ===
-      'best'
-        ? 'bg-purple-600 text-white'
-        : 'bg-gray-800 text-gray-400 hover:text-white'}"
-      onclick={() => (rankingMode = 'best')}
-    >
-      Best Position
-    </Button>
-    <Button
-      class="flex-1 py-2 text-sm font-medium transition-colors {rankingMode ===
-      'total'
-        ? 'bg-purple-600 text-white'
-        : 'bg-gray-800 text-gray-400 hover:text-white'}"
-      onclick={() => (rankingMode = 'total')}
-    >
-      Best PnL
-    </Button>
-  </div>
+  <TabNavigation {tabs} activeTab={rankingMode} onTabChange={handleTabChange} />
 
   <!-- Content -->
   <div class="flex-1 overflow-auto min-h-0">
