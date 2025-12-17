@@ -5,7 +5,6 @@
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import Label from '$lib/components/ui/label/label.svelte';
-  import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { TabType, Token } from '$lib/interfaces';
@@ -31,6 +30,7 @@
     findBestSourceToken,
     calculateDeficitWithBuffer,
   } from '$lib/utils/swap-helper';
+  import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
 
   let {
     land,
@@ -60,6 +60,52 @@
   );
 
   let hasAdvisorWarnings = $state(false);
+  let showTokenDropdown = $state(false);
+  let tokenContainerRef = $state<HTMLDivElement | null>(null);
+  let containerWidth = $state(0);
+
+  // Get user's tokens sorted by dollar value (descending)
+  let sortedUserTokens = $derived.by(() => {
+    const tokens = walletStore.tokenBalances;
+    if (!tokens || tokens.length === 0) return [];
+
+    // Filter to only tokens with non-zero balance and sort by USD value
+    return tokens
+      .filter(([_, balance]) => balance && !balance.rawValue().isZero())
+      .sort((a, b) => {
+        const aValue = walletStore.getCachedBaseTokenEquivalent(a[0].address);
+        const bValue = walletStore.getCachedBaseTokenEquivalent(b[0].address);
+        if (!aValue && !bValue) return 0;
+        if (!aValue) return 1;
+        if (!bValue) return -1;
+        return bValue.rawValue().comparedTo(aValue.rawValue());
+      })
+      .map(([token]) => token);
+  });
+
+  // Calculate how many tokens can fit (each token ~75px + 4px gap, plus 36px for + button)
+  const TOKEN_WIDTH = 79; // approximate width of each token button
+  const PLUS_BUTTON_WIDTH = 36;
+  let visibleTokenCount = $derived(
+    Math.max(0, Math.floor((containerWidth - PLUS_BUTTON_WIDTH) / TOKEN_WIDTH)),
+  );
+
+  // Tokens to display (limited to what fits)
+  let visibleTokens = $derived(sortedUserTokens.slice(0, visibleTokenCount));
+
+  // Watch container size
+  $effect(() => {
+    if (!tokenContainerRef) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        containerWidth = entry.contentRect.width;
+      }
+    });
+
+    observer.observe(tokenContainerRef);
+    return () => observer.disconnect();
+  });
 
   let tokenValue: Token | string | undefined = $state(data.mainCurrencyAddress);
   let selectedToken: Token | undefined = $derived.by(() => {
@@ -576,7 +622,111 @@
         Determines the land you are going to build. You stake this token and
         will receive this token when bought
       </p>
-      <TokenSelect bind:value={tokenValue} variant="swap" />
+      <div
+        bind:this={tokenContainerRef}
+        class="relative flex gap-1 items-center w-full"
+      >
+        <!-- Quick token buttons - only show what fits -->
+        {#each visibleTokens as token (token.address)}
+          <button
+            type="button"
+            class={[
+              'flex items-center gap-1 px-2 py-1 rounded border transition-all shrink-0',
+              'hover:bg-white/10',
+              {
+                'border-yellow-500 bg-yellow-500/20':
+                  selectedToken?.address === token.address,
+                'border-white/30 bg-transparent':
+                  selectedToken?.address !== token.address,
+              },
+            ]}
+            onclick={() => {
+              tokenValue = token;
+              showTokenDropdown = false;
+            }}
+          >
+            <TokenAvatar {token} class="h-5 w-5" />
+            <span class="text-sm font-medium">{token.symbol}</span>
+          </button>
+        {/each}
+
+        <!-- Dropdown arrow button -->
+        <button
+          type="button"
+          class="flex items-center justify-center w-8 h-8 rounded border border-white/30 hover:bg-white/10 transition-all shrink-0 ml-auto"
+          onclick={() => (showTokenDropdown = !showTokenDropdown)}
+        >
+          <svg
+            class={[
+              'w-4 h-4 transition-transform',
+              { 'rotate-180': showTokenDropdown },
+            ]}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M19 9l-7 7-7-7"
+            />
+          </svg>
+        </button>
+
+        <!-- Full-width dropdown -->
+        {#if showTokenDropdown}
+          <div
+            class="absolute left-0 right-0 top-full mt-1 z-50 bg-[#1a1a24] border border-white/20 rounded-lg shadow-lg max-h-64 overflow-y-auto"
+          >
+            {#each sortedUserTokens as token (token.address)}
+              {@const balance = walletStore.getBalance(token.address)}
+              {@const usdEquivalent = walletStore.getCachedBaseTokenEquivalent(
+                token.address,
+              )}
+              <button
+                type="button"
+                class={[
+                  'flex justify-between items-center w-full px-3 py-2 hover:bg-white/10 transition-all',
+                  {
+                    'bg-yellow-500/20':
+                      selectedToken?.address === token.address,
+                  },
+                ]}
+                onclick={() => {
+                  tokenValue = token;
+                  showTokenDropdown = false;
+                }}
+              >
+                <div class="flex gap-2 items-center">
+                  <TokenAvatar {token} class="h-6 w-6" />
+                  <div class="flex flex-col items-start">
+                    <span class="font-medium">{token.symbol}</span>
+                    {#if token.name && token.name !== token.symbol}
+                      <span class="text-xs text-gray-400">{token.name}</span>
+                    {/if}
+                  </div>
+                </div>
+                {#if balance}
+                  <div class="flex flex-col items-end text-right">
+                    <span class="font-ds">{balance.toString()}</span>
+                    {#if usdEquivalent}
+                      <span class="text-xs text-gray-400">
+                        ≈ ${usdEquivalent.toString()}
+                      </span>
+                    {/if}
+                  </div>
+                {/if}
+              </button>
+            {/each}
+            {#if sortedUserTokens.length === 0}
+              <div class="p-3 text-center text-gray-400 text-sm">
+                No tokens with balance
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
       {#if tokenError}
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
