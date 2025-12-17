@@ -20,6 +20,7 @@
       isOpen: true,
       data: { location: land.location },
       disableResize: true,
+      showMaximize: true,
     });
   }
 </script>

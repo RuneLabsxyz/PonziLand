@@ -7,6 +7,7 @@
   import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
   import { onMount } from 'svelte';
+  import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
 
   let {
     land,
@@ -41,18 +42,20 @@
     />
   </div>
 
-  <div class="w-full h-full mt-4">
-    <OverallTab
-      {land}
-      bind:activeTab
-      isActive={activeTab === 'overall'}
-      {auctionPrice}
-    />
-    <BuyTab
-      {land}
-      bind:activeTab
-      isActive={activeTab === 'buy'}
-      {auctionPrice}
-    />
-  </div>
+  <ScrollArea class="w-full mt-4 -mr-4">
+    <div class="max-h-[80vh] pr-4">
+      <OverallTab
+        {land}
+        bind:activeTab
+        isActive={activeTab === 'overall'}
+        {auctionPrice}
+      />
+      <BuyTab
+        {land}
+        bind:activeTab
+        isActive={activeTab === 'buy'}
+        {auctionPrice}
+      />
+    </div>
+  </ScrollArea>
 </div>
