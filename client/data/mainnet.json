@@ -21,7 +21,10 @@
     }
   ],
   "dropLand": {
-    "address": "0x02c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd"
+    "address": [
+      "0x02c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd",
+      "0x062f0ca21835f5fb7470f80eaee41dcf29f7989e14607f023f390fcfb864bc7c"
+    ]
   },
   "availableTokens": [
     {
@@ -56,7 +59,6 @@
       "decimals": 5,
       "skin": "DOG"
     },
-
     {
       "name": "Daydreams dreams",
       "symbol": "DREAMS",
