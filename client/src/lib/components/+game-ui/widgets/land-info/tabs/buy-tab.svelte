@@ -27,6 +27,10 @@
   } from '$lib/components/tutorial/stores.svelte';
   import { Card } from '$lib/components/ui/card';
   import { widgetsStore } from '$lib/stores/widgets.store';
+  import {
+    findBestSourceToken,
+    calculateDeficitWithBuffer,
+  } from '$lib/utils/swap-helper';
 
   let {
     land,
@@ -280,6 +284,71 @@
     }
 
     return null;
+  });
+
+  // State for auto-opening swap widget on insufficient balance
+  let swapTriggeredForCurrentLand = $state<string | null>(null);
+
+  // Check if balance error indicates insufficient funds
+  let isInsufficientBalanceError = $derived(
+    balanceError &&
+      (balanceError.includes("don't have enough") ||
+        balanceError.includes("don't have any")),
+  );
+
+  // Calculate the required amount for land purchase
+  let requiredLandTokenAmount = $derived.by(() => {
+    if (!land.token) return null;
+    if (land.type === 'auction') return auctionPrice ?? null;
+    return land.sellPrice;
+  });
+
+  // Auto-open swap widget when insufficient balance is detected
+  $effect(() => {
+    // Only react to these specific dependencies
+    const shouldTrigger =
+      isInsufficientBalanceError &&
+      land.token &&
+      requiredLandTokenAmount &&
+      account.isConnected &&
+      isActive;
+
+    if (!shouldTrigger) return;
+
+    // Create a unique key for this land to track if we've already triggered
+    const landKey = `${land.location}-${land.token?.address}`;
+
+    // Check if we've already triggered for this land (use untrack to avoid re-running)
+    const alreadyTriggered = untrack(
+      () => swapTriggeredForCurrentLand === landKey,
+    );
+    if (alreadyTriggered) return;
+
+    // Mark as triggered (use untrack to avoid re-running the effect)
+    untrack(() => {
+      swapTriggeredForCurrentLand = landKey;
+    });
+
+    // Calculate deficit and open swap (use untrack to avoid reactive dependencies)
+    untrack(() => {
+      const userBalance = walletStore.getBalance(land.token!.address);
+      const deficitAmount = calculateDeficitWithBuffer(
+        requiredLandTokenAmount!,
+        userBalance,
+        5, // 5% buffer for slippage
+      );
+
+      const bestSourceToken = findBestSourceToken(land.token!.address);
+
+      widgetsStore.updateWidget('swap', {
+        isOpen: true,
+        data: {
+          prefillBuyToken: land.token,
+          prefillBuyAmount: deficitAmount,
+          prefillSellToken: bestSourceToken,
+        },
+      });
+    });
   });
 
   // Check if form is valid
