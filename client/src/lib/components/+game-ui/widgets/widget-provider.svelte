@@ -60,7 +60,7 @@
         {:else if type === 'data-maps'}
           <WidgetHeatmap />
         {:else if type === 'swap'}
-          <WidgetSwap />
+          <WidgetSwap data={widget.data} />
         {:else if type === 'disclaimer'}
           <WidgetDisclaimer />
         {:else if type === 'command-center'}

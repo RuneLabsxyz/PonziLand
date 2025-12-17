@@ -16,8 +16,22 @@
   import data from '$profileData';
   import type { Quote } from '@avnu/avnu-sdk';
 
+  interface Props {
+    data?: {
+      prefillBuyToken?: Token;
+      prefillBuyAmount?: string;
+      prefillSellToken?: Token;
+    };
+  }
+
+  let { data: widgetData }: Props = $props();
+
   let { client, accountManager } = useDojo();
   let avnu = useAvnu();
+
+  // Track if we've already applied prefill to avoid re-applying on re-renders
+  let prefillApplied = $state(false);
+  let lastPrefillData = $state<string | null>(null);
 
   // Svelte 5 reactive states using runes
   let sellAmount = $state('');
@@ -110,6 +124,42 @@
       getTokenBalance(buyToken.address).then((balance) => {
         buyTokenBalance = CurrencyAmount.fromUnscaled(balance ?? 0, buyToken);
       });
+    }
+  });
+
+  // Apply prefill data when provided from buy-tab insufficient balance flow
+  $effect(() => {
+    if (!widgetData) {
+      // Reset flag when widget data is cleared
+      prefillApplied = false;
+      lastPrefillData = null;
+      return;
+    }
+
+    // Create a signature of current prefill data to detect changes
+    const prefillSignature = JSON.stringify({
+      buyToken: widgetData.prefillBuyToken?.address,
+      buyAmount: widgetData.prefillBuyAmount,
+      sellToken: widgetData.prefillSellToken?.address,
+    });
+
+    // Only apply if this is new prefill data
+    if (prefillSignature !== lastPrefillData) {
+      lastPrefillData = prefillSignature;
+
+      // Apply prefill values
+      if (widgetData.prefillBuyToken) {
+        buyToken = widgetData.prefillBuyToken;
+      }
+      if (widgetData.prefillSellToken) {
+        sellToken = widgetData.prefillSellToken;
+      }
+      if (widgetData.prefillBuyAmount) {
+        buyAmount = widgetData.prefillBuyAmount;
+        leadingSide = 'buy'; // Set leading side to buy since we're specifying buy amount
+        sellAmount = ''; // Clear sell amount to trigger quote fetch
+        isLoadingQuotes = true;
+      }
     }
   });
 
