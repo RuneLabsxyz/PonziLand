@@ -1,4 +1,4 @@
-use std::{cmp::max, sync::Arc};
+use std::sync::Arc;
 
 use chaindata_models::{
     events::EventId,
@@ -41,25 +41,29 @@ impl ModelListenerTask {
         }
     }
 
-    /// Gets the most recent update time across all model tables.
-    /// This is used to determine where to start when catching up with model updates.
-    async fn get_last_update_time(&self) -> Result<DateTime<Utc>, sqlx::Error> {
+    /// Gets the most recent update time per model table.
+    ///
+    /// Note: we keep independent cursors so a frequently-updated model (e.g. `LandStake`)
+    /// does not prevent catchup for a less frequent one (e.g. `Land`).
+    async fn get_last_update_times(&self) -> Result<(DateTime<Utc>, DateTime<Utc>), sqlx::Error> {
         // If we did not start indexing, start from the beginning
         let fallback_time = DateTime::UNIX_EPOCH.naive_utc();
 
-        // Get latest from land table
+        // Get latest from each table independently
         let land_latest = self
             .land_repository
             .get_latest_timestamp()
             .await?
-            .unwrap_or(fallback_time);
+            .unwrap_or(fallback_time)
+            .and_utc();
         let land_stake_latest = self
             .land_stake_repository
             .get_latest_timestamp()
             .await?
-            .unwrap_or(fallback_time);
+            .unwrap_or(fallback_time)
+            .and_utc();
 
-        Ok(max(land_latest, land_stake_latest).and_utc())
+        Ok((land_latest, land_stake_latest))
     }
 
     #[allow(clippy::match_wildcard_for_single_variants)]
@@ -114,24 +118,38 @@ impl Task for ModelListenerTask {
 
         loop {
             // Poll for new models from the database
-            let last_check = self
-                .get_last_update_time()
+            let (last_land_check, last_land_stake_check) = self
+                .get_last_update_times()
                 .await
                 .expect("Failed to retrieve last update time");
 
-            let last_check = last_check - chrono::Duration::seconds(1);
+            // Subtract 1 second to avoid missing models due to timestamp precision issues
+            let safe_last_land_check = last_land_check - chrono::Duration::seconds(1);
+            let safe_last_land_stake_check = last_land_stake_check - chrono::Duration::seconds(1);
 
-            info!("Polling for models after: {:?}", last_check);
+            info!(
+                "Polling for Land after: {:?} and LandStake after: {:?}",
+                safe_last_land_check, safe_last_land_stake_check
+            );
 
-            // Get all entities that were updated after the last check
-            let mut models_stream = self
-                .client
-                .get_all_entities_after(last_check)
-                .expect("Error while fetching entities");
-
-            // Process models as they go
             let mut model_count = 0;
-            while let Some(model) = models_stream.next().await {
+
+            // Land catchup
+            let mut land_stream = self
+                .client
+                .get_land_entities_after(safe_last_land_check)
+                .expect("Error while fetching Land entities");
+            while let Some(model) = land_stream.next().await {
+                self.process_model(model).await;
+                model_count += 1;
+            }
+
+            // LandStake catchup
+            let mut land_stake_stream = self
+                .client
+                .get_land_stake_entities_after(safe_last_land_stake_check)
+                .expect("Error while fetching LandStake entities");
+            while let Some(model) = land_stake_stream.next().await {
                 self.process_model(model).await;
                 model_count += 1;
             }
