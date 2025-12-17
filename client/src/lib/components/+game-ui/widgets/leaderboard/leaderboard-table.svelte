@@ -1,15 +1,15 @@
 <script lang="ts">
   import { ChevronDown, ChevronUp } from 'lucide-svelte';
-  import { formatAddress } from '../leaderboard/helpers';
+  import { formatAddress } from './helpers';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
   import account from '$lib/account.svelte';
   import { padAddress, locationToCoordinates } from '$lib/utils';
   import type {
     LeaderboardEntry,
     RankingMode,
-    TournamentPosition,
+    LeaderboardPosition,
     MetricType,
-  } from './tournament.service';
+  } from './leaderboard.service';
   import PositionRow from './cells/position-row.svelte';
   import StatusCell from '../positions/cells/status-cell.svelte';
   import TotalPnlCell from '../positions/cells/total-pnl-cell.svelte';
@@ -60,7 +60,7 @@
   }
 
   // Get the display value for a position based on metric type
-  function getPositionDisplayValue(position: TournamentPosition): number {
+  function getPositionDisplayValue(position: LeaderboardPosition): number {
     if (metricType === 'tokenFlow') {
       return position.metrics?.netTokenFlow?.rawValue().toNumber() ?? -Infinity;
     }
@@ -79,7 +79,7 @@
   const allPositionsSorted = $derived.by(() => {
     const positions: Array<{
       owner: string;
-      position: TournamentPosition;
+      position: LeaderboardPosition;
       displayValue: number;
     }> = [];
 

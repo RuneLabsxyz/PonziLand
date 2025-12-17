@@ -3,7 +3,7 @@
   import type { Snippet } from 'svelte';
   import { RefreshCw } from 'lucide-svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
-  import TournamentLeaderboard from '../tournament/tournament-leaderboard.svelte';
+  import LeaderboardTable from './leaderboard-table.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import {
     fetchLeaderboard,
@@ -101,7 +101,7 @@
     {:else if entries.length === 0}
       <div class="text-center py-8 text-gray-400">No positions yet</div>
     {:else}
-      <TournamentLeaderboard
+      <LeaderboardTable
         entries={sortedEntries}
         {rankingMode}
         limit={MAX_ITEMS}

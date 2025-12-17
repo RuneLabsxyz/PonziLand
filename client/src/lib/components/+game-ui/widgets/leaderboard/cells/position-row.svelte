@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TournamentPosition } from '../tournament.service';
+  import type { LeaderboardPosition } from '../leaderboard.service';
   import StatusCell from '../../positions/cells/status-cell.svelte';
   import TotalPnlCell from '../../positions/cells/total-pnl-cell.svelte';
   import CostCell from '../../positions/cells/cost-cell.svelte';
@@ -10,7 +10,7 @@
   import { locationToCoordinates } from '$lib/utils';
 
   interface Props {
-    position: TournamentPosition;
+    position: LeaderboardPosition;
     /** Show all columns (true) or simplified view without buy/sell (false) */
     showFullDetails?: boolean;
   }

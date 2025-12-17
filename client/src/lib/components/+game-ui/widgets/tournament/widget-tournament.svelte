@@ -3,8 +3,8 @@
   import type { Snippet } from 'svelte';
   import { RefreshCw } from 'lucide-svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
-  import TournamentLeaderboard from './tournament-leaderboard.svelte';
   import TabNavigation from '$lib/components/ui/tab-navigation.svelte';
+  import LeaderboardTable from '../leaderboard/leaderboard-table.svelte';
   import {
     fetchTournamentLeaderboard,
     sortEntriesByRankingMode,
@@ -196,7 +196,7 @@
         No tournament positions yet
       </div>
     {:else}
-      <TournamentLeaderboard
+      <LeaderboardTable
         entries={sortedEntries}
         {rankingMode}
         showFullDetails={false}
