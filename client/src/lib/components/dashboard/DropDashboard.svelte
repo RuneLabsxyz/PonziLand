@@ -16,20 +16,17 @@
     GlobalDropMetricsResponse,
     TokenAmountMap,
   } from '$lib/api/drops/requests';
-  import {
-    fetchDropLands,
-    fetchGlobalMetrics,
-  } from '$lib/api/drops/requests';
+  import { fetchDropLands, fetchGlobalMetrics } from '$lib/api/drops/requests';
   import {
     getTokenPrices,
     type TokenPrice,
   } from '$lib/api/defi/ekubo/requests';
 
-const dropWallets = Array.isArray(data.dropLand?.address)
-  ? data.dropLand.address
-  : data.dropLand?.address
-    ? [data.dropLand.address]
-    : [];
+  const dropWallets = Array.isArray(data.dropLand?.address)
+    ? data.dropLand.address
+    : data.dropLand?.address
+      ? [data.dropLand.address]
+      : [];
 
   let reinjector = $state(dropWallets[0] ?? '');
   let drops = $state<DropLandResponse[]>([]);
@@ -53,41 +50,42 @@ const dropWallets = Array.isArray(data.dropLand?.address)
   let globalCopyStatus = $state<'idle' | 'success' | 'error'>('idle');
   let copyStatusTimeout: ReturnType<typeof setTimeout> | null = null;
   let globalCopyStatusTimeout: ReturnType<typeof setTimeout> | null = null;
-const usdcToken =
-  data.availableTokens.find(
-    (token) => token.symbol?.toUpperCase() === 'USDC',
-  ) ?? null;
-const mainCurrencyAddress = data.mainCurrencyAddress;
-const mainCurrencyToken = mainCurrencyAddress
-  ? getTokenInfo(mainCurrencyAddress)
-  : null;
+  const usdcToken =
+    data.availableTokens.find((token) => {
+      const symbol = token.symbol?.toUpperCase();
+      return symbol === 'USDC' || symbol === 'USDC.E';
+    }) ?? null;
+  const mainCurrencyAddress = data.mainCurrencyAddress;
+  const mainCurrencyToken = mainCurrencyAddress
+    ? getTokenInfo(mainCurrencyAddress)
+    : null;
 
-type TokenBreakdownRow = {
-  tokenAddress: string;
-  label: string;
-  amountFormatted: string;
-  usdAmount: CurrencyAmount | null;
-  usdFormatted: string | null;
-};
-type GlobalTokenRow = {
-  tokenAddress: string;
-  label: string;
-  feesFormatted: string;
-  inflowsFormatted: string;
-  saleFeesFormatted: string;
-  distributedFormatted: string;
-  feesUsd: CurrencyAmount | null;
-  inflowsUsd: CurrencyAmount | null;
-  saleFeesUsd: CurrencyAmount | null;
-  distributedUsd: CurrencyAmount | null;
-  feesUsdFormatted: string | null;
-  inflowsUsdFormatted: string | null;
-  saleFeesUsdFormatted: string | null;
-  distributedUsdFormatted: string | null;
-};
+  type TokenBreakdownRow = {
+    tokenAddress: string;
+    label: string;
+    amountFormatted: string;
+    usdAmount: CurrencyAmount | null;
+    usdFormatted: string | null;
+  };
+  type GlobalTokenRow = {
+    tokenAddress: string;
+    label: string;
+    feesFormatted: string;
+    inflowsFormatted: string;
+    saleFeesFormatted: string;
+    distributedFormatted: string;
+    feesUsd: CurrencyAmount | null;
+    inflowsUsd: CurrencyAmount | null;
+    saleFeesUsd: CurrencyAmount | null;
+    distributedUsd: CurrencyAmount | null;
+    feesUsdFormatted: string | null;
+    inflowsUsdFormatted: string | null;
+    saleFeesUsdFormatted: string | null;
+    distributedUsdFormatted: string | null;
+  };
   let dropResponseJson = $derived(JSON.stringify(drops, null, 2));
   let globalResponseJson = $derived(
-    globalMetrics ? JSON.stringify(globalMetrics, null, 2) : ''
+    globalMetrics ? JSON.stringify(globalMetrics, null, 2) : '',
   );
   let copyStatusMessage = $derived(
     copyStatus === 'success'
@@ -101,7 +99,7 @@ type GlobalTokenRow = {
       ? 'JSON copied'
       : globalCopyStatus === 'error'
         ? 'Failed to copy JSON'
-        : ''
+        : '',
   );
 
   onMount(() => {
@@ -150,8 +148,7 @@ type GlobalTokenRow = {
       lastUpdated = new Date();
     } catch (err) {
       console.error('Error loading drops:', err);
-      error =
-        err instanceof Error ? err.message : 'Error loading drop lands';
+      error = err instanceof Error ? err.message : 'Error loading drop lands';
     } finally {
       loading = false;
       console.log('Loading finished, loading state:', loading);
@@ -224,10 +221,7 @@ type GlobalTokenRow = {
     if (!textToCopy) return;
 
     try {
-      if (
-        typeof navigator !== 'undefined' &&
-        navigator.clipboard?.writeText
-      ) {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
         fallbackCopy(textToCopy);
@@ -258,10 +252,7 @@ type GlobalTokenRow = {
     if (!textToCopy) return;
 
     try {
-      if (
-        typeof navigator !== 'undefined' &&
-        navigator.clipboard?.writeText
-      ) {
+      if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(textToCopy);
       } else {
         fallbackCopy(textToCopy);
@@ -390,9 +381,8 @@ type GlobalTokenRow = {
     }
 
     return (
-      tokenPrices.find(
-        (price) => padAddress(price.address) === normalized,
-      ) ?? null
+      tokenPrices.find((price) => padAddress(price.address) === normalized) ??
+      null
     );
   }
 
@@ -409,9 +399,7 @@ type GlobalTokenRow = {
     const toPrice = getTokenPrice(toToken.address);
     if (!fromPrice || !toPrice) return null;
 
-    const baseValue = amount
-      .rawValue()
-      .dividedBy(fromPrice.ratio.rawValue());
+    const baseValue = amount.rawValue().dividedBy(fromPrice.ratio.rawValue());
     if (!baseValue.isFinite()) return null;
 
     const convertedValue = baseValue.multipliedBy(toPrice.ratio.rawValue());
@@ -522,10 +510,7 @@ type GlobalTokenRow = {
         feesFormatted: formatTokenAmount(entry.token, entry.fees),
         inflowsFormatted: formatTokenAmount(entry.token, entry.inflows),
         saleFeesFormatted: formatTokenAmount(entry.token, entry.sale_fees),
-        distributedFormatted: formatTokenAmount(
-          entry.token,
-          entry.distributed,
-        ),
+        distributedFormatted: formatTokenAmount(entry.token, entry.distributed),
         feesUsd,
         inflowsUsd,
         saleFeesUsd,
@@ -592,15 +577,17 @@ type GlobalTokenRow = {
   }
 
   let parsedLocationFilter = $derived(parseLocationFilter(locationFilter));
-  let filteredDrops = $derived(drops.filter((drop) =>
-    matchesFilters(drop, parsedLocationFilter),
-  ));
-  let activeDrops = $derived(filteredDrops.filter((drop) => drop.is_active).length);
+  let filteredDrops = $derived(
+    drops.filter((drop) => matchesFilters(drop, parsedLocationFilter)),
+  );
+  let activeDrops = $derived(
+    filteredDrops.filter((drop) => drop.is_active).length,
+  );
   let averageRoi = $derived(
     filteredDrops.length > 0
       ? filteredDrops.reduce((sum, drop) => sum + drop.drop_roi, 0) /
-        filteredDrops.length
-      : 0
+          filteredDrops.length
+      : 0,
   );
 
   let globalTokenRows = $derived(buildGlobalTokenRows(globalMetrics));
@@ -653,7 +640,7 @@ type GlobalTokenRow = {
           .minus(totalDistributedUsd.rawValue())
           .dividedBy(totalDistributedUsd.rawValue())
           .toNumber() // (received - distributed) / distributed
-      : null
+      : null,
   );
 
   // Aggregation removed per UX feedback (per-drop details already expose all info)
@@ -833,7 +820,6 @@ type GlobalTokenRow = {
         <p class="text-gray-400">Average ROI</p>
       </div>
     </div>
-
   </div>
 </Card>
 
@@ -847,7 +833,8 @@ type GlobalTokenRow = {
           Global metrics (per token)
         </p>
         <p class="text-sm text-gray-300">
-          Uses the same filters (reinjector, level, fee, dates). Raw ROI comes from the API; USD ROI uses your token prices.
+          Uses the same filters (reinjector, level, fee, dates). Raw ROI comes
+          from the API; USD ROI uses your token prices.
         </p>
         {#if globalLastUpdated}
           <p class="text-xs text-gray-500">
@@ -904,20 +891,26 @@ type GlobalTokenRow = {
     </div>
 
     {#if globalLoading}
-      <div class="rounded-xl border border-dashed border-white/20 p-4 text-center text-sm text-gray-300">
+      <div
+        class="rounded-xl border border-dashed border-white/20 p-4 text-center text-sm text-gray-300"
+      >
         Loading global metrics...
       </div>
     {:else if globalError}
-      <div class="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200">
+      <div
+        class="rounded-xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-200"
+      >
         {globalError}
       </div>
     {:else if !globalMetrics}
       <div class="rounded-xl border border-white/10 p-4 text-sm text-gray-300">
-        Click “Global metrics” to see per-token aggregates with the current filters.
+        Click “Global metrics” to see per-token aggregates with the current
+        filters.
       </div>
     {:else}
       {#if showGlobalRawResponse}
-        <pre class="rounded-xl bg-slate-950/70 p-3 text-[11px] leading-5 text-emerald-100 overflow-auto">
+        <pre
+          class="rounded-xl bg-slate-950/70 p-3 text-[11px] leading-5 text-emerald-100 overflow-auto">
 {globalResponseJson}
         </pre>
       {/if}
@@ -931,9 +924,7 @@ type GlobalTokenRow = {
         <div class="rounded-xl bg-black/30 p-3 text-sm text-gray-300">
           <p class="text-xs text-gray-500">Sale fees (USD)</p>
           <p class="font-semibold text-emerald-300 text-lg">
-            {totalSaleFeesUsd
-              ? `$${totalSaleFeesUsd.toString()} USDC`
-              : '—'}
+            {totalSaleFeesUsd ? `$${totalSaleFeesUsd.toString()} USDC` : '—'}
           </p>
         </div>
         <div class="rounded-xl bg-black/30 p-3 text-sm text-gray-300">
@@ -966,9 +957,7 @@ type GlobalTokenRow = {
         <div class="rounded-xl bg-black/30 p-3 text-sm text-gray-300">
           <p class="text-xs text-gray-500">Total inflows (USD)</p>
           <p class="font-semibold text-emerald-300 text-lg">
-            {totalInflowsUsd
-              ? `$${totalInflowsUsd.toString()} USDC`
-              : '—'}
+            {totalInflowsUsd ? `$${totalInflowsUsd.toString()} USDC` : '—'}
           </p>
         </div>
         <div class="rounded-xl bg-black/30 p-3 text-sm text-gray-300">
@@ -994,14 +983,19 @@ type GlobalTokenRow = {
       </div>
 
       <div class="rounded-xl border border-white/5 bg-black/30 p-4">
-        <div class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
+        <div
+          class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400"
+        >
           <p>Per token breakdown</p>
           <span class="text-[11px] text-gray-500">
-            Fees = neighbor inflows × fee rate; Inflows = taxes received by drops; Distributed = stake paid out
+            Fees = neighbor inflows × fee rate; Inflows = taxes received by
+            drops; Distributed = stake paid out
           </span>
         </div>
         {#if globalTokenRows.length === 0}
-          <p class="mt-3 text-xs text-gray-500">No data for the selected filters.</p>
+          <p class="mt-3 text-xs text-gray-500">
+            No data for the selected filters.
+          </p>
         {:else}
           <div class="mt-3 overflow-x-auto">
             <table class="min-w-full text-left text-xs text-gray-200">
@@ -1057,7 +1051,10 @@ type GlobalTokenRow = {
                   </tr>
                 {/each}
                 <tr class="border-t border-white/10">
-                  <td class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500" colspan="5">
+                  <td
+                    class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500"
+                    colspan="5"
+                  >
                     Totals (USD)
                   </td>
                   <td class="py-2 pr-4 font-semibold text-emerald-200">
@@ -1090,9 +1087,12 @@ type GlobalTokenRow = {
 
 <div class="mt-6 space-y-4">
   <p class="text-xs text-gray-500">
-    DEBUG — loading: {loading ? 'true' : 'false'}, error: {error || 'none'}, drops: {drops.length}, filtered: {filteredDrops.length}
+    DEBUG — loading: {loading ? 'true' : 'false'}, error: {error || 'none'},
+    drops: {drops.length}, filtered: {filteredDrops.length}
   </p>
-  <div class="rounded-xl border border-white/10 bg-black/40 p-4 text-sm text-gray-200">
+  <div
+    class="rounded-xl border border-white/10 bg-black/40 p-4 text-sm text-gray-200"
+  >
     <div class="flex flex-wrap items-center justify-between gap-3">
       <div>
         <p class="text-xs uppercase tracking-wide text-gray-400">
@@ -1136,7 +1136,8 @@ type GlobalTokenRow = {
       </div>
     </div>
     {#if showRawResponse}
-      <pre class="mt-3 max-h-96 overflow-auto rounded-xl bg-slate-950/70 p-3 text-[11px] leading-5 text-emerald-100">{dropResponseJson}</pre>
+      <pre
+        class="mt-3 max-h-96 overflow-auto rounded-xl bg-slate-950/70 p-3 text-[11px] leading-5 text-emerald-100">{dropResponseJson}</pre>
     {/if}
   </div>
   {#if loading}
@@ -1158,7 +1159,10 @@ type GlobalTokenRow = {
   {:else}
     <div class="grid gap-4">
       {#each filteredDrops as drop}
-        {@const inflowRows = buildTokenRows(drop.token_inflows, drop.stake_token)}
+        {@const inflowRows = buildTokenRows(
+          drop.token_inflows,
+          drop.stake_token,
+        )}
         {@const inflowUsdTotal = sumUsdFromRows(inflowRows)}
         {@const areaFeeRows = buildTokenRows(
           drop.area_protocol_fees_total,
@@ -1230,7 +1234,9 @@ type GlobalTokenRow = {
             </div>
           </div>
 
-          <div class="mt-4 rounded-2xl border border-white/5 bg-black/40 p-4 text-center">
+          <div
+            class="mt-4 rounded-2xl border border-white/5 bg-black/40 p-4 text-center"
+          >
             <p class="text-xs uppercase tracking-wide text-gray-400">
               Net total impact
             </p>
@@ -1245,7 +1251,9 @@ type GlobalTokenRow = {
                   : 'text-gray-500'
               }`}
             >
-              {netUsdTotal ? `$${netUsdTotal.toString()} USDC` : 'Total unavailable'}
+              {netUsdTotal
+                ? `$${netUsdTotal.toString()} USDC`
+                : 'Total unavailable'}
             </p>
             <p class="mt-1 text-[11px] text-gray-500">
               Token inflows + auctions + protocol fees - distributed stake
@@ -1347,7 +1355,9 @@ type GlobalTokenRow = {
 
           <div class="mt-6 grid gap-4 text-sm md:grid-cols-2">
             <div class="rounded-xl bg-black/30 p-4">
-              <div class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
+              <div
+                class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400"
+              >
                 <p>Token inflows</p>
                 {#if inflowUsdTotal}
                   <span class="text-emerald-200">
@@ -1356,11 +1366,15 @@ type GlobalTokenRow = {
                 {/if}
               </div>
               {#if inflowRows.length === 0}
-                <p class="mt-3 text-xs text-gray-500">No tokens received yet.</p>
+                <p class="mt-3 text-xs text-gray-500">
+                  No tokens received yet.
+                </p>
               {:else}
                 <div class="mt-3 overflow-x-auto">
                   <table class="min-w-full text-left text-xs text-gray-200">
-                    <thead class="text-[11px] uppercase tracking-wide text-gray-500">
+                    <thead
+                      class="text-[11px] uppercase tracking-wide text-gray-500"
+                    >
                       <tr>
                         <th class="py-2 pr-4">Token</th>
                         <th class="py-2 pr-4">Amount</th>
@@ -1382,7 +1396,10 @@ type GlobalTokenRow = {
                         </tr>
                       {/each}
                       <tr class="border-t border-white/10">
-                        <td class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500" colspan="2">
+                        <td
+                          class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500"
+                          colspan="2"
+                        >
                           Total (USD)
                         </td>
                         <td class="py-2 font-semibold text-emerald-200">
@@ -1397,7 +1414,9 @@ type GlobalTokenRow = {
               {/if}
             </div>
             <div class="rounded-xl bg-black/30 p-4">
-              <div class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
+              <div
+                class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400"
+              >
                 <p>Area protocol fees</p>
                 {#if areaFeesUsdTotal}
                   <span class="text-emerald-200">
@@ -1410,7 +1429,9 @@ type GlobalTokenRow = {
               {:else}
                 <div class="mt-3 overflow-x-auto">
                   <table class="min-w-full text-left text-xs text-gray-200">
-                    <thead class="text-[11px] uppercase tracking-wide text-gray-500">
+                    <thead
+                      class="text-[11px] uppercase tracking-wide text-gray-500"
+                    >
                       <tr>
                         <th class="py-2 pr-4">Token</th>
                         <th class="py-2 pr-4">Amount</th>
@@ -1432,7 +1453,10 @@ type GlobalTokenRow = {
                         </tr>
                       {/each}
                       <tr class="border-t border-white/10">
-                        <td class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500" colspan="2">
+                        <td
+                          class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500"
+                          colspan="2"
+                        >
                           Total (USD)
                         </td>
                         <td class="py-2 font-semibold text-emerald-200">
@@ -1447,7 +1471,9 @@ type GlobalTokenRow = {
               {/if}
             </div>
             <div class="rounded-xl bg-black/30 p-4">
-              <div class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400">
+              <div
+                class="flex items-center justify-between text-xs uppercase tracking-wide text-gray-400"
+              >
                 <p>Sale fees</p>
                 {#if saleFeesUsdTotal}
                   <span class="text-emerald-200">
@@ -1456,11 +1482,15 @@ type GlobalTokenRow = {
                 {/if}
               </div>
               {#if saleFeeRows.length === 0}
-                <p class="mt-3 text-xs text-gray-500">No sale fees collected.</p>
+                <p class="mt-3 text-xs text-gray-500">
+                  No sale fees collected.
+                </p>
               {:else}
                 <div class="mt-3 overflow-x-auto">
                   <table class="min-w-full text-left text-xs text-gray-200">
-                    <thead class="text-[11px] uppercase tracking-wide text-gray-500">
+                    <thead
+                      class="text-[11px] uppercase tracking-wide text-gray-500"
+                    >
                       <tr>
                         <th class="py-2 pr-4">Token</th>
                         <th class="py-2 pr-4">Amount</th>
@@ -1482,7 +1512,10 @@ type GlobalTokenRow = {
                         </tr>
                       {/each}
                       <tr class="border-t border-white/10">
-                        <td class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500" colspan="2">
+                        <td
+                          class="py-2 pr-4 text-right text-[11px] uppercase text-gray-500"
+                          colspan="2"
+                        >
                           Total (USD)
                         </td>
                         <td class="py-2 font-semibold text-emerald-200">

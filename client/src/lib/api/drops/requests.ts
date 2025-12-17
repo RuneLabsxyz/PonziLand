@@ -99,7 +99,9 @@ function dateToIso8601(
   const dateParts = parseDateValue(value);
   if (!dateParts) return undefined;
 
-  const date = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day));
+  const date = new Date(
+    Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day),
+  );
   if (
     Number.isNaN(date.getTime()) ||
     date.getUTCFullYear() !== dateParts.year ||

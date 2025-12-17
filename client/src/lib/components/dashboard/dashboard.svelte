@@ -319,12 +319,17 @@
 
       <div class="col-span-full">
         <Card class="shadow-ponzi px-4 py-6">
-          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div
+            class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+          >
             <div class="space-y-1">
-              <p class="text-xs uppercase text-gray-400 tracking-wide">Drop lands</p>
-              <h2 class="text-xl font-semibold text-white">Estimaciones de reinjections</h2>
-              <p class="text-sm text-gray-400">
-access to the panel              </p>
+              <p class="text-xs uppercase text-gray-400 tracking-wide">
+                Drop lands
+              </p>
+              <h2 class="text-xl font-semibold text-white">
+                Estimaciones de reinjections
+              </h2>
+              <p class="text-sm text-gray-400">access to the panel</p>
             </div>
             <a
               class="rounded-full bg-white/10 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white/20"
