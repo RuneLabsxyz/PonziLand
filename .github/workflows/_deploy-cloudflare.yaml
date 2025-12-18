@@ -87,11 +87,11 @@ jobs:
       - name: Promote version as active
         id: promote
         # Promote based on branch and environment:
-        # - main branch: promote mainnet and sepolia
-        # - staging branch: promote next
+        # - main branch: promote next, sepolia, and mainnet-test (staging environments)
+        # - prod branch: promote mainnet (production)
         if: |
-          (github.ref == 'refs/heads/main' && (matrix.environment == 'mainnet' || matrix.environment == 'sepolia')) ||
-          (github.ref == 'refs/heads/staging' && matrix.environment == 'next')
+          (github.ref == 'refs/heads/main' && (matrix.environment == 'next' || matrix.environment == 'sepolia' || matrix.environment == 'mainnet-test')) ||
+          (github.ref == 'refs/heads/prod' && matrix.environment == 'mainnet')
         working-directory: ./client
         run: |
           export VERSION_ID=$(bun wrangler versions list --env ${{ matrix.environment }} --json | jq -r '.[] | select(.annotations."workers/tag" == "${{ steps.vars.outputs.sha_short }}") | .id')
@@ -110,11 +110,11 @@ jobs:
         if: always()
         run: |
           # Determine if deployment was successful
-          if [[ "${{ steps.upload.outputs.upload_success }}" == "true" ]] && ([[ "${{ github.ref }}" != "refs/heads/main" ]] && [[ "${{ github.ref }}" != "refs/heads/staging" ]] || [[ "${{ steps.promote.outputs.promote_success }}" == "true" ]]); then
+          if [[ "${{ steps.upload.outputs.upload_success }}" == "true" ]] && ([[ "${{ github.ref }}" != "refs/heads/main" ]] && [[ "${{ github.ref }}" != "refs/heads/prod" ]] || [[ "${{ steps.promote.outputs.promote_success }}" == "true" ]]); then
             DEPLOYMENT_SUCCESS="true"
 
             # Determine URL based on whether it's promoted or preview
-            if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
               # Production URLs for promoted builds
               case "${{ matrix.environment }}" in
                 "mainnet") DEPLOYMENT_URL="https://play.ponzi.land" ;;
