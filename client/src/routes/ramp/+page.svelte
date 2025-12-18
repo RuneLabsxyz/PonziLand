@@ -24,9 +24,6 @@
   import BigNumber from 'bignumber.js';
   import { debounce } from '$lib/utils/debounce.svelte';
   import type { QuoteResponse } from './api/fetch-quote/+server';
-  import CoinAnimation from '$lib/components/ramp/coin-animation.svelte';
-  import Particles from '$lib/components/ramp/particles.svelte';
-  import CharacterBox from '$lib/components/ramp/character-box.svelte';
   import { onMount } from 'svelte';
   import WalletSetups from './WalletSetups.svelte';
 
@@ -52,7 +49,7 @@
 
   let network = $derived(
     data.networks?.find(
-      (network) =>
+      (network: NetworkWithTokens.Data) =>
         Number(network.chain_id) === Number((provider.current as any)?.chainId),
     ),
   );

@@ -5,11 +5,14 @@
   import { setupAccount } from '$lib/contexts/account.svelte';
   import { setupFaro } from '$lib/contexts/faro';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
+  import type { Snippet } from 'svelte';
 
   import '../app.css';
   setupFaro();
   setupAccount();
   setupSocialink();
+
+  let { children }: { children: Snippet } = $props();
 
   let isMobile = $state(false);
 
@@ -57,5 +60,5 @@
   <MobileBlock />
 {:else}
   <SelectWalletModal />
-  <slot />
+  {@render children()}
 {/if}

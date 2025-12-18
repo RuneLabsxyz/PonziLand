@@ -2,13 +2,20 @@
   import accountDataProvider, { setup } from '$lib/account.svelte';
   import { Button } from '$lib/components/ui/button';
   import { useDojo } from '$lib/contexts/dojo';
-  import { ENABLE_TOKEN_DROP } from '$lib/flags';
+  import { ENABLE_BRIDGE, ENABLE_TOKEN_DROP } from '$lib/flags';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { usernameStore } from '$lib/stores/username.store.svelte';
   import { padAddress, shortenHex } from '$lib/utils';
   import type { Snippet } from 'svelte';
   import WalletBalance from './wallet-balance.svelte';
   import SetUsernameButton from '$lib/components/socialink/SetUsernameButton.svelte';
+  import WalletPanel from '../bridge/wallet-panel.svelte';
+  import TransferPanel from '../bridge/transfer-panel.svelte';
+  import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
+  import type { TokenInfo } from '$lib/bridge/types';
+  import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
+  import { accountState } from '$lib/account.svelte';
+  import { onMount } from 'svelte';
 
   let {
     setCustomControls,
@@ -20,6 +27,120 @@
   setup();
 
   let copied = $state(false);
+
+  // Bridge mode state
+  let bridgeMode = $state(false);
+  let selectedToken = $state<string | null>(null);
+  let transferDirection = $state<'toGame' | 'toSolana' | null>(null);
+  let sourceBalance = $state('0');
+
+  const NORMAL_STYLES =
+    'width: 320px; height: auto; top: 0px; right: 0px; transform: none;';
+  const BRIDGE_STYLES =
+    'width: 700px; height: auto; top: 0px; right: 0px; transform: none;';
+
+  // Get bridgable token symbols (tokens that exist on BOTH chains)
+  const bridgableSymbols = $derived.by((): string[] => {
+    if (!bridgeStore.config) return [];
+
+    const solanaTokens = bridgeStore.config.tokens
+      .filter((t: TokenInfo) => t.chainName.toLowerCase().includes('solana'))
+      .map((t: TokenInfo) => t.symbol);
+
+    const starknetTokens = bridgeStore.config.tokens
+      .filter((t: TokenInfo) => t.chainName.toLowerCase().includes('starknet'))
+      .map((t: TokenInfo) => t.symbol);
+
+    return [
+      ...new Set(
+        solanaTokens.filter((s: string) => starknetTokens.includes(s)),
+      ),
+    ];
+  });
+
+  // Fetch source balance when token/direction changes
+  $effect(() => {
+    if (selectedToken && transferDirection) {
+      fetchSourceBalance();
+    } else {
+      sourceBalance = '0';
+    }
+  });
+
+  async function fetchSourceBalance() {
+    if (!selectedToken || !transferDirection) return;
+
+    const isToGame = transferDirection === 'toGame';
+    const sourceChain = isToGame ? 'solanamainnet' : 'starknet';
+    const sourceAddress = isToGame
+      ? phantomWalletStore.walletAddress
+      : accountState.address;
+
+    if (!sourceAddress) {
+      sourceBalance = '0';
+      return;
+    }
+
+    try {
+      const tokenBalance = await bridgeStore.getBalance(
+        sourceChain,
+        selectedToken,
+        sourceAddress,
+      );
+      if (tokenBalance) {
+        sourceBalance = tokenBalance.formatted;
+      } else {
+        sourceBalance = '0';
+      }
+    } catch (err) {
+      console.error('Error fetching source balance:', err);
+      sourceBalance = '0';
+    }
+  }
+
+  function handleSolanaTokenSelect(symbol: string) {
+    selectedToken = symbol;
+    transferDirection = 'toGame';
+  }
+
+  function handleStarknetTokenSelect(symbol: string) {
+    selectedToken = symbol;
+    transferDirection = 'toSolana';
+  }
+
+  // Handle clicking a bridgable token in the wallet balance (enables bridge mode)
+  function handleStarknetBridgeClick(symbol: string) {
+    if (!bridgeMode) {
+      // Enable bridge mode first
+      bridgeMode = true;
+      widgetsStore.updateWidget('wallet', { fixedStyles: BRIDGE_STYLES });
+      phantomWalletStore.initialize();
+    }
+    // Select the token for transfer to Solana
+    selectedToken = symbol;
+    transferDirection = 'toSolana';
+  }
+
+  // Ensure wallet starts with normal width on mount
+  onMount(() => {
+    widgetsStore.updateWidget('wallet', { fixedStyles: NORMAL_STYLES });
+  });
+
+  function toggleBridgeMode() {
+    bridgeMode = !bridgeMode;
+    if (bridgeMode) {
+      widgetsStore.updateWidget('wallet', { fixedStyles: BRIDGE_STYLES });
+      phantomWalletStore.initialize();
+      // Load bridge config
+      bridgeStore.loadConfig().catch((err) => {
+        console.error('Failed to load bridge config:', err);
+      });
+    } else {
+      widgetsStore.updateWidget('wallet', { fixedStyles: NORMAL_STYLES });
+      selectedToken = null;
+      transferDirection = null;
+    }
+  }
 
   function copy() {
     try {
@@ -48,6 +169,10 @@
 
   function openSwapWidget() {
     widgetsStore.updateWidget('swap', { isOpen: true });
+  }
+
+  function openBridgeWidget() {
+    toggleBridgeMode();
   }
 
   const { accountManager } = useDojo();
@@ -136,8 +261,62 @@
   {/if}
 
   <div class="flex flex-col">
-    <WalletBalance {setCustomControls} />
-    <Button size="md" class="w-full" onclick={openSwapWidget}>SWAP</Button>
+    <div class="flex gap-3">
+      {#if bridgeMode && ENABLE_BRIDGE}
+        <!-- Left: Solana Wallet Panel (shown when bridge mode is active) -->
+        <div class="flex-1">
+          {#if !bridgeStore.isReady}
+            <div class="flex flex-col items-center justify-center py-8 gap-2">
+              <span class="text-gray-400 text-sm">Initializing bridge...</span>
+            </div>
+          {:else if bridgeStore.configError}
+            <div class="p-3 bg-red-800/20 rounded text-red-400 text-sm">
+              Bridge error: {bridgeStore.configError}
+            </div>
+          {:else}
+            <WalletPanel
+              chain="solana"
+              title="Solana Wallet"
+              {bridgableSymbols}
+              {selectedToken}
+              onTokenSelect={handleSolanaTokenSelect}
+            />
+          {/if}
+        </div>
+      {/if}
+
+      <!-- Right: Game Wallet (always shown) -->
+      <div class={bridgeMode && ENABLE_BRIDGE ? 'flex-1' : 'w-full'}>
+        <WalletBalance
+          {setCustomControls}
+          bridgableSymbols={ENABLE_BRIDGE ? bridgableSymbols : []}
+          onBridgeTokenClick={handleStarknetBridgeClick}
+          title={bridgeMode && ENABLE_BRIDGE ? 'Game Wallet' : undefined}
+        />
+      </div>
+    </div>
+
+    {#if bridgeMode && ENABLE_BRIDGE && bridgeStore.isReady && !bridgeStore.configError}
+      <!-- Transfer Panel (only in bridge mode) -->
+      <TransferPanel {selectedToken} {transferDirection} {sourceBalance} />
+
+      <!-- Close bridge button -->
+      <div class="flex gap-2 mt-2">
+        <Button size="md" class="flex-1" onclick={toggleBridgeMode}>
+          ← Close Bridge
+        </Button>
+      </div>
+    {:else}
+      <!-- Action buttons (normal mode or bridge not ready) -->
+      <div class="flex gap-2">
+        <Button size="md" class="flex-1" onclick={openSwapWidget}>SWAP</Button>
+        {#if ENABLE_BRIDGE}
+          <Button size="md" class="flex-1" onclick={openBridgeWidget}>
+            {bridgeMode ? 'BRIDGING...' : 'BRIDGE'}
+          </Button>
+        {/if}
+      </div>
+    {/if}
   </div>
 {:else}
   <Button

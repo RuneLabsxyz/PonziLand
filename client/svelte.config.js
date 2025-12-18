@@ -23,6 +23,7 @@ const profiles = {
     BYPASS_TOKEN: process.env.BYPASS_TOKEN,
     PUBLIC_SOCIALINK_URL: process.env.SOCIALINK_URL,
     PUBLIC_PONZI_API_URL: process.env.PONZI_API_URL,
+    PUBLIC_BRIDGE_API_URL: process.env.BRIDGE_API_URL,
     PUBLIC_FARO_COLLECTOR_URL: process.env.FARO_COLLECTOR_URL,
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: process.env.POSTHOG_KEY,
@@ -35,7 +36,8 @@ const profiles = {
     PUBLIC_AVNU_URL: 'https://sepolia.api.avnu.fi',
     PUBLIC_EKUBO_URL: 'https://sepolia-api.ekubo.org',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land/api',
+    PUBLIC_PONZI_API_URL: 'https://api-sepolia.ponzi.land',
+    PUBLIC_BRIDGE_API_URL: 'http://localhost:5173',
     PUBLIC_DOJO_CHAIN_ID: 'SN_KATANA',
     PUBLIC_DOJO_BURNER_ADDRESS:
       '0x127fd5f1fe78a71f8bcd1fec63e3fe2f0486b6ecd5c86a0466c3a21fa5cfcec',
@@ -61,7 +63,8 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-sepolia/api',
+    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-sepolia/api/',
+    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
@@ -80,6 +83,7 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://api.ponzi.land/api',
+    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
@@ -99,6 +103,7 @@ const profiles = {
     PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL: 'http://localhost:3031',
+    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
@@ -117,7 +122,8 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-mainnet-temp/api',
+    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-mainnet/api/',
+    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
@@ -138,6 +144,7 @@ const profiles = {
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL:
       'https://' + process.env['DEPLOY_NAME'] + '.ponzis.fun/api',
+    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
@@ -158,6 +165,7 @@ const profiles = {
     PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink-sepolia.ponzi.land',
     PUBLIC_PONZI_API_URL: 'https://play.ponzis.fun/api',
+    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,

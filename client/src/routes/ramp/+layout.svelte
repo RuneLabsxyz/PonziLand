@@ -3,15 +3,18 @@
   import CoinAnimation from '$lib/components/ramp/coin-animation.svelte';
   import type { LayoutServerData } from './$types';
   import type { AccountInterface } from 'starknet';
+  import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
+  import type { Snippet } from 'svelte';
 
   import { address as ethAddress, provider } from '$lib/ramp/stores.svelte';
   import { AccountManager, setupAccount } from '$lib/contexts/account.svelte';
 
-  let { children, data }: { children: any; data: LayoutServerData } = $props();
+  let { children, data }: { children: Snippet; data: LayoutServerData } =
+    $props();
 
   let network = $derived(
     data.networks?.find(
-      (network) =>
+      (network: NetworkWithTokens.Data) =>
         Number(network.chain_id) === Number((provider.current as any)?.chainId),
     ),
   );
@@ -59,7 +62,7 @@
       <p>Network: {network?.display_name}</p>
       <p>
         Available tokens: {network?.tokens
-          ?.map((token) => token.symbol)
+          ?.map((token: NetworkWithTokens.Data.Token) => token.symbol)
           .join(', ')}
       </p>
       <p>ETH Address : {truncateAddress(ethAddress.current)}</p>

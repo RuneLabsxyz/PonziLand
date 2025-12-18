@@ -21,6 +21,7 @@
   import WidgetTournament from './tournament/widget-tournament.svelte';
   import WidgetUsername from './username/widget-username.svelte';
   import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
+  import WidgetHistory from './history/widget-history.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -71,6 +72,8 @@
           <WidgetTournament {setCustomTitle} {setCustomControls} />
         {:else if type === 'username'}
           <WidgetUsername />
+        {:else if type === 'history'}
+          <WidgetHistory />
         {/if}
       {/snippet}
     </Draggable>
