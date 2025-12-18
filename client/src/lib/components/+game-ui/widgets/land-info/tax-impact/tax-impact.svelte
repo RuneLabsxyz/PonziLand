@@ -15,10 +15,13 @@
   import PaybackTimeBreakdown from './payback-time-breakdown.svelte';
   import SellProfitBreakdown from './sell-profit-breakdown.svelte';
   import { Card } from '$lib/components/ui/card';
+  import { ChevronDown } from 'lucide-svelte';
 
   // Fee calculation constants (matching smart contract values)
   const SCALE_FACTOR_FOR_FEE = 10_000_000;
   const BUY_FEE_RATE = 500_000; // 5% fee (500,000 / 10,000,000)
+
+  let isExpanded = $state(false);
 
   let {
     sellAmountVal = undefined,
@@ -527,124 +530,153 @@
   });
 </script>
 
-<div class="w-full flex flex-col gap-2">
-  <h2 class="font-ponzi-number">Neighborhood Tax Impact</h2>
-  <p class="leading-none -mt-1 opacity-75">
-    You can get an estimation of your land survival time in function of its
-    neighbors
-  </p>
+<div class="bg-slate-800/30 border border-slate-600/30 rounded text-md mt-3">
+  <!-- Collapsed Header -->
+  <button
+    onclick={() => (isExpanded = !isExpanded)}
+    class="w-full flex items-center justify-between p-3 hover:bg-slate-700/20 transition-colors"
+  >
+    <div class="flex flex-col items-start gap-1">
+      <span class="font-semibold text-xl cursor-pointer"
+        >Neighborhood Tax Impact</span
+      >
+      <span class="leading-none text-sm text-left opacity-75">
+        You can get an estimation of your land survival time in function of its
+        neighbors
+      </span>
+    </div>
 
-  {#if hasConversionError}
     <div
-      class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs"
+      class="transition-transform duration-200"
+      class:rotate-180={isExpanded}
     >
-      ⚠️ Cannot convert token prices - calculations may be inaccurate
+      <ChevronDown size={16} class="text-slate-400" />
     </div>
-  {/if}
+  </button>
 
-  <!-- Horizontal Slider Above -->
-  <div class="mb-4 w-full">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2">
-        <span class="opacity-50 text-sm">Neighbors:</span>
-
-        <PonziSlider bind:value={nbNeighbors} />
-      </div>
-
-      <div
-        class="{sliderNetYieldInBaseToken &&
-        sliderNetYieldInBaseToken.rawValue().isNegative()
-          ? 'text-red-500'
-          : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-xl"
-      >
-        <span>
-          {#if sliderNetYieldInBaseToken}
-            {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
-            {sliderNetYieldInBaseToken}
-          {:else}
-            -
-          {/if}
-          {baseToken?.symbol}/h
-        </span>
-        <TokenAvatar token={baseToken} class="border border-white w-3 h-3" />
-      </div>
-    </div>
-  </div>
-
-  <!-- Grid and Details Below -->
-  <div class="flex gap-4">
-    <div class="flex-shrink-0">
-      {#if neighbors}
-        <BuyInsightsNeighborGrid {neighbors} {nbNeighbors} {selectedToken} />
-      {/if}
-    </div>
-
-    <ScrollArea class="flex flex-col flex-1 gap-2 max-h-48 pr-2">
-      <PaybackTimeBreakdown
-        {paybackTimeString}
-        {paybackTimeSeconds}
-        {currentBuyPrice}
-        landToken={land.token}
-        {baseToken}
-        {nbNeighbors}
-        netYieldPerHour={sliderNetYieldInBaseToken || undefined}
-        currentBuyPriceInBaseToken={originalCostInBaseToken || undefined}
-        grossYieldPerHour={sliderNeighborsYieldInBaseToken || undefined}
-        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
-      />
-
-      <NukeTimeBreakdown
-        nukeTimeString={sliderNukeTimeString}
-        nukeTimeSeconds={sliderNukeTimeSeconds}
-        stakeAmount={stakeAmountVal
-          ? CurrencyAmount.fromScaled(stakeAmountVal, selectedToken)
-          : land?.stakeAmount}
-        {selectedToken}
-        {baseToken}
-        {nbNeighbors}
-        hourlyCost={sliderNeighborsCost}
-        hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
-        {taxPerNeighbor}
-      />
-      <hr class="my-1 opacity-50" />
-
-      {#if sellAmountVal && selectedToken && baseToken}
-        <SellProfitBreakdown
-          {sellAmountVal}
-          {selectedToken}
-          {baseToken}
-          landToken={land.token}
-          {sellerFeeAmount}
-          netSellerProceeds={netSellerProceedsInSelectedToken}
-          originalCost={originalCostInLandToken}
-          originalCostInBaseToken={originalCostInBaseToken || undefined}
-          {actualSellBenefit}
-        />
-      {/if}
-    </ScrollArea>
-  </div>
-
-  <!-- Advisor Warnings -->
-  {#if advisorWarnings.length > 0}
-    {#each advisorWarnings as warning}
-      <Card
-        class="ponzi-bg bg-blend-overlay m-0 mt-4 p-3 {warning.type === 'strong'
-          ? 'bg-red-600/50'
-          : 'bg-orange-300/50'}"
-      >
-        <div class="flex justify-stretch items-start">
-          <img
-            src="/ui/icons/Icon_Shield{warning.type === 'strong'
-              ? 'Red'
-              : 'Orange'}.png"
-            alt="Shield {warning.type === 'strong' ? 'Red' : 'Orange'} Icon"
-            class="w-8 h-8 mr-2 flex-shrink-0"
-          />
-          <span class="text-lg leading-tight">
-            {warning.message}
-          </span>
+  {#if isExpanded}
+    <div class="p-3 border-t border-slate-600/30 flex flex-col gap-2">
+      {#if hasConversionError}
+        <div
+          class="bg-yellow-900/20 border border-yellow-600/30 rounded p-2 text-yellow-300 text-xs"
+        >
+          ⚠️ Cannot convert token prices - calculations may be inaccurate
         </div>
-      </Card>
-    {/each}
+      {/if}
+
+      <!-- Horizontal Slider Above -->
+      <div class="mb-4 w-full">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="opacity-50 text-sm">Neighbors:</span>
+
+            <PonziSlider bind:value={nbNeighbors} />
+          </div>
+
+          <div
+            class="{sliderNetYieldInBaseToken &&
+            sliderNetYieldInBaseToken.rawValue().isNegative()
+              ? 'text-red-500'
+              : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-xl"
+          >
+            <span>
+              {#if sliderNetYieldInBaseToken}
+                {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
+                {sliderNetYieldInBaseToken}
+              {:else}
+                -
+              {/if}
+              {baseToken?.symbol}/h
+            </span>
+            <TokenAvatar
+              token={baseToken}
+              class="border border-white w-3 h-3"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Grid and Details Below -->
+      <div class="flex gap-4">
+        <div class="flex-shrink-0">
+          {#if neighbors}
+            <BuyInsightsNeighborGrid
+              {neighbors}
+              {nbNeighbors}
+              {selectedToken}
+            />
+          {/if}
+        </div>
+
+        <ScrollArea class="flex flex-col flex-1 gap-2 max-h-48 pr-2">
+          <PaybackTimeBreakdown
+            {paybackTimeString}
+            {paybackTimeSeconds}
+            {currentBuyPrice}
+            landToken={land.token}
+            {baseToken}
+            {nbNeighbors}
+            netYieldPerHour={sliderNetYieldInBaseToken || undefined}
+            currentBuyPriceInBaseToken={originalCostInBaseToken || undefined}
+            grossYieldPerHour={sliderNeighborsYieldInBaseToken || undefined}
+            hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
+          />
+
+          <NukeTimeBreakdown
+            nukeTimeString={sliderNukeTimeString}
+            nukeTimeSeconds={sliderNukeTimeSeconds}
+            stakeAmount={stakeAmountVal
+              ? CurrencyAmount.fromScaled(stakeAmountVal, selectedToken)
+              : land?.stakeAmount}
+            {selectedToken}
+            {baseToken}
+            {nbNeighbors}
+            hourlyCost={sliderNeighborsCost}
+            hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
+            {taxPerNeighbor}
+          />
+          <hr class="my-1 opacity-50" />
+
+          {#if sellAmountVal && selectedToken && baseToken}
+            <SellProfitBreakdown
+              {sellAmountVal}
+              {selectedToken}
+              {baseToken}
+              landToken={land.token}
+              {sellerFeeAmount}
+              netSellerProceeds={netSellerProceedsInSelectedToken}
+              originalCost={originalCostInLandToken}
+              originalCostInBaseToken={originalCostInBaseToken || undefined}
+              {actualSellBenefit}
+            />
+          {/if}
+        </ScrollArea>
+      </div>
+
+      <!-- Advisor Warnings -->
+      {#if advisorWarnings.length > 0}
+        {#each advisorWarnings as warning}
+          <Card
+            class="ponzi-bg bg-blend-overlay m-0 mt-4 p-3 {warning.type ===
+            'strong'
+              ? 'bg-red-600/50'
+              : 'bg-orange-300/50'}"
+          >
+            <div class="flex justify-stretch items-start">
+              <img
+                src="/ui/icons/Icon_Shield{warning.type === 'strong'
+                  ? 'Red'
+                  : 'Orange'}.png"
+                alt="Shield {warning.type === 'strong' ? 'Red' : 'Orange'} Icon"
+                class="w-8 h-8 mr-2 flex-shrink-0"
+              />
+              <span class="text-lg leading-tight">
+                {warning.message}
+              </span>
+            </div>
+          </Card>
+        {/each}
+      {/if}
+    </div>
   {/if}
 </div>
