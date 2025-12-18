@@ -248,17 +248,52 @@
     }
   }
 
-  // Reset manual edit flags on blur
-  function onSellPriceBlur() {
-    setTimeout(() => {
-      isManualSellPriceEdit = false;
-    }, 0);
+  // Track if user is actively interacting with sliders
+  let isUserDraggingSellPriceSlider = $state(false);
+  let isUserDraggingStakeSlider = $state(false);
+
+  // Called when user starts interacting with sell price slider
+  function onSellPriceSliderPointerDown() {
+    isUserDraggingSellPriceSlider = true;
+    isManualSellPriceEdit = false;
   }
 
-  function onStakeBlur() {
-    setTimeout(() => {
-      isManualStakeEdit = false;
-    }, 0);
+  function onSellPriceSliderPointerUp() {
+    isUserDraggingSellPriceSlider = false;
+  }
+
+  // Called when user starts interacting with stake slider
+  function onStakeSliderPointerDown() {
+    isUserDraggingStakeSlider = true;
+    isManualStakeEdit = false;
+  }
+
+  function onStakeSliderPointerUp() {
+    isUserDraggingStakeSlider = false;
+  }
+
+  // Slider value change handlers - only update if user is dragging
+  function onSellPriceSliderChange(value: number) {
+    if (isUserDraggingSellPriceSlider) {
+      sellPricePercent = value;
+    }
+  }
+
+  function onStakeSliderChange(value: number) {
+    if (isUserDraggingStakeSlider) {
+      stakePercent = value;
+    }
+  }
+
+  // Reset manual edit flag when preset is clicked
+  function onSellPricePresetClick(preset: number) {
+    isManualSellPriceEdit = false;
+    sellPricePercent = preset;
+  }
+
+  function onStakePresetClick(preset: number) {
+    isManualStakeEdit = false;
+    stakePercent = preset;
   }
 
   let stakeAmount: CurrencyAmount = $derived.by(() => {
@@ -855,7 +890,7 @@
                     'border-white/30': sellPricePercent !== preset,
                   },
                 ]}
-                onclick={() => (sellPricePercent = preset)}
+                onclick={() => onSellPricePresetClick(preset)}
               >
                 {preset >= 0 ? '+' : ''}{preset}%
               </button>
@@ -863,15 +898,22 @@
           </div>
 
           <!-- Slider -->
-          <Slider
-            type="single"
-            min={-50}
-            max={100}
-            step={1}
-            value={sellPricePercent}
-            onValueChange={(v) => (sellPricePercent = v)}
-            class="w-full"
-          />
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            onpointerdown={onSellPriceSliderPointerDown}
+            onpointerup={onSellPriceSliderPointerUp}
+            onpointerleave={onSellPriceSliderPointerUp}
+          >
+            <Slider
+              type="single"
+              min={-50}
+              max={100}
+              step={1}
+              value={sellPricePercent}
+              onValueChange={onSellPriceSliderChange}
+              class="w-full"
+            />
+          </div>
 
           <!-- Value display -->
           <div class="flex gap-2 items-center">
@@ -880,7 +922,6 @@
               type="number"
               value={sellPrice}
               oninput={(e) => onSellPriceInput(e.currentTarget.value)}
-              onblur={onSellPriceBlur}
               class={['flex-1', { 'border-red-500': sellPriceError }]}
             />
             <span class="text-sm text-gray-400 whitespace-nowrap">
@@ -921,7 +962,7 @@
                     'border-white/30': stakePercent !== preset,
                   },
                 ]}
-                onclick={() => (stakePercent = preset)}
+                onclick={() => onStakePresetClick(preset)}
               >
                 {preset >= 100 ? `${preset / 100}x` : `${preset}%`}
               </button>
@@ -929,15 +970,22 @@
           </div>
 
           <!-- Slider -->
-          <Slider
-            type="single"
-            min={10}
-            max={1000}
-            step={10}
-            value={stakePercent}
-            onValueChange={(v) => (stakePercent = v)}
-            class="w-full"
-          />
+          <!-- svelte-ignore a11y_no_static_element_interactions -->
+          <div
+            onpointerdown={onStakeSliderPointerDown}
+            onpointerup={onStakeSliderPointerUp}
+            onpointerleave={onStakeSliderPointerUp}
+          >
+            <Slider
+              type="single"
+              min={10}
+              max={1000}
+              step={10}
+              value={stakePercent}
+              onValueChange={onStakeSliderChange}
+              class="w-full"
+            />
+          </div>
 
           <!-- Value display -->
           <div class="flex gap-2 items-center">
@@ -946,7 +994,6 @@
               type="number"
               value={stake}
               oninput={(e) => onStakeInput(e.currentTarget.value)}
-              onblur={onStakeBlur}
               class={['flex-1', { 'border-red-500': stakeAmountError }]}
             />
             <span class="text-sm text-gray-400 whitespace-nowrap">
