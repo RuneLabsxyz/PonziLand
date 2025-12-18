@@ -220,33 +220,38 @@
   function onSellPriceInput(value: string) {
     isManualSellPriceEdit = true;
     sellPrice = value;
-
-    // Calculate new percentage from manual input (no clamping)
-    if (basePriceInSelectedToken && value !== '') {
-      const inputValue = parseFloat(value);
-      const baseValue = basePriceInSelectedToken.rawValue().toNumber();
-      if (!isNaN(inputValue) && baseValue > 0) {
-        const newPercent = ((inputValue - baseValue) / baseValue) * 100;
-        sellPricePercent = newPercent;
-      }
-    }
+    // Don't update sellPricePercent here - let the slider show closest position via displaySellPricePercent
   }
 
   // Handler for manual stake input
   function onStakeInput(value: string) {
     isManualStakeEdit = true;
     stake = value;
+    // Don't update stakePercent here - let the slider show closest position via displayStakePercent
+  }
 
-    // Calculate new percentage from manual input (no clamping)
-    if (value !== '') {
-      const sellPriceNum = parseFloat(sellPrice);
-      const stakeNum = parseFloat(value);
-      if (!isNaN(sellPriceNum) && !isNaN(stakeNum) && sellPriceNum > 0) {
-        const newPercent = (stakeNum / sellPriceNum) * 100;
-        stakePercent = newPercent;
+  // Derived slider display values - calculated from input when in manual mode
+  let displaySellPricePercent = $derived.by(() => {
+    if (isManualSellPriceEdit && sellPrice && basePriceInSelectedToken) {
+      const inputValue = parseFloat(sellPrice);
+      const baseValue = basePriceInSelectedToken.rawValue().toNumber();
+      if (!isNaN(inputValue) && baseValue > 0) {
+        return ((inputValue - baseValue) / baseValue) * 100;
       }
     }
-  }
+    return sellPricePercent;
+  });
+
+  let displayStakePercent = $derived.by(() => {
+    if (isManualStakeEdit && stake && sellPrice) {
+      const sellPriceNum = parseFloat(sellPrice);
+      const stakeNum = parseFloat(stake);
+      if (!isNaN(sellPriceNum) && !isNaN(stakeNum) && sellPriceNum > 0) {
+        return (stakeNum / sellPriceNum) * 100;
+      }
+    }
+    return stakePercent;
+  });
 
   // Track if user is actively interacting with sliders
   let isUserDraggingSellPriceSlider = $state(false);
@@ -909,7 +914,7 @@
               min={-50}
               max={100}
               step={1}
-              value={sellPricePercent}
+              value={displaySellPricePercent}
               onValueChange={onSellPriceSliderChange}
               class="w-full"
             />
@@ -981,7 +986,7 @@
               min={10}
               max={1000}
               step={10}
-              value={stakePercent}
+              value={displayStakePercent}
               onValueChange={onStakeSliderChange}
               class="w-full"
             />
