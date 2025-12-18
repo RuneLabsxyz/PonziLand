@@ -1,23 +1,38 @@
+// Midgard POC Game State
+// Implements yellow paper economics with time-based burn/inflation
+
 import type { Land, LandWithFactory, Factory, ChallengeResult } from './types';
 import { hasFactory } from './types';
 import {
   INITIAL_GARD_BALANCE,
   INITIAL_LANDS,
   TICK_INTERVAL_MS,
+  BASE_TIME_PER_REAL_SECOND,
   STAKE_DECREASE_RATE,
-  FACTORY_MINT_RATE,
-  FACTORY_BURN_RATE,
-  CHALLENGE_WIN_MULTIPLIER,
-  CHALLENGE_SUPPLY_SHARE,
+  LOSS_BURN_REDUCTION,
+  WIN_PAYOUT_MULTIPLIER,
 } from './constants';
+import {
+  calculateBurn,
+  calculateInflation,
+  calculateEffectiveBurn,
+  calculateAvailableInflation,
+  calculateTicketCost,
+  canChallenge,
+  calculateWinReward,
+  playGame,
+} from './formulas';
 
 export class MidgardGameStore {
   // Reactive state using Svelte 5 runes
   public lands = $state<Land[]>(structuredClone(INITIAL_LANDS));
   public playerGardBalance = $state<number>(INITIAL_GARD_BALANCE);
   public isPlaying = $state<boolean>(false);
-  public timeMultiplier = $state<number>(1);
+  public timeSpeed = $state<number>(1);
   public selectedLandId = $state<number | null>(null);
+
+  // Simulation time in game seconds
+  public simulationTime = $state<number>(0);
 
   // For factory creation flow
   public pendingFactoryScore = $state<number | null>(null);
@@ -27,6 +42,7 @@ export class MidgardGameStore {
   public lastChallengeResult = $state<ChallengeResult | null>(null);
 
   private tickInterval: ReturnType<typeof setInterval> | null = null;
+  private lastRealTime: number = 0;
 
   constructor() {}
 
@@ -36,18 +52,54 @@ export class MidgardGameStore {
     return this.lands.find((l) => l.id === this.selectedLandId) ?? null;
   }
 
+  // Get factory stats for a land (computed on demand using yellow paper formulas)
+  public getFactoryStats(land: Land) {
+    if (!hasFactory(land)) return null;
+
+    const factory = land.factory;
+    const elapsed = this.simulationTime - factory.createdAt;
+
+    const burn = calculateBurn(elapsed);
+    const inflation = calculateInflation(elapsed);
+    const effectiveBurn = calculateEffectiveBurn(
+      elapsed,
+      factory.burnReductions,
+    );
+    const availableInflation = calculateAvailableInflation(
+      elapsed,
+      factory.inflationPaidOut,
+    );
+    const ticketCost = calculateTicketCost(effectiveBurn);
+    const challengeAllowed = canChallenge(availableInflation, ticketCost);
+    const potentialWinReward = calculateWinReward(ticketCost);
+
+    return {
+      elapsed,
+      burn,
+      inflation,
+      effectiveBurn,
+      availableInflation,
+      ticketCost,
+      challengeAllowed,
+      potentialWinReward,
+      score: factory.score,
+      stakedGard: factory.stakedGard,
+    };
+  }
+
   // Time control methods
   public togglePlay() {
     this.isPlaying = !this.isPlaying;
     if (this.isPlaying) {
+      this.lastRealTime = performance.now();
       this.startTick();
     } else {
       this.stopTick();
     }
   }
 
-  public setTimeMultiplier(value: number) {
-    this.timeMultiplier = Math.max(0.5, Math.min(3, value));
+  public setTimeSpeed(value: number) {
+    this.timeSpeed = Math.max(1, Math.min(10, value));
   }
 
   // Land selection
@@ -59,16 +111,16 @@ export class MidgardGameStore {
     this.lastChallengeResult = null;
   }
 
-  // Roll a random score for factory creation
+  // Roll a random score for factory creation (mini-game)
   public rollFactoryScore(): number {
-    const score = Math.floor(Math.random() * 101); // 0-100
+    const score = playGame();
     this.pendingFactoryScore = score;
     return score;
   }
 
-  // Roll a random score for challenge
+  // Roll a random score for challenge (mini-game)
   public rollChallengeScore(): number {
-    const score = Math.floor(Math.random() * 101); // 0-100
+    const score = playGame();
     this.challengeScore = score;
     return score;
   }
@@ -88,13 +140,13 @@ export class MidgardGameStore {
     // Deduct from player balance
     this.playerGardBalance -= lockAmount;
 
-    // Create factory on land
+    // Create factory on land with yellow paper structure
     const factory: Factory = {
-      lockedGard: lockAmount,
-      initialLockedGard: lockAmount,
-      mintedSupply: 0,
-      burntAmount: 0,
+      createdAt: this.simulationTime,
+      stakedGard: lockAmount,
       score: this.pendingFactoryScore,
+      burnReductions: 0,
+      inflationPaidOut: 0,
     };
 
     const landWithFactory: LandWithFactory = {
@@ -110,14 +162,9 @@ export class MidgardGameStore {
     return true;
   }
 
-  // Challenge system
-  public challenge(
-    factoryLandId: number,
-    cost: number,
-  ): ChallengeResult | null {
+  // Challenge system (yellow paper implementation)
+  public challenge(factoryLandId: number): ChallengeResult | null {
     if (this.challengeScore === null) return null;
-    if (cost <= 0) return null;
-    if (this.playerGardBalance < cost) return null;
 
     const landIndex = this.lands.findIndex((l) => l.id === factoryLandId);
     if (landIndex === -1) return null;
@@ -125,39 +172,52 @@ export class MidgardGameStore {
     const land = this.lands[landIndex];
     if (!hasFactory(land)) return null;
 
+    const stats = this.getFactoryStats(land);
+    if (!stats) return null;
+
+    const ticketCost = stats.ticketCost;
+
+    // Check player can afford
+    if (this.playerGardBalance < ticketCost) return null;
+
+    // Check liquidity constraint
+    if (!stats.challengeAllowed) return null;
+
     const playerScore = this.challengeScore;
     const factoryScore = land.factory.score;
     const won = playerScore > factoryScore;
 
     let gardChange: number;
 
-    if (won) {
-      // Win: get back 2x cost + 50% of factory's minted supply
-      const winnings = cost * CHALLENGE_WIN_MULTIPLIER;
-      const supplyShare = land.factory.mintedSupply * CHALLENGE_SUPPLY_SHARE;
-      gardChange = winnings + supplyShare;
+    // Deduct ticket cost (burned in both cases initially)
+    this.playerGardBalance -= ticketCost;
 
-      // Update factory - reduce minted supply
+    if (won) {
+      // Win: challenger earns gamma * Ticket from factory's inflation
+      const winReward = calculateWinReward(ticketCost);
+      gardChange = winReward;
+
+      // Update factory - add to inflation paid out
       this.lands[landIndex] = {
         ...land,
         factory: {
           ...land.factory,
-          mintedSupply: land.factory.mintedSupply - supplyShare,
+          inflationPaidOut: land.factory.inflationPaidOut + winReward,
         },
       };
 
-      this.playerGardBalance += gardChange;
+      this.playerGardBalance += winReward;
     } else {
-      // Lose: cost is burned, factory recovers burnt tokens
-      gardChange = -cost;
-      this.playerGardBalance -= cost;
+      // Lose: ticket is burned, beta fraction reduces factory's burn obligation
+      gardChange = -ticketCost;
+      const burnReduction = LOSS_BURN_REDUCTION * ticketCost;
 
-      // Factory recovers burnt tokens
+      // Update factory - add to burn reductions
       this.lands[landIndex] = {
         ...land,
         factory: {
           ...land.factory,
-          burntAmount: Math.max(0, land.factory.burntAmount - cost),
+          burnReductions: land.factory.burnReductions + burnReduction,
         },
       };
     }
@@ -166,6 +226,7 @@ export class MidgardGameStore {
       playerScore,
       factoryScore,
       won,
+      ticketCost,
       gardChange,
     };
 
@@ -177,33 +238,25 @@ export class MidgardGameStore {
 
   // Game tick (called each interval)
   private tick() {
-    const multiplier = this.timeMultiplier;
+    const now = performance.now();
+    const realDeltaMs = now - this.lastRealTime;
+    this.lastRealTime = now;
 
+    // Convert real time to game time
+    // realDeltaMs / 1000 = real seconds
+    // * BASE_TIME_PER_REAL_SECOND = game seconds per real second
+    // * timeSpeed = speed multiplier
+    const gameDeltaSeconds =
+      (realDeltaMs / 1000) * BASE_TIME_PER_REAL_SECOND * this.timeSpeed;
+
+    // Advance simulation time
+    this.simulationTime += gameDeltaSeconds;
+
+    // Update land stakes (Ponziland mechanic)
     this.lands = this.lands.map((land) => {
-      // Decrease stake on all lands
-      const newStake = Math.max(
-        0,
-        land.stakeAmount * (1 - STAKE_DECREASE_RATE * multiplier),
-      );
-
-      if (hasFactory(land)) {
-        // Update factory
-        const mintAmount =
-          land.factory.lockedGard * FACTORY_MINT_RATE * multiplier;
-        const burnAmount =
-          land.factory.lockedGard * FACTORY_BURN_RATE * multiplier;
-
-        return {
-          ...land,
-          stakeAmount: newStake,
-          factory: {
-            ...land.factory,
-            mintedSupply: land.factory.mintedSupply + mintAmount,
-            lockedGard: Math.max(0, land.factory.lockedGard - burnAmount),
-            burntAmount: land.factory.burntAmount + burnAmount,
-          },
-        };
-      }
+      // Stake decreases exponentially over time
+      const decayFactor = Math.exp(-STAKE_DECREASE_RATE * gameDeltaSeconds);
+      const newStake = land.stakeAmount * decayFactor;
 
       return { ...land, stakeAmount: newStake };
     });
@@ -227,8 +280,9 @@ export class MidgardGameStore {
     this.lands = structuredClone(INITIAL_LANDS);
     this.playerGardBalance = INITIAL_GARD_BALANCE;
     this.isPlaying = false;
-    this.timeMultiplier = 1;
+    this.timeSpeed = 1;
     this.selectedLandId = null;
+    this.simulationTime = 0;
     this.pendingFactoryScore = null;
     this.challengeScore = null;
     this.lastChallengeResult = null;

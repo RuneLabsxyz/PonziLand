@@ -2,29 +2,19 @@
   import { midgardGame } from '$lib/midgard/game-state.svelte';
   import { hasFactory } from '$lib/midgard/types';
   import type { Land } from '$lib/midgard/types';
+  import { formatTime } from '$lib/midgard/formulas';
+  import { TIME_SPEEDS, LOSS_BURN_REDUCTION } from '$lib/midgard/constants';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
-  import { Slider } from '$lib/components/ui/slider';
   import { onDestroy } from 'svelte';
 
   // Factory creation state
   let lockAmount = $state<string>('100');
 
-  // Challenge state
-  let challengeCost = $state<string>('10');
-
   // Cleanup on destroy
   onDestroy(() => {
     midgardGame.destroy();
   });
-
-  // Get factory from land (type-safe helper)
-  function getFactory(land: Land) {
-    if (hasFactory(land)) {
-      return land.factory;
-    }
-    return null;
-  }
 
   // Get stake percentage for color
   function getStakePercent(land: Land): number {
@@ -55,30 +45,34 @@
 
   // Handle challenge
   function handleChallenge() {
-    const cost = parseFloat(challengeCost);
-    if (isNaN(cost) || cost <= 0) return;
     if (midgardGame.selectedLandId === null) return;
-
-    midgardGame.challenge(midgardGame.selectedLandId, cost);
+    midgardGame.challenge(midgardGame.selectedLandId);
   }
 
-  // Slider value binding (needs array)
-  let timeSliderValue = $state<number[]>([1]);
-
-  $effect(() => {
-    midgardGame.setTimeMultiplier(timeSliderValue[0]);
-  });
+  // Derived state for selected land
+  let selectedLand = $derived(midgardGame.selectedLand);
+  let landHasFactory = $derived(
+    selectedLand ? hasFactory(selectedLand) : false,
+  );
+  let factoryStats = $derived(
+    selectedLand ? midgardGame.getFactoryStats(selectedLand) : null,
+  );
 </script>
 
 <div class="min-h-screen bg-[#1a1a2e] p-6 text-white">
   <!-- Header -->
   <div class="mb-6 flex items-center justify-between">
-    <h1 class="font-ponzi-number text-3xl">MIDGARD POC</h1>
+    <div>
+      <h1 class="font-ponzi-number text-3xl">MIDGARD POC</h1>
+      <p class="text-sm text-gray-500">Yellow Paper Implementation</p>
+    </div>
     <div class="flex items-center gap-4">
-      <span class="text-gray-400">$GARD Balance:</span>
-      <span class="font-ponzi-number text-2xl text-yellow-400">
-        {midgardGame.playerGardBalance.toFixed(2)}
-      </span>
+      <div class="text-right">
+        <span class="text-sm text-gray-400">$GARD Balance</span>
+        <div class="font-ponzi-number text-2xl text-yellow-400">
+          {midgardGame.playerGardBalance.toFixed(2)}
+        </div>
+      </div>
       <Button variant="red" size="md" onclick={() => midgardGame.reset()}
         >Reset</Button
       >
@@ -94,16 +88,35 @@
       {midgardGame.isPlaying ? 'Pause' : 'Play'}
     </Button>
 
-    <div class="flex items-center gap-3">
-      <span class="text-gray-400">Time Speed:</span>
-      <div class="w-32">
-        <Slider bind:value={timeSliderValue} min={0.5} max={3} step={0.5} />
-      </div>
-      <span class="font-ponzi-number w-12 text-center"
-        >{timeSliderValue[0]}x</span
+    <!-- Time Display -->
+    <div class="flex items-center gap-2">
+      <span class="text-gray-400">Game Time:</span>
+      <span class="font-ponzi-number text-lg"
+        >{formatTime(midgardGame.simulationTime)}</span
       >
     </div>
 
+    <!-- Speed Buttons -->
+    <div class="flex items-center gap-2">
+      <span class="text-gray-400">Speed:</span>
+      {#each TIME_SPEEDS as speed}
+        <button
+          class={[
+            'rounded px-3 py-1 text-sm font-bold transition-colors',
+            {
+              'bg-blue-500 text-white': midgardGame.timeSpeed === speed,
+              'bg-gray-700 text-gray-300 hover:bg-gray-600':
+                midgardGame.timeSpeed !== speed,
+            },
+          ]}
+          onclick={() => midgardGame.setTimeSpeed(speed)}
+        >
+          {speed}x
+        </button>
+      {/each}
+    </div>
+
+    <!-- Status Indicator -->
     <div
       class={[
         'ml-auto flex items-center gap-2 rounded-full px-3 py-1',
@@ -183,7 +196,7 @@
                       'bg-red-500': stakePercent <= 33,
                     },
                   ]}
-                  style="width: {stakePercent}%"
+                  style="width: {Math.max(0, Math.min(100, stakePercent))}%"
                 ></div>
               </div>
             </div>
@@ -193,28 +206,29 @@
     </div>
 
     <!-- Side Panel -->
-    <div class="min-w-80 flex-1">
-      {#if midgardGame.selectedLand}
-        {@const land = midgardGame.selectedLand}
-        {@const landHasFactory = hasFactory(land)}
-
+    <div class="min-w-96 flex-1">
+      {#if selectedLand}
         <!-- Selected Land Info -->
         <div class="mb-4 rounded-lg bg-black/40 p-4">
           <h2 class="mb-3 text-lg">
-            Selected: Land #{land.id}
+            Selected: Land #{selectedLand.id}
             <span class="text-gray-500">
-              ({land.position.row}, {land.position.col})
+              ({selectedLand.position.row}, {selectedLand.position.col})
             </span>
           </h2>
           <div class="grid grid-cols-2 gap-2 text-sm">
             <div>
               <span class="text-gray-400">Sell Price:</span>
-              <span class="font-ponzi-number ml-2">${land.sellPrice}</span>
+              <span class="font-ponzi-number ml-2"
+                >${selectedLand.sellPrice}</span
+              >
             </div>
             <div>
               <span class="text-gray-400">Stake:</span>
-              <span class={['ml-2', getStakeColor(getStakePercent(land))]}>
-                {land.stakeAmount.toFixed(2)}
+              <span
+                class={['ml-2', getStakeColor(getStakePercent(selectedLand))]}
+              >
+                {selectedLand.stakeAmount.toFixed(2)}
               </span>
             </div>
           </div>
@@ -228,7 +242,7 @@
             <!-- Lock Amount Input -->
             <div class="mb-4">
               <label class="mb-1 block text-sm text-gray-400"
-                >Lock Amount ($GARD)</label
+                >Stake $GARD (locked amount)</label
               >
               <Input
                 type="number"
@@ -244,7 +258,7 @@
             <!-- Score Mini-game -->
             <div class="mb-4">
               <label class="mb-1 block text-sm text-gray-400"
-                >Factory Score (Mini-game)</label
+                >Factory Score (EGS Mini-game)</label
               >
               <div class="flex items-center gap-3">
                 <Button
@@ -252,14 +266,14 @@
                   size="md"
                   onclick={() => midgardGame.rollFactoryScore()}
                 >
-                  Roll Score
+                  Play Game
                 </Button>
                 {#if midgardGame.pendingFactoryScore !== null}
                   <span class="font-ponzi-number text-2xl text-cyan-400">
                     {midgardGame.pendingFactoryScore}
                   </span>
                 {:else}
-                  <span class="text-gray-500">Click to roll (0-100)</span>
+                  <span class="text-gray-500">Click to play (0-100)</span>
                 {/if}
               </div>
             </div>
@@ -276,35 +290,73 @@
               Create Factory
             </Button>
           </div>
-        {:else}
-          <!-- Factory Stats -->
-          {@const factory = getFactory(land)}
+        {:else if factoryStats}
+          <!-- Factory Stats (Yellow Paper) -->
           <div class="mb-4 rounded-lg bg-black/40 p-4">
             <h3 class="mb-3 text-lg text-purple-400">Factory Stats</h3>
-            <div class="space-y-2 text-sm">
-              <div class="flex justify-between">
+
+            <div class="mb-3 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded bg-black/30 p-2">
                 <span class="text-gray-400">Score:</span>
-                <span class="font-ponzi-number text-cyan-400"
-                  >{factory.score}</span
+                <span class="font-ponzi-number ml-2 text-cyan-400"
+                  >{factoryStats.score}</span
                 >
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Locked $GARD:</span>
-                <span class="font-ponzi-number"
-                  >{factory.lockedGard.toFixed(2)}</span
+              <div class="rounded bg-black/30 p-2">
+                <span class="text-gray-400">Age:</span>
+                <span class="font-ponzi-number ml-2"
+                  >{formatTime(factoryStats.elapsed)}</span
                 >
               </div>
-              <div class="flex justify-between">
-                <span class="text-gray-400">Minted Supply:</span>
-                <span class="font-ponzi-number text-green-400"
-                  >{factory.mintedSupply.toFixed(2)}</span
+              <div class="rounded bg-black/30 p-2">
+                <span class="text-gray-400">Staked:</span>
+                <span class="font-ponzi-number ml-2"
+                  >{factoryStats.stakedGard.toFixed(2)}</span
                 >
               </div>
+            </div>
+
+            <!-- Yellow Paper Economics -->
+            <div class="space-y-2 border-t border-gray-700 pt-3 text-sm">
               <div class="flex justify-between">
-                <span class="text-gray-400">Burnt Amount:</span>
-                <span class="font-ponzi-number text-red-400"
-                  >{factory.burntAmount.toFixed(2)}</span
-                >
+                <span class="text-gray-400">Burn Obligation B(t):</span>
+                <span class="font-ponzi-number text-red-400">
+                  {factoryStats.burn.toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Burn Reductions:</span>
+                <span class="font-ponzi-number text-yellow-400">
+                  -{(factoryStats.burn - factoryStats.effectiveBurn).toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Effective Burn Beff:</span>
+                <span class="font-ponzi-number text-orange-400">
+                  {factoryStats.effectiveBurn.toFixed(4)}
+                </span>
+              </div>
+              <div
+                class="mt-2 flex justify-between border-t border-gray-700 pt-2"
+              >
+                <span class="text-gray-400">Inflation I(t):</span>
+                <span class="font-ponzi-number text-green-400">
+                  {factoryStats.inflation.toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Paid Out:</span>
+                <span class="font-ponzi-number text-yellow-400">
+                  -{(
+                    factoryStats.inflation - factoryStats.availableInflation
+                  ).toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Available Inflation:</span>
+                <span class="font-ponzi-number text-emerald-400">
+                  {factoryStats.availableInflation.toFixed(4)}
+                </span>
               </div>
             </div>
           </div>
@@ -313,17 +365,28 @@
           <div class="rounded-lg bg-black/40 p-4">
             <h3 class="mb-3 text-lg text-orange-400">Challenge Factory</h3>
 
-            <!-- Challenge Cost Input -->
-            <div class="mb-4">
-              <label class="mb-1 block text-sm text-gray-400"
-                >Challenge Cost ($GARD)</label
-              >
-              <Input
-                type="number"
-                bind:value={challengeCost}
-                placeholder="Enter cost"
-                class="bg-black/50"
-              />
+            <!-- Challenge Economics -->
+            <div class="mb-4 space-y-2 text-sm">
+              <div class="flex justify-between rounded bg-black/30 p-2">
+                <span class="text-gray-400">Ticket Cost (α × Beff):</span>
+                <span class="font-ponzi-number text-yellow-400">
+                  {factoryStats.ticketCost.toFixed(4)} $GARD
+                </span>
+              </div>
+              <div class="flex justify-between rounded bg-black/30 p-2">
+                <span class="text-gray-400">Win Reward (γ × Ticket):</span>
+                <span class="font-ponzi-number text-green-400">
+                  {factoryStats.potentialWinReward.toFixed(4)} $GARD
+                </span>
+              </div>
+              <div class="flex justify-between rounded bg-black/30 p-2">
+                <span class="text-gray-400">Liquidity Check:</span>
+                {#if factoryStats.challengeAllowed}
+                  <span class="text-green-400">✓ Allowed</span>
+                {:else}
+                  <span class="text-red-400">✗ Insufficient inflation</span>
+                {/if}
+              </div>
             </div>
 
             <!-- Roll Challenge Score -->
@@ -335,7 +398,7 @@
                   size="md"
                   onclick={() => midgardGame.rollChallengeScore()}
                 >
-                  Roll Score
+                  Play Game
                 </Button>
                 {#if midgardGame.challengeScore !== null}
                   <span class="font-ponzi-number text-2xl text-cyan-400">
@@ -343,10 +406,15 @@
                   </span>
                   <span class="text-gray-500">vs</span>
                   <span class="font-ponzi-number text-2xl text-purple-400">
-                    {factory.score}
+                    {factoryStats.score}
                   </span>
+                  {#if midgardGame.challengeScore > factoryStats.score}
+                    <span class="text-green-400">WIN</span>
+                  {:else}
+                    <span class="text-red-400">LOSE</span>
+                  {/if}
                 {:else}
-                  <span class="text-gray-500">Click to roll</span>
+                  <span class="text-gray-500">Click to play</span>
                 {/if}
               </div>
             </div>
@@ -356,12 +424,22 @@
               variant="red"
               class="w-full"
               disabled={midgardGame.challengeScore === null ||
-                parseFloat(challengeCost) <= 0 ||
-                parseFloat(challengeCost) > midgardGame.playerGardBalance}
+                !factoryStats.challengeAllowed ||
+                midgardGame.playerGardBalance < factoryStats.ticketCost}
               onclick={handleChallenge}
             >
-              Challenge!
+              Challenge! (Cost: {factoryStats.ticketCost.toFixed(4)} $GARD)
             </Button>
+
+            {#if !factoryStats.challengeAllowed}
+              <p class="mt-2 text-center text-xs text-red-400">
+                Factory needs more inflation to pay potential winners
+              </p>
+            {:else if midgardGame.playerGardBalance < factoryStats.ticketCost}
+              <p class="mt-2 text-center text-xs text-red-400">
+                Insufficient $GARD balance
+              </p>
+            {/if}
 
             <!-- Last Result -->
             {#if midgardGame.lastChallengeResult}
@@ -390,8 +468,15 @@
                     },
                   ]}
                 >
-                  {result.won ? '+' : ''}{result.gardChange.toFixed(2)} $GARD
+                  {result.won ? '+' : ''}{result.gardChange.toFixed(4)} $GARD
                 </div>
+                {#if !result.won}
+                  <div class="mt-1 text-xs text-gray-400">
+                    Factory burn reduced by {(
+                      result.ticketCost * LOSS_BURN_REDUCTION
+                    ).toFixed(4)} (β={LOSS_BURN_REDUCTION * 100}%)
+                  </div>
+                {/if}
               </div>
             {/if}
           </div>
@@ -407,29 +492,42 @@
     </div>
   </div>
 
-  <!-- Instructions -->
+  <!-- Instructions (Yellow Paper Summary) -->
   <div class="mt-6 rounded-lg bg-black/20 p-4 text-sm text-gray-400">
-    <h3 class="mb-2 font-bold text-white">How to Play</h3>
-    <ul class="list-inside list-disc space-y-1">
-      <li>
-        Press <strong>Play</strong> to start time - stakes will decrease on all lands
-      </li>
-      <li>
-        Select a land and <strong>create a factory</strong> by locking $GARD and rolling
-        a score
-      </li>
-      <li>
-        Factories <strong>mint $GARD</strong> over time (2%/tick) while burning locked
-        tokens (1.5%/tick)
-      </li>
-      <li>
-        <strong>Challenge</strong> a factory: roll higher than its score to win 2x
-        your cost + 50% of its minted supply
-      </li>
-      <li>
-        If you lose, your cost is burned and the factory recovers some burnt
-        tokens
-      </li>
-    </ul>
+    <h3 class="mb-2 font-bold text-white">Yellow Paper Mechanics</h3>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <h4 class="mb-1 font-semibold text-purple-400">Factory Economics</h4>
+        <ul class="list-inside list-disc space-y-1">
+          <li>
+            <strong>Burn:</strong> B(t) = r × t (linear with time)
+          </li>
+          <li>
+            <strong>Inflation:</strong> I(t) = r × t × (1 + m × (1 - e<sup
+              >-t/A</sup
+            >))
+          </li>
+          <li>Inflation always ≥ Burn (bonus factor ≥ 1)</li>
+          <li>Failed challenges reduce burn obligation</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="mb-1 font-semibold text-orange-400">Challenge System</h4>
+        <ul class="list-inside list-disc space-y-1">
+          <li>
+            <strong>Ticket Cost:</strong> α × Beff (10% of effective burn)
+          </li>
+          <li>
+            <strong>Win:</strong> Earn γ × Ticket (190%) from inflation
+          </li>
+          <li>
+            <strong>Lose:</strong> Ticket burned, β (90%) reduces factory burn
+          </li>
+          <li>
+            <strong>Constraint:</strong> Available inflation ≥ γ × Ticket
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </div>

@@ -8,12 +8,13 @@ export interface BaseLand {
 }
 
 // Factory that exists on a land
+// Yellow paper: Factories track creation time for burn/inflation calculations
 export interface Factory {
-  lockedGard: number;
-  initialLockedGard: number;
-  mintedSupply: number;
-  burntAmount: number;
-  score: number; // 0-100
+  createdAt: number; // Simulation time when factory was created (seconds)
+  stakedGard: number; // Initial locked amount
+  score: number; // EGS game score (0-100)
+  burnReductions: number; // Sum of beta * Ticket from failed challenges
+  inflationPaidOut: number; // Sum of payouts to winning challengers
 }
 
 // Land with a factory
@@ -34,5 +35,6 @@ export interface ChallengeResult {
   playerScore: number;
   factoryScore: number;
   won: boolean;
+  ticketCost: number;
   gardChange: number; // Positive if won, negative if lost
 }

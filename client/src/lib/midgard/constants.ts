@@ -3,23 +3,35 @@ import type { BaseLand } from './types';
 // Grid configuration
 export const GRID_SIZE = 3; // 3x3
 
-// Initial values
-export const INITIAL_GARD_BALANCE = 1000;
+// Initial player balance
+export const INITIAL_GARD_BALANCE = 10000;
 
-// Time mechanics (per tick)
-export const TICK_INTERVAL_MS = 1000; // 1 second per tick
+// Time settings
+// POC uses accelerated time: 1 real second = configurable game time
+export const TICK_INTERVAL_MS = 100; // Update every 100ms for smooth UI
+export const BASE_TIME_PER_REAL_SECOND = 3600; // 1 real second = 1 hour game time
 
-// Stake decrease rate: 1% per tick
-export const STAKE_DECREASE_RATE = 0.01;
+// Yellow Paper: Factory Burn/Inflation Rates
+// r: burn rate (GARD per game second)
+export const BURN_RATE = 0.001;
+// A: inflation ramp cap duration (7 days = 604800 seconds)
+export const INFLATION_RAMP_DURATION = 604800;
+// m: maximum bonus fraction (50% max inflation bonus)
+export const MAX_BONUS_FRACTION = 0.5;
 
-// Factory mechanics (per tick)
-export const FACTORY_MINT_RATE = 0.02; // Mints 2% of locked GARD per tick
-export const FACTORY_BURN_RATE = 0.015; // Burns 1.5% of locked GARD per tick
+// Yellow Paper: Challenge Parameters
+// alpha: challenge cost as fraction of effective burn (10%)
+export const CHALLENGE_COST_FRACTION = 0.1;
+// beta: fraction of lost ticket that reduces burn obligation (90%)
+export const LOSS_BURN_REDUCTION = 0.9;
+// gamma: win payout multiplier (190% of ticket)
+export const WIN_PAYOUT_MULTIPLIER = 1.9;
 
-// Challenge mechanics
-export const CHALLENGE_BASE_COST = 10;
-export const CHALLENGE_WIN_MULTIPLIER = 2; // Win back 2x the cost
-export const CHALLENGE_SUPPLY_SHARE = 0.5; // Win 50% of factory's minted supply
+// Ponziland simulation: stake decrease rate (per game second)
+export const STAKE_DECREASE_RATE = 0.00001;
+
+// Time speed presets for UI
+export const TIME_SPEEDS: number[] = [1, 2, 5, 10];
 
 // Initial lands configuration
 export const INITIAL_LANDS: BaseLand[] = [
