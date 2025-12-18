@@ -8,6 +8,9 @@
   import { Input } from '$lib/components/ui/input';
   import { onDestroy } from 'svelte';
 
+  // Chart imports
+  import { LineChart } from 'layerchart';
+
   // Factory creation state
   let lockAmount = $state<string>('100');
 
@@ -57,6 +60,9 @@
   let factoryStats = $derived(
     selectedLand ? midgardGame.getFactoryStats(selectedLand) : null,
   );
+
+  // Derived chart data
+  let chartData = $derived(midgardGame.chartHistory);
 </script>
 
 <div class="min-h-screen bg-[#1a1a2e] p-6 text-white">
@@ -360,6 +366,54 @@
               </div>
             </div>
           </div>
+
+          <!-- Chart Visualization -->
+          {#if chartData.length > 1}
+            <div class="mb-4 rounded-lg bg-black/40 p-4 text-white">
+              <h3 class="mb-3 text-lg text-blue-400">
+                Factory Economics Over Time
+              </h3>
+              <div class="h-48">
+                <LineChart
+                  data={chartData}
+                  x="time"
+                  y="inflation"
+                  series={[
+                    {
+                      key: 'inflation',
+                      label: 'Inflation I(t)',
+                      color: 'hsl(142 76% 36%)',
+                    },
+                    {
+                      key: 'burn',
+                      label: 'Burn B(t)',
+                      color: 'hsl(0 84% 60%)',
+                    },
+                  ]}
+                  props={{
+                    xAxis: {
+                      format: (v: number) => formatTime(v),
+                      class: 'text-white',
+                    },
+                    yAxis: {
+                      format: (v: number) => v.toFixed(2),
+                      class: 'text-white',
+                    },
+                  }}
+                />
+              </div>
+              <div class="mt-2 flex justify-center gap-4 text-xs">
+                <div class="flex items-center gap-1">
+                  <div class="h-2 w-4 rounded bg-green-500"></div>
+                  <span class="text-gray-400">Inflation I(t)</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <div class="h-2 w-4 rounded bg-red-500"></div>
+                  <span class="text-gray-400">Burn B(t)</span>
+                </div>
+              </div>
+            </div>
+          {/if}
 
           <!-- Challenge Section -->
           <div class="rounded-lg bg-black/40 p-4">

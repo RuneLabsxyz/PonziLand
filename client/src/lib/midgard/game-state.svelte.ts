@@ -1,7 +1,13 @@
 // Midgard POC Game State
 // Implements yellow paper economics with time-based burn/inflation
 
-import type { Land, LandWithFactory, Factory, ChallengeResult } from './types';
+import type {
+  Land,
+  LandWithFactory,
+  Factory,
+  ChallengeResult,
+  ChartDataPoint,
+} from './types';
 import { hasFactory } from './types';
 import {
   INITIAL_GARD_BALANCE,
@@ -40,6 +46,9 @@ export class MidgardGameStore {
   // For challenge flow
   public challengeScore = $state<number | null>(null);
   public lastChallengeResult = $state<ChallengeResult | null>(null);
+
+  // Chart data history
+  public chartHistory = $state<ChartDataPoint[]>([]);
 
   private tickInterval: ReturnType<typeof setInterval> | null = null;
   private lastRealTime: number = 0;
@@ -104,6 +113,10 @@ export class MidgardGameStore {
 
   // Land selection
   public selectLand(id: number | null) {
+    // Clear chart history when changing selection
+    if (id !== this.selectedLandId) {
+      this.chartHistory = [];
+    }
     this.selectedLandId = id;
     // Reset pending states when changing selection
     this.pendingFactoryScore = null;
@@ -236,6 +249,32 @@ export class MidgardGameStore {
     return result;
   }
 
+  // Collect chart data point for visualization
+  private collectChartData() {
+    if (this.selectedLandId === null) return;
+    const land = this.lands.find((l) => l.id === this.selectedLandId);
+    if (!land || !hasFactory(land)) return;
+
+    const stats = this.getFactoryStats(land);
+    if (!stats) return;
+
+    // Sample every ~1 game hour (limit to 100 points max)
+    const sampleInterval = 3600; // 1 hour in game seconds
+    const lastPoint = this.chartHistory[this.chartHistory.length - 1];
+
+    if (!lastPoint || this.simulationTime - lastPoint.time >= sampleInterval) {
+      this.chartHistory = [
+        ...this.chartHistory.slice(-99),
+        {
+          time: this.simulationTime,
+          burn: stats.burn,
+          inflation: stats.inflation,
+          netSupply: stats.inflation - stats.burn,
+        },
+      ];
+    }
+  }
+
   // Game tick (called each interval)
   private tick() {
     const now = performance.now();
@@ -260,6 +299,9 @@ export class MidgardGameStore {
 
       return { ...land, stakeAmount: newStake };
     });
+
+    // Collect chart data for visualization
+    this.collectChartData();
   }
 
   private startTick() {
@@ -286,6 +328,7 @@ export class MidgardGameStore {
     this.pendingFactoryScore = null;
     this.challengeScore = null;
     this.lastChallengeResult = null;
+    this.chartHistory = [];
   }
 
   // Cleanup

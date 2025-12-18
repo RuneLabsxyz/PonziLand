@@ -38,3 +38,11 @@ export interface ChallengeResult {
   ticketCost: number;
   gardChange: number; // Positive if won, negative if lost
 }
+
+// Chart data point for visualizing factory economics
+export interface ChartDataPoint {
+  time: number; // Simulation time in seconds
+  burn: number; // B(t)
+  inflation: number; // I(t)
+  netSupply: number; // I(t) - B(t)
+}
