@@ -9,6 +9,7 @@ use crate::service::token::TokenService;
 pub struct Token {
     pub symbol: String,
     pub address: String,
+    pub decimals: u32,
 }
 
 #[derive(Clone)]
@@ -34,6 +35,7 @@ impl TokenRoute {
             .map(|token| Token {
                 symbol: token.symbol.clone(),
                 address: token.address.to_fixed_hex_string(),
+                decimals: token.decimals,
             })
             .collect();
         Json(tokens)
