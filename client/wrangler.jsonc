@@ -40,5 +40,13 @@
         },
       ],
     },
+    "next": {
+      "routes": [
+        {
+          "pattern": "next.ponzi.land",
+          "custom_domain": true,
+        },
+      ],
+    },
   },
 }
