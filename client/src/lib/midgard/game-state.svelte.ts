@@ -7,6 +7,7 @@ import type {
   Factory,
   ChallengeResult,
   ChallengeRecord,
+  ClosedFactoryRecord,
   ChartDataPoint,
 } from './types';
 import { hasFactory } from './types';
@@ -53,6 +54,9 @@ export class MidgardGameStore {
 
   // Challenge history for table display
   public challengeHistory = $state<ChallengeRecord[]>([]);
+
+  // Closed factory history for table display
+  public closedFactoryHistory = $state<ClosedFactoryRecord[]>([]);
 
   private tickInterval: ReturnType<typeof setInterval> | null = null;
   private lastRealTime: number = 0;
@@ -321,8 +325,56 @@ export class MidgardGameStore {
       return { ...land, stakeAmount: newStake };
     });
 
+    // Check for factories that need to close (burn >= stake)
+    this.checkFactoryClosure();
+
     // Collect chart data for visualization
     this.collectChartData();
+  }
+
+  // Check if any factories should close (burn >= stake)
+  private checkFactoryClosure() {
+    const closedLandIds: number[] = [];
+
+    this.lands = this.lands.map((land) => {
+      if (!hasFactory(land)) return land;
+
+      const stats = this.getFactoryStats(land);
+      if (!stats) return land;
+
+      // Close factory if effective burn >= staked amount
+      if (stats.effectiveBurn >= stats.stakedGard) {
+        // Record the closure
+        this.closedFactoryHistory = [
+          ...this.closedFactoryHistory,
+          {
+            landId: land.id,
+            closedAt: this.simulationTime,
+            duration: stats.elapsed,
+            stakedGard: stats.stakedGard,
+            finalBurn: stats.effectiveBurn,
+            finalInflation: stats.availableInflation,
+            score: stats.score,
+          },
+        ];
+
+        closedLandIds.push(land.id);
+
+        // Remove factory from land (convert back to BaseLand)
+        const { factory, ...baseLand } = land;
+        return baseLand as Land;
+      }
+
+      return land;
+    });
+
+    // Clear chart history if selected land's factory was closed
+    if (
+      this.selectedLandId !== null &&
+      closedLandIds.includes(this.selectedLandId)
+    ) {
+      this.chartHistory = [];
+    }
   }
 
   private startTick() {
@@ -351,6 +403,7 @@ export class MidgardGameStore {
     this.lastChallengeResult = null;
     this.chartHistory = [];
     this.challengeHistory = [];
+    this.closedFactoryHistory = [];
   }
 
   // Cleanup

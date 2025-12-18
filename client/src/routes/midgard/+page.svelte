@@ -665,4 +665,60 @@
       </div>
     </div>
   </div>
+
+  <!-- Closed Factories History -->
+  {#if midgardGame.closedFactoryHistory.length > 0}
+    <div class="mt-6 rounded-lg bg-black/40 p-4">
+      <h3 class="mb-3 text-lg text-red-400">Closed Factories</h3>
+      <div class="max-h-48 overflow-y-auto">
+        <table class="w-full text-sm">
+          <thead class="sticky top-0 bg-black/60">
+            <tr class="text-gray-500">
+              <th class="py-2 text-left">Land</th>
+              <th class="py-2 text-right">Duration</th>
+              <th class="py-2 text-right">Stake</th>
+              <th class="py-2 text-right">Final Burn</th>
+              <th class="py-2 text-right">Final Inflation</th>
+              <th class="py-2 text-right">Net Result</th>
+              <th class="py-2 text-right">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {#each [...midgardGame.closedFactoryHistory].reverse() as record}
+              {@const netResult = record.finalInflation - record.finalBurn}
+              <tr class="border-t border-gray-800">
+                <td class="py-2">#{record.landId}</td>
+                <td class="py-2 text-right font-ponzi-number"
+                  >{formatTime(record.duration)}</td
+                >
+                <td class="py-2 text-right font-ponzi-number text-yellow-400"
+                  >{record.stakedGard.toFixed(2)}</td
+                >
+                <td class="py-2 text-right font-ponzi-number text-red-400"
+                  >{record.finalBurn.toFixed(2)}</td
+                >
+                <td class="py-2 text-right font-ponzi-number text-green-400"
+                  >{record.finalInflation.toFixed(2)}</td
+                >
+                <td
+                  class={[
+                    'py-2 text-right font-ponzi-number',
+                    {
+                      'text-green-400': netResult >= 0,
+                      'text-red-400': netResult < 0,
+                    },
+                  ]}
+                >
+                  {netResult >= 0 ? '+' : ''}{netResult.toFixed(2)}
+                </td>
+                <td class="py-2 text-right font-ponzi-number text-cyan-400"
+                  >{record.score}</td
+                >
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {/if}
 </div>

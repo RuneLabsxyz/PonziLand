@@ -50,6 +50,17 @@ export interface ChallengeRecord {
   netResult: number; // gardChange: positive if won, negative (ticket cost) if lost
 }
 
+// Closed factory record for history table
+export interface ClosedFactoryRecord {
+  landId: number;
+  closedAt: number; // Simulation time when closed
+  duration: number; // How long it ran (closedAt - createdAt)
+  stakedGard: number; // Initial stake
+  finalBurn: number; // Final effective burn (>= stake)
+  finalInflation: number; // Final available inflation
+  score: number; // Factory score
+}
+
 // Chart data point for visualizing factory economics
 export interface ChartDataPoint {
   time: number; // Simulation time in seconds
