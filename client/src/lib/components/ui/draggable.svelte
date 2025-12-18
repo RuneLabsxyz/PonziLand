@@ -60,14 +60,14 @@
   let el = $state<HTMLElement | null>(null);
   let currentPosition = $state<Position>(initialPosition);
   let currentDimensions = $state<Dimensions>(initialDimensions);
-  let isFixed = $state($widgetsStore[id]?.fixed || false);
+  let isFixed = $derived($widgetsStore[id]?.fixed || false);
   let fixedStyles = $derived($widgetsStore[id]?.fixedStyles || '');
-  let disableControls = $state($widgetsStore[id]?.disableControls || false);
-  let transparency = $state($widgetsStore[id]?.transparency ?? 1);
-  let isMaximized = $state($widgetsStore[id]?.isMaximized || false);
-  let showMaximize = $state($widgetsStore[id]?.showMaximize || false);
-  // svelte-ignore state_referenced_locally - We want to be able to modify the transparency value
-  let sliderValue = $state(transparency * 100);
+  let disableControls = $derived($widgetsStore[id]?.disableControls || false);
+  let transparency = $derived($widgetsStore[id]?.transparency ?? 1);
+  let isMaximized = $derived($widgetsStore[id]?.isMaximized || false);
+  let showMaximize = $derived($widgetsStore[id]?.showMaximize || false);
+  let prevIsMaximized = $state<boolean | null>(null);
+  let sliderValue = $derived(transparency * 100);
   let customControls = $state<Snippet<[]> | null>(null);
   let customTitle = $state<Snippet<[]> | null>(null);
   // Compute the style string based on whether the widget is fixed, maximized, or normal
@@ -91,7 +91,6 @@
 
   function handleTransparencyChange(value: number) {
     const newValue = Math.max(10, Math.min(100, value)) / 100;
-    transparency = newValue;
     widgetsStore.updateWidget(id, { transparency: newValue });
   }
 
@@ -209,8 +208,6 @@
         fixed: false,
         fixedStyles: '',
       });
-    } else {
-      isFixed = currentWidget.fixed || false;
     }
 
     // Set up interact
@@ -250,14 +247,11 @@
   $effect(() => {
     const storeWidget = $widgetsStore[id];
     if (storeWidget) {
-      const wasMaximized = isMaximized;
-      isMaximized = storeWidget.isMaximized || false;
-      showMaximize = storeWidget.showMaximize || false;
-
       // If maximized state changed, re-setup interact
-      if (wasMaximized !== isMaximized) {
+      if (prevIsMaximized !== null && prevIsMaximized !== isMaximized) {
         setupInteract();
       }
+      prevIsMaximized = isMaximized;
 
       if (storeWidget.position) {
         currentPosition = storeWidget.position;
@@ -303,7 +297,7 @@
                 <DropdownMenu.Label>Transparency</DropdownMenu.Label>
                 <Slider
                   type="single"
-                  bind:value={sliderValue}
+                  value={sliderValue}
                   max={100}
                   min={10}
                   step={10}
