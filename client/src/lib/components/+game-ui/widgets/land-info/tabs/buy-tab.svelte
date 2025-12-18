@@ -130,13 +130,42 @@
   // Slider state for stake (% of sell price, default 200% = 2x)
   let stakePercent = $state(200);
 
+  // Default fallback price (1 USDC equivalent) when base price is 0
+  const DEFAULT_FALLBACK_AMOUNT = 1;
+
+  // Check if base price is zero or invalid (needs fallback mode)
+  let isZeroBasePrice = $derived.by(() => {
+    const originalPrice =
+      land.type === 'auction' ? auctionPrice : land.sellPrice;
+    if (!originalPrice) return true;
+    return originalPrice.rawValue().isZero();
+  });
+
   // Base price in selected token (the buy price converted to selected token)
   let basePriceInSelectedToken = $derived.by(() => {
     if (!selectedToken || !land.token) return null;
 
     const originalPrice =
       land.type === 'auction' ? auctionPrice : land.sellPrice;
-    if (!originalPrice) return null;
+
+    // If price is 0 or missing, use fallback (1 USDC equivalent in selected token)
+    if (!originalPrice || originalPrice.rawValue().isZero()) {
+      // Create a 1 USDC amount in base token, then convert to selected token
+      const oneUsdcInBase = CurrencyAmount.fromScaled(
+        DEFAULT_FALLBACK_AMOUNT,
+        baseToken,
+      );
+
+      if (padAddress(baseToken.address) === padAddress(selectedToken.address)) {
+        return oneUsdcInBase;
+      }
+
+      return walletStore.convertTokenAmount(
+        oneUsdcInBase,
+        baseToken,
+        selectedToken,
+      );
+    }
 
     // If tokens are the same, no conversion needed
     if (padAddress(land.token.address) === padAddress(selectedToken.address)) {
@@ -806,6 +835,11 @@
           <p class="-mt-1 mb-1 opacity-75 leading-none text-sm">
             What is paid to you when your land is bought out
           </p>
+          {#if isZeroBasePrice}
+            <p class="text-yellow-400 text-xs -mt-1 mb-1">
+              ℹ️ Land price is 0 - using 1 {baseToken.symbol} as reference for sliders
+            </p>
+          {/if}
 
           <!-- Preset buttons -->
           <div class="flex flex-wrap gap-1">
