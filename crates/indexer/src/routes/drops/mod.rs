@@ -155,4 +155,3 @@ fn u256_to_f64_with_decimals(value: &starknet::core::types::U256, decimals: u32)
 
     raw_value / divisor
 }
-
