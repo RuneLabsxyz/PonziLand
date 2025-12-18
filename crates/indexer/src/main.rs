@@ -38,6 +38,7 @@ use worker::MonitorManager;
 
 pub mod config;
 pub mod service;
+pub mod utils;
 pub mod worker;
 
 pub mod state;

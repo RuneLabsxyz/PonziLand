@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 use crate::state::AppState;
+use crate::utils::normalize_token_address;
 
 const USDC_SYMBOL: &str = "USDC";
 
@@ -153,12 +154,6 @@ fn u256_to_f64_with_decimals(value: &starknet::core::types::U256, decimals: u32)
     let divisor = 10_f64.powi(i32::try_from(decimals).unwrap_or(18));
 
     raw_value / divisor
-}
-
-/// Normalize token address to padded format (0x + 64 hex chars)
-fn normalize_token_address(address: &str) -> String {
-    let stripped = address.strip_prefix("0x").unwrap_or(address);
-    format!("0x{stripped:0>64}")
 }
 
 /// Get token decimals based on known token addresses
