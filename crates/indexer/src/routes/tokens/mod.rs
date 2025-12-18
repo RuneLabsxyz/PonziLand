@@ -32,10 +32,14 @@ impl TokenRoute {
         let tokens = token_service
             .tokens
             .iter()
-            .map(|token| Token {
-                symbol: token.symbol.clone(),
-                address: token.address.to_fixed_hex_string(),
-                decimals: token.decimals,
+            .map(|token| {
+                let address = token.address.to_fixed_hex_string();
+                let decimals = token_service.get_decimals(&address);
+                Token {
+                    symbol: token.symbol.clone(),
+                    address,
+                    decimals,
+                }
             })
             .collect();
         Json(tokens)
