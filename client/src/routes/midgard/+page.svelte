@@ -559,6 +559,61 @@
                 {/if}
               </div>
             {/if}
+
+            <!-- Challenge History Table -->
+            {#if midgardGame.challengeHistory.length > 0}
+              <div class="mt-4 border-t border-gray-700 pt-4">
+                <h4 class="mb-2 text-sm text-gray-400">Challenge History</h4>
+                <div class="max-h-32 overflow-y-auto">
+                  <table class="w-full text-xs">
+                    <thead class="sticky top-0 bg-black/60">
+                      <tr class="text-gray-500">
+                        <th class="py-1 text-left">Time</th>
+                        <th class="py-1 text-right">Ticket</th>
+                        <th class="py-1 text-right">Reward</th>
+                        <th class="py-1 text-center">Score</th>
+                        <th class="py-1 text-right">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {#each [...midgardGame.challengeHistory].reverse() as record}
+                        <tr class="border-t border-gray-800">
+                          <td class="py-1 font-ponzi-number"
+                            >{formatTime(record.time)}</td
+                          >
+                          <td class="py-1 text-right font-ponzi-number"
+                            >{record.ticketCost.toFixed(2)}</td
+                          >
+                          <td class="py-1 text-right font-ponzi-number"
+                            >{record.potentialReward.toFixed(2)}</td
+                          >
+                          <td class="py-1 text-center">
+                            <span class="font-ponzi-number"
+                              >{record.playerScore}</span
+                            >
+                            <span class="text-gray-500">vs</span>
+                            <span class="font-ponzi-number"
+                              >{record.factoryScore}</span
+                            >
+                          </td>
+                          <td
+                            class={[
+                              'py-1 text-right font-ponzi-number',
+                              {
+                                'text-green-400': record.won,
+                                'text-red-400': !record.won,
+                              },
+                            ]}
+                          >
+                            {record.won ? '+' : ''}{record.netResult.toFixed(2)}
+                          </td>
+                        </tr>
+                      {/each}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            {/if}
           </div>
         {/if}
       {:else}

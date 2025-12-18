@@ -39,6 +39,17 @@ export interface ChallengeResult {
   gardChange: number; // Positive if won, negative if lost
 }
 
+// Challenge record for history table
+export interface ChallengeRecord {
+  time: number; // Simulation time when challenge occurred
+  ticketCost: number; // Ticket price paid
+  potentialReward: number; // gamma * ticket (what you could have won)
+  playerScore: number;
+  factoryScore: number;
+  won: boolean;
+  netResult: number; // gardChange: positive if won, negative (ticket cost) if lost
+}
+
 // Chart data point for visualizing factory economics
 export interface ChartDataPoint {
   time: number; // Simulation time in seconds

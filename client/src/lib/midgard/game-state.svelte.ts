@@ -6,6 +6,7 @@ import type {
   LandWithFactory,
   Factory,
   ChallengeResult,
+  ChallengeRecord,
   ChartDataPoint,
 } from './types';
 import { hasFactory } from './types';
@@ -49,6 +50,9 @@ export class MidgardGameStore {
 
   // Chart data history
   public chartHistory = $state<ChartDataPoint[]>([]);
+
+  // Challenge history for table display
+  public challengeHistory = $state<ChallengeRecord[]>([]);
 
   private tickInterval: ReturnType<typeof setInterval> | null = null;
   private lastRealTime: number = 0;
@@ -243,6 +247,20 @@ export class MidgardGameStore {
       gardChange,
     };
 
+    // Record challenge in history
+    this.challengeHistory = [
+      ...this.challengeHistory,
+      {
+        time: this.simulationTime,
+        ticketCost,
+        potentialReward: stats.potentialWinReward,
+        playerScore,
+        factoryScore,
+        won,
+        netResult: gardChange,
+      },
+    ];
+
     this.lastChallengeResult = result;
     this.challengeScore = null;
 
@@ -332,6 +350,7 @@ export class MidgardGameStore {
     this.challengeScore = null;
     this.lastChallengeResult = null;
     this.chartHistory = [];
+    this.challengeHistory = [];
   }
 
   // Cleanup
