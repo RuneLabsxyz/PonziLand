@@ -63,9 +63,24 @@
 
   // Derived chart data
   let chartData = $derived(midgardGame.chartHistory);
+
+  // Compute symmetric y-domain centered at 0
+  let yDomainSymmetric = $derived.by(() => {
+    if (chartData.length === 0) return [-1, 1];
+    let maxAbs = 0;
+    for (const d of chartData) {
+      maxAbs = Math.max(
+        maxAbs,
+        Math.abs(d.availableInflation),
+        Math.abs(d.effectiveBurn),
+        Math.abs(d.effectiveNet),
+      );
+    }
+    return [-maxAbs * 1.1, maxAbs * 1.1]; // 10% padding
+  });
 </script>
 
-<div class="min-h-screen bg-[#1a1a2e] p-6 text-white">
+<div class="min-h-screen bg-[#1a1a2e] p-6 text-white stroke-white">
   <!-- Header -->
   <div class="mb-6 flex items-center justify-between">
     <div>
@@ -378,16 +393,23 @@
                   data={chartData}
                   x="time"
                   y="inflation"
+                  yDomain={yDomainSymmetric}
                   series={[
                     {
-                      key: 'inflation',
-                      label: 'Inflation I(t)',
+                      key: 'availableInflation',
+                      label: 'Eff. Inflation',
                       color: 'hsl(142 76% 36%)',
                     },
                     {
-                      key: 'burn',
-                      label: 'Burn B(t)',
+                      key: 'effectiveBurn',
+                      label: 'Eff. Burn',
                       color: 'hsl(0 84% 60%)',
+                      value: (d: { effectiveBurn: number }) => -d.effectiveBurn,
+                    },
+                    {
+                      key: 'effectiveNet',
+                      label: 'Eff. Net',
+                      color: 'hsl(45 93% 47%)',
                     },
                   ]}
                   props={{
@@ -405,11 +427,15 @@
               <div class="mt-2 flex justify-center gap-4 text-xs">
                 <div class="flex items-center gap-1">
                   <div class="h-2 w-4 rounded bg-green-500"></div>
-                  <span class="text-gray-400">Inflation I(t)</span>
+                  <span class="text-gray-400">Eff. Inflation</span>
                 </div>
                 <div class="flex items-center gap-1">
                   <div class="h-2 w-4 rounded bg-red-500"></div>
-                  <span class="text-gray-400">Burn B(t)</span>
+                  <span class="text-gray-400">Eff. Burn</span>
+                </div>
+                <div class="flex items-center gap-1">
+                  <div class="h-2 w-4 rounded bg-yellow-500"></div>
+                  <span class="text-gray-400">Eff. Net</span>
                 </div>
               </div>
             </div>

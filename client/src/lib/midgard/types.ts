@@ -45,4 +45,7 @@ export interface ChartDataPoint {
   burn: number; // B(t)
   inflation: number; // I(t)
   netSupply: number; // I(t) - B(t)
+  effectiveBurn: number; // Beff (after challenge reductions)
+  availableInflation: number; // I(t) - paid out
+  effectiveNet: number; // availableInflation - effectiveBurn
 }

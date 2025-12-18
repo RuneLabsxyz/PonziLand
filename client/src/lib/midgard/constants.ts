@@ -17,7 +17,7 @@ export const BURN_RATE = 0.001;
 // A: inflation ramp cap duration (7 days = 604800 seconds)
 export const INFLATION_RAMP_DURATION = 604800;
 // m: maximum bonus fraction (50% max inflation bonus)
-export const MAX_BONUS_FRACTION = 0.5;
+export const MAX_BONUS_FRACTION = 5;
 
 // Yellow Paper: Challenge Parameters
 // alpha: challenge cost as fraction of effective burn (10%)

@@ -270,6 +270,9 @@ export class MidgardGameStore {
           burn: stats.burn,
           inflation: stats.inflation,
           netSupply: stats.inflation - stats.burn,
+          effectiveBurn: stats.effectiveBurn,
+          availableInflation: stats.availableInflation,
+          effectiveNet: stats.availableInflation - stats.effectiveBurn,
         },
       ];
     }
