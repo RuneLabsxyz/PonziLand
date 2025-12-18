@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - prod
       - target/*
   merge_group:
 
@@ -185,6 +186,8 @@ jobs:
     needs: ci-status
     if: always() && needs.ci-status.result == 'success'
     uses: ./.github/workflows/_deploy-cloudflare.yaml
+    with:
+      branch: ${{ github.ref_name }}
     secrets:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}

@@ -10,6 +10,7 @@ This PR has passed automatic testing, and is ready to be tested manually.
 | mainnet | {{ .MAINNET_STATUS }} | {{ .MAINNET_URL }} |
 | sepolia | {{ .SEPOLIA_STATUS }} | {{ .SEPOLIA_URL }} |
 | mainnet-test | {{ .MAINNET_TEST_STATUS }} | {{ .MAINNET_TEST_URL }} |
+| next (staging) | {{ .NEXT_STATUS }} | {{ .NEXT_URL }} |
 
 ---
 ##### This comment was written by a bot!

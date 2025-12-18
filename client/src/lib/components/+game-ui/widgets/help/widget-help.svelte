@@ -49,7 +49,7 @@
         class="w-24 h-24 mx-auto"
       />
       <p class="text-center font-bold text-sm md:text-base">
-        HAHAHAHAHA! Still confused?
+        HAHA! Still confused?
         <br />
         <!-- Let me guide you through the depths of deception in my tutorial, -->
         <br />

@@ -2,6 +2,11 @@ name: Deploy App to Cloudflare
 
 on:
   workflow_call:
+    inputs:
+      branch:
+        description: 'Branch name triggering the deployment'
+        required: true
+        type: string
     secrets:
       CLOUDFLARE_API_TOKEN:
         required: true
@@ -18,7 +23,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        environment: [mainnet, sepolia, mainnet-test]
+        environment: [mainnet, sepolia, mainnet-test, next]
     name: Deploy frontend to Cloudflare
     outputs:
       mainnet-success: ${{ steps.deployment-status.outputs.mainnet-success || '' }}
@@ -27,6 +32,8 @@ jobs:
       sepolia-url: ${{ steps.deployment-status.outputs.sepolia-url || '' }}
       mainnet-test-success: ${{ steps.deployment-status.outputs.mainnet-test-success || '' }}
       mainnet-test-url: ${{ steps.deployment-status.outputs.mainnet-test-url || '' }}
+      next-success: ${{ steps.deployment-status.outputs.next-success || '' }}
+      next-url: ${{ steps.deployment-status.outputs.next-url || '' }}
       sha-short: ${{ steps.vars.outputs.sha_short || '' }}
     steps:
       - name: Checkout repository
@@ -48,7 +55,7 @@ jobs:
         working-directory: ./client
         run: bun run build
         env:
-          DOJO_PROFILE: ${{ matrix.environment }}
+          DOJO_PROFILE: ${{ matrix.environment == 'next' && 'mainnet' || matrix.environment }}
           PUBLIC_GIT_COMMIT_HASH: ${{ env.PUBLIC_GIT_COMMIT_HASH }}
           POSTHOG_KEY: ${{ secrets.POSTHOG_KEY }}
           # Force the auto bundler to prepare for cloudflare (otherwise it does weird things)
@@ -79,8 +86,12 @@ jobs:
 
       - name: Promote version as active
         id: promote
-        # Only promote if it's a push to main
-        if: ${{ github.ref == 'refs/heads/main' }}
+        # Promote based on branch and environment:
+        # - main branch: promote next, sepolia, and mainnet-test (staging environments)
+        # - prod branch: promote mainnet (production)
+        if: |
+          (github.ref == 'refs/heads/main' && (matrix.environment == 'next' || matrix.environment == 'sepolia' || matrix.environment == 'mainnet-test')) ||
+          (github.ref == 'refs/heads/prod' && matrix.environment == 'mainnet')
         working-directory: ./client
         run: |
           export VERSION_ID=$(bun wrangler versions list --env ${{ matrix.environment }} --json | jq -r '.[] | select(.annotations."workers/tag" == "${{ steps.vars.outputs.sha_short }}") | .id')
@@ -99,9 +110,23 @@ jobs:
         if: always()
         run: |
           # Determine if deployment was successful
-          if [[ "${{ steps.upload.outputs.upload_success }}" == "true" ]] && ([[ "${{ github.ref }}" != "refs/heads/main" ]] || [[ "${{ steps.promote.outputs.promote_success }}" == "true" ]]); then
+          if [[ "${{ steps.upload.outputs.upload_success }}" == "true" ]] && ([[ "${{ github.ref }}" != "refs/heads/main" ]] && [[ "${{ github.ref }}" != "refs/heads/prod" ]] || [[ "${{ steps.promote.outputs.promote_success }}" == "true" ]]); then
             DEPLOYMENT_SUCCESS="true"
-            DEPLOYMENT_URL="https://${{ steps.vars.outputs.sha_short }}-ponzi-land-${{ matrix.environment }}.runelabs.workers.dev/"
+
+            # Determine URL based on whether it's promoted or preview
+            if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+              # Production URLs for promoted builds
+              case "${{ matrix.environment }}" in
+                "mainnet") DEPLOYMENT_URL="https://play.ponzi.land" ;;
+                "sepolia") DEPLOYMENT_URL="https://sepolia.ponzi.land" ;;
+                "next") DEPLOYMENT_URL="https://next.ponzi.land" ;;
+                "mainnet-test") DEPLOYMENT_URL="https://test.ponzi.land" ;;
+                *) DEPLOYMENT_URL="https://${{ steps.vars.outputs.sha_short }}-ponzi-land-${{ matrix.environment }}.runelabs.workers.dev/" ;;
+              esac
+            else
+              # Preview URLs for PR builds
+              DEPLOYMENT_URL="https://${{ steps.vars.outputs.sha_short }}-ponzi-land-${{ matrix.environment }}.runelabs.workers.dev/"
+            fi
           else
             DEPLOYMENT_SUCCESS="false"
             DEPLOYMENT_URL=""
@@ -137,6 +162,8 @@ jobs:
             SEPOLIA_URL: ${{ needs.deploy-cloudflare.outputs.sepolia-success == 'true' && needs.deploy-cloudflare.outputs.sepolia-url || '-' }}
             MAINNET_TEST_STATUS: ${{ needs.deploy-cloudflare.outputs.mainnet-test-success == 'true' && '✅' || '❌' }}
             MAINNET_TEST_URL: ${{ needs.deploy-cloudflare.outputs.mainnet-test-success == 'true' && needs.deploy-cloudflare.outputs.mainnet-test-url || '-' }}
+            NEXT_STATUS: ${{ needs.deploy-cloudflare.outputs.next-success == 'true' && '✅' || '❌' }}
+            NEXT_URL: ${{ needs.deploy-cloudflare.outputs.next-success == 'true' && needs.deploy-cloudflare.outputs.next-url || '-' }}
 
       - name: Create comment
         if: steps.fc.outputs.comment-id == ''
