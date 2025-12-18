@@ -16,9 +16,11 @@ pub struct AppState {
     pub land_historical_repository: Arc<LandHistoricalRepository>,
     pub wallet_activity_repository: Arc<WalletActivityRepository>,
     pub price_feed_repository: Arc<PriceFeedRepository>,
+    pub drop_emitter_wallets: Arc<Vec<String>>,
 }
 
 impl AppState {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         token_service: Arc<TokenService>,
         avnu_service: Arc<AvnuService>,
@@ -27,6 +29,7 @@ impl AppState {
         land_historical_repository: Arc<LandHistoricalRepository>,
         wallet_activity_repository: Arc<WalletActivityRepository>,
         price_feed_repository: Arc<PriceFeedRepository>,
+        drop_emitter_wallets: Arc<Vec<String>>,
     ) -> Self {
         Self {
             token_service,
@@ -36,6 +39,7 @@ impl AppState {
             land_historical_repository,
             wallet_activity_repository,
             price_feed_repository,
+            drop_emitter_wallets,
         }
     }
 }
@@ -79,5 +83,11 @@ impl FromRef<AppState> for Arc<WalletActivityRepository> {
 impl FromRef<AppState> for Arc<PriceFeedRepository> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.price_feed_repository.clone()
+    }
+}
+
+impl FromRef<AppState> for Arc<Vec<String>> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.drop_emitter_wallets.clone()
     }
 }

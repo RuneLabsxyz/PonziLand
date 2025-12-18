@@ -1,5 +1,11 @@
 default_token = "STRK"
 
+# Wallet addresses tracked as "drop emitters" for the /drops/emitted endpoint
+drop_emitter_wallets = [
+    "0x2c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd",
+    "0x62f0ca21835f5fb7470f80eaee41dcf29f7989e14607f023f390fcfb864bc7c",
+]
+
 cors_origins = [
     "http://localhost:3000",
     "https://localhost:3000",

@@ -138,6 +138,7 @@ async fn main() -> Result<()> {
         land_historical_repository,
         wallet_activity_repository,
         price_feed_repository,
+        drop_emitter_wallets: Arc::new(config.drop_emitter_wallets.clone()),
     };
 
     let cors = CorsLayer::new()

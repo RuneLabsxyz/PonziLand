@@ -7,12 +7,6 @@ use std::sync::Arc;
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
 use crate::state::AppState;
 
-/// Hardcoded wallet addresses that are tracked as "drop emitters"
-const DROP_EMITTER_WALLETS: &[&str] = &[
-    "0x2c1873209e67ed782d8a829d2c289947e959448c3311f785fb8314da4b4eebd",
-    "0x62f0ca21835f5fb7470f80eaee41dcf29f7989e14607f023f390fcfb864bc7c",
-];
-
 const USDC_SYMBOL: &str = "USDC";
 
 #[derive(Debug, Clone, Serialize)]
@@ -47,9 +41,10 @@ impl DropsRoute {
         State(avnu_service): State<Arc<AvnuService>>,
         State(ekubo_service): State<Arc<EkuboService>>,
         State(token_service): State<Arc<TokenService>>,
+        State(drop_emitter_wallets): State<Arc<Vec<String>>>,
     ) -> Result<Json<DropsEmittedResponse>, axum::http::StatusCode> {
-        // Convert hardcoded wallets to lowercase for case-insensitive matching
-        let wallets: Vec<String> = DROP_EMITTER_WALLETS
+        // Convert configured wallets to lowercase for case-insensitive matching
+        let wallets: Vec<String> = drop_emitter_wallets
             .iter()
             .map(|w| w.to_lowercase())
             .collect();

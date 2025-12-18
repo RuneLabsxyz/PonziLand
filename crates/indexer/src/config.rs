@@ -39,6 +39,10 @@ pub struct Conf {
     pub database: DatabaseConfig,
 
     pub default_token: String,
+
+    /// Wallet addresses tracked as "drop emitters" for the drops endpoint
+    #[config(default = [])]
+    pub drop_emitter_wallets: Vec<String>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
