@@ -1,7 +1,4 @@
-import {
-  PUBLIC_GAME_LAUNCH,
-  PUBLIC_PONZI_API_URL,
-} from '$env/static/public';
+import { PUBLIC_GAME_LAUNCH, PUBLIC_PONZI_API_URL } from '$env/static/public';
 import {
   calculatePositionMetrics,
   type PositionMetrics,
