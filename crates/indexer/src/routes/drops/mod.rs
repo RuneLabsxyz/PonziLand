@@ -11,11 +11,16 @@ use crate::utils::normalize_token_address;
 const USDC_SYMBOL: &str = "USDC";
 
 #[derive(Debug, Clone, Serialize)]
+pub struct TokenInfo {
+    pub address: String,
+    pub amount: String,
+    pub usd: Option<f64>,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct DropsEmittedResponse {
     pub total_usd: f64,
-    pub by_token: HashMap<String, String>,
-    pub by_token_usd: HashMap<String, f64>,
-    pub by_token_name: HashMap<String, String>,
+    pub tokens: HashMap<String, TokenInfo>,
     pub positions_count: u64,
     pub tracked_wallets: Vec<String>,
 }
@@ -79,20 +84,16 @@ impl DropsRoute {
 
         // Convert to USD and build response
         let mut total_usd = 0.0_f64;
-        let mut by_token: HashMap<String, String> = HashMap::new();
-        let mut by_token_usd: HashMap<String, f64> = HashMap::new();
-        let mut by_token_name: HashMap<String, String> = HashMap::new();
+        let mut tokens: HashMap<String, TokenInfo> = HashMap::new();
 
         for (token_address, amount) in &aggregated_outflows {
-            // Store raw amount as string
-            by_token.insert(token_address.clone(), amount.to_string());
-
             let normalized_address = normalize_token_address(token_address);
 
-            // Look up token symbol
-            if let Some(symbol) = token_symbols.get(&normalized_address) {
-                by_token_name.insert(token_address.clone(), symbol.clone());
-            }
+            // Get token symbol (use address as fallback)
+            let symbol = token_symbols
+                .get(&normalized_address)
+                .cloned()
+                .unwrap_or_else(|| token_address.clone());
 
             // Get token price and convert to USD
             let token_ratio: Option<f64> = avnu_service
@@ -106,29 +107,37 @@ impl DropsRoute {
 
             let decimals = token_service.get_decimals(&normalized_address);
 
-            if let (Some(token_ratio), Some(usdc)) = (token_ratio, usdc_ratio) {
+            let usd_value = if let (Some(token_ratio), Some(usdc)) = (token_ratio, usdc_ratio) {
                 // Calculate USD value
                 // usdc ratio is already in USD form (1 STRK = Y USD)
                 // token_ratio is "1 STRK = X tokens"
                 // So 1 token = (usdc / token_ratio) USD
                 if token_ratio > 0.0 {
                     let usd_per_token = usdc / token_ratio;
-
-                    // Convert U256 amount to f64 with proper decimals
                     let amount_f64 = u256_to_f64_with_decimals(amount, decimals);
-                    let usd_value = amount_f64 * usd_per_token;
-
-                    by_token_usd.insert(token_address.clone(), usd_value);
-                    total_usd += usd_value;
+                    let usd = amount_f64 * usd_per_token;
+                    total_usd += usd;
+                    Some(usd)
+                } else {
+                    None
                 }
-            }
+            } else {
+                None
+            };
+
+            tokens.insert(
+                symbol,
+                TokenInfo {
+                    address: token_address.clone(),
+                    amount: amount.to_string(),
+                    usd: usd_value,
+                },
+            );
         }
 
         Ok(Json(DropsEmittedResponse {
             total_usd,
-            by_token,
-            by_token_usd,
-            by_token_name,
+            tokens,
             positions_count: positions.len() as u64,
             tracked_wallets: wallets,
         }))
