@@ -17,7 +17,7 @@ export const GET: RequestHandler = async ({ params }) => {
     const stats = factoryService.computeFactoryStats(factory);
 
     return json({
-      ...factory,
+      factory,
       stats,
     });
   } catch (error) {
