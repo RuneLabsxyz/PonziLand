@@ -15,6 +15,7 @@ pub struct DropsEmittedResponse {
     pub total_usd: f64,
     pub by_token: HashMap<String, String>,
     pub by_token_usd: HashMap<String, f64>,
+    pub by_token_name: HashMap<String, String>,
     pub positions_count: u64,
     pub tracked_wallets: Vec<String>,
 }
@@ -69,16 +70,29 @@ impl DropsRoute {
 
         let usdc_ratio = get_usdc_ratio(&token_service, &avnu_service, &ekubo_service);
 
+        // Build token address to symbol lookup map
+        let token_symbols: HashMap<String, String> = token_service
+            .list()
+            .into_iter()
+            .map(|t| (t.address.to_fixed_hex_string(), t.symbol))
+            .collect();
+
         // Convert to USD and build response
         let mut total_usd = 0.0_f64;
         let mut by_token: HashMap<String, String> = HashMap::new();
         let mut by_token_usd: HashMap<String, f64> = HashMap::new();
+        let mut by_token_name: HashMap<String, String> = HashMap::new();
 
         for (token_address, amount) in &aggregated_outflows {
             // Store raw amount as string
             by_token.insert(token_address.clone(), amount.to_string());
 
             let normalized_address = normalize_token_address(token_address);
+
+            // Look up token symbol
+            if let Some(symbol) = token_symbols.get(&normalized_address) {
+                by_token_name.insert(token_address.clone(), symbol.clone());
+            }
 
             // Get token price and convert to USD
             let token_ratio: Option<f64> = avnu_service
@@ -114,6 +128,7 @@ impl DropsRoute {
             total_usd,
             by_token,
             by_token_usd,
+            by_token_name,
             positions_count: positions.len() as u64,
             tracked_wallets: wallets,
         }))
