@@ -18,8 +18,8 @@ use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{
-    land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute, tokens::TokenRoute,
-    wallets::WalletsRoute,
+    drops::DropsRoute, land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute,
+    tokens::TokenRoute, wallets::WalletsRoute,
 };
 use serde::{Deserialize, Serialize};
 use service::{
@@ -38,6 +38,7 @@ use worker::MonitorManager;
 
 pub mod config;
 pub mod service;
+pub mod utils;
 pub mod worker;
 
 pub mod state;
@@ -138,6 +139,7 @@ async fn main() -> Result<()> {
         land_historical_repository,
         wallet_activity_repository,
         price_feed_repository,
+        drop_emitter_wallets: Arc::new(config.drop_emitter_wallets.clone()),
     };
 
     let cors = CorsLayer::new()
@@ -178,6 +180,10 @@ async fn main() -> Result<()> {
         .nest(
             "/wallets",
             WalletsRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
+            "/drops",
+            DropsRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))

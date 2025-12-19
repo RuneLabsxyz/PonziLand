@@ -277,4 +277,21 @@ impl Repository {
         .fetch_all(&mut *(self.db.acquire().await?))
         .await
     }
+
+    /// Gets all positions for multiple owners (for aggregate calculations)
+    pub async fn get_by_owners(
+        &self,
+        owners: &[String],
+    ) -> Result<Vec<LandHistoricalModel>, sqlx::Error> {
+        let mut all_positions = Vec::new();
+
+        for owner in owners {
+            let positions = self.get_by_owner(owner).await?;
+            all_positions.extend(positions);
+        }
+
+        all_positions.sort_by(|a, b| b.time_bought.cmp(&a.time_bought));
+
+        Ok(all_positions)
+    }
 }
