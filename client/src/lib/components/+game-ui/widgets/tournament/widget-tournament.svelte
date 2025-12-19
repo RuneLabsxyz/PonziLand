@@ -11,11 +11,9 @@
     type LeaderboardEntry,
     type RankingMode,
     TOURNAMENT_START,
+    TOURNAMENT_END,
   } from './tournament.service';
   import SetUsernameButton from '$lib/components/socialink/SetUsernameButton.svelte';
-
-  // Tournament end: Dec 19, 14:30 Paris time (CET = UTC+1) = 13:30 UTC
-  const TOURNAMENT_END = '2025-12-19T13:30:00Z';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;

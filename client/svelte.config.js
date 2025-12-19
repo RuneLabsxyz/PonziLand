@@ -14,6 +14,7 @@ process.env.PUBLIC_DOJO_PROFILE = profile;
 // Game configuration constants
 const GAME_LAUNCH_DATE = '2025-10-01T00:00:00Z';
 const TOURNAMENT_START_DATE = '2025-12-15T19:00:00Z';
+const TOURNAMENT_END_DATE = '2025-12-20T19:30:00Z';
 
 const profiles = {
   env: {
@@ -34,6 +35,7 @@ const profiles = {
     LAYERSWAP_TOKEN: process.env.LAYERSWAP_TOKEN,
     PUBLIC_GAME_LAUNCH: process.env.GAME_LAUNCH,
     PUBLIC_TOURNAMENT_START: process.env.TOURNAMENT_START,
+    PUBLIC_TOURNAMENT_END: process.env.TOURNAMENT_END,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -55,6 +57,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8',
@@ -76,6 +79,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -96,6 +100,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
   },
   'mainnet-local-api': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
@@ -117,6 +122,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
@@ -138,6 +144,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
   },
   deployment: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -160,6 +167,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
     MANIFEST_PATH: '/etc/config/manifest.json',
     DATA_PATH: '/etc/config/data.json',
   },
@@ -182,6 +190,7 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: null,
     PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
     PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
+    PUBLIC_TOURNAMENT_END: TOURNAMENT_END_DATE,
     MANIFEST_PATH: '../playtest/deployments/test/manifest.json',
     DATA_PATH: '../playtest/deployments/test/data.json',
   },
