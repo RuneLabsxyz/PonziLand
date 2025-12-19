@@ -3,13 +3,12 @@
   import type { Snippet } from 'svelte';
   import { RefreshCw } from 'lucide-svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
-  import TournamentLeaderboard from './tournament-leaderboard.svelte';
   import TabNavigation from '$lib/components/ui/tab-navigation.svelte';
+  import LeaderboardTable from '../leaderboard/leaderboard-table.svelte';
   import {
     fetchTournamentLeaderboard,
     sortEntriesByRankingMode,
     type LeaderboardEntry,
-    type LeaderboardResponse,
     type RankingMode,
     TOURNAMENT_START,
   } from './tournament.service';
@@ -23,12 +22,13 @@
     setCustomControls?: (controls: Snippet<[]> | null) => void;
   };
 
-  let { setCustomTitle, setCustomControls }: Props = $props();
+  let { setCustomControls }: Props = $props();
 
-  let leaderboardPromise = $state<Promise<LeaderboardResponse> | null>(null);
+  let entries = $state<LeaderboardEntry[]>([]);
   let refreshInterval: NodeJS.Timeout;
   let countdownInterval: NodeJS.Timeout;
   let isRefreshing = $state(false);
+  let isInitialLoad = $state(true);
   let rankingMode = $state<RankingMode>('best');
   let now = $state(new Date());
 
@@ -53,21 +53,21 @@
     return { days, hours, minutes, seconds };
   });
 
-  const sortedEntries = $derived.by(() => {
-    if (!leaderboardPromise) return null;
-    return leaderboardPromise.then((data) =>
-      sortEntriesByRankingMode(data.entries, rankingMode),
-    );
-  });
+  // Sort entries by ranking mode using TokenFlow metrics (excludes buy/sell)
+  const sortedEntries = $derived(
+    sortEntriesByRankingMode(entries, rankingMode, 'tokenFlow'),
+  );
 
   async function refresh() {
     if (isRefreshing) return;
     isRefreshing = true;
-    leaderboardPromise = null;
 
     try {
-      leaderboardPromise = fetchTournamentLeaderboard();
-      await leaderboardPromise;
+      const data = await fetchTournamentLeaderboard();
+      entries = data.entries;
+      isInitialLoad = false;
+    } catch (error) {
+      console.error('Error fetching tournament leaderboard:', error);
     } finally {
       isRefreshing = false;
     }
@@ -184,32 +184,24 @@
 
   <!-- Content -->
   <div class="flex-1 overflow-auto min-h-0">
-    {#if sortedEntries}
-      {#await sortedEntries}
-        <div
-          class="text-center py-8 text-gray-400 flex flex-col items-center gap-4"
-        >
-          <RotatingCoin />
-          <span>Loading tournament data...</span>
-        </div>
-      {:then entries}
-        {#if entries.length === 0}
-          <div class="text-center py-8 text-gray-400">
-            No tournament positions yet
-          </div>
-        {:else}
-          <TournamentLeaderboard {entries} {rankingMode} />
-        {/if}
-      {:catch error}
-        <div class="text-center py-8 text-red-400">Error: {error.message}</div>
-      {/await}
-    {:else}
+    {#if isInitialLoad}
       <div
         class="text-center py-8 text-gray-400 flex flex-col items-center gap-4"
       >
         <RotatingCoin />
         <span>Loading tournament data...</span>
       </div>
+    {:else if sortedEntries.length === 0}
+      <div class="text-center py-8 text-gray-400">
+        No tournament positions yet
+      </div>
+    {:else}
+      <LeaderboardTable
+        entries={sortedEntries}
+        {rankingMode}
+        showFullDetails={false}
+        metricType="tokenFlow"
+      />
     {/if}
   </div>
 </div>

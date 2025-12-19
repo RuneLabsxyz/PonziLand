@@ -180,10 +180,11 @@ const guildWidgetState: WidgetState = {
 const leaderboardWidgetState: WidgetState = {
   id: 'leaderboard',
   type: 'leaderboard',
-  position: { x: window.innerWidth - 320, y: 600 },
-  dimensions: { width: 320, height: 300 },
+  position: { x: 140, y: 80 },
+  dimensions: { width: 650, height: 500 },
   isMinimized: false,
   isOpen: false,
+  showMaximize: true,
 };
 
 export const DEFAULT_WIDGETS_STATE: WidgetsState = Object.assign(
@@ -200,10 +201,11 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     icon: '/ui/icons/Icon_ControlCenter.png',
   },
   {
-    id: 'tournament',
-    type: 'tournament',
-    label: 'Tournament',
-    icon: '/ui/icons/Icon_Cup.png',
+    id: 'leaderboard',
+    type: 'leaderboard',
+    label: 'Leaderboard',
+    icon: '/ui/icons/Icon_Crown.png',
+    if: ENABLE_LEADERBOARD,
   },
   {
     id: 'market',
@@ -218,6 +220,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
   },
   {
+    id: 'tournament',
+    type: 'tournament',
+    label: 'Tournament',
+    icon: '/ui/icons/Icon_Cup.png',
+  },
+  {
     id: 'help',
     type: 'help',
     label: 'Help',
@@ -229,13 +237,6 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     label: 'Guild',
     icon: '/ui/icons/Icon_Guilds.png',
     if: ENABLE_GUILD,
-  },
-  {
-    id: 'leaderboard',
-    type: 'leaderboard',
-    label: 'Leaderboard',
-    icon: '/ui/icons/Icon_Cup.png',
-    if: ENABLE_LEADERBOARD,
   },
 
   // {

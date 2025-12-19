@@ -6,7 +6,7 @@ export const ENABLE_TOKEN_DROP = false;
 
 export const ENABLE_GUILD = false;
 
-export const ENABLE_LEADERBOARD = false;
+export const ENABLE_LEADERBOARD = true;
 
 export const ENABLE_BRIDGE = true;
 

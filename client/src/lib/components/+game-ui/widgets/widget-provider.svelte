@@ -12,7 +12,7 @@
   import WidgetNftLink from './nft-link/widget-nft-link.svelte';
   import WidgetGuild from './guild/widget-guild.svelte';
   import { ENABLE_GUILD } from '$lib/flags';
-  import WidgetLeaderboard from './leaderboard/Leaderboard.svelte';
+  import WidgetLeaderboard from './leaderboard/widget-leaderboard.svelte';
   import WidgetHeatmap from './heatmap/widget-heatmap.svelte';
   import WidgetSwap from './swap/widget-swap.svelte';
   import WidgetDisclaimer from './disclaimer/widget-disclaimer.svelte';
@@ -57,7 +57,7 @@
         {:else if type === 'guild' && ENABLE_GUILD}
           <WidgetGuild />
         {:else if type === 'leaderboard'}
-          <WidgetLeaderboard />
+          <WidgetLeaderboard {setCustomControls} />
         {:else if type === 'data-maps'}
           <WidgetHeatmap />
         {:else if type === 'swap'}
