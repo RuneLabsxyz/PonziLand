@@ -264,13 +264,11 @@
         })}
       >
         {#if baseEquivalent}
-          <span class="text-lg leading-none">
-            $
-          </span>{baseEquivalent.toString()}
+          {@const val = baseEquivalent.rawValue().toNumber()}
+          <span class="text-lg leading-none">$</span>{#if val > 0 && val < 0.01}{'<0.01'}{:else}{baseEquivalent.toString()}{/if}
         {:else if isBaseToken}
-          <span class="text-lg leading-none">
-            $
-          </span>{displayAmount.toString()}
+          {@const val = displayAmount.rawValue().toNumber()}
+          <span class="text-lg leading-none">$</span>{#if val > 0 && val < 0.01}{'<0.01'}{:else}{displayAmount.toString()}{/if}
         {/if}
       </div>
     </div>

@@ -35,7 +35,7 @@
   let sourceBalance = $state('0');
 
   const NORMAL_STYLES =
-    'width: 320px; height: auto; top: 0px; right: 0px; transform: none;';
+    'width: 380px; height: auto; top: 0px; right: 0px; transform: none;';
   const BRIDGE_STYLES =
     'width: 700px; height: auto; top: 0px; right: 0px; transform: none;';
 
