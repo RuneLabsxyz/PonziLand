@@ -1,4 +1,7 @@
-import { PUBLIC_PONZI_API_URL } from '$env/static/public';
+import {
+  PUBLIC_PONZI_API_URL,
+  PUBLIC_TOURNAMENT_START,
+} from '$env/static/public';
 import {
   processLeaderboardEntries,
   type LeaderboardResponse,
@@ -15,8 +18,8 @@ export type {
 } from '../leaderboard/leaderboard.service';
 export { sortEntriesByRankingMode } from '../leaderboard/leaderboard.service';
 
-// Tournament start: Dec 15, 20:00 Paris time (CET = UTC+1) = 19:00 UTC
-export const TOURNAMENT_START = '2025-12-15T19:00:00Z';
+// Re-export for components that need it
+export const TOURNAMENT_START = PUBLIC_TOURNAMENT_START;
 
 /**
  * Fetch tournament positions (since tournament start)
@@ -24,7 +27,7 @@ export const TOURNAMENT_START = '2025-12-15T19:00:00Z';
 export async function fetchTournamentLeaderboard(): Promise<LeaderboardResponse> {
   try {
     const response = await fetch(
-      `${PUBLIC_PONZI_API_URL}/land-historical/leaderboard?since=${TOURNAMENT_START}`,
+      `${PUBLIC_PONZI_API_URL}/land-historical/leaderboard?since=${PUBLIC_TOURNAMENT_START}`,
     );
 
     if (!response.ok) {

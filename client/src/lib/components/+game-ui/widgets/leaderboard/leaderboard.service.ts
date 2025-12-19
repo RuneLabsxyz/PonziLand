@@ -1,11 +1,11 @@
-import { PUBLIC_PONZI_API_URL } from '$env/static/public';
+import {
+  PUBLIC_GAME_LAUNCH,
+  PUBLIC_PONZI_API_URL,
+} from '$env/static/public';
 import {
   calculatePositionMetrics,
   type PositionMetrics,
 } from '../positions/position-pnl-calculator';
-
-// Game launch: October 1, 2025
-const GAME_LAUNCH = '2025-10-01T00:00:00Z';
 
 // ===== Shared Types =====
 
@@ -129,7 +129,7 @@ export function processLeaderboardEntries(
 export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
   try {
     const response = await fetch(
-      `${PUBLIC_PONZI_API_URL}/land-historical/leaderboard?since=${GAME_LAUNCH}`,
+      `${PUBLIC_PONZI_API_URL}/land-historical/leaderboard?since=${PUBLIC_GAME_LAUNCH}`,
     );
 
     if (!response.ok) {

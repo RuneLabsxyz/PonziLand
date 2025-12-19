@@ -11,6 +11,10 @@ let profile = process.env.DOJO_PROFILE?.toLowerCase() ?? 'dev';
 
 process.env.PUBLIC_DOJO_PROFILE = profile;
 
+// Game configuration constants
+const GAME_LAUNCH_DATE = '2025-10-01T00:00:00Z';
+const TOURNAMENT_START_DATE = '2025-12-15T19:00:00Z';
+
 const profiles = {
   env: {
     PUBLIC_DOJO_RPC_URL: process.env.DOJO_RPC_URL,
@@ -28,6 +32,8 @@ const profiles = {
     PUBLIC_POSTHOG_KEY: process.env.POSTHOG_KEY,
     PAYMASTER_API_KEY: process.env.PAYMASTER_API_KEY,
     LAYERSWAP_TOKEN: process.env.LAYERSWAP_TOKEN,
+    PUBLIC_GAME_LAUNCH: process.env.GAME_LAUNCH,
+    PUBLIC_TOURNAMENT_START: process.env.TOURNAMENT_START,
   },
   dev: {
     PUBLIC_DOJO_RPC_URL: 'http://127.0.0.1:5050',
@@ -47,6 +53,8 @@ const profiles = {
     PUBLIC_FARO_COLLECTOR_URL: null,
     PUBLIC_GIT_COMMIT_HASH: null,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
   },
   sepolia: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia/rpc/v0_8',
@@ -66,6 +74,8 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
   },
   'mainnet-test': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet',
@@ -84,6 +94,8 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
   },
   'mainnet-local-api': {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
@@ -103,6 +115,8 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
   },
   mainnet: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/mainnet/rpc/v0_9',
@@ -122,6 +136,8 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
   },
   deployment: {
     PUBLIC_DOJO_RPC_URL: 'https://api.cartridge.gg/x/starknet/sepolia',
@@ -142,6 +158,8 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
     MANIFEST_PATH: '/etc/config/manifest.json',
     DATA_PATH: '/etc/config/data.json',
   },
@@ -162,6 +180,8 @@ const profiles = {
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
     PUBLIC_POSTHOG_KEY: null,
+    PUBLIC_GAME_LAUNCH: GAME_LAUNCH_DATE,
+    PUBLIC_TOURNAMENT_START: TOURNAMENT_START_DATE,
     MANIFEST_PATH: '../playtest/deployments/test/manifest.json',
     DATA_PATH: '../playtest/deployments/test/data.json',
   },
