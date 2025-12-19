@@ -112,7 +112,7 @@
   }
 </script>
 
-<div class="min-h-screen bg-[#1a1a2e] p-6 text-white">
+<div class="min-h-screen p-6 text-white">
   <!-- Header -->
   <div class="mb-6 flex items-center justify-between">
     <div>

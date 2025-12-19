@@ -45,7 +45,7 @@
   }
 </script>
 
-<div class="min-h-screen bg-[#1a1a2e] text-white">
+<div class="min-h-screen bg-ponzi text-white">
   <!-- Header -->
   <header class="border-b border-gray-800 bg-black/40">
     <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
