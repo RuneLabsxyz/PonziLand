@@ -283,11 +283,27 @@ export class MidgardGameStore {
         },
       };
 
+      // Tokenomics: Burn the ticket cost
+      this.burnBalance += ticketCost;
+      this.totalBurned += ticketCost;
+
       // Tokenomics: Mint inflation to challenger
       this.challengerBalance += winReward;
       this.totalMinted += winReward;
 
-      // Record MINT event
+      // Record BURN event for ticket
+      this.tokenEvents = [
+        ...this.tokenEvents,
+        {
+          time: this.simulationTime,
+          type: 'BURN',
+          amount: ticketCost,
+          source: 'challenge_win_ticket',
+          description: `Challenge ticket burned on Land #${factoryLandId}`,
+        },
+      ];
+
+      // Record MINT event for reward
       this.tokenEvents = [
         ...this.tokenEvents,
         {

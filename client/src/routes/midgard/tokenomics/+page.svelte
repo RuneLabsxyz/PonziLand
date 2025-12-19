@@ -190,7 +190,6 @@
                 format: (v: number) => v.toFixed(0),
                 class: 'text-white',
               },
-              area: { fill: 'none' },
             }}
           />
         </div>
