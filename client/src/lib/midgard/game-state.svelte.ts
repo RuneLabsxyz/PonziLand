@@ -240,7 +240,11 @@ export class MidgardGameStore {
   }
 
   // Challenge system (yellow paper implementation) - plays game on challenge
-  public challenge(factoryLandId: number): ChallengeResult | null {
+  // Optional forceOutcome parameter for testing: 'win' or 'loss'
+  public challenge(
+    factoryLandId: number,
+    forceOutcome?: 'win' | 'loss',
+  ): ChallengeResult | null {
     const landIndex = this.lands.findIndex((l) => l.id === factoryLandId);
     if (landIndex === -1) return null;
 
@@ -258,10 +262,22 @@ export class MidgardGameStore {
     // Check liquidity constraint
     if (!stats.challengeAllowed) return null;
 
-    // Play game to determine score - one chance!
-    const playerScore = playGame();
+    // Determine outcome - either forced or by playing the game
     const factoryScore = land.factory.score;
-    const won = playerScore > factoryScore;
+    let playerScore: number;
+    let won: boolean;
+
+    if (forceOutcome === 'win') {
+      playerScore = factoryScore + 1; // Ensure win
+      won = true;
+    } else if (forceOutcome === 'loss') {
+      playerScore = Math.max(0, factoryScore - 1); // Ensure loss
+      won = false;
+    } else {
+      // Play game to determine score - one chance!
+      playerScore = playGame();
+      won = playerScore > factoryScore;
+    }
 
     let gardChange: number;
 

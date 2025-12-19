@@ -46,10 +46,16 @@
     }
   }
 
-  // Handle challenge
+  // Handle challenge (random game)
   function handleChallenge() {
     if (midgardGame.selectedLandId === null) return;
     midgardGame.challenge(midgardGame.selectedLandId);
+  }
+
+  // Handle forced challenge outcome (for testing)
+  function handleForceChallenge(outcome: 'win' | 'loss') {
+    if (midgardGame.selectedLandId === null) return;
+    midgardGame.challenge(midgardGame.selectedLandId, outcome);
   }
 
   // Derived state for selected land
@@ -602,18 +608,37 @@
               </div>
             </div>
 
-            <!-- Challenge Button -->
-            <Button
-              variant="red"
-              class="w-full"
-              disabled={!factoryStats.challengeAllowed ||
-                midgardGame.challengerBalance < factoryStats.ticketCost}
-              onclick={handleChallenge}
-            >
-              Challenge! (Cost: {factoryStats.ticketCost.toFixed(4)} $GARD)
-            </Button>
+            <!-- Challenge Buttons -->
+            <div class="flex gap-2">
+              <Button
+                variant="red"
+                class="flex-1"
+                disabled={!factoryStats.challengeAllowed ||
+                  midgardGame.challengerBalance < factoryStats.ticketCost}
+                onclick={handleChallenge}
+              >
+                Challenge! (Game)
+              </Button>
+              <Button
+                variant="blue"
+                disabled={!factoryStats.challengeAllowed ||
+                  midgardGame.challengerBalance < factoryStats.ticketCost}
+                onclick={() => handleForceChallenge('win')}
+              >
+                Force Win
+              </Button>
+              <button
+                class="rounded bg-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!factoryStats.challengeAllowed ||
+                  midgardGame.challengerBalance < factoryStats.ticketCost}
+                onclick={() => handleForceChallenge('loss')}
+              >
+                Force Loss
+              </button>
+            </div>
             <p class="mt-2 text-center text-xs text-gray-500">
-              Score determined when you challenge - one chance!
+              Cost: {factoryStats.ticketCost.toFixed(4)} $GARD | Game = random score,
+              Force = guaranteed outcome
             </p>
 
             {#if !factoryStats.challengeAllowed}
