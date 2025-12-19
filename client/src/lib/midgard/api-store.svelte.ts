@@ -1,6 +1,7 @@
 /**
  * Midgard API Store
  * Svelte 5 reactive store backed by the database API
+ * Single wallet can act as both Tycoon (factory owner) and Challenger
  */
 
 import * as api from './api-client';
@@ -18,35 +19,40 @@ class MidgardAPIStore {
   public isLoading = $state(false);
   public error = $state<string | null>(null);
 
-  // Wallet addresses
-  public tycoonAddress = $state('');
-  public challengerAddress = $state('');
+  // Single wallet
+  public walletAddress = $state('');
+  public wallet = $state<Wallet | null>(null);
 
-  // Wallet data
-  public tycoonWallet = $state<Wallet | null>(null);
-  public challengerWallet = $state<Wallet | null>(null);
-
-  // Current factory (pending or active)
+  // Current factory (for selected land)
   public currentFactory = $state<Factory | null>(null);
   public factoryStats = $state<FactoryStats | null>(null);
+
+  // All factories (for factories list page)
+  public factories = $state<Factory[]>([]);
 
   // Current challenge (pending)
   public pendingChallenge = $state<Challenge | null>(null);
   public lastChallengeResult = $state<Challenge | null>(null);
 
+  // Factory challenges history
+  public factoryChallenges = $state<Challenge[]>([]);
+
   // Supply stats
   public supplyStats = $state<SupplyStats | null>(null);
 
-  // Selected land ID (for UI)
+  // Selected land ID (for My Lands page)
   public selectedLandId = $state<string | null>(null);
 
-  // Derived balances
-  public get tycoonBalance(): number {
-    return this.tycoonWallet?.gardBalance ?? 0;
+  // Selected factory ID (for Factories page)
+  public selectedFactoryId = $state<string | null>(null);
+
+  // Derived balance
+  public get walletBalance(): number {
+    return this.wallet?.gardBalance ?? 0;
   }
 
-  public get challengerBalance(): number {
-    return this.challengerWallet?.gardBalance ?? 0;
+  public get lockedBalance(): number {
+    return this.wallet?.lockedBalance ?? 0;
   }
 
   public get totalSupply(): number {
@@ -75,23 +81,17 @@ class MidgardAPIStore {
   }
 
   /**
-   * Connect wallets (creates if they don't exist)
+   * Connect wallet (creates if it doesn't exist)
    */
-  async connect(tycoonAddr: string, challengerAddr: string): Promise<void> {
+  async connect(address: string): Promise<void> {
     this.isLoading = true;
     this.error = null;
 
     try {
-      // Create/get both wallets
-      const [tycoon, challenger] = await Promise.all([
-        api.createWallet(tycoonAddr),
-        api.createWallet(challengerAddr),
-      ]);
+      const wallet = await api.createWallet(address);
 
-      this.tycoonAddress = tycoonAddr;
-      this.challengerAddress = challengerAddr;
-      this.tycoonWallet = tycoon;
-      this.challengerWallet = challenger;
+      this.walletAddress = address;
+      this.wallet = wallet;
       this.isConnected = true;
 
       // Load supply stats
@@ -109,33 +109,29 @@ class MidgardAPIStore {
    */
   disconnect(): void {
     this.isConnected = false;
-    this.tycoonAddress = '';
-    this.challengerAddress = '';
-    this.tycoonWallet = null;
-    this.challengerWallet = null;
+    this.walletAddress = '';
+    this.wallet = null;
     this.currentFactory = null;
     this.factoryStats = null;
+    this.factories = [];
     this.pendingChallenge = null;
     this.lastChallengeResult = null;
+    this.factoryChallenges = [];
     this.selectedLandId = null;
+    this.selectedFactoryId = null;
   }
 
   /**
-   * Refresh wallet balances
+   * Refresh wallet balance
    */
-  async refreshWallets(): Promise<void> {
+  async refreshWallet(): Promise<void> {
     if (!this.isConnected) return;
 
     try {
-      const [tycoon, challenger] = await Promise.all([
-        api.getWallet(this.tycoonAddress),
-        api.getWallet(this.challengerAddress),
-      ]);
-
-      if (tycoon) this.tycoonWallet = tycoon;
-      if (challenger) this.challengerWallet = challenger;
+      const wallet = await api.getWallet(this.walletAddress);
+      if (wallet) this.wallet = wallet;
     } catch (e) {
-      console.error('Failed to refresh wallets:', e);
+      console.error('Failed to refresh wallet:', e);
     }
   }
 
@@ -151,6 +147,36 @@ class MidgardAPIStore {
   }
 
   /**
+   * Load all active factories
+   */
+  async loadFactories(): Promise<void> {
+    try {
+      this.factories = await api.getFactories({ status: 'active' });
+    } catch (e) {
+      console.error('Failed to load factories:', e);
+    }
+  }
+
+  /**
+   * Select a factory (for Factories page)
+   */
+  async selectFactory(factoryId: string): Promise<void> {
+    this.selectedFactoryId = factoryId;
+
+    try {
+      const data = await api.getFactoryWithStats(factoryId);
+      if (data) {
+        this.currentFactory = data.factory;
+        this.factoryStats = data.stats;
+        // Load challenges for this factory
+        this.factoryChallenges = await api.getFactoryChallenges(factoryId);
+      }
+    } catch (e) {
+      console.error('Failed to select factory:', e);
+    }
+  }
+
+  /**
    * Create a new factory (in pending status)
    */
   async createFactory(landId: string, stakedGard: number): Promise<Factory> {
@@ -160,7 +186,7 @@ class MidgardAPIStore {
     try {
       const factory = await api.createFactory(
         landId,
-        this.tycoonAddress,
+        this.walletAddress,
         stakedGard,
       );
 
@@ -168,7 +194,7 @@ class MidgardAPIStore {
       this.selectedLandId = landId;
 
       // Refresh wallet balance
-      await this.refreshWallets();
+      await this.refreshWallet();
 
       return factory;
     } catch (e) {
@@ -235,22 +261,27 @@ class MidgardAPIStore {
 
       if (factory && factory.status === 'active') {
         await this.refreshFactoryStats();
+        // Load challenges for this factory
+        this.factoryChallenges = await api.getFactoryChallenges(factory.id);
       } else {
         this.factoryStats = null;
+        this.factoryChallenges = [];
       }
     } catch (e) {
       console.error('Failed to load factory:', e);
       this.currentFactory = null;
       this.factoryStats = null;
+      this.factoryChallenges = [];
     }
   }
 
   /**
-   * Start a challenge (deducts ticket, creates pending challenge)
+   * Start a challenge (burns ticket, creates pending challenge)
    */
-  async createChallenge(): Promise<Challenge> {
-    if (!this.currentFactory || this.currentFactory.status !== 'active') {
-      throw new Error('No active factory to challenge');
+  async createChallenge(factoryId?: string): Promise<Challenge> {
+    const targetFactoryId = factoryId || this.currentFactory?.id;
+    if (!targetFactoryId) {
+      throw new Error('No factory to challenge');
     }
 
     this.isLoading = true;
@@ -258,14 +289,14 @@ class MidgardAPIStore {
 
     try {
       const challenge = await api.createChallenge(
-        this.currentFactory.id,
-        this.challengerAddress,
+        targetFactoryId,
+        this.walletAddress,
       );
 
       this.pendingChallenge = challenge;
 
-      // Refresh wallet balance (ticket deducted)
-      await this.refreshWallets();
+      // Refresh wallet balance (ticket burned)
+      await this.refreshWallet();
 
       return challenge;
     } catch (e) {
@@ -299,7 +330,7 @@ class MidgardAPIStore {
 
       // Refresh everything
       await Promise.all([
-        this.refreshWallets(),
+        this.refreshWallet(),
         this.refreshFactoryStats(),
         this.refreshSupplyStats(),
       ]);
@@ -310,38 +341,16 @@ class MidgardAPIStore {
         if (updatedFactory) {
           this.currentFactory = updatedFactory;
         }
+        // Refresh challenges list
+        this.factoryChallenges = await api.getFactoryChallenges(
+          this.currentFactory.id,
+        );
       }
 
       return result;
     } catch (e) {
       this.error =
         e instanceof Error ? e.message : 'Failed to complete challenge';
-      throw e;
-    } finally {
-      this.isLoading = false;
-    }
-  }
-
-  /**
-   * Cancel a pending challenge (refund ticket)
-   */
-  async cancelChallenge(): Promise<void> {
-    if (!this.pendingChallenge) {
-      return;
-    }
-
-    this.isLoading = true;
-    this.error = null;
-
-    try {
-      await api.cancelChallenge(this.pendingChallenge.id);
-      this.pendingChallenge = null;
-
-      // Refresh wallet balance (ticket refunded)
-      await this.refreshWallets();
-    } catch (e) {
-      this.error =
-        e instanceof Error ? e.message : 'Failed to cancel challenge';
       throw e;
     } finally {
       this.isLoading = false;
@@ -368,7 +377,7 @@ class MidgardAPIStore {
       this.factoryStats = null;
 
       // Refresh balances
-      await Promise.all([this.refreshWallets(), this.refreshSupplyStats()]);
+      await Promise.all([this.refreshWallet(), this.refreshSupplyStats()]);
     } catch (e) {
       this.error = e instanceof Error ? e.message : 'Failed to close factory';
       throw e;
@@ -384,6 +393,14 @@ class MidgardAPIStore {
     this.currentFactory = null;
     this.factoryStats = null;
     this.pendingChallenge = null;
+    this.lastChallengeResult = null;
+    this.factoryChallenges = [];
+  }
+
+  /**
+   * Clear last challenge result
+   */
+  clearLastResult(): void {
     this.lastChallengeResult = null;
   }
 }
