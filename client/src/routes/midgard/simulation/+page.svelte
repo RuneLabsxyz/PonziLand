@@ -91,7 +91,9 @@
   <div class="mb-6 flex items-center justify-between">
     <div>
       <h1 class="font-ponzi-number text-3xl">MIDGARD SIMULATION</h1>
-      <p class="text-sm text-gray-500">Yellow Paper Implementation (Client-side)</p>
+      <p class="text-sm text-gray-500">
+        Yellow Paper Implementation (Client-side)
+      </p>
     </div>
     <div class="flex items-center gap-4">
       <!-- Tycoon Balance -->

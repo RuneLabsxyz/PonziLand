@@ -1,6 +1,7 @@
 <script lang="ts">
   import accountState, { setup } from '$lib/account.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
+  import { setupClient } from '$lib/contexts/client.svelte';
   import { midgardAPI } from '$lib/midgard/api-store.svelte';
   import Nav from '$lib/midgard/components/Nav.svelte';
   import { Button } from '$lib/components/ui/button';
@@ -10,9 +11,10 @@
 
   const account = useAccount();
 
-  // Initialize account listeners on mount
+  // Initialize account listeners and Dojo client on mount
   onMount(() => {
     setup();
+    setupClient(); // Initialize Dojo client for ponzi-land store
   });
 
   // Auto-connect Midgard when PonziLand wallet connects
