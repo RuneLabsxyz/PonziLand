@@ -18,15 +18,11 @@
   let { position, showFullDetails = true }: Props = $props();
 
   const coordinates = $derived(locationToCoordinates(position.land_location));
-
-  // Grid column definitions
-  const fullGridCols = 'grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]';
-  const simplifiedGridCols = 'grid-cols-[50px_60px_1fr_1fr_1fr_1fr]';
 </script>
 
 {#if showFullDetails}
   <div
-    class="grid {fullGridCols} gap-2 px-3 py-1.5 text-xs border-b border-gray-800/50 hover:bg-gray-800/20"
+    class="grid grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 text-xs border-b border-gray-800/50 hover:bg-gray-800/20"
   >
     <!-- Location -->
     <div class="font-ponzi-number text-gray-300">
@@ -97,7 +93,7 @@
 {:else}
   <!-- Simplified view - no buy/sell columns -->
   <div
-    class="grid {simplifiedGridCols} gap-2 px-3 py-1.5 text-xs border-b border-gray-800/50 hover:bg-gray-800/20"
+    class="grid grid-cols-[50px_60px_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 text-xs border-b border-gray-800/50 hover:bg-gray-800/20"
   >
     <!-- Location -->
     <div class="font-ponzi-number text-gray-300">

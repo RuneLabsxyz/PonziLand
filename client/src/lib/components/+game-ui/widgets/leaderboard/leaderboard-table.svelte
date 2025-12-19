@@ -126,15 +126,6 @@
   function getCoordinates(location: number): { x: number; y: number } {
     return locationToCoordinates(location);
   }
-
-  // Grid column definitions
-  const fullGridCols =
-    'grid-cols-[32px_minmax(70px,1fr)_50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]';
-  const simplifiedGridCols =
-    'grid-cols-[32px_minmax(80px,1fr)_50px_60px_1fr_1fr_1fr_1fr]';
-  const fullExpandedGridCols =
-    'grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]';
-  const simplifiedExpandedGridCols = 'grid-cols-[50px_60px_1fr_1fr_1fr_1fr]';
 </script>
 
 <div class="flex flex-col h-full">
@@ -217,7 +208,7 @@
             <!-- Positions Header -->
             {#if showFullDetails}
               <div
-                class="grid {fullExpandedGridCols} gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
+                class="grid grid-cols-[50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
               >
                 <div>Location</div>
                 <div>Status</div>
@@ -232,7 +223,7 @@
               </div>
             {:else}
               <div
-                class="grid {simplifiedExpandedGridCols} gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
+                class="grid grid-cols-[50px_60px_1fr_1fr_1fr_1fr] gap-2 px-3 py-1.5 text-[10px] text-gray-500 border-b border-gray-700/50"
               >
                 <div>Location</div>
                 <div>Status</div>
@@ -256,7 +247,7 @@
     <!-- Header -->
     {#if showFullDetails}
       <div
-        class="grid {fullGridCols} gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
+        class="grid grid-cols-[32px_minmax(70px,1fr)_50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
       >
         <div class="text-center">#</div>
         <div>Player</div>
@@ -273,7 +264,7 @@
       </div>
     {:else}
       <div
-        class="grid {simplifiedGridCols} gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
+        class="grid grid-cols-[32px_minmax(80px,1fr)_50px_60px_1fr_1fr_1fr_1fr] gap-2 px-3 py-2 bg-gray-800/50 text-[10px] text-gray-400 font-medium border-b border-gray-700"
       >
         <div class="text-center">#</div>
         <div>Player</div>
@@ -296,7 +287,7 @@
           <div
             class={[
               'grid',
-              fullGridCols,
+              'grid-cols-[32px_minmax(70px,1fr)_50px_60px_1fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr]',
               'gap-2 px-3 py-1.5 items-center text-xs border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors',
               { 'bg-purple-900/30': isUser },
             ]}
@@ -407,7 +398,7 @@
           <div
             class={[
               'grid',
-              simplifiedGridCols,
+              'grid-cols-[32px_minmax(80px,1fr)_50px_60px_1fr_1fr_1fr_1fr]',
               'gap-2 px-3 py-1.5 items-center text-xs border-b border-gray-700/50 hover:bg-gray-800/30 transition-colors',
               { 'bg-purple-900/30': isUser },
             ]}
