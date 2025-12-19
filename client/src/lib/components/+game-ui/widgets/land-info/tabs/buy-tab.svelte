@@ -39,17 +39,25 @@
   // Preset values for stake slider (% of sell price)
   const STAKE_PRESETS = [10, 25, 50, 100, 200, 300, 500, 1000];
 
+  interface Props {
+    land: LandWithActions;
+    activeTab: TabType;
+    isActive?: boolean;
+    auctionPrice?: CurrencyAmount;
+    showSwapButton?: boolean;
+    onSwapClick?: (() => void) | null;
+    swapTokenSymbol?: string | null;
+  }
+
   let {
     land,
     auctionPrice,
     activeTab = $bindable(),
     isActive = false,
-  }: {
-    land: LandWithActions;
-    activeTab: TabType;
-    isActive?: boolean;
-    auctionPrice?: CurrencyAmount;
-  } = $props();
+    showSwapButton = $bindable(false),
+    onSwapClick = $bindable(null),
+    swapTokenSymbol = $bindable(null),
+  }: Props = $props();
 
   let baseToken = $derived.by(() => {
     const selectedAddress = settingsStore.selectedBaseTokenAddress;
@@ -503,7 +511,15 @@
         prefillSellToken: bestSourceToken,
       },
     });
+    widgetsStore.bringToFront('swap');
   }
+
+  // Sync swap button state to parent
+  $effect(() => {
+    showSwapButton = !!isInsufficientBalanceError;
+    onSwapClick = openSwapForDeficit;
+    swapTokenSymbol = land.token?.symbol ?? null;
+  });
 
   // Check if form is valid
   let isFormValid = $derived(
@@ -1003,18 +1019,7 @@
       </div>
 
       {#if balanceError}
-        <div class="flex items-center justify-between gap-2 mt-1">
-          <p class="text-red-500 text-sm">{balanceError}</p>
-          {#if isInsufficientBalanceError}
-            <button
-              type="button"
-              class="px-3 py-1 text-sm bg-yellow-500 hover:bg-yellow-600 text-black font-medium rounded transition-colors shrink-0"
-              onclick={openSwapForDeficit}
-            >
-              Swap
-            </button>
-          {/if}
-        </div>
+        <p class="text-red-500 text-sm mt-1">{balanceError}</p>
       {/if}
 
       {#if loading}

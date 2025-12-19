@@ -15,17 +15,19 @@
   import IncreasePrice from './increase-price.svelte';
   import IncreaseStake from './increase-stake.svelte';
 
+  interface Props {
+    land: LandWithActions;
+    activeTab: TabType;
+    isActive?: boolean;
+    auctionPrice?: CurrencyAmount;
+  }
+
   let {
     land,
     activeTab = $bindable(),
     isActive = false,
     auctionPrice,
-  }: {
-    land: LandWithActions;
-    activeTab: TabType;
-    isActive?: boolean;
-    auctionPrice?: CurrencyAmount;
-  } = $props();
+  }: Props = $props();
 
   const address = $derived(account.address);
   let isOwner = $derived(
