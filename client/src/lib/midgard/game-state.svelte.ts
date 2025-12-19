@@ -457,11 +457,16 @@ export class MidgardGameStore {
       // Close factory if effective burn >= staked amount OR land stake is depleted
       if (stats.effectiveBurn >= stats.stakedGard || land.stakeAmount <= 0) {
         const stakedAmount = stats.stakedGard;
+        const burnObligation = Math.min(stats.effectiveBurn, stakedAmount);
+        const refundAmount = stakedAmount - burnObligation;
+        const inflationPayout = stats.availableInflation;
 
-        // Tokenomics: Burn the locked stake
+        // Release lock from vault
         this.vaultBalance -= stakedAmount;
-        this.burnBalance += stakedAmount;
-        this.totalBurned += stakedAmount;
+
+        // 1. Burn only the burn obligation
+        this.burnBalance += burnObligation;
+        this.totalBurned += burnObligation;
 
         // Record BURN event for factory closure
         this.tokenEvents = [
@@ -469,11 +474,34 @@ export class MidgardGameStore {
           {
             time: this.simulationTime,
             type: 'BURN',
-            amount: stakedAmount,
+            amount: burnObligation,
             source: 'factory_close',
-            description: `Factory closed on Land #${land.id}, ${stakedAmount.toFixed(2)} GARD burned`,
+            description: `Factory closed on Land #${land.id}, ${burnObligation.toFixed(2)} GARD burned`,
           },
         ];
+
+        // 2. Refund unburned stake to tycoon
+        if (refundAmount > 0) {
+          this.tycoonBalance += refundAmount;
+        }
+
+        // 3. Mint remaining inflation to tycoon as profit
+        if (inflationPayout > 0) {
+          this.tycoonBalance += inflationPayout;
+          this.totalMinted += inflationPayout;
+
+          // Record MINT event for inflation payout
+          this.tokenEvents = [
+            ...this.tokenEvents,
+            {
+              time: this.simulationTime,
+              type: 'MINT',
+              amount: inflationPayout,
+              source: 'factory_close',
+              description: `Factory closed on Land #${land.id}, ${inflationPayout.toFixed(2)} GARD profit to Tycoon`,
+            },
+          ];
+        }
 
         // Record the closure
         this.closedFactoryHistory = [

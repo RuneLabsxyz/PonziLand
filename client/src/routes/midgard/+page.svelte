@@ -538,6 +538,7 @@
                       format: (v: number) => v.toFixed(2),
                       class: 'text-white',
                     },
+                    area: { fill: 'none' },
                   }}
                 />
               </div>
