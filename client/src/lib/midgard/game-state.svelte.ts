@@ -368,8 +368,8 @@ export class MidgardGameStore {
       const stats = this.getFactoryStats(land);
       if (!stats) return land;
 
-      // Close factory if effective burn >= staked amount
-      if (stats.effectiveBurn >= stats.stakedGard) {
+      // Close factory if effective burn >= staked amount OR land stake is depleted
+      if (stats.effectiveBurn >= stats.stakedGard || land.stakeAmount <= 0) {
         // Record the closure
         this.closedFactoryHistory = [
           ...this.closedFactoryHistory,
