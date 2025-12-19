@@ -32,6 +32,7 @@ import {
   playGame,
   getNeighborCount,
   calculateStakeBurnRate,
+  calculatePredictedNetResult,
 } from './formulas';
 
 export class MidgardGameStore {
@@ -92,6 +93,11 @@ export class MidgardGameStore {
     const ticketCost = calculateTicketCost(effectiveBurn);
     const challengeAllowed = canChallenge(availableInflation, ticketCost);
     const potentialWinReward = calculateWinReward(ticketCost);
+    const predictedNetResult = calculatePredictedNetResult(
+      factory.stakedGard,
+      factory.burnReductions,
+      factory.inflationPaidOut,
+    );
 
     return {
       elapsed,
@@ -102,6 +108,7 @@ export class MidgardGameStore {
       ticketCost,
       challengeAllowed,
       potentialWinReward,
+      predictedNetResult,
       score: factory.score,
       stakedGard: factory.stakedGard,
     };

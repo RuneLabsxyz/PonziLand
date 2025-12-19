@@ -346,7 +346,9 @@
                 </span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">Burn Reductions:</span>
+                <span class="text-gray-400"
+                  >Lost Challenges Burn Reductions:</span
+                >
                 <span class="font-ponzi-number text-yellow-400">
                   -{(factoryStats.burn - factoryStats.effectiveBurn).toFixed(4)}
                 </span>
@@ -366,7 +368,7 @@
                 </span>
               </div>
               <div class="flex justify-between">
-                <span class="text-gray-400">Paid Out:</span>
+                <span class="text-gray-400">Challenge wins paid:</span>
                 <span class="font-ponzi-number text-yellow-400">
                   -{(
                     factoryStats.inflation - factoryStats.availableInflation
@@ -377,6 +379,50 @@
                 <span class="text-gray-400">Available Inflation:</span>
                 <span class="font-ponzi-number text-emerald-400">
                   {factoryStats.availableInflation.toFixed(4)}
+                </span>
+              </div>
+              <div
+                class="mt-2 flex justify-between border-t border-gray-700 pt-2"
+              >
+                <span class="text-gray-400">Current Net:</span>
+                <span
+                  class={[
+                    'font-ponzi-number',
+                    {
+                      'text-green-400':
+                        factoryStats.availableInflation -
+                          factoryStats.effectiveBurn >=
+                        0,
+                      'text-red-400':
+                        factoryStats.availableInflation -
+                          factoryStats.effectiveBurn <
+                        0,
+                    },
+                  ]}
+                >
+                  {factoryStats.availableInflation -
+                    factoryStats.effectiveBurn >=
+                  0
+                    ? '+'
+                    : ''}{(
+                    factoryStats.availableInflation - factoryStats.effectiveBurn
+                  ).toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Predicted Net Result:</span>
+                <span
+                  class={[
+                    'font-ponzi-number',
+                    {
+                      'text-green-400': factoryStats.predictedNetResult >= 0,
+                      'text-red-400': factoryStats.predictedNetResult < 0,
+                    },
+                  ]}
+                >
+                  {factoryStats.predictedNetResult >= 0
+                    ? '+'
+                    : ''}{factoryStats.predictedNetResult.toFixed(4)}
                 </span>
               </div>
             </div>

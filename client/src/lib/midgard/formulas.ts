@@ -169,3 +169,23 @@ export function calculateStakeBurnRate(
     (sellPrice * TAX_RATE * PONZI_GAME_SPEED) / (MAX_NEIGHBORS * 100);
   return burnPerNeighbor * neighborCount;
 }
+
+/**
+ * Calculate predicted net result when factory closes
+ * @param stakedGard - Initial staked amount
+ * @param burnReductions - Sum of burn reductions from failed challenges
+ * @param inflationPaidOut - Sum of payouts to winning challengers
+ * @returns Predicted net result (positive = profit, negative = loss)
+ */
+export function calculatePredictedNetResult(
+  stakedGard: number,
+  burnReductions: number,
+  inflationPaidOut: number,
+): number {
+  // Time when effectiveBurn reaches stakedGard
+  const closureElapsed = (stakedGard + burnReductions) / BURN_RATE;
+  // Inflation at closure time
+  const finalInflation = calculateInflation(closureElapsed) - inflationPaidOut;
+  // Net result = what's left after paying the burn obligation
+  return finalInflation - stakedGard;
+}
