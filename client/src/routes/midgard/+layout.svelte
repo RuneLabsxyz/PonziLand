@@ -1,31 +1,47 @@
 <script lang="ts">
+  import accountState, { setup } from '$lib/account.svelte';
+  import { useAccount } from '$lib/contexts/account.svelte';
   import { midgardAPI } from '$lib/midgard/api-store.svelte';
   import Nav from '$lib/midgard/components/Nav.svelte';
-  import { Input } from '$lib/components/ui/input';
   import { Button } from '$lib/components/ui/button';
+  import { onMount } from 'svelte';
 
   let { children } = $props();
 
-  let walletInput = $state('');
+  const account = useAccount();
 
-  async function handleConnect() {
-    if (!walletInput.trim()) return;
-    try {
-      await midgardAPI.connect(walletInput.trim());
-    } catch (e) {
-      console.error('Failed to connect:', e);
+  // Initialize account listeners on mount
+  onMount(() => {
+    setup();
+  });
+
+  // Auto-connect Midgard when PonziLand wallet connects
+  $effect(() => {
+    const address = accountState.address;
+    if (accountState.isConnected && address) {
+      if (!midgardAPI.isConnected && !midgardAPI.isLoading) {
+        // Use IIFE to handle async in effect
+        (async () => {
+          try {
+            console.log('Connecting Midgard with address:', address);
+            await midgardAPI.connect(address);
+            console.log('Midgard connected successfully');
+          } catch (e) {
+            console.error('Failed to connect Midgard:', e);
+          }
+        })();
+      }
+    } else if (!accountState.isConnected && midgardAPI.isConnected) {
+      midgardAPI.disconnect();
     }
+  });
+
+  function handleConnectWallet() {
+    account?.promptForLogin();
   }
 
   function handleDisconnect() {
-    midgardAPI.disconnect();
-    walletInput = '';
-  }
-
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === 'Enter') {
-      handleConnect();
-    }
+    account?.disconnect();
   }
 </script>
 
@@ -45,7 +61,7 @@
 
       <!-- Wallet Section -->
       <div class="flex items-center gap-4">
-        {#if midgardAPI.isConnected}
+        {#if accountState.isConnected && midgardAPI.isConnected}
           <!-- Connected State -->
           <div class="flex items-center gap-3">
             <div class="text-right">
@@ -58,35 +74,26 @@
             <div class="text-right">
               <div class="text-xs text-gray-500">Wallet</div>
               <div class="font-mono text-sm text-gray-300">
-                {midgardAPI.walletAddress.slice(
+                {accountState.address?.slice(
                   0,
                   8,
-                )}...{midgardAPI.walletAddress.slice(-6)}
+                )}...{accountState.address?.slice(-6)}
               </div>
             </div>
             <Button variant="blue" size="sm" onclick={handleDisconnect}>
               Disconnect
             </Button>
           </div>
+        {:else if accountState.isConnected && !midgardAPI.isConnected}
+          <!-- PonziLand connected but Midgard loading -->
+          <div class="flex items-center gap-2 text-gray-400">
+            <span class="text-sm">Connecting to Midgard...</span>
+          </div>
         {:else}
           <!-- Disconnected State -->
-          <div class="flex items-center gap-2">
-            <Input
-              type="text"
-              placeholder="Enter wallet address..."
-              class="w-64 bg-gray-800 text-sm"
-              bind:value={walletInput}
-              onkeydown={handleKeydown}
-            />
-            <Button
-              variant="blue"
-              size="sm"
-              onclick={handleConnect}
-              disabled={midgardAPI.isLoading || !walletInput.trim()}
-            >
-              {midgardAPI.isLoading ? 'Connecting...' : 'Connect'}
-            </Button>
-          </div>
+          <Button variant="blue" size="md" onclick={handleConnectWallet}>
+            Connect Wallet
+          </Button>
         {/if}
       </div>
     </div>
@@ -101,8 +108,18 @@
 
   <!-- Main Content -->
   <main class="mx-auto max-w-7xl p-6">
-    {#if midgardAPI.isConnected}
+    {#if accountState.isConnected && midgardAPI.isConnected}
       {@render children()}
+    {:else if accountState.isConnected && !midgardAPI.isConnected}
+      <!-- Loading Midgard -->
+      <div class="flex min-h-[60vh] flex-col items-center justify-center">
+        <div class="text-center">
+          <h1 class="font-ponzi-number mb-4 text-4xl text-purple-400">
+            Connecting to Midgard...
+          </h1>
+          <p class="text-gray-400">Setting up your Midgard wallet</p>
+        </div>
+      </div>
     {:else}
       <!-- Login Prompt -->
       <div class="flex min-h-[60vh] flex-col items-center justify-center">
@@ -111,25 +128,12 @@
             Welcome to Midgard
           </h1>
           <p class="mb-8 max-w-md text-gray-400">
-            Enter your wallet address to start playing. You can create factories
-            as a Tycoon or challenge existing factories as a Challenger.
+            Connect your wallet to start playing. You can create factories as a
+            Tycoon or challenge existing factories as a Challenger.
           </p>
-          <div class="flex items-center justify-center gap-2">
-            <Input
-              type="text"
-              placeholder="Enter wallet address..."
-              class="w-80 bg-gray-800"
-              bind:value={walletInput}
-              onkeydown={handleKeydown}
-            />
-            <Button
-              variant="blue"
-              onclick={handleConnect}
-              disabled={midgardAPI.isLoading || !walletInput.trim()}
-            >
-              {midgardAPI.isLoading ? 'Connecting...' : 'Connect Wallet'}
-            </Button>
-          </div>
+          <Button variant="blue" onclick={handleConnectWallet}>
+            Connect Wallet
+          </Button>
           <p class="mt-4 text-xs text-gray-600">
             New wallets are automatically created with 1000 GARD
           </p>
