@@ -4,14 +4,18 @@
   import LandNukeTime from '$lib/components/+game-map/land/land-nuke-time.svelte';
   import LandOverview from '$lib/components/+game-map/land/land-overview.svelte';
   import LandOwnerInfo from '$lib/components/+game-map/land/land-owner-info.svelte';
+  import { Button } from '$lib/components/ui/button';
   import Card from '$lib/components/ui/card/card.svelte';
   import PriceDisplay from '$lib/components/ui/price-display.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import { getBaseToken } from '$lib/stores/wallet.svelte';
   import { padAddress } from '$lib/utils';
   import InfoTabs from './info-tabs.svelte';
 
   let { land }: { land: LandWithActions } = $props();
+
+  let showSwapButton = $state(false);
+  let onSwapClick = $state<(() => void) | null>(null);
+  let swapTokenSymbol = $state<string | null>(null);
 
   let address = $derived(account.address);
   let isOwner = $derived(land?.owner === padAddress(address ?? ''));
@@ -80,7 +84,18 @@
       {#if fetching}
         Fetching auction price...
       {/if}
+      {#if showSwapButton && onSwapClick}
+        <Button variant="red" size="lg" onclick={onSwapClick} class="mt-4">
+          SWAP TO {swapTokenSymbol ?? ''}
+        </Button>
+      {/if}
     </div>
-    <InfoTabs {land} auctionPrice={currentPrice} />
+    <InfoTabs
+      {land}
+      auctionPrice={currentPrice}
+      bind:showSwapButton
+      bind:onSwapClick
+      bind:swapTokenSymbol
+    />
   </div>
 </div>

@@ -8,10 +8,21 @@
   import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
   import { onMount } from 'svelte';
 
+  interface Props {
+    land: LandWithActions;
+    auctionPrice?: CurrencyAmount;
+    showSwapButton?: boolean;
+    onSwapClick?: (() => void) | null;
+    swapTokenSymbol?: string | null;
+  }
+
   let {
     land,
     auctionPrice,
-  }: { land: LandWithActions; auctionPrice?: CurrencyAmount } = $props();
+    showSwapButton = $bindable(false),
+    onSwapClick = $bindable(null),
+    swapTokenSymbol = $bindable(null),
+  }: Props = $props();
 
   let activeTab = $state<TabType>('buy');
 
@@ -53,6 +64,9 @@
       bind:activeTab
       isActive={activeTab === 'buy'}
       {auctionPrice}
+      bind:showSwapButton
+      bind:onSwapClick
+      bind:swapTokenSymbol
     />
   </div>
 </div>
