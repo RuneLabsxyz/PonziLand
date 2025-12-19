@@ -9,6 +9,7 @@
   import FactoryStats from '$lib/midgard/components/FactoryStats.svelte';
   import ChallengeForm from '$lib/midgard/components/ChallengeForm.svelte';
   import ChallengeHistory from '$lib/midgard/components/ChallengeHistory.svelte';
+  import FlappyGameModal from '$lib/midgard/components/game/FlappyGameModal.svelte';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { getTokenInfo } from '$lib/utils';
@@ -17,7 +18,7 @@
   // Land selection
   let selectedLandId = $state<number | null>(null);
   let stakeInput = $state('');
-  let scoreInput = $state('');
+  let showActivationGame = $state(false);
 
   // Factory lookup map
   let landFactories = $state<Map<number, typeof midgardAPI.currentFactory>>(
@@ -82,15 +83,17 @@
     }
   }
 
-  // Activate factory
-  async function handleActivateFactory() {
-    const score = parseInt(scoreInput);
-    if (isNaN(score) || score < 0 || score > 100) return;
+  // Open activation game modal
+  function openActivationGame() {
+    showActivationGame = true;
+  }
 
+  // Activate factory with game score
+  async function handleActivateWithScore(score: number) {
+    showActivationGame = false;
     try {
       await midgardAPI.activateFactory(score);
       await loadAllFactories();
-      scoreInput = '';
     } catch (e) {
       console.error('Failed to activate factory:', e);
     }
@@ -291,30 +294,13 @@
             </div>
           </div>
 
-          <div>
-            <label class="mb-1 block text-sm text-gray-500">
-              Your Score (0-100)
-            </label>
-            <Input
-              type="number"
-              placeholder="Enter your game score"
-              min="0"
-              max="100"
-              class="bg-gray-800"
-              bind:value={scoreInput}
-            />
-          </div>
-
           <Button
             variant="blue"
             class="w-full bg-yellow-600 hover:bg-yellow-500"
-            disabled={midgardAPI.isLoading ||
-              isNaN(parseInt(scoreInput)) ||
-              parseInt(scoreInput) < 0 ||
-              parseInt(scoreInput) > 100}
-            onclick={handleActivateFactory}
+            disabled={midgardAPI.isLoading}
+            onclick={openActivationGame}
           >
-            {midgardAPI.isLoading ? 'Activating...' : 'Activate Factory'}
+            {midgardAPI.isLoading ? 'Activating...' : 'Play to Activate'}
           </Button>
         </div>
       {:else if midgardAPI.currentFactory.status === 'active'}
@@ -406,3 +392,11 @@
     {/if}
   </div>
 </div>
+
+<!-- Game Modal for Factory Activation -->
+<FlappyGameModal
+  visible={showActivationGame}
+  title="Activate Factory"
+  onClose={() => (showActivationGame = false)}
+  onScoreSubmit={handleActivateWithScore}
+/>

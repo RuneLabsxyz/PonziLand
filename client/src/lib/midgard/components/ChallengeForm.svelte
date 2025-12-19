@@ -1,7 +1,7 @@
 <script lang="ts">
   import { midgardAPI } from '../api-store.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { Input } from '$lib/components/ui/input';
+  import FlappyGameModal from './game/FlappyGameModal.svelte';
 
   interface Props {
     factoryId?: string;
@@ -13,7 +13,7 @@
   let { factoryId, ticketCost, potentialReward, challengeAllowed }: Props =
     $props();
 
-  let scoreInput = $state('');
+  let showChallengeGame = $state(false);
 
   async function handleCreateChallenge() {
     try {
@@ -23,13 +23,14 @@
     }
   }
 
-  async function handleCompleteChallenge() {
-    const score = parseInt(scoreInput);
-    if (isNaN(score) || score < 0 || score > 100) return;
+  function openChallengeGame() {
+    showChallengeGame = true;
+  }
 
+  async function handleCompleteWithScore(score: number) {
+    showChallengeGame = false;
     try {
       await midgardAPI.completeChallenge(score);
-      scoreInput = '';
     } catch (e) {
       console.error('Failed to complete challenge:', e);
     }
@@ -40,7 +41,7 @@
   <h4 class="text-sm font-semibold text-orange-400">Challenge</h4>
 
   {#if midgardAPI.pendingChallenge}
-    <!-- Pending Challenge: Enter Score -->
+    <!-- Pending Challenge: Play Game -->
     <div class="rounded-lg bg-orange-500/10 p-4">
       <div class="mb-3 text-center text-sm text-orange-400">
         Challenge in Progress!
@@ -59,29 +60,16 @@
           </div>
         </div>
       </div>
-      <div class="space-y-2">
-        <Input
-          type="number"
-          placeholder="Enter your score (0-100)"
-          min="0"
-          max="100"
-          class="bg-gray-800"
-          bind:value={scoreInput}
-        />
-        <Button
-          variant="blue"
-          class="w-full bg-orange-600 hover:bg-orange-500"
-          disabled={midgardAPI.isLoading ||
-            isNaN(parseInt(scoreInput)) ||
-            parseInt(scoreInput) < 0 ||
-            parseInt(scoreInput) > 100}
-          onclick={handleCompleteChallenge}
-        >
-          {midgardAPI.isLoading ? 'Submitting...' : 'Submit Score'}
-        </Button>
-      </div>
+      <Button
+        variant="blue"
+        class="w-full bg-orange-600 hover:bg-orange-500"
+        disabled={midgardAPI.isLoading}
+        onclick={openChallengeGame}
+      >
+        {midgardAPI.isLoading ? 'Submitting...' : 'Play Challenge Game'}
+      </Button>
       <p class="mt-2 text-center text-xs text-gray-500">
-        Ticket was burned. Complete the challenge to see if you win!
+        Ticket was burned. Play to set your score!
       </p>
     </div>
   {:else if midgardAPI.lastChallengeResult}
@@ -193,3 +181,11 @@
     </div>
   {/if}
 </div>
+
+<!-- Game Modal for Challenge -->
+<FlappyGameModal
+  visible={showChallengeGame}
+  title="Challenge Game"
+  onClose={() => (showChallengeGame = false)}
+  onScoreSubmit={handleCompleteWithScore}
+/>
