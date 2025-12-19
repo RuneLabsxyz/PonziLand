@@ -6,6 +6,7 @@
   import type { Snippet } from 'svelte';
   import { onDestroy, onMount } from 'svelte';
   import HistoryList from '../history/history-list.svelte';
+  import WidgetTournament from '../tournament/widget-tournament.svelte';
   import MarketWidget from '../market/widget-market.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from '../positions/historical-positions.svelte';
@@ -23,11 +24,13 @@
   };
 
   let refreshInterval: NodeJS.Timeout;
-  let activeTab = $state<'history' | 'positions' | 'market' | 'my-lands'>(
-    'my-lands',
-  );
+  let activeTab = $state<
+    'history' | 'positions' | 'market' | 'my-lands' | 'leaderboard'
+  >('my-lands');
 
-  function setActiveTab(tab: 'history' | 'positions' | 'market' | 'my-lands') {
+  function setActiveTab(
+    tab: 'history' | 'positions' | 'market' | 'my-lands' | 'leaderboard',
+  ) {
     activeTab = tab;
   }
 
@@ -132,6 +135,23 @@
         ]}
       />
     </button>
+
+    <button
+      class="flex items-center justify-center h-10 w-10 md:hidden"
+      onclick={() => setActiveTab('leaderboard')}
+    >
+      <img
+        src="/ui/icons/Icon_Cup.png"
+        alt="Leaderboard"
+        class={[
+          'h-8 w-8',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+              activeTab === 'leaderboard',
+          },
+        ]}
+      />
+    </button>
   </div>
 
   <div
@@ -150,6 +170,8 @@
       <HistoricalPositions {setCustomControls} />
     {:else if activeTab === 'my-lands'}
       <MyLandsWidget {setCustomControls} />
+    {:else if activeTab === 'leaderboard'}
+      <WidgetTournament />
     {/if}
   </div>
 </div>
