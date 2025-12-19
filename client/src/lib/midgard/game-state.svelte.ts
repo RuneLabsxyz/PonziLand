@@ -16,9 +16,10 @@ import {
   INITIAL_LANDS,
   TICK_INTERVAL_MS,
   BASE_TIME_PER_REAL_SECOND,
-  STAKE_DECREASE_RATE,
   LOSS_BURN_REDUCTION,
   WIN_PAYOUT_MULTIPLIER,
+  GRID_SIZE,
+  BASE_TIME,
 } from './constants';
 import {
   calculateBurn,
@@ -29,6 +30,8 @@ import {
   canChallenge,
   calculateWinReward,
   playGame,
+  getNeighborCount,
+  calculateStakeBurnRate,
 } from './formulas';
 
 export class MidgardGameStore {
@@ -316,11 +319,13 @@ export class MidgardGameStore {
     // Advance simulation time
     this.simulationTime += gameDeltaSeconds;
 
-    // Update land stakes (Ponziland mechanic)
+    // Update land stakes using PonziLand tax formula
     this.lands = this.lands.map((land) => {
-      // Stake decreases exponentially over time
-      const decayFactor = Math.exp(-STAKE_DECREASE_RATE * gameDeltaSeconds);
-      const newStake = land.stakeAmount * decayFactor;
+      const neighborCount = getNeighborCount(land.position, GRID_SIZE);
+      const burnRate = calculateStakeBurnRate(land.sellPrice, neighborCount);
+      // stake decreases linearly: delta = burnRate * time / baseTime
+      const stakeDelta = (burnRate * gameDeltaSeconds) / BASE_TIME;
+      const newStake = Math.max(0, land.stakeAmount - stakeDelta);
 
       return { ...land, stakeAmount: newStake };
     });

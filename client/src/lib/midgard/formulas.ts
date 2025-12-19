@@ -7,6 +7,9 @@ import {
   MAX_BONUS_FRACTION,
   CHALLENGE_COST_FRACTION,
   WIN_PAYOUT_MULTIPLIER,
+  TAX_RATE,
+  PONZI_GAME_SPEED,
+  MAX_NEIGHBORS,
 } from './constants';
 
 /**
@@ -124,4 +127,45 @@ export function formatTime(seconds: number): string {
   parts.push(`${minutes}m`);
 
   return parts.join(' ');
+}
+
+/**
+ * Calculate number of neighbors for a grid position
+ * @param position - Grid position {row, col}
+ * @param gridSize - Size of the grid (default 3 for 3x3)
+ * @returns Number of valid adjacent cells (0-8)
+ */
+export function getNeighborCount(
+  position: { row: number; col: number },
+  gridSize: number = 3,
+): number {
+  const { row, col } = position;
+  let count = 0;
+  for (let dr = -1; dr <= 1; dr++) {
+    for (let dc = -1; dc <= 1; dc++) {
+      if (dr === 0 && dc === 0) continue;
+      const nr = row + dr;
+      const nc = col + dc;
+      if (nr >= 0 && nr < gridSize && nc >= 0 && nc < gridSize) {
+        count++;
+      }
+    }
+  }
+  return count;
+}
+
+/**
+ * Calculate stake burn rate based on sell price and neighbor count
+ * Formula from taxes.ts: burnForOneNeighbor * neighborCount
+ * @param sellPrice - Land sell price
+ * @param neighborCount - Number of neighbors
+ * @returns Burn rate per BASE_TIME unit
+ */
+export function calculateStakeBurnRate(
+  sellPrice: number,
+  neighborCount: number,
+): number {
+  const burnPerNeighbor =
+    (sellPrice * TAX_RATE * PONZI_GAME_SPEED) / (MAX_NEIGHBORS * 100);
+  return burnPerNeighbor * neighborCount;
 }

@@ -27,8 +27,11 @@ export const LOSS_BURN_REDUCTION = 0.9;
 // gamma: win payout multiplier (190% of ticket)
 export const WIN_PAYOUT_MULTIPLIER = 1.9;
 
-// Ponziland simulation: stake decrease rate (per game second)
-export const STAKE_DECREASE_RATE = 0.00001;
+// PonziLand Tax Parameters (matching taxes.ts formulas)
+export const TAX_RATE = 0.1; // 10% tax rate
+export const PONZI_GAME_SPEED = 20; // Normal speed multiplier
+export const MAX_NEIGHBORS = 8; // Max possible neighbors in grid
+export const BASE_TIME = 3600; // 1 hour in seconds (base unit for tax calc)
 
 // Time speed presets for UI
 export const TIME_SPEEDS: number[] = [1, 2, 5, 10];
