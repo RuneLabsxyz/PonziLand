@@ -17,7 +17,6 @@ import {
   TICK_INTERVAL_MS,
   BASE_TIME_PER_REAL_SECOND,
   LOSS_BURN_REDUCTION,
-  WIN_PAYOUT_MULTIPLIER,
   GRID_SIZE,
   BASE_TIME,
 } from './constants';
@@ -46,11 +45,10 @@ export class MidgardGameStore {
   // Simulation time in game seconds
   public simulationTime = $state<number>(0);
 
-  // For factory creation flow
-  public pendingFactoryScore = $state<number | null>(null);
+  // Last factory creation result
+  public lastFactoryResult = $state<{ score: number } | null>(null);
 
-  // For challenge flow
-  public challengeScore = $state<number | null>(null);
+  // Last challenge result
   public lastChallengeResult = $state<ChallengeResult | null>(null);
 
   // Chart data history
@@ -144,29 +142,13 @@ export class MidgardGameStore {
       this.chartHistory = [];
     }
     this.selectedLandId = id;
-    // Reset pending states when changing selection
-    this.pendingFactoryScore = null;
-    this.challengeScore = null;
+    // Reset results when changing selection
+    this.lastFactoryResult = null;
     this.lastChallengeResult = null;
   }
 
-  // Roll a random score for factory creation (mini-game)
-  public rollFactoryScore(): number {
-    const score = playGame();
-    this.pendingFactoryScore = score;
-    return score;
-  }
-
-  // Roll a random score for challenge (mini-game)
-  public rollChallengeScore(): number {
-    const score = playGame();
-    this.challengeScore = score;
-    return score;
-  }
-
-  // Factory creation
+  // Factory creation - plays game and uses score immediately
   public createFactory(landId: number, lockAmount: number): boolean {
-    if (this.pendingFactoryScore === null) return false;
     if (lockAmount <= 0) return false;
     if (this.playerGardBalance < lockAmount) return false;
 
@@ -176,6 +158,9 @@ export class MidgardGameStore {
     const land = this.lands[landIndex];
     if (hasFactory(land)) return false; // Already has factory
 
+    // Play game to determine score - one chance!
+    const score = playGame();
+
     // Deduct from player balance
     this.playerGardBalance -= lockAmount;
 
@@ -183,7 +168,7 @@ export class MidgardGameStore {
     const factory: Factory = {
       createdAt: this.simulationTime,
       stakedGard: lockAmount,
-      score: this.pendingFactoryScore,
+      score,
       burnReductions: 0,
       inflationPaidOut: 0,
       challengeWins: 0,
@@ -198,16 +183,14 @@ export class MidgardGameStore {
 
     this.lands[landIndex] = landWithFactory;
 
-    // Reset pending score
-    this.pendingFactoryScore = null;
+    // Store result for UI display
+    this.lastFactoryResult = { score };
 
     return true;
   }
 
-  // Challenge system (yellow paper implementation)
+  // Challenge system (yellow paper implementation) - plays game on challenge
   public challenge(factoryLandId: number): ChallengeResult | null {
-    if (this.challengeScore === null) return null;
-
     const landIndex = this.lands.findIndex((l) => l.id === factoryLandId);
     if (landIndex === -1) return null;
 
@@ -225,7 +208,8 @@ export class MidgardGameStore {
     // Check liquidity constraint
     if (!stats.challengeAllowed) return null;
 
-    const playerScore = this.challengeScore;
+    // Play game to determine score - one chance!
+    const playerScore = playGame();
     const factoryScore = land.factory.score;
     const won = playerScore > factoryScore;
 
@@ -290,7 +274,6 @@ export class MidgardGameStore {
     ];
 
     this.lastChallengeResult = result;
-    this.challengeScore = null;
 
     return result;
   }
@@ -428,8 +411,7 @@ export class MidgardGameStore {
     this.timeSpeed = 1;
     this.selectedLandId = null;
     this.simulationTime = 0;
-    this.pendingFactoryScore = null;
-    this.challengeScore = null;
+    this.lastFactoryResult = null;
     this.lastChallengeResult = null;
     this.chartHistory = [];
     this.challengeHistory = [];

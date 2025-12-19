@@ -276,40 +276,29 @@
               </p>
             </div>
 
-            <!-- Score Mini-game -->
-            <div class="mb-4">
-              <label class="mb-1 block text-sm text-gray-400"
-                >Factory Score (EGS Mini-game)</label
-              >
-              <div class="flex items-center gap-3">
-                <Button
-                  variant="blue"
-                  size="md"
-                  onclick={() => midgardGame.rollFactoryScore()}
-                >
-                  Play Game
-                </Button>
-                {#if midgardGame.pendingFactoryScore !== null}
-                  <span class="font-ponzi-number text-2xl text-cyan-400">
-                    {midgardGame.pendingFactoryScore}
-                  </span>
-                {:else}
-                  <span class="text-gray-500">Click to play (0-100)</span>
-                {/if}
-              </div>
-            </div>
-
             <!-- Create Button -->
             <Button
               variant="blue"
               class="w-full"
-              disabled={midgardGame.pendingFactoryScore === null ||
-                parseFloat(lockAmount) <= 0 ||
+              disabled={parseFloat(lockAmount) <= 0 ||
                 parseFloat(lockAmount) > midgardGame.playerGardBalance}
               onclick={handleCreateFactory}
             >
-              Create Factory
+              Create Factory (Play Game)
             </Button>
+            <p class="mt-2 text-center text-xs text-gray-500">
+              Score determined when you create - one chance!
+            </p>
+
+            <!-- Last Factory Result -->
+            {#if midgardGame.lastFactoryResult}
+              <div class="mt-4 rounded-lg bg-purple-500/20 p-3 text-center">
+                <div class="text-sm text-gray-400">Factory Created!</div>
+                <div class="font-ponzi-number text-2xl text-cyan-400">
+                  Score: {midgardGame.lastFactoryResult.score}
+                </div>
+              </div>
+            {/if}
           </div>
         {:else if factoryStats}
           <!-- Factory Stats (Yellow Paper) -->
@@ -545,33 +534,13 @@
               </div>
             </div>
 
-            <!-- Roll Challenge Score -->
-            <div class="mb-4">
-              <label class="mb-1 block text-sm text-gray-400">Your Score</label>
-              <div class="flex items-center gap-3">
-                <Button
-                  variant="blue"
-                  size="md"
-                  onclick={() => midgardGame.rollChallengeScore()}
-                >
-                  Play Game
-                </Button>
-                {#if midgardGame.challengeScore !== null}
-                  <span class="font-ponzi-number text-2xl text-cyan-400">
-                    {midgardGame.challengeScore}
-                  </span>
-                  <span class="text-gray-500">vs</span>
-                  <span class="font-ponzi-number text-2xl text-purple-400">
-                    {factoryStats.score}
-                  </span>
-                  {#if midgardGame.challengeScore > factoryStats.score}
-                    <span class="text-green-400">WIN</span>
-                  {:else}
-                    <span class="text-red-400">LOSE</span>
-                  {/if}
-                {:else}
-                  <span class="text-gray-500">Click to play</span>
-                {/if}
+            <!-- Challenge Info -->
+            <div class="mb-4 rounded bg-black/30 p-3">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-400">Factory Score to Beat:</span>
+                <span class="font-ponzi-number text-2xl text-purple-400">
+                  {factoryStats.score}
+                </span>
               </div>
             </div>
 
@@ -579,13 +548,15 @@
             <Button
               variant="red"
               class="w-full"
-              disabled={midgardGame.challengeScore === null ||
-                !factoryStats.challengeAllowed ||
+              disabled={!factoryStats.challengeAllowed ||
                 midgardGame.playerGardBalance < factoryStats.ticketCost}
               onclick={handleChallenge}
             >
               Challenge! (Cost: {factoryStats.ticketCost.toFixed(4)} $GARD)
             </Button>
+            <p class="mt-2 text-center text-xs text-gray-500">
+              Score determined when you challenge - one chance!
+            </p>
 
             {#if !factoryStats.challengeAllowed}
               <p class="mt-2 text-center text-xs text-red-400">
