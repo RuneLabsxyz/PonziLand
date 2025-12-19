@@ -12,7 +12,7 @@ const USDC_SYMBOL: &str = "USDC";
 
 #[derive(Debug, Clone, Serialize)]
 pub struct TokenInfo {
-    pub address: String,
+    pub symbol: Option<String>,
     pub amount: String,
     pub usd: Option<f64>,
 }
@@ -89,11 +89,8 @@ impl DropsRoute {
         for (token_address, amount) in &aggregated_outflows {
             let normalized_address = normalize_token_address(token_address);
 
-            // Get token symbol (use address as fallback)
-            let symbol = token_symbols
-                .get(&normalized_address)
-                .cloned()
-                .unwrap_or_else(|| token_address.clone());
+            // Get token symbol
+            let symbol = token_symbols.get(&normalized_address).cloned();
 
             // Get token price and convert to USD
             let token_ratio: Option<f64> = avnu_service
@@ -126,9 +123,9 @@ impl DropsRoute {
             };
 
             tokens.insert(
-                symbol,
+                token_address.clone(),
                 TokenInfo {
-                    address: token_address.clone(),
+                    symbol,
                     amount: amount.to_string(),
                     usd: usd_value,
                 },
