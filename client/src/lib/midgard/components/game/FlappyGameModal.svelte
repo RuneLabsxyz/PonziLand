@@ -10,6 +10,7 @@
     onClose: () => void;
     onScoreSubmit: (score: number) => void;
     title?: string;
+    autoSubmit?: boolean;
   }
 
   let {
@@ -17,11 +18,13 @@
     onClose,
     onScoreSubmit,
     title = 'Play Game',
+    autoSubmit = false,
   }: Props = $props();
 
   let gamePhase = $state<GamePhase>('ready');
   let score = $state(0);
   let gameCanvas: FlappyGameCanvas;
+  let isSubmitting = $state(false);
 
   function handleClose() {
     resetGame();
@@ -34,7 +37,14 @@
   }
 
   function handleGameOver() {
-    // gamePhase is already set to 'gameover' by the canvas component
+    // Auto-submit score if enabled
+    if (autoSubmit) {
+      isSubmitting = true;
+      // Small delay to show the score before submitting
+      setTimeout(() => {
+        submitScore();
+      }, 1000);
+    }
   }
 
   function restartGame() {
@@ -47,6 +57,7 @@
     gameCanvas?.reset();
     gamePhase = 'ready';
     score = 0;
+    isSubmitting = false;
   }
 
   function submitScore() {
@@ -116,16 +127,22 @@
           <div class="font-ponzi-number text-3xl text-purple-400 mb-4">
             Final Score: {score}
           </div>
-          <div class="flex gap-3 justify-center">
-            <Button variant="blue" onclick={restartGame}>Play Again</Button>
-            <Button
-              variant="blue"
-              class="bg-green-600 hover:bg-green-500"
-              onclick={submitScore}
-            >
-              Use Score ({score})
-            </Button>
-          </div>
+          {#if autoSubmit}
+            <p class="text-gray-400 text-sm">
+              {isSubmitting ? 'Submitting score...' : 'Score submitted!'}
+            </p>
+          {:else}
+            <div class="flex gap-3 justify-center">
+              <Button variant="blue" onclick={restartGame}>Play Again</Button>
+              <Button
+                variant="blue"
+                class="bg-green-600 hover:bg-green-500"
+                onclick={submitScore}
+              >
+                Use Score ({score})
+              </Button>
+            </div>
+          {/if}
         </div>
       {/if}
     </div>

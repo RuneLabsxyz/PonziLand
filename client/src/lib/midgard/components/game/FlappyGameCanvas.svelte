@@ -59,6 +59,17 @@
     }
   });
 
+  // Track previous phase to detect when game starts
+  let previousPhase: GamePhase = 'ready';
+
+  // Auto-flap when game starts
+  $effect(() => {
+    if (previousPhase === 'ready' && gamePhase === 'playing' && gameEngine) {
+      gameEngine.flap();
+    }
+    previousPhase = gamePhase;
+  });
+
   export function flap() {
     if (gamePhase === 'playing' && gameEngine) {
       gameEngine.flap();
