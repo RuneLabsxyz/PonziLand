@@ -10,7 +10,8 @@ export const INITIAL_CHALLENGER_BALANCE = 1000; // Challenger
 // Time settings
 // POC uses accelerated time: 1 real second = configurable game time
 export const TICK_INTERVAL_MS = 100; // Update every 100ms for smooth UI
-export const BASE_TIME_PER_REAL_SECOND = 3600; // 1 real second = 1 hour game time
+export const BASE_TIME_PER_REAL_SECOND = 3600; // 1 real second = 1 hour game time (simulation)
+export const API_GAME_SPEED = 60; // API mode: 1 real second = 1 game minute
 
 // Yellow Paper: Factory Burn/Inflation Rates
 // r: burn rate (GARD per game second)

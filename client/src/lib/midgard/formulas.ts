@@ -10,6 +10,7 @@ import {
   TAX_RATE,
   PONZI_GAME_SPEED,
   MAX_NEIGHBORS,
+  API_GAME_SPEED,
 } from './constants';
 
 /**
@@ -188,4 +189,22 @@ export function calculatePredictedNetResult(
   const finalInflation = calculateInflation(closureElapsed) - inflationPaidOut;
   // Net result = what's left after paying the burn obligation
   return finalInflation - stakedGard;
+}
+
+/**
+ * Convert real-world seconds to game seconds using API_GAME_SPEED
+ * @param realSeconds - Real-world elapsed seconds
+ * @returns Game time in seconds
+ */
+export function realToGameSeconds(realSeconds: number): number {
+  return realSeconds * API_GAME_SPEED;
+}
+
+/**
+ * Convert game seconds to real-world seconds using API_GAME_SPEED
+ * @param gameSeconds - Game time in seconds
+ * @returns Real-world elapsed seconds
+ */
+export function gameToRealSeconds(gameSeconds: number): number {
+  return gameSeconds / API_GAME_SPEED;
 }

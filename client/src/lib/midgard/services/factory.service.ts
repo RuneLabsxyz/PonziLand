@@ -11,7 +11,7 @@ import {
   canChallenge,
   calculatePredictedNetResult,
 } from '../formulas';
-import { BURN_RATE, LOSS_BURN_REDUCTION } from '../constants';
+import { BURN_RATE, LOSS_BURN_REDUCTION, API_GAME_SPEED } from '../constants';
 import * as walletService from './wallet.service';
 
 export interface FactoryStats {
@@ -185,9 +185,10 @@ export function computeFactoryStats(
     factory.createdAtTime instanceof Date
       ? factory.createdAtTime
       : new Date(factory.createdAtTime);
-  const elapsedSeconds = Math.floor(
-    (currentTime.getTime() - createdAt.getTime()) / 1000,
-  );
+  // Convert real elapsed time to game time using API_GAME_SPEED
+  const realElapsedSeconds =
+    (currentTime.getTime() - createdAt.getTime()) / 1000;
+  const elapsedSeconds = Math.floor(realElapsedSeconds * API_GAME_SPEED);
 
   const burn = calculateBurn(elapsedSeconds);
   const inflation = calculateInflation(elapsedSeconds);
