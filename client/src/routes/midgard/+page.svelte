@@ -359,6 +359,188 @@
             {/if}
           </div>
         {:else if factoryStats}
+          <!-- Challenge Section -->
+          <div class="rounded-lg bg-black/40 p-4 mb-4">
+            <h3 class="mb-3 text-lg text-orange-400">Challenge Factory</h3>
+
+            <!-- Challenge Economics -->
+            <div class="mb-4 space-y-2 text-sm">
+              <div class="flex justify-between rounded bg-black/30 p-2">
+                <span class="text-gray-400">Ticket Cost (α × Beff):</span>
+                <span class="font-ponzi-number text-yellow-400">
+                  {factoryStats.ticketCost.toFixed(4)} $GARD
+                </span>
+              </div>
+              <div class="flex justify-between rounded bg-black/30 p-2">
+                <span class="text-gray-400">Win Reward (γ × Ticket):</span>
+                <span class="font-ponzi-number text-green-400">
+                  {factoryStats.potentialWinReward.toFixed(4)} $GARD
+                </span>
+              </div>
+              <div class="flex justify-between rounded bg-black/30 p-2">
+                <span class="text-gray-400">Liquidity Check:</span>
+                {#if factoryStats.challengeAllowed}
+                  <span class="text-green-400">✓ Allowed</span>
+                {:else}
+                  <span class="text-red-400">✗ Insufficient inflation</span>
+                {/if}
+              </div>
+            </div>
+
+            <!-- Challenge Info -->
+            <div class="mb-4 rounded bg-black/30 p-3">
+              <div class="flex items-center justify-between">
+                <span class="text-gray-400">Factory Score to Beat:</span>
+                <span class="font-ponzi-number text-2xl text-purple-400">
+                  {factoryStats.score}
+                </span>
+              </div>
+              <div class="mt-2 flex items-center justify-between text-sm">
+                <span class="text-gray-400">Challenger Balance:</span>
+                <span class="font-ponzi-number text-orange-400">
+                  {midgardGame.challengerBalance.toFixed(2)} $GARD
+                </span>
+              </div>
+            </div>
+
+            <!-- Challenge Buttons -->
+            <div class="flex gap-2">
+              <Button
+                variant="blue"
+                class="flex-1"
+                disabled={!factoryStats.challengeAllowed ||
+                  midgardGame.challengerBalance < factoryStats.ticketCost}
+                onclick={handleChallenge}
+              >
+                Challenge! (Game)
+              </Button>
+              <Button
+                variant="blue"
+                disabled={!factoryStats.challengeAllowed ||
+                  midgardGame.challengerBalance < factoryStats.ticketCost}
+                onclick={() => handleForceChallenge('win')}
+              >
+                Force Win
+              </Button>
+              <Button
+                variant="red"
+                disabled={!factoryStats.challengeAllowed ||
+                  midgardGame.challengerBalance < factoryStats.ticketCost}
+                onclick={() => handleForceChallenge('loss')}
+              >
+                Force Loss
+              </Button>
+            </div>
+            <p class="mt-2 text-center text-xs text-gray-500">
+              Cost: {factoryStats.ticketCost.toFixed(4)} $GARD | Game = random score,
+              Force = guaranteed outcome
+            </p>
+
+            {#if !factoryStats.challengeAllowed}
+              <p class="mt-2 text-center text-xs text-red-400">
+                Factory needs more inflation to pay potential winners
+              </p>
+            {:else if midgardGame.challengerBalance < factoryStats.ticketCost}
+              <p class="mt-2 text-center text-xs text-red-400">
+                Insufficient Challenger balance
+              </p>
+            {/if}
+
+            <!-- Last Result -->
+            {#if midgardGame.lastChallengeResult}
+              {@const result = midgardGame.lastChallengeResult}
+              <div
+                class={[
+                  'mt-4 rounded-lg p-3 text-center',
+                  {
+                    'bg-green-500/20': result.won,
+                    'bg-red-500/20': !result.won,
+                  },
+                ]}
+              >
+                <div class="text-lg font-bold">
+                  {result.won ? 'YOU WON!' : 'YOU LOST'}
+                </div>
+                <div class="text-sm">
+                  Your score: {result.playerScore} vs Factory: {result.factoryScore}
+                </div>
+                <div
+                  class={[
+                    'font-ponzi-number text-lg',
+                    {
+                      'text-green-400': result.won,
+                      'text-red-400': !result.won,
+                    },
+                  ]}
+                >
+                  {result.won ? '+' : ''}{result.gardChange.toFixed(4)} $GARD
+                </div>
+                {#if !result.won}
+                  <div class="mt-1 text-xs text-gray-400">
+                    Factory burn reduced by {(
+                      result.ticketCost * LOSS_BURN_REDUCTION
+                    ).toFixed(4)} (β={LOSS_BURN_REDUCTION * 100}%)
+                  </div>
+                {/if}
+              </div>
+            {/if}
+
+            <!-- Challenge History Table -->
+            {#if midgardGame.challengeHistory.length > 0}
+              <div class="mt-4 border-t border-gray-700 pt-4">
+                <h4 class="mb-2 text-sm text-gray-400">Challenge History</h4>
+                <div class="max-h-32 overflow-y-auto">
+                  <table class="w-full text-xs">
+                    <thead class="sticky top-0 bg-black/60">
+                      <tr class="text-gray-500">
+                        <th class="py-1 text-left">Time</th>
+                        <th class="py-1 text-right">Ticket</th>
+                        <th class="py-1 text-right">Reward</th>
+                        <th class="py-1 text-center">Score</th>
+                        <th class="py-1 text-right">Result</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {#each [...midgardGame.challengeHistory].reverse() as record}
+                        <tr class="border-t border-gray-800">
+                          <td class="py-1 font-ponzi-number"
+                            >{formatTime(record.time)}</td
+                          >
+                          <td class="py-1 text-right font-ponzi-number"
+                            >{record.ticketCost.toFixed(2)}</td
+                          >
+                          <td class="py-1 text-right font-ponzi-number"
+                            >{record.potentialReward.toFixed(2)}</td
+                          >
+                          <td class="py-1 text-center">
+                            <span class="font-ponzi-number"
+                              >{record.playerScore}</span
+                            >
+                            <span class="text-gray-500">vs</span>
+                            <span class="font-ponzi-number"
+                              >{record.factoryScore}</span
+                            >
+                          </td>
+                          <td
+                            class={[
+                              'py-1 text-right font-ponzi-number',
+                              {
+                                'text-green-400': record.won,
+                                'text-red-400': !record.won,
+                              },
+                            ]}
+                          >
+                            {record.won ? '+' : ''}{record.netResult.toFixed(2)}
+                          </td>
+                        </tr>
+                      {/each}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            {/if}
+          </div>
+
           <!-- Factory Stats (Yellow Paper) -->
           <div class="mb-4 rounded-lg bg-black/40 p-4">
             <h3 class="mb-3 text-lg text-purple-400">Factory Stats</h3>
@@ -563,188 +745,6 @@
               </div>
             </div>
           {/if}
-
-          <!-- Challenge Section -->
-          <div class="rounded-lg bg-black/40 p-4">
-            <h3 class="mb-3 text-lg text-orange-400">Challenge Factory</h3>
-
-            <!-- Challenge Economics -->
-            <div class="mb-4 space-y-2 text-sm">
-              <div class="flex justify-between rounded bg-black/30 p-2">
-                <span class="text-gray-400">Ticket Cost (α × Beff):</span>
-                <span class="font-ponzi-number text-yellow-400">
-                  {factoryStats.ticketCost.toFixed(4)} $GARD
-                </span>
-              </div>
-              <div class="flex justify-between rounded bg-black/30 p-2">
-                <span class="text-gray-400">Win Reward (γ × Ticket):</span>
-                <span class="font-ponzi-number text-green-400">
-                  {factoryStats.potentialWinReward.toFixed(4)} $GARD
-                </span>
-              </div>
-              <div class="flex justify-between rounded bg-black/30 p-2">
-                <span class="text-gray-400">Liquidity Check:</span>
-                {#if factoryStats.challengeAllowed}
-                  <span class="text-green-400">✓ Allowed</span>
-                {:else}
-                  <span class="text-red-400">✗ Insufficient inflation</span>
-                {/if}
-              </div>
-            </div>
-
-            <!-- Challenge Info -->
-            <div class="mb-4 rounded bg-black/30 p-3">
-              <div class="flex items-center justify-between">
-                <span class="text-gray-400">Factory Score to Beat:</span>
-                <span class="font-ponzi-number text-2xl text-purple-400">
-                  {factoryStats.score}
-                </span>
-              </div>
-              <div class="mt-2 flex items-center justify-between text-sm">
-                <span class="text-gray-400">Challenger Balance:</span>
-                <span class="font-ponzi-number text-orange-400">
-                  {midgardGame.challengerBalance.toFixed(2)} $GARD
-                </span>
-              </div>
-            </div>
-
-            <!-- Challenge Buttons -->
-            <div class="flex gap-2">
-              <Button
-                variant="red"
-                class="flex-1"
-                disabled={!factoryStats.challengeAllowed ||
-                  midgardGame.challengerBalance < factoryStats.ticketCost}
-                onclick={handleChallenge}
-              >
-                Challenge! (Game)
-              </Button>
-              <Button
-                variant="blue"
-                disabled={!factoryStats.challengeAllowed ||
-                  midgardGame.challengerBalance < factoryStats.ticketCost}
-                onclick={() => handleForceChallenge('win')}
-              >
-                Force Win
-              </Button>
-              <button
-                class="rounded bg-gray-700 px-3 py-2 text-sm font-medium hover:bg-gray-600 disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={!factoryStats.challengeAllowed ||
-                  midgardGame.challengerBalance < factoryStats.ticketCost}
-                onclick={() => handleForceChallenge('loss')}
-              >
-                Force Loss
-              </button>
-            </div>
-            <p class="mt-2 text-center text-xs text-gray-500">
-              Cost: {factoryStats.ticketCost.toFixed(4)} $GARD | Game = random score,
-              Force = guaranteed outcome
-            </p>
-
-            {#if !factoryStats.challengeAllowed}
-              <p class="mt-2 text-center text-xs text-red-400">
-                Factory needs more inflation to pay potential winners
-              </p>
-            {:else if midgardGame.challengerBalance < factoryStats.ticketCost}
-              <p class="mt-2 text-center text-xs text-red-400">
-                Insufficient Challenger balance
-              </p>
-            {/if}
-
-            <!-- Last Result -->
-            {#if midgardGame.lastChallengeResult}
-              {@const result = midgardGame.lastChallengeResult}
-              <div
-                class={[
-                  'mt-4 rounded-lg p-3 text-center',
-                  {
-                    'bg-green-500/20': result.won,
-                    'bg-red-500/20': !result.won,
-                  },
-                ]}
-              >
-                <div class="text-lg font-bold">
-                  {result.won ? 'YOU WON!' : 'YOU LOST'}
-                </div>
-                <div class="text-sm">
-                  Your score: {result.playerScore} vs Factory: {result.factoryScore}
-                </div>
-                <div
-                  class={[
-                    'font-ponzi-number text-lg',
-                    {
-                      'text-green-400': result.won,
-                      'text-red-400': !result.won,
-                    },
-                  ]}
-                >
-                  {result.won ? '+' : ''}{result.gardChange.toFixed(4)} $GARD
-                </div>
-                {#if !result.won}
-                  <div class="mt-1 text-xs text-gray-400">
-                    Factory burn reduced by {(
-                      result.ticketCost * LOSS_BURN_REDUCTION
-                    ).toFixed(4)} (β={LOSS_BURN_REDUCTION * 100}%)
-                  </div>
-                {/if}
-              </div>
-            {/if}
-
-            <!-- Challenge History Table -->
-            {#if midgardGame.challengeHistory.length > 0}
-              <div class="mt-4 border-t border-gray-700 pt-4">
-                <h4 class="mb-2 text-sm text-gray-400">Challenge History</h4>
-                <div class="max-h-32 overflow-y-auto">
-                  <table class="w-full text-xs">
-                    <thead class="sticky top-0 bg-black/60">
-                      <tr class="text-gray-500">
-                        <th class="py-1 text-left">Time</th>
-                        <th class="py-1 text-right">Ticket</th>
-                        <th class="py-1 text-right">Reward</th>
-                        <th class="py-1 text-center">Score</th>
-                        <th class="py-1 text-right">Result</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {#each [...midgardGame.challengeHistory].reverse() as record}
-                        <tr class="border-t border-gray-800">
-                          <td class="py-1 font-ponzi-number"
-                            >{formatTime(record.time)}</td
-                          >
-                          <td class="py-1 text-right font-ponzi-number"
-                            >{record.ticketCost.toFixed(2)}</td
-                          >
-                          <td class="py-1 text-right font-ponzi-number"
-                            >{record.potentialReward.toFixed(2)}</td
-                          >
-                          <td class="py-1 text-center">
-                            <span class="font-ponzi-number"
-                              >{record.playerScore}</span
-                            >
-                            <span class="text-gray-500">vs</span>
-                            <span class="font-ponzi-number"
-                              >{record.factoryScore}</span
-                            >
-                          </td>
-                          <td
-                            class={[
-                              'py-1 text-right font-ponzi-number',
-                              {
-                                'text-green-400': record.won,
-                                'text-red-400': !record.won,
-                              },
-                            ]}
-                          >
-                            {record.won ? '+' : ''}{record.netResult.toFixed(2)}
-                          </td>
-                        </tr>
-                      {/each}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            {/if}
-          </div>
         {/if}
       {:else}
         <!-- No land selected -->
