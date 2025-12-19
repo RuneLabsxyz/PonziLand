@@ -4,8 +4,12 @@ import type { Wallet, NewWallet, TokenEvent, NewTokenEvent } from '../db';
 
 export type TokenEventType = 'LOCK' | 'UNLOCK' | 'MINT' | 'BURN' | 'TRANSFER';
 
+// Initial GARD balance for new wallets
+const INITIAL_WALLET_BALANCE = 1000;
+
 /**
  * Get or create a wallet by address
+ * New wallets are minted 1000 GARD as initial balance
  */
 export async function getOrCreateWallet(address: string): Promise<Wallet> {
   const db = getDb();
@@ -20,17 +24,29 @@ export async function getOrCreateWallet(address: string): Promise<Wallet> {
     return existing[0];
   }
 
-  // Create new wallet
+  // Create new wallet with initial balance (minted)
   const newWallet: NewWallet = {
     address,
-    gardBalance: 0,
+    gardBalance: INITIAL_WALLET_BALANCE,
     lockedBalance: 0,
-    totalMinted: 0,
+    totalMinted: INITIAL_WALLET_BALANCE,
     totalBurned: 0,
   };
 
   const inserted = await db.insert(wallets).values(newWallet).returning();
-  return inserted[0];
+  const wallet = inserted[0];
+
+  // Log the initial mint event
+  const mintEvent: NewTokenEvent = {
+    eventType: 'MINT',
+    walletAddress: address,
+    amount: INITIAL_WALLET_BALANCE,
+    source: 'wallet_create',
+    description: `Initial ${INITIAL_WALLET_BALANCE} GARD minted for new wallet`,
+  };
+  await db.insert(tokenEvents).values(mintEvent);
+
+  return wallet;
 }
 
 /**
