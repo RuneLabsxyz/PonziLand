@@ -1,4 +1,8 @@
-import { PUBLIC_GAME_LAUNCH, PUBLIC_PONZI_API_URL } from '$env/static/public';
+import {
+  PUBLIC_GAME_LAUNCH,
+  PUBLIC_PONZI_API_URL,
+  PUBLIC_TOURNAMENT_START,
+} from '$env/static/public';
 import {
   calculatePositionMetrics,
   type PositionMetrics,
@@ -118,29 +122,59 @@ export function processLeaderboardEntries(
   });
 }
 
-// ===== Leaderboard Fetch (All-time since game launch) =====
+// ===== Leaderboard Service Class =====
+
+/**
+ * Reusable leaderboard service that can be instantiated with different start dates
+ */
+export class LeaderboardService {
+  constructor(
+    private readonly sinceDate: string,
+    private readonly name: string = 'leaderboard',
+  ) {}
+
+  async fetch(): Promise<LeaderboardResponse> {
+    try {
+      const response = await fetch(
+        `${PUBLIC_PONZI_API_URL}/land-historical/leaderboard?since=${this.sinceDate}`,
+      );
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch ${this.name}: ${response.statusText}`);
+      }
+
+      const data = (await response.json()) as LeaderboardResponse;
+
+      return {
+        ...data,
+        entries: processLeaderboardEntries(data.entries),
+      };
+    } catch (error) {
+      console.error(`Error fetching ${this.name}:`, error);
+      throw error;
+    }
+  }
+}
+
+// ===== Pre-instantiated Services =====
+
+/** All-time leaderboard since game launch */
+export const allTimeLeaderboard = new LeaderboardService(
+  PUBLIC_GAME_LAUNCH,
+  'leaderboard',
+);
+
+/** Tournament leaderboard since tournament start */
+export const tournamentLeaderboard = new LeaderboardService(
+  PUBLIC_TOURNAMENT_START,
+  'tournament',
+);
+
+// ===== Backward-compatible Function Exports =====
 
 /**
  * Fetch all historical positions since game launch
  */
 export async function fetchLeaderboard(): Promise<LeaderboardResponse> {
-  try {
-    const response = await fetch(
-      `${PUBLIC_PONZI_API_URL}/land-historical/leaderboard?since=${PUBLIC_GAME_LAUNCH}`,
-    );
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch leaderboard: ${response.statusText}`);
-    }
-
-    const data = (await response.json()) as LeaderboardResponse;
-
-    return {
-      ...data,
-      entries: processLeaderboardEntries(data.entries),
-    };
-  } catch (error) {
-    console.error('Error fetching leaderboard:', error);
-    throw error;
-  }
+  return allTimeLeaderboard.fetch();
 }
