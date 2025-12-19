@@ -734,10 +734,12 @@
   <div class="w-full h-full">
     {#if !account.isConnected}
       <!-- Wallet connection prompt -->
-      <div class="flex flex-col items-center justify-center h-full gap-4">
+      <div class="flex flex-col items-center justify-center h-full gap-4 px-4">
         <div class="text-center">
-          <h3 class="text-lg font-semibold mb-2">Connect Wallet Required</h3>
-          <p class="text-sm opacity-75 mb-4">
+          <h3 class="text-base md:text-lg font-semibold mb-2">
+            Connect Wallet Required
+          </h3>
+          <p class="text-xs md:text-sm opacity-75 mb-4">
             You need to connect your wallet to buy land and participate in the
             game.
           </p>
@@ -753,8 +755,10 @@
       </div>
     {:else}
       <!-- Buy tab content will go here -->
-      <Label class="font-ponzi-number" for="token">Token</Label>
-      <p class="-mt-1 mb-1 opacity-75 leading-none">
+      <Label class="font-ponzi-number text-sm md:text-base" for="token"
+        >Token</Label
+      >
+      <p class="-mt-1 mb-1 opacity-75 leading-none text-xs md:text-sm">
         Determines the land you are going to build. You stake this token and
         will receive this token when bought
       </p>
@@ -868,11 +872,13 @@
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
 
-      <div class="flex flex-col gap-4 my-4">
+      <div class="flex flex-col gap-3 md:gap-4 my-3 md:my-4">
         <!-- Sell Price Section -->
-        <div class="flex flex-col gap-2">
-          <Label class="font-ponzi-number" for="sell">Sell Price</Label>
-          <p class="-mt-1 mb-1 opacity-75 leading-none text-sm">
+        <div class="flex flex-col gap-1.5 md:gap-2">
+          <Label class="font-ponzi-number text-sm md:text-base" for="sell"
+            >Sell Price</Label
+          >
+          <p class="-mt-1 mb-1 opacity-75 leading-none text-xs md:text-sm">
             What is paid to you when your land is bought out
           </p>
           {#if isZeroBasePrice}
@@ -882,12 +888,12 @@
           {/if}
 
           <!-- Preset buttons -->
-          <div class="flex flex-wrap gap-1">
+          <div class="flex flex-wrap gap-0.5 md:gap-1">
             {#each SELL_PRICE_PRESETS as preset}
               <button
                 type="button"
                 class={[
-                  'px-2 py-1 rounded border text-xs transition-all',
+                  'px-1.5 md:px-2 py-0.5 md:py-1 rounded border text-[10px] md:text-xs transition-all',
                   'hover:bg-white/10',
                   {
                     'border-yellow-500 bg-yellow-500/20':
@@ -921,7 +927,7 @@
           </div>
 
           <!-- Value display -->
-          <div class="flex gap-2 items-center">
+          <div class="flex gap-1 md:gap-2 items-center">
             <Input
               id="sell"
               type="number"
@@ -929,12 +935,12 @@
               oninput={(e) => onSellPriceInput(e.currentTarget.value)}
               class={['flex-1', { 'border-red-500': sellPriceError }]}
             />
-            <span class="text-sm text-gray-400 whitespace-nowrap">
+            <span class="text-xs md:text-sm text-gray-400 whitespace-nowrap">
               {selectedToken?.symbol}
             </span>
             {#if sellPriceInBaseCurrency}
               <span
-                class="text-m font-ponzi-number text-white whitespace-nowrap"
+                class="text-xs md:text-sm font-ponzi-number text-white whitespace-nowrap"
               >
                 ≈ {sellPriceInBaseCurrency.toString()}
                 {baseToken.symbol}
@@ -942,24 +948,26 @@
             {/if}
           </div>
           {#if sellPriceError}
-            <p class="text-red-500 text-sm">{sellPriceError}</p>
+            <p class="text-red-500 text-xs md:text-sm">{sellPriceError}</p>
           {/if}
         </div>
 
         <!-- Stake Amount Section -->
-        <div class="flex flex-col gap-2">
-          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
-          <p class="-mt-1 mb-1 leading-none opacity-75 text-sm">
+        <div class="flex flex-col gap-1.5 md:gap-2">
+          <Label class="font-ponzi-number text-sm md:text-base" for="stake"
+            >Stake Amount</Label
+          >
+          <p class="-mt-1 mb-1 leading-none opacity-75 text-xs md:text-sm">
             Locked value to pay taxes and survive (ratio of sell price)
           </p>
 
           <!-- Preset buttons -->
-          <div class="flex flex-wrap gap-1">
+          <div class="flex flex-wrap gap-0.5 md:gap-1">
             {#each STAKE_PRESETS as preset}
               <button
                 type="button"
                 class={[
-                  'px-2 py-1 rounded border text-xs transition-all',
+                  'px-1.5 md:px-2 py-0.5 md:py-1 rounded border text-[10px] md:text-xs transition-all',
                   'hover:bg-white/10',
                   {
                     'border-yellow-500 bg-yellow-500/20':
@@ -993,7 +1001,7 @@
           </div>
 
           <!-- Value display -->
-          <div class="flex gap-2 items-center">
+          <div class="flex gap-1 md:gap-2 items-center">
             <Input
               id="stake"
               type="number"
@@ -1001,12 +1009,12 @@
               oninput={(e) => onStakeInput(e.currentTarget.value)}
               class={['flex-1', { 'border-red-500': stakeAmountError }]}
             />
-            <span class="text-sm text-gray-400 whitespace-nowrap">
+            <span class="text-xs md:text-sm text-gray-400 whitespace-nowrap">
               {selectedToken?.symbol}
             </span>
             {#if stakeAmountInBaseCurrency}
               <span
-                class="text-m font-ponzi-number text-white whitespace-nowrap"
+                class="text-xs md:text-sm font-ponzi-number text-white whitespace-nowrap"
               >
                 ≈ {stakeAmountInBaseCurrency.toString()}
                 {baseToken.symbol}
@@ -1014,7 +1022,7 @@
             {/if}
           </div>
           {#if stakeAmountError}
-            <p class="text-red-500 text-sm">{stakeAmountError}</p>
+            <p class="text-red-500 text-xs md:text-sm">{stakeAmountError}</p>
           {/if}
         </div>
       </div>
@@ -1031,17 +1039,17 @@
       </div>
 
       {#if balanceError}
-        <p class="text-red-500 text-sm mt-1">{balanceError}</p>
+        <p class="text-red-500 text-xs md:text-sm mt-1">{balanceError}</p>
       {/if}
 
       {#if loading}
-        <Button class="mt-3 w-full" disabled>
+        <Button class="mt-2 md:mt-3 w-full text-xs md:text-sm" disabled>
           buying <ThreeDots />
         </Button>
       {:else}
         <Button
           onclick={handleBuyClick}
-          class="mt-3 w-full"
+          class="mt-2 md:mt-3 w-full text-xs md:text-sm"
           disabled={!isFormValid ||
             isOwner ||
             loading ||
@@ -1085,7 +1093,7 @@
             (padAddress(selectedToken.address) === padAddress(baseToken.address)
               ? stakeAmount
               : null)}
-          <span class="text-gray-300 text-sm block">
+          <span class="text-gray-300 text-xs md:text-sm block">
             {#if landPriceInBase && stakeInBase}
               (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
               {baseToken.symbol})

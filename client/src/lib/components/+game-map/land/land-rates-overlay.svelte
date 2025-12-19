@@ -67,7 +67,7 @@
       );
 
       if (baseValue) {
-        const symbol = baseToken.symbol === 'USDC' ? '$' : baseToken.symbol;
+        const symbol = baseToken.symbol.startsWith('USDC') ? '$' : baseToken.symbol;
         return {
           amount: displayCurrency(baseValue.rawValue()),
           symbol: symbol,
@@ -77,7 +77,7 @@
       }
     } else {
       const symbol =
-        land.token?.symbol === 'USDC' ? '$' : land.token?.symbol || 'UNKNOWN';
+        land.token?.symbol.startsWith('USDC') ? '$' : land.token?.symbol || 'UNKNOWN';
       return {
         amount: displayCurrency(Number(tokenBurnRate)),
         symbol: symbol,
@@ -114,13 +114,13 @@
       const rawAmount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
       const rawDisplay = {
         rawAmount: displayCurrency(rawAmount.rawValue()),
-        rawSymbol: info.token.symbol === 'USDC' ? '$' : info.token.symbol,
+        rawSymbol: info.token.symbol.startsWith('USDC') ? '$' : info.token.symbol,
       };
 
       if (settingsStore.showRatesInBaseToken && baseToken) {
         const baseAmount = getYieldValueInBaseToken(info);
         if (baseAmount) {
-          const symbol = baseToken.symbol === 'USDC' ? '$' : baseToken.symbol;
+          const symbol = baseToken.symbol.startsWith('USDC') ? '$' : baseToken.symbol;
           return {
             amount: displayCurrency(baseAmount.rawValue()),
             symbol: symbol,
@@ -131,7 +131,7 @@
         }
       } else {
         const amount = CurrencyAmount.fromUnscaled(info.per_hour, info.token);
-        const symbol = info.token.symbol === 'USDC' ? '$' : info.token.symbol;
+        const symbol = info.token.symbol.startsWith('USDC') ? '$' : info.token.symbol;
         return {
           amount: displayCurrency(amount.rawValue()),
           symbol: symbol,
@@ -242,7 +242,7 @@
         ? baseToken.symbol
         : land.token?.symbol || 'UNKNOWN';
 
-    const displaySymbol = tokenSymbol === 'USDC' ? '$' : tokenSymbol;
+    const displaySymbol = tokenSymbol.startsWith('USDC') ? '$' : tokenSymbol;
 
     return {
       totalEarnings: {

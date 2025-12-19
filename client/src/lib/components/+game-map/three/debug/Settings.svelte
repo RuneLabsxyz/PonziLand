@@ -17,30 +17,7 @@
   import type { ListOptions } from 'svelte-tweakpane-ui';
   import { landStore } from '$lib/stores/store.svelte';
   import { useClient } from '$lib/contexts/client.svelte';
-
-  const cameraOptions: ListOptions<number> = {
-    NONE: 0b0,
-    ROTATE: 0b1,
-    TRUCK: 0b10,
-    SCREEN_PAN: 0b100,
-    OFFSET: 0b1000,
-    DOLLY: 0b10000,
-    ZOOM: 0b100000,
-    TOUCH_ROTATE: 0b1000000,
-    TOUCH_TRUCK: 0b10000000,
-    TOUCH_SCREEN_PAN: 0b100000000,
-    TOUCH_OFFSET: 0b1000000000,
-    TOUCH_DOLLY: 0b10000000000,
-    TOUCH_ZOOM: 0b100000000000,
-    TOUCH_DOLLY_TRUCK: 0b1000000000000,
-    TOUCH_DOLLY_SCREEN_PAN: 0b10000000000000,
-    TOUCH_DOLLY_OFFSET: 0b100000000000000,
-    TOUCH_DOLLY_ROTATE: 0b1000000000000000,
-    TOUCH_ZOOM_TRUCK: 0b10000000000000000,
-    TOUCH_ZOOM_OFFSET: 0b100000000000000000,
-    TOUCH_ZOOM_SCREEN_PAN: 0b1000000000000000000,
-    TOUCH_ZOOM_ROTATE: 0b10000000000000000000,
-  };
+  import { CAMERA_OPTIONS } from '$lib/utils/camera-options';
 </script>
 
 <Pane title="Dev Settings" position="draggable" x={0} y={120}>
@@ -55,17 +32,32 @@
     <List
       bind:value={devsettings.cameraControlsLeftClick}
       label="Camera Left Click"
-      options={cameraOptions}
+      options={CAMERA_OPTIONS}
     />
     <List
       bind:value={devsettings.cameraControlsRightClick}
       label="Camera Right Click"
-      options={cameraOptions}
+      options={CAMERA_OPTIONS}
     />
     <List
       bind:value={devsettings.CameraControlsWheel}
       label="Camera Wheel"
-      options={cameraOptions}
+      options={CAMERA_OPTIONS}
+    />
+    <List
+      bind:value={devsettings.cameraControlsOneFinger}
+      label="Touch One Finger"
+      options={CAMERA_OPTIONS}
+    />
+    <List
+      bind:value={devsettings.cameraControlsTwoFinger}
+      label="Touch Two Finger"
+      options={CAMERA_OPTIONS}
+    />
+    <List
+      bind:value={devsettings.cameraControlsThreeFinger}
+      label="Touch Three Finger"
+      options={CAMERA_OPTIONS}
     />
     <Checkbox bind:value={devsettings.billboarding} label="Billboarding" />
   </Folder>

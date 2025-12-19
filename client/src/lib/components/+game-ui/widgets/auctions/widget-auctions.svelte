@@ -22,6 +22,8 @@
   import { openLandInfoWidget } from '../../game-ui.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import type { Snippet } from 'svelte';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
+  import { openMobileLandDetails } from '$lib/stores/mobile-nav.store';
 
   let {
     setCustomControls,
@@ -61,22 +63,34 @@
   function moveToLand(land: LandWithPrice) {
     const coordinates = parseLocation(land.location);
     const baseLand = landStore.getLand(coordinates[0], coordinates[1]);
-    if (baseLand) {
-      selectedLand.value = get(baseLand);
+
+    if (deviceStore.isMobile) {
+      // On mobile, open the land details in the market tab
+      if (baseLand) {
+        const baseLandValue = get(baseLand);
+        if (baseLandValue && 'owner' in baseLandValue) {
+          openMobileLandDetails(baseLandValue);
+        }
+      }
+    } else {
+      // On desktop, move camera and select land
+      if (baseLand) {
+        selectedLand.value = get(baseLand);
+      }
+      gameStore.cameraControls?.setLookAt(
+        coordinates[0],
+        50,
+        coordinates[1],
+        coordinates[0],
+        0,
+        coordinates[1],
+        true,
+      );
+      const locationNumber = Number(land.location);
+      if (cursorStore.selectedTileIndex == locationNumber)
+        gameStore.cameraControls?.zoomTo(250, true);
+      cursorStore.selectedTileIndex = locationNumber;
     }
-    gameStore.cameraControls?.setLookAt(
-      coordinates[0],
-      50,
-      coordinates[1],
-      coordinates[0],
-      0,
-      coordinates[1],
-      true,
-    );
-    const locationNumber = Number(land.location);
-    if (cursorStore.selectedTileIndex == locationNumber)
-      gameStore.cameraControls?.zoomTo(250, true);
-    cursorStore.selectedTileIndex = locationNumber;
   }
 
   // Function to refresh auctions data

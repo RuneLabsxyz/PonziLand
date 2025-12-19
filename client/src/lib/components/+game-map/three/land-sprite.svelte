@@ -43,6 +43,7 @@
   import { devsettings } from './utils/devsettings.store.svelte';
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
   import FilterEffect from '$lib/components/tutorial/filter-effect.svelte';
   import {
     nextStep,
@@ -723,7 +724,9 @@
         spritesheet={roadSpritesheet}
         bind:ref={roadSprite}
         receiveShadow={true}
-        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+        fps={devsettings.enableAnimations &&
+        devsettings.enableSpriteAnimations &&
+        !deviceStore.isMobile
           ? devsettings.reducedAnimationMode
             ? Math.max(10, devsettings.animationFPS)
             : undefined
@@ -741,7 +744,9 @@
         spritesheet={biomeSpritesheet}
         bind:ref={biomeSprite}
         receiveShadow={true}
-        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+        fps={devsettings.enableAnimations &&
+        devsettings.enableSpriteAnimations &&
+        !deviceStore.isMobile
           ? devsettings.reducedAnimationMode
             ? Math.max(10, devsettings.animationFPS)
             : undefined
@@ -785,7 +790,9 @@
         spritesheet={buildingSpritesheet}
         bind:ref={buildingSprite}
         receiveShadow={true}
-        fps={devsettings.enableAnimations && devsettings.enableSpriteAnimations
+        fps={devsettings.enableAnimations &&
+        devsettings.enableSpriteAnimations &&
+        !deviceStore.isMobile
           ? devsettings.reducedAnimationMode
             ? Math.max(10, devsettings.animationFPS)
             : undefined
@@ -813,7 +820,8 @@
         bind:ref={nukeSprite}
         fps={devsettings.enableAnimations &&
         devsettings.enableSpriteAnimations &&
-        devsettings.enableNukeAnimations
+        devsettings.enableNukeAnimations &&
+        !deviceStore.isMobile
           ? devsettings.reducedAnimationMode
             ? Math.max(5, devsettings.animationFPS / 3)
             : 10
@@ -866,7 +874,8 @@
         {isUnzoomed}
         currentUserAddress={accountState.address}
         enableAnimation={devsettings.enableAnimations &&
-          devsettings.enableNukeAnimations}
+          devsettings.enableNukeAnimations &&
+          !deviceStore.isMobile}
       />
     {/if}
 

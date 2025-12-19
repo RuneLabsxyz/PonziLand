@@ -7,9 +7,20 @@
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
   import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
+  import MobileBottomNavbar from '../ui/mobile-bottom-navbar.svelte';
+  import MobileContentContainer from '../ui/mobile-content-container.svelte';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
+  import { openMobileLandDetails } from '$lib/stores/mobile-nav.store';
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
+    // Check if mobile and redirect to mobile land tab
+    if (deviceStore.isMobile) {
+      openMobileLandDetails(land);
+      return;
+    }
+
+    // Desktop behavior - open widget
     const { x, y } = locationToCoordinates(land.location);
     widgetsStore.addWidget({
       id: devsettings.multiLandInfo ? `land-info [${x}-${y}]` : 'land-info',
@@ -30,8 +41,17 @@
 >
   <OverlayManager />
 
-  <WidgetLauncher />
-  <WidgetProvider />
+  <!-- Desktop widget launcher and provider -->
+  <div class="hidden md:block">
+    <WidgetLauncher />
+    <WidgetProvider />
+  </div>
 
   <TxNotificationZone />
+
+  <!-- Mobile navigation and content -->
+  <div class="md:hidden">
+    <MobileBottomNavbar />
+    <MobileContentContainer />
+  </div>
 </div>

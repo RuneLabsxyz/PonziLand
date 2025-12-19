@@ -1,5 +1,5 @@
 {
-  "origin": ["https://play.ponzi.land/"],
+  "origin": ["https://play.ponzi.land/", "https://localhost:3000/"],
   "theme": {
     "colors": {
       "primary": "#F38332"

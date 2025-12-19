@@ -13,6 +13,8 @@
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
   import { devsettings } from './three/utils/devsettings.store.svelte';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
+  import { openMobileLandDetails } from '$lib/stores/mobile-nav.store';
 
   let { children = undefined } = $props();
 

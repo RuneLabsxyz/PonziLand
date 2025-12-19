@@ -13,6 +13,7 @@
   import { setOutlineControls } from './utils/outline-controls.store.svelte';
   import { coordinatesToLocation } from '$lib/utils';
   import { devsettings } from './utils/devsettings.store.svelte';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
 
   let {
     landTiles,
@@ -44,11 +45,12 @@
   const clock = new THREE.Clock();
 
   useTask(() => {
-    // Only run shader time updates if animations are enabled
+    // Only run shader time updates if animations are enabled and not on mobile
     if (
       outlineControls &&
       devsettings.enableAnimations &&
-      devsettings.enableShaderAnimations
+      devsettings.enableShaderAnimations &&
+      !deviceStore.isMobile
     ) {
       outlineControls.updateTime(clock.getElapsedTime());
     }

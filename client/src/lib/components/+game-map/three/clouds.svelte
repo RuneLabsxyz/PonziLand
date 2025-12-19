@@ -17,6 +17,7 @@
   import { cursorStore } from './cursor.store.svelte';
   import { onMount } from 'svelte';
   import seedrandom from 'seedrandom';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
 
   interface Props {
     bounds: {
@@ -125,10 +126,12 @@
 
     const edgePositions = [];
 
-    // Reduced density and rings for better performance
-    const numRings = 2; // Reduced from 3 to 2
+    // Reduced density and rings for better performance - even more on mobile
+    const numRings = deviceStore.isMobile ? 1 : 2; // Only 1 ring on mobile
     const ringSpacing = CLOUD_SPACING * 0.8; // Slightly wider spacing
-    const densitySpacing = CLOUD_SPACING * 1.2; // Increased from 0.8 to 1.2 for less density
+    const densitySpacing = deviceStore.isMobile
+      ? CLOUD_SPACING * 2.5
+      : CLOUD_SPACING * 1.2; // Much less density on mobile
 
     for (let ring = 0; ring < numRings; ring++) {
       const ringOffset = ring * ringSpacing;
@@ -272,8 +275,8 @@
 
   // Animate clouds with subtle movement
   useTask((delta) => {
-    // Only animate if enabled
-    if (!enableAnimation) return;
+    // Stop all animations on mobile or if disabled
+    if (!enableAnimation || deviceStore.isMobile) return;
     time += delta * 0.1; // Very slow time progression (0.1x speed)
   });
 
@@ -286,8 +289,8 @@
     const positions: any[] = [];
 
     // Include time and cursor position in dependencies to ensure animations and mouse reactivity update
-    const currentTime = time;
-    const mousePos = cursorStore.absolutePosition;
+    const currentTime = deviceStore.isMobile ? 0 : time; // No time updates on mobile
+    const mousePos = deviceStore.isMobile ? null : cursorStore.absolutePosition; // No mouse tracking on mobile
 
     // Use cached edge positions
     const edgePositions = generateEdgePositions(bounds);
@@ -299,11 +302,15 @@
     let culledCount = 0;
     let processedCount = 0;
 
-    // Pre-calculate expensive values outside the loop
-    const cloudRenderDistanceX = Math.max(currentRenderDistance.x * 2, 100);
-    const cloudRenderDistanceZ = Math.max(currentRenderDistance.z * 2, 100);
-    const time07 = currentTime * 0.7;
-    const time05 = currentTime * 0.5;
+    // Pre-calculate expensive values outside the loop - reduce render distance on mobile
+    const cloudRenderDistanceX = deviceStore.isMobile
+      ? Math.max(currentRenderDistance.x * 1.2, 50)
+      : Math.max(currentRenderDistance.x * 2, 100);
+    const cloudRenderDistanceZ = deviceStore.isMobile
+      ? Math.max(currentRenderDistance.z * 1.2, 50)
+      : Math.max(currentRenderDistance.z * 2, 100);
+    const time07 = deviceStore.isMobile ? 0 : currentTime * 0.7;
+    const time05 = deviceStore.isMobile ? 0 : currentTime * 0.5;
 
     edgePositions.forEach(({ x, z }) => {
       const distanceX = Math.abs(x - cameraX);
@@ -317,10 +324,16 @@
         processedCount++;
         const cached = getCachedRandomValues(x, z, true);
 
-        // Add subtle movement based on time for edge clouds using cached values
-        const movementX = Math.sin(currentTime + cached.timeOffset) * 0.3;
-        const movementZ = Math.cos(time07 + cached.timeOffset2) * 0.2;
-        const verticalBob = Math.sin(time05 + cached.timeOffset3) * 0.1;
+        // Add subtle movement based on time for edge clouds using cached values - skip on mobile
+        const movementX = deviceStore.isMobile
+          ? 0
+          : Math.sin(currentTime + cached.timeOffset) * 0.3;
+        const movementZ = deviceStore.isMobile
+          ? 0
+          : Math.cos(time07 + cached.timeOffset2) * 0.2;
+        const verticalBob = deviceStore.isMobile
+          ? 0
+          : Math.sin(time05 + cached.timeOffset3) * 0.1;
 
         // Add mouse-based movement for border clouds - optimized
         let mouseInfluenceX = 0;
@@ -517,8 +530,8 @@
 
   // Update clouds instances when positions change - using useTask for better performance
   useTask(() => {
-    // Skip animation updates if disabled
-    if (!enableAnimation) return;
+    // Skip animation updates if disabled or on mobile
+    if (!enableAnimation && !deviceStore.isMobile) return;
     if (cloudsInstancedMesh && cloudPositions.length > 0) {
       const tempObject = new Object3D();
 
@@ -538,8 +551,8 @@
 
   // Create cloud plane meshes - using useTask for better performance
   useTask(() => {
-    // Skip cloud plane updates if animation disabled
-    if (!enableAnimation) return;
+    // Skip cloud plane updates if animation disabled or on mobile
+    if (!enableAnimation && !deviceStore.isMobile) return;
     if (cloudPlaneGeometries.length > 0) {
       const material = new MeshStandardMaterial({});
 

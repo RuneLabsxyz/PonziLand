@@ -56,9 +56,10 @@
   <meta name="twitter:image" content="https://play.ponzi.land/home/hero.png" />
 </svelte:head>
 
-{#if isMobile}
-  <MobileBlock />
-{:else}
+<div
+  class="mobile-vh-fix overflow-hidden"
+  style="height: calc(var(--vh, 1vh) * 100);"
+>
   <SelectWalletModal />
   {@render children()}
-{/if}
+</div>

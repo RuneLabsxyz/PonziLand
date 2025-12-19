@@ -5,6 +5,7 @@
   import { Separator } from '$lib/components/ui/separator';
   import * as ToggleGroup from '$lib/components/ui/toggle-group';
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
+  import { deviceStore } from '$lib/stores/device.store.svelte';
   import { onMount } from 'svelte';
   import OverlayManagerItem from './OverlayManagerItem.svelte';
 
@@ -40,11 +41,21 @@
 </script>
 
 <div
-  class="top-0 left-1/2 absolute z-2 pb-5 overlay-hover-detect"
+  class="absolute z-2 overlay-hover-detect
+    {deviceStore.isMobile ? 'top-2 right-2' : 'top-0 left-1/2 pb-5'}"
+  class:translate-x-[-50%]={!deviceStore.isMobile}
   style="pointer-events: all;"
 >
-  <Card class="bg-ponzi overlay-container relative">
-    <div class="flex gap-2 -m-2">
+  <Card
+    class="bg-ponzi overlay-container relative {deviceStore.isMobile
+      ? 'p-2'
+      : ''}"
+  >
+    <div
+      class="flex {deviceStore.isMobile
+        ? 'flex-col gap-1'
+        : 'gap-2'} {deviceStore.isMobile ? '' : '-m-2'}"
+    >
       <!-- <Toggle variant="map" size="sm" class="rounded">
       <img
         src="/ui/icons/Icon_Book.png"
@@ -53,7 +64,7 @@
       />
     </Toggle> -->
       <ToggleGroup.Root
-        class="rounded-none"
+        class={['rounded-none', { 'flex-col flex': deviceStore.isMobile }]}
         size="sm"
         variant="map"
         type="single"
@@ -79,11 +90,14 @@
           <div class="font-ponzi-number text-xs stroke-3d-black">⟐</div>
         </OverlayManagerItem>
       </ToggleGroup.Root>
-      <Separator orientation="vertical" class="my-2 opacity-50" />
+      <Separator
+        orientation={deviceStore.isMobile ? 'horizontal' : 'vertical'}
+        class={['opacity-50', { 'my-1': !deviceStore.isMobile }]}
+      />
       <ToggleGroup.Root
         size="sm"
         variant="map"
-        class="rounded-none"
+        class={['rounded-none', { 'flex-col flex': deviceStore.isMobile }]}
         type="multiple"
         value={multiple}
         onValueChange={(e) => (multiple = e as MultipleValues)}
@@ -104,25 +118,34 @@
         </OverlayManagerItem>
       </ToggleGroup.Root>
     </div>
-    <div
-      class="absolute left-1/2 -translate-x-1/2 mt-3 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
-    >
-      ^
-    </div>
+    {#if !deviceStore.isMobile}
+      <div
+        class="absolute left-1/2 -translate-x-1/2 mt-3 rotate-180 leading-none h-1 chevron text-gray-200 font-ponzi-number text-2xl"
+      >
+        ^
+      </div>
+    {/if}
   </Card>
 </div>
 
 <style>
-  :global(.overlay-container) {
-    transform: translateY(-75%);
-    transition: transform 0.2s ease-in-out;
-  }
-  .overlay-hover-detect {
-    transform: translateX(-50%);
+  /* Desktop styles - keep slide animation */
+  @media (min-width: 768px) {
+    :global(.overlay-container) {
+      transform: translateY(-75%);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    :global(.overlay-hover-detect:hover .overlay-container) {
+      transform: translateY(0);
+    }
   }
 
-  :global(.overlay-hover-detect:hover .overlay-container) {
-    transform: translateY(0);
+  /* Mobile styles - always visible, no slide animation */
+  @media (max-width: 767px) {
+    :global(.overlay-container) {
+      transform: none;
+    }
   }
 
   .chevron {
