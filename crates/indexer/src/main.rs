@@ -77,9 +77,9 @@ async fn main() -> Result<()> {
 
     let monitor = MonitorManager::new();
 
-    let token_service = Arc::new(
-        TokenService::new(&config).with_context(|| "Error while setting up token service")?,
-    );
+    let token_service = TokenService::new(&config, &monitor)
+        .await
+        .with_context(|| "Error while setting up token service")?;
 
     let ekubo = EkuboService::new(&config, token_service.clone(), &monitor)
         .await

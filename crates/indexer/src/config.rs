@@ -49,13 +49,6 @@ pub struct Conf {
 pub struct Token {
     pub symbol: String,
     pub address: Felt,
-    /// Token decimals (default: 18)
-    #[serde(default = "default_decimals")]
-    pub decimals: u32,
-}
-
-const fn default_decimals() -> u32 {
-    18
 }
 
 #[derive(Config, Debug, Clone)]
