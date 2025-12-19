@@ -99,6 +99,11 @@ export class MidgardGameStore {
       factory.inflationPaidOut,
     );
 
+    // Challenge value totals
+    const totalWinsValue = factory.inflationPaidOut;
+    const totalLossesValue = factory.challengeLossValue;
+    const netChallengeValue = totalWinsValue - totalLossesValue;
+
     return {
       elapsed,
       burn,
@@ -111,6 +116,9 @@ export class MidgardGameStore {
       predictedNetResult,
       score: factory.score,
       stakedGard: factory.stakedGard,
+      totalWinsValue,
+      totalLossesValue,
+      netChallengeValue,
     };
   }
 
@@ -178,6 +186,9 @@ export class MidgardGameStore {
       score: this.pendingFactoryScore,
       burnReductions: 0,
       inflationPaidOut: 0,
+      challengeWins: 0,
+      challengeLosses: 0,
+      challengeLossValue: 0,
     };
 
     const landWithFactory: LandWithFactory = {
@@ -228,12 +239,13 @@ export class MidgardGameStore {
       const winReward = calculateWinReward(ticketCost);
       gardChange = winReward;
 
-      // Update factory - add to inflation paid out
+      // Update factory - add to inflation paid out and increment win counter
       this.lands[landIndex] = {
         ...land,
         factory: {
           ...land.factory,
           inflationPaidOut: land.factory.inflationPaidOut + winReward,
+          challengeWins: land.factory.challengeWins + 1,
         },
       };
 
@@ -243,12 +255,14 @@ export class MidgardGameStore {
       gardChange = -ticketCost;
       const burnReduction = LOSS_BURN_REDUCTION * ticketCost;
 
-      // Update factory - add to burn reductions
+      // Update factory - add to burn reductions, increment loss counter, and track loss value
       this.lands[landIndex] = {
         ...land,
         factory: {
           ...land.factory,
           burnReductions: land.factory.burnReductions + burnReduction,
+          challengeLosses: land.factory.challengeLosses + 1,
+          challengeLossValue: land.factory.challengeLossValue + ticketCost,
         },
       };
     }
@@ -367,6 +381,10 @@ export class MidgardGameStore {
             finalBurn: stats.effectiveBurn,
             finalInflation: stats.availableInflation,
             score: stats.score,
+            totalChallenges:
+              land.factory.challengeWins + land.factory.challengeLosses,
+            wins: land.factory.challengeWins,
+            losses: land.factory.challengeLosses,
           },
         ];
 

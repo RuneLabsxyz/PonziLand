@@ -4,7 +4,7 @@ import type { BaseLand } from './types';
 export const GRID_SIZE = 3; // 3x3
 
 // Initial player balance
-export const INITIAL_GARD_BALANCE = 10000;
+export const INITIAL_GARD_BALANCE = 1000;
 
 // Time settings
 // POC uses accelerated time: 1 real second = configurable game time

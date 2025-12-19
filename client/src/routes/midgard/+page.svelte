@@ -425,6 +425,36 @@
                     : ''}{factoryStats.predictedNetResult.toFixed(4)}
                 </span>
               </div>
+              <div
+                class="mt-2 flex justify-between border-t border-gray-700 pt-2"
+              >
+                <span class="text-gray-400">Challenge Wins Value:</span>
+                <span class="font-ponzi-number text-green-400">
+                  +{factoryStats.totalWinsValue.toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Challenge Losses Value:</span>
+                <span class="font-ponzi-number text-red-400">
+                  -{factoryStats.totalLossesValue.toFixed(4)}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">Net Challenge Value:</span>
+                <span
+                  class={[
+                    'font-ponzi-number',
+                    {
+                      'text-green-400': factoryStats.netChallengeValue >= 0,
+                      'text-red-400': factoryStats.netChallengeValue < 0,
+                    },
+                  ]}
+                >
+                  {factoryStats.netChallengeValue >= 0
+                    ? '+'
+                    : ''}{factoryStats.netChallengeValue.toFixed(4)}
+                </span>
+              </div>
             </div>
           </div>
 
@@ -726,6 +756,7 @@
               <th class="py-2 text-right">Final Burn</th>
               <th class="py-2 text-right">Final Inflation</th>
               <th class="py-2 text-right">Net Result</th>
+              <th class="py-2 text-right">Challenges</th>
               <th class="py-2 text-right">Score</th>
             </tr>
           </thead>
@@ -756,6 +787,14 @@
                   ]}
                 >
                   {netResult >= 0 ? '+' : ''}{netResult.toFixed(2)}
+                </td>
+                <td class="py-2 text-right font-ponzi-number">
+                  {record.totalChallenges}
+                  <span class="text-xs"
+                    >(<span class="text-green-400">{record.wins}W</span>/<span
+                      class="text-red-400">{record.losses}L</span
+                    >)</span
+                  >
                 </td>
                 <td class="py-2 text-right font-ponzi-number text-cyan-400"
                   >{record.score}</td

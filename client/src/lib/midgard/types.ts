@@ -15,6 +15,9 @@ export interface Factory {
   score: number; // EGS game score (0-100)
   burnReductions: number; // Sum of beta * Ticket from failed challenges
   inflationPaidOut: number; // Sum of payouts to winning challengers
+  challengeWins: number; // Number of challenges won by challengers
+  challengeLosses: number; // Number of challenges lost by challengers
+  challengeLossValue: number; // Sum of ticket costs from lost challenges
 }
 
 // Land with a factory
@@ -59,6 +62,9 @@ export interface ClosedFactoryRecord {
   finalBurn: number; // Final effective burn (>= stake)
   finalInflation: number; // Final available inflation
   score: number; // Factory score
+  totalChallenges: number; // Total challenges received
+  wins: number; // Challenges won by challengers
+  losses: number; // Challenges lost by challengers
 }
 
 // Chart data point for visualizing factory economics
