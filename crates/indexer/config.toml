@@ -43,6 +43,7 @@ address = "0x040E81cfeB176BFDbc5047BBC55eb471CFAb20a6B221f38d8fDa134E1bFFFca4"
 [[token]]
 symbol = "SOL"
 address = "0x1e70aedffd376afe33cebdf51ed5365131dccb2a5b2cb36d02b785442912b9b"
+decimals = 9
 [[token]]
 symbol = "BROTHER"
 address = "0x3b405a98c9e795d427fe82cdeeeed803f221b52471e3a757574a2b4180793ee"
@@ -61,9 +62,11 @@ address = "0x49201f03a0f0a9e70e28dcd74cbf44931174dbe3cc4b2ff488898339959e559"
 [[token]]
 symbol = "BTC"
 address = "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac"
+decimals = 8
 [[token]]
 symbol = "BONK"
 address = "0x781bddf077f25a53411d567093f63f9a839ec9e6bc4d99d9240cf742b98b0e8"
+decimals = 5
 [[token]]
 symbol = "SISTER"
 address = "0x102d5e124c51b936ee87302e0f938165aec96fb6c2027ae7f3a5ed46c77573b"
@@ -73,6 +76,7 @@ address = "0x4fcaf2a7b4a072fe57c59beee807322d34ed65000d78611c909a46fead07fb1"
 [[token]]
 symbol = "USDC"
 address = "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8"
+decimals = 6
 [[token]]
 symbol = "SCHIZO"
 address = "0x00acc2fa3bb7f6a6726c14d9e142d51fe3984dbfa32b5907e1e76425177875e2"

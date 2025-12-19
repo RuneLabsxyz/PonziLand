@@ -30,4 +30,17 @@ impl TokenService {
     pub fn main_token(&self) -> &Token {
         &self.main_token
     }
+
+    /// Get decimals for a token by its normalized address.
+    /// Returns 18 (default) if the token is not found.
+    #[must_use]
+    pub fn get_decimals(&self, normalized_address: &str) -> u32 {
+        self.tokens
+            .iter()
+            .find(|t| {
+                let token_addr = t.address.to_fixed_hex_string();
+                token_addr.eq_ignore_ascii_case(normalized_address)
+            })
+            .map_or(18, |t| t.decimals)
+    }
 }

@@ -90,7 +90,7 @@ impl DropsRoute {
                         .map(|info| info.ratio.0.into())
                 });
 
-            let decimals = get_token_decimals(&normalized_address);
+            let decimals = token_service.get_decimals(&normalized_address);
 
             if let (Some(token_ratio), Some(usdc)) = (token_ratio, usdc_ratio) {
                 // Calculate USD value
@@ -154,23 +154,4 @@ fn u256_to_f64_with_decimals(value: &starknet::core::types::U256, decimals: u32)
     let divisor = 10_f64.powi(i32::try_from(decimals).unwrap_or(18));
 
     raw_value / divisor
-}
-
-/// Get token decimals based on known token addresses
-/// USDC/USDT = 6 decimals, BTC = 8 decimals, SOL = 9 decimals, BONK = 5 decimals, most others = 18 decimals
-fn get_token_decimals(normalized_address: &str) -> u32 {
-    match normalized_address {
-        // USDC - 6 decimals
-        "0x053c91253bc9682c04929ca02ed00b3e423f6710d2ee7e0d5ebb06f3ecf368a8" => 6,
-        // USDT - 6 decimals
-        "0x068f5c6a61780768455de69077e07e89787839bf8166decfbf92b645209c0fb8" => 6,
-        // WBTC - 8 decimals
-        "0x03fe2b97c1fd336e750087d68b9b867997fd64a2661ff3ca5a7c771641e8e7ac" => 8,
-        // SOL - 9 decimals (Solana native)
-        "0x01e70aedffd376afe33cebdf51ed5365131dccb2a5b2cb36d02b785442912b9b" => 9,
-        // BONK - 5 decimals
-        "0x0781bddf077f25a53411d567093f63f9a839ec9e6bc4d99d9240cf742b98b0e8" => 5,
-        // Default to 18 decimals (ETH, STRK, LORDS, meme tokens, etc.)
-        _ => 18,
-    }
 }
