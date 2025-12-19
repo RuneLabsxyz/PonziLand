@@ -9,10 +9,13 @@ import type {
   ChallengeRecord,
   ClosedFactoryRecord,
   ChartDataPoint,
+  TokenEvent,
+  TokenSupplySnapshot,
 } from './types';
 import { hasFactory } from './types';
 import {
-  INITIAL_GARD_BALANCE,
+  INITIAL_TYCOON_BALANCE,
+  INITIAL_CHALLENGER_BALANCE,
   INITIAL_LANDS,
   TICK_INTERVAL_MS,
   BASE_TIME_PER_REAL_SECOND,
@@ -37,13 +40,30 @@ import {
 export class MidgardGameStore {
   // Reactive state using Svelte 5 runes
   public lands = $state<Land[]>(structuredClone(INITIAL_LANDS));
-  public playerGardBalance = $state<number>(INITIAL_GARD_BALANCE);
   public isPlaying = $state<boolean>(false);
   public timeSpeed = $state<number>(1);
   public selectedLandId = $state<number | null>(null);
 
   // Simulation time in game seconds
   public simulationTime = $state<number>(0);
+
+  // Tokenomics: Player balances
+  public tycoonBalance = $state<number>(INITIAL_TYCOON_BALANCE);
+  public challengerBalance = $state<number>(INITIAL_CHALLENGER_BALANCE);
+
+  // Tokenomics: Vault and burn tracking
+  public vaultBalance = $state<number>(0); // Locked in factories
+  public burnBalance = $state<number>(0); // Accumulated burns
+
+  // Tokenomics: Mint and burn totals
+  public totalMinted = $state<number>(0); // All inflation paid out
+  public totalBurned = $state<number>(0); // All tokens burned
+
+  // Tokenomics: Event history
+  public tokenEvents = $state<TokenEvent[]>([]);
+
+  // Tokenomics: Supply history for charts
+  public supplyHistory = $state<TokenSupplySnapshot[]>([]);
 
   // Last factory creation result
   public lastFactoryResult = $state<{ score: number } | null>(null);
@@ -64,6 +84,23 @@ export class MidgardGameStore {
   private lastRealTime: number = 0;
 
   constructor() {}
+
+  // Tokenomics: Computed properties
+  public get startingSupply(): number {
+    return INITIAL_TYCOON_BALANCE + INITIAL_CHALLENGER_BALANCE;
+  }
+
+  public get totalSupply(): number {
+    return this.startingSupply + this.totalMinted - this.totalBurned;
+  }
+
+  public get circulatingSupply(): number {
+    return this.tycoonBalance + this.challengerBalance;
+  }
+
+  public get netInflation(): number {
+    return this.totalMinted - this.totalBurned;
+  }
 
   // Get selected land (derived-like getter)
   public get selectedLand(): Land | null {
@@ -150,7 +187,7 @@ export class MidgardGameStore {
   // Factory creation - plays game and uses score immediately
   public createFactory(landId: number, lockAmount: number): boolean {
     if (lockAmount <= 0) return false;
-    if (this.playerGardBalance < lockAmount) return false;
+    if (this.tycoonBalance < lockAmount) return false;
 
     const landIndex = this.lands.findIndex((l) => l.id === landId);
     if (landIndex === -1) return false;
@@ -161,8 +198,21 @@ export class MidgardGameStore {
     // Play game to determine score - one chance!
     const score = playGame();
 
-    // Deduct from player balance
-    this.playerGardBalance -= lockAmount;
+    // Tokenomics: Lock tokens from tycoon to vault
+    this.tycoonBalance -= lockAmount;
+    this.vaultBalance += lockAmount;
+
+    // Record LOCK event
+    this.tokenEvents = [
+      ...this.tokenEvents,
+      {
+        time: this.simulationTime,
+        type: 'LOCK',
+        amount: lockAmount,
+        source: 'factory_create',
+        description: `Factory created on Land #${landId}, ${lockAmount.toFixed(2)} GARD locked`,
+      },
+    ];
 
     // Create factory on land with yellow paper structure
     const factory: Factory = {
@@ -202,8 +252,8 @@ export class MidgardGameStore {
 
     const ticketCost = stats.ticketCost;
 
-    // Check player can afford
-    if (this.playerGardBalance < ticketCost) return null;
+    // Check challenger can afford
+    if (this.challengerBalance < ticketCost) return null;
 
     // Check liquidity constraint
     if (!stats.challengeAllowed) return null;
@@ -215,11 +265,11 @@ export class MidgardGameStore {
 
     let gardChange: number;
 
-    // Deduct ticket cost (burned in both cases initially)
-    this.playerGardBalance -= ticketCost;
+    // Deduct ticket cost from challenger
+    this.challengerBalance -= ticketCost;
 
     if (won) {
-      // Win: challenger earns gamma * Ticket from factory's inflation
+      // Win: challenger earns gamma * Ticket from factory's inflation (MINTED)
       const winReward = calculateWinReward(ticketCost);
       gardChange = winReward;
 
@@ -233,7 +283,21 @@ export class MidgardGameStore {
         },
       };
 
-      this.playerGardBalance += winReward;
+      // Tokenomics: Mint inflation to challenger
+      this.challengerBalance += winReward;
+      this.totalMinted += winReward;
+
+      // Record MINT event
+      this.tokenEvents = [
+        ...this.tokenEvents,
+        {
+          time: this.simulationTime,
+          type: 'MINT',
+          amount: winReward,
+          source: 'challenge_win',
+          description: `Challenge won on Land #${factoryLandId}, ${winReward.toFixed(2)} GARD minted`,
+        },
+      ];
     } else {
       // Lose: ticket is burned, beta fraction reduces factory's burn obligation
       gardChange = -ticketCost;
@@ -249,6 +313,22 @@ export class MidgardGameStore {
           challengeLossValue: land.factory.challengeLossValue + ticketCost,
         },
       };
+
+      // Tokenomics: Burn the ticket
+      this.burnBalance += ticketCost;
+      this.totalBurned += ticketCost;
+
+      // Record BURN event
+      this.tokenEvents = [
+        ...this.tokenEvents,
+        {
+          time: this.simulationTime,
+          type: 'BURN',
+          amount: ticketCost,
+          source: 'challenge_loss',
+          description: `Challenge lost on Land #${factoryLandId}, ${ticketCost.toFixed(2)} GARD burned`,
+        },
+      ];
     }
 
     const result: ChallengeResult = {
@@ -339,6 +419,29 @@ export class MidgardGameStore {
 
     // Collect chart data for visualization
     this.collectChartData();
+
+    // Collect supply history for tokenomics charts
+    this.collectSupplySnapshot();
+  }
+
+  // Collect supply snapshot for tokenomics visualization
+  private collectSupplySnapshot() {
+    // Sample every ~1 game hour (limit to 100 points max)
+    const sampleInterval = 3600; // 1 hour in game seconds
+    const lastPoint = this.supplyHistory[this.supplyHistory.length - 1];
+
+    if (!lastPoint || this.simulationTime - lastPoint.time >= sampleInterval) {
+      this.supplyHistory = [
+        ...this.supplyHistory.slice(-99),
+        {
+          time: this.simulationTime,
+          totalSupply: this.totalSupply,
+          circulatingSupply: this.circulatingSupply,
+          lockedSupply: this.vaultBalance,
+          burnedSupply: this.burnBalance,
+        },
+      ];
+    }
   }
 
   // Check if any factories should close (burn >= stake)
@@ -353,6 +456,25 @@ export class MidgardGameStore {
 
       // Close factory if effective burn >= staked amount OR land stake is depleted
       if (stats.effectiveBurn >= stats.stakedGard || land.stakeAmount <= 0) {
+        const stakedAmount = stats.stakedGard;
+
+        // Tokenomics: Burn the locked stake
+        this.vaultBalance -= stakedAmount;
+        this.burnBalance += stakedAmount;
+        this.totalBurned += stakedAmount;
+
+        // Record BURN event for factory closure
+        this.tokenEvents = [
+          ...this.tokenEvents,
+          {
+            time: this.simulationTime,
+            type: 'BURN',
+            amount: stakedAmount,
+            source: 'factory_close',
+            description: `Factory closed on Land #${land.id}, ${stakedAmount.toFixed(2)} GARD burned`,
+          },
+        ];
+
         // Record the closure
         this.closedFactoryHistory = [
           ...this.closedFactoryHistory,
@@ -406,11 +528,22 @@ export class MidgardGameStore {
   public reset() {
     this.stopTick();
     this.lands = structuredClone(INITIAL_LANDS);
-    this.playerGardBalance = INITIAL_GARD_BALANCE;
     this.isPlaying = false;
     this.timeSpeed = 1;
     this.selectedLandId = null;
     this.simulationTime = 0;
+
+    // Reset tokenomics
+    this.tycoonBalance = INITIAL_TYCOON_BALANCE;
+    this.challengerBalance = INITIAL_CHALLENGER_BALANCE;
+    this.vaultBalance = 0;
+    this.burnBalance = 0;
+    this.totalMinted = 0;
+    this.totalBurned = 0;
+    this.tokenEvents = [];
+    this.supplyHistory = [];
+
+    // Reset other state
     this.lastFactoryResult = null;
     this.lastChallengeResult = null;
     this.chartHistory = [];

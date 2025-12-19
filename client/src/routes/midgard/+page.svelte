@@ -88,15 +88,67 @@
       <p class="text-sm text-gray-500">Yellow Paper Implementation</p>
     </div>
     <div class="flex items-center gap-4">
+      <!-- Tycoon Balance -->
       <div class="text-right">
-        <span class="text-sm text-gray-400">$GARD Balance</span>
-        <div class="font-ponzi-number text-2xl text-yellow-400">
-          {midgardGame.playerGardBalance.toFixed(2)}
+        <span class="text-sm text-purple-400">Tycoon</span>
+        <div class="font-ponzi-number text-xl text-yellow-400">
+          {midgardGame.tycoonBalance.toFixed(2)}
         </div>
       </div>
+      <!-- Challenger Balance -->
+      <div class="text-right">
+        <span class="text-sm text-orange-400">Challenger</span>
+        <div class="font-ponzi-number text-xl text-yellow-400">
+          {midgardGame.challengerBalance.toFixed(2)}
+        </div>
+      </div>
+      <a
+        href="/midgard/tokenomics"
+        class="rounded bg-blue-600 px-3 py-1.5 text-sm font-medium hover:bg-blue-500"
+      >
+        Tokenomics
+      </a>
       <Button variant="red" size="md" onclick={() => midgardGame.reset()}
         >Reset</Button
       >
+    </div>
+  </div>
+
+  <!-- Quick Stats Panel -->
+  <div class="mb-6 grid grid-cols-4 gap-3 rounded-lg bg-black/30 p-3 text-sm">
+    <div class="rounded bg-black/40 p-2 text-center">
+      <span class="text-gray-400">Total Supply</span>
+      <div class="font-ponzi-number text-lg text-blue-400">
+        {midgardGame.totalSupply.toFixed(2)}
+      </div>
+    </div>
+    <div class="rounded bg-black/40 p-2 text-center">
+      <span class="text-gray-400">Locked</span>
+      <div class="font-ponzi-number text-lg text-yellow-400">
+        {midgardGame.vaultBalance.toFixed(2)}
+      </div>
+    </div>
+    <div class="rounded bg-black/40 p-2 text-center">
+      <span class="text-gray-400">Burned</span>
+      <div class="font-ponzi-number text-lg text-red-400">
+        {midgardGame.burnBalance.toFixed(2)}
+      </div>
+    </div>
+    <div class="rounded bg-black/40 p-2 text-center">
+      <span class="text-gray-400">Net Inflation</span>
+      <div
+        class={[
+          'font-ponzi-number text-lg',
+          {
+            'text-green-400': midgardGame.netInflation >= 0,
+            'text-red-400': midgardGame.netInflation < 0,
+          },
+        ]}
+      >
+        {midgardGame.netInflation >= 0
+          ? '+'
+          : ''}{midgardGame.netInflation.toFixed(2)}
+      </div>
     </div>
   </div>
 
@@ -263,7 +315,7 @@
             <!-- Lock Amount Input -->
             <div class="mb-4">
               <label class="mb-1 block text-sm text-gray-400"
-                >Stake $GARD (locked amount)</label
+                >Stake $GARD (locked from Tycoon)</label
               >
               <Input
                 type="number"
@@ -271,8 +323,8 @@
                 placeholder="Enter amount"
                 class="bg-black/50"
               />
-              <p class="mt-1 text-xs text-gray-500">
-                Available: {midgardGame.playerGardBalance.toFixed(2)} $GARD
+              <p class="mt-1 text-xs text-purple-400">
+                Tycoon Balance: {midgardGame.tycoonBalance.toFixed(2)} $GARD
               </p>
             </div>
 
@@ -281,7 +333,7 @@
               variant="blue"
               class="w-full"
               disabled={parseFloat(lockAmount) <= 0 ||
-                parseFloat(lockAmount) > midgardGame.playerGardBalance}
+                parseFloat(lockAmount) > midgardGame.tycoonBalance}
               onclick={handleCreateFactory}
             >
               Create Factory (Play Game)
@@ -542,6 +594,12 @@
                   {factoryStats.score}
                 </span>
               </div>
+              <div class="mt-2 flex items-center justify-between text-sm">
+                <span class="text-gray-400">Challenger Balance:</span>
+                <span class="font-ponzi-number text-orange-400">
+                  {midgardGame.challengerBalance.toFixed(2)} $GARD
+                </span>
+              </div>
             </div>
 
             <!-- Challenge Button -->
@@ -549,7 +607,7 @@
               variant="red"
               class="w-full"
               disabled={!factoryStats.challengeAllowed ||
-                midgardGame.playerGardBalance < factoryStats.ticketCost}
+                midgardGame.challengerBalance < factoryStats.ticketCost}
               onclick={handleChallenge}
             >
               Challenge! (Cost: {factoryStats.ticketCost.toFixed(4)} $GARD)
@@ -562,9 +620,9 @@
               <p class="mt-2 text-center text-xs text-red-400">
                 Factory needs more inflation to pay potential winners
               </p>
-            {:else if midgardGame.playerGardBalance < factoryStats.ticketCost}
+            {:else if midgardGame.challengerBalance < factoryStats.ticketCost}
               <p class="mt-2 text-center text-xs text-red-400">
-                Insufficient $GARD balance
+                Insufficient Challenger balance
               </p>
             {/if}
 

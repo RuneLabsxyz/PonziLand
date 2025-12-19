@@ -77,3 +77,24 @@ export interface ChartDataPoint {
   availableInflation: number; // I(t) - paid out
   effectiveNet: number; // availableInflation - effectiveBurn
 }
+
+// Token event types for tokenomics tracking
+export type TokenEventType = 'LOCK' | 'MINT' | 'BURN';
+
+// Token event record for tokenomics history
+export interface TokenEvent {
+  time: number; // Simulation time when event occurred
+  type: TokenEventType;
+  amount: number; // Amount of tokens involved
+  source: string; // e.g., "factory_create", "challenge_win", "challenge_loss", "factory_close"
+  description: string; // Human-readable description
+}
+
+// Supply snapshot for tracking supply over time
+export interface TokenSupplySnapshot {
+  time: number;
+  totalSupply: number;
+  circulatingSupply: number;
+  lockedSupply: number;
+  burnedSupply: number;
+}

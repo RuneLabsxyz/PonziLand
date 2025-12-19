@@ -3,8 +3,9 @@ import type { BaseLand } from './types';
 // Grid configuration
 export const GRID_SIZE = 3; // 3x3
 
-// Initial player balance
-export const INITIAL_GARD_BALANCE = 1000;
+// Initial player balances (tokenomics)
+export const INITIAL_TYCOON_BALANCE = 1000; // Factory owner
+export const INITIAL_CHALLENGER_BALANCE = 1000; // Challenger
 
 // Time settings
 // POC uses accelerated time: 1 real second = configurable game time
