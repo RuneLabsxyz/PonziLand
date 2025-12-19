@@ -265,10 +265,12 @@
       >
         {#if baseEquivalent}
           {@const val = baseEquivalent.rawValue().toNumber()}
-          <span class="text-lg leading-none">$</span>{#if val > 0 && val < 0.01}{'<0.01'}{:else}{baseEquivalent.toString()}{/if}
+          <span class="text-lg leading-none">$</span
+          >{#if val > 0 && val < 0.01}{'<0.01'}{:else}{baseEquivalent.toString()}{/if}
         {:else if isBaseToken}
           {@const val = displayAmount.rawValue().toNumber()}
-          <span class="text-lg leading-none">$</span>{#if val > 0 && val < 0.01}{'<0.01'}{:else}{displayAmount.toString()}{/if}
+          <span class="text-lg leading-none">$</span
+          >{#if val > 0 && val < 0.01}{'<0.01'}{:else}{displayAmount.toString()}{/if}
         {/if}
       </div>
     </div>
