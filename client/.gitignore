@@ -28,4 +28,8 @@ vite.config.ts.timestamp-*
 
 bunfig.toml
 
+# Data directory - keep but ignore database files
 !data
+data/*.db
+data/*.db-journal
+data/*.db-wal
