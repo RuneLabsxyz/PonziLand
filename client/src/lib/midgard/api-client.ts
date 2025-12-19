@@ -324,3 +324,19 @@ export async function getSupplyStats(): Promise<SupplyStats> {
   }
   return res.json();
 }
+
+export async function getTokenEvents(
+  limit = 100,
+  type?: 'LOCK' | 'UNLOCK' | 'MINT' | 'BURN' | 'TRANSFER',
+): Promise<TokenEvent[]> {
+  const params = new URLSearchParams();
+  params.set('limit', limit.toString());
+  if (type) params.set('type', type);
+
+  const res = await fetch(`${API_BASE}/stats/token-events?${params}`);
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.error || 'Failed to get token events');
+  }
+  return res.json();
+}
