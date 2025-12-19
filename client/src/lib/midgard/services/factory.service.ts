@@ -32,24 +32,18 @@ export interface CreateFactoryParams {
   landId: string;
   ownerAddress: string;
   stakedGard: number;
-  score: number;
   createdAtBlock?: number;
 }
 
 /**
- * Create a new factory on a land
+ * Create a new factory on a land (status: pending, no score yet)
+ * Factory must be activated with a score to become active
  */
 export async function createFactory(
   params: CreateFactoryParams,
 ): Promise<Factory> {
   const db = getDb();
-  const {
-    landId,
-    ownerAddress,
-    stakedGard,
-    score,
-    createdAtBlock = 0,
-  } = params;
+  const { landId, ownerAddress, stakedGard, createdAtBlock = 0 } = params;
 
   // Ensure wallet exists
   await walletService.getOrCreateWallet(ownerAddress);
@@ -57,19 +51,19 @@ export async function createFactory(
   // Lock GARD from owner's wallet
   await walletService.lockGard(ownerAddress, stakedGard);
 
-  // Create factory record
+  // Create factory record (pending status, no score)
   const newFactory: NewFactory = {
     landId,
     ownerAddress,
     stakedGard,
-    score,
+    score: null, // Set on activation
     createdAtBlock,
     createdAtTime: new Date(),
     burnReductions: 0,
     inflationPaidOut: 0,
     challengeWins: 0,
     challengeLosses: 0,
-    status: 'active',
+    status: 'pending',
   };
 
   const result = await db.insert(factories).values(newFactory).returning();
@@ -89,6 +83,31 @@ export async function createFactory(
 }
 
 /**
+ * Activate a pending factory with a score
+ */
+export async function activateFactory(
+  factoryId: string,
+  score: number,
+): Promise<Factory> {
+  const db = getDb();
+
+  const result = await db
+    .update(factories)
+    .set({
+      score,
+      status: 'active',
+    })
+    .where(and(eq(factories.id, factoryId), eq(factories.status, 'pending')))
+    .returning();
+
+  if (result.length === 0) {
+    throw new Error('Factory not found or not in pending status');
+  }
+
+  return result[0];
+}
+
+/**
  * Get factory by ID
  */
 export async function getFactory(id: string): Promise<Factory | null> {
@@ -100,17 +119,23 @@ export async function getFactory(id: string): Promise<Factory | null> {
 }
 
 /**
- * Get active factory on a specific land
+ * Get active or pending factory on a specific land
  */
 export async function getFactoryByLand(
   landId: string,
 ): Promise<Factory | null> {
   const db = getDb();
 
+  // Find factory that is either pending or active (not closed)
   const result = await db
     .select()
     .from(factories)
-    .where(and(eq(factories.landId, landId), eq(factories.status, 'active')));
+    .where(
+      and(
+        eq(factories.landId, landId),
+        sql`${factories.status} IN ('pending', 'active')`,
+      ),
+    );
 
   return result.length > 0 ? result[0] : null;
 }
@@ -119,7 +144,7 @@ export async function getFactoryByLand(
  * Get all factories (optionally filtered by status or owner)
  */
 export async function getFactories(options?: {
-  status?: 'active' | 'closed';
+  status?: 'pending' | 'active' | 'closed';
   ownerAddress?: string;
 }): Promise<Factory[]> {
   const db = getDb();

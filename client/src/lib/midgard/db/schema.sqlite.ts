@@ -44,7 +44,7 @@ export const factories = sqliteTable(
     createdAtBlock: integer('created_at_block').notNull(),
     createdAtTime: integer('created_at_time', { mode: 'timestamp' }).notNull(),
     stakedGard: real('staked_gard').notNull(),
-    score: integer('score').notNull(),
+    score: integer('score'), // Nullable - set on activation
 
     // Aggregate challenge stats
     burnReductions: real('burn_reductions').notNull().default(0),
@@ -53,9 +53,9 @@ export const factories = sqliteTable(
     challengeLosses: integer('challenge_losses').notNull().default(0),
 
     // Status
-    status: text('status', { enum: ['active', 'closed'] })
+    status: text('status', { enum: ['pending', 'active', 'closed'] })
       .notNull()
-      .default('active'),
+      .default('pending'),
     closedAtTime: integer('closed_at_time', { mode: 'timestamp' }),
     closeReason: text('close_reason', {
       enum: ['burn_exceeded', 'stake_depleted', 'manual'],

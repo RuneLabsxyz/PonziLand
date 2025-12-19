@@ -5,7 +5,11 @@ import { factoryService } from '$lib/midgard/services';
 // GET /api/factories - List all factories (with filters)
 export const GET: RequestHandler = async ({ url }) => {
   try {
-    const status = url.searchParams.get('status') as 'active' | 'closed' | null;
+    const status = url.searchParams.get('status') as
+      | 'pending'
+      | 'active'
+      | 'closed'
+      | null;
     const ownerAddress = url.searchParams.get('owner');
 
     const factories = await factoryService.getFactories({
@@ -20,11 +24,11 @@ export const GET: RequestHandler = async ({ url }) => {
   }
 };
 
-// POST /api/factories - Create factory on land
+// POST /api/factories - Create factory on land (creates in pending status)
 export const POST: RequestHandler = async ({ request }) => {
   try {
     const body = await request.json();
-    const { landId, ownerAddress, stakedGard, score, createdAtBlock } = body;
+    const { landId, ownerAddress, stakedGard, createdAtBlock } = body;
 
     // Validate required fields
     if (!landId || typeof landId !== 'string') {
@@ -39,18 +43,12 @@ export const POST: RequestHandler = async ({ request }) => {
         { status: 400 },
       );
     }
-    if (typeof score !== 'number' || score < 0 || score > 100) {
-      return json(
-        { error: 'score must be a number between 0 and 100' },
-        { status: 400 },
-      );
-    }
 
-    // Check if land already has an active factory
+    // Check if land already has an active or pending factory
     const existingFactory = await factoryService.getFactoryByLand(landId);
     if (existingFactory) {
       return json(
-        { error: 'Land already has an active factory' },
+        { error: 'Land already has an active or pending factory' },
         { status: 409 },
       );
     }
@@ -59,7 +57,6 @@ export const POST: RequestHandler = async ({ request }) => {
       landId,
       ownerAddress,
       stakedGard,
-      score,
       createdAtBlock,
     });
 

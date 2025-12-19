@@ -128,6 +128,11 @@ export async function completeChallenge(
     throw new Error(`Factory ${challenge.factoryId} not found`);
   }
 
+  // Factory must be active and have a score
+  if (factory.status !== 'active' || factory.score === null) {
+    throw new Error(`Factory ${challenge.factoryId} is not active`);
+  }
+
   const factoryScore = factory.score;
   const won = playerScore > factoryScore;
   let gardChange = 0;
