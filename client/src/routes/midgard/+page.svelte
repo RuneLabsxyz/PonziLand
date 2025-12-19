@@ -90,14 +90,6 @@
     }
   }
 
-  async function handleCancelChallenge() {
-    try {
-      await midgardAPI.cancelChallenge();
-    } catch (e) {
-      console.error('Cancel challenge failed:', e);
-    }
-  }
-
   async function handleCloseFactory() {
     try {
       await midgardAPI.closeFactory();
@@ -548,26 +540,21 @@
                   />
                 </div>
 
-                <div class="flex gap-2">
-                  <Button
-                    variant="blue"
-                    class="flex-1"
-                    disabled={midgardAPI.isLoading ||
-                      isNaN(parseInt(challengeScoreInput)) ||
-                      parseInt(challengeScoreInput) < 0 ||
-                      parseInt(challengeScoreInput) > 100}
-                    onclick={handleCompleteChallenge}
-                  >
-                    {midgardAPI.isLoading ? 'Completing...' : 'Submit Score'}
-                  </Button>
-                  <Button
-                    variant="red"
-                    disabled={midgardAPI.isLoading}
-                    onclick={handleCancelChallenge}
-                  >
-                    Cancel
-                  </Button>
-                </div>
+                <Button
+                  variant="blue"
+                  class="w-full"
+                  disabled={midgardAPI.isLoading ||
+                    isNaN(parseInt(challengeScoreInput)) ||
+                    parseInt(challengeScoreInput) < 0 ||
+                    parseInt(challengeScoreInput) > 100}
+                  onclick={handleCompleteChallenge}
+                >
+                  {midgardAPI.isLoading ? 'Completing...' : 'Submit Score'}
+                </Button>
+                <p class="mt-2 text-center text-xs text-gray-500">
+                  Ticket was burned on creation. Complete the challenge to see
+                  if you win!
+                </p>
               </div>
             {/if}
 

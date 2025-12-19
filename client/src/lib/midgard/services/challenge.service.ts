@@ -62,8 +62,8 @@ export async function createChallenge(
     );
   }
 
-  // Deduct ticket cost from challenger (held in escrow until game result)
-  await walletService.updateGardBalance(challengerAddress, -stats.ticketCost);
+  // Burn ticket cost from challenger (non-refundable)
+  await walletService.burnGard(challengerAddress, stats.ticketCost);
 
   // Create challenge record
   const newChallenge: NewChallenge = {
@@ -82,14 +82,14 @@ export async function createChallenge(
   const result = await db.insert(challenges).values(newChallenge).returning();
   const challenge = result[0];
 
-  // Log ticket payment event
+  // Log ticket burn event
   await walletService.logTokenEvent(
     challengerAddress,
-    'LOCK',
+    'BURN',
     stats.ticketCost,
     'challenge_create',
     challenge.id,
-    `Paid ${stats.ticketCost} GARD ticket for challenge on factory ${factoryId}`,
+    `Burned ${stats.ticketCost} GARD ticket for challenge on factory ${factoryId}`,
   );
 
   return challenge;
@@ -156,29 +156,10 @@ export async function completeChallenge(
       `Won challenge: received ${reward} GARD (ticket: ${challenge.ticketCost})`,
     );
   } else {
-    // Challenger loses: ticket is burned
+    // Challenger loses: ticket was already burned at creation
     gardChange = -challenge.ticketCost;
     burnReduction = LOSS_BURN_REDUCTION * challenge.ticketCost;
-
-    // The ticket was already deducted, now mark it as burned
-    // We need to update the challenger's totalBurned
-    await db
-      .update(wallets)
-      .set({
-        totalBurned: sql`${wallets.totalBurned} + ${challenge.ticketCost}`,
-        updatedAt: new Date(),
-      })
-      .where(eq(wallets.address, challenge.challengerAddress));
-
-    // Log burn event
-    await walletService.logTokenEvent(
-      challenge.challengerAddress,
-      'BURN',
-      challenge.ticketCost,
-      'challenge_loss',
-      challengeId,
-      `Lost challenge: ${challenge.ticketCost} GARD burned`,
-    );
+    // No additional burn needed - ticket was burned when challenge was created
   }
 
   // Update factory aggregate stats
@@ -224,56 +205,13 @@ export async function completeChallengeWithGame(
 }
 
 /**
- * Cancel a pending challenge (refund ticket)
+ * Cancel a pending challenge - DISABLED
+ * Challenges cannot be cancelled because tickets are burned on creation
  */
-export async function cancelChallenge(challengeId: string): Promise<Challenge> {
-  const db = getDb();
-
-  // Get challenge
-  const challengeResult = await db
-    .select()
-    .from(challenges)
-    .where(eq(challenges.id, challengeId));
-
-  if (challengeResult.length === 0) {
-    throw new Error(`Challenge ${challengeId} not found`);
-  }
-
-  const challenge = challengeResult[0];
-
-  if (challenge.status !== 'pending') {
-    throw new Error(
-      `Challenge ${challengeId} is not pending (status: ${challenge.status})`,
-    );
-  }
-
-  // Refund ticket to challenger
-  await walletService.updateGardBalance(
-    challenge.challengerAddress,
-    challenge.ticketCost,
+export async function cancelChallenge(_challengeId: string): Promise<never> {
+  throw new Error(
+    'Challenges cannot be cancelled. Tickets are burned on creation.',
   );
-
-  // Log refund event
-  await walletService.logTokenEvent(
-    challenge.challengerAddress,
-    'UNLOCK',
-    challenge.ticketCost,
-    'challenge_cancel',
-    challengeId,
-    `Challenge cancelled: ${challenge.ticketCost} GARD refunded`,
-  );
-
-  // Update challenge status
-  const result = await db
-    .update(challenges)
-    .set({
-      status: 'cancelled',
-      completedAtTime: new Date(),
-    })
-    .where(eq(challenges.id, challengeId))
-    .returning();
-
-  return result[0];
 }
 
 /**
