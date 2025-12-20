@@ -633,88 +633,93 @@
     }
 
     // Normal mode - proceed with actual blockchain transaction
-    // Calculate deductions for optimistic balance update
-    const deductions: TokenDeduction[] = [];
-    const landPrice = land.type === 'auction' ? currentPrice : land.sellPrice;
+    try {
+      // Calculate deductions for optimistic balance update
+      const deductions: TokenDeduction[] = [];
+      const landPrice = land.type === 'auction' ? currentPrice : land.sellPrice;
 
-    if (land.token && landPrice && selectedToken) {
-      const landTokenAddress = padAddress(land.token.address);
-      const selectedTokenAddress = padAddress(selectedToken.address);
+      if (land.token && landPrice && selectedToken) {
+        const landTokenAddress = padAddress(land.token.address);
+        const selectedTokenAddress = padAddress(selectedToken.address);
 
-      if (landTokenAddress === selectedTokenAddress) {
-        // Same token - combine land price + stake into single deduction
-        deductions.push({
-          tokenAddress: land.token.address,
-          amount: landPrice.add(stakeAmount),
-        });
-      } else {
-        // Different tokens - deduct separately
-        deductions.push({
-          tokenAddress: land.token.address,
-          amount: landPrice,
-        });
-        if (!stakeAmount.rawValue().isZero()) {
+        if (landTokenAddress === selectedTokenAddress) {
+          // Same token - combine land price + stake into single deduction
           deductions.push({
-            tokenAddress: selectedToken.address,
-            amount: stakeAmount,
+            tokenAddress: land.token.address,
+            amount: landPrice.add(stakeAmount),
           });
+        } else {
+          // Different tokens - deduct separately
+          deductions.push({
+            tokenAddress: land.token.address,
+            amount: landPrice,
+          });
+          if (!stakeAmount.rawValue().isZero()) {
+            deductions.push({
+              tokenAddress: selectedToken.address,
+              amount: stakeAmount,
+            });
+          }
         }
       }
-    }
 
-    await executeTransaction({
-      execute: () =>
-        land.type === 'auction'
-          ? bidLand(land.location, landSetup)
-          : buyLand(land.location, landSetup),
-      deductions,
-      notificationName: 'buy',
-      onSuccess: () => {
-        gameSounds.play('buy');
+      await executeTransaction({
+        execute: () =>
+          land.type === 'auction'
+            ? bidLand(land.location, landSetup)
+            : buyLand(land.location, landSetup),
+        deductions,
+        notificationName: 'buy',
+        onSuccess: () => {
+          gameSounds.play('buy');
 
-        // Update the land in the store
-        const updatedLand = {
-          ...land,
-          token: selectedToken,
-          tokenUsed: selectedToken?.address || '',
-          tokenAddress: selectedToken?.address || '',
-          token_used: selectedToken?.address || '',
-          token_address: selectedToken?.address || '',
-          owner: account.address,
-          stakeAmount: stakeAmount,
-          sell_price: sellPriceAmount.toBignumberish(),
-          block_date_bought: Date.now() / 1000,
-          // @ts-ignore
-          level: (land.level === 1
-            ? 'Zero'
-            : land.level === 2
-              ? 'First'
-              : 'Second') as CairoCustomEnum,
-        };
+          // Update the land in the store
+          const updatedLand = {
+            ...land,
+            token: selectedToken,
+            tokenUsed: selectedToken?.address || '',
+            tokenAddress: selectedToken?.address || '',
+            token_used: selectedToken?.address || '',
+            token_address: selectedToken?.address || '',
+            owner: account.address,
+            stakeAmount: stakeAmount,
+            sell_price: sellPriceAmount.toBignumberish(),
+            block_date_bought: Date.now() / 1000,
+            // @ts-ignore
+            level: (land.level === 1
+              ? 'Zero'
+              : land.level === 2
+                ? 'First'
+                : 'Second') as CairoCustomEnum,
+          };
 
-        landStore.updateLand({
-          entityId: land.location,
-          models: { ponzi_land: { Land: updatedLand } },
-        });
+          landStore.updateLand({
+            entityId: land.location,
+            models: { ponzi_land: { Land: updatedLand } },
+          });
 
-        landStore.updateLand({
-          entityId: land.location,
-          models: {
-            ponzi_land: {
-              LandStake: {
-                location: land.location,
-                amount: stakeAmount.toBignumberish(),
+          landStore.updateLand({
+            entityId: land.location,
+            models: {
+              ponzi_land: {
+                LandStake: {
+                  location: land.location,
+                  amount: stakeAmount.toBignumberish(),
+                },
               },
             },
-          },
-        });
-      },
-      onError: (error) => {
-        console.error(`Error buying land for location ${land.location}`, error);
-      },
-    });
-
-    loading = false;
+          });
+        },
+        onError: (error) => {
+          console.error(
+            `Error buying land for location ${land.location}`,
+            error,
+          );
+        },
+      });
+    } finally {
+      loading = false;
+    }
   }
 </script>
 

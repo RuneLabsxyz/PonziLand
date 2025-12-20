@@ -63,41 +63,43 @@
     }
 
     isLoading = true;
-    const amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
+    try {
+      const amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
 
-    await executeTransaction({
-      execute: () => land.increaseStake(amountToAdd),
-      deductions: land.token
-        ? [{ tokenAddress: land.token.address, amount: amountToAdd }]
-        : [],
-      waitForLand: () => land.wait(),
-      notificationName: 'stake',
-      onSuccess: () => {
-        // Calculate new total stake
-        land.stakeAmount.setToken(land.token);
-        const currentStake =
-          land.stakeAmount || CurrencyAmount.fromScaled('0', land.token);
-        const newTotalStake = currentStake.add(amountToAdd);
+      await executeTransaction({
+        execute: () => land.increaseStake(amountToAdd),
+        deductions: land.token
+          ? [{ tokenAddress: land.token.address, amount: amountToAdd }]
+          : [],
+        waitForLand: () => land.wait(),
+        notificationName: 'stake',
+        onSuccess: () => {
+          // Calculate new total stake
+          land.stakeAmount.setToken(land.token);
+          const currentStake =
+            land.stakeAmount || CurrencyAmount.fromScaled('0', land.token);
+          const newTotalStake = currentStake.add(amountToAdd);
 
-        // Update the land stake
-        landStore.updateLand({
-          entityId: land.location,
-          models: {
-            ponzi_land: {
-              LandStake: {
-                location: land.location,
-                amount: newTotalStake.toBignumberish(),
+          // Update the land stake
+          landStore.updateLand({
+            entityId: land.location,
+            models: {
+              ponzi_land: {
+                LandStake: {
+                  location: land.location,
+                  amount: newTotalStake.toBignumberish(),
+                },
               },
             },
-          },
-        });
-      },
-      onError: (error) => {
-        console.error('Error increasing stake:', error);
-      },
-    });
-
-    isLoading = false;
+          });
+        },
+        onError: (error) => {
+          console.error('Error increasing stake:', error);
+        },
+      });
+    } finally {
+      isLoading = false;
+    }
   };
 </script>
 
