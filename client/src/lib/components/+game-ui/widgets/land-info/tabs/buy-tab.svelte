@@ -32,6 +32,12 @@
     calculateDeficitWithBuffer,
   } from '$lib/utils/swap-helper';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import {
+    applyOptimisticDeductions,
+    rollbackOptimisticDeductions,
+    confirmOptimisticDeductions,
+    type TokenDeduction,
+  } from '$lib/utils/optimistic-balance';
 
   // Preset values for sell price slider (% offset from buy price)
   const SELL_PRICE_PRESETS = [-50, -25, -10, -5, -1, 0, 1, 5, 10, 25, 50, 100];
@@ -632,6 +638,38 @@
     }
 
     // Normal mode - proceed with actual blockchain transaction
+    // Calculate deductions for optimistic balance update
+    const deductions: TokenDeduction[] = [];
+    const landPrice = land.type === 'auction' ? currentPrice : land.sellPrice;
+
+    if (land.token && landPrice && selectedToken) {
+      const landTokenAddress = padAddress(land.token.address);
+      const selectedTokenAddress = padAddress(selectedToken.address);
+
+      if (landTokenAddress === selectedTokenAddress) {
+        // Same token - combine land price + stake into single deduction
+        deductions.push({
+          tokenAddress: land.token.address,
+          amount: landPrice.add(stakeAmount),
+        });
+      } else {
+        // Different tokens - deduct separately
+        deductions.push({
+          tokenAddress: land.token.address,
+          amount: landPrice,
+        });
+        if (!stakeAmount.rawValue().isZero()) {
+          deductions.push({
+            tokenAddress: selectedToken.address,
+            amount: stakeAmount,
+          });
+        }
+      }
+    }
+
+    // Apply optimistic balance deduction before transaction
+    const optimisticTxId = applyOptimisticDeductions(deductions);
+
     let result;
     try {
       if (land.type == 'auction') {
@@ -650,9 +688,18 @@
 
         const txReceipt = await txPromise;
         if (txReceipt?.statusReceipt !== 'SUCCEEDED') {
+          // Rollback optimistic balance on failure
+          if (optimisticTxId) {
+            rollbackOptimisticDeductions(optimisticTxId);
+          }
           throw new Error(
             `Transaction failed with status: ${txReceipt?.statusReceipt}`,
           );
+        }
+
+        // Confirm optimistic update on success
+        if (optimisticTxId) {
+          confirmOptimisticDeductions(optimisticTxId);
         }
 
         gameSounds.play('buy');
@@ -707,6 +754,10 @@
         landStore.updateLand(stakeEntity);
       }
     } catch (error) {
+      // Rollback optimistic balance on any error
+      if (optimisticTxId) {
+        rollbackOptimisticDeductions(optimisticTxId);
+      }
       console.error(
         `Error buying land for account ${accountManager!.getProvider()?.getWalletAccount()?.address} for location ${land.location} , transaction hash: ${result?.transaction_hash}`,
         error,

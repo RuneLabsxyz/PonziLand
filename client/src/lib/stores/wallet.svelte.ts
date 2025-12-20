@@ -412,6 +412,102 @@ export class WalletStore {
     );
   }
 
+  // Optimistic balance tracking for rollback
+  private pendingOptimisticUpdates: Map<string, Map<string, CurrencyAmount>> =
+    new Map();
+
+  /**
+   * Set a balance optimistically (before blockchain confirmation)
+   */
+  public optimisticallySetBalance(
+    tokenAddress: string,
+    balance: CurrencyAmount,
+  ): void {
+    this.balances.set(tokenAddress, balance);
+    this.updateConversionCache();
+    this.calculateTotalBalance();
+  }
+
+  /**
+   * Deduct an amount optimistically, storing the previous value for potential rollback
+   * @returns true if successful, false if deduction would result in negative balance
+   */
+  public optimisticallyDeductBalance(
+    transactionId: string,
+    tokenAddress: string,
+    amount: CurrencyAmount,
+  ): boolean {
+    const currentBalance = this.getBalance(tokenAddress);
+    if (!currentBalance) return false;
+
+    const newBalance = currentBalance.rawValue().minus(amount.rawValue());
+
+    // Prevent negative balances
+    if (newBalance.isNegative()) return false;
+
+    // Store snapshot for rollback
+    if (!this.pendingOptimisticUpdates.has(transactionId)) {
+      this.pendingOptimisticUpdates.set(transactionId, new Map());
+    }
+    const snapshot = this.pendingOptimisticUpdates.get(transactionId)!;
+
+    // Only store first snapshot (original balance)
+    if (!snapshot.has(tokenAddress)) {
+      snapshot.set(tokenAddress, currentBalance);
+    }
+
+    const token = this.getToken(tokenAddress);
+    this.optimisticallySetBalance(
+      tokenAddress,
+      CurrencyAmount.fromRaw(newBalance, token ?? undefined),
+    );
+
+    return true;
+  }
+
+  /**
+   * Rollback optimistic balance changes for a failed transaction
+   */
+  public rollbackOptimisticUpdate(transactionId: string): void {
+    const snapshot = this.pendingOptimisticUpdates.get(transactionId);
+    if (!snapshot) return;
+
+    for (const [tokenAddress, balance] of snapshot) {
+      this.optimisticallySetBalance(tokenAddress, balance);
+    }
+
+    this.pendingOptimisticUpdates.delete(transactionId);
+  }
+
+  /**
+   * Confirm and clean up a successful optimistic update
+   */
+  public confirmOptimisticUpdate(transactionId: string): void {
+    this.pendingOptimisticUpdates.delete(transactionId);
+  }
+
+  /**
+   * Add an amount optimistically (e.g., for swap buy side)
+   */
+  public optimisticallyAddBalance(
+    tokenAddress: string,
+    amount: CurrencyAmount,
+  ): void {
+    const currentBalance = this.getBalance(tokenAddress);
+    if (!currentBalance) {
+      // If no balance exists, just set it
+      this.optimisticallySetBalance(tokenAddress, amount);
+      return;
+    }
+
+    const newBalance = currentBalance.rawValue().plus(amount.rawValue());
+    const token = this.getToken(tokenAddress);
+    this.optimisticallySetBalance(
+      tokenAddress,
+      CurrencyAmount.fromRaw(newBalance, token ?? undefined),
+    );
+  }
+
   public destroy() {
     if (this.subscription) {
       this.subscription.cancel();

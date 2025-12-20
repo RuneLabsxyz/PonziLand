@@ -15,6 +15,11 @@
     nextStep,
     tutorialAttribute,
   } from '$lib/components/tutorial/stores.svelte';
+  import {
+    applyOptimisticDeductions,
+    rollbackOptimisticDeductions,
+    confirmOptimisticDeductions,
+  } from '$lib/utils/optimistic-balance';
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -64,8 +69,21 @@
     }
 
     isLoading = true;
+    let optimisticTxId: string | null = null;
+
     try {
       let amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
+
+      // Apply optimistic balance deduction before transaction
+      if (land.token) {
+        optimisticTxId = applyOptimisticDeductions([
+          {
+            tokenAddress: land.token.address,
+            amount: amountToAdd,
+          },
+        ]);
+      }
+
       let result = await land.increaseStake(amountToAdd);
       if (result?.transaction_hash) {
         const txPromise = accountManager!
@@ -74,7 +92,27 @@
           ?.waitForTransaction(result.transaction_hash);
         const landPromise = land.wait();
 
-        await Promise.any([txPromise, landPromise]);
+        const txReceipt = await Promise.any([txPromise, landPromise]);
+
+        // Check if transaction failed (only if txPromise resolved first)
+        if (
+          txReceipt &&
+          typeof txReceipt === 'object' &&
+          'statusReceipt' in txReceipt &&
+          txReceipt.statusReceipt !== 'SUCCEEDED'
+        ) {
+          if (optimisticTxId) {
+            rollbackOptimisticDeductions(optimisticTxId);
+          }
+          throw new Error(
+            `Transaction failed with status: ${txReceipt.statusReceipt}`,
+          );
+        }
+
+        // Confirm optimistic update on success
+        if (optimisticTxId) {
+          confirmOptimisticDeductions(optimisticTxId);
+        }
 
         // the new stake amount should be current + new stake amount
         land.stakeAmount.setToken(land.token);
@@ -99,6 +137,10 @@
         landStore.updateLand(parsedStake);
       }
     } catch (error) {
+      // Rollback optimistic balance on any error
+      if (optimisticTxId) {
+        rollbackOptimisticDeductions(optimisticTxId);
+      }
       console.error('Error increasing stake:', error);
     } finally {
       isLoading = false;

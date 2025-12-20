@@ -75,6 +75,22 @@ export class CurrencyAmount {
     );
   }
 
+  public subtract(other: CurrencyAmount) {
+    if (
+      this.token &&
+      other.token &&
+      this.token.address !== other.token.address
+    ) {
+      throw 'Incompatible currencies!';
+    }
+
+    const resultToken = this.token || other.token;
+    return CurrencyAmount.fromRaw(
+      this.rawValue().minus(other.rawValue()),
+      resultToken,
+    );
+  }
+
   /**
    * Displays an human-friendly representation of the CurrencyAmount
    * @returns A human-readable string representing the CurrencyAmount

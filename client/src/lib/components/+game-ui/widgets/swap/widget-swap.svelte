@@ -15,6 +15,12 @@
   import { debounce } from '$lib/utils/debounce.svelte';
   import data from '$profileData';
   import type { Quote } from '@avnu/avnu-sdk';
+  import {
+    applyOptimisticDeductions,
+    rollbackOptimisticDeductions,
+    confirmOptimisticDeductions,
+    optimisticallyAddBalance,
+  } from '$lib/utils/optimistic-balance';
 
   interface Props {
     data?: {
@@ -260,16 +266,71 @@
       });
   });
 
+  let isExecutingSwap = $state(false);
+
   async function executeSwap() {
-    if (quotes.length == 0) {
+    if (quotes.length == 0 || !sellToken || !buyToken) {
       return;
     }
 
+    isExecutingSwap = true;
     const quote = quotes[0];
-    // Execute swap
-    await avnu.executeSwap(quote, { slippage }).then((res) => {
-      notificationQueue.addNotification(res?.transactionHash ?? null, 'swap');
-    });
+
+    // Calculate sell and buy amounts for optimistic updates
+    const sellAmountCurrency = CurrencyAmount.fromScaled(sellAmount, sellToken);
+    const buyAmountCurrency = CurrencyAmount.fromScaled(buyAmount, buyToken);
+
+    // Apply optimistic deduction for sell amount
+    const optimisticTxId = applyOptimisticDeductions([
+      {
+        tokenAddress: sellToken.address,
+        amount: sellAmountCurrency,
+      },
+    ]);
+
+    try {
+      // Execute swap
+      const res = await avnu.executeSwap(quote, { slippage });
+      const txHash = res?.transactionHash ?? null;
+
+      if (txHash) {
+        // Wait for transaction confirmation
+        const txReceipt = await accountManager
+          ?.getProvider()
+          ?.getWalletAccount()
+          ?.waitForTransaction(txHash);
+
+        if (txReceipt?.isSuccess()) {
+          // Confirm sell deduction and add buy amount
+          if (optimisticTxId) {
+            confirmOptimisticDeductions(optimisticTxId);
+          }
+          optimisticallyAddBalance(buyToken.address, buyAmountCurrency);
+
+          // Register success notification
+          notificationQueue.registerSuccessNotification(txHash, 'swap');
+        } else {
+          // Rollback on failure
+          if (optimisticTxId) {
+            rollbackOptimisticDeductions(optimisticTxId);
+          }
+          notificationQueue.registerFailedNotification(txHash, 'swap');
+        }
+      } else {
+        // No tx hash - rollback
+        if (optimisticTxId) {
+          rollbackOptimisticDeductions(optimisticTxId);
+        }
+      }
+    } catch (error) {
+      // Rollback on any error
+      if (optimisticTxId) {
+        rollbackOptimisticDeductions(optimisticTxId);
+      }
+      console.error('Swap execution failed:', error);
+    } finally {
+      isExecutingSwap = false;
+    }
   }
 
   function validateSlippage(value: number) {
@@ -622,11 +683,14 @@
     class="w-full"
     onclick={executeSwap}
     disabled={isLoadingQuotes ||
+      isExecutingSwap ||
       quotes.length <= 0 ||
       !quotes[0]?.gasFeesInUsd ||
       hasInsufficientBalance}
   >
-    {#if isLoadingQuotes}
+    {#if isExecutingSwap}
+      Swapping...
+    {:else if isLoadingQuotes}
       Loading...
     {:else if hasInsufficientBalance}
       Insufficient Balance
