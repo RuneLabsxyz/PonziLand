@@ -82,7 +82,8 @@ mod TaxesComponent {
         total_taxes: u256,
         total_tax_for_claimer: u256,
         elapsed_time_claimer: u64,
-        cache_elapsed_time: Span<(ContractAddress, u64)>,
+        /// (neighbor_owner, neighbor_location, elapsed_time)
+        cache_elapsed_time: Span<(ContractAddress, u16, u64)>,
         total_elapsed_time: u64,
     }
 
@@ -483,10 +484,13 @@ mod TaxesComponent {
             config: @ClaimConfig,
             ref token_transfers: Array<(ContractAddress, u256)>,
         ) -> bool {
-            let mut tax_amount_for_neighbor: Array<(ContractAddress, u256)> = ArrayTrait::new();
+            // (neighbor_address, neighbor_location, share_amount)
+            let mut tax_amount_for_neighbor: Array<(ContractAddress, u16, u256)> =
+                ArrayTrait::new();
             let mut total_shares_calculated: u256 = 0;
             let mut total_fee_amount: u256 = 0;
-            for (neighbor_address, individual_elapsed_time) in *tax_data.cache_elapsed_time {
+            for (neighbor_address, neighbor_location, individual_elapsed_time) in *tax_data
+                .cache_elapsed_time {
                 let share_for_neighbor = calculate_share_for_nuke(
                     *individual_elapsed_time, *tax_data.total_elapsed_time, tax_payer_stake.amount,
                 );
@@ -496,7 +500,8 @@ mod TaxesComponent {
 
                 tax_payer_stake.accumulated_taxes_fee += fee_amount;
                 total_fee_amount += fee_amount.into();
-                tax_amount_for_neighbor.append((*neighbor_address, share_for_neighbor));
+                tax_amount_for_neighbor
+                    .append((*neighbor_address, *neighbor_location, share_for_neighbor));
                 total_shares_calculated += share_for_neighbor;
             }
 
@@ -603,23 +608,38 @@ mod TaxesComponent {
         /// @notice Distributes nuked land's stake proportionally to all neighbors
         /// @dev Handles batched token transfers when a land is nuked. First accumulates
         /// amounts by neighbor address (deduplicating if same address appears multiple times),
-        /// then executes batched transfers.
+        /// then executes batched transfers and emits LandTransferEvent for each neighbor.
         fn _distribute_nuke(
             ref self: ComponentState<TContractState>,
-            store: Store,
+            mut store: Store,
             nuked_land: @Land,
             ref nuked_land_stake: LandStake,
-            neighbors_of_nuked_land: Span<(ContractAddress, u256)>,
+            neighbors_of_nuked_land: Span<(ContractAddress, u16, u256)>,
             config: @ClaimConfig,
         ) {
             let mut total_to_distribute: u256 = 0;
             let mut accumulated_transfers: Array<(ContractAddress, u256)> = ArrayTrait::new();
 
             // Accumulate amounts by neighbor address (deduplicates identical neighbors)
-            for (neighbor_address, tax_amount) in neighbors_of_nuked_land {
+            // and emit events for each neighbor with their location
+            for (neighbor_address, neighbor_location, tax_amount) in neighbors_of_nuked_land {
                 total_to_distribute += *tax_amount;
                 accumulated_transfers =
                     accumulate_amount_by_key(accumulated_transfers, *neighbor_address, *tax_amount);
+
+                // Emit event for this nuke distribution
+                if *tax_amount > 0 {
+                    store
+                        .world
+                        .emit_event(
+                            @LandTransferEvent {
+                                from_location: *nuked_land.location,
+                                to_location: *neighbor_location,
+                                token_address: *nuked_land.token_used,
+                                amount: *tax_amount,
+                            },
+                        );
+                }
             }
 
             assert(total_to_distribute <= nuked_land_stake.amount, 'Distribution of nuke > stake');
@@ -823,7 +843,7 @@ mod TaxesComponent {
         ) -> TaxCalculationData {
             let mut total_taxes: u256 = 0;
             let mut total_tax_for_claimer: u256 = 0;
-            let mut cache_elapsed_time: Array<(ContractAddress, u64)> = ArrayTrait::new();
+            let mut cache_elapsed_time: Array<(ContractAddress, u16, u64)> = ArrayTrait::new();
             let mut total_elapsed_time: u64 = 0;
             let mut elapsed_time_claimer: u64 = 0;
             for neighbor in neighbors_of_tax_payer {
@@ -833,7 +853,7 @@ mod TaxesComponent {
                         neighbor_location, *config.tax_payer.location, *config.current_time,
                     );
                 total_elapsed_time += elapsed_time;
-                cache_elapsed_time.append((*neighbor.owner, elapsed_time));
+                cache_elapsed_time.append((*neighbor.owner, neighbor_location, elapsed_time));
                 let tax_amount = self
                     ._preview_precise_taxes(
                         store, config.tax_payer, neighbor_location, elapsed_time,
