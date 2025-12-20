@@ -152,7 +152,9 @@
   {#if gameStats.isLoading}
     <div class="text-center text-sm opacity-50">Loading...</div>
   {:else}
-    <div class="bg-black/20 rounded-lg p-3 flex flex-col gap-2 font-ponzi-number text-sm">
+    <div
+      class="bg-black/20 rounded-lg p-3 flex flex-col gap-2 font-ponzi-number text-sm"
+    >
       <!-- Lands Owned -->
       <div class="flex justify-between items-center">
         <span class="opacity-50">Lands Owned</span>
