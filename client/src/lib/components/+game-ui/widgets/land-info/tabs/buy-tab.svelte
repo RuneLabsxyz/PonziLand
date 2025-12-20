@@ -32,12 +32,7 @@
     calculateDeficitWithBuffer,
   } from '$lib/utils/swap-helper';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import {
-    applyOptimisticDeductions,
-    rollbackOptimisticDeductions,
-    confirmOptimisticDeductions,
-    type TokenDeduction,
-  } from '$lib/utils/optimistic-balance';
+  import { executeTransaction, type TokenDeduction } from '$lib/transactions';
 
   // Preset values for sell price slider (% offset from buy price)
   const SELL_PRICE_PRESETS = [-50, -25, -10, -5, -1, 0, 1, 5, 10, 25, 50, 100];
@@ -667,44 +662,17 @@
       }
     }
 
-    // Apply optimistic balance deduction before transaction
-    const optimisticTxId = applyOptimisticDeductions(deductions);
-
-    let result;
-    try {
-      if (land.type == 'auction') {
-        result = await bidLand(land.location, landSetup);
-      } else {
-        result = await buyLand(land.location, landSetup);
-      }
-
-      if (result?.transaction_hash) {
-        console.log('Buying land with TX: ', result.transaction_hash);
-        // Wait for transaction confirmation
-        const txPromise = accountManager!
-          .getProvider()
-          ?.getWalletAccount()
-          ?.waitForTransaction(result.transaction_hash);
-
-        const txReceipt = await txPromise;
-        if (txReceipt?.statusReceipt !== 'SUCCEEDED') {
-          // Rollback optimistic balance on failure
-          if (optimisticTxId) {
-            rollbackOptimisticDeductions(optimisticTxId);
-          }
-          throw new Error(
-            `Transaction failed with status: ${txReceipt?.statusReceipt}`,
-          );
-        }
-
-        // Confirm optimistic update on success
-        if (optimisticTxId) {
-          confirmOptimisticDeductions(optimisticTxId);
-        }
-
+    await executeTransaction({
+      execute: () =>
+        land.type === 'auction'
+          ? bidLand(land.location, landSetup)
+          : buyLand(land.location, landSetup),
+      deductions,
+      notificationName: 'buy',
+      onSuccess: () => {
         gameSounds.play('buy');
 
-        // Optimistically update the land in the store
+        // Update the land in the store
         const updatedLand = {
           ...land,
           token: selectedToken,
@@ -712,10 +680,10 @@
           tokenAddress: selectedToken?.address || '',
           token_used: selectedToken?.address || '',
           token_address: selectedToken?.address || '',
-          owner: account.address, // Assuming the owner is the current account
-          stakeAmount: stakeAmount, // Set the stake amount
-          sell_price: sellPriceAmount.toBignumberish(), // Ensure this is a raw value
-          block_date_bought: Date.now() / 1000, // Set the current timestamp or appropriate value
+          owner: account.address,
+          stakeAmount: stakeAmount,
+          sell_price: sellPriceAmount.toBignumberish(),
+          block_date_bought: Date.now() / 1000,
           // @ts-ignore
           level: (land.level === 1
             ? 'Zero'
@@ -724,21 +692,12 @@
               : 'Second') as CairoCustomEnum,
         };
 
-        // Create a parsed entity for the updated land
-        const parsedEntity = {
+        landStore.updateLand({
           entityId: land.location,
-          models: {
-            ponzi_land: {
-              Land: updatedLand,
-            },
-          },
-        };
+          models: { ponzi_land: { Land: updatedLand } },
+        });
 
-        // Update the land store
-        landStore.updateLand(parsedEntity);
-
-        // Create a parsed entity for the stake
-        const stakeEntity = {
+        landStore.updateLand({
           entityId: land.location,
           models: {
             ponzi_land: {
@@ -748,24 +707,14 @@
               },
             },
           },
-        };
+        });
+      },
+      onError: (error) => {
+        console.error(`Error buying land for location ${land.location}`, error);
+      },
+    });
 
-        // Update the land store with the stake
-        landStore.updateLand(stakeEntity);
-      }
-    } catch (error) {
-      // Rollback optimistic balance on any error
-      if (optimisticTxId) {
-        rollbackOptimisticDeductions(optimisticTxId);
-      }
-      console.error(
-        `Error buying land for account ${accountManager!.getProvider()?.getWalletAccount()?.address} for location ${land.location} , transaction hash: ${result?.transaction_hash}`,
-        error,
-      );
-      loading = false;
-    } finally {
-      loading = false;
-    }
+    loading = false;
   }
 </script>
 

@@ -8,19 +8,13 @@
   import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { Token } from '$lib/interfaces';
-  import { notificationQueue } from '$lib/stores/event.store.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { debounce } from '$lib/utils/debounce.svelte';
   import data from '$profileData';
   import type { Quote } from '@avnu/avnu-sdk';
-  import {
-    applyOptimisticDeductions,
-    rollbackOptimisticDeductions,
-    confirmOptimisticDeductions,
-    optimisticallyAddBalance,
-  } from '$lib/utils/optimistic-balance';
+  import { executeTransaction } from '$lib/transactions';
 
   interface Props {
     data?: {
@@ -268,7 +262,7 @@
 
   let isExecutingSwap = $state(false);
 
-  async function executeSwap() {
+  async function executeSwapAction() {
     if (quotes.length == 0 || !sellToken || !buyToken) {
       return;
     }
@@ -276,61 +270,31 @@
     isExecutingSwap = true;
     const quote = quotes[0];
 
-    // Calculate sell and buy amounts for optimistic updates
+    // Calculate amounts for optimistic updates
     const sellAmountCurrency = CurrencyAmount.fromScaled(sellAmount, sellToken);
     const buyAmountCurrency = CurrencyAmount.fromScaled(buyAmount, buyToken);
 
-    // Apply optimistic deduction for sell amount
-    const optimisticTxId = applyOptimisticDeductions([
-      {
-        tokenAddress: sellToken.address,
-        amount: sellAmountCurrency,
+    await executeTransaction({
+      execute: async () => {
+        const res = await avnu.executeSwap(quote, { slippage });
+        // Normalize AVNU response (transactionHash -> transaction_hash)
+        return res?.transactionHash
+          ? { transaction_hash: res.transactionHash }
+          : null;
       },
-    ]);
+      deductions: [
+        { tokenAddress: sellToken.address, amount: sellAmountCurrency },
+      ],
+      additions: [
+        { tokenAddress: buyToken.address, amount: buyAmountCurrency },
+      ],
+      notificationName: 'swap',
+      onError: (error) => {
+        console.error('Swap execution failed:', error);
+      },
+    });
 
-    try {
-      // Execute swap
-      const res = await avnu.executeSwap(quote, { slippage });
-      const txHash = res?.transactionHash ?? null;
-
-      if (txHash) {
-        // Wait for transaction confirmation
-        const txReceipt = await accountManager
-          ?.getProvider()
-          ?.getWalletAccount()
-          ?.waitForTransaction(txHash);
-
-        if (txReceipt?.isSuccess()) {
-          // Confirm sell deduction and add buy amount
-          if (optimisticTxId) {
-            confirmOptimisticDeductions(optimisticTxId);
-          }
-          optimisticallyAddBalance(buyToken.address, buyAmountCurrency);
-
-          // Register success notification
-          notificationQueue.registerSuccessNotification(txHash, 'swap');
-        } else {
-          // Rollback on failure
-          if (optimisticTxId) {
-            rollbackOptimisticDeductions(optimisticTxId);
-          }
-          notificationQueue.registerFailedNotification(txHash, 'swap');
-        }
-      } else {
-        // No tx hash - rollback
-        if (optimisticTxId) {
-          rollbackOptimisticDeductions(optimisticTxId);
-        }
-      }
-    } catch (error) {
-      // Rollback on any error
-      if (optimisticTxId) {
-        rollbackOptimisticDeductions(optimisticTxId);
-      }
-      console.error('Swap execution failed:', error);
-    } finally {
-      isExecutingSwap = false;
-    }
+    isExecutingSwap = false;
   }
 
   function validateSlippage(value: number) {
@@ -681,7 +645,7 @@
 <div class="flex flex-col gap-2 mt-2">
   <Button
     class="w-full"
-    onclick={executeSwap}
+    onclick={executeSwapAction}
     disabled={isLoadingQuotes ||
       isExecutingSwap ||
       quotes.length <= 0 ||

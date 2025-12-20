@@ -4,7 +4,6 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import { writable } from 'svelte/store';
-  import { useAccount } from '$lib/contexts/account.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
@@ -15,15 +14,10 @@
     nextStep,
     tutorialAttribute,
   } from '$lib/components/tutorial/stores.svelte';
-  import {
-    applyOptimisticDeductions,
-    rollbackOptimisticDeductions,
-    confirmOptimisticDeductions,
-  } from '$lib/utils/optimistic-balance';
+  import { executeTransaction } from '$lib/transactions';
 
   let { land }: { land: LandWithActions } = $props();
 
-  let accountManager = useAccount();
   let disabled = writable(false);
   let stakeIncrease = $state('0.1');
   let isLoading = $state(false);
@@ -69,82 +63,41 @@
     }
 
     isLoading = true;
-    let optimisticTxId: string | null = null;
+    const amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
 
-    try {
-      let amountToAdd = CurrencyAmount.fromScaled(stakeIncrease, land.token);
-
-      // Apply optimistic balance deduction before transaction
-      if (land.token) {
-        optimisticTxId = applyOptimisticDeductions([
-          {
-            tokenAddress: land.token.address,
-            amount: amountToAdd,
-          },
-        ]);
-      }
-
-      let result = await land.increaseStake(amountToAdd);
-      if (result?.transaction_hash) {
-        const txPromise = accountManager!
-          .getProvider()
-          ?.getWalletAccount()
-          ?.waitForTransaction(result.transaction_hash);
-        const landPromise = land.wait();
-
-        const txReceipt = await Promise.any([txPromise, landPromise]);
-
-        // Check if transaction failed (only if txPromise resolved first)
-        if (
-          txReceipt &&
-          typeof txReceipt === 'object' &&
-          'statusReceipt' in txReceipt &&
-          txReceipt.statusReceipt !== 'SUCCEEDED'
-        ) {
-          if (optimisticTxId) {
-            rollbackOptimisticDeductions(optimisticTxId);
-          }
-          throw new Error(
-            `Transaction failed with status: ${txReceipt.statusReceipt}`,
-          );
-        }
-
-        // Confirm optimistic update on success
-        if (optimisticTxId) {
-          confirmOptimisticDeductions(optimisticTxId);
-        }
-
-        // the new stake amount should be current + new stake amount
+    await executeTransaction({
+      execute: () => land.increaseStake(amountToAdd),
+      deductions: land.token
+        ? [{ tokenAddress: land.token.address, amount: amountToAdd }]
+        : [],
+      waitForLand: () => land.wait(),
+      notificationName: 'stake',
+      onSuccess: () => {
+        // Calculate new total stake
         land.stakeAmount.setToken(land.token);
         const currentStake =
           land.stakeAmount || CurrencyAmount.fromScaled('0', land.token);
-        amountToAdd = currentStake.add(amountToAdd);
+        const newTotalStake = currentStake.add(amountToAdd);
 
         // Update the land stake
-        const parsedStake = {
+        landStore.updateLand({
           entityId: land.location,
           models: {
             ponzi_land: {
               LandStake: {
                 location: land.location,
-                amount: amountToAdd.toBignumberish(),
-                last_pay_time: Date.now() / 1000,
+                amount: newTotalStake.toBignumberish(),
               },
             },
           },
-        };
-        console.log('Parsed stake update:', parsedStake);
-        landStore.updateLand(parsedStake);
-      }
-    } catch (error) {
-      // Rollback optimistic balance on any error
-      if (optimisticTxId) {
-        rollbackOptimisticDeductions(optimisticTxId);
-      }
-      console.error('Error increasing stake:', error);
-    } finally {
-      isLoading = false;
-    }
+        });
+      },
+      onError: (error) => {
+        console.error('Error increasing stake:', error);
+      },
+    });
+
+    isLoading = false;
   };
 </script>
 
