@@ -8,13 +8,13 @@
   import TokenSelect from '$lib/components/ui/token/token-select.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { Token } from '$lib/interfaces';
-  import { notificationQueue } from '$lib/stores/event.store.svelte';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { useAvnu, type QuoteParams } from '$lib/utils/avnu.svelte';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import { debounce } from '$lib/utils/debounce.svelte';
   import data from '$profileData';
   import type { Quote } from '@avnu/avnu-sdk';
+  import { executeTransaction } from '$lib/transactions';
 
   interface Props {
     data?: {
@@ -260,16 +260,41 @@
       });
   });
 
-  async function executeSwap() {
-    if (quotes.length == 0) {
+  let isExecutingSwap = $state(false);
+
+  async function executeSwapAction() {
+    if (quotes.length == 0 || !sellToken || !buyToken) {
       return;
     }
 
+    isExecutingSwap = true;
     const quote = quotes[0];
-    // Execute swap
-    await avnu.executeSwap(quote, { slippage }).then((res) => {
-      notificationQueue.addNotification(res?.transactionHash ?? null, 'swap');
+
+    // Calculate amounts for optimistic updates
+    const sellAmountCurrency = CurrencyAmount.fromScaled(sellAmount, sellToken);
+    const buyAmountCurrency = CurrencyAmount.fromScaled(buyAmount, buyToken);
+
+    await executeTransaction({
+      execute: async () => {
+        const res = await avnu.executeSwap(quote, { slippage });
+        // Normalize AVNU response (transactionHash -> transaction_hash)
+        return res?.transactionHash
+          ? { transaction_hash: res.transactionHash }
+          : null;
+      },
+      deductions: [
+        { tokenAddress: sellToken.address, amount: sellAmountCurrency },
+      ],
+      additions: [
+        { tokenAddress: buyToken.address, amount: buyAmountCurrency },
+      ],
+      notificationName: 'swap',
+      onError: (error) => {
+        console.error('Swap execution failed:', error);
+      },
     });
+
+    isExecutingSwap = false;
   }
 
   function validateSlippage(value: number) {
@@ -620,13 +645,16 @@
 <div class="flex flex-col gap-2 mt-2">
   <Button
     class="w-full"
-    onclick={executeSwap}
+    onclick={executeSwapAction}
     disabled={isLoadingQuotes ||
+      isExecutingSwap ||
       quotes.length <= 0 ||
       !quotes[0]?.gasFeesInUsd ||
       hasInsufficientBalance}
   >
-    {#if isLoadingQuotes}
+    {#if isExecutingSwap}
+      Swapping...
+    {:else if isLoadingQuotes}
       Loading...
     {:else if hasInsufficientBalance}
       Insufficient Balance

@@ -67,6 +67,38 @@ class NotificationQueue {
   public removeNotification(txCount: number) {
     this.queue = this.queue.filter((n) => n.txCount !== txCount);
   }
+
+  /**
+   * Register a successful transaction notification (when already confirmed)
+   */
+  public registerSuccessNotification(txhash: string, functionName: string) {
+    const notification = this.registerNotification(functionName);
+    notification.txhash = txhash;
+    notification.isValid = true;
+    notification.pending = false;
+    setTimeout(() => this.removeNotification(notification.txCount), 3600);
+  }
+
+  /**
+   * Register a failed transaction notification (when already confirmed as failed)
+   */
+  public registerFailedNotification(
+    txhash: string | null,
+    functionName: string,
+  ) {
+    const notification = this.registerNotification(functionName);
+    notification.txhash = txhash;
+    notification.isValid = false;
+    notification.pending = false;
+    sendError(
+      new Error(`Transaction failed for ${notification.functionName}`),
+      {
+        txhash: notification.txhash,
+        address: accountManager?.getProvider()?.getWalletAccount()?.address,
+      },
+    );
+    setTimeout(() => this.removeNotification(notification.txCount), 3600);
+  }
 }
 
 export const notificationQueue = new NotificationQueue();
