@@ -1,10 +1,6 @@
 import { walletStore } from '$lib/stores/wallet.svelte';
 import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
-
-export interface TokenDeduction {
-  tokenAddress: string;
-  amount: CurrencyAmount;
-}
+import type { TokenDeduction } from '$lib/transactions/types';
 
 /**
  * Generate a unique transaction ID for tracking optimistic updates
@@ -14,28 +10,29 @@ export function generateOptimisticTxId(): string {
 }
 
 /**
- * Apply optimistic balance deductions for a pending transaction
- * @returns Transaction ID for rollback/confirmation, or null if any deduction fails
+ * Apply optimistic balance deductions for a pending transaction.
+ * Validates all deductions can succeed before applying any to prevent partial state.
+ * @returns Transaction ID for rollback/confirmation, or null if any deduction would fail
  */
 export function applyOptimisticDeductions(
   deductions: TokenDeduction[],
 ): string | null {
-  const txId = generateOptimisticTxId();
-
+  // First pass: validate all deductions can succeed
   for (const { tokenAddress, amount } of deductions) {
     if (amount.rawValue().isZero()) continue;
 
-    const success = walletStore.optimisticallyDeductBalance(
-      txId,
-      tokenAddress,
-      amount,
-    );
-
-    if (!success) {
-      // Rollback any successful deductions in this batch
-      walletStore.rollbackOptimisticUpdate(txId);
-      return null;
+    const currentBalance = walletStore.getBalance(tokenAddress);
+    if (!currentBalance || currentBalance.rawValue().lt(amount.rawValue())) {
+      return null; // Fail early, no partial state
     }
+  }
+
+  // Second pass: apply all deductions (guaranteed to succeed)
+  const txId = generateOptimisticTxId();
+  for (const { tokenAddress, amount } of deductions) {
+    if (amount.rawValue().isZero()) continue;
+
+    walletStore.optimisticallyDeductBalance(txId, tokenAddress, amount);
   }
 
   return txId;
