@@ -10,6 +10,7 @@
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from '../positions/historical-positions.svelte';
   import GameStatisticsWidget from './game-statistics/widget-game-statistics.svelte';
+  import ActivityWidget from './activity/widget-activity.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
@@ -25,11 +26,22 @@
 
   let refreshInterval: NodeJS.Timeout;
   let activeTab = $state<
-    'history' | 'positions' | 'market' | 'my-lands' | 'game-statistics'
+    | 'history'
+    | 'positions'
+    | 'market'
+    | 'my-lands'
+    | 'game-statistics'
+    | 'activity'
   >('my-lands');
 
   function setActiveTab(
-    tab: 'history' | 'positions' | 'market' | 'my-lands' | 'game-statistics',
+    tab:
+      | 'history'
+      | 'positions'
+      | 'market'
+      | 'my-lands'
+      | 'game-statistics'
+      | 'activity',
   ) {
     activeTab = tab;
   }
@@ -152,6 +164,23 @@
         ]}
       />
     </button>
+
+    <button
+      class="flex items-center justify-center h-10 w-10"
+      onclick={() => setActiveTab('activity')}
+    >
+      <img
+        src="/ui/icons/Icon_Thin_Book.png"
+        alt="Activity"
+        class={[
+          'h-8 w-8',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+              activeTab === 'activity',
+          },
+        ]}
+      />
+    </button>
   </div>
 
   <div
@@ -172,6 +201,8 @@
       <MyLandsWidget {setCustomControls} />
     {:else if activeTab === 'game-statistics'}
       <GameStatisticsWidget {setCustomControls} />
+    {:else if activeTab === 'activity'}
+      <ActivityWidget />
     {/if}
   </div>
 </div>
