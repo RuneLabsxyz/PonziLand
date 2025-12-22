@@ -2,6 +2,7 @@ import { devsettings } from '$lib/components/+game-map/three/utils/devsettings.s
 import { DEFAULT_TIMEOUT, GRID_SIZE } from '$lib/const';
 import type { Client } from '$lib/contexts/client.svelte';
 import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
+import { activityStore } from '$lib/stores/activity.store.svelte';
 import { claimStore } from '$lib/stores/claim.store.svelte';
 import { nukeStore } from '$lib/stores/nuke.store.svelte';
 import { gameSounds } from '$lib/stores/sfx.svelte';
@@ -79,6 +80,7 @@ export class LandTileStore {
     new Map(),
   );
   private ownershipUpdatePending = false;
+  private isInitialLoad = true; // Flag to skip activity events during initial load
 
   constructor() {
     // Put empty lands everywhere.
@@ -135,6 +137,9 @@ export class LandTileStore {
       this.sub = undefined;
     }
 
+    // Mark as initial load
+    this.isInitialLoad = true;
+
     const { initialEntities, subscription } = await setupLandsSubscription(
       client,
       (lands) => {
@@ -144,6 +149,9 @@ export class LandTileStore {
 
     // Setup the initial lands
     this.setEntities(initialEntities);
+
+    // Mark initial load as complete - real-time updates will now emit activity events
+    this.isInitialLoad = false;
 
     // Store the subscription
     this.sub = subscription;
@@ -673,6 +681,16 @@ export class LandTileStore {
             gameSounds.play('nuke');
             const locationStr = coordinatesToLocation(location).toString();
             nukeStore.animationManager.triggerAnimation(locationStr, 1000);
+
+            // Emit nuke activity event
+            if (!this.isInitialLoad && BuildingLand.is(previousLand)) {
+              activityStore.addEvent({
+                type: 'nuke',
+                location,
+                locationString: `${location.x}, ${location.y}`,
+                ownerNuked: previousLand.owner,
+              });
+            }
           }
 
           this.currentLands.update((lands) => {
@@ -741,6 +759,49 @@ export class LandTileStore {
               location: landModel.location,
               amount: previousLand.stakeAmount.toBigint(),
             } as LandStake);
+          }
+
+          // Emit activity events for ownership changes
+          if (!this.isInitialLoad && BuildingLand.is(newLand)) {
+            const newOwner = (newLand as BuildingLand).owner;
+            const token =
+              getTokenMetadata((newLand as BuildingLand).tokenUsed) ??
+              undefined;
+
+            if (AuctionLand.is(previousLand)) {
+              // Auction win - someone won an auction
+              activityStore.addEvent({
+                type: 'auction_win',
+                location,
+                locationString: `${location.x}, ${location.y}`,
+                buyer: newOwner,
+                price: (newLand as BuildingLand).sellPrice,
+                token,
+              });
+            } else if (BuildingLand.is(previousLand)) {
+              // Land buy - someone bought from another player
+              if (previousLand.owner !== newOwner) {
+                activityStore.addEvent({
+                  type: 'land_buy',
+                  location,
+                  locationString: `${location.x}, ${location.y}`,
+                  buyer: newOwner,
+                  seller: previousLand.owner,
+                  price: (newLand as BuildingLand).sellPrice,
+                  token,
+                });
+              }
+            } else if (EmptyLand.is(previousLand)) {
+              // First purchase of an empty land
+              activityStore.addEvent({
+                type: 'land_buy',
+                location,
+                locationString: `${location.x}, ${location.y}`,
+                buyer: newOwner,
+                price: (newLand as BuildingLand).sellPrice,
+                token,
+              });
+            }
           }
         }
       } else if (landStakeModel !== undefined) {

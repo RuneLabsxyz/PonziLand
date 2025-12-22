@@ -4,6 +4,7 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { locationToCoordinates } from '$lib/utils';
   import { devsettings } from '../+game-map/three/utils/devsettings.store.svelte';
+  import GameToastZone from '../ui/game-toast/game-toast-zone.svelte';
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
   import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
@@ -34,4 +35,5 @@
   <WidgetProvider />
 
   <TxNotificationZone />
+  <GameToastZone />
 </div>
