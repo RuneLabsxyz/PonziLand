@@ -77,10 +77,22 @@ export async function executeTransaction(
       ?.getWalletAccount()
       ?.waitForTransaction(txHash);
 
+    if (!txPromise) {
+      if (optimisticTxId) rollbackOptimisticDeductions(optimisticTxId);
+      const error = new Error('Wallet not connected');
+      config.onError?.(error);
+      return { success: false, error };
+    }
+
     // Optionally race against land.wait() for faster UI update
-    const receipt = config.waitForLand
-      ? await Promise.any([txPromise, config.waitForLand()])
-      : await txPromise;
+    // but always use the actual receipt for success check
+    let receipt: unknown;
+    if (config.waitForLand) {
+      await Promise.race([txPromise, config.waitForLand()]);
+      receipt = await txPromise;
+    } else {
+      receipt = await txPromise;
+    }
 
     // Check if transaction succeeded
     const success = isTransactionSuccessful(receipt);
@@ -120,7 +132,7 @@ export async function executeTransaction(
         );
       }
 
-      const error = new Error('Transaction failed');
+      const error = new Error(`Transaction ${txHash} failed on-chain`);
       config.onError?.(error);
       return { success: false, txHash, error };
     }

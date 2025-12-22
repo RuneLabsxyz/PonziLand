@@ -268,33 +268,38 @@
     }
 
     isExecutingSwap = true;
-    const quote = quotes[0];
+    try {
+      const quote = quotes[0];
 
-    // Calculate amounts for optimistic updates
-    const sellAmountCurrency = CurrencyAmount.fromScaled(sellAmount, sellToken);
-    const buyAmountCurrency = CurrencyAmount.fromScaled(buyAmount, buyToken);
+      // Calculate amounts for optimistic updates
+      const sellAmountCurrency = CurrencyAmount.fromScaled(
+        sellAmount,
+        sellToken,
+      );
+      const buyAmountCurrency = CurrencyAmount.fromScaled(buyAmount, buyToken);
 
-    await executeTransaction({
-      execute: async () => {
-        const res = await avnu.executeSwap(quote, { slippage });
-        // Normalize AVNU response (transactionHash -> transaction_hash)
-        return res?.transactionHash
-          ? { transaction_hash: res.transactionHash }
-          : null;
-      },
-      deductions: [
-        { tokenAddress: sellToken.address, amount: sellAmountCurrency },
-      ],
-      additions: [
-        { tokenAddress: buyToken.address, amount: buyAmountCurrency },
-      ],
-      notificationName: 'swap',
-      onError: (error) => {
-        console.error('Swap execution failed:', error);
-      },
-    });
-
-    isExecutingSwap = false;
+      await executeTransaction({
+        execute: async () => {
+          const res = await avnu.executeSwap(quote, { slippage });
+          // Normalize AVNU response (transactionHash -> transaction_hash)
+          return res?.transactionHash
+            ? { transaction_hash: res.transactionHash }
+            : null;
+        },
+        deductions: [
+          { tokenAddress: sellToken.address, amount: sellAmountCurrency },
+        ],
+        additions: [
+          { tokenAddress: buyToken.address, amount: buyAmountCurrency },
+        ],
+        notificationName: 'swap',
+        onError: (error) => {
+          console.error('Swap execution failed:', error);
+        },
+      });
+    } finally {
+      isExecutingSwap = false;
+    }
   }
 
   function validateSlippage(value: number) {
