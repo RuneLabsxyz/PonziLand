@@ -7,7 +7,7 @@
   import { locationToCoordinates, padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { derived } from 'svelte/store';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import account from '$lib/account.svelte';
   import type { Snippet } from 'svelte';
   import DailySummary from './daily-summary.svelte';
@@ -26,12 +26,12 @@
 
   onMount(() => {
     setupLandsSubscription();
-  });
-
-  onDestroy(() => {
-    if (unsubscribe) {
-      unsubscribe();
-    }
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+        unsubscribe = null;
+      }
+    };
   });
 
   // Re-setup subscription when account changes

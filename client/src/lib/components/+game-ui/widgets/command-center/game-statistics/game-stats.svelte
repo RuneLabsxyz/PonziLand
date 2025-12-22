@@ -1,10 +1,7 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
-  import {
-    fetchHistoricalPositions,
-    type HistoricalPosition,
-  } from '$lib/components/+game-ui/widgets/positions/historical-positions.service';
+  import { fetchHistoricalPositions } from '$lib/components/+game-ui/widgets/positions/historical-positions.service';
   import account from '$lib/account.svelte';
   import { padAddress } from '$lib/utils';
   import { displayCurrency } from '$lib/utils/currency';
@@ -17,8 +14,9 @@
 
   let { lands }: Props = $props();
 
-  interface GameStatsData {
-    landsOwned: number;
+  let landsOwned = $derived(lands.length);
+
+  interface FetchedStats {
     totalPurchases: number;
     biggestBuy: {
       usdValue: number;
@@ -26,47 +24,32 @@
       token: any;
     } | null;
     totalEarnings: number;
-    isLoading: boolean;
   }
 
-  let gameStats = $state<GameStatsData>({
-    landsOwned: 0,
-    totalPurchases: 0,
-    biggestBuy: null,
-    totalEarnings: 0,
-    isLoading: true,
-  });
+  let statsPromise = $state<Promise<FetchedStats> | null>(null);
 
   let lastFetchedAddress = $state('');
 
   $effect(() => {
     const currentAddress = account.address;
-    const currentLandsCount = lands.length;
-
-    // Update lands owned immediately
-    gameStats = { ...untrack(() => gameStats), landsOwned: currentLandsCount };
 
     if (!currentAddress) {
-      gameStats = {
-        landsOwned: currentLandsCount,
+      statsPromise = Promise.resolve({
         totalPurchases: 0,
         biggestBuy: null,
         totalEarnings: 0,
-        isLoading: false,
-      };
+      });
       lastFetchedAddress = '';
       return;
     }
 
     const userAddress = padAddress(currentAddress);
     if (!userAddress) {
-      gameStats = {
-        landsOwned: currentLandsCount,
+      statsPromise = Promise.resolve({
         totalPurchases: 0,
         biggestBuy: null,
         totalEarnings: 0,
-        isLoading: false,
-      };
+      });
       return;
     }
 
@@ -76,70 +59,53 @@
     }
 
     lastFetchedAddress = userAddress;
-    gameStats = { ...untrack(() => gameStats), isLoading: true };
 
-    fetchHistoricalPositions(userAddress)
-      .then((positions) => {
-        if (!positions.length) {
-          gameStats = {
-            landsOwned: currentLandsCount,
-            totalPurchases: 0,
-            biggestBuy: null,
-            totalEarnings: 0,
-            isLoading: false,
-          };
-          return;
-        }
-
-        // Total purchases = all positions (including open ones)
-        const totalPurchases = positions.length;
-
-        // Find biggest buy by USD equivalent
-        let biggestBuy: GameStatsData['biggestBuy'] = null;
-        let maxBuyUsd = 0;
-
-        for (const position of positions) {
-          const buyCostUsd = position.metrics?.buyCostBaseEquivalent;
-          if (buyCostUsd) {
-            const usdValue = Number(buyCostUsd.rawValue());
-            if (usdValue > maxBuyUsd) {
-              maxBuyUsd = usdValue;
-              biggestBuy = {
-                usdValue,
-                tokenAmount: position.metrics?.buyAmount || null,
-                token: position.metrics?.buyToken,
-              };
-            }
-          }
-        }
-
-        // Calculate total earnings (sum of all inflows)
-        let totalEarnings = 0;
-        for (const position of positions) {
-          const inflow = position.metrics?.totalInflowBaseEquivalent;
-          if (inflow) {
-            totalEarnings += Number(inflow.rawValue());
-          }
-        }
-
-        gameStats = {
-          landsOwned: currentLandsCount,
-          totalPurchases,
-          biggestBuy,
-          totalEarnings,
-          isLoading: false,
-        };
-      })
-      .catch((error) => {
-        console.error('Error fetching game stats:', error);
-        gameStats = {
-          landsOwned: currentLandsCount,
+    statsPromise = fetchHistoricalPositions(userAddress).then((positions) => {
+      if (!positions.length) {
+        return {
           totalPurchases: 0,
           biggestBuy: null,
           totalEarnings: 0,
-          isLoading: false,
         };
-      });
+      }
+
+      // Total purchases = all positions (including open ones)
+      const totalPurchases = positions.length;
+
+      // Find biggest buy by USD equivalent
+      let biggestBuy: FetchedStats['biggestBuy'] = null;
+      let maxBuyUsd = 0;
+
+      for (const position of positions) {
+        const buyCostUsd = position.metrics?.buyCostBaseEquivalent;
+        if (buyCostUsd) {
+          const usdValue = Number(buyCostUsd.rawValue());
+          if (usdValue > maxBuyUsd) {
+            maxBuyUsd = usdValue;
+            biggestBuy = {
+              usdValue,
+              tokenAmount: position.metrics?.buyAmount || null,
+              token: position.metrics?.buyToken,
+            };
+          }
+        }
+      }
+
+      // Calculate total earnings (sum of all inflows)
+      let totalEarnings = 0;
+      for (const position of positions) {
+        const inflow = position.metrics?.totalInflowBaseEquivalent;
+        if (inflow) {
+          totalEarnings += Number(inflow.rawValue());
+        }
+      }
+
+      return {
+        totalPurchases,
+        biggestBuy,
+        totalEarnings,
+      };
+    });
   });
 </script>
 
@@ -149,37 +115,34 @@
     Game Stats
   </div>
 
-  {#if gameStats.isLoading}
+  {#await statsPromise}
     <div class="text-center text-sm opacity-50">Loading...</div>
-  {:else}
+  {:then stats}
     <div
       class="bg-black/20 rounded-lg p-3 flex flex-col gap-2 font-ponzi-number text-sm"
     >
       <!-- Lands Owned -->
       <div class="flex justify-between items-center">
         <span class="opacity-50">Lands Owned</span>
-        <span>{gameStats.landsOwned}</span>
+        <span>{landsOwned}</span>
       </div>
 
       <!-- Total Purchases -->
       <div class="flex justify-between items-center">
         <span class="opacity-50">Total Purchases</span>
-        <span>{gameStats.totalPurchases}</span>
+        <span>{stats?.totalPurchases ?? 0}</span>
       </div>
 
       <!-- Biggest Buy -->
       <div class="flex justify-between items-center">
         <span class="opacity-50">Biggest Buy</span>
-        {#if gameStats.biggestBuy}
+        {#if stats?.biggestBuy}
           <div class="flex items-center gap-1">
-            <span>{displayCurrency(gameStats.biggestBuy.usdValue)} $</span>
-            {#if gameStats.biggestBuy.tokenAmount && gameStats.biggestBuy.token}
+            <span>{displayCurrency(stats.biggestBuy.usdValue)} $</span>
+            {#if stats.biggestBuy.tokenAmount && stats.biggestBuy.token}
               <span class="opacity-50 flex items-center gap-1">
-                ({gameStats.biggestBuy.tokenAmount.toString()}
-                <TokenAvatar
-                  token={gameStats.biggestBuy.token}
-                  class="h-3 w-3"
-                />)
+                ({stats.biggestBuy.tokenAmount.toString()}
+                <TokenAvatar token={stats.biggestBuy.token} class="h-3 w-3" />)
               </span>
             {/if}
           </div>
@@ -192,9 +155,11 @@
       <div class="flex justify-between items-center">
         <span class="opacity-50">Total Earnings</span>
         <span class="text-green-500">
-          +{displayCurrency(gameStats.totalEarnings)} $
+          +{displayCurrency(stats?.totalEarnings ?? 0)} $
         </span>
       </div>
     </div>
-  {/if}
+  {:catch}
+    <div class="text-center text-sm opacity-50">Error loading stats</div>
+  {/await}
 </div>

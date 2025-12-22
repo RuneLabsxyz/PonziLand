@@ -33,13 +33,7 @@
     net: number;
   }
 
-  let tokenStats = $state<{
-    stats: TokenStats[];
-    isLoading: boolean;
-  }>({
-    stats: [],
-    isLoading: true,
-  });
+  let statsPromise = $state<Promise<TokenStats[]> | null>(null);
 
   let calculatedForLandsKey = $state('');
 
@@ -47,21 +41,16 @@
     const landsKey = lands.map((l) => l.location).join(',');
     const currentBaseToken = baseToken;
 
-    if (
-      landsKey === untrack(() => calculatedForLandsKey) ||
-      untrack(() => tokenStats.isLoading && calculatedForLandsKey !== '')
-    ) {
-      return;
-    }
-
-    if (!lands.length || !currentBaseToken) {
-      tokenStats = { stats: [], isLoading: false };
-      calculatedForLandsKey = landsKey;
+    if (landsKey === untrack(() => calculatedForLandsKey)) {
       return;
     }
 
     calculatedForLandsKey = landsKey;
-    tokenStats = { ...untrack(() => tokenStats), isLoading: true };
+
+    if (!lands.length || !currentBaseToken) {
+      statsPromise = Promise.resolve([]);
+      return;
+    }
 
     const landsToProcess = [...lands];
     const tokenForCalc = currentBaseToken;
@@ -80,7 +69,7 @@
     }
 
     // Calculate stats for each token group
-    Promise.all(
+    statsPromise = Promise.all(
       [...landsByToken.entries()].map(async ([tokenAddress, tokenLands]) => {
         const token = tokenLands[0].token!;
         let totalEarnings = 0;
@@ -155,7 +144,7 @@
     ).then((results) => {
       // Sort by building count descending
       results.sort((a, b) => b.buildingCount - a.buildingCount);
-      tokenStats = { stats: results, isLoading: false };
+      return results;
     });
   });
 </script>
@@ -166,54 +155,64 @@
     Token Breakdown
   </div>
 
-  {#if tokenStats.isLoading}
-    <div class="text-center text-sm opacity-50">Calculating...</div>
-  {:else if tokenStats.stats.length === 0}
+  {#if lands.length === 0}
     <div class="text-center text-sm opacity-50">No lands owned</div>
   {:else}
-    <div class="flex flex-col gap-2 max-h-[220px] overflow-y-auto">
-      {#each tokenStats.stats as stat}
-        <div class="bg-black/20 rounded-lg p-3">
-          <!-- Token header with count -->
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <TokenAvatar token={stat.token} class="h-5 w-5" />
-              <span class="font-ponzi-number text-sm">
-                {stat.token.symbol}
-              </span>
-            </div>
-            <span class="opacity-50 text-xs">
-              {stat.buildingCount} building{stat.buildingCount > 1 ? 's' : ''}
-            </span>
-          </div>
+    {#await statsPromise}
+      <div class="text-center text-sm opacity-50">Calculating...</div>
+    {:then stats}
+      {#if stats && stats.length > 0}
+        <div class="flex flex-col gap-2 max-h-[220px] overflow-y-auto">
+          {#each stats as stat}
+            <div class="bg-black/20 rounded-lg p-3">
+              <!-- Token header with count -->
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                  <TokenAvatar token={stat.token} class="h-5 w-5" />
+                  <span class="font-ponzi-number text-sm">
+                    {stat.token.symbol}
+                  </span>
+                </div>
+                <span class="opacity-50 text-xs">
+                  {stat.buildingCount} building{stat.buildingCount > 1
+                    ? 's'
+                    : ''}
+                </span>
+              </div>
 
-          <!-- Stats row -->
-          <div class="flex justify-between text-xs">
-            <div class="flex flex-col items-start">
-              <span class="opacity-50">Earnings</span>
-              <span class="text-green-500 font-ponzi-number">
-                +{displayCurrency(stat.earnings)} $
-              </span>
+              <!-- Stats row -->
+              <div class="flex justify-between text-xs">
+                <div class="flex flex-col items-start">
+                  <span class="opacity-50">Earnings</span>
+                  <span class="text-green-500 font-ponzi-number">
+                    +{displayCurrency(stat.earnings)} $
+                  </span>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="opacity-50">Net</span>
+                  <span
+                    class="font-ponzi-number {stat.net >= 0
+                      ? 'text-green-500'
+                      : 'text-red-500'}"
+                  >
+                    {stat.net >= 0 ? '+' : ''}{displayCurrency(stat.net)} $
+                  </span>
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="opacity-50">Cost</span>
+                  <span class="text-red-500 font-ponzi-number">
+                    -{displayCurrency(stat.costs)} $
+                  </span>
+                </div>
+              </div>
             </div>
-            <div class="flex flex-col items-center">
-              <span class="opacity-50">Net</span>
-              <span
-                class="font-ponzi-number {stat.net >= 0
-                  ? 'text-green-500'
-                  : 'text-red-500'}"
-              >
-                {stat.net >= 0 ? '+' : ''}{displayCurrency(stat.net)} $
-              </span>
-            </div>
-            <div class="flex flex-col items-end">
-              <span class="opacity-50">Cost</span>
-              <span class="text-red-500 font-ponzi-number">
-                -{displayCurrency(stat.costs)} $
-              </span>
-            </div>
-          </div>
+          {/each}
         </div>
-      {/each}
-    </div>
+      {:else}
+        <div class="text-center text-sm opacity-50">No token data</div>
+      {/if}
+    {:catch}
+      <div class="text-center text-sm opacity-50">Error calculating stats</div>
+    {/await}
   {/if}
 </div>
