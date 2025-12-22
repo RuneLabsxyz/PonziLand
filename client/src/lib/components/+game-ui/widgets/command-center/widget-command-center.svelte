@@ -9,6 +9,7 @@
   import MarketWidget from '../market/widget-market.svelte';
   import MyLandsWidget from '../my-lands/widget-my-lands.svelte';
   import HistoricalPositions from '../positions/historical-positions.svelte';
+  import GameStatisticsWidget from './game-statistics/widget-game-statistics.svelte';
 
   type Props = {
     setCustomTitle?: (title: Snippet<[]> | null) => void;
@@ -23,11 +24,13 @@
   };
 
   let refreshInterval: NodeJS.Timeout;
-  let activeTab = $state<'history' | 'positions' | 'market' | 'my-lands'>(
-    'my-lands',
-  );
+  let activeTab = $state<
+    'history' | 'positions' | 'market' | 'my-lands' | 'game-statistics'
+  >('my-lands');
 
-  function setActiveTab(tab: 'history' | 'positions' | 'market' | 'my-lands') {
+  function setActiveTab(
+    tab: 'history' | 'positions' | 'market' | 'my-lands' | 'game-statistics',
+  ) {
     activeTab = tab;
   }
 
@@ -132,6 +135,23 @@
         ]}
       />
     </button>
+
+    <button
+      class="flex items-center justify-center h-10 w-10"
+      onclick={() => setActiveTab('game-statistics')}
+    >
+      <img
+        src="/ui/icons/IconTiny_Stats.png"
+        alt="Statistics"
+        class={[
+          'h-8 w-8',
+          {
+            'drop-shadow-[0_0_2px_rgba(255,255,0,0.8)]':
+              activeTab === 'game-statistics',
+          },
+        ]}
+      />
+    </button>
   </div>
 
   <div
@@ -150,6 +170,8 @@
       <HistoricalPositions {setCustomControls} />
     {:else if activeTab === 'my-lands'}
       <MyLandsWidget {setCustomControls} />
+    {:else if activeTab === 'game-statistics'}
+      <GameStatisticsWidget {setCustomControls} />
     {/if}
   </div>
 </div>
