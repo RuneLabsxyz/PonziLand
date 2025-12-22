@@ -5,6 +5,7 @@
   import { coordinatesToLocation, padAddress } from '$lib/utils';
   import { formatAddress } from '$lib/components/+game-ui/widgets/leaderboard/helpers';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
+  import { X } from 'lucide-svelte';
 
   interface Props {
     event: ActivityEvent;
@@ -73,9 +74,9 @@
   </div>
 
   <button
-    class="text-gray-500 hover:text-white text-lg flex-shrink-0 px-1"
+    class="text-gray-500 hover:text-white flex-shrink-0 px-1"
     onclick={handleDismiss}
   >
-    &times;
+    <X class="w-4 h-4" />
   </button>
 </div>
