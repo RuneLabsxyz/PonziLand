@@ -10,6 +10,8 @@ pub struct MessageModel {
     pub recipient: String,
     pub content: String,
     pub created_at: DateTime<Utc>,
+    pub context_type: Option<String>,
+    pub context_id: Option<String>,
 }
 
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
