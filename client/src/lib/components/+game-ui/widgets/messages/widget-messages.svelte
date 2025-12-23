@@ -1,9 +1,13 @@
 <script lang="ts">
-  import { messagesStore } from '$lib/stores/messages.store.svelte';
+  import {
+    messagesStore,
+    type ChatTab,
+  } from '$lib/stores/messages.store.svelte';
   import accountData from '$lib/account.svelte';
   import ConversationList from './conversation-list.svelte';
   import MessageThread from './message-thread.svelte';
   import MessageInput from './message-input.svelte';
+  import GlobalChat from './global-chat.svelte';
   import { Button } from '$lib/components/ui/button';
   import { shortenHex, padAddress } from '$lib/utils';
   import { usernamesStore } from '$lib/stores/account.store.svelte';
@@ -25,6 +29,9 @@
   $effect(() => {
     if (accountData.address) {
       messagesStore.setUserAddress(accountData.address);
+    } else {
+      // Still load global messages even without wallet
+      messagesStore.setUserAddress(null);
     }
   });
 
@@ -37,6 +44,11 @@
       showSuggestions = false;
     }
   });
+
+  function setTab(tab: ChatTab) {
+    messagesStore.setActiveTab(tab);
+    showNewConversation = false;
+  }
 
   function startNewConversation() {
     const trimmed = newConversationAddress.trim();
@@ -119,99 +131,129 @@
 </script>
 
 <div class="w-full h-full flex flex-col">
-  {#if !accountData.isConnected}
-    <div class="flex items-center justify-center h-full">
-      <p class="text-muted-foreground">Connect your wallet to use messages</p>
-    </div>
-  {:else if messagesStore.activeConversation}
-    <!-- Active conversation view -->
-    <div class="flex flex-col h-full">
-      <!-- Header -->
-      <div class="flex items-center gap-2 p-3 border-b border-border">
-        <button
-          class="text-sm hover:underline"
-          onclick={() => messagesStore.setActiveConversation(null)}
-        >
-          ← Back
-        </button>
-        <span class="font-mono text-sm">
-          {getDisplayName(messagesStore.activeConversation)}
-        </span>
-      </div>
+  <!-- Tab Header -->
+  <div class="flex gap-2 p-2 border-b border-border">
+    <Button
+      variant={messagesStore.activeTab === 'global' ? 'blue' : 'red'}
+      size="md"
+      class="flex-1"
+      onclick={() => setTab('global')}
+    >
+      Global
+    </Button>
+    <Button
+      variant={messagesStore.activeTab === 'direct' ? 'blue' : 'red'}
+      size="md"
+      class="flex-1"
+      onclick={() => setTab('direct')}
+    >
+      Direct
+    </Button>
+  </div>
 
-      <!-- Messages -->
-      <div class="flex-1 overflow-hidden">
-        <MessageThread />
-      </div>
+  <!-- Content -->
+  <div class="flex-1 overflow-hidden">
+    {#if messagesStore.activeTab === 'global'}
+      <GlobalChat />
+    {:else if messagesStore.activeConversation}
+      <!-- Active conversation view -->
+      <div class="flex flex-col h-full">
+        <!-- Header -->
+        <div class="flex items-center gap-2 p-3 border-b border-border">
+          <button
+            class="text-sm hover:underline"
+            onclick={() => messagesStore.setActiveConversation(null)}
+          >
+            ← Back
+          </button>
+          <span class="font-mono text-sm">
+            {getDisplayName(messagesStore.activeConversation)}
+          </span>
+        </div>
 
-      <!-- Input -->
-      <MessageInput />
-    </div>
-  {:else}
-    <!-- Conversation list view -->
-    <div class="flex flex-col h-full">
-      <!-- Header with new conversation button -->
-      <div class="flex items-center justify-between p-3 border-b border-border">
-        <span class="font-semibold">Messages</span>
-        <button
-          class="text-sm px-2 py-1 border border-border rounded hover:bg-accent/50 transition-colors"
-          onclick={() => (showNewConversation = !showNewConversation)}
-        >
-          {showNewConversation ? 'Cancel' : '+ New'}
-        </button>
-      </div>
+        <!-- Messages -->
+        <div class="flex-1 overflow-hidden">
+          <MessageThread />
+        </div>
 
-      <!-- New conversation input -->
-      {#if showNewConversation}
-        <div class="p-3 border-b border-border flex gap-2 relative">
-          <div class="flex-1 relative">
-            <input
-              type="text"
-              placeholder="Enter wallet address or username"
-              bind:value={newConversationAddress}
-              onkeydown={handleKeyDown}
-              onblur={handleBlur}
-              onfocus={() => suggestions.length > 0 && (showSuggestions = true)}
-              class="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-            {#if showSuggestions && suggestions.length > 0}
-              <div
-                class="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50 overflow-hidden"
-              >
-                {#each suggestions as suggestion, index}
-                  <button
-                    type="button"
-                    class={[
-                      'w-full px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors flex items-center justify-between',
-                      index === selectedSuggestionIndex && 'bg-accent/50',
-                    ]}
-                    onmousedown={() => selectSuggestion(suggestion)}
-                  >
-                    <span class="font-medium">{suggestion.username}</span>
-                    <span class="text-xs text-muted-foreground font-mono">
-                      {shortenHex(suggestion.address, 4)}
-                    </span>
-                  </button>
-                {/each}
-              </div>
-            {/if}
+        <!-- Input -->
+        <MessageInput />
+      </div>
+    {:else}
+      <!-- Conversation list view -->
+      <div class="flex flex-col h-full">
+        {#if !accountData.isConnected}
+          <div class="flex items-center justify-center h-full">
+            <p class="text-muted-foreground text-sm">Connect wallet for DMs</p>
           </div>
-          <Button size="sm" onclick={startNewConversation}>Start</Button>
-        </div>
-      {/if}
+        {:else}
+          <!-- Header with new conversation button -->
+          <div
+            class="flex items-center justify-between p-3 border-b border-border"
+          >
+            <span class="font-semibold text-sm">Direct Messages</span>
+            <button
+              class="text-sm px-2 py-1 border border-border rounded hover:bg-accent/50 transition-colors"
+              onclick={() => (showNewConversation = !showNewConversation)}
+            >
+              {showNewConversation ? 'Cancel' : '+ New'}
+            </button>
+          </div>
 
-      <!-- Conversation list -->
-      <div class="flex-1 overflow-hidden">
-        <ConversationList />
+          <!-- New conversation input -->
+          {#if showNewConversation}
+            <div class="p-3 border-b border-border flex gap-2 relative">
+              <div class="flex-1 relative">
+                <input
+                  type="text"
+                  placeholder="Enter wallet address or username"
+                  bind:value={newConversationAddress}
+                  onkeydown={handleKeyDown}
+                  onblur={handleBlur}
+                  onfocus={() =>
+                    suggestions.length > 0 && (showSuggestions = true)}
+                  class="w-full px-3 py-2 text-sm bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
+                />
+                {#if showSuggestions && suggestions.length > 0}
+                  <div
+                    class="absolute top-full left-0 right-0 mt-1 bg-background border border-border rounded-md shadow-lg z-50 overflow-hidden"
+                  >
+                    {#each suggestions as suggestion, index}
+                      <button
+                        type="button"
+                        class={[
+                          'w-full px-3 py-2 text-left text-sm hover:bg-accent/50 transition-colors flex items-center justify-between',
+                          index === selectedSuggestionIndex && 'bg-accent/50',
+                        ]}
+                        onmousedown={() => selectSuggestion(suggestion)}
+                      >
+                        <span class="font-medium">{suggestion.username}</span>
+                        <span class="text-xs text-muted-foreground font-mono">
+                          {shortenHex(suggestion.address, 4)}
+                        </span>
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+              <Button size="sm" onclick={startNewConversation}>Start</Button>
+            </div>
+          {/if}
+
+          <!-- Conversation list -->
+          <div class="flex-1 overflow-hidden">
+            <ConversationList />
+          </div>
+        {/if}
       </div>
+    {/if}
+  </div>
 
-      {#if messagesStore.error}
-        <div
-          class="p-2 text-sm text-destructive bg-destructive/10 border-t border-destructive/20"
-        >
-          {messagesStore.error}
-        </div>
-      {/if}
+  {#if messagesStore.error}
+    <div
+      class="p-2 text-sm text-destructive bg-destructive/10 border-t border-destructive/20"
+    >
+      {messagesStore.error}
     </div>
   {/if}
 </div>

@@ -102,46 +102,31 @@ impl MessagesRepository {
         address: &str,
     ) -> Result<Vec<ConversationSummary>, Error> {
         // This query finds the most recent message for each conversation partner
+        // Excludes global chat messages
         let conversations = sqlx::query_as::<_, ConversationSummary>(
             r#"
-            WITH latest_messages AS (
-                SELECT DISTINCT ON (
-                    CASE
-                        WHEN sender = $1 THEN recipient
-                        ELSE sender
-                    END
-                )
-                    CASE
-                        WHEN sender = $1 THEN recipient
-                        ELSE sender
-                    END as with_address,
-                    content as last_message,
-                    created_at as last_message_at
-                FROM messages
-                WHERE sender = $1 OR recipient = $1
-                ORDER BY
-                    CASE
-                        WHEN sender = $1 THEN recipient
-                        ELSE sender
-                    END,
-                    created_at DESC
-            ),
-            unread_counts AS (
-                SELECT
-                    sender as from_address,
-                    COUNT(*) as unread_count
-                FROM messages
-                WHERE recipient = $1
-                GROUP BY sender
+            SELECT DISTINCT ON (
+                CASE
+                    WHEN sender = $1 THEN recipient
+                    ELSE sender
+                END
             )
-            SELECT
-                lm.with_address,
-                lm.last_message,
-                lm.last_message_at,
-                COALESCE(uc.unread_count, 0) as unread_count
-            FROM latest_messages lm
-            LEFT JOIN unread_counts uc ON uc.from_address = lm.with_address
-            ORDER BY lm.last_message_at DESC
+                CASE
+                    WHEN sender = $1 THEN recipient
+                    ELSE sender
+                END as with_address,
+                content as last_message,
+                created_at as last_message_at
+            FROM messages
+            WHERE (sender = $1 OR recipient = $1)
+              AND recipient != 'global'
+              AND sender != 'global'
+            ORDER BY
+                CASE
+                    WHEN sender = $1 THEN recipient
+                    ELSE sender
+                END,
+                created_at DESC
             "#,
         )
         .bind(address)
@@ -149,6 +134,48 @@ impl MessagesRepository {
         .await?;
 
         Ok(conversations)
+    }
+
+    /// Get global chat messages
+    ///
+    /// # Errors
+    /// Returns an error if the query fails
+    pub async fn get_global_messages(
+        &self,
+        after: Option<DateTime<Utc>>,
+        limit: i64,
+    ) -> Result<Vec<MessageModel>, Error> {
+        let messages = if let Some(after_ts) = after {
+            sqlx::query_as::<_, MessageModel>(
+                r#"
+                SELECT id, sender, recipient, content, created_at
+                FROM messages
+                WHERE recipient = 'global'
+                AND created_at > $1
+                ORDER BY created_at ASC
+                LIMIT $2
+                "#,
+            )
+            .bind(after_ts)
+            .bind(limit)
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await?
+        } else {
+            sqlx::query_as::<_, MessageModel>(
+                r#"
+                SELECT id, sender, recipient, content, created_at
+                FROM messages
+                WHERE recipient = 'global'
+                ORDER BY created_at DESC
+                LIMIT $1
+                "#,
+            )
+            .bind(limit)
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await?
+        };
+
+        Ok(messages)
     }
 
     /// Get a message by ID
