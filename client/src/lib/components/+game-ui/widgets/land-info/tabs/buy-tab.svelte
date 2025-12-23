@@ -17,7 +17,7 @@
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
   import type { CairoCustomEnum } from 'starknet';
-  import { untrack } from 'svelte';
+  import { tick, untrack } from 'svelte';
   import TaxImpact from '../tax-impact/tax-impact.svelte';
   import {
     nextStep,
@@ -492,7 +492,7 @@
   });
 
   // Open swap modal with the correct deficit amount
-  function openSwapForDeficit() {
+  async function openSwapForDeficit() {
     if (!land.token || !requiredLandTokenAmount) return;
 
     const userBalance = walletStore.getBalance(land.token.address);
@@ -512,6 +512,8 @@
         prefillSellToken: bestSourceToken,
       },
     });
+
+    await tick();
     widgetsStore.bringToFront('swap');
   }
 
