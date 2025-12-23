@@ -11,6 +11,9 @@ use std::sync::Arc;
 
 use crate::state::AppState;
 
+/// Special address used for global chat messages
+pub const GLOBAL_CHAT_ADDRESS: &str = "global";
+
 #[derive(Debug, Deserialize)]
 pub struct SendMessageRequest {
     pub sender: String,
@@ -54,6 +57,12 @@ pub struct GetConversationsQuery {
     pub address: String, // The requesting user's address
 }
 
+#[derive(Debug, Deserialize)]
+pub struct GetGlobalMessagesQuery {
+    pub after: Option<String>, // ISO 8601 timestamp
+    pub limit: Option<i64>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct GetConversationsResponse {
     pub conversations: Vec<ConversationResponse>,
@@ -64,7 +73,6 @@ pub struct ConversationResponse {
     pub with_address: String,
     pub last_message: String,
     pub last_message_at: String,
-    pub unread_count: i64,
 }
 
 #[derive(Debug, Serialize)]
@@ -91,6 +99,7 @@ impl MessagesRoute {
             .route("/", post(Self::send_message))
             .route("/", get(Self::get_messages))
             .route("/conversations", get(Self::get_conversations))
+            .route("/global", get(Self::get_global_messages))
     }
 
     async fn send_message(
@@ -206,12 +215,50 @@ impl MessagesRoute {
                 with_address: c.with_address,
                 last_message: c.last_message,
                 last_message_at: c.last_message_at.to_rfc3339(),
-                unread_count: c.unread_count,
             })
             .collect();
 
         Ok(Json(GetConversationsResponse {
             conversations: responses,
+        }))
+    }
+
+    async fn get_global_messages(
+        State(messages_repository): State<Arc<MessagesRepository>>,
+        Query(query): Query<GetGlobalMessagesQuery>,
+    ) -> Result<Json<GetMessagesResponse>, (StatusCode, Json<ErrorResponse>)> {
+        let after = query
+            .after
+            .as_ref()
+            .and_then(|s| DateTime::parse_from_rfc3339(s).ok())
+            .map(|dt| dt.with_timezone(&Utc));
+
+        let limit = query.limit.unwrap_or(100).min(200);
+
+        let messages = messages_repository
+            .get_global_messages(after, limit)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ErrorResponse {
+                        error: format!("Failed to get global messages: {e}"),
+                    }),
+                )
+            })?;
+
+        let responses: Vec<MessageResponse> = messages
+            .into_iter()
+            .map(|m| MessageResponse {
+                id: m.id.to_string(),
+                sender: m.sender,
+                content: m.content,
+                created_at: m.created_at.to_rfc3339(),
+            })
+            .collect();
+
+        Ok(Json(GetMessagesResponse {
+            messages: responses,
         }))
     }
 }
