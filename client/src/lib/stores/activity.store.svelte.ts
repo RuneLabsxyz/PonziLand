@@ -1,6 +1,13 @@
 import type { Location } from '$lib/api/land/location';
 import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 import type { TokenSkin } from '$lib/tokens';
+import {
+  getRecentActivity,
+  type ActivityEventResponse,
+} from '$lib/api/activity';
+import { getTokenMetadata } from '$lib/tokens';
+import { getTokenInfo } from '$lib/utils';
+import { CurrencyAmount as CA } from '$lib/utils/CurrencyAmount';
 
 // Activity event types
 export type ActivityEventType = 'land_buy' | 'auction_win' | 'nuke';
@@ -38,6 +45,8 @@ class ActivityStore {
   private _events = $state<ActivityEvent[]>([]);
   private _toasts = $state<ActivityEvent[]>([]);
   private _config = $state<ActivityConfig>({ ...DEFAULT_CONFIG });
+  private _isLoading = $state(false);
+  private _hasLoadedInitial = $state(false);
 
   // Event ID set for deduplication
   private eventIdSet = new Set<string>();
@@ -50,6 +59,7 @@ class ActivityStore {
   public readonly toasts = $derived(this._toasts);
   public readonly config = $derived(this._config);
   public readonly isEmpty = $derived(this._events.length === 0);
+  public readonly isLoading = $derived(this._isLoading);
 
   /**
    * Add a new activity event
@@ -151,6 +161,97 @@ class ActivityStore {
     this.clearAllToasts();
     this._events = [];
     this.eventIdSet.clear();
+  }
+
+  /**
+   * Load initial events from Torii
+   */
+  public async loadInitialEvents(limit: number = 50): Promise<void> {
+    if (this._hasLoadedInitial || this._isLoading) {
+      return;
+    }
+
+    this._isLoading = true;
+
+    try {
+      const events = await getRecentActivity(limit);
+
+      // Convert API events to ActivityEvent format
+      const activityEvents: ActivityEvent[] = events
+        .map((event) => this.convertApiEvent(event))
+        .filter((e): e is ActivityEvent => e !== null);
+
+      // Add events in reverse order (oldest first) so newest ends up at top
+      const newEvents = [];
+      for (const event of activityEvents.reverse()) {
+        if (!this.eventIdSet.has(event.id)) {
+          this.eventIdSet.add(event.id);
+          newEvents.push(event);
+        }
+      }
+      this._events = [...this._events, ...newEvents];
+      // Sort events by timestamp descending (newest first)
+      this._events = this._events.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime(),
+      );
+
+      // Trim if exceeds max
+      if (this._events.length > this._config.maxEvents) {
+        const removed = this._events.slice(this._config.maxEvents);
+        this._events = this._events.slice(0, this._config.maxEvents);
+        for (const event of removed) {
+          this.eventIdSet.delete(event.id);
+        }
+      }
+
+      this._hasLoadedInitial = true;
+    } catch (err) {
+      console.error('Failed to load initial activity events:', err);
+    } finally {
+      this._isLoading = false;
+    }
+  }
+
+  /**
+   * Convert API event to ActivityEvent format
+   */
+  private convertApiEvent(event: ActivityEventResponse): ActivityEvent | null {
+    try {
+      const location: Location = { x: event.location_x, y: event.location_y };
+
+      // Get token info from address
+      const token = event.token_used
+        ? getTokenInfo(event.token_used)
+        : undefined;
+
+      // Get token skin metadata from the token's skin name
+      const tokenMeta = token?.skin ? getTokenMetadata(token.skin) : undefined;
+
+      let price: CurrencyAmount | undefined;
+      if (event.price && token) {
+        try {
+          // Use fromUnscaled since contract returns raw values (like wei)
+          price = CA.fromUnscaled(event.price, token);
+        } catch {
+          // Ignore price parsing errors
+        }
+      }
+
+      return {
+        id: event.id,
+        type: event.type,
+        timestamp: new Date(event.timestamp),
+        location,
+        locationString: `${event.location_x}, ${event.location_y}`,
+        buyer: event.buyer,
+        seller: event.seller,
+        price,
+        token: tokenMeta ?? undefined,
+        ownerNuked: event.owner_nuked,
+      };
+    } catch {
+      return null;
+    }
   }
 }
 
