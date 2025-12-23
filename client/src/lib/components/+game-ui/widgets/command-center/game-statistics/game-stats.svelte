@@ -29,9 +29,11 @@
   let statsPromise = $state<Promise<FetchedStats> | null>(null);
 
   let lastFetchedAddress = $state('');
+  let lastFetchedLandsKey = $state('');
 
   $effect(() => {
     const currentAddress = account.address;
+    const landsKey = lands.map((l) => l.location).join(',');
 
     if (!currentAddress) {
       statsPromise = Promise.resolve({
@@ -40,6 +42,7 @@
         totalEarnings: 0,
       });
       lastFetchedAddress = '';
+      lastFetchedLandsKey = '';
       return;
     }
 
@@ -53,12 +56,14 @@
       return;
     }
 
-    // Skip if already fetched for this address
-    if (userAddress === untrack(() => lastFetchedAddress)) {
+    const previousAddress = untrack(() => lastFetchedAddress);
+    const previousLandsKey = untrack(() => lastFetchedLandsKey);
+    if (userAddress === previousAddress && landsKey === previousLandsKey) {
       return;
     }
 
     lastFetchedAddress = userAddress;
+    lastFetchedLandsKey = landsKey;
 
     statsPromise = fetchHistoricalPositions(userAddress).then((positions) => {
       if (!positions.length) {
