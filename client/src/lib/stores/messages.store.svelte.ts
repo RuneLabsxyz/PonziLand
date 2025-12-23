@@ -4,6 +4,8 @@ import {
   sendMessage as apiSendMessage,
   getMessages as apiGetMessages,
   getConversations as apiGetConversations,
+  getGlobalMessages as apiGetGlobalMessages,
+  GLOBAL_CHAT_ADDRESS,
 } from '$lib/api/messages';
 import { padAddress } from '$lib/utils';
 
@@ -15,22 +17,28 @@ interface MessagesState {
   error: string | null;
 }
 
+export type ChatTab = 'global' | 'direct';
+
 class MessagesStore {
   private _conversations = $state<Conversation[]>([]);
   private _activeConversation = $state<string | null>(null);
   private _messages = $state<Map<string, Message[]>>(new Map());
+  private _globalMessages = $state<Message[]>([]);
   private _loading = $state<boolean>(false);
   private _error = $state<string | null>(null);
   private _userAddress = $state<string | null>(null);
+  private _activeTab = $state<ChatTab>('global');
 
   private pollInterval: ReturnType<typeof setInterval> | null = null;
 
   // Public reactive accessors
   public readonly conversations = $derived(this._conversations);
   public readonly activeConversation = $derived(this._activeConversation);
+  public readonly globalMessages = $derived(this._globalMessages);
   public readonly loading = $derived(this._loading);
   public readonly error = $derived(this._error);
   public readonly userAddress = $derived(this._userAddress);
+  public readonly activeTab = $derived(this._activeTab);
 
   // Get messages for the active conversation
   public readonly activeMessages = $derived.by(() => {
@@ -49,12 +57,23 @@ class MessagesStore {
       this._messages = new Map();
       this._activeConversation = null;
 
+      // Always load global messages
+      this.loadGlobalMessages();
+      this.startPolling();
+
       if (normalized) {
         this.loadConversations();
-        this.startPolling();
-      } else {
-        this.stopPolling();
       }
+    }
+  }
+
+  /**
+   * Set the active tab
+   */
+  public setActiveTab(tab: ChatTab): void {
+    this._activeTab = tab;
+    if (tab === 'direct') {
+      this._activeConversation = null;
     }
   }
 
@@ -74,6 +93,40 @@ class MessagesStore {
       console.error('Failed to load conversations:', err);
       this._error =
         err instanceof Error ? err.message : 'Failed to load conversations';
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  /**
+   * Load global chat messages
+   */
+  public async loadGlobalMessages(after?: string): Promise<void> {
+    this._loading = true;
+    this._error = null;
+
+    try {
+      const messages = await apiGetGlobalMessages(after, 100);
+
+      if (after) {
+        // Merge with existing messages
+        const existingIds = new Set(this._globalMessages.map((m) => m.id));
+        const newMessages = messages.filter((m) => !existingIds.has(m.id));
+        if (newMessages.length > 0) {
+          this._globalMessages = [...this._globalMessages, ...newMessages].sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime(),
+          );
+        }
+      } else {
+        // Initial load - messages come in DESC order, reverse them
+        this._globalMessages = messages.reverse();
+      }
+    } catch (err) {
+      console.error('Failed to load global messages:', err);
+      this._error =
+        err instanceof Error ? err.message : 'Failed to load global messages';
     } finally {
       this._loading = false;
     }
@@ -194,6 +247,46 @@ class MessagesStore {
   }
 
   /**
+   * Send a message to global chat
+   */
+  public async sendGlobalMessage(content: string): Promise<boolean> {
+    if (!this._userAddress) {
+      this._error = 'Not connected';
+      return false;
+    }
+
+    this._loading = true;
+    this._error = null;
+
+    try {
+      const result = await apiSendMessage(
+        this._userAddress,
+        GLOBAL_CHAT_ADDRESS,
+        content,
+      );
+
+      // Add the sent message to local state immediately
+      const newMessage: Message = {
+        id: result.id,
+        sender: this._userAddress,
+        content,
+        created_at: result.created_at,
+      };
+
+      this._globalMessages = [...this._globalMessages, newMessage];
+
+      return true;
+    } catch (err) {
+      console.error('Failed to send global message:', err);
+      this._error =
+        err instanceof Error ? err.message : 'Failed to send message';
+      return false;
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  /**
    * Start a new conversation with an address
    */
   public startConversation(partnerAddress: string): void {
@@ -215,6 +308,11 @@ class MessagesStore {
 
     // Poll every 15 seconds
     this.pollInterval = setInterval(async () => {
+      // Always poll global messages
+      const lastGlobalMessage =
+        this._globalMessages[this._globalMessages.length - 1];
+      await this.loadGlobalMessages(lastGlobalMessage?.created_at);
+
       if (this._userAddress) {
         await this.loadConversations();
 
@@ -260,9 +358,11 @@ class MessagesStore {
     this.stopPolling();
     this._conversations = [];
     this._messages = new Map();
+    this._globalMessages = [];
     this._activeConversation = null;
     this._userAddress = null;
     this._error = null;
+    this._activeTab = 'global';
   }
 }
 

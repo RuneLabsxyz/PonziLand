@@ -11,7 +11,6 @@ export interface Conversation {
   with_address: string;
   last_message: string;
   last_message_at: string;
-  unread_count: number;
 }
 
 export interface SendMessageRequest {
@@ -32,6 +31,8 @@ export interface GetMessagesResponse {
 export interface GetConversationsResponse {
   conversations: Conversation[];
 }
+
+export const GLOBAL_CHAT_ADDRESS = 'global';
 
 export interface ErrorResponse {
   error: string;
@@ -133,4 +134,43 @@ export async function getConversations(
 
   const data = (await response.json()) as GetConversationsResponse;
   return data.conversations;
+}
+
+/**
+ * Get global chat messages
+ */
+export async function getGlobalMessages(
+  after?: string,
+  limit?: number,
+): Promise<Message[]> {
+  const params = new URLSearchParams();
+
+  if (after) {
+    params.set('after', after);
+  }
+
+  if (limit) {
+    params.set('limit', limit.toString());
+  }
+
+  const url = params.toString()
+    ? `${BASE_URL}/global?${params}`
+    : `${BASE_URL}/global`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = (await response.json()) as ErrorResponse;
+    throw new Error(
+      errorData.error || `Failed to get global messages: ${response.status}`,
+    );
+  }
+
+  const data = (await response.json()) as GetMessagesResponse;
+  return data.messages;
 }
