@@ -30,8 +30,8 @@ pub struct SendMessageResponse {
 
 #[derive(Debug, Deserialize)]
 pub struct GetMessagesQuery {
-    pub address: String, // The requesting user's address
-    pub with: String,    // The conversation partner's address
+    pub address: String,       // The requesting user's address
+    pub with: String,          // The conversation partner's address
     pub after: Option<String>, // ISO 8601 timestamp
     pub limit: Option<i64>,
 }
@@ -176,7 +176,9 @@ impl MessagesRoute {
             })
             .collect();
 
-        Ok(Json(GetMessagesResponse { messages: responses }))
+        Ok(Json(GetMessagesResponse {
+            messages: responses,
+        }))
     }
 
     async fn get_conversations(

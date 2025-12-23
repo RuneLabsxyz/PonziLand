@@ -97,7 +97,10 @@ impl MessagesRepository {
     ///
     /// # Errors
     /// Returns an error if the query fails
-    pub async fn get_conversations(&self, address: &str) -> Result<Vec<ConversationSummary>, Error> {
+    pub async fn get_conversations(
+        &self,
+        address: &str,
+    ) -> Result<Vec<ConversationSummary>, Error> {
         // This query finds the most recent message for each conversation partner
         let conversations = sqlx::query_as::<_, ConversationSummary>(
             r#"
