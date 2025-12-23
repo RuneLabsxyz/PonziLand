@@ -10,7 +10,8 @@ use axum::{
     Json, Router,
 };
 use chaindata_repository::{
-    LandHistoricalRepository, LandRepository, PriceFeedRepository, WalletActivityRepository,
+    LandHistoricalRepository, LandRepository, MessagesRepository, PriceFeedRepository,
+    WalletActivityRepository,
 };
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
@@ -18,8 +19,8 @@ use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{
-    drops::DropsRoute, land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute,
-    tokens::TokenRoute, wallets::WalletsRoute,
+    drops::DropsRoute, land_historical::LandHistoricalRoute, lands::LandsRoute,
+    messages::MessagesRoute, price::PriceRoute, tokens::TokenRoute, wallets::WalletsRoute,
 };
 use serde::{Deserialize, Serialize};
 use service::{
@@ -120,6 +121,7 @@ async fn main() -> Result<()> {
     let land_historical_repository = Arc::new(LandHistoricalRepository::new(pool.clone()));
     let wallet_activity_repository = Arc::new(WalletActivityRepository::new(pool.clone()));
     let price_feed_repository = Arc::new(PriceFeedRepository::new(pool.clone()));
+    let messages_repository = Arc::new(MessagesRepository::new(pool.clone()));
 
     // Start price feed service to record prices every minute
     let _price_feed_service = PriceFeedService::new(
@@ -139,12 +141,14 @@ async fn main() -> Result<()> {
         land_historical_repository,
         wallet_activity_repository,
         price_feed_repository,
+        messages_repository,
         drop_emitter_wallets: Arc::new(config.drop_emitter_wallets.clone()),
     };
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
-        .allow_methods([Method::GET, Method::POST]);
+        .allow_methods([Method::GET, Method::POST])
+        .allow_headers([http::header::CONTENT_TYPE]);
 
     let cors = if config.cors_origins.len() == 1 && config.cors_origins[0] == "*" {
         cors.allow_origin(Any)
@@ -184,6 +188,10 @@ async fn main() -> Result<()> {
         .nest(
             "/drops",
             DropsRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
+            "/messages",
+            MessagesRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))

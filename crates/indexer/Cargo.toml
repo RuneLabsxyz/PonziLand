@@ -48,6 +48,7 @@ sqlx = { workspace = true, features = [
 dotenv = "0.15.0"
 migrations = { path = "../migrations" }
 chaindata-repository = { path = "../chaindata/repository" }
+chaindata-models = { path = "../chaindata/models" }
 ponziland-models = { path = "../ponziland-models" }
 serde_json.workspace = true
 price-provider.workspace = true

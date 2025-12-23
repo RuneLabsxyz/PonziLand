@@ -22,6 +22,7 @@
   import WidgetUsername from './username/widget-username.svelte';
   import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
   import WidgetHistory from './history/widget-history.svelte';
+  import WidgetMessages from './messages/widget-messages.svelte';
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
@@ -74,6 +75,8 @@
           <WidgetUsername />
         {:else if type === 'history'}
           <WidgetHistory />
+        {:else if type === 'messages'}
+          <WidgetMessages />
         {/if}
       {/snippet}
     </Draggable>
