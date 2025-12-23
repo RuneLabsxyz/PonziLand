@@ -19,10 +19,8 @@ pub struct SendMessageRequest {
     pub sender: String,
     pub recipient: String,
     pub content: String,
-    // TODO: Add signature fields for proper auth
-    // pub timestamp: i64,
-    // pub signature_r: String,
-    // pub signature_s: String,
+    pub context_type: Option<String>,
+    pub context_id: Option<String>,
 }
 
 #[derive(Debug, Serialize)]
@@ -63,6 +61,14 @@ pub struct GetGlobalMessagesQuery {
     pub limit: Option<i64>,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct GetContextMessagesQuery {
+    pub context_type: String,
+    pub context_id: String,
+    pub after: Option<String>,
+    pub limit: Option<i64>,
+}
+
 #[derive(Debug, Serialize)]
 pub struct GetConversationsResponse {
     pub conversations: Vec<ConversationResponse>,
@@ -100,6 +106,7 @@ impl MessagesRoute {
             .route("/", get(Self::get_messages))
             .route("/conversations", get(Self::get_conversations))
             .route("/global", get(Self::get_global_messages))
+            .route("/context", get(Self::get_context_messages))
     }
 
     async fn send_message(
@@ -131,7 +138,13 @@ impl MessagesRoute {
         // In production, derive sender from verified signature
 
         let message = messages_repository
-            .insert_message(&request.sender, &request.recipient, &request.content)
+            .insert_message(
+                &request.sender,
+                &request.recipient,
+                &request.content,
+                request.context_type.as_deref(),
+                request.context_id.as_deref(),
+            )
             .await
             .map_err(|e| {
                 (
@@ -243,6 +256,45 @@ impl MessagesRoute {
                     StatusCode::INTERNAL_SERVER_ERROR,
                     Json(ErrorResponse {
                         error: format!("Failed to get global messages: {e}"),
+                    }),
+                )
+            })?;
+
+        let responses: Vec<MessageResponse> = messages
+            .into_iter()
+            .map(|m| MessageResponse {
+                id: m.id.to_string(),
+                sender: m.sender,
+                content: m.content,
+                created_at: m.created_at.to_rfc3339(),
+            })
+            .collect();
+
+        Ok(Json(GetMessagesResponse {
+            messages: responses,
+        }))
+    }
+
+    async fn get_context_messages(
+        State(messages_repository): State<Arc<MessagesRepository>>,
+        Query(query): Query<GetContextMessagesQuery>,
+    ) -> Result<Json<GetMessagesResponse>, (StatusCode, Json<ErrorResponse>)> {
+        let after = query
+            .after
+            .as_ref()
+            .and_then(|s| DateTime::parse_from_rfc3339(s).ok())
+            .map(|dt| dt.with_timezone(&Utc));
+
+        let limit = query.limit.unwrap_or(50).min(100);
+
+        let messages = messages_repository
+            .get_context_messages(&query.context_type, &query.context_id, after, limit)
+            .await
+            .map_err(|e| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    Json(ErrorResponse {
+                        error: format!("Failed to get context messages: {e}"),
                     }),
                 )
             })?;
