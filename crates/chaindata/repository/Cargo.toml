@@ -18,6 +18,7 @@ sqlx = { workspace = true, features = [
 chaindata-models = { path = "../models" }
 ponziland-models = { path = "../../ponziland-models" }
 thiserror.workspace = true
+uuid = { workspace = true, features = ["serde"] }
 
 [dev-dependencies]
 migrations = { path = "../../migrations" }
