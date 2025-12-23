@@ -96,6 +96,61 @@ export function formatWithoutExponential(
   return result;
 }
 
+/**
+ * Format very small numbers using subscript notation for leading zeros
+ * e.g., 0.00000012 becomes "0.0₆12" (subscript 6 indicates 6 zeros)
+ * @param value - The number to format
+ * @param significantDigits - Number of significant digits to show (default: 3)
+ * @returns Formatted string with subscript notation for zeros
+ */
+export function formatSmallNumber(
+  value: string | number | BigNumber,
+  significantDigits: number = 3,
+): string {
+  const bn = new BigNumber(value);
+  const abs = bn.abs();
+
+  if (abs.isZero()) return '0';
+  if (abs.isGreaterThanOrEqualTo(0.0001)) {
+    // For numbers >= 0.0001, use regular formatting
+    return formatWithoutExponential(bn, significantDigits);
+  }
+
+  // Count leading zeros after decimal point
+  const str = abs.toFixed(20); // Get full precision
+  const decimalIndex = str.indexOf('.');
+  if (decimalIndex === -1) return str;
+
+  let leadingZeros = 0;
+  for (let i = decimalIndex + 1; i < str.length; i++) {
+    if (str[i] === '0') {
+      leadingZeros++;
+    } else {
+      break;
+    }
+  }
+
+  // If 4 or more leading zeros, use subscript notation
+  if (leadingZeros >= 4) {
+    // Get significant digits after the zeros
+    const significantPart = str.slice(decimalIndex + 1 + leadingZeros);
+    const truncatedSignificant = significantPart.slice(0, significantDigits);
+
+    // Subscript digits: ₀₁₂₃₄₅₆₇₈₉
+    const subscriptDigits = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+    const subscriptZeroCount = leadingZeros
+      .toString()
+      .split('')
+      .map((d) => subscriptDigits[parseInt(d)])
+      .join('');
+
+    const sign = bn.isNegative() ? '-' : '';
+    return `${sign}0.0${subscriptZeroCount}${truncatedSignificant}`;
+  }
+
+  return formatWithoutExponential(bn, significantDigits);
+}
+
 export function displayCurrency(value: string | number | BigNumber): string {
   const bn = new BigNumber(value);
   const abs = bn.abs();
@@ -120,8 +175,8 @@ export function displayCurrency(value: string | number | BigNumber): string {
   } else if (abs.isGreaterThanOrEqualTo(1)) {
     formatted = bn.toFormat(2);
   } else {
-    // Very small number < 1 — use formatWithoutExponential to avoid exponential notation
-    formatted = formatWithoutExponential(bn, 3);
+    // Very small number < 1 — use compact notation for very small numbers
+    formatted = formatSmallNumber(bn, 3);
   }
 
   return formatted + suffix;

@@ -914,20 +914,21 @@
           </div>
 
           <!-- Value display -->
-          <div class="flex gap-2 items-center">
+          <div class="flex gap-2 items-center overflow-hidden">
             <Input
               id="sell"
               type="number"
               value={sellPrice}
               oninput={(e) => onSellPriceInput(e.currentTarget.value)}
-              class={['flex-1', { 'border-red-500': sellPriceError }]}
+              class={['flex-1 min-w-0', { 'border-red-500': sellPriceError }]}
             />
-            <span class="text-sm text-gray-400 whitespace-nowrap">
+            <span class="text-sm text-gray-400 whitespace-nowrap shrink-0">
               {selectedToken?.symbol}
             </span>
             {#if sellPriceInBaseCurrency}
               <span
-                class="text-m font-ponzi-number text-white whitespace-nowrap"
+                class="text-sm font-ponzi-number text-white whitespace-nowrap truncate max-w-[120px]"
+                title="≈ {sellPriceInBaseCurrency.toString()} {baseToken.symbol}"
               >
                 ≈ {sellPriceInBaseCurrency.toString()}
                 {baseToken.symbol}
@@ -986,20 +987,21 @@
           </div>
 
           <!-- Value display -->
-          <div class="flex gap-2 items-center">
+          <div class="flex gap-2 items-center overflow-hidden">
             <Input
               id="stake"
               type="number"
               value={stake}
               oninput={(e) => onStakeInput(e.currentTarget.value)}
-              class={['flex-1', { 'border-red-500': stakeAmountError }]}
+              class={['flex-1 min-w-0', { 'border-red-500': stakeAmountError }]}
             />
-            <span class="text-sm text-gray-400 whitespace-nowrap">
+            <span class="text-sm text-gray-400 whitespace-nowrap shrink-0">
               {selectedToken?.symbol}
             </span>
             {#if stakeAmountInBaseCurrency}
               <span
-                class="text-m font-ponzi-number text-white whitespace-nowrap"
+                class="text-sm font-ponzi-number text-white whitespace-nowrap truncate max-w-[120px]"
+                title="≈ {stakeAmountInBaseCurrency.toString()} {baseToken.symbol}"
               >
                 ≈ {stakeAmountInBaseCurrency.toString()}
                 {baseToken.symbol}
