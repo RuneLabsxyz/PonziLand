@@ -1,8 +1,10 @@
 <script lang="ts">
   import SelectWalletModal from '$lib/components/+game-ui/modals/SelectWalletModal.svelte';
+  import SelectSolanaWalletModal from '$lib/components/+game-ui/modals/SelectSolanaWalletModal.svelte';
   import MobileBlock from '$lib/components/MobileBlock.svelte';
 
   import { setupAccount } from '$lib/contexts/account.svelte';
+  import { setupSolanaAccount } from '$lib/bridge/solana-account.svelte';
   import { setupFaro } from '$lib/contexts/faro';
   import { setupSocialink } from '$lib/accounts/social/index.svelte';
   import type { Snippet } from 'svelte';
@@ -10,6 +12,7 @@
   import '../app.css';
   setupFaro();
   setupAccount();
+  setupSolanaAccount();
   setupSocialink();
 
   let { children }: { children: Snippet } = $props();
@@ -60,5 +63,6 @@
   <MobileBlock />
 {:else}
   <SelectWalletModal />
+  <SelectSolanaWalletModal />
   {@render children()}
 {/if}
