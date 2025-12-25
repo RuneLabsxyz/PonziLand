@@ -1,3 +1,14 @@
+/**
+ * @deprecated This file is deprecated. Use solana-account.svelte.ts instead.
+ * The new implementation supports multiple Solana wallets (Phantom, Backpack, Solflare, etc.)
+ * via the @solana/wallet-adapter library.
+ *
+ * Migration:
+ * - Replace `import { phantomWalletStore }` with `import { useSolanaAccount }`
+ * - Replace `phantomWalletStore.connect()` with `solanaAccount.promptForLogin()`
+ * - Replace `phantomWalletStore.isConnected` with `solanaAccount.isConnected`
+ * - Replace `phantomWalletStore.walletAddress` with `solanaAccount.walletAddress`
+ */
 import { PublicKey } from '@solana/web3.js';
 
 interface PhantomWalletState {
