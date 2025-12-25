@@ -43,11 +43,15 @@
   );
 
   const sourceAddress = $derived(
-    isToGame ? (solanaAccount?.walletAddress ?? '') : (accountState.address ?? ''),
+    isToGame
+      ? (solanaAccount?.walletAddress ?? '')
+      : (accountState.address ?? ''),
   );
 
   const destAddress = $derived(
-    isToGame ? (accountState.address ?? '') : (solanaAccount?.walletAddress ?? ''),
+    isToGame
+      ? (accountState.address ?? '')
+      : (solanaAccount?.walletAddress ?? ''),
   );
 
   const canTransfer = $derived(
