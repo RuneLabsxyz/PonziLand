@@ -6,7 +6,6 @@ import { createLandWithActions } from '$lib/utils/land-actions';
 import { AuctionLand } from '$lib/api/land/auction_land';
 import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
-import { notificationQueue } from '$lib/stores/event.store.svelte';
 import { parseDojoCall } from '@dojoengine/core';
 import { getManifest } from '$lib/manifest';
 
@@ -54,10 +53,6 @@ export async function buyLand(location: string, setup: LandSetup) {
       setup.tokenAddress,
       setup.currentPrice!.toBignumberish(),
     );
-    notificationQueue.addNotification(
-      res?.transaction_hash ?? null,
-      'buy land',
-    );
     return res;
   } catch (error) {
     console.error('Dojo not initialized yet:', error);
@@ -85,10 +80,6 @@ export async function bidLand(location: string, setup: LandSetup) {
       setup.amountToStake.toBignumberish(),
       setup.tokenAddress,
       setup.currentPrice!.toBignumberish(),
-    );
-    notificationQueue.addNotification(
-      res?.transaction_hash ?? null,
-      'buy land',
     );
     return res;
   } catch (error) {

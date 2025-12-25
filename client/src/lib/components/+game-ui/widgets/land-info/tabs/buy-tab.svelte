@@ -671,7 +671,6 @@
             ? bidLand(land.location, landSetup)
             : buyLand(land.location, landSetup),
         deductions,
-        notificationName: 'buy',
         onSuccess: () => {
           gameSounds.play('buy');
 
