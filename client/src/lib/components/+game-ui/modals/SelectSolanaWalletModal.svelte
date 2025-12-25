@@ -97,7 +97,9 @@
               <div class="flex flex-col items-start text-left">
                 <div class="text-lg">{wallet.name}</div>
                 {#if readyState}
-                  <div class="text-xs {readyState.color}">{readyState.text}</div>
+                  <div class="text-xs {readyState.color}">
+                    {readyState.text}
+                  </div>
                 {/if}
               </div>
             </Button>

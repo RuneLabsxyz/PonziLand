@@ -174,7 +174,9 @@ export class SolanaAccountManager {
   private migrateFromPhantomStore() {
     // Check if old phantom key exists and new key doesn't
     const oldValue = localStorage.getItem(OLD_PHANTOM_KEY);
-    const newValue = localStorage.getItem(previousSolanaWalletSymbol.toString());
+    const newValue = localStorage.getItem(
+      previousSolanaWalletSymbol.toString(),
+    );
 
     if (oldValue && !newValue) {
       // Migrate to new format
