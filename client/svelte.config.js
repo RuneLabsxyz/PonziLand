@@ -144,7 +144,7 @@ const profiles = {
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
     PUBLIC_PONZI_API_URL:
       'https://api.runelabs.xyz/ponziland-mainnet-temp/api/',
-    PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
+    PUBLIC_BRIDGE_API_URL: 'http://localhost:5173',
     PUBLIC_FARO_COLLECTOR_URL:
       'https://faro-collector-prod-eu-west-2.grafana.net/collect/6b0946d2811fceca6349c46b402a3d2c',
     PUBLIC_GIT_COMMIT_HASH: process.env.PUBLIC_GIT_COMMIT_HASH,
