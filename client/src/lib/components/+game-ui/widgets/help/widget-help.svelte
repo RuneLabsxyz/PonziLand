@@ -1,12 +1,42 @@
-<script>
+<script lang="ts">
   import { goto } from '$app/navigation';
   import { Button } from '$lib/components/ui/button';
   import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
   import WidgetSettings from '../settings/widget-settings.svelte';
   import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
   import accountData from '$lib/account.svelte';
+  import { referralStore } from '$lib/stores/referral.store.svelte';
 
   let claimState = $state('idle');
+  let referralCode = $state<string | null>(null);
+  let referralLoading = $state(false);
+  let copied = $state(false);
+
+  async function fetchReferralCode() {
+    if (!accountData.address || referralLoading) return;
+    referralLoading = true;
+    try {
+      const code = await referralStore.fetchUserCode(accountData.address);
+      referralCode = code;
+    } catch (e) {
+      console.error('Failed to fetch referral code:', e);
+    } finally {
+      referralLoading = false;
+    }
+  }
+
+  async function copyReferralLink() {
+    if (!referralCode) return;
+    try {
+      await navigator.clipboard.writeText(`https://play.ponzi.land/r/${referralCode}`);
+      copied = true;
+      setTimeout(() => {
+        copied = false;
+      }, 2000);
+    } catch (e) {
+      console.error('Failed to copy:', e);
+    }
+  }
 
   async function claimTokens() {
     if (claimState === 'loading') return;
@@ -103,6 +133,29 @@
           </svg>
         </a>
       </div>
+
+      {#if accountData.address}
+        <div class="flex flex-col gap-2 p-4 mt-4 bg-black/30 rounded-lg border border-yellow-500/30">
+          <p class="text-sm font-bold text-yellow-400">Invite Friends:</p>
+          {#if referralCode}
+            <div class="flex gap-2 items-center">
+              <input
+                type="text"
+                readonly
+                value={`play.ponzi.land/r/${referralCode}`}
+                class="flex-1 bg-black/50 px-3 py-2 rounded text-sm font-mono text-white border border-yellow-500/20"
+              />
+              <Button size="sm" onclick={copyReferralLink}>
+                {copied ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+          {:else}
+            <Button size="sm" onclick={fetchReferralCode} disabled={referralLoading}>
+              {referralLoading ? 'Loading...' : 'Get Referral Link'}
+            </Button>
+          {/if}
+        </div>
+      {/if}
     </div>
 
     <WidgetSettings />
