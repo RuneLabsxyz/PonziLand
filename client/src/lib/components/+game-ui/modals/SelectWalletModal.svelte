@@ -7,6 +7,7 @@
   import Button from '$lib/components/ui/button/button.svelte';
   import { Card } from '$lib/components/ui/card';
   import CloseButton from '$lib/components/ui/close-button.svelte';
+  import { referralStore } from '$lib/stores/referral.store.svelte';
 
   let visible = $state(false);
   let loading = $state(true);
@@ -53,6 +54,25 @@
     // TODO(#58): Split the session setup
     if (account!.getProvider()?.supportsSession()) {
       await account!.setupSession();
+    }
+
+    // Check for pending referral and submit if exists
+    if (referralStore.pendingCode) {
+      try {
+        const walletAccount = account!.getProvider()?.getWalletAccount();
+        const address = walletAccount?.address;
+        if (walletAccount && address) {
+          const result = await referralStore.submitReferral(address, walletAccount);
+          if (result.success) {
+            console.log('Referral submitted successfully');
+          } else {
+            console.log('Referral submission skipped:', result.error);
+          }
+        }
+      } catch (e) {
+        console.error('Referral submission failed:', e);
+        // Don't block login on referral failure
+      }
     }
 
     visible = false;
