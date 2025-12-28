@@ -57,22 +57,37 @@
     }
 
     // Check for pending referral and submit if exists
+    console.log('[Referral] Checking pending code:', referralStore.pendingCode);
     if (referralStore.pendingCode) {
       try {
         const walletAccount = account!.getProvider()?.getWalletAccount();
         const address = walletAccount?.address;
+        console.log(
+          '[Referral] Wallet account:',
+          walletAccount ? 'exists' : 'null',
+          'address:',
+          address,
+        );
         if (walletAccount && address) {
-          const result = await referralStore.submitReferral(address, walletAccount);
+          console.log('[Referral] Submitting referral...');
+          const result = await referralStore.submitReferral(
+            address,
+            walletAccount,
+          );
           if (result.success) {
-            console.log('Referral submitted successfully');
+            console.log('[Referral] Submitted successfully');
           } else {
-            console.log('Referral submission skipped:', result.error);
+            console.log('[Referral] Submission skipped:', result.error);
           }
+        } else {
+          console.log('[Referral] No wallet account available');
         }
       } catch (e) {
-        console.error('Referral submission failed:', e);
+        console.error('[Referral] Submission failed:', e);
         // Don't block login on referral failure
       }
+    } else {
+      console.log('[Referral] No pending code');
     }
 
     visible = false;

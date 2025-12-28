@@ -28,7 +28,9 @@
   async function copyReferralLink() {
     if (!referralCode) return;
     try {
-      await navigator.clipboard.writeText(`https://play.ponzi.land/r/${referralCode}`);
+      await navigator.clipboard.writeText(
+        `https://play.ponzi.land/r/${referralCode}`,
+      );
       copied = true;
       setTimeout(() => {
         copied = false;
@@ -135,7 +137,9 @@
       </div>
 
       {#if accountData.address}
-        <div class="flex flex-col gap-2 p-4 mt-4 bg-black/30 rounded-lg border border-yellow-500/30">
+        <div
+          class="flex flex-col gap-2 p-4 mt-4 bg-black/30 rounded-lg border border-yellow-500/30"
+        >
           <p class="text-sm font-bold text-yellow-400">Invite Friends:</p>
           {#if referralCode}
             <div class="flex gap-2 items-center">
@@ -150,7 +154,11 @@
               </Button>
             </div>
           {:else}
-            <Button size="sm" onclick={fetchReferralCode} disabled={referralLoading}>
+            <Button
+              size="sm"
+              onclick={fetchReferralCode}
+              disabled={referralLoading}
+            >
               {referralLoading ? 'Loading...' : 'Get Referral Link'}
             </Button>
           {/if}
