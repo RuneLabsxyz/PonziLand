@@ -1,13 +1,20 @@
 import { browser } from '$app/environment';
 import { PUBLIC_BRIDGE_API_URL } from '$env/static/public';
-import type { AccountInterface, TypedData } from 'starknet';
+import type { AccountInterface } from 'starknet';
 
 const REFERRAL_STORAGE_KEY = 'ponziland_pending_referral';
+
+interface ReferralStats {
+  pendingCount: number;
+  completedCount: number;
+  totalCount: number;
+}
 
 class ReferralStore {
   private _pendingCode = $state<string | null>(null);
   private _initialized = false;
   userCode = $state<string | null>(null);
+  referralStats = $state<ReferralStats | null>(null);
   loading = $state(false);
   error = $state<string | null>(null);
 
@@ -67,9 +74,32 @@ class ReferralStore {
     }
   }
 
+  async fetchReferralStats(address: string): Promise<ReferralStats | null> {
+    try {
+      const res = await fetch(
+        `${PUBLIC_BRIDGE_API_URL}/api/${address}/referral-stats`,
+      );
+      const data = await res.json();
+      if (data.success) {
+        this.referralStats = {
+          pendingCount: data.pendingCount,
+          completedCount: data.completedCount,
+          totalCount: data.totalCount,
+        };
+        return this.referralStats;
+      } else {
+        console.error('Failed to fetch referral stats:', data.error);
+        return null;
+      }
+    } catch (e) {
+      console.error('Error fetching referral stats:', e);
+      return null;
+    }
+  }
+
   async submitReferral(
     address: string,
-    walletAccount: AccountInterface,
+    _walletAccount: AccountInterface,
   ): Promise<{ success: boolean; error?: string }> {
     if (!this.pendingCode) {
       return { success: false, error: 'No pending referral code' };
@@ -79,30 +109,8 @@ class ReferralStore {
     this.error = null;
 
     try {
-      // 1. Get typed data from API
-      const apiUrl = `${PUBLIC_BRIDGE_API_URL}/api/referral/${this.pendingCode}/typed-data`;
-      console.log('[Referral] Fetching typed data from:', apiUrl);
-      const tdRes = await fetch(apiUrl);
-      const tdData = await tdRes.json();
-      console.log('[Referral] Typed data response:', tdData);
-
-      if (!tdData.success) {
-        // Code not found or invalid - clear it
-        this.clearPendingReferral();
-        return {
-          success: false,
-          error: tdData.error || 'Invalid referral code',
-        };
-      }
-
-      const typedData: TypedData = tdData.typedData;
-
-      // 2. Sign with wallet
-      console.log('[Referral] Requesting signature...');
-      const signature = await walletAccount.signMessage(typedData);
-      console.log('[Referral] Got signature:', signature);
-
-      // 3. Submit to API
+      // Submit referral code (no signature required)
+      console.log('[Referral] Submitting referral code:', this.pendingCode);
       const submitRes = await fetch(
         `${PUBLIC_BRIDGE_API_URL}/api/referral/submit`,
         {
@@ -111,8 +119,6 @@ class ReferralStore {
           body: JSON.stringify({
             address,
             referral_code: this.pendingCode,
-            signature,
-            typed_data: typedData,
           }),
         },
       );
@@ -123,10 +129,9 @@ class ReferralStore {
         this.clearPendingReferral();
         return { success: true };
       } else {
-        // Clear pending referral on certain errors (already referred, has activity, etc.)
+        // Clear pending referral on certain errors (already referred, etc.)
         const clearErrors = [
           'ALREADY_REFERRED',
-          'HAS_ACTIVITY',
           'SELF_REFERRAL',
           'CIRCULAR_REFERRAL',
         ];

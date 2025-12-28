@@ -6,11 +6,19 @@
   import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
   import accountData from '$lib/account.svelte';
   import { referralStore } from '$lib/stores/referral.store.svelte';
+  import { onMount } from 'svelte';
 
   let claimState = $state('idle');
-  let referralCode = $state<string | null>(null);
+  let referralCode = $state<string | null>(referralStore.userCode);
   let referralLoading = $state(false);
   let copied = $state(false);
+
+  // Fetch stats on mount automatically
+  onMount(() => {
+    if (accountData.address) {
+      referralStore.fetchReferralStats(accountData.address);
+    }
+  });
 
   async function fetchReferralCode() {
     if (!accountData.address || referralLoading) return;
@@ -18,6 +26,10 @@
     try {
       const code = await referralStore.fetchUserCode(accountData.address);
       referralCode = code;
+      // Also fetch stats when we get the code
+      if (code) {
+        await referralStore.fetchReferralStats(accountData.address);
+      }
     } catch (e) {
       console.error('Failed to fetch referral code:', e);
     } finally {
@@ -137,8 +149,36 @@
       </div>
 
       {#if accountData.address}
+        <!-- Referral Stats Section -->
         <div
-          class="flex flex-col gap-2 p-4 mt-4 bg-black/30 rounded-lg border border-yellow-500/30"
+          class="p-4 mt-4 bg-black/30 rounded-lg border border-yellow-500/30"
+        >
+          <p class="text-sm font-bold text-yellow-400 mb-3">Your Referrals</p>
+          <div class="flex justify-around">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-yellow-300">
+                {referralStore.referralStats?.pendingCount ?? '-'}
+              </p>
+              <p class="text-xs text-gray-400">Pending</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-green-400">
+                {referralStore.referralStats?.completedCount ?? '-'}
+              </p>
+              <p class="text-xs text-gray-400">Completed</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-white">
+                {referralStore.referralStats?.totalCount ?? '-'}
+              </p>
+              <p class="text-xs text-gray-400">Total</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invite Link Section -->
+        <div
+          class="flex flex-col gap-2 p-4 bg-black/30 rounded-lg border border-yellow-500/30"
         >
           <p class="text-sm font-bold text-yellow-400">Invite Friends:</p>
           {#if referralCode}
