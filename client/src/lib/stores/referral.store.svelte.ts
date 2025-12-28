@@ -1,6 +1,5 @@
 import { browser } from '$app/environment';
 import { PUBLIC_BRIDGE_API_URL } from '$env/static/public';
-import type { AccountInterface } from 'starknet';
 
 const REFERRAL_STORAGE_KEY = 'ponziland_pending_referral';
 
@@ -99,7 +98,6 @@ class ReferralStore {
 
   async submitReferral(
     address: string,
-    _walletAccount: AccountInterface,
   ): Promise<{ success: boolean; error?: string }> {
     if (!this.pendingCode) {
       return { success: false, error: 'No pending referral code' };
