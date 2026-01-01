@@ -8,6 +8,7 @@ import {
 import { getDojoConfig } from '$lib/dojoConfig';
 import { ArgentXAccount } from '$lib/accounts/argentx';
 import { setupController, SvelteController } from '$lib/accounts/controller';
+import type { AuthOptions } from '@cartridge/controller';
 import { NoSessionStarknetWallet } from '$lib/accounts/getStarknet';
 import { loadDojoConfig } from '$lib/dojoConfig';
 import { Provider as StarknetProvider } from 'starknet';
@@ -48,7 +49,7 @@ export const WalletWeights: Record<string, number> = {
 // TODO: In AccountProvider, offer a way to store the session loaded from local storage, if it exists (can be a no-op on cartridge + burner)
 
 export type AccountProvider = {
-  connect(): Promise<any>;
+  connect(signupOptions?: AuthOptions): Promise<any>;
 
   setupSession(): Promise<StoredSession | void>;
   loadSession(storage: StoredSession): Promise<void>;
@@ -74,8 +75,8 @@ const stubLocalStorage = {
   getItem(id: string) {
     return null;
   },
-  setItem(id: string, value: string) {},
-  removeItem(id: string) {},
+  setItem(id: string, value: string) { },
+  removeItem(id: string) { },
 };
 
 const localStorage = browser ? window.localStorage : stubLocalStorage;
@@ -259,7 +260,7 @@ export class AccountManager {
     });
   }
 
-  public async selectAndLogin(providerId: string) {
+  public async selectAndLogin(providerId: string, signupOptions?: AuthOptions) {
     const walletObject = availableWallets.find(
       (e) => e.wallet.id == providerId,
     );
@@ -276,8 +277,8 @@ export class AccountManager {
       // Handle user cancelled action
       this._provider = provider;
       this._walletObject = walletObject.wallet;
-      // First, ask for a login
-      await provider.connect();
+      // First, ask for a login (pass signupOptions for controller)
+      await provider.connect(signupOptions);
       console.info('User logged-in successfully');
 
       this._listeners.forEach((listener) =>

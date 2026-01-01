@@ -3,17 +3,16 @@ import type {
   StoredSession,
 } from '$lib/contexts/account.svelte';
 import { type DojoConfig } from '$lib/dojoConfig';
-import Controller from '@cartridge/controller';
+import Controller, { type AuthOptions } from '@cartridge/controller';
 import type { AccountInterface, WalletAccount } from 'starknet';
 import preset from './utils/preset.json';
 import { traceWallet } from './utils/walnut-trace';
-import type { AccountDeploymentData } from '@starknet-io/types-js';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
   _username?: string;
 
-  async connect(): Promise<WalletAccount | undefined> {
+  async connect(signupOptions?: AuthOptions): Promise<WalletAccount | undefined> {
     // If the user is already logged in, return the existing account
     if (this._account) {
       return this._account;
@@ -21,14 +20,13 @@ export class SvelteController extends Controller implements AccountProvider {
 
     try {
       // This is a temporary fix for the type mismatch due to different versions of starknet.js
-      const res: WalletAccount | undefined = (await super.connect()) as any;
+      const res: WalletAccount | undefined = (await super.connect(signupOptions)) as any;
       if (res) {
         this._account = res;
         this._username = await super.username();
 
         console.info(
-          `User ${this.getUsername()} has logged in successfully!\nAddress; ${
-            this._account?.address
+          `User ${this.getUsername()} has logged in successfully!\nAddress; ${this._account?.address
           }`,
         );
 
@@ -74,7 +72,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
 const accountKey = Symbol('controller');
 
-export async function connect(controller: SvelteController) {}
+export async function connect(controller: SvelteController) { }
 
 function a2hex(str: string): string {
   var arr = [];
@@ -105,32 +103,6 @@ export async function setupController(
   });
 
   console.info('Starting controller!');
-
-  // Check if the controller is already connected
-  if (await controller.probe()) {
-    await controller.connect();
-  }
-
-  return controller;
-}
-
-export async function setupPhantomController(
-  config: DojoConfig,
-): Promise<SvelteController | undefined> {
-  if (typeof window === 'undefined') {
-    // We are on the server. Return nothing.
-    return undefined;
-  }
-
-  const controller = new SvelteController({
-    defaultChainId: a2hex(config.chainId), // SN_SEPOLIA in hex
-    chains: [{ rpcUrl: config.rpcUrl }],
-    preset: 'ponziland',
-    policies: preset.chains.SN_MAIN.policies as any,
-    signupOptions: ['phantom-evm'],
-  });
-
-  console.info('Starting phantom controller!');
 
   // Check if the controller is already connected
   if (await controller.probe()) {

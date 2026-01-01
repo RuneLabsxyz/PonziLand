@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { useAccount } from '$lib/contexts/account.svelte';
   import { ENABLE_RAMP } from '$lib/flags';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
@@ -44,8 +43,8 @@
     });
   });
 
-  async function login(id: string) {
-    await account!.selectAndLogin(id);
+  async function login(id: string, signupOptions?: string[]) {
+    await account!.selectAndLogin(id, signupOptions as any);
     console.log('Logged in!');
 
     // TODO(#58): Split the session setup
@@ -99,16 +98,20 @@
               </div>
             </Button>
           {/each}
-          {#if ENABLE_RAMP}
-            _________________________
-            <Button
-              class="flex flex-row justify-start"
-              onclick={() => {
-                visible = false;
-                goto('/ramp');
-              }}>Phantom</Button
-            >
-          {/if}
+          <div class="border-t border-gray-600 my-2"></div>
+          <Button
+            class="flex flex-row justify-start w-full min-h-[60px] p-3 pb-5"
+            onclick={() => login('controller', ['phantom-evm'])}
+          >
+            <img
+              src="https://phantom.com/favicon/favicon-32x32.png"
+              alt="Phantom logo"
+              class="h-10 p-2 pr-4"
+            />
+            <div class="flex flex-col items-start text-left">
+              <div class="text-lg">Phantom</div>
+            </div>
+          </Button>
         </div>
       </div>
     {/if}
