@@ -104,7 +104,7 @@
             onclick={() => login('controller', ['phantom-evm'])}
           >
             <img
-              src="https://phantom.com/favicon/favicon-32x32.png"
+              src="/extra/wallets/phantom.png"
               alt="Phantom logo"
               class="h-10 p-2 pr-4"
             />
