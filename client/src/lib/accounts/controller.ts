@@ -12,7 +12,9 @@ export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
   _username?: string;
 
-  async connect(signupOptions?: AuthOptions): Promise<WalletAccount | undefined> {
+  async connect(
+    signupOptions?: AuthOptions,
+  ): Promise<WalletAccount | undefined> {
     // If the user is already logged in, return the existing account
     if (this._account) {
       return this._account;
@@ -20,13 +22,16 @@ export class SvelteController extends Controller implements AccountProvider {
 
     try {
       // This is a temporary fix for the type mismatch due to different versions of starknet.js
-      const res: WalletAccount | undefined = (await super.connect(signupOptions)) as any;
+      const res: WalletAccount | undefined = (await super.connect(
+        signupOptions,
+      )) as any;
       if (res) {
         this._account = res;
         this._username = await super.username();
 
         console.info(
-          `User ${this.getUsername()} has logged in successfully!\nAddress; ${this._account?.address
+          `User ${this.getUsername()} has logged in successfully!\nAddress; ${
+            this._account?.address
           }`,
         );
 
@@ -72,7 +77,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
 const accountKey = Symbol('controller');
 
-export async function connect(controller: SvelteController) { }
+export async function connect(controller: SvelteController) {}
 
 function a2hex(str: string): string {
   var arr = [];

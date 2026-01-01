@@ -75,8 +75,8 @@ const stubLocalStorage = {
   getItem(id: string) {
     return null;
   },
-  setItem(id: string, value: string) { },
-  removeItem(id: string) { },
+  setItem(id: string, value: string) {},
+  removeItem(id: string) {},
 };
 
 const localStorage = browser ? window.localStorage : stubLocalStorage;
