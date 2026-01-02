@@ -27,8 +27,7 @@ export class SvelteController extends Controller implements AccountProvider {
         this._username = await super.username();
 
         console.info(
-          `User ${this.getUsername()} has logged in successfully!\nAddress; ${
-            this._account?.address
+          `User ${this.getUsername()} has logged in successfully!\nAddress; ${this._account?.address
           }`,
         );
 
@@ -74,7 +73,7 @@ export class SvelteController extends Controller implements AccountProvider {
 
 const accountKey = Symbol('controller');
 
-export async function connect(controller: SvelteController) {}
+export async function connect(controller: SvelteController) { }
 
 function a2hex(str: string): string {
   var arr = [];
@@ -85,13 +84,20 @@ function a2hex(str: string): string {
   return '0x' + arr.join('');
 }
 
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  fallback: T,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
+
 export async function setupController(
   config: DojoConfig,
 ): Promise<SvelteController | undefined> {
-  let state: { value: SvelteController | undefined } = {
-    value: undefined,
-  };
-
   if (typeof window === 'undefined') {
     // We are on the server. Return nothing.
     return undefined;
@@ -102,13 +108,19 @@ export async function setupController(
     chains: [{ rpcUrl: config.rpcUrl }],
     preset: 'ponziland',
     policies: preset.chains.SN_MAIN.policies as any,
+    lazyload: true,
   });
 
   console.info('Starting controller!');
 
-  // Check if the controller is already connected
-  if (await controller.probe()) {
-    await controller.connect();
+  // Check if the controller is already connected (with timeout to prevent blocking)
+  const probeResult = await withTimeout(controller.probe(), 3000, undefined);
+  if (probeResult) {
+    try {
+      await withTimeout(controller.connect(), 5000, undefined);
+    } catch (e) {
+      console.warn('Controller auto-connect failed:', e);
+    }
   }
 
   return controller;

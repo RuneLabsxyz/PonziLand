@@ -214,11 +214,12 @@ export class AccountManager {
       previousWalletSymbol.toString(),
     );
 
-    // Setup cartridge before anything else
-    controller = await setupController(config);
-
-    // Get all available wallets
-    await scanObjectForWalletsCustom();
+    // Setup controller and scan for wallets in parallel for faster loading
+    const [controllerResult] = await Promise.all([
+      setupController(config),
+      scanObjectForWalletsCustom(),
+    ]);
+    controller = controllerResult;
 
     if (previousWallet != null) {
       console.info('Attempting auto-login with provider', previousWallet);
