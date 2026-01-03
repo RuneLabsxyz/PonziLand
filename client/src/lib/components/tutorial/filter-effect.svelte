@@ -21,7 +21,7 @@
 <HTML
   portal={document.getElementById('game-canvas') ?? document.body}
   {position}
-  zIndexRange={[15, 5]}
+  zIndexRange={[5, 0]}
   distanceFactor={0.01}
 >
   <div
