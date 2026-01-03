@@ -13,12 +13,14 @@ const ALLOWED_LANDS_PER_STEP: Record<number, [number, number][]> = {
   1: [], // No clicks during intro
   2: [[128, 128]], // Click on owned land
   3: [[128, 128]], // Info panel exploration
-  4: [[128, 128]], // Buy land - open menu
-  5: [[128, 128]], // Buy land - execute
-  6: [[127, 127]], // Auction intro - click on auction
-  7: [[127, 127]], // Auction mechanics
-  8: [[128, 128]], // Low stake warning
-  9: [[128, 128]], // Increase stake
+  4: [[128, 128]], // Pro mode toggle
+  5: [[128, 128]], // Token earnings explanation
+  6: [[128, 128]], // Buy land - open menu
+  7: [[128, 128]], // Buy land - execute
+  8: [[127, 127]], // Auction intro - click on auction
+  9: [[127, 127]], // Auction mechanics
+  10: [[128, 128]], // Low stake warning
+  11: [[128, 128]], // Increase stake
 };
 
 // Enabled widget buttons per step (others will be greyed out)
@@ -26,13 +28,15 @@ const ENABLED_WIDGETS_PER_STEP: Record<number, string[]> = {
   1: [],
   2: [],
   3: [],
-  4: ['buy-land'],
-  5: ['buy-land'],
-  6: [],
-  7: [],
-  8: ['land-info'],
-  9: ['land-info'],
-  10: [],
+  4: [], // Pro mode toggle - no widget buttons
+  5: [], // Token earnings - no widget buttons
+  6: ['buy-land'],
+  7: ['buy-land'],
+  8: [],
+  9: [],
+  10: ['land-info'],
+  11: ['land-info'],
+  12: [],
 };
 
 // Field descriptions for interactive exploration (step 3)

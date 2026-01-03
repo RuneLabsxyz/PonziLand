@@ -13,6 +13,7 @@
   import {
     tutorialAttribute,
     tutorialState,
+    nextStep,
   } from '$lib/components/tutorial/stores.svelte';
 
   type Props = {
@@ -23,6 +24,15 @@
   let { setCustomTitle, setCustomControls }: Props = $props();
 
   let highlighted = $derived(tutorialAttribute('highlight_info').has);
+  let highlightProMode = $derived(tutorialAttribute('highlight_pro_mode').has);
+  let waitProModeClick = $derived(tutorialAttribute('wait_pro_mode_click').has);
+
+  function handleProModeToggle() {
+    settingsStore.toggleNoobMode();
+    if (waitProModeClick) {
+      nextStep();
+    }
+  }
 
   const address = $derived(account.address);
   let landWithActions = $derived(selectedLandWithActions());
@@ -51,8 +61,8 @@
 
 {#snippet customControlsSnippet()}
   <button
-    class="window-control"
-    onclick={() => settingsStore.toggleNoobMode()}
+    class="window-control {highlightProMode ? 'pro-mode-highlight' : ''}"
+    onclick={handleProModeToggle}
     aria-label={settingsStore.isNoobMode
       ? 'Switch to Pro Mode'
       : 'Switch to Noob Mode'}
@@ -95,6 +105,12 @@
 </div>
 
 <style>
+  .pro-mode-highlight {
+    border: 2px solid #ffd700 !important;
+    border-radius: 6px;
+    animation: goldGlow 1.5s ease-in-out infinite;
+  }
+
   .content-wrapper {
     position: relative;
   }
