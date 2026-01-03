@@ -18,7 +18,7 @@ const ALLOWED_LANDS_PER_STEP: Record<number, [number, number][]> = {
   6: [[128, 128]], // Buy land - open menu
   7: [[128, 128]], // Buy land - execute
   8: [[127, 127]], // Auction intro - click on auction
-  9: [[127, 127]], // Auction mechanics
+  9: [[127, 127]], // Auction buy - wait for purchase
   10: [], // Activate shields - no land clicks
   11: [[128, 128]], // Low stake warning
   12: [[128, 128]], // Increase stake
@@ -34,8 +34,8 @@ const ENABLED_WIDGETS_PER_STEP: Record<number, string[]> = {
   5: [], // Token earnings - no widget buttons
   6: ['buy-land'],
   7: ['buy-land'],
-  8: [],
-  9: [],
+  8: ['buy-land'], // Clicking auction opens buy widget
+  9: ['buy-land'], // Auction buy step
   10: [], // Activate shields - no widget buttons
   11: ['land-info'],
   12: ['land-info'],

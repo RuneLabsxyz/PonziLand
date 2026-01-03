@@ -544,7 +544,8 @@
     if (land.type == 'auction') {
       // In tutorial mode, use a mock price to avoid RPC hangs
       if (tutorialState.tutorialEnabled) {
-        currentPrice = auctionPrice ?? CurrencyAmount.fromScaled(0.5, land.token);
+        currentPrice =
+          auctionPrice ?? CurrencyAmount.fromScaled(0.5, land.token);
       } else {
         // Use RPC for exact price when bidding to avoid approval issues
         currentPrice = await land.getCurrentAuctionPrice(true);
@@ -624,8 +625,11 @@
         // Play purchase sound
         gameSounds.play('buy');
 
-        // Progress to next tutorial step if waiting for buy
-        if (tutorialAttribute('wait_buy_land').has) {
+        // Progress to next tutorial step if waiting for buy (regular or auction)
+        if (
+          tutorialAttribute('wait_buy_land').has ||
+          tutorialAttribute('wait_auction_buy').has
+        ) {
           nextStep();
         }
 

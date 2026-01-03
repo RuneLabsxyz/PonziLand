@@ -56,8 +56,9 @@
   {
     "_step": "9",
     "text": "Auction prices start high and decrease over time.<br><br>Buy before it gets too cheap - or someone else will grab it!",
+    "continue": "Buy the auction land",
     "image_id": 2,
-    "has": ["highlight_auction", "decrease_stake", "next"]
+    "has": ["highlight_auction", "decrease_stake", "wait_auction_buy"]
   },
   {
     "_step": "10",
