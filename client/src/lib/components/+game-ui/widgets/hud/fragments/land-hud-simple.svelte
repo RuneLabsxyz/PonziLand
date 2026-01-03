@@ -132,7 +132,7 @@
       </div>
     </div>
   </div>
-  <div class="flex flex-col text-2xl">
+  <div class="flex flex-col text-xl">
     <div
       class={getFieldClass(
         'token',
@@ -253,20 +253,6 @@
     background: rgba(255, 215, 0, 0.1);
   }
 
-  .tutorial-explorable.explored {
-    border-color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-  }
-
-  .tutorial-explorable.explored::after {
-    content: '\2713';
-    position: absolute;
-    right: 0.25rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #22c55e;
-    font-size: 0.875rem;
-  }
 
   .tutorial-tooltip {
     position: absolute;
@@ -277,11 +263,12 @@
     color: white;
     padding: 0.75rem 1rem;
     border-radius: 8px;
-    font-size: 0.875rem;
-    max-width: 300px;
-    min-width: 200px;
+    font-size: 1rem;
+    font-family: sans-serif;
+    max-width: 400px;
+    min-width: 280px;
     text-align: center;
-    z-index: 1000;
+    z-index: 9999;
     border: 2px solid #ffd700;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     margin-bottom: 8px;

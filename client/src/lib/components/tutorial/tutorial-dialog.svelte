@@ -57,15 +57,7 @@
     };
   });
 
-  // Auto-advance when all fields are explored
-  $effect(() => {
-    if (isInteractiveMode && exploredCount >= TOTAL_EXPLORABLE_FIELDS) {
-      // Small delay before advancing
-      setTimeout(() => {
-        nextStep();
-      }, 500);
-    }
-  });
+  let allFieldsExplored = $derived(exploredCount >= TOTAL_EXPLORABLE_FIELDS);
 
   $effect(() => {
     if (
@@ -151,15 +143,15 @@
       <div class="flex justify-center px-6 pb-4">
         <button
           onclick={skipExploration}
-          class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-          disabled={!canSkipExploration &&
-            exploredCount < TOTAL_EXPLORABLE_FIELDS}
+          class="flex items-center gap-2 px-4 py-2 rounded transition-colors text-sm {allFieldsExplored
+            ? 'bg-gold-highlight'
+            : 'bg-gray-700 hover:bg-gray-600'}"
+          disabled={!canSkipExploration && !allFieldsExplored}
         >
-          {exploredCount >= TOTAL_EXPLORABLE_FIELDS
-            ? 'Continue'
-            : canSkipExploration
-              ? 'Skip (I understand)'
-              : 'Hover over each field...'}
+          {allFieldsExplored ? 'Continue' : canSkipExploration ? 'Skip (I understand)' : 'Hover over each field...'}
+          {#if allFieldsExplored}
+            <ChevronRight class="h-4 w-4" />
+          {/if}
         </button>
       </div>
     {:else if showNavigation}
@@ -205,6 +197,26 @@
 </div>
 
 <style>
+  .bg-gold-highlight {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: black;
+    font-weight: 600;
+    animation: goldPulse 1.5s ease-in-out infinite;
+  }
+
+  .bg-gold-highlight:hover {
+    background: linear-gradient(135deg, #ffe033, #ffbb33);
+  }
+
+  @keyframes goldPulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(255, 215, 0, 1);
+    }
+  }
+
   button:disabled {
     opacity: 0.5;
     cursor: not-allowed;

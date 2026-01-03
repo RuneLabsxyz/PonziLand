@@ -115,7 +115,9 @@ export function isWidgetEnabled(widgetId: string): boolean {
 
 // Track explored fields for interactive info panel
 export function markFieldExplored(fieldId: string) {
-  tutorialState.exploredFields.add(fieldId);
+  if (!tutorialState.exploredFields.has(fieldId)) {
+    tutorialState.exploredFields = new Set([...tutorialState.exploredFields, fieldId]);
+  }
 }
 
 export function isFieldExplored(fieldId: string): boolean {

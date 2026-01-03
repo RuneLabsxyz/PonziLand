@@ -98,30 +98,36 @@
     background: rgba(255, 215, 0, 0.1);
   }
 
-  .tutorial-explorable.explored {
-    border-color: #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-  }
 
   .tutorial-tooltip {
     position: absolute;
     bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    right: 0;
     background: rgba(0, 0, 0, 0.95);
     color: white;
     padding: 0.75rem 1rem;
     border-radius: 8px;
-    font-size: 0.875rem;
+    font-size: 1rem;
+    font-family: sans-serif;
     max-width: 400px;
     min-width: 280px;
     text-align: center;
-    z-index: 100;
+    z-index: 9999;
     border: 2px solid #ffd700;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     margin-bottom: 8px;
     white-space: normal;
     line-height: 1.4;
+  }
+
+  .tutorial-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 20px;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ffd700;
   }
 
   @keyframes goldGlow {
