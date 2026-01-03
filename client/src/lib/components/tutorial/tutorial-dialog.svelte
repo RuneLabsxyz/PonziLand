@@ -103,10 +103,10 @@
   }
 </script>
 
-<div class="fixed top-4 left-1/2 transform -translate-x-1/2 z-[9999]">
+<div class="fixed top-14 left-1/2 transform -translate-x-1/2 z-[9999]">
   <Card>
     <div
-      class="flex items-center gap-4 w-[600px] min-h-[200px] p-6 font-ponzi-number"
+      class="flex items-center gap-3 w-[600px] min-h-[160px] p-4 font-ponzi-number"
     >
       {#if currentDialog}
         <div class="w-36 flex-shrink-0">
@@ -124,7 +124,7 @@
 
     <!-- Interactive exploration progress -->
     {#if isInteractiveMode}
-      <div class="px-6 pb-2">
+      <div class="px-4 pb-2">
         <div class="flex items-center justify-between text-sm text-gray-400">
           <span
             >Fields explored: {exploredCount} / {TOTAL_EXPLORABLE_FIELDS}</span
@@ -140,7 +140,7 @@
           </div>
         </div>
       </div>
-      <div class="flex justify-center px-6 pb-4">
+      <div class="flex justify-center px-4 pb-3">
         <button
           onclick={skipExploration}
           class="flex items-center gap-2 px-4 py-2 rounded transition-colors text-sm {allFieldsExplored
@@ -148,14 +148,18 @@
             : 'bg-gray-700 hover:bg-gray-600'}"
           disabled={!canSkipExploration && !allFieldsExplored}
         >
-          {allFieldsExplored ? 'Continue' : canSkipExploration ? 'Skip (I understand)' : 'Hover over each field...'}
+          {allFieldsExplored
+            ? 'Continue'
+            : canSkipExploration
+              ? 'Skip (I understand)'
+              : 'Hover over each field...'}
           {#if allFieldsExplored}
             <ChevronRight class="h-4 w-4" />
           {/if}
         </button>
       </div>
     {:else if showNavigation}
-      <div class="flex justify-between items-center px-6 pb-4">
+      <div class="flex justify-between items-center px-4 pb-3">
         <button
           onclick={previousStep}
           class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
@@ -184,7 +188,7 @@
         {/if}
       </div>
     {:else if currentDialog?.continue != undefined}
-      <div class="flex justify-end items-end px-6 pb-4">
+      <div class="flex justify-end items-end px-4 pb-3">
         <button
           class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 transition-colors text-sm opacity-70"
           disabled
@@ -209,7 +213,8 @@
   }
 
   @keyframes goldPulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 8px rgba(255, 215, 0, 0.6);
     }
     50% {

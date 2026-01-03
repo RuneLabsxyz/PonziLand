@@ -19,8 +19,9 @@ const ALLOWED_LANDS_PER_STEP: Record<number, [number, number][]> = {
   7: [[128, 128]], // Buy land - execute
   8: [[127, 127]], // Auction intro - click on auction
   9: [[127, 127]], // Auction mechanics
-  10: [[128, 128]], // Low stake warning
-  11: [[128, 128]], // Increase stake
+  10: [], // Activate shields - no land clicks
+  11: [[128, 128]], // Low stake warning
+  12: [[128, 128]], // Increase stake
 };
 
 // Enabled widget buttons per step (others will be greyed out)
@@ -34,15 +35,15 @@ const ENABLED_WIDGETS_PER_STEP: Record<number, string[]> = {
   7: ['buy-land'],
   8: [],
   9: [],
-  10: ['land-info'],
+  10: [], // Activate shields - no widget buttons
   11: ['land-info'],
-  12: [],
+  12: ['land-info'],
+  13: [],
 };
 
 // Field descriptions for interactive exploration (step 3)
 export const TUTORIAL_FIELD_DESCRIPTIONS: Record<string, string> = {
-  token:
-    'The token used for this land. You pay taxes in this token.',
+  token: 'The token used for this land. You pay taxes in this token.',
   stake:
     'Your deposited funds. Taxes are paid from this. When it runs out, your land gets nuked!',
   sell_price:
@@ -120,7 +121,10 @@ export function isWidgetEnabled(widgetId: string): boolean {
 // Track explored fields for interactive info panel
 export function markFieldExplored(fieldId: string) {
   if (!tutorialState.exploredFields.has(fieldId)) {
-    tutorialState.exploredFields = new Set([...tutorialState.exploredFields, fieldId]);
+    tutorialState.exploredFields = new Set([
+      ...tutorialState.exploredFields,
+      fieldId,
+    ]);
   }
 }
 
@@ -136,4 +140,4 @@ export function resetExploredFields() {
   tutorialState.exploredFields = new Set();
 }
 
-export function checkProfitability() { }
+export function checkProfitability() {}

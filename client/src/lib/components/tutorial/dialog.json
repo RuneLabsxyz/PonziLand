@@ -61,20 +61,27 @@
   },
   {
     "_step": "10",
+    "text": "You can see how long each land has before it gets nuked! Hover on the <b>top bar</b> and click the <b>shield icon</b>.",
+    "continue": "Click the shield button",
+    "image_id": 2,
+    "has": ["highlight_shield_button", "wait_shield_click"]
+  },
+  {
+    "_step": "11",
     "text": "Uh oh! Your land's stake is running low and it will be <b>nuked</b> soon!<br><br>Open the info panel to add more stake.",
     "continue": "Click the Info button",
     "image_id": 3,
     "has": ["highlight_building", "wait_info_open"]
   },
   {
-    "_step": "11",
+    "_step": "12",
     "text": "Use <b>Increase Stake</b> to add more funds. This extends how long your land survives!",
     "continue": "Increase your stake",
     "image_id": 3,
     "has": ["highlight_building", "wait_increase_stake"]
   },
   {
-    "_step": "12",
+    "_step": "13",
     "text": "You've got the basics! Remember:<br><br>- Set prices to stay profitable<br>- Keep your stake topped up<br>- Watch for cheap auctions<br><br>Good luck in PonziLand!",
     "image_id": 1,
     "has": ["enter_grid"]
