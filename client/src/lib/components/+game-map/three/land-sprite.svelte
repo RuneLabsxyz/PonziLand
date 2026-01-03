@@ -911,7 +911,7 @@
   <HTML
     portal={document.getElementById('game-canvas') ?? document.body}
     position={selectedLandTilePosition}
-    zIndexRange={[100, 50]}
+    zIndexRange={[10, 0]}
     distanceFactor={0.01}
   >
     {#if selectedLand}
