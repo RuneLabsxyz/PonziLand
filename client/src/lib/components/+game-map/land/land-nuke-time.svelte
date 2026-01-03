@@ -98,7 +98,6 @@
     background: rgba(255, 215, 0, 0.1);
   }
 
-
   .tutorial-tooltip {
     position: absolute;
     bottom: 100%;
