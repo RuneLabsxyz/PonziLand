@@ -18,6 +18,12 @@ declare global {
       ctx: ExecutionContext;
     }
   }
+
+  interface Window {
+    phantom?: {
+      ethereum?: unknown;
+    };
+  }
 }
 
 export {};

@@ -12,6 +12,7 @@
   let visible = $state(false);
   let loading = $state(true);
   let showAllWallets = $state(true);
+  let phantomDetected = $state(false);
 
   let validWallets: StarknetWindowObject[] = $state([]);
 
@@ -28,6 +29,9 @@
       validWallets = (await account.wait()).getAvailableWallets();
       console.log('validWallets', validWallets);
     }
+    // Check if Phantom wallet extension is available
+    phantomDetected =
+      typeof window !== 'undefined' && !!window.phantom?.ethereum;
   })();
 
   onMount(() => {
@@ -98,20 +102,22 @@
               </div>
             </Button>
           {/each}
-          <div class="border-t border-gray-600 my-2"></div>
-          <Button
-            class="flex flex-row justify-start w-full min-h-[60px] p-3 pb-5"
-            onclick={() => login('controller', ['phantom-evm'])}
-          >
-            <img
-              src="/extra/wallets/phantom.png"
-              alt="Phantom logo"
-              class="h-10 p-2 pr-4"
-            />
-            <div class="flex flex-col items-start text-left">
-              <div class="text-lg">Phantom</div>
-            </div>
-          </Button>
+          {#if phantomDetected}
+            <div class="border-t border-gray-600 my-2"></div>
+            <Button
+              class="flex flex-row justify-start w-full min-h-[60px] p-3 pb-5"
+              onclick={() => login('controller', ['phantom-evm'])}
+            >
+              <img
+                src="/extra/wallets/phantom.png"
+                alt="Phantom logo"
+                class="h-10 p-2 pr-4"
+              />
+              <div class="flex flex-col items-start text-left">
+                <div class="text-lg">Phantom</div>
+              </div>
+            </Button>
+          {/if}
         </div>
       </div>
     {/if}
