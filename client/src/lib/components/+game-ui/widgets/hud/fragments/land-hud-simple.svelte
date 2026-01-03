@@ -1,6 +1,11 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
-  import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
+  import {
+    tutorialAttribute,
+    markFieldExplored,
+    isFieldExplored,
+    TUTORIAL_FIELD_DESCRIPTIONS,
+  } from '$lib/components/tutorial/stores.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
   import { getBaseToken, walletStore } from '$lib/stores/wallet.svelte';
@@ -18,18 +23,50 @@
     land: LandWithActions;
   } = $props();
   let baseToken = $derived(getBaseToken());
+
+  // Interactive exploration state
+  let isInteractiveMode = $derived(
+    tutorialAttribute('interactive_explore').has,
+  );
+  let hoveredField = $state<string | null>(null);
+
+  function handleFieldHover(fieldId: string) {
+    if (isInteractiveMode) {
+      hoveredField = fieldId;
+      markFieldExplored(fieldId);
+    }
+  }
+
+  function handleFieldLeave() {
+    hoveredField = null;
+  }
+
+  function getFieldClass(fieldId: string, baseClass: string) {
+    if (!isInteractiveMode) return baseClass;
+    const explored = isFieldExplored(fieldId);
+    return `${baseClass} tutorial-explorable ${explored ? 'explored' : ''}`;
+  }
 </script>
 
 <div class="w-full flex flex-col gap-2">
   <div class="flex w-full justify-center select-text">
     <div
-      class={[
-        'text-center pb-2 text-ponzi-number',
-        tutorialAttribute('highlight_info_earnings').has
-          ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-          : '',
-      ]}
+      class={getFieldClass(
+        'earnings',
+        'text-center pb-2 text-ponzi-number relative',
+      )}
+      class:tutorial-highlight={tutorialAttribute('highlight_info_earnings')
+        .has}
+      onmouseenter={() => handleFieldHover('earnings')}
+      onmouseleave={handleFieldLeave}
+      role="button"
+      tabindex="0"
     >
+      {#if hoveredField === 'earnings' && isInteractiveMode}
+        <div class="tutorial-tooltip">
+          {TUTORIAL_FIELD_DESCRIPTIONS['earnings']}
+        </div>
+      {/if}
       <span class="opacity-50">Net earnings / hour:</span>
       <div
         class="{totalYieldValue - Number(burnRate.toString()) >= 0
@@ -48,13 +85,21 @@
   </div>
   <div class="flex w-full justify-between select-text">
     <div
-      class={[
-        'flex flex-col items-center text-ponzi-number',
-        tutorialAttribute('highlight_info_income').has
-          ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-          : '',
-      ]}
+      class={getFieldClass(
+        'income',
+        'flex flex-col items-center text-ponzi-number relative',
+      )}
+      class:tutorial-highlight={tutorialAttribute('highlight_info_income').has}
+      onmouseenter={() => handleFieldHover('income')}
+      onmouseleave={handleFieldLeave}
+      role="button"
+      tabindex="0"
     >
+      {#if hoveredField === 'income' && isInteractiveMode}
+        <div class="tutorial-tooltip">
+          {TUTORIAL_FIELD_DESCRIPTIONS['income']}
+        </div>
+      {/if}
       <div class="opacity-50 text-sm">Earning / hour :</div>
       <div class="text-green-500 flex items-center gap-2">
         <span class="text-xl stroke-3d-black">
@@ -63,13 +108,22 @@
       </div>
     </div>
     <div
-      class={[
-        'flex flex-col items-center text-ponzi-number',
-        tutorialAttribute('highlight_info_outgoing').has
-          ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-          : '',
-      ]}
+      class={getFieldClass(
+        'outgoing',
+        'flex flex-col items-center text-ponzi-number relative',
+      )}
+      class:tutorial-highlight={tutorialAttribute('highlight_info_outgoing')
+        .has}
+      onmouseenter={() => handleFieldHover('outgoing')}
+      onmouseleave={handleFieldLeave}
+      role="button"
+      tabindex="0"
     >
+      {#if hoveredField === 'outgoing' && isInteractiveMode}
+        <div class="tutorial-tooltip">
+          {TUTORIAL_FIELD_DESCRIPTIONS['outgoing']}
+        </div>
+      {/if}
       <div class="opacity-50 text-sm">Cost / hour :</div>
       <div class="text-red-500 flex items-center gap-2">
         <span class="text-xl stroke-3d-black">
@@ -78,15 +132,23 @@
       </div>
     </div>
   </div>
-  <div class="flex flex-col text-xl">
+  <div class="flex flex-col text-2xl">
     <div
-      class={[
-        'flex justify-between w-full pt-2 leading-none',
-        tutorialAttribute('highlight_info_token').has
-          ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-          : '',
-      ]}
+      class={getFieldClass(
+        'token',
+        'flex justify-between w-full pt-2 leading-none relative',
+      )}
+      class:tutorial-highlight={tutorialAttribute('highlight_info_token').has}
+      onmouseenter={() => handleFieldHover('token')}
+      onmouseleave={handleFieldLeave}
+      role="button"
+      tabindex="0"
     >
+      {#if hoveredField === 'token' && isInteractiveMode}
+        <div class="tutorial-tooltip">
+          {TUTORIAL_FIELD_DESCRIPTIONS['token']}
+        </div>
+      {/if}
       <div class="low-opacity">Token :</div>
       <div class="text-opacity-30">
         {land?.token?.symbol}
@@ -94,13 +156,21 @@
       </div>
     </div>
     <div
-      class={[
-        'flex justify-between w-full pt-2 leading-none',
-        tutorialAttribute('highlight_info_stake').has
-          ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-          : '',
-      ]}
+      class={getFieldClass(
+        'stake',
+        'flex justify-between w-full pt-2 leading-none relative',
+      )}
+      class:tutorial-highlight={tutorialAttribute('highlight_info_stake').has}
+      onmouseenter={() => handleFieldHover('stake')}
+      onmouseleave={handleFieldLeave}
+      role="button"
+      tabindex="0"
     >
+      {#if hoveredField === 'stake' && isInteractiveMode}
+        <div class="tutorial-tooltip">
+          {TUTORIAL_FIELD_DESCRIPTIONS['stake']}
+        </div>
+      {/if}
       <div class="low-opacity">Stake Amount :</div>
       <div class="text-opacity-30">
         {land?.stakeAmount}
@@ -118,13 +188,22 @@
       </div>
     </div>
     <div
-      class={[
-        'flex justify-between w-full pt-2 leading-none',
-        tutorialAttribute('highlight_info_sell_price').has
-          ? 'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2'
-          : 'm-2',
-      ]}
+      class={getFieldClass(
+        'sell_price',
+        'flex justify-between w-full pt-2 leading-none relative',
+      )}
+      class:tutorial-highlight={tutorialAttribute('highlight_info_sell_price')
+        .has}
+      onmouseenter={() => handleFieldHover('sell_price')}
+      onmouseleave={handleFieldLeave}
+      role="button"
+      tabindex="0"
     >
+      {#if hoveredField === 'sell_price' && isInteractiveMode}
+        <div class="tutorial-tooltip">
+          {TUTORIAL_FIELD_DESCRIPTIONS['sell_price']}
+        </div>
+      {/if}
       <div class="low-opacity">Sell Price :</div>
       <div class="text-opacity-30">
         {land?.sellPrice}
@@ -151,5 +230,87 @@
 
   .low-opacity {
     opacity: 0.7;
+  }
+
+  .tutorial-highlight {
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 0.5rem;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  .tutorial-explorable {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    overflow: visible;
+  }
+
+  .tutorial-explorable:hover {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+  }
+
+  .tutorial-explorable.explored {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+  }
+
+  .tutorial-explorable.explored::after {
+    content: '\2713';
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #22c55e;
+    font-size: 0.875rem;
+  }
+
+  .tutorial-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    max-width: 300px;
+    min-width: 200px;
+    text-align: center;
+    z-index: 1000;
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    margin-bottom: 8px;
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  .tutorial-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ffd700;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
   }
 </style>

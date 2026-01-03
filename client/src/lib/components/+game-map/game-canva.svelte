@@ -12,8 +12,18 @@
   import Debug from './three/debug/Debug.svelte';
   import { devsettings } from './three/utils/devsettings.store.svelte';
   import { GRID_SIZE } from '$lib/const';
+  import {
+    tutorialState,
+    TUTORIAL_CAMERA,
+  } from '$lib/components/tutorial/stores.svelte';
 
   const CENTER = Math.floor(GRID_SIZE / 2);
+
+  // Derive camera settings based on tutorial mode
+  let isTutorial = $derived(tutorialState.tutorialEnabled);
+  let cameraZoom = $derived(isTutorial ? TUTORIAL_CAMERA.zoomLevel : 100);
+  let enableZoom = $derived(!isTutorial || !TUTORIAL_CAMERA.lockControls);
+  let enablePan = $derived(!isTutorial || !TUTORIAL_CAMERA.lockControls);
 
   // Show dev tools if URL ends with #dev
   let showDevTools = $state(false);
@@ -34,6 +44,25 @@
     gameStore.cameraControls.mouseButtons.wheel =
       devsettings.CameraControlsWheel as any;
   });
+
+  // Apply tutorial camera settings when tutorial is enabled
+  $effect(() => {
+    if (!gameStore.cameraControls) return;
+    if (isTutorial) {
+      // Center camera on tutorial area with fixed zoom
+      const { centerX, centerY, zoomLevel } = TUTORIAL_CAMERA;
+      gameStore.cameraControls.setLookAt(
+        centerX,
+        50,
+        centerY,
+        centerX,
+        0,
+        centerY,
+        true, // smooth animation
+      );
+      gameStore.cameraControls.zoomTo(zoomLevel, true);
+    }
+  });
 </script>
 
 <div id="game-canvas" style="height: 100%; width: 100%;">
@@ -48,18 +77,24 @@
     >
       <CameraControls
         rotation={false}
-        enableZoom={true}
-        enablePan={true}
+        {enableZoom}
+        {enablePan}
         panSpeed={1.0}
         screenSpacePanning={true}
         zoomToCursor
         enableDamping
         zoom0={5}
-        minZoom={10}
-        maxZoom={1000}
+        minZoom={isTutorial ? TUTORIAL_CAMERA.zoomLevel : 10}
+        maxZoom={isTutorial ? TUTORIAL_CAMERA.zoomLevel : 1000}
         bind:ref={gameStore.cameraControls}
         oncreate={(ref: CameraControlsRef) => {
-          ref.setLookAt(CENTER, 50, CENTER, CENTER, 0, CENTER, false);
+          const startX = isTutorial ? TUTORIAL_CAMERA.centerX : CENTER;
+          const startY = isTutorial ? TUTORIAL_CAMERA.centerY : CENTER;
+          const startZoom = isTutorial ? TUTORIAL_CAMERA.zoomLevel : 100;
+          ref.setLookAt(startX, 50, startY, startX, 0, startY, false);
+          if (isTutorial) {
+            ref.zoomTo(startZoom, false);
+          }
           ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
           ref.mouseButtons.right = devsettings.cameraControlsRightClick as any;
           ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;

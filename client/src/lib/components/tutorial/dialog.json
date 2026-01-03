@@ -1,132 +1,69 @@
 [
   {
     "_step": "1",
-    "text": "<b>What a week huh,</b> Welcome to PonziLand !\nI'm Lazi, and I'll be your guide to learn the ropes.",
+    "text": "<b>Welcome to PonziLand!</b><br><br>I'm Lazi, and I'll be your guide. Let's learn the basics together!",
     "image_id": 1,
     "has": ["no_interraction", "next"]
   },
   {
     "_step": "2",
-    "text": "That’s an owned land, they are your way to go in Ponziland.",
-    "continue": "Click on the highlighted land to get details about it.",
+    "text": "That highlighted land is owned by a player. Click on it to see its details.",
+    "continue": "Click on the highlighted land",
     "image_id": 2,
     "has": ["highlight_building", "wait_select_land"]
   },
   {
     "_step": "3",
-    "text": "Let's dig into some of the info we have in this information panel.",
+    "text": "This info panel shows everything about the land.<br><br><b>Hover over each field to learn what it means!</b>",
+    "continue": "Explore the fields to continue",
     "image_id": 3,
-    "has": ["highlight_info", "next"]
+    "has": ["highlight_info", "interactive_explore"]
   },
   {
     "_step": "4",
-    "text": "In PonziLand, when you buy a land, you need to choose a token to use. <br><br> It will both be the token you use to pay taxes, and the one other players will give you to buy your land. <br> Interesting, isn't it?",
-    "image_id": 4,
-    "has": ["highlight_info", "highlight_info_token", "next", "previous"]
-  },
-  {
-    "_step": "5",
-    "text": "All lands have a sell price set by their owner, that any player can pay to own the land.",
-    "image_id": 4,
-    "has": ["highlight_info", "highlight_info_sell_price", "next", "previous"]
-  },
-  {
-    "_step": "6",
-    "text": "The taxes paid per hour are calculated based on a percentage of the sell price set by the owner.",
-    "image_id": 2,
-    "has": ["highlight_info", "highlight_info_outgoing", "next", "previous"]
-  },
-  {
-    "_step": "7",
-    "text": "You pay those taxes from the stake put into a land.",
-    "image_id": 2,
-    "has": ["highlight_info", "highlight_info_stake", "next", "previous"]
-  },
-  {
-    "_step": "8",
-    "text": "In the same way that you pay taxes to your neighbors, you can also receive income from them.",
-    "image_id": 2,
-    "has": ["highlight_info", "highlight_info_income", "next", "previous"]
-  },
-  {
-    "_step": "9",
-    "text": "The net earnings should be self explanatory. You combine all of what you get from neighbor per hour at the current token prices, substract what you pay them. It updates frequently.",
-    "image_id": 1,
-    "has": ["highlight_info", "highlight_info_earnings", "next", "previous"]
-  },
-  {
-    "_step": "10",
-    "text": "The nuke time here is based on the sell price and remaining stake. If it ever goes too low, you can add more stake to keep your land for a bit longer.",
-    "image_id": 2,
-    "has": ["highlight_info", "highlight_info_nuke", "next", "previous"]
-  },
-  {
-    "_step": "11",
-    "text": "Now, let's buy a land. <br/><br/> Let's get started by opening the buy menu.",
-    "continue": "Click on the \"Buy land\" button",
+    "text": "Now let's buy a land! Click the <b>BUY LAND</b> button to open the purchase menu.",
+    "continue": "Click on the BUY LAND button",
     "image_id": 4,
     "has": ["highlight_building", "highlight_map_buy", "wait_buy_land_open"]
   },
   {
-    "_step": "12",
-    "text": "I'm good at building, but not good at setting prices.<br/><br/>Can you try making it profitable?",
-    "continue": "Click on the buy now button when the land is profitable if both or left to collect taxes.",
+    "_step": "5",
+    "text": "Set a price that makes sense - you want to earn more from neighbors than you pay in taxes!<br><br>Click <b>Buy Now</b> when you're happy with it.",
+    "continue": "Configure and buy the land",
     "image_id": 4,
     "has": ["wait_buy_land"]
   },
   {
-    "_step": "13",
-    "text": "Wouh. That's a cool castle.",
-    "image_id": 1,
-    "has": ["next"]
-  },
-  {
-    "_step": "14",
-    "text": "There is another way to get a land, construction sites.",
+    "_step": "6",
+    "text": "Nice! You now own a land!<br><br>See that construction site? That's an <b>auction</b> - another way to get land. Click on it!",
     "continue": "Click on the auction",
     "image_id": 3,
-    "has": ["highlight_auction", "wait_auction_selected", "previous"]
+    "has": ["highlight_auction", "wait_auction_selected"]
   },
   {
-    "_step": "15",
-    "text": "When they appear, the price starts really high.<br/> Over time, the price goes down. At the start, it decreases quickly, then slows down as the price approaches zero.",
+    "_step": "7",
+    "text": "Auction prices start high and decrease over time.<br><br>Buy before it gets too cheap - or someone else will grab it!",
     "image_id": 2,
-    "has": ["highlight_auction", "next"]
+    "has": ["highlight_auction", "decrease_stake", "next"]
   },
   {
-    "_step": "16",
-    "text": "Other players might also want that construction site, so buy it before the prices becomes too interesting",
-    "image_id": 3,
-    "has": ["highlight_auction", "previous", "next"]
-  },
-  {
-    "_step": "16",
-    "text": "Time is going fast! Seems like your land doesn't have a lot of stake anymore, and will be nuked soon.<br/>Let's prevent that!",
-    "image_id": 3,
-    "has": ["decrease_stake", "next"]
-  },
-  {
-    "_step": "17",
-    "text": "Open the information panel for your land, using the \"Info\" button",
+    "_step": "8",
+    "text": "Uh oh! Your land's stake is running low and it will be <b>nuked</b> soon!<br><br>Open the info panel to add more stake.",
+    "continue": "Click the Info button",
     "image_id": 3,
     "has": ["highlight_building", "wait_info_open"]
   },
   {
-    "_step": "18",
-    "text": "In the information panel, you can increase the stake using the \"Increase Stake\" form.<br/><br/> Do it, I would prefer not have a building explode again.",
+    "_step": "9",
+    "text": "Use <b>Increase Stake</b> to add more funds. This extends how long your land survives!",
+    "continue": "Increase your stake",
     "image_id": 3,
     "has": ["highlight_building", "wait_increase_stake"]
   },
   {
-    "_step": "19",
-    "text": "If the lands around you increased a lot in price, you can also increase the price of your land on this screen.",
-    "image_id": 3,
-    "has": ["next"]
-  },
-  {
-    "_step": "21",
-    "text": "I think you now have all the basics to get started. Enjoy your time in PoniLand!",
-    "image_id": 3,
-    "has": ["enter_grid", "previous"]
+    "_step": "10",
+    "text": "You've got the basics! Remember:<br><br>- Set prices to stay profitable<br>- Keep your stake topped up<br>- Watch for cheap auctions<br><br>Good luck in PonziLand!",
+    "image_id": 1,
+    "has": ["enter_grid"]
   }
 ]
