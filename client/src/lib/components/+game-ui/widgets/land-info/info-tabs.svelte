@@ -27,7 +27,10 @@
   let activeTab = $state<TabType>('buy');
 
   onMount(() => {
-    if (tutorialAttribute('wait_increase_stake').has) {
+    if (
+      tutorialAttribute('wait_increase_stake').has ||
+      tutorialAttribute('wait_claim_nuke').has
+    ) {
       activeTab = 'overall';
     }
   });

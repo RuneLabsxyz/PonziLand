@@ -15,6 +15,7 @@
   import { TextTextureCache } from './utils/text-texture';
   import { devsettings } from './utils/devsettings.store.svelte';
   import { nukeTimeManager } from './utils/nuke-time-manager.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
 
   interface Props {
     landTiles: LandTile[];
@@ -87,7 +88,10 @@
   );
 
   // Reactive nuke time data calculation using the manager
+  // Include tutorialState.tutorialStep as dependency to recalculate on step changes
   let nukeTimeData = $derived.by(() => {
+    // Access tutorialStep to create dependency (forces recalculation on step change)
+    const _step = tutorialState.tutorialStep;
     return nukeTimeManager.calculateNukeTimeData(visibleNukeTiles, landTiles);
   });
 

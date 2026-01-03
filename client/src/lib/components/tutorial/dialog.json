@@ -82,7 +82,14 @@
   },
   {
     "_step": "13",
-    "text": "You've got the basics! Remember:<br><br>- Set prices to stay profitable<br>- Keep your stake topped up<br>- Watch for cheap auctions<br><br>Good luck in PonziLand!",
+    "text": "Look! A neighbor's land is about to be <b>nuked</b>! Click the <b>golden coin</b> above your land to claim your taxes - this will trigger the neighbor's nuke!",
+    "continue": "Click the coin to claim",
+    "image_id": 4,
+    "has": ["highlight_building", "highlight_nuke_neighbor", "wait_claim_nuke"]
+  },
+  {
+    "_step": "14",
+    "text": "You've got the basics! Remember:<br><br>- Set prices to stay profitable<br>- Keep your stake topped up<br>- Watch for cheap auctions<br>- Claim nuked lands for rewards!<br><br>Good luck in PonziLand!",
     "image_id": 1,
     "has": ["enter_grid"]
   }

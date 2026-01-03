@@ -1160,4 +1160,45 @@ export class LandTileStore {
       } as ParsedEntity<SchemaType>);
     });
   }
+
+  // Convert a building land to auction land for tutorial nuke simulation
+  public convertToAuctionForTutorial(x: number, y: number): void {
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    // Get the existing land
+    const landStore = this.store[x][y];
+    let existingLand: BaseLand;
+    const unsubscribe = landStore.subscribe(({ value }) => {
+      existingLand = value;
+    });
+    unsubscribe();
+
+    // Only convert building lands
+    if (!BuildingLand.is(existingLand!)) {
+      console.warn(
+        `Cannot convert land at ${x},${y} to auction - not a building land`,
+      );
+      return;
+    }
+
+    const location = coordinatesToLocation({ x, y });
+
+    // Create fake auction data
+    const fakeAuction: Auction = {
+      land_location: location,
+      is_finished: false,
+      start_price: 10000000000000000000000, // 10000 tokens
+      start_time: Date.now() / 1000,
+      floor_price: 5000000000000000000000, // 5000 tokens
+      sold_at_price: new CairoOption(CairoOptionVariant.None),
+    };
+
+    // Create auction land from existing building land
+    const auctionLand = new AuctionLand(existingLand!, fakeAuction);
+
+    // Update the store
+    this.updateLandDirectly(x, y, auctionLand);
+
+    console.log(`Tutorial: Converted building at ${x},${y} to auction`);
+  }
 }

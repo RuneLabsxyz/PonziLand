@@ -22,6 +22,7 @@ const ALLOWED_LANDS_PER_STEP: Record<number, [number, number][]> = {
   10: [], // Activate shields - no land clicks
   11: [[128, 128]], // Low stake warning
   12: [[128, 128]], // Increase stake
+  13: [[128, 128]], // Claim your land to trigger neighbor nuke
 };
 
 // Enabled widget buttons per step (others will be greyed out)
@@ -38,7 +39,8 @@ const ENABLED_WIDGETS_PER_STEP: Record<number, string[]> = {
   10: [], // Activate shields - no widget buttons
   11: ['land-info'],
   12: ['land-info'],
-  13: [],
+  13: ['land-info'], // Claim button in land info
+  14: [],
 };
 
 // Field descriptions for interactive exploration (step 3)

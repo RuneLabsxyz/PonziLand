@@ -47,6 +47,7 @@
   import {
     nextStep,
     tutorialAttribute,
+    tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
   const CIRCLE_PADDING = 8;
 
@@ -476,6 +477,22 @@
 
   // Optimized coin tiles using reactive ownership data
   let ownedCoinTiles = $derived.by(() => {
+    // In tutorial claim step, include player's land at 128,128
+    const isTutorialClaimStep =
+      tutorialState.tutorialEnabled && tutorialAttribute('wait_claim_nuke').has;
+
+    if (isTutorialClaimStep) {
+      // Find the tutorial land at 128,128 (location = 32896)
+      const tutorialLand = visibleLandTiles.find(
+        (tile) =>
+          BuildingLand.is(tile.land) &&
+          coordinatesToLocation(tile.land.location) === 32896,
+      );
+      if (tutorialLand) {
+        return [tutorialLand];
+      }
+    }
+
     if (
       !accountState.address ||
       !visibleLandTiles ||
@@ -518,6 +535,9 @@
     } else if (tutorialAttribute('highlight_auction').has) {
       targetX = 127;
       targetY = 127;
+    } else if (tutorialAttribute('highlight_nuke_neighbor').has) {
+      targetX = 129;
+      targetY = 128;
     } else {
       return undefined;
     }
@@ -965,4 +985,3 @@
     </HTML>
   {/if}
 {/if}
-
