@@ -3,17 +3,18 @@ import type {
   StoredSession,
 } from '$lib/contexts/account.svelte';
 import { type DojoConfig } from '$lib/dojoConfig';
-import Controller from '@cartridge/controller';
+import Controller, { type AuthOptions } from '@cartridge/controller';
 import type { AccountInterface, WalletAccount } from 'starknet';
 import preset from './utils/preset.json';
 import { traceWallet } from './utils/walnut-trace';
-import type { AccountDeploymentData } from '@starknet-io/types-js';
 
 export class SvelteController extends Controller implements AccountProvider {
   _account?: WalletAccount;
   _username?: string;
 
-  async connect(): Promise<WalletAccount | undefined> {
+  async connect(
+    signupOptions?: AuthOptions,
+  ): Promise<WalletAccount | undefined> {
     // If the user is already logged in, return the existing account
     if (this._account) {
       return this._account;
@@ -21,7 +22,9 @@ export class SvelteController extends Controller implements AccountProvider {
 
     try {
       // This is a temporary fix for the type mismatch due to different versions of starknet.js
-      const res: WalletAccount | undefined = (await super.connect()) as any;
+      const res: WalletAccount | undefined = (await super.connect(
+        signupOptions,
+      )) as any;
       if (res) {
         this._account = res;
         this._username = await super.username();
