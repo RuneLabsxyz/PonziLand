@@ -542,8 +542,13 @@
     let currentPrice: CurrencyAmount | undefined = land.sellPrice;
 
     if (land.type == 'auction') {
-      // Use RPC for exact price when bidding to avoid approval issues
-      currentPrice = await land.getCurrentAuctionPrice(true);
+      // In tutorial mode, use a mock price to avoid RPC hangs
+      if (tutorialState.tutorialEnabled) {
+        currentPrice = auctionPrice ?? CurrencyAmount.fromScaled(0.5, land.token);
+      } else {
+        // Use RPC for exact price when bidding to avoid approval issues
+        currentPrice = await land.getCurrentAuctionPrice(true);
+      }
     }
 
     const landSetup: LandSetup = {
@@ -560,14 +565,15 @@
       return;
     }
 
-    // Check if we're in tutorial mode (step 9)
-    if (tutorialAttribute('wait_buy_land').has) {
+    // Check if we're in tutorial mode - simulate all purchases locally
+    if (tutorialState.tutorialEnabled) {
       try {
         console.log('Tutorial mode: Simulating land purchase locally');
 
         // Optimistically update the land in the store (same as real purchase)
         const updatedLand = {
           ...land,
+          type: 'land', // Convert auction to regular land after purchase
           token: selectedToken,
           tokenUsed: selectedToken?.address || '',
           tokenAddress: selectedToken?.address || '',
@@ -576,6 +582,7 @@
           owner: account.address,
           stakeAmount: stakeAmount,
           sell_price: sellPriceAmount.toBignumberish(),
+          sellPrice: sellPriceAmount,
           block_date_bought: Date.now(),
           // @ts-ignore
           level: (land.level === 1
@@ -617,8 +624,10 @@
         // Play purchase sound
         gameSounds.play('buy');
 
-        // Progress to next tutorial step
-        nextStep();
+        // Progress to next tutorial step if waiting for buy
+        if (tutorialAttribute('wait_buy_land').has) {
+          nextStep();
+        }
 
         widgetsStore.closeWidget('land-info');
 
@@ -628,9 +637,6 @@
       } finally {
         loading = false;
       }
-      return;
-    } else if (tutorialState.tutorialEnabled) {
-      console.error('Tutorial: Land purchase failed, wrong time!');
       return;
     }
 

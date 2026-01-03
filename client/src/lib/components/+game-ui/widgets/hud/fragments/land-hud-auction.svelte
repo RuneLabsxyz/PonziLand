@@ -27,6 +27,12 @@
   let priceDisplay = $derived(currentPrice?.toString());
 
   $effect(() => {
+    // In tutorial mode, use a mock price to avoid RPC hangs
+    if (tutorialState.tutorialEnabled) {
+      currentPrice = CurrencyAmount.fromScaled(0.5, displayToken);
+      return;
+    }
+
     fetchCurrentPrice();
 
     const interval = setInterval(() => {
