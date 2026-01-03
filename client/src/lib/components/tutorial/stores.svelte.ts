@@ -10,37 +10,39 @@ export const TUTORIAL_CAMERA = {
 
 // Allowed land positions per step (empty array = no land clicks allowed)
 const ALLOWED_LANDS_PER_STEP: Record<number, [number, number][]> = {
-  1: [], // No clicks during intro
-  2: [[128, 128]], // Click on owned land
-  3: [[128, 128]], // Info panel exploration
-  4: [[128, 128]], // Pro mode toggle
-  5: [[128, 128]], // Token earnings explanation
-  6: [[128, 128]], // Buy land - open menu
-  7: [[128, 128]], // Buy land - execute
-  8: [[127, 127]], // Auction intro - click on auction
-  9: [[127, 127]], // Auction buy - wait for purchase
-  10: [], // Activate shields - no land clicks
-  11: [[128, 128]], // Low stake warning
-  12: [[128, 128]], // Increase stake
-  13: [[128, 128]], // Claim your land to trigger neighbor nuke
+  1: [], // Fullscreen intro - no clicks
+  2: [], // Lazi intro - no clicks
+  3: [[128, 128]], // Click on owned land
+  4: [[128, 128]], // Info panel exploration
+  5: [[128, 128]], // Pro mode toggle
+  6: [[128, 128]], // Token earnings explanation
+  7: [[128, 128]], // Buy land - open menu
+  8: [[128, 128]], // Buy land - execute
+  9: [[127, 127]], // Auction intro - click on auction
+  10: [[127, 127]], // Auction buy - wait for purchase
+  11: [], // Activate shields - no land clicks
+  12: [[128, 128]], // Low stake warning
+  13: [[128, 128]], // Increase stake
+  14: [[128, 128]], // Claim your land to trigger neighbor nuke
 };
 
 // Enabled widget buttons per step (others will be greyed out)
 const ENABLED_WIDGETS_PER_STEP: Record<number, string[]> = {
-  1: [],
-  2: [],
+  1: [], // Fullscreen intro
+  2: [], // Lazi intro
   3: [],
-  4: [], // Pro mode toggle - no widget buttons
-  5: [], // Token earnings - no widget buttons
-  6: ['buy-land'],
+  4: [],
+  5: [], // Pro mode toggle - no widget buttons
+  6: [], // Token earnings - no widget buttons
   7: ['buy-land'],
-  8: ['buy-land'], // Clicking auction opens buy widget
-  9: ['buy-land'], // Auction buy step
-  10: [], // Activate shields - no widget buttons
-  11: ['land-info'],
+  8: ['buy-land'],
+  9: ['buy-land'], // Clicking auction opens buy widget
+  10: ['buy-land'], // Auction buy step
+  11: [], // Activate shields - no widget buttons
   12: ['land-info'],
-  13: ['land-info'], // Claim button in land info
-  14: [],
+  13: ['land-info'],
+  14: ['land-info'], // Claim button in land info
+  15: [],
 };
 
 // Field descriptions for interactive exploration (step 3)

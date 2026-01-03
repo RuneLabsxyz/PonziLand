@@ -942,10 +942,10 @@
           ]}
           size="sm"
           onclick={() => {
-            // In tutorial, only allow opening buy widget on steps 6-9 (buy land and auction steps)
+            // In tutorial, only allow opening buy widget on steps 7-10 (buy land and auction steps)
             if (tutorialState.tutorialEnabled) {
               const step = tutorialState.tutorialStep;
-              if (step < 6 || step > 9) {
+              if (step < 7 || step > 10) {
                 return; // Block early/late opening to prevent deadlock
               }
             }

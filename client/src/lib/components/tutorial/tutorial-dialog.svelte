@@ -26,6 +26,9 @@
       tutorialAttribute('enter_grid').has,
   );
 
+  // Fullscreen intro mode (step 1)
+  let isFullscreenIntro = $derived(tutorialAttribute('fullscreen_intro').has);
+
   // Interactive exploration state
   let isInteractiveMode = $derived(
     tutorialAttribute('interactive_explore').has,
@@ -103,102 +106,131 @@
   }
 </script>
 
-<div class="fixed top-4 left-4 z-[9999]">
-  <Card>
-    <div
-      class="flex items-center gap-3 w-[600px] min-h-[160px] p-4 font-ponzi-number"
-    >
-      {#if currentDialog}
-        <div class="w-36 flex-shrink-0">
+<!-- Fullscreen intro overlay -->
+{#if isFullscreenIntro}
+  <div
+    class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
+  >
+    <Card class="max-w-2xl">
+      <div class="flex flex-col items-center gap-6 p-8 font-ponzi-number">
+        {#if currentDialog}
           <img
             src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
             alt="Ponzi Worker"
-            class="h-full w-full object-contain"
+            class="w-48 h-48 object-contain"
           />
-        </div>
-        <div class="flex-1 text-base leading-relaxed">
-          {@html currentDialog.text}
-        </div>
-      {/if}
-    </div>
-
-    <!-- Interactive exploration progress -->
-    {#if isInteractiveMode}
-      <div class="px-4 pb-2">
-        <div class="flex items-center justify-between text-sm text-gray-400">
-          <span
-            >Fields explored: {exploredCount} / {TOTAL_EXPLORABLE_FIELDS}</span
-          >
-          <div class="flex gap-1">
-            {#each Array(TOTAL_EXPLORABLE_FIELDS) as _, i}
-              <div
-                class="w-3 h-3 rounded-full {i < exploredCount
-                  ? 'bg-green-500'
-                  : 'bg-gray-600'}"
-              ></div>
-            {/each}
+          <div class="text-xl leading-relaxed text-center">
+            {@html currentDialog.text}
           </div>
-        </div>
-      </div>
-      <div class="flex justify-center px-4 pb-3">
-        <button
-          onclick={skipExploration}
-          class="flex items-center gap-2 px-4 py-2 rounded transition-colors text-sm {allFieldsExplored
-            ? 'bg-gold-highlight'
-            : 'bg-gray-700 hover:bg-gray-600'}"
-          disabled={!canSkipExploration && !allFieldsExplored}
-        >
-          {allFieldsExplored
-            ? 'Continue'
-            : canSkipExploration
-              ? 'Skip (I understand)'
-              : 'Hover over each field...'}
-          {#if allFieldsExplored}
-            <ChevronRight class="h-4 w-4" />
-          {/if}
-        </button>
-      </div>
-    {:else if showNavigation}
-      <div class="flex justify-between items-center px-4 pb-3">
-        <button
-          onclick={previousStep}
-          class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-          disabled={!tutorialAttribute('previous').has}
-        >
-          <ChevronLeft class="h-4 w-4" />
-          Previous
-        </button>
-        {#if tutorialAttribute('enter_grid').has}
-          <Button
-            onclick={() => {
-              enterGrid();
-            }}
-          >
-            Enter the Grid
-          </Button>
-        {:else}
-          <button
-            onclick={nextStep}
-            class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
-            disabled={!tutorialAttribute('next').has}
-          >
-            Next
-            <ChevronRight class="h-4 w-4" />
-          </button>
         {/if}
       </div>
-    {:else if currentDialog?.continue != undefined}
-      <div class="flex justify-end items-end px-4 pb-3">
-        <button
-          class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 transition-colors text-sm opacity-70"
-          disabled
-        >
-          {currentDialog.continue}
-        </button>
+      <div class="flex justify-center px-8 pb-6">
+        <Button onclick={nextStep} class="px-8 py-3 text-lg">
+          Let's Go!
+          <ChevronRight class="h-5 w-5 ml-2" />
+        </Button>
       </div>
-    {/if}
-  </Card>
-</div>
+    </Card>
+  </div>
+{:else}
+  <!-- Normal top-left dialog -->
+  <div class="fixed top-4 left-4 z-[9999]">
+    <Card>
+      <div
+        class="flex items-center gap-3 w-[600px] min-h-[160px] p-4 font-ponzi-number"
+      >
+        {#if currentDialog}
+          <div class="w-36 flex-shrink-0">
+            <img
+              src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
+              alt="Ponzi Worker"
+              class="h-full w-full object-contain"
+            />
+          </div>
+          <div class="flex-1 text-base leading-relaxed">
+            {@html currentDialog.text}
+          </div>
+        {/if}
+      </div>
+
+      <!-- Interactive exploration progress -->
+      {#if isInteractiveMode}
+        <div class="px-4 pb-2">
+          <div class="flex items-center justify-between text-sm text-gray-400">
+            <span
+              >Fields explored: {exploredCount} / {TOTAL_EXPLORABLE_FIELDS}</span
+            >
+            <div class="flex gap-1">
+              {#each Array(TOTAL_EXPLORABLE_FIELDS) as _, i}
+                <div
+                  class="w-3 h-3 rounded-full {i < exploredCount
+                    ? 'bg-green-500'
+                    : 'bg-gray-600'}"
+                ></div>
+              {/each}
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-center px-4 pb-3">
+          <button
+            onclick={skipExploration}
+            class="flex items-center gap-2 px-4 py-2 rounded transition-colors text-sm {allFieldsExplored
+              ? 'bg-gold-highlight'
+              : 'bg-gray-700 hover:bg-gray-600'}"
+            disabled={!canSkipExploration && !allFieldsExplored}
+          >
+            {allFieldsExplored
+              ? 'Continue'
+              : canSkipExploration
+                ? 'Skip (I understand)'
+                : 'Hover over each field...'}
+            {#if allFieldsExplored}
+              <ChevronRight class="h-4 w-4" />
+            {/if}
+          </button>
+        </div>
+      {:else if showNavigation}
+        <div class="flex justify-between items-center px-4 pb-3">
+          <button
+            onclick={previousStep}
+            class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+            disabled={!tutorialAttribute('previous').has}
+          >
+            <ChevronLeft class="h-4 w-4" />
+            Previous
+          </button>
+          {#if tutorialAttribute('enter_grid').has}
+            <Button
+              onclick={() => {
+                enterGrid();
+              }}
+            >
+              Enter the Grid
+            </Button>
+          {:else}
+            <button
+              onclick={nextStep}
+              class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 hover:bg-gray-600 transition-colors text-sm"
+              disabled={!tutorialAttribute('next').has}
+            >
+              Next
+              <ChevronRight class="h-4 w-4" />
+            </button>
+          {/if}
+        </div>
+      {:else if currentDialog?.continue != undefined}
+        <div class="flex justify-end items-end px-4 pb-3">
+          <button
+            class="flex items-center gap-1 px-4 py-2 rounded bg-gray-700 transition-colors text-sm opacity-70"
+            disabled
+          >
+            {currentDialog.continue}
+          </button>
+        </div>
+      {/if}
+    </Card>
+  </div>
+{/if}
 
 <style>
   .bg-gold-highlight {

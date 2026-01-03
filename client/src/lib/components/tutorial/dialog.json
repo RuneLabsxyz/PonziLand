@@ -1,95 +1,101 @@
 [
   {
     "_step": "1",
-    "text": "<b>Welcome to PonziLand!</b><br><br>I'm Lazi, and I'll be your guide. Let's learn the basics together!",
+    "text": "<b>Welcome to PonziLand!</b><br><br>PonziLand is a <b>token-agnostic</b> game where you stake tokens on land to earn from your neighbors - but watch out, they earn from you too!<br><br>This tutorial is a <b>sandbox</b> with fake tokens to help you learn the mechanics risk-free.",
+    "image_id": 1,
+    "has": ["fullscreen_intro", "next"]
+  },
+  {
+    "_step": "2",
+    "text": "I'm Lazi, and I'll be your guide. Let's learn the basics together!",
     "image_id": 1,
     "has": ["no_interraction", "next"]
   },
   {
-    "_step": "2",
+    "_step": "3",
     "text": "That highlighted land is owned by a player. Click on it to see its details.",
     "continue": "Click on the highlighted land",
     "image_id": 2,
     "has": ["highlight_building", "wait_select_land"]
   },
   {
-    "_step": "3",
+    "_step": "4",
     "text": "This info panel shows everything about the land.<br><br><b>Hover over each field to learn what it means!</b>",
     "continue": "Explore the fields to continue",
     "image_id": 3,
     "has": ["highlight_info", "interactive_explore"]
   },
   {
-    "_step": "4",
+    "_step": "5",
     "text": "Want more details? Click the <b>eye icon</b> to switch to Pro Mode!",
     "continue": "Click the Pro Mode toggle",
     "image_id": 2,
     "has": ["highlight_pro_mode", "wait_pro_mode_click"]
   },
   {
-    "_step": "5",
+    "_step": "6",
     "text": "Pro Mode shows the <b>full token breakdown</b> - see exactly where your earnings come from each neighbor!",
     "image_id": 3,
     "has": ["highlight_token_earnings", "next", "previous"]
   },
   {
-    "_step": "6",
+    "_step": "7",
     "text": "Now let's buy a land! Click the <b>BUY LAND</b> button to open the purchase menu.",
     "continue": "Click on the BUY LAND button",
     "image_id": 4,
     "has": ["highlight_building", "highlight_map_buy", "wait_buy_land_open"]
   },
   {
-    "_step": "7",
+    "_step": "8",
     "text": "Set a price that makes sense - you want to earn more from neighbors than you pay in taxes!<br><br>Click <b>Buy Now</b> when you're happy with it.",
     "continue": "Configure and buy the land",
     "image_id": 4,
     "has": ["wait_buy_land"]
   },
   {
-    "_step": "8",
+    "_step": "9",
     "text": "Nice! You now own a land!<br><br>See that construction site? That's an <b>auction</b> - another way to get land. Click on it!",
     "continue": "Click on the auction",
     "image_id": 3,
     "has": ["highlight_auction", "wait_auction_selected"]
   },
   {
-    "_step": "9",
+    "_step": "10",
     "text": "Auction prices start high and decrease over time.<br><br>Buy before it gets too cheap - or someone else will grab it!",
     "continue": "Buy the auction land",
     "image_id": 2,
     "has": ["highlight_auction", "decrease_stake", "wait_auction_buy"]
   },
   {
-    "_step": "10",
+    "_step": "11",
     "text": "You can see how long each land has before it gets nuked! Hover on the <b>top bar</b> and click the <b>shield icon</b>.",
     "continue": "Click the shield button",
     "image_id": 2,
     "has": ["highlight_shield_button", "wait_shield_click"]
   },
   {
-    "_step": "11",
+    "_step": "12",
     "text": "Uh oh! Your land's stake is running low and it will be <b>nuked</b> soon!<br><br>Open the info panel to add more stake.",
     "continue": "Click the Info button",
     "image_id": 3,
     "has": ["highlight_building", "wait_info_open"]
   },
   {
-    "_step": "12",
+    "_step": "13",
     "text": "Use <b>Increase Stake</b> to add more funds. This extends how long your land survives!",
     "continue": "Increase your stake",
     "image_id": 3,
     "has": ["highlight_building", "wait_increase_stake"]
   },
   {
-    "_step": "13",
+    "_step": "14",
     "text": "Look! A neighbor's land is about to be <b>nuked</b>! Click the <b>golden coin</b> above your land to claim your taxes - this will trigger the neighbor's nuke!",
     "continue": "Click the coin to claim",
     "image_id": 4,
     "has": ["highlight_building", "highlight_nuke_neighbor", "wait_claim_nuke"]
   },
   {
-    "_step": "14",
+    "_step": "15",
     "text": "You've got the basics! Remember:<br><br>- Set prices to stay profitable<br>- Keep your stake topped up<br>- Watch for cheap auctions<br>- Claim nuked lands for rewards!<br><br>Good luck in PonziLand!",
     "image_id": 1,
     "has": ["enter_grid"]
