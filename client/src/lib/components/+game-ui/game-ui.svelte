@@ -13,10 +13,17 @@
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
     const { x, y } = locationToCoordinates(land.location);
+
+    // Center the widget on screen
+    const position = {
+      x: Math.max(50, (window.innerWidth - 800) / 2),
+      y: Math.max(50, (window.innerHeight - 800) / 2),
+    };
+
     widgetsStore.addWidget({
       id: devsettings.multiLandInfo ? `land-info [${x}-${y}]` : 'land-info',
       type: 'land-info',
-      position: { x: 100, y: 100 },
+      position,
       dimensions: { width: 800, height: 0 },
       isMinimized: false,
       isOpen: true,

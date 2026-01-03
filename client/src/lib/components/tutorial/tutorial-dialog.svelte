@@ -103,7 +103,7 @@
   }
 </script>
 
-<div class="fixed top-14 left-1/2 transform -translate-x-1/2 z-[9999]">
+<div class="fixed top-4 left-4 z-[9999]">
   <Card>
     <div
       class="flex items-center gap-3 w-[600px] min-h-[160px] p-4 font-ponzi-number"
