@@ -1,8 +1,7 @@
 <script lang="ts">
   import { useAccount } from '$lib/contexts/account.svelte';
-  import { ENABLE_RAMP } from '$lib/flags';
+  import type { AuthOptions } from '@cartridge/controller';
   import type { StarknetWindowObject } from '@starknet-io/get-starknet-core';
-  import { ChevronDown, ChevronUp } from 'lucide-svelte';
   import { onMount } from 'svelte';
   import { on } from 'svelte/events';
   import Button from '$lib/components/ui/button/button.svelte';
@@ -47,8 +46,8 @@
     });
   });
 
-  async function login(id: string, signupOptions?: string[]) {
-    await account!.selectAndLogin(id, signupOptions as any);
+  async function login(id: string, signupOptions?: AuthOptions) {
+    await account!.selectAndLogin(id, signupOptions);
     console.log('Logged in!');
 
     // TODO(#58): Split the session setup
