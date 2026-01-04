@@ -161,7 +161,7 @@
         Connect {chain === 'solana' ? 'Solana' : 'Starknet'} wallet
       </div>
       <Button size="lg" onclick={handleConnect}>
-        Connect {chain === 'solana' ? 'Phantom' : 'Starknet'}
+        Connect {chain === 'solana' ? 'Solana' : 'Starknet'}
       </Button>
     </div>
   {:else if loadingBalances}

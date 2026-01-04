@@ -9,8 +9,24 @@
 
   let visible = $state(false);
   let loading = $state(true);
+  let showAllWallets = $state(false);
 
   let validWallets: Adapter[] = $state([]);
+
+  // Filter to show only installed wallets by default
+  let installedWallets = $derived(
+    validWallets.filter(
+      (w) => w.readyState === 'Installed' || w.readyState === 'Loadable',
+    ),
+  );
+  let notInstalledWallets = $derived(
+    validWallets.filter((w) => w.readyState === 'NotDetected'),
+  );
+  let displayedWallets = $derived(
+    showAllWallets
+      ? [...installedWallets, ...notInstalledWallets]
+      : installedWallets,
+  );
 
   const solanaAccount = useSolanaAccount();
 
@@ -83,27 +99,41 @@
         </div>
 
         <div class="flex flex-col justify-stretch gap-2">
-          {#each validWallets as wallet}
+          {#each displayedWallets as wallet}
             {@const readyState = getReadyStateLabel(wallet.readyState)}
-            <Button
-              class="flex flex-row justify-start w-full min-h-[60px] p-3 pb-5"
+            <button
+              type="button"
+              class="flex items-center w-full pt-1 pb-2 px-4 gap-3 rounded-md button-ponzi-blue stroke-3d-blue"
               onclick={() => login(wallet.name)}
             >
               <img
                 src={wallet.icon}
                 alt={wallet.name + ' logo'}
-                class="h-10 p-2 pr-4"
+                class="w-8 h-8 shrink-0"
               />
               <div class="flex flex-col items-start text-left">
-                <div class="text-lg">{wallet.name}</div>
+                <div class="text-sm text-white font-ponzi-number">
+                  {wallet.name}
+                </div>
                 {#if readyState}
                   <div class="text-xs {readyState.color}">
                     {readyState.text}
                   </div>
                 {/if}
               </div>
-            </Button>
+            </button>
           {/each}
+
+          {#if notInstalledWallets.length > 0}
+            <Button
+              variant="red"
+              onclick={() => (showAllWallets = !showAllWallets)}
+            >
+              <div class="text-xs">
+                {showAllWallets ? 'Show less' : 'See more wallets'}
+              </div>
+            </Button>
+          {/if}
         </div>
       </div>
     {/if}

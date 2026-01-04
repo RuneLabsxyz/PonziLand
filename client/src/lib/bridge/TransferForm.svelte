@@ -247,7 +247,7 @@
             {#if isStarknet}
               Connect Starknet Wallet
             {:else if isSolana}
-              Connect Phantom
+              Connect Solana
             {:else}
               Connect Wallet
             {/if}
