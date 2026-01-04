@@ -220,12 +220,6 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     icon: '/ui/icons/Icon_Thin_MyLand.png', // Reusing existing icon, could be replaced with a heatmap-specific icon
   },
   {
-    id: 'tournament',
-    type: 'tournament',
-    label: 'Tournament',
-    icon: '/ui/icons/Icon_Cup.png',
-  },
-  {
     id: 'help',
     type: 'help',
     label: 'Help',
