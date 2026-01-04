@@ -330,7 +330,8 @@
   </div>
 {:else}
   <Button
-    class="m-2"
+    size="lg"
+    class="m-2 w-full"
     onclick={async () => {
       await accountManager?.promptForLogin();
     }}
