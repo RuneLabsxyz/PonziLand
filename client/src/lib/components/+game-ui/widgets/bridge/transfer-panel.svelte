@@ -10,6 +10,7 @@
   import { useDojo } from '$lib/contexts/dojo';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
   import { Connection, VersionedTransaction } from '@solana/web3.js';
+  import { PUBLIC_SOLANA_RPC_URL } from '$env/static/public';
 
   interface Props {
     selectedToken: string | null;
@@ -22,8 +23,8 @@
   const { accountManager } = useDojo();
   const solanaAccount = useSolanaAccount();
 
-  // Solana RPC connection for signing
-  const SOLANA_RPC_URL = 'https://api.mainnet-beta.solana.com';
+  const SOLANA_RPC_URL =
+    PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
 
   let amount = $state('');
 
