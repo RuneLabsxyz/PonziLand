@@ -18,7 +18,8 @@ use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{
-    drops::DropsRoute, land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute,
+    auction_purchases::AuctionPurchasesRoute, drops::DropsRoute,
+    land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute,
     tokens::TokenRoute, wallets::WalletsRoute,
 };
 use serde::{Deserialize, Serialize};
@@ -184,6 +185,12 @@ async fn main() -> Result<()> {
         .nest(
             "/drops",
             DropsRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
+            "/auction-purchases",
+            AuctionPurchasesRoute::new()
+                .router()
+                .with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))

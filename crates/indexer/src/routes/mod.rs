@@ -1,3 +1,4 @@
+pub mod auction_purchases;
 pub mod drops;
 pub mod land_historical;
 pub mod lands;
