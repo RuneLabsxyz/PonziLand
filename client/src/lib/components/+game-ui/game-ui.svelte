@@ -8,6 +8,7 @@
   import TxNotificationZone from '../ui/tx-notification-zone.svelte';
   import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
+  import EmptyWalletPrompt from '../empty-wallet-prompt/empty-wallet-prompt.svelte';
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
@@ -36,4 +37,6 @@
 
   <TxNotificationZone />
   <GameToastZone />
+
+  <EmptyWalletPrompt />
 </div>

@@ -223,7 +223,12 @@
           />
         </button>
       {/if}
-      <button type="button" onclick={copy} class="text-left relative">
+      <button
+        type="button"
+        onclick={copy}
+        class="text-left relative"
+        data-highlight-target="wallet-address"
+      >
         <p class="font-ponzi-number">
           {shortenHex(padAddress(address ?? ''), 4)}
         </p>
@@ -311,7 +316,12 @@
       <div class="flex gap-2">
         <Button size="md" class="flex-1" onclick={openSwapWidget}>SWAP</Button>
         {#if ENABLE_BRIDGE}
-          <Button size="md" class="flex-1" onclick={openBridgeWidget}>
+          <Button
+            size="md"
+            class="flex-1"
+            onclick={openBridgeWidget}
+            data-highlight-target="bridge-button"
+          >
             {bridgeMode ? 'BRIDGING...' : 'BRIDGE'}
           </Button>
         {/if}
