@@ -5,7 +5,6 @@ import {
   SolflareWalletAdapter,
   CoinbaseWalletAdapter,
   TrustWalletAdapter,
-  LedgerWalletAdapter,
   NightlyWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 
@@ -19,7 +18,6 @@ export const SolanaWalletWeights: Record<string, number> = {
   'Coinbase Wallet': 25,
   Nightly: 20,
   Trust: 15,
-  Ledger: 10,
 };
 
 export type SolanaConnectedEvent = {
@@ -50,6 +48,17 @@ const stubLocalStorage = {
   setItem(_id: string, _value: string) {},
   removeItem(_id: string) {},
 };
+
+function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  fallback: T,
+): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((resolve) => setTimeout(() => resolve(fallback), ms)),
+  ]);
+}
 
 const localStorage = browser ? window.localStorage : stubLocalStorage;
 
@@ -138,13 +147,13 @@ export class SolanaAccountManager {
     // Initialize all adapters
     // Note: Wallet Standard wallets (like Backpack) are detected automatically
     // by the individual adapters that support Wallet Standard
+    // Note: LedgerWalletAdapter removed due to Buffer polyfill issues in browser
     this._adapters = [
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter(),
       new CoinbaseWalletAdapter(),
       new NightlyWalletAdapter(),
       new TrustWalletAdapter(),
-      new LedgerWalletAdapter(),
     ];
 
     // Migrate from old phantom-only storage
@@ -161,7 +170,15 @@ export class SolanaAccountManager {
         previousWallet,
       );
       try {
-        await this.selectAndConnect(previousWallet as WalletName);
+        // Add timeout to prevent hanging if wallet extension doesn't respond
+        const connected = await withTimeout(
+          this.selectAndConnect(previousWallet as WalletName).then(() => true),
+          5000,
+          false,
+        );
+        if (!connected) {
+          console.warn('[Solana] Auto-login timed out');
+        }
       } catch (e) {
         console.error('[Solana] Auto-login failed:', e);
         localStorage.removeItem(previousSolanaWalletSymbol.toString());
