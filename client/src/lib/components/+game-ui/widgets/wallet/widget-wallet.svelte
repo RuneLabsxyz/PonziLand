@@ -13,7 +13,7 @@
   import TransferPanel from '../bridge/transfer-panel.svelte';
   import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
   import type { TokenInfo } from '$lib/bridge/types';
-  import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
+  import { useSolanaAccount } from '$lib/bridge/solana-account.svelte';
   import { accountState } from '$lib/account.svelte';
   import { onMount } from 'svelte';
 
@@ -25,6 +25,8 @@
 
   // Setup account management
   setup();
+
+  const solanaAccount = useSolanaAccount();
 
   let copied = $state(false);
 
@@ -73,7 +75,7 @@
     const isToGame = transferDirection === 'toGame';
     const sourceChain = isToGame ? 'solanamainnet' : 'starknet';
     const sourceAddress = isToGame
-      ? phantomWalletStore.walletAddress
+      ? solanaAccount?.walletAddress
       : accountState.address;
 
     if (!sourceAddress) {
@@ -114,7 +116,6 @@
       // Enable bridge mode first
       bridgeMode = true;
       widgetsStore.updateWidget('wallet', { fixedStyles: BRIDGE_STYLES });
-      phantomWalletStore.initialize();
     }
     // Select the token for transfer to Solana
     selectedToken = symbol;
@@ -130,7 +131,6 @@
     bridgeMode = !bridgeMode;
     if (bridgeMode) {
       widgetsStore.updateWidget('wallet', { fixedStyles: BRIDGE_STYLES });
-      phantomWalletStore.initialize();
       // Load bridge config
       bridgeStore.loadConfig().catch((err) => {
         console.error('Failed to load bridge config:', err);
