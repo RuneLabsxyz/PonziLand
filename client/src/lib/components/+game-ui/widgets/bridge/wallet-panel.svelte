@@ -132,7 +132,7 @@
         </span>
         <button
           type="button"
-          class="text-[10px] text-gray-400 hover:text-gray-300 transition-colors {loadingBalances
+          class="hover:opacity-50 transition-opacity {loadingBalances
             ? 'animate-spin'
             : ''}"
           onclick={fetchBalances}
@@ -143,11 +143,11 @@
         </button>
         <button
           type="button"
-          class="text-[10px] text-red-400 hover:text-red-300 transition-colors"
+          class="hover:opacity-50 transition-opacity"
           onclick={handleDisconnect}
-          title="Disconnect"
+          aria-label="Logout"
         >
-          ✕
+          <img src="/ui/icons/logout.png" alt="logout" class="h-5 w-5" />
         </button>
       </div>
     {/if}
@@ -159,7 +159,7 @@
       <div class="text-sm text-gray-400">
         Connect {chain === 'solana' ? 'Phantom' : 'Starknet'} wallet
       </div>
-      <Button size="sm" onclick={handleConnect}>
+      <Button size="lg" onclick={handleConnect}>
         Connect {chain === 'solana' ? 'Phantom' : 'Starknet'}
       </Button>
     </div>
