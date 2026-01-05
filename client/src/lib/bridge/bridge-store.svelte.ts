@@ -289,7 +289,7 @@ class BridgeStore {
   ): Promise<string[]> {
     const wallet = walletProvider.getSolanaWallet();
 
-    if (!wallet || !wallet.isConnected) {
+    if (!wallet || !wallet.connected) {
       throw new Error('Solana wallet not connected');
     }
 
@@ -299,7 +299,7 @@ class BridgeStore {
 
     const walletAddress = wallet.publicKey.toString();
     if (walletAddress.toLowerCase() !== sender.toLowerCase()) {
-      throw new Error('Connected Phantom wallet address does not match sender');
+      throw new Error('Connected Solana wallet address does not match sender');
     }
 
     const txHashes: string[] = [];

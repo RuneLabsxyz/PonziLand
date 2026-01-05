@@ -8,7 +8,7 @@
   import { RefreshCw } from 'lucide-svelte';
 
   import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
-  import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
+  import { useSolanaAccount } from '$lib/bridge/solana-account.svelte';
   import { accountState } from '$lib/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import type { Token } from '$lib/interfaces';
@@ -25,6 +25,7 @@
     $props();
 
   const { accountManager } = useDojo();
+  const solanaAccount = useSolanaAccount();
 
   const gameCompatibleSymbols = $derived(
     bridgableSymbols.filter((symbol) =>
@@ -36,13 +37,13 @@
 
   const isConnected = $derived(
     chain === 'solana'
-      ? phantomWalletStore.isConnected
+      ? (solanaAccount?.isConnected ?? false)
       : accountState.isConnected,
   );
 
   const walletAddress = $derived(
     chain === 'solana'
-      ? phantomWalletStore.walletAddress
+      ? (solanaAccount?.walletAddress ?? '')
       : (accountState.address ?? ''),
   );
 
@@ -89,7 +90,7 @@
 
   async function handleConnect() {
     if (chain === 'solana') {
-      await phantomWalletStore.connect({ forcePrompt: true });
+      await solanaAccount?.promptForLogin();
     } else {
       await accountManager?.promptForLogin();
     }
@@ -97,7 +98,7 @@
 
   async function handleDisconnect() {
     if (chain === 'solana') {
-      await phantomWalletStore.disconnect();
+      await solanaAccount?.disconnect();
       balances = new Map();
     } else {
       await accountManager?.disconnect();
@@ -157,10 +158,10 @@
   {#if !isConnected}
     <div class="flex flex-col items-center justify-center gap-3 py-4">
       <div class="text-sm text-gray-400">
-        Connect {chain === 'solana' ? 'Phantom' : 'Starknet'} wallet
+        Connect {chain === 'solana' ? 'Solana' : 'Starknet'} wallet
       </div>
       <Button size="lg" onclick={handleConnect}>
-        Connect {chain === 'solana' ? 'Phantom' : 'Starknet'}
+        Connect {chain === 'solana' ? 'Solana' : 'Starknet'}
       </Button>
     </div>
   {:else if loadingBalances}

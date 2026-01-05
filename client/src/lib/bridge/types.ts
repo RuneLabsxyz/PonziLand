@@ -1,4 +1,5 @@
 import type { AccountInterface } from 'starknet';
+import type { VersionedTransaction, Transaction } from '@solana/web3.js';
 
 // Chain and token types from API
 export interface ChainInfo {
@@ -98,7 +99,23 @@ export interface TransferResult {
   error?: string;
 }
 
-// Wallet provider interface
+// Wallet provider interface - generic Solana wallet adapter interface
+export interface SolanaWalletAdapter {
+  connected: boolean;
+  publicKey: { toString(): string } | null;
+  signAndSendTransaction(
+    transaction: VersionedTransaction | Transaction,
+    options?: { skipPreflight?: boolean },
+  ): Promise<{ signature: string }>;
+  signTransaction?<T extends VersionedTransaction | Transaction>(
+    transaction: T,
+  ): Promise<T>;
+  signAllTransactions?<T extends VersionedTransaction | Transaction>(
+    transactions: T[],
+  ): Promise<T[]>;
+}
+
+/** @deprecated Use SolanaWalletAdapter instead */
 export interface PhantomProvider {
   isConnected: boolean;
   publicKey: { toString(): string } | null;
@@ -110,7 +127,7 @@ export interface PhantomProvider {
 
 export interface WalletProvider {
   getStarknetAccount(): AccountInterface | null;
-  getSolanaWallet(): PhantomProvider | null;
+  getSolanaWallet(): SolanaWalletAdapter | null;
 }
 
 // API error response

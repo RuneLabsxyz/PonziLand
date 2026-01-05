@@ -4,11 +4,13 @@
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import BridgeSteps from './bridge-steps.svelte';
   import { bridgeStore } from '$lib/bridge/bridge-store.svelte';
-  import type { WalletProvider } from '$lib/bridge/types';
-  import { phantomWalletStore } from '$lib/bridge/phantom.svelte';
+  import type { WalletProvider, SolanaWalletAdapter } from '$lib/bridge/types';
+  import { useSolanaAccount } from '$lib/bridge/solana-account.svelte';
   import { accountState } from '$lib/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
   import { notificationQueue } from '$lib/stores/event.store.svelte';
+  import { Connection, VersionedTransaction } from '@solana/web3.js';
+  import { PUBLIC_SOLANA_RPC_URL } from '$env/static/public';
 
   interface Props {
     selectedToken: string | null;
@@ -19,6 +21,10 @@
   let { selectedToken, transferDirection, sourceBalance }: Props = $props();
 
   const { accountManager } = useDojo();
+  const solanaAccount = useSolanaAccount();
+
+  const SOLANA_RPC_URL =
+    PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
 
   let amount = $state('');
 
@@ -30,19 +36,23 @@
   const destChain = $derived(isToGame ? 'starknet' : 'solanamainnet');
 
   const sourceWalletConnected = $derived(
-    isToGame ? phantomWalletStore.isConnected : accountState.isConnected,
+    isToGame ? (solanaAccount?.isConnected ?? false) : accountState.isConnected,
   );
 
   const destWalletConnected = $derived(
-    isToGame ? accountState.isConnected : phantomWalletStore.isConnected,
+    isToGame ? accountState.isConnected : (solanaAccount?.isConnected ?? false),
   );
 
   const sourceAddress = $derived(
-    isToGame ? phantomWalletStore.walletAddress : (accountState.address ?? ''),
+    isToGame
+      ? (solanaAccount?.walletAddress ?? '')
+      : (accountState.address ?? ''),
   );
 
   const destAddress = $derived(
-    isToGame ? (accountState.address ?? '') : phantomWalletStore.walletAddress,
+    isToGame
+      ? (accountState.address ?? '')
+      : (solanaAccount?.walletAddress ?? ''),
   );
 
   const canTransfer = $derived(
@@ -79,9 +89,25 @@
         }
         return null;
       },
-      getSolanaWallet: () => {
-        if (isToGame && typeof window !== 'undefined') {
-          return (window as any).solana ?? null;
+      getSolanaWallet: (): SolanaWalletAdapter | null => {
+        if (isToGame) {
+          const adapter = solanaAccount?.getAdapter();
+          if (adapter && adapter.connected && adapter.publicKey) {
+            const connection = new Connection(SOLANA_RPC_URL);
+            return {
+              connected: adapter.connected,
+              publicKey: adapter.publicKey,
+              signAndSendTransaction: async (tx, opts) => {
+                // For VersionedTransaction, use sendTransaction
+                const signature = await adapter.sendTransaction(
+                  tx as VersionedTransaction,
+                  connection,
+                  { skipPreflight: opts?.skipPreflight ?? false },
+                );
+                return { signature };
+              },
+            };
+          }
         }
         return null;
       },
@@ -223,11 +249,11 @@
       <!-- Connection warnings -->
       {#if !sourceWalletConnected}
         <div class="text-xs text-yellow-500 text-center">
-          Connect {isToGame ? 'Phantom' : 'Starknet'} wallet to transfer
+          Connect {isToGame ? 'Solana' : 'Starknet'} wallet to transfer
         </div>
       {:else if !destWalletConnected}
         <div class="text-xs text-yellow-500 text-center">
-          Connect {isToGame ? 'Starknet' : 'Phantom'} wallet to receive tokens
+          Connect {isToGame ? 'Starknet' : 'Solana'} wallet to receive tokens
         </div>
       {/if}
     </div>
