@@ -1,5 +1,8 @@
 <script lang="ts">
-  import { useSolanaAccount } from '$lib/bridge/solana-account.svelte';
+  import {
+    useSolanaAccount,
+    setupSolanaAccount,
+  } from '$lib/bridge/solana-account.svelte';
   import type { Adapter, WalletName } from '@solana/wallet-adapter-base';
   import { onMount } from 'svelte';
   import { on } from 'svelte/events';
@@ -28,13 +31,26 @@
       : installedWallets,
   );
 
-  const solanaAccount = useSolanaAccount();
+  // Get solana account lazily to avoid race conditions
+  function getSolanaAccount() {
+    return useSolanaAccount();
+  }
 
-  const promisesToWait = (async () => {
-    if (solanaAccount != null) {
-      validWallets = (await solanaAccount.wait()).getAvailableWallets();
+  async function loadWallets() {
+    // Try to get existing account or set it up
+    let account = getSolanaAccount();
+    if (!account) {
+      account = await setupSolanaAccount();
     }
-  })();
+    if (account) {
+      // Add timeout to prevent indefinite loading
+      const timeoutPromise = new Promise<void>((resolve) =>
+        setTimeout(resolve, 10000),
+      );
+      await Promise.race([account.wait(), timeoutPromise]);
+      validWallets = account.getAvailableWallets();
+    }
+  }
 
   onMount(() => {
     on(window, 'solana_wallet_prompt', async () => {
@@ -42,13 +58,14 @@
       loading = true;
       visible = true;
 
-      await promisesToWait;
+      await loadWallets();
 
       loading = false;
     });
   });
 
   async function login(walletName: string) {
+    const solanaAccount = getSolanaAccount();
     try {
       await solanaAccount!.selectAndConnect(walletName as WalletName);
       console.log('[Solana] Logged in with:', walletName);
