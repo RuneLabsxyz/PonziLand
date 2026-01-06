@@ -885,10 +885,8 @@
       {/if}
 
       <div
-        class={[
-          'flex flex-col gap-4 my-4',
-          { 'tutorial-highlight-inputs': highlightBuyInputs },
-        ]}
+        class="flex flex-col gap-4 my-4"
+        class:tutorial-highlight-inputs={highlightBuyInputs}
       >
         <!-- Sell Price Section -->
         <div class="flex flex-col gap-2">
