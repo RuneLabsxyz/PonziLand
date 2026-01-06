@@ -75,7 +75,7 @@
       "hint": "Set price & buy",
       "position": {
         "type": "widget-relative",
-        "targetWidget": "land-buy",
+        "targetWidget": "buy-land",
         "fallback": "map-center"
       },
       "allowed_lands": [
