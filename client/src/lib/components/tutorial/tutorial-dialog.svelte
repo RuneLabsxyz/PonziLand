@@ -36,6 +36,9 @@
   // Click-to-continue mode for passive updates
   let waitLaziClick = $derived(tutorialAttribute('wait_lazi_click').has);
 
+  // Show Next button for manual advancement
+  let showNextButton = $derived(tutorialAttribute('show_next_button').has);
+
   // Dialog dimensions for position calculations
   const DIALOG_WIDTH = 480;
   const DIALOG_HEIGHT = 120;
@@ -290,24 +293,10 @@
     };
   });
 
-  // Track explored fields for interactive_explore mode
+  // Track explored fields for interactive_explore mode (no longer auto-advances, user clicks Next)
   let exploredFieldsCount = $derived(getExploredFieldsCount());
-  let hasAdvancedFromExplore = $state(false);
 
-  // Advance when user has explored at least 3 fields during interactive_explore
-  $effect(() => {
-    if (
-      tutorialAttribute('interactive_explore').has &&
-      exploredFieldsCount >= 3 &&
-      !hasAdvancedFromExplore
-    ) {
-      hasAdvancedFromExplore = true;
-      // Give a moment to see the last tooltip, then advance
-      setTimeout(() => nextStep(), 1500);
-    }
-  });
-
-  // Progressive land spawning effects
+  // Progressive land spawning effects (no longer auto-advances, user clicks Next)
   $effect(() => {
     // Spawn second auction when attribute is set
     if (
@@ -316,8 +305,6 @@
     ) {
       hasSpawnedSecondAuction = true;
       landStore.addTutorialSecondAuction();
-      // Auto-advance to next step after spawning
-      setTimeout(() => nextStep(), 1500);
     }
 
     // Spawn neighbor lands when attribute is set
@@ -330,8 +317,6 @@
     if (tutorialAttribute('spawn_full_auction').has && !hasSpawnedFullAuction) {
       hasSpawnedFullAuction = true;
       landStore.addTutorialFullAuction();
-      // Auto-advance to next step after spawning
-      setTimeout(() => nextStep(), 1500);
     }
   });
 
@@ -423,10 +408,15 @@
           {/each}
         </div>
 
-        <!-- Action hint or Enter Grid button -->
+        <!-- Action hint, Next button, or Enter Grid button -->
         {#if showEnterGrid}
           <Button onclick={enterGrid} size="sm" class="action-hint-button">
             Enter the Grid
+            <ChevronRight class="h-4 w-4 ml-1" />
+          </Button>
+        {:else if showNextButton}
+          <Button onclick={nextStep} class="action-hint-button">
+            Next
             <ChevronRight class="h-4 w-4 ml-1" />
           </Button>
         {:else if currentDialog?.hint}

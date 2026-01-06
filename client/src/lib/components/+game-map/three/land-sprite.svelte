@@ -42,7 +42,7 @@
   import { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
   import { devsettings } from './utils/devsettings.store.svelte';
   import { toLocation } from '$lib/api/land/location';
-  import { coordinatesToLocation } from '$lib/utils';
+  import { coordinatesToLocation, locationToCoordinates } from '$lib/utils';
   import FilterEffect from '$lib/components/tutorial/filter-effect.svelte';
   import {
     nextStep,
@@ -373,6 +373,18 @@
     }
   });
 
+  // Tutorial highlight effect for coin when highlight_nuke_neighbor is active
+  $effect(() => {
+    if (!coinShaderMaterial) return;
+
+    if (tutorialAttribute('highlight_nuke_neighbor').has) {
+      // In tutorial claim step, there's only one coin at index 0 (player's land at 128,128)
+      coinShaderMaterial.setTutorialHighlight(0);
+    } else {
+      coinShaderMaterial.clearTutorialHighlight();
+    }
+  });
+
   let crownTexture = new TextureLoader().load('/ui/icons/Icon_Crown.png');
   crownTexture.magFilter = NearestFilter;
   crownTexture.minFilter = NearestFilter;
@@ -544,19 +556,29 @@
         targetX = 127;
         targetY = 127;
       } else if (tutorialAttribute('tutorial_phase_5').has) {
-        // Full auction for advanced purchase
-        targetX = 126;
-        targetY = 126;
+        // Full auction for advanced purchase (to the left of center)
+        targetX = 127;
+        targetY = 128;
       } else {
         // Default fallback
         targetX = 127;
         targetY = 127;
       }
-    } else if (tutorialAttribute('highlight_nuke_neighbor').has) {
-      targetX = 129;
-      targetY = 128;
     } else {
       return undefined;
+    }
+
+    // Don't highlight land when buy/info button should be highlighted instead
+    // (only when the target land is selected)
+    if (
+      (tutorialAttribute('highlight_map_buy').has ||
+        tutorialAttribute('highlight_info_button').has) &&
+      selectedLand
+    ) {
+      const coords = locationToCoordinates(selectedLand.location);
+      if (coords.x === targetX && coords.y === targetY) {
+        return undefined;
+      }
     }
 
     return visibleLandTiles.find((tile) => {
@@ -937,7 +959,11 @@
       {/if}
       {#if selectedLand.owner == accountState.address}
         <Button
-          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20"
+          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20 {tutorialAttribute(
+            'highlight_info_button',
+          ).has
+            ? 'tutorial-highlight-button'
+            : ''}"
           size="sm"
           onclick={() => {
             if (tutorialAttribute('wait_info_open').has) {
@@ -950,13 +976,11 @@
         </Button>
       {:else}
         <Button
-          class={[
-            'absolute top-[50px] -translate-y-full -translate-x-1/2 z-20',
-            {
-              'animate-pulse shadow-[0_0_20px_rgba(255,255,255,0.8)] hover:shadow-[0_0_30px_rgba(255,255,255,1)] transition-shadow duration-1000':
-                tutorialAttribute('highlight_map_buy').has,
-            },
-          ]}
+          class="absolute top-[50px] -translate-y-full -translate-x-1/2 z-20 {tutorialAttribute(
+            'highlight_map_buy',
+          ).has
+            ? 'tutorial-highlight-button'
+            : ''}"
           size="sm"
           onclick={() => {
             // In tutorial, only allow opening buy widget when the attribute is set
@@ -1010,3 +1034,24 @@
     </HTML>
   {/if}
 {/if}
+
+<style>
+  :global(.tutorial-highlight-button) {
+    border: 2px solid #ffd700 !important;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
+  }
+</style>

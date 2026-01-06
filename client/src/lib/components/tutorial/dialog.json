@@ -21,9 +21,7 @@
       "_comment": "Welcome intro - fullscreen",
       "text": "<b>Welcome to PonziLand!</b><br><br>In PonziLand, you stake tokens on land to earn from your neighbors - but they earn from you too!<br><br>Let's learn the basics in this <b>sandbox</b> with fake tokens.",
       "image_id": 1,
-      "has": [
-        "fullscreen_intro"
-      ],
+      "has": ["fullscreen_intro"],
       "hint": "",
       "position": "center",
       "allowed_lands": [],
@@ -45,26 +43,16 @@
       "hint": "Click the auction",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          128,
-          128
-        ],
+        "targetLand": [128, 128],
         "fallback": "map-center"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "buy-land"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["buy-land"]
     },
     {
       "_step": "3",
       "_comment": "Simplified buy modal explanation - positioned left of land-info widget",
-      "text": "Set your <b>sell price</b> - this is what others pay to buy your land.<br><br>Don't worry about the other options for now. Just pick a price and hit <b>Buy Now</b>!",
+      "text": "Set your <b>sell price</b> - this is what others pay to buy your land. <b>Buy Now</b>!",
       "image_id": 3,
       "has": [
         "simplified_buy",
@@ -78,32 +66,19 @@
         "targetWidget": "buy-land",
         "fallback": "map-center"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "buy-land"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["buy-land"]
     },
     {
       "_step": "4",
       "_comment": "First purchase complete - explain land ownership",
       "text": "You own your first land! The building shows it's yours.<br><br>Look - a new auction just appeared nearby! <b>Auctions spawn randomly next to active lands.</b>",
       "image_id": 1,
-      "has": [
-        "spawn_second_auction",
-        "tutorial_phase_2"
-      ],
+      "has": ["spawn_second_auction", "show_next_button", "tutorial_phase_2"],
       "hint": "",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          128,
-          128
-        ],
+        "targetLand": [128, 128],
         "fallback": "map-center"
       },
       "allowed_lands": [],
@@ -123,36 +98,22 @@
       "hint": "Click the auction",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          127,
-          127
-        ],
+        "targetLand": [127, 127],
         "fallback": "map-bottom-left"
       },
-      "allowed_lands": [
-        [
-          127,
-          127
-        ]
-      ],
+      "allowed_lands": [[127, 127]],
       "enabled_widgets": []
     },
     {
       "_step": "6",
       "_comment": "Someone else bought it - now you have a neighbor",
-      "text": "Oh no! <b>Someone else bought it</b> before you! But that's actually good - now you have a <b>neighbor</b>!<br><br>Notice they're using <b>LORDS</b> token. You'll earn taxes from them!",
+      "text": "Oh no! <b>Someone else bought it</b> before you! But that's actually good - now you have a <b>neighbor</b>!<br><br>Notice they're using <b>ETH</b>. You'll earn taxes from them!",
       "image_id": 4,
-      "has": [
-        "wait_lazi_click",
-        "tutorial_phase_2"
-      ],
-      "hint": "Click to continue",
+      "has": ["show_next_button", "tutorial_phase_2"],
+      "hint": "",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          127,
-          127
-        ],
+        "targetLand": [127, 127],
         "fallback": "map-bottom-left"
       },
       "allowed_lands": [],
@@ -163,29 +124,15 @@
       "_comment": "Explain taxes - click your land",
       "text": "Let's see how much you're earning! <b>Click on your land</b> (at the center) to view your taxes.",
       "image_id": 2,
-      "has": [
-        "highlight_building",
-        "wait_land_info_click",
-        "tutorial_phase_3"
-      ],
+      "has": ["highlight_building", "wait_land_info_click", "tutorial_phase_3"],
       "hint": "Click your land",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          128,
-          128
-        ],
+        "targetLand": [128, 128],
         "fallback": "map-center"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["land-info"]
     },
     {
       "_step": "8",
@@ -195,23 +142,17 @@
       "has": [
         "interactive_explore",
         "highlight_info",
+        "show_next_button",
         "tutorial_phase_3"
       ],
-      "hint": "Hover over 3+ fields",
+      "hint": "",
       "position": {
         "type": "widget-relative",
         "targetWidget": "land-info",
         "fallback": "widget-left"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["land-info"]
     },
     {
       "_step": "9",
@@ -230,15 +171,8 @@
         "targetWidget": "land-info",
         "fallback": "widget-left"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["land-info"]
     },
     {
       "_step": "10",
@@ -248,54 +182,38 @@
       "has": [
         "highlight_token_earnings",
         "spawn_full_auction",
-        "wait_lazi_click",
+        "show_next_button",
         "tutorial_phase_4"
       ],
-      "hint": "Click to continue",
+      "hint": "",
       "position": {
         "type": "widget-relative",
         "targetWidget": "land-info",
         "fallback": "widget-left"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["land-info"]
     },
     {
       "_step": "11",
-      "_comment": "Full buy modal - new auction",
+      "_comment": "Full buy modal - new auction, highlight BUY LAND button after click",
       "text": "Now let's try to buy another auction!<br><br><b>Click on the new auction</b> to the left.",
       "image_id": 2,
       "has": [
         "highlight_auction",
-        "wait_select_land",
+        "highlight_map_buy",
+        "wait_buy_land_open",
         "allow_buy_widget",
         "tutorial_phase_5"
       ],
       "hint": "Click the auction",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          127,
-          128
-        ],
+        "targetLand": [127, 128],
         "fallback": "map-left"
       },
-      "allowed_lands": [
-        [
-          127,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "buy-land"
-      ]
+      "allowed_lands": [[127, 128]],
+      "enabled_widgets": ["buy-land"]
     },
     {
       "_step": "12",
@@ -314,15 +232,8 @@
         "targetWidget": "buy-land",
         "fallback": "widget-left"
       },
-      "allowed_lands": [
-        [
-          127,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "buy-land"
-      ]
+      "allowed_lands": [[127, 128]],
+      "enabled_widgets": ["buy-land"]
     },
     {
       "_step": "13",
@@ -341,15 +252,8 @@
         "targetWidget": "buy-land",
         "fallback": "widget-left"
       },
-      "allowed_lands": [
-        [
-          127,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "buy-land"
-      ]
+      "allowed_lands": [[127, 128]],
+      "enabled_widgets": ["buy-land"]
     },
     {
       "_step": "14",
@@ -369,59 +273,38 @@
     },
     {
       "_step": "15",
-      "_comment": "Stake running low",
+      "_comment": "Stake running low - highlight INFO button after selecting land",
       "text": "Uh oh! Your first land's stake is <b>running low</b>! See the red timer?<br><br>Open its info panel to add more stake before it gets nuked!",
       "image_id": 3,
       "has": [
         "highlight_building",
+        "highlight_info_button",
         "wait_info_open",
         "tutorial_phase_6"
       ],
-      "hint": "Click Info",
+      "hint": "Click your land",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          128,
-          128
-        ],
+        "targetLand": [128, 128],
         "fallback": "map-center"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["land-info"]
     },
     {
       "_step": "16",
       "_comment": "Increase stake",
       "text": "Use <b>Increase Stake</b> to add more fuel. This extends your survival time!",
       "image_id": 3,
-      "has": [
-        "highlight_building",
-        "wait_increase_stake",
-        "neighbor_land_nuke",
-        "tutorial_phase_6"
-      ],
+      "has": ["wait_increase_stake", "neighbor_land_nuke", "tutorial_phase_6"],
       "hint": "Add stake",
       "position": {
         "type": "widget-relative",
-        "targetWidget": "land-info",
+        "targetWidget": "buy-land",
         "fallback": "widget-left"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["buy-land"]
     },
     {
       "_step": "17",
@@ -429,7 +312,6 @@
       "text": "Look! A neighbor's land is about to be <b>nuked</b>!<br><br>Click the <b>golden coin</b> above your land to claim your taxes - this triggers their nuke!",
       "image_id": 4,
       "has": [
-        "highlight_building",
         "highlight_nuke_neighbor",
         "wait_claim_nuke",
         "neighbor_land_nuke",
@@ -438,30 +320,18 @@
       "hint": "Claim taxes",
       "position": {
         "type": "map-relative",
-        "targetLand": [
-          128,
-          128
-        ],
+        "targetLand": [128, 128],
         "fallback": "map-center"
       },
-      "allowed_lands": [
-        [
-          128,
-          128
-        ]
-      ],
-      "enabled_widgets": [
-        "land-info"
-      ]
+      "allowed_lands": [[128, 128]],
+      "enabled_widgets": ["land-info"]
     },
     {
       "_step": "18",
       "_comment": "Tutorial complete",
       "text": "You've mastered the basics!<br><br>Remember:<br>- Higher sell price = more taxes you pay<br>- Keep stake topped up<br>- Claim taxes from dying neighbors<br>- Diversify your token portfolio!<br><br>Good luck in PonziLand!",
       "image_id": 1,
-      "has": [
-        "enter_grid"
-      ],
+      "has": ["enter_grid"],
       "hint": "",
       "position": "map-center",
       "allowed_lands": [],
