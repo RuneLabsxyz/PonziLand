@@ -1026,6 +1026,63 @@ export class LandTileStore {
     this.addAuctionAt(127, 127, tokenAddress, 'First');
   }
 
+  // Convert the second auction to a building owned by someone else (simulates another player buying it)
+  public convertTutorialAuctionToBuilding(): void {
+    console.log(
+      'Tutorial: Converting auction at 127,127 to building (other player bought it)...',
+    );
+    // Use a fake owner address to simulate another player buying the land
+    const fakeOwner =
+      '0x0432d05c36cac355e0a74a08e8b8776b45f5bff96b59b351ec9171bf66a22a37';
+    const x = 127;
+    const y = 127;
+
+    // Find LORDS token for the building
+    const lordsToken = data.availableTokens.find(
+      (t) => t.symbol === 'LORDS' || t.symbol === 'ETH',
+    );
+    const tokenAddress = lordsToken?.address ?? data.mainCurrencyAddress;
+    const tokenInfo = data.availableTokens.find(
+      (t) => t.address === tokenAddress,
+    );
+
+    if (!tokenInfo) {
+      console.error('Token not found for tutorial building');
+      return;
+    }
+
+    const price = CurrencyAmount.fromScaled(50, tokenInfo);
+
+    this.currentLands.update((lands) => {
+      const fakeLand: Land = {
+        owner: fakeOwner,
+        location: coordinatesToLocation({ x, y }),
+        block_date_bought: Date.now() / 1000,
+        sell_price: price.toBigint(),
+        token_used: tokenAddress,
+        // @ts-ignore
+        level: 'First',
+      };
+
+      const fakeStake: LandStake = {
+        location: coordinatesToLocation({ x, y }),
+        amount: price.toBigint() * BigInt(2),
+        neighbors_info_packed: 0,
+        accumulated_taxes_fee: 0,
+      };
+
+      const buildingLand = new BuildingLand(fakeLand);
+      buildingLand.updateStake(fakeStake);
+
+      this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+      this.store[x][y].set({ value: buildingLand });
+      lands[x][y] = buildingLand;
+
+      this.forceOwnershipUpdate();
+      return lands;
+    });
+  }
+
   // Add neighbor lands around player's center land (step 7-9)
   public addTutorialNeighbors(): void {
     console.log('Tutorial: Adding neighbor lands...');
@@ -1099,9 +1156,10 @@ export class LandTileStore {
   }
 
   // Add full auction for advanced tutorial (step 12-15)
+  // Position: directly to the left of player's first land at (128, 128)
   public addTutorialFullAuction(): void {
     console.log('Tutorial: Adding full auction for advanced purchase...');
-    this.addAuctionAt(126, 126, data.mainCurrencyAddress, 'First');
+    this.addAuctionAt(127, 128, data.mainCurrencyAddress, 'First');
   }
 
   // Helper: Add an auction at specific coordinates

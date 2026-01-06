@@ -6,6 +6,8 @@
     tutorialAttribute,
     resetExploredFields,
     resetExploredTaxFields,
+    getExploredFieldsCount,
+    TOTAL_EXPLORABLE_FIELDS,
   } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
@@ -34,6 +36,8 @@
   let hasSpawnedSecondAuction = $state(false);
   let hasSpawnedNeighbors = $state(false);
   let hasSpawnedFullAuction = $state(false);
+  let hasConvertedAuction = $state(false);
+  let autoAdvanceTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Auto-advance effects based on wait_* attributes
   $effect(() => {
@@ -46,12 +50,20 @@
       nextStep();
     }
 
-    // Wait for second auction selection
+    // Wait for second auction selection - auto-convert if attribute is set
     if (
       selectedLand.value?.location.x === 127 &&
       selectedLand.value?.location.y === 127 &&
       tutorialAttribute('wait_second_auction_click').has
     ) {
+      // If auto_convert_auction is set, convert the auction to a building (owned by someone else)
+      if (
+        tutorialAttribute('auto_convert_auction').has &&
+        !hasConvertedAuction
+      ) {
+        hasConvertedAuction = true;
+        landStore.convertTutorialAuctionToBuilding();
+      }
       nextStep();
     }
 
@@ -65,9 +77,9 @@
       nextStep();
     }
 
-    // Legacy support for older wait_select_land
+    // Wait for full auction selection at (127, 128) - step 12
     if (
-      selectedLand.value?.location.x === 128 &&
+      selectedLand.value?.location.x === 127 &&
       selectedLand.value?.location.y === 128 &&
       tutorialAttribute('wait_select_land').has
     ) {
@@ -89,6 +101,45 @@
       // @ts-ignore This is really bad, but at least it works
       land._stakeAmount = CurrencyAmount.fromScaled(0.01, land.token);
       landStore.updateLandDirectly(128, 128, land);
+    }
+  });
+
+  // Auto-advance effect for steps with auto_advance attribute
+  $effect(() => {
+    // Clear any existing timer when step changes
+    if (autoAdvanceTimer) {
+      clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = null;
+    }
+
+    // If current step has auto_advance, set a timer
+    if (tutorialAttribute('auto_advance').has) {
+      autoAdvanceTimer = setTimeout(() => {
+        nextStep();
+      }, 3000); // 3 second delay
+    }
+
+    return () => {
+      if (autoAdvanceTimer) {
+        clearTimeout(autoAdvanceTimer);
+      }
+    };
+  });
+
+  // Track explored fields for interactive_explore mode
+  let exploredFieldsCount = $derived(getExploredFieldsCount());
+  let hasAdvancedFromExplore = $state(false);
+
+  // Advance when user has explored at least 3 fields during interactive_explore
+  $effect(() => {
+    if (
+      tutorialAttribute('interactive_explore').has &&
+      exploredFieldsCount >= 3 &&
+      !hasAdvancedFromExplore
+    ) {
+      hasAdvancedFromExplore = true;
+      // Give a moment to see the last tooltip, then advance
+      setTimeout(() => nextStep(), 1500);
     }
   });
 

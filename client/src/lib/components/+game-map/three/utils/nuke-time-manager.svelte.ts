@@ -28,11 +28,11 @@ function initMockTimes() {
   // 128,128 - Player's first land (center) - 2 hours default, nuke for shield demo
   TUTORIAL_MOCK_NUKE_TIMES[coordToHex(128, 128)] = 3600 * 2;
 
-  // 127,127 - Player's second land (different token) - 3 days
+  // 127,127 - Neighbor land (someone else bought it) - 3 days
   TUTORIAL_MOCK_NUKE_TIMES[coordToHex(127, 127)] = 86400 * 3;
 
-  // 126,126 - Third auction (full buy modal) - 4 days
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(126, 126)] = 86400 * 4;
+  // 127,128 - Third auction (full buy modal) - directly left of center - 4 days
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(127, 128)] = 86400 * 4;
 
   // Neighbor lands (spawned in phase 3):
   // 129,128 - right neighbor - will show NUKE for claim step
