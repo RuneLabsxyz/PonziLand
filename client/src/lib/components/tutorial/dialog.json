@@ -38,7 +38,8 @@
         "wait_buy_land_open",
         "simplified_buy",
         "allow_buy_widget",
-        "tutorial_phase_1"
+        "tutorial_phase_1",
+        "darken_map"
       ],
       "hint": "Click the auction",
       "position": {
@@ -93,7 +94,8 @@
         "highlight_auction",
         "wait_second_auction_click",
         "auto_convert_auction",
-        "tutorial_phase_2"
+        "tutorial_phase_2",
+        "darken_map"
       ],
       "hint": "Click the auction",
       "position": {
@@ -124,7 +126,12 @@
       "_comment": "Explain taxes - click your land",
       "text": "Let's see how much you're earning! <b>Click on your land</b> (at the center) to view your taxes.",
       "image_id": 2,
-      "has": ["highlight_building", "wait_land_info_click", "tutorial_phase_3"],
+      "has": [
+        "highlight_building",
+        "wait_land_info_click",
+        "tutorial_phase_3",
+        "darken_map"
+      ],
       "hint": "Click your land",
       "position": {
         "type": "map-relative",
@@ -143,8 +150,10 @@
         "interactive_explore",
         "highlight_info",
         "show_next_button",
-        "tutorial_phase_3"
+        "tutorial_phase_3",
+        "darken_widget"
       ],
+      "spotlight_widget": "land-info",
       "hint": "",
       "position": {
         "type": "widget-relative",
@@ -163,8 +172,10 @@
         "spawn_neighbors",
         "highlight_pro_mode",
         "wait_pro_mode_click",
-        "tutorial_phase_3"
+        "tutorial_phase_3",
+        "darken_widget"
       ],
+      "spotlight_widget": "land-info",
       "hint": "Click the eye",
       "position": {
         "type": "widget-relative",
@@ -204,7 +215,8 @@
         "highlight_map_buy",
         "wait_buy_land_open",
         "allow_buy_widget",
-        "tutorial_phase_5"
+        "tutorial_phase_5",
+        "darken_map"
       ],
       "hint": "Click the auction",
       "position": {
@@ -280,7 +292,8 @@
         "highlight_building",
         "highlight_info_button",
         "wait_info_open",
-        "tutorial_phase_6"
+        "tutorial_phase_6",
+        "darken_map"
       ],
       "hint": "Click your land",
       "position": {
@@ -315,7 +328,8 @@
         "highlight_nuke_neighbor",
         "wait_claim_nuke",
         "neighbor_land_nuke",
-        "tutorial_phase_6"
+        "tutorial_phase_6",
+        "darken_map"
       ],
       "hint": "Claim taxes",
       "position": {

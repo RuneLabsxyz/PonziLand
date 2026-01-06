@@ -9,6 +9,7 @@
   import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
   import EmptyWalletPrompt from '../empty-wallet-prompt/empty-wallet-prompt.svelte';
+  import TutorialOverlay from '../tutorial/tutorial-overlay.svelte';
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
@@ -41,6 +42,8 @@
 
   <WidgetLauncher />
   <WidgetProvider />
+
+  <TutorialOverlay />
 
   <TxNotificationZone />
   <GameToastZone />

@@ -21,6 +21,7 @@ export interface TutorialStep {
   allowed_lands: number[][];
   enabled_widgets: string[];
   continue?: string;
+  spotlight_widget?: string; // Widget to spotlight with darkening overlay
 }
 
 // Normalize position to TutorialPosition format (backward compatible)
@@ -99,6 +100,12 @@ let currentStepAttributes = $derived(
 
 // Get the current step data
 export function getCurrentStep(): TutorialStep | null {
+  if (!tutorialState.tutorialEnabled) return null;
+  return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
+}
+
+// Get the current step raw data (for accessing fields like spotlight_widget)
+export function getCurrentStepData(): TutorialStep | null {
   if (!tutorialState.tutorialEnabled) return null;
   return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
 }
