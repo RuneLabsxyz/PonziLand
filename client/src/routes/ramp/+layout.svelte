@@ -3,7 +3,7 @@
   import CoinAnimation from '$lib/components/ramp/coin-animation.svelte';
   import type { LayoutServerData } from './$types';
   import type { AccountInterface } from 'starknet';
-  import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
+  import type { NetworkWithTokens } from '@layerswap/sdk/resources/index';
   import type { Snippet } from 'svelte';
 
   import { address as ethAddress, provider } from '$lib/ramp/stores.svelte';

@@ -277,7 +277,4 @@
   .number-display-shadow {
     text-shadow: 0px 3px 0 #000;
   }
-  .skew {
-    transform: skew(-26deg);
-  }
 </style>
