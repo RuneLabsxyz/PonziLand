@@ -103,15 +103,27 @@
 
     // Widget-relative positioning
     if (pos.type === 'widget-relative' && pos.targetWidget) {
+      const offset = pos.offset || { x: 0, y: 0 };
+      const WIDGET_SPACING = 40;
+
+      // Special case: land-info widget - lock tutorial at bottom-right
+      if (pos.targetWidget === 'land-info') {
+        if (typeof window !== 'undefined') {
+          const RIGHT_PADDING = 650; // Space for land-info widget
+          // Fixed bottom-right position
+          let x = window.innerWidth - DIALOG_WIDTH - RIGHT_PADDING;
+          let y = window.innerHeight - DIALOG_HEIGHT - 100;
+
+          return { type: 'absolute' as const, x, y };
+        }
+      }
+
+      // Other widgets: use store position
       const widget = findWidgetByType(pos.targetWidget);
       if (widget) {
-        const offset = pos.offset || { x: 0, y: 0 };
-
-        // Position to the LEFT of the widget
-        let x = widget.position.x - DIALOG_WIDTH - MARGIN + offset.x;
+        let x = widget.position.x - DIALOG_WIDTH - WIDGET_SPACING + offset.x;
         let y = widget.position.y + offset.y;
 
-        // Clamp to viewport bounds
         if (typeof window !== 'undefined') {
           x = Math.max(
             MARGIN,
