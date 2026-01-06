@@ -46,6 +46,22 @@
     const explored = isFieldExplored(fieldId);
     return `${baseClass} tutorial-explorable ${explored ? 'explored' : ''}`;
   }
+
+  // Calculate sell price in USD for ratio display
+  let sellPriceInUsdAmount = $derived(
+    land?.token && baseToken
+      ? walletStore.convertTokenAmount(land?.sellPrice, land.token, baseToken)
+      : null,
+  );
+
+  // Calculate outflow as percentage of sell price (per hour)
+  let outflowPercentage = $derived.by(() => {
+    if (!sellPriceInUsdAmount) return 0;
+    const sellPriceValue = Number(sellPriceInUsdAmount.toString());
+    const burnRateValue = Number(burnRate.toString());
+    if (sellPriceValue <= 0) return 0;
+    return (burnRateValue / sellPriceValue) * 100;
+  });
 </script>
 
 <div class="w-full flex flex-col gap-2">
@@ -122,6 +138,17 @@
       {#if hoveredField === 'outgoing' && isInteractiveMode}
         <div class="tutorial-tooltip tutorial-tooltip-right">
           {TUTORIAL_FIELD_DESCRIPTIONS['outgoing']}
+          {#if sellPriceInUsdAmount && outflowPercentage > 0}
+            <div class="mt-2 pt-2 border-t border-gold-500/30 text-sm">
+              Your sell price is <span class="text-yellow-300"
+                >{sellPriceInUsdAmount} $</span
+              >
+              and the outflow (land maintenance cost) is
+              <span class="text-yellow-300"
+                >{outflowPercentage.toFixed(2)}%</span
+              > of that value per hour.
+            </div>
+          {/if}
         </div>
       {/if}
       <div class="opacity-50 text-sm">Cost / hour :</div>
