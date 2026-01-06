@@ -36,6 +36,9 @@
       !tutorialAttribute('wait_buy_land').has &&
       !tutorialAttribute('wait_auction_buy').has,
   );
+
+  // Simplified buy mode for tutorial - only sell price, auto stake
+  let isSimplifiedMode = $derived(tutorialAttribute('simplified_buy').has);
   import { Card } from '$lib/components/ui/card';
   import { Slider } from '$lib/components/ui/slider';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -223,7 +226,7 @@
 
   // Update stake when sell price or stake percentage changes
   $effect(() => {
-    if (isManualStakeEdit) return;
+    if (isManualStakeEdit && !isSimplifiedMode) return;
     if (!sellPrice || !selectedToken) {
       stake = '';
       return;
@@ -233,7 +236,9 @@
       stake = '';
       return;
     }
-    const stakeValue = sellPriceNum * (stakePercent / 100);
+    // In simplified mode, auto-set stake to 2x sell price (200%)
+    const effectiveStakePercent = isSimplifiedMode ? 200 : stakePercent;
+    const stakeValue = sellPriceNum * (effectiveStakePercent / 100);
     stake = formatWithoutExponential(stakeValue.toString(), 6);
   });
 
@@ -769,119 +774,134 @@
       </div>
     {:else}
       <!-- Buy tab content will go here -->
-      <Label class="font-ponzi-number" for="token">Token</Label>
-      <p class="-mt-1 mb-1 opacity-75 leading-none">
-        Determines the land you are going to build. You stake this token and
-        will receive this token when bought
-      </p>
-      <div
-        bind:this={tokenContainerRef}
-        class="relative flex gap-1 items-center w-full"
-      >
-        <!-- Quick token buttons - only show what fits -->
-        {#each visibleTokens as token (token.address)}
+
+      <!-- Token selector - hidden in simplified mode -->
+      {#if !isSimplifiedMode}
+        <Label class="font-ponzi-number" for="token">Token</Label>
+        <p class="-mt-1 mb-1 opacity-75 leading-none">
+          Determines the land you are going to build. You stake this token and
+          will receive this token when bought
+        </p>
+        <div
+          bind:this={tokenContainerRef}
+          class="relative flex gap-1 items-center w-full"
+        >
+          <!-- Quick token buttons - only show what fits -->
+          {#each visibleTokens as token (token.address)}
+            <button
+              type="button"
+              class={[
+                'flex items-center gap-1 px-2 py-1 rounded border transition-all shrink-0',
+                'hover:bg-white/10',
+                {
+                  'border-yellow-500 bg-yellow-500/20':
+                    selectedToken?.address === token.address,
+                  'border-white/30 bg-transparent':
+                    selectedToken?.address !== token.address,
+                },
+              ]}
+              onclick={() => {
+                tokenValue = token;
+                showTokenDropdown = false;
+              }}
+            >
+              <TokenAvatar {token} class="h-5 w-5" />
+              <span class="text-sm font-medium">{token.symbol}</span>
+            </button>
+          {/each}
+
+          <!-- Dropdown arrow button -->
           <button
             type="button"
-            class={[
-              'flex items-center gap-1 px-2 py-1 rounded border transition-all shrink-0',
-              'hover:bg-white/10',
-              {
-                'border-yellow-500 bg-yellow-500/20':
-                  selectedToken?.address === token.address,
-                'border-white/30 bg-transparent':
-                  selectedToken?.address !== token.address,
-              },
-            ]}
-            onclick={() => {
-              tokenValue = token;
-              showTokenDropdown = false;
-            }}
+            class="flex items-center justify-center w-8 h-8 rounded border border-white/30 hover:bg-white/10 transition-all shrink-0 ml-auto"
+            aria-label="Toggle token dropdown"
+            onclick={() => (showTokenDropdown = !showTokenDropdown)}
           >
-            <TokenAvatar {token} class="h-5 w-5" />
-            <span class="text-sm font-medium">{token.symbol}</span>
+            <svg
+              class={[
+                'w-4 h-4 transition-transform',
+                { 'rotate-180': showTokenDropdown },
+              ]}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
           </button>
-        {/each}
 
-        <!-- Dropdown arrow button -->
-        <button
-          type="button"
-          class="flex items-center justify-center w-8 h-8 rounded border border-white/30 hover:bg-white/10 transition-all shrink-0 ml-auto"
-          aria-label="Toggle token dropdown"
-          onclick={() => (showTokenDropdown = !showTokenDropdown)}
-        >
-          <svg
-            class={[
-              'w-4 h-4 transition-transform',
-              { 'rotate-180': showTokenDropdown },
-            ]}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
-
-        <!-- Full-width dropdown -->
-        {#if showTokenDropdown}
-          <div
-            class="absolute left-0 right-0 top-full mt-1 z-50 bg-[#1a1a24] border border-white/20 rounded-lg shadow-lg max-h-64 overflow-y-auto"
-          >
-            {#each sortedUserTokens as token (token.address)}
-              {@const balance = walletStore.getBalance(token.address)}
-              {@const usdEquivalent = walletStore.getCachedBaseTokenEquivalent(
-                token.address,
-              )}
-              <button
-                type="button"
-                class={[
-                  'flex justify-between items-center w-full px-3 py-2 hover:bg-white/10 transition-all',
-                  {
-                    'bg-yellow-500/20':
-                      selectedToken?.address === token.address,
-                  },
-                ]}
-                onclick={() => {
-                  tokenValue = token;
-                  showTokenDropdown = false;
-                }}
-              >
-                <div class="flex gap-2 items-center">
-                  <TokenAvatar {token} class="h-6 w-6" />
-                  <div class="flex flex-col items-start">
-                    <span class="font-medium">{token.symbol}</span>
-                    {#if token.name && token.name !== token.symbol}
-                      <span class="text-xs text-gray-400">{token.name}</span>
-                    {/if}
+          <!-- Full-width dropdown -->
+          {#if showTokenDropdown}
+            <div
+              class="absolute left-0 right-0 top-full mt-1 z-50 bg-[#1a1a24] border border-white/20 rounded-lg shadow-lg max-h-64 overflow-y-auto"
+            >
+              {#each sortedUserTokens as token (token.address)}
+                {@const balance = walletStore.getBalance(token.address)}
+                {@const usdEquivalent =
+                  walletStore.getCachedBaseTokenEquivalent(token.address)}
+                <button
+                  type="button"
+                  class={[
+                    'flex justify-between items-center w-full px-3 py-2 hover:bg-white/10 transition-all',
+                    {
+                      'bg-yellow-500/20':
+                        selectedToken?.address === token.address,
+                    },
+                  ]}
+                  onclick={() => {
+                    tokenValue = token;
+                    showTokenDropdown = false;
+                  }}
+                >
+                  <div class="flex gap-2 items-center">
+                    <TokenAvatar {token} class="h-6 w-6" />
+                    <div class="flex flex-col items-start">
+                      <span class="font-medium">{token.symbol}</span>
+                      {#if token.name && token.name !== token.symbol}
+                        <span class="text-xs text-gray-400">{token.name}</span>
+                      {/if}
+                    </div>
                   </div>
+                  {#if balance}
+                    <div class="flex flex-col items-end text-right">
+                      <span class="font-ds">{balance.toString()}</span>
+                      {#if usdEquivalent}
+                        <span class="text-xs text-gray-400">
+                          ≈ ${usdEquivalent.toString()}
+                        </span>
+                      {/if}
+                    </div>
+                  {/if}
+                </button>
+              {/each}
+              {#if sortedUserTokens.length === 0}
+                <div class="p-3 text-center text-gray-400 text-sm">
+                  No tokens with balance
                 </div>
-                {#if balance}
-                  <div class="flex flex-col items-end text-right">
-                    <span class="font-ds">{balance.toString()}</span>
-                    {#if usdEquivalent}
-                      <span class="text-xs text-gray-400">
-                        ≈ ${usdEquivalent.toString()}
-                      </span>
-                    {/if}
-                  </div>
-                {/if}
-              </button>
-            {/each}
-            {#if sortedUserTokens.length === 0}
-              <div class="p-3 text-center text-gray-400 text-sm">
-                No tokens with balance
-              </div>
-            {/if}
-          </div>
+              {/if}
+            </div>
+          {/if}
+        </div>
+        {#if tokenError}
+          <p class="text-red-500 text-sm mt-1">{tokenError}</p>
         {/if}
-      </div>
-      {#if tokenError}
-        <p class="text-red-500 text-sm mt-1">{tokenError}</p>
+      {/if}
+
+      <!-- Simplified mode header -->
+      {#if isSimplifiedMode}
+        <div
+          class="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
+        >
+          <p class="text-sm text-yellow-200">
+            <b>Quick Buy:</b> Just set your sell price. Stake is auto-calculated (2x
+            price).
+          </p>
+        </div>
       {/if}
 
       <div
@@ -966,90 +986,107 @@
           {/if}
         </div>
 
-        <!-- Stake Amount Section -->
-        <div class="flex flex-col gap-2">
-          <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
-          <p class="-mt-1 mb-1 leading-none opacity-75 text-sm">
-            Locked value to pay taxes and survive (ratio of sell price)
-          </p>
+        <!-- Stake Amount Section - hidden in simplified mode -->
+        {#if !isSimplifiedMode}
+          <div class="flex flex-col gap-2">
+            <Label class="font-ponzi-number" for="stake">Stake Amount</Label>
+            <p class="-mt-1 mb-1 leading-none opacity-75 text-sm">
+              Locked value to pay taxes and survive (ratio of sell price)
+            </p>
 
-          <!-- Preset buttons -->
-          <div class="flex flex-wrap gap-1">
-            {#each STAKE_PRESETS as preset}
-              <button
-                type="button"
+            <!-- Preset buttons -->
+            <div class="flex flex-wrap gap-1">
+              {#each STAKE_PRESETS as preset}
+                <button
+                  type="button"
+                  class={[
+                    'px-2 py-1 rounded border text-xs transition-all',
+                    'hover:bg-white/10',
+                    {
+                      'border-yellow-500 bg-yellow-500/20':
+                        stakePercent === preset,
+                      'border-white/30': stakePercent !== preset,
+                    },
+                  ]}
+                  onclick={() => onStakePresetClick(preset)}
+                >
+                  {preset >= 100 ? `${preset / 100}x` : `${preset}%`}
+                </button>
+              {/each}
+            </div>
+
+            <!-- Slider -->
+            <!-- svelte-ignore a11y_no_static_element_interactions -->
+            <div
+              onpointerdown={onStakeSliderPointerDown}
+              onpointerup={onStakeSliderPointerUp}
+              onpointerleave={onStakeSliderPointerUp}
+            >
+              <Slider
+                type="single"
+                min={10}
+                max={1000}
+                step={10}
+                value={displayStakePercent}
+                onValueChange={onStakeSliderChange}
+                class="w-full"
+              />
+            </div>
+
+            <!-- Value display -->
+            <div class="flex gap-2 items-center overflow-hidden">
+              <Input
+                id="stake"
+                type="number"
+                value={stake}
+                oninput={(e) => onStakeInput(e.currentTarget.value)}
                 class={[
-                  'px-2 py-1 rounded border text-xs transition-all',
-                  'hover:bg-white/10',
-                  {
-                    'border-yellow-500 bg-yellow-500/20':
-                      stakePercent === preset,
-                    'border-white/30': stakePercent !== preset,
-                  },
+                  'flex-1 min-w-0',
+                  { 'border-red-500': stakeAmountError },
                 ]}
-                onclick={() => onStakePresetClick(preset)}
-              >
-                {preset >= 100 ? `${preset / 100}x` : `${preset}%`}
-              </button>
-            {/each}
-          </div>
-
-          <!-- Slider -->
-          <!-- svelte-ignore a11y_no_static_element_interactions -->
-          <div
-            onpointerdown={onStakeSliderPointerDown}
-            onpointerup={onStakeSliderPointerUp}
-            onpointerleave={onStakeSliderPointerUp}
-          >
-            <Slider
-              type="single"
-              min={10}
-              max={1000}
-              step={10}
-              value={displayStakePercent}
-              onValueChange={onStakeSliderChange}
-              class="w-full"
-            />
-          </div>
-
-          <!-- Value display -->
-          <div class="flex gap-2 items-center overflow-hidden">
-            <Input
-              id="stake"
-              type="number"
-              value={stake}
-              oninput={(e) => onStakeInput(e.currentTarget.value)}
-              class={['flex-1 min-w-0', { 'border-red-500': stakeAmountError }]}
-            />
-            <span class="text-sm text-gray-400 whitespace-nowrap shrink-0">
-              {selectedToken?.symbol}
-            </span>
-            {#if stakeAmountInBaseCurrency}
-              <span
-                class="text-sm font-ponzi-number text-white whitespace-nowrap truncate max-w-[120px]"
-                title="≈ {stakeAmountInBaseCurrency.toString()} {baseToken.symbol}"
-              >
-                ≈ {stakeAmountInBaseCurrency.toString()}
-                {baseToken.symbol}
+              />
+              <span class="text-sm text-gray-400 whitespace-nowrap shrink-0">
+                {selectedToken?.symbol}
               </span>
+              {#if stakeAmountInBaseCurrency}
+                <span
+                  class="text-sm font-ponzi-number text-white whitespace-nowrap truncate max-w-[120px]"
+                  title="≈ {stakeAmountInBaseCurrency.toString()} {baseToken.symbol}"
+                >
+                  ≈ {stakeAmountInBaseCurrency.toString()}
+                  {baseToken.symbol}
+                </span>
+              {/if}
+            </div>
+            {#if stakeAmountError}
+              <p class="text-red-500 text-sm">{stakeAmountError}</p>
             {/if}
           </div>
-          {#if stakeAmountError}
-            <p class="text-red-500 text-sm">{stakeAmountError}</p>
-          {/if}
-        </div>
+        {:else}
+          <!-- Simplified mode: show auto-calculated stake info -->
+          <div class="flex flex-col gap-1 p-2 bg-gray-800/50 rounded">
+            <span class="text-xs text-gray-400">Auto Stake (2x price)</span>
+            <span class="text-sm font-ponzi-number">
+              {stake}
+              {selectedToken?.symbol ?? land.token?.symbol}
+            </span>
+          </div>
+        {/if}
       </div>
 
-      <div class="w-full">
-        <TaxImpact
-          sellAmountVal={sellPrice}
-          stakeAmountVal={stake}
-          {selectedToken}
-          {land}
-          {auctionPrice}
-          bind:hasAdvisorWarnings
-        />
-      </div>
+      <!-- Tax Impact - hidden in simplified mode -->
+      {#if !isSimplifiedMode}
+        <div class="w-full">
+          <TaxImpact
+            sellAmountVal={sellPrice}
+            stakeAmountVal={stake}
+            {selectedToken}
+            {land}
+            {auctionPrice}
+            bind:hasAdvisorWarnings
+          />
+        </div>
+      {/if}
 
       {#if balanceError}
         <p class="text-red-500 text-sm mt-1">{balanceError}</p>

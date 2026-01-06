@@ -1003,9 +1003,154 @@ export class LandTileStore {
     });
   }
 
-  // Add default auction lands for tutorial mode
+  // ==========================================
+  // Progressive Tutorial Methods (Softer Onboarding)
+  // ==========================================
+
+  // Add only the initial auction for tutorial (step 1-3)
+  public addTutorialInitialAuction(): void {
+    console.log('Tutorial: Adding initial auction at center...');
+    const centerX = 128;
+    const centerY = 128;
+    this.addAuctionAt(centerX, centerY, data.mainCurrencyAddress, 'First');
+  }
+
+  // Add second auction after first purchase (step 4-6) - LORDS token
+  public addTutorialSecondAuction(): void {
+    console.log('Tutorial: Adding second auction...');
+    // Find LORDS token
+    const lordsToken = data.availableTokens.find(
+      (t) => t.symbol === 'LORDS' || t.symbol === 'ETH',
+    );
+    const tokenAddress = lordsToken?.address ?? data.mainCurrencyAddress;
+    this.addAuctionAt(127, 127, tokenAddress, 'First');
+  }
+
+  // Add neighbor lands around player's center land (step 7-9)
+  public addTutorialNeighbors(): void {
+    console.log('Tutorial: Adding neighbor lands...');
+    const fakeOwner =
+      '0x0432d05c36cac355e0a74a08e8b8776b45f5bff96b59b351ec9171bf66a22a37';
+
+    // Find tokens for variety
+    const tokenAddressMap: { [symbol: string]: string } = {};
+    data.availableTokens.forEach((token) => {
+      tokenAddressMap[token.symbol] = token.address;
+    });
+
+    // Add 4 neighbor lands in different tokens
+    const neighbors = [
+      {
+        x: 129,
+        y: 128,
+        token: tokenAddressMap['ETH'] ?? data.mainCurrencyAddress,
+      },
+      {
+        x: 128,
+        y: 129,
+        token: tokenAddressMap['WBTC'] ?? data.mainCurrencyAddress,
+      },
+      {
+        x: 128,
+        y: 127,
+        token: tokenAddressMap['SOL'] ?? data.mainCurrencyAddress,
+      },
+      {
+        x: 129,
+        y: 129,
+        token: tokenAddressMap['DOG'] ?? data.mainCurrencyAddress,
+      },
+    ];
+
+    this.currentLands.update((lands) => {
+      neighbors.forEach(({ x, y, token }) => {
+        const tokenInfo = data.availableTokens.find((t) => t.address === token);
+        if (!tokenInfo) return;
+
+        const price = CurrencyAmount.fromScaled(100, tokenInfo);
+        const fakeLand: Land = {
+          owner: fakeOwner,
+          location: coordinatesToLocation({ x, y }),
+          block_date_bought: Date.now() / 1000,
+          sell_price: price.toBigint(),
+          token_used: token,
+          // @ts-ignore
+          level: 'Second',
+        };
+
+        const fakeStake: LandStake = {
+          location: coordinatesToLocation({ x, y }),
+          amount: price.toBigint() * BigInt(2),
+          neighbors_info_packed: 0,
+          accumulated_taxes_fee: 0,
+        };
+
+        const buildingLand = new BuildingLand(fakeLand);
+        buildingLand.updateStake(fakeStake);
+
+        this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+        this.store[x][y].set({ value: buildingLand });
+        lands[x][y] = buildingLand;
+      });
+
+      this.forceOwnershipUpdate();
+      return lands;
+    });
+  }
+
+  // Add full auction for advanced tutorial (step 12-15)
+  public addTutorialFullAuction(): void {
+    console.log('Tutorial: Adding full auction for advanced purchase...');
+    this.addAuctionAt(126, 126, data.mainCurrencyAddress, 'First');
+  }
+
+  // Helper: Add an auction at specific coordinates
+  private addAuctionAt(
+    x: number,
+    y: number,
+    tokenAddress: string,
+    level: string,
+  ): void {
+    const location = coordinatesToLocation({ x, y });
+    const basePrice = 10000000000000000000n; // 10 tokens
+
+    const fakeLand: Land = {
+      owner: '0x00',
+      location: location,
+      block_date_bought: Date.now() / 1000,
+      sell_price: basePrice,
+      token_used: tokenAddress,
+      // @ts-ignore
+      level: level,
+    };
+
+    const fakeAuction: Auction = {
+      land_location: location,
+      is_finished: false,
+      start_price: basePrice * BigInt(2),
+      start_time: Date.now() / 1000,
+      floor_price: basePrice / BigInt(2),
+      sold_at_price: new CairoOption(CairoOptionVariant.None),
+    };
+
+    this.updateLand({
+      entityId: `tutorial_auction_${location}`,
+      models: {
+        ponzi_land: {
+          Land: fakeLand,
+          Auction: fakeAuction,
+        },
+      },
+    } as ParsedEntity<SchemaType>);
+  }
+
+  // ==========================================
+  // Legacy Tutorial Method (for backwards compatibility)
+  // ==========================================
+
+  // Add default auction lands for tutorial mode (legacy - all at once)
   public addTutorialAuctions(): void {
-    console.log('Adding tutorial auction lands...');
+    console.log('Adding tutorial auction lands (legacy mode)...');
 
     // Center position
     const centerX = Math.floor(GRID_SIZE / 2);
