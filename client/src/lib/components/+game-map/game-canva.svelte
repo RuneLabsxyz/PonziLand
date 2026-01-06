@@ -37,12 +37,23 @@
 
   $effect(() => {
     if (!gameStore.cameraControls) return;
-    gameStore.cameraControls.mouseButtons.left =
-      devsettings.cameraControlsLeftClick as any;
-    gameStore.cameraControls.mouseButtons.right =
-      devsettings.cameraControlsRightClick as any;
-    gameStore.cameraControls.mouseButtons.wheel =
-      devsettings.CameraControlsWheel as any;
+    // Disable all camera mouse controls during tutorial
+    if (isTutorial && TUTORIAL_CAMERA.lockControls) {
+      gameStore.cameraControls.mouseButtons.left = 0; // NONE
+      gameStore.cameraControls.mouseButtons.right = 0; // NONE
+      gameStore.cameraControls.mouseButtons.wheel = 0; // NONE
+      gameStore.cameraControls.mouseButtons.middle = 0; // NONE
+      gameStore.cameraControls.touches.one = 0; // NONE
+      gameStore.cameraControls.touches.two = 0; // NONE
+      gameStore.cameraControls.touches.three = 0; // NONE
+    } else {
+      gameStore.cameraControls.mouseButtons.left =
+        devsettings.cameraControlsLeftClick as any;
+      gameStore.cameraControls.mouseButtons.right =
+        devsettings.cameraControlsRightClick as any;
+      gameStore.cameraControls.mouseButtons.wheel =
+        devsettings.CameraControlsWheel as any;
+    }
   });
 
   // Apply tutorial camera settings when tutorial is enabled
@@ -94,10 +105,22 @@
           ref.setLookAt(startX, 50, startY, startX, 0, startY, false);
           if (isTutorial) {
             ref.zoomTo(startZoom, false);
+            // Lock camera controls during tutorial
+            if (TUTORIAL_CAMERA.lockControls) {
+              ref.mouseButtons.left = 0;
+              ref.mouseButtons.right = 0;
+              ref.mouseButtons.wheel = 0;
+              ref.mouseButtons.middle = 0;
+              ref.touches.one = 0;
+              ref.touches.two = 0;
+              ref.touches.three = 0;
+            }
+          } else {
+            ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
+            ref.mouseButtons.right =
+              devsettings.cameraControlsRightClick as any;
+            ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;
           }
-          ref.mouseButtons.left = devsettings.cameraControlsLeftClick as any;
-          ref.mouseButtons.right = devsettings.cameraControlsRightClick as any;
-          ref.mouseButtons.wheel = devsettings.CameraControlsWheel as any;
         }}
       />
     </T.OrthographicCamera>
