@@ -410,7 +410,7 @@
 
         <!-- Action hint, Next button, or Enter Grid button -->
         {#if showEnterGrid}
-          <Button onclick={enterGrid} size="sm" class="action-hint-button">
+          <Button onclick={enterGrid} class="action-hint-button">
             Enter the Grid
             <ChevronRight class="h-4 w-4 ml-1" />
           </Button>
