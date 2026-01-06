@@ -59,7 +59,8 @@
         "simplified_buy",
         "wait_buy_land",
         "allow_buy_widget",
-        "tutorial_phase_1"
+        "tutorial_phase_1",
+        "darken_widget"
       ],
       "hint": "Set price & buy",
       "position": {
@@ -194,7 +195,8 @@
         "highlight_token_earnings",
         "spawn_full_auction",
         "show_next_button",
-        "tutorial_phase_4"
+        "tutorial_phase_4",
+        "darken_widget"
       ],
       "hint": "",
       "position": {
@@ -236,7 +238,8 @@
         "highlight_tax_impact",
         "wait_tax_impact_click",
         "allow_buy_widget",
-        "tutorial_phase_5"
+        "tutorial_phase_5",
+        "darken_widget"
       ],
       "hint": "Expand tax impact",
       "position": {
@@ -256,7 +259,8 @@
         "interactive_tax_explore",
         "allow_buy_widget",
         "wait_buy_land",
-        "tutorial_phase_5"
+        "tutorial_phase_5",
+        "darken_widget"
       ],
       "hint": "Hover & buy",
       "position": {
@@ -309,7 +313,12 @@
       "_comment": "Increase stake",
       "text": "Use <b>Increase Stake</b> to add more fuel. This extends your survival time!",
       "image_id": 3,
-      "has": ["wait_increase_stake", "neighbor_land_nuke", "tutorial_phase_6"],
+      "has": [
+        "wait_increase_stake",
+        "neighbor_land_nuke",
+        "tutorial_phase_6",
+        "darken_widget"
+      ],
       "hint": "Add stake",
       "position": {
         "type": "widget-relative",

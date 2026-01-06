@@ -22,6 +22,7 @@
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { get } from 'svelte/store';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import TutorialOverlay from './tutorial-overlay.svelte';
 
   let currentDialog = $derived(
     dialogData.steps[tutorialState.tutorialStep - 1],
@@ -334,6 +335,9 @@
     window.location.href = '/game';
   }
 </script>
+
+<!-- Widget darkening overlay -->
+<TutorialOverlay />
 
 <!-- Fullscreen intro overlay -->
 {#if isFullscreenIntro}
