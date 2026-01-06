@@ -1,14 +1,42 @@
 import tutorialData from './dialog.json';
 
+// Position type for dynamic tutorial positioning
+export interface TutorialPosition {
+  type: 'fixed' | 'widget-relative' | 'map-relative';
+  preset?: string; // For 'fixed' type
+  targetWidget?: string; // For 'widget-relative' (e.g., 'buy-land', 'land-info')
+  targetLand?: [number, number]; // For 'map-relative' [x, y]
+  offset?: { x: number; y: number };
+  fallback?: string; // Fallback preset if target unavailable
+}
+
 // Type definition for tutorial step
-interface TutorialStep {
+export interface TutorialStep {
   _step: string;
   text: string;
   image_id: number;
   has: string[];
+  hint?: string;
+  position?: string | TutorialPosition;
   allowed_lands: number[][];
   enabled_widgets: string[];
   continue?: string;
+}
+
+// Normalize position to TutorialPosition format (backward compatible)
+export function normalizePosition(
+  position: string | TutorialPosition | undefined,
+): TutorialPosition {
+  if (!position) {
+    return { type: 'fixed', preset: 'map-center', fallback: 'map-center' };
+  }
+
+  if (typeof position === 'string') {
+    // Legacy format - treat as fixed preset
+    return { type: 'fixed', preset: position, fallback: position };
+  }
+
+  return position;
 }
 
 // Tutorial camera settings
@@ -70,7 +98,7 @@ let currentStepAttributes = $derived(
 );
 
 // Get the current step data
-function getCurrentStep(): TutorialStep | null {
+export function getCurrentStep(): TutorialStep | null {
   if (!tutorialState.tutorialEnabled) return null;
   return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
 }

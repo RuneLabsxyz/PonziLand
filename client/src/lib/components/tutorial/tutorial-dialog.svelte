@@ -8,11 +8,15 @@
     resetExploredTaxFields,
     getExploredFieldsCount,
     TOTAL_EXPLORABLE_FIELDS,
+    normalizePosition,
+    type TutorialPosition,
   } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
+  import { Vector3 } from 'three';
   import { ChevronRight } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -31,6 +35,145 @@
 
   // Click-to-continue mode for passive updates
   let waitLaziClick = $derived(tutorialAttribute('wait_lazi_click').has);
+
+  // Dialog dimensions for position calculations
+  const DIALOG_WIDTH = 480;
+  const DIALOG_HEIGHT = 120;
+  const MARGIN = 20;
+
+  // Normalize position from current dialog step (cast needed for JSON type inference)
+  let normalizedPos = $derived(
+    normalizePosition(
+      currentDialog?.position as string | TutorialPosition | undefined,
+    ),
+  );
+
+  // Map position presets to CSS classes (fallback positioning)
+  const positionClasses: Record<string, string> = {
+    'widget-left': 'top-1/2 left-[5%] -translate-y-1/2',
+    'map-center': 'top-[55%] left-[10%]',
+    'map-left': 'top-[45%] right-[10%]',
+    'map-bottom-left': 'top-[25%] right-[15%]',
+    'below-top': 'top-[20%] left-1/2 -translate-x-1/2',
+    center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+  };
+
+  // Reactive widget positions from store
+  let widgets = $derived($widgetsStore);
+
+  // Find widget by type (widgets can have dynamic IDs like 'land-info [128-128]')
+  function findWidgetByType(targetType: string) {
+    // Map conceptual names to actual widget types
+    const typeMapping: Record<string, string> = {
+      'buy-land': 'land-info', // "buy-land" is actually the land-info widget
+      'land-info': 'land-info',
+    };
+    const actualType = typeMapping[targetType] || targetType;
+
+    // Find any open, non-minimized widget of this type
+    return Object.values(widgets).find(
+      (w) => w.type === actualType && w.isOpen && !w.isMinimized,
+    );
+  }
+
+  // Project 3D world coordinates to screen space
+  function projectToScreen(
+    worldX: number,
+    worldZ: number,
+  ): { x: number; y: number } | null {
+    const camera = gameStore.cameraControls?.camera;
+    if (!camera || typeof window === 'undefined') return null;
+
+    // Create world position (y=0.5 to be slightly above ground)
+    const worldPos = new Vector3(worldX, 0.5, worldZ);
+
+    // Project to normalized device coordinates (-1 to 1)
+    worldPos.project(camera);
+
+    // Convert to screen coordinates
+    const screenX = (worldPos.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
+
+    return { x: screenX, y: screenY };
+  }
+
+  // Compute screen position based on position type
+  let computedPosition = $derived.by(() => {
+    const pos = normalizedPos;
+
+    // Widget-relative positioning
+    if (pos.type === 'widget-relative' && pos.targetWidget) {
+      const widget = findWidgetByType(pos.targetWidget);
+      if (widget) {
+        const offset = pos.offset || { x: 0, y: 0 };
+
+        // Position to the LEFT of the widget
+        let x = widget.position.x - DIALOG_WIDTH - MARGIN + offset.x;
+        let y = widget.position.y + offset.y;
+
+        // Clamp to viewport bounds
+        if (typeof window !== 'undefined') {
+          x = Math.max(
+            MARGIN,
+            Math.min(x, window.innerWidth - DIALOG_WIDTH - MARGIN),
+          );
+          y = Math.max(
+            MARGIN,
+            Math.min(y, window.innerHeight - DIALOG_HEIGHT - MARGIN),
+          );
+        }
+
+        return { type: 'absolute' as const, x, y };
+      }
+    }
+
+    // Map-relative positioning - project 3D coordinates to screen
+    if (pos.type === 'map-relative' && pos.targetLand) {
+      const [landX, landZ] = pos.targetLand;
+      const screenPos = projectToScreen(landX, landZ);
+
+      if (screenPos) {
+        const offset = pos.offset || { x: 0, y: 0 };
+        const MAP_SPACING = 180; // Extra spacing from land tile
+
+        // Position to the LEFT of the land tile with extra spacing
+        let x = screenPos.x - DIALOG_WIDTH - MAP_SPACING + offset.x;
+        let y = screenPos.y - DIALOG_HEIGHT / 2 + offset.y;
+
+        // Clamp to viewport bounds
+        if (typeof window !== 'undefined') {
+          x = Math.max(
+            MARGIN,
+            Math.min(x, window.innerWidth - DIALOG_WIDTH - MARGIN),
+          );
+          y = Math.max(
+            MARGIN,
+            Math.min(y, window.innerHeight - DIALOG_HEIGHT - MARGIN),
+          );
+        }
+
+        return { type: 'absolute' as const, x, y };
+      }
+    }
+
+    // Fallback to fixed CSS class positioning
+    const preset = pos.fallback || pos.preset || 'map-center';
+    return { type: 'fixed' as const, preset };
+  });
+
+  // Generate position class or style based on computed position
+  let currentPositionClass = $derived(
+    computedPosition.type === 'fixed'
+      ? positionClasses[computedPosition.preset] ||
+          positionClasses['map-center']
+      : '',
+  );
+
+  let positionStyle = $derived(
+    computedPosition.type === 'absolute'
+      ? `top: ${computedPosition.y}px; left: ${computedPosition.x}px;`
+      : '',
+  );
 
   function handleLaziClick() {
     if (waitLaziClick) {
@@ -223,7 +366,10 @@
   </div>
 {:else}
   <!-- Compact Lazi dialog - click to continue for passive updates -->
-  <div class="fixed top-4 left-4 z-[9999]">
+  <div
+    class="fixed z-[9999] transition-all duration-300 {currentPositionClass}"
+    style={positionStyle}
+  >
     <Card
       class="tutorial-card {waitLaziClick
         ? 'cursor-pointer hover:border-yellow-400'
