@@ -87,8 +87,8 @@
       "_comment": "Someone else bought it - now you have a neighbor",
       "text": "Oh no! <b>Someone else bought it</b> before you! But that's actually good - now you have a <b>neighbor</b>!<br><br>Notice they're using <b>LORDS</b> token. You'll earn taxes from them!",
       "image_id": 4,
-      "has": ["auto_advance", "tutorial_phase_2"],
-      "hint": "",
+      "has": ["wait_lazi_click", "tutorial_phase_2"],
+      "hint": "Click to continue",
       "allowed_lands": [],
       "enabled_widgets": []
     },
@@ -114,40 +114,36 @@
     },
     {
       "_step": "9",
-      "_comment": "Spawn more neighbors",
-      "text": "More players are joining! Look - <b>new neighbors</b> appeared around your land!<br><br>Each neighbor uses a <b>different token</b>. You earn taxes in each of their tokens!",
+      "_comment": "Spawn neighbors + pro mode prompt (merged)",
+      "text": "New neighbors joined! Click the <b>eye icon</b> to see your earnings breakdown by token.",
       "image_id": 2,
-      "has": ["spawn_neighbors", "auto_advance", "tutorial_phase_3"],
-      "hint": "",
-      "allowed_lands": [[128, 128]],
-      "enabled_widgets": ["land-info"]
-    },
-    {
-      "_step": "10",
-      "_comment": "Pro mode toggle",
-      "text": "Want to see the breakdown by token? Click the <b>eye icon</b> to toggle <b>Pro Mode</b>!",
-      "image_id": 3,
-      "has": ["highlight_pro_mode", "wait_pro_mode_click", "tutorial_phase_4"],
+      "has": [
+        "spawn_neighbors",
+        "highlight_pro_mode",
+        "wait_pro_mode_click",
+        "tutorial_phase_3"
+      ],
       "hint": "Click the eye",
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
     },
     {
-      "_step": "11",
+      "_step": "10",
       "_comment": "Pro mode explanation",
       "text": "Pro Mode shows <b>exactly how much</b> you earn from each neighbor in their token.<br><br>This helps you track your multi-token portfolio!",
       "image_id": 1,
       "has": [
         "highlight_token_earnings",
         "spawn_full_auction",
+        "wait_lazi_click",
         "tutorial_phase_4"
       ],
-      "hint": "",
+      "hint": "Click to continue",
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
     },
     {
-      "_step": "12",
+      "_step": "11",
       "_comment": "Full buy modal - new auction",
       "text": "Now let's try to buy another auction!<br><br><b>Click on the new auction</b> to the left.",
       "image_id": 2,
@@ -162,24 +158,9 @@
       "enabled_widgets": ["buy-land"]
     },
     {
-      "_step": "13",
-      "_comment": "Full modal - token selection",
-      "text": "Now you see the <b>full buy options</b>:<br><br>- <b>Token:</b> Choose which token to stake<br>- <b>Sell Price:</b> What others pay for your land<br>- <b>Stake:</b> Your tax fuel (more = longer survival)",
-      "image_id": 3,
-      "has": [
-        "highlight_buy_inputs",
-        "allow_buy_widget",
-        "auto_advance",
-        "tutorial_phase_5"
-      ],
-      "hint": "",
-      "allowed_lands": [[127, 128]],
-      "enabled_widgets": ["buy-land"]
-    },
-    {
-      "_step": "14",
-      "_comment": "Tax impact section",
-      "text": "Now click on <b>Neighborhood Tax Impact</b> to see how your settings affect your survival!",
+      "_step": "12",
+      "_comment": "Tax impact section - directly after popup appears",
+      "text": "Click on <b>Neighborhood Tax Impact</b> to see how your settings affect your survival!",
       "image_id": 2,
       "has": [
         "highlight_tax_impact",
@@ -192,7 +173,7 @@
       "enabled_widgets": ["buy-land"]
     },
     {
-      "_step": "15",
+      "_step": "13",
       "_comment": "Tax impact explanation + buy",
       "text": "<b>Hover over each field</b> to learn what they mean!<br><br>When you're happy with your settings, click <b>Buy Now</b>!",
       "image_id": 3,
@@ -207,7 +188,7 @@
       "enabled_widgets": ["buy-land"]
     },
     {
-      "_step": "16",
+      "_step": "14",
       "_comment": "Shield button introduction",
       "text": "Great! You're building an empire!<br><br>Now let's learn about <b>shields</b>. Click the <b>shield icon</b> in the top bar to see nuke times.",
       "image_id": 2,
@@ -222,7 +203,7 @@
       "enabled_widgets": []
     },
     {
-      "_step": "17",
+      "_step": "15",
       "_comment": "Stake running low",
       "text": "Uh oh! Your first land's stake is <b>running low</b>! See the red timer?<br><br>Open its info panel to add more stake before it gets nuked!",
       "image_id": 3,
@@ -232,7 +213,7 @@
       "enabled_widgets": ["land-info"]
     },
     {
-      "_step": "18",
+      "_step": "16",
       "_comment": "Increase stake",
       "text": "Use <b>Increase Stake</b> to add more fuel. This extends your survival time!",
       "image_id": 3,
@@ -247,7 +228,7 @@
       "enabled_widgets": ["land-info"]
     },
     {
-      "_step": "19",
+      "_step": "17",
       "_comment": "Neighbor nuking - claim taxes",
       "text": "Look! A neighbor's land is about to be <b>nuked</b>!<br><br>Click the <b>golden coin</b> above your land to claim your taxes - this triggers their nuke!",
       "image_id": 4,
@@ -263,7 +244,7 @@
       "enabled_widgets": ["land-info"]
     },
     {
-      "_step": "20",
+      "_step": "18",
       "_comment": "Tutorial complete",
       "text": "You've mastered the basics!<br><br>Remember:<br>- Higher sell price = more taxes you pay<br>- Keep stake topped up<br>- Claim taxes from dying neighbors<br>- Diversify your token portfolio!<br><br>Good luck in PonziLand!",
       "image_id": 1,

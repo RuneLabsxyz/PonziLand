@@ -29,6 +29,15 @@
   // Show "Enter the Grid" button at end
   let showEnterGrid = $derived(tutorialAttribute('enter_grid').has);
 
+  // Click-to-continue mode for passive updates
+  let waitLaziClick = $derived(tutorialAttribute('wait_lazi_click').has);
+
+  function handleLaziClick() {
+    if (waitLaziClick) {
+      nextStep();
+    }
+  }
+
   // Total steps for progress indicator
   const totalSteps = dialogData.steps.length;
 
@@ -213,9 +222,16 @@
     </Card>
   </div>
 {:else}
-  <!-- Compact Lazi dialog - no buttons, auto-advances -->
+  <!-- Compact Lazi dialog - click to continue for passive updates -->
   <div class="fixed top-4 left-4 z-[9999]">
-    <Card class="tutorial-card">
+    <Card
+      class="tutorial-card {waitLaziClick
+        ? 'cursor-pointer hover:border-yellow-400'
+        : ''}"
+      onclick={handleLaziClick}
+      role={waitLaziClick ? 'button' : undefined}
+      tabindex={waitLaziClick ? 0 : undefined}
+    >
       <div
         class="flex items-center gap-3 w-[480px] min-h-[120px] p-4 font-ponzi-number"
       >
