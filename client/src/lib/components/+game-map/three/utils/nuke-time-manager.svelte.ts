@@ -6,7 +6,10 @@ import { parseNukeTimeComponents } from '$lib/utils/date';
 import { SvelteMap } from 'svelte/reactivity';
 import type { LandTile } from '../landTile';
 import type { BaseLand } from '$lib/api/land';
-import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+import {
+  tutorialAttribute,
+  tutorialState,
+} from '$lib/components/tutorial/stores.svelte';
 import { coordinatesToLocation, toHexWithPadding } from '$lib/utils';
 
 // Helper to convert x,y to hex location string
@@ -176,20 +179,19 @@ export class NukeTimeManager {
    * Get mock nuke time for tutorial mode
    */
   private getTutorialMockTime(locationKey: string): number {
-    const step = tutorialState.tutorialStep;
-
-    // Player's land (128,128) - shows NUKE at step 11 (low stake warning)
-    // Step 9: decrease_stake, Step 10: shields, Step 11: low stake warning
-    // Step 12: increase stake (after this, stake is restored)
+    // Player's land (128,128) - shows NUKE when player_land_nuke attribute is set
     if (locationKey === PLAYER_LAND_HEX) {
-      if (step === 11) {
+      if (tutorialAttribute('player_land_nuke').has) {
         return 30; // 30 seconds = shows "NUKE!"
       }
       return TUTORIAL_MOCK_NUKE_TIMES[PLAYER_LAND_HEX] ?? 3600 * 2;
     }
 
-    // Neighbor land (129,128) - to the right - shows NUKE at step 13 (claim step)
-    if (locationKey === NEIGHBOR_NUKE_HEX && step >= 13) {
+    // Neighbor land (129,128) - to the right - shows NUKE when neighbor_land_nuke attribute is set
+    if (
+      locationKey === NEIGHBOR_NUKE_HEX &&
+      tutorialAttribute('neighbor_land_nuke').has
+    ) {
       return 30; // 30 seconds = shows "NUKE!"
     }
 

@@ -19,7 +19,9 @@
   import { get } from 'svelte/store';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
 
-  let currentDialog = $derived(dialogData[tutorialState.tutorialStep - 1]);
+  let currentDialog = $derived(
+    dialogData.steps[tutorialState.tutorialStep - 1],
+  );
   let showNavigation = $derived(
     tutorialAttribute('previous').has ||
       tutorialAttribute('next').has ||

@@ -482,11 +482,12 @@
       tutorialState.tutorialEnabled && tutorialAttribute('wait_claim_nuke').has;
 
     if (isTutorialClaimStep) {
-      // Find the tutorial land at 128,128 (location = 32896)
+      // Find the tutorial land at 128,128
       const tutorialLand = visibleLandTiles.find(
         (tile) =>
           BuildingLand.is(tile.land) &&
-          coordinatesToLocation(tile.land.location) === 32896,
+          coordinatesToLocation(tile.land.location) ===
+            coordinatesToLocation({ x: 128, y: 128 }),
       );
       if (tutorialLand) {
         return [tutorialLand];
@@ -942,12 +943,12 @@
           ]}
           size="sm"
           onclick={() => {
-            // In tutorial, only allow opening buy widget on steps 7-10 (buy land and auction steps)
-            if (tutorialState.tutorialEnabled) {
-              const step = tutorialState.tutorialStep;
-              if (step < 7 || step > 10) {
-                return; // Block early/late opening to prevent deadlock
-              }
+            // In tutorial, only allow opening buy widget when the attribute is set
+            if (
+              tutorialState.tutorialEnabled &&
+              !tutorialAttribute('allow_buy_widget').has
+            ) {
+              return; // Block opening to prevent deadlock
             }
 
             if (tutorialAttribute('wait_buy_land_open').has) {
