@@ -357,7 +357,7 @@
       "image_id": 1,
       "has": ["enter_grid"],
       "hint": "",
-      "position": "map-center",
+      "position": "center",
       "allowed_lands": [],
       "enabled_widgets": []
     }
