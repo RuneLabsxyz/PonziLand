@@ -70,6 +70,56 @@ export let tutorialState = $state({
   exploredTaxFields: new Set<string>(), // For interactive tax impact panel
 });
 
+// Outro sequence state
+export type OutroPhase =
+  | 'idle'
+  | 'zooming'
+  | 'activity'
+  | 'nuking'
+  | 'pausing'
+  | 'complete';
+
+export let tutorialOutroState = $state({
+  isPlaying: false,
+  phase: 'idle' as OutroPhase,
+});
+
+export function startOutroSequence() {
+  tutorialOutroState.isPlaying = true;
+  tutorialOutroState.phase = 'zooming';
+}
+
+// Advance step with outro check - use this when the current step might have trigger_outro
+export function advanceStepWithOutroCheck() {
+  // Get current step attributes
+  const currentStepData = tutorialData.steps[tutorialState.tutorialStep - 1];
+  const hasOutroTrigger = currentStepData?.has?.includes('trigger_outro');
+
+  if (hasOutroTrigger) {
+    console.log(
+      'Tutorial: Triggering outro sequence from step',
+      tutorialState.tutorialStep,
+    );
+    startOutroSequence();
+    return;
+  }
+
+  // Otherwise, normal advancement
+  nextStep();
+}
+
+export function setOutroPhase(phase: OutroPhase) {
+  tutorialOutroState.phase = phase;
+  if (phase === 'complete') {
+    tutorialOutroState.isPlaying = false;
+  }
+}
+
+export function resetOutroSequence() {
+  tutorialOutroState.isPlaying = false;
+  tutorialOutroState.phase = 'idle';
+}
+
 export function nextStep() {
   if (tutorialState.tutorialStep < tutorialData.steps.length) {
     tutorialState.tutorialStep += 1;

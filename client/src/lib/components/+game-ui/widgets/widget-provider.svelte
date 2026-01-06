@@ -22,10 +22,17 @@
   import WidgetUsername from './username/widget-username.svelte';
   import MinimizedToolbar from '$lib/components/ui/minimized-toolbar.svelte';
   import WidgetHistory from './history/widget-history.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
+
+  // Widgets to hide during tutorial mode
+  const tutorialHiddenWidgets = ['wallet'];
 </script>
 
 {#each Object.entries($widgetsStore) as [id, widget]}
-  {#if widget.isOpen && !widget.isMinimized}
+  {@const hiddenInTutorial =
+    tutorialState.tutorialEnabled &&
+    tutorialHiddenWidgets.includes(widget.type)}
+  {#if widget.isOpen && !widget.isMinimized && !hiddenInTutorial}
     <Draggable
       {id}
       type={widget.type}

@@ -338,7 +338,8 @@
         "wait_claim_nuke",
         "neighbor_land_nuke",
         "tutorial_phase_6",
-        "darken_map"
+        "darken_map",
+        "trigger_outro"
       ],
       "hint": "Claim taxes",
       "position": {

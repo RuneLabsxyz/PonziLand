@@ -21,7 +21,7 @@
   import {
     tutorialState,
     tutorialAttribute,
-    nextStep,
+    advanceStepWithOutroCheck,
   } from '$lib/components/tutorial/stores.svelte';
 
   const dojo = useDojo();
@@ -143,8 +143,9 @@
       }, 3000);
 
       // 6. Advance tutorial after short delay so user sees animations
+      // Use advanceStepWithOutroCheck to handle the outro sequence if trigger_outro is set
       setTimeout(() => {
-        nextStep();
+        advanceStepWithOutroCheck();
       }, 500);
       return;
     }

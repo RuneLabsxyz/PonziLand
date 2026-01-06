@@ -10,6 +10,8 @@
     TOTAL_EXPLORABLE_FIELDS,
     normalizePosition,
     type TutorialPosition,
+    tutorialOutroState,
+    startOutroSequence,
   } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
@@ -23,10 +25,26 @@
   import { get } from 'svelte/store';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import TutorialOverlay from './tutorial-overlay.svelte';
+  import TutorialOutro from './tutorial-outro.svelte';
 
   let currentDialog = $derived(
     dialogData.steps[tutorialState.tutorialStep - 1],
   );
+
+  // Check if outro is currently playing
+  let isOutroPlaying = $derived(tutorialOutroState.isPlaying);
+
+  // Custom advance function that checks for outro trigger
+  function advanceStep() {
+    // If current step has trigger_outro, start the outro instead of advancing
+    if (tutorialAttribute('trigger_outro').has) {
+      console.log('Tutorial: Triggering outro sequence');
+      startOutroSequence();
+      return;
+    }
+    // Otherwise, normal advancement
+    nextStep();
+  }
 
   // Fullscreen intro mode (step 1)
   let isFullscreenIntro = $derived(tutorialAttribute('fullscreen_intro').has);
@@ -339,8 +357,13 @@
 <!-- Widget darkening overlay -->
 <TutorialOverlay />
 
-<!-- Fullscreen intro overlay -->
-{#if isFullscreenIntro}
+<!-- Tutorial outro sequence orchestrator -->
+<TutorialOutro />
+
+<!-- Hide dialog during outro -->
+{#if isOutroPlaying}
+  <!-- Dialog hidden during cinematic outro -->
+{:else if isFullscreenIntro}
   <div
     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
   >
