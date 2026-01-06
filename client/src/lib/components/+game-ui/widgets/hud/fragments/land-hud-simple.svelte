@@ -120,7 +120,7 @@
       tabindex="0"
     >
       {#if hoveredField === 'outgoing' && isInteractiveMode}
-        <div class="tutorial-tooltip">
+        <div class="tutorial-tooltip tutorial-tooltip-right">
           {TUTORIAL_FIELD_DESCRIPTIONS['outgoing']}
         </div>
       {/if}
@@ -284,6 +284,18 @@
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
     border-top: 8px solid #ffd700;
+  }
+
+  .tutorial-tooltip-right {
+    left: auto;
+    right: 0;
+    transform: translateX(0);
+  }
+
+  .tutorial-tooltip-right::after {
+    left: auto;
+    right: 20px;
+    transform: translateX(0);
   }
 
   @keyframes goldGlow {
