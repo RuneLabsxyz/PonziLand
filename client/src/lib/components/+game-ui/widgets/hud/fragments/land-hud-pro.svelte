@@ -14,6 +14,12 @@
     tutorialAttribute('highlight_token_earnings').has,
   );
 
+  let isInteractiveMode = $derived(
+    tutorialAttribute('interactive_explore').has,
+  );
+
+  let showYieldTooltip = $state(false);
+
   let {
     yieldInfo,
     totalYieldValue,
@@ -157,10 +163,21 @@
 
   {#if yieldData}
     <div
-      class="flex flex-col pt-4 {highlightTokenEarnings
+      class="flex flex-col pt-4 relative {highlightTokenEarnings
         ? 'token-earnings-highlight'
         : ''}"
+      role="button"
+      tabindex="0"
+      onmouseenter={() => (showYieldTooltip = true)}
+      onmouseleave={() => (showYieldTooltip = false)}
     >
+      {#if showYieldTooltip && (isInteractiveMode || highlightTokenEarnings)}
+        <div class="yield-tooltip">
+          This is the detailed breakdown of taxes you receive from neighboring
+          lands. Each neighbor pays you based on their sell price and token
+          type.
+        </div>
+      {/if}
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">
@@ -198,6 +215,39 @@
     border-radius: 8px;
     padding: 0.5rem;
     animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  .yield-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: sans-serif;
+    max-width: 300px;
+    min-width: 250px;
+    text-align: center;
+    z-index: 9999;
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    margin-bottom: 8px;
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  .yield-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ffd700;
   }
 
   @keyframes goldGlow {
