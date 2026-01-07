@@ -53,6 +53,7 @@
     calculateDeficitWithBuffer,
   } from '$lib/utils/swap-helper';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { Info } from 'lucide-svelte';
   import { executeTransaction, type TokenDeduction } from '$lib/transactions';
 
@@ -706,7 +707,7 @@
 </script>
 
 {#if isActive}
-  <div class="w-full h-full">
+  <div class="w-full h-full flex flex-col min-h-0 overflow-hidden">
     {#if !account.isConnected}
       <!-- Wallet connection prompt -->
       <div class="flex flex-col items-center justify-center h-full gap-4">
@@ -727,89 +728,37 @@
         </Button>
       </div>
     {:else}
-      <!-- Buy tab content will go here -->
-
-      <!-- Token selector - hidden in simplified mode -->
-      {#if !isSimplifiedMode}
-        <div class="flex items-center gap-1.5">
-          <Label class="font-ponzi-number" for="token">Token</Label>
-          <div class="info-tooltip-container">
-            <Info class="w-3.5 h-3.5 text-gray-400 cursor-help" />
-            <div class="info-tooltip">
-              Determines the land you are going to build. You stake this token
-              and will receive this token when bought.
+      <!-- Scrollable form content -->
+      <ScrollArea class="pr-1">
+        <div class="pr-2" style="max-height: 50vh;">
+          <!-- Token selector - hidden in simplified mode -->
+          {#if !isSimplifiedMode}
+            <div class="flex items-center gap-1.5">
+              <Label class="font-ponzi-number" for="token">Token</Label>
+              <div class="info-tooltip-container">
+                <Info class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                <div class="info-tooltip">
+                  Determines the land you are going to build. You stake this
+                  token and will receive this token when bought.
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
-        <div
-          bind:this={tokenContainerRef}
-          class="relative flex gap-1 items-center w-full"
-        >
-          <!-- Quick token buttons - only show what fits -->
-          {#each visibleTokens as token (token.address)}
-            <button
-              type="button"
-              class={[
-                'flex items-center gap-1 px-2 py-1 rounded border transition-all shrink-0',
-                'hover:bg-white/10',
-                {
-                  'border-yellow-500 bg-yellow-500/20':
-                    selectedToken?.address === token.address,
-                  'border-white/30 bg-transparent':
-                    selectedToken?.address !== token.address,
-                },
-              ]}
-              onclick={() => {
-                tokenValue = token;
-                showTokenDropdown = false;
-              }}
-            >
-              <TokenAvatar {token} class="h-5 w-5" />
-              <span class="text-sm font-medium">{token.symbol}</span>
-            </button>
-          {/each}
-
-          <!-- Dropdown arrow button -->
-          <button
-            type="button"
-            class="flex items-center justify-center w-8 h-8 rounded border border-white/30 hover:bg-white/10 transition-all shrink-0 ml-auto"
-            aria-label="Toggle token dropdown"
-            onclick={() => (showTokenDropdown = !showTokenDropdown)}
-          >
-            <svg
-              class={[
-                'w-4 h-4 transition-transform',
-                { 'rotate-180': showTokenDropdown },
-              ]}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </button>
-
-          <!-- Full-width dropdown -->
-          {#if showTokenDropdown}
             <div
-              class="absolute left-0 right-0 top-full mt-1 z-50 bg-[#1a1a24] border border-white/20 rounded-lg shadow-lg max-h-64 overflow-y-auto"
+              bind:this={tokenContainerRef}
+              class="relative flex gap-1 items-center w-full"
             >
-              {#each sortedUserTokens as token (token.address)}
-                {@const balance = walletStore.getBalance(token.address)}
-                {@const usdEquivalent =
-                  walletStore.getCachedBaseTokenEquivalent(token.address)}
+              <!-- Quick token buttons - only show what fits -->
+              {#each visibleTokens as token (token.address)}
                 <button
                   type="button"
                   class={[
-                    'flex justify-between items-center w-full px-3 py-2 hover:bg-white/10 transition-all',
+                    'flex items-center gap-1 px-2 py-1 rounded border transition-all shrink-0',
+                    'hover:bg-white/10',
                     {
-                      'bg-yellow-500/20':
+                      'border-yellow-500 bg-yellow-500/20':
                         selectedToken?.address === token.address,
+                      'border-white/30 bg-transparent':
+                        selectedToken?.address !== token.address,
                     },
                   ]}
                   onclick={() => {
@@ -817,285 +766,350 @@
                     showTokenDropdown = false;
                   }}
                 >
-                  <div class="flex gap-2 items-center">
-                    <TokenAvatar {token} class="h-6 w-6" />
-                    <div class="flex flex-col items-start">
-                      <span class="font-medium">{token.symbol}</span>
-                      {#if token.name && token.name !== token.symbol}
-                        <span class="text-xs text-gray-400">{token.name}</span>
-                      {/if}
-                    </div>
-                  </div>
-                  {#if balance}
-                    <div class="flex flex-col items-end text-right">
-                      <span class="font-ds">{balance.toString()}</span>
-                      {#if usdEquivalent}
-                        <span class="text-xs text-gray-400">
-                          ≈ ${usdEquivalent.toString()}
-                        </span>
-                      {/if}
-                    </div>
-                  {/if}
+                  <TokenAvatar {token} class="h-5 w-5" />
+                  <span class="text-sm font-medium">{token.symbol}</span>
                 </button>
               {/each}
-              {#if sortedUserTokens.length === 0}
-                <div class="p-3 text-center text-gray-400 text-sm">
-                  No tokens with balance
+
+              <!-- Dropdown arrow button -->
+              <button
+                type="button"
+                class="flex items-center justify-center w-8 h-8 rounded border border-white/30 hover:bg-white/10 transition-all shrink-0 ml-auto"
+                aria-label="Toggle token dropdown"
+                onclick={() => (showTokenDropdown = !showTokenDropdown)}
+              >
+                <svg
+                  class={[
+                    'w-4 h-4 transition-transform',
+                    { 'rotate-180': showTokenDropdown },
+                  ]}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+
+              <!-- Full-width dropdown -->
+              {#if showTokenDropdown}
+                <div
+                  class="absolute left-0 right-0 top-full mt-1 z-50 bg-[#1a1a24] border border-white/20 rounded-lg shadow-lg max-h-64 overflow-y-auto"
+                >
+                  {#each sortedUserTokens as token (token.address)}
+                    {@const balance = walletStore.getBalance(token.address)}
+                    {@const usdEquivalent =
+                      walletStore.getCachedBaseTokenEquivalent(token.address)}
+                    <button
+                      type="button"
+                      class={[
+                        'flex justify-between items-center w-full px-3 py-2 hover:bg-white/10 transition-all',
+                        {
+                          'bg-yellow-500/20':
+                            selectedToken?.address === token.address,
+                        },
+                      ]}
+                      onclick={() => {
+                        tokenValue = token;
+                        showTokenDropdown = false;
+                      }}
+                    >
+                      <div class="flex gap-2 items-center">
+                        <TokenAvatar {token} class="h-6 w-6" />
+                        <div class="flex flex-col items-start">
+                          <span class="font-medium">{token.symbol}</span>
+                          {#if token.name && token.name !== token.symbol}
+                            <span class="text-xs text-gray-400"
+                              >{token.name}</span
+                            >
+                          {/if}
+                        </div>
+                      </div>
+                      {#if balance}
+                        <div class="flex flex-col items-end text-right">
+                          <span class="font-ds">{balance.toString()}</span>
+                          {#if usdEquivalent}
+                            <span class="text-xs text-gray-400">
+                              ≈ ${usdEquivalent.toString()}
+                            </span>
+                          {/if}
+                        </div>
+                      {/if}
+                    </button>
+                  {/each}
+                  {#if sortedUserTokens.length === 0}
+                    <div class="p-3 text-center text-gray-400 text-sm">
+                      No tokens with balance
+                    </div>
+                  {/if}
                 </div>
               {/if}
             </div>
+            {#if tokenError}
+              <p class="text-red-500 text-sm mt-1">{tokenError}</p>
+            {/if}
           {/if}
-        </div>
-        {#if tokenError}
-          <p class="text-red-500 text-sm mt-1">{tokenError}</p>
-        {/if}
-      {/if}
 
-      <!-- Simplified mode header -->
-      {#if isSimplifiedMode}
-        <div
-          class="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
-        >
-          <p class="text-sm text-yellow-200">
-            <b>Quick Buy:</b> Just set your sell price. Stake is auto-calculated (2x
-            price).
-          </p>
-        </div>
-      {/if}
-
-      {#if isZeroBasePrice}
-        <p class="text-yellow-400 text-xs mb-2">
-          ℹ️ Land price is 0 - using 1 {baseToken.symbol} as reference
-        </p>
-      {/if}
-
-      <div
-        class={[
-          'my-4',
-          {
-            'flex gap-4': !isSimplifiedMode,
-            'flex flex-col gap-4': isSimplifiedMode,
-          },
-        ]}
-        class:tutorial-highlight-inputs={highlightBuyInputs}
-      >
-        <!-- Sell Price Section -->
-        <div class="flex flex-col gap-2 flex-1">
-          <div class="flex items-center gap-1.5">
-            <Label class="font-ponzi-number" for="sell">Sell Price</Label>
-            <div class="info-tooltip-container">
-              <Info class="w-3.5 h-3.5 text-gray-400 cursor-help" />
-              <div class="info-tooltip">
-                What is paid to you when your land is bought out.
-              </div>
+          <!-- Simplified mode header -->
+          {#if isSimplifiedMode}
+            <div
+              class="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-lg"
+            >
+              <p class="text-sm text-yellow-200">
+                <b>Quick Buy:</b> Just set your sell price. Stake is auto-calculated
+                (2x price).
+              </p>
             </div>
-          </div>
-
-          <!-- Delta buttons -->
-          <div class="flex gap-1">
-            {#each SELL_PRICE_DELTAS as delta}
-              <button
-                type="button"
-                class="px-2 py-1 rounded border text-xs transition-all hover:bg-white/10 border-white/30 flex-1"
-                onclick={() => onSellPriceDeltaClick(delta)}
-              >
-                {delta >= 0 ? '+' : ''}{delta}%
-              </button>
-            {/each}
-          </div>
-
-          <!-- Current % display -->
-          <div class="text-xs text-gray-400 text-center">
-            Current: {sellPricePercent >= 0 ? '+' : ''}{sellPricePercent}%
-          </div>
-
-          <!-- Value display -->
-          <div class="flex gap-1 items-center">
-            <Input
-              id="sell"
-              type="number"
-              value={sellPrice}
-              oninput={(e) => onSellPriceInput(e.currentTarget.value)}
-              class={['flex-1 min-w-0', { 'border-red-500': sellPriceError }]}
-            />
-            <span class="text-xs text-gray-400 shrink-0">
-              {selectedToken?.symbol}
-            </span>
-          </div>
-          {#if sellPriceInBaseCurrency}
-            <span class="text-xs text-gray-400">
-              ≈ {sellPriceInBaseCurrency.toString()}
-              {baseToken.symbol}
-            </span>
           {/if}
-          {#if sellPriceError}
-            <p class="text-red-500 text-xs">{sellPriceError}</p>
-          {/if}
-        </div>
 
-        <!-- Stake Amount Section - hidden in simplified mode -->
-        {#if !isSimplifiedMode}
-          <div class="flex flex-col gap-2 flex-1">
-            <div class="flex items-center gap-1.5">
-              <Label class="font-ponzi-number" for="stake">Stake</Label>
-              <div class="info-tooltip-container">
-                <Info class="w-3.5 h-3.5 text-gray-400 cursor-help" />
-                <div class="info-tooltip">
-                  Locked value to pay taxes and survive (ratio of sell price).
+          {#if isZeroBasePrice}
+            <p class="text-yellow-400 text-xs mb-2">
+              ℹ️ Land price is 0 - using 1 {baseToken.symbol} as reference
+            </p>
+          {/if}
+
+          <div
+            class={[
+              'my-4',
+              {
+                'flex gap-4': !isSimplifiedMode,
+                'flex flex-col gap-4': isSimplifiedMode,
+              },
+            ]}
+            class:tutorial-highlight-inputs={highlightBuyInputs}
+          >
+            <!-- Sell Price Section -->
+            <div class="flex flex-col gap-2 flex-1">
+              <div class="flex items-center gap-1.5">
+                <Label class="font-ponzi-number" for="sell">Sell Price</Label>
+                <div class="info-tooltip-container">
+                  <Info class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                  <div class="info-tooltip">
+                    What is paid to you when your land is bought out.
+                  </div>
                 </div>
               </div>
+
+              <!-- Delta buttons -->
+              <div class="flex gap-1">
+                {#each SELL_PRICE_DELTAS as delta}
+                  <button
+                    type="button"
+                    class="px-2 py-1 rounded border text-xs transition-all hover:bg-white/10 border-white/30 flex-1"
+                    onclick={() => onSellPriceDeltaClick(delta)}
+                  >
+                    {delta >= 0 ? '+' : ''}{delta}%
+                  </button>
+                {/each}
+              </div>
+
+              <!-- Current % display -->
+              <div class="text-xs text-gray-400 text-center">
+                Current: {sellPricePercent >= 0 ? '+' : ''}{sellPricePercent}%
+              </div>
+
+              <!-- Value display -->
+              <div class="flex gap-1 items-center">
+                <Input
+                  id="sell"
+                  type="number"
+                  value={sellPrice}
+                  oninput={(e) => onSellPriceInput(e.currentTarget.value)}
+                  class={[
+                    'flex-1 min-w-0',
+                    { 'border-red-500': sellPriceError },
+                  ]}
+                />
+                <span class="text-xs text-gray-400 shrink-0">
+                  {selectedToken?.symbol}
+                </span>
+              </div>
+              {#if sellPriceInBaseCurrency}
+                <span class="text-xs text-gray-400">
+                  ≈ {sellPriceInBaseCurrency.toString()}
+                  {baseToken.symbol}
+                </span>
+              {/if}
+              {#if sellPriceError}
+                <p class="text-red-500 text-xs">{sellPriceError}</p>
+              {/if}
             </div>
 
-            <!-- Delta buttons -->
-            <div class="flex gap-1">
-              {#each STAKE_DELTAS as delta}
-                <button
-                  type="button"
-                  class="px-2 py-1 rounded border text-xs transition-all hover:bg-white/10 border-white/30 flex-1"
-                  onclick={() => onStakeDeltaClick(delta)}
-                >
-                  {delta >= 0 ? '+' : ''}{delta}%
-                </button>
-              {/each}
-            </div>
+            <!-- Stake Amount Section - hidden in simplified mode -->
+            {#if !isSimplifiedMode}
+              <div class="flex flex-col gap-2 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <Label class="font-ponzi-number" for="stake">Stake</Label>
+                  <div class="info-tooltip-container">
+                    <Info class="w-3.5 h-3.5 text-gray-400 cursor-help" />
+                    <div class="info-tooltip">
+                      Locked value to pay taxes and survive (ratio of sell
+                      price).
+                    </div>
+                  </div>
+                </div>
 
-            <!-- Current % display -->
-            <div class="text-xs text-gray-400 text-center">
-              Current: {stakePercent}% ({(stakePercent / 100).toFixed(1)}x)
-            </div>
+                <!-- Delta buttons -->
+                <div class="flex gap-1">
+                  {#each STAKE_DELTAS as delta}
+                    <button
+                      type="button"
+                      class="px-2 py-1 rounded border text-xs transition-all hover:bg-white/10 border-white/30 flex-1"
+                      onclick={() => onStakeDeltaClick(delta)}
+                    >
+                      {delta >= 0 ? '+' : ''}{delta}%
+                    </button>
+                  {/each}
+                </div>
 
-            <!-- Value display -->
-            <div class="flex gap-1 items-center">
-              <Input
-                id="stake"
-                type="number"
-                value={stake}
-                oninput={(e) => onStakeInput(e.currentTarget.value)}
-                class={[
-                  'flex-1 min-w-0',
-                  { 'border-red-500': stakeAmountError },
-                ]}
+                <!-- Current % display -->
+                <div class="text-xs text-gray-400 text-center">
+                  Current: {stakePercent}% ({(stakePercent / 100).toFixed(1)}x)
+                </div>
+
+                <!-- Value display -->
+                <div class="flex gap-1 items-center">
+                  <Input
+                    id="stake"
+                    type="number"
+                    value={stake}
+                    oninput={(e) => onStakeInput(e.currentTarget.value)}
+                    class={[
+                      'flex-1 min-w-0',
+                      { 'border-red-500': stakeAmountError },
+                    ]}
+                  />
+                  <span class="text-xs text-gray-400 shrink-0">
+                    {selectedToken?.symbol}
+                  </span>
+                </div>
+                {#if stakeAmountInBaseCurrency}
+                  <span class="text-xs text-gray-400">
+                    ≈ {stakeAmountInBaseCurrency.toString()}
+                    {baseToken.symbol}
+                  </span>
+                {/if}
+                {#if stakeAmountError}
+                  <p class="text-red-500 text-xs">{stakeAmountError}</p>
+                {/if}
+              </div>
+            {:else}
+              <!-- Simplified mode: show auto-calculated stake info -->
+              <div class="flex flex-col gap-1 p-2 bg-gray-800/50 rounded">
+                <span class="text-xs text-gray-400">Auto Stake (2x price)</span>
+                <span class="text-sm font-ponzi-number">
+                  {stake}
+                  {selectedToken?.symbol ?? land.token?.symbol}
+                </span>
+              </div>
+            {/if}
+          </div>
+
+          <!-- Tax Impact - hidden in simplified mode -->
+          {#if !isSimplifiedMode}
+            <div class="w-full">
+              <TaxImpact
+                sellAmountVal={sellPrice}
+                stakeAmountVal={stake}
+                {selectedToken}
+                {land}
+                {auctionPrice}
+                bind:hasAdvisorWarnings
               />
-              <span class="text-xs text-gray-400 shrink-0">
-                {selectedToken?.symbol}
-              </span>
             </div>
-            {#if stakeAmountInBaseCurrency}
-              <span class="text-xs text-gray-400">
-                ≈ {stakeAmountInBaseCurrency.toString()}
-                {baseToken.symbol}
-              </span>
-            {/if}
-            {#if stakeAmountError}
-              <p class="text-red-500 text-xs">{stakeAmountError}</p>
-            {/if}
-          </div>
+          {/if}
+        </div>
+      </ScrollArea>
+
+      <!-- Buy button section - always visible at bottom -->
+      <div class="shrink-0 pt-2 pb-4">
+        {#if balanceError}
+          <p class="text-red-500 text-sm mt-1">{balanceError}</p>
+        {/if}
+
+        {#if loading}
+          <Button class="mt-3 w-full" disabled>
+            buying <ThreeDots />
+          </Button>
         {:else}
-          <!-- Simplified mode: show auto-calculated stake info -->
-          <div class="flex flex-col gap-1 p-2 bg-gray-800/50 rounded">
-            <span class="text-xs text-gray-400">Auto Stake (2x price)</span>
-            <span class="text-sm font-ponzi-number">
-              {stake}
-              {selectedToken?.symbol ?? land.token?.symbol}
+          <Button
+            onclick={handleBuyClick}
+            class="mt-3 w-full"
+            disabled={!isFormValid ||
+              isOwner ||
+              loading ||
+              isBuyBlockedByTutorial ||
+              shouldBlockForAdvisorWarnings(
+                tutorialState.tutorialEnabled,
+                hasAdvisorWarnings,
+              )}
+          >
+            BUY FOR <span class="text-yellow-500">
+              &nbsp;
+              {#if land.type == 'auction'}
+                {#await land?.getCurrentAuctionPrice(false)}
+                  fetching...
+                {:then price}
+                  {price}
+                {/await}
+              {:else}
+                {land.sellPrice}
+              {/if}
+              &nbsp;
             </span>
-          </div>
+            {land.token?.symbol}
+            & STAKE
+            <span class="text-yellow-500">
+              &nbsp;{stakeAmount.toString()}&nbsp;
+            </span>
+            {selectedToken?.symbol}
+          </Button>
+          {#if land.token && selectedToken}
+            {@const landPriceInBase =
+              land.type == 'auction' && auctionPrice
+                ? walletStore.convertTokenAmount(
+                    auctionPrice,
+                    land.token,
+                    baseToken,
+                  )
+                : walletStore.convertTokenAmount(
+                    land.sellPrice,
+                    land.token,
+                    baseToken,
+                  )}
+            {@const stakeInBase =
+              stakeAmountInBaseCurrency ||
+              (padAddress(selectedToken.address) ===
+              padAddress(baseToken.address)
+                ? stakeAmount
+                : null)}
+            <span class="text-gray-300 text-sm block">
+              {#if landPriceInBase && stakeInBase}
+                (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
+                {baseToken.symbol})
+              {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+                (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
+                {baseToken.symbol})
+              {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
+                (Total: ≈{land.type == 'auction' && auctionPrice
+                  ? auctionPrice.add(stakeInBase).toString()
+                  : land.sellPrice.add(stakeInBase).toString()}
+                {baseToken.symbol})
+              {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
+                (Total: ≈{land.type == 'auction' && auctionPrice
+                  ? auctionPrice.add(stakeAmount).toString()
+                  : land.sellPrice.add(stakeAmount).toString()}
+                {baseToken.symbol})
+              {/if}
+            </span>
+          {/if}
         {/if}
       </div>
-
-      <!-- Tax Impact - hidden in simplified mode -->
-      {#if !isSimplifiedMode}
-        <div class="w-full">
-          <TaxImpact
-            sellAmountVal={sellPrice}
-            stakeAmountVal={stake}
-            {selectedToken}
-            {land}
-            {auctionPrice}
-            bind:hasAdvisorWarnings
-          />
-        </div>
-      {/if}
-
-      {#if balanceError}
-        <p class="text-red-500 text-sm mt-1">{balanceError}</p>
-      {/if}
-
-      {#if loading}
-        <Button class="mt-3 w-full" disabled>
-          buying <ThreeDots />
-        </Button>
-      {:else}
-        <Button
-          onclick={handleBuyClick}
-          class="mt-3 w-full"
-          disabled={!isFormValid ||
-            isOwner ||
-            loading ||
-            isBuyBlockedByTutorial ||
-            shouldBlockForAdvisorWarnings(
-              tutorialState.tutorialEnabled,
-              hasAdvisorWarnings,
-            )}
-        >
-          BUY FOR <span class="text-yellow-500">
-            &nbsp;
-            {#if land.type == 'auction'}
-              {#await land?.getCurrentAuctionPrice(false)}
-                fetching...
-              {:then price}
-                {price}
-              {/await}
-            {:else}
-              {land.sellPrice}
-            {/if}
-            &nbsp;
-          </span>
-          {land.token?.symbol}
-          & STAKE
-          <span class="text-yellow-500">
-            &nbsp;{stakeAmount.toString()}&nbsp;
-          </span>
-          {selectedToken?.symbol}
-        </Button>
-        {#if land.token && selectedToken}
-          {@const landPriceInBase =
-            land.type == 'auction' && auctionPrice
-              ? walletStore.convertTokenAmount(
-                  auctionPrice,
-                  land.token,
-                  baseToken,
-                )
-              : walletStore.convertTokenAmount(
-                  land.sellPrice,
-                  land.token,
-                  baseToken,
-                )}
-          {@const stakeInBase =
-            stakeAmountInBaseCurrency ||
-            (padAddress(selectedToken.address) === padAddress(baseToken.address)
-              ? stakeAmount
-              : null)}
-          <span class="text-gray-300 text-sm block">
-            {#if landPriceInBase && stakeInBase}
-              (Total: ≈{landPriceInBase.add(stakeInBase).toString()}
-              {baseToken.symbol})
-            {:else if landPriceInBase && padAddress(selectedToken.address) === padAddress(baseToken.address)}
-              (Total: ≈{landPriceInBase.add(stakeAmount).toString()}
-              {baseToken.symbol})
-            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && stakeInBase}
-              (Total: ≈{land.type == 'auction' && auctionPrice
-                ? auctionPrice.add(stakeInBase).toString()
-                : land.sellPrice.add(stakeInBase).toString()}
-              {baseToken.symbol})
-            {:else if padAddress(land.token.address) === padAddress(baseToken.address) && padAddress(selectedToken.address) === padAddress(baseToken.address)}
-              (Total: ≈{land.type == 'auction' && auctionPrice
-                ? auctionPrice.add(stakeAmount).toString()
-                : land.sellPrice.add(stakeAmount).toString()}
-              {baseToken.symbol})
-            {/if}
-          </span>
-        {/if}
-      {/if}
     {/if}
   </div>
 {/if}

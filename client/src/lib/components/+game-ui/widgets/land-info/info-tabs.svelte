@@ -45,8 +45,8 @@
   ];
 </script>
 
-<div class="w-full h-full flex flex-col mt-6 mr-6">
-  <div class="flex gap-2 w-full justify-center">
+<div class="w-full h-full flex flex-col mt-6 mr-6 min-h-0 overflow-hidden">
+  <div class="flex gap-2 w-full justify-center shrink-0">
     <TabNavigation
       {tabs}
       {activeTab}
@@ -55,7 +55,7 @@
     />
   </div>
 
-  <div class="w-full h-full mt-4">
+  <div class="w-full flex-1 mt-4 min-h-0 overflow-hidden flex flex-col">
     <OverallTab
       {land}
       bind:activeTab

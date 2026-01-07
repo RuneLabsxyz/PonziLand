@@ -68,9 +68,9 @@
     </Card>
   </div>
 {/if}
-<div class="h-full w-full flex flex-col">
-  <div class="w-full flex">
-    <div class="flex flex-col items-center px-8 pt-8">
+<div class="h-full w-full flex flex-col max-h-[80vh] overflow-hidden">
+  <div class="w-full flex min-h-0 flex-1 overflow-hidden">
+    <div class="flex flex-col items-center px-8 pt-8 shrink-0">
       <LandOverview {land} {isOwner} size="lg" />
       <div
         class="mt-6 text-ponzi-number text-2xl flex items-center gap-2 stroke-3d-black"
