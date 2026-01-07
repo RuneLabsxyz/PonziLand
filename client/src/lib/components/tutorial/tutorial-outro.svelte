@@ -3,31 +3,49 @@
   import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
   import { landStore } from '$lib/stores/store.svelte';
   import { tutorialOutroState, setOutroPhase, nextStep } from './stores.svelte';
+  import { TUTORIAL_OUTRO_CONFIG, TUTORIAL_COORDS } from './constants';
 
-  // Timing constants (in milliseconds)
-  const ZOOM_DURATION = 12000; // 12 seconds for zoom out (20% faster)
-  const ACTIVITY_DURATION = 4000; // 4 seconds of continued activity
-  const PAUSE_DURATION = 1500; // 1.5 second pause on empty map
-  const SPAWN_INTERVAL = 100; // Spawn lands every 100ms (faster)
-  const NUKE_INTERVAL = 2000; // Nuke rarely - every 2 seconds
+  // Destructure timing constants for convenience
+  const {
+    ZOOM_DURATION,
+    ACTIVITY_DURATION,
+    PAUSE_DURATION,
+    SPAWN_INTERVAL,
+    NUKE_INTERVAL,
+    START_ZOOM,
+    END_ZOOM,
+    START_RADIUS,
+    MAX_RADIUS,
+  } = TUTORIAL_OUTRO_CONFIG;
 
-  // Camera settings
-  const START_ZOOM = 280;
-  const END_ZOOM = 50; // Zoom out more
-  const CENTER_X = 128;
-  const CENTER_Y = 128;
+  // Camera center coordinates
+  const CENTER_X = TUTORIAL_COORDS.CENTER.x;
+  const CENTER_Y = TUTORIAL_COORDS.CENTER.y;
 
   // Expanding ring spawning
-  let currentRadius = 2; // Start close to center
-  const MAX_RADIUS = 45; // Maximum distance from center
+  let currentRadius = START_RADIUS;
   let startTime = 0;
 
   // Track spawned lands for nuking
   let spawnedLands: { x: number; y: number }[] = [];
   let spawnIntervalId: ReturnType<typeof setInterval> | null = null;
   let nukeIntervalId: ReturnType<typeof setInterval> | null = null;
-  let phaseTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  // Track ALL phase timeouts to ensure proper cleanup on unmount
+  let phaseTimeoutIds: ReturnType<typeof setTimeout>[] = [];
   let originalSmoothTime: number | null = null;
+
+  // Helper to schedule a phase timeout and track it for cleanup
+  function schedulePhaseTimeout(callback: () => void, delay: number) {
+    const timeoutId = setTimeout(callback, delay);
+    phaseTimeoutIds.push(timeoutId);
+    return timeoutId;
+  }
+
+  // Clear all phase timeouts
+  function clearAllPhaseTimeouts() {
+    phaseTimeoutIds.forEach((id) => clearTimeout(id));
+    phaseTimeoutIds = [];
+  }
 
   // Watch for outro state changes
   $effect(() => {
@@ -41,8 +59,12 @@
 
   function startOutro() {
     console.log('Tutorial Outro: Starting cinematic sequence...');
+
+    // Clear any existing timeouts from previous runs
+    clearAllPhaseTimeouts();
+
     spawnedLands = [];
-    currentRadius = 2;
+    currentRadius = START_RADIUS;
     startTime = Date.now();
 
     // Start smooth zoom animation
@@ -55,13 +77,13 @@
     startNuking();
 
     // After zoom duration, transition to activity phase
-    phaseTimeoutId = setTimeout(() => {
+    schedulePhaseTimeout(() => {
       restoreCameraSettings();
       setOutroPhase('activity');
       console.log('Tutorial Outro: Activity phase');
 
       // Continue activity for a bit longer
-      phaseTimeoutId = setTimeout(() => {
+      schedulePhaseTimeout(() => {
         stopSpawning();
         stopNuking();
         setOutroPhase('nuking');
@@ -71,11 +93,11 @@
         landStore.clearAllTutorialLands();
 
         // After lands are cleared, pause then complete
-        phaseTimeoutId = setTimeout(() => {
+        schedulePhaseTimeout(() => {
           setOutroPhase('pausing');
           console.log('Tutorial Outro: Pausing on empty map');
 
-          phaseTimeoutId = setTimeout(() => {
+          schedulePhaseTimeout(() => {
             completeOutro();
           }, PAUSE_DURATION);
         }, 800); // Wait for nuke animations
@@ -114,8 +136,9 @@
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / ZOOM_DURATION, 1);
 
-      // Expand radius as we zoom out - start at 2, end at MAX_RADIUS
-      currentRadius = 2 + Math.floor(progress * (MAX_RADIUS - 2));
+      // Expand radius as we zoom out - start at START_RADIUS, end at MAX_RADIUS
+      currentRadius =
+        START_RADIUS + Math.floor(progress * (MAX_RADIUS - START_RADIUS));
 
       // Spawn more lands as we zoom out (3-6 per interval, increasing over time)
       const baseCount = 3 + Math.floor(progress * 3);
@@ -173,9 +196,7 @@
     stopSpawning();
     stopNuking();
     restoreCameraSettings();
-    if (phaseTimeoutId) {
-      clearTimeout(phaseTimeoutId);
-    }
+    clearAllPhaseTimeouts();
   });
 </script>
 

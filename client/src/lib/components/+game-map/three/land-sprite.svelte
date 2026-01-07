@@ -49,6 +49,12 @@
     tutorialAttribute,
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
+  import {
+    getBlackSquareTarget,
+    shouldHideBlackSquareForButton,
+    findTutorialClaimLand,
+    isBuyWidgetBlocked,
+  } from './land-sprite.tutorial';
   const CIRCLE_PADDING = 8;
 
   // Allow passing a custom land store (for tutorials)
@@ -494,12 +500,9 @@
       tutorialState.tutorialEnabled && tutorialAttribute('wait_claim_nuke').has;
 
     if (isTutorialClaimStep) {
-      // Find the tutorial land at 128,128
-      const tutorialLand = visibleLandTiles.find(
-        (tile) =>
-          BuildingLand.is(tile.land) &&
-          coordinatesToLocation(tile.land.location) ===
-            coordinatesToLocation({ x: 128, y: 128 }),
+      const tutorialLand = findTutorialClaimLand(
+        visibleLandTiles,
+        BuildingLand.is,
       );
       if (tutorialLand) {
         return [tutorialLand];
@@ -538,52 +541,33 @@
   let blackSquareLandTile = $derived.by(() => {
     if (!visibleLandTiles) return undefined;
 
-    // Determine coordinates based on tutorial step
-    let targetX: number | undefined;
-    let targetY: number | undefined;
+    // Use helper to determine target coordinates based on tutorial phase
+    const target = getBlackSquareTarget(
+      tutorialAttribute('highlight_building').has,
+      tutorialAttribute('highlight_auction').has,
+      tutorialAttribute('tutorial_phase_1').has,
+      tutorialAttribute('tutorial_phase_2').has,
+      tutorialAttribute('tutorial_phase_5').has,
+    );
 
-    if (tutorialAttribute('highlight_building').has) {
-      targetX = 128;
-      targetY = 128;
-    } else if (tutorialAttribute('highlight_auction').has) {
-      // Dynamic auction highlight based on tutorial phase
-      if (tutorialAttribute('tutorial_phase_1').has) {
-        // First auction at center
-        targetX = 128;
-        targetY = 128;
-      } else if (tutorialAttribute('tutorial_phase_2').has) {
-        // Second auction
-        targetX = 127;
-        targetY = 127;
-      } else if (tutorialAttribute('tutorial_phase_5').has) {
-        // Full auction for advanced purchase (to the left of center)
-        targetX = 127;
-        targetY = 128;
-      } else {
-        // Default fallback
-        targetX = 127;
-        targetY = 127;
-      }
-    } else {
-      return undefined;
-    }
+    if (!target) return undefined;
 
-    // Don't highlight land when buy/info button should be highlighted instead
-    // (only when the target land is selected)
+    // Hide highlight when buy/info button should be highlighted instead
     if (
-      (tutorialAttribute('highlight_map_buy').has ||
-        tutorialAttribute('highlight_info_button').has) &&
-      selectedLand
+      shouldHideBlackSquareForButton(
+        tutorialAttribute('highlight_map_buy').has,
+        tutorialAttribute('highlight_info_button').has,
+        selectedLand,
+        target.x,
+        target.y,
+      )
     ) {
-      const coords = locationToCoordinates(selectedLand.location);
-      if (coords.x === targetX && coords.y === targetY) {
-        return undefined;
-      }
+      return undefined;
     }
 
     return visibleLandTiles.find((tile) => {
       return (
-        tile.land.location.x === targetX && tile.land.location.y === targetY
+        tile.land.location.x === target.x && tile.land.location.y === target.y
       );
     });
   });
@@ -985,8 +969,10 @@
           onclick={() => {
             // In tutorial, only allow opening buy widget when the attribute is set
             if (
-              tutorialState.tutorialEnabled &&
-              !tutorialAttribute('allow_buy_widget').has
+              isBuyWidgetBlocked(
+                tutorialState.tutorialEnabled,
+                tutorialAttribute('allow_buy_widget').has,
+              )
             ) {
               return; // Block opening to prevent deadlock
             }

@@ -1,4 +1,77 @@
 import tutorialData from './dialog.json';
+import { TUTORIAL_CAMERA_CONFIG } from './constants';
+
+/**
+ * Known tutorial attribute names for type safety.
+ * These correspond to values in the `has` array of dialog.json steps.
+ */
+export type TutorialAttribute =
+  // Display modes
+  | 'fullscreen_intro'
+  | 'darken_map'
+  | 'darken_widget'
+  | 'no_interraction'
+  // Highlighting - general
+  | 'highlight_auction'
+  | 'highlight_building'
+  | 'highlight_map_buy'
+  | 'highlight_info'
+  | 'highlight_info_button'
+  | 'highlight_pro_mode'
+  | 'highlight_token_earnings'
+  | 'highlight_tax_impact'
+  | 'highlight_shield_button'
+  | 'highlight_nuke_neighbor'
+  | 'highlight_buy_inputs'
+  // Highlighting - info panel fields
+  | 'highlight_info_token'
+  | 'highlight_info_stake'
+  | 'highlight_info_sell_price'
+  | 'highlight_info_income'
+  | 'highlight_info_outgoing'
+  | 'highlight_info_earnings'
+  | 'highlight_info_nuke'
+  // Wait conditions
+  | 'wait_auction_click'
+  | 'wait_auction_buy'
+  | 'wait_second_auction_click'
+  | 'wait_land_info_click'
+  | 'wait_buy_land_open'
+  | 'wait_buy_land'
+  | 'wait_select_land'
+  | 'wait_auction_selected'
+  | 'wait_pro_mode_click'
+  | 'wait_tax_impact_click'
+  | 'wait_shield_click'
+  | 'wait_info_open'
+  | 'wait_increase_stake'
+  | 'wait_claim_nuke'
+  | 'wait_lazi_click'
+  // Actions
+  | 'spawn_second_auction'
+  | 'spawn_neighbors'
+  | 'spawn_full_auction'
+  | 'auto_convert_auction'
+  | 'auto_advance'
+  | 'decrease_stake'
+  | 'trigger_outro'
+  // UI controls
+  | 'show_next_button'
+  | 'enter_grid'
+  | 'simplified_buy'
+  | 'allow_buy_widget'
+  | 'interactive_explore'
+  | 'interactive_tax_explore'
+  // Phase markers
+  | 'tutorial_phase_1'
+  | 'tutorial_phase_2'
+  | 'tutorial_phase_3'
+  | 'tutorial_phase_4'
+  | 'tutorial_phase_5'
+  | 'tutorial_phase_6'
+  // Nuke state
+  | 'player_land_nuke'
+  | 'neighbor_land_nuke';
 
 // Position type for dynamic tutorial positioning
 export interface TutorialPosition {
@@ -40,12 +113,12 @@ export function normalizePosition(
   return position;
 }
 
-// Tutorial camera settings
+// Tutorial camera settings (re-exported from constants for backward compatibility)
 export const TUTORIAL_CAMERA = {
-  zoomLevel: 280, // Higher = closer view
-  centerX: 128,
-  centerY: 128,
-  lockControls: true, // Disable zoom/pan during tutorial
+  zoomLevel: TUTORIAL_CAMERA_CONFIG.ZOOM_LEVEL,
+  centerX: TUTORIAL_CAMERA_CONFIG.CENTER_X,
+  centerY: TUTORIAL_CAMERA_CONFIG.CENTER_Y,
+  lockControls: TUTORIAL_CAMERA_CONFIG.LOCK_CONTROLS,
 };
 
 // Field descriptions for interactive exploration (step 4)
@@ -154,13 +227,7 @@ export function getCurrentStep(): TutorialStep | null {
   return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
 }
 
-// Get the current step raw data (for accessing fields like spotlight_widget)
-export function getCurrentStepData(): TutorialStep | null {
-  if (!tutorialState.tutorialEnabled) return null;
-  return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
-}
-
-export function tutorialAttribute(attribute: string) {
+export function tutorialAttribute(attribute: TutorialAttribute) {
   return {
     get has() {
       return (
@@ -233,8 +300,6 @@ export function getExploredTaxFieldsCount(): number {
 export function resetExploredTaxFields() {
   tutorialState.exploredTaxFields = new Set();
 }
-
-export function checkProfitability() {}
 
 // Skip to a specific minimum step (for action-based progression)
 export function ensureMinimumStep(minStep: number) {

@@ -11,43 +11,54 @@ import {
   tutorialState,
 } from '$lib/components/tutorial/stores.svelte';
 import { coordinatesToLocation, toHexWithPadding } from '$lib/utils';
+import { TUTORIAL_COORDS } from '$lib/components/tutorial/constants';
 
 // Helper to convert x,y to hex location string
 function coordToHex(x: number, y: number): string {
   return toHexWithPadding(coordinatesToLocation({ x, y }));
 }
 
+// Hex location keys derived from centralized constants
+const PLAYER_LAND_HEX = coordToHex(
+  TUTORIAL_COORDS.CENTER.x,
+  TUTORIAL_COORDS.CENTER.y,
+);
+const NEIGHBOR_NUKE_HEX = coordToHex(
+  TUTORIAL_COORDS.NEIGHBOR_TO_NUKE.x,
+  TUTORIAL_COORDS.NEIGHBOR_TO_NUKE.y,
+);
+
 // Mock nuke times for tutorial mode (in seconds)
 // Keys are hex location strings matching land.locationString format
 const TUTORIAL_MOCK_NUKE_TIMES: Record<string, number> = {};
 
-// Initialize mock times with proper hex keys
+// Initialize mock times with proper hex keys using centralized coordinates
 function initMockTimes() {
-  // Progressive tutorial land positions:
+  const { CENTER, SECOND_AUCTION, FULL_AUCTION, NEIGHBOR_TO_NUKE } =
+    TUTORIAL_COORDS;
 
   // 128,128 - Player's first land (center) - 2 hours default, nuke for shield demo
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(128, 128)] = 3600 * 2;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(CENTER.x, CENTER.y)] = 3600 * 2;
 
   // 127,127 - Neighbor land (someone else bought it) - 3 days
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(127, 127)] = 86400 * 3;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(SECOND_AUCTION.x, SECOND_AUCTION.y)] =
+    86400 * 3;
 
   // 127,128 - Third auction (full buy modal) - directly left of center - 4 days
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(127, 128)] = 86400 * 4;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(FULL_AUCTION.x, FULL_AUCTION.y)] =
+    86400 * 4;
 
   // Neighbor lands (spawned in phase 3):
   // 129,128 - right neighbor - will show NUKE for claim step
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(129, 128)] = 3600 * 8;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(NEIGHBOR_TO_NUKE.x, NEIGHBOR_TO_NUKE.y)] =
+    3600 * 8;
   // 128,129 - below neighbor - 1 day
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(128, 129)] = 86400;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(CENTER.x, CENTER.y + 1)] = 86400;
   // 128,127 - above neighbor - 5 days
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(128, 127)] = 86400 * 5;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(CENTER.x, CENTER.y - 1)] = 86400 * 5;
   // 129,129 - diagonal neighbor - 6 days
-  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(129, 129)] = 86400 * 6;
+  TUTORIAL_MOCK_NUKE_TIMES[coordToHex(CENTER.x + 1, CENTER.y + 1)] = 86400 * 6;
 }
-
-// Hex location keys for specific tutorial lands
-const PLAYER_LAND_HEX = coordToHex(128, 128);
-const NEIGHBOR_NUKE_HEX = coordToHex(129, 128);
 
 // Initialize on module load
 initMockTimes();

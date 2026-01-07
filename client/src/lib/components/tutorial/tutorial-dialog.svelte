@@ -284,8 +284,7 @@
     // Decrease stake for tutorial demonstration
     if (tutorialAttribute('decrease_stake').has) {
       let land = get(landStore.getLand(128, 128)!);
-      // @ts-ignore This is really bad, but at least it works
-      land._stakeAmount = CurrencyAmount.fromScaled(0.01, land.token);
+      land.setStakeAmount(CurrencyAmount.fromScaled(0.01, land.token));
       landStore.updateLandDirectly(128, 128, land);
     }
   });
@@ -346,6 +345,18 @@
     tutorialState.tutorialStep = 1;
     resetExploredFields();
     resetExploredTaxFields();
+
+    // Reset spawning flags so tutorial can be replayed
+    hasSpawnedSecondAuction = false;
+    hasSpawnedNeighbors = false;
+    hasSpawnedFullAuction = false;
+    hasConvertedAuction = false;
+
+    // Clear any lingering auto-advance timer
+    if (autoAdvanceTimer) {
+      clearTimeout(autoAdvanceTimer);
+      autoAdvanceTimer = null;
+    }
   });
 
   function enterGrid() {
