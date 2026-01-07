@@ -60,6 +60,7 @@
   const BUY_FEE_RATE = 500_000; // 5% fee (500,000 / 10,000,000)
 
   let isExpanded = $state(false);
+  let hasAutoExpandedForTutorial = $state(false);
 
   let {
     sellAmountVal = undefined,
@@ -567,10 +568,15 @@
     hasAdvisorWarnings = advisorWarnings.length > 0;
   });
 
-  // Auto-expand when entering interactive exploration mode
+  // Auto-expand when entering interactive exploration mode (only once)
   $effect(() => {
-    if (interactiveTaxExplore && !isExpanded) {
+    if (interactiveTaxExplore && !isExpanded && !hasAutoExpandedForTutorial) {
       isExpanded = true;
+      hasAutoExpandedForTutorial = true;
+    }
+    // Reset the flag when exiting tutorial mode
+    if (!interactiveTaxExplore && hasAutoExpandedForTutorial) {
+      hasAutoExpandedForTutorial = false;
     }
   });
 </script>
