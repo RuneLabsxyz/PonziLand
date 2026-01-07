@@ -17,7 +17,7 @@
   import { BrowserProvider } from 'ethers/providers';
   import type { PageData } from './$types';
   import RampTokenSelect from './RampTokenSelect.svelte';
-  import type { NetworkWithTokens } from '@layerswap/sdk/resources/index.mjs';
+  import type { NetworkWithTokens } from '@layerswap/sdk/resources/index';
   import { Card } from '$lib/components/ui/card';
   import { enhance } from '$app/forms';
   import { Contract } from 'ethers';

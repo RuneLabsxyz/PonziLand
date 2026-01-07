@@ -24,6 +24,18 @@
     tutorialAttribute,
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
+
+  // Tutorial highlighting for buy inputs
+  let highlightBuyInputs = $derived(
+    tutorialAttribute('highlight_buy_inputs').has,
+  );
+
+  // Block buy button until tutorial reaches the buy step
+  let isBuyBlockedByTutorial = $derived(
+    tutorialState.tutorialEnabled &&
+      !tutorialAttribute('wait_buy_land').has &&
+      !tutorialAttribute('wait_auction_buy').has,
+  );
   import { Card } from '$lib/components/ui/card';
   import { Slider } from '$lib/components/ui/slider';
   import { widgetsStore } from '$lib/stores/widgets.store';
@@ -872,7 +884,10 @@
         <p class="text-red-500 text-sm mt-1">{tokenError}</p>
       {/if}
 
-      <div class="flex flex-col gap-4 my-4">
+      <div
+        class="flex flex-col gap-4 my-4"
+        class:tutorial-highlight-inputs={highlightBuyInputs}
+      >
         <!-- Sell Price Section -->
         <div class="flex flex-col gap-2">
           <Label class="font-ponzi-number" for="sell">Sell Price</Label>
@@ -1051,6 +1066,7 @@
           disabled={!isFormValid ||
             isOwner ||
             loading ||
+            isBuyBlockedByTutorial ||
             (tutorialState.tutorialEnabled && hasAdvisorWarnings)}
         >
           BUY FOR <span class="text-yellow-500">
@@ -1115,3 +1131,26 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  .tutorial-highlight-inputs {
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 1rem;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
+  }
+</style>

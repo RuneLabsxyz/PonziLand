@@ -16,6 +16,8 @@
   import {
     isLandClickAllowed,
     tutorialState,
+    nextStep,
+    tutorialAttribute,
   } from '$lib/components/tutorial/stores.svelte';
 
   let { children = undefined } = $props();
@@ -147,6 +149,14 @@
         if (tile) {
           selectedLand.value = tile;
           gameSounds.play('biomeSelect');
+
+          // Progress tutorial if waiting for land selection
+          if (
+            tutorialState.tutorialEnabled &&
+            tutorialAttribute('wait_select_land').has
+          ) {
+            nextStep();
+          }
 
           // Handle camera movement if gameStore.cameraControls exists
           // Skip camera movement during tutorial (camera is locked)

@@ -16,6 +16,44 @@
   import SellProfitBreakdown from './sell-profit-breakdown.svelte';
   import { Card } from '$lib/components/ui/card';
   import { ChevronDown } from 'lucide-svelte';
+  import {
+    nextStep,
+    tutorialAttribute,
+    TAX_FIELD_DESCRIPTIONS,
+    markTaxFieldExplored,
+    isTaxFieldExplored,
+  } from '$lib/components/tutorial/stores.svelte';
+
+  // Tutorial states
+  let highlightTaxImpact = $derived(
+    tutorialAttribute('highlight_tax_impact').has,
+  );
+  let waitTaxImpactClick = $derived(
+    tutorialAttribute('wait_tax_impact_click').has,
+  );
+  let interactiveTaxExplore = $derived(
+    tutorialAttribute('interactive_tax_explore').has,
+  );
+
+  // Interactive hover state
+  let hoveredTaxField = $state<string | null>(null);
+
+  function handleTaxFieldHover(fieldId: string) {
+    if (interactiveTaxExplore) {
+      hoveredTaxField = fieldId;
+      markTaxFieldExplored(fieldId);
+    }
+  }
+
+  function handleTaxFieldLeave() {
+    hoveredTaxField = null;
+  }
+
+  function getTaxFieldClass(fieldId: string, baseClass: string) {
+    if (!interactiveTaxExplore) return baseClass;
+    const explored = isTaxFieldExplored(fieldId);
+    return `${baseClass} tutorial-tax-explorable ${explored ? 'explored' : ''}`;
+  }
 
   // Fee calculation constants (matching smart contract values)
   const SCALE_FACTOR_FOR_FEE = 10_000_000;
@@ -528,12 +566,32 @@
   $effect(() => {
     hasAdvisorWarnings = advisorWarnings.length > 0;
   });
+
+  // Auto-expand when entering interactive exploration mode
+  $effect(() => {
+    if (interactiveTaxExplore && !isExpanded) {
+      isExpanded = true;
+    }
+  });
 </script>
 
-<div class="bg-slate-800/30 border border-slate-600/30 rounded text-md mt-3">
+<div
+  class={[
+    'bg-slate-800/30 border rounded text-md mt-3',
+    {
+      'border-gold-500 tutorial-highlight-tax': highlightTaxImpact,
+      'border-slate-600/30': !highlightTaxImpact,
+    },
+  ]}
+>
   <!-- Collapsed Header -->
   <button
-    onclick={() => (isExpanded = !isExpanded)}
+    onclick={() => {
+      isExpanded = !isExpanded;
+      if (waitTaxImpactClick && isExpanded) {
+        nextStep();
+      }
+    }}
     class="w-full flex items-center justify-between p-3 hover:bg-slate-700/20 transition-colors"
   >
     <div class="flex flex-col items-start gap-1">
@@ -567,18 +625,41 @@
       <!-- Horizontal Slider Above -->
       <div class="mb-4 w-full">
         <div class="flex items-center justify-between">
-          <div class="flex items-center gap-2">
+          <div
+            class={getTaxFieldClass(
+              'neighbors_slider',
+              'flex items-center gap-2 relative',
+            )}
+            role="button"
+            tabindex="0"
+            onmouseenter={() => handleTaxFieldHover('neighbors_slider')}
+            onmouseleave={handleTaxFieldLeave}
+          >
+            {#if hoveredTaxField === 'neighbors_slider' && interactiveTaxExplore}
+              <div class="tutorial-tax-tooltip">
+                {TAX_FIELD_DESCRIPTIONS['neighbors_slider']}
+              </div>
+            {/if}
             <span class="opacity-50 text-sm">Neighbors:</span>
 
             <PonziSlider bind:value={nbNeighbors} />
           </div>
 
           <div
-            class="{sliderNetYieldInBaseToken &&
-            sliderNetYieldInBaseToken.rawValue().isNegative()
-              ? 'text-red-500'
-              : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-xl"
+            class={getTaxFieldClass(
+              'net_yield',
+              `${sliderNetYieldInBaseToken && sliderNetYieldInBaseToken.rawValue().isNegative() ? 'text-red-500' : 'text-green-500'} font-ponzi-number flex items-center gap-1 text-xl relative`,
+            )}
+            role="button"
+            tabindex="0"
+            onmouseenter={() => handleTaxFieldHover('net_yield')}
+            onmouseleave={handleTaxFieldLeave}
           >
+            {#if hoveredTaxField === 'net_yield' && interactiveTaxExplore}
+              <div class="tutorial-tax-tooltip tutorial-tax-tooltip-right">
+                {TAX_FIELD_DESCRIPTIONS['net_yield']}
+              </div>
+            {/if}
             <span>
               {#if sliderNetYieldInBaseToken}
                 {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
@@ -609,46 +690,87 @@
         </div>
 
         <ScrollArea class="flex flex-col flex-1 gap-2 max-h-48 pr-2">
-          <PaybackTimeBreakdown
-            {paybackTimeString}
-            {paybackTimeSeconds}
-            {currentBuyPrice}
-            landToken={land.token}
-            {baseToken}
-            {nbNeighbors}
-            netYieldPerHour={sliderNetYieldInBaseToken || undefined}
-            currentBuyPriceInBaseToken={originalCostInBaseToken || undefined}
-            grossYieldPerHour={sliderNeighborsYieldInBaseToken || undefined}
-            hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
-          />
+          <div
+            class={getTaxFieldClass('payback_time', 'relative')}
+            role="button"
+            tabindex="0"
+            onmouseenter={() => handleTaxFieldHover('payback_time')}
+            onmouseleave={handleTaxFieldLeave}
+          >
+            {#if hoveredTaxField === 'payback_time' && interactiveTaxExplore}
+              <div class="tutorial-tax-tooltip">
+                {TAX_FIELD_DESCRIPTIONS['payback_time']}
+              </div>
+            {/if}
+            <PaybackTimeBreakdown
+              {paybackTimeString}
+              {paybackTimeSeconds}
+              {currentBuyPrice}
+              landToken={land.token}
+              {baseToken}
+              {nbNeighbors}
+              netYieldPerHour={sliderNetYieldInBaseToken || undefined}
+              currentBuyPriceInBaseToken={originalCostInBaseToken || undefined}
+              grossYieldPerHour={sliderNeighborsYieldInBaseToken || undefined}
+              hourlyCostInBaseToken={sliderNeighborsCostInBaseToken ||
+                undefined}
+            />
+          </div>
 
-          <NukeTimeBreakdown
-            nukeTimeString={sliderNukeTimeString}
-            nukeTimeSeconds={sliderNukeTimeSeconds}
-            stakeAmount={stakeAmountVal
-              ? CurrencyAmount.fromScaled(stakeAmountVal, selectedToken)
-              : land?.stakeAmount}
-            {selectedToken}
-            {baseToken}
-            {nbNeighbors}
-            hourlyCost={sliderNeighborsCost}
-            hourlyCostInBaseToken={sliderNeighborsCostInBaseToken || undefined}
-            {taxPerNeighbor}
-          />
+          <div
+            class={getTaxFieldClass('nuke_time', 'relative')}
+            role="button"
+            tabindex="0"
+            onmouseenter={() => handleTaxFieldHover('nuke_time')}
+            onmouseleave={handleTaxFieldLeave}
+          >
+            {#if hoveredTaxField === 'nuke_time' && interactiveTaxExplore}
+              <div class="tutorial-tax-tooltip">
+                {TAX_FIELD_DESCRIPTIONS['nuke_time']}
+              </div>
+            {/if}
+            <NukeTimeBreakdown
+              nukeTimeString={sliderNukeTimeString}
+              nukeTimeSeconds={sliderNukeTimeSeconds}
+              stakeAmount={stakeAmountVal
+                ? CurrencyAmount.fromScaled(stakeAmountVal, selectedToken)
+                : land?.stakeAmount}
+              {selectedToken}
+              {baseToken}
+              {nbNeighbors}
+              hourlyCost={sliderNeighborsCost}
+              hourlyCostInBaseToken={sliderNeighborsCostInBaseToken ||
+                undefined}
+              {taxPerNeighbor}
+            />
+          </div>
           <hr class="my-1 opacity-50" />
 
           {#if sellAmountVal && selectedToken && baseToken}
-            <SellProfitBreakdown
-              {sellAmountVal}
-              {selectedToken}
-              {baseToken}
-              landToken={land.token}
-              {sellerFeeAmount}
-              netSellerProceeds={netSellerProceedsInSelectedToken}
-              originalCost={originalCostInLandToken}
-              originalCostInBaseToken={originalCostInBaseToken || undefined}
-              {actualSellBenefit}
-            />
+            <div
+              class={getTaxFieldClass('sell_profit', 'relative')}
+              role="button"
+              tabindex="0"
+              onmouseenter={() => handleTaxFieldHover('sell_profit')}
+              onmouseleave={handleTaxFieldLeave}
+            >
+              {#if hoveredTaxField === 'sell_profit' && interactiveTaxExplore}
+                <div class="tutorial-tax-tooltip">
+                  {TAX_FIELD_DESCRIPTIONS['sell_profit']}
+                </div>
+              {/if}
+              <SellProfitBreakdown
+                {sellAmountVal}
+                {selectedToken}
+                {baseToken}
+                landToken={land.token}
+                {sellerFeeAmount}
+                netSellerProceeds={netSellerProceedsInSelectedToken}
+                originalCost={originalCostInLandToken}
+                originalCostInBaseToken={originalCostInBaseToken || undefined}
+                {actualSellBenefit}
+              />
+            </div>
           {/if}
         </ScrollArea>
       </div>
@@ -680,3 +802,87 @@
     </div>
   {/if}
 </div>
+
+<style>
+  .tutorial-highlight-tax {
+    border: 2px solid #ffd700 !important;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  .tutorial-tax-explorable {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+    overflow: visible;
+  }
+
+  .tutorial-tax-explorable:hover {
+    border-color: #ffd700;
+    background: rgba(255, 215, 0, 0.1);
+  }
+
+  .tutorial-tax-explorable.explored {
+    border-color: rgba(255, 215, 0, 0.3);
+  }
+
+  .tutorial-tax-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-family: sans-serif;
+    max-width: 300px;
+    min-width: 200px;
+    text-align: center;
+    z-index: 9999;
+    border: 2px solid #ffd700;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    margin-bottom: 8px;
+    white-space: normal;
+    line-height: 1.4;
+  }
+
+  .tutorial-tax-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid #ffd700;
+  }
+
+  .tutorial-tax-tooltip-right {
+    left: auto;
+    right: 0;
+    transform: translateX(0);
+  }
+
+  .tutorial-tax-tooltip-right::after {
+    left: auto;
+    right: 20px;
+    transform: translateX(0);
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
+  }
+</style>

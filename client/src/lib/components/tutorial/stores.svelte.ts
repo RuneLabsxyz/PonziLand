@@ -19,7 +19,7 @@ export const TUTORIAL_CAMERA = {
   lockControls: true, // Disable zoom/pan during tutorial
 };
 
-// Field descriptions for interactive exploration (step 3)
+// Field descriptions for interactive exploration (step 4)
 export const TUTORIAL_FIELD_DESCRIPTIONS: Record<string, string> =
   tutorialData.field_descriptions;
 
@@ -27,10 +27,18 @@ export const TOTAL_EXPLORABLE_FIELDS = Object.keys(
   TUTORIAL_FIELD_DESCRIPTIONS,
 ).length;
 
+// Tax field descriptions for interactive tax impact exploration (step 10)
+export const TAX_FIELD_DESCRIPTIONS: Record<string, string> =
+  (tutorialData as { tax_field_descriptions?: Record<string, string> })
+    .tax_field_descriptions || {};
+
+export const TOTAL_TAX_FIELDS = Object.keys(TAX_FIELD_DESCRIPTIONS).length;
+
 export let tutorialState = $state({
   tutorialEnabled: false,
   tutorialStep: 1,
   exploredFields: new Set<string>(), // For interactive info panel
+  exploredTaxFields: new Set<string>(), // For interactive tax impact panel
 });
 
 export function nextStep() {
@@ -119,4 +127,46 @@ export function resetExploredFields() {
   tutorialState.exploredFields = new Set();
 }
 
+// Track explored tax fields for interactive tax impact panel
+export function markTaxFieldExplored(fieldId: string) {
+  if (!tutorialState.exploredTaxFields.has(fieldId)) {
+    tutorialState.exploredTaxFields = new Set([
+      ...tutorialState.exploredTaxFields,
+      fieldId,
+    ]);
+  }
+}
+
+export function isTaxFieldExplored(fieldId: string): boolean {
+  return tutorialState.exploredTaxFields.has(fieldId);
+}
+
+export function getExploredTaxFieldsCount(): number {
+  return tutorialState.exploredTaxFields.size;
+}
+
+export function resetExploredTaxFields() {
+  tutorialState.exploredTaxFields = new Set();
+}
+
 export function checkProfitability() {}
+
+// Skip to a specific minimum step (for action-based progression)
+export function ensureMinimumStep(minStep: number) {
+  if (tutorialState.tutorialEnabled && tutorialState.tutorialStep < minStep) {
+    tutorialState.tutorialStep = minStep;
+  }
+}
+
+// Skip to the step containing a specific attribute
+export function skipToStepWithAttribute(attribute: string) {
+  if (!tutorialState.tutorialEnabled) return;
+
+  const stepIndex = tutorialData.steps.findIndex((step) =>
+    step.has.includes(attribute),
+  );
+
+  if (stepIndex !== -1 && tutorialState.tutorialStep < stepIndex + 1) {
+    tutorialState.tutorialStep = stepIndex + 1;
+  }
+}
