@@ -15,6 +15,12 @@
     tutorialAttribute,
   } from '$lib/components/tutorial/stores.svelte';
   import { executeTransaction } from '$lib/transactions';
+  import { widgetsStore } from '$lib/stores/widgets.store';
+
+  // Tutorial highlighting for increase stake
+  let highlightIncreaseStake = $derived(
+    tutorialAttribute('wait_increase_stake').has,
+  );
 
   let { land }: { land: LandWithActions } = $props();
 
@@ -59,6 +65,7 @@
     // Handle tutorial
     if (tutorialAttribute('wait_increase_stake').has) {
       nextStep();
+      widgetsStore.closeWidget('land-info');
       return;
     }
 
@@ -103,7 +110,12 @@
   };
 </script>
 
-<div class="flex flex-col gap-4 w-full">
+<div
+  class={[
+    'flex flex-col gap-4 w-full',
+    { 'tutorial-highlight-section': highlightIncreaseStake },
+  ]}
+>
   <div class="space-y-3">
     <Label>Amount to add to stake</Label>
     <Input
@@ -128,3 +140,26 @@
     </Button>
   </div>
 </div>
+
+<style>
+  .tutorial-highlight-section {
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 1rem;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
+  }
+</style>

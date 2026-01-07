@@ -54,14 +54,15 @@
     {
       "_step": "3",
       "_comment": "Simplified buy modal explanation - positioned left of land-info widget",
-      "text": "Set your <b>sell price</b> - this is what others pay to buy your land. <b>Buy Now</b>!",
+      "text": "Set your <b>sell price</b> - this determines:<br>• What others pay to <b>buy your land</b><br>• How much <b>taxes you pay</b> per hour (higher price = higher taxes)<br><br>Start with a modest price, then click <b>Buy Now</b>!",
       "image_id": 3,
       "has": [
         "simplified_buy",
         "wait_buy_land",
         "allow_buy_widget",
         "tutorial_phase_1",
-        "darken_widget"
+        "darken_widget",
+        "highlight_buy_inputs"
       ],
       "hint": "Set price & buy",
       "position": {
