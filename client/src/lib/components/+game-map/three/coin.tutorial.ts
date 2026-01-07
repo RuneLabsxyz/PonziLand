@@ -3,19 +3,21 @@
  * Extracted to keep the main component focused on rendering.
  */
 
+import {
+  TUTORIAL_COORDS,
+  TUTORIAL_TIMING,
+  PLAYER_LAND_LOCATION,
+} from '$lib/components/tutorial/constants';
 import { coordinatesToLocation } from '$lib/utils';
 
 /**
- * Tutorial location constants
+ * Tutorial location constants (re-exported for backward compatibility)
  */
 export const TUTORIAL_COIN_CONFIG = {
-  // Player's land location: 128 * 256 + 128 = 32896
-  PLAYER_LAND_LOCATION: coordinatesToLocation({ x: 128, y: 128 }),
-  // Neighbor land to nuke: x=129, y=128
-  NEIGHBOR_LAND: { x: 129, y: 128 },
-  // Animation timings
-  NUKE_ANIMATION_DELAY_MS: 3000,
-  STEP_ADVANCE_DELAY_MS: 500,
+  PLAYER_LAND_LOCATION: PLAYER_LAND_LOCATION,
+  NEIGHBOR_LAND: TUTORIAL_COORDS.NEIGHBOR_TO_NUKE,
+  NUKE_ANIMATION_DELAY_MS: TUTORIAL_TIMING.NUKE_ANIMATION_DELAY,
+  STEP_ADVANCE_DELAY_MS: TUTORIAL_TIMING.STEP_ADVANCE_DELAY,
 } as const;
 
 /**

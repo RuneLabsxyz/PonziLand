@@ -180,6 +180,13 @@ export abstract class BaseLand {
     return this._stakeAmount;
   }
 
+  /**
+   * Set the stake amount (used for tutorial mode demonstrations)
+   */
+  public setStakeAmount(amount: CurrencyAmount): void {
+    this._stakeAmount = amount;
+  }
+
   public get block_date_bought(): BigNumberish {
     return this._block_date_bought;
   }

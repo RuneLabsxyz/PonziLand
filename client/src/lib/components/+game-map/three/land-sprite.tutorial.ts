@@ -6,14 +6,15 @@
 import type { LandTile } from './landTile';
 import type { BaseLand } from '$lib/api/land';
 import { coordinatesToLocation, locationToCoordinates } from '$lib/utils';
+import { TUTORIAL_COORDS } from '$lib/components/tutorial/constants';
 
 /**
- * Tutorial tile location constants
+ * Tutorial tile location constants (re-exported for backward compatibility)
  */
 export const TUTORIAL_LOCATIONS = {
-  CENTER: { x: 128, y: 128 },
-  SECOND_AUCTION: { x: 127, y: 127 },
-  FULL_AUCTION: { x: 127, y: 128 },
+  CENTER: TUTORIAL_COORDS.CENTER,
+  SECOND_AUCTION: TUTORIAL_COORDS.SECOND_AUCTION,
+  FULL_AUCTION: TUTORIAL_COORDS.FULL_AUCTION,
 } as const;
 
 /**
