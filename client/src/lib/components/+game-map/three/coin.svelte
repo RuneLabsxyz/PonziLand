@@ -82,7 +82,13 @@
 
   let timing = $derived.by(() => {
     // In tutorial claim step, always show coin for player's land
-    if (shouldShowTutorialCoin(tutorialState.tutorialEnabled, tutorialAttribute('wait_claim_nuke').has, tileLocation)) {
+    if (
+      shouldShowTutorialCoin(
+        tutorialState.tutorialEnabled,
+        tutorialAttribute('wait_claim_nuke').has,
+        tileLocation,
+      )
+    ) {
       return true;
     }
     return claimStore.value[tile.land.locationString]?.claimable ?? false;
@@ -90,7 +96,11 @@
 
   // Check if this is the tutorial claim step on player's land
   let isTutorialClaimStep = $derived(
-    isTutorialClaimTile(tutorialState.tutorialEnabled, tutorialAttribute('wait_claim_nuke').has, tileLocation),
+    isTutorialClaimTile(
+      tutorialState.tutorialEnabled,
+      tutorialAttribute('wait_claim_nuke').has,
+      tileLocation,
+    ),
   );
 
   async function handleSingleClaim() {

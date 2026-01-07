@@ -500,7 +500,10 @@
       tutorialState.tutorialEnabled && tutorialAttribute('wait_claim_nuke').has;
 
     if (isTutorialClaimStep) {
-      const tutorialLand = findTutorialClaimLand(visibleLandTiles, BuildingLand.is);
+      const tutorialLand = findTutorialClaimLand(
+        visibleLandTiles,
+        BuildingLand.is,
+      );
       if (tutorialLand) {
         return [tutorialLand];
       }
@@ -965,7 +968,12 @@
           size="sm"
           onclick={() => {
             // In tutorial, only allow opening buy widget when the attribute is set
-            if (isBuyWidgetBlocked(tutorialState.tutorialEnabled, tutorialAttribute('allow_buy_widget').has)) {
+            if (
+              isBuyWidgetBlocked(
+                tutorialState.tutorialEnabled,
+                tutorialAttribute('allow_buy_widget').has,
+              )
+            ) {
               return; // Block opening to prevent deadlock
             }
 

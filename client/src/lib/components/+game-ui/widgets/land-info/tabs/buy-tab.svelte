@@ -650,7 +650,12 @@
         gameSounds.play('buy');
 
         // Progress to next tutorial step if waiting for buy (regular or auction)
-        if (shouldAdvanceTutorialOnBuy(tutorialAttribute('wait_buy_land').has, tutorialAttribute('wait_auction_buy').has)) {
+        if (
+          shouldAdvanceTutorialOnBuy(
+            tutorialAttribute('wait_buy_land').has,
+            tutorialAttribute('wait_auction_buy').has,
+          )
+        ) {
           nextStep();
         }
 
@@ -1108,7 +1113,10 @@
             isOwner ||
             loading ||
             isBuyBlockedByTutorial ||
-            shouldBlockForAdvisorWarnings(tutorialState.tutorialEnabled, hasAdvisorWarnings)}
+            shouldBlockForAdvisorWarnings(
+              tutorialState.tutorialEnabled,
+              hasAdvisorWarnings,
+            )}
         >
           BUY FOR <span class="text-yellow-500">
             &nbsp;

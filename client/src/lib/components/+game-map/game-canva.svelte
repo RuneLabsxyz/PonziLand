@@ -107,7 +107,15 @@
             CENTER,
             100,
           );
-          ref.setLookAt(settings.centerX, 50, settings.centerY, settings.centerX, 0, settings.centerY, false);
+          ref.setLookAt(
+            settings.centerX,
+            50,
+            settings.centerY,
+            settings.centerX,
+            0,
+            settings.centerY,
+            false,
+          );
           if (isTutorial) {
             ref.zoomTo(settings.zoom, false);
             // Lock camera controls during tutorial
