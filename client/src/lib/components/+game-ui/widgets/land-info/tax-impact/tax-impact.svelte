@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { LandWithActions } from '$lib/api/land';
   import PonziSlider from '$lib/components/ui/ponzi-slider/ponzi-slider.svelte';
-  import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import type { LandYieldInfo, Token } from '$lib/interfaces';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
@@ -37,16 +36,26 @@
 
   // Interactive hover state
   let hoveredTaxField = $state<string | null>(null);
+  let tooltipPosition = $state<{ top: number; left: number } | null>(null);
 
-  function handleTaxFieldHover(fieldId: string) {
+  function handleTaxFieldHover(fieldId: string, event: MouseEvent) {
     if (interactiveTaxExplore) {
       hoveredTaxField = fieldId;
       markTaxFieldExplored(fieldId);
+
+      // Calculate tooltip position based on element
+      const target = event.currentTarget as HTMLElement;
+      const rect = target.getBoundingClientRect();
+      tooltipPosition = {
+        top: rect.top,
+        left: rect.left + rect.width / 2,
+      };
     }
   }
 
   function handleTaxFieldLeave() {
     hoveredTaxField = null;
+    tooltipPosition = null;
   }
 
   function getTaxFieldClass(fieldId: string, baseClass: string) {
@@ -638,14 +647,9 @@
             )}
             role="button"
             tabindex="0"
-            onmouseenter={() => handleTaxFieldHover('neighbors_slider')}
+            onmouseenter={(e) => handleTaxFieldHover('neighbors_slider', e)}
             onmouseleave={handleTaxFieldLeave}
           >
-            {#if hoveredTaxField === 'neighbors_slider' && interactiveTaxExplore}
-              <div class="tutorial-tax-tooltip">
-                {TAX_FIELD_DESCRIPTIONS['neighbors_slider']}
-              </div>
-            {/if}
             <span class="opacity-50 text-sm">Neighbors:</span>
 
             <PonziSlider bind:value={nbNeighbors} />
@@ -658,14 +662,9 @@
             )}
             role="button"
             tabindex="0"
-            onmouseenter={() => handleTaxFieldHover('net_yield')}
+            onmouseenter={(e) => handleTaxFieldHover('net_yield', e)}
             onmouseleave={handleTaxFieldLeave}
           >
-            {#if hoveredTaxField === 'net_yield' && interactiveTaxExplore}
-              <div class="tutorial-tax-tooltip tutorial-tax-tooltip-right">
-                {TAX_FIELD_DESCRIPTIONS['net_yield']}
-              </div>
-            {/if}
             <span>
               {#if sliderNetYieldInBaseToken}
                 {sliderNetYieldInBaseToken.rawValue().isNegative() ? '' : '+'}
@@ -684,7 +683,7 @@
       </div>
 
       <!-- Grid and Details Below -->
-      <div class="flex gap-4">
+      <div class="flex gap-4 overflow-visible">
         <div class="flex-shrink-0">
           {#if neighbors}
             <BuyInsightsNeighborGrid
@@ -695,19 +694,14 @@
           {/if}
         </div>
 
-        <ScrollArea class="flex flex-col flex-1 gap-2 max-h-48 pr-2">
+        <div class="flex flex-col flex-1 gap-2 overflow-visible">
           <div
             class={getTaxFieldClass('payback_time', 'relative')}
             role="button"
             tabindex="0"
-            onmouseenter={() => handleTaxFieldHover('payback_time')}
+            onmouseenter={(e) => handleTaxFieldHover('payback_time', e)}
             onmouseleave={handleTaxFieldLeave}
           >
-            {#if hoveredTaxField === 'payback_time' && interactiveTaxExplore}
-              <div class="tutorial-tax-tooltip">
-                {TAX_FIELD_DESCRIPTIONS['payback_time']}
-              </div>
-            {/if}
             <PaybackTimeBreakdown
               {paybackTimeString}
               {paybackTimeSeconds}
@@ -727,14 +721,9 @@
             class={getTaxFieldClass('nuke_time', 'relative')}
             role="button"
             tabindex="0"
-            onmouseenter={() => handleTaxFieldHover('nuke_time')}
+            onmouseenter={(e) => handleTaxFieldHover('nuke_time', e)}
             onmouseleave={handleTaxFieldLeave}
           >
-            {#if hoveredTaxField === 'nuke_time' && interactiveTaxExplore}
-              <div class="tutorial-tax-tooltip">
-                {TAX_FIELD_DESCRIPTIONS['nuke_time']}
-              </div>
-            {/if}
             <NukeTimeBreakdown
               nukeTimeString={sliderNukeTimeString}
               nukeTimeSeconds={sliderNukeTimeSeconds}
@@ -757,14 +746,9 @@
               class={getTaxFieldClass('sell_profit', 'relative')}
               role="button"
               tabindex="0"
-              onmouseenter={() => handleTaxFieldHover('sell_profit')}
+              onmouseenter={(e) => handleTaxFieldHover('sell_profit', e)}
               onmouseleave={handleTaxFieldLeave}
             >
-              {#if hoveredTaxField === 'sell_profit' && interactiveTaxExplore}
-                <div class="tutorial-tax-tooltip">
-                  {TAX_FIELD_DESCRIPTIONS['sell_profit']}
-                </div>
-              {/if}
               <SellProfitBreakdown
                 {sellAmountVal}
                 {selectedToken}
@@ -778,7 +762,7 @@
               />
             </div>
           {/if}
-        </ScrollArea>
+        </div>
       </div>
 
       <!-- Advisor Warnings -->
@@ -809,6 +793,16 @@
   {/if}
 </div>
 
+<!-- Fixed position tooltip portal -->
+{#if hoveredTaxField && tooltipPosition && interactiveTaxExplore}
+  <div
+    class="tutorial-tax-tooltip"
+    style="top: {tooltipPosition.top}px; left: {tooltipPosition.left}px; transform: translate(-50%, -100%) translateY(-8px);"
+  >
+    {TAX_FIELD_DESCRIPTIONS[hoveredTaxField]}
+  </div>
+{/if}
+
 <style>
   .tutorial-highlight-tax {
     border: 2px solid #ffd700 !important;
@@ -834,10 +828,7 @@
   }
 
   .tutorial-tax-tooltip {
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    position: fixed;
     background: rgba(0, 0, 0, 0.95);
     color: white;
     padding: 0.75rem 1rem;
@@ -850,32 +841,9 @@
     z-index: 9999;
     border: 2px solid #ffd700;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    margin-bottom: 8px;
     white-space: normal;
     line-height: 1.4;
-  }
-
-  .tutorial-tax-tooltip::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 8px solid transparent;
-    border-right: 8px solid transparent;
-    border-top: 8px solid #ffd700;
-  }
-
-  .tutorial-tax-tooltip-right {
-    left: auto;
-    right: 0;
-    transform: translateX(0);
-  }
-
-  .tutorial-tax-tooltip-right::after {
-    left: auto;
-    right: 20px;
-    transform: translateX(0);
+    pointer-events: none;
   }
 
   @keyframes goldGlow {
