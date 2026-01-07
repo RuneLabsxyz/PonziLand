@@ -10,7 +10,7 @@
   } from '$lib/stores/nuke.store.svelte';
   import { gameSounds } from '$lib/stores/sfx.svelte';
   import { landStore } from '$lib/stores/store.svelte';
-  import { padAddress } from '$lib/utils';
+  import { coordinatesToLocation, padAddress } from '$lib/utils';
   import { createLandWithActions } from '$lib/utils/land-actions';
   import { getAggregatedTaxes, type TaxData } from '$lib/utils/taxes';
   import { useThrelte } from '@threlte/core';
@@ -18,6 +18,11 @@
   import type { InstancedMesh as TInstancedMesh } from 'three';
   import type { LandTile } from './landTile';
   import type { CoinHoverShaderMaterial } from './utils/coin-hover-shader';
+  import {
+    tutorialState,
+    tutorialAttribute,
+    nextStep,
+  } from '$lib/components/tutorial/stores.svelte';
 
   const dojo = useDojo();
 
@@ -46,7 +51,13 @@
     landStore.getAllLands,
   );
 
+  // Local state for tutorial coin animation (claimStore won't have tutorial land)
+  let tutorialAnimating = $state(false);
+
   let animating = $derived.by(() => {
+    // Tutorial animation takes precedence
+    if (tutorialAnimating) return true;
+
     const claimInfo = claimStore.value[tile.land.locationString];
     if (!claimInfo) return false;
 
@@ -60,9 +71,29 @@
     }
   });
 
+  // Get numeric location for comparisons
+  let tileLocation = $derived(coordinatesToLocation(tile.land.location));
+
   let timing = $derived.by(() => {
+    // In tutorial claim step, always show coin for player's land
+    if (
+      tutorialState.tutorialEnabled &&
+      tutorialAttribute('wait_claim_nuke').has
+    ) {
+      // Player's land at 128,128 = 128 * 256 + 128 = 32896
+      if (tileLocation === 32896) {
+        return true;
+      }
+    }
     return claimStore.value[tile.land.locationString]?.claimable ?? false;
   });
+
+  // Check if this is the tutorial claim step on player's land
+  let isTutorialClaimStep = $derived(
+    tutorialState.tutorialEnabled &&
+      tutorialAttribute('wait_claim_nuke').has &&
+      tileLocation === 32896,
+  );
 
   async function handleSingleClaim() {
     if (accountState.walletAccount === undefined) {
@@ -88,6 +119,35 @@
 
   const handleCoinClick = async (tile: LandTile, i: number) => {
     if (animating || !timing) return;
+
+    // Handle tutorial claim step
+    if (isTutorialClaimStep) {
+      // 1. Trigger coin animation (hide coin)
+      tutorialAnimating = true;
+
+      // 2. Play claim sound
+      gameSounds.play('claim');
+
+      // 3. Trigger nuke animation on neighbor land (129,128)
+      // Location: y * 256 + x = 128 * 256 + 129 = 32897
+      // Use decimal number as string (not hex) to match nuke-sprite.svelte lookup
+      const neighborLocation = coordinatesToLocation({ x: 129, y: 128 });
+      nukeStore.animationManager.triggerAnimation(String(neighborLocation));
+
+      // 4. Play nuke sound
+      gameSounds.play('nuke');
+
+      // 5. Convert neighbor building to auction after nuke animation (3 seconds)
+      setTimeout(() => {
+        landStore.convertToAuctionForTutorial(129, 128);
+      }, 3000);
+
+      // 6. Advance tutorial after short delay so user sees animations
+      setTimeout(() => {
+        nextStep();
+      }, 500);
+      return;
+    }
 
     if (accountState.walletAccount === undefined) {
       console.error('No wallet account found');

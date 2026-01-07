@@ -47,6 +47,7 @@
   import {
     nextStep,
     tutorialAttribute,
+    tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
   const CIRCLE_PADDING = 8;
 
@@ -476,6 +477,23 @@
 
   // Optimized coin tiles using reactive ownership data
   let ownedCoinTiles = $derived.by(() => {
+    // In tutorial claim step, include player's land at 128,128
+    const isTutorialClaimStep =
+      tutorialState.tutorialEnabled && tutorialAttribute('wait_claim_nuke').has;
+
+    if (isTutorialClaimStep) {
+      // Find the tutorial land at 128,128
+      const tutorialLand = visibleLandTiles.find(
+        (tile) =>
+          BuildingLand.is(tile.land) &&
+          coordinatesToLocation(tile.land.location) ===
+            coordinatesToLocation({ x: 128, y: 128 }),
+      );
+      if (tutorialLand) {
+        return [tutorialLand];
+      }
+    }
+
     if (
       !accountState.address ||
       !visibleLandTiles ||
@@ -518,6 +536,9 @@
     } else if (tutorialAttribute('highlight_auction').has) {
       targetX = 127;
       targetY = 127;
+    } else if (tutorialAttribute('highlight_nuke_neighbor').has) {
+      targetX = 129;
+      targetY = 128;
     } else {
       return undefined;
     }
@@ -922,6 +943,14 @@
           ]}
           size="sm"
           onclick={() => {
+            // In tutorial, only allow opening buy widget when the attribute is set
+            if (
+              tutorialState.tutorialEnabled &&
+              !tutorialAttribute('allow_buy_widget').has
+            ) {
+              return; // Block opening to prevent deadlock
+            }
+
             if (tutorialAttribute('wait_buy_land_open').has) {
               nextStep();
             }

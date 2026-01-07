@@ -21,73 +21,52 @@
 <HTML
   portal={document.getElementById('game-canvas') ?? document.body}
   {position}
-  zIndexRange={[15, 5]}
+  zIndexRange={[5, 0]}
   distanceFactor={0.01}
 >
   <div
-    class="black-square-effect"
+    class="highlight-effect"
     style="transform: translate(-50%, -50%) scale({scale})"
   >
-    <div class="black-overlay"></div>
-    <div class="center-glow"></div>
+    <div class="glow-border"></div>
   </div>
 </HTML>
 
 <style>
-  .black-square-effect {
+  .highlight-effect {
     position: relative;
     width: 100px;
     height: 100px;
     pointer-events: none;
   }
 
-  .black-overlay {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 10000px;
-    height: 10000px;
-    background: #000000;
-    opacity: 0.5;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-
-    /* Create a hole in the center using clip-path */
-    clip-path: polygon(
-      0% 0%,
-      0% 100%,
-      49.5% 100%,
-      49.5% 49.5%,
-      50.5% 49.5%,
-      50.5% 50.5%,
-      49.5% 50.5%,
-      49.5% 100%,
-      100% 100%,
-      100% 0%
-    );
-  }
-
-  .center-glow {
+  .glow-border {
     position: absolute;
     top: 50%;
     left: 50%;
     width: 100px;
     height: 100px;
     transform: translate(-50%, -50%);
+    border: 3px solid #ffd700;
+    border-radius: 8px;
     background: transparent;
-    animation: whiteGlow 2s ease-in-out infinite;
+    animation: goldGlow 2s ease-in-out infinite;
     pointer-events: none;
   }
 
-  @keyframes whiteGlow {
+  @keyframes goldGlow {
     0%,
     100% {
-      background: rgba(255, 255, 255, 0);
-      box-shadow: 0 0 0px rgba(255, 255, 255, 0);
+      box-shadow:
+        0 0 10px rgba(255, 215, 0, 0.4),
+        0 0 20px rgba(255, 215, 0, 0.2),
+        inset 0 0 10px rgba(255, 215, 0, 0.1);
     }
     50% {
-      background: rgba(255, 255, 255, 0.3);
-      box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
+      box-shadow:
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.4),
+        inset 0 0 15px rgba(255, 215, 0, 0.2);
     }
   }
 </style>

@@ -27,6 +27,12 @@
   let priceDisplay = $derived(currentPrice?.toString());
 
   $effect(() => {
+    // In tutorial mode, use a mock price to avoid RPC hangs
+    if (tutorialState.tutorialEnabled) {
+      currentPrice = CurrencyAmount.fromScaled(0.5, displayToken);
+      return;
+    }
+
     fetchCurrentPrice();
 
     const interval = setInterval(() => {
@@ -73,10 +79,9 @@
       <div class="text-ponzi-number text-center">Loading...</div>
     {/if}
     <div
-      class={{
-        'ring-2 ring-blue-400 ring-opacity-50 bg-blue-50 bg-opacity-10 rounded-lg p-2':
-          tutorialAttribute('highlight_map_buy').has,
-      }}
+      class={[
+        tutorialAttribute('highlight_map_buy').has ? 'tutorial-highlight' : '',
+      ]}
     >
       <Button
         onclick={() => {
@@ -93,5 +98,26 @@
 <style>
   .border-ponzi-auction {
     background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23F2B545FF' stroke-width='10' stroke-dasharray='20%2c20' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
+  }
+
+  .tutorial-highlight {
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 0.5rem;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
   }
 </style>

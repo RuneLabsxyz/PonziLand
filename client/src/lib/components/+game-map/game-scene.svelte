@@ -13,6 +13,10 @@
   import { toLocation } from '$lib/api/land/location';
   import { coordinatesToLocation } from '$lib/utils';
   import { devsettings } from './three/utils/devsettings.store.svelte';
+  import {
+    isLandClickAllowed,
+    tutorialState,
+  } from '$lib/components/tutorial/stores.svelte';
 
   let { children = undefined } = $props();
 
@@ -125,6 +129,18 @@
 
       // Find the land tile that corresponds to our grid position
       if (cursorStore.gridPosition) {
+        // Check if tutorial mode restricts this click
+        if (
+          tutorialState.tutorialEnabled &&
+          !isLandClickAllowed(
+            cursorStore.gridPosition.x,
+            cursorStore.gridPosition.y,
+          )
+        ) {
+          // Ignore click on disallowed land during tutorial
+          return;
+        }
+
         const tile =
           landTiles[cursorStore.gridPosition.x][cursorStore.gridPosition.y];
 
@@ -133,7 +149,8 @@
           gameSounds.play('biomeSelect');
 
           // Handle camera movement if gameStore.cameraControls exists
-          if (gameStore.cameraControls) {
+          // Skip camera movement during tutorial (camera is locked)
+          if (gameStore.cameraControls && !tutorialState.tutorialEnabled) {
             gameStore.cameraControls.setLookAt(
               cursorStore.gridPosition.x,
               50, // Slightly above the tile

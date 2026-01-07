@@ -7,10 +7,23 @@
   import { heatmapStore } from '$lib/stores/heatmap.svelte';
   import { onMount } from 'svelte';
   import OverlayManagerItem from './OverlayManagerItem.svelte';
+  import {
+    tutorialAttribute,
+    nextStep,
+  } from '$lib/components/tutorial/stores.svelte';
 
   type MultipleValues = ('nuke' | 'rates')[];
 
   let multiple: MultipleValues = $state([]);
+
+  // Tutorial state
+  let highlightShieldButton = $derived(
+    tutorialAttribute('highlight_shield_button').has,
+  );
+  let waitShieldClick = $derived(tutorialAttribute('wait_shield_click').has);
+
+  // Keep the overlay visible during tutorial shield step
+  let forceVisible = $derived(highlightShieldButton || waitShieldClick);
 
   onMount(() => {
     if (devsettings.showNukeTimes) multiple.push('nuke');
@@ -20,6 +33,11 @@
   $effect(() => {
     devsettings.showNukeTimes = multiple.includes('nuke');
     devsettings.showRatesOverlay = multiple.includes('rates');
+
+    // Advance tutorial when shield is clicked
+    if (waitShieldClick && multiple.includes('nuke')) {
+      nextStep();
+    }
   });
 
   type HeatmapState =
@@ -40,7 +58,9 @@
 </script>
 
 <div
-  class="top-0 left-1/2 absolute z-2 pb-5 overlay-hover-detect"
+  class="top-0 left-1/2 absolute z-2 pb-5 overlay-hover-detect {forceVisible
+    ? 'force-visible'
+    : ''}"
   style="pointer-events: all;"
 >
   <Card class="bg-ponzi overlay-container relative">
@@ -88,13 +108,15 @@
         value={multiple}
         onValueChange={(e) => (multiple = e as MultipleValues)}
       >
-        <OverlayManagerItem value="nuke" tooltip="Show Nuke Times">
-          <img
-            src="/ui/icons/Icon_ShieldRed.png"
-            alt="Stats Icon"
-            class="inline h-4 w-4"
-          />
-        </OverlayManagerItem>
+        <div class={highlightShieldButton ? 'tutorial-highlight' : ''}>
+          <OverlayManagerItem value="nuke" tooltip="Show Nuke Times">
+            <img
+              src="/ui/icons/Icon_ShieldRed.png"
+              alt="Stats Icon"
+              class="inline h-4 w-4"
+            />
+          </OverlayManagerItem>
+        </div>
         <OverlayManagerItem value="rates" tooltip="Show Rates Overlay">
           <img
             src="/ui/icons/Icon_Coin3.png"
@@ -121,7 +143,8 @@
     transform: translateX(-50%);
   }
 
-  :global(.overlay-hover-detect:hover .overlay-container) {
+  :global(.overlay-hover-detect:hover .overlay-container),
+  :global(.force-visible .overlay-container) {
     transform: translateY(0);
   }
 
@@ -135,5 +158,25 @@
       2px 0 0 #000,
       0 -2px 0 #000,
       -2px 0 0 #000;
+  }
+
+  .tutorial-highlight {
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
   }
 </style>

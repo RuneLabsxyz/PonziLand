@@ -8,6 +8,11 @@
   import { displayCurrency } from '$lib/utils/currency';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
   import data from '$profileData';
+  import { tutorialAttribute } from '$lib/components/tutorial/stores.svelte';
+
+  let highlightTokenEarnings = $derived(
+    tutorialAttribute('highlight_token_earnings').has,
+  );
 
   let {
     yieldInfo,
@@ -151,7 +156,11 @@
   </div>
 
   {#if yieldData}
-    <div class="flex flex-col pt-4">
+    <div
+      class="flex flex-col pt-4 {highlightTokenEarnings
+        ? 'token-earnings-highlight'
+        : ''}"
+    >
       <div class="text-ponzi-number">Yield per hour:</div>
       {#each yieldData as _yield}
         <div class="flex justify-between items-center text-green-400">
@@ -182,5 +191,26 @@
 
   .low-opacity {
     opacity: 0.7;
+  }
+
+  .token-earnings-highlight {
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    padding: 0.5rem;
+    animation: goldGlow 2s ease-in-out infinite;
+  }
+
+  @keyframes goldGlow {
+    0%,
+    100% {
+      box-shadow:
+        0 0 8px rgba(255, 215, 0, 0.4),
+        0 0 16px rgba(255, 215, 0, 0.2);
+    }
+    50% {
+      box-shadow:
+        0 0 16px rgba(255, 215, 0, 0.8),
+        0 0 32px rgba(255, 215, 0, 0.4);
+    }
   }
 </style>

@@ -13,6 +13,7 @@
   import {
     tutorialAttribute,
     tutorialState,
+    nextStep,
   } from '$lib/components/tutorial/stores.svelte';
 
   type Props = {
@@ -23,6 +24,15 @@
   let { setCustomTitle, setCustomControls }: Props = $props();
 
   let highlighted = $derived(tutorialAttribute('highlight_info').has);
+  let highlightProMode = $derived(tutorialAttribute('highlight_pro_mode').has);
+  let waitProModeClick = $derived(tutorialAttribute('wait_pro_mode_click').has);
+
+  function handleProModeToggle() {
+    settingsStore.toggleNoobMode();
+    if (waitProModeClick) {
+      nextStep();
+    }
+  }
 
   const address = $derived(account.address);
   let landWithActions = $derived(selectedLandWithActions());
@@ -51,8 +61,8 @@
 
 {#snippet customControlsSnippet()}
   <button
-    class="window-control"
-    onclick={() => settingsStore.toggleNoobMode()}
+    class="window-control {highlightProMode ? 'pro-mode-highlight' : ''}"
+    onclick={handleProModeToggle}
     aria-label={settingsStore.isNoobMode
       ? 'Switch to Pro Mode'
       : 'Switch to Noob Mode'}
@@ -65,9 +75,6 @@
   </button>
 {/snippet}
 
-{#if highlighted}
-  <div class="spotlight-overlay"></div>
-{/if}
 {#if land}
   {#if land.type !== 'auction'}
     <div class="absolute left-0 top-0 -translate-y-full">
@@ -81,9 +88,6 @@
   {/if}
 {/if}
 <div class="content-wrapper" class:highlighted>
-  {#if highlighted}
-    <div class="spotlight-glow"></div>
-  {/if}
   {#if land}
     {#if land.type === 'auction'}
       <LandHudAuction {land} />
@@ -101,15 +105,10 @@
 </div>
 
 <style>
-  .spotlight-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0, 0, 0, 0.7);
-    pointer-events: auto;
-    z-index: 9998;
+  .pro-mode-highlight {
+    border: 2px solid #ffd700 !important;
+    border-radius: 6px;
+    animation: goldGlow 1.5s ease-in-out infinite;
   }
 
   .content-wrapper {
@@ -121,37 +120,22 @@
     z-index: 9999;
     pointer-events: auto;
     overflow: visible;
+    border: 2px solid #ffd700;
+    border-radius: 8px;
+    animation: goldGlow 2s ease-in-out infinite;
   }
 
-  .spotlight-glow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 200%;
-    height: 400%;
-    background: radial-gradient(
-      ellipse at center,
-      rgba(255, 255, 255, 0.2) 0%,
-      rgba(255, 255, 255, 0.12) 30%,
-      rgba(255, 255, 255, 0.06) 50%,
-      transparent 70%
-    );
-    pointer-events: none;
-    z-index: -1;
-    filter: blur(30px);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
+  @keyframes goldGlow {
     0%,
     100% {
-      opacity: 0.7;
-      transform: translate(-50%, -50%) scale(1);
+      box-shadow:
+        0 0 10px rgba(255, 215, 0, 0.4),
+        0 0 20px rgba(255, 215, 0, 0.2);
     }
     50% {
-      opacity: 1;
-      transform: translate(-50%, -50%) scale(1.1);
+      box-shadow:
+        0 0 20px rgba(255, 215, 0, 0.8),
+        0 0 40px rgba(255, 215, 0, 0.4);
     }
   }
 </style>

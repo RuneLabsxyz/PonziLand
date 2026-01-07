@@ -27,9 +27,12 @@ export const MAX_STAKE = 2000n; // Around 250$
 export const MAX_CLAIM_ALL_COUNT = 3;
 
 /**
- * Due to the current state of the tutorial, it should be disabled in order to not confuse and
- * drop players.
- *
- * Once it has been reworked, this flag should be removed.
+ * Enables the tutorial for new players.
+ * The tutorial has been reworked with:
+ * - Camera lock and zoom control
+ * - Consolidated steps (10 instead of 21)
+ * - Interactive hover exploration
+ * - Subtle gold glow highlights
+ * - Greyed out UI elements
  */
-export const ENABLE_TUTORIAL = false;
+export const ENABLE_TUTORIAL = true;
