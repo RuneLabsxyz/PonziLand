@@ -24,6 +24,11 @@
     tutorialAttribute,
     tutorialState,
   } from '$lib/components/tutorial/stores.svelte';
+  import {
+    shouldBlockBuyInTutorial,
+    shouldAdvanceTutorialOnBuy,
+    shouldBlockForAdvisorWarnings,
+  } from './buy-tab.tutorial';
 
   // Tutorial highlighting for buy inputs
   let highlightBuyInputs = $derived(
@@ -32,9 +37,11 @@
 
   // Block buy button until tutorial reaches the buy step
   let isBuyBlockedByTutorial = $derived(
-    tutorialState.tutorialEnabled &&
-      !tutorialAttribute('wait_buy_land').has &&
-      !tutorialAttribute('wait_auction_buy').has,
+    shouldBlockBuyInTutorial(
+      tutorialState.tutorialEnabled,
+      tutorialAttribute('wait_buy_land').has,
+      tutorialAttribute('wait_auction_buy').has,
+    ),
   );
 
   // Simplified buy mode for tutorial - only sell price, auto stake
@@ -643,10 +650,7 @@
         gameSounds.play('buy');
 
         // Progress to next tutorial step if waiting for buy (regular or auction)
-        if (
-          tutorialAttribute('wait_buy_land').has ||
-          tutorialAttribute('wait_auction_buy').has
-        ) {
+        if (shouldAdvanceTutorialOnBuy(tutorialAttribute('wait_buy_land').has, tutorialAttribute('wait_auction_buy').has)) {
           nextStep();
         }
 
@@ -1104,7 +1108,7 @@
             isOwner ||
             loading ||
             isBuyBlockedByTutorial ||
-            (tutorialState.tutorialEnabled && hasAdvisorWarnings)}
+            shouldBlockForAdvisorWarnings(tutorialState.tutorialEnabled, hasAdvisorWarnings)}
         >
           BUY FOR <span class="text-yellow-500">
             &nbsp;

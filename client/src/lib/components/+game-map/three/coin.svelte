@@ -23,6 +23,12 @@
     tutorialAttribute,
     advanceStepWithOutroCheck,
   } from '$lib/components/tutorial/stores.svelte';
+  import {
+    TUTORIAL_COIN_CONFIG,
+    getTutorialNeighborLocation,
+    shouldShowTutorialCoin,
+    isTutorialClaimTile,
+  } from './coin.tutorial';
 
   const dojo = useDojo();
 
@@ -76,23 +82,15 @@
 
   let timing = $derived.by(() => {
     // In tutorial claim step, always show coin for player's land
-    if (
-      tutorialState.tutorialEnabled &&
-      tutorialAttribute('wait_claim_nuke').has
-    ) {
-      // Player's land at 128,128 = 128 * 256 + 128 = 32896
-      if (tileLocation === 32896) {
-        return true;
-      }
+    if (shouldShowTutorialCoin(tutorialState.tutorialEnabled, tutorialAttribute('wait_claim_nuke').has, tileLocation)) {
+      return true;
     }
     return claimStore.value[tile.land.locationString]?.claimable ?? false;
   });
 
   // Check if this is the tutorial claim step on player's land
   let isTutorialClaimStep = $derived(
-    tutorialState.tutorialEnabled &&
-      tutorialAttribute('wait_claim_nuke').has &&
-      tileLocation === 32896,
+    isTutorialClaimTile(tutorialState.tutorialEnabled, tutorialAttribute('wait_claim_nuke').has, tileLocation),
   );
 
   async function handleSingleClaim() {
@@ -128,25 +126,23 @@
       // 2. Play claim sound
       gameSounds.play('claim');
 
-      // 3. Trigger nuke animation on neighbor land (129,128)
-      // Location: y * 256 + x = 128 * 256 + 129 = 32897
-      // Use decimal number as string (not hex) to match nuke-sprite.svelte lookup
-      const neighborLocation = coordinatesToLocation({ x: 129, y: 128 });
+      // 3. Trigger nuke animation on neighbor land
+      const neighborLocation = getTutorialNeighborLocation();
       nukeStore.animationManager.triggerAnimation(String(neighborLocation));
 
       // 4. Play nuke sound
       gameSounds.play('nuke');
 
-      // 5. Convert neighbor building to auction after nuke animation (3 seconds)
+      // 5. Convert neighbor building to auction after nuke animation
+      const { x, y } = TUTORIAL_COIN_CONFIG.NEIGHBOR_LAND;
       setTimeout(() => {
-        landStore.convertToAuctionForTutorial(129, 128);
-      }, 3000);
+        landStore.convertToAuctionForTutorial(x, y);
+      }, TUTORIAL_COIN_CONFIG.NUKE_ANIMATION_DELAY_MS);
 
       // 6. Advance tutorial after short delay so user sees animations
-      // Use advanceStepWithOutroCheck to handle the outro sequence if trigger_outro is set
       setTimeout(() => {
         advanceStepWithOutroCheck();
-      }, 500);
+      }, TUTORIAL_COIN_CONFIG.STEP_ADVANCE_DELAY_MS);
       return;
     }
 
