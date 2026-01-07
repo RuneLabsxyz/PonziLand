@@ -8,20 +8,43 @@
     resetExploredTaxFields,
     getExploredFieldsCount,
     TOTAL_EXPLORABLE_FIELDS,
+    normalizePosition,
+    type TutorialPosition,
+    tutorialOutroState,
+    startOutroSequence,
   } from './stores.svelte';
   import dialogData from './dialog.json';
   import { onMount } from 'svelte';
   import { landStore, selectedLand } from '$lib/stores/store.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
+  import { gameStore } from '$lib/components/+game-map/three/game.store.svelte';
+  import { Vector3 } from 'three';
   import { ChevronRight } from 'lucide-svelte';
   import { Button } from '$lib/components/ui/button';
   import { widgetsStore } from '$lib/stores/widgets.store';
   import { get } from 'svelte/store';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import TutorialOverlay from './tutorial-overlay.svelte';
+  import TutorialOutro from './tutorial-outro.svelte';
 
   let currentDialog = $derived(
     dialogData.steps[tutorialState.tutorialStep - 1],
   );
+
+  // Check if outro is currently playing
+  let isOutroPlaying = $derived(tutorialOutroState.isPlaying);
+
+  // Custom advance function that checks for outro trigger
+  function advanceStep() {
+    // If current step has trigger_outro, start the outro instead of advancing
+    if (tutorialAttribute('trigger_outro').has) {
+      console.log('Tutorial: Triggering outro sequence');
+      startOutroSequence();
+      return;
+    }
+    // Otherwise, normal advancement
+    nextStep();
+  }
 
   // Fullscreen intro mode (step 1)
   let isFullscreenIntro = $derived(tutorialAttribute('fullscreen_intro').has);
@@ -31,6 +54,160 @@
 
   // Click-to-continue mode for passive updates
   let waitLaziClick = $derived(tutorialAttribute('wait_lazi_click').has);
+
+  // Show Next button for manual advancement
+  let showNextButton = $derived(tutorialAttribute('show_next_button').has);
+
+  // Dialog dimensions for position calculations
+  const DIALOG_WIDTH = 480;
+  const DIALOG_HEIGHT = 120;
+  const MARGIN = 20;
+
+  // Normalize position from current dialog step (cast needed for JSON type inference)
+  let normalizedPos = $derived(
+    normalizePosition(
+      currentDialog?.position as string | TutorialPosition | undefined,
+    ),
+  );
+
+  // Map position presets to CSS classes (fallback positioning)
+  const positionClasses: Record<string, string> = {
+    'widget-left': 'top-1/2 left-[5%] -translate-y-1/2',
+    'map-center': 'top-[55%] left-[10%]',
+    'map-left': 'top-[45%] right-[10%]',
+    'map-bottom-left': 'top-[25%] right-[15%]',
+    'below-top': 'top-[20%] left-1/2 -translate-x-1/2',
+    center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+  };
+
+  // Reactive widget positions from store
+  let widgets = $derived($widgetsStore);
+
+  // Find widget by type (widgets can have dynamic IDs like 'land-info [128-128]')
+  function findWidgetByType(targetType: string) {
+    // Map conceptual names to actual widget types
+    const typeMapping: Record<string, string> = {
+      'buy-land': 'land-info', // "buy-land" is actually the land-info widget
+      'land-info': 'land-info',
+    };
+    const actualType = typeMapping[targetType] || targetType;
+
+    // Find any open, non-minimized widget of this type
+    return Object.values(widgets).find(
+      (w) => w.type === actualType && w.isOpen && !w.isMinimized,
+    );
+  }
+
+  // Project 3D world coordinates to screen space
+  function projectToScreen(
+    worldX: number,
+    worldZ: number,
+  ): { x: number; y: number } | null {
+    const camera = gameStore.cameraControls?.camera;
+    if (!camera || typeof window === 'undefined') return null;
+
+    // Create world position (y=0.5 to be slightly above ground)
+    const worldPos = new Vector3(worldX, 0.5, worldZ);
+
+    // Project to normalized device coordinates (-1 to 1)
+    worldPos.project(camera);
+
+    // Convert to screen coordinates
+    const screenX = (worldPos.x * 0.5 + 0.5) * window.innerWidth;
+    const screenY = (-worldPos.y * 0.5 + 0.5) * window.innerHeight;
+
+    return { x: screenX, y: screenY };
+  }
+
+  // Compute screen position based on position type
+  let computedPosition = $derived.by(() => {
+    const pos = normalizedPos;
+
+    // Widget-relative positioning
+    if (pos.type === 'widget-relative' && pos.targetWidget) {
+      const offset = pos.offset || { x: 0, y: 0 };
+      const WIDGET_SPACING = 40;
+
+      // Special case: land-info widget - lock tutorial at bottom-right
+      if (pos.targetWidget === 'land-info') {
+        if (typeof window !== 'undefined') {
+          const RIGHT_PADDING = 650; // Space for land-info widget
+          // Fixed bottom-right position
+          let x = window.innerWidth - DIALOG_WIDTH - RIGHT_PADDING;
+          let y = window.innerHeight - DIALOG_HEIGHT - 100;
+
+          return { type: 'absolute' as const, x, y };
+        }
+      }
+
+      // Other widgets: use store position
+      const widget = findWidgetByType(pos.targetWidget);
+      if (widget) {
+        let x = widget.position.x - DIALOG_WIDTH - WIDGET_SPACING + offset.x;
+        let y = widget.position.y + offset.y;
+
+        if (typeof window !== 'undefined') {
+          x = Math.max(
+            MARGIN,
+            Math.min(x, window.innerWidth - DIALOG_WIDTH - MARGIN),
+          );
+          y = Math.max(
+            MARGIN,
+            Math.min(y, window.innerHeight - DIALOG_HEIGHT - MARGIN),
+          );
+        }
+
+        return { type: 'absolute' as const, x, y };
+      }
+    }
+
+    // Map-relative positioning - project 3D coordinates to screen
+    if (pos.type === 'map-relative' && pos.targetLand) {
+      const [landX, landZ] = pos.targetLand;
+      const screenPos = projectToScreen(landX, landZ);
+
+      if (screenPos) {
+        const offset = pos.offset || { x: 0, y: 0 };
+        const MAP_SPACING = 180; // Extra spacing from land tile
+
+        // Position to the LEFT of the land tile with extra spacing
+        let x = screenPos.x - DIALOG_WIDTH - MAP_SPACING + offset.x;
+        let y = screenPos.y - DIALOG_HEIGHT / 2 + offset.y;
+
+        // Clamp to viewport bounds
+        if (typeof window !== 'undefined') {
+          x = Math.max(
+            MARGIN,
+            Math.min(x, window.innerWidth - DIALOG_WIDTH - MARGIN),
+          );
+          y = Math.max(
+            MARGIN,
+            Math.min(y, window.innerHeight - DIALOG_HEIGHT - MARGIN),
+          );
+        }
+
+        return { type: 'absolute' as const, x, y };
+      }
+    }
+
+    // Fallback to fixed CSS class positioning
+    const preset = pos.fallback || pos.preset || 'map-center';
+    return { type: 'fixed' as const, preset };
+  });
+
+  // Generate position class or style based on computed position
+  let currentPositionClass = $derived(
+    computedPosition.type === 'fixed'
+      ? positionClasses[computedPosition.preset] ||
+          positionClasses['map-center']
+      : '',
+  );
+
+  let positionStyle = $derived(
+    computedPosition.type === 'absolute'
+      ? `top: ${computedPosition.y}px; left: ${computedPosition.x}px;`
+      : '',
+  );
 
   function handleLaziClick() {
     if (waitLaziClick) {
@@ -135,24 +312,10 @@
     };
   });
 
-  // Track explored fields for interactive_explore mode
+  // Track explored fields for interactive_explore mode (no longer auto-advances, user clicks Next)
   let exploredFieldsCount = $derived(getExploredFieldsCount());
-  let hasAdvancedFromExplore = $state(false);
 
-  // Advance when user has explored at least 3 fields during interactive_explore
-  $effect(() => {
-    if (
-      tutorialAttribute('interactive_explore').has &&
-      exploredFieldsCount >= 3 &&
-      !hasAdvancedFromExplore
-    ) {
-      hasAdvancedFromExplore = true;
-      // Give a moment to see the last tooltip, then advance
-      setTimeout(() => nextStep(), 1500);
-    }
-  });
-
-  // Progressive land spawning effects
+  // Progressive land spawning effects (no longer auto-advances, user clicks Next)
   $effect(() => {
     // Spawn second auction when attribute is set
     if (
@@ -161,8 +324,6 @@
     ) {
       hasSpawnedSecondAuction = true;
       landStore.addTutorialSecondAuction();
-      // Auto-advance to next step after spawning
-      setTimeout(() => nextStep(), 1500);
     }
 
     // Spawn neighbor lands when attribute is set
@@ -175,8 +336,6 @@
     if (tutorialAttribute('spawn_full_auction').has && !hasSpawnedFullAuction) {
       hasSpawnedFullAuction = true;
       landStore.addTutorialFullAuction();
-      // Auto-advance to next step after spawning
-      setTimeout(() => nextStep(), 1500);
     }
   });
 
@@ -195,8 +354,16 @@
   }
 </script>
 
-<!-- Fullscreen intro overlay -->
-{#if isFullscreenIntro}
+<!-- Widget darkening overlay -->
+<TutorialOverlay />
+
+<!-- Tutorial outro sequence orchestrator -->
+<TutorialOutro />
+
+<!-- Hide dialog during outro -->
+{#if isOutroPlaying}
+  <!-- Dialog hidden during cinematic outro -->
+{:else if isFullscreenIntro}
   <div
     class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80"
   >
@@ -223,7 +390,10 @@
   </div>
 {:else}
   <!-- Compact Lazi dialog - click to continue for passive updates -->
-  <div class="fixed top-4 left-4 z-[9999]">
+  <div
+    class="fixed z-[9999] transition-all duration-300 {currentPositionClass}"
+    style={positionStyle}
+  >
     <Card
       class="tutorial-card {waitLaziClick
         ? 'cursor-pointer hover:border-yellow-400'
@@ -265,10 +435,15 @@
           {/each}
         </div>
 
-        <!-- Action hint or Enter Grid button -->
+        <!-- Action hint, Next button, or Enter Grid button -->
         {#if showEnterGrid}
-          <Button onclick={enterGrid} size="sm" class="action-hint-button">
+          <Button onclick={enterGrid} class="action-hint-button">
             Enter the Grid
+            <ChevronRight class="h-4 w-4 ml-1" />
+          </Button>
+        {:else if showNextButton}
+          <Button onclick={nextStep} class="action-hint-button">
+            Next
             <ChevronRight class="h-4 w-4 ml-1" />
           </Button>
         {:else if currentDialog?.hint}

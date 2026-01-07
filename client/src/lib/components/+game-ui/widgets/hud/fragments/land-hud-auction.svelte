@@ -78,20 +78,17 @@
     {:else}
       <div class="text-ponzi-number text-center">Loading...</div>
     {/if}
-    <div
-      class={[
-        tutorialAttribute('highlight_map_buy').has ? 'tutorial-highlight' : '',
-      ]}
+    <Button
+      class={tutorialAttribute('highlight_map_buy').has
+        ? 'tutorial-highlight-button'
+        : ''}
+      onclick={() => {
+        if (tutorialAttribute('wait_buy_land_open').has) {
+          nextStep();
+        }
+        openLandInfoWidget(land);
+      }}>BUY LAND</Button
     >
-      <Button
-        onclick={() => {
-          if (tutorialAttribute('wait_buy_land_open').has) {
-            nextStep();
-          }
-          openLandInfoWidget(land);
-        }}>BUY LAND</Button
-      >
-    </div>
   </div>
 </div>
 
@@ -100,10 +97,8 @@
     background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23F2B545FF' stroke-width='10' stroke-dasharray='20%2c20' stroke-dashoffset='0' stroke-linecap='butt'/%3e%3c/svg%3e");
   }
 
-  .tutorial-highlight {
-    border: 2px solid #ffd700;
-    border-radius: 8px;
-    padding: 0.5rem;
+  :global(.tutorial-highlight-button) {
+    border: 2px solid #ffd700 !important;
     animation: goldGlow 2s ease-in-out infinite;
   }
 

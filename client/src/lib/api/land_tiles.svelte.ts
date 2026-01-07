@@ -1404,4 +1404,190 @@ export class LandTileStore {
 
     console.log(`Tutorial: Converted building at ${x},${y} to auction`);
   }
+
+  // ==========================================
+  // Tutorial Outro Sequence Methods
+  // ==========================================
+
+  // Add a single building land at a random position for the outro
+  public addTutorialOutroLand(): { x: number; y: number } | null {
+    return this.addTutorialOutroLandAtRadius(128, 128, 30);
+  }
+
+  // Add a building land within a specific radius from center (for expanding outro)
+  public addTutorialOutroLandAtRadius(
+    centerX: number,
+    centerY: number,
+    maxRadius: number,
+  ): { x: number; y: number } | null {
+    const fakeOwner =
+      '0x0432d05c36cac355e0a74a08e8b8776b45f5bff96b59b351ec9171bf66a22a37';
+    const levels = ['First', 'Second', 'Second'];
+
+    let attempts = 0;
+    const maxAttempts = 30;
+
+    while (attempts < maxAttempts) {
+      // Generate random position within the radius
+      const angle = Math.random() * Math.PI * 2;
+      const distance = Math.random() * maxRadius;
+      const x = Math.round(centerX + Math.cos(angle) * distance);
+      const y = Math.round(centerY + Math.sin(angle) * distance);
+
+      // Clamp to valid grid coordinates
+      if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) {
+        attempts++;
+        continue;
+      }
+
+      // Check if this position is empty
+      let currentLand: BaseLand | undefined;
+      const unsubscribe = this.store[x][y].subscribe(
+        ({ value }) => (currentLand = value),
+      );
+      unsubscribe();
+
+      if (EmptyLand.is(currentLand!)) {
+        // Found an empty spot, add a building
+        const randomToken =
+          TOKEN_ADDRESSES[Math.floor(Math.random() * TOKEN_ADDRESSES.length)];
+        const randomLevel = levels[Math.floor(Math.random() * levels.length)];
+        const tokenInfo = data.availableTokens.find(
+          (t) => t.address === randomToken,
+        );
+
+        if (!tokenInfo) {
+          attempts++;
+          continue;
+        }
+
+        const price = CurrencyAmount.fromScaled(
+          Math.floor(Math.random() * 100) + 10,
+          tokenInfo,
+        );
+
+        this.currentLands.update((lands) => {
+          const fakeLand: Land = {
+            owner: fakeOwner,
+            location: coordinatesToLocation({ x, y }),
+            block_date_bought: Date.now() / 1000,
+            sell_price: price.toBigint(),
+            token_used: randomToken,
+            // @ts-ignore
+            level: randomLevel,
+          };
+
+          const fakeStake: LandStake = {
+            location: coordinatesToLocation({ x, y }),
+            amount: price.toBigint() * BigInt(2),
+            neighbors_info_packed: 0,
+            accumulated_taxes_fee: 0,
+          };
+
+          const buildingLand = new BuildingLand(fakeLand);
+          buildingLand.updateStake(fakeStake);
+
+          this.updateOwnershipIndexBulk({ x, y }, lands[x][y], buildingLand);
+          this.store[x][y].set({ value: buildingLand });
+          lands[x][y] = buildingLand;
+
+          return lands;
+        });
+
+        this.forceOwnershipUpdate();
+        return { x, y };
+      }
+
+      attempts++;
+    }
+
+    return null;
+  }
+
+  // Nuke a tutorial land (convert to empty with animation)
+  public nukeTutorialLand(x: number, y: number): void {
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_SIZE) return;
+
+    // Check if land is a building
+    let currentLand: BaseLand | undefined;
+    const unsubscribe = this.store[x][y].subscribe(
+      ({ value }) => (currentLand = value),
+    );
+    unsubscribe();
+
+    if (!BuildingLand.is(currentLand!) && !AuctionLand.is(currentLand!)) {
+      return;
+    }
+
+    // Trigger nuke animation
+    const location = coordinatesToLocation({ x, y });
+    nukeStore.animationManager.triggerAnimation(location.toString(), 800);
+
+    // Convert to empty land after a short delay
+    setTimeout(() => {
+      this.currentLands.update((lands) => {
+        const emptyLand = new EmptyLand({ x, y });
+        this.updateOwnershipIndexBulk({ x, y }, lands[x][y], emptyLand);
+        this.store[x][y].set({ value: emptyLand });
+        lands[x][y] = emptyLand;
+        return lands;
+      });
+      this.forceOwnershipUpdate();
+    }, 300);
+  }
+
+  // Get all non-empty land positions
+  public getNonEmptyLandPositions(): { x: number; y: number }[] {
+    const positions: { x: number; y: number }[] = [];
+
+    for (let x = 0; x < GRID_SIZE; x++) {
+      for (let y = 0; y < GRID_SIZE; y++) {
+        let currentLand: BaseLand | undefined;
+        const unsubscribe = this.store[x][y].subscribe(
+          ({ value }) => (currentLand = value),
+        );
+        unsubscribe();
+
+        if (!EmptyLand.is(currentLand!)) {
+          positions.push({ x, y });
+        }
+      }
+    }
+
+    return positions;
+  }
+
+  // Clear all lands back to empty (for outro finale)
+  public clearAllTutorialLands(): void {
+    console.log('Tutorial Outro: Clearing all lands...');
+
+    // Get all non-empty positions first
+    const nonEmptyPositions = this.getNonEmptyLandPositions();
+
+    // Trigger nuke animations for all
+    nonEmptyPositions.forEach(({ x, y }) => {
+      const location = coordinatesToLocation({ x, y });
+      nukeStore.animationManager.triggerAnimation(location.toString(), 1000);
+    });
+
+    // After animation delay, clear all lands
+    setTimeout(() => {
+      this.currentLands.update((lands) => {
+        for (let x = 0; x < GRID_SIZE; x++) {
+          for (let y = 0; y < GRID_SIZE; y++) {
+            const emptyLand = new EmptyLand({ x, y });
+            this.store[x][y].set({ value: emptyLand });
+            lands[x][y] = emptyLand;
+          }
+        }
+        return lands;
+      });
+
+      // Clear ownership index
+      this.ownershipIndex.clear();
+      this.forceOwnershipUpdate();
+
+      console.log('Tutorial Outro: All lands cleared');
+    }, 500);
+  }
 }

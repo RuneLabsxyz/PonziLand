@@ -1,14 +1,43 @@
 import tutorialData from './dialog.json';
 
+// Position type for dynamic tutorial positioning
+export interface TutorialPosition {
+  type: 'fixed' | 'widget-relative' | 'map-relative';
+  preset?: string; // For 'fixed' type
+  targetWidget?: string; // For 'widget-relative' (e.g., 'buy-land', 'land-info')
+  targetLand?: [number, number]; // For 'map-relative' [x, y]
+  offset?: { x: number; y: number };
+  fallback?: string; // Fallback preset if target unavailable
+}
+
 // Type definition for tutorial step
-interface TutorialStep {
+export interface TutorialStep {
   _step: string;
   text: string;
   image_id: number;
   has: string[];
+  hint?: string;
+  position?: string | TutorialPosition;
   allowed_lands: number[][];
   enabled_widgets: string[];
   continue?: string;
+  spotlight_widget?: string; // Widget to spotlight with darkening overlay
+}
+
+// Normalize position to TutorialPosition format (backward compatible)
+export function normalizePosition(
+  position: string | TutorialPosition | undefined,
+): TutorialPosition {
+  if (!position) {
+    return { type: 'fixed', preset: 'map-center', fallback: 'map-center' };
+  }
+
+  if (typeof position === 'string') {
+    // Legacy format - treat as fixed preset
+    return { type: 'fixed', preset: position, fallback: position };
+  }
+
+  return position;
 }
 
 // Tutorial camera settings
@@ -41,6 +70,56 @@ export let tutorialState = $state({
   exploredTaxFields: new Set<string>(), // For interactive tax impact panel
 });
 
+// Outro sequence state
+export type OutroPhase =
+  | 'idle'
+  | 'zooming'
+  | 'activity'
+  | 'nuking'
+  | 'pausing'
+  | 'complete';
+
+export let tutorialOutroState = $state({
+  isPlaying: false,
+  phase: 'idle' as OutroPhase,
+});
+
+export function startOutroSequence() {
+  tutorialOutroState.isPlaying = true;
+  tutorialOutroState.phase = 'zooming';
+}
+
+// Advance step with outro check - use this when the current step might have trigger_outro
+export function advanceStepWithOutroCheck() {
+  // Get current step attributes
+  const currentStepData = tutorialData.steps[tutorialState.tutorialStep - 1];
+  const hasOutroTrigger = currentStepData?.has?.includes('trigger_outro');
+
+  if (hasOutroTrigger) {
+    console.log(
+      'Tutorial: Triggering outro sequence from step',
+      tutorialState.tutorialStep,
+    );
+    startOutroSequence();
+    return;
+  }
+
+  // Otherwise, normal advancement
+  nextStep();
+}
+
+export function setOutroPhase(phase: OutroPhase) {
+  tutorialOutroState.phase = phase;
+  if (phase === 'complete') {
+    tutorialOutroState.isPlaying = false;
+  }
+}
+
+export function resetOutroSequence() {
+  tutorialOutroState.isPlaying = false;
+  tutorialOutroState.phase = 'idle';
+}
+
 export function nextStep() {
   if (tutorialState.tutorialStep < tutorialData.steps.length) {
     tutorialState.tutorialStep += 1;
@@ -70,7 +149,13 @@ let currentStepAttributes = $derived(
 );
 
 // Get the current step data
-function getCurrentStep(): TutorialStep | null {
+export function getCurrentStep(): TutorialStep | null {
+  if (!tutorialState.tutorialEnabled) return null;
+  return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
+}
+
+// Get the current step raw data (for accessing fields like spotlight_widget)
+export function getCurrentStepData(): TutorialStep | null {
   if (!tutorialState.tutorialEnabled) return null;
   return tutorialData.steps[tutorialState.tutorialStep - 1] as TutorialStep;
 }

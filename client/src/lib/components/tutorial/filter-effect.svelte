@@ -1,6 +1,7 @@
 <script lang="ts">
   import { HTML } from '@threlte/extras';
   import type { LandTile } from '$lib/components/+game-map/three/landTile';
+  import { tutorialAttribute } from './stores.svelte';
 
   interface Props {
     tile: LandTile;
@@ -16,18 +17,24 @@
     tile.position[1] + positionOffset[1] + 0.5,
     tile.position[2] + positionOffset[2],
   ]);
+
+  // Check if darkening should be enabled for map elements
+  let showDarkening = $derived(tutorialAttribute('darken_map').has);
 </script>
 
 <HTML
   portal={document.getElementById('game-canvas') ?? document.body}
   {position}
-  zIndexRange={[5, 0]}
+  zIndexRange={[15, 5]}
   distanceFactor={0.01}
 >
   <div
     class="highlight-effect"
     style="transform: translate(-50%, -50%) scale({scale})"
   >
+    {#if showDarkening}
+      <div class="black-overlay"></div>
+    {/if}
     <div class="glow-border"></div>
   </div>
 </HTML>
@@ -38,6 +45,32 @@
     width: 100px;
     height: 100px;
     pointer-events: none;
+  }
+
+  .black-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 10000px;
+    height: 10000px;
+    background: #000000;
+    opacity: 0.7;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+
+    /* Create a hole in the center using clip-path */
+    clip-path: polygon(
+      0% 0%,
+      0% 100%,
+      49.5% 100%,
+      49.5% 49.5%,
+      50.5% 49.5%,
+      50.5% 50.5%,
+      49.5% 50.5%,
+      49.5% 100%,
+      100% 100%,
+      100% 0%
+    );
   }
 
   .glow-border {

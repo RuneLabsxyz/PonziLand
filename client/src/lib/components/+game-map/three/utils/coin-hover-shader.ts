@@ -4,6 +4,8 @@ import coinOutlineVertexShader from '$lib/shaders/coin_vertex.glsl';
 import coinOutlineFragmentShader from '$lib/shaders/coin_fragment.glsl';
 
 export class CoinHoverShaderMaterial extends ShaderMaterial {
+  private tutorialHighlightIndex: number = -1;
+
   constructor(texture: Texture) {
     super({
       uniforms: {
@@ -47,10 +49,34 @@ export class CoinHoverShaderMaterial extends ShaderMaterial {
       this.uniforms.hoveredInstanceIndex.value = instanceIndex;
     } else {
       // Only clear if this instance was the one being hovered
-      if (this.uniforms.hoveredInstanceIndex.value === instanceIndex) {
+      // Don't clear if tutorial highlight is active on this index
+      if (
+        this.uniforms.hoveredInstanceIndex.value === instanceIndex &&
+        this.tutorialHighlightIndex !== instanceIndex
+      ) {
         this.uniforms.hoverState.value = 0.0;
         this.uniforms.hoveredInstanceIndex.value = -1.0;
       }
+    }
+  }
+
+  // Set a persistent tutorial highlight on a specific coin instance
+  setTutorialHighlight(instanceIndex: number) {
+    this.tutorialHighlightIndex = instanceIndex;
+    if (instanceIndex >= 0) {
+      this.uniforms.hoverState.value = 1.0;
+      this.uniforms.hoveredInstanceIndex.value = instanceIndex;
+    }
+  }
+
+  // Clear the tutorial highlight
+  clearTutorialHighlight() {
+    const prevIndex = this.tutorialHighlightIndex;
+    this.tutorialHighlightIndex = -1;
+    // Only clear shader state if current hovered index matches
+    if (this.uniforms.hoveredInstanceIndex.value === prevIndex) {
+      this.uniforms.hoverState.value = 0.0;
+      this.uniforms.hoveredInstanceIndex.value = -1.0;
     }
   }
 }
