@@ -91,7 +91,60 @@ export type TransferStatus =
   | 'signing'
   | 'sending'
   | 'success'
-  | 'error';
+  | 'error'
+  // Relay tracking states
+  | 'relaying'
+  | 'delivered'
+  | 'relay_timeout'
+  | 'relay_error';
+
+// Hyperlane relay tracking status
+export type RelayStatus =
+  | 'pending_message_id' // Waiting to resolve msg_id from origin tx
+  | 'relaying' // msg_id found, awaiting delivery
+  | 'delivered' // is_delivered = true
+  | 'timeout' // 15 min elapsed without delivery
+  | 'error'; // GraphQL or relay error
+
+// Persisted transfer record for tracking
+export interface PendingTransfer {
+  id: string; // Unique ID (origin_tx_hash)
+  originTxHash: string;
+  originChain: string;
+  destinationChain: string;
+  tokenSymbol: string;
+  amount: string;
+  sender: string;
+  recipient: string;
+  createdAt: number; // Unix timestamp
+  messageId: string | null; // Resolved from Hyperlane GraphQL
+  status: RelayStatus;
+  destinationTxHash: string | null;
+  deliveredAt: number | null;
+}
+
+// Hyperlane GraphQL message response
+export interface HyperlaneMessage {
+  msg_id: string;
+  is_delivered: boolean;
+  destination_tx_hash: string | null;
+  send_occurred_at: string | null;
+  delivery_occurred_at: string | null;
+  delivery_latency: number | null;
+  origin_chain_id: number;
+  destination_chain_id: number;
+}
+
+// Parameters for starting transfer tracking
+export interface TrackTransferParams {
+  originTxHash: string;
+  originChain: string;
+  destinationChain: string;
+  tokenSymbol: string;
+  amount: string;
+  sender: string;
+  recipient: string;
+}
 
 export interface TransferResult {
   success: boolean;

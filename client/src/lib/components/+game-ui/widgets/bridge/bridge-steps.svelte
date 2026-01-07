@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { TransferStatus } from '$lib/bridge/types';
+  import type { TransferStatus, RelayStatus } from '$lib/bridge/types';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
   import { cn } from '$lib/utils';
 
@@ -9,9 +9,19 @@
     sourceChain: 'starknet' | 'solanamainnet';
     destChain: 'starknet' | 'solanamainnet';
     error?: string | null;
+    relayStatus?: RelayStatus | null;
+    destinationTxHash?: string | null;
   }
 
-  let { status, txHashes, sourceChain, destChain, error }: Props = $props();
+  let {
+    status,
+    txHashes,
+    sourceChain,
+    destChain,
+    error,
+    relayStatus = null,
+    destinationTxHash = null,
+  }: Props = $props();
 
   interface Step {
     id: string;
@@ -32,9 +42,21 @@
       description: 'Transaction on source chain',
     },
     { id: 'relay', label: 'Relay', description: 'Cross-chain message relay' },
+    { id: 'done', label: 'Done', description: 'Transfer complete' },
   ];
 
   const currentStepIndex = $derived.by(() => {
+    // Relay states take precedence when in relaying status
+    if (status === 'relaying' || status === 'delivered') {
+      if (relayStatus === 'delivered') return 4; // Done
+      if (
+        relayStatus === 'relaying' ||
+        relayStatus === 'pending_message_id' ||
+        relayStatus === 'timeout'
+      )
+        return 3; // Relay
+    }
+
     switch (status) {
       case 'fetching_quote':
       case 'building_tx':
@@ -43,21 +65,30 @@
         return 1;
       case 'sending':
         return 2;
-      case 'success':
+      case 'relaying':
         return 3;
+      case 'delivered':
+      case 'success':
+        return 4;
       case 'error':
+      case 'relay_error':
         return -1;
       default:
         return -1;
     }
   });
 
+  const isRelayTimeout = $derived(relayStatus === 'timeout');
+
   const isActive = $derived(status !== 'idle');
 
   function getStepState(
     index: number,
-  ): 'completed' | 'active' | 'pending' | 'error' {
+  ): 'completed' | 'active' | 'pending' | 'error' | 'timeout' {
     if (status === 'error' && index === currentStepIndex + 1) return 'error';
+    // Show timeout state for relay step
+    if (index === 3 && isRelayTimeout && currentStepIndex === 3)
+      return 'timeout';
     if (index < currentStepIndex) return 'completed';
     if (index === currentStepIndex) return 'active';
     return 'pending';
@@ -65,6 +96,13 @@
 
   function getSourceExplorerUrl(hash: string): string {
     if (sourceChain === 'starknet') {
+      return `https://starkscan.co/tx/${hash}`;
+    }
+    return `https://solscan.io/tx/${hash}`;
+  }
+
+  function getDestExplorerUrl(hash: string): string {
+    if (destChain === 'starknet') {
       return `https://starkscan.co/tx/${hash}`;
     }
     return `https://solscan.io/tx/${hash}`;
@@ -104,6 +142,8 @@
                   state === 'pending',
                 'bg-red-500/20 text-red-400 border border-red-500/50':
                   state === 'error',
+                'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50':
+                  state === 'timeout',
               },
             )}
           >
@@ -113,6 +153,8 @@
               <RotatingCoin />
             {:else if state === 'error'}
               ✗
+            {:else if state === 'timeout'}
+              <RotatingCoin />
             {:else}
               {i + 1}
             {/if}
@@ -124,6 +166,7 @@
               'text-cyan-400': state === 'active',
               'text-gray-500': state === 'pending',
               'text-red-400': state === 'error',
+              'text-yellow-400': state === 'timeout',
             })}
           >
             {step.label}
@@ -159,12 +202,28 @@
       {:else if status === 'sending'}
         <p class="text-sm text-cyan-400">Sending transaction...</p>
         <p class="text-xs text-gray-500">Submitting to {sourceChainName}</p>
+      {:else if status === 'relaying' && relayStatus === 'timeout'}
+        <p class="text-sm text-yellow-400">Taking longer than usual...</p>
+        <p class="text-xs text-yellow-400/70">
+          Transfer is still in progress. This can take up to 30 minutes during
+          network congestion.
+        </p>
+      {:else if status === 'relaying' && (relayStatus === 'pending_message_id' || relayStatus === 'relaying')}
+        <p class="text-sm text-cyan-400">Relaying message...</p>
+        <p class="text-xs text-gray-500">
+          Cross-chain transfer in progress. This typically takes 1-5 minutes.
+        </p>
+      {:else if relayStatus === 'delivered' || status === 'delivered'}
+        <p class="text-sm text-green-400">Transfer complete!</p>
+        <p class="text-xs text-gray-500">
+          Funds delivered to {destChainName}
+        </p>
       {:else if status === 'success'}
         <p class="text-sm text-green-400">Transfer initiated!</p>
         <p class="text-xs text-gray-500">
           Relaying to {destChainName}. This typically takes 1-5 minutes.
         </p>
-      {:else if status === 'error' && error}
+      {:else if (status === 'error' || status === 'relay_error') && error}
         <p class="text-sm text-red-400">Transfer failed</p>
         <p class="text-xs text-red-400/70">{error}</p>
       {/if}
@@ -173,7 +232,7 @@
     <!-- Transaction links -->
     {#if txHashes.length > 0}
       <div class="flex flex-col gap-1 pt-2 border-t border-[#ffffff10]">
-        <div class="flex items-center justify-center gap-3 text-xs">
+        <div class="flex items-center justify-center gap-3 text-xs flex-wrap">
           <a
             href={getSourceExplorerUrl(txHashes[0])}
             target="_blank"
@@ -191,6 +250,17 @@
           >
             Track on Hyperlane
           </a>
+          {#if destinationTxHash}
+            <span class="text-gray-600">•</span>
+            <a
+              href={getDestExplorerUrl(destinationTxHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-green-400 hover:text-green-300 underline"
+            >
+              View on {destChainName}
+            </a>
+          {/if}
         </div>
       </div>
     {/if}
