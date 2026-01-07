@@ -127,6 +127,7 @@
     if (pos.type === 'widget-relative' && pos.targetWidget) {
       const offset = pos.offset || { x: 0, y: 0 };
       const WIDGET_SPACING = 40;
+      const side = pos.dialogSide || 'left';
 
       // Special case: land-info widget - lock tutorial at bottom-right
       if (pos.targetWidget === 'land-info') {
@@ -143,7 +144,11 @@
       // Other widgets: use store position
       const widget = findWidgetByType(pos.targetWidget);
       if (widget) {
-        let x = widget.position.x - DIALOG_WIDTH - WIDGET_SPACING + offset.x;
+        const widgetWidth = widget.dimensions?.width || 400; // Default widget width
+        let x =
+          side === 'left'
+            ? widget.position.x - DIALOG_WIDTH - WIDGET_SPACING + offset.x
+            : widget.position.x + widgetWidth + WIDGET_SPACING + offset.x;
         let y = widget.position.y + offset.y;
 
         if (typeof window !== 'undefined') {
@@ -169,9 +174,13 @@
       if (screenPos) {
         const offset = pos.offset || { x: 0, y: 0 };
         const MAP_SPACING = 180; // Extra spacing from land tile
+        const side = pos.dialogSide || 'left';
 
-        // Position to the LEFT of the land tile with extra spacing
-        let x = screenPos.x - DIALOG_WIDTH - MAP_SPACING + offset.x;
+        // Position to the specified side of the land tile
+        let x =
+          side === 'left'
+            ? screenPos.x - DIALOG_WIDTH - MAP_SPACING + offset.x
+            : screenPos.x + MAP_SPACING + offset.x;
         let y = screenPos.y - DIALOG_HEIGHT / 2 + offset.y;
 
         // Clamp to viewport bounds

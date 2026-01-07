@@ -81,6 +81,7 @@ export interface TutorialPosition {
   targetLand?: [number, number]; // For 'map-relative' [x, y]
   offset?: { x: number; y: number };
   fallback?: string; // Fallback preset if target unavailable
+  dialogSide?: 'left' | 'right'; // Which side of the target to place the dialog
 }
 
 // Type definition for tutorial step
