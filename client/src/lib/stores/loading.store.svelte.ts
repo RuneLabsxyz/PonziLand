@@ -954,9 +954,9 @@ class LoadingStore {
 
         // Account state already set at the beginning of startComprehensiveLoading
 
-        // Add tutorial auction lands after basic setup
-        console.log('Adding tutorial auction lands...');
-        landStore.addTutorialAuctions();
+        // Add initial tutorial auction (progressive tutorial - starts with just 1 auction)
+        console.log('Adding initial tutorial auction...');
+        landStore.addTutorialInitialAuction();
 
         // Set fake wallet balances for tutorial
         console.log('Setting tutorial wallet balances...');

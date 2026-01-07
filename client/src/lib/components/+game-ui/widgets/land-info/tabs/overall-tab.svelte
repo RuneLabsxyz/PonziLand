@@ -4,6 +4,7 @@
   import { AuctionLand } from '$lib/api/land/auction_land';
   import { Button } from '$lib/components/ui/button';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
+  import { tutorialState } from '$lib/components/tutorial/stores.svelte';
   import type { LandYieldInfo, TabType } from '$lib/interfaces';
   import { walletStore } from '$lib/stores/wallet.svelte';
   import { settingsStore } from '$lib/stores/settings.store.svelte';
@@ -91,6 +92,9 @@
   }
 
   $effect(() => {
+    // Track tutorial step changes to refresh neighbor data when neighbors spawn
+    const _tutorialStep = tutorialState.tutorialStep;
+
     if (land == undefined || baseToken == undefined) return;
     land.getYieldInfo(false).then((info) => {
       yieldInfo = info;

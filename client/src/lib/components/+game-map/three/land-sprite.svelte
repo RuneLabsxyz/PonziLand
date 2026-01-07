@@ -534,8 +534,24 @@
       targetX = 128;
       targetY = 128;
     } else if (tutorialAttribute('highlight_auction').has) {
-      targetX = 127;
-      targetY = 127;
+      // Dynamic auction highlight based on tutorial phase
+      if (tutorialAttribute('tutorial_phase_1').has) {
+        // First auction at center
+        targetX = 128;
+        targetY = 128;
+      } else if (tutorialAttribute('tutorial_phase_2').has) {
+        // Second auction
+        targetX = 127;
+        targetY = 127;
+      } else if (tutorialAttribute('tutorial_phase_5').has) {
+        // Full auction for advanced purchase
+        targetX = 126;
+        targetY = 126;
+      } else {
+        // Default fallback
+        targetX = 127;
+        targetY = 127;
+      }
     } else if (tutorialAttribute('highlight_nuke_neighbor').has) {
       targetX = 129;
       targetY = 128;

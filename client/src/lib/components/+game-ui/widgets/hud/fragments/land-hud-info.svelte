@@ -80,6 +80,9 @@
   }
 
   $effect(() => {
+    // Track tutorial step changes to refresh neighbor data when neighbors spawn
+    const _step = tutorialStep;
+
     if (land == undefined || baseToken == undefined) return;
     land.getYieldInfo(false).then((info) => {
       yieldInfo = info;
