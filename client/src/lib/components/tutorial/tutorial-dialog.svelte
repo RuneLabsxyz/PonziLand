@@ -60,6 +60,7 @@
 
   // Dialog dimensions for position calculations
   const DIALOG_WIDTH = 480;
+  const MIN_DIALOG_WIDTH = 280; // Minimum width before dialog gets too cramped
   const DIALOG_HEIGHT = 120;
   const MARGIN = 20;
 
@@ -127,29 +128,63 @@
     if (pos.type === 'widget-relative' && pos.targetWidget) {
       const offset = pos.offset || { x: 0, y: 0 };
       const WIDGET_SPACING = 40;
+      const side = pos.dialogSide || 'left';
 
       // Special case: land-info widget - lock tutorial at bottom-right
       if (pos.targetWidget === 'land-info') {
         if (typeof window !== 'undefined') {
           const RIGHT_PADDING = 650; // Space for land-info widget
+          // Calculate available width (space from left edge to widget area)
+          const availableWidth = window.innerWidth - RIGHT_PADDING - MARGIN * 2;
+          const dialogWidth = Math.max(
+            MIN_DIALOG_WIDTH,
+            Math.min(DIALOG_WIDTH, availableWidth),
+          );
           // Fixed bottom-right position
-          let x = window.innerWidth - DIALOG_WIDTH - RIGHT_PADDING;
+          let x = window.innerWidth - dialogWidth - RIGHT_PADDING;
           let y = window.innerHeight - DIALOG_HEIGHT - 100;
 
-          return { type: 'absolute' as const, x, y };
+          return { type: 'absolute' as const, x, y, width: dialogWidth };
         }
       }
 
       // Other widgets: use store position
       const widget = findWidgetByType(pos.targetWidget);
       if (widget) {
-        let x = widget.position.x - DIALOG_WIDTH - WIDGET_SPACING + offset.x;
+        const widgetWidth = widget.dimensions?.width || 400; // Default widget width
+
+        // Calculate available space based on side
+        let availableWidth: number;
+        if (typeof window !== 'undefined') {
+          if (side === 'left') {
+            // Space from left edge to widget
+            availableWidth = widget.position.x - WIDGET_SPACING - MARGIN * 2;
+          } else {
+            // Space from widget right edge to screen right edge
+            availableWidth =
+              window.innerWidth -
+              (widget.position.x + widgetWidth + WIDGET_SPACING) -
+              MARGIN;
+          }
+        } else {
+          availableWidth = DIALOG_WIDTH;
+        }
+
+        const dialogWidth = Math.max(
+          MIN_DIALOG_WIDTH,
+          Math.min(DIALOG_WIDTH, availableWidth),
+        );
+
+        let x =
+          side === 'left'
+            ? widget.position.x - dialogWidth - WIDGET_SPACING + offset.x
+            : widget.position.x + widgetWidth + WIDGET_SPACING + offset.x;
         let y = widget.position.y + offset.y;
 
         if (typeof window !== 'undefined') {
           x = Math.max(
             MARGIN,
-            Math.min(x, window.innerWidth - DIALOG_WIDTH - MARGIN),
+            Math.min(x, window.innerWidth - dialogWidth - MARGIN),
           );
           y = Math.max(
             MARGIN,
@@ -157,7 +192,7 @@
           );
         }
 
-        return { type: 'absolute' as const, x, y };
+        return { type: 'absolute' as const, x, y, width: dialogWidth };
       }
     }
 
@@ -169,16 +204,40 @@
       if (screenPos) {
         const offset = pos.offset || { x: 0, y: 0 };
         const MAP_SPACING = 180; // Extra spacing from land tile
+        const side = pos.dialogSide || 'left';
 
-        // Position to the LEFT of the land tile with extra spacing
-        let x = screenPos.x - DIALOG_WIDTH - MAP_SPACING + offset.x;
+        // Calculate available space based on side
+        let availableWidth: number;
+        if (typeof window !== 'undefined') {
+          if (side === 'left') {
+            // Space from left edge to land position
+            availableWidth = screenPos.x - MAP_SPACING - MARGIN * 2;
+          } else {
+            // Space from land position to right edge
+            availableWidth =
+              window.innerWidth - (screenPos.x + MAP_SPACING) - MARGIN;
+          }
+        } else {
+          availableWidth = DIALOG_WIDTH;
+        }
+
+        const dialogWidth = Math.max(
+          MIN_DIALOG_WIDTH,
+          Math.min(DIALOG_WIDTH, availableWidth),
+        );
+
+        // Position to the specified side of the land tile
+        let x =
+          side === 'left'
+            ? screenPos.x - dialogWidth - MAP_SPACING + offset.x
+            : screenPos.x + MAP_SPACING + offset.x;
         let y = screenPos.y - DIALOG_HEIGHT / 2 + offset.y;
 
         // Clamp to viewport bounds
         if (typeof window !== 'undefined') {
           x = Math.max(
             MARGIN,
-            Math.min(x, window.innerWidth - DIALOG_WIDTH - MARGIN),
+            Math.min(x, window.innerWidth - dialogWidth - MARGIN),
           );
           y = Math.max(
             MARGIN,
@@ -186,13 +245,13 @@
           );
         }
 
-        return { type: 'absolute' as const, x, y };
+        return { type: 'absolute' as const, x, y, width: dialogWidth };
       }
     }
 
     // Fallback to fixed CSS class positioning
     const preset = pos.fallback || pos.preset || 'map-center';
-    return { type: 'fixed' as const, preset };
+    return { type: 'fixed' as const, preset, width: DIALOG_WIDTH };
   });
 
   // Generate position class or style based on computed position
@@ -208,6 +267,10 @@
       ? `top: ${computedPosition.y}px; left: ${computedPosition.x}px;`
       : '',
   );
+
+  // Dynamic dialog width - compress when space is limited
+  let dialogWidth = $derived(computedPosition.width || DIALOG_WIDTH);
+  let isCompressed = $derived(dialogWidth < DIALOG_WIDTH - 50);
 
   function handleLaziClick() {
     if (waitLaziClick) {
@@ -414,17 +477,30 @@
       tabindex={waitLaziClick ? 0 : undefined}
     >
       <div
-        class="flex items-center gap-3 w-[480px] min-h-[120px] p-4 font-ponzi-number"
+        class={[
+          'p-4 font-ponzi-number transition-all duration-300',
+          isCompressed ? 'flex flex-col gap-2' : 'flex items-center gap-3',
+        ]}
+        style="width: {dialogWidth}px; min-height: {isCompressed
+          ? 'auto'
+          : '120px'};"
       >
         {#if currentDialog}
-          <div class="w-24 flex-shrink-0">
+          <div
+            class={['flex-shrink-0', isCompressed ? 'w-16 mx-auto' : 'w-24']}
+          >
             <img
               src={`/tutorial/ponziworker_${currentDialog.image_id}.png`}
               alt="Lazi"
               class="h-full w-full object-contain"
             />
           </div>
-          <div class="flex-1 text-sm leading-relaxed">
+          <div
+            class={[
+              'leading-relaxed',
+              isCompressed ? 'text-xs text-center' : 'flex-1 text-sm',
+            ]}
+          >
             {@html currentDialog.text}
           </div>
         {/if}

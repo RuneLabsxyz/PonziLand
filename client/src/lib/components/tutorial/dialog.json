@@ -19,7 +19,7 @@
     {
       "_step": "1",
       "_comment": "Welcome intro - fullscreen",
-      "text": "<b>Welcome to PonziLand!</b><br><br>In PonziLand, you stake tokens on land to earn from your neighbors - but they earn from you too!<br><br>Let's learn the basics in this <b>sandbox</b> with fake tokens.",
+      "text": "<span class='text-yellow-400'>Welcome to PonziLand!</span><br><br>In PonziLand, you stake tokens on land to earn from your neighbors - but they earn from you too!<br><br>Let's learn the basics in this <span class='text-yellow-400'>sandbox</span> with fake tokens.",
       "image_id": 1,
       "has": ["fullscreen_intro"],
       "hint": "",
@@ -30,7 +30,7 @@
     {
       "_step": "2",
       "_comment": "Point to first auction - highlight BUY LAND button after click",
-      "text": "See that construction site? That's an <b>auction</b> - a piece of land waiting to be claimed!<br><br><b>Click on it</b> to buy your first land.",
+      "text": "See that construction site? That's an <span class='text-yellow-400'>auction</span> - a piece of land waiting to be claimed!<br><br><span class='text-yellow-400'>Click on it</span> to buy your first land.",
       "image_id": 2,
       "has": [
         "highlight_auction",
@@ -45,7 +45,8 @@
       "position": {
         "type": "map-relative",
         "targetLand": [128, 128],
-        "fallback": "map-center"
+        "fallback": "map-center",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["buy-land"]
@@ -53,20 +54,22 @@
     {
       "_step": "3",
       "_comment": "Simplified buy modal explanation - positioned left of land-info widget",
-      "text": "Set your <b>sell price</b> - this is what others pay to buy your land. <b>Buy Now</b>!",
+      "text": "Set your <span class='text-yellow-400'>sell price</span> - this determines:<br>• What others pay to <span class='text-yellow-400'>buy your land</span><br>• How much <span class='text-yellow-400'>taxes you pay</span> per hour (higher price = higher taxes)<br><br>Start with a modest price, then click <span class='text-yellow-400'>Buy Now</span>!",
       "image_id": 3,
       "has": [
         "simplified_buy",
         "wait_buy_land",
         "allow_buy_widget",
         "tutorial_phase_1",
-        "darken_widget"
+        "darken_widget",
+        "highlight_buy_inputs"
       ],
       "hint": "Set price & buy",
       "position": {
         "type": "widget-relative",
         "targetWidget": "buy-land",
-        "fallback": "map-center"
+        "fallback": "map-center",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["buy-land"]
@@ -74,14 +77,15 @@
     {
       "_step": "4",
       "_comment": "First purchase complete - explain land ownership",
-      "text": "You own your first land! The building shows it's yours.<br><br>Look - a new auction just appeared nearby! <b>Auctions spawn randomly next to active lands.</b>",
+      "text": "You own your first land! The building shows it's yours.<br><br>Look - a new auction just appeared nearby! <span class='text-yellow-400'>Auctions spawn randomly next to active lands.</span>",
       "image_id": 1,
       "has": ["spawn_second_auction", "show_next_button", "tutorial_phase_2"],
       "hint": "",
       "position": {
         "type": "map-relative",
         "targetLand": [128, 128],
-        "fallback": "map-center"
+        "fallback": "map-center",
+        "dialogSide": "left"
       },
       "allowed_lands": [],
       "enabled_widgets": []
@@ -89,7 +93,7 @@
     {
       "_step": "5",
       "_comment": "Click second auction - someone else buys it",
-      "text": "<b>Click on the new auction</b> to claim it!",
+      "text": "<span class='text-yellow-400'>Click on the new auction</span> to claim it!",
       "image_id": 2,
       "has": [
         "highlight_auction",
@@ -102,7 +106,8 @@
       "position": {
         "type": "map-relative",
         "targetLand": [127, 127],
-        "fallback": "map-bottom-left"
+        "fallback": "map-bottom-left",
+        "dialogSide": "right"
       },
       "allowed_lands": [[127, 127]],
       "enabled_widgets": []
@@ -110,14 +115,15 @@
     {
       "_step": "6",
       "_comment": "Someone else bought it - now you have a neighbor",
-      "text": "Oh no! <b>Someone else bought it</b> before you! But that's actually good - now you have a <b>neighbor</b>!<br><br>Notice they're using <b>ETH</b>. You'll earn taxes from them!",
+      "text": "Oh no! <span class='text-yellow-400'>Someone else bought it</span> before you! But that's actually good - now you have a <span class='text-yellow-400'>neighbor</span>!<br><br>Notice they're using <span class='text-yellow-400'>ETH</span>. You'll earn taxes from them!",
       "image_id": 4,
       "has": ["show_next_button", "tutorial_phase_2"],
       "hint": "",
       "position": {
         "type": "map-relative",
         "targetLand": [127, 127],
-        "fallback": "map-bottom-left"
+        "fallback": "map-bottom-left",
+        "dialogSide": "right"
       },
       "allowed_lands": [],
       "enabled_widgets": []
@@ -125,7 +131,7 @@
     {
       "_step": "7",
       "_comment": "Explain taxes - click your land",
-      "text": "Let's see how much you're earning! <b>Click on your land</b> (at the center) to view your taxes.",
+      "text": "Let's see how much you're earning! <span class='text-yellow-400'>Click on your land</span> (at the center) to view your taxes.",
       "image_id": 2,
       "has": [
         "highlight_building",
@@ -137,7 +143,8 @@
       "position": {
         "type": "map-relative",
         "targetLand": [128, 128],
-        "fallback": "map-center"
+        "fallback": "map-center",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
@@ -145,7 +152,7 @@
     {
       "_step": "8",
       "_comment": "Explain the land info panel with interactive hovers",
-      "text": "<b>Hover over each field</b> to learn what it means!<br><br>Explore: Token, Stake, Sell Price, Income, Cost, and Net Earnings.",
+      "text": "<span class='text-yellow-400'>Hover over each field</span> to learn what it means!<br><br>Explore: Token, Stake, Sell Price, Income, Cost, and Net Earnings.",
       "image_id": 3,
       "has": [
         "interactive_explore",
@@ -159,7 +166,8 @@
       "position": {
         "type": "widget-relative",
         "targetWidget": "land-info",
-        "fallback": "widget-left"
+        "fallback": "widget-left",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
@@ -167,7 +175,7 @@
     {
       "_step": "9",
       "_comment": "Spawn neighbors + pro mode prompt (merged)",
-      "text": "New neighbors joined! Click the <b>eye icon</b> to see your earnings breakdown by token.",
+      "text": "New neighbors joined! Click the <span class='text-yellow-400'>eye icon</span> to see your earnings breakdown by token.",
       "image_id": 2,
       "has": [
         "spawn_neighbors",
@@ -181,7 +189,8 @@
       "position": {
         "type": "widget-relative",
         "targetWidget": "land-info",
-        "fallback": "widget-left"
+        "fallback": "widget-left",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
@@ -189,7 +198,7 @@
     {
       "_step": "10",
       "_comment": "Pro mode explanation",
-      "text": "Pro Mode shows <b>exactly how much</b> you earn from each neighbor in their token.<br><br>This helps you track your multi-token portfolio!",
+      "text": "Pro Mode shows <span class='text-yellow-400'>exactly how much</span> you earn from each neighbor in their token.<br><br>This helps you track your multi-token portfolio!",
       "image_id": 1,
       "has": [
         "highlight_token_earnings",
@@ -202,7 +211,8 @@
       "position": {
         "type": "widget-relative",
         "targetWidget": "land-info",
-        "fallback": "widget-left"
+        "fallback": "widget-left",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
@@ -210,7 +220,7 @@
     {
       "_step": "11",
       "_comment": "Full buy modal - new auction, highlight BUY LAND button after click",
-      "text": "Now let's try to buy another auction!<br><br><b>Click on the new auction</b> to the left.",
+      "text": "Now let's try to buy another auction!<br><br><span class='text-yellow-400'>Click on the new auction</span> to the left.",
       "image_id": 2,
       "has": [
         "highlight_auction",
@@ -224,7 +234,8 @@
       "position": {
         "type": "map-relative",
         "targetLand": [127, 128],
-        "fallback": "map-left"
+        "fallback": "map-left",
+        "dialogSide": "right"
       },
       "allowed_lands": [[127, 128]],
       "enabled_widgets": ["buy-land"]
@@ -232,7 +243,7 @@
     {
       "_step": "12",
       "_comment": "Tax impact section - directly after popup appears",
-      "text": "Click on <b>Neighborhood Tax Impact</b> to see how your settings affect your survival!",
+      "text": "Click on <span class='text-yellow-400'>Neighborhood Tax Impact</span> to see how your settings affect your survival!",
       "image_id": 2,
       "has": [
         "highlight_tax_impact",
@@ -245,7 +256,8 @@
       "position": {
         "type": "widget-relative",
         "targetWidget": "buy-land",
-        "fallback": "widget-left"
+        "fallback": "widget-left",
+        "dialogSide": "left"
       },
       "allowed_lands": [[127, 128]],
       "enabled_widgets": ["buy-land"]
@@ -253,7 +265,7 @@
     {
       "_step": "13",
       "_comment": "Tax impact explanation + buy",
-      "text": "<b>Hover over each field</b> to learn what they mean!<br><br>When you're happy with your settings, click <b>Buy Now</b>!",
+      "text": "<span class='text-yellow-400'>Hover over each field</span> to learn what they mean!<br><br><span class='text-yellow-400'>Tip:</span> Your <span class='text-yellow-400'>stake</span> is your fuel tank - it pays your taxes over time. Higher stake = longer survival!<br><br>When ready, click <span class='text-yellow-400'>Buy Now</span>!",
       "image_id": 3,
       "has": [
         "interactive_tax_explore",
@@ -266,7 +278,8 @@
       "position": {
         "type": "widget-relative",
         "targetWidget": "buy-land",
-        "fallback": "widget-left"
+        "fallback": "widget-left",
+        "dialogSide": "left"
       },
       "allowed_lands": [[127, 128]],
       "enabled_widgets": ["buy-land"]
@@ -274,7 +287,7 @@
     {
       "_step": "14",
       "_comment": "Shield button introduction",
-      "text": "Great! You're building an empire!<br><br>Now let's learn about <b>shields</b>. Click the <b>shield icon</b> in the top bar to see nuke times.",
+      "text": "Great! You're building an empire!<br><br>Now let's learn about <span class='text-yellow-400'>shields</span>. Click the <span class='text-yellow-400'>shield icon</span> in the top bar to see nuke times.",
       "image_id": 2,
       "has": [
         "highlight_shield_button",
@@ -290,7 +303,7 @@
     {
       "_step": "15",
       "_comment": "Stake running low - highlight INFO button after selecting land",
-      "text": "Uh oh! Your first land's stake is <b>running low</b>! See the red timer?<br><br>Open its info panel to add more stake before it gets nuked!",
+      "text": "Uh oh! Your first land's stake is <span class='text-yellow-400'>running low</span>! See the red timer?<br><br>Open its info panel to add more stake before it gets nuked!",
       "image_id": 3,
       "has": [
         "highlight_building",
@@ -303,7 +316,8 @@
       "position": {
         "type": "map-relative",
         "targetLand": [128, 128],
-        "fallback": "map-center"
+        "fallback": "map-center",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
@@ -311,7 +325,7 @@
     {
       "_step": "16",
       "_comment": "Increase stake",
-      "text": "Use <b>Increase Stake</b> to add more fuel. This extends your survival time!",
+      "text": "Use <span class='text-yellow-400'>Increase Stake</span> to add more fuel. This extends your survival time!",
       "image_id": 3,
       "has": [
         "wait_increase_stake",
@@ -323,7 +337,8 @@
       "position": {
         "type": "widget-relative",
         "targetWidget": "buy-land",
-        "fallback": "widget-left"
+        "fallback": "widget-left",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["buy-land"]
@@ -331,7 +346,7 @@
     {
       "_step": "17",
       "_comment": "Neighbor nuking - claim taxes",
-      "text": "Look! A neighbor's land is about to be <b>nuked</b>!<br><br>Click the <b>golden coin</b> above your land to claim your taxes - this triggers their nuke!",
+      "text": "Look! A neighbor's land is about to be <span class='text-yellow-400'>nuked</span>!<br><br>Click the <span class='text-yellow-400'>golden coin</span> above your land to claim your taxes - this triggers their nuke!",
       "image_id": 4,
       "has": [
         "highlight_nuke_neighbor",
@@ -345,7 +360,8 @@
       "position": {
         "type": "map-relative",
         "targetLand": [128, 128],
-        "fallback": "map-center"
+        "fallback": "map-center",
+        "dialogSide": "left"
       },
       "allowed_lands": [[128, 128]],
       "enabled_widgets": ["land-info"]
