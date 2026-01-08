@@ -115,38 +115,57 @@ class HyperlaneTracker {
   }
 
   // Query Hyperlane GraphQL for message by origin tx hash
-  private async queryMessage(
-    originTxHash: string,
-  ): Promise<HyperlaneMessage | null> {
-    const hexHash = this.txHashToHex(originTxHash);
+  private async queryMessage(originTxHash: string): Promise<HyperlaneMessage | null> {
+    const hexHash = this.txHashToHex(originTxHash).toLowerCase();
+    const byteaHash = "\\x" + hexHash; // single backslash in the JSON value
 
-    // Build query with bytea literal
-    const query =
-      'query { message_view(where: {origin_tx_hash: {_eq: "\\\\x' +
-      hexHash +
-      '"}}, limit: 1) { msg_id is_delivered destination_tx_hash send_occurred_at delivery_occurred_at delivery_latency origin_chain_id destination_chain_id } }';
+    // Use variables instead of string concatenation (no escaping footguns)
+    const query = `
+    query MessageByOriginTx($h: bytea!) {
+      message_view(where: { origin_tx_hash: { _eq: $h } }, limit: 1) {
+        msg_id
+        is_delivered
+        destination_tx_hash
+        send_occurred_at
+        delivery_occurred_at
+        delivery_latency
+        origin_chain_id
+        destination_chain_id
+      }
+    }
+  `;
+
+    const url = `${this.GRAPHQL_URL}`;
+
+    const requestId = Date.now().toString();
 
     try {
-      const response = await fetch(this.GRAPHQL_URL, {
-        method: 'POST',
+      const response = await fetch(url, {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, max-age=0',
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
+          "Pragma": "no-cache",
+          // Some CDNs vary cache by headers; making this unique can also help
+          "X-Request-Id": requestId,
         },
-        body: JSON.stringify({ query }),
+        cache: "no-store",
+        body: JSON.stringify({
+          query: query + `\n# ${requestId}`,     // harmless GraphQL comment
+          variables: { h: byteaHash },
+        }),
       });
 
       const data = await response.json();
 
       if (data.errors) {
-        console.error('[Hyperlane] GraphQL error:', data.errors);
+        console.error("[Hyperlane] GraphQL error:", data.errors);
         return null;
       }
 
       const message = data.data?.message_view?.[0];
       if (!message) return null;
 
-      // Convert bytea fields to hex strings
       return {
         msg_id: this.byteaToHex(message.msg_id),
         is_delivered: message.is_delivered,
@@ -160,10 +179,11 @@ class HyperlaneTracker {
         destination_chain_id: message.destination_chain_id,
       };
     } catch (error) {
-      console.error('[Hyperlane] Query failed:', error);
+      console.error("[Hyperlane] Query failed:", error);
       return null;
     }
   }
+
 
   // Convert bytea string to hex
   private byteaToHex(bytea: string): string {

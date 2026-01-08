@@ -321,18 +321,16 @@ class BridgeStore {
       throw new Error('Connected wallet address does not match sender');
     }
 
-    const txHashes: string[] = [];
+    // Use multicall to batch all transactions into one
+    // This is more efficient and works better with Controller wallet
+    const calls = transactions.map((tx) => ({
+      contractAddress: tx.contractAddress,
+      entrypoint: tx.entrypoint,
+      calldata: tx.calldata,
+    }));
 
-    for (const tx of transactions) {
-      const result = await account.execute({
-        contractAddress: tx.contractAddress,
-        entrypoint: tx.entrypoint,
-        calldata: tx.calldata,
-      });
-      txHashes.push(result.transaction_hash);
-    }
-
-    return txHashes;
+    const result = await account.execute(calls);
+    return [result.transaction_hash];
   }
 
   private async signAndSendSolana(
