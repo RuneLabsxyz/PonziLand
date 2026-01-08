@@ -149,7 +149,7 @@ class HyperlaneTracker {
     return '0x' + bytea;
   }
 
-  private startPolling(): void {
+  private async startPolling(): Promise<void> {
     this.stopPolling();
 
     const poll = async () => {
@@ -203,7 +203,7 @@ class HyperlaneTracker {
       }
     };
 
-    poll();
+    await poll();
     this.pollingInterval = setInterval(poll, this.POLL_INTERVAL);
   }
 
