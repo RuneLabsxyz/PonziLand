@@ -152,7 +152,7 @@ const profiles = {
     LAYERSWAP_TOKEN: '',
     PAYMASTER_API_KEY: '',
     PUBLIC_SOCIALINK_URL: 'https://socialink.ponzi.land',
-    PUBLIC_PONZI_API_URL: 'http://localhost:3031',
+    PUBLIC_PONZI_API_URL: 'https://api.runelabs.xyz/ponziland-mainnet/api/',
     PUBLIC_BRIDGE_API_URL: 'https://ponzi.land',
     PUBLIC_SOLANA_RPC_URL: 'https://api.mainnet-beta.solana.com',
     PUBLIC_ENABLE_BRIDGE: 'true',

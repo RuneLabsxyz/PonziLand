@@ -5,11 +5,21 @@
 
   const events = $derived(activityStore.events);
   const isEmpty = $derived(activityStore.isEmpty);
+  const isLoading = $derived(activityStore.isLoading);
+
+  // Load initial events on mount
+  $effect(() => {
+    activityStore.loadInitialEvents(50);
+  });
 </script>
 
 <ScrollArea type="scroll" class="flex-1">
   <div class="flex flex-col">
-    {#if isEmpty}
+    {#if isLoading && isEmpty}
+      <div class="text-center py-8 text-gray-400 text-sm">
+        Loading activity...
+      </div>
+    {:else if isEmpty}
       <div class="text-center py-8 text-gray-400 text-sm">
         No activity yet. Events will appear here when players buy, sell, or get
         nuked.
