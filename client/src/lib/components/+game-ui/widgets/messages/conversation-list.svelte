@@ -45,18 +45,9 @@
               {formatTimestampRelative(new Date(conversation.last_message_at))}
             </span>
           </div>
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-muted-foreground truncate max-w-[200px]">
-              {conversation.last_message}
-            </span>
-            {#if conversation.unread_count > 0}
-              <span
-                class="px-2 py-0.5 text-xs font-medium bg-primary text-primary-foreground rounded-full"
-              >
-                {conversation.unread_count}
-              </span>
-            {/if}
-          </div>
+          <span class="text-sm text-muted-foreground truncate max-w-[200px]">
+            {conversation.last_message}
+          </span>
         </button>
       {/each}
     </div>

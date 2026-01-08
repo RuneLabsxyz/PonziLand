@@ -17,5 +17,4 @@ pub struct ConversationSummary {
     pub with_address: String,
     pub last_message: String,
     pub last_message_at: DateTime<Utc>,
-    pub unread_count: i64,
 }
