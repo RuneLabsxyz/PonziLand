@@ -1,7 +1,5 @@
 import { PUBLIC_ENABLE_BRIDGE } from '$env/static/public';
 
-export const ENABLE_RAMP = false;
-
 export const FUSE_DISABLE_SOCIALINK = false;
 
 export const ENABLE_TOKEN_DROP = false;
