@@ -22,14 +22,7 @@ class HyperlaneTracker {
 
   private readonly POLL_INTERVAL = 5000; // 5 seconds
   private readonly TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
-  private readonly STORAGE_KEY = 'ponziland_pending_bridges';
   private readonly GRAPHQL_URL = 'https://api.hyperlane.xyz/v1/graphql';
-
-  constructor() {
-    if (browser) {
-      this.loadFromStorage();
-    }
-  }
 
   // Public reactive getters
   get activeTransfer(): PendingTransfer | null {
@@ -43,15 +36,6 @@ class HyperlaneTracker {
 
   get hasActiveTransfer(): boolean {
     return this.state.activeTransferId !== null;
-  }
-
-  get hasPendingTransfers(): boolean {
-    return Array.from(this.state.transfers.values()).some(
-      (t) =>
-        t.status === 'pending_message_id' ||
-        t.status === 'relaying' ||
-        t.status === 'timeout',
-    );
   }
 
   // Track a new transfer after origin tx is sent
@@ -73,33 +57,9 @@ class HyperlaneTracker {
     };
 
     this.state.transfers.set(transfer.id, transfer);
+    this.state.transfers = new Map(this.state.transfers); // Trigger reactivity
     this.state.activeTransferId = transfer.id;
-    this.persistToStorage();
     this.startPolling(transfer.id);
-  }
-
-  // Resume tracking pending transfers on page load
-  async resumeTracking(): Promise<void> {
-    this.loadFromStorage();
-
-    for (const [id, transfer] of this.state.transfers) {
-      if (
-        transfer.status === 'pending_message_id' ||
-        transfer.status === 'relaying' ||
-        transfer.status === 'timeout'
-      ) {
-        // Set active to the most recent pending transfer
-        if (
-          !this.state.activeTransferId ||
-          transfer.createdAt >
-            (this.state.transfers.get(this.state.activeTransferId)?.createdAt ??
-              0)
-        ) {
-          this.state.activeTransferId = id;
-        }
-        this.startPolling(id);
-      }
-    }
   }
 
   // Stop tracking a specific transfer
@@ -110,27 +70,14 @@ class HyperlaneTracker {
     }
   }
 
-  // Clear all completed/error transfers from storage
-  clearCompleted(): void {
-    for (const [id, transfer] of this.state.transfers) {
-      if (transfer.status === 'delivered' || transfer.status === 'error') {
-        this.state.transfers.delete(id);
-        if (this.state.activeTransferId === id) {
-          this.state.activeTransferId = null;
-        }
-      }
-    }
-    this.persistToStorage();
-  }
-
   // Reset active transfer (after user acknowledges completion)
   resetActive(): void {
     if (this.state.activeTransferId) {
       const transfer = this.state.transfers.get(this.state.activeTransferId);
       if (transfer?.status === 'delivered' || transfer?.status === 'error') {
         this.state.transfers.delete(this.state.activeTransferId);
+        this.state.transfers = new Map(this.state.transfers); // Trigger reactivity
         this.state.activeTransferId = null;
-        this.persistToStorage();
       }
     }
   }
@@ -182,7 +129,10 @@ class HyperlaneTracker {
     try {
       const response = await fetch(this.GRAPHQL_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, max-age=0',
+        },
         body: JSON.stringify({ query }),
       });
 
@@ -315,46 +265,7 @@ class HyperlaneTracker {
 
     const updated = { ...transfer, ...updates };
     this.state.transfers.set(transferId, updated);
-    this.persistToStorage();
-  }
-
-  // Persist to localStorage
-  private persistToStorage(): void {
-    if (!browser) return;
-
-    try {
-      const transfers = Array.from(this.state.transfers.values());
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(transfers));
-    } catch (error) {
-      console.error('[Hyperlane] Failed to persist transfers:', error);
-    }
-  }
-
-  // Load from localStorage
-  private loadFromStorage(): void {
-    if (!browser) return;
-
-    try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (!stored) return;
-
-      const transfers: PendingTransfer[] = JSON.parse(stored);
-
-      for (const transfer of transfers) {
-        // Only restore non-terminal transfers or recently completed ones
-        if (transfer.status !== 'delivered' && transfer.status !== 'error') {
-          this.state.transfers.set(transfer.id, transfer);
-        } else if (
-          transfer.deliveredAt &&
-          Date.now() - transfer.deliveredAt < 60000
-        ) {
-          // Keep recently delivered transfers for 1 minute so UI can show success
-          this.state.transfers.set(transfer.id, transfer);
-        }
-      }
-    } catch (error) {
-      console.error('[Hyperlane] Failed to load transfers:', error);
-    }
+    this.state.transfers = new Map(this.state.transfers); // Trigger reactivity
   }
 }
 

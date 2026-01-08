@@ -120,11 +120,6 @@ class BridgeStore {
     hyperlaneTracker.resetActive();
   }
 
-  // Resume tracking on page load
-  resumeTracking(): void {
-    hyperlaneTracker.resumeTracking();
-  }
-
   // Cleanup on unmount
   destroyTracker(): void {
     hyperlaneTracker.destroy();

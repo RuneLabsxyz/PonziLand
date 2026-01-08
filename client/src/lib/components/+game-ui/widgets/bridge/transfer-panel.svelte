@@ -160,9 +160,6 @@
   let cleanupListener: (() => void) | undefined;
 
   onMount(() => {
-    // Resume tracking any pending transfers from previous session
-    bridgeStore.resumeTracking();
-
     // Listen for bridge delivery events to refresh balances
     const handleDelivery = () => {
       onBalanceRefresh?.();
