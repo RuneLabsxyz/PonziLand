@@ -13,7 +13,9 @@ import type {
   SolanaTransaction,
   TransferTransactionsResponse,
   ApiError,
+  RelayStatus,
 } from './types';
+import { hyperlaneTracker } from './hyperlane-tracker.svelte';
 
 const BRIDGE_API_URL = PUBLIC_BRIDGE_API_URL || 'http://localhost:3000';
 
@@ -82,8 +84,45 @@ class BridgeStore {
     return (
       this.transferState.status !== 'idle' &&
       this.transferState.status !== 'success' &&
-      this.transferState.status !== 'error'
+      this.transferState.status !== 'error' &&
+      this.transferState.status !== 'delivered'
     );
+  }
+
+  // Hyperlane relay tracking getters
+  get relayStatus(): RelayStatus | null {
+    return hyperlaneTracker.activeTransfer?.status ?? null;
+  }
+
+  get isRelaying(): boolean {
+    const status = this.relayStatus;
+    return status === 'pending_message_id' || status === 'relaying';
+  }
+
+  get isDelivered(): boolean {
+    return this.relayStatus === 'delivered';
+  }
+
+  get isRelayTimeout(): boolean {
+    return this.relayStatus === 'timeout';
+  }
+
+  get destinationTxHash(): string | null {
+    return hyperlaneTracker.activeTransfer?.destinationTxHash ?? null;
+  }
+
+  get activeTransfer() {
+    return hyperlaneTracker.activeTransfer;
+  }
+
+  // Reset relay tracking state
+  resetRelay(): void {
+    hyperlaneTracker.resetActive();
+  }
+
+  // Cleanup on unmount
+  destroyTracker(): void {
+    hyperlaneTracker.destroy();
   }
 
   async loadConfig(): Promise<BridgeConfig> {
@@ -234,7 +273,21 @@ class BridgeStore {
       }
 
       this.transferState.txHashes = txHashes;
-      this.transferState.status = 'success';
+
+      // Start Hyperlane tracking for cross-chain relay
+      if (txHashes.length > 0) {
+        hyperlaneTracker.trackTransfer({
+          originTxHash: txHashes[0],
+          originChain: params.originChain,
+          destinationChain: params.destinationChain,
+          tokenSymbol: params.tokenSymbol,
+          amount: params.amount,
+          sender: params.sender,
+          recipient: params.recipient,
+        });
+      }
+
+      this.transferState.status = 'relaying';
 
       return {
         success: true,
@@ -268,18 +321,16 @@ class BridgeStore {
       throw new Error('Connected wallet address does not match sender');
     }
 
-    const txHashes: string[] = [];
+    // Use multicall to batch all transactions into one
+    // This is more efficient and works better with Controller wallet
+    const calls = transactions.map((tx) => ({
+      contractAddress: tx.contractAddress,
+      entrypoint: tx.entrypoint,
+      calldata: tx.calldata,
+    }));
 
-    for (const tx of transactions) {
-      const result = await account.execute({
-        contractAddress: tx.contractAddress,
-        entrypoint: tx.entrypoint,
-        calldata: tx.calldata,
-      });
-      txHashes.push(result.transaction_hash);
-    }
-
-    return txHashes;
+    const result = await account.execute(calls);
+    return [result.transaction_hash];
   }
 
   private async signAndSendSolana(

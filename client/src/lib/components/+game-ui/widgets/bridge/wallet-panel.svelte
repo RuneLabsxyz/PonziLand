@@ -11,6 +11,7 @@
   import { useSolanaAccount } from '$lib/bridge/solana-account.svelte';
   import { accountState } from '$lib/account.svelte';
   import { useDojo } from '$lib/contexts/dojo';
+  import { onMount } from 'svelte';
   import type { Token } from '$lib/interfaces';
 
   interface Props {
@@ -19,10 +20,17 @@
     bridgableSymbols: string[];
     selectedToken: string | null;
     onTokenSelect: (symbol: string) => void;
+    onRefreshReady?: (refresh: () => Promise<void>) => void;
   }
 
-  let { chain, title, bridgableSymbols, selectedToken, onTokenSelect }: Props =
-    $props();
+  let {
+    chain,
+    title,
+    bridgableSymbols,
+    selectedToken,
+    onTokenSelect,
+    onRefreshReady,
+  }: Props = $props();
 
   const { accountManager } = useDojo();
   const solanaAccount = useSolanaAccount();
@@ -50,6 +58,10 @@
   // Token balances state
   let balances = $state<Map<string, string>>(new Map());
   let loadingBalances = $state(false);
+
+  onMount(() => {
+    onRefreshReady?.(fetchBalances);
+  });
 
   // Fetch balances on connect
   $effect(() => {

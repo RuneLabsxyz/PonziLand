@@ -117,7 +117,7 @@
         if (!aValue && !bValue) return 0;
         if (!aValue) return 1;
         if (!bValue) return -1;
-        return bValue.rawValue().comparedTo(aValue.rawValue());
+        return bValue.rawValue().comparedTo(aValue.rawValue()) ?? 0;
       })
       .map(([token]) => token);
   });

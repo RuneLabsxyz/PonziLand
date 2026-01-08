@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/ui/button';
   import Input from '$lib/components/ui/input/input.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
@@ -148,6 +149,21 @@
     prevSelectedToken = selectedToken;
     prevAmount = amount;
   });
+
+  onDestroy(() => {
+    bridgeStore.destroyTracker();
+  });
+
+  // Reset transfer state when delivery is complete and user starts new transfer
+  function handleDismissComplete() {
+    bridgeStore.reset();
+    bridgeStore.resetRelay();
+  }
+
+  const showDismissButton = $derived(
+    bridgeStore.relayStatus === 'delivered' ||
+      bridgeStore.transferStatus === 'delivered',
+  );
 </script>
 
 <div class="border border-[#ffffff33] rounded-lg bg-[#10101a]/50 p-4">
@@ -209,42 +225,57 @@
         {sourceChain}
         {destChain}
         error={bridgeStore.transferError}
+        relayStatus={bridgeStore.relayStatus}
+        destinationTxHash={bridgeStore.destinationTxHash}
       />
 
+      <!-- Dismiss completed transfer button -->
+      {#if showDismissButton}
+        <button
+          type="button"
+          class="w-full py-2 px-4 text-sm font-medium bg-transparent text-gray-300 border border-[#ffffff33] rounded-md hover:bg-[#ffffff10] transition-colors"
+          onclick={handleDismissComplete}
+        >
+          Start New Transfer
+        </button>
+      {/if}
+
       <!-- Transfer buttons -->
-      <div class="flex gap-2">
-        {#if isToSolana}
-          <Button
-            class="flex-1"
-            onclick={handleTransfer}
-            disabled={!canTransfer}
-          >
-            {#if bridgeStore.isLoading}
-              <span class="flex items-center gap-2">
-                <RotatingCoin />
-                Processing...
-              </span>
-            {:else}
-              ← Transfer to Solana
-            {/if}
-          </Button>
-        {:else}
-          <Button
-            class="flex-1"
-            onclick={handleTransfer}
-            disabled={!canTransfer}
-          >
-            {#if bridgeStore.isLoading}
-              <span class="flex items-center gap-2">
-                <RotatingCoin />
-                Processing...
-              </span>
-            {:else}
-              Transfer to Game →
-            {/if}
-          </Button>
-        {/if}
-      </div>
+      {#if !showDismissButton}
+        <div class="flex gap-2">
+          {#if isToSolana}
+            <Button
+              class="flex-1"
+              onclick={handleTransfer}
+              disabled={!canTransfer}
+            >
+              {#if bridgeStore.isLoading}
+                <span class="flex items-center gap-2">
+                  <RotatingCoin />
+                  Processing...
+                </span>
+              {:else}
+                ← Transfer to Solana
+              {/if}
+            </Button>
+          {:else}
+            <Button
+              class="flex-1"
+              onclick={handleTransfer}
+              disabled={!canTransfer}
+            >
+              {#if bridgeStore.isLoading}
+                <span class="flex items-center gap-2">
+                  <RotatingCoin />
+                  Processing...
+                </span>
+              {:else}
+                Transfer to Game →
+              {/if}
+            </Button>
+          {/if}
+        </div>
+      {/if}
 
       <!-- Connection warnings -->
       {#if !sourceWalletConnected}
