@@ -1,85 +1,38 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { Button } from '$lib/components/ui/button';
   import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
   import WidgetSettings from '../settings/widget-settings.svelte';
-  import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
   import accountData from '$lib/account.svelte';
   import { referralStore } from '$lib/stores/referral.store.svelte';
   import { onMount } from 'svelte';
 
-  let claimState = $state('idle');
-  let referralCode = $state<string | null>(referralStore.userCode);
-  let referralLoading = $state(false);
+  let referralCodePromise = $state<Promise<string | null> | null>(null);
   let copied = $state(false);
 
-  // Fetch stats on mount automatically
   onMount(() => {
     if (accountData.address) {
       referralStore.fetchReferralStats(accountData.address);
     }
   });
 
-  async function fetchReferralCode() {
-    if (!accountData.address || referralLoading) return;
-    referralLoading = true;
-    try {
-      const code = await referralStore.fetchUserCode(accountData.address);
-      referralCode = code;
-      // Also fetch stats when we get the code
-      if (code) {
-        await referralStore.fetchReferralStats(accountData.address);
-      }
-    } catch (e) {
-      console.error('Failed to fetch referral code:', e);
-    } finally {
-      referralLoading = false;
+  async function fetchReferralCode(): Promise<string | null> {
+    if (!accountData.address) return null;
+    const code = await referralStore.fetchUserCode(accountData.address);
+    if (code) {
+      await referralStore.fetchReferralStats(accountData.address);
     }
+    return code;
   }
 
-  async function copyReferralLink() {
-    if (!referralCode) return;
+  async function copyReferralLink(code: string) {
     try {
-      await navigator.clipboard.writeText(
-        `https://play.ponzi.land/r/${referralCode}`,
-      );
+      await navigator.clipboard.writeText(`https://play.ponzi.land/r/${code}`);
       copied = true;
       setTimeout(() => {
         copied = false;
       }, 2000);
     } catch (e) {
       console.error('Failed to copy:', e);
-    }
-  }
-
-  async function claimTokens() {
-    if (claimState === 'loading') return;
-
-    claimState = 'loading';
-    try {
-      if (!accountData.address) {
-        throw new Error('No address found');
-      }
-      const response = await fetch(
-        `${PUBLIC_SOCIALINK_URL}/api/user/${accountData.address}/mint`,
-        {
-          method: 'POST',
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to claim tokens');
-      }
-
-      claimState = 'success';
-      setTimeout(() => {
-        claimState = 'idle';
-      }, 2000);
-    } catch (error) {
-      claimState = 'error';
-      setTimeout(() => {
-        claimState = 'idle';
-      }, 2000);
     }
   }
 </script>
@@ -105,21 +58,6 @@
           ><Button>Docs</Button></a
         >
       </div>
-      <!-- <Button
-        onclick={claimTokens}
-        disabled={claimState !== 'idle'}
-        class="relative"
-      >
-        {#if claimState === 'loading'}
-          Loading...
-        {:else if claimState === 'success'}
-          ✓ Claimed!
-        {:else if claimState === 'error'}
-          ✗ Failed
-        {:else}
-          No tokens? Claim here!
-        {/if}
-      </Button> -->
 
       <div class="flex justify-center gap-4 mt-2">
         <!-- svelte-ignore a11y_consider_explicit_label -->
@@ -181,25 +119,59 @@
           class="flex flex-col gap-2 p-4 bg-black/30 rounded-lg border border-yellow-500/30"
         >
           <p class="text-sm font-bold text-yellow-400">Invite Friends:</p>
-          {#if referralCode}
+          {#if referralStore.userCode}
             <div class="flex gap-2 items-center">
               <input
                 type="text"
                 readonly
-                value={`play.ponzi.land/r/${referralCode}`}
+                value={`play.ponzi.land/r/${referralStore.userCode}`}
                 class="flex-1 bg-black/50 px-3 py-2 rounded text-sm font-mono text-white border border-yellow-500/20"
               />
-              <Button size="sm" onclick={copyReferralLink}>
+              <Button
+                size="sm"
+                onclick={() => copyReferralLink(referralStore.userCode!)}
+              >
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
+          {:else if referralCodePromise}
+            {#await referralCodePromise}
+              <Button size="sm" disabled>Loading...</Button>
+            {:then code}
+              {#if code}
+                <div class="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    readonly
+                    value={`play.ponzi.land/r/${code}`}
+                    class="flex-1 bg-black/50 px-3 py-2 rounded text-sm font-mono text-white border border-yellow-500/20"
+                  />
+                  <Button size="sm" onclick={() => copyReferralLink(code)}>
+                    {copied ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+              {:else}
+                <Button
+                  size="sm"
+                  onclick={() => (referralCodePromise = fetchReferralCode())}
+                >
+                  Retry
+                </Button>
+              {/if}
+            {:catch}
+              <Button
+                size="sm"
+                onclick={() => (referralCodePromise = fetchReferralCode())}
+              >
+                Failed - Retry
+              </Button>
+            {/await}
           {:else}
             <Button
               size="sm"
-              onclick={fetchReferralCode}
-              disabled={referralLoading}
+              onclick={() => (referralCodePromise = fetchReferralCode())}
             >
-              {referralLoading ? 'Loading...' : 'Get Referral Link'}
+              Get Referral Link
             </Button>
           {/if}
         </div>
