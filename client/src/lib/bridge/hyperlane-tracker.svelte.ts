@@ -2,45 +2,27 @@ import { browser } from '$app/environment';
 import bs58 from 'bs58';
 import type {
   PendingTransfer,
-  RelayStatus,
   HyperlaneMessage,
   TrackTransferParams,
 } from './types';
 
-interface TrackerState {
-  transfers: Map<string, PendingTransfer>;
-  activeTransferId: string | null;
-}
-
 class HyperlaneTracker {
-  private state = $state<TrackerState>({
-    transfers: new Map(),
-    activeTransferId: null,
-  });
-
-  private pollingIntervals = new Map<string, ReturnType<typeof setInterval>>();
+  private transfer = $state<PendingTransfer | null>(null);
+  private pollingInterval: ReturnType<typeof setInterval> | null = null;
 
   private readonly POLL_INTERVAL = 5000; // 5 seconds
   private readonly TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
   private readonly GRAPHQL_URL = 'https://api.hyperlane.xyz/v1/graphql';
 
-  // Public reactive getters
   get activeTransfer(): PendingTransfer | null {
-    if (!this.state.activeTransferId) return null;
-    return this.state.transfers.get(this.state.activeTransferId) ?? null;
+    return this.transfer;
   }
 
-  get allTransfers(): PendingTransfer[] {
-    return Array.from(this.state.transfers.values());
-  }
-
-  get hasActiveTransfer(): boolean {
-    return this.state.activeTransferId !== null;
-  }
-
-  // Track a new transfer after origin tx is sent
   async trackTransfer(params: TrackTransferParams): Promise<void> {
-    const transfer: PendingTransfer = {
+    // Stop any existing tracking
+    this.stopPolling();
+
+    this.transfer = {
       id: params.originTxHash,
       originTxHash: params.originTxHash,
       originChain: params.originChain,
@@ -56,53 +38,32 @@ class HyperlaneTracker {
       deliveredAt: null,
     };
 
-    this.state.transfers.set(transfer.id, transfer);
-    this.state.transfers = new Map(this.state.transfers); // Trigger reactivity
-    this.state.activeTransferId = transfer.id;
-    this.startPolling(transfer.id);
+    this.startPolling();
   }
 
-  // Stop tracking a specific transfer
-  stopTracking(transferId: string): void {
-    this.stopPolling(transferId);
-    if (this.state.activeTransferId === transferId) {
-      this.state.activeTransferId = null;
-    }
-  }
-
-  // Reset active transfer (after user acknowledges completion)
   resetActive(): void {
-    if (this.state.activeTransferId) {
-      const transfer = this.state.transfers.get(this.state.activeTransferId);
-      if (transfer?.status === 'delivered' || transfer?.status === 'error') {
-        this.state.transfers.delete(this.state.activeTransferId);
-        this.state.transfers = new Map(this.state.transfers); // Trigger reactivity
-        this.state.activeTransferId = null;
-      }
+    if (
+      this.transfer?.status === 'delivered' ||
+      this.transfer?.status === 'error'
+    ) {
+      this.stopPolling();
+      this.transfer = null;
     }
   }
 
-  // Cleanup on unmount
   destroy(): void {
-    for (const id of this.pollingIntervals.keys()) {
-      this.stopPolling(id);
-    }
+    this.stopPolling();
   }
 
-  // Convert tx hash to hex format for Hyperlane API
   private txHashToHex(txHash: string): string {
-    // Check if it's already hex (starts with 0x)
     if (txHash.startsWith('0x')) {
-      // Starknet hex hash - remove 0x and pad to 64 chars
       return txHash.slice(2).padStart(64, '0');
     }
 
-    // Check if it looks like hex (only hex chars)
     if (/^[0-9a-fA-F]+$/.test(txHash)) {
       return txHash.padStart(64, '0');
     }
 
-    // Assume it's base58 (Solana signature) - decode to hex
     try {
       const bytes = bs58.decode(txHash);
       return Array.from(bytes)
@@ -114,14 +75,12 @@ class HyperlaneTracker {
     }
   }
 
-  // Query Hyperlane GraphQL for message by origin tx hash
   private async queryMessage(
     originTxHash: string,
   ): Promise<HyperlaneMessage | null> {
     const hexHash = this.txHashToHex(originTxHash).toLowerCase();
-    const byteaHash = '\\x' + hexHash; // single backslash in the JSON value
+    const byteaHash = '\\x' + hexHash;
 
-    // Use variables instead of string concatenation (no escaping footguns)
     const query = `
     query MessageByOriginTx($h: bytea!) {
       message_view(where: { origin_tx_hash: { _eq: $h } }, limit: 1) {
@@ -137,23 +96,20 @@ class HyperlaneTracker {
     }
   `;
 
-    const url = `${this.GRAPHQL_URL}`;
-
     const requestId = Date.now().toString();
 
     try {
-      const response = await fetch(url, {
+      const response = await fetch(this.GRAPHQL_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate',
           Pragma: 'no-cache',
-          // Some CDNs vary cache by headers; making this unique can also help
           'X-Request-Id': requestId,
         },
         cache: 'no-store',
         body: JSON.stringify({
-          query: query + `\n# ${requestId}`, // harmless GraphQL comment
+          query: query + `\n# ${requestId}`,
           variables: { h: byteaHash },
         }),
       });
@@ -186,68 +142,56 @@ class HyperlaneTracker {
     }
   }
 
-  // Convert bytea string to hex
   private byteaToHex(bytea: string): string {
     if (!bytea) return '';
-    // If already hex with 0x prefix, return as is
     if (bytea.startsWith('0x')) return bytea;
-    // If \x prefix (PostgreSQL bytea), convert to 0x
     if (bytea.startsWith('\\x')) return '0x' + bytea.slice(2);
-    // Otherwise assume it's raw hex
     return '0x' + bytea;
   }
 
-  // Start polling for a transfer
-  private startPolling(transferId: string): void {
-    // Clear any existing interval
-    this.stopPolling(transferId);
+  private startPolling(): void {
+    this.stopPolling();
 
     const poll = async () => {
-      const transfer = this.state.transfers.get(transferId);
-      if (!transfer) {
-        this.stopPolling(transferId);
+      if (!this.transfer) {
+        this.stopPolling();
         return;
       }
 
-      // Check timeout
-      const elapsed = Date.now() - transfer.createdAt;
-      if (elapsed >= this.TIMEOUT_MS && transfer.status !== 'timeout') {
-        this.updateTransfer(transferId, { status: 'timeout' });
-        // Continue polling - bridges can take 30+ min during congestion
+      const elapsed = Date.now() - this.transfer.createdAt;
+      if (elapsed >= this.TIMEOUT_MS && this.transfer.status !== 'timeout') {
+        this.transfer = { ...this.transfer, status: 'timeout' };
       }
 
       try {
-        const message = await this.queryMessage(transfer.originTxHash);
+        const message = await this.queryMessage(this.transfer.originTxHash);
 
-        if (!message) {
-          // Message not yet indexed, keep waiting
-          return;
-        }
+        if (!message) return;
 
-        // Update message ID if not set
-        if (!transfer.messageId && message.msg_id) {
-          this.updateTransfer(transferId, {
+        if (!this.transfer.messageId && message.msg_id) {
+          this.transfer = {
+            ...this.transfer,
             messageId: message.msg_id,
-            status: transfer.status === 'timeout' ? 'timeout' : 'relaying',
-          });
+            status: this.transfer.status === 'timeout' ? 'timeout' : 'relaying',
+          };
         }
 
-        // Check delivery status
         if (message.is_delivered) {
-          this.updateTransfer(transferId, {
+          const destinationChain = this.transfer.destinationChain;
+          this.transfer = {
+            ...this.transfer,
             status: 'delivered',
             destinationTxHash: message.destination_tx_hash,
             deliveredAt: Date.now(),
-          });
-          this.stopPolling(transferId);
+          };
+          this.stopPolling();
 
-          // Dispatch event for destination wallet refresh
           if (browser) {
             window.dispatchEvent(
               new CustomEvent('bridge_delivered', {
                 detail: {
-                  transferId,
-                  destinationChain: transfer.destinationChain,
+                  transferId: this.transfer.id,
+                  destinationChain,
                   destinationTxHash: message.destination_tx_hash,
                 },
               }),
@@ -256,38 +200,18 @@ class HyperlaneTracker {
         }
       } catch (error) {
         console.error('[Hyperlane] Polling error:', error);
-        // Don't change status on transient errors, keep polling
       }
     };
 
-    // Immediate first poll
     poll();
-
-    // Set up interval
-    const intervalId = setInterval(poll, this.POLL_INTERVAL);
-    this.pollingIntervals.set(transferId, intervalId);
+    this.pollingInterval = setInterval(poll, this.POLL_INTERVAL);
   }
 
-  // Stop polling for a transfer
-  private stopPolling(transferId: string): void {
-    const intervalId = this.pollingIntervals.get(transferId);
-    if (intervalId) {
-      clearInterval(intervalId);
-      this.pollingIntervals.delete(transferId);
+  private stopPolling(): void {
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+      this.pollingInterval = null;
     }
-  }
-
-  // Update a transfer's fields
-  private updateTransfer(
-    transferId: string,
-    updates: Partial<PendingTransfer>,
-  ): void {
-    const transfer = this.state.transfers.get(transferId);
-    if (!transfer) return;
-
-    const updated = { ...transfer, ...updates };
-    this.state.transfers.set(transferId, updated);
-    this.state.transfers = new Map(this.state.transfers); // Trigger reactivity
   }
 }
 
