@@ -115,9 +115,11 @@ class HyperlaneTracker {
   }
 
   // Query Hyperlane GraphQL for message by origin tx hash
-  private async queryMessage(originTxHash: string): Promise<HyperlaneMessage | null> {
+  private async queryMessage(
+    originTxHash: string,
+  ): Promise<HyperlaneMessage | null> {
     const hexHash = this.txHashToHex(originTxHash).toLowerCase();
-    const byteaHash = "\\x" + hexHash; // single backslash in the JSON value
+    const byteaHash = '\\x' + hexHash; // single backslash in the JSON value
 
     // Use variables instead of string concatenation (no escaping footguns)
     const query = `
@@ -141,17 +143,17 @@ class HyperlaneTracker {
 
     try {
       const response = await fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
-          "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
-          "Pragma": "no-cache",
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, max-age=0, must-revalidate',
+          Pragma: 'no-cache',
           // Some CDNs vary cache by headers; making this unique can also help
-          "X-Request-Id": requestId,
+          'X-Request-Id': requestId,
         },
-        cache: "no-store",
+        cache: 'no-store',
         body: JSON.stringify({
-          query: query + `\n# ${requestId}`,     // harmless GraphQL comment
+          query: query + `\n# ${requestId}`, // harmless GraphQL comment
           variables: { h: byteaHash },
         }),
       });
@@ -159,7 +161,7 @@ class HyperlaneTracker {
       const data = await response.json();
 
       if (data.errors) {
-        console.error("[Hyperlane] GraphQL error:", data.errors);
+        console.error('[Hyperlane] GraphQL error:', data.errors);
         return null;
       }
 
@@ -179,11 +181,10 @@ class HyperlaneTracker {
         destination_chain_id: message.destination_chain_id,
       };
     } catch (error) {
-      console.error("[Hyperlane] Query failed:", error);
+      console.error('[Hyperlane] Query failed:', error);
       return null;
     }
   }
-
 
   // Convert bytea string to hex
   private byteaToHex(bytea: string): string {
@@ -240,12 +241,13 @@ class HyperlaneTracker {
           });
           this.stopPolling(transferId);
 
-          // Dispatch event for balance refresh
+          // Dispatch event for destination wallet refresh
           if (browser) {
             window.dispatchEvent(
               new CustomEvent('bridge_delivered', {
                 detail: {
                   transferId,
+                  destinationChain: transfer.destinationChain,
                   destinationTxHash: message.destination_tx_hash,
                 },
               }),

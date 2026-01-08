@@ -15,7 +15,8 @@
   import type { TokenInfo } from '$lib/bridge/types';
   import { useSolanaAccount } from '$lib/bridge/solana-account.svelte';
   import { accountState } from '$lib/account.svelte';
-  import { onMount } from 'svelte';
+  import { walletStore } from '$lib/stores/wallet.svelte';
+  import { onMount, onDestroy } from 'svelte';
 
   let {
     setCustomControls,
@@ -35,6 +36,8 @@
   let selectedToken = $state<string | null>(null);
   let transferDirection = $state<'toGame' | 'toSolana' | null>(null);
   let sourceBalance = $state('0');
+
+  let solanaRefresh: (() => Promise<void>) | null = null;
 
   const NORMAL_STYLES =
     'width: 380px; height: auto; top: 0px; right: 0px; transform: none;';
@@ -122,9 +125,22 @@
     transferDirection = 'toSolana';
   }
 
-  // Ensure wallet starts with normal width on mount
+  function handleBridgeDelivered() {
+    solanaRefresh?.();
+    if (accountState.address) {
+      walletStore.update(accountState.address);
+    }
+    fetchSourceBalance();
+  }
+
   onMount(() => {
     widgetsStore.updateWidget('wallet', { fixedStyles: NORMAL_STYLES });
+
+    window.addEventListener('bridge_delivered', handleBridgeDelivered);
+  });
+
+  onDestroy(() => {
+    window.removeEventListener('bridge_delivered', handleBridgeDelivered);
   });
 
   function toggleBridgeMode() {
@@ -285,6 +301,7 @@
               {bridgableSymbols}
               {selectedToken}
               onTokenSelect={handleSolanaTokenSelect}
+              onRefreshReady={(refresh) => (solanaRefresh = refresh)}
             />
           {/if}
         </div>

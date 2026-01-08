@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { Button } from '$lib/components/ui/button';
   import Input from '$lib/components/ui/input/input.svelte';
   import RotatingCoin from '$lib/components/loading-screen/rotating-coin.svelte';
@@ -17,15 +17,9 @@
     selectedToken: string | null;
     transferDirection: 'toGame' | 'toSolana' | null;
     sourceBalance: string;
-    onBalanceRefresh?: () => void;
   }
 
-  let {
-    selectedToken,
-    transferDirection,
-    sourceBalance,
-    onBalanceRefresh,
-  }: Props = $props();
+  let { selectedToken, transferDirection, sourceBalance }: Props = $props();
 
   const { accountManager } = useDojo();
   const solanaAccount = useSolanaAccount();
@@ -156,22 +150,7 @@
     prevAmount = amount;
   });
 
-  // Handle delivery event for balance refresh
-  let cleanupListener: (() => void) | undefined;
-
-  onMount(() => {
-    // Listen for bridge delivery events to refresh balances
-    const handleDelivery = () => {
-      onBalanceRefresh?.();
-    };
-
-    window.addEventListener('bridge_delivered', handleDelivery);
-    cleanupListener = () =>
-      window.removeEventListener('bridge_delivered', handleDelivery);
-  });
-
   onDestroy(() => {
-    cleanupListener?.();
     bridgeStore.destroyTracker();
   });
 

@@ -23,6 +23,10 @@
     destinationTxHash = null,
   }: Props = $props();
 
+  const isDelivered = $derived(
+    relayStatus === 'delivered' || status === 'delivered',
+  );
+
   interface Step {
     id: string;
     label: string;
@@ -122,8 +126,25 @@
 
 {#if isActive}
   <div
-    class="flex flex-col gap-3 p-3 rounded-lg bg-[#1a1a2e]/80 border border-[#ffffff15]"
+    class="flex flex-col gap-3 p-3 rounded-lg bg-[#1a1a2e]/80 border border-[#ffffff15] relative overflow-hidden"
   >
+    <!-- Confetti animation on delivery -->
+    {#if isDelivered}
+      <div class="confetti-container">
+        {#each Array(20) as _, i}
+          <div
+            class="confetti"
+            style="--delay: {i * 0.1}s; --x: {Math.random() * 100}%; --color: {[
+              '#10b981',
+              '#34d399',
+              '#6ee7b7',
+              '#fbbf24',
+              '#f59e0b',
+            ][i % 5]}"
+          ></div>
+        {/each}
+      </div>
+    {/if}
     <!-- Steps indicator -->
     <div class="flex items-center justify-between">
       {#each steps as step, i}
@@ -135,9 +156,9 @@
               'w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all',
               {
                 'bg-green-500/20 text-green-400 border border-green-500/50':
-                  state === 'completed',
+                  state === 'completed' || (i === 4 && isDelivered),
                 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50':
-                  state === 'active',
+                  state === 'active' && !(i === 4 && isDelivered),
                 'bg-gray-700/50 text-gray-500 border border-gray-600/30':
                   state === 'pending',
                 'bg-red-500/20 text-red-400 border border-red-500/50':
@@ -147,7 +168,7 @@
               },
             )}
           >
-            {#if state === 'completed'}
+            {#if state === 'completed' || (i === 4 && isDelivered)}
               ✓
             {:else if state === 'active'}
               <RotatingCoin />
@@ -162,8 +183,9 @@
           <!-- Step label -->
           <span
             class={cn('text-[10px] mt-1 text-center', {
-              'text-green-400': state === 'completed',
-              'text-cyan-400': state === 'active',
+              'text-green-400':
+                state === 'completed' || (i === 4 && isDelivered),
+              'text-cyan-400': state === 'active' && !(i === 4 && isDelivered),
               'text-gray-500': state === 'pending',
               'text-red-400': state === 'error',
               'text-yellow-400': state === 'timeout',
@@ -266,3 +288,39 @@
     {/if}
   </div>
 {/if}
+
+<style>
+  .confetti-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .confetti {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--color);
+    left: var(--x);
+    top: -10px;
+    border-radius: 2px;
+    animation: confetti-fall 2s ease-out forwards;
+    animation-delay: var(--delay);
+    opacity: 0;
+  }
+
+  @keyframes confetti-fall {
+    0% {
+      opacity: 1;
+      transform: translateY(0) rotate(0deg) scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(120px) rotate(720deg) scale(0.5);
+    }
+  }
+</style>
