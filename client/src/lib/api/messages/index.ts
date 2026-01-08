@@ -17,6 +17,8 @@ export interface SendMessageRequest {
   sender: string;
   recipient: string;
   content: string;
+  context_type?: string;
+  context_id?: string;
 }
 
 export interface SendMessageResponse {
@@ -33,6 +35,7 @@ export interface GetConversationsResponse {
 }
 
 export const GLOBAL_CHAT_ADDRESS = 'global';
+export const ACTIVITY_CONTEXT_TYPE = 'activity';
 
 export interface ErrorResponse {
   error: string;
@@ -47,6 +50,8 @@ export async function sendMessage(
   sender: string,
   recipient: string,
   content: string,
+  contextType?: string,
+  contextId?: string,
 ): Promise<SendMessageResponse> {
   const response = await fetch(BASE_URL, {
     method: 'POST',
@@ -57,6 +62,8 @@ export async function sendMessage(
       sender,
       recipient,
       content,
+      context_type: contextType,
+      context_id: contextId,
     } satisfies SendMessageRequest),
   });
 
@@ -168,6 +175,46 @@ export async function getGlobalMessages(
     const errorData = (await response.json()) as ErrorResponse;
     throw new Error(
       errorData.error || `Failed to get global messages: ${response.status}`,
+    );
+  }
+
+  const data = (await response.json()) as GetMessagesResponse;
+  return data.messages;
+}
+
+/**
+ * Get messages for a specific context (e.g., activity comments)
+ */
+export async function getContextMessages(
+  contextType: string,
+  contextId: string,
+  after?: string,
+  limit?: number,
+): Promise<Message[]> {
+  const params = new URLSearchParams({
+    context_type: contextType,
+    context_id: contextId,
+  });
+
+  if (after) {
+    params.set('after', after);
+  }
+
+  if (limit) {
+    params.set('limit', limit.toString());
+  }
+
+  const response = await fetch(`${BASE_URL}/context?${params}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = (await response.json()) as ErrorResponse;
+    throw new Error(
+      errorData.error || `Failed to get context messages: ${response.status}`,
     );
   }
 

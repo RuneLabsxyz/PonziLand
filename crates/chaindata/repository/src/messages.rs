@@ -22,24 +22,28 @@ impl MessagesRepository {
         sender: &str,
         recipient: &str,
         content: &str,
+        context_type: Option<&str>,
+        context_id: Option<&str>,
     ) -> Result<MessageModel, Error> {
         let result = sqlx::query_as::<_, MessageModel>(
             r#"
-            INSERT INTO messages (sender, recipient, content)
-            VALUES ($1, $2, $3)
-            RETURNING id, sender, recipient, content, created_at
+            INSERT INTO messages (sender, recipient, content, context_type, context_id)
+            VALUES ($1, $2, $3, $4, $5)
+            RETURNING id, sender, recipient, content, created_at, context_type, context_id
             "#,
         )
         .bind(sender)
         .bind(recipient)
         .bind(content)
+        .bind(context_type)
+        .bind(context_id)
         .fetch_one(&mut *(self.db.acquire().await?))
         .await?;
 
         Ok(result)
     }
 
-    /// Get messages between two addresses
+    /// Get messages between two addresses (DMs only, no context)
     ///
     /// # Errors
     /// Returns an error if the query fails
@@ -53,12 +57,13 @@ impl MessagesRepository {
         let messages = if let Some(after_ts) = after {
             sqlx::query_as::<_, MessageModel>(
                 r#"
-                SELECT id, sender, recipient, content, created_at
+                SELECT id, sender, recipient, content, created_at, context_type, context_id
                 FROM messages
                 WHERE (
                     (sender = $1 AND recipient = $2) OR
                     (sender = $2 AND recipient = $1)
                 )
+                AND context_type IS NULL
                 AND created_at > $3
                 ORDER BY created_at ASC
                 LIMIT $4
@@ -73,12 +78,13 @@ impl MessagesRepository {
         } else {
             sqlx::query_as::<_, MessageModel>(
                 r#"
-                SELECT id, sender, recipient, content, created_at
+                SELECT id, sender, recipient, content, created_at, context_type, context_id
                 FROM messages
                 WHERE (
                     (sender = $1 AND recipient = $2) OR
                     (sender = $2 AND recipient = $1)
                 )
+                AND context_type IS NULL
                 ORDER BY created_at DESC
                 LIMIT $3
                 "#,
@@ -102,7 +108,7 @@ impl MessagesRepository {
         address: &str,
     ) -> Result<Vec<ConversationSummary>, Error> {
         // This query finds the most recent message for each conversation partner
-        // Excludes global chat messages
+        // Excludes global chat messages and context messages
         let conversations = sqlx::query_as::<_, ConversationSummary>(
             r#"
             SELECT DISTINCT ON (
@@ -121,6 +127,7 @@ impl MessagesRepository {
             WHERE (sender = $1 OR recipient = $1)
               AND recipient != 'global'
               AND sender != 'global'
+              AND context_type IS NULL
             ORDER BY
                 CASE
                     WHEN sender = $1 THEN recipient
@@ -148,7 +155,7 @@ impl MessagesRepository {
         let messages = if let Some(after_ts) = after {
             sqlx::query_as::<_, MessageModel>(
                 r#"
-                SELECT id, sender, recipient, content, created_at
+                SELECT id, sender, recipient, content, created_at, context_type, context_id
                 FROM messages
                 WHERE recipient = 'global'
                 AND created_at > $1
@@ -163,13 +170,63 @@ impl MessagesRepository {
         } else {
             sqlx::query_as::<_, MessageModel>(
                 r#"
-                SELECT id, sender, recipient, content, created_at
+                SELECT id, sender, recipient, content, created_at, context_type, context_id
                 FROM messages
                 WHERE recipient = 'global'
                 ORDER BY created_at DESC
                 LIMIT $1
                 "#,
             )
+            .bind(limit)
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await?
+        };
+
+        Ok(messages)
+    }
+
+    /// Get messages for a specific context (e.g., activity comments)
+    ///
+    /// # Errors
+    /// Returns an error if the query fails
+    pub async fn get_context_messages(
+        &self,
+        context_type: &str,
+        context_id: &str,
+        after: Option<DateTime<Utc>>,
+        limit: i64,
+    ) -> Result<Vec<MessageModel>, Error> {
+        let messages = if let Some(after_ts) = after {
+            sqlx::query_as::<_, MessageModel>(
+                r#"
+                SELECT id, sender, recipient, content, created_at, context_type, context_id
+                FROM messages
+                WHERE context_type = $1
+                AND context_id = $2
+                AND created_at > $3
+                ORDER BY created_at ASC
+                LIMIT $4
+                "#,
+            )
+            .bind(context_type)
+            .bind(context_id)
+            .bind(after_ts)
+            .bind(limit)
+            .fetch_all(&mut *(self.db.acquire().await?))
+            .await?
+        } else {
+            sqlx::query_as::<_, MessageModel>(
+                r#"
+                SELECT id, sender, recipient, content, created_at, context_type, context_id
+                FROM messages
+                WHERE context_type = $1
+                AND context_id = $2
+                ORDER BY created_at DESC
+                LIMIT $3
+                "#,
+            )
+            .bind(context_type)
+            .bind(context_id)
             .bind(limit)
             .fetch_all(&mut *(self.db.acquire().await?))
             .await?
@@ -185,7 +242,7 @@ impl MessagesRepository {
     pub async fn get_message_by_id(&self, id: Uuid) -> Result<Option<MessageModel>, Error> {
         let message = sqlx::query_as::<_, MessageModel>(
             r#"
-            SELECT id, sender, recipient, content, created_at
+            SELECT id, sender, recipient, content, created_at, context_type, context_id
             FROM messages
             WHERE id = $1
             "#,
