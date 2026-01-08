@@ -2,10 +2,8 @@
   import { goto } from '$app/navigation';
   import accountDataProvider from '$lib/account.svelte';
 
-  import { Button } from '$lib/components/ui/button';
   import SelectWallet from '$lib/components/+game-ui/widgets/wallet/select-wallet.svelte';
   import { useAccount } from '$lib/contexts/account.svelte';
-  import { ENABLE_RAMP } from '$lib/flags';
 
   const accountManager = useAccount();
 
@@ -40,14 +38,4 @@
   <div class="mt-5 flex items-center justify-stretch w-full">
     <SelectWallet />
   </div>
-
-  {#if ENABLE_RAMP}
-    <div class="self-center text-xl font-bold mx-2">or</div>
-
-    <Button
-      onclick={() => {
-        goto('/ramp');
-      }}>Phantom</Button
-    >
-  {/if}
 </div>
