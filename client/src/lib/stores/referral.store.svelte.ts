@@ -1,12 +1,27 @@
 import { browser } from '$app/environment';
 import { PUBLIC_BRIDGE_API_URL } from '$env/static/public';
 
-const REFERRAL_STORAGE_KEY = 'ponziland_pending_referral';
+const REFERRAL_COOKIE_NAME = 'ponziland_referral';
 
 interface ReferralStats {
   pendingCount: number;
   completedCount: number;
   totalCount: number;
+}
+
+function getCookie(name: string): string | null {
+  if (!browser) return null;
+  const escaped = name.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+  const match = document.cookie.match(
+    new RegExp(`(?:^|;\\s*)${escaped}=([^;]*)`),
+  );
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function deleteCookie(name: string) {
+  if (!browser) return;
+  const secure = location.protocol === 'https:' ? '; Secure' : '';
+  document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax${secure}`;
 }
 
 class ReferralStore {
@@ -17,15 +32,16 @@ class ReferralStore {
   loading = $state(false);
   error = $state<string | null>(null);
 
-  // Lazy load from localStorage (constructor runs during SSR when browser=false)
   get pendingCode(): string | null {
     if (!this._initialized && browser) {
-      this._pendingCode = localStorage.getItem(REFERRAL_STORAGE_KEY);
+      this._pendingCode = getCookie(REFERRAL_COOKIE_NAME);
       this._initialized = true;
-      console.log(
-        '[Referral] Loaded pending code from storage:',
-        this._pendingCode,
-      );
+      if (this._pendingCode) {
+        console.log(
+          '[Referral] Loaded pending code from cookie:',
+          this._pendingCode,
+        );
+      }
     }
     return this._pendingCode;
   }
@@ -35,18 +51,9 @@ class ReferralStore {
     this._initialized = true;
   }
 
-  setPendingReferral(code: string) {
-    this.pendingCode = code.toUpperCase();
-    if (browser) {
-      localStorage.setItem(REFERRAL_STORAGE_KEY, this.pendingCode);
-    }
-  }
-
   clearPendingReferral() {
     this.pendingCode = null;
-    if (browser) {
-      localStorage.removeItem(REFERRAL_STORAGE_KEY);
-    }
+    deleteCookie(REFERRAL_COOKIE_NAME);
   }
 
   async fetchUserCode(address: string): Promise<string | null> {
