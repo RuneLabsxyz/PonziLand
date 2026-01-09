@@ -150,7 +150,7 @@ impl Repository {
         .map(|row| row.latest_time)
     }
 
-    pub async fn count_by_owner(&self, owner: &str) -> Result<OwnerStats, sqlx::Error> {
+    pub async fn get_owner_stats(&self, owner: &str) -> Result<OwnerStats, sqlx::Error> {
         query!(
             r#"
             SELECT COUNT(*) as count, MIN(time_bought) as first_activity

@@ -204,7 +204,7 @@ impl LandHistoricalRoute {
         let owner_lowercase = owner.to_lowercase();
 
         let stats = land_historical_repository
-            .count_by_owner(&owner_lowercase)
+            .get_owner_stats(&owner_lowercase)
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
