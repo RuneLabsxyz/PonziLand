@@ -1,7 +1,7 @@
 use axum::{
+    Json, Router,
     extract::{Path, Query, State},
     routing::get,
-    Json, Router,
 };
 use chaindata_repository::LandHistoricalRepository;
 use chrono::{Duration, Utc};
@@ -203,15 +203,15 @@ impl LandHistoricalRoute {
         // Convert address to lowercase for case-insensitive matching
         let owner_lowercase = owner.to_lowercase();
 
-        let (count, first_activity) = land_historical_repository
+        let stats = land_historical_repository
             .count_by_owner(&owner_lowercase)
             .await
             .map_err(|_| axum::http::StatusCode::INTERNAL_SERVER_ERROR)?;
 
         Ok(Json(serde_json::json!({
             "owner": owner,
-            "total_lands_owned": count,
-            "first_activity_at": first_activity
+            "total_lands_owned": stats.count,
+            "first_activity_at": stats.first_activity
         })))
     }
 

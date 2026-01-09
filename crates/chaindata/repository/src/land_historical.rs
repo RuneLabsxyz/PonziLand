@@ -9,6 +9,12 @@ use serde_json;
 use sqlx::{query, query_as};
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
+pub struct OwnerStats {
+    pub count: i64,
+    pub first_activity: Option<NaiveDateTime>,
+}
+
 /// Repository for managing land historical records
 pub struct Repository {
     db: Database,
@@ -144,10 +150,7 @@ impl Repository {
         .map(|row| row.latest_time)
     }
 
-    pub async fn count_by_owner(
-        &self,
-        owner: &str,
-    ) -> Result<(i64, Option<NaiveDateTime>), sqlx::Error> {
+    pub async fn count_by_owner(&self, owner: &str) -> Result<OwnerStats, sqlx::Error> {
         query!(
             r#"
             SELECT COUNT(*) as count, MIN(time_bought) as first_activity
@@ -158,7 +161,10 @@ impl Repository {
         )
         .fetch_one(&mut *(self.db.acquire().await?))
         .await
-        .map(|row| (row.count.unwrap_or(0), row.first_activity))
+        .map(|row| OwnerStats {
+            count: row.count.unwrap_or(0),
+            first_activity: row.first_activity,
+        })
     }
 
     /// Closes all open positions for a land location with the given reason
