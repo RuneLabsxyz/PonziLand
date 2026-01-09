@@ -5,7 +5,6 @@ use chaindata_models::{
 };
 use chrono::NaiveDateTime;
 use ponziland_models::models::CloseReason;
-use serde_json;
 use sqlx::{query, query_as};
 use std::collections::HashMap;
 
@@ -13,6 +12,12 @@ use std::collections::HashMap;
 pub struct OwnerStats {
     pub count: i64,
     pub first_activity: Option<NaiveDateTime>,
+
+#[derive(Debug, Clone)]
+pub struct AuctionSpendSummary {
+    pub auction_count: i64,
+    pub total_spend: String,
+    pub latest_time_bought: Option<NaiveDateTime>,
 }
 
 /// Repository for managing land historical records
@@ -164,6 +169,38 @@ impl Repository {
         .map(|row| OwnerStats {
             count: row.count.unwrap_or(0),
             first_activity: row.first_activity,
+        })
+    }
+
+    /// Gets total auction spend (buy_token_used IS NULL) for an owner within a time range
+    pub async fn get_auction_spend_by_owner(
+        &self,
+        owner: &str,
+        start_time: NaiveDateTime,
+        end_time: NaiveDateTime,
+    ) -> Result<AuctionSpendSummary, sqlx::Error> {
+        query!(
+            r#"
+            SELECT
+                COUNT(*) as auction_count,
+                COALESCE(SUM(CAST(buy_cost_token AS NUMERIC)), 0)::TEXT as total_spend,
+                MAX(time_bought) as latest_time_bought
+            FROM land_historical
+            WHERE owner = $1
+              AND buy_token_used IS NULL
+              AND time_bought >= $2
+              AND time_bought < $3
+            "#,
+            owner,
+            start_time,
+            end_time
+        )
+        .fetch_one(&mut *(self.db.acquire().await?))
+        .await
+        .map(|row| AuctionSpendSummary {
+            auction_count: row.auction_count.unwrap_or(0),
+            total_spend: row.total_spend.unwrap_or_else(|| "0".to_string()),
+            latest_time_bought: row.latest_time_bought,
         })
     }
 
