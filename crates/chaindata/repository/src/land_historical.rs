@@ -12,6 +12,7 @@ use std::collections::HashMap;
 pub struct OwnerStats {
     pub count: i64,
     pub first_activity: Option<NaiveDateTime>,
+}
 
 #[derive(Debug, Clone)]
 pub struct AuctionSpendSummary {
