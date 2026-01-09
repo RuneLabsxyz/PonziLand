@@ -66,8 +66,8 @@ import { PUBLIC_POSTHOG_KEY } from '$env/static/public';
 
 const client = PUBLIC_POSTHOG_KEY
   ? new PostHog(PUBLIC_POSTHOG_KEY, {
-      host: 'https://eu.i.posthog.com',
-    })
+    host: 'https://eu.i.posthog.com',
+  })
   : null;
 
 export const handleError: HandleServerError = async ({ error, status }) => {
@@ -78,8 +78,6 @@ export const handleError: HandleServerError = async ({ error, status }) => {
 };
 
 export const handle: Handle = async ({ event, resolve }) => {
-  // Bypass all this trickery if the bypass token is set to '' (default), or if we're building
-  // Or if we are after the DATE_GATE
   if (building) {
     return await resolve(event);
   }

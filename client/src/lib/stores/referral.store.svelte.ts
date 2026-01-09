@@ -1,7 +1,6 @@
 import { browser } from '$app/environment';
 import { PUBLIC_BRIDGE_API_URL } from '$env/static/public';
-
-const REFERRAL_COOKIE_NAME = 'ponziland_referral';
+import { REFERRAL_COOKIE_NAME } from '$lib/const';
 
 interface ReferralStats {
   pendingCount: number;

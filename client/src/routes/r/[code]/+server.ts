@@ -1,8 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-
-const REFERRAL_COOKIE_NAME = 'ponziland_referral';
-const REFERRAL_CODE_REGEX = /^[A-Z0-9]{6}$/i;
+import { REFERRAL_COOKIE_NAME, REFERRAL_CODE_REGEX } from '$lib/const';
 
 export const GET: RequestHandler = ({ params, cookies, url }) => {
   const raw = params.code ?? '';
