@@ -144,11 +144,13 @@ impl Repository {
         .map(|row| row.latest_time)
     }
 
-    /// Gets total count of positions for an owner
-    pub async fn count_by_owner(&self, owner: &str) -> Result<i64, sqlx::Error> {
+    pub async fn count_by_owner(
+        &self,
+        owner: &str,
+    ) -> Result<(i64, Option<NaiveDateTime>), sqlx::Error> {
         query!(
             r#"
-            SELECT COUNT(*) as count
+            SELECT COUNT(*) as count, MIN(time_bought) as first_activity
             FROM land_historical
             WHERE owner = $1
             "#,
@@ -156,7 +158,7 @@ impl Repository {
         )
         .fetch_one(&mut *(self.db.acquire().await?))
         .await
-        .map(|row| row.count.unwrap_or(0))
+        .map(|row| (row.count.unwrap_or(0), row.first_activity))
     }
 
     /// Closes all open positions for a land location with the given reason

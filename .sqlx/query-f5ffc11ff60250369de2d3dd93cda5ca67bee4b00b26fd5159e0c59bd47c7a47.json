@@ -1,0 +1,28 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT COUNT(*) as count, MIN(time_bought) as first_activity\n            FROM land_historical\n            WHERE owner = $1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "count",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 1,
+        "name": "first_activity",
+        "type_info": "Timestamp"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text"
+      ]
+    },
+    "nullable": [
+      null,
+      null
+    ]
+  },
+  "hash": "f5ffc11ff60250369de2d3dd93cda5ca67bee4b00b26fd5159e0c59bd47c7a47"
+}
