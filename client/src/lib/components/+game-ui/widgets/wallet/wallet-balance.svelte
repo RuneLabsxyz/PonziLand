@@ -277,52 +277,14 @@
   {/if}
 </div>
 
-<!-- Staked in Lands section -->
-<div class="flex items-center border-t border-gray-700 mt-2 gap-2 p-2">
-  <span class="font-ponzi-number">
-    Staked
-    <InfoTooltip text="Total tokens locked as stakes across your lands" />
-  </span>
-
-  <div class="flex flex-1 items-center gap-2 justify-end select-text"></div>
-  {#if totalStakedUsd && baseToken}
-    <div
-      class="font-ponzi-number px-1 rounded flex items-center gap-1"
-      title="Total staked value in USDC"
-    >
-      <div class="font-ponzi-number">
-        {totalStakedUsd.toString()}
-      </div>
-      <TokenAvatar token={baseToken} class="h-6 w-6" />
-    </div>
-  {:else}
-    <div class="font-ponzi-number text-gray-500">$0</div>
-  {/if}
-</div>
-
-<!-- Staked tokens breakdown -->
-{#if stakedByToken.size > 0}
-  <div class="flex flex-col gap-1 px-2 py-1 border-t border-gray-700/50">
-    {#each [...stakedByToken.entries()] as [tokenAddress, { token, amount }]}
-      {@const convertedAmount = walletStore.convertTokenAmount(
-        amount,
-        token,
-        baseToken!,
-      )}
-      <div class="flex items-center gap-2 text-sm">
-        <TokenAvatar {token} class="h-5 w-5" />
-        <span class="font-ponzi-number">{amount.toString()}</span>
-        {#if convertedAmount && baseToken}
-          <span class="text-gray-400 text-xs ml-auto">
-            ≈ {convertedAmount.toString()}
-            <TokenAvatar
-              token={baseToken}
-              class="h-4 w-4 inline-block ml-0.5"
-            />
-          </span>
-        {/if}
-      </div>
-    {/each}
+<!-- Staked amount (smaller, below balance) -->
+{#if totalStakedUsd && baseToken}
+  <div class="flex items-center justify-end gap-1 px-2 -mt-1 mb-1">
+    <span class="text-xs text-gray-400">Staked:</span>
+    <span class="text-xs font-ponzi-number text-gray-400">
+      {totalStakedUsd.toString()}
+    </span>
+    <TokenAvatar token={baseToken} class="h-4 w-4 opacity-50" />
   </div>
 {/if}
 
