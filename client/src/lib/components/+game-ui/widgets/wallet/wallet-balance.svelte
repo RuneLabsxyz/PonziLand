@@ -17,6 +17,7 @@
   import { BuildingLand } from '$lib/api/land/building_land';
   import type { Token } from '$lib/interfaces';
   import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { get } from 'svelte/store';
 
   let {
     setCustomControls,
@@ -144,12 +145,15 @@
 
   // Calculate staked amounts from owned lands
   const stakedByToken = $derived.by(() => {
-    const stakeMap = new Map<string, { token: Token; amount: CurrencyAmount }>();
+    const stakeMap = new Map<
+      string,
+      { token: Token; amount: CurrencyAmount }
+    >();
 
     if (!address) return stakeMap;
 
     const normalizedAddress = padAddress(address);
-    const allLands = landStore.getAllLands();
+    const allLands = get(landStore.getAllLands());
 
     for (const land of allLands) {
       if (!BuildingLand.is(land)) continue;
@@ -181,7 +185,11 @@
     let total = CurrencyAmount.fromScaled(0, baseToken);
 
     for (const [, { token, amount }] of stakedByToken) {
-      const converted = walletStore.convertTokenAmount(amount, token, baseToken);
+      const converted = walletStore.convertTokenAmount(
+        amount,
+        token,
+        baseToken,
+      );
       if (converted) {
         total = total.add(converted);
       }
@@ -307,7 +315,10 @@
         {#if convertedAmount && baseToken}
           <span class="text-gray-400 text-xs ml-auto">
             ≈ {convertedAmount.toString()}
-            <TokenAvatar token={baseToken} class="h-4 w-4 inline-block ml-0.5" />
+            <TokenAvatar
+              token={baseToken}
+              class="h-4 w-4 inline-block ml-0.5"
+            />
           </span>
         {/if}
       </div>
