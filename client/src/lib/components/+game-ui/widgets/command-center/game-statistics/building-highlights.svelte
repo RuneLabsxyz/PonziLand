@@ -31,6 +31,10 @@
     earnings: number;
     costs: number;
     net: number;
+    totalStaked: CurrencyAmount;
+    totalStakedUsd: number;
+    totalSellValue: CurrencyAmount;
+    totalSellValueUsd: number;
   }
 
   let statsPromise = $state<Promise<TokenStats[]> | null>(null);
@@ -74,6 +78,10 @@
         const token = tokenLands[0].token!;
         let totalEarnings = 0;
         let totalCosts = 0;
+        let totalStaked = CurrencyAmount.fromScaled(0, token);
+        let totalStakedUsd = 0;
+        let totalSellValue = CurrencyAmount.fromScaled(0, token);
+        let totalSellValueUsd = 0;
 
         for (const land of tokenLands) {
           try {
@@ -128,6 +136,31 @@
                 totalCosts += Number(convertedBurnRate.rawValue());
               }
             }
+
+            // Calculate staked and sell values
+            if (land.stakeAmount && tokenForCalc) {
+              totalStaked = totalStaked.add(land.stakeAmount);
+              const stakedUsd = walletStore.convertTokenAmount(
+                land.stakeAmount,
+                token,
+                tokenForCalc,
+              );
+              if (stakedUsd) {
+                totalStakedUsd += Number(stakedUsd.rawValue());
+              }
+            }
+
+            if (land.sellPrice && tokenForCalc) {
+              totalSellValue = totalSellValue.add(land.sellPrice);
+              const sellUsd = walletStore.convertTokenAmount(
+                land.sellPrice,
+                token,
+                tokenForCalc,
+              );
+              if (sellUsd) {
+                totalSellValueUsd += Number(sellUsd.rawValue());
+              }
+            }
           } catch (error) {
             console.error('Error calculating stats for land:', error);
           }
@@ -139,6 +172,10 @@
           earnings: totalEarnings * 24,
           costs: totalCosts * 24,
           net: (totalEarnings - totalCosts) * 24,
+          totalStaked,
+          totalStakedUsd,
+          totalSellValue,
+          totalSellValueUsd,
         };
       }),
     ).then((results) => {
@@ -178,6 +215,30 @@
                     ? 's'
                     : ''}
                 </span>
+              </div>
+
+              <!-- Stake & Sell Value row -->
+              <div
+                class="flex justify-between text-xs mb-2 border-b border-gray-700/30 pb-2"
+              >
+                <div class="flex flex-col items-start">
+                  <span class="opacity-50">Staked</span>
+                  <span class="font-ponzi-number"
+                    >{stat.totalStaked.toString()}</span
+                  >
+                  <span class="text-gray-400 text-[10px]"
+                    >≈ {displayCurrency(stat.totalStakedUsd)} $</span
+                  >
+                </div>
+                <div class="flex flex-col items-end">
+                  <span class="opacity-50">Sell Value</span>
+                  <span class="font-ponzi-number"
+                    >{stat.totalSellValue.toString()}</span
+                  >
+                  <span class="text-gray-400 text-[10px]"
+                    >≈ {displayCurrency(stat.totalSellValueUsd)} $</span
+                  >
+                </div>
               </div>
 
               <!-- Stats row -->
