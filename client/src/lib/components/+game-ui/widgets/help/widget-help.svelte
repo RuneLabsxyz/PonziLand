@@ -127,10 +127,7 @@
                 value={`play.ponzi.land/r/${referralStore.userCode}`}
                 class="flex-1 bg-black/50 px-3 py-2 rounded text-sm font-mono text-white border border-yellow-500/20"
               />
-              <Button
-                size="sm"
-                onclick={() => copyReferralLink(referralStore.userCode!)}
-              >
+              <Button onclick={() => copyReferralLink(referralStore.userCode!)}>
                 {copied ? 'Copied!' : 'Copy'}
               </Button>
             </div>
@@ -152,7 +149,6 @@
                 </div>
               {:else}
                 <Button
-                  size="sm"
                   onclick={() => (referralCodePromise = fetchReferralCode())}
                 >
                   Retry
@@ -160,17 +156,13 @@
               {/if}
             {:catch}
               <Button
-                size="sm"
                 onclick={() => (referralCodePromise = fetchReferralCode())}
               >
                 Failed - Retry
               </Button>
             {/await}
           {:else}
-            <Button
-              size="sm"
-              onclick={() => (referralCodePromise = fetchReferralCode())}
-            >
+            <Button onclick={() => (referralCodePromise = fetchReferralCode())}>
               Get Referral Link
             </Button>
           {/if}
