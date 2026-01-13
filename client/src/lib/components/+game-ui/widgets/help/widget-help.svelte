@@ -1,41 +1,38 @@
-<script>
-  import { goto } from '$app/navigation';
+<script lang="ts">
   import { Button } from '$lib/components/ui/button';
   import ScrollArea from '$lib/components/ui/scroll-area/scroll-area.svelte';
   import WidgetSettings from '../settings/widget-settings.svelte';
-  import { PUBLIC_SOCIALINK_URL } from '$env/static/public';
   import accountData from '$lib/account.svelte';
+  import { referralStore } from '$lib/stores/referral.store.svelte';
+  import { onMount } from 'svelte';
 
-  let claimState = $state('idle');
+  let referralCodePromise = $state<Promise<string | null> | null>(null);
+  let copied = $state(false);
 
-  async function claimTokens() {
-    if (claimState === 'loading') return;
+  onMount(() => {
+    if (accountData.address) {
+      referralStore.fetchReferralStats(accountData.address);
+    }
+  });
 
-    claimState = 'loading';
+  async function fetchReferralCode(): Promise<string | null> {
+    if (!accountData.address) return null;
+    const code = await referralStore.fetchUserCode(accountData.address);
+    if (code) {
+      await referralStore.fetchReferralStats(accountData.address);
+    }
+    return code;
+  }
+
+  async function copyReferralLink(code: string) {
     try {
-      if (!accountData.address) {
-        throw new Error('No address found');
-      }
-      const response = await fetch(
-        `${PUBLIC_SOCIALINK_URL}/api/user/${accountData.address}/mint`,
-        {
-          method: 'POST',
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error('Failed to claim tokens');
-      }
-
-      claimState = 'success';
+      await navigator.clipboard.writeText(`https://play.ponzi.land/r/${code}`);
+      copied = true;
       setTimeout(() => {
-        claimState = 'idle';
+        copied = false;
       }, 2000);
-    } catch (error) {
-      claimState = 'error';
-      setTimeout(() => {
-        claimState = 'idle';
-      }, 2000);
+    } catch (e) {
+      console.error('Failed to copy:', e);
     }
   }
 </script>
@@ -61,21 +58,6 @@
           ><Button>Docs</Button></a
         >
       </div>
-      <!-- <Button
-        onclick={claimTokens}
-        disabled={claimState !== 'idle'}
-        class="relative"
-      >
-        {#if claimState === 'loading'}
-          Loading...
-        {:else if claimState === 'success'}
-          ✓ Claimed!
-        {:else if claimState === 'error'}
-          ✗ Failed
-        {:else}
-          No tokens? Claim here!
-        {/if}
-      </Button> -->
 
       <div class="flex justify-center gap-4 mt-2">
         <!-- svelte-ignore a11y_consider_explicit_label -->
@@ -103,6 +85,97 @@
           </svg>
         </a>
       </div>
+
+      {#if accountData.address}
+        <!-- Referral Stats Section -->
+        <div
+          class="p-4 mt-4 bg-black/30 rounded-lg border border-yellow-500/30"
+        >
+          <p class="text-sm font-bold text-yellow-400 mb-3">Your Referrals</p>
+          <div class="flex justify-around">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-yellow-300">
+                {referralStore.referralStats?.pendingCount ?? '-'}
+              </p>
+              <p class="text-xs text-gray-400">Pending</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-green-400">
+                {referralStore.referralStats?.completedCount ?? '-'}
+              </p>
+              <p class="text-xs text-gray-400">Completed</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-white">
+                {referralStore.referralStats?.totalCount ?? '-'}
+              </p>
+              <p class="text-xs text-gray-400">Total</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invite Link Section -->
+        <div
+          class="flex flex-col gap-2 p-4 bg-black/30 rounded-lg border border-yellow-500/30"
+        >
+          <p class="text-sm font-bold text-yellow-400">Invite Friends:</p>
+          {#if referralStore.userCode}
+            <div class="flex gap-2 items-center">
+              <input
+                type="text"
+                readonly
+                value={`play.ponzi.land/r/${referralStore.userCode}`}
+                class="flex-1 bg-black/50 px-3 py-2 rounded text-sm font-mono text-white border border-yellow-500/20"
+              />
+              <Button
+                size="sm"
+                onclick={() => copyReferralLink(referralStore.userCode!)}
+              >
+                {copied ? 'Copied!' : 'Copy'}
+              </Button>
+            </div>
+          {:else if referralCodePromise}
+            {#await referralCodePromise}
+              <Button size="sm" disabled>Loading...</Button>
+            {:then code}
+              {#if code}
+                <div class="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    readonly
+                    value={`play.ponzi.land/r/${code}`}
+                    class="flex-1 bg-black/50 px-3 py-2 rounded text-sm font-mono text-white border border-yellow-500/20"
+                  />
+                  <Button size="sm" onclick={() => copyReferralLink(code)}>
+                    {copied ? 'Copied!' : 'Copy'}
+                  </Button>
+                </div>
+              {:else}
+                <Button
+                  size="sm"
+                  onclick={() => (referralCodePromise = fetchReferralCode())}
+                >
+                  Retry
+                </Button>
+              {/if}
+            {:catch}
+              <Button
+                size="sm"
+                onclick={() => (referralCodePromise = fetchReferralCode())}
+              >
+                Failed - Retry
+              </Button>
+            {/await}
+          {:else}
+            <Button
+              size="sm"
+              onclick={() => (referralCodePromise = fetchReferralCode())}
+            >
+              Get Referral Link
+            </Button>
+          {/if}
+        </div>
+      {/if}
     </div>
 
     <WidgetSettings />
