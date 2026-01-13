@@ -23,3 +23,7 @@ export const AI_AGENT_ADDRESSES = data.aiAgents.map(
 
 //TODO: to regulate the size of the map we have to use the MAX_CIRCLE CONST
 export const GRID_SIZE = 256;
+
+// Referral system constants
+export const REFERRAL_COOKIE_NAME = 'ponziland_referral';
+export const REFERRAL_CODE_REGEX = /^[A-Z0-9]{6}$/i;
