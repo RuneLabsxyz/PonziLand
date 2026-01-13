@@ -4,13 +4,23 @@ use axum::{
     Json, Router,
 };
 use chaindata_repository::LandHistoricalRepository;
-use chrono::{Duration, Utc};
+use chrono::{Duration, NaiveDateTime, Utc};
 use ponziland_models::models::CloseReason;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::state::AppState;
+
+fn deserialize_datetime<'de, D>(deserializer: D) -> Result<NaiveDateTime, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s: String = serde::Deserialize::deserialize(deserializer)?;
+    NaiveDateTime::parse_from_str(&s, "%Y-%m-%dT%H:%M:%S")
+        .or_else(|_| chrono::DateTime::parse_from_rfc3339(&s).map(|dt| dt.naive_utc()))
+        .map_err(serde::de::Error::custom)
+}
 
 fn deserialize_optional_datetime<'de, D>(
     deserializer: D,
@@ -87,6 +97,26 @@ pub struct LeaderboardResponse {
     pub since: String,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct AuctionSpendQuery {
+    /// Buyer wallet address (required)
+    pub owner: String,
+    /// Start of time range (required, ISO8601)
+    #[serde(deserialize_with = "deserialize_datetime")]
+    pub start_time: NaiveDateTime,
+    /// End of time range (required, ISO8601)
+    #[serde(deserialize_with = "deserialize_datetime")]
+    pub end_time: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize)]
+pub struct AuctionSpendResponse {
+    pub owner: String,
+    pub total_strk_spend: String,
+    pub auction_count: i64,
+    pub latest_time_bought: Option<String>,
+}
+
 pub struct LandHistoricalRoute;
 
 impl Default for LandHistoricalRoute {
@@ -104,6 +134,7 @@ impl LandHistoricalRoute {
     pub fn router(self) -> Router<AppState> {
         Router::new()
             .route("/leaderboard", get(Self::get_leaderboard))
+            .route("/auction-spend", get(Self::get_auction_spend))
             .route("/{owner}", get(Self::get_positions_by_owner))
             .route("/{owner}/count", get(Self::get_position_count))
     }
@@ -213,6 +244,28 @@ impl LandHistoricalRoute {
             "total_lands_owned": stats.count,
             "first_activity_at": stats.first_activity
         })))
+    }
+
+    async fn get_auction_spend(
+        Query(query): Query<AuctionSpendQuery>,
+        State(land_historical_repository): State<Arc<LandHistoricalRepository>>,
+    ) -> Result<Json<AuctionSpendResponse>, axum::http::StatusCode> {
+        let owner_lowercase = query.owner.to_lowercase();
+
+        let summary = land_historical_repository
+            .get_auction_spend_by_owner(&owner_lowercase, query.start_time, query.end_time)
+            .await
+            .map_err(|e| {
+                tracing::error!("Failed to get auction spend: {}", e);
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR
+            })?;
+
+        Ok(Json(AuctionSpendResponse {
+            owner: query.owner,
+            total_strk_spend: summary.total_spend,
+            auction_count: summary.auction_count,
+            latest_time_bought: summary.latest_time_bought.map(|dt| dt.to_string()),
+        }))
     }
 
     async fn get_leaderboard(

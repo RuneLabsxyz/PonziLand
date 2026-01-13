@@ -12,7 +12,7 @@ pub type Database = sqlx::PgPool;
 pub use error::Error;
 pub use event::Repository as EventRepository;
 pub use land::Repository as LandRepository;
-pub use land_historical::Repository as LandHistoricalRepository;
+pub use land_historical::{AuctionSpendSummary, Repository as LandHistoricalRepository};
 pub use land_stake::Repository as LandStakeRepository;
 pub use price_feed::PriceFeedRepository;
 pub use wallet_activity::WalletActivityRepository;
