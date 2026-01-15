@@ -19,3 +19,4 @@ deployment
 # Database
 data/
 node_modules/
+.turbo
