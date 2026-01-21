@@ -82,10 +82,13 @@ class WelcomeModalStore {
         console.log(
           '[WelcomeModalStore] Wallet has activity, not showing modal',
         );
+        // Mark as seen so we don't check again (prevents infinite loop)
+        this.markAsSeen();
       }
     } catch (error) {
       console.error('[WelcomeModalStore] Error in checkAndShowModal:', error);
-      // Fail-safe: don't show modal on errors
+      // Fail-safe: don't show modal on errors, and mark as seen to prevent infinite loop
+      this.markAsSeen();
     } finally {
       this._isChecking = false;
     }
