@@ -45,9 +45,7 @@
       <!-- Action Buttons -->
       <div class="flex gap-4 w-full">
         <Button onclick={handleTutorial} class="flex-1">Start Tutorial</Button>
-        <Button variant="secondary" onclick={handleSkip} class="flex-1"
-          >Skip for now</Button
-        >
+        <Button onclick={handleSkip} class="flex-1">Skip for now</Button>
       </div>
     </div>
   </Card>
