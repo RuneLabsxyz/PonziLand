@@ -48,12 +48,14 @@
       <p class="text-center font-bold text-sm md:text-base">
         HAHA! Still confused?
         <br />
-        <!-- Let me guide you through the depths of deception in my tutorial, -->
+        Let me guide you through the depths of deception in my tutorial,
         <br />
-        brave the forbidden scrolls of knowledge in the documentation!
+        or brave the forbidden scrolls of knowledge in the documentation!
       </p>
       <div class="flex justify-center gap-4">
-        <!-- <Button onclick={() => goto('/tutorial')}>Tutorial</Button> -->
+        <Button onclick={() => (window.location.href = '/tutorial')}
+          >Tutorial</Button
+        >
         <a href="https://docs.ponzi.land" target="_blank"
           ><Button>Docs</Button></a
         >
