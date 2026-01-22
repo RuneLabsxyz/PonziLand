@@ -6,7 +6,10 @@
   import GameUi from '$lib/components/+game-ui/game-ui.svelte';
   import GameCanva from '$lib/components/+game-map/game-canva.svelte';
   import SwitchChainModal from '$lib/components/+game-ui/modals/SwitchChainModal.svelte';
+  import WelcomeModal from '$lib/components/+game-ui/modals/WelcomeModal.svelte';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
+  import { welcomeModalStore } from '$lib/stores/welcome-modal.store.svelte';
+  import accountState from '$lib/account.svelte';
   import type { PageData } from './$types';
 
   let webglShow = $derived(webGLStateStore.hasError);
@@ -17,6 +20,29 @@
   let gameContentReady = $derived(
     !loading && loadingStore.phases.dojo.items['dojo-init'],
   );
+
+  // Check for first-time player and show welcome modal
+  $effect(() => {
+    console.log('[WelcomeModal] Effect triggered', {
+      gameContentReady,
+      isConnected: accountState.isConnected,
+      address: accountState.address,
+      isChecking: welcomeModalStore.isChecking,
+    });
+
+    if (
+      gameContentReady &&
+      accountState.isConnected &&
+      accountState.address &&
+      !welcomeModalStore.isChecking
+    ) {
+      console.log(
+        '[WelcomeModal] Calling checkAndShowModal with address:',
+        accountState.address,
+      );
+      welcomeModalStore.checkAndShowModal(accountState.address);
+    }
+  });
 
   onMount(async () => {
     // Initialize WebGL first
@@ -35,6 +61,7 @@
   {#if !webglShow && gameContentReady}
     <div class="absolute inset-0">
       <SwitchChainModal />
+      <WelcomeModal />
       <GameUi />
       <GameCanva />
     </div>
