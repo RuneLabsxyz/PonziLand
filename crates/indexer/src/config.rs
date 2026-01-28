@@ -71,6 +71,8 @@ pub struct EkuboConfig {
     pub api_url: Url,
     #[config(env = "EKUBO_CORE_CONTRACT_ADDRESS")]
     pub core_contract_address: Felt,
+    #[config(env = "EKUBO_CHAIN_ID")]
+    pub chain_id: String,
 }
 
 #[derive(Config, Debug, Clone)]

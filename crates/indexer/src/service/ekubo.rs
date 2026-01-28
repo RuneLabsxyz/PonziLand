@@ -63,6 +63,7 @@ impl EkuboService {
                 config.ekubo.core_contract_address,
                 rpc_client,
                 config.ekubo.api_url.to_string(),
+                config.ekubo.chain_id.clone(),
             ),
         });
 

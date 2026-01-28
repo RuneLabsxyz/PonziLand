@@ -26,7 +26,8 @@ world_address = "0x59713eb00142d15a502824739e5f3b9a81a808c0e660875ff1ae199b533a6
 torii_url = "https://api.cartridge.gg/x/ponziland-mainnet-world-new/torii"
 
 [ekubo]
-api_url = "https://starknet-mainnet-api.ekubo.org"
+api_url = "https://prod-api.ekubo.org"
+chain_id = "23448594291968334" # SN_MAIN
 core_contract_address = "0x00000005dd3D2F4429AF886cD1a3b08289DBcEa99A294197E9eB43b0e0325b4b"
 
 [starknet]
