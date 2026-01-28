@@ -22,7 +22,8 @@ jobs:
       - id: setup-dojo
         uses: runelabsxyz/setup-dojo@main
         with:
-          version: "1.7.0-alpha.2"
+          version: "1.8.0"
+          scarb-version: "2.13.1"
 
       - name: Build contract
         working-directory: ./contracts

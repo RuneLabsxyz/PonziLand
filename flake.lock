@@ -8,11 +8,11 @@
         "oxalica": "oxalica"
       },
       "locked": {
-        "lastModified": 1759911979,
-        "narHash": "sha256-g0zeoZTMm0CG596wvuxdzu6ueUbd+tFoEPoz2nAU2/M=",
+        "lastModified": 1768929278,
+        "narHash": "sha256-AvvxB99QvMSV16WrPsuGdhVOv+lW83pRhdO7KGY+nXY=",
         "owner": "knownasred",
         "repo": "cairo-nix",
-        "rev": "e0be603e458472c67e6b5e973e833eee7d1c3fe7",
+        "rev": "57d34bf60a15ea3ab24150acc95b7675011bbee6",
         "type": "github"
       },
       "original": {
@@ -38,7 +38,9 @@
     },
     "fenix": {
       "inputs": {
-        "nixpkgs": ["nixpkgs"],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
         "rust-analyzer-src": "rust-analyzer-src"
       },
       "locked": {
@@ -73,7 +75,9 @@
     },
     "flake-parts": {
       "inputs": {
-        "nixpkgs-lib": ["nixpkgs"]
+        "nixpkgs-lib": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1760948891,
@@ -111,7 +115,9 @@
       "inputs": {
         "flake-compat": "flake-compat",
         "gitignore": "gitignore",
-        "nixpkgs": ["nixpkgs"]
+        "nixpkgs": [
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1760663237,
@@ -129,7 +135,10 @@
     },
     "gitignore": {
       "inputs": {
-        "nixpkgs": ["git-hooks", "nixpkgs"]
+        "nixpkgs": [
+          "git-hooks",
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1709087332,
@@ -179,7 +188,10 @@
     },
     "oxalica": {
       "inputs": {
-        "nixpkgs": ["cairo-nix", "nixpkgs"]
+        "nixpkgs": [
+          "cairo-nix",
+          "nixpkgs"
+        ]
       },
       "locked": {
         "lastModified": 1757298987,

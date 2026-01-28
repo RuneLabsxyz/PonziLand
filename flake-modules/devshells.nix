@@ -58,8 +58,8 @@
           gcc
 
           # Cairo/Starknet tools (linux only atm)
-          cairo-nix.dojo
-          cairo-nix.scarb-nightly
+          cairo-nix.sozo
+          cairo-nix.scarb
           cairo-nix.starkli
           cairo-nix.slot
         ]);

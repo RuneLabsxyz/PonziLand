@@ -1,9 +1,10 @@
 mod setup {
     // Core Cairo imports
     use core::serde::Serde;
-
     // Dojo imports
-    use dojo::world::{IWorldDispatcher, IWorldDispatcherTrait, WorldStorage, WorldStorageTrait};
+    use dojo::world::{
+        IWorldDispatcher, IWorldDispatcherTrait, WorldStorage, WorldStorageTrait, world,
+    };
     use dojo_cairo_test::{
         ContractDef, ContractDefTrait, NamespaceDef, TestResource, WorldStorageTestTrait,
         spawn_test_world,
@@ -80,7 +81,7 @@ mod setup {
         );
 
         //
-        let mut world = spawn_test_world([ndef].span());
+        let mut world = spawn_test_world(world::TEST_CLASS_HASH, [ndef].span());
         world.sync_perms_and_inits(cdf);
 
         let (config_contract_address, _) = world.dns(@"config").unwrap();
