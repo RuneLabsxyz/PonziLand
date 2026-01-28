@@ -33,18 +33,25 @@ where
     // Allows to pass a reqwest client if needed
     http_client: Arc<ReqwestClient>,
     ekubo_api: String,
+    chain_id: String,
 }
 
 impl<Client> EkuboClient<Client>
 where
     Client: starknet::providers::Provider + Send + Sync + std::fmt::Debug,
 {
-    pub fn new(contract_address: Felt, rpc_client: Client, ekubo_api: String) -> Self {
+    pub fn new(
+        contract_address: Felt,
+        rpc_client: Client,
+        ekubo_api: String,
+        chain_id: String,
+    ) -> Self {
         Self {
             contract_address,
             rpc_client,
             http_client: Arc::new(ReqwestClient::new()),
             ekubo_api,
+            chain_id,
         }
     }
 
@@ -56,6 +63,7 @@ where
         Ok(get_all_pools(
             &self.http_client,
             &self.ekubo_api,
+            &self.chain_id,
             &token0.to_fixed_hex_string(),
             &token1.to_fixed_hex_string(),
         )

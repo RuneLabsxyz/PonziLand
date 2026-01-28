@@ -14,6 +14,9 @@ const eSTRK: Felt = Felt::from_hex_unchecked(
     "0x071de745c1ae996cfd39fb292b4342b7c086622e3ecf3a5692bd623060ff3fa0", // This is eSTRK
 );
 
+// Starknet Sepolia chain ID
+const CHAIN_ID: &str = "23448594291968334";
+
 #[tokio::main]
 pub async fn main() {
     let client = JsonRpcClient::new(HttpTransport::new(
@@ -23,7 +26,8 @@ pub async fn main() {
         Felt::from_hex("0x0444a09d96389aa7148f1aada508e30b71299ffe650d9c97fdaae38cb9a23384")
             .unwrap(),
         &client,
-        "https://starknet-sepolia-api.ekubo.org".to_string(),
+        "https://prod-api.ekubo.org".to_string(),
+        CHAIN_ID.to_string(),
     );
 
     // Find the best pool for the pair
