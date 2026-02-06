@@ -4,11 +4,13 @@ import type { Token } from '$lib/interfaces';
 import { configValues } from '$lib/stores/config.store.svelte';
 import {
   executeSwap,
+  fetchBuildExecuteTransaction,
   fetchQuotes,
   type ExecuteSwapOptions,
   type Quote,
   type QuoteRequest,
 } from '@avnu/avnu-sdk';
+import type { Call } from 'starknet';
 import type { CurrencyAmount } from './CurrencyAmount';
 
 export type BaseQuoteParams = {
@@ -80,6 +82,21 @@ export function useAvnu() {
         executeOptions,
         options,
       );
+    },
+    async buildSwapCalls(
+      quote: Quote,
+      takerAddress: string,
+      slippage: number = 0.01,
+      includeApprove: boolean = true,
+    ): Promise<Call[]> {
+      const result = await fetchBuildExecuteTransaction(
+        quote.quoteId,
+        takerAddress,
+        slippage,
+        includeApprove,
+        options,
+      );
+      return result.calls;
     },
     async fetchSwapPrice(params: SwapPriceParams): Promise<SwapPriceResponse> {
       try {

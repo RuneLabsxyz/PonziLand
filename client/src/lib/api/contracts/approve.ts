@@ -24,6 +24,7 @@ async function getApprove(
   data: ApprovalData[],
   spendingCall: DojoCall | Call,
   namespace: string = 'ponzi_land',
+  prefixCalls: Call[] = [],
 ): Promise<AllowArray<DojoCall | Call>> {
   let spendingContract;
 
@@ -48,7 +49,7 @@ async function getApprove(
     };
   });
 
-  return [...approvals, spendingCall];
+  return [...prefixCalls, ...approvals, spendingCall];
 }
 
 function max(a: bigint, b: bigint): bigint {
@@ -67,6 +68,7 @@ export async function wrappedActions(provider: DojoProvider) {
     /* Added parameters required for approval */
     buyingToken: string,
     currentPrice: BigNumberish,
+    swapCalls: Call[] = [],
   ) => {
     const approvals =
       buyingToken == tokenForSale
@@ -96,6 +98,8 @@ export async function wrappedActions(provider: DojoProvider) {
         sellPrice,
         amountToStake,
       ),
+      'ponzi_land',
+      swapCalls,
     );
 
     return await provider.execute(snAccount, calls, 'ponzi_land');
@@ -111,6 +115,7 @@ export async function wrappedActions(provider: DojoProvider) {
     /* Added arguments for approval */
     currentToken: string,
     buyPrice: BigNumberish,
+    swapCalls: Call[] = [],
   ) => {
     const approvals =
       currentToken == tokenForSale
@@ -141,6 +146,8 @@ export async function wrappedActions(provider: DojoProvider) {
           sellPrice,
           amountToStake,
         ),
+        'ponzi_land',
+        swapCalls,
       );
 
       return await provider.execute(snAccount, calls, 'ponzi_land');
