@@ -3,6 +3,7 @@
 const browser = typeof window !== 'undefined';
 import { accountConfig, configureAccount, type AccountConfig } from '../consts.js';
 import { ArgentXAccount } from '../wallets/argentx.js';
+import { NoSessionStarknetWallet } from '../wallets/getStarknet.js';
 import { setupController, SvelteController } from '../wallets/controller.js';
 import { Provider as StarknetProvider } from 'starknet';
 import getStarknet from '@starknet-io/get-starknet-core';
@@ -105,7 +106,7 @@ export async function Provider(
 			return new ArgentXAccount(wallet, accountConfig);
 		// NOTE: To add new providers, this is here.
 		default:
-			return null;
+			return new NoSessionStarknetWallet(wallet);
 	}
 }
 
