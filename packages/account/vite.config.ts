@@ -1,13 +1,13 @@
 import devtoolsJson from 'vite-plugin-devtools-json';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
-import UnoCSS from '@unocss/svelte-scoped/vite';
 
 export default defineConfig({
 	plugins: [
 		sveltekit(),
 		devtoolsJson()
 		/* Keeping source code here as we haven't migrated the UI package yet
+		import UnoCSS from '@unocss/svelte-scoped/vite';
 		UnoCSS({
 			onlyGlobal: true,
 			injectReset: '@unocss/reset/tailwind.css'
