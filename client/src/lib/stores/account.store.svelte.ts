@@ -42,6 +42,20 @@ class UsernamesStore {
     const paddedAddr = padAddress(address);
     return paddedAddr ? this.usernames[paddedAddr] : undefined;
   }
+
+  searchByUsername(
+    query: string,
+  ): Array<{ address: string; username: string }> {
+    if (!query || query.length < 2) return [];
+    const lowerQuery = query.toLowerCase();
+    return Object.entries(this.usernames)
+      .filter(
+        ([_, username]) =>
+          username && username.toLowerCase().includes(lowerQuery),
+      )
+      .map(([address, username]) => ({ address, username: username! }))
+      .slice(0, 5);
+  }
 }
 
 export const usernamesStore = new UsernamesStore();
