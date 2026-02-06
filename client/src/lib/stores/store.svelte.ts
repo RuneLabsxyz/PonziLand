@@ -8,6 +8,7 @@ import { Neighbors } from '$lib/api/neighbors';
 import { useDojo } from '$lib/contexts/dojo';
 import { parseDojoCall } from '@dojoengine/core';
 import { getManifest } from '$lib/manifest';
+import type { Call } from 'starknet';
 
 // Main stores following Dojo subscription pattern
 export let landStore = $state(new LandTileStore());
@@ -37,7 +38,11 @@ let selectedLandWithActionsState = $derived.by(() => {
   return { value: landWithActions };
 });
 
-export async function buyLand(location: string, setup: LandSetup) {
+export async function buyLand(
+  location: string,
+  setup: LandSetup,
+  swapCalls: Call[] = [],
+) {
   try {
     const { client: sdk, accountManager } = useDojo();
     const account = () => {
@@ -52,6 +57,7 @@ export async function buyLand(location: string, setup: LandSetup) {
       setup.amountToStake.toBignumberish(),
       setup.tokenAddress,
       setup.currentPrice!.toBignumberish(),
+      swapCalls,
     );
     return res;
   } catch (error) {
@@ -62,7 +68,11 @@ export async function buyLand(location: string, setup: LandSetup) {
   }
 }
 
-export async function bidLand(location: string, setup: LandSetup) {
+export async function bidLand(
+  location: string,
+  setup: LandSetup,
+  swapCalls: Call[] = [],
+) {
   try {
     const { client: sdk, accountManager } = useDojo();
     const account = () => {
@@ -80,6 +90,7 @@ export async function bidLand(location: string, setup: LandSetup) {
       setup.amountToStake.toBignumberish(),
       setup.tokenAddress,
       setup.currentPrice!.toBignumberish(),
+      swapCalls,
     );
     return res;
   } catch (error) {
