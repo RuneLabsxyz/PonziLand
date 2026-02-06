@@ -1,13 +1,13 @@
 {
 	"name": "@runelabsxyz/ponziland-account",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"repository": {
 		"url": "https://github.com/RuneLabsxyz/PonziLand",
 		"directory": "packages/account"
 	},
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build && npm run prepack",
+		"build": "npm run prepack",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"prepack": "svelte-kit sync && svelte-package && publint",
@@ -66,9 +66,6 @@
 		"@sveltejs/package": "^2.5.4",
 		"@sveltejs/vite-plugin-svelte": "^6.2.0",
 		"@types/node": "^22",
-		"@unocss/preset-wind3": "^66.5.4",
-		"@unocss/preset-wind4": "^66.5.4",
-		"@unocss/svelte-scoped": "^66.5.4",
 		"@vitest/browser": "^3.2.4",
 		"eslint": "^9.36.0",
 		"eslint-config-prettier": "^10.1.8",
@@ -82,7 +79,6 @@
 		"svelte-check": "^4.3.2",
 		"typescript": "^5.9.2",
 		"typescript-eslint": "^8.44.1",
-		"unocss": "^66.5.4",
 		"vite": "^7.1.7",
 		"vite-plugin-devtools-json": "^1.0.0",
 		"vitest": "^3.2.4",
