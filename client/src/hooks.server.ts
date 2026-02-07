@@ -89,6 +89,37 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   const BYPASS_TOKEN = env.BYPASS_TOKEN ?? '';
+  const hasBypassToken = BYPASS_TOKEN !== '';
+
+  const setBypassCookie = () => {
+    event.cookies.set('BypassToken', BYPASS_TOKEN, {
+      path: '/',
+      httpOnly: true,
+      secure: true,
+      sameSite: 'strict',
+      maxAge: 60 * 60 * 24 * 30, // 30 days
+    });
+  };
+
+  const queryToken = event.url.searchParams.get('token');
+  const cookieToken = event.cookies.get('BypassToken');
+
+  const hasValidBypass =
+    hasBypassToken &&
+    (queryToken === BYPASS_TOKEN || cookieToken === BYPASS_TOKEN);
+
+  if (queryToken === BYPASS_TOKEN && hasBypassToken) {
+    setBypassCookie();
+  }
+
+  // Force the drop dashboard to be private when a BYPASS_TOKEN is configured
+  if (
+    hasBypassToken &&
+    pathname.startsWith('/dashboard/drops') &&
+    !hasValidBypass
+  ) {
+    return redirect(302, '/maintenance');
+  }
 
   if (
     !isMaintenanceModeEnabled(BYPASS_TOKEN, new Date(), DATE_GATE, CLOSING_DATE)
@@ -100,19 +131,8 @@ export const handle: Handle = async ({ event, resolve }) => {
     return await resolve(event);
   }
 
-  if (event.url.searchParams.has('token')) {
-    const token = event.url.searchParams.get('token');
-    if (token === BYPASS_TOKEN) {
-      // Set the cookie
-      event.cookies.set('BypassToken', BYPASS_TOKEN, {
-        path: '/',
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 60 * 60 * 24 * 30, // 30 days
-      });
-      return await resolve(event);
-    }
+  if (hasValidBypass) {
+    return await resolve(event);
   }
 
   if (allowedUrls.includes(event.url.pathname)) {
@@ -121,10 +141,5 @@ export const handle: Handle = async ({ event, resolve }) => {
   }
 
   // For the others, check the cookies, and if we have the good value, resolve as normal. Otherwise redirect to /maintenance
-  const cookie = event.cookies.get('BypassToken');
-  if (cookie === BYPASS_TOKEN) {
-    return await resolve(event);
-  } else {
-    return redirect(302, '/maintenance');
-  }
+  return redirect(302, '/maintenance');
 };

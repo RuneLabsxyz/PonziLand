@@ -10,7 +10,8 @@ use axum::{
     Json, Router,
 };
 use chaindata_repository::{
-    LandHistoricalRepository, LandRepository, PriceFeedRepository, WalletActivityRepository,
+    DropLandQueriesRepository, LandHistoricalRepository, LandRepository, PriceFeedRepository,
+    WalletActivityRepository,
 };
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
@@ -120,6 +121,7 @@ async fn main() -> Result<()> {
     let land_historical_repository = Arc::new(LandHistoricalRepository::new(pool.clone()));
     let wallet_activity_repository = Arc::new(WalletActivityRepository::new(pool.clone()));
     let price_feed_repository = Arc::new(PriceFeedRepository::new(pool.clone()));
+    let drop_land_queries_repository = Arc::new(DropLandQueriesRepository::new(pool.clone()));
 
     // Start price feed service to record prices every minute
     let _price_feed_service = PriceFeedService::new(
@@ -131,16 +133,17 @@ async fn main() -> Result<()> {
     )
     .with_context(|| "Error while setting up price feed service")?;
 
-    let app_state = AppState {
-        token_service: token_service.clone(),
-        avnu_service: avnu.clone(),
-        ekubo_service: ekubo.clone(),
+    let app_state = AppState::new(
+        token_service.clone(),
+        avnu.clone(),
+        ekubo.clone(),
         land_repository,
         land_historical_repository,
         wallet_activity_repository,
         price_feed_repository,
-        drop_emitter_wallets: Arc::new(config.drop_emitter_wallets.clone()),
-    };
+        Arc::new(config.drop_emitter_wallets.clone()),
+        drop_land_queries_repository,
+    );
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
