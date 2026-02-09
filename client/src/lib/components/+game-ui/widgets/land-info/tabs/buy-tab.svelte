@@ -54,8 +54,11 @@
   } from '$lib/utils/swap-helper';
   import TokenAvatar from '$lib/components/ui/token-avatar/token-avatar.svelte';
   import { ScrollArea } from '$lib/components/ui/scroll-area';
-  import { Info } from 'lucide-svelte';
+  import { Info, ArrowRightLeft } from 'lucide-svelte';
   import { executeTransaction, type TokenDeduction } from '$lib/transactions';
+  import { useAvnu } from '$lib/utils/avnu.svelte';
+  import type { Quote } from '@avnu/avnu-sdk';
+  import type { Call } from 'starknet';
 
   // Delta values for sell price adjustment (additive)
   const SELL_PRICE_DELTAS = [-10, -5, -1, 1, 5, 10];
@@ -321,6 +324,139 @@
   });
   let loading = $state(false);
 
+  // --- Swap state ---
+  const avnu = useAvnu();
+  let swapSourceToken: Token | undefined = $state(undefined);
+  let swapQuote: Quote | null = $state(null);
+  let isLoadingQuote = $state(false);
+  let swapQuoteError: string | null = $state(null);
+
+  // Determine if the user needs a swap to afford the land's token price
+  let needsSwap = $derived.by(() => {
+    if (!land.token) return false;
+    const landPrice = land.type === 'auction' ? auctionPrice : land.sellPrice;
+    if (!landPrice) return false;
+    const userBalance = walletStore.getBalance(land.token.address);
+    if (!userBalance) return true;
+
+    // How much of the land token is needed for the purchase price
+    // If the selected stake token is the same as the land token, user also needs stake amount in that token
+    const selectedAddress = padAddress(selectedToken?.address ?? '');
+    const landTokenAddress = padAddress(land.token.address);
+
+    const needed =
+      selectedAddress === landTokenAddress
+        ? landPrice.add(stakeAmount) // same token: price + stake
+        : landPrice; // different token: just the price
+
+    return userBalance.rawValue().isLessThan(needed.rawValue());
+  });
+
+  // The deficit amount the user needs to swap (in the land's token)
+  let swapDeficitAmount = $derived.by(() => {
+    if (!needsSwap || !land.token) return null;
+    const landPrice = land.type === 'auction' ? auctionPrice : land.sellPrice;
+    if (!landPrice) return null;
+
+    const userBalance = walletStore.getBalance(land.token.address);
+    const selectedAddress = padAddress(selectedToken?.address ?? '');
+    const landTokenAddress = padAddress(land.token.address);
+
+    const needed =
+      selectedAddress === landTokenAddress
+        ? landPrice.add(stakeAmount)
+        : landPrice;
+
+    if (!userBalance || userBalance.rawValue().isZero()) {
+      // Need full amount + 5% buffer (rawValue is already scaled/human-readable)
+      return CurrencyAmount.fromRaw(needed.rawValue().times(1.05), land.token);
+    }
+
+    const deficit = needed.rawValue().minus(userBalance.rawValue());
+    if (deficit.isLessThanOrEqualTo(0)) return null;
+
+    // Add 5% buffer for slippage
+    return CurrencyAmount.fromRaw(deficit.times(1.05), land.token);
+  });
+
+  // Auto-select the best swap source token when a swap is needed
+  $effect(() => {
+    if (needsSwap && !swapSourceToken) {
+      swapSourceToken = findBestSourceToken(land.token?.address);
+    }
+    if (!needsSwap) {
+      swapSourceToken = undefined;
+      swapQuote = null;
+      swapQuoteError = null;
+    }
+  });
+
+  // Fetch AVNU quote when swap is needed and source token is selected
+  let quoteDebounceTimer: ReturnType<typeof setTimeout> | undefined;
+  $effect(() => {
+    // Track dependencies
+    const _needsSwap = needsSwap;
+    const _sourceToken = swapSourceToken;
+    const _deficit = swapDeficitAmount;
+    const _landToken = land.token;
+
+    clearTimeout(quoteDebounceTimer);
+
+    if (!_needsSwap || !_sourceToken || !_deficit || !_landToken) {
+      swapQuote = null;
+      swapQuoteError = null;
+      return;
+    }
+
+    quoteDebounceTimer = setTimeout(async () => {
+      isLoadingQuote = true;
+      swapQuoteError = null;
+      try {
+        const quotes = await avnu.fetchQuotes({
+          sellToken: _sourceToken,
+          buyToken: _landToken,
+          buyAmount: _deficit,
+        });
+        if (quotes && quotes.length > 0) {
+          swapQuote = quotes[0];
+        } else {
+          swapQuote = null;
+          swapQuoteError = 'No swap route found';
+        }
+      } catch (e) {
+        console.error('Failed to fetch swap quote:', e);
+        swapQuote = null;
+        swapQuoteError = 'Failed to fetch swap quote';
+      } finally {
+        isLoadingQuote = false;
+      }
+    }, 500);
+  });
+
+  // Check if swap source token has enough balance
+  let swapSourceBalanceError = $derived.by(() => {
+    if (!needsSwap || !swapQuote || !swapSourceToken) return null;
+    const sourceBalance = walletStore.getBalance(swapSourceToken.address);
+    if (!sourceBalance) return `You don't have any ${swapSourceToken.symbol}`;
+    const sellAmount = CurrencyAmount.fromUnscaled(
+      swapQuote.sellAmount,
+      swapSourceToken,
+    );
+    if (sourceBalance.rawValue().isLessThan(sellAmount.rawValue())) {
+      return `Insufficient ${swapSourceToken.symbol} for swap (need ${sellAmount.toString()}, have ${sourceBalance.toString()})`;
+    }
+    return null;
+  });
+
+  // Tokens available as swap sources (excluding land token)
+  let swapSourceTokenOptions = $derived.by(() => {
+    if (!land.token) return [];
+    const landTokenAddress = padAddress(land.token.address);
+    return sortedUserTokens.filter(
+      (t) => padAddress(t.address) !== landTokenAddress,
+    );
+  });
+
   let accountManager = useAccount();
   const { accountManager: dojoAccountManager } = useDojo();
 
@@ -383,6 +519,39 @@
   });
 
   let balanceError = $derived.by(() => {
+    // When a swap is active and we have a valid quote, skip land token balance checks
+    // Instead, validate the swap source token balance
+    if (needsSwap && swapQuote && !swapQuoteError) {
+      // Check swap source balance
+      if (swapSourceBalanceError) {
+        return swapSourceBalanceError;
+      }
+
+      // Still check stake token balance if stake token != land token
+      const selectedAddress = padAddress(selectedToken?.address ?? '');
+      const landTokenAddress = padAddress(land.token?.address ?? '');
+      if (selectedAddress !== landTokenAddress) {
+        const stakeBalance = walletStore.getBalance(selectedToken?.address!);
+        if (
+          !stakeBalance ||
+          stakeBalance.rawValue().isLessThan(stakeAmount.rawValue())
+        ) {
+          return `You don't have enough ${selectedToken?.symbol} to stake`;
+        }
+      }
+
+      if (tutorialState.tutorialEnabled && hasAdvisorWarnings) {
+        return 'Fix the warnings above to continue';
+      }
+      return null;
+    }
+
+    // When swap is needed but quote is still loading or errored
+    if (needsSwap && !swapQuote) {
+      if (isLoadingQuote) return null; // Don't show error while loading
+      if (swapQuoteError) return swapQuoteError;
+    }
+
     if (land.type == 'auction') {
       const landPrice = auctionPrice;
       if (!landPrice) {
@@ -496,7 +665,12 @@
 
   // Check if form is valid
   let isFormValid = $derived(
-    !tokenError && !stakeAmountError && !sellPriceError && !balanceError,
+    !tokenError &&
+      !stakeAmountError &&
+      !sellPriceError &&
+      !balanceError &&
+      !(needsSwap && isLoadingQuote) &&
+      !(needsSwap && !swapQuote && !isLoadingQuote),
   );
 
   async function handleBuyClick() {
@@ -618,6 +792,37 @@
 
     // Normal mode - proceed with actual blockchain transaction
     try {
+      // Build swap calls if needed
+      let swapCalls: Call[] = [];
+      let freshQuote: Quote | null = null;
+      if (needsSwap && swapSourceToken && land.token) {
+        try {
+          // Fetch a fresh quote (quotes have a TTL)
+          const freshQuotes = await avnu.fetchQuotes({
+            sellToken: swapSourceToken,
+            buyToken: land.token,
+            buyAmount: swapDeficitAmount!,
+          });
+
+          if (!freshQuotes || freshQuotes.length === 0) {
+            throw new Error('No swap route available');
+          }
+
+          freshQuote = freshQuotes[0];
+          const userAddress = account.address!;
+          swapCalls = await avnu.buildSwapCalls(
+            freshQuote,
+            userAddress,
+            0.01, // 1% slippage
+            true, // include approve
+          );
+        } catch (e) {
+          console.error('Failed to build swap calls:', e);
+          loading = false;
+          return;
+        }
+      }
+
       // Calculate deductions for optimistic balance update
       const deductions: TokenDeduction[] = [];
       const landPrice = land.type === 'auction' ? currentPrice : land.sellPrice;
@@ -626,7 +831,27 @@
         const landTokenAddress = padAddress(land.token.address);
         const selectedTokenAddress = padAddress(selectedToken.address);
 
-        if (landTokenAddress === selectedTokenAddress) {
+        if (needsSwap && swapSourceToken && freshQuote) {
+          // With swap: deduct the swap sell amount from the source token
+          const swapSellAmount = CurrencyAmount.fromUnscaled(
+            freshQuote.sellAmount,
+            swapSourceToken,
+          );
+          deductions.push({
+            tokenAddress: swapSourceToken.address,
+            amount: swapSellAmount,
+          });
+          // Also deduct stake if it's a different token than the land token
+          if (
+            selectedTokenAddress !== landTokenAddress &&
+            !stakeAmount.rawValue().isZero()
+          ) {
+            deductions.push({
+              tokenAddress: selectedToken.address,
+              amount: stakeAmount,
+            });
+          }
+        } else if (landTokenAddress === selectedTokenAddress) {
           // Same token - combine land price + stake into single deduction
           deductions.push({
             tokenAddress: land.token.address,
@@ -650,8 +875,8 @@
       await executeTransaction({
         execute: () =>
           land.type === 'auction'
-            ? bidLand(land.location, landSetup)
-            : buyLand(land.location, landSetup),
+            ? bidLand(land.location, landSetup, swapCalls)
+            : buyLand(land.location, landSetup, swapCalls),
         deductions,
         onSuccess: () => {
           gameSounds.play('buy');
@@ -853,6 +1078,70 @@
             {#if tokenError}
               <p class="text-red-500 text-sm mt-1">{tokenError}</p>
             {/if}
+          {/if}
+
+          <!-- Swap info banner -->
+          {#if needsSwap && !isSimplifiedMode}
+            <div
+              class="my-2 p-2.5 bg-blue-500/10 border border-blue-500/30 rounded-lg"
+            >
+              <div class="flex items-center gap-1.5 mb-1.5">
+                <ArrowRightLeft class="w-3.5 h-3.5 text-blue-400" />
+                <span class="text-xs font-medium text-blue-300"
+                  >Auto-Swap via AVNU</span
+                >
+              </div>
+
+              {#if isLoadingQuote}
+                <p class="text-xs text-gray-400">Fetching swap quote...</p>
+              {:else if swapQuoteError}
+                <p class="text-xs text-red-400">{swapQuoteError}</p>
+              {:else if swapQuote && swapSourceToken}
+                <p class="text-xs text-gray-300">
+                  Swapping ~{CurrencyAmount.fromUnscaled(
+                    swapQuote.sellAmount,
+                    swapSourceToken,
+                  ).toString()}
+                  {swapSourceToken.symbol}
+                  → ~{CurrencyAmount.fromUnscaled(
+                    swapQuote.buyAmount,
+                    land.token,
+                  ).toString()}
+                  {land.token?.symbol}
+                </p>
+              {/if}
+
+              <!-- Swap source token selector -->
+              {#if swapSourceTokenOptions.length > 0}
+                <div class="flex items-center gap-1.5 mt-1.5">
+                  <span class="text-xs text-gray-400">Pay with:</span>
+                  <div class="flex gap-1 flex-wrap">
+                    {#each swapSourceTokenOptions as token (token.address)}
+                      <button
+                        type="button"
+                        class={[
+                          'flex items-center gap-1 px-1.5 py-0.5 rounded border text-xs transition-all',
+                          'hover:bg-white/10',
+                          {
+                            'border-blue-500 bg-blue-500/20':
+                              swapSourceToken?.address === token.address,
+                            'border-white/20 bg-transparent':
+                              swapSourceToken?.address !== token.address,
+                          },
+                        ]}
+                        onclick={() => {
+                          swapSourceToken = token;
+                          swapQuote = null;
+                        }}
+                      >
+                        <TokenAvatar {token} class="h-4 w-4" />
+                        <span>{token.symbol}</span>
+                      </button>
+                    {/each}
+                  </div>
+                </div>
+              {/if}
+            </div>
           {/if}
 
           <!-- Simplified mode header -->
