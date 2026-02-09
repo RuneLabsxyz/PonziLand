@@ -177,3 +177,95 @@ Use centralized date utilities from `$lib/utils/date` for consistent date format
 
 ## Dev Tips and Gotchas
 - When you add a nix file, add it to the git before trying to run a command. Otherwise you might get a file not found error.
+
+## Communication Style
+
+- Never use phrases like "Perfect!", "Here is the implementation", "Great!", or similar filler language
+- Be direct and concise in responses
+- Focus on the work, not on narrating it
+
+## Git Workflow
+
+### Commit Messages
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/):
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+**Types:**
+
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `style`: Formatting, no code change
+- `refactor`: Code change that neither fixes a bug nor adds a feature
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
+**Rules:**
+
+- First line must be clear and descriptive (max 72 characters)
+- Use imperative mood ("add feature" not "added feature")
+- No period at the end of the subject line
+
+**Examples:**
+
+```
+feat: add challenge expiration timer
+fix: prevent duplicate factory closures
+refactor(wallet): simplify balance calculation
+```
+
+### Graphite Workflow
+
+1. **Track branches**: After creating a branch, run:
+
+   ```bash
+   gt track
+   ```
+
+2. **Submit for review**: When task is complete (after all checks pass):
+   ```bash
+   gt submit
+   ```
+
+## Pre-Submit Checklist
+
+Before marking a task as done, run these commands and fix any issues:
+
+```bash
+# 1. Format code
+bun prettier --write .
+
+# 2. Lint and fix
+bun lint
+
+# 3. Type check
+bun check
+```
+
+Fix all errors before submitting. Do not submit code with formatting, linting, or type errors.
+
+## Vibe Kanban Integration
+
+Tasks are tracked through Vibe Kanban. The branch naming convention follows the pattern:
+
+```
+<initials>/<ticket-number>-<short-description>
+```
+
+Example: `vk/2844-create-agent-md`
+
+When working on a task:
+
+1. Ensure you're on the correct branch for the ticket
+2. Track the branch with `gt track`
+3. Make commits following conventional commits
+4. Run all checks before completing
+5. Submit with `gt submit` when done
