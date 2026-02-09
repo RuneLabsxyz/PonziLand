@@ -81,6 +81,8 @@
           <WidgetUsername />
         {:else if type === 'history'}
           <WidgetHistory />
+        {:else if type === 'messages'}
+          <WidgetMessages />
         {/if}
       {/snippet}
     </Draggable>
