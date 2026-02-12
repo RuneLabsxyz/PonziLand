@@ -1,6 +1,6 @@
 use super::{
     actions::{
-        AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
+        AddStakeEventModel, AuctionFinishedEventModel, LandBoughtEventModel, LandNukedEventModel,
         LandTransferEventModel, NewAuctionEventModel,
     },
     auth::{AddressAuthorizedEventModel, AddressRemovedEventModel, VerifierUpdatedEventModel},
@@ -18,6 +18,7 @@ pub struct Event {
 
 #[derive(Clone, Debug)]
 pub enum DataModel {
+    AddStake(AddStakeEventModel),
     AuctionFinished(AuctionFinishedEventModel),
     LandBought(LandBoughtEventModel),
     LandNuked(LandNukedEventModel),
@@ -31,6 +32,7 @@ pub enum DataModel {
 impl DataModel {
     pub fn set_id(&mut self, id: Id) {
         match self {
+            DataModel::AddStake(model) => model.id = Some(id),
             DataModel::AuctionFinished(model) => model.id = Some(id),
             DataModel::LandBought(model) => model.id = Some(id),
             DataModel::LandNuked(model) => model.id = Some(id),
@@ -46,6 +48,7 @@ impl DataModel {
 impl From<EventData> for DataModel {
     fn from(data: EventData) -> Self {
         match data {
+            EventData::AddStake(data) => DataModel::AddStake(data.into()),
             EventData::AuctionFinished(data) => DataModel::AuctionFinished(data.into()),
             EventData::LandBought(data) => DataModel::LandBought(data.into()),
             EventData::LandNuked(data) => DataModel::LandNuked(data.into()),
