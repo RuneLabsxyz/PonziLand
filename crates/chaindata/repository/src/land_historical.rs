@@ -43,7 +43,7 @@ impl Repository {
                 token_inflows, token_outflows
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-            ON CONFLICT (id) DO UPDATE SET 
+            ON CONFLICT (id) DO UPDATE SET
                 at = EXCLUDED.at,
                 close_date = EXCLUDED.close_date,
                 close_reason = EXCLUDED.close_reason,
@@ -290,7 +290,7 @@ impl Repository {
         .await
     }
 
-    /// Gets all closed positions since a given date (for leaderboard)
+    /// Gets all closed positions since a given date (for leaderboard) - from main
     pub async fn get_closed_positions_since(
         &self,
         since: NaiveDateTime,
@@ -324,7 +324,7 @@ impl Repository {
         .await
     }
 
-    /// Gets all positions for multiple owners (for aggregate calculations)
+    /// Gets all positions for multiple owners (for aggregate calculations) - from main
     pub async fn get_by_owners(
         &self,
         owners: &[String],

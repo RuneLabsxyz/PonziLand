@@ -2376,6 +2376,7 @@ dependencies = [
  "arc-swap",
  "avnu-pricing",
  "axum 0.8.4",
+ "chaindata-models",
  "chaindata-repository",
  "chaindata-service",
  "chrono",
