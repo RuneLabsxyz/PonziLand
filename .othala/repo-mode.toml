@@ -1,0 +1,2 @@
+mode = "merge"
+# merge: merge-as-you-go for fast iteration/non-prod
