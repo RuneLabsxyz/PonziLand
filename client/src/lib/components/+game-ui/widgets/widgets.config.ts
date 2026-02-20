@@ -166,6 +166,14 @@ const baseWidgetsState: WidgetsState = {
     isOpen: false,
     disableResize: true,
   },
+  messages: {
+    id: 'messages',
+    type: 'messages',
+    position: { x: 160, y: 90 },
+    dimensions: { width: 400, height: 500 },
+    isMinimized: false,
+    isOpen: false,
+  },
 };
 
 const guildWidgetState: WidgetState = {
@@ -231,6 +239,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     label: 'Guild',
     icon: '/ui/icons/Icon_Guilds.png',
     if: ENABLE_GUILD,
+  },
+  {
+    id: 'messages',
+    type: 'messages',
+    label: 'Messages',
+    icon: '/ui/icons/Icon_Thin_Notification.png',
   },
 
   // {
