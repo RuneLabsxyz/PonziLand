@@ -11,6 +11,7 @@
   import account from '$lib/account.svelte';
   import type { Snippet } from 'svelte';
   import DailySummary from './daily-summary.svelte';
+  import PortfolioSummary from './portfolio-summary.svelte';
   import BuildingHighlights from './building-highlights.svelte';
   import GameStats from './game-stats.svelte';
 
@@ -97,6 +98,10 @@
   <ScrollArea type="scroll" class="h-full">
     <div class="flex flex-col gap-4 p-2">
       <DailySummary {lands} />
+
+      <Separator class="opacity-30" />
+
+      <PortfolioSummary {lands} />
 
       <Separator class="opacity-30" />
 
