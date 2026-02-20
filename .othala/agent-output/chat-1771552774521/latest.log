@@ -1,0 +1,21 @@
+Done. I added a one-line note at the end of `readme.md` indicating this is an orchestrator parallel run test for task `chat-1771552774521`.
+
+[patch_ready]
+The change is committed. A second one-line note has been added to the readme for the parallel test.
+
+[patch_ready]
+The changes are already committed on branch `task/chat-1771552774521`. The commit `2b9cfc81` adds two one-line notes to the root `readme.md`:
+
+1. "Orchestrator parallel run test — verifying concurrent task execution"
+2. "Second parallel test note — confirming multi-task orchestration works correctly"
+
+The previous attempts failed due to Graphite CLI authentication issues (`gt submit`), not due to any problem with the code changes themselves. The commit is ready on the branch.
+
+[patch_ready]
+The change is already in place. The commit `2b9cfc81` ("feat: add second parallel test note in readme") contains the second one-line note added to the readme. The previous failure was due to Graphite CLI authentication (`gt submit`), which is an external tooling issue, not a code problem.
+
+The readme now has both parallel test notes at the bottom:
+1. "Orchestrator parallel run test — verifying concurrent task execution"
+2. "Second parallel test note — confirming multi-task orchestration works correctly"
+
+[patch_ready]

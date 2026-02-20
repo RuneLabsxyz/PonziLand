@@ -128,3 +128,153 @@ impl TryFrom<Struct> for EventData {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn test_from_json_land_bought() {
+        let json = json!({
+            "buyer": "0x1234",
+            "land_location": 2080,
+            "sold_price": "0x0000000000000000000000000000000000000000000000056bc75e2d63100000",
+            "seller": "0xabcd",
+            "token_used": "0x5735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58"
+        });
+        let result = EventData::from_json("ponzi_land-LandBoughtEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::LandBought(_)));
+    }
+
+    #[test]
+    fn test_from_json_auction_finished() {
+        let json = json!({
+            "land_location": 100,
+            "buyer": "0x1234",
+            "final_price": "0x0000000000000000000000000000000000000000000000056bc75e2d63100000",
+            "token_used": "0xabcd"
+        });
+        let result = EventData::from_json("ponzi_land-AuctionFinishedEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::AuctionFinished(_)));
+    }
+
+    #[test]
+    fn test_from_json_land_nuked() {
+        let json = json!({
+            "owner_nuked": "0x1234",
+            "land_location": 42
+        });
+        let result = EventData::from_json("ponzi_land-LandNukedEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::LandNuked(_)));
+    }
+
+    #[test]
+    fn test_from_json_new_auction() {
+        let json = json!({
+            "land_location": 500,
+            "start_price": "0x0000000000000000000000000000000000000000000000056bc75e2d63100000",
+            "floor_price": "0x00000000000000000000000000000000000000000000000029a2241af62c0000"
+        });
+        let result = EventData::from_json("ponzi_land-NewAuctionEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::NewAuction(_)));
+    }
+
+    #[test]
+    fn test_from_json_address_authorized() {
+        let json = json!({
+            "address": "0x1234",
+            "authorized_at": "1000000"
+        });
+        let result = EventData::from_json("ponzi_land-AddressAuthorizedEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::AddressAuthorized(_)));
+    }
+
+    #[test]
+    fn test_from_json_address_removed() {
+        let json = json!({
+            "address": "0x1234",
+            "authorized_at": "1000000"
+        });
+        let result = EventData::from_json("ponzi_land-AddressRemovedEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::AddressRemoved(_)));
+    }
+
+    #[test]
+    fn test_from_json_verifier_updated() {
+        let json = json!({
+            "new_verifier": "0x1234",
+            "old_verifier": "0xabcd"
+        });
+        let result = EventData::from_json("ponzi_land-VerifierUpdatedEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::VerifierUpdated(_)));
+    }
+
+    #[test]
+    fn test_from_json_land_transfer() {
+        let json = json!({
+            "from_location": 100,
+            "to_location": 200,
+            "token_address": "0x1234",
+            "amount": "0x0000000000000000000000000000000000000000000000056bc75e2d63100000"
+        });
+        let result = EventData::from_json("ponzi_land-LandTransferEvent", json);
+        assert!(result.is_ok());
+        assert!(matches!(result.unwrap(), EventData::LandTransfer(_)));
+    }
+
+    #[test]
+    fn test_from_json_unknown_event_returns_error() {
+        let json = json!({"some": "data"});
+        let result = EventData::from_json("ponzi_land-UnknownEvent", json);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_event_parse_json_variant() {
+        let json = json!({
+            "owner_nuked": "0x1234",
+            "land_location": 42
+        });
+        let raw = RawToriiData::Json {
+            name: "ponzi_land-LandNukedEvent".to_string(),
+            data: json,
+            at: chrono::Utc::now(),
+            event_id: "evt_123".to_string(),
+        };
+        let result = Event::parse(raw);
+        assert!(result.is_ok());
+        let event = result.unwrap();
+        assert!(matches!(event.data, EventData::LandNuked(_)));
+        assert_eq!(event.event_id, "evt_123");
+    }
+
+    #[test]
+    fn test_event_parse_preserves_timestamp() {
+        let json = json!({
+            "buyer": "0x1234",
+            "land_location": 2080,
+            "sold_price": "0x01",
+            "seller": "0xabcd",
+            "token_used": "0x5678"
+        });
+        let ts = chrono::DateTime::parse_from_rfc3339("2024-06-15T12:00:00Z")
+            .unwrap()
+            .with_timezone(&chrono::Utc);
+        let raw = RawToriiData::Json {
+            name: "ponzi_land-LandBoughtEvent".to_string(),
+            data: json,
+            at: ts,
+            event_id: "evt_456".to_string(),
+        };
+        let event = Event::parse(raw).unwrap();
+        assert_eq!(event.at, ts.naive_utc());
+    }
+}

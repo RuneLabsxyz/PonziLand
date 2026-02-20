@@ -2,9 +2,9 @@ use std::sync::Arc;
 
 use chaindata_models::{
     events::EventId,
-    models::{LandModel, LandStakeModel},
+    models::{AuctionModel, LandModel, LandStakeModel},
 };
-use chaindata_repository::{LandRepository, LandStakeRepository};
+use chaindata_repository::{AuctionRepository, LandRepository, LandStakeRepository};
 use chrono::{DateTime, Utc};
 use ponziland_models::models::Model;
 use sqlx::error::DatabaseError;
@@ -21,11 +21,12 @@ use super::Task;
 /// Supported models:
 /// - Land
 /// - `LandStake`
-/// - Auctions (soon, TODO)
+/// - Auction
 pub struct ModelListenerTask {
     client: Arc<ToriiClient>,
     land_repository: Arc<LandRepository>,
     land_stake_repository: Arc<LandStakeRepository>,
+    auction_repository: Arc<AuctionRepository>,
 }
 
 impl ModelListenerTask {
@@ -33,11 +34,13 @@ impl ModelListenerTask {
         client: Arc<ToriiClient>,
         land_repository: Arc<LandRepository>,
         land_stake_repository: Arc<LandStakeRepository>,
+        auction_repository: Arc<AuctionRepository>,
     ) -> Self {
         Self {
             client,
             land_repository,
             land_stake_repository,
+            auction_repository,
         }
     }
 
@@ -45,7 +48,9 @@ impl ModelListenerTask {
     ///
     /// Note: we keep independent cursors so a frequently-updated model (e.g. `LandStake`)
     /// does not prevent catchup for a less frequent one (e.g. `Land`).
-    async fn get_last_update_times(&self) -> Result<(DateTime<Utc>, DateTime<Utc>), sqlx::Error> {
+    async fn get_last_update_times(
+        &self,
+    ) -> Result<(DateTime<Utc>, DateTime<Utc>, DateTime<Utc>), sqlx::Error> {
         // If we did not start indexing, start from the beginning
         let fallback_time = DateTime::UNIX_EPOCH.naive_utc();
 
@@ -62,11 +67,16 @@ impl ModelListenerTask {
             .await?
             .unwrap_or(fallback_time)
             .and_utc();
+        let auction_latest = self
+            .auction_repository
+            .get_latest_timestamp()
+            .await?
+            .unwrap_or(fallback_time)
+            .and_utc();
 
-        Ok((land_latest, land_stake_latest))
+        Ok((land_latest, land_stake_latest, auction_latest))
     }
 
-    #[allow(clippy::match_wildcard_for_single_variants)]
     async fn process_model(&self, model_data: RawToriiData) {
         let model = Model::parse(model_data).expect("Error while parsing model data");
         let result = match model.model {
@@ -88,9 +98,14 @@ impl ModelListenerTask {
                     ))
                     .await
             }
-            _ => {
-                //TODO: Implement this later
-                return;
+            Model::Auction(auction) => {
+                self.auction_repository
+                    .save(AuctionModel::from_at(
+                        &auction,
+                        EventId::parse_from_torii(&model.event_id.unwrap()).unwrap(),
+                        model.timestamp.unwrap_or(Utc::now()).naive_utc(),
+                    ))
+                    .await
             }
         };
 
@@ -118,7 +133,7 @@ impl Task for ModelListenerTask {
 
         loop {
             // Poll for new models from the database
-            let (last_land_check, last_land_stake_check) = self
+            let (last_land_check, last_land_stake_check, last_auction_check) = self
                 .get_last_update_times()
                 .await
                 .expect("Failed to retrieve last update time");
@@ -126,10 +141,11 @@ impl Task for ModelListenerTask {
             // Subtract 1 second to avoid missing models due to timestamp precision issues
             let safe_last_land_check = last_land_check - chrono::Duration::seconds(1);
             let safe_last_land_stake_check = last_land_stake_check - chrono::Duration::seconds(1);
+            let safe_last_auction_check = last_auction_check - chrono::Duration::seconds(1);
 
             info!(
-                "Polling for Land after: {:?} and LandStake after: {:?}",
-                safe_last_land_check, safe_last_land_stake_check
+                "Polling for Land after: {:?}, LandStake after: {:?}, Auction after: {:?}",
+                safe_last_land_check, safe_last_land_stake_check, safe_last_auction_check
             );
 
             let mut model_count = 0;
@@ -150,6 +166,16 @@ impl Task for ModelListenerTask {
                 .get_land_stake_entities_after(safe_last_land_stake_check)
                 .expect("Error while fetching LandStake entities");
             while let Some(model) = land_stake_stream.next().await {
+                self.process_model(model).await;
+                model_count += 1;
+            }
+
+            // Auction catchup
+            let mut auction_stream = self
+                .client
+                .get_auction_entities_after(safe_last_auction_check)
+                .expect("Error while fetching Auction entities");
+            while let Some(model) = auction_stream.next().await {
                 self.process_model(model).await;
                 model_count += 1;
             }

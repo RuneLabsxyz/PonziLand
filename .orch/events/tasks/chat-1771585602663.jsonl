@@ -1,0 +1,18 @@
+{"id":"E-CREATE-chat-1771585602663","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:06:44.380144924Z","kind":"task_created"}
+{"id":"E-AGENT-SPAWNED-chat-1771585602663-1771585607281806056","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:06:47.281806056Z","kind":{"agent_spawned":{"model":"codex"}}}
+{"id":"E-AGENT-COMPLETED-chat-1771585602663-1771585609285460354","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:06:49.285460354Z","kind":{"agent_completed":{"model":"codex","success":false,"duration_secs":2}}}
+{"id":"E-RETRY-chat-1771585602663-1771585609321164781","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:06:49.321164781Z","kind":{"retry_scheduled":{"attempt":1,"model":"claude","reason":"retrying (attempt 1/3) with claude"}}}
+{"id":"E-MODEL-FALLBACK-chat-1771585602663-1771585609321164781","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:06:49.321164781Z","kind":{"model_fallback":{"from_model":"codex","to_model":"claude","reason":"retrying (attempt 1/3) with claude"}}}
+{"id":"E-AGENT-SPAWNED-chat-1771585602663-1771585611342091674","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:06:51.342091674Z","kind":{"agent_spawned":{"model":"claude"}}}
+{"id":"E-AGENT-COMPLETED-chat-1771585602663-1771586334216830932","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:18:54.216830932Z","kind":{"agent_completed":{"model":"claude","success":true,"duration_secs":722}}}
+{"id":"E-READY-chat-1771585602663-1771586334235353078","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:18:54.235353078Z","kind":{"task_state_changed":{"from":"CHATTING","to":"READY"}}}
+{"id":"E-VERIFY-START-chat-1771585602663-1771586336267343307","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:18:56.267343307Z","kind":"verify_started"}
+{"id":"E-VERIFY-DONE-chat-1771585602663-1771586336267343307","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:18:56.267343307Z","kind":{"verify_completed":{"success":true}}}
+{"id":"E-RESTACK-START-chat-1771585602663-1771586347146819472","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:07.146819472Z","kind":{"task_state_changed":{"from":"READY","to":"RESTACKING"}}}
+{"id":"E-RESTACK-START-chat-1771585602663-1771586347146819472-restack-started","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:07.146819472Z","kind":"restack_started"}
+{"id":"E-RESTACK-DONE-chat-1771585602663-1771586347146819472","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:07.146819472Z","kind":{"task_state_changed":{"from":"RESTACKING","to":"READY"}}}
+{"id":"E-RESTACK-DONE-chat-1771585602663-1771586347146819472-restack-completed","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:07.146819472Z","kind":"restack_completed"}
+{"id":"E-SUBMIT-START-chat-1771585602663-1771586352761434757","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:12.761434757Z","kind":{"task_state_changed":{"from":"READY","to":"SUBMITTING"}}}
+{"id":"E-SUBMIT-START-chat-1771585602663-1771586352761434757-submit-started","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:12.761434757Z","kind":{"submit_started":{"mode":"stack"}}}
+{"id":"E-SUBMIT-DONE-chat-1771585602663-1771586352761434757","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:12.761434757Z","kind":{"task_state_changed":{"from":"SUBMITTING","to":"AWAITING_MERGE"}}}
+{"id":"E-SUBMIT-DONE-chat-1771585602663-1771586352761434757-submit-completed","task_id":"chat-1771585602663","repo_id":".","at":"2026-02-20T11:19:12.761434757Z","kind":"submit_completed"}

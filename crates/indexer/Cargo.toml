@@ -25,7 +25,7 @@ tokio = { workspace = true, features = ["full"] }
 tokio-util = "0.7.14"
 tracing.workspace = true
 tracing-subscriber.workspace = true
-metrics-exporter-prometheus = "0.16.2"
+metrics-exporter-prometheus = { version = "0.16.2", default-features = false, features = ["http-listener"] }
 apalis-core = "0.7.0"
 tower = "0.5.2"
 anyhow.workspace = true

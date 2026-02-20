@@ -1,0 +1,24 @@
+The diff is clean and minimal. Here's a summary of all changes:
+
+## Summary
+
+### What was already in place
+- `.cargo/config.toml` already had `SQLX_OFFLINE = "true"` set, so SQLx compile-time query macros (`query!`, `query_as!`) skip database validation during compilation.
+
+### Changes made
+
+**1. Added `db-tests` feature flag to two crates:**
+- `crates/chaindata/repository/Cargo.toml` — added `[features] db-tests = []`
+- `crates/chaindata/models/Cargo.toml` — added `[features] db-tests = []`
+
+**2. Feature-gated database test modules:**
+- `crates/chaindata/repository/src/land.rs` — changed `#[cfg(test)]` to `#[cfg(all(test, feature = "db-tests"))]` on the tests module (2 DB tests)
+- `crates/chaindata/repository/src/land_stake.rs` — changed `#[cfg(test)]` to `#[cfg(all(test, feature = "db-tests"))]` on the tests module (2 DB tests)
+- `crates/chaindata/models/src/shared/u256.rs` — split the test module: DB test (`sqlx_test_u256_db_conversion`) moved to a new `db_tests` module gated by `#[cfg(all(test, feature = "db-tests"))]`, pure unit tests remain in `#[cfg(test)]`
+
+**3. Result:**
+- Without `--features db-tests`: DB tests don't compile at all (zero overhead, no DB dependency)
+- With `--features db-tests` or `--all-features`: DB tests compile but are `#[ignore]`d (won't fail without a running PostgreSQL)
+- To actually run DB tests: `cargo test --features db-tests -- --include-ignored`
+
+[patch_ready]

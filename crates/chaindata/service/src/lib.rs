@@ -2,8 +2,8 @@ pub mod error;
 pub mod tasks;
 
 use chaindata_repository::{
-    Database, EventRepository, LandHistoricalRepository, LandRepository, LandStakeRepository,
-    WalletActivityRepository,
+    AuctionRepository, Database, EventRepository, LandHistoricalRepository, LandRepository,
+    LandStakeRepository, WalletActivityRepository,
 };
 use serde::{Deserialize, Serialize};
 use starknet::core::types::Felt;
@@ -50,6 +50,7 @@ impl ChainDataService {
         let event_repository = Arc::new(EventRepository::new(database.clone()));
         let land_repository = Arc::new(LandRepository::new(database.clone()));
         let land_stake_repository = Arc::new(LandStakeRepository::new(database.clone()));
+        let auction_repository = Arc::new(AuctionRepository::new(database.clone()));
         let land_historical_repository = Arc::new(LandHistoricalRepository::new(database.clone()));
         let wallet_activity_repository = Arc::new(WalletActivityRepository::new(database.clone()));
 
@@ -69,6 +70,7 @@ impl ChainDataService {
                 client.clone(),
                 land_repository,
                 land_stake_repository,
+                auction_repository,
             )
             .wrap(),
             land_historical_listener_task: LandHistoricalListenerTask::new(

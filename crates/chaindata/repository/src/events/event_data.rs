@@ -111,7 +111,8 @@ implement_repository!(AuctionFinishedEventModel, "event_auction_finished", {
     id,
     location,
     buyer,
-    price
+    price,
+    token_used
 });
 
 implement_repository!(LandBoughtEventModel, "event_land_bought", {

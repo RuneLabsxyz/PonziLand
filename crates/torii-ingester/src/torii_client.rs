@@ -140,6 +140,20 @@ impl ToriiClient {
         ))
     }
 
+    /// Get only Auction entities after a given instant.
+    ///
+    /// # Errors
+    /// Returns an error if the SQL query fails.
+    pub fn get_auction_entities_after(
+        &self,
+        instant: chrono::DateTime<Utc>,
+    ) -> Result<impl Stream<Item = RawToriiData>, Error> {
+        self.do_entities_sql_request(format!(
+            "e.created_at > \"{}\" AND m.name = 'Auction'",
+            instant.format("%F %T")
+        ))
+    }
+
     /// Get only LandStake entities after a given instant.
     ///
     /// # Errors
@@ -266,16 +280,14 @@ impl ToriiClient {
 
             loop {
                 // TODO(red): Add base offset support
-                let request: Vec<QueryResponse> = match sql_client
-                    .query(request(current_offset).into())
-                    .await
-                {
-                    Ok(request) => request,
-                    Err(e) => {
-                        error!("torii sql query failed: {e}");
-                        break;
-                    }
-                };
+                let request: Vec<QueryResponse> =
+                    match sql_client.query(request(current_offset).into()).await {
+                        Ok(request) => request,
+                        Err(e) => {
+                            error!("torii sql query failed: {e}");
+                            break;
+                        }
+                    };
 
                 if request.is_empty() {
                     break;
@@ -323,7 +335,7 @@ where
 
 fn parse_created_at(value: &str) -> Option<DateTime<Utc>> {
     NaiveDateTime::parse_from_str(value, "%F %T")
-        .map(chrono::NaiveDateTime::and_utc)
+        .map(|dt| dt.and_utc())
         .ok()
 }
 

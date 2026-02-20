@@ -178,10 +178,10 @@ impl LandHistoricalListenerTask {
 
         // Close all previous positions for this land location with sale revenue
         let sale_revenue_token = Some(event.price.clone());
-        let sale_token_used = None; // TODO: Determine default auction token
+        let sale_token_used = Some(event.token_used.as_str());
         let sale_revenue_usd = sale_revenue_token
             .as_ref()
-            .and_then(|revenue| Self::convert_to_usd(revenue, ""));
+            .and_then(|revenue| Self::convert_to_usd(revenue, &event.token_used));
 
         let closed_count = self
             .land_historical_repository
@@ -211,11 +211,10 @@ impl LandHistoricalListenerTask {
 
         // Extract financial data from the auction event
         let buy_cost_token = Some(event.price.clone());
-        // Note: Auctions might use a default token (ETH/STRK), this should be configured
-        let buy_token_used = None; // TODO: Determine default auction token
+        let buy_token_used = Some(event.token_used.clone());
         let buy_cost_usd = buy_cost_token
             .as_ref()
-            .and_then(|cost| Self::convert_to_usd(cost, ""));
+            .and_then(|cost| Self::convert_to_usd(cost, &event.token_used));
 
         // Create land historical for the auction winner with financial data
         let position = LandHistorical::new_with_cost(

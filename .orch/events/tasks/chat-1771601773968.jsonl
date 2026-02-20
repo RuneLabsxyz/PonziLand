@@ -1,0 +1,6 @@
+{"id":"E-CREATE-chat-1771601773968","task_id":"chat-1771601773968","repo_id":".","at":"2026-02-20T15:36:17.318471134Z","kind":"task_created"}
+{"id":"E-AGENT-SPAWNED-chat-1771601773968-1771601779096417193","task_id":"chat-1771601773968","repo_id":".","at":"2026-02-20T15:36:19.096417193Z","kind":{"agent_spawned":{"model":"codex"}}}
+{"id":"E-AGENT-COMPLETED-chat-1771601773968-1771601785190231452","task_id":"chat-1771601773968","repo_id":".","at":"2026-02-20T15:36:25.190231452Z","kind":{"agent_completed":{"model":"codex","success":false,"duration_secs":6}}}
+{"id":"E-RETRY-chat-1771601773968-1771601785666915375","task_id":"chat-1771601773968","repo_id":".","at":"2026-02-20T15:36:25.666915375Z","kind":{"retry_scheduled":{"attempt":1,"model":"claude","reason":"retrying (attempt 1/3) with claude"}}}
+{"id":"E-MODEL-FALLBACK-chat-1771601773968-1771601785666915375","task_id":"chat-1771601773968","repo_id":".","at":"2026-02-20T15:36:25.666915375Z","kind":{"model_fallback":{"from_model":"codex","to_model":"claude","reason":"retrying (attempt 1/3) with claude"}}}
+{"id":"E-AGENT-SPAWNED-chat-1771601773968-1771601787724288456","task_id":"chat-1771601773968","repo_id":".","at":"2026-02-20T15:36:27.724288456Z","kind":{"agent_spawned":{"model":"claude"}}}

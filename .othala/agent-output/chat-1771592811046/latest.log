@@ -1,0 +1,36 @@
+Everything looks good. Let me do a final summary of what was implemented and created:
+
+## Summary of Changes
+
+### New Feature: Auction Data Pipeline
+
+This implementation adds full auction model support to the Rust backend meta-indexer, completing a previously stubbed-out TODO item. The auction data is now ingested from Torii, stored in PostgreSQL, and served via a REST API endpoint.
+
+### Files Created (new):
+1. **`crates/migrations/sql/0014_add_auction_table.sql`** — Database migration creating the `auction` table with indexes
+2. **`crates/chaindata/repository/src/auction.rs`** — Auction repository with save, get_latest_at_location, get_active_auctions, and get_latest_timestamp methods
+3. **`crates/indexer/src/routes/auctions/mod.rs`** — REST API route `GET /auctions/active` returning active auctions
+4. **`.sqlx/query-*.json` (5 files)** — SQLx offline query metadata for compile-time SQL checking without a database
+
+### Files Modified:
+1. **`crates/chaindata/models/src/models/auction.rs`** — Replaced `// TODO` stub with full `AuctionModel` struct and `from_at` conversion
+2. **`crates/chaindata/models/src/models/mod.rs`** — Exported `AuctionModel`
+3. **`crates/chaindata/repository/src/lib.rs`** — Exported `AuctionRepository`
+4. **`crates/chaindata/service/src/lib.rs`** — Added auction repository to `ChainDataService`
+5. **`crates/chaindata/service/src/tasks/model_listener.rs`** — Added auction model processing + Torii polling
+6. **`crates/torii-ingester/src/torii_client.rs`** — Added `get_auction_entities_after()` method
+7. **`crates/indexer/src/main.rs`** — Wired auction repository and route into the app
+8. **`crates/indexer/src/state.rs`** — Added `auction_repository` to `AppState`
+9. **`crates/indexer/src/routes/mod.rs`** — Registered `auctions` module
+
+### Pre-existing fix:
+10. **`crates/ponziland-models/src/models/land_historical.rs`** — Fixed broken tests using `ContractAddress(...)` constructor on a type alias (use `Felt::from_hex(...)` directly)
+
+### Verification:
+- `SQLX_OFFLINE=true cargo build` — succeeds
+- `SQLX_OFFLINE=true cargo check` — succeeds
+- `SQLX_OFFLINE=true cargo clippy --all-targets --all-features` — succeeds (only pre-existing warnings)
+- `cargo fmt --check` — clean
+- Tests: All non-database tests pass; the 4 `#[sqlx::test]` integration tests fail with `PoolTimedOut` as expected without a running PostgreSQL
+
+[patch_ready]

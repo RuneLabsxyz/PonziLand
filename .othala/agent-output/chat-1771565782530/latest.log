@@ -1,0 +1,34 @@
+All changes are clean and well-organized. Here's a summary of what was done:
+
+## Summary
+
+**High-impact TODO resolved:** Added `token_used` field to `AuctionFinishedEvent` across the full stack (Cairo contracts → Rust backend), resolving the `// TODO: Determine default auction token` comments that caused auction transaction data to lose token information.
+
+### Changes across 8 files + 1 new migration:
+
+**Cairo Smart Contracts (3 files):**
+1. `contracts/src/events.cairo` — Added `token_used: ContractAddress` field to `AuctionFinishedEvent`
+2. `contracts/src/components/auction.cairo` — Updated `finish_auction()` to accept and emit `token_used`
+3. `contracts/src/systems/actions.cairo` — Passed `land.token_used` to `finish_auction()`
+
+**Rust Backend (4 files):**
+4. `crates/ponziland-models/src/events/actions/auction_finished.rs` — Added `token_used: ContractAddress` to `AuctionFinishedEvent` struct + Torii parser
+5. `crates/chaindata/models/src/events/actions/auction_finished.rs` — Added `token_used: String` to `AuctionFinishedEventModel` + conversion logic
+6. `crates/chaindata/repository/src/events/event_data.rs` — Added `token_used` to the DB repository macro
+7. `crates/chaindata/service/src/tasks/land_historical_listener.rs` — Replaced `None // TODO` with actual `event.token_used` for both sale and buy token tracking
+
+**Bonus fix:**
+8. `crates/torii-ingester/src/torii_client.rs` — Fixed pre-existing compilation error where `chrono::NaiveDateTime::and_utc` changed from `self` to `&self` in newer chrono
+
+**New file:**
+9. `crates/migrations/sql/0013_add_auction_token_used.sql` — Database migration to add `token_used` column
+
+### Verification:
+- `cargo check` passes for all modified crates (with `SQLX_OFFLINE=true`)
+- All 5 available tests pass
+- `cargo test --all-targets --all-features` cannot run due to pre-existing `aws-lc-sys` nix linker issue (missing `Scrt1.o`/`crti.o`) unrelated to these changes
+
+[patch_ready]
+You've hit your limit · resets 9am (UTC)
+You've hit your limit · resets 9am (UTC)
+You've hit your limit · resets 9am (UTC)

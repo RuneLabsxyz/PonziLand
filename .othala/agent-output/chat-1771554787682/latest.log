@@ -1,0 +1,13 @@
+Here's a summary of the changes made:
+
+**File:** `client/src/lib/components/+game-ui/widgets/leaderboard/request.ts`
+
+**What changed:**
+1. **Removed** the `PUBLIC_SOCIALINK_URL` import (no longer needed)
+2. **Added** import of `getSocialink` from `$lib/accounts/social/index.svelte`
+3. **Replaced** the raw `fetch` call to `${PUBLIC_SOCIALINK_URL}/api/user/lookup` with a direct call to `socialink.getUsers({ addresses })` using the `@runelabsxyz/socialink-sdk` (v0.3.1)
+4. **Removed** the `// TODO: Replace this with a direct SDK call` comment
+
+**Behavior parity:** The function signature, return type (`Promise<Record<string, string>>`), error handling, address padding, and username mapping logic are all preserved. The SDK's `getUsers()` method returns `UserLookup[]` (with `{ username, address }` entries), which matches the shape of the previous raw API response.
+
+[patch_ready]

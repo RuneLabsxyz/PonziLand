@@ -137,3 +137,110 @@ impl LandHistorical {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use starknet::core::types::Felt;
+
+    #[test]
+    fn test_close_reason_display() {
+        assert_eq!(CloseReason::Bought.to_string(), "bought");
+        assert_eq!(CloseReason::Nuked.to_string(), "nuked");
+    }
+
+    #[test]
+    fn test_close_reason_from_str() {
+        assert_eq!(
+            "bought".parse::<CloseReason>().unwrap(),
+            CloseReason::Bought
+        );
+        assert_eq!("nuked".parse::<CloseReason>().unwrap(), CloseReason::Nuked);
+        // Case insensitive
+        assert_eq!(
+            "BOUGHT".parse::<CloseReason>().unwrap(),
+            CloseReason::Bought
+        );
+        assert_eq!("Nuked".parse::<CloseReason>().unwrap(), CloseReason::Nuked);
+    }
+
+    #[test]
+    fn test_close_reason_from_str_invalid() {
+        assert!("invalid".parse::<CloseReason>().is_err());
+        assert!("".parse::<CloseReason>().is_err());
+    }
+
+    #[test]
+    fn test_close_reason_roundtrip() {
+        for reason in [CloseReason::Bought, CloseReason::Nuked] {
+            let s = reason.to_string();
+            let parsed: CloseReason = s.parse().unwrap();
+            assert_eq!(parsed, reason);
+        }
+    }
+
+    #[test]
+    fn test_land_historical_new() {
+        let owner = Felt::from_hex("0x1234").unwrap();
+        let location = Location(2080);
+        let time =
+            NaiveDateTime::parse_from_str("2024-06-15 12:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+
+        let record = LandHistorical::new(owner, location, time);
+
+        assert!(record.id.contains("0x1234"));
+        assert!(record.id.contains(&time.and_utc().timestamp().to_string()));
+        assert_eq!(record.owner, format!("{:#x}", owner));
+        assert_eq!(record.land_location, location);
+        assert_eq!(record.time_bought, time);
+        assert!(record.close_date.is_none());
+        assert!(record.close_reason.is_none());
+        assert!(record.buy_cost_token.is_none());
+        assert!(record.buy_cost_usd.is_none());
+        assert!(record.buy_token_used.is_none());
+        assert!(record.sale_revenue_token.is_none());
+        assert!(record.token_inflows.is_empty());
+        assert!(record.token_outflows.is_empty());
+    }
+
+    #[test]
+    fn test_land_historical_new_with_cost() {
+        let owner = Felt::from_hex("0xabcd").unwrap();
+        let location = Location(100);
+        let time =
+            NaiveDateTime::parse_from_str("2024-01-01 00:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+        let cost = U256::from(1_000_000_u64);
+        let token = "0x5678".to_string();
+
+        let record = LandHistorical::new_with_cost(
+            owner,
+            location,
+            time,
+            Some(cost),
+            None,
+            Some(token.clone()),
+        );
+
+        assert_eq!(record.buy_cost_token, Some(cost));
+        assert!(record.buy_cost_usd.is_none());
+        assert_eq!(record.buy_token_used, Some(token));
+        assert!(record.close_date.is_none());
+        assert!(record.sale_revenue_token.is_none());
+    }
+
+    #[test]
+    fn test_land_historical_id_format() {
+        let owner = Felt::from_hex("0xff").unwrap();
+        let location = Location(64); // coordinates: (1, 0)
+        let time =
+            NaiveDateTime::parse_from_str("2024-06-15 12:00:00", "%Y-%m-%d %H:%M:%S").unwrap();
+
+        let record = LandHistorical::new(owner, location, time);
+
+        // ID should be: owner_location_display_timestamp
+        let expected_ts = time.and_utc().timestamp();
+        assert!(record.id.ends_with(&expected_ts.to_string()));
+        // Location Display is (x, y) format
+        assert!(record.id.contains("(1, 0)"));
+    }
+}

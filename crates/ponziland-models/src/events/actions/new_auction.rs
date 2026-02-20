@@ -21,3 +21,37 @@ impl TryFrom<Struct> for NewAuctionEvent {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deserialization() {
+        let json = r#"
+        {
+            "land_location": 500,
+            "start_price": "0x0000000000000000000000000000000000000000000000056bc75e2d63100000",
+            "floor_price": "0x00000000000000000000000000000000000000000000000029a2241af62c0000"
+        }
+        "#;
+        let event: NewAuctionEvent =
+            serde_json::from_str(json).expect("Failed to deserialize NewAuctionEvent");
+        assert_eq!(event.land_location, Location(500));
+    }
+
+    #[test]
+    fn test_serialization_roundtrip() {
+        let json = r#"
+        {
+            "land_location": 10,
+            "start_price": "0x0a",
+            "floor_price": "0x01"
+        }
+        "#;
+        let event: NewAuctionEvent = serde_json::from_str(json).unwrap();
+        let serialized = serde_json::to_string(&event).unwrap();
+        let deserialized: NewAuctionEvent = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.land_location, event.land_location);
+    }
+}

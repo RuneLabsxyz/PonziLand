@@ -23,3 +23,35 @@ impl TryFrom<Struct> for LandNukedEvent {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deserialization() {
+        let json = r#"
+        {
+            "owner_nuked": "0x1234",
+            "land_location": 42
+        }
+        "#;
+        let event: LandNukedEvent =
+            serde_json::from_str(json).expect("Failed to deserialize LandNukedEvent");
+        assert_eq!(event.land_location, Location(42));
+    }
+
+    #[test]
+    fn test_serialization_roundtrip() {
+        let json = r#"
+        {
+            "owner_nuked": "0xdead",
+            "land_location": 999
+        }
+        "#;
+        let event: LandNukedEvent = serde_json::from_str(json).unwrap();
+        let serialized = serde_json::to_string(&event).unwrap();
+        let deserialized: LandNukedEvent = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.land_location, event.land_location);
+    }
+}

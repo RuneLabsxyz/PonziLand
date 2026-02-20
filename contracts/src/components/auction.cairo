@@ -110,6 +110,7 @@ pub mod AuctionComponent {
             mut auction: Auction,
             buyer: ContractAddress,
             final_price: u256,
+            token_used: ContractAddress,
         ) {
             auction.is_finished = true;
             auction.sold_at_price = Option::Some(final_price);
@@ -123,7 +124,7 @@ pub mod AuctionComponent {
                 .world
                 .emit_event(
                     @AuctionFinishedEvent {
-                        land_location: auction.land_location, buyer, final_price,
+                        land_location: auction.land_location, buyer, final_price, token_used,
                     },
                 );
         }

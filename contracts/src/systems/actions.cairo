@@ -997,7 +997,7 @@ pub mod actions {
             //update neighbors_info_packed with the new land for the existing neighbors
             update_neighbors_info(store, neighbors, land.location, current_time);
 
-            self.auction.finish_auction(store, auction, caller, current_price);
+            self.auction.finish_auction(store, auction, caller, current_price, land.token_used);
 
             // Generate new auctions if space available
             let active_auctions = self.auction.get_active_auctions_count();

@@ -32,3 +32,41 @@ impl TryFrom<Struct> for LandBoughtEvent {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_deserialization() {
+        let json = r#"
+        {
+            "buyer": "0x1234",
+            "land_location": 2080,
+            "sold_price": "0x0000000000000000000000000000000000000000000000056bc75e2d63100000",
+            "seller": "0xabcd",
+            "token_used": "0x5735fa6be5dd248350866644c0a137e571f9d637bb4db6532ddd63a95854b58"
+        }
+        "#;
+        let event: LandBoughtEvent =
+            serde_json::from_str(json).expect("Failed to deserialize LandBoughtEvent");
+        assert_eq!(event.land_location, Location(2080));
+    }
+
+    #[test]
+    fn test_serialization_roundtrip() {
+        let json = r#"
+        {
+            "buyer": "0x1234",
+            "land_location": 100,
+            "sold_price": "0x01",
+            "seller": "0xabcd",
+            "token_used": "0x5678"
+        }
+        "#;
+        let event: LandBoughtEvent = serde_json::from_str(json).unwrap();
+        let serialized = serde_json::to_string(&event).unwrap();
+        let deserialized: LandBoughtEvent = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(deserialized.land_location, event.land_location);
+    }
+}

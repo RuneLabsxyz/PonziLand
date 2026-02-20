@@ -1,0 +1,14 @@
+{"id":"E-CREATE-chat-1771590976584","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:36:18.454036470Z","kind":"task_created"}
+{"id":"E-AGENT-SPAWNED-chat-1771590976584-1771590978960289211","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:36:18.960289211Z","kind":{"agent_spawned":{"model":"claude"}}}
+{"id":"E-AGENT-COMPLETED-chat-1771590976584-1771592009164120778","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:29.164120778Z","kind":{"agent_completed":{"model":"claude","success":true,"duration_secs":1030}}}
+{"id":"E-READY-chat-1771590976584-1771592009182743523","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:29.182743523Z","kind":{"task_state_changed":{"from":"CHATTING","to":"READY"}}}
+{"id":"E-VERIFY-START-chat-1771590976584-1771592011209926218","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:31.209926218Z","kind":"verify_started"}
+{"id":"E-VERIFY-DONE-chat-1771590976584-1771592011209926218","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:31.209926218Z","kind":{"verify_completed":{"success":true}}}
+{"id":"E-RESTACK-START-chat-1771590976584-1771592015051933590","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:35.051933590Z","kind":{"task_state_changed":{"from":"READY","to":"RESTACKING"}}}
+{"id":"E-RESTACK-START-chat-1771590976584-1771592015051933590-restack-started","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:35.051933590Z","kind":"restack_started"}
+{"id":"E-RESTACK-DONE-chat-1771590976584-1771592015051933590","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:35.051933590Z","kind":{"task_state_changed":{"from":"RESTACKING","to":"READY"}}}
+{"id":"E-RESTACK-DONE-chat-1771590976584-1771592015051933590-restack-completed","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:35.051933590Z","kind":"restack_completed"}
+{"id":"E-SUBMIT-START-chat-1771590976584-1771592020107786454","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:40.107786454Z","kind":{"task_state_changed":{"from":"READY","to":"SUBMITTING"}}}
+{"id":"E-SUBMIT-START-chat-1771590976584-1771592020107786454-submit-started","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:40.107786454Z","kind":{"submit_started":{"mode":"stack"}}}
+{"id":"E-SUBMIT-DONE-chat-1771590976584-1771592020107786454","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:40.107786454Z","kind":{"task_state_changed":{"from":"SUBMITTING","to":"AWAITING_MERGE"}}}
+{"id":"E-SUBMIT-DONE-chat-1771590976584-1771592020107786454-submit-completed","task_id":"chat-1771590976584","repo_id":".","at":"2026-02-20T12:53:40.107786454Z","kind":"submit_completed"}

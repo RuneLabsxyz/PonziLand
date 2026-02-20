@@ -1,0 +1,68 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            WITH latest_auctions AS (\n                SELECT DISTINCT ON (location)\n                    id, at, location, start_time, start_price, floor_price,\n                    is_finished, decay_rate, sold_at_price\n                FROM auction\n                ORDER BY location, at DESC\n            )\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                start_time,\n                start_price as \"start_price: _\",\n                floor_price as \"floor_price: _\",\n                is_finished,\n                decay_rate,\n                sold_at_price as \"sold_at_price: _\"\n            FROM latest_auctions\n            WHERE is_finished = false\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: _",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "start_time",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "start_price: _",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "floor_price: _",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_finished",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "decay_rate",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 8,
+        "name": "sold_at_price: _",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "aa85a580a8293529e5d0b5cdf995f6a8b52ca2e0ad20942fe4eb62b9490c509a"
+}

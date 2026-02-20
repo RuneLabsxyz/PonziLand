@@ -1,0 +1,70 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "\n            SELECT\n                id as \"id: _\",\n                at,\n                location as \"location: Location\",\n                start_time,\n                start_price as \"start_price: _\",\n                floor_price as \"floor_price: _\",\n                is_finished,\n                decay_rate,\n                sold_at_price as \"sold_at_price: _\"\n            FROM auction\n            WHERE location = $1\n            ORDER BY at DESC\n            LIMIT 1\n            ",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: _",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "at",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 2,
+        "name": "location: Location",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 3,
+        "name": "start_time",
+        "type_info": "Timestamp"
+      },
+      {
+        "ordinal": 4,
+        "name": "start_price: _",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 5,
+        "name": "floor_price: _",
+        "type_info": "Numeric"
+      },
+      {
+        "ordinal": 6,
+        "name": "is_finished",
+        "type_info": "Bool"
+      },
+      {
+        "ordinal": 7,
+        "name": "decay_rate",
+        "type_info": "Int2"
+      },
+      {
+        "ordinal": 8,
+        "name": "sold_at_price: _",
+        "type_info": "Numeric"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "f49c5ddaf1166515bc8a59800e2f069856fc1b2df6b64a0a79bb44712c2271ef"
+}

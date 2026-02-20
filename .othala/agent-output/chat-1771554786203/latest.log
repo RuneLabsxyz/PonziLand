@@ -1,0 +1,3136 @@
+OpenAI Codex v0.104.0 (research preview)
+--------
+workdir: /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203
+model: gpt-5.3-codex
+provider: openai
+approval: never
+sandbox: workspace-write [workdir, /tmp, $TMPDIR]
+reasoning effort: none
+reasoning summaries: auto
+session id: 019c78e4-d4dc-75f0-b729-7e043472f772
+--------
+user
+# Task Assignment
+
+**Task ID:** chat-1771554786203
+**Title:** # Task Assignment
+
+**Task ID:** chat-1771554786203
+**Title:** feat: implement client/src/lib/api/nuke-event.ts TODO with working API call + error handling; add/update tests if present; emit [patch_ready]
+
+---
+
+# Task Metadata
+
+- Priority: normal
+- Attempt: 1
+
+---
+
+# Verification
+
+Run this command to verify your changes before signalling completion:
+```bash
+echo verify skipped
+```
+
+---
+
+# Signals
+
+When you are done and the code is ready, print exactly: `[patch_ready]`
+If you are blocked and need human help, print exactly: `[needs_human]`
+If you have a plan ready for decomposition, print exactly: `[plan_ready]`
+
+
+---
+
+# Signals
+
+- When you are done and the code is ready, print exactly: `[patch_ready]`
+- If you are blocked and need human help, print exactly: `[needs_human]`
+
+mcp startup: no servers
+
+thinking
+**Inspecting tree structure**
+codex
+Implementing `client/src/lib/api/nuke-event.ts` now: I’ll inspect the existing API patterns and tests, then patch the TODO with a real call plus error handling and run the provided verification command.
+exec
+/run/current-system/sw/bin/bash -lc 'rg --files' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc 'rg -n "nuke-event|TODO|lib/api" client/src || true' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 53ms:
+client/src/lib/contexts/client.svelte.ts:1:import { wrappedActions } from '$lib/api/contracts/approve';
+client/src/lib/contexts/client.svelte.ts:2:import { createPaymasteredDojoProvider } from '$lib/api/contracts/PaymasteredDojoProvider';
+client/src/lib/contexts/account.svelte.ts:49:// TODO: In AccountProvider, offer a way to store the session loaded from local storage, if it exists (can be a no-op on cartridge + burner)
+client/src/lib/contexts/account.svelte.ts:84:// TODO:
+client/src/lib/contexts/account.svelte.ts:471:  // TODO: Maybe mirror the some of the AccountProvider functions to make it easier to use?
+client/src/lib/api/history/index.svelte.ts:5:import { toLocation, type Location } from '$lib/api/land/location';
+client/src/lib/api/nuke-event.ts:18://TODO make this work
+client/src/lib/stores/store.svelte.ts:1:import type { BaseLand, LandSetup, LandWithActions } from '$lib/api/land';
+client/src/lib/stores/store.svelte.ts:2:import { BuildingLand } from '$lib/api/land/building_land';
+client/src/lib/stores/store.svelte.ts:3:import { LandTileStore } from '$lib/api/land_tiles.svelte';
+client/src/lib/stores/store.svelte.ts:6:import { AuctionLand } from '$lib/api/land/auction_land';
+client/src/lib/stores/store.svelte.ts:7:import { Neighbors } from '$lib/api/neighbors';
+client/src/lib/stores/wallet.svelte.ts:4:import { getTokenPrices, type TokenPrice } from '$lib/api/defi/ekubo/requests';
+client/src/lib/stores/loading.store.svelte.ts:9:import { getTokenPrices } from '$lib/api/defi/ekubo/requests';
+client/src/lib/utils/entity-logger.ts:3:import type { Location } from '$lib/api/land/location';
+client/src/lib/utils/land-actions.ts:1:import type { BaseLand } from '$lib/api/land';
+client/src/lib/utils/land-actions.ts:2:import { AuctionLand } from '$lib/api/land/auction_land';
+client/src/lib/utils/land-actions.ts:3:import { BuildingLand } from '$lib/api/land/building_land';
+client/src/lib/utils/land-actions.ts:4:import { Neighbors } from '$lib/api/neighbors';
+client/src/lib/stores/claim.store.svelte.ts:1:import { type LandWithActions } from '$lib/api/land';
+ succeeded in 54ms:
+Total output lines: 1172
+
+Cargo.lock
+flake-modules/process-compose.nix
+flake-modules/scripts.nix
+flake-modules/packages.nix
+flake-modules/devshells.nix
+LICENSE
+bunfig.toml
+GAMEJAM.md
+dist/index.js
+dist/index.js.map
+crates/ekubo/Cargo.toml
+crates/ekubo/examples/get_price.rs
+crates/ekubo/src/lib.rs
+crates/ekubo/src/api/mod.rs
+crates/ekubo/src/api/pool.rs
+crates/ekubo/src/contract/mod.rs
+crates/ekubo/src/contract/pool_price.rs
+crates/chaindata/service/Cargo.toml
+codex
+I found the target TODO and now I’m reading `nuke-event.ts` plus nearby API modules to mirror the project’s request/error conventions before editing.
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,220p' client/src/lib/api/wallet-activity.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/api/history/index.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,220p' client/src/lib/api/neighbors.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,220p' client/src/lib/api/nuke-event.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+import { PUBLIC_PONZI_API_URL } from '$env/static/public';
+
+interface LandHistoricalCountResponse {
+  owner: string;
+  total_lands_owned: number;
+  first_activity_at: string | null;
+}
+
+/**
+ * Check if a wallet has any onchain activity in PonziLand
+ * @param address - The wallet address to check
+ * @returns Promise resolving to { hasActivity: boolean }
+ */
+export async function checkWalletActivity(
+  address: string,
+): Promise<{ hasActivity: boolean }> {
+  const url = `${PUBLIC_PONZI_API_URL}land-historical/${address}/count`;
+  console.log('[WalletActivity] Checking wallet activity', { address, url });
+
+  try {
+ succeeded in 50ms:
+import {
+  ClauseBuilder,
+  ToriiQueryBuilder,
+  type SchemaType,
+} from '@dojoengine/sdk';
+import { useDojo } from '$lib/contexts/dojo';
+import { NAME_SPACE } from '$lib/const';
+
+function getNukeQuery() {
+  const keys: `${string}-${string}`[] = [];
+  keys.push(`${NAME_SPACE}-LandNukedEvent`);
+  const clauses = new ClauseBuilder().keys(keys, []);
+  return new ToriiQueryBuilder<SchemaType>()
+    .withClause(clauses.build())
+    .includeHashedKeys();
+}
+
+//TODO make this work
+export const getNukeData = async () => {
+  const { client: sdk } = useDojo();
+ succeeded in 51ms:
+import { PUBLIC_DOJO_TORII_URL } from '$env/static/public';
+import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { getTokenInfo } from '$lib/utils';
+import { CurrencyAmount as CurrencyAmountClass } from '$lib/utils/CurrencyAmount';
+import { toLocation, type Location } from '$lib/api/land/location';
+
+// Base event fields common to all events
+interface BaseHistoryEvent {
+  id: string;
+  modelName: string;
+  createdAt: number;
+  timestamp: Date;
+  accountAddress: string;
+}
+
+// Specific event types as a discriminated union
+export interface LandBoughtHistoryEvent extends BaseHistoryEvent {
+  type: 'LandBoughtEvent';
+  seller: string;
+  buyer: string;
+ succeeded in 51ms:
+import { GRID_SIZE, COORD_MULTIPLIER } from '$lib/const';
+import { locationToCoordinates, toBigInt, toHexWithPadding } from '$lib/utils';
+import type { BaseLand } from './land';
+import type { LandTileStore } from './land_tiles.svelte';
+import { get } from 'svelte/store';
+
+export class Neighbors {
+  public MAP_SIZE = GRID_SIZE;
+  public location: bigint;
+  public locations: {
+    array: bigint[];
+    up: bigint;
+    down: bigint;
+    left: bigint;
+    right: bigint;
+    upLeft: bigint;
+    upRight: bigint;
+    downLeft: bigint;
+    downRight: bigint;
+  };
+
+thinking
+**Searching event usage**
+exec
+/run/current-system/sw/bin/bash -lc 'rg -n "getNukeData|nuke-event|LandNukedEvent|subscribeEventQuery|queryEvents|fetch.*event" client/src/lib client/src/routes | head -n 200' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+client/src/lib/components/dashboard/buyInfo.svelte:50:      console.error('Error fetching buy events:', error);
+client/src/lib/api/history/index.svelte.ts:29:  type: 'LandNukedEvent';
+client/src/lib/api/history/index.svelte.ts:96:        case 'LandNukedEvent':
+client/src/lib/api/history/index.svelte.ts:223:      console.error('Failed to fetch new events:', error);
+client/src/lib/api/history/index.svelte.ts:225:        error instanceof Error ? error.message : 'Failed to fetch new events';
+client/src/lib/api/history/index.svelte.ts:272:   * Build the SQL query for fetching events
+client/src/lib/api/history/index.svelte.ts:399:      } else if (eventType === 'LandNukedEvent') {
+client/src/lib/api/history/index.svelte.ts:404:          type: 'LandNukedEvent',
+client/src/lib/api/history/index.svelte.ts:525:    return this.getEventsByType('LandNukedEvent');
+client/src/lib/api/nuke-event.ts:11:  keys.push(`${NAME_SPACE}-LandNukedEvent`);
+client/src/lib/api/nuke-event.ts:19:export const getNukeData = async () => {
+client/src/lib/api/nuke-event.ts:23:  const nukeData = await sdk.subscribeEventQuery({
+client/src/lib/components/+game-ui/widgets/history/history-entry.svelte:12:{#if event.type === 'LandBoughtEvent' || event.type === 'LandNukedEvent'}
+client/src/lib/components/+game-ui/widgets/history/land-transaction-entry.svelte:20:  ): e is LandNukedHistoryEvent => 'type' in e && e.type === 'LandNukedEvent';
+client/src/lib/models.gen.ts:91:// Type definition for `ponzi_land::events::LandNukedEvent` struct
+client/src/lib/models.gen.ts:92:export interface LandNukedEvent {
+client/src/lib/models.gen.ts:150:    LandNukedEvent: LandNukedEvent;
+client/src/lib/models.gen.ts:232:    LandNukedEvent: {
+client/src/lib/models.gen.ts:274:  LandNukedEvent = 'ponzi_land-LandNukedEvent',
+
+thinking
+**Inspecting API pattern in buyInfo**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,220p' client/src/lib/components/dashboard/buyInfo.svelte" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '220,560p' client/src/lib/api/history/index.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/api/auction.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+<script lang="ts">
+  import Card from '$lib/components/ui/card/card.svelte';
+  import type { Token } from '$lib/interfaces';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { getTokenMetadata } from '$lib/utils';
+  import { onMount } from 'svelte';
+  import { fetchBuyEvents } from './requests';
+
+  let {
+    tokens,
+  }: {
+    tokens: Token[];
+  } = $props();
+
+  let tokenTotals = $state<Record<string, bigint>>({});
+  let tokenTransactions = $state<Record<string, number>>({});
+  let isLoading = $state(true);
+
+  /**
+   * @notice Calculates total amount spent per token from buy events
+ succeeded in 51ms:
+
+      this._lastUpdate = Date.now();
+    } catch (error) {
+      console.error('Failed to fetch new events:', error);
+      this._error =
+        error instanceof Error ? error.message : 'Failed to fetch new events';
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  /**
+   * Load more events (pagination - older events)
+   */
+  public async loadMore(): Promise<void> {
+    if (!this._accountAddress || !this._hasMore || this._loading) {
+      return;
+    }
+
+    this._loading = true;
+ succeeded in 51ms:
+import { useDojo } from '$lib/contexts/dojo';
+import { ModelsMapping } from '$lib/models.gen';
+import { MemberClause, ToriiQueryBuilder } from '@dojoengine/sdk';
+
+export const getAuctionDataFromLocation = async (location: string) => {
+  const { client: sdk } = useDojo();
+
+  const query = new ToriiQueryBuilder()
+    .withClause(
+      MemberClause(
+        ModelsMapping.Auction,
+        'land_location',
+        'Eq',
+        location.toString(),
+      ).build(),
+    )
+    .addEntityModel(ModelsMapping.Auction);
+
+  // also query initial
+  return await sdk.getEntities({
+
+thinking
+**Inspecting type usage in data store**
+codex
+I’m checking where `getNukeData` is consumed so the new behavior and return type fit existing callers without regressions.
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/stores/nuke.store.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/stores/event.store.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "rg -n \"getNukeData\\(|nukeData|nuke event\" client/src/lib client/src/routes" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 50ms:
+// Optimized nuke animation management with batching
+class NukeAnimationManager {
+  private activeAnimations = new Map<
+    string,
+    { startTime: number; timeoutId?: number }
+  >();
+  private animationDuration = 3000;
+  private batchQueue: Array<{
+    location: string;
+    delay: number;
+    queueTime: number;
+  }> = [];
+  private batchTimer?: number;
+  private batchThreshold = 50; // ms to wait before processing batch
+  private maxBatchSize = 20; // max nukes per batch to prevent overwhelming
+  private animationTimeoutGroups = new Map<number, Set<string>>(); // Group timeouts by end time
+  private cleanupInterval?: number;
+
+  constructor() {
+    // Periodic cleanup of completed timeouts to prevent memory leaks
+ succeeded in 50ms:
+import type { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+import { writable } from 'svelte/store';
+import { useAccount } from '$lib/contexts/account.svelte';
+import { sendError } from '$lib/contexts/faro';
+
+export type ClaimEvent = CurrencyAmount;
+
+export const claimQueue = writable<ClaimEvent[]>([]);
+
+let accountManager = $derived(useAccount());
+
+class NotificationQueue {
+  public queue: {
+    txCount: number;
+    pending: boolean;
+    txhash: string | null;
+    isValid: boolean | null;
+    functionName: string;
+  }[] = $state([]);
+
+ succeeded in 51ms:
+client/src/lib/api/history/index.svelte.ts:522:   * Get only nuke events
+client/src/lib/api/nuke-event.ts:23:  const nukeData = await sdk.subscribeEventQuery({
+client/src/lib/api/nuke-event.ts:33:  return nukeData;
+
+thinking
+**Checking API module tests**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/api/land_tiles.test.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "rg --files client/src | rg \"\\.test\\.(ts|tsx|svelte\\.ts)"'$|'"\\.spec\\.(ts|tsx)"'$"' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+import { describe, expect, it, beforeEach, vi } from 'vitest';
+import { get } from 'svelte/store';
+import type { ParsedEntity } from '@dojoengine/sdk';
+import { LandTileStore } from './land_tiles.svelte';
+import type { Auction, Land, LandStake, SchemaType } from '$lib/models.gen';
+import { EmptyLand } from './land';
+import { AuctionLand } from './land/auction_land';
+import { BuildingLand } from './land/building_land';
+import { coordinatesToLocation } from '$lib/utils';
+
+// Mock store imports
+vi.mock('$lib/stores/sfx.svelte', () => ({
+  gameSounds: { play: vi.fn() },
+}));
+
+vi.mock('$lib/stores/claim.store.svelte', () => ({
+  claimStore: { value: {} },
+}));
+
+vi.mock('$lib/stores/nuke.store.svelte', () => ({
+ succeeded in 51ms:
+client/src/hooks.server.test.ts
+client/src/lib/manifest.test.ts
+client/src/lib/api/land_tiles.test.ts
+
+thinking
+**Exploring event subscription approach**
+exec
+/run/current-system/sw/bin/bash -lc "rg -n \"subscribeEventQuery|subscribe.*Event|getEventMessages|ToriiQueryBuilder<SchemaType>|ClauseBuilder\\(|includeHashedKeys\\(|addEntityModel\\(ModelsMapping\" client/src crates | head -n 300" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+client/src/lib/api/config.svelte.ts:115:      .addEntityModel(ModelsMapping.Config) // Subscribe to Config model
+client/src/lib/api/config.svelte.ts:116:      .includeHashedKeys(); // Include entity keys for proper updates
+client/src/lib/api/land/torii.ts:19:      .addEntityModel(ModelsMapping.Land)
+client/src/lib/api/land/torii.ts:20:      .addEntityModel(ModelsMapping.LandStake)
+client/src/lib/api/land/torii.ts:22:      .addEntityModel(ModelsMapping.Auction)
+client/src/lib/api/land/torii.ts:23:      .includeHashedKeys()
+client/src/lib/api/auction.svelte.ts:17:    .addEntityModel(ModelsMapping.Auction);
+client/src/lib/api/auction.svelte.ts:29:    .addEntityModel(ModelsMapping.Auction)
+client/src/lib/api/auction.svelte.ts:30:    .includeHashedKeys();
+client/src/lib/api/nuke-event.ts:12:  const clauses = new ClauseBuilder().keys(keys, []);
+client/src/lib/api/nuke-event.ts:13:  return new ToriiQueryBuilder<SchemaType>()
+client/src/lib/api/nuke-event.ts:15:    .includeHashedKeys();
+client/src/lib/api/nuke-event.ts:23:  const nukeData = await sdk.subscribeEventQuery({
+
+thinking
+**Reviewing subscription and error handling**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/api/config.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 50ms:
+/**
+ * ConfigStore - Manages dynamic configuration from smart contracts
+ *
+ * SUBSCRIPTION PATTERN EXPLAINED:
+ * ===============================
+ * 1. Smart Contract: When config changes in Cairo contract, emits ConfigUpdated event
+ * 2. Torii Indexer: Listens to contract events and updates its database
+ * 3. Client Subscription: This store subscribes to Config model changes via Torii
+ * 4. Svelte Store: Updates reactive store, triggering UI updates automatically
+ *
+ * PATTERN FOLLOWED:
+ * ================
+ * - Similar to LandTileStore architecture
+ * - Setup method initializes subscription + loads initial data
+ * - Internal writable store for reactive updates
+ * - Cleanup on destroy to prevent memory leaks
+ */
+
+import type { Client } from '$lib/contexts/client.svelte';
+import { ModelsMapping, type Config, type SchemaType } from '$lib/models.gen';
+
+thinking
+**Inspecting event subscription types**
+codex
+I found the established subscription pattern (`subscribeEntityQuery`) and I’m now inspecting SDK typings to implement `subscribeEventQuery` correctly and make tests validate the real contract.
+exec
+/run/current-system/sw/bin/bash -lc "rg -n \"subscribeEventQuery\\(|interface.*Subscribe.*Event|type.*EventQuery|callback: \\(result\\)|subscribeEntityQuery\" client/node_modules/@dojoengine -g\"*.d.ts\" -g\"*.ts\" | head -n 200" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+rg: client/node_modules/@dojoengine: IO error for operation on client/node_modules/@dojoengine: No such file or directory (os error 2)
+
+thinking
+**Checking workspace node_modules location**
+exec
+/run/current-system/sw/bin/bash -lc "rg -n \"subscribeEventQuery\\(|subscribeEntityQuery\\(\" node_modules client -g\"*.d.ts\" -g\"*.ts\" | head -n 200" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+rg: node_modules: No such file or directory (os error 2)
+client/src/lib/api/config.svelte.ts:50:    const subscribeResponse = await client.subscribeEntityQuery({
+client/src/lib/api/land/torii.ts:32:  const subscribeResponse = await client.subscribeEntityQuery({
+client/src/lib/api/nuke-event.ts:23:  const nukeData = await sdk.subscribeEventQuery({
+
+thinking
+**Planning type inspection approach**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,240p' client/src/lib/api/land/torii.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+import type { Client } from '$lib/contexts/client.svelte';
+import { ModelsMapping, type SchemaType } from '$lib/models.gen';
+import { ToriiQueryBuilder, type ParsedEntity } from '@dojoengine/sdk';
+
+// Fetch the data from torii
+function getQuery(pagination?: { cursor?: string; size: number }) {
+  let base = new ToriiQueryBuilder();
+  if (pagination?.cursor) {
+    base.withCursor(pagination.cursor);
+  }
+
+  if (pagination?.size) {
+    base.withLimit(pagination.size);
+    base.withDirection('Forward');
+  }
+
+  return (
+    base
+      .addEntityModel(ModelsMapping.Land)
+      .addEntityModel(ModelsMapping.LandStake)
+
+thinking
+**Assessing event fetch strategy**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,280p' client/src/lib/contexts/dojo.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/contexts/client.svelte.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,280p' client/src/lib/dojoConfig.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+import { wrappedActions } from '$lib/api/contracts/approve';
+import { createPaymasteredDojoProvider } from '$lib/api/contracts/PaymasteredDojoProvider';
+import { loadDojoConfig, type DojoConfig } from '$lib/dojoConfig';
+import { type SchemaType as Schema } from '$lib/models.gen';
+import { init } from '@dojoengine/sdk';
+
+let dojoKey = Symbol('dojo');
+
+export type Client = NonNullable<Awaited<ReturnType<typeof _setupDojo>>>;
+
+async function _setupDojo(config: DojoConfig) {
+  if (typeof window === 'undefined') {
+    // We are on the server. Return nothing.
+    return undefined;
+  }
+
+  const initialized = await init<Schema>({
+    client: {
+      toriiUrl: config.toriiUrl,
+      worldAddress: config.manifest.world.address,
+ succeeded in 51ms:
+import { useAccount } from './account.svelte';
+import { useClient } from './client.svelte';
+
+export function useDojo() {
+  const client = useClient();
+  const accountManager = useAccount();
+
+  return {
+    client,
+    accountManager,
+  };
+}
+ succeeded in 50ms:
+import { createDojoConfig, DojoProvider } from '@dojoengine/core';
+import { loadManifest } from '$lib/manifest';
+import {
+  PUBLIC_DOJO_RPC_URL,
+  PUBLIC_DOJO_TORII_URL,
+  PUBLIC_DOJO_PROFILE,
+  PUBLIC_DOJO_BURNER_ADDRESS,
+  PUBLIC_DOJO_BURNER_PRIVATE,
+  PUBLIC_DOJO_CHAIN_ID,
+} from '$env/static/public';
+
+import type {
+  CallPolicy,
+  ContractPolicy,
+  SessionPolicies,
+} from '@cartridge/presets';
+
+import type { DojoConfig as DojoConfigInternal } from '@dojoengine/core';
+
+export type DojoConfig = DojoConfigInternal & {
+
+thinking
+**Reviewing client wrapper methods**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,320p' client/src/lib/api/contracts/approve.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 50ms:
+import { setupWorld } from '$lib/contracts.gen';
+import {
+  DojoProvider,
+  getContractByName,
+  type DojoCall,
+} from '@dojoengine/core';
+import {
+  cairo,
+  CallData,
+  type Account,
+  type AccountInterface,
+  type AllowArray,
+  type BigNumberish,
+  type Call,
+} from 'starknet';
+
+export type ApprovalData = {
+  tokenAddress: string;
+  amount: BigNumberish;
+};
+
+thinking
+**Inspecting event enums and mappings**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '220,320p' client/src/lib/models.gen.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+    AuctionFinishedEvent: {
+      land_location: 0,
+      buyer: '',
+      final_price: 0,
+    },
+    LandBoughtEvent: {
+      buyer: '',
+      land_location: 0,
+      sold_price: 0,
+      seller: '',
+      token_used: '',
+    },
+    LandNukedEvent: {
+      owner_nuked: '',
+      land_location: 0,
+    },
+    LandTransferEvent: {
+      from_location: 0,
+      to_location: 0,
+      token_address: '',
+
+thinking
+**Checking event usage and docs**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,220p' client/src/lib/api/UPDATE.md" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+# Objective
+
+Instead of relying on the base zustand store made available by the dojo.js sdk,
+we will use a custom store optimized for the representation of our tiles (in a grid instead of linearly).
+This also allows us to only refresh the land that has changed instead of the entire grid each time (as we are limited by the derived store system)
+It also allows us to use runes instead of svelte4 stores, improving usability.
+
+# Implementation
+
+Instead of using $state everywhere (something I would have loved), it simply cannot work that way, as the updates would be everywhere.
+the best solution would be to use land store. Each land coordinate is a store that you can access. Should allow you do to the following code:
+
+```js
+let landStore = getLand(x, y);
+let land = $derived($landStore);
+```
+
+Which make it so the tile is only updated when the land in question changes.
+
+Another change that this system allows is the ability to lazily update the computations of the land. Currently, we attach a lot of logic + computations (like changing the balance of the land) eagerly, and for every update of the store.
+
+thinking
+**Checking TypeScript strict settings**
+exec
+/run/current-system/sw/bin/bash -lc 'cat client/tsconfig.json' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+{
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "strict": true,
+    "moduleResolution": "bundler",
+    "types": ["vite-plugin-glsl/ext"],
+    "lib": ["es2022"]
+  }
+  // Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
+  // except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
+  //
+  // If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
+  // from the referenced tsconfig.json - TypeScript does not merge them in
+
+thinking
+**Inspecting test config and environment**
+exec
+/run/current-system/sw/bin/bash -lc 'cat client/vitest.config.ts' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  plugins: [sveltekit()],
+  resolve: process.env.VITEST
+    ? {
+        conditions: ['browser'],
+      }
+    : undefined,
+  test: {
+    globals: true,
+  },
+});
+
+thinking
+**Defining robust nuke-event handler and tests**
+codex
+I have enough context and I’m now patching `nuke-event.ts` to make the call actually useful: return initial nuke events + subscription, validate client availability, and surface clear errors from both subscription setup and callback responses.
+file update
+M /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203/client/src/lib/api/nuke-event.ts
+@@ -8,2 +8,25 @@
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+@@ -17,18 +40,41 @@
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+apply_patch(auto_approved=true) exited 0 in 24ms:
+Success. Updated the following files:
+M client/src/lib/api/nuke-event.ts
+file update:
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+file update:
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Adding test file planning**
+codex
+Next I’m adding a focused test file for `nuke-event.ts` to cover the successful subscription path, missing-client failure, and callback error logging behavior.
+file update
+A /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203/client/src/lib/api/nuke-event.test.ts
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getNukeData } from './nuke-event';
+
+const mockUseDojo = vi.fn();
+const mockClauseKeys = vi.fn();
+const mockWithClause = vi.fn();
+const mockIncludeHashedKeys = vi.fn();
+
+vi.mock('$lib/contexts/dojo', () => ({
+  useDojo: () => mockUseDojo(),
+}));
+
+vi.mock('@dojoengine/sdk', () => {
+  class ClauseBuilder {
+    keys(...args: unknown[]) {
+      mockClauseKeys(...args);
+      return this;
+    }
+
+    build() {
+      return { kind: 'mock-clause' };
+    }
+  }
+
+  class ToriiQueryBuilder {
+    withClause(clause: unknown) {
+      mockWithClause(clause);
+      return this;
+    }
+
+    includeHashedKeys() {
+      mockIncludeHashedKeys();
+      return this;
+    }
+  }
+
+  return {
+    ClauseBuilder,
+    ToriiQueryBuilder,
+  };
+});
+
+describe('getNukeData', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('returns initial nuke events and subscription handle', async () => {
+    const subscription = { cancel: vi.fn() };
+    const initialEvents = [{ id: 'nuke-1' }];
+    const subscribeEventQuery = vi.fn().mockResolvedValue([
+      { getItems: () => initialEvents },
+      subscription,
+    ]);
+
+    mockUseDojo.mockReturnValue({
+      client: { subscribeEventQuery },
+    });
+
+    const result = await getNukeData();
+
+    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
+    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
+    expect(mockWithClause).toHaveBeenCalledTimes(1);
+    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      initialEvents,
+      subscription,
+    });
+  });
+
+  it('throws when dojo client does not support subscribeEventQuery', async () => {
+    mockUseDojo.mockReturnValue({
+      client: {},
+    });
+
+    await expect(getNukeData()).rejects.toThrow(
+      'Dojo client is not initialized for nuke event queries',
+    );
+  });
+
+  it('logs callback errors from the subscription response', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    let capturedCallback:
+      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
+      | undefined;
+
+    const subscribeEventQuery = vi.fn().mockImplementation(
+      async ({
+        callback,
+      }: {
+        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
+      }) => {
+        capturedCallback = callback;
+        return [{ getItems: () => [] }, { cancel: vi.fn() }];
+      },
+    );
+
+    mockUseDojo.mockReturnValue({
+      client: { subscribeEventQuery },
+    });
+
+    await getNukeData();
+
+    expect(capturedCallback).toBeDefined();
+    capturedCallback?.({ error: new Error('boom') });
+    capturedCallback?.({ data: null });
+
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Nuke event subscription error:',
+      expect.any(Error),
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Nuke event subscription returned no data in callback',
+    );
+
+    consoleSpy.mockRestore();
+  });
+});
+apply_patch(auto_approved=true) exited 0 in 11ms:
+Success. Updated the following files:
+A client/src/lib/api/nuke-event.test.ts
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Checking test command availability**
+codex
+Edits are in place; I’m running the requested verification command now, and I’ll also run the targeted test once to sanity-check the new API behavior.
+exec
+/run/current-system/sw/bin/bash -lc 'echo verify skipped' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc 'cat client/package.json' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 50ms:
+verify skipped
+ succeeded in 51ms:
+{
+  "name": "client",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "dev:sepolia": "DOJO_PROFILE=sepolia vite dev",
+    "dev:mainnet": "DOJO_PROFILE=mainnet vite dev",
+    "dev:mainnet-local-api": "DOJO_PROFILE=mainnet-local-api vite dev",
+    "dev:deployment": "DOJO_PROFILE=deployment_local vite dev",
+    "deployment": "DOJO_PROFILE=deployment vite dev",
+    "build": "vite build",
+    "build:sepolia": "DOJO_PROFILE=sepolia vite build",
+    "build:mainnet": "DOJO_PROFILE=mainnet vite build",
+    "preview": "vite preview",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts",
+    "test:watch": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --watch",
+    "test:ui": "DOJO_PROFILE=sepolia bun vitest --config ./vitest.config.ts --ui"
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Checking test command availability**
+exec
+/run/current-system/sw/bin/bash -lc 'bun vitest --config ./vitest.config.ts client/src/lib/api/nuke-event.test.ts' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203/client exited 127 in 51ms:
+/run/current-system/sw/bin/bash: line 1: bun: command not found
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Assessing test run options**
+codex
+The required verification command succeeded. I attempted to run the new unit test, but this environment doesn’t have `bun` installed, so automated test execution is currently blocked. I’ll still provide the patch details and exact blocker in the final handoff.
+exec
+/run/current-system/sw/bin/bash -lc 'git status --short' in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+ M client/src/lib/api/nuke-event.ts
+?? client/src/lib/api/nuke-event.test.ts
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Checking lint and formatting issues**
+exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,260p' client/src/lib/api/nuke-event.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203exec
+/run/current-system/sw/bin/bash -lc "sed -n '1,280p' client/src/lib/api/nuke-event.test.ts" in /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203 succeeded in 51ms:
+import {
+  ClauseBuilder,
+  ToriiQueryBuilder,
+  type SchemaType,
+} from '@dojoengine/sdk';
+import { useDojo } from '$lib/contexts/dojo';
+import { NAME_SPACE } from '$lib/const';
+
+interface NukeSubscriptionResponse {
+  error?: unknown;
+  data?: unknown[] | null;
+}
+
+interface QueryPage<T> {
+  getItems: () => T[];
+}
+
+interface NukeDataResult<T = unknown> {
+  initialEvents: T[];
+  subscription: unknown;
+ succeeded in 50ms:
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getNukeData } from './nuke-event';
+
+const mockUseDojo = vi.fn();
+const mockClauseKeys = vi.fn();
+const mockWithClause = vi.fn();
+const mockIncludeHashedKeys = vi.fn();
+
+vi.mock('$lib/contexts/dojo', () => ({
+  useDojo: () => mockUseDojo(),
+}));
+
+vi.mock('@dojoengine/sdk', () => {
+  class ClauseBuilder {
+    keys(...args: unknown[]) {
+      mockClauseKeys(...args);
+      return this;
+    }
+
+    build() {
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..71486f7d58ff70bb91801df1230ca192f714ed32
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,43 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
+       }
+-    },
+-  });
+-  return nukeData;
++    });
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Adding runtime array check and explicit error**
+file update
+M /home/server/clawd/projects/PonziLand/.orch/wt/chat-1771554786203/client/src/lib/api/nuke-event.ts
+@@ -63,5 +63,9 @@
+         }
+-      }
++      },
+     });
+ 
++    if (!Array.isArray(nukeData)) {
++      throw new Error('Invalid nuke event subscription response');
++    }
++
+     const firstPage = nukeData[0];
+apply_patch(auto_approved=true) exited 0 in 14ms:
+Success. Updated the following files:
+M client/src/lib/api/nuke-event.ts
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..3e1885bff0b3aecbed969d6f5f9e1616934ad5ab
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,47 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
+-      }
+-    },
+-  });
+-  return nukeData;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
++      },
++    });
++
++    if (!Array.isArray(nukeData)) {
++      throw new Error('Invalid nuke event subscription response');
++    }
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..3e1885bff0b3aecbed969d6f5f9e1616934ad5ab
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,47 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
+-      }
+-    },
+-  });
+-  return nukeData;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
++      },
++    });
++
++    if (!Array.isArray(nukeData)) {
++      throw new Error('Invalid nuke event subscription response');
++    }
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+
+thinking
+**Confirming exact final signal**
+codex
+[patch_ready]
+file update:
+diff --git a/client/src/lib/api/nuke-event.test.ts b/client/src/lib/api/nuke-event.test.ts
+new file mode 100644
+index 0000000000000000000000000000000000000000..92558329c807b00820012bb6bbdee1be5bbc89b8
+--- /dev/null
++++ b/client/src/lib/api/nuke-event.test.ts
+@@ -0,0 +1,119 @@
++import { beforeEach, describe, expect, it, vi } from 'vitest';
++import { getNukeData } from './nuke-event';
++
++const mockUseDojo = vi.fn();
++const mockClauseKeys = vi.fn();
++const mockWithClause = vi.fn();
++const mockIncludeHashedKeys = vi.fn();
++
++vi.mock('$lib/contexts/dojo', () => ({
++  useDojo: () => mockUseDojo(),
++}));
++
++vi.mock('@dojoengine/sdk', () => {
++  class ClauseBuilder {
++    keys(...args: unknown[]) {
++      mockClauseKeys(...args);
++      return this;
++    }
++
++    build() {
++      return { kind: 'mock-clause' };
++    }
++  }
++
++  class ToriiQueryBuilder {
++    withClause(clause: unknown) {
++      mockWithClause(clause);
++      return this;
++    }
++
++    includeHashedKeys() {
++      mockIncludeHashedKeys();
++      return this;
++    }
++  }
++
++  return {
++    ClauseBuilder,
++    ToriiQueryBuilder,
++  };
++});
++
++describe('getNukeData', () => {
++  beforeEach(() => {
++    vi.clearAllMocks();
++  });
++
++  it('returns initial nuke events and subscription handle', async () => {
++    const subscription = { cancel: vi.fn() };
++    const initialEvents = [{ id: 'nuke-1' }];
++    const subscribeEventQuery = vi.fn().mockResolvedValue([
++      { getItems: () => initialEvents },
++      subscription,
++    ]);
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    const result = await getNukeData();
++
++    expect(subscribeEventQuery).toHaveBeenCalledTimes(1);
++    expect(mockClauseKeys).toHaveBeenCalledTimes(1);
++    expect(mockWithClause).toHaveBeenCalledTimes(1);
++    expect(mockIncludeHashedKeys).toHaveBeenCalledTimes(1);
++    expect(result).toEqual({
++      initialEvents,
++      subscription,
++    });
++  });
++
++  it('throws when dojo client does not support subscribeEventQuery', async () => {
++    mockUseDojo.mockReturnValue({
++      client: {},
++    });
++
++    await expect(getNukeData()).rejects.toThrow(
++      'Dojo client is not initialized for nuke event queries',
++    );
++  });
++
++  it('logs callback errors from the subscription response', async () => {
++    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
++    let capturedCallback:
++      | ((response: { error?: unknown; data?: unknown[] | null }) => void)
++      | undefined;
++
++    const subscribeEventQuery = vi.fn().mockImplementation(
++      async ({
++        callback,
++      }: {
++        callback: (response: { error?: unknown; data?: unknown[] | null }) => void;
++      }) => {
++        capturedCallback = callback;
++        return [{ getItems: () => [] }, { cancel: vi.fn() }];
++      },
++    );
++
++    mockUseDojo.mockReturnValue({
++      client: { subscribeEventQuery },
++    });
++
++    await getNukeData();
++
++    expect(capturedCallback).toBeDefined();
++    capturedCallback?.({ error: new Error('boom') });
++    capturedCallback?.({ data: null });
++
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription error:',
++      expect.any(Error),
++    );
++    expect(consoleSpy).toHaveBeenCalledWith(
++      'Nuke event subscription returned no data in callback',
++    );
++
++    consoleSpy.mockRestore();
++  });
++});
+diff --git a/client/src/lib/api/nuke-event.ts b/client/src/lib/api/nuke-event.ts
+index 4dce24ca626c884d7c65ce8dfb7488e639286248..3e1885bff0b3aecbed969d6f5f9e1616934ad5ab
+--- a/client/src/lib/api/nuke-event.ts
++++ b/client/src/lib/api/nuke-event.ts
+@@ -6,6 +6,29 @@
+ import { useDojo } from '$lib/contexts/dojo';
+ import { NAME_SPACE } from '$lib/const';
+ 
++interface NukeSubscriptionResponse {
++  error?: unknown;
++  data?: unknown[] | null;
++}
++
++interface QueryPage<T> {
++  getItems: () => T[];
++}
++
++interface NukeDataResult<T = unknown> {
++  initialEvents: T[];
++  subscription: unknown;
++}
++
++function hasGetItems<T>(value: unknown): value is QueryPage<T> {
++  return (
++    typeof value === 'object' &&
++    value !== null &&
++    'getItems' in value &&
++    typeof (value as QueryPage<T>).getItems === 'function'
++  );
++}
++
+ function getNukeQuery() {
+   const keys: `${string}-${string}`[] = [];
+   keys.push(`${NAME_SPACE}-LandNukedEvent`);
+@@ -15,20 +38,47 @@
+     .includeHashedKeys();
+ }
+ 
+-//TODO make this work
+-export const getNukeData = async () => {
++export const getNukeData = async (): Promise<NukeDataResult> => {
+   const { client: sdk } = useDojo();
+ 
+-  const query = getNukeQuery();
+-  const nukeData = await sdk.subscribeEventQuery({
+-    query,
+-    callback: (response) => {
+-      if (response.error || response.data == null) {
+-        console.log('Got an error!', response.error);
+-      } else {
+-        return response.data;
+-      }
+-    },
+-  });
+-  return nukeData;
++  if (!sdk || typeof sdk.subscribeEventQuery !== 'function') {
++    throw new Error('Dojo client is not initialized for nuke event queries');
++  }
++
++  try {
++    const query = getNukeQuery();
++    const nukeData = await sdk.subscribeEventQuery({
++      query,
++      callback: (response: NukeSubscriptionResponse) => {
++        if (response.error) {
++          console.error('Nuke event subscription error:', response.error);
++          return;
++        }
++
++        if (response.data == null) {
++          console.error(
++            'Nuke event subscription returned no data in callback',
++          );
++          return;
++        }
++      },
++    });
++
++    if (!Array.isArray(nukeData)) {
++      throw new Error('Invalid nuke event subscription response');
++    }
++
++    const firstPage = nukeData[0];
++    const initialEvents = hasGetItems(firstPage) ? firstPage.getItems() : [];
++
++    return {
++      initialEvents,
++      subscription: nukeData[1],
++    };
++  } catch (error) {
++    console.error('Failed to subscribe to nuke events:', error);
++    throw error instanceof Error
++      ? error
++      : new Error('Failed to subscribe to nuke events');
++  }
+ };
+
+tokens used
+114,590
+[patch_ready]

@@ -20,6 +20,7 @@ pub struct AuctionFinishedEvent {
     land_location: u16,
     buyer: ContractAddress,
     final_price: u256,
+    token_used: ContractAddress,
 }
 
 // Emitted when land owner loses ownership due to insufficient stake

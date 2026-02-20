@@ -1,0 +1,3 @@
+The change is in place. `console.log('Othala works!');` has been added to line 1 of `client/src/hooks.client.ts`.
+
+[patch_ready]

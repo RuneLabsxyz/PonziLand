@@ -13,6 +13,7 @@ pub struct AuctionFinishedEventModel {
     pub location: Location,
     pub buyer: String,
     pub price: U256,
+    pub token_used: String,
 }
 
 impl From<AuctionFinishedEvent> for AuctionFinishedEventModel {
@@ -22,6 +23,7 @@ impl From<AuctionFinishedEvent> for AuctionFinishedEventModel {
             location: event.land_location.into(),
             buyer: format!("{:#x}", event.buyer),
             price: event.final_price.into(),
+            token_used: format!("{:#x}", event.token_used),
         }
     }
 }

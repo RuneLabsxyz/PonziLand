@@ -1,0 +1,41 @@
+# PonziLand E2E Test Specification
+# DB tests are isolated to prevent postgres dependency issues
+
+name = "ponziland-e2e"
+required = true
+timeout_secs = 1800
+
+[[stages]]
+name = "check"
+command = "cargo check --all-targets"
+timeout_secs = 300
+required = true
+continue_on_fail = false
+
+[[stages]]
+name = "clippy"
+command = "cargo clippy --all-targets -- -D warnings"
+timeout_secs = 300
+required = false
+continue_on_fail = true
+
+[[stages]]
+name = "unit-fast"
+# Run unit tests WITHOUT db-tests feature (no postgres required)
+command = "cargo test --lib --no-default-features"
+timeout_secs = 600
+required = true
+continue_on_fail = false
+
+[[stages]]
+name = "db-tests"
+# Run DB tests only when postgres is available
+# This stage is optional and can fail without blocking
+command = "cargo test --features db-tests -- --test-threads=1"
+timeout_secs = 900
+required = false
+continue_on_fail = true
+
+[pass_criteria]
+all_required_must_pass = true
+required_stages = ["check", "unit-fast"]
