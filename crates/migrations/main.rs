@@ -9,6 +9,8 @@ use tokio::io::AsyncWriteExt;
 use tracing::info;
 use tracing_subscriber::filter::LevelFilter;
 
+const MIGRATIONS_DIR: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/sql");
+
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
 struct Cli {
@@ -27,13 +29,18 @@ enum Commands {
     },
 }
 
+fn database_connect_options() -> PgConnectOptions {
+    match std::env::var("DATABASE_URL") {
+        Ok(url) if !url.trim().is_empty() => {
+            PgConnectOptions::from_str(&url).expect("Invalid database url!")
+        }
+        _ => PgConnectOptions::new(),
+    }
+}
+
 async fn migrate() {
     // Connect to the database
-    let connection = if let Ok(url) = std::env::var("DATABASE_URL") {
-        PgConnectOptions::from_str(&url).expect("Invalid database url!")
-    } else {
-        PgConnectOptions::new()
-    };
+    let connection = database_connect_options();
 
     let mut connection = connection
         .application_name("sql-migrator")
@@ -55,11 +62,11 @@ async fn create_new_migration(name: String) {
     let name = name.replace([' ', '_'], "-").to_lowercase();
 
     // Create a new file in the sql directory
-    let file_name = format!("sql/{:0>4}_{}.sql", current_count + 1, name);
+    let file_name = format!("{MIGRATIONS_DIR}/{:0>4}_{}.sql", current_count + 1, name);
 
-    if !fs::exists("./sql").unwrap_or(false) {
+    if !fs::exists(MIGRATIONS_DIR).unwrap_or(false) {
         println!("PWD: {:#?}", env::var("PWD"));
-        panic!("No sql directory found! Are you in the good directory?");
+        panic!("No sql directory found at {MIGRATIONS_DIR}");
     }
 
     let mut file = File::create(&file_name)
@@ -97,7 +104,7 @@ pub async fn main() {
 
 async fn recreate_database() {
     // Connect to the database
-    let options = PgConnectOptions::new().application_name("sql-migrator");
+    let options = database_connect_options().application_name("sql-migrator");
     let mut connection = options
         .connect()
         .await

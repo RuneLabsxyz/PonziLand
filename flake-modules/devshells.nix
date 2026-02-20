@@ -51,11 +51,9 @@
           systemd
           udev
           libusb1
-          pkgs.stdenv.cc.cc
+          pkgs.stdenv.cc
 
           pkg-config
-
-          gcc
 
           # Cairo/Starknet tools (linux only atm)
           cairo-nix.sozo

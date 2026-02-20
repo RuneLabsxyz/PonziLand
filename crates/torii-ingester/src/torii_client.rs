@@ -322,9 +322,30 @@ where
 }
 
 fn parse_created_at(value: &str) -> Option<DateTime<Utc>> {
-    NaiveDateTime::parse_from_str(value, "%F %T")
-        .map(chrono::NaiveDateTime::and_utc)
-        .ok()
+    let value = value.trim();
+
+    if let Ok(datetime) = DateTime::parse_from_rfc3339(value) {
+        return Some(datetime.with_timezone(&Utc));
+    }
+
+    for format in ["%F %T%.f%:z", "%F %T%:z"] {
+        if let Ok(datetime) = DateTime::parse_from_str(value, format) {
+            return Some(datetime.with_timezone(&Utc));
+        }
+    }
+
+    let without_utc_suffix = value
+        .strip_suffix(" UTC")
+        .or_else(|| value.strip_suffix(" utc"))
+        .unwrap_or(value);
+
+    for format in ["%F %T%.f", "%F %T"] {
+        if let Ok(naive) = NaiveDateTime::parse_from_str(without_utc_suffix, format) {
+            return Some(naive.and_utc());
+        }
+    }
+
+    None
 }
 
 #[cfg(test)]
@@ -346,5 +367,35 @@ mod tests {
     fn parse_created_at_rejects_invalid_timestamp() {
         assert_eq!(parse_created_at("2026/01/02 03:04:05"), None);
         assert_eq!(parse_created_at(""), None);
+    }
+
+    #[test]
+    fn parse_created_at_accepts_fractional_seconds() {
+        let parsed = parse_created_at("2026-01-02 03:04:05.123456");
+        let expected = DateTime::parse_from_rfc3339("2026-01-02T03:04:05.123456Z")
+            .unwrap()
+            .with_timezone(&Utc);
+
+        assert_eq!(parsed, Some(expected));
+    }
+
+    #[test]
+    fn parse_created_at_accepts_offset_timestamp() {
+        let parsed = parse_created_at("2026-01-02 04:04:05+01:00");
+        let expected = DateTime::parse_from_rfc3339("2026-01-02T03:04:05Z")
+            .unwrap()
+            .with_timezone(&Utc);
+
+        assert_eq!(parsed, Some(expected));
+    }
+
+    #[test]
+    fn parse_created_at_accepts_utc_suffix() {
+        let parsed = parse_created_at("2026-01-02 03:04:05 UTC");
+        let expected = DateTime::parse_from_rfc3339("2026-01-02T03:04:05Z")
+            .unwrap()
+            .with_timezone(&Utc);
+
+        assert_eq!(parsed, Some(expected));
     }
 }
