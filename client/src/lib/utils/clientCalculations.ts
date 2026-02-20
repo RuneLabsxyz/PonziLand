@@ -111,10 +111,12 @@ export function calculateYieldInfo(
 
       // Use the existing tax calculation logic from taxes.ts
       // This replicates get_tax_rate_per_neighbor from the contract
+      // Pass the neighbor's location for edge/corner-aware max neighbor calculation
       const perHourBigNumber = calculateBurnRate(
         neighborLand.sellPrice,
         neighborLand.level,
         1,
+        Number(location),
       );
       // Convert BigNumber to BigInt
       const perHour = CurrencyAmount.fromRaw(

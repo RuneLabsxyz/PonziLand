@@ -8,6 +8,7 @@
 export function formatDate(dateString: string): string {
   try {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
     return date.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
@@ -26,6 +27,7 @@ export function formatDate(dateString: string): string {
 export function formatDateOnly(dateString: string): string {
   try {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
     return date.toLocaleDateString(undefined, {
       year: 'numeric',
       month: 'short',
@@ -42,6 +44,7 @@ export function formatDateOnly(dateString: string): string {
 export function formatTimeOnly(dateString: string): string {
   try {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
     return date.toLocaleTimeString(undefined, {
       hour: '2-digit',
       minute: '2-digit',
@@ -58,6 +61,7 @@ export function formatDuration(startDate: string, endDate: string): string {
   try {
     const start = new Date(startDate);
     const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return '-';
 
     const diffMs = end.getTime() - start.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -189,6 +193,7 @@ export function formatDurationHMS(durationInSeconds: number): string {
 export function formatDateCompact(dateString: string): string {
   try {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = String(date.getFullYear()).slice(-2);

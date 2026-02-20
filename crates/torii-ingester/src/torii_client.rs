@@ -266,16 +266,14 @@ impl ToriiClient {
 
             loop {
                 // TODO(red): Add base offset support
-                let request: Vec<QueryResponse> = match sql_client
-                    .query(request(current_offset).into())
-                    .await
-                {
-                    Ok(request) => request,
-                    Err(e) => {
-                        error!("torii sql query failed: {e}");
-                        break;
-                    }
-                };
+                let request: Vec<QueryResponse> =
+                    match sql_client.query(request(current_offset).into()).await {
+                        Ok(request) => request,
+                        Err(e) => {
+                            error!("torii sql query failed: {e}");
+                            break;
+                        }
+                    };
 
                 if request.is_empty() {
                     break;
@@ -323,7 +321,7 @@ where
 
 fn parse_created_at(value: &str) -> Option<DateTime<Utc>> {
     NaiveDateTime::parse_from_str(value, "%F %T")
-        .map(chrono::NaiveDateTime::and_utc)
+        .map(|dt| dt.and_utc())
         .ok()
 }
 

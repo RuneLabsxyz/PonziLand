@@ -3,6 +3,7 @@ import data from '$profileData';
 // Coordinate system constants (matching contracts/src/helpers/coord.cairo)
 export const COORD_MULTIPLIER = 256; // TWO_POW_8 from contracts
 export const COORD_MASK = 0xff; // MASK_8 from contracts
+export const MAX_GRID_SIZE = 255; // MAX_GRID_SIZE from contracts/src/consts.cairo
 
 // Tournament dates
 export const DATE_GATE: Date | undefined = new Date('2025-06-02T22:30:00Z');

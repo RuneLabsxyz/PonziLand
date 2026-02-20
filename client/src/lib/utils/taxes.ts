@@ -1,5 +1,5 @@
 import type { LandWithActions } from '$lib/api/land';
-import { Neighbors } from '$lib/api/neighbors';
+import { Neighbors, maxNeighbors } from '$lib/api/neighbors';
 import { configValues } from '$lib/stores/config.store.svelte';
 import type { Token } from '$lib/interfaces';
 import { toHexWithPadding, padAddress } from '$lib/utils';
@@ -150,8 +150,9 @@ export const estimateNukeTimeRpc = async (
   }
 
   const baseTime = configValues.baseTime;
+  const landLocation = Number(land.location);
   const burnRate = Number(
-    calculateBurnRate(land.sellPrice, land.level, numNeighbors),
+    calculateBurnRate(land.sellPrice, land.level, numNeighbors, landLocation),
   );
 
   if (burnRate <= 0 || configValues.gameSpeed === 0) {
@@ -205,8 +206,14 @@ export const estimateNukeTimeSync = (
     return 0;
   }
 
+  const landLocation = Number(land.location);
   const burnRate = Number(
-    calculateBurnRate(land.sellPrice, land.level, neighbourNumber),
+    calculateBurnRate(
+      land.sellPrice,
+      land.level,
+      neighbourNumber,
+      landLocation,
+    ),
   );
 
   if (burnRate <= 0) {
@@ -257,8 +264,18 @@ export const estimateTax = (sellPrice: number) => {
   };
 };
 
-export function burnForOneNeighbor(sellPrice: CurrencyAmount) {
-  const maxN = 8;
+/**
+ * Calculate the per-neighbor tax rate for a land.
+ * Matches contracts/src/helpers/taxes.cairo::get_tax_rate_per_neighbor.
+ *
+ * @param sellPrice - The land's sell price
+ * @param maxN - Maximum geometric neighbors for the land's position (3, 5, or 8).
+ *               Defaults to 8 (interior land). Use maxNeighbors(location) for edge/corner accuracy.
+ */
+export function burnForOneNeighbor(
+  sellPrice: CurrencyAmount,
+  maxN: number = 8,
+) {
   return sellPrice
     .rawValue()
     .multipliedBy(configValues.taxRate)
@@ -266,15 +283,25 @@ export function burnForOneNeighbor(sellPrice: CurrencyAmount) {
     .dividedBy(maxN * 100);
 }
 
-// TODO: edge case land in the corners or edges of the map
+/**
+ * Calculate the total burn rate for a land based on its sell price, level, and neighbor count.
+ *
+ * @param sellPrice - The land's sell price
+ * @param level - The land's level (affects discount: level 2 = 10%, level 3 = 15%)
+ * @param neighborCount - Number of actual occupied neighbors
+ * @param location - Optional land location index for edge/corner-aware max neighbor calculation.
+ *                   When provided, uses maxNeighbors(location) instead of the default 8.
+ */
 export function calculateBurnRate(
   sellPrice: CurrencyAmount,
   level: number,
   neighborCount: number,
+  location?: number,
 ) {
+  const maxN = location !== undefined ? maxNeighbors(location) : 8;
   const discount_for_level = calculateDiscount(level);
 
-  let base = burnForOneNeighbor(sellPrice).multipliedBy(neighborCount);
+  let base = burnForOneNeighbor(sellPrice, maxN).multipliedBy(neighborCount);
 
   if (discount_for_level > 0) {
     return base.multipliedBy(100 - discount_for_level).dividedBy(100);

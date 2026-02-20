@@ -221,7 +221,7 @@ mod tests {
         }
 
         // Clean up
-        sqlx::query!("DROP TABLE IF EXISTS u256_test;")
+        sqlx::query("DROP TABLE IF EXISTS u256_test;")
             .execute(&pool)
             .await
             .expect("Failed to drop test table");
