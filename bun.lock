@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "ponziland",
@@ -119,7 +120,7 @@
     },
     "packages/account": {
       "name": "@runelabsxyz/ponziland-account",
-      "version": "0.6.0",
+      "version": "0.6.1",
       "dependencies": {
         "@argent/x-sessions": "catalog:",
         "@cartridge/controller": "catalog:",
