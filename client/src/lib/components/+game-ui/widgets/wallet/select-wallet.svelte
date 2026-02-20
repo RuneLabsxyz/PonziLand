@@ -34,10 +34,7 @@
     await account!.selectAndLogin(id);
     console.log('Logged in!');
 
-    // TODO(#58): Split the session setup
-    if (account!.getProvider()?.supportsSession()) {
-      await account!.setupSession();
-    }
+    await account!.setupSessionIfSupported();
 
     // resolve waiting promises.
     window.dispatchEvent(new Event('wallet_login_success'));

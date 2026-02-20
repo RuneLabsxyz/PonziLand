@@ -397,6 +397,15 @@ export class AccountManager {
     }
   }
 
+  public async setupSessionIfSupported(): Promise<boolean> {
+    if (this._provider == null || !this._provider.supportsSession()) {
+      return false;
+    }
+
+    await this.setupSession();
+    return true;
+  }
+
   public getAvailableWallets() {
     return availableWallets
       .map((e) => e.wallet)

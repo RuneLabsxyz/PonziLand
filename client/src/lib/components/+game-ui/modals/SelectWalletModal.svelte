@@ -51,10 +51,7 @@
     await account!.selectAndLogin(id, signupOptions);
     console.log('Logged in!');
 
-    // TODO(#58): Split the session setup
-    if (account!.getProvider()?.supportsSession()) {
-      await account!.setupSession();
-    }
+    await account!.setupSessionIfSupported();
 
     // Check for pending referral and submit if exists
     if (referralStore.pendingCode) {
