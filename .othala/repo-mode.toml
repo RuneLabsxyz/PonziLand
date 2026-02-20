@@ -1,2 +1,2 @@
-mode = "merge"
-# merge: merge-as-you-go for fast iteration/non-prod
+mode = "stack"
+# stack: production-safe review flow (no auto-merge)
