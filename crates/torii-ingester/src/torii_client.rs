@@ -11,6 +11,7 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
 use tokio_stream::Stream;
 use torii_client::Client as GrpcClient;
+use tracing::{error, warn};
 
 // TODO(Red): Make sure we loose no messages between the catchup and the listen
 // (Maybe add the listen at the same time we do the catchup, and if we keep the event IDs somewhere, we can work with this system)
@@ -265,11 +266,16 @@ impl ToriiClient {
 
             loop {
                 // TODO(red): Add base offset support
-                let request: Vec<QueryResponse> = sql_client
+                let request: Vec<QueryResponse> = match sql_client
                     .query(request(current_offset).into())
                     .await
-                    // TODO: Remove usage of panics
-                    .expect("ohno");
+                {
+                    Ok(request) => request,
+                    Err(e) => {
+                        error!("torii sql query failed: {e}");
+                        break;
+                    }
+                };
 
                 if request.is_empty() {
                     break;
@@ -279,17 +285,25 @@ impl ToriiClient {
 
                 // We can send data through the wire.
                 for elem in request {
+                    let Some(at) = parse_created_at(&elem.created_at) else {
+                        warn!(
+                            event_id = %elem.event_id,
+                            created_at = %elem.created_at,
+                            "skipping torii row with invalid created_at"
+                        );
+                        continue;
+                    };
+
                     let event = RawToriiData::Json {
                         name: elem.selector,
                         data: elem.data,
                         event_id: elem.event_id,
-                        // TODO: Migrate this to something else than panics
-                        at: NaiveDateTime::parse_from_str(&elem.created_at, "%F %T")
-                            .unwrap()
-                            .and_utc(),
+                        at,
                     };
-                    // TODO: Migrate this to something else than panics
-                    tx.send(event).await.expect("Error");
+
+                    if tx.send(event).await.is_err() {
+                        break;
+                    }
                 }
             }
         });
@@ -305,4 +319,32 @@ where
 {
     let json_string: String = String::deserialize(deserializer)?.replace("\\\"", "\"");
     serde_json::from_str::<T>(&json_string).map_err(serde::de::Error::custom)
+}
+
+fn parse_created_at(value: &str) -> Option<DateTime<Utc>> {
+    NaiveDateTime::parse_from_str(value, "%F %T")
+        .map(chrono::NaiveDateTime::and_utc)
+        .ok()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_created_at;
+    use chrono::{DateTime, Utc};
+
+    #[test]
+    fn parse_created_at_accepts_torii_format() {
+        let parsed = parse_created_at("2026-01-02 03:04:05");
+        let expected = DateTime::parse_from_rfc3339("2026-01-02T03:04:05Z")
+            .unwrap()
+            .with_timezone(&Utc);
+
+        assert_eq!(parsed, Some(expected));
+    }
+
+    #[test]
+    fn parse_created_at_rejects_invalid_timestamp() {
+        assert_eq!(parse_created_at("2026/01/02 03:04:05"), None);
+        assert_eq!(parse_created_at(""), None);
+    }
 }
