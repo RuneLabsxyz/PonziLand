@@ -190,6 +190,7 @@ mod tests {
     use migrations::MIGRATOR;
 
     #[sqlx::test(migrator = "MIGRATOR")]
+    #[ignore = "Test is using a database, only running it if wanted."]
     async fn test_save_and_get_land(pool: sqlx::PgPool) -> Result<(), Error> {
         let repo = Repository::new(pool);
 
@@ -243,6 +244,7 @@ mod tests {
     }
 
     #[sqlx::test(migrator = "MIGRATOR")]
+    #[ignore = "Test is using a database, only running it if wanted."]
     async fn test_land_versioning(pool: sqlx::PgPool) -> Result<(), Error> {
         let repo = Repository::new(pool);
 
