@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # Fast verification for PonziLand (no postgres required)
-# This skips DB-dependent tests for quick iteration
+# Skips DB-coupled crates/tests to keep Othala lanes reliable
 
 set -euo pipefail
 
+export SQLX_OFFLINE=true
+
 echo "[verify-fast] Starting fast verification (no DB)..."
 
-# Fast check
 echo "[verify-fast] Running cargo check..."
 cargo check --all-targets
 
-# Fast unit tests (skip DB tests)
-echo "[verify-fast] Running unit tests (no db-tests feature)..."
-cargo test --lib --no-default-features
+echo "[verify-fast] Running unit tests (workspace, excluding DB-coupled crate)..."
+cargo test --workspace --lib --no-default-features --exclude chaindata-repository
 
 echo "[verify-fast] ✓ Fast verification passed (DB tests skipped)"
