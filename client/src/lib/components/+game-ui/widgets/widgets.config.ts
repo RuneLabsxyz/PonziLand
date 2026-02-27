@@ -86,6 +86,15 @@ const baseWidgetsState: WidgetsState = {
     isMinimized: false,
     isOpen: false,
   },
+  chat: {
+    id: 'chat',
+    type: 'chat',
+    position: { x: 60, y: 60 },
+    dimensions: { width: 400, height: 500 },
+    isMinimized: false,
+    isOpen: false,
+    showMaximize: true,
+  },
   help: {
     id: 'help',
     type: 'help',
@@ -229,6 +238,12 @@ const allWidgets: (Widget & { if?: boolean })[] = [
     type: 'help',
     label: 'Help',
     icon: '/ui/icons/Icon_Thin_Book.png',
+  },
+  {
+    id: 'chat',
+    type: 'chat',
+    label: 'Chat',
+    icon: '/ui/icons/Icon_Thin_Notification.png',
   },
   {
     id: 'guild',

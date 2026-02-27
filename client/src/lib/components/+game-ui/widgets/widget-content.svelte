@@ -20,6 +20,7 @@
   import WidgetTournament from './tournament/widget-tournament.svelte';
   import WidgetUsername from './username/widget-username.svelte';
   import WidgetHistory from './history/widget-history.svelte';
+  import WidgetChat from './chat/widget-chat.svelte';
 
   type Props = {
     type: string;
@@ -74,4 +75,6 @@
   <WidgetUsername />
 {:else if type === 'history'}
   <WidgetHistory />
+{:else if type === 'chat'}
+  <WidgetChat />
 {/if}
