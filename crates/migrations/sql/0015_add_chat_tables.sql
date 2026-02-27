@@ -47,9 +47,8 @@ CREATE TABLE chat_ban (
     expires_at TIMESTAMP WITHOUT TIME ZONE -- NULL = permanent
 );
 
-CREATE UNIQUE INDEX chat_ban_user_active_idx
-    ON chat_ban (user_address)
-    WHERE expires_at IS NULL OR expires_at > NOW();
+CREATE INDEX chat_ban_user_active_idx
+    ON chat_ban (user_address, expires_at);
 
 -- Seed the default global channel
 INSERT INTO chat_channel (id, channel_type, name)
