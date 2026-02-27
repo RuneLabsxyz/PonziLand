@@ -9,6 +9,8 @@
   import OverlayManager from './overlay-manager/OverlayManager.svelte';
   import WidgetProvider from './widgets/widget-provider.svelte';
   import EmptyWalletPrompt from '../empty-wallet-prompt/empty-wallet-prompt.svelte';
+  import SidebarDock from '../ui/sidebar-dock.svelte';
+  import WidgetContent from './widgets/widget-content.svelte';
 
   // Function to open land info widget
   export function openLandInfoWidget(land: LandWithActions) {
@@ -47,3 +49,10 @@
 
   <EmptyWalletPrompt />
 </div>
+
+<!-- Sidebar dock renders outside the pointer-events:none overlay -->
+<SidebarDock>
+  {#snippet children({ dockedWidgetType, dockedWidgetData })}
+    <WidgetContent type={dockedWidgetType} data={dockedWidgetData} />
+  {/snippet}
+</SidebarDock>
