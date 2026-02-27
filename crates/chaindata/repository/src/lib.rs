@@ -1,4 +1,5 @@
 pub mod auction;
+pub mod chat;
 pub mod event;
 pub mod events;
 pub mod land;
@@ -11,6 +12,7 @@ mod error;
 
 pub type Database = sqlx::PgPool;
 pub use auction::Repository as AuctionRepository;
+pub use chat::ChatRepository;
 pub use error::Error;
 pub use event::Repository as EventRepository;
 pub use land::Repository as LandRepository;
