@@ -53,6 +53,8 @@ serde_json.workspace = true
 price-provider.workspace = true
 avnu-pricing = { path = "../avnu-pricing" }
 moka = { version = "0.12", features = ["future"] }
+uuid.workspace = true
+chaindata-models = { path = "../chaindata/models" }
 
 [lints]
 workspace = true

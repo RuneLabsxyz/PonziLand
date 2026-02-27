@@ -10,8 +10,8 @@ use axum::{
     Json, Router,
 };
 use chaindata_repository::{
-    AuctionRepository, LandHistoricalRepository, LandRepository, PriceFeedRepository,
-    WalletActivityRepository,
+    AuctionRepository, ChatRepository, LandHistoricalRepository, LandRepository,
+    PriceFeedRepository, WalletActivityRepository,
 };
 use chaindata_service::{ChainDataService, ChainDataServiceConfiguration};
 use config::Conf;
@@ -19,8 +19,9 @@ use confique::Config;
 use migrations::MIGRATOR;
 use monitoring::listen_monitoring;
 use routes::{
-    auctions::AuctionsRoute, drops::DropsRoute, land_historical::LandHistoricalRoute,
-    lands::LandsRoute, price::PriceRoute, tokens::TokenRoute, wallets::WalletsRoute,
+    auctions::AuctionsRoute, chat::ChatRoute, drops::DropsRoute,
+    land_historical::LandHistoricalRoute, lands::LandsRoute, price::PriceRoute, tokens::TokenRoute,
+    wallets::WalletsRoute,
 };
 use serde::{Deserialize, Serialize};
 use service::{
@@ -122,6 +123,7 @@ async fn main() -> Result<()> {
     let wallet_activity_repository = Arc::new(WalletActivityRepository::new(pool.clone()));
     let price_feed_repository = Arc::new(PriceFeedRepository::new(pool.clone()));
     let auction_repository = Arc::new(AuctionRepository::new(pool.clone()));
+    let chat_repository = Arc::new(ChatRepository::new(pool.clone()));
 
     // Start price feed service to record prices every minute
     let _price_feed_service = PriceFeedService::new(
@@ -143,6 +145,7 @@ async fn main() -> Result<()> {
         price_feed_repository,
         auction_repository,
         drop_emitter_wallets: Arc::new(config.drop_emitter_wallets.clone()),
+        chat_repository,
     };
 
     let cors = CorsLayer::new()
@@ -191,6 +194,10 @@ async fn main() -> Result<()> {
         .nest(
             "/auctions",
             AuctionsRoute::new().router().with_state(app_state.clone()),
+        )
+        .nest(
+            "/chat",
+            ChatRoute::new().router().with_state(app_state.clone()),
         )
         // `GET /` goes to `root`
         .route("/", get(root))
