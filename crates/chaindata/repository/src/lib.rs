@@ -1,4 +1,5 @@
 pub mod auction;
+pub mod chat;
 pub mod event;
 pub mod events;
 pub mod land;
@@ -18,3 +19,4 @@ pub use land_historical::{AuctionSpendSummary, Repository as LandHistoricalRepos
 pub use land_stake::Repository as LandStakeRepository;
 pub use price_feed::PriceFeedRepository;
 pub use wallet_activity::WalletActivityRepository;
+pub use chat::ChatRepository;
