@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use axum::extract::FromRef;
 use chaindata_repository::{
-    AuctionRepository, LandHistoricalRepository, LandRepository, PriceFeedRepository,
-    WalletActivityRepository,
+    AuctionRepository, ChatRepository, LandHistoricalRepository, LandRepository,
+    PriceFeedRepository, WalletActivityRepository,
 };
 
 use crate::service::{avnu::AvnuService, ekubo::EkuboService, token::TokenService};
@@ -19,6 +19,7 @@ pub struct AppState {
     pub price_feed_repository: Arc<PriceFeedRepository>,
     pub auction_repository: Arc<AuctionRepository>,
     pub drop_emitter_wallets: Arc<Vec<String>>,
+    pub chat_repository: Arc<ChatRepository>,
 }
 
 impl AppState {
@@ -33,6 +34,7 @@ impl AppState {
         price_feed_repository: Arc<PriceFeedRepository>,
         auction_repository: Arc<AuctionRepository>,
         drop_emitter_wallets: Arc<Vec<String>>,
+        chat_repository: Arc<ChatRepository>,
     ) -> Self {
         Self {
             token_service,
@@ -44,6 +46,7 @@ impl AppState {
             price_feed_repository,
             auction_repository,
             drop_emitter_wallets,
+            chat_repository,
         }
     }
 }
@@ -99,5 +102,11 @@ impl FromRef<AppState> for Arc<AuctionRepository> {
 impl FromRef<AppState> for Arc<Vec<String>> {
     fn from_ref(app_state: &AppState) -> Self {
         app_state.drop_emitter_wallets.clone()
+    }
+}
+
+impl FromRef<AppState> for Arc<ChatRepository> {
+    fn from_ref(app_state: &AppState) -> Self {
+        app_state.chat_repository.clone()
     }
 }

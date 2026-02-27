@@ -890,6 +890,7 @@ dependencies = [
  "serde_json",
  "sqlx",
  "thiserror 2.0.12",
+ "uuid 1.17.0",
 ]
 
 [[package]]
@@ -2270,6 +2271,7 @@ dependencies = [
  "arc-swap",
  "avnu-pricing",
  "axum 0.8.4",
+ "chaindata-models",
  "chaindata-repository",
  "chaindata-service",
  "chrono",
@@ -2295,6 +2297,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "url",
+ "uuid 1.17.0",
 ]
 
 [[package]]
