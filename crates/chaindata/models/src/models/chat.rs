@@ -18,6 +18,7 @@ pub struct ChatChannelModel {
     pub created_at: NaiveDateTime,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, FromRow, Serialize, Deserialize)]
 pub struct ChatChannelParticipantModel {
     pub id: i32,
