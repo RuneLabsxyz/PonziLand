@@ -6,6 +6,10 @@ contracts/manifest_* @RuneLabsxyz/deployment
 
 # All the client folder is managed by the frontend team
 client @RuneLabsxyz/frontend
+# ... along with the packages folder
+packages @RuneLabsxyz/frontend
+# And the docs
+docs @RuneLabsxyz/frontend
 
 # The rest of the contract folder is managed by the contracts team
 contracts @RuneLabsxyz/contracts
