@@ -16,6 +16,7 @@ impl EventDataRepository {
         Conn: 'e + sqlx::Executor<'e, Database = sqlx::Postgres>,
     {
         match event.clone() {
+            EventDataModel::AddStake(event) => Self::save_event(conn, event),
             EventDataModel::AuctionFinished(event) => Self::save_event(conn, event),
             EventDataModel::LandBought(event) => Self::save_event(conn, event),
             EventDataModel::LandNuked(event) => Self::save_event(conn, event),

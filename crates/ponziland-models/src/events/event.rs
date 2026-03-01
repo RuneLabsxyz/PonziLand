@@ -3,12 +3,14 @@ use torii_ingester::prelude::Struct;
 use torii_ingester::{error::ToriiConversionError, RawToriiData};
 
 use super::actions::{
-    AuctionFinishedEvent, LandBoughtEvent, LandNukedEvent, LandTransferEvent, NewAuctionEvent,
+    AddStakeEvent, AuctionFinishedEvent, LandBoughtEvent, LandNukedEvent, LandTransferEvent,
+    NewAuctionEvent,
 };
 use super::auth::{AddressAuthorizedEvent, AddressRemovedEvent, VerifierUpdatedEvent};
 
 #[derive(Clone, Debug)]
 pub enum EventData {
+    AddStake(AddStakeEvent),
     AuctionFinished(AuctionFinishedEvent),
     LandBought(LandBoughtEvent),
     LandNuked(LandNukedEvent),
@@ -69,6 +71,7 @@ impl EventData {
     /// Returns an error if the JSON value cannot be deserialized into the corresponding event data.
     pub fn from_json(name: &str, json: Value) -> Result<Self, ToriiConversionError> {
         Ok(match name {
+            "ponzi_land-AddStakeEvent" => EventData::AddStake(serde_json::from_value(json)?),
             "ponzi_land-AuctionFinishedEvent" => {
                 EventData::AuctionFinished(serde_json::from_value(json)?)
             }
@@ -99,6 +102,9 @@ impl TryFrom<Struct> for EventData {
     type Error = ToriiConversionError;
     fn try_from(value: Struct) -> Result<Self, Self::Error> {
         Ok(match &*value.name {
+            "ponzi_land-AddStakeEvent" => {
+                EventData::AddStake(AddStakeEvent::try_from(value)?)
+            }
             "ponzi_land-AuctionFinishedEvent" => {
                 EventData::AuctionFinished(AuctionFinishedEvent::try_from(value)?)
             }
