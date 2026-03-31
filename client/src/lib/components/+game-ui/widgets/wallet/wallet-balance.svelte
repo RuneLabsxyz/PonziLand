@@ -12,7 +12,12 @@
   import { ScrollArea } from '$lib/components/ui/scroll-area';
   import { loadingStore } from '$lib/stores/loading.store.svelte';
   import InfoTooltip from '$lib/components/ui/info-tooltip.svelte';
-  import { cn } from '$lib/utils';
+  import { cn, padAddress } from '$lib/utils';
+  import { landStore } from '$lib/stores/store.svelte';
+  import { BuildingLand } from '$lib/api/land/building_land';
+  import type { Token } from '$lib/interfaces';
+  import { CurrencyAmount } from '$lib/utils/CurrencyAmount';
+  import { get } from 'svelte/store';
 
   let {
     setCustomControls,
@@ -138,6 +143,61 @@
 
   const totalBalance = $derived(walletStore.totalBalance);
 
+  // Calculate staked amounts from owned lands
+  const stakedByToken = $derived.by(() => {
+    const stakeMap = new Map<
+      string,
+      { token: Token; amount: CurrencyAmount }
+    >();
+
+    if (!address) return stakeMap;
+
+    const normalizedAddress = padAddress(address);
+    const allLands = get(landStore.getAllLands());
+
+    for (const land of allLands) {
+      if (!BuildingLand.is(land)) continue;
+      if (padAddress(land.owner) !== normalizedAddress) continue;
+
+      const token = land.token;
+      const stakeAmount = land.stakeAmount;
+
+      if (!token || !stakeAmount || stakeAmount.isZero()) continue;
+
+      const existing = stakeMap.get(token.address);
+      if (existing) {
+        stakeMap.set(token.address, {
+          token,
+          amount: existing.amount.add(stakeAmount),
+        });
+      } else {
+        stakeMap.set(token.address, { token, amount: stakeAmount });
+      }
+    }
+
+    return stakeMap;
+  });
+
+  // Calculate total staked value in base token (USD)
+  const totalStakedUsd = $derived.by(() => {
+    if (!baseToken || stakedByToken.size === 0) return null;
+
+    let total = CurrencyAmount.fromScaled(0, baseToken);
+
+    for (const [, { token, amount }] of stakedByToken) {
+      const converted = walletStore.convertTokenAmount(
+        amount,
+        token,
+        baseToken,
+      );
+      if (converted) {
+        total = total.add(converted);
+      }
+    }
+
+    return total;
+  });
+
   // Sort tokens with base token first, then by equivalent base token balance value
   const sortedTokenBalances = $derived.by(() => {
     const tokens = walletStore.tokenBalances;
@@ -216,6 +276,17 @@
     </div>
   {/if}
 </div>
+
+<!-- Staked amount (smaller, below balance) -->
+{#if totalStakedUsd && baseToken}
+  <div class="flex items-center justify-end gap-1 px-2 -mt-1 mb-1">
+    <span class="text-xs text-gray-400">Staked:</span>
+    <span class="text-xs font-ponzi-number text-gray-400">
+      {totalStakedUsd.toString()}
+    </span>
+    <TokenAvatar token={baseToken} class="h-4 w-4 opacity-50" />
+  </div>
+{/if}
 
 {#if !isMinimized}
   {#if errorMessage}
