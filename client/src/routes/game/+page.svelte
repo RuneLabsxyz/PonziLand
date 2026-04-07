@@ -15,6 +15,7 @@
   import { page } from '$app/state';
   import accountState from '$lib/account.svelte';
   import type { PageData } from './$types';
+  import { sidebarWidth } from '$lib/stores/widgets.store';
 
   let webglShow = $derived(webGLStateStore.hasError);
   let webglError = $derived(webGLStateStore.errorMessage);
@@ -103,7 +104,10 @@
 <div class="h-screen w-screen bg-black/10 overflow-visible relative">
   <!-- Game Canvas and UI - Always rendered but potentially hidden -->
   {#if !webglShow && gameContentReady}
-    <div class="absolute inset-0">
+    <div
+      class="absolute inset-0 transition-[right] duration-250 ease-in-out"
+      style="right: {$sidebarWidth}px;"
+    >
       <SwitchChainModal />
       <WelcomeModal />
       <GameUi />

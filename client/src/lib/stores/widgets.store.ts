@@ -4,7 +4,7 @@ import {
   type WidgetState,
 } from '$lib/components/+game-ui/widgets/widgets.config';
 import { WIDGETS_STORAGE_KEY } from '$lib/const';
-import { writable } from 'svelte/store';
+import { writable, derived } from 'svelte/store';
 
 const STORAGE_KEY = WIDGETS_STORAGE_KEY;
 
@@ -346,7 +346,96 @@ function createWidgetsStore() {
         saveState(newState);
         return newState;
       }),
+    dockWidget: (id: string) =>
+      update((state) => {
+        if (!state[id]) {
+          console.error('Widget not found:', id);
+          return state;
+        }
+        const widget = state[id];
+
+        // Undock any currently docked widget first
+        const newState = { ...state };
+        for (const [wid, w] of Object.entries(newState)) {
+          if (w.isDocked && wid !== id) {
+            newState[wid] = {
+              ...w,
+              isDocked: false,
+              position: w.preDockState?.position || w.position,
+              dimensions: w.preDockState?.dimensions || w.dimensions,
+              preDockState: undefined,
+            };
+          }
+        }
+
+        // Save pre-dock state and dock this widget
+        const preDockState = {
+          position: { ...widget.position },
+          dimensions: widget.dimensions ? { ...widget.dimensions } : undefined,
+        };
+
+        newState[id] = {
+          ...widget,
+          isDocked: true,
+          isMaximized: false,
+          isMinimized: false,
+          isOpen: true,
+          preDockState,
+        };
+
+        saveState(newState);
+        return newState;
+      }),
+    undockWidget: (id: string) =>
+      update((state) => {
+        if (!state[id]) {
+          console.error('Widget not found:', id);
+          return state;
+        }
+        const widget = state[id];
+
+        const newState = {
+          ...state,
+          [id]: {
+            ...widget,
+            isDocked: false,
+            position: widget.preDockState?.position || widget.position,
+            dimensions: widget.preDockState?.dimensions || widget.dimensions,
+            preDockState: undefined,
+          },
+        };
+        saveState(newState);
+        return newState;
+      }),
   };
 }
 
+export const SIDEBAR_DOCK_WIDTH = 450;
+
+function createSidebarStore() {
+  const { subscribe, set, update } = writable<{
+    collapsed: boolean;
+  }>({ collapsed: false });
+
+  return {
+    subscribe,
+    toggleCollapse: () => update((s) => ({ ...s, collapsed: !s.collapsed })),
+    setCollapsed: (collapsed: boolean) => update((s) => ({ ...s, collapsed })),
+  };
+}
+
+export const sidebarStore = createSidebarStore();
+
 export const widgetsStore = createWidgetsStore();
+
+// Derived store: effective sidebar width (used for layout shifting)
+export const sidebarWidth = derived(
+  [widgetsStore, sidebarStore],
+  ([$widgets, $sidebar]) => {
+    const hasDocked = Object.values($widgets).some(
+      (w) => w.isDocked && w.isOpen,
+    );
+    if (!hasDocked) return 0;
+    return $sidebar.collapsed ? 40 : SIDEBAR_DOCK_WIDTH;
+  },
+);

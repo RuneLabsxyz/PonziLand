@@ -27,6 +27,11 @@ export interface WidgetState {
     dimensions: { width: number; height: number };
   }; // State before maximizing
   showMaximize?: boolean; // Whether to show the maximize button
+  isDocked?: boolean; // Whether the widget is docked to the sidebar
+  preDockState?: {
+    position: { x: number; y: number };
+    dimensions?: { width: number; height: number };
+  }; // State before docking
 }
 
 export interface WidgetsState {

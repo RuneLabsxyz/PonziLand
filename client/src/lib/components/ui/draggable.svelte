@@ -13,7 +13,14 @@
   import '@interactjs/modifiers';
   import '@interactjs/reflow';
   import '@interactjs/snappers';
-  import { Minus, MoreVertical, X, Maximize, Minimize } from 'lucide-svelte';
+  import {
+    Minus,
+    MoreVertical,
+    X,
+    Maximize,
+    Minimize,
+    PanelRight,
+  } from 'lucide-svelte';
   import { onMount, onDestroy } from 'svelte';
 
   interface Position {
@@ -243,6 +250,10 @@
     }
   }
 
+  function handleDock() {
+    widgetsStore.dockWidget(id);
+  }
+
   // Update local state when store changes and re-setup interact when needed
   $effect(() => {
     const storeWidget = $widgetsStore[id];
@@ -320,6 +331,13 @@
               {/if}
             </button>
           {/if}
+          <button
+            class="window-control"
+            onclick={handleDock}
+            title="Dock to sidebar"
+          >
+            <PanelRight size={16} />
+          </button>
           <button class="window-control" onclick={handleMinimize}>
             <Minus size={16} />
           </button>
